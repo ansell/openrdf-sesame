@@ -28,8 +28,8 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-queryalgebra-model</module>
-		<module>openrdf-queryalgebra-evaluation</module>
+		<module>model</module>
+		<module>evaluation</module>
 	</modules>
 
 	<build>
