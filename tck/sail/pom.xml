@@ -28,9 +28,9 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-sail-api-compliance</module>
-		<module>openrdf-sail-memory-compliance</module>
-		<module>openrdf-sail-nativerdf-compliance</module>
+		<module>api</module>
+		<module>memory</module>
+		<module>nativerdf</module>
 	</modules>
 
 	<build>

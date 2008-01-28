@@ -28,8 +28,8 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-queryparser-serql-compliance</module>
-		<module>openrdf-queryparser-sparql-compliance</module>
+		<module>serql</module>
+		<module>sparql</module>
 	</modules>
 
 	<build>

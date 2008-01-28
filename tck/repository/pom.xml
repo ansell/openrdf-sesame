@@ -29,10 +29,10 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-repository-compliance-base</module>
-		<module>openrdf-repository-http-compliance</module>
-		<module>openrdf-repository-sail-memory-compliance</module>
-		<module>openrdf-repository-sail-nativerdf-compliance</module>
+		<module>compliance-base</module>
+		<module>http</module>
+		<module>sail-memory</module>
+		<module>sail-nativerdf</module>
 	</modules>
 
 	<build>

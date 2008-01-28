@@ -28,12 +28,12 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-rio-compliance-base</module>
-		<module>openrdf-rio-n3-compliance</module>
-		<module>openrdf-rio-ntriples-compliance</module>
-		<module>openrdf-rio-rdfxml-compliance</module>
-		<module>openrdf-rio-turtle-compliance</module>
-		<module>openrdf-rio-trig-compliance</module>
+		<module>base</module>
+		<module>n3</module>
+		<module>ntriples</module>
+		<module>rdfxml</module>
+		<module>trig</module>
+		<module>turtle</module>
 	</modules>
 
 	<build>
