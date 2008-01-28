@@ -28,13 +28,13 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-rio-api</module>
-		<module>openrdf-rio-n3</module>
-		<module>openrdf-rio-ntriples</module>
-		<module>openrdf-rio-rdfxml</module>
-		<module>openrdf-rio-trix</module>
-		<module>openrdf-rio-turtle</module>
-		<module>openrdf-rio-trig</module>
+		<module>api</module>
+		<module>n3</module>
+		<module>ntriples</module>
+		<module>rdfxml</module>
+		<module>trix</module>
+		<module>turtle</module>
+		<module>trig</module>
 	</modules>
 
 	<build>
