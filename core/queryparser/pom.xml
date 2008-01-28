@@ -28,9 +28,9 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-queryparser-api</module>
-		<module>openrdf-queryparser-serql</module>
-		<module>openrdf-queryparser-sparql</module>
+		<module>api</module>
+		<module>serql</module>
+		<module>sparql</module>
 	</modules>
 
 	<build>

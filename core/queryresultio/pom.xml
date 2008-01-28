@@ -28,11 +28,11 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-queryresultio-api</module>
-		<module>openrdf-queryresultio-binary</module>
-		<module>openrdf-queryresultio-sparqljson</module>
-		<module>openrdf-queryresultio-sparqlxml</module>
-		<module>openrdf-queryresultio-text</module>
+		<module>api</module>
+		<module>binary</module>
+		<module>sparqljson</module>
+		<module>sparqlxml</module>
+		<module>text</module>
 	</modules>
 
 	<build>

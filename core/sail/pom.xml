@@ -28,10 +28,10 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-sail-api</module>
-		<module>openrdf-sail-inferencer</module>
-		<module>openrdf-sail-memory</module>
-		<module>openrdf-sail-nativerdf</module>
+		<module>api</module>
+		<module>inferencer</module>
+		<module>memory</module>
+		<module>nativerdf</module>
 	</modules>
 
 	<build>
