@@ -1,0 +1,10 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sys: <http://www.openrdf.org/config/repository#> .
+
+{
+ _:node12f9tmrtkx1 a sys:RepositoryContext .
+}
+
+_:node12f9tmrtkx1 {
+ _:node12f9tmrtkx2 a sys:Repository .
+}
