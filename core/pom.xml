@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.openrdf</groupId>
-	<artifactId>openrdf-sesame</artifactId>
+	<artifactId>openrdf-sesame-core</artifactId>
 	<packaging>pom</packaging>
 	<version>2.1-SNAPSHOT</version>
 	<name>OpenRDF Sesame</name>
@@ -28,17 +28,17 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-console</module>
-		<module>openrdf-http</module>
-		<module>openrdf-model</module>
-		<module>openrdf-query</module>
-		<module>openrdf-queryalgebra</module>
-		<module>openrdf-queryparser</module>
-		<module>openrdf-queryresultio</module>
-		<module>openrdf-repository</module>
-		<module>openrdf-rio</module>
-		<module>openrdf-runtime</module>
-		<module>openrdf-sail</module>
+		<module>console</module>
+		<module>http</module>
+		<module>model</module>
+		<module>query</module>
+		<module>queryalgebra</module>
+		<module>queryparser</module>
+		<module>queryresultio</module>
+		<module>repository</module>
+		<module>rio</module>
+		<module>runtime</module>
+		<module>sail</module>
 	</modules>
 
 	<build>
@@ -219,9 +219,9 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame2</connection>
-		<developerConnection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame2</developerConnection>
-		<url>http://src.aduna-software.org/viewvc/${groupId}/projects/sesame2</url>
+		<connection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame/trunk/core</connection>
+		<developerConnection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame/trunk/core</developerConnection>
+		<url>http://src.aduna-software.org/viewvc/${groupId}/projects/sesame/trunk/core</url>
 	</scm>
 
 </project>
