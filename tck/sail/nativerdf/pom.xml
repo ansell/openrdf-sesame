@@ -89,12 +89,6 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<tagBase>https://src.aduna-software.org/svn/${groupId}/releases/sesame2-tck/openrdf-sail-compliance/${artifactId}</tagBase>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>

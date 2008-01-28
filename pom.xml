@@ -120,9 +120,9 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame/trunk</connection>
-		<developerConnection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame/trunk</developerConnection>
-		<url>http://src.aduna-software.org/viewvc/${groupId}/projects/sesame2/trunk</url>
+		<connection>scm:svn:https://src.aduna-software.org/svn/${groupId}/sesame/trunk</connection>
+		<developerConnection>scm:svn:https://src.aduna-software.org/svn/${groupId}/sesame/trunk</developerConnection>
+		<url>http://src.aduna-software.org/viewvc/${groupId}/sesame/trunk</url>
 	</scm>
 
 </project>
