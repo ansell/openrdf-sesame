@@ -28,7 +28,7 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-queryresultio-api-compliance</module>
+		<module>api</module>
 	</modules>
 
 	<build>

@@ -28,8 +28,8 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-http-testserver</module>
-		<module>openrdf-http-server-compliance</module>
+		<module>testserver</module>
+		<module>server</module>
 	</modules>
 
 	<build>
