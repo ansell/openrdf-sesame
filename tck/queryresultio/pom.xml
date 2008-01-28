@@ -47,15 +47,6 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
-
-			<plugin>
-				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<tagBase>
-						https://src.aduna-software.org/svn/${groupId}/releases/sesame2-tck/${artifactId}
-					</tagBase>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
