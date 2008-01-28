@@ -5,11 +5,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.openrdf</groupId>
-	<artifactId>openrdf-sesame2-tck</artifactId>
+	<artifactId>openrdf-sesame</artifactId>
 	<packaging>pom</packaging>
 	<version>2.1-SNAPSHOT</version>
-	<name>OpenRDF Sesame Technology Compatibility Kit</name>
-	<description>Sesame is an RDF/RDFS database.</description>
+	<name>OpenRDF Sesame</name>
+	<description>An extensible framework for RDF and RDF Schema data.</description>
 	<url>http://www.openrdf.org/</url>
 
 	<organization>
@@ -28,14 +28,8 @@
 	</licenses>
 
 	<modules>
-		<module>http</module>
-		<module>model</module>
-		<module>queryalgebra-evaluation</module>
-		<module>queryparser</module>
-		<module>queryresultio</module>
-		<module>repository</module>
-		<module>rio</module>
-		<module>sail</module>
+		<module>core</module>
+		<module>tck</module>
 	</modules>
 
 	<build>
@@ -55,11 +49,13 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<artifactId>maven-release-plugin</artifactId>
+				<groupId>ch.elca.el4j.maven.plugins</groupId>
+				<artifactId>maven-depgraph-plugin</artifactId>
 				<configuration>
-					<tagBase>
-						https://src.aduna-software.org/svn/${groupId}/releases/sesame2-tck
-					</tagBase>
+					<outDir>target/site/images</outDir>
+					<dotFile>${pom.artifactId}.dot</dotFile>
+					<outFile>${pom.artifactId}.png</outFile>
+					<filterEmptyArtifacts>true</filterEmptyArtifacts>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -98,6 +94,16 @@
 		</repository>
 	</repositories>
 
+	<pluginRepositories>
+		<pluginRepository>
+			<id>elca-services</id>
+			<url>http://el4.elca-services.ch/el4j/maven2repository</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<distributionManagement>
 		<repository>
 			<id>ftp-aduna-repo</id>
@@ -114,15 +120,9 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>
-			scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame/trunk/tck
-		</connection>
-		<developerConnection>
-			scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame/trunk/tck
-		</developerConnection>
-		<url>
-			http://src.aduna-software.org/viewvc/${groupId}/projects/sesame/trunk/tck
-		</url>
+		<connection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame/trunk</connection>
+		<developerConnection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame/trunk</developerConnection>
+		<url>http://src.aduna-software.org/viewvc/${groupId}/projects/sesame2/trunk</url>
 	</scm>
 
 </project>
