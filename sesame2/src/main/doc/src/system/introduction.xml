@@ -1,0 +1,15 @@
+<chapter id="chapter-introduction"> 
+	<title>Introduction</title>
+	<para>
+		Sesame is a system/framework for storing and querying RDF data. It
+		includes various storage backends (memory, file, database), query
+		languages, inferencers, and client-server protocols.
+	</para>
+	<para>
+		This document describes the general architecture and the APIs for Sesame
+		2.0, a major revision of Sesame that focusses on adding context- and
+		transaction support. The required API changes for this are quite
+		extensive and will likely not be fully compatible with previous
+		releases, hence the new major version number.
+	</para>
+</chapter>

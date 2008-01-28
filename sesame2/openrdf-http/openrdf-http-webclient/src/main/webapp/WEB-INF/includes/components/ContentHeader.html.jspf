@@ -1,0 +1,33 @@
+<div id="contentheader">
+	<table>
+		<tr><th colspan="3"><fmt:message key="selections.current" /></th></tr>
+		<tr>
+			<th><fmt:message key="server.title" />:</th>
+			<td>
+		<c:choose>
+			<c:when test="${sessionScope['openrdf-server'] != null}">${sessionScope['openrdf-server'].location}</c:when>
+			<c:otherwise><span class="disabled"><fmt:message key="server.none" /></span></c:otherwise>
+		</c:choose>
+			</td>
+			<td>
+			[<a href="${path}/server/select.form"><fmt:message key="server.change" /></a>]
+			</td>
+		</tr>
+		<tr>
+			<th><fmt:message key="repository.title" />:</th>
+			<td>
+		<c:choose>
+			<c:when test="${sessionScope['openrdf-repository'] != null}">${sessionScope['openrdf-repository-info'].description} (${sessionScope['openrdf-repository-info'].id})</c:when>
+			<c:otherwise><span class="disabled"><fmt:message key="repository.none" /></span></c:otherwise>
+		</c:choose>
+			</td>
+			<td>
+		<c:if test="${sessionScope['openrdf-server'] != null}">[<a href="${path}/server/overview.view"><fmt:message key="repository.change" /></a>]</c:if>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3">&nbsp;</td>
+		</tr>
+	</table>
+<%@ include file="/WEB-INF/includes/components/tabs.html.jspf" %>
+</div>
