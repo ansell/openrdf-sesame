@@ -28,12 +28,12 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-http-protocol</module>
-		<module>openrdf-http-client</module>
-		<module>openrdf-http-server</module>
-		<module>openrdf-http-server-spring</module>
-		<module>openrdf-http-webclient</module>
-		<module>openrdf-http-webclient-spring</module>
+		<module>protocol</module>
+		<module>client</module>
+		<module>server</module>
+		<module>server-spring</module>
+		<module>webclient</module>
+		<module>webclient-spring</module>
 	</modules>
 
 	<build>
