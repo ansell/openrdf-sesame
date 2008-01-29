@@ -6,19 +6,18 @@
 
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-sesame</artifactId>
-	<packaging>pom</packaging>
 	<version>2.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>core</module>
+		<module>tck</module>
+	</modules>
+
 	<name>OpenRDF Sesame</name>
 	<description>An extensible framework for RDF and RDF Schema data.</description>
 	<url>http://www.openrdf.org/</url>
-
-	<organization>
-		<name>Aduna</name>
-		<url>http://www.aduna-software.com/</url>
-	</organization>
-
 	<inceptionYear>2001</inceptionYear>
-
 	<licenses>
 		<license>
 			<name>Aduna BSD-style license</name>
@@ -26,17 +25,16 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-
-	<modules>
-		<module>core</module>
-		<module>tck</module>
-	</modules>
+	<organization>
+		<name>Aduna</name>
+		<url>http://www.aduna-software.com/</url>
+	</organization>
 
 	<build>
 		<extensions>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ftp</artifactId>
+				<artifactId>wagon-ssh</artifactId>
 			</extension>
 		</extensions>
 		<plugins>
@@ -46,9 +44,10 @@
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
+					<encoding>utf8</encoding>
 				</configuration>
 			</plugin>
-			<plugin>
+<!--			<plugin>
 				<groupId>ch.elca.el4j.maven.plugins</groupId>
 				<artifactId>maven-depgraph-plugin</artifactId>
 				<configuration>
@@ -57,44 +56,42 @@
 					<outFile>${pom.artifactId}.png</outFile>
 					<filterEmptyArtifacts>true</filterEmptyArtifacts>
 				</configuration>
-			</plugin>
+			</plugin>-->
 		</plugins>
 	</build>
+
+	<scm>
+		<connection>scm:svn:https://src.aduna-software.org/svn/${groupId}/sesame/trunk</connection>
+		<developerConnection>scm:svn:https://src.aduna-software.org/svn/${groupId}/sesame/trunk</developerConnection>
+		<url>http://src.aduna-software.org/viewvc/${groupId}/sesame/trunk</url>
+	</scm>
 
 	<repositories>
 		<repository>
 			<releases>
 				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
 			</snapshots>
-			<id>aduna-repo</id>
-			<name>Aduna Repository</name>
+			<id>aduna-opensource.releases</id>
+			<name>Aduna Open Source - Maven repository</name>
 			<url>http://repository.aduna-software.org/maven2</url>
 		</repository>
 		<repository>
 			<releases>
 				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
-				<updatePolicy>daily</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
 			</snapshots>
-			<id>aduna-snapshot-repo</id>
-			<name>Aduna Snapshot Repository</name>
+			<id>aduna-opensource.snapshots</id>
+			<name>Aduna Open Source - Maven snapshot repository</name>
 			<url>http://repository.aduna-software.org/maven2-snapshots</url>
 		</repository>
 	</repositories>
 
-	<pluginRepositories>
+<!--	<pluginRepositories>
 		<pluginRepository>
 			<id>elca-services</id>
 			<url>http://el4.elca-services.ch/el4j/maven2repository</url>
@@ -102,27 +99,21 @@
 				<enabled>true</enabled>
 			</releases>
 		</pluginRepository>
-	</pluginRepositories>
+	</pluginRepositories>-->
 
 	<distributionManagement>
 		<repository>
-			<id>ftp-aduna-repo</id>
-			<name>Aduna Repository</name>
-			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
-			<uniqueVersion>true</uniqueVersion>
+			<id>aduna-opensource.releases</id>
+			<name>Aduna Open Source - Maven repository</name>
+			<url>scp://repository.aduna-software.org/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
+			<uniqueVersion>false</uniqueVersion>
 		</repository>
 		<snapshotRepository>
-			<id>ftp-aduna-repo</id>
-			<name>Aduna Snapshot Repository</name>
-			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2-snapshots</url>
-			<uniqueVersion>true</uniqueVersion>
+			<id>aduna-opensource.snapshots</id>
+			<name>Aduna Open Source - Maven snapshot repository</name>
+			<url>scp://repository.aduna-software.org/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2-snapshots</url>
+			<uniqueVersion>false</uniqueVersion>
 		</snapshotRepository>
 	</distributionManagement>
-
-	<scm>
-		<connection>scm:svn:https://src.aduna-software.org/svn/${groupId}/sesame/trunk</connection>
-		<developerConnection>scm:svn:https://src.aduna-software.org/svn/${groupId}/sesame/trunk</developerConnection>
-		<url>http://src.aduna-software.org/viewvc/${groupId}/sesame/trunk</url>
-	</scm>
 
 </project>

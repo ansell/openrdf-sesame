@@ -2,34 +2,16 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
+	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-sesame</artifactId>
 		<version>2.1-SNAPSHOT</version>
 	</parent>
 
-	<modelVersion>4.0.0</modelVersion>
-
 	<artifactId>openrdf-sesame-core</artifactId>
 	<packaging>pom</packaging>
-	<name>OpenRDF Sesame</name>
-	<description>An extensible framework for RDF and RDF Schema data.</description>
-	<url>http://www.openrdf.org/</url>
-
-	<organization>
-		<name>Aduna</name>
-		<url>http://www.aduna-software.com/</url>
-	</organization>
-
-	<inceptionYear>2001</inceptionYear>
-
-	<licenses>
-		<license>
-			<name>Aduna BSD-style license</name>
-			<url>http://www.aduna-software.com/documents/legal/licenses/aduna-bsd.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
 
 	<modules>
 		<module>console</module>
@@ -45,41 +27,20 @@
 		<module>sail</module>
 	</modules>
 
+	<name>OpenRDF Sesame Core</name>
+	<description>Core modules for OpenRDF Sesame</description>
+
 	<build>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ftp</artifactId>
-			</extension>
-		</extensions>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
+				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
+					<descriptors>
+						<descriptor>src/main/assembly/onejar.xml</descriptor>
+						<descriptor>src/main/assembly/sdk.xml</descriptor>
+					</descriptors>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>ch.elca.el4j.maven.plugins</groupId>
-				<artifactId>maven-depgraph-plugin</artifactId>
-				<configuration>
-					<outDir>target/site/images</outDir>
-					<dotFile>${pom.artifactId}.dot</dotFile>
-					<outFile>${pom.artifactId}.png</outFile>
-					<filterEmptyArtifacts>true</filterEmptyArtifacts>
-				</configuration>
-			</plugin>
-            <plugin>
-                 <artifactId>maven-assembly-plugin</artifactId>
-                 <configuration>
-                 	<descriptors>
-                 	   <descriptor>src/main/assembly/onejar.xml</descriptor>
-                 	   <descriptor>src/main/assembly/sdk.xml</descriptor>
-                 	</descriptors>
-                 </configuration>
-            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -163,69 +124,5 @@
 			</plugin>
 		</plugins>
 	</reporting>
-
-	<repositories>
-		<repository>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</snapshots>
-			<id>aduna-repo</id>
-			<name>Aduna Repository</name>
-			<url>http://repository.aduna-software.org/maven2</url>
-		</repository>
-		<repository>
-			<releases>
-				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>daily</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
-			</snapshots>
-			<id>aduna-snapshot-repo</id>
-			<name>Aduna Snapshot Repository</name>
-			<url>http://repository.aduna-software.org/maven2-snapshots</url>
-		</repository>
-	</repositories>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>elca-services</id>
-			<url>http://el4.elca-services.ch/el4j/maven2repository</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</pluginRepository>
-	</pluginRepositories>
-
-	<distributionManagement>
-		<repository>
-			<id>ftp-aduna-repo</id>
-			<name>Aduna Repository</name>
-			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
-			<uniqueVersion>true</uniqueVersion>
-		</repository>
-		<snapshotRepository>
-			<id>ftp-aduna-repo</id>
-			<name>Aduna Snapshot Repository</name>
-			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2-snapshots</url>
-			<uniqueVersion>true</uniqueVersion>
-		</snapshotRepository>
-	</distributionManagement>
-
-	<scm>
-		<connection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame/trunk/core</connection>
-		<developerConnection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame/trunk/core</developerConnection>
-		<url>http://src.aduna-software.org/viewvc/${groupId}/projects/sesame/trunk/core</url>
-	</scm>
 
 </project>
