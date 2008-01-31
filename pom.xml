@@ -4,7 +4,13 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.openrdf</groupId>
+	<parent>
+		<groupId>org.openrdf</groupId>
+		<artifactId>openrdf</artifactId>
+		<version>1</version>
+		<relativePath>../..</relativePath>
+	</parent>
+
 	<artifactId>openrdf-sesame</artifactId>
 	<version>2.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -36,6 +42,225 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- OpenRDF modules -->
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-model</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-rio-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-rio-ntriples</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-rio-n3</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-rio-rdfxml</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-rio-trix</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-rio-turtle</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-rio-trig</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-query</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-queryparser-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-queryparser-serql</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-queryparser-sparql</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-queryresultio-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-queryresultio-binary</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-queryresultio-sparqljson</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-queryresultio-sparqlxml</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-queryresultio-text</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-queryalgebra-model</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-queryalgebra-evaluation</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-repository-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-repository-manager</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-repository-http</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-repository-sail</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-repository-event</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-repository-dataset</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-http-protocol</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-http-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-sail-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-sail-inferencer</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-sail-memory</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-sail-nativerdf</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-runtime</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-http-server</artifactId>
+				<version>${project.version}</version>
+				<type>war</type>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-http-server-spring</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-http-webclient</artifactId>
+				<version>${project.version}</version>
+				<type>war</type>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-http-webclient-spring</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 			<!-- Aduna modules -->
 			<dependency>
 				<groupId>info.aduna</groupId>
@@ -158,6 +383,13 @@
 		</dependencies>
 	</dependencyManagement>
 
+	
+	<scm>
+		<connection>scm:svn:https://src.aduna-software.org/svn/${groupId}/sesame/trunk/</connection>
+		<developerConnection>scm:svn:https://src.aduna-software.org/svn/${groupId}/sesame/trunk/</developerConnection>
+		<url>http://src.aduna-software.org/viewvc/${groupId}/sesame/trunk/</url>
+	</scm>
+
 	<build>
 		<extensions>
 			<extension>
@@ -188,37 +420,6 @@
 		</plugins>
 	</build>
 
-	<scm>
-		<connection>scm:svn:https://src.aduna-software.org/svn/${groupId}/sesame/trunk</connection>
-		<developerConnection>scm:svn:https://src.aduna-software.org/svn/${groupId}/sesame/trunk</developerConnection>
-		<url>http://src.aduna-software.org/viewvc/${groupId}/sesame/trunk</url>
-	</scm>
-
-	<repositories>
-		<repository>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>aduna-opensource.releases</id>
-			<name>Aduna Open Source - Maven repository</name>
-			<url>http://repository.aduna-software.org/maven2</url>
-		</repository>
-		<repository>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<id>aduna-opensource.snapshots</id>
-			<name>Aduna Open Source - Maven snapshot repository</name>
-			<url>http://repository.aduna-software.org/maven2-snapshots</url>
-		</repository>
-	</repositories>
-
 <!--	<pluginRepositories>
 		<pluginRepository>
 			<id>elca-services</id>
@@ -228,20 +429,5 @@
 			</releases>
 		</pluginRepository>
 	</pluginRepositories>-->
-
-	<distributionManagement>
-		<repository>
-			<id>aduna-opensource.releases</id>
-			<name>Aduna Open Source - Maven repository</name>
-			<url>scp://repository.aduna-software.org/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
-			<uniqueVersion>false</uniqueVersion>
-		</repository>
-		<snapshotRepository>
-			<id>aduna-opensource.snapshots</id>
-			<name>Aduna Open Source - Maven snapshot repository</name>
-			<url>scp://repository.aduna-software.org/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2-snapshots</url>
-			<uniqueVersion>false</uniqueVersion>
-		</snapshotRepository>
-	</distributionManagement>
 
 </project>

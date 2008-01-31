@@ -27,4 +27,32 @@
 	<name>OpenRDF Sesame TCK</name>
 	<description>Technology Compatibility Kit for OpenRDF Sesame</description>
 
+	<dependencyManagement>
+		<dependencies>		
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-http-testserver</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-rio-compliance-base</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-sail-api-compliance</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openrdf</groupId>
+				<artifactId>openrdf-repository-compliance-base</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>		
+	</dependencyManagement>
+
 </project>
