@@ -35,7 +35,9 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQuery;
@@ -131,44 +133,44 @@ public class SPARQLQueryTest extends TestCase {
 	protected void runTest()
 		throws Exception
 	{
-			RepositoryConnection con = dataRep.getConnection();
-			try {
-				String queryString = readQueryString();
-				Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);
-				if (dataset != null) {
-					query.setDataset(dataset);
-				}
-
-				if (query instanceof TupleQuery) {
-					TupleQueryResult queryResult = ((TupleQuery)query).evaluate();
-
-					TupleQueryResult expectedResult = readExpectedTupleQueryResult();
-					compareTupleQueryResults(queryResult, expectedResult);
-
-					// Graph queryGraph = RepositoryUtil.asGraph(queryResult);
-					// Graph expectedGraph = readExpectedTupleQueryResult();
-					// compareGraphs(queryGraph, expectedGraph);
-				}
-				else if (query instanceof GraphQuery) {
-					GraphQueryResult gqr = ((GraphQuery)query).evaluate();
-					Set<Statement> queryResult = Iterations.asSet(gqr);
-
-					Set<Statement> expectedResult = readExpectedGraphQueryResult();
-
-					compareGraphs(queryResult, expectedResult);
-				}
-				else if (query instanceof BooleanQuery) {
-					boolean queryResult = ((BooleanQuery)query).evaluate();
-					boolean expectedResult = readExpectedBooleanQueryResult();
-					assertEquals(expectedResult, queryResult);
-				}
-				else {
-					throw new RuntimeException("Unexpected query type: " + query.getClass());
-				}
+		RepositoryConnection con = dataRep.getConnection();
+		try {
+			String queryString = readQueryString();
+			Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);
+			if (dataset != null) {
+				query.setDataset(dataset);
 			}
-			finally {
-				con.close();
+
+			if (query instanceof TupleQuery) {
+				TupleQueryResult queryResult = ((TupleQuery)query).evaluate();
+
+				TupleQueryResult expectedResult = readExpectedTupleQueryResult();
+				compareTupleQueryResults(queryResult, expectedResult);
+
+				// Graph queryGraph = RepositoryUtil.asGraph(queryResult);
+				// Graph expectedGraph = readExpectedTupleQueryResult();
+				// compareGraphs(queryGraph, expectedGraph);
 			}
+			else if (query instanceof GraphQuery) {
+				GraphQueryResult gqr = ((GraphQuery)query).evaluate();
+				Set<Statement> queryResult = Iterations.asSet(gqr);
+
+				Set<Statement> expectedResult = readExpectedGraphQueryResult();
+
+				compareGraphs(queryResult, expectedResult);
+			}
+			else if (query instanceof BooleanQuery) {
+				boolean queryResult = ((BooleanQuery)query).evaluate();
+				boolean expectedResult = readExpectedBooleanQueryResult();
+				assertEquals(expectedResult, queryResult);
+			}
+			else {
+				throw new RuntimeException("Unexpected query type: " + query.getClass());
+			}
+		}
+		finally {
+			con.close();
+		}
 	}
 
 	private void compareTupleQueryResults(TupleQueryResult queryResult, TupleQueryResult expectedResult)
@@ -431,6 +433,7 @@ public class SPARQLQueryTest extends TestCase {
 	}
 
 	public static class Factory {
+
 		public SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 				String resultFileURL, Dataset dataSet)
 		{
@@ -456,14 +459,12 @@ public class SPARQLQueryTest extends TestCase {
 		manifestRep.initialize();
 		RepositoryConnection con = manifestRep.getConnection();
 
-		URL manifest = new URL(manifestFileURL);
+		con.add(new URL(manifestFileURL), manifestFileURL, RDFFormat.TURTLE);
 
-		con.add(manifest, manifestFileURL, RDFFormat.TURTLE);
+		suite.setName(getManifestName(manifestRep, con, manifestFileURL));
 
-		suite.setName(manifestFileURL.substring(ManifestTest.MANIFEST_DIR.length()));
-
-		// note that we only select those test cases that are mentioned in the
-		// list.
+		// Extract test case information from the manifest file. Note that we only
+		// select those test cases that are mentioned in the list.
 		StringBuilder query = new StringBuilder(512);
 		query.append(" SELECT DISTINCT testURI, testName, resultFile, action, queryFile, defaultGraph ");
 		query.append(" FROM {} rdf:first {testURI} dawgt:approval {dawgt:Approved}; ");
@@ -527,5 +528,29 @@ public class SPARQLQueryTest extends TestCase {
 		manifestRep.shutDown();
 		logger.info("Created test suite with " + suite.countTestCases() + " test cases.");
 		return suite;
+	}
+
+	protected static String getManifestName(Repository manifestRep, RepositoryConnection con,
+			String manifestFileURL)
+		throws QueryEvaluationException, RepositoryException, MalformedQueryException
+	{
+		// Try to extract suite name from manifest file
+		TupleQuery manifestNameQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
+				"SELECT ManifestName FROM {ManifestURL} rdfs:label {ManifestName}");
+		manifestNameQuery.setBinding("ManifestURL", manifestRep.getValueFactory().createURI(manifestFileURL));
+		TupleQueryResult manifestNames = manifestNameQuery.evaluate();
+		try {
+			if (manifestNames.hasNext()) {
+				return manifestNames.next().getValue("ManifestName").stringValue();
+			}
+		}
+		finally {
+			manifestNames.close();
+		}
+
+		// Derive name from manifest URL
+		int lastSlashIdx = manifestFileURL.lastIndexOf('/');
+		int secLastSlashIdx = manifestFileURL.lastIndexOf('/', lastSlashIdx - 1);
+		return manifestFileURL.substring(secLastSlashIdx + 1, lastSlashIdx);
 	}
 }
