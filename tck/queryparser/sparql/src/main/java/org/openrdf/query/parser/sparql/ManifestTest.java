@@ -28,20 +28,16 @@ public class ManifestTest extends TestCase {
 
 	private static final boolean REMOTE = false;
 
-	public static final String HOST;
+	public static final String MANIFEST_FILE;
 
 	static {
 		if (REMOTE) {
-			HOST = "http://www.w3.org/2001/sw/DataAccess/tests/";
+			MANIFEST_FILE = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/manifest-evaluation.ttl";
 		}
 		else {
-			HOST = ManifestTest.class.getResource("/testcases-dawg/").toString();
+			MANIFEST_FILE = ManifestTest.class.getResource("/testcases-dawg/data-r2/manifest-evaluation.ttl").toString();
 		}
 	}
-
-	public static final String MANIFEST_DIR = HOST + "data-r2/";
-
-	public static final String MANIFEST_FILE = MANIFEST_DIR + "manifest-evaluation.ttl";
 
 	public ManifestTest(String name) {
 		super(name);
