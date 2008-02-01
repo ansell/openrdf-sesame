@@ -619,7 +619,8 @@ public class MemoryStore extends SailBase {
 		}
 
 		// completely new statement
-		MemStatement st = new MemStatement(memSubj, memPred, memObj, memContext, currentSnapshot + 1, explicit);
+		MemStatement st = new MemStatement(memSubj, memPred, memObj, memContext, explicit, currentSnapshot + 1,
+				TxnStatus.NEW);
 		statements.add(st);
 		st.addToComponentLists();
 
@@ -691,7 +692,7 @@ public class MemoryStore extends SailBase {
 
 				// ...and add a clone with modified explicit/implicit flag
 				MemStatement explSt = new MemStatement(st.getSubject(), st.getPredicate(), st.getObject(),
-						st.getContext(), txnSnapshot, txnStatus == TxnStatus.EXPLICIT);
+						st.getContext(), txnStatus == TxnStatus.EXPLICIT, txnSnapshot);
 				statements.add(explSt);
 				explSt.addToComponentLists();
 			}
