@@ -58,22 +58,39 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		assertTrue(testCon.hasStatement(alice, RDF.TYPE, person, true));
 	}
 
+	public void testMakeExplicit()
+		throws Exception
+	{
+		testCon.setAutoCommit(false);
+		testCon.add(woman, RDFS.SUBCLASSOF, person);
+		testCon.add(alice, RDF.TYPE, woman);
+		testCon.setAutoCommit(true);
+
+		assertTrue(testCon.hasStatement(alice, RDF.TYPE, person, true));
+
+		testCon.add(alice, RDF.TYPE, person);
+
+		assertTrue(testCon.hasStatement(alice, RDF.TYPE, person, true));
+	}
+
 	public void testExplicitFlag()
 		throws Exception
 	{
 		RepositoryResult<Statement> result = testCon.getStatements(RDF.TYPE, RDF.TYPE, null, true);
-
-		boolean hasResults = result.hasNext();
+		try {
+			assertTrue("result should not be empty", result.hasNext());
+		}
+		finally {
 		result.close();
-
-		assertTrue("result should not be empty", hasResults);
+		}
 
 		result = testCon.getStatements(RDF.TYPE, RDF.TYPE, null, false);
-
-		hasResults = result.hasNext();
+		try {
+			assertFalse("result should be empty", result.hasNext());
+		}
+		finally {
 		result.close();
-
-		assertFalse("result should be empty", hasResults);
+		}
 	}
 
 	public void testInferencerUpdates()
