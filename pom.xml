@@ -17,7 +17,7 @@
 
 	<modules>
 		<module>core</module>
-		<module>tck</module>
+		<module>testsuites</module>
 	</modules>
 
 	<name>OpenRDF Sesame</name>
