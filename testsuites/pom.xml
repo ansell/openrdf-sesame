@@ -10,7 +10,7 @@
 		<version>2.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>openrdf-sesame-tck</artifactId>
+	<artifactId>openrdf-sesame-testsuites</artifactId>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -24,8 +24,8 @@
 		<module>sail</module>
 	</modules>
 
-	<name>OpenRDF Sesame TCK</name>
-	<description>Technology Compatibility Kit for OpenRDF Sesame</description>
+	<name>OpenRDF Sesame test suites</name>
+	<description>OpenRDF Sesame test suites</description>
 
 	<dependencyManagement>
 		<dependencies>		
