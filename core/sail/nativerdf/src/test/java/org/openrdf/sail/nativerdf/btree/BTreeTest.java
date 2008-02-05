@@ -136,7 +136,7 @@ public class BTreeTest extends TestCase {
 		btree.insert(TEST_VALUES.get(meanIdx));
 		btree.insert(TEST_VALUES.get(meanIdx + 1));
 
-		RecordIterator iter1 = btree.iterateAll();
+		RecordIterator iter1 = btree.iterateAll()	;
 		iter1.next();
 
 		RecordIterator iter2 = btree.iterateAll();
