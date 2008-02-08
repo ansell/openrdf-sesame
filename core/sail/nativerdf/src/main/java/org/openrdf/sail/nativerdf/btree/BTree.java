@@ -13,11 +13,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import info.aduna.io.ByteArrayUtil;
 
@@ -1007,7 +1004,7 @@ public class BTree {
 		private boolean dataChanged;
 
 		/** Registered listeners that want to be notified of changes to the node. */
-		private ConcurrentLinkedQueue<NodeListener> listeners = new ConcurrentLinkedQueue<NodeListener>();
+		private LinkedList<NodeListener> listeners = new LinkedList<NodeListener>();
 
 		/**
 		 * Creates a new Node object with the specified ID.
@@ -1310,53 +1307,91 @@ public class BTree {
 			rightSibling.setValueCount(0);
 			rightSibling.dataChanged = true;
 
-			notifyNodeMerged(rightSibling, rightIdx);
+			rightSibling.notifyNodeMerged(this, rightIdx);
 		}
 
 		public void register(NodeListener listener) {
-			assert !listeners.contains(listener);
-			listeners.add(listener);
+			synchronized (listeners) {
+				assert !listeners.contains(listener);
+				listeners.add(listener);
+			}
 		}
 
 		public void deregister(NodeListener listener) {
-			assert listeners.contains(listener);
-			listeners.remove(listener);
+			synchronized (listeners) {
+				assert listeners.contains(listener);
+				listeners.remove(listener);
+			}
 		}
 
 		private void notifyValueAdded(int index) {
-			for (NodeListener l : listeners) {
-				l.valueAdded(this, index);
+			synchronized (listeners) {
+				Iterator<NodeListener> iter = listeners.iterator();
+
+				while (iter.hasNext()) {
+					// Deregister if listener return true
+					if (iter.next().valueAdded(this, index)) {
+						iter.remove();
+					}
+				}
 			}
 		}
 
 		private void notifyValueRemoved(int index) {
-			for (NodeListener l : listeners) {
-				l.valueRemoved(this, index);
+			synchronized (listeners) {
+				Iterator<NodeListener> iter = listeners.iterator();
+
+				while (iter.hasNext()) {
+					// Deregister if listener return true
+					if (iter.next().valueRemoved(this, index)) {
+						iter.remove();
+					}
+				}
 			}
 		}
 
 		private void notifyValueChanged(int index) {
-			for (NodeListener l : listeners) {
-				l.valueChanged(this, index);
+			synchronized (listeners) {
+				Iterator<NodeListener> iter = listeners.iterator();
+
+				while (iter.hasNext()) {
+					// Deregister if listener return true
+					if (iter.next().valueChanged(this, index)) {
+						iter.remove();
+					}
+				}
 			}
 		}
 
 		private void notifyNodeSplit(Node rightNode, int medianIdx)
 			throws IOException
 		{
-			for (NodeListener l : listeners) {
-				l.nodeSplit(this, rightNode, medianIdx);
+			synchronized (listeners) {
+				Iterator<NodeListener> iter = listeners.iterator();
+
+				while (iter.hasNext()) {
+					boolean deregister = iter.next().nodeSplit(this, rightNode, medianIdx);
+
+					if (deregister) {
+						iter.remove();
+					}
+				}
 			}
 		}
 
-		private void notifyNodeMerged(Node rightNode, int rightIdx)
+		private void notifyNodeMerged(Node targetNode, int mergeIdx)
 			throws IOException
 		{
-			Set<NodeListener> combinedSet = new HashSet<NodeListener>(listeners);
-			combinedSet.addAll(rightNode.listeners);
+			synchronized (listeners) {
+				Iterator<NodeListener> iter = listeners.iterator();
 
-			for (NodeListener l : combinedSet) {
-				l.nodesMerged(this, rightNode, rightIdx);
+				while (iter.hasNext()) {
+					boolean deregister = iter.next().nodeMergedWith(this, targetNode, mergeIdx);
+
+					if (deregister) {
+						iter.remove();
+					}
+				}
 			}
 		}
 
@@ -1419,16 +1454,78 @@ public class BTree {
 
 	private interface NodeListener {
 
-		public void valueAdded(Node node, int index);
+		/**
+		 * Signals to registered node listeners that a value has been added to a
+		 * node.
+		 * 
+		 * @param node
+		 *        The node which the value has been added to.
+		 * @param index
+		 *        The index where the value was inserted.
+		 * @return Indicates whether the node listener should be deregistered as a
+		 *         result of this event.
+		 */
+		public boolean valueAdded(Node node, int index);
 
-		public void valueRemoved(Node node, int index);
+		/**
+		 * Signals to registered node listeners that a value has been removed from
+		 * a node.
+		 * 
+		 * @param node
+		 *        The node which the value has been removed from.
+		 * @param index
+		 *        The index where the value was removed.
+		 * @return Indicates whether the node listener should be deregistered as a
+		 *         result of this event.
+		 */
+		public boolean valueRemoved(Node node, int index);
 
-		public void valueChanged(Node node, int index);
+		/**
+		 * Signals to registered node listeners that a value has been changed.
+		 * 
+		 * @param node
+		 *        The node in which the value has been changed.
+		 * @param index
+		 *        The index of the changed value.
+		 * @return Indicates whether the node listener should be deregistered as a
+		 *         result of this event.
+		 */
+		public boolean valueChanged(Node node, int index);
 
-		public void nodeSplit(Node node, Node newNode, int medianIdx)
+		/**
+		 * Signals to registered node listeners that a node has been split.
+		 * 
+		 * @param node
+		 *        The node which has been split.
+		 * @param newNode
+		 *        The newly allocated node containing the "right" half of the
+		 *        values.
+		 * @param medianIdx
+		 *        The index where the node has been split. The value at this index
+		 *        has been moved to the node's parent.
+		 * @return Indicates whether the node listener should be deregistered as a
+		 *         result of this event.
+		 */
+		public boolean nodeSplit(Node node, Node newNode, int medianIdx)
 			throws IOException;
 
-		public void nodesMerged(Node leftNode, Node rightNode, int rightIdx)
+		/**
+		 * Signals to registered node listeners that two nodes have been merged.
+		 * All values from the source node have been appended to the value of the
+		 * target node.
+		 * 
+		 * @param sourceNode
+		 *        The node that donated its values to the target node.
+		 * @param targetNode
+		 *        The node in which the values have been merged.
+		 * @param mergeIdx
+		 *        The index of <tt>sourceNode</tt>'s values in
+		 *        <tt>targetNode</tt>.
+		 * 
+		 * @return Indicates whether the node listener should be deregistered with
+		 *         the <em>source node</em> as a result of this event.
+		 */
+		public boolean nodeMergedWith(Node sourceNode, Node targetNode, int mergeIdx)
 			throws IOException;
 	}
 
@@ -1684,7 +1781,7 @@ public class BTree {
 			return 0;
 		}
 
-		public void valueAdded(Node node, int index) {
+		public boolean valueAdded(Node node, int index) {
 			if (node == currentNode) {
 				if (index <= currentIdx) {
 					currentIdx++;
@@ -1701,9 +1798,11 @@ public class BTree {
 					}
 				}
 			}
+
+			return false;
 		}
 
-		public void valueRemoved(Node node, int index) {
+		public boolean valueRemoved(Node node, int index) {
 			if (node == currentNode) {
 				if (index <= currentIdx) {
 					currentIdx--;
@@ -1720,18 +1819,23 @@ public class BTree {
 					}
 				}
 			}
+
+			return false;
 		}
 
-		public void valueChanged(Node node, int index) {
+		public boolean valueChanged(Node node, int index) {
+			return false;
 		}
 
-		public void nodeSplit(Node node, Node newNode, int medianIdx)
+		public boolean nodeSplit(Node node, Node newNode, int medianIdx)
 			throws IOException
 		{
+			boolean deregister = false;
+
 			if (node == currentNode) {
 				if (currentIdx > medianIdx) {
 					currentNode.release();
-					currentNode.deregister(this);
+					deregister = true;
 
 					newNode.use();
 					newNode.register(this);
@@ -1749,7 +1853,7 @@ public class BTree {
 
 						if (parentIdx > medianIdx) {
 							parentNode.release();
-							parentNode.deregister(this);
+							deregister = true;
 
 							newNode.use();
 							newNode.register(this);
@@ -1762,39 +1866,45 @@ public class BTree {
 					}
 				}
 			}
+
+			return deregister;
 		}
 
-		public void nodesMerged(Node leftNode, Node rightNode, int rightIdx)
+		public boolean nodeMergedWith(Node sourceNode, Node targetNode, int mergeIdx)
 			throws IOException
 		{
-			if (rightNode == currentNode) {
+			boolean deregister = false;
+
+			if (sourceNode == currentNode) {
 				currentNode.release();
-				currentNode.deregister(this);
+				deregister = true;
 
-				leftNode.use();
-				leftNode.register(this);
+				targetNode.use();
+				targetNode.register(this);
 
-				currentNode = leftNode;
-				currentIdx += rightIdx;
+				currentNode = targetNode;
+				currentIdx += mergeIdx;
 			}
 			else {
 				for (int i = 0; i < parentNodeStack.size(); i++) {
 					Node parentNode = parentNodeStack.get(i);
 
-					if (rightNode == parentNode) {
+					if (sourceNode == parentNode) {
 						parentNode.release();
-						parentNode.deregister(this);
+						deregister = true;
 
-						leftNode.use();
-						leftNode.register(this);
+						targetNode.use();
+						targetNode.register(this);
 
-						parentNodeStack.set(i, leftNode);
-						parentIndexStack.set(i, rightIdx + parentIndexStack.get(i));
+						parentNodeStack.set(i, targetNode);
+						parentIndexStack.set(i, mergeIdx + parentIndexStack.get(i));
 
 						break;
 					}
 				}
 			}
+
+			return deregister;
 		}
 	}
 
