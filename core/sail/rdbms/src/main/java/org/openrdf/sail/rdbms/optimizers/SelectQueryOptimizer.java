@@ -10,6 +10,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.eq;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.isNull;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.or;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -211,7 +212,12 @@ public class SelectQueryOptimizer extends
 
 		String alias = getTableAlias(predValue) + aliasCount++;
 		long predId = getInternalId(predValue);
-		String tableName = tables.getTableName(predId);
+		String tableName;
+		try {
+			tableName = tables.getTableName(predId);
+		} catch (SQLException e) {
+			throw new RdbmsRuntimeException(e);
+		}
 		JoinItem from = new JoinItem(alias, tableName, predId);
 
 		ColumnVar s = ColumnVar

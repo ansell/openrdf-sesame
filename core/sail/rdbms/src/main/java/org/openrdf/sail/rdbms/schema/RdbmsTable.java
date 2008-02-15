@@ -30,10 +30,13 @@ public class RdbmsTable {
 	private int removedCount;
 	private long rowCount;
 
-	public RdbmsTable(Connection conn, String name) {
+	public RdbmsTable(String name) {
 		super();
-		this.conn = conn;
 		this.name = name;
+	}
+
+	public void setConnection(Connection conn) {
+		this.conn = conn;
 	}
 
 	public long size() {

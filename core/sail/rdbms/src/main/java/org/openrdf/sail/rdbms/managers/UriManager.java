@@ -35,8 +35,7 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	}
 
 	@Override
-	public void flush() throws SQLException {
-		super.flush();
+	public void flushTable() throws SQLException {
 		shorter.flush();
 		longer.flush();
 	}
@@ -44,6 +43,11 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	@Override
 	public int getIdVersion() {
 		return shorter.getIdVersion() + longer.getIdVersion();
+	}
+
+	@Override
+	protected int getBatchSize() {
+		return shorter.getBatchSize();
 	}
 
 	@Override

@@ -26,6 +26,10 @@ public class RdbmsException extends SailException {
 		super(msg);
 	}
 
+	public RdbmsException(String msg, Exception e) {
+		super(msg, e);
+	}
+
 	public RdbmsException(Exception e) {
 	}
 

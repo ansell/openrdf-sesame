@@ -43,6 +43,8 @@ public class RdbmsConnectionFactory {
 	private DataSource ds;
 	private String user;
 	private String password;
+	private Connection lookup;
+	private Connection literalLookup;
 	private Connection index;
 	private LiteralTable literalTable;
 	private NamespaceManager namespaces;
@@ -57,6 +59,10 @@ public class RdbmsConnectionFactory {
 
 	public void setSail(RdbmsStore sail) {
 		this.sail = sail;
+	}
+
+	public DataSource getDataSource() {
+		return ds;
 	}
 
 	public void setDataSource(DataSource ds) {
@@ -76,28 +82,32 @@ public class RdbmsConnectionFactory {
 	public void init() throws SailException {
 		try {
 			index = getConnection();
+			lookup = getConnection();
+			literalLookup = getConnection();
 			index.setAutoCommit(true);
+			lookup.setAutoCommit(true);
+			literalLookup.setAutoCommit(true);
 			RdbmsTableFactory tables = createRdbmsTableFactory();
-			tables.setConnection(index);
 			namespaces = new NamespaceManager();
-			namespaces.setConnection(index);
-			NamespacesTable nsTable = tables.createNamespacesTable();
+			namespaces.setConnection(lookup);
+			NamespacesTable nsTable = tables.createNamespacesTable(index);
 			nsTable.initialize();
 			namespaces.setNamespacesTable(nsTable);
 			namespaces.initialize();
-			bnodeTable = tables.createBNodeTable();
+			bnodeTable = tables.createBNodeTable(lookup);
 			bnodeTable.initialize();
-			uriTable = tables.createURITable();
+			uriTable = tables.createURITable(lookup);
 			uriTable.initialize();
-			longUriTable = tables.createLongURITable();
+			longUriTable = tables.createLongURITable(lookup);
 			longUriTable.initialize();
-			literalTable = tables.createLiteralTable();
+			literalTable = tables.createLiteralTable(literalLookup);
 			literalTable.initialize();
 			uriManager = new UriManager(uriTable, longUriTable);
 			uriManager.init();
 			predicateManager = new PredicateManager();
 			predicateManager.setUriManager(uriManager);
 			predicateTableManager = new PredicateTableManager(tables);
+			predicateTableManager.setConnection(index);
 			predicateTableManager.setBNodeTable(bnodeTable);
 			predicateTableManager.setURITable(uriTable);
 			predicateTableManager.setLongUriTable(longUriTable);
@@ -140,8 +150,8 @@ public class RdbmsConnectionFactory {
 			s.setLongUriTable(longUriTable);
 			s.setLiteralTable(literalTable);
 			RdbmsTableFactory tables = createRdbmsTableFactory();
-			tables.setConnection(db);
 			TransTableManager trans = createTransTableManager();
+			trans.setConnection(db);
 			trans.setRdbmsTableFactory(tables);
 			trans.setStatementsTable(predicateTableManager);
 			trans.setFromDummyTable(getFromDummyTable());
@@ -187,10 +197,18 @@ public class RdbmsConnectionFactory {
 			if (literalManager != null) {
 				literalManager.close();
 			}
+			if (lookup != null) {
+				lookup.close();
+				lookup = null;
+			}
+			if (literalLookup != null) {
+				literalLookup.close();
+				literalLookup = null;
+			}
 			if (index != null) {
 				index.close();
+				index = null;
 			}
-			index = null;
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
 		}

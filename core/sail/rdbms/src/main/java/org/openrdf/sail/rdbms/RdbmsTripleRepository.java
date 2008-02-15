@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 
@@ -37,6 +38,8 @@ import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.ResourceTable;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Facade to {@link TransTableManager}, {@link ResourceTable}, and
@@ -47,10 +50,11 @@ import org.openrdf.sail.rdbms.schema.TransTableManager;
  * 
  */
 public class RdbmsTripleRepository {
-	private static int BATCH_INSERT = 10000;
-	private static int FORCE_INSERT = 15000;
+	private static int MIN_QUEUE_SIZE = 1024;
+	private static int BATCH_SIZE = 10240;
+	private static int MAX_QUEUE = 2;
 	private static int FLUSH_EVERY = 20000;
-	private static int threadCount;
+	private Logger logger = LoggerFactory.getLogger(RdbmsTripleRepository.class);
 	private Connection conn;
 	private RdbmsValueFactory vf;
 	private TransTableManager statements;
@@ -61,8 +65,9 @@ public class RdbmsTripleRepository {
 	private LiteralTable literals;
 	private Lock readLock;
 	private DefaultSailChangedEvent sailChangedEvent;
-	private List<RdbmsStatement> added = new ArrayList(FORCE_INSERT);
-	private List<RdbmsStatement> queue = new ArrayList(FORCE_INSERT);
+	private List<RdbmsStatement> lookupQueue = new ArrayList(MIN_QUEUE_SIZE);
+	private LinkedList<List<RdbmsStatement>> queue = new LinkedList<List<RdbmsStatement>>();
+	private Object threadQueue = new Object();
 	private int addedSinceFlush;
 	private Thread insertThread;
 	Exception exc;
@@ -119,16 +124,18 @@ public class RdbmsTripleRepository {
 
 	public void flush() throws RdbmsException {
 		try {
-			synchronized (added) {
-				if (!added.isEmpty()) {
-					insert(added);
-					added.clear();
+			synchronized (queue) {
+				while (!queue.isEmpty()) {
+					insert(queue.remove());
 				}
-				synchronized (queue) {
-					if (!queue.isEmpty()) {
-						insert(queue);
-						queue.clear();
+				synchronized (lookupQueue) {
+					if (!lookupQueue.isEmpty()) {
+						insert(lookupQueue);
+						lookupQueue.clear();
 					}
+				}
+				synchronized (threadQueue) {
+					// wait for thread to finish
 				}
 			}
 			flushStatements();
@@ -139,27 +146,45 @@ public class RdbmsTripleRepository {
 		vf.flush();
 	}
 
-	public void add(RdbmsStatement st) throws SailException {
+	public void add(RdbmsStatement st) throws SailException, SQLException {
 		if (readLock == null) {
 			readLock = vf.getIdReadLock();
 			readLock.lock();
 		}
-		try {
-			synchronized (added) {
-				added.add(st);
-				++addedSinceFlush;
-				if (added.size() >= BATCH_INSERT && insertThread == null) {
-					startInsentThread();
-				} else if (added.size() >= FORCE_INSERT) {
-					insert(added);
-					added.clear();
-				} else {
-					added.notify();
-				}
-			}
-		} catch (SQLException e) {
-			throw new RdbmsException(e);
+		synchronized (lookupQueue) {
+			lookupQueue.add(st);
+			if (lookupQueue.size() < MIN_QUEUE_SIZE)
+				return;
 		}
+		List<RdbmsStatement> removed = null;
+		synchronized (queue) {
+			synchronized (lookupQueue) {
+				if (queue.isEmpty() || queue.getLast().size() >= BATCH_SIZE) {
+					queue.add(new ArrayList(BATCH_SIZE));
+				}
+				queue.getLast().addAll(lookupQueue);
+				addedSinceFlush += lookupQueue.size();
+				lookupQueue.clear();
+			}
+			if (queue.size() > 1 && insertThread == null) {
+				startInsentThread();
+			} else if (queue.size() > MAX_QUEUE) {
+				removed = queue.remove();
+			} else if (isTimeToCommit()) {
+				logger.warn("TRANSACTION TOO LONG - forcing commit");
+				commit();
+				begin();
+			} else {
+				queue.notify();
+			}
+		}
+		if (removed != null) {
+			insert(removed);
+		}
+	}
+
+	protected boolean isTimeToCommit() throws SQLException {
+		return false;
 	}
 
 	public void begin() throws SQLException {
@@ -168,9 +193,12 @@ public class RdbmsTripleRepository {
 
 	public void close() throws SQLException {
 		closed = true;
-		synchronized(added) {
-			added.clear();
-			added.notify();
+		synchronized(queue) {
+			synchronized (lookupQueue) {
+				lookupQueue.clear();
+			}
+			queue.clear();
+			queue.notify();
 		}
 		statements.close();
 		if (!conn.getAutoCommit()) {
@@ -284,8 +312,11 @@ public class RdbmsTripleRepository {
 	}
 
 	public void rollback() throws SQLException, SailException {
-		synchronized(added) {
-			added.clear();
+		synchronized(queue) {
+			synchronized (lookupQueue) {
+				lookupQueue.clear();
+			}
+			queue.clear();
 		}
 		conn.rollback();
 		conn.setAutoCommit(true);
@@ -318,26 +349,34 @@ public class RdbmsTripleRepository {
 
 	void insertThread() throws InterruptedException, RdbmsException,
 			SQLException {
+		logger.debug("Starting helper thread {}", Thread.currentThread()
+				.getName());
+		List<RdbmsStatement> removed = null;
 		while (!closed) {
-			synchronized (added) {
-				while (!closed && added.size() < BATCH_INSERT) {
-					added.wait();
+			synchronized (queue) {
+				while (!closed
+						&& (queue.isEmpty() || queue.peek().size() < BATCH_SIZE)
+						&& addedSinceFlush < FLUSH_EVERY) {
+					queue.wait();
 				}
-				synchronized (queue) {
-					queue.addAll(added);
-					added.clear();
+				if (closed)
+					return;
+				if (addedSinceFlush < FLUSH_EVERY) {
+					removed = queue.remove();
 				}
 			}
-			if (!closed) {
-				synchronized (queue) {
-					insert(queue);
-					queue.clear();
+			if (removed != null) {
+				synchronized (threadQueue) {
+					insert(removed);
+					removed = null;
 				}
-				if (addedSinceFlush >= FLUSH_EVERY) {
-					flushStatements();
-				}
+			}
+			if (addedSinceFlush >= FLUSH_EVERY) {
+				flushStatements();
 			}
 		}
+		logger.debug("Closing helper thread {}", Thread.currentThread()
+				.getName());
 	}
 
 	private void startInsentThread() {
@@ -349,11 +388,11 @@ public class RdbmsTripleRepository {
 					exc = e;
 				}
 			}
-		}, "statement-insert-" + threadCount++);
+		}, Thread.currentThread().getName() + "-statement-insert");
 		insertThread.start();
 	}
 
-	private String buildContextQuery() {
+	private String buildContextQuery() throws SQLException {
 		if (statements.isEmpty())
 			return null;
 		String tableName = statements.getCombinedTableName();
@@ -375,7 +414,7 @@ public class RdbmsTripleRepository {
 		return query.toString();
 	}
 
-	private String buildCountQuery(RdbmsResource... ctxs) {
+	private String buildCountQuery(RdbmsResource... ctxs) throws SQLException {
 		String tableName = statements.getCombinedTableName();
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT COUNT(*) FROM ");

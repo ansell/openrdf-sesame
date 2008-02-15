@@ -35,8 +35,7 @@ public class LiteralManager extends ValueManagerBase<Literal, RdbmsLiteral> {
 	}
 
 	@Override
-	public void flush() throws SQLException {
-		super.flush();
+	public void flushTable() throws SQLException {
 		table.flush();
 	}
 
@@ -76,6 +75,11 @@ public class LiteralManager extends ValueManagerBase<Literal, RdbmsLiteral> {
 				table.insertDatatype(id, label, dt);
 			}
 		}
+	}
+
+	@Override
+	protected int getBatchSize() {
+		return table.getBatchSize();
 	}
 
 	@Override

@@ -85,7 +85,7 @@ public class MySqlStore extends RdbmsStore {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 		} catch (ClassNotFoundException e) {
-			throw new RdbmsException(e);
+			throw new RdbmsException(e.toString(), e);
 		}
 		StringBuilder url = new StringBuilder();
 		url.append("jdbc:mysql:");

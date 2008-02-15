@@ -5,6 +5,8 @@
  */
 package org.openrdf.sail.rdbms.postgresql;
 
+import java.sql.Connection;
+
 import org.openrdf.sail.rdbms.schema.PredicateTable;
 import org.openrdf.sail.rdbms.schema.RdbmsTable;
 import org.openrdf.sail.rdbms.schema.RdbmsTableFactory;
@@ -29,12 +31,12 @@ public class PgSqlTableFactory extends RdbmsTableFactory {
 	}
 
 	@Override
-	protected RdbmsTable createRdbmsTable(String name) {
-		return new PgSqlTable(getConnection(), name);
+	protected RdbmsTable newTable(String name) {
+		return new PgSqlTable(name);
 	}
 
 	@Override
-	public PredicateTable createPredicateTable(String tableName) {
-		return super.createPredicateTable(tableName.toLowerCase());
+	public PredicateTable createPredicateTable(Connection conn, String tableName) {
+		return super.createPredicateTable(conn, tableName.toLowerCase());
 	}
 }

@@ -76,7 +76,7 @@ public class PgSqlStore extends RdbmsStore {
 		try {
 			Class.forName("org.postgresql.Driver");
 		} catch (ClassNotFoundException e) {
-			throw new RdbmsException(e);
+			throw new RdbmsException(e.toString(), e);
 		}
 		StringBuilder url = new StringBuilder();
 		url.append("jdbc:postgresql:");

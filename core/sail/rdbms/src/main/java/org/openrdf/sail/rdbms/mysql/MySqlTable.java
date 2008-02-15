@@ -1,14 +1,13 @@
 package org.openrdf.sail.rdbms.mysql;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.openrdf.sail.rdbms.schema.RdbmsTable;
 
 public class MySqlTable extends RdbmsTable {
 
-	public MySqlTable(Connection conn, String name) {
-		super(conn, name);
+	public MySqlTable(String name) {
+		super(name);
 	}
 
 	@Override

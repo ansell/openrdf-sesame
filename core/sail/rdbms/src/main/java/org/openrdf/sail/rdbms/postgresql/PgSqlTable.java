@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.rdbms.postgresql;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.openrdf.sail.rdbms.schema.RdbmsTable;
@@ -18,8 +17,8 @@ import org.openrdf.sail.rdbms.schema.RdbmsTable;
  */
 public class PgSqlTable extends RdbmsTable {
 
-	public PgSqlTable(Connection conn, String name) {
-		super(conn, name.toLowerCase());
+	public PgSqlTable(String name) {
+		super(name.toLowerCase());
 	}
 
 	@Override

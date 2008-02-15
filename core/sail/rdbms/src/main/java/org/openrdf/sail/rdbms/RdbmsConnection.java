@@ -72,12 +72,16 @@ public class RdbmsConnection extends SailConnectionBase {
 	@Override
 	protected void addStatementInternal(Resource subj, URI pred, Value obj,
 			Resource... contexts) throws SailException {
-		if (contexts.length == 0) {
-			triples.add(vf.createStatement(subj, pred, obj));
-		} else {
-			for (Resource ctx : contexts) {
-				triples.add(vf.createStatement(subj, pred, obj, ctx));
+		try {
+			if (contexts.length == 0) {
+				triples.add(vf.createStatement(subj, pred, obj));
+			} else {
+				for (Resource ctx : contexts) {
+					triples.add(vf.createStatement(subj, pred, obj, ctx));
+				}
 			}
+		} catch (SQLException e) {
+			throw new RdbmsException(e);
 		}
 	}
 

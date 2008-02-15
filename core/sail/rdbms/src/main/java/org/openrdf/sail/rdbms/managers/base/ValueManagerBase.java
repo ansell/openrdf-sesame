@@ -9,12 +9,17 @@ import info.aduna.collections.LRUMap;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.openrdf.sail.rdbms.model.RdbmsValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 	public static final long NIL_ID = 0;
+	private Logger logger = LoggerFactory.getLogger(ValueManagerBase.class);
 	boolean closed;
 	Exception exc;
 	private LRUMap<K, V> cache = new LRUMap(256);
@@ -63,11 +68,24 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 	}
 
 	public void flush() throws SQLException {
-		lookupIds();
+		if (exc != null) {
+			throwException();
+		}
+		synchronized (needIds) {
+			if (!needIds.isEmpty()) {
+				loadIds(needIds);
+				idsNoLongerNeeded(needIds);
+				needIds.clear();
+			}
+		}
 		insertNewValues();
+		flushTable();
 	}
 
 	public long getInternalId(V val) throws SQLException {
+		if (exc != null) {
+			throwException();
+		}
 		if (val == null)
 			return NIL_ID;
 		K key = key(val);
@@ -84,7 +102,7 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 				}
 			}
 			if (needsId(value)) {
-				lookupIds();
+				lookup(value);
 			}
 		}
 		return value.getInternalId();
@@ -103,7 +121,11 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		lookupThread.start();
 	}
 
+	protected abstract void flushTable() throws SQLException;
+
 	protected abstract int getIdVersion();
+
+	protected abstract int getBatchSize();
 
 	protected abstract int getSelectChunkSize();
 
@@ -118,14 +140,20 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 	protected abstract long nextId(V value);
 
 	void lookupThread() throws SQLException, InterruptedException {
-		Map<K, V> values;
-		values = new HashMap<K, V>();
+		logger.debug("Starting helper thread {}", Thread.currentThread().getName());
+		int chunkSize = getSelectChunkSize();
+		int batchSize = getBatchSize();
+		Map<K, V> values = new HashMap<K, V>(chunkSize * 2);
 		while (!closed) {
 			synchronized (needIds) {
-				while (!closed && needIds.size() < getSelectChunkSize()) {
+				while (!closed && needIds.size() < chunkSize) {
 					needIds.wait();
 				}
-				values.putAll(needIds);
+				Iterator<Entry<K, V>> iter = needIds.entrySet().iterator();
+				for (int i = 0; i < batchSize && iter.hasNext(); i++) {
+					Entry<K, V> next = iter.next();
+					values.put(next.getKey(), next.getValue());
+				}
 			}
 			if (!closed) {
 				loadIds(values);
@@ -137,8 +165,10 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 					values.clear();
 				}
 				insertNewValues();
+				flushTable();
 			}
 		}
+		logger.debug("Closing helper thread {}", Thread.currentThread().getName());
 	}
 
 	private void idsNoLongerNeeded(Map<K, V> needIds) {
@@ -175,16 +205,24 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		}
 	}
 
-	private void lookupIds() throws SQLException {
-		if (exc != null) {
-			throwException();
-		}
+	private void lookup(V value) throws SQLException {
+		int chunkSize = getSelectChunkSize();
+		Map<K, V> values = new HashMap(chunkSize);
+		values.put(key(value), value); // ensure this value gets in
 		synchronized (needIds) {
-			if (needIds.isEmpty())
-				return;
-			loadIds(needIds);
-			idsNoLongerNeeded(needIds);
-			needIds.clear();
+			// lookup a few more at the same time
+			Iterator<Entry<K, V>> iter = needIds.entrySet().iterator();
+			for (int i = 1; i < chunkSize && iter.hasNext(); i++) {
+				Entry<K, V> next = iter.next();
+				values.put(next.getKey(), next.getValue());
+			}
+		}
+		loadIds(values);
+		synchronized (needIds) {
+			idsNoLongerNeeded(values);
+			for (K key : values.keySet()) {
+				needIds.remove(key);
+			}
 		}
 	}
 
