@@ -231,6 +231,48 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	public void testLongURIRoundTrip()
+		throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		for (int i=0;i<512;i++) {
+			sb.append(Character.toChars('A' + (i%26)));
+		}
+		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
+		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
+		URI obj = new URIImpl(EXAMPLE_NS + GUERNICA + sb.toString());
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
+	public void testLongLiteralRoundTrip()
+		throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		for (int i=0;i<512;i++) {
+			sb.append(Character.toChars('A' + (i%26)));
+		}
+		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
+		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
+		Literal obj = new LiteralImpl("guernica" + sb.toString());
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
+	public void testLongLangRoundTrip()
+		throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		for (int i=0;i<512;i++) {
+			sb.append(Character.toChars('A' + (i%26)));
+		}
+		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
+		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
+		Literal obj = new LiteralImpl("guernica" + sb.toString(), "es");
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
 	private void testValueRoundTrip(Resource subj, URI pred, Value obj)
 		throws Exception
 	{
