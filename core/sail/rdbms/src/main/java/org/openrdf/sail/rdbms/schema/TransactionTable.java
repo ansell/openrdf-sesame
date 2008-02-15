@@ -16,7 +16,7 @@ import java.sql.SQLException;
  * 
  */
 public class TransactionTable {
-	public static int BATCH_SIZE = 512;
+	private int batchSize;
 	private PredicateTable statements;
 	private int addedCount;
 	private int removedCount;
@@ -34,8 +34,16 @@ public class TransactionTable {
 		this.statements = statements;
 	}
 
-	protected int getBatchSize() {
-		return BATCH_SIZE;
+	public int getUncommittedRowCount() {
+		return addedCount + uploadCount;
+	}
+
+	public int getBatchSize() {
+		return batchSize;
+	}
+
+	public void setBatchSize(int size) {
+		this.batchSize = size;
 	}
 
 	public void initialize() throws SQLException {
@@ -62,6 +70,7 @@ public class TransactionTable {
 	public synchronized int flush() throws SQLException {
 		if (insertStmt == null)
 			return 0;
+		statements.blockUntilReady();
 		synchronized (temporary) {
 			insertStmt.executeBatch();
 			int count = temporary.executeUpdate(buildInsertSelect());
@@ -119,13 +128,13 @@ public class TransactionTable {
 		return sb.toString();
 	}
 
-	public boolean isEmpty() {
+	public boolean isEmpty() throws SQLException {
 		return statements.isEmpty() && addedCount == 0 && uploadCount == 0;
 	}
 
 	@Override
 	public String toString() {
-		return statements.getName();
+		return statements.toString();
 	}
 
 }

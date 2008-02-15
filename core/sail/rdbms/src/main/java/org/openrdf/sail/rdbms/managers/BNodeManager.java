@@ -31,14 +31,18 @@ public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
 	}
 
 	@Override
-	public void flush() throws SQLException {
-		super.flush();
+	protected void flushTable() throws SQLException {
 		table.flush();
 	}
 
 	@Override
 	public int getIdVersion() {
 		return table.getIdVersion();
+	}
+
+	@Override
+	protected int getBatchSize() {
+		return table.getBatchSize();
 	}
 
 	@Override

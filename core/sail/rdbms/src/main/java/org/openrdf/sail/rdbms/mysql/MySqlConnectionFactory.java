@@ -7,6 +7,7 @@ package org.openrdf.sail.rdbms.mysql;
 
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -32,8 +33,8 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 	protected RdbmsTableFactory createRdbmsTableFactory() {
 		return new RdbmsTableFactory() {
 			@Override
-			protected RdbmsTable createRdbmsTable(String name) {
-				return new MySqlTable(getConnection(), name);
+			protected RdbmsTable newTable(String name) {
+				return new MySqlTable(name);
 			}
 
 			@Override
@@ -55,8 +56,8 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 			}
 
 			@Override
-			public NamespacesTable createNamespacesTable() {
-				return new NamespacesTable(createRdbmsTable(NAMESPACES)) {
+			public NamespacesTable createNamespacesTable(Connection conn) {
+				return new NamespacesTable(createTable(conn, NAMESPACES)) {
 					@Override
 					protected void createTable() throws SQLException {
 						StringBuilder sb = new StringBuilder();

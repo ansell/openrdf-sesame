@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.rdbms.postgresql;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.openrdf.sail.rdbms.schema.RdbmsTable;

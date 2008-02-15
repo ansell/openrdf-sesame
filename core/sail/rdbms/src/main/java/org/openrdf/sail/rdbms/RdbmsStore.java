@@ -89,7 +89,15 @@ public class RdbmsStore extends SailBase {
 
 	@Override
 	protected void shutDownInternal() throws SailException {
+		DataSource ds = factory.getDataSource();
 		factory.shutDown();
+		if (ds instanceof BasicDataSource) {
+			try {
+				((BasicDataSource) ds).close();
+			} catch (SQLException e) {
+				throw new RdbmsException(e);
+			}
+		}
 	}
 
 	protected void setConnectionFactory(RdbmsConnectionFactory factory) {

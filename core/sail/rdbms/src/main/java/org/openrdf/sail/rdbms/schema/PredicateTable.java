@@ -38,35 +38,50 @@ public class PredicateTable {
 	private RdbmsTable table;
 	private ValueTypes objTypes = new ValueTypes();
 	private ValueTypes subjTypes = new ValueTypes();
+	private boolean initialize;
 
 	public PredicateTable(RdbmsTable table) {
 		this.table = table;
 	}
 
-	public void initialize() throws SQLException {
-		if (!table.isCreated()) {
-			createTable();
-		} else {
-			table.count();
-			if (table.size() > 0) {
-				int[] aggregate = table.aggregate(OBJ_CONTAINS);
-				for (int i = 0; i < aggregate.length; i++) {
-					if (aggregate[i] == 1) {
-						objTypes.add(IdCode.values()[i]);
-					}
-				}
-				aggregate = table.aggregate(SUBJ_CONTAINS);
-				for (int i = 0; i < aggregate.length; i++) {
-					if (aggregate[i] == 1) {
-						subjTypes.add(IdCode.values()[i]);
-					}
-				}
-			
-			}
-		}
+	public synchronized void initTable() throws SQLException {
+		if (initialize)
+			return;
+		table.createTransactionalTable(buildTableColumns());
+		table.index(PKEY);
+		table.index(OBJ_INDEX);
+		table.index(SUBJ_INDEX);
+		initialize = true;
 	}
 
-	public String getName() {
+	public void reload() throws SQLException {
+		table.count();
+		if (table.size() > 0) {
+			int[] aggregate = table.aggregate(OBJ_CONTAINS);
+			for (int i = 0; i < aggregate.length; i++) {
+				if (aggregate[i] == 1) {
+					objTypes.add(IdCode.values()[i]);
+				}
+			}
+			aggregate = table.aggregate(SUBJ_CONTAINS);
+			for (int i = 0; i < aggregate.length; i++) {
+				if (aggregate[i] == 1) {
+					subjTypes.add(IdCode.values()[i]);
+				}
+			}
+		
+		}
+		initialize = true;
+	}
+
+	public void blockUntilReady() throws SQLException {
+		if (initialize)
+			return;
+		initTable();
+	}
+
+	public String getName() throws SQLException {
+		blockUntilReady();
 		return table.getName();
 	}
 
@@ -87,11 +102,27 @@ public class PredicateTable {
 	}
 
 	public void modified(int addedCount, int removedCount) throws SQLException {
+		blockUntilReady();
 		table.modified(addedCount, removedCount);
 		if (isEmpty()) {
 			objTypes.reset();
 			subjTypes.reset();
 		}
+	}
+
+	public boolean isEmpty() throws SQLException {
+		blockUntilReady();
+		return table.size() == 0;
+	}
+
+	@Override
+	public String toString() {
+		return table.getName();
+	}
+
+	public void drop() throws SQLException {
+		blockUntilReady();
+		table.drop();
 	}
 
 	protected CharSequence buildTableColumns() {
@@ -100,25 +131,5 @@ public class PredicateTable {
 		sb.append("  subj BIGINT NOT NULL,\n");
 		sb.append("  obj BIGINT NOT NULL\n");
 		return sb;
-	}
-
-	public void createTable() throws SQLException {
-		table.createTransactionalTable(buildTableColumns());
-		table.index(PKEY);
-		table.index(OBJ_INDEX);
-		table.index(SUBJ_INDEX);
-	}
-
-	public boolean isEmpty() {
-		return table.size() == 0;
-	}
-
-	@Override
-	public String toString() {
-		return getName();
-	}
-
-	public void drop() throws SQLException {
-		table.drop();
 	}
 }
