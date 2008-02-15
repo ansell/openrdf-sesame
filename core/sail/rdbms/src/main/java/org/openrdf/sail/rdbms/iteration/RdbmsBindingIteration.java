@@ -58,9 +58,7 @@ public class RdbmsBindingIteration extends
 			String name = var.getName();
 			if (var != null && !result.hasBinding(name)) {
 				Value value = var.getValue();
-				if (value == null && var.isResource()) {
-					value = createResource(rs, var.getIndex() + 1);
-				} else if (value == null) {
+				if (value == null) {
 					value = createValue(rs, var.getIndex() + 1);
 				}
 				if (value != null) {

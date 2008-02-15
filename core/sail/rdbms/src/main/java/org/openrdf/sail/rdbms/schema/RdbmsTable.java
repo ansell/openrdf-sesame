@@ -64,7 +64,6 @@ public class RdbmsTable {
 			execute(buildCreateTemporaryTable(columns));
 		} catch (SQLException e) {
 			// must already exist
-			conn.rollback();
 		}
 	}
 
