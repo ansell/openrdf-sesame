@@ -21,6 +21,7 @@
 		<module>inferencer</module>
 		<module>memory</module>
 		<module>nativerdf</module>
+		<module>rdbms</module>
 	</modules>
 
 </project>

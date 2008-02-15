@@ -5,9 +5,10 @@
  */
 package org.openrdf.sail.rdbms.postgresql;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.rdbms.RdbmsStore;
-import org.postgresql.jdbc3.Jdbc3PoolingDataSource;
+import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 
 /**
  * A convenient way to initialise a PostgreSQL RDF store.
@@ -16,8 +17,6 @@ import org.postgresql.jdbc3.Jdbc3PoolingDataSource;
  * 
  */
 public class PgSqlStore extends RdbmsStore {
-	private Jdbc3PoolingDataSource source;
-	private String name = genName();
 	private String serverName;
 	private String databaseName;
 	private int portNumber;
@@ -30,14 +29,6 @@ public class PgSqlStore extends RdbmsStore {
 
 	public PgSqlStore(String databaseName) {
 		setDatabaseName(databaseName);
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getServerName() {
@@ -82,38 +73,35 @@ public class PgSqlStore extends RdbmsStore {
 
 	@Override
 	public void initialize() throws SailException {
-		source = new Jdbc3PoolingDataSource();
-		source.setDataSourceName(name);
+		try {
+			Class.forName("org.postgresql.Driver");
+		} catch (ClassNotFoundException e) {
+			throw new RdbmsException(e);
+		}
+		StringBuilder url = new StringBuilder();
+		url.append("jdbc:postgresql:");
 		if (serverName != null) {
-			source.setServerName(serverName);
+			url.append("//").append(serverName);
+			if (portNumber > 0) {
+				url.append(":").append(portNumber);
+			}
+			url.append("/");
 		}
-		source.setDatabaseName(databaseName);
-		if (portNumber > 0) {
-			source.setPortNumber(portNumber);
-		}
+		url.append(databaseName);
+		BasicDataSource ds = new BasicDataSource();
+		ds.setUrl(url.toString());
 		if (user != null) {
-			source.setUser(user);
+			ds.setUsername(user);
 		} else {
-			source.setUser(System.getProperty("user.name"));
+			ds.setUsername(System.getProperty("user.name"));
 		}
 		if (password != null) {
-			source.setPassword(password);
+			ds.setPassword(password);
 		}
 		PgSqlConnectionFactory factory = new PgSqlConnectionFactory();
 		factory.setSail(this);
-		factory.setDataSource(source);
+		factory.setDataSource(ds);
 		setConnectionFactory(factory);
 		super.initialize();
-	}
-
-	@Override
-	protected void shutDownInternal() throws SailException {
-		super.shutDownInternal();
-		source.close();
-	}
-
-	private String genName() {
-		String hex = Integer.toHexString(System.identityHashCode(this));
-		return getClass().getSimpleName() + "#" + hex;
 	}
 }

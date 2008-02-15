@@ -5,11 +5,10 @@
  */
 package org.openrdf.sail.rdbms.mysql;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.rdbms.RdbmsStore;
-
-import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 
 /**
  * A convenient way to initialise a MySql RDF store.
@@ -18,9 +17,8 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
  * 
  */
 public class MySqlStore extends RdbmsStore {
-	private MysqlDataSource source;
 	private String name = genName();
-	private String serverName;
+	private String serverName = "localhost";
 	private String databaseName;
 	private int portNumber;
 	private String user;
@@ -84,29 +82,35 @@ public class MySqlStore extends RdbmsStore {
 
 	@Override
 	public void initialize() throws SailException {
-		source = new MysqlConnectionPoolDataSource();
-		source.setDatabaseName(name);
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (ClassNotFoundException e) {
+			throw new RdbmsException(e);
+		}
+		StringBuilder url = new StringBuilder();
+		url.append("jdbc:mysql:");
 		if (serverName != null) {
-			source.setServerName(serverName);
+			url.append("//").append(serverName);
+			if (portNumber > 0) {
+				url.append(":").append(portNumber);
+			}
+			url.append("/");
 		}
-		source.setDatabaseName(databaseName);
-		if (portNumber > 0) {
-			source.setPortNumber(portNumber);
-		}
+		url.append(databaseName);
+		url.append("?useUnicode=yes&characterEncoding=UTF-8");
+		BasicDataSource ds = new BasicDataSource();
+		ds.setUrl(url.toString());
 		if (user != null) {
-			source.setUser(user);
+			ds.setUsername(user);
 		} else {
-			source.setUser(System.getProperty("user.name"));
+			ds.setUsername(System.getProperty("user.name"));
 		}
 		if (password != null) {
-			source.setPassword(password);
+			ds.setPassword(password);
 		}
-		source.setUseUnicode(true);
-		source.setCharacterEncoding("UTF-8");
-		source.setCharacterSetResults("UTF-8");
 		MySqlConnectionFactory factory = new MySqlConnectionFactory();
 		factory.setSail(this);
-		factory.setDataSource(source);
+		factory.setDataSource(ds);
 		setConnectionFactory(factory);
 		super.initialize();
 	}
