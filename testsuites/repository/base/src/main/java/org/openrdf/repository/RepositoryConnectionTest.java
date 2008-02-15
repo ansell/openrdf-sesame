@@ -14,12 +14,18 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
+
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import junit.framework.TestCase;
 
@@ -1325,6 +1331,41 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		testCon.add(bob, name, nameBob, context2);
 		assertEquals(Arrays.asList(context2), testCon.getContextIDs().asList());
+	}
+
+	public void testXmlCalendarZ() throws Exception {
+		String NS = "http://example.org/rdf/";
+		int OFFSET = TimeZone.getDefault().getOffset(new Date(2007, Calendar.NOVEMBER, 6).getTime()) / 1000 / 60;
+		String SELECT_BY_DATE = "SELECT ?s ?d WHERE { ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#value> ?d . FILTER (?d <= ?date) }";
+		DatatypeFactory data = DatatypeFactory.newInstance();
+		for (int i=1;i<5;i++) {
+			URI uri = vf.createURI(NS, "date" + i);
+			XMLGregorianCalendar xcal = data.newXMLGregorianCalendar();
+			xcal.setYear(2000);
+			xcal.setMonth(11);
+			xcal.setDay(i*2);
+			testCon.add(uri, RDF.VALUE, vf.createLiteral(xcal));
+			URI uriz = vf.createURI(NS, "dateZ" + i);
+			xcal = data.newXMLGregorianCalendar();
+			xcal.setYear(2007);
+			xcal.setMonth(11);
+			xcal.setDay(i*2);
+			xcal.setTimezone(OFFSET);
+			testCon.add(uriz, RDF.VALUE, vf.createLiteral(xcal));
+		}
+		XMLGregorianCalendar xcal = data.newXMLGregorianCalendar();
+		xcal.setYear(2007);
+		xcal.setMonth(11);
+		xcal.setDay(6);
+		xcal.setTimezone(OFFSET);
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, SELECT_BY_DATE);
+		query.setBinding("date", vf.createLiteral(xcal));
+		TupleQueryResult result = query.evaluate();
+		List list = new ArrayList();
+		while (result.hasNext()) {
+			list.add(result.next());
+		}
+		assertEquals(7, list.size());
 	}
 
 	private int getTotalStatementCount(RepositoryConnection connection)
