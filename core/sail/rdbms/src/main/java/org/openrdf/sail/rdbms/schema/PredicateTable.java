@@ -89,12 +89,12 @@ public class PredicateTable {
 		return objTypes;
 	}
 
-	public ValueTypes getSubjTypes() {
-		return subjTypes;
-	}
-
 	public void setObjTypes(ValueTypes valueTypes) {
 		this.objTypes.merge(valueTypes);
+	}
+
+	public ValueTypes getSubjTypes() {
+		return subjTypes;
 	}
 
 	public void setSubjTypes(ValueTypes valueTypes) {
