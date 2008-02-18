@@ -13,7 +13,7 @@
 	<artifactId>openrdf-http</artifactId>
 	<packaging>pom</packaging>
 
-	<name>OpenRDF HTTP protocol client and server</name>
+	<name>OpenRDF Sesame: HTTP</name>
 	<description>Client and server for repository communication over HTTP.</description>
 
 	<modules>

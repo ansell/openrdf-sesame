@@ -13,7 +13,7 @@
 	<artifactId>openrdf-rio</artifactId>
 	<packaging>pom</packaging>
 
-	<name>OpenRDF Rio</name>
+	<name>OpenRDF Sesame: Rio</name>
 	<description>Rio (RDF I/O) is an API for parsers and writers of various RDF	file formats.</description>
 
 	<modules>

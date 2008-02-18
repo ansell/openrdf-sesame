@@ -12,17 +12,16 @@
 
 	<artifactId>openrdf-rio-ntriples</artifactId>
 
-	<name>OpenRDF Rio N-Triples parser and writer</name>
+	<name>OpenRDF Sesame: Rio - N-Triples</name>
 	<description>Rio parser and writer implementation for the N-Triples file format.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-api</artifactId>
 		</dependency>
 	</dependencies>

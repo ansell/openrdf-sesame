@@ -12,22 +12,20 @@
 
 	<artifactId>openrdf-rio-trig</artifactId>
 
-	<name>OpenRDF Rio TriG parser and writer</name>
+	<name>OpenRDF Sesame: Rio - TriG</name>
 	<description>Rio parser and writer implementation for the TriG file format.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-turtle</artifactId>
 		</dependency>
 	</dependencies>

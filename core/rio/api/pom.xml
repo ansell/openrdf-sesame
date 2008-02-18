@@ -12,23 +12,23 @@
 
 	<artifactId>openrdf-rio-api</artifactId>
 
-	<name>OpenRDF Rio API</name>
+	<name>OpenRDF Sesame: Rio - API</name>
 	<description>Rio API.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-lang</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-lang</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-net</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-net</artifactId>
 		</dependency>
 	</dependencies>
 

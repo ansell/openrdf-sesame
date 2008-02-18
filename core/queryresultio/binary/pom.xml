@@ -12,28 +12,26 @@
 
 	<artifactId>openrdf-queryresultio-binary</artifactId>
 
-	<name>OpenRDF binary query result parser and writer</name>
+	<name>OpenRDF Sesame: Query result IO - binary</name>
 	<description>Query result parser and writer implementation for OpenRDF's binary query results format.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-queryresultio-api</artifactId>
 		</dependency>
-	
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-query</artifactId>
 		</dependency>
-	
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-io</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-io</artifactId>
 		</dependency>
 	</dependencies>
 

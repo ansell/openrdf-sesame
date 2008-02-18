@@ -13,7 +13,7 @@
 	<artifactId>openrdf-queryparser</artifactId>
 	<packaging>pom</packaging>
 
-	<name>OpenRDF query parser</name>
+	<name>OpenRDF Sesame: Query parser</name>
 	<description>Query parser API and implementations.</description>
 
 	<modules>

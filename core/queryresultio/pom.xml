@@ -13,7 +13,7 @@
 	<artifactId>openrdf-queryresultio</artifactId>
 	<packaging>pom</packaging>
 
-	<name>OpenRDF query result IO</name>
+	<name>OpenRDF Sesame: Query result IO</name>
 	<description>Query result IO API and implementations.</description>
 
 	<modules>

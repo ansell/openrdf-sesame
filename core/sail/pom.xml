@@ -13,7 +13,7 @@
 	<artifactId>openrdf-sail</artifactId>
 	<packaging>pom</packaging>
 
-	<name>OpenRDF Sail</name>
+	<name>OpenRDF Sesame: Sail</name>
 	<description>Sail API and implementations.</description>
 
 	<modules>

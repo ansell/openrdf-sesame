@@ -12,28 +12,26 @@
 
 	<artifactId>openrdf-rio-rdfxml</artifactId>
 
-	<name>OpenRDF Rio RDF/XML parser and writer</name>
+	<name>OpenRDF Sesame: Rio - RDF/XML</name>
 	<description>Rio parser and writer implementation for the RDF/XML file format.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-api</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-net</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-net</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-xml</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-xml</artifactId>
 		</dependency>
 	</dependencies>
 

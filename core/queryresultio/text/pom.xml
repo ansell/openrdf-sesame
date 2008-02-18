@@ -12,18 +12,18 @@
 
 	<artifactId>openrdf-queryresultio-text</artifactId>
 
-	<name>OpenRDF parser and writer for plain text boolean query results</name>
+	<name>OpenRDF Sesame: Query result IO - plain text booleans</name>
 	<description>Query result parser and writer implementation for OpenRDF's plain text boolean query results format.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-queryresultio-api</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-io</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-io</artifactId>
 		</dependency>
 	</dependencies>
 

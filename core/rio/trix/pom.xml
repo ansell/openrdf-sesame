@@ -12,23 +12,22 @@
 
 	<artifactId>openrdf-rio-trix</artifactId>
 
-	<name>OpenRDF Rio TriX parser and writer</name>
+	<name>OpenRDF Sesame: Rio - TriX</name>
 	<description>Rio parser and writer implementation for the TriX file format.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-api</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-xml</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-xml</artifactId>
 		</dependency>
 	</dependencies>
 
