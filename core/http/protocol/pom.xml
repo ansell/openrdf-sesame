@@ -12,33 +12,30 @@
 
 	<artifactId>openrdf-http-protocol</artifactId>
 
-	<name>OpenRDF HTTP protocol</name>
+	<name>OpenRDF Sesame: HTTP protocol</name>
 	<description>HTTP protocol (REST-style)</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-repository-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-ntriples</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
 		
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-lang</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-lang</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-xml</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-xml</artifactId>
 		</dependency>
 
 		<dependency>

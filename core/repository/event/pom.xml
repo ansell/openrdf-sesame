@@ -13,17 +13,16 @@
 
 	<artifactId>openrdf-repository-event</artifactId>
 
-	<name>OpenRDF repository wrapper - event</name>
+	<name>OpenRDF Sesame: Repository - event (wrapper)</name>
 	<description>Implementation that notifies listeners of events on a wrapped repository</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-repository-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
 

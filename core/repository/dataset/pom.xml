@@ -12,32 +12,28 @@
 
 	<artifactId>openrdf-repository-dataset</artifactId>
 
-	<name>OpenRDF repository wrapper - dataset</name>
+	<name>OpenRDF Sesame: Repository - dataset (wrapper)</name>
 	<description>Implementation that loads all referenced datasets into a wrapped repository</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-repository-sail</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-repository-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-query</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
 

@@ -13,17 +13,17 @@
 
 	<artifactId>openrdf-queryalgebra-model</artifactId>
 
-	<name>OpenRDF query algebra model</name>
+	<name>OpenRDF Sesame: Query algebra - model</name>
 	<description>A generic query algebra for RDF queries.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-collections</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-collections</artifactId>
 		</dependency>
 	</dependencies>
 

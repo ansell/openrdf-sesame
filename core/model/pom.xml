@@ -13,13 +13,13 @@
 
 	<artifactId>openrdf-model</artifactId>
 
-	<name>OpenRDF RDF model</name>
+	<name>OpenRDF Sesame: Model</name>
 	<description>RDF model interfaces and implementations.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-collections</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-collections</artifactId>
 		</dependency>
 
 		<dependency>

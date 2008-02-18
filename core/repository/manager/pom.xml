@@ -12,57 +12,48 @@
 
 	<artifactId>openrdf-repository-manager</artifactId>
 
-	<name>OpenRDF repository manager</name>
+	<name>OpenRDF Sesame: Repository manager</name>
 	<description>Repository manager</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-repository-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-repository-event</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-repository-sail</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-sail-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-sail-memory</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-repository-http</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-http-client</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-http-protocol</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-query</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
 		

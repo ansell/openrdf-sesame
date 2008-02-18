@@ -12,28 +12,27 @@
 
 	<artifactId>openrdf-rio-turtle</artifactId>
 
-	<name>OpenRDF Rio Turtle parser and writer</name>
+	<name>OpenRDF Sesame: Rio - Turtle</name>
 	<description>Rio parser and writer implementation for the Turtle file format.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-api</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-io</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-io</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-text</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-text</artifactId>
 		</dependency>
 	</dependencies>
 

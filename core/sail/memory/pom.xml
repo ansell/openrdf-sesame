@@ -12,58 +12,50 @@
 
 	<artifactId>openrdf-sail-memory</artifactId>
 
-	<name>OpenRDF memory store</name>
+	<name>OpenRDF Sesame: Sail - memory</name>
 	<description>Sail implementation that stores data in main memory, optionally using a dump-restore file for persistence.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-sail-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-sail-inferencer</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-queryalgebra-evaluation</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-queryalgebra-model</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-query</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-iteration</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-collections</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-concurrent</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-concurrent</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-io</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-io</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-lang</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-lang</artifactId>
 		</dependency>
 
 		<dependency>

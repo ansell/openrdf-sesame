@@ -13,7 +13,7 @@
 	<artifactId>openrdf-queryalgebra</artifactId>
 	<packaging>pom</packaging>
 
-	<name>OpenRDF query algebra</name>
+	<name>OpenRDF Sesame: Query algebra</name>
 	<description>Query algebra model and evaluation.</description>
 
 	<modules>

@@ -12,28 +12,26 @@
 
 	<artifactId>openrdf-queryresultio-sparqlxml</artifactId>
 
-	<name>OpenRDF SPARQL/XML query result parser and writer</name>
+	<name>OpenRDF Sesame: Query result IO - SPARQL/XML</name>
 	<description>Query result parser and writer implementation for the SPARQL Query Results XML Format.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-queryresultio-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-query</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-xml</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-xml</artifactId>
 		</dependency>
 	</dependencies>
 

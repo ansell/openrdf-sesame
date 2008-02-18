@@ -13,7 +13,7 @@
 	<artifactId>openrdf-repository</artifactId>
 	<packaging>pom</packaging>
 
-	<name>OpenRDF repository</name>
+	<name>OpenRDF Sesame: Repository</name>
 	<description>Repository API and implemenations.</description>
 
 	<modules>

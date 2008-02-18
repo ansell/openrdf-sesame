@@ -12,40 +12,36 @@
 
 	<artifactId>openrdf-repository-api</artifactId>
 
-	<name>OpenRDF repository API</name>
+	<name>OpenRDF Sesame: Repository - API</name>
 	<description>API for interacting with repositories of RDF data.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-query</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-iteration</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-collections</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-lang</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-lang</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
@@ -53,38 +49,34 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-ntriples</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-rdfxml</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-trig</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-rio-trix</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>openrdf-rio-turtle</artifactId>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf</groupId>
-			<artifactId>openrdf-rio-turtle</artifactId>
-			<scope>test</scope>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
 		</dependency>
 	</dependencies>
 

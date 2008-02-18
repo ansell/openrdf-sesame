@@ -13,38 +13,34 @@
 
 	<artifactId>openrdf-queryparser-sparql</artifactId>
 
-	<name>OpenRDF SPARQL query parser</name>
+	<name>OpenRDF Sesame: Query parser - SPARQL</name>
 	<description>Query language parser implementation for SPARQL.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-queryparser-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-query</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-queryalgebra-model</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-model</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-net</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-net</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-text</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-text</artifactId>
 		</dependency>
 	</dependencies>
 

@@ -12,23 +12,22 @@
 
 	<artifactId>openrdf-queryparser-api</artifactId>
 
-	<name>OpenRDF query parser API</name>
+	<name>OpenRDF Sesame: Query parser - API</name>
 	<description>Query language parsers API.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-query</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>org.openrdf</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>openrdf-queryalgebra-model</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-lang</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-lang</artifactId>
 		</dependency>
 	</dependencies>
 
