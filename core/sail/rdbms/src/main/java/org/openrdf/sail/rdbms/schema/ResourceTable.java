@@ -126,8 +126,8 @@ public class ResourceTable {
 		return getName();
 	}
 
-	public void expunge(String condition) throws SQLException {
+	public void optimize() throws SQLException {
 		flush();
-		table.expunge(condition);
+		table.optimize();
 	}
 }

@@ -102,4 +102,10 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 		return shorter.nextId(IdCode.URI);
 	}
 
+	@Override
+	protected void optimize() throws SQLException {
+		shorter.optimize();
+		longer.optimize();
+	}
+
 }

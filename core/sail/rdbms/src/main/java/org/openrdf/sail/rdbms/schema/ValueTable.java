@@ -118,6 +118,10 @@ public class ValueTable<V> {
 		return count;
 	}
 
+	public void optimize() throws SQLException {
+		table.optimize();
+	}
+
 	public boolean expungeRemovedStatements(int count, String condition)
 			throws SQLException {
 		flush();

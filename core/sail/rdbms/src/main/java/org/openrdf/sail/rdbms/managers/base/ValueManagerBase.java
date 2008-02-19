@@ -80,6 +80,9 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		}
 		insertNewValues();
 		flushTable();
+		synchronized (needIds) {
+			needIds.notify();
+		}
 	}
 
 	public long getInternalId(V val) throws SQLException {
@@ -139,23 +142,31 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 
 	protected abstract long nextId(V value);
 
+	protected abstract void optimize() throws SQLException;
+
 	void lookupThread() throws SQLException, InterruptedException {
-		logger.debug("Starting helper thread {}", Thread.currentThread().getName());
+		logger.debug("Starting helper thread {}", Thread.currentThread()
+				.getName());
 		int chunkSize = getSelectChunkSize();
 		int batchSize = getBatchSize();
 		Map<K, V> values = new HashMap<K, V>(chunkSize * 2);
 		while (!closed) {
-			synchronized (needIds) {
-				while (!closed && needIds.size() < chunkSize) {
+			int size = 0;
+			while (!closed && size < chunkSize) {
+				synchronized (needIds) {
 					needIds.wait();
+					size = needIds.size();
+					Iterator<Entry<K, V>> iter = needIds.entrySet().iterator();
+					for (int i = 0; i < batchSize && iter.hasNext(); i++) {
+						Entry<K, V> next = iter.next();
+						values.put(next.getKey(), next.getValue());
+					}
 				}
-				Iterator<Entry<K, V>> iter = needIds.entrySet().iterator();
-				for (int i = 0; i < batchSize && iter.hasNext(); i++) {
-					Entry<K, V> next = iter.next();
-					values.put(next.getKey(), next.getValue());
+				if (size == 0) {
+					optimize();
 				}
 			}
-			if (!closed) {
+			if (!closed && !values.isEmpty()) {
 				loadIds(values);
 				synchronized (needIds) {
 					idsNoLongerNeeded(values);
@@ -166,9 +177,11 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 				}
 				insertNewValues();
 				flushTable();
+				optimize();
 			}
 		}
-		logger.debug("Closing helper thread {}", Thread.currentThread().getName());
+		logger.debug("Closing helper thread {}", Thread.currentThread()
+				.getName());
 	}
 
 	private void idsNoLongerNeeded(Map<K, V> needIds) {

@@ -40,6 +40,11 @@ public class LiteralManager extends ValueManagerBase<Literal, RdbmsLiteral> {
 	}
 
 	@Override
+	protected void optimize() throws SQLException {
+		table.optimize();
+	}
+
+	@Override
 	public int getIdVersion() {
 		return table.getIdVersion();
 	}

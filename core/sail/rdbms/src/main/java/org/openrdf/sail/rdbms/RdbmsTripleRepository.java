@@ -123,6 +123,11 @@ public class RdbmsTripleRepository {
 	}
 
 	public void flush() throws RdbmsException {
+		flushQueue();
+		vf.flush();
+	}
+
+	private void flushQueue() throws RdbmsException {
 		try {
 			synchronized (queue) {
 				while (!queue.isEmpty()) {
@@ -143,7 +148,6 @@ public class RdbmsTripleRepository {
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
-		vf.flush();
 	}
 
 	public void add(RdbmsStatement st) throws SailException, SQLException {
@@ -209,7 +213,7 @@ public class RdbmsTripleRepository {
 	}
 
 	public void commit() throws SQLException, RdbmsException {
-		flush();
+		flushQueue();
 		conn.commit();
 		conn.setAutoCommit(true);
 		if (readLock != null) {

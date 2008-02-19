@@ -36,6 +36,11 @@ public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
 	}
 
 	@Override
+	protected void optimize() throws SQLException {
+		table.optimize();
+	}
+
+	@Override
 	public int getIdVersion() {
 		return table.getIdVersion();
 	}

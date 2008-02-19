@@ -198,14 +198,13 @@ public class LiteralTable {
 		dateTime.flush();
 	}
 
-	public void expunge(String condition) throws SQLException {
-		flush();
-		labels.expunge(condition);
-		longLabels.expunge(condition);
-		languages.expunge(condition);
-		datatypes.expunge(condition);
-		numeric.expunge(condition);
-		dateTime.expunge(condition);
+	public void optimize() throws SQLException {
+		labels.optimize();
+		longLabels.optimize();
+		languages.optimize();
+		datatypes.optimize();
+		numeric.optimize();
+		dateTime.optimize();
 	}
 
 	public void load(Collection<? extends Literal> literals, LiteralHandler handler)
