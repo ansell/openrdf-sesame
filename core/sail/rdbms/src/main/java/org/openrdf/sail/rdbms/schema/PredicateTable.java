@@ -104,6 +104,7 @@ public class PredicateTable {
 	public void modified(int addedCount, int removedCount) throws SQLException {
 		blockUntilReady();
 		table.modified(addedCount, removedCount);
+		table.optimize();
 		if (isEmpty()) {
 			objTypes.reset();
 			subjTypes.reset();

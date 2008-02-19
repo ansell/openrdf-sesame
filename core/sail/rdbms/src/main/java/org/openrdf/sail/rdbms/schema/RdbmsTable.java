@@ -191,8 +191,10 @@ public class RdbmsTable {
 		removedCount += deleted;
 		rowCount += inserted - deleted;
 		assert rowCount >= 0 : rowCount;
-		int delta = addedCount + removedCount;
-		if (optimize(delta, rowCount)) {
+	}
+
+	public void optimize() throws SQLException {
+		if (optimize(addedCount + removedCount, rowCount)) {
 			execute(buildOptimize());
 			addedCount = removedCount = 0;
 		}

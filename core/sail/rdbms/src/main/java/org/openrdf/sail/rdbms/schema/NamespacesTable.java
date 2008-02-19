@@ -63,6 +63,7 @@ public class NamespacesTable {
 		if (result != 1 && result != Statement.SUCCESS_NO_INFO)
 			throw new RdbmsRuntimeException("Namespace could not be created");
 		table.modified(1, 0);
+		table.optimize();
 	}
 
 	public void updatePrefix(String prefix, String namespace)
