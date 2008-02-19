@@ -151,22 +151,15 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		int batchSize = getBatchSize();
 		Map<K, V> values = new HashMap<K, V>(chunkSize * 2);
 		while (!closed) {
-			int size = 0;
-			while (!closed && size < chunkSize) {
-				synchronized (needIds) {
-					needIds.wait();
-					size = needIds.size();
-					Iterator<Entry<K, V>> iter = needIds.entrySet().iterator();
-					for (int i = 0; i < batchSize && iter.hasNext(); i++) {
-						Entry<K, V> next = iter.next();
-						values.put(next.getKey(), next.getValue());
-					}
-				}
-				if (size == 0) {
-					optimize();
+			synchronized (needIds) {
+				needIds.wait();
+				Iterator<Entry<K, V>> iter = needIds.entrySet().iterator();
+				for (int i = 0; i < batchSize && iter.hasNext(); i++) {
+					Entry<K, V> next = iter.next();
+					values.put(next.getKey(), next.getValue());
 				}
 			}
-			if (!closed && !values.isEmpty()) {
+			if (!values.isEmpty()) {
 				loadIds(values);
 				synchronized (needIds) {
 					idsNoLongerNeeded(values);
@@ -175,10 +168,10 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 					}
 					values.clear();
 				}
-				insertNewValues();
-				flushTable();
-				optimize();
 			}
+			insertNewValues();
+			flushTable();
+			optimize();
 		}
 		logger.debug("Closing helper thread {}", Thread.currentThread()
 				.getName());
