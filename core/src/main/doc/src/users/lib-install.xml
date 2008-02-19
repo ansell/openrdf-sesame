@@ -65,9 +65,9 @@
 			<ulink url="http://logging.apache.org/log4j/">Apache log4j 1.2</ulink>,
 			you need to include the SLF4J-to-log4j bridge in your classpath. The
 			SLF4J release packages include bridges to various logging implementations;
-			just download the SLF4J release package (Sesame currently uses 1.3.0) and
+			just download the SLF4J release package (Sesame currently uses 1.4.3) and
 			include the appropriate bridge in your classpath;
-			<filename>slf4j-log4j12-1.3.0.jar</filename>, for example. That's all!
+			<filename>slf4j-log4j12-1.4.3.jar</filename>, for example. That's all!
 		</para>
 	</section>
 </chapter>
