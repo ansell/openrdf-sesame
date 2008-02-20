@@ -37,8 +37,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-logging-file</artifactId>
+			<groupId>info.aduna.appbase</groupId>
+			<artifactId>aduna-appbase-logging-file</artifactId>
 		</dependency>
 	</dependencies>
 

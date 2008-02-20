@@ -12,7 +12,7 @@
 
 	<artifactId>openrdf-sail-nativerdf</artifactId>
 
-	<name>OpenRDF Sesame: Sail - native</name>
+	<name>OpenRDF Sesame: NativeStore</name>
 	<description>Sail implementation that stores data directly to disk in dedicated file formats.</description>
 
 	<dependencies>

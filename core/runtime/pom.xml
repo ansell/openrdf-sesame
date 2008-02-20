@@ -159,6 +159,11 @@
 			<artifactId>openrdf-sail-nativerdf</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>openrdf-sail-rdbms</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>

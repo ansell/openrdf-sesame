@@ -12,7 +12,7 @@
 
 	<artifactId>openrdf-sail-memory</artifactId>
 
-	<name>OpenRDF Sesame: Sail - memory</name>
+	<name>OpenRDF Sesame: MemoryStore</name>
 	<description>Sail implementation that stores data in main memory, optionally using a dump-restore file for persistence.</description>
 
 	<dependencies>
