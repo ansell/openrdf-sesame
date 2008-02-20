@@ -21,6 +21,7 @@
 		<module>http</module>
 		<module>sail-memory</module>
 		<module>sail-nativerdf</module>
+		<module>sail-rdbms</module>
 	</modules>
 
 	<build>
