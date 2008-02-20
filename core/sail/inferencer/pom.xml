@@ -12,7 +12,7 @@
 
 	<artifactId>openrdf-sail-inferencer</artifactId>
 
-	<name>OpenRDF Sesame: Sail - inferencer</name>
+	<name>OpenRDF Sesame: Inferencer Sails</name>
 	<description>Stackable Sail implementation that adds RDF Schema inferencing to an RDF store.</description>
 
 	<dependencies>

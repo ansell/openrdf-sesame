@@ -12,7 +12,7 @@
 
 	<artifactId>openrdf-sail-api</artifactId>
 
-	<name>OpenRDF Sesame: Sail - API</name>
+	<name>OpenRDF Sesame: Sail API</name>
 	<description>RDF Storage And Inference Layer ("Sail") API.</description>
 
 	<dependencies>

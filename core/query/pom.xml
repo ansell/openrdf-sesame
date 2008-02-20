@@ -29,11 +29,6 @@
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-collections</artifactId>
 		</dependency>
-		
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
 	</dependencies>
 
 </project>

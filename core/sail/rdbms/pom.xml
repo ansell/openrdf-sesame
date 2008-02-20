@@ -12,7 +12,7 @@
 
 	<artifactId>openrdf-sail-rdbms</artifactId>
 
-	<name>OpenRDF Sesame: Sail - RDBMS</name>
+	<name>OpenRDF Sesame: RDBMS Sail</name>
 	<description>Sail implementation that stores data in a relational database.</description>
 
 	<dependencies>
@@ -42,6 +42,11 @@
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-collections</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 
 		<dependency>
