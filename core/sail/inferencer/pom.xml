@@ -5,12 +5,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf</groupId>
-		<artifactId>openrdf-sail</artifactId>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-sail</artifactId>
 		<version>2.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>openrdf-sail-inferencer</artifactId>
+	<artifactId>sesame-sail-inferencer</artifactId>
 
 	<name>OpenRDF Sesame: Inferencer Sails</name>
 	<description>Stackable Sail implementation that adds RDF Schema inferencing to an RDF store.</description>
@@ -18,32 +18,32 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-sail-api</artifactId>
+			<artifactId>sesame-sail-api</artifactId>
 		</dependency>		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryalgebra-model</artifactId>
+			<artifactId>sesame-queryalgebra-model</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-query</artifactId>
+			<artifactId>sesame-query</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryparser-api</artifactId>
+			<artifactId>sesame-queryparser-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryparser-serql</artifactId>
+			<artifactId>sesame-queryparser-serql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-rio-api</artifactId>
+			<artifactId>sesame-rio-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-model</artifactId>
+			<artifactId>sesame-model</artifactId>
 		</dependency>
 
 		<dependency>

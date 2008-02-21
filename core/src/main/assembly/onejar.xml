@@ -5,6 +5,7 @@
 		<format>jar</format>
 	</formats>
 
+	<baseDirectory>openrdf-sesame</baseDirectory>
 	<includeBaseDirectory>false</includeBaseDirectory>
 	<includeSiteDirectory>false</includeSiteDirectory>
 
@@ -26,7 +27,8 @@
 						<scope>runtime</scope>
 						<useTransitiveFiltering>true</useTransitiveFiltering>
 						<includes>
-							<include>info.aduna:*:jar:*</include>
+							<include>info.aduna.commons:*:jar:*</include>
+							<include>info.aduna.appbase:*:jar:*</include>
 						</includes>
 					</dependencySet>
 				</dependencySets>
