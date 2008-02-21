@@ -5,40 +5,40 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf</groupId>
-		<artifactId>openrdf-rio-compliance</artifactId>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-rio-compliance</artifactId>
 		<version>2.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>openrdf-rio-n3-compliance</artifactId>
+	<artifactId>sesame-rio-n3-compliance</artifactId>
 
 	<name>OpenRDF N3 writer compliance tests</name>
 	<description>Tests for the N3 file format.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf</groupId>
-			<artifactId>openrdf-runtime</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-runtime</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf</groupId>
-			<artifactId>openrdf-repository-sail</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-repository-sail</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf</groupId>
-			<artifactId>openrdf-sail-memory</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-sail-memory</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf</groupId>
-			<artifactId>openrdf-rio-ntriples</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-rio-ntriples</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf</groupId>
-			<artifactId>openrdf-rio-turtle</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-rio-turtle</artifactId>
 		</dependency>
 
 		<dependency>

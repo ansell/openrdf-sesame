@@ -5,12 +5,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf</groupId>
-		<artifactId>openrdf-sesame-core</artifactId>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-core</artifactId>
 		<version>2.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>openrdf-runtime</artifactId>
+	<artifactId>sesame-runtime</artifactId>
 
 	<name>OpenRDF Sesame: Runtime</name>
 	<description>Runtime dependencies for an OpenRDF application</description>
@@ -18,150 +18,150 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-model</artifactId>
+			<artifactId>sesame-model</artifactId>
 		</dependency>
 		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-query</artifactId>
+			<artifactId>sesame-query</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryalgebra-model</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryparser-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryparser-serql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryparser-sparql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryresultio-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryresultio-binary</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryresultio-sparqljson</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryresultio-sparqlxml</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryresultio-text</artifactId>
-			<scope>runtime</scope>
+			<artifactId>sesame-queryalgebra-model</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-repository-api</artifactId>
+			<artifactId>sesame-queryparser-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-repository-manager</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-repository-http</artifactId>
+			<artifactId>sesame-queryparser-serql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-repository-sail</artifactId>
+			<artifactId>sesame-queryparser-sparql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-queryresultio-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-queryresultio-binary</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-repository-dataset</artifactId>
+			<artifactId>sesame-queryresultio-sparqljson</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-queryresultio-sparqlxml</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-queryresultio-text</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-repository-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-repository-manager</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-repository-http</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-repository-sail</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-repository-dataset</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-http-protocol</artifactId>
+			<artifactId>sesame-http-protocol</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-http-client</artifactId>
+			<artifactId>sesame-http-client</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-rio-api</artifactId>
+			<artifactId>sesame-rio-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-rio-ntriples</artifactId>
+			<artifactId>sesame-rio-ntriples</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-rio-n3</artifactId>
+			<artifactId>sesame-rio-n3</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-rio-rdfxml</artifactId>
+			<artifactId>sesame-rio-rdfxml</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-rio-trix</artifactId>
+			<artifactId>sesame-rio-trix</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-rio-turtle</artifactId>
+			<artifactId>sesame-rio-turtle</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-rio-trig</artifactId>
+			<artifactId>sesame-rio-trig</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-sail-api</artifactId>
+			<artifactId>sesame-sail-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-sail-inferencer</artifactId>
+			<artifactId>sesame-sail-inferencer</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-sail-memory</artifactId>
+			<artifactId>sesame-sail-memory</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-sail-nativerdf</artifactId>
+			<artifactId>sesame-sail-nativerdf</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-sail-rdbms</artifactId>
+			<artifactId>sesame-sail-rdbms</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 

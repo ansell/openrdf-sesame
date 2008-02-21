@@ -5,12 +5,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf</groupId>
-		<artifactId>openrdf-http</artifactId>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-http</artifactId>
 		<version>2.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>openrdf-http-client</artifactId>
+	<artifactId>sesame-http-client</artifactId>
 
 	<name>OpenRDF Sesame: HTTP client</name>
 	<description>Client functionality for communicating with an OpenRDF server over HTTP.</description>
@@ -18,27 +18,27 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-http-protocol</artifactId>
+			<artifactId>sesame-http-protocol</artifactId>
 		</dependency>		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-query</artifactId>
+			<artifactId>sesame-query</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryresultio-api</artifactId>
+			<artifactId>sesame-queryresultio-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-rio-api</artifactId>
+			<artifactId>sesame-rio-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-model</artifactId>
+			<artifactId>sesame-model</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-repository-api</artifactId>
+			<artifactId>sesame-repository-api</artifactId>
 		</dependency>
 
 		<dependency>

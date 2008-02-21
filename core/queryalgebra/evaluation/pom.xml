@@ -6,12 +6,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf</groupId>
-		<artifactId>openrdf-queryalgebra</artifactId>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-queryalgebra</artifactId>
 		<version>2.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>openrdf-queryalgebra-evaluation</artifactId>
+	<artifactId>sesame-queryalgebra-evaluation</artifactId>
 
 	<name>OpenRDF Sesame: Query algebra - evaluation</name>
 	<description>Evaluation strategy API and implementations for the query algebra model.</description>
@@ -19,15 +19,15 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryalgebra-model</artifactId>
+			<artifactId>sesame-queryalgebra-model</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-model</artifactId>
+			<artifactId>sesame-model</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-query</artifactId>
+			<artifactId>sesame-query</artifactId>
 		</dependency>
 
 		<dependency>

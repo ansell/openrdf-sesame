@@ -5,12 +5,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf</groupId>
-		<artifactId>openrdf-sesame-core</artifactId>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-core</artifactId>
 		<version>2.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>openrdf-console</artifactId>
+	<artifactId>sesame-console</artifactId>
 
 	<name>OpenRDF Sesame: Console</name>
 	<description>Command line user interface to Sesame repositories.</description>
@@ -18,20 +18,20 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-runtime</artifactId>
+			<artifactId>sesame-runtime</artifactId>
 			<!--<scope>runtime</scope>-->
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryparser-serql</artifactId>
+			<artifactId>sesame-queryparser-serql</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-queryparser-sparql</artifactId>
+			<artifactId>sesame-queryparser-sparql</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>openrdf-rio-ntriples</artifactId>
+			<artifactId>sesame-rio-ntriples</artifactId>
 		</dependency>
 
 		<dependency>

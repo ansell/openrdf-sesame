@@ -6,6 +6,8 @@
 		<format>zip</format>
 	</formats>
 
+	<baseDirectory>openrdf-sesame</baseDirectory>
+
 	<moduleSets>
 		<moduleSet>
 			<includes>
@@ -40,11 +42,11 @@
 
 	<files>
 		<file>
-			<source>openrdf-http/openrdf-http-server/target/openrdf-sesame.war</source>
+			<source>http/server/target/openrdf-sesame.war</source>
 			<outputDirectory>war</outputDirectory>
 		</file>
 		<file>
-			<source>openrdf-http/openrdf-http-webclient/target/openrdf-workbench.war</source>
+			<source>http/webclient/target/openrdf-workbench.war</source>
 			<outputDirectory>war</outputDirectory>
 		</file>
 	</files>
