@@ -57,7 +57,7 @@ public class RdbmsTripleRepository {
 	private static int MAX_THREADS = 2;
 	private static int MAX_QUEUE = MAX_THREADS * 2 + 1;
 	private static int FLUSH_EVERY = Integer.MAX_VALUE;//1000000;
-	private static int COMMIT_EVERY = 1000000;
+	private static int COMMIT_EVERY = Integer.MAX_VALUE;//1000000;
 	private Logger logger = LoggerFactory.getLogger(RdbmsTripleRepository.class);
 	private Connection conn;
 	private RdbmsValueFactory vf;
@@ -170,7 +170,7 @@ public class RdbmsTripleRepository {
 		synchronized (queue) {
 			synchronized (lookupQueue) {
 				if (queue.isEmpty() || queue.getLast().size() >= BATCH_SIZE) {
-					queue.add(new ArrayList(BATCH_SIZE));
+					queue.add(new ArrayList<RdbmsStatement>(BATCH_SIZE));
 				}
 				queue.getLast().addAll(lookupQueue);
 				addedSinceFlush += lookupQueue.size();
@@ -305,10 +305,13 @@ public class RdbmsTripleRepository {
 			int total = 0;
 			for (Long id : predicates) {
 				String tableName = statements.findTableName(id);
+				if (!statements.isPredColumnPresent(id)) {
+					p = null;
+				}
 				String query = buildDeleteQuery(tableName, s, p, o, c);
 				PreparedStatement stmt = conn.prepareStatement(query);
 				try {
-					setSelectQuery(stmt, s, null, o, c);
+					setSelectQuery(stmt, s, p, o, c);
 					int count = stmt.executeUpdate();
 					statements.removed(id, count);
 					total += count;
@@ -478,6 +481,7 @@ public class RdbmsTripleRepository {
 		SqlJoinBuilder join;
 		if (pred != null) {
 			join = query.from(uris.getName(), "pu");
+			// TODO what about long predicate URIs? 
 			join = join.join(tableName, "t");
 		} else {
 			join = query.from(tableName, "t");
@@ -512,6 +516,9 @@ public class RdbmsTripleRepository {
 		if (pred != null) {
 			long id = vf.getInternalId(pred);
 			query.filter().and().columnEquals("pu", "id", id);
+			if (statements.isPredColumnPresent(id)) {
+				query.filter().and().columnEquals("t", "pred", id);
+			}
 		}
 		if (obj != null) {
 			long id = vf.getInternalId(obj);
@@ -536,6 +543,9 @@ public class RdbmsTripleRepository {
 		if (subj != null) {
 			sb.append(" AND subj = ?");
 		}
+		if (pred != null) {
+			sb.append(" AND pred = ?");
+		}
 		if (obj != null) {
 			sb.append(" AND obj = ?");
 		}
@@ -555,9 +565,6 @@ public class RdbmsTripleRepository {
 			RdbmsURI pred, RdbmsValue obj, RdbmsResource... ctxs)
 			throws SQLException, RdbmsException {
 		int p = 0;
-		if (pred != null) {
-			stmt.setString(++p, pred.stringValue());
-		}
 		if (ctxs != null && ctxs.length > 0) {
 			for (int i = 0; i < ctxs.length; i++) {
 				if (ctxs[i] == null) {
@@ -569,6 +576,9 @@ public class RdbmsTripleRepository {
 		}
 		if (subj != null) {
 			stmt.setLong(++p, vf.getInternalId(subj));
+		}
+		if (pred != null) {
+			stmt.setLong(++p, vf.getInternalId(pred));
 		}
 		if (obj != null) {
 			stmt.setLong(++p, vf.getInternalId(obj));

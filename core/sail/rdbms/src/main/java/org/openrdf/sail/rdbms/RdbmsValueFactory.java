@@ -44,7 +44,6 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * 
  */
 public class RdbmsValueFactory extends ValueFactoryBase {
-	public static int id_wait;
 	@Deprecated
 	public static final String NIL_LABEL = "nil";
 	private ValueFactory vf;
@@ -227,7 +226,6 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		if (r == null)
 			return ValueTable.NIL_ID;
 		RdbmsValue value = asRdbmsValue(r);
-		long start = System.currentTimeMillis();
 		try {
 			if (value instanceof RdbmsURI) {
 				Long id = predicates.getIdIfPredicate((RdbmsURI) value);
@@ -240,9 +238,6 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 			return literals.getInternalId((RdbmsLiteral) value);
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
-		} finally {
-			long end = System.currentTimeMillis();
-			id_wait += end - start;
 		}
 	}
 

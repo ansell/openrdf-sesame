@@ -5,6 +5,10 @@
  */
 package org.openrdf.sail.rdbms.optimizers;
 
+import static org.openrdf.sail.rdbms.algebra.ColumnVar.createCtx;
+import static org.openrdf.sail.rdbms.algebra.ColumnVar.createObj;
+import static org.openrdf.sail.rdbms.algebra.ColumnVar.createPred;
+import static org.openrdf.sail.rdbms.algebra.ColumnVar.createSubj;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.coalesce;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.eq;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.isNull;
@@ -213,18 +217,19 @@ public class SelectQueryOptimizer extends
 		String alias = getTableAlias(predValue) + aliasCount++;
 		long predId = getInternalId(predValue);
 		String tableName;
+		boolean present;
 		try {
 			tableName = tables.getTableName(predId);
+			present = tables.isPredColumnPresent(predId);
 		} catch (SQLException e) {
 			throw new RdbmsRuntimeException(e);
 		}
 		JoinItem from = new JoinItem(alias, tableName, predId);
 
-		ColumnVar s = ColumnVar
-				.createSubj(alias, subjVar, (Resource) subjValue);
-		ColumnVar p = ColumnVar.createPred(alias, predVar, (URI) predValue);
-		ColumnVar o = ColumnVar.createObj(alias, objVar, objValue);
-		ColumnVar c = ColumnVar.createCtx(alias, ctxVar, (Resource) ctxValue);
+		ColumnVar s = createSubj(alias, subjVar, (Resource) subjValue);
+		ColumnVar p = createPred(alias, predVar, (URI) predValue, !present);
+		ColumnVar o = createObj(alias, objVar, objValue);
+		ColumnVar c = createCtx(alias, ctxVar, (Resource) ctxValue);
 
 		s.setTypes(tables.getSubjTypes(predId));
 		o.setTypes(tables.getObjTypes(predId));
@@ -238,7 +243,7 @@ public class SelectQueryOptimizer extends
 			if (vars.containsKey(var.getName())) {
 				IdColumn existing = new IdColumn(vars.get(var.getName()));
 				from.addFilter(new SqlEq(new IdColumn(var), existing));
-			} else if (value != null && !var.isPredicate()) {
+			} else if (value != null && !var.isImplied()) {
 				try {
 					LongValue vc = new LongValue(vf.getInternalId(value));
 					from.addFilter(new SqlEq(new IdColumn(var), vc));

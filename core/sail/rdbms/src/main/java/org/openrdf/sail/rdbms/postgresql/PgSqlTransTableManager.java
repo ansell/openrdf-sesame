@@ -38,9 +38,9 @@ public class PgSqlTransTableManager extends TransTableManager {
 		super.createTemporaryTable(table);
 		StringBuilder sb = new StringBuilder();
 		sb.append("PREPARE ").append(table.getName());
-		sb.append("_insert (bigint, bigint, bigint) AS\n");
+		sb.append("_insert (bigint, bigint, bigint, bigint) AS\n");
 		sb.append("INSERT INTO ").append(table.getName());
-		sb.append(" VALUES ($1, $2, $3)");
+		sb.append(" VALUES ($1, $2, $3, $4)");
 		table.execute(sb.toString());
 		this.table = table;
 	}

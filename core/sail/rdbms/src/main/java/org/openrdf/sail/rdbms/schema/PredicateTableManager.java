@@ -32,7 +32,10 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class PredicateTableManager {
-	Exception exc;
+	private static final String DEFAULT_TABLE_PREFIX = "TRIPLES";
+	private static final String OTHER_TRIPLES_TABLE = "OTHER_TRIPLES";
+	private static int MAX_TABLES = Integer.MAX_VALUE;
+	public static Long OTHER_PRED = Long.valueOf(-1);
 	private ResourceTable bnodes;
 	private boolean closed;
 	private Connection conn;
@@ -46,6 +49,7 @@ public class PredicateTableManager {
 	private Pattern tablePrefix = Pattern.compile("\\W(\\w*)\\W*$");
 	private Map<Long, PredicateTable> tables = new HashMap<Long, PredicateTable>();
 	private ResourceTable uris;
+	Exception exc;
 
 	public PredicateTableManager(RdbmsTableFactory factory) {
 		this.factory = factory;
@@ -112,7 +116,9 @@ public class PredicateTableManager {
 	}
 
 	public synchronized PredicateTable getExistingTable(long pred) {
-		return tables.get(pred);
+		if (tables.containsKey(pred))
+			return tables.get(pred);
+		return tables.get(OTHER_PRED);
 	}
 
 	public synchronized Collection<Long> getPredicateIds() {
@@ -122,16 +128,29 @@ public class PredicateTableManager {
 	public synchronized PredicateTable getPredicateTable(long pred) throws SQLException {
 			if (tables.containsKey(pred))
 				return tables.get(pred);
+			if (tables.containsKey(OTHER_PRED))
+				return tables.get(OTHER_PRED);
 			String tableName = getNewTableName(pred);
+			if (tables.size() >= MAX_TABLES) {
+				tableName = OTHER_TRIPLES_TABLE;
+			}
 			PredicateTable table = factory.createPredicateTable(conn, tableName);
-			initTable(table);
-			tables.put(pred, table);
+			if (tables.size() >= MAX_TABLES) {
+				table.setPredColumnPresent(true);
+				initTable(table);
+				tables.put(OTHER_PRED, table);
+			} else {
+				initTable(table);
+				tables.put(pred, table);
+			}
 			return table;
 	}
 
 	public synchronized String getTableName(long pred) throws SQLException {
 		if (tables.containsKey(pred))
 			return tables.get(pred).getName();
+		if (tables.containsKey(OTHER_PRED))
+			return tables.get(OTHER_PRED).getName();
 		return null;
 	}
 
@@ -168,11 +187,14 @@ public class PredicateTableManager {
 	protected Map<Long, PredicateTable> findPredicateTables()
 			throws SQLException {
 		Map<Long, PredicateTable> tables = new HashMap<Long, PredicateTable>();
-		Set<String> names = findPredicateTableName();
+		Set<String> names = findPredicateTableNames();
 		for (String tableName : names) {
 			PredicateTable table = factory.createPredicateTable(conn, tableName);
+			if (tableName.equalsIgnoreCase(OTHER_TRIPLES_TABLE)) {
+				table.setPredColumnPresent(true);
+			}
 			table.reload();
-			tables.put(getPredId(tableName), table);
+			tables.put(key(tableName), table);
 		}
 		return tables;
 	}
@@ -213,6 +235,9 @@ public class PredicateTableManager {
 			sb.append(" AND NOT EXISTS (SELECT * FROM ");
 			sb.append(e.getValue().getName());
 			sb.append(" WHERE ctx = id OR subj = id OR obj = id");
+			if (e.getValue().isPredColumnPresent()) {
+				sb.append(" OR pred = id");
+			}
 			sb.append(")");
 		}
 		return sb.toString();
@@ -224,7 +249,9 @@ public class PredicateTableManager {
 		return tableName;
 	}
 
-	protected long getPredId(String tn) {
+	protected long key(String tn) {
+		if (tn.equalsIgnoreCase(OTHER_TRIPLES_TABLE))
+			return OTHER_PRED;
 		Long id = Long.valueOf(tn.substring(tn.lastIndexOf('_') + 1));
 		return id;
 	}
@@ -232,13 +259,13 @@ public class PredicateTableManager {
 	protected String getTableNamePrefix(long pred) throws SQLException {
 		String uri = predicates.getPredicateUri(pred);
 		if (uri == null)
-			return "pred";
+			return DEFAULT_TABLE_PREFIX;
 		Matcher m = tablePrefix.matcher(uri);
 		if (!m.find())
-			return "pred";
+			return DEFAULT_TABLE_PREFIX;
 		String localName = m.group(1).replaceAll("^[^a-zA-Z]*", "");
 		if (localName.length() == 0)
-			return "pred";
+			return DEFAULT_TABLE_PREFIX;
 		if (localName.length() > 16)
 			return localName.substring(0, 16);
 		return localName;
@@ -264,7 +291,7 @@ public class PredicateTableManager {
 		logger.debug("Closing helper thread {}", initThread.getName());
 	}
 
-	private Set<String> findPredicateTableName() throws SQLException {
+	private Set<String> findPredicateTableNames() throws SQLException {
 		Set<String> names = findAllTables();
 		names.retainAll(findTablesWithColumn("ctx"));
 		names.retainAll(findTablesWithColumn("subj"));

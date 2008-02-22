@@ -5,6 +5,8 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
+import static org.openrdf.sail.rdbms.schema.PredicateTableManager.OTHER_PRED;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -110,7 +112,11 @@ public class TransTableManager {
 			if ((table == null || table.isEmpty()) && predicate.isEmpty())
 				continue;
 			sb.append("SELECT ctx, subj, ");
-			sb.append(pred).append(" AS pred,");
+			if (predicate.isPredColumnPresent()) {
+				sb.append(" pred,");
+			} else {
+				sb.append(pred).append(" AS pred,");
+			}
 			sb.append(" obj");
 			sb.append("\nFROM ");
 			sb.append(predicate.getName());
@@ -173,8 +179,16 @@ public class TransTableManager {
 		synchronized (tables) {
 			TransactionTable table = tables.get(pred);
 			if (table == null) {
-				table = createTransactionTable(pred);
-				tables.put(pred, table);
+				PredicateTable predicate = predicates.getPredicateTable(pred);
+				Long key = pred;
+				if (predicate.isPredColumnPresent()) {
+					key = OTHER_PRED;
+					table = tables.get(key);
+					if (table != null)
+						return table;
+				}
+				table = createTransactionTable(predicate);
+				tables.put(key, table);
 				list = null;
 			}
 			return table;
@@ -183,6 +197,10 @@ public class TransTableManager {
 
 	public Collection<Long> getPredicateIds() {
 		return predicates.getPredicateIds();
+	}
+
+	public boolean isPredColumnPresent(Long id) throws SQLException {
+		return predicates.getPredicateTable(id).isPredColumnPresent();
 	}
 
 	public ValueTypes getObjTypes(long pred) {
@@ -215,7 +233,7 @@ public class TransTableManager {
 		return true;
 	}
 
-	protected TransactionTable createTransactionTable(long pred)
+	protected TransactionTable createTransactionTable(PredicateTable predicate)
 			throws SQLException {
 		if (temporaryTable == null) {
 			temporaryTable = factory.createTemporaryTable(conn);
@@ -224,7 +242,7 @@ public class TransTableManager {
 			}
 		}
 		TransactionTable table = factory.createTransactionTable();
-		table.setPredicateTable(predicates.getPredicateTable(pred));
+		table.setPredicateTable(predicate);
 		table.setTemporaryTable(temporaryTable);
 		table.setBatchSize(getBatchSize());
 		table.initialize();
@@ -235,6 +253,7 @@ public class TransTableManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("  ctx BIGINT NOT NULL,\n");
 		sb.append("  subj BIGINT NOT NULL,\n");
+		sb.append("  pred BIGINT NOT NULL,\n");
 		sb.append("  obj BIGINT NOT NULL\n");
 		table.createTemporaryTable(sb);
 	}

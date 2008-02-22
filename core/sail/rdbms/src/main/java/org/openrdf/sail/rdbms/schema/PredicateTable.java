@@ -19,6 +19,8 @@ public class PredicateTable {
 	private static final String[] PKEY = { "ctx", "subj", "obj" };
 	private static final String[] SUBJ_INDEX = { "subj" };
 	private static final String[] OBJ_INDEX = { "obj" };
+	private static final String[] PRED_PKEY = { "ctx", "subj", "pred", "obj" };
+	private static final String[] PRED_INDEX = { "pred" };
 	private static final String[] OBJ_CONTAINS = new String[IdCode.values().length];
 	private static final String[] SUBJ_CONTAINS = new String[IdCode.values().length];
 	static {
@@ -41,9 +43,18 @@ public class PredicateTable {
 	private ValueTypes objTypes = new ValueTypes();
 	private ValueTypes subjTypes = new ValueTypes();
 	private boolean initialize;
+	private boolean predColumnPresent;
 
 	public PredicateTable(RdbmsTable table) {
 		this.table = table;
+	}
+
+	public boolean isPredColumnPresent() {
+		return predColumnPresent;
+	}
+
+	public void setPredColumnPresent(boolean present) {
+		predColumnPresent = present;
 	}
 
 	public synchronized void initTable() throws SQLException {
@@ -51,7 +62,12 @@ public class PredicateTable {
 			return;
 		table.createTransactionalTable(buildTableColumns());
 		total_st++;
-		table.index(PKEY);
+		if (isPredColumnPresent()) {
+			table.index(PRED_PKEY);
+			table.index(PRED_INDEX);
+		} else {
+			table.index(PKEY);
+		}
 		total_st++;
 		table.index(OBJ_INDEX);
 		total_st++;
@@ -137,6 +153,9 @@ public class PredicateTable {
 		StringBuilder sb = new StringBuilder();
 		sb.append("  ctx BIGINT NOT NULL,\n");
 		sb.append("  subj BIGINT NOT NULL,\n");
+		if (isPredColumnPresent()) {
+			sb.append("  pred BIGINT NOT NULL,\n");
+		}
 		sb.append("  obj BIGINT NOT NULL\n");
 		return sb;
 	}
