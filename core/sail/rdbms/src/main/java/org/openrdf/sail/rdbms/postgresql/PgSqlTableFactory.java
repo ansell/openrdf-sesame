@@ -26,11 +26,6 @@ public class PgSqlTableFactory extends RdbmsTableFactory {
 	}
 
 	@Override
-	public PgSqlTransactionTable createTransactionTable() {
-		return new PgSqlTransactionTable();
-	}
-
-	@Override
 	protected RdbmsTable newTable(String name) {
 		return new PgSqlTable(name);
 	}

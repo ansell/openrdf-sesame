@@ -77,10 +77,6 @@ public class RdbmsTableFactory {
 		return new PredicateTable(table);
 	}
 
-	public TransactionTable createTransactionTable() {
-		return new TransactionTable();
-	}
-
 	public RdbmsTable createTemporaryTable(Connection conn) {
 		return createTable(conn, TRANS_STATEMENTS);
 	}

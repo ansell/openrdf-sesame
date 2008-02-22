@@ -24,6 +24,7 @@ import java.util.Map;
  */
 public class TransTableManager {
 	public static int BATCH_SIZE = 512;
+	private static boolean TEMPORARY_TABLE_USED = true;
 	private RdbmsTableFactory factory;
 	private PredicateTableManager predicates;
 	private RdbmsTable temporaryTable;
@@ -200,6 +201,8 @@ public class TransTableManager {
 	}
 
 	public boolean isPredColumnPresent(Long id) throws SQLException {
+		if (id == ValueTable.NIL_ID)
+			return true;
 		return predicates.getPredicateTable(id).isPredColumnPresent();
 	}
 
@@ -207,8 +210,7 @@ public class TransTableManager {
 		PredicateTable table = predicates.getExistingTable(pred);
 		if (table == null)
 			return ValueTypes.UNKNOWN;
-		ValueTypes subjTypes = table.getObjTypes();
-		return subjTypes;
+		return table.getObjTypes();
 	}
 
 	public ValueTypes getSubjTypes(long pred) {
@@ -235,18 +237,27 @@ public class TransTableManager {
 
 	protected TransactionTable createTransactionTable(PredicateTable predicate)
 			throws SQLException {
-		if (temporaryTable == null) {
-			temporaryTable = factory.createTemporaryTable(conn);
+		if (temporaryTable == null && TEMPORARY_TABLE_USED) {
+			temporaryTable = createTemporaryTable(conn);
 			if (!temporaryTable.isCreated()) {
 				createTemporaryTable(temporaryTable);
 			}
 		}
-		TransactionTable table = factory.createTransactionTable();
+		TransactionTable table = createTransactionTable();
 		table.setPredicateTable(predicate);
 		table.setTemporaryTable(temporaryTable);
+		table.setConnection(conn);
 		table.setBatchSize(getBatchSize());
 		table.initialize();
 		return table;
+	}
+
+	protected RdbmsTable createTemporaryTable(Connection conn) {
+		return factory.createTemporaryTable(conn);
+	}
+
+	protected TransactionTable createTransactionTable() {
+		return new TransactionTable();
 	}
 
 	protected void createTemporaryTable(RdbmsTable table) throws SQLException {
