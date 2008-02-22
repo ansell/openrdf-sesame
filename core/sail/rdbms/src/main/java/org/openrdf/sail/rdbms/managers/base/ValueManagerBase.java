@@ -5,35 +5,38 @@
  */
 package org.openrdf.sail.rdbms.managers.base;
 
-import info.aduna.collections.LRUMap;
-
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.Lock;
 
-import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.collections.LRUMap;
+
+import org.openrdf.sail.rdbms.model.RdbmsValue;
+
 public abstract class ValueManagerBase<K, V extends RdbmsValue> {
-	public static final long NIL_ID = 0;
 	private Logger logger = LoggerFactory.getLogger(ValueManagerBase.class);
 	boolean closed;
 	Exception exc;
-	private LRUMap<K, V> cache = new LRUMap(256);
-	private String label;
+	private LRUMap<K, V> cache = new LRUMap<K, V>(256);
 	private Thread lookupThread;
-	private Map<K, V> needIds = new HashMap();
-	private Map<K, V> newValues = new HashMap();
+	private Map<K, V> needIds = new HashMap<K, V>();
+	private Map<K, V> newValues = new HashMap<K, V>();
+	private Lock idLock;
 
-	public ValueManagerBase(String label) {
+	public ValueManagerBase(Lock idLock) {
 		super();
-		this.label = label;
+		this.idLock = idLock;
 	}
 
 	public V cache(V value) throws SQLException {
+		if (!needsId(value))
+			return value;
 		K key = key(value);
 		synchronized (needIds) {
 			if (needIds.containsKey(key))
@@ -73,9 +76,14 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		}
 		synchronized (needIds) {
 			if (!needIds.isEmpty()) {
-				loadIds(needIds);
-				idsNoLongerNeeded(needIds);
-				needIds.clear();
+				idLock.lock();
+				try {
+					loadIds(needIds);
+					idsNoLongerNeeded(needIds);
+					needIds.clear();
+				} finally {
+					idLock.unlock();
+				}
 			}
 		}
 		insertNewValues();
@@ -85,30 +93,12 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		}
 	}
 
-	public long getInternalId(V val) throws SQLException {
-		if (exc != null) {
-			throwException();
-		}
-		if (val == null)
-			return NIL_ID;
-		K key = key(val);
-		V value = val;
-		if (needsId(value)) {
-			synchronized (needIds) {
-				if (needsId(value)) {
-					if (needIds.containsKey(key)) {
-						value = needIds.get(key);
-					} else {
-						needIds.put(key, value);
-						needIds.notify();
-					}
-				}
-			}
-			if (needsId(value)) {
-				lookup(value);
-			}
-		}
-		return value.getInternalId();
+	public long getInternalId(V val) {
+		if (val.getInternalId() != null)
+			return val.getInternalId();
+		long id = getMissingId(val);
+		val.setInternalId(id);
+		return id;
 	}
 
 	public void init() {
@@ -120,7 +110,7 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 					exc = e;
 				}
 			}
-		}, label + "-lookup");
+		}, getClass().getSimpleName() + "-lookup");
 		lookupThread.start();
 	}
 
@@ -140,7 +130,7 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 	protected abstract void loadIds(final Map<K, V> needIds)
 			throws SQLException;
 
-	protected abstract long nextId(V value);
+	protected abstract long getMissingId(V value);
 
 	protected abstract void optimize() throws SQLException;
 
@@ -160,13 +150,18 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 				}
 			}
 			if (!values.isEmpty()) {
-				loadIds(values);
-				synchronized (needIds) {
-					idsNoLongerNeeded(values);
-					for (K key : values.keySet()) {
-						needIds.remove(key);
+				idLock.lock();
+				try {
+					loadIds(values);
+					synchronized (needIds) {
+						idsNoLongerNeeded(values);
+						for (K key : values.keySet()) {
+							needIds.remove(key);
+						}
+						values.clear();
 					}
-					values.clear();
+				} finally {
+					idLock.unlock();
 				}
 			}
 			insertNewValues();
@@ -188,7 +183,7 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 							value.setInternalId(res.getInternalId());
 							value.setVersion(res.getVersion());
 						} else {
-							value.setInternalId(nextId(value));
+							value.setInternalId(getInternalId(value));
 							value.setVersion(getIdVersion());
 							newValues.put(key, value);
 						}
@@ -211,30 +206,7 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		}
 	}
 
-	private void lookup(V value) throws SQLException {
-		int chunkSize = getSelectChunkSize();
-		Map<K, V> values = new HashMap(chunkSize);
-		values.put(key(value), value); // ensure this value gets in
-		synchronized (needIds) {
-			// lookup a few more at the same time
-			Iterator<Entry<K, V>> iter = needIds.entrySet().iterator();
-			for (int i = 1; i < chunkSize && iter.hasNext(); i++) {
-				Entry<K, V> next = iter.next();
-				values.put(next.getKey(), next.getValue());
-			}
-		}
-		loadIds(values);
-		synchronized (needIds) {
-			idsNoLongerNeeded(values);
-			for (K key : values.keySet()) {
-				needIds.remove(key);
-			}
-		}
-	}
-
 	private boolean needsId(V value) {
-		if (value.getInternalId() == null)
-			return true;
 		if (value.getVersion() == null)
 			return true;
 		return value.getVersion().intValue() != getIdVersion();

@@ -22,6 +22,7 @@ import java.util.List;
  * 
  */
 public class RdbmsTable {
+	public static int total_opt;
 	public static int MAX_DELTA_TO_FORCE_OPTIMIZE = 10000;
 	private static final String[] TYPE_TABLE = new String[] { "TABLE" };
 	private int addedCount;
@@ -124,43 +125,6 @@ public class RdbmsTable {
 		}
 	}
 
-	public long[] maxIds() throws SQLException {
-		String column = "id";
-		StringBuilder shift = new StringBuilder();
-		shift.append("MOD((").append(column);
-		shift.append(" >> ").append(IdCode.SHIFT);
-		shift.append(") + ").append(IdCode.MOD).append(", ");
-		shift.append(IdCode.MOD);
-		shift.append(")");
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT ").append(shift);
-		sb.append(", MAX(").append(column);
-		sb.append("), COUNT(*)\n");
-		sb.append("FROM ").append(name);
-		sb.append("\nGROUP BY ").append(shift);
-		String query = sb.toString();
-		Statement st = conn.createStatement();
-		try {
-			ResultSet rs = st.executeQuery(query);
-			try {
-				rowCount = 0;
-				long[] result = new long[IdCode.values().length];
-				while (rs.next()) {
-					int idx = rs.getInt(1);
-					result[idx] = rs.getLong(2);
-					assert IdCode.decode(result[idx]).equals(IdCode.values()[idx]);
-					rowCount += rs.getLong(3);
-					assert rowCount >= 0 : rowCount;
-				}
-				return result;
-			} finally {
-				rs.close();
-			}
-		} finally {
-			st.close();
-		}
-	}
-
 	public long count() throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT COUNT(*)\n");
@@ -197,6 +161,7 @@ public class RdbmsTable {
 		if (optimize(addedCount + removedCount, rowCount)) {
 			execute(buildOptimize());
 			addedCount = removedCount = 0;
+			total_opt += 1;
 		}
 	}
 

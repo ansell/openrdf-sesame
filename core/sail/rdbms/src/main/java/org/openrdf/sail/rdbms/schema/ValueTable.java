@@ -8,9 +8,6 @@ package org.openrdf.sail.rdbms.schema;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Manages the rows in a value table. These tables have two columns: an internal
@@ -19,13 +16,14 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author James Leigh
  * 
  */
-public class ValueTable<V> {
+public class ValueTable {
+	public static int total_rows;
+	public static int total_st;
 	public static int CHUNK_SIZE = 15;
 	public static int BATCH_SIZE = 128;
 	public static final long NIL_ID = 0;
 	private static final String[] PKEY = { "id" };
 	private static final String[] VALUE_INDEX = { "value" };
-	private ConcurrentMap<IdCode, AtomicLong> seq = new ConcurrentHashMap<IdCode, AtomicLong>();
 	private int length;
 	private int sqlType;
 	private String INSERT;
@@ -47,13 +45,6 @@ public class ValueTable<V> {
 
 	public String getName() {
 		return table.getName();
-	}
-
-	public long nextId(IdCode code) {
-		if (!seq.containsKey(code)) {
-			seq.putIfAbsent(code, new AtomicLong(code.minId()));
-		}
-		return seq.get(code).incrementAndGet();
 	}
 
 	public long size() {
@@ -82,16 +73,11 @@ public class ValueTable<V> {
 			table.index(PKEY);
 			table.index(VALUE_INDEX);
 		} else {
-			for (long max : table.maxIds()) {
-				IdCode code = IdCode.decode(max);
-				if (max > code.minId()) {
-					seq.put(code, new AtomicLong(max));
-				}
-			}
+			table.count();
 		}
 	}
 
-	public synchronized void insert(long id, V value) throws SQLException {
+	public synchronized void insert(long id, Object value) throws SQLException {
 		if (insertStmt == null) {
 			insertStmt = prepareInsert();
 		}
@@ -115,6 +101,8 @@ public class ValueTable<V> {
 		insertStmt = null;
 		uploadCount = 0;
 		table.modified(count, 0);
+		total_rows += count;
+		total_st += 1;
 		return count;
 	}
 

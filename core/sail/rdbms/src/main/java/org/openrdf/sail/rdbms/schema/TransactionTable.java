@@ -16,6 +16,10 @@ import java.sql.SQLException;
  * 
  */
 public class TransactionTable {
+	public static int total_rows;
+	public static int total_st;
+	public static int total_wait;
+	public static int table_wait;
 	private int batchSize;
 	private PredicateTable statements;
 	private int addedCount;
@@ -70,13 +74,21 @@ public class TransactionTable {
 	public synchronized int flush() throws SQLException {
 		if (insertStmt == null)
 			return 0;
+		long before = System.currentTimeMillis();
 		statements.blockUntilReady();
+		long after = System.currentTimeMillis();
+		table_wait += after - before;
 		synchronized (temporary) {
+			long start = System.currentTimeMillis();
 			insertStmt.executeBatch();
 			int count = temporary.executeUpdate(buildInsertSelect());
+			long end = System.currentTimeMillis();
 			temporary.clear();
 			uploadCount = 0;
 			addedCount += count;
+			total_rows += count;
+			total_st += 2;
+			total_wait += end - start;
 		}
 		statements.setObjTypes(objTypes);
 		statements.setSubjTypes(subjTypes);

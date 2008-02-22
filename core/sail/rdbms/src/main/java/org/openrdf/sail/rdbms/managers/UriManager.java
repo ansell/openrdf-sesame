@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
@@ -28,21 +29,21 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	private ResourceTable shorter;
 	private ResourceTable longer;
 
-	public UriManager(ResourceTable shorter, ResourceTable longer) {
-		super("uri");
+	public UriManager(Lock idLock, ResourceTable shorter, ResourceTable longer) {
+		super(idLock);
 		this.shorter = shorter;
 		this.longer = longer;
 	}
 
 	@Override
-	public void flushTable() throws SQLException {
-		shorter.flush();
-		longer.flush();
+	public int getIdVersion() {
+		return shorter.getIdVersion() + longer.getIdVersion();
 	}
 
 	@Override
-	public int getIdVersion() {
-		return shorter.getIdVersion() + longer.getIdVersion();
+	protected void flushTable() throws SQLException {
+		shorter.flush();
+		longer.flush();
 	}
 
 	@Override
@@ -96,10 +97,11 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	}
 
 	@Override
-	protected long nextId(RdbmsURI value) {
-		if (value.stringValue().length() > IdCode.LONG)
-			return longer.nextId(IdCode.URI_LONG);
-		return shorter.nextId(IdCode.URI);
+	protected long getMissingId(RdbmsURI value) {
+		String uri = value.stringValue();
+		if (uri.length() > IdCode.LONG)
+			return IdCode.URI_LONG.getId(uri);
+		return IdCode.URI.getId(uri);
 	}
 
 	@Override

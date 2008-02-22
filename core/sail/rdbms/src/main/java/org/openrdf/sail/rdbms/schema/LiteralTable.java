@@ -5,9 +5,6 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
-import static org.openrdf.model.datatypes.XMLDatatypeUtil.isCalendarDatatype;
-import static org.openrdf.model.datatypes.XMLDatatypeUtil.isNumericDatatype;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,8 +18,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.sail.rdbms.model.RdbmsLiteral;
 
 /**
  * A Facade to the five literal value tables. Which are labels, languages,
@@ -33,21 +28,6 @@ import org.openrdf.sail.rdbms.model.RdbmsLiteral;
  */
 public class LiteralTable {
 	private static TimeZone Z = TimeZone.getTimeZone("GMT");
-
-	public static boolean isZoned(Literal lit) {
-		String stringValue = lit.stringValue();
-		int length = stringValue.length();
-		if (length < 1)
-			return false;
-		if (stringValue.charAt(length - 1) == 'Z')
-			return true;
-		if (length < 6)
-			return false;
-		if (stringValue.charAt(length - 3) != ':')
-			return false;
-		char chr = stringValue.charAt(length - 6);
-		return chr == '+' || chr == '-';
-	}
 
 	public static long getCalendarValue(XMLGregorianCalendar xcal) {
 		return xcal.toGregorianCalendar(Z, Locale.US, null).getTimeInMillis();
@@ -62,60 +42,60 @@ public class LiteralTable {
 		public abstract void handleLiteral(long id, String label, URI datatype);
 	}
 
-	private ValueTable<String> labels;
-	private ValueTable<String> longLabels;
-	private ValueTable<String> languages;
-	private ValueTable<String> datatypes;
-	private ValueTable<Double> numeric;
-	private ValueTable<Long> dateTime;
+	private ValueTable labels;
+	private ValueTable longLabels;
+	private ValueTable languages;
+	private ValueTable datatypes;
+	private ValueTable numeric;
+	private ValueTable dateTime;
 	private String SELECT;
 	private int version;
 
-	public ValueTable<String> getLabelTable() {
+	public ValueTable getLabelTable() {
 		return labels;
 	}
 
-	public void setLabelTable(ValueTable<String> labels) {
+	public void setLabelTable(ValueTable labels) {
 		this.labels = labels;
 	}
 
-	public ValueTable<String> getLongLabelTable() {
+	public ValueTable getLongLabelTable() {
 		return longLabels;
 	}
 
-	public void setLongLabelTable(ValueTable<String> longLabels) {
+	public void setLongLabelTable(ValueTable longLabels) {
 		this.longLabels = longLabels;
 	}
 
-	public ValueTable<String> getLanguageTable() {
+	public ValueTable getLanguageTable() {
 		return languages;
 	}
 
-	public void setLanguageTable(ValueTable<String> languages) {
+	public void setLanguageTable(ValueTable languages) {
 		this.languages = languages;
 	}
 
-	public ValueTable<String> getDatatypeTable() {
+	public ValueTable getDatatypeTable() {
 		return datatypes;
 	}
 
-	public void setDatatypeTable(ValueTable<String> datatypes) {
+	public void setDatatypeTable(ValueTable datatypes) {
 		this.datatypes = datatypes;
 	}
 
-	public ValueTable<Double> getNumericTable() {
+	public ValueTable getNumericTable() {
 		return numeric;
 	}
 
-	public void setNumericTable(ValueTable<Double> numeric) {
+	public void setNumericTable(ValueTable numeric) {
 		this.numeric = numeric;
 	}
 
-	public ValueTable<Long> getDateTimeTable() {
+	public ValueTable getDateTimeTable() {
 		return dateTime;
 	}
 
-	public void setDateTimeTable(ValueTable<Long> dateTime) {
+	public void setDateTimeTable(ValueTable dateTime) {
 		this.dateTime = dateTime;
 	}
 
@@ -268,36 +248,5 @@ public class LiteralTable {
 		if (bool) {
 			version++;
 		}
-	}
-
-	public Long nextId(RdbmsLiteral lit) {
-		String lang = lit.getLanguage();
-		URI dt = lit.getDatatype();
-		int length = lit.stringValue().length();
-		if (lang != null) {
-			// language
-			if (length > IdCode.LONG)
-				return longLabels.nextId(IdCode.LANG_LONG);
-			return languages.nextId(IdCode.LANG);
-		}
-		if (dt == null) {
-			// simple
-			if (length > IdCode.LONG)
-				return longLabels.nextId(IdCode.SIMPLE_LONG);
-			return labels.nextId(IdCode.SIMPLE);
-		}
-		if (isNumericDatatype(dt))
-			return numeric.nextId(IdCode.NUMERIC);
-		if (isCalendarDatatype(dt)) {
-			// calendar
-			if (isZoned(lit))
-				return dateTime.nextId(IdCode.DATETIME_ZONED);
-			return dateTime.nextId(IdCode.DATETIME);
-		}
-		if (RDF.XMLLITERAL.equals(dt))
-			return datatypes.nextId(IdCode.XML);
-		if (length > IdCode.LONG)
-			return longLabels.nextId(IdCode.TYPED_LONG);
-		return datatypes.nextId(IdCode.TYPED);
 	}
 }
