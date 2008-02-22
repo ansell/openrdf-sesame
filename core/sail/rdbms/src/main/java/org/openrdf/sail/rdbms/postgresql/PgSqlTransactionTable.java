@@ -29,7 +29,7 @@ public class PgSqlTransactionTable extends TransactionTable {
 	protected String buildInsert() throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("EXECUTE ").append(temporary.getName());
-		sb.append("_insert(?, ?, ?)");
+		sb.append("_insert(?, ?, ?, ?)");
 		return sb.toString();
 	}
 

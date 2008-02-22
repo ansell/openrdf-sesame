@@ -48,10 +48,10 @@ public class ColumnVar implements Cloneable {
 		return var;
 	}
 
-	public static ColumnVar createPred(String alias, Var v, URI uri) {
+	public static ColumnVar createPred(String alias, Var v, URI uri, boolean implied) {
 		ColumnVar var = createSubj(alias, v, uri);
 		var.column = "pred";
-		var.implied = uri != null;
+		var.implied = uri != null && implied;
 		var.types = ValueTypes.URI;
 		return var;
 	}

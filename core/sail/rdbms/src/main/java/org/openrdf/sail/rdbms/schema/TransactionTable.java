@@ -62,7 +62,8 @@ public class TransactionTable {
 		}
 		insertStmt.setLong(1, ctx);
 		insertStmt.setLong(2, subj);
-		insertStmt.setLong(3, obj);
+		insertStmt.setLong(3, pred);
+		insertStmt.setLong(4, obj);
 		subjTypes.add(IdCode.decode(subj));
 		objTypes.add(IdCode.decode(obj));
 		insertStmt.addBatch();
@@ -99,13 +100,24 @@ public class TransactionTable {
 		String tableName = statements.getName();
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ").append(tableName).append("\n");
-		sb.append("SELECT DISTINCT * FROM ");
+		sb.append("SELECT DISTINCT ctx, subj, ");
+		if (statements.isPredColumnPresent()) {
+			sb.append("pred, ");
+		}
+		sb.append("obj FROM ");
 		sb.append(temporary.getName()).append(" tr\n");
 		sb.append("WHERE NOT EXISTS (");
-		sb.append("SELECT * FROM ");
+		sb.append("SELECT ctx, subj, ");
+		if (statements.isPredColumnPresent()) {
+			sb.append("pred, ");
+		}
+		sb.append("obj FROM ");
 		sb.append(tableName).append(" st\n");
 		sb.append("WHERE st.ctx = tr.ctx");
 		sb.append(" AND st.subj = tr.subj");
+		if (statements.isPredColumnPresent()) {
+			sb.append(" AND st.pred = tr.pred");
+		}
 		sb.append(" AND st.obj = tr.obj");
 		sb.append(")");
 		return sb.toString();
@@ -135,8 +147,8 @@ public class TransactionTable {
 	protected String buildInsert() throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ").append(temporary.getName());
-		sb.append(" (ctx, subj, obj)\n");
-		sb.append("VALUES (?, ?, ?)");
+		sb.append(" (ctx, subj, pred, obj)\n");
+		sb.append("VALUES (?, ?, ?, ?)");
 		return sb.toString();
 	}
 
@@ -147,6 +159,10 @@ public class TransactionTable {
 	@Override
 	public String toString() {
 		return statements.toString();
+	}
+
+	protected boolean isPredColumnPresent() {
+		return statements.isPredColumnPresent();
 	}
 
 }
