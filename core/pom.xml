@@ -34,7 +34,9 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
+				<inherited>false</inherited>
 				<configuration>
+					<finalName>openrdf-sesame-${project.version}</finalName>
 					<descriptors>
 						<descriptor>src/main/assembly/onejar.xml</descriptor>
 						<descriptor>src/main/assembly/sdk.xml</descriptor>
