@@ -28,6 +28,7 @@
 			<type>war</type>
 		</dependency>
 
+		<!-- Required for CommonsMultipartResolver from the Spring Framework -->
 		<dependency>
 			<groupId>commons-fileupload</groupId>
 			<artifactId>commons-fileupload</artifactId>
