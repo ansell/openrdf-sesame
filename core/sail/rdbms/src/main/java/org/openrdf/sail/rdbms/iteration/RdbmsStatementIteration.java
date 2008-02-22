@@ -13,12 +13,12 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.iteration.base.RdbmIterationBase;
-import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsStatement;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.IdCode;
+import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
  * Converts a {@link ResultSet} into a {@link RdbmsStatement} in an iteration.
@@ -53,7 +53,7 @@ public class RdbmsStatementIteration extends
 	private RdbmsResource createResource(ResultSet rs, int index)
 			throws SQLException {
 		long id = rs.getLong(index);
-		if (id == ValueManagerBase.NIL_ID)
+		if (id == ValueTable.NIL_ID)
 			return null;
 		String stringValue = rs.getString(index + 1);
 		return vf.getRdbmsResource(id, stringValue);

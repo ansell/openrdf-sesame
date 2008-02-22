@@ -30,6 +30,7 @@ import org.openrdf.sail.rdbms.model.RdbmsStatement;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.IdCode;
+import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
  * Provides basic value creation both for traditional values as well as values
@@ -43,6 +44,7 @@ import org.openrdf.sail.rdbms.schema.IdCode;
  * 
  */
 public class RdbmsValueFactory extends ValueFactoryBase {
+	public static int id_wait;
 	@Deprecated
 	public static final String NIL_LABEL = "nil";
 	private ValueFactory vf;
@@ -157,45 +159,50 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	public RdbmsResource asRdbmsResource(Resource node) {
 		if (node == null)
 			return null;
-		if (node instanceof RdbmsResource)
-			return (RdbmsResource) node;
 		if (node instanceof URI)
-			return createURI(node.stringValue());
+			return asRdbmsURI((URI) node);
+		if (node instanceof RdbmsBNode) {
+			try {
+				return bnodes.cache((RdbmsBNode) node);
+			} catch (SQLException e) {
+				throw new RdbmsRuntimeException(e);
+			}
+		}
 		return createBNode(((BNode) node).getID());
 	}
 
 	public RdbmsURI asRdbmsURI(URI uri) {
 		if (uri == null)
 			return null;
-		if (uri instanceof RdbmsURI)
-			return (RdbmsURI) uri;
+		if (uri instanceof RdbmsURI) {
+			try {
+				return uris.cache((RdbmsURI) uri);
+			} catch (SQLException e) {
+				throw new RdbmsRuntimeException(e);
+			}
+		}
 		return createURI(uri.stringValue());
 	}
 
 	public RdbmsValue asRdbmsValue(Value value) {
 		if (value == null)
 			return null;
-		if (value instanceof RdbmsValue)
-			return (RdbmsValue) value;
-		if (value instanceof URI)
-			return asRdbmsURI((URI) value);
-		if (value instanceof BNode)
-			return asRdbmsResource((BNode) value);
-		return asRdbmsLiteral((Literal) value);
+		if (value instanceof Literal)
+			return asRdbmsLiteral((Literal) value);
+		return asRdbmsResource((Resource) value);
 	}
 
 	public RdbmsLiteral asRdbmsLiteral(Literal literal) {
-		if (literal instanceof RdbmsLiteral)
-			return (RdbmsLiteral) literal;
-		RdbmsLiteral lit = literals.findInCache(literal);
-		if (lit == null) {
-			try {
+		try {
+			if (literal instanceof RdbmsLiteral)
+				return literals.cache((RdbmsLiteral) literal);
+			RdbmsLiteral lit = literals.findInCache(literal);
+			if (lit == null)
 				lit = literals.cache(new RdbmsLiteral(literal));
-			} catch (SQLException e) {
-				throw new RdbmsRuntimeException(e);
-			}
+			return lit;
+		} catch (SQLException e) {
+			throw new RdbmsRuntimeException(e);
 		}
-		return lit;
 	}
 
 	public RdbmsResource[] asRdbmsResource(Resource... contexts) {
@@ -217,7 +224,10 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	}
 
 	public long getInternalId(Value r) throws RdbmsException {
+		if (r == null)
+			return ValueTable.NIL_ID;
 		RdbmsValue value = asRdbmsValue(r);
+		long start = System.currentTimeMillis();
 		try {
 			if (value instanceof RdbmsURI) {
 				Long id = predicates.getIdIfPredicate((RdbmsURI) value);
@@ -230,6 +240,9 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 			return literals.getInternalId((RdbmsLiteral) value);
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
+		} finally {
+			long end = System.currentTimeMillis();
+			id_wait += end - start;
 		}
 	}
 

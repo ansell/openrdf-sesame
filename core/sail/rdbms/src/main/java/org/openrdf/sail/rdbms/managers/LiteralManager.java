@@ -5,17 +5,22 @@
  */
 package org.openrdf.sail.rdbms.managers;
 
+import static org.openrdf.model.datatypes.XMLDatatypeUtil.isCalendarDatatype;
+import static org.openrdf.model.datatypes.XMLDatatypeUtil.isNumericDatatype;
 import static org.openrdf.sail.rdbms.schema.LiteralTable.getCalendarValue;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.LiteralImpl;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsLiteral;
+import org.openrdf.sail.rdbms.schema.IdCode;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable.LiteralHandler;
 
@@ -29,24 +34,24 @@ import org.openrdf.sail.rdbms.schema.LiteralTable.LiteralHandler;
 public class LiteralManager extends ValueManagerBase<Literal, RdbmsLiteral> {
 	private LiteralTable table;
 
-	public LiteralManager(LiteralTable table) {
-		super("literals");
+	public LiteralManager(Lock idLock, LiteralTable table) {
+		super(idLock);
 		this.table = table;
 	}
 
 	@Override
-	public void flushTable() throws SQLException {
+	public int getIdVersion() {
+		return table.getIdVersion();
+	}
+
+	@Override
+	protected void flushTable() throws SQLException {
 		table.flush();
 	}
 
 	@Override
 	protected void optimize() throws SQLException {
 		table.optimize();
-	}
-
-	@Override
-	public int getIdVersion() {
-		return table.getIdVersion();
 	}
 
 	@Override
@@ -93,8 +98,63 @@ public class LiteralManager extends ValueManagerBase<Literal, RdbmsLiteral> {
 	}
 
 	@Override
-	protected long nextId(RdbmsLiteral value) {
-		return table.nextId(value);
+	protected long getMissingId(RdbmsLiteral lit) {
+		String lang = lit.getLanguage();
+		URI dt = lit.getDatatype();
+		int length = lit.stringValue().length();
+		if (lang != null) {
+			// language
+			if (length > IdCode.LONG)
+				return getMissingId(lit, IdCode.LANG_LONG);
+			return getMissingId(lit, IdCode.LANG);
+		}
+		if (dt == null) {
+			// simple
+			if (length > IdCode.LONG)
+				return getMissingId(lit, IdCode.SIMPLE_LONG);
+			return getMissingId(lit, IdCode.SIMPLE);
+		}
+		if (isNumericDatatype(dt))
+			return getMissingId(lit, IdCode.NUMERIC);
+		if (isCalendarDatatype(dt)) {
+			// calendar
+			if (isZoned(lit))
+				return getMissingId(lit, IdCode.DATETIME_ZONED);
+			return getMissingId(lit, IdCode.DATETIME);
+		}
+		if (RDF.XMLLITERAL.equals(dt))
+			return getMissingId(lit, IdCode.XML);
+		if (length > IdCode.LONG)
+			return getMissingId(lit, IdCode.TYPED_LONG);
+		return getMissingId(lit, IdCode.TYPED);
+	
+	}
+
+	/**
+	 * @param lang_long
+	 * @return
+	 */
+	private long getMissingId(RdbmsLiteral lit, IdCode code) {
+		if (code.isTypedLiteral())
+			return code.getId(lit.getDatatype().stringValue(), lit.getLabel());
+		if (code.isLanguageLiteral())
+			return code.getId(lit.getLanguage(), lit.getLabel());
+		return code.getId(lit.getLabel());
+	}
+
+	public static boolean isZoned(Literal lit) {
+		String stringValue = lit.stringValue();
+		int length = stringValue.length();
+		if (length < 1)
+			return false;
+		if (stringValue.charAt(length - 1) == 'Z')
+			return true;
+		if (length < 6)
+			return false;
+		if (stringValue.charAt(length - 3) != ':')
+			return false;
+		char chr = stringValue.charAt(length - 6);
+		return chr == '+' || chr == '-';
 	}
 
 	@Override

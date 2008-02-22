@@ -9,7 +9,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.num;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.shift;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.sqlNull;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
-import static org.openrdf.sail.rdbms.schema.LiteralTable.isZoned;
+import static org.openrdf.sail.rdbms.managers.LiteralManager.isZoned;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;

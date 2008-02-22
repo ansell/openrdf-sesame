@@ -47,6 +47,13 @@ public class IdCodeTest extends TestCase {
 		}
 	}
 
+	public void testEncode() throws Exception {
+		for (IdCode code : IdCode.values()) {
+			assertEquals(code, IdCode.decode(code.getId("")));
+			assertEquals(code, IdCode.decode(code.getId("The quick brown fox jumps over the lazy dog")));
+		}
+	}
+
 	private String x60(char c) {
 		char[] a = new char[60];
 		Arrays.fill(a, 0, a.length, c);

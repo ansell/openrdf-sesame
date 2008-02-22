@@ -9,7 +9,7 @@ import org.openrdf.sail.rdbms.model.RdbmsURI;
 public class PredicateManager {
 	private UriManager uris;
 	private Map<String, Long> ids = new HashMap<String, Long>();
-	private Map<Long, String> predicates = new HashMap();
+	private Map<Long, String> predicates = new HashMap<Long, String>();
 
 	public void setUriManager(UriManager uris) {
 		this.uris = uris;

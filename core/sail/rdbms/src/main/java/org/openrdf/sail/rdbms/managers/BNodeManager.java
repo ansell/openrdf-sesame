@@ -7,6 +7,7 @@ package org.openrdf.sail.rdbms.managers;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsBNode;
@@ -25,9 +26,14 @@ import org.openrdf.sail.rdbms.schema.ResourceTable.HandleIdValue;
 public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
 	private ResourceTable table;
 
-	public BNodeManager(ResourceTable table) {
-		super("bonde");
+	public BNodeManager(Lock idLock, ResourceTable table) {
+		super(idLock);
 		this.table = table;
+	}
+
+	@Override
+	public int getIdVersion() {
+		return table.getIdVersion();
 	}
 
 	@Override
@@ -38,11 +44,6 @@ public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
 	@Override
 	protected void optimize() throws SQLException {
 		table.optimize();
-	}
-
-	@Override
-	public int getIdVersion() {
-		return table.getIdVersion();
 	}
 
 	@Override
@@ -81,8 +82,8 @@ public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
 	}
 
 	@Override
-	protected long nextId(RdbmsBNode value) {
-		return table.nextId(IdCode.BNODE);
+	protected long getMissingId(RdbmsBNode value) {
+		return IdCode.BNODE.getId(value.stringValue());
 	}
 
 }

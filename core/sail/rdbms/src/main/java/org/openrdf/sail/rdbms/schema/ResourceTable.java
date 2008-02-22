@@ -22,11 +22,11 @@ public class ResourceTable {
 		void handleIdValue(long id, String value);
 	}
 
-	private ValueTable<String> table;
+	private ValueTable table;
 	private String selectByValue;
 	private int version;
 
-	public ResourceTable(ValueTable<String> table) {
+	public ResourceTable(ValueTable table) {
 		super();
 		this.table = table;
 	}
@@ -62,10 +62,6 @@ public class ResourceTable {
 
 	public int getIdVersion() {
 		return version;
-	}
-
-	public long nextId(IdCode code) {
-		return table.nextId(code);
 	}
 
 	public void insert(long id, String value) throws SQLException {

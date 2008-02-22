@@ -18,10 +18,10 @@ import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
 import org.openrdf.sail.rdbms.exceptions.RdbmsQueryEvaluationException;
 import org.openrdf.sail.rdbms.iteration.base.RdbmIterationBase;
-import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.IdCode;
+import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
  * Converts a {@link ResultSet} into a {@link BindingSet} in an iteration.
@@ -77,7 +77,7 @@ public class RdbmsBindingIteration extends
 	private RdbmsResource createResource(ResultSet rs, int index)
 			throws SQLException {
 		long id = rs.getLong(index);
-		if (id == ValueManagerBase.NIL_ID)
+		if (id == ValueTable.NIL_ID)
 			return null;
 		return vf.getRdbmsResource(id, rs.getString(index + 1));
 	}

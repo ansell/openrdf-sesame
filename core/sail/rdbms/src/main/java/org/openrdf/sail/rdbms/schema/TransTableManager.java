@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 
 /**
  * Manages and delegates to a collection of {@link TransactionTable}s.
@@ -125,7 +124,7 @@ public class TransTableManager {
 	}
 
 	public String getTableName(long pred) throws SQLException {
-		if (pred == ValueManagerBase.NIL_ID)
+		if (pred == ValueTable.NIL_ID)
 			return getCombinedTableName();
 		String tableName = predicates.getTableName(pred);
 		if (tableName == null)
