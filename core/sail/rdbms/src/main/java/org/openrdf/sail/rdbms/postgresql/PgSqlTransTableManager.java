@@ -9,6 +9,7 @@ import java.sql.SQLException;
 
 import org.openrdf.sail.rdbms.schema.RdbmsTable;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
+import org.openrdf.sail.rdbms.schema.TransactionTable;
 
 public class PgSqlTransTableManager extends TransTableManager {
 	private RdbmsTable table;
@@ -43,6 +44,21 @@ public class PgSqlTransTableManager extends TransTableManager {
 		sb.append(" VALUES ($1, $2, $3, $4)");
 		table.execute(sb.toString());
 		this.table = table;
+	}
+
+	@Override
+	public TransactionTable createTransactionTable() {
+		return new TransactionTable(){
+			@Override
+			protected String buildInsert(String tableName, boolean predColumnPresent) throws SQLException {
+				if (table == null || !tableName.equals(table.getName()))
+					return super.buildInsert(tableName, predColumnPresent);
+				StringBuilder sb = new StringBuilder();
+				sb.append("EXECUTE ").append(tableName);
+				sb.append("_insert(?, ?, ?, ?)");
+				return sb.toString();
+			}
+		};
 	}
 
 }

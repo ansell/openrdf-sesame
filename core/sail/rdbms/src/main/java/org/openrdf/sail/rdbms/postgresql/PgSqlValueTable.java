@@ -49,7 +49,7 @@ public class PgSqlValueTable extends ValueTable {
 	}
 
 	@Override
-	public PreparedStatement prepareInsert() throws SQLException {
+	protected PreparedStatement prepareInsert() throws SQLException {
 		return table.prepareStatement(EXECUTE_INSERT);
 	}
 

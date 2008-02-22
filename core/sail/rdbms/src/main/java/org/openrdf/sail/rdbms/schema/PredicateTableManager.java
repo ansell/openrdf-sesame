@@ -126,6 +126,7 @@ public class PredicateTableManager {
 	}
 
 	public synchronized PredicateTable getPredicateTable(long pred) throws SQLException {
+		assert pred != 0;
 			if (tables.containsKey(pred))
 				return tables.get(pred);
 			if (tables.containsKey(OTHER_PRED))
@@ -253,6 +254,7 @@ public class PredicateTableManager {
 		if (tn.equalsIgnoreCase(OTHER_TRIPLES_TABLE))
 			return OTHER_PRED;
 		Long id = Long.valueOf(tn.substring(tn.lastIndexOf('_') + 1));
+		assert id != 0;
 		return id;
 	}
 

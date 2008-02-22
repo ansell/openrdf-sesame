@@ -5,6 +5,7 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -29,9 +30,14 @@ public class TransactionTable {
 	private int uploadCount;
 	private ValueTypes objTypes;
 	private ValueTypes subjTypes;
+	private Connection conn;
 
 	public void setTemporaryTable(RdbmsTable table) {
 		this.temporary = table;
+	}
+
+	public void setConnection(Connection conn) {
+		this.conn = conn;
 	}
 
 	public void setPredicateTable(PredicateTable statements) {
@@ -62,8 +68,12 @@ public class TransactionTable {
 		}
 		insertStmt.setLong(1, ctx);
 		insertStmt.setLong(2, subj);
-		insertStmt.setLong(3, pred);
-		insertStmt.setLong(4, obj);
+		if (temporary == null && !statements.isPredColumnPresent()) {
+			insertStmt.setLong(3, obj);
+		} else {
+			insertStmt.setLong(3, pred);
+			insertStmt.setLong(4, obj);
+		}
 		subjTypes.add(IdCode.decode(subj));
 		objTypes.add(IdCode.decode(obj));
 		insertStmt.addBatch();
@@ -79,17 +89,28 @@ public class TransactionTable {
 		statements.blockUntilReady();
 		long after = System.currentTimeMillis();
 		table_wait += after - before;
-		synchronized (temporary) {
+		if (temporary == null) {
 			long start = System.currentTimeMillis();
 			insertStmt.executeBatch();
-			int count = temporary.executeUpdate(buildInsertSelect());
 			long end = System.currentTimeMillis();
-			temporary.clear();
-			uploadCount = 0;
-			addedCount += count;
-			total_rows += count;
-			total_st += 2;
+			addedCount += uploadCount;
+			total_rows += uploadCount;
+			total_st += 1;
 			total_wait += end - start;
+			uploadCount = 0;
+		} else {
+			synchronized (temporary) {
+				long start = System.currentTimeMillis();
+				insertStmt.executeBatch();
+				int count = temporary.executeUpdate(buildInsertSelect());
+				long end = System.currentTimeMillis();
+				temporary.clear();
+				addedCount += count;
+				total_rows += count;
+				total_st += 2;
+				total_wait += end - start;
+				uploadCount = 0;
+			}
 		}
 		statements.setObjTypes(objTypes);
 		statements.setSubjTypes(subjTypes);
@@ -141,14 +162,30 @@ public class TransactionTable {
 	}
 
 	protected PreparedStatement prepareInsert() throws SQLException {
-		return temporary.prepareStatement(buildInsert());
+		if (temporary == null) {
+			boolean present = statements.isPredColumnPresent();
+			String sql = buildInsert(statements.getName(), present);
+			return conn.prepareStatement(sql);
+		}
+		String sql = buildInsert(temporary.getName(), true);
+		return conn.prepareStatement(sql);
 	}
 
-	protected String buildInsert() throws SQLException {
+	protected String buildInsert(String tableName, boolean predColumnPresent)
+		throws SQLException
+	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("INSERT INTO ").append(temporary.getName());
-		sb.append(" (ctx, subj, pred, obj)\n");
-		sb.append("VALUES (?, ?, ?, ?)");
+		sb.append("INSERT INTO ").append(tableName);
+		sb.append(" (ctx, subj, ");
+		if (predColumnPresent) {
+			sb.append("pred, ");
+		}
+		sb.append("obj)\n");
+		sb.append("VALUES (?, ?, ");
+		if (predColumnPresent) {
+			sb.append("?, ");
+		}
+		sb.append("?)");
 		return sb.toString();
 	}
 
