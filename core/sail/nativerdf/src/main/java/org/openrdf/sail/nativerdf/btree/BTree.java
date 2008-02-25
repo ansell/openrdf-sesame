@@ -988,9 +988,6 @@ public class BTree {
 		/** This node's ID. */
 		private int id;
 
-		/** The offset of this node in the file. */
-		private long offset;
-
 		/** This node's data. */
 		private byte[] data;
 
@@ -1020,7 +1017,6 @@ public class BTree {
 			}
 
 			this.id = id;
-			this.offset = nodeID2offset(id);
 			this.valueCount = 0;
 			this.usageCount = 0;
 
@@ -1401,7 +1397,7 @@ public class BTree {
 			ByteBuffer buf = ByteBuffer.wrap(data);
 			// Don't fill the spare slot in data:
 			buf.limit(nodeSize);
-			fileChannel.read(buf, offset);
+			fileChannel.read(buf, nodeID2offset(id));
 
 			valueCount = ByteArrayUtil.getInt(data, 0);
 		}
@@ -1412,7 +1408,7 @@ public class BTree {
 			ByteBuffer buf = ByteBuffer.wrap(data);
 			// Don't write the spare slot in data to the file:
 			buf.limit(nodeSize);
-			fileChannel.write(buf, offset);
+			fileChannel.write(buf, nodeID2offset(id));
 			dataChanged = false;
 		}
 
