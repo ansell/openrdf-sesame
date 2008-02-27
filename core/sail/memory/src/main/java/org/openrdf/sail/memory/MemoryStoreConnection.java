@@ -298,7 +298,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 		// Prevent concurrent transactions by acquiring an exclusive txn lock
 		txnLock = store.getTransactionLock();
-		store.cancelSyncTask();
+		store.startTransaction();
 	}
 
 	@Override
