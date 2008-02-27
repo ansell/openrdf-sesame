@@ -8,6 +8,7 @@ package org.openrdf.sail.memory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -73,6 +74,11 @@ public class MemoryStore extends SailBase {
 	private MemStatementList statements;
 
 	/**
+	 * Set of all statements that have been affected by a transaction.
+	 */
+	private IdentityHashMap<MemStatement, MemStatement> txnStatements;
+
+	/**
 	 * Identifies the current snapshot.
 	 */
 	private int currentSnapshot;
@@ -83,7 +89,8 @@ public class MemoryStore extends SailBase {
 	private MemNamespaceStore namespaceStore;
 
 	/**
-	 * Lock manager used to prevent concurrent transactions.
+	 * Lock manager used to give the snapshot cleanup thread exclusive access to
+	 * the statement list.
 	 */
 	private ReadWriteLockManager statementListLockManager;
 
@@ -569,6 +576,9 @@ public class MemoryStore extends SailBase {
 					// statement is already present, update its transaction
 					// status if appropriate
 					MemStatement st = stIter.next();
+
+					txnStatements.put(st, st);
+
 					TxnStatus txnStatus = st.getTxnStatus();
 
 					if (txnStatus == TxnStatus.NEUTRAL && !st.isExplicit() && explicit) {
@@ -624,6 +634,8 @@ public class MemoryStore extends SailBase {
 		statements.add(st);
 		st.addToComponentLists();
 
+		txnStatements.put(st, st);
+
 		return st;
 	}
 
@@ -655,7 +667,17 @@ public class MemoryStore extends SailBase {
 			st.setTxnStatus(TxnStatus.NEUTRAL);
 		}
 
+		txnStatements.put(st, st);
+
 		return statementsRemoved;
+	}
+
+	protected void startTransaction()
+		throws SailException
+	{
+		cancelSyncTask();
+
+		txnStatements = new IdentityHashMap<MemStatement, MemStatement>();
 	}
 
 	protected void commit()
@@ -667,8 +689,7 @@ public class MemoryStore extends SailBase {
 
 		int txnSnapshot = currentSnapshot + 1;
 
-		for (int i = statements.size() - 1; i >= 0; i--) {
-			MemStatement st = statements.get(i);
+		for (MemStatement st : txnStatements.keySet()) {
 			TxnStatus txnStatus = st.getTxnStatus();
 
 			if (txnStatus == TxnStatus.NEUTRAL) {
@@ -700,6 +721,8 @@ public class MemoryStore extends SailBase {
 			st.setTxnStatus(TxnStatus.NEUTRAL);
 		}
 
+		txnStatements = null;
+
 		if (statementsAdded || statementsRemoved || statementsDeprecated) {
 			currentSnapshot = txnSnapshot;
 		}
@@ -726,9 +749,7 @@ public class MemoryStore extends SailBase {
 
 		int txnSnapshot = currentSnapshot + 1;
 
-		for (int i = statements.size() - 1; i >= 0; i--) {
-			MemStatement st = statements.get(i);
-
+		for (MemStatement st : txnStatements.keySet()) {
 			TxnStatus txnStatus = st.getTxnStatus();
 			if (txnStatus == TxnStatus.NEW || txnStatus == TxnStatus.ZOMBIE) {
 				// Statement has been added during this transaction
@@ -739,6 +760,8 @@ public class MemoryStore extends SailBase {
 				st.setTxnStatus(TxnStatus.NEUTRAL);
 			}
 		}
+
+		txnStatements = null;
 
 		scheduleSnapshotCleanup();
 	}
