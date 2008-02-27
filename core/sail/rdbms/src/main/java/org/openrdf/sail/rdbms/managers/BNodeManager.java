@@ -24,11 +24,13 @@ import org.openrdf.sail.rdbms.schema.ResourceTable.HandleIdValue;
  * 
  */
 public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
+	public static BNodeManager instance;
 	private ResourceTable table;
 
 	public BNodeManager(Lock idLock, ResourceTable table) {
 		super(idLock);
 		this.table = table;
+		instance = this;
 	}
 
 	@Override

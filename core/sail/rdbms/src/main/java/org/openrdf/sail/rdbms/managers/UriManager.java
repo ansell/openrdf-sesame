@@ -26,6 +26,7 @@ import org.openrdf.sail.rdbms.schema.ResourceTable.HandleIdValue;
  * 
  */
 public class UriManager extends ValueManagerBase<String, RdbmsURI> {
+	public static UriManager instance;
 	private ResourceTable shorter;
 	private ResourceTable longer;
 
@@ -33,6 +34,7 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 		super(idLock);
 		this.shorter = shorter;
 		this.longer = longer;
+		instance = this;
 	}
 
 	@Override

@@ -27,6 +27,7 @@ import org.openrdf.model.impl.URIImpl;
  * 
  */
 public class LiteralTable {
+	public static final boolean ONLY_INSERT_LABEL = false;
 	private static TimeZone Z = TimeZone.getTimeZone("GMT");
 
 	public static long getCalendarValue(XMLGregorianCalendar xcal) {
@@ -107,14 +108,19 @@ public class LiteralTable {
 		numeric.initialize();
 		dateTime.initialize();
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT labels.id, CASE WHEN labels.value IS NOT NULL THEN labels.value ELSE ll.value END, g.value, d.value\n");
-		sb.append("FROM ").append(labels.getName()).append(" labels\n");
-		sb.append(" LEFT JOIN ").append(longLabels.getName());
-		sb.append(" ll ON (ll.id = labels.id)\n");
-		sb.append(" LEFT JOIN ").append(languages.getName());
-		sb.append(" g ON (g.id = labels.id)\n");
-		sb.append(" LEFT JOIN ").append(datatypes.getName());
-		sb.append(" d ON (d.id = labels.id)\n");
+		if (ONLY_INSERT_LABEL) {
+			sb.append("SELECT labels.id, labels.value FROM ");
+			sb.append(labels.getName()).append(" labels\n");
+		} else {
+			sb.append("SELECT labels.id, CASE WHEN labels.value IS NOT NULL THEN labels.value ELSE ll.value END, g.value, d.value\n");
+			sb.append("FROM ").append(labels.getName()).append(" labels\n");
+			sb.append(" LEFT JOIN ").append(longLabels.getName());
+			sb.append(" ll ON (ll.id = labels.id)\n");
+			sb.append(" LEFT JOIN ").append(languages.getName());
+			sb.append(" g ON (g.id = labels.id)\n");
+			sb.append(" LEFT JOIN ").append(datatypes.getName());
+			sb.append(" d ON (d.id = labels.id)\n");
+		}
 		sb.append("WHERE labels.value IN (");
 		for (int i = 0, n = getSelectChunkSize(); i < n; i++) {
 			sb.append("?,");

@@ -32,11 +32,13 @@ import org.openrdf.sail.rdbms.schema.LiteralTable.LiteralHandler;
  * 
  */
 public class LiteralManager extends ValueManagerBase<Literal, RdbmsLiteral> {
+	public static LiteralManager instance;
 	private LiteralTable table;
 
 	public LiteralManager(Lock idLock, LiteralTable table) {
 		super(idLock);
 		this.table = table;
+		instance = this;
 	}
 
 	@Override

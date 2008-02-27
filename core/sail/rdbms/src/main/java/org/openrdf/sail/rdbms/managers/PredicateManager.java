@@ -1,41 +1,36 @@
 package org.openrdf.sail.rdbms.managers;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
+
+import info.aduna.collections.LRUMap;
 
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 
 public class PredicateManager {
 	private UriManager uris;
-	private Map<String, Long> ids = new HashMap<String, Long>();
-	private Map<Long, String> predicates = new HashMap<Long, String>();
+	private Map<Long, String> predicates = new LRUMap<Long, String>(64);
 
 	public void setUriManager(UriManager uris) {
 		this.uris = uris;
 	}
 
-	public synchronized long getIdOfPredicate(RdbmsURI uri) throws SQLException {
-		Long id = ids.get(uri.stringValue());
-		if (id == null) {
-			id = uris.getInternalId(uri);
-			ids.put(uri.stringValue(), id);
+	public long getIdOfPredicate(RdbmsURI uri) throws SQLException {
+		Long id = uris.getInternalId(uri);
+		synchronized(predicates) {
 			predicates.put(id, uri.stringValue());
 		}
 		return id;
 	}
 
-	public synchronized Long getIdIfPredicate(RdbmsURI uri) throws SQLException {
-		return ids.get(uri.stringValue());
+	public String getPredicateUri(long id) {
+		synchronized(predicates) {
+			return predicates.get(id);
+		}
 	}
 
-	public synchronized String getPredicateUri(long id) {
-		return predicates.get(id);
-	}
-
-	public synchronized void remove(long id) {
-		if (predicates.containsKey(id)) {
-			ids.remove(predicates.get(id));
+	public void remove(long id) {
+		synchronized(predicates) {
 			predicates.remove(id);
 		}
 	}

@@ -30,6 +30,7 @@ import org.openrdf.sail.rdbms.model.RdbmsStatement;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.IdCode;
+import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
@@ -101,10 +102,14 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	}
 
 	public RdbmsLiteral createLiteral(String label, String language) {
+		if (LiteralTable.ONLY_INSERT_LABEL)
+			return createLiteral(label);
 		return asRdbmsLiteral(vf.createLiteral(label, language));
 	}
 
 	public RdbmsLiteral createLiteral(String label, URI datatype) {
+		if (LiteralTable.ONLY_INSERT_LABEL)
+			return createLiteral(label);
 		return asRdbmsLiteral(vf.createLiteral(label, datatype));
 	}
 
@@ -222,23 +227,17 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		return createStatement(s, p, o, c);
 	}
 
-	public long getInternalId(Value r) throws RdbmsException {
+	public long getInternalId(Value r)
+		throws RdbmsException
+	{
 		if (r == null)
 			return ValueTable.NIL_ID;
 		RdbmsValue value = asRdbmsValue(r);
-		try {
-			if (value instanceof RdbmsURI) {
-				Long id = predicates.getIdIfPredicate((RdbmsURI) value);
-				if (id != null)
-					return id;
-				return uris.getInternalId((RdbmsURI) value);
-			}
-			if (value instanceof RdbmsBNode)
-				return bnodes.getInternalId((RdbmsBNode) value);
-			return literals.getInternalId((RdbmsLiteral) value);
-		} catch (SQLException e) {
-			throw new RdbmsException(e);
-		}
+		if (value instanceof RdbmsURI)
+			return uris.getInternalId((RdbmsURI)value);
+		if (value instanceof RdbmsBNode)
+			return bnodes.getInternalId((RdbmsBNode)value);
+		return literals.getInternalId((RdbmsLiteral)value);
 	}
 
 	public long getPredicateId(RdbmsURI predicate) throws RdbmsException {
