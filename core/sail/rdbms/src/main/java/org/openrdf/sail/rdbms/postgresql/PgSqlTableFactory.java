@@ -20,9 +20,8 @@ import org.openrdf.sail.rdbms.schema.RdbmsTableFactory;
 public class PgSqlTableFactory extends RdbmsTableFactory {
 
 	@Override
-	public PgSqlValueTable createValueTable(RdbmsTable table, int sqlType,
-			int length) {
-		return new PgSqlValueTable(table, sqlType, length);
+	public PgSqlValueTable newValueTable() {
+		return new PgSqlValueTable();
 	}
 
 	@Override

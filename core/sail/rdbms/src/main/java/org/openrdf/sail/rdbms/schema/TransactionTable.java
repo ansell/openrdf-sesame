@@ -20,7 +20,6 @@ public class TransactionTable {
 	public static int total_rows;
 	public static int total_st;
 	public static int total_wait;
-	public static int table_wait;
 	private int batchSize;
 	private PredicateTable statements;
 	private int addedCount;
@@ -82,13 +81,14 @@ public class TransactionTable {
 		}
 	}
 
+	public boolean isReady() {
+		return statements.isReady();
+	}
+
 	public synchronized int flush() throws SQLException {
 		if (insertStmt == null)
 			return 0;
-		long before = System.currentTimeMillis();
 		statements.blockUntilReady();
-		long after = System.currentTimeMillis();
-		table_wait += after - before;
 		if (temporary == null) {
 			long start = System.currentTimeMillis();
 			insertStmt.executeBatch();

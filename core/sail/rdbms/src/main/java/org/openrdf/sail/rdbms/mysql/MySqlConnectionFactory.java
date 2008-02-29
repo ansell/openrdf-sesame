@@ -38,9 +38,8 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 			}
 
 			@Override
-			protected ValueTable createValueTable(RdbmsTable rdbmsTable,
-					int sqlType, int length) {
-				return new ValueTable(rdbmsTable, sqlType, length) {
+			protected ValueTable newValueTable() {
+				return new ValueTable() {
 					@Override
 					protected String getDeclaredSqlType(int type, int length) {
 						String declare = super.getDeclaredSqlType(type, length);

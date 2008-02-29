@@ -230,14 +230,19 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	public long getInternalId(Value r)
 		throws RdbmsException
 	{
-		if (r == null)
-			return ValueTable.NIL_ID;
-		RdbmsValue value = asRdbmsValue(r);
-		if (value instanceof RdbmsURI)
-			return uris.getInternalId((RdbmsURI)value);
-		if (value instanceof RdbmsBNode)
-			return bnodes.getInternalId((RdbmsBNode)value);
-		return literals.getInternalId((RdbmsLiteral)value);
+		try {
+			if (r == null)
+				return ValueTable.NIL_ID;
+			RdbmsValue value = asRdbmsValue(r);
+			if (value instanceof RdbmsURI)
+				return uris.getInternalId((RdbmsURI)value);
+			if (value instanceof RdbmsBNode)
+				return bnodes.getInternalId((RdbmsBNode)value);
+			return literals.getInternalId((RdbmsLiteral)value);
+		}
+		catch (SQLException e) {
+			throw new RdbmsException(e);
+		}
 	}
 
 	public long getPredicateId(RdbmsURI predicate) throws RdbmsException {

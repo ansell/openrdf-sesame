@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -40,9 +43,6 @@ import org.openrdf.sail.rdbms.schema.ResourceTable;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Facade to {@link TransTableManager}, {@link ResourceTable}, and
  * {@link LiteralTable} for adding, removing, and retrieving statements from the
@@ -52,12 +52,12 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class RdbmsTripleRepository {
-	private static int MIN_QUEUE_SIZE = 1024;
-	private static int BATCH_SIZE = 10240;
-	private static int MAX_THREADS = 2;
-	private static int MAX_QUEUE = MAX_THREADS * 2 + 1;
-	private static int FLUSH_EVERY = Integer.MAX_VALUE;//1000000;
-	private static int COMMIT_EVERY = Integer.MAX_VALUE;//1000000;
+	public static int MIN_QUEUE_SIZE = 1024;
+	public static int BATCH_SIZE = 10240;
+	public static int MAX_THREADS = 2;
+	public static int MAX_QUEUE = MAX_THREADS * 2 + 1;
+	public static int FLUSH_EVERY = 100000;
+	public static int COMMIT_EVERY = Integer.MAX_VALUE;//1000000;
 	private Logger logger = LoggerFactory.getLogger(RdbmsTripleRepository.class);
 	private Connection conn;
 	private RdbmsValueFactory vf;
@@ -70,7 +70,7 @@ public class RdbmsTripleRepository {
 	private Lock readLock;
 	private DefaultSailChangedEvent sailChangedEvent;
 	private List<RdbmsStatement> lookupQueue = new ArrayList(MIN_QUEUE_SIZE);
-	private LinkedList<List<RdbmsStatement>> queue = new LinkedList<List<RdbmsStatement>>();
+	private LinkedList<List<RdbmsStatement>> queue = new LinkedList();
 	private int addedSinceFlush;
 	private int addedSinceCommit;
 	private List<Object> workThread = new CopyOnWriteArrayList<Object>();
@@ -129,31 +129,6 @@ public class RdbmsTripleRepository {
 	public void flush() throws RdbmsException {
 		flushQueue();
 		vf.flush();
-	}
-
-	private void flushQueue() throws RdbmsException {
-		try {
-			synchronized (queue) {
-				while (!queue.isEmpty()) {
-					insert(queue.remove());
-				}
-				synchronized (lookupQueue) {
-					if (!lookupQueue.isEmpty()) {
-						insert(lookupQueue);
-						lookupQueue.clear();
-					}
-				}
-				for (Object o : workThread) {
-					synchronized (o) {
-						// wait for thread to finish
-					}
-				}
-			}
-			flushStatements();
-			statements.cleanup();
-		} catch (SQLException e) {
-			throw new RdbmsException(e);
-		}
 	}
 
 	public void add(RdbmsStatement st) throws SailException, SQLException {
@@ -365,7 +340,7 @@ public class RdbmsTripleRepository {
 		}
 	}
 
-	void insertThread(Object threadQueue) throws InterruptedException, RdbmsException,
+	void insertThread(Object threadQueue, boolean primary) throws InterruptedException, RdbmsException,
 			SQLException {
 		logger.debug("Starting helper thread {}", Thread.currentThread()
 				.getName());
@@ -388,8 +363,11 @@ public class RdbmsTripleRepository {
 					removed = null;
 				}
 			}
-			if (addedSinceFlush >= FLUSH_EVERY) {
-				flushStatements();
+			if (primary && addedSinceFlush >= FLUSH_EVERY) {
+				addedSinceFlush = 0;
+				if (statements.flushUnpopular() > 0) {
+					sailChangedEvent.setStatementsAdded(true);
+				}
 			}
 		}
 		logger.debug("Closing helper thread {}", Thread.currentThread()
@@ -397,20 +375,49 @@ public class RdbmsTripleRepository {
 	}
 
 	private void startInsentThread() {
-		final Object count = new Object();
-		workThread.add(count);
+		final Object lock = new Object();
+		workThread.add(lock);
 		String currentName = Thread.currentThread().getName();
 		String name = currentName + "-statement-insert-" + workThread.size();
 		Thread insertThread = new Thread(new Runnable() {
 			public void run() {
 				try {
-					insertThread(count);
+					insertThread(lock, workThread.size() == 1);
 				} catch (Exception e) {
 					exc = e;
+					logger.error(e.toString(), e);
 				}
 			}
 		}, name);
 		insertThread.start();
+	}
+
+	private void flushQueue() throws RdbmsException {
+		try {
+			synchronized (queue) {
+				while (!queue.isEmpty()) {
+					insert(queue.remove());
+				}
+				synchronized (lookupQueue) {
+					if (!lookupQueue.isEmpty()) {
+						insert(lookupQueue);
+						lookupQueue.clear();
+					}
+				}
+				for (Object o : workThread) {
+					synchronized (o) {
+						// wait for thread to finish
+					}
+				}
+			}
+			addedSinceFlush = 0;
+			if (statements.flush() > 0) {
+				sailChangedEvent.setStatementsAdded(true);
+			}
+			statements.cleanup();
+		} catch (SQLException e) {
+			throw new RdbmsException(e);
+		}
 	}
 
 	private String buildContextQuery() throws SQLException {
@@ -593,13 +600,6 @@ public class RdbmsTripleRepository {
 			long pred = vf.getPredicateId(triple.getPredicate());
 			long obj = vf.getInternalId(triple.getObject());
 			statements.insert(ctx, subj, pred, obj);
-		}
-	}
-
-	private void flushStatements() throws SQLException {
-		addedSinceFlush = 0;
-		if (statements.flush() > 0) {
-			sailChangedEvent.setStatementsAdded(true);
 		}
 	}
 

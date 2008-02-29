@@ -22,8 +22,19 @@ public class PgSqlTable extends RdbmsTable {
 	}
 
 	@Override
+	protected String buildLongIndex(String... columns) {
+		// FIXME
+		return buildIndex(columns);
+	}
+
+	@Override
 	protected String buildOptimize() throws SQLException {
 		return "VACUUM ANALYZE " + getName();
+	}
+
+	@Override
+	protected String buildClear() {
+		return "TRUNCATE " + getName();
 	}
 
 }

@@ -20,16 +20,12 @@ public class MySqlTable extends RdbmsTable {
 	}
 
 	@Override
-	protected String buildIndex(String... columns) {
-		if (columns.length == 1 && columns[0].equals("value")
-				&& getName().startsWith("LONG_")) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("CREATE INDEX ").append(buildIndexName(columns));
-			sb.append(" ON ").append(getName());
-			sb.append(" (value(1024))");
-			return sb.toString();
-		}
-		return super.buildIndex(columns);
+	protected String buildLongIndex(String... columns) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("CREATE INDEX ").append(buildIndexName(columns));
+		sb.append(" ON ").append(getName());
+		sb.append(" (value(1024))");
+		return sb.toString();
 	}
 
 	@Override

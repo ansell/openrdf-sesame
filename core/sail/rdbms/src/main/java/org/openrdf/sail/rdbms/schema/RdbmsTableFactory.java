@@ -40,27 +40,27 @@ public class RdbmsTableFactory {
 	}
 
 	public ResourceTable createBNodeTable(Connection conn) {
-		RdbmsTable rdbmsTable = createTable(conn, BNODE_VALUES);
-		return new ResourceTable(createValueTable(rdbmsTable, VARCHAR, VCS));
+		ValueTable table = createValueTable(conn, BNODE_VALUES, VARCHAR, VCS);
+		return new ResourceTable(table);
 	}
 
 	public ResourceTable createURITable(Connection conn) {
-		RdbmsTable rdbmsTable = createTable(conn, URI_VALUES);
-		return new ResourceTable(createValueTable(rdbmsTable, VARCHAR, VCL));
+		ValueTable table = createValueTable(conn, URI_VALUES, VARCHAR, VCL);
+		return new ResourceTable(table);
 	}
 
 	public ResourceTable createLongURITable(Connection conn) {
-		RdbmsTable rdbmsTable = createTable(conn, LURI_VALUES);
-		return new ResourceTable(createValueTable(rdbmsTable, LONGVARCHAR));
+		ValueTable table = createValueTable(conn, LURI_VALUES, LONGVARCHAR);
+		return new ResourceTable(table);
 	}
 
 	public LiteralTable createLiteralTable(Connection conn) {
-		ValueTable lbs = createValueTable(createTable(conn, LBS), VARCHAR, VCL);
-		ValueTable llbs = createValueTable(createTable(conn, LLBS), LONGVARCHAR);
-		ValueTable lgs = createValueTable(createTable(conn, LANGS), VARCHAR, VCS);
-		ValueTable dt = createValueTable(createTable(conn, DTS), VARCHAR, VCL);
-		ValueTable num = createValueTable(createTable(conn, NUM_VALUES), DOUBLE);
-		ValueTable dateTime = createValueTable(createTable(conn, TIMES), BIGINT);
+		ValueTable lbs = createValueTable(conn, LBS, VARCHAR, VCL);
+		ValueTable llbs = createValueTable(conn, LLBS, LONGVARCHAR);
+		ValueTable lgs = createValueTable(conn, LANGS, VARCHAR, VCS);
+		ValueTable dt = createValueTable(conn, DTS, VARCHAR, VCL);
+		ValueTable num = createValueTable(conn, NUM_VALUES, DOUBLE);
+		ValueTable dateTime = createValueTable(conn, TIMES, BIGINT);
 		LiteralTable literals = new LiteralTable();
 		literals.setLabelTable(lbs);
 		literals.setLongLabelTable(llbs);
@@ -78,7 +78,11 @@ public class RdbmsTableFactory {
 	}
 
 	public RdbmsTable createTemporaryTable(Connection conn) {
-		return createTable(conn, TRANS_STATEMENTS);
+		return createTemporaryTable(conn, TRANS_STATEMENTS);
+	}
+
+	protected RdbmsTable createTemporaryTable(Connection conn, String name) {
+		return createTable(conn, name);
 	}
 
 	protected RdbmsTable createTable(Connection conn, String name) {
@@ -91,12 +95,20 @@ public class RdbmsTableFactory {
 		return new RdbmsTable(name);
 	}
 
-	protected ValueTable createValueTable(RdbmsTable rdbmsTable, int sqlType) {
-		return createValueTable(rdbmsTable, sqlType, -1);
+	protected ValueTable createValueTable(Connection conn, String name, int sqlType) {
+		return createValueTable(conn, name, sqlType, -1);
 	}
 
-	protected ValueTable createValueTable(RdbmsTable rdbmsTable, int sqlType,
+	protected ValueTable createValueTable(Connection conn, String name, int sqlType,
 			int length) {
-		return new ValueTable(rdbmsTable, sqlType, length);
+		ValueTable table = newValueTable();
+		table.setRdbmsTable(createTable(conn, name));
+		table.setSqlType(sqlType);
+		table.setLength(length);
+		return table;
+	}
+
+	protected ValueTable newValueTable() {
+		return new ValueTable();
 	}
 }

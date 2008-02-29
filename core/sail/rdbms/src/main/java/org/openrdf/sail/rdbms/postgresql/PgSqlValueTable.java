@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.openrdf.sail.rdbms.schema.RdbmsTable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
@@ -20,37 +19,30 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * 
  */
 public class PgSqlValueTable extends ValueTable {
-	private RdbmsTable table;
-	private String PREPARE_INSERT;
 	private String EXECUTE_INSERT;
 
-	public PgSqlValueTable(RdbmsTable table, int sqlType, int length) {
-		super(table, sqlType, length);
-		this.table = table;
+	@Override
+	public void initialize() throws SQLException {
+		super.initialize();
 		StringBuilder sb = new StringBuilder();
-		sb.append("PREPARE ").append(table.getName());
+		sb.append("PREPARE ").append(getRdbmsTable().getName());
 		sb.append("_insert (bigint, ");
-		sb.append(getDeclaredSqlType(sqlType, length)
+		sb.append(getDeclaredSqlType(getSqlType(), getLength())
 				.replaceAll("\\(.*\\)", ""));
 		sb.append(") AS\n");
-		sb.append("INSERT INTO ").append(table.getName());
+		sb.append("INSERT INTO ").append(getRdbmsTable().getName());
 		sb.append(" VALUES ($1, $2)");
-		PREPARE_INSERT = sb.toString();
+		getRdbmsTable().execute(sb.toString());
+		
 		sb.delete(0, sb.length());
-		sb.append("EXECUTE ").append(table.getName());
+		sb.append("EXECUTE ").append(getRdbmsTable().getName());
 		sb.append("_insert(?, ?)");
 		EXECUTE_INSERT = sb.toString();
 	}
 
 	@Override
-	public void initialize() throws SQLException {
-		super.initialize();
-		table.execute(PREPARE_INSERT);
-	}
-
-	@Override
 	protected PreparedStatement prepareInsert() throws SQLException {
-		return table.prepareStatement(EXECUTE_INSERT);
+		return getRdbmsTable().prepareStatement(EXECUTE_INSERT);
 	}
 
 	@Override

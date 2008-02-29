@@ -14,16 +14,17 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.openrdf.sail.rdbms.managers.PredicateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.openrdf.sail.rdbms.managers.PredicateManager;
 
 /**
  * Manages and delegates to the collection of {@link PredicateTable}.
@@ -34,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class PredicateTableManager {
 	private static final String DEFAULT_TABLE_PREFIX = "TRIPLES";
 	private static final String OTHER_TRIPLES_TABLE = "OTHER_TRIPLES";
-	private static int MAX_TABLES = Integer.MAX_VALUE;
+	public static int MAX_TABLES = Integer.MAX_VALUE;//1000;
 	public static Long OTHER_PRED = Long.valueOf(-1);
 	private ResourceTable bnodes;
 	private boolean closed;
@@ -45,7 +46,7 @@ public class PredicateTableManager {
 	private Logger logger = LoggerFactory.getLogger(PredicateTableManager.class);
 	private ResourceTable longUris;
 	private PredicateManager predicates;
-	private List<PredicateTable> queue = new ArrayList<PredicateTable>();
+	private LinkedList<PredicateTable> queue = new LinkedList<PredicateTable>();
 	private Pattern tablePrefix = Pattern.compile("\\W(\\w*)\\W*$");
 	private Map<Long, PredicateTable> tables = new HashMap<Long, PredicateTable>();
 	private ResourceTable uris;
@@ -87,6 +88,7 @@ public class PredicateTableManager {
 					initThread();
 				} catch (Exception e) {
 					exc = e;
+					logger.error(e.toString(), e);
 				}
 			}
 		}, "table-initialize");
@@ -282,7 +284,7 @@ public class PredicateTableManager {
 					queue.wait();
 				}
 				if (!queue.isEmpty()) {
-					table = queue.remove(0);
+					table = queue.pop();
 				}
 			}
 			if (table != null) {

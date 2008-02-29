@@ -109,7 +109,12 @@ public class RdbmsTable {
 	}
 
 	public void index(String... columns) throws SQLException {
-		execute(buildIndex(columns));
+		if (columns.length == 1 && columns[0].equals("value")
+				&& getName().startsWith("LONG_")) {
+			execute(buildLongIndex(columns));
+		} else {
+			execute(buildIndex(columns));
+		}
 	}
 
 	public boolean isCreated() throws SQLException {
@@ -279,6 +284,10 @@ public class RdbmsTable {
 		}
 		sb.append(")");
 		return sb.toString();
+	}
+
+	protected String buildLongIndex(String... columns) {
+		return buildIndex(columns);
 	}
 
 	/**

@@ -97,6 +97,10 @@ public class PredicateTable {
 		initialize = true;
 	}
 
+	public boolean isReady() {
+		return initialize;
+	}
+
 	public void blockUntilReady() throws SQLException {
 		if (initialize)
 			return;
