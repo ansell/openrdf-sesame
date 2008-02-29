@@ -109,8 +109,8 @@ public class RdbmsTable {
 	}
 
 	public void index(String... columns) throws SQLException {
-		if (columns.length == 1 && columns[0].equals("value")
-				&& getName().startsWith("LONG_")) {
+		if (columns.length == 1 && columns[0].equalsIgnoreCase("value")
+				&& getName().toUpperCase().contains("LONG_")) {
 			execute(buildLongIndex(columns));
 		} else {
 			execute(buildIndex(columns));
