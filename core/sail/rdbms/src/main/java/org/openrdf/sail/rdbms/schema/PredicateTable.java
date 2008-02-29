@@ -16,6 +16,7 @@ import java.sql.SQLException;
 public class PredicateTable {
 	public static int tables_created;
 	public static int total_st;
+	public static final boolean INDEX_TRIPLES = true;
 	private static final String[] PKEY = { "ctx", "subj", "obj" };
 	private static final String[] SUBJ_INDEX = { "subj" };
 	private static final String[] OBJ_INDEX = { "obj" };
@@ -62,17 +63,19 @@ public class PredicateTable {
 			return;
 		table.createTransactionalTable(buildTableColumns());
 		total_st++;
-		if (isPredColumnPresent()) {
-			table.index(PRED_PKEY);
-			table.index(PRED_INDEX);
-		} else {
-			table.index(PKEY);
+		if (INDEX_TRIPLES) {
+			if (isPredColumnPresent()) {
+				table.index(PRED_PKEY);
+				table.index(PRED_INDEX);
+			} else {
+				table.index(PKEY);
+			}
+			total_st++;
+			table.index(OBJ_INDEX);
+			total_st++;
+			table.index(SUBJ_INDEX);
+			total_st++;
 		}
-		total_st++;
-		table.index(OBJ_INDEX);
-		total_st++;
-		table.index(SUBJ_INDEX);
-		total_st++;
 		initialize = true;
 		tables_created++;
 	}

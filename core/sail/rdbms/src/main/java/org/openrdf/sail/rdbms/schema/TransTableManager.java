@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 public class TransTableManager {
 	public static final int POPULAR = 64;
 	public static int BATCH_SIZE = 512;
-	public static final boolean TEMPORARY_TABLE_USED = true;
+	public static final boolean TEMPORARY_TABLE_USED = PredicateTable.INDEX_TRIPLES;
 	private RdbmsTableFactory factory;
 	private PredicateTableManager predicates;
 	private RdbmsTable temporaryTable;

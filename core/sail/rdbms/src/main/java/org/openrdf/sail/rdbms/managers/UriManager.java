@@ -6,17 +6,11 @@
 package org.openrdf.sail.rdbms.managers;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
 
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
-import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.schema.IdCode;
 import org.openrdf.sail.rdbms.schema.ResourceTable;
-import org.openrdf.sail.rdbms.schema.ResourceTable.HandleIdValue;
 
 /**
  * Manages URIs. Including creating, inserting, and looking up their
@@ -30,8 +24,7 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	private ResourceTable shorter;
 	private ResourceTable longer;
 
-	public UriManager(Lock idLock, ResourceTable shorter, ResourceTable longer) {
-		super(idLock);
+	public UriManager(ResourceTable shorter, ResourceTable longer) {
 		this.shorter = shorter;
 		this.longer = longer;
 		instance = this;
@@ -54,11 +47,6 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	}
 
 	@Override
-	protected int getSelectChunkSize() {
-		return shorter.getSelectChunkSize();
-	}
-
-	@Override
 	protected String key(RdbmsURI value) {
 		return value.stringValue();
 	}
@@ -71,31 +59,6 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 		} else {
 			shorter.insert(id, uri);
 		}
-	}
-
-	@Override
-	protected void loadIds(final Map<String, RdbmsURI> needIds) throws SQLException {
-		List<String> small = new ArrayList<String>(needIds.size());
-		List<String> big = new ArrayList<String>(needIds.size());
-		for (String uri : needIds.keySet()) {
-			if (uri.length() > IdCode.LONG) {
-				big.add(uri);
-			} else {
-				small.add(uri);
-			}
-		}
-		final int version = getIdVersion();
-		HandleIdValue handler = new HandleIdValue() {
-			public void handleIdValue(long id, String value) {
-				RdbmsResource res = needIds.get(value);
-				if (res != null) {
-					res.setInternalId(id);
-					res.setVersion(version);
-				}
-			}
-		};
-		shorter.load(small, handler);
-		longer.load(big, handler);
 	}
 
 	@Override

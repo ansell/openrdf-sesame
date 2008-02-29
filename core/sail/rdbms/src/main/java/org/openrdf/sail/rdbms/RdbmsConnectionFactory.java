@@ -7,7 +7,6 @@ package org.openrdf.sail.rdbms;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.locks.Lock;
 
 import javax.sql.DataSource;
 
@@ -105,8 +104,7 @@ public class RdbmsConnectionFactory {
 			literalTable.initialize();
 			vf = new RdbmsValueFactory();
 			vf.setDelegate(ValueFactoryImpl.getInstance());
-			Lock idLock = vf.getIdReadLock();
-			uriManager = new UriManager(idLock, uriTable, longUriTable);
+			uriManager = new UriManager(uriTable, longUriTable);
 			uriManager.init();
 			predicateManager = new PredicateManager();
 			predicateManager.setUriManager(uriManager);
@@ -118,11 +116,11 @@ public class RdbmsConnectionFactory {
 			predicateTableManager.setLiteralTable(literalTable);
 			predicateTableManager.setPredicateManager(predicateManager);
 			predicateTableManager.initialize();
-			bnodeManager = new BNodeManager(idLock, bnodeTable);
+			bnodeManager = new BNodeManager(bnodeTable);
 			bnodeManager.init();
 			vf.setBNodeManager(bnodeManager);
 			vf.setURIManager(uriManager);
-			literalManager = new LiteralManager(idLock, literalTable);
+			literalManager = new LiteralManager(literalTable);
 			literalManager.init();
 			vf.setLiteralManager(literalManager);
 			vf.setPredicateManager(predicateManager);

@@ -19,17 +19,18 @@ import java.sql.Types;
 public class ValueTable {
 	public static int total_rows;
 	public static int total_st;
-	public static int CHUNK_SIZE = 15;
-	public static int BATCH_SIZE = 128;
+	public static int BATCH_SIZE = 5120;
 	public static final boolean INDEX_VALUES = false;
 	public static final long NIL_ID = 0;
 	private static final String[] PKEY = { "id" };
 	private static final String[] VALUE_INDEX = { "value" };
-	private int length;
+	private int length = -1;
 	private int sqlType;
-	private String INSERT;
+	protected String INSERT;
+	protected String INSERT_SELECT;
 	private String EXPUNGE;
 	private RdbmsTable table;
+	private RdbmsTable temporary;
 	private PreparedStatement insertStmt;
 	private int uploadCount;
 	private int removedStatementsSinceExpunge;
@@ -58,6 +59,14 @@ public class ValueTable {
 		this.table = table;
 	}
 
+	public RdbmsTable getTemporaryTable() {
+		return temporary;
+	}
+
+	public void setTemporaryTable(RdbmsTable temporary) {
+		this.temporary = temporary;
+	}
+
 	public String getName() {
 		return table.getName();
 	}
@@ -66,31 +75,37 @@ public class ValueTable {
 		return table.size();
 	}
 
-	public int getSelectChunkSize() {
-		return CHUNK_SIZE;
-	}
-
 	public int getBatchSize() {
 		return BATCH_SIZE;
 	}
 
 	public void initialize() throws SQLException {
 		StringBuilder sb = new StringBuilder();
-		sb.append("INSERT INTO ").append(table.getName());
+		sb.append("INSERT INTO ").append(temporary.getName());
 		sb.append(" (id, value) VALUES (?, ?)");
 		INSERT = sb.toString();
+		sb.delete(0, sb.length());
+		sb.append("INSERT INTO ").append(table.getName());
+		sb.append(" (id, value) SELECT DISTINCT id, value FROM ");
+		sb.append(temporary.getName()).append(" tmp\n");
+		sb.append("WHERE NOT EXISTS (SELECT id FROM ").append(table.getName());
+		sb.append(" val WHERE val.id = tmp.id)");
+		INSERT_SELECT = sb.toString();
 		sb.delete(0, sb.length());
 		sb.append("DELETE FROM ").append(table.getName()).append("\n");
 		sb.append("WHERE 1=1 ");
 		EXPUNGE = sb.toString();
 		if (!table.isCreated()) {
-			createTable();
+			createTable(table);
 			table.index(PKEY);
 			if (INDEX_VALUES) {
 				table.index(VALUE_INDEX);
 			}
 		} else {
 			table.count();
+		}
+		if (!temporary.isCreated()) {
+			createTemporaryTable(temporary);
 		}
 	}
 
@@ -110,16 +125,18 @@ public class ValueTable {
 		if (insertStmt == null)
 			return 0;
 		int count = 0;
-		for (int result : insertStmt.executeBatch()) {
-			if (result > 0) {
-				count += result;
-			}
+		synchronized(temporary) {
+			insertStmt.executeBatch();
+			total_st += 1;
+			count = temporary.executeUpdate(INSERT_SELECT);
+			total_st += 1;
+			total_rows += count;
+			temporary.clear();
+			total_st += 1;
 		}
 		insertStmt = null;
 		uploadCount = 0;
 		table.modified(count, 0);
-		total_rows += count;
-		total_st += 1;
 		return count;
 	}
 
@@ -149,15 +166,23 @@ public class ValueTable {
 	}
 
 	protected PreparedStatement prepareInsert() throws SQLException {
-		return table.prepareStatement(INSERT);
+		return temporary.prepareStatement(INSERT);
 	}
 
-	protected void createTable() throws SQLException {
+	protected void createTable(RdbmsTable table) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("  id BIGINT NOT NULL,\n");
 		sb.append("  value ").append(getDeclaredSqlType(sqlType, length));
 		sb.append(" NOT NULL\n");
 		table.createTable(sb);
+	}
+
+	protected void createTemporaryTable(RdbmsTable table) throws SQLException {
+		StringBuilder sb = new StringBuilder();
+		sb.append("  id BIGINT NOT NULL,\n");
+		sb.append("  value ").append(getDeclaredSqlType(sqlType, length));
+		sb.append(" NOT NULL\n");
+		table.createTemporaryTable(sb);
 	}
 
 	protected String getDeclaredSqlType(int type, int length) {
@@ -187,11 +212,6 @@ public class ValueTable {
 		default:
 			throw new AssertionError("Unsupported SQL Type: " + type);
 		}
-	}
-
-	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		flush();
-		return table.prepareStatement(sql);
 	}
 
 	@Override
