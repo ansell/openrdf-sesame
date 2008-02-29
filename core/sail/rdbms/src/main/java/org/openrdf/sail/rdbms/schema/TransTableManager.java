@@ -12,8 +12,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 
 /**
@@ -23,13 +25,21 @@ import java.util.Map;
  * 
  */
 public class TransTableManager {
+	public static final int POPULAR = 64;
 	public static int BATCH_SIZE = 512;
-	private static boolean TEMPORARY_TABLE_USED = true;
+	public static final boolean TEMPORARY_TABLE_USED = true;
 	private RdbmsTableFactory factory;
 	private PredicateTableManager predicates;
 	private RdbmsTable temporaryTable;
 	private Map<Long, TransactionTable> tables = new HashMap<Long, TransactionTable>();
 	private List<TransactionTable> list;
+	private LinkedHashMap<TransactionTable, Boolean> popular = new LinkedHashMap<TransactionTable, Boolean>(POPULAR) {
+		private static final long serialVersionUID = 4679235006378767952L;
+
+		@Override
+		protected boolean removeEldestEntry(Entry<TransactionTable, Boolean> eldest) {
+			return size() > POPULAR;
+		}};
 	private int removedCount;
 	private String fromDummy;
 	private Connection conn;
@@ -76,6 +86,21 @@ public class TransTableManager {
 	public int flush() throws SQLException {
 		int count = 0;
 		for (TransactionTable table : getTables()) {
+			count += table.flush();
+			table.cleanup();
+		}
+		return count;
+	}
+
+	public int flushUnpopular() throws SQLException {
+		int count = 0;
+		for (TransactionTable table : getTables()) {
+			synchronized (popular) {
+				if (popular.containsKey(table))
+					continue;
+			}
+			if (!table.isReady())
+				continue;
 			count += table.flush();
 			table.cleanup();
 		}
@@ -191,6 +216,9 @@ public class TransTableManager {
 				table = createTransactionTable(predicate);
 				tables.put(key, table);
 				list = null;
+			}
+			synchronized (popular) {
+				popular.put(table, Boolean.TRUE);
 			}
 			return table;
 		}

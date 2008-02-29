@@ -100,7 +100,7 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		}
 	}
 
-	public long getInternalId(V val) {
+	public long getInternalId(V val) throws SQLException {
 		if (val.getInternalId() != null)
 			return val.getInternalId();
 		long id = getMissingId(val);
@@ -181,7 +181,7 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 				.getName());
 	}
 
-	private void idsNoLongerNeeded(Map<K, V> needIds) {
+	private void idsNoLongerNeeded(Map<K, V> needIds) throws SQLException {
 		synchronized (newValues) {
 			synchronized (cache) {
 				for (V value : needIds.values()) {

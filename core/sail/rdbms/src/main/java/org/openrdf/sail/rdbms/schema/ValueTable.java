@@ -21,6 +21,7 @@ public class ValueTable {
 	public static int total_st;
 	public static int CHUNK_SIZE = 15;
 	public static int BATCH_SIZE = 128;
+	public static final boolean INDEX_VALUES = false;
 	public static final long NIL_ID = 0;
 	private static final String[] PKEY = { "id" };
 	private static final String[] VALUE_INDEX = { "value" };
@@ -33,14 +34,28 @@ public class ValueTable {
 	private int uploadCount;
 	private int removedStatementsSinceExpunge;
 
-	public ValueTable(RdbmsTable table, int sqlType) {
-		this(table, sqlType, -1);
+	public int getLength() {
+		return length;
 	}
 
-	public ValueTable(RdbmsTable table, int sqlType, int length) {
-		this.table = table;
-		this.sqlType = sqlType;
+	public void setLength(int length) {
 		this.length = length;
+	}
+
+	public int getSqlType() {
+		return sqlType;
+	}
+
+	public void setSqlType(int sqlType) {
+		this.sqlType = sqlType;
+	}
+
+	public RdbmsTable getRdbmsTable() {
+		return table;
+	}
+
+	public void setRdbmsTable(RdbmsTable table) {
+		this.table = table;
 	}
 
 	public String getName() {
@@ -71,7 +86,9 @@ public class ValueTable {
 		if (!table.isCreated()) {
 			createTable();
 			table.index(PKEY);
-			table.index(VALUE_INDEX);
+			if (INDEX_VALUES) {
+				table.index(VALUE_INDEX);
+			}
 		} else {
 			table.count();
 		}
