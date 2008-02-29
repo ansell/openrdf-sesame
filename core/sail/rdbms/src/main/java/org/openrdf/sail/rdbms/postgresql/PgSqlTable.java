@@ -23,8 +23,8 @@ public class PgSqlTable extends RdbmsTable {
 
 	@Override
 	protected String buildLongIndex(String... columns) {
-		// FIXME
-		return buildIndex(columns);
+		// TODO How can we index text columns?
+		return null;
 	}
 
 	@Override
