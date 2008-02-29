@@ -103,6 +103,7 @@ public class RdbmsTableFactory {
 			int length) {
 		ValueTable table = newValueTable();
 		table.setRdbmsTable(createTable(conn, name));
+		table.setTemporaryTable(createTemporaryTable(conn, "INSERT_" + name));
 		table.setSqlType(sqlType);
 		table.setLength(length);
 		return table;

@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.rdbms.postgresql;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -19,30 +18,36 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * 
  */
 public class PgSqlValueTable extends ValueTable {
-	private String EXECUTE_INSERT;
 
 	@Override
 	public void initialize() throws SQLException {
 		super.initialize();
 		StringBuilder sb = new StringBuilder();
-		sb.append("PREPARE ").append(getRdbmsTable().getName());
+		sb.append("PREPARE ").append(getTemporaryTable().getName());
 		sb.append("_insert (bigint, ");
 		sb.append(getDeclaredSqlType(getSqlType(), getLength())
 				.replaceAll("\\(.*\\)", ""));
 		sb.append(") AS\n");
-		sb.append("INSERT INTO ").append(getRdbmsTable().getName());
+		sb.append("INSERT INTO ").append(getTemporaryTable().getName());
 		sb.append(" VALUES ($1, $2)");
-		getRdbmsTable().execute(sb.toString());
-		
+		getTemporaryTable().execute(sb.toString());
 		sb.delete(0, sb.length());
-		sb.append("EXECUTE ").append(getRdbmsTable().getName());
+		sb.append("EXECUTE ").append(getTemporaryTable().getName());
 		sb.append("_insert(?, ?)");
-		EXECUTE_INSERT = sb.toString();
-	}
-
-	@Override
-	protected PreparedStatement prepareInsert() throws SQLException {
-		return getRdbmsTable().prepareStatement(EXECUTE_INSERT);
+		INSERT = sb.toString();
+		sb.delete(0, sb.length());
+		sb.append("PREPARE ").append(getTemporaryTable().getName());
+		sb.append("_insert_select AS\n");
+		sb.append("INSERT INTO ").append(getRdbmsTable().getName());
+		sb.append(" (id, value) SELECT DISTINCT id, value FROM ");
+		sb.append(getTemporaryTable().getName()).append(" tmp\n");
+		sb.append("WHERE NOT EXISTS (SELECT id FROM ").append(getRdbmsTable().getName());
+		sb.append(" val WHERE val.id = tmp.id)");
+		getTemporaryTable().execute(sb.toString());
+		sb.delete(0, sb.length());
+		sb.append("EXECUTE ").append(getTemporaryTable().getName());
+		sb.append("_insert_select");
+		INSERT_SELECT = sb.toString();
 	}
 
 	@Override

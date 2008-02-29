@@ -8,14 +8,11 @@ package org.openrdf.sail.rdbms.schema;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.Collection;
 import java.util.Locale;
 import java.util.TimeZone;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.URIImpl;
 
@@ -49,7 +46,6 @@ public class LiteralTable {
 	private ValueTable datatypes;
 	private ValueTable numeric;
 	private ValueTable dateTime;
-	private String SELECT;
 	private int version;
 
 	public ValueTable getLabelTable() {
@@ -107,30 +103,6 @@ public class LiteralTable {
 		datatypes.initialize();
 		numeric.initialize();
 		dateTime.initialize();
-		StringBuilder sb = new StringBuilder();
-		if (ONLY_INSERT_LABEL) {
-			sb.append("SELECT labels.id, labels.value FROM ");
-			sb.append(labels.getName()).append(" labels\n");
-		} else {
-			sb.append("SELECT labels.id, CASE WHEN labels.value IS NOT NULL THEN labels.value ELSE ll.value END, g.value, d.value\n");
-			sb.append("FROM ").append(labels.getName()).append(" labels\n");
-			sb.append(" LEFT JOIN ").append(longLabels.getName());
-			sb.append(" ll ON (ll.id = labels.id)\n");
-			sb.append(" LEFT JOIN ").append(languages.getName());
-			sb.append(" g ON (g.id = labels.id)\n");
-			sb.append(" LEFT JOIN ").append(datatypes.getName());
-			sb.append(" d ON (d.id = labels.id)\n");
-		}
-		sb.append("WHERE labels.value IN (");
-		for (int i = 0, n = getSelectChunkSize(); i < n; i++) {
-			sb.append("?,");
-		}
-		sb.setCharAt(sb.length() - 1, ')');
-		SELECT = sb.toString();
-	}
-
-	public int getSelectChunkSize() {
-		return labels.getSelectChunkSize();
 	}
 
 	public int getBatchSize() {
@@ -192,34 +164,6 @@ public class LiteralTable {
 		numeric.optimize();
 		dateTime.optimize();
 	}
-
-	public void load(Collection<? extends Literal> literals, LiteralHandler handler)
-			throws SQLException {
-		PreparedStatement stmt = prepareSelect();
-		try {
-			int p = 0;
-			for (Literal lit : literals) {
-				stmt.setString(++p, lit.getLabel());
-				if (p < getSelectChunkSize())
-					continue;
-				importNeededIds(stmt, handler);
-				p = 0;
-			}
-			if (p > 0) {
-				while (p < getSelectChunkSize()) {
-					stmt.setNull(++p, Types.VARCHAR);
-				}
-				importNeededIds(stmt, handler);
-			}
-		} finally {
-			stmt.close();
-		}
-	}
-
-	protected PreparedStatement prepareSelect() throws SQLException {
-		return labels.prepareStatement(SELECT);
-	}
-
 	protected void importNeededIds(PreparedStatement stmt,
 			LiteralHandler handler) throws SQLException {
 		ResultSet rs = stmt.executeQuery();

@@ -54,9 +54,9 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
 public class RdbmsTripleRepository {
 	public static int MIN_QUEUE_SIZE = 1024;
 	public static int BATCH_SIZE = 10240;
-	public static int MAX_THREADS = 2;
+	public static int MAX_THREADS = 3;
 	public static int MAX_QUEUE = MAX_THREADS * 2 + 1;
-	public static int FLUSH_EVERY = 100000;
+	public static int FLUSH_EVERY = 500000;
 	public static int COMMIT_EVERY = Integer.MAX_VALUE;//1000000;
 	private Logger logger = LoggerFactory.getLogger(RdbmsTripleRepository.class);
 	private Connection conn;

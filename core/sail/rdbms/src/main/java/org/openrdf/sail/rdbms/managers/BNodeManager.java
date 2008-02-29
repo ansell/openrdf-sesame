@@ -6,15 +6,11 @@
 package org.openrdf.sail.rdbms.managers;
 
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
 
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsBNode;
-import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.schema.IdCode;
 import org.openrdf.sail.rdbms.schema.ResourceTable;
-import org.openrdf.sail.rdbms.schema.ResourceTable.HandleIdValue;
 
 /**
  * Manages BNodes. Including creating, inserting, and looking up their
@@ -27,8 +23,7 @@ public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
 	public static BNodeManager instance;
 	private ResourceTable table;
 
-	public BNodeManager(Lock idLock, ResourceTable table) {
-		super(idLock);
+	public BNodeManager(ResourceTable table) {
 		this.table = table;
 		instance = this;
 	}
@@ -54,11 +49,6 @@ public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
 	}
 
 	@Override
-	protected int getSelectChunkSize() {
-		return table.getSelectChunkSize();
-	}
-
-	@Override
 	protected String key(RdbmsBNode value) {
 		return value.stringValue();
 	}
@@ -66,21 +56,6 @@ public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
 	@Override
 	protected void insert(long id, RdbmsBNode resource) throws SQLException {
 		table.insert(id, resource.stringValue());
-	}
-
-	@Override
-	protected void loadIds(final Map<String, RdbmsBNode> needIds) throws SQLException {
-		final int version = table.getIdVersion();
-		HandleIdValue handler = new HandleIdValue() {
-			public void handleIdValue(long id, String value) {
-				RdbmsResource res = needIds.get(value);
-				if (res != null) {
-					res.setInternalId(id);
-					res.setVersion(version);
-				}
-			}
-		};
-		table.load(needIds.keySet(), handler);
 	}
 
 	@Override
