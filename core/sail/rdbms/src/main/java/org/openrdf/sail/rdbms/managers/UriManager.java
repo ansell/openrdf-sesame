@@ -7,6 +7,7 @@ package org.openrdf.sail.rdbms.managers;
 
 import java.sql.SQLException;
 
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.schema.IdCode;
@@ -73,6 +74,11 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	protected void optimize() throws SQLException {
 		shorter.optimize();
 		longer.optimize();
+	}
+
+	@Override
+	protected RdbmsURI createClosedSignal() {
+		return new RdbmsURI(new URIImpl("urn:closedSignal"));
 	}
 
 }

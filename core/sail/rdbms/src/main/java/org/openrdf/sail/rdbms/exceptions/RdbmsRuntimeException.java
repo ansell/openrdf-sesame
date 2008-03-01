@@ -28,4 +28,8 @@ public class RdbmsRuntimeException extends RuntimeException {
 		super(e);
 	}
 
+	public RdbmsRuntimeException(InterruptedException e) {
+		super(e);
+	}
+
 }

@@ -16,11 +16,12 @@ import java.sql.SQLException;
 public class PredicateTable {
 	public static int tables_created;
 	public static int total_st;
+	public static final boolean UNIQUE_INDEX_TRIPLES = true;
 	public static final boolean INDEX_TRIPLES = true;
-	private static final String[] PKEY = { "ctx", "subj", "obj" };
+	private static final String[] PKEY = { "obj", "subj", "ctx" };
 	private static final String[] SUBJ_INDEX = { "subj" };
-	private static final String[] OBJ_INDEX = { "obj" };
-	private static final String[] PRED_PKEY = { "ctx", "subj", "pred", "obj" };
+	private static final String[] CTX_INDEX = { "ctx" };
+	private static final String[] PRED_PKEY = { "obj", "subj", "pred", "ctx" };
 	private static final String[] PRED_INDEX = { "pred" };
 	private static final String[] OBJ_CONTAINS = new String[IdCode.values().length];
 	private static final String[] SUBJ_CONTAINS = new String[IdCode.values().length];
@@ -63,17 +64,23 @@ public class PredicateTable {
 			return;
 		table.createTransactionalTable(buildTableColumns());
 		total_st++;
-		if (INDEX_TRIPLES) {
+		if (UNIQUE_INDEX_TRIPLES) {
 			if (isPredColumnPresent()) {
 				table.index(PRED_PKEY);
-				table.index(PRED_INDEX);
+				total_st++;
 			} else {
 				table.index(PKEY);
+				total_st++;
 			}
-			total_st++;
-			table.index(OBJ_INDEX);
-			total_st++;
+		}
+		if (INDEX_TRIPLES) {
+			if (isPredColumnPresent()) {
+				table.index(PRED_INDEX);
+				total_st++;
+			}
 			table.index(SUBJ_INDEX);
+			total_st++;
+			table.index(CTX_INDEX);
 			total_st++;
 		}
 		initialize = true;

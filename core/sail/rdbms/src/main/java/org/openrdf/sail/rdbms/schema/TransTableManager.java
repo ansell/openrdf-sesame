@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 public class TransTableManager {
 	public static final int POPULAR = 64;
 	public static int BATCH_SIZE = 512;
-	public static final boolean TEMPORARY_TABLE_USED = PredicateTable.INDEX_TRIPLES;
+	public static final boolean TEMPORARY_TABLE_USED = PredicateTable.UNIQUE_INDEX_TRIPLES;
 	private RdbmsTableFactory factory;
 	private PredicateTableManager predicates;
 	private RdbmsTable temporaryTable;
@@ -87,7 +87,6 @@ public class TransTableManager {
 		int count = 0;
 		for (TransactionTable table : getTables()) {
 			count += table.flush();
-			table.cleanup();
 		}
 		return count;
 	}
@@ -102,21 +101,12 @@ public class TransTableManager {
 			if (!table.isReady())
 				continue;
 			count += table.flush();
-			table.cleanup();
 		}
 		return count;
 	}
 
-	public void cleanup() throws SQLException {
-		synchronized (tables) {
-			for (TransactionTable table : tables.values()) {
-				table.cleanup();
-			}
-		}
-	}
-
 	public void close() throws SQLException {
-		cleanup();
+		// allow subclasses to override
 	}
 
 	public String findTableName(long pred) throws SQLException {
@@ -186,7 +176,6 @@ public class TransTableManager {
 		synchronized (tables) {
 			for (TransactionTable table : tables.values()) {
 				table.committed();
-				table.cleanup();
 			}
 			list = null;
 			tables.clear();
@@ -218,6 +207,7 @@ public class TransTableManager {
 				list = null;
 			}
 			synchronized (popular) {
+				popular.remove(table);
 				popular.put(table, Boolean.TRUE);
 			}
 			return table;
