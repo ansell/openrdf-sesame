@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsLiteral;
@@ -49,6 +50,11 @@ public class LiteralManager extends ValueManagerBase<Literal, RdbmsLiteral> {
 	public LiteralManager(LiteralTable table) {
 		this.table = table;
 		instance = this;
+	}
+
+	@Override
+	protected RdbmsLiteral createClosedSignal() {
+		return new RdbmsLiteral(new LiteralImpl(""));
 	}
 
 	@Override

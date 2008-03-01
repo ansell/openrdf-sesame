@@ -19,7 +19,7 @@ import java.sql.Types;
 public class ValueTable {
 	public static int total_rows;
 	public static int total_st;
-	public static int BATCH_SIZE = 5120;
+	public static int BATCH_SIZE = 8192;
 	public static final boolean INDEX_VALUES = false;
 	public static final long NIL_ID = 0;
 	private static final String[] PKEY = { "id" };
@@ -109,35 +109,36 @@ public class ValueTable {
 		}
 	}
 
-	public synchronized void insert(long id, Object value) throws SQLException {
-		if (insertStmt == null) {
-			insertStmt = prepareInsert();
+	public void insert(long id, Object value) throws SQLException {
+		PreparedStatement stmt = null;
+		synchronized (this) {
+			if (insertStmt == null) {
+				insertStmt = prepareInsert();
+			}
+			insertStmt.setLong(1, id);
+			insertStmt.setObject(2, value);
+			insertStmt.addBatch();
+			if (++uploadCount > getBatchSize()) {
+				uploadCount = 0;
+				stmt = insertStmt;
+				insertStmt = null;
+			}
 		}
-		insertStmt.setLong(1, id);
-		insertStmt.setObject(2, value);
-		insertStmt.addBatch();
-		if (++uploadCount > getBatchSize()) {
-			flush();
+		if (stmt != null) {
+			flush(stmt);
 		}
 	}
 
-	public synchronized int flush() throws SQLException {
-		if (insertStmt == null)
-			return 0;
-		int count = 0;
-		synchronized(temporary) {
-			insertStmt.executeBatch();
-			total_st += 1;
-			count = temporary.executeUpdate(INSERT_SELECT);
-			total_st += 1;
-			total_rows += count;
-			temporary.clear();
-			total_st += 1;
+	public int flush() throws SQLException {
+		PreparedStatement stmt;
+		synchronized (this) {
+			uploadCount = 0;
+			stmt = insertStmt;
+			insertStmt = null;
 		}
-		insertStmt = null;
-		uploadCount = 0;
-		table.modified(count, 0);
-		return count;
+		if (stmt == null)
+			return 0;
+		return flush(stmt);
 	}
 
 	public void optimize() throws SQLException {
@@ -161,8 +162,10 @@ public class ValueTable {
 	}
 
 	public void expunge(String condition) throws SQLException {
-		int count = table.executeUpdate(EXPUNGE + condition);
-		table.modified(0, count);
+		synchronized (table) {
+			int count = table.executeUpdate(EXPUNGE + condition);
+			table.modified(0, count);
+		}
 	}
 
 	protected PreparedStatement prepareInsert() throws SQLException {
@@ -217,6 +220,29 @@ public class ValueTable {
 	@Override
 	public String toString() {
 		return getName();
+	}
+
+	private int flush(PreparedStatement stmt)
+		throws SQLException
+	{
+		try {
+			synchronized (table) {
+				int count = 0;
+				synchronized(temporary) {
+					stmt.executeBatch();
+					total_st += 1;
+					count = temporary.executeUpdate(INSERT_SELECT);
+					total_st += 1;
+					total_rows += count;
+					temporary.clear();
+					total_st += 1;
+				}
+				table.modified(count, 0);
+				return count;
+			}
+		} finally {
+			stmt.close();
+		}
 	}
 
 }

@@ -60,24 +60,32 @@ public class TransactionTable {
 		subjTypes = statements.getSubjTypes().clone();
 	}
 
-	public synchronized void insert(long ctx, long subj, long pred, long obj)
+	public void insert(long ctx, long subj, long pred, long obj)
 			throws SQLException {
-		if (insertStmt == null) {
-			insertStmt = prepareInsert();
+		PreparedStatement stmt = null;
+		synchronized (this) {
+			if (insertStmt == null) {
+				insertStmt = prepareInsert();
+			}
+			insertStmt.setLong(1, ctx);
+			insertStmt.setLong(2, subj);
+			if (temporary == null && !statements.isPredColumnPresent()) {
+				insertStmt.setLong(3, obj);
+			} else {
+				insertStmt.setLong(3, pred);
+				insertStmt.setLong(4, obj);
+			}
+			insertStmt.addBatch();
+			subjTypes.add(IdCode.decode(subj));
+			objTypes.add(IdCode.decode(obj));
+			if (++uploadCount == getBatchSize()) {
+				uploadCount = 0;
+				stmt = insertStmt;
+				insertStmt = null;
+			}
 		}
-		insertStmt.setLong(1, ctx);
-		insertStmt.setLong(2, subj);
-		if (temporary == null && !statements.isPredColumnPresent()) {
-			insertStmt.setLong(3, obj);
-		} else {
-			insertStmt.setLong(3, pred);
-			insertStmt.setLong(4, obj);
-		}
-		subjTypes.add(IdCode.decode(subj));
-		objTypes.add(IdCode.decode(obj));
-		insertStmt.addBatch();
-		if (++uploadCount > getBatchSize()) {
-			flush();
+		if (stmt != null) {
+			flush(stmt);
 		}
 	}
 
@@ -85,36 +93,19 @@ public class TransactionTable {
 		return statements.isReady();
 	}
 
-	public synchronized int flush() throws SQLException {
+	public int flush() throws SQLException {
 		if (insertStmt == null)
 			return 0;
 		statements.blockUntilReady();
-		if (temporary == null) {
-			long start = System.currentTimeMillis();
-			insertStmt.executeBatch();
-			long end = System.currentTimeMillis();
-			addedCount += uploadCount;
-			total_rows += uploadCount;
-			total_st += 1;
-			total_wait += end - start;
+		PreparedStatement stmt;
+		synchronized (this) {
 			uploadCount = 0;
-		} else {
-			synchronized (temporary) {
-				long start = System.currentTimeMillis();
-				insertStmt.executeBatch();
-				int count = temporary.executeUpdate(buildInsertSelect());
-				long end = System.currentTimeMillis();
-				temporary.clear();
-				addedCount += count;
-				total_rows += count;
-				total_st += 2;
-				total_wait += end - start;
-				uploadCount = 0;
-			}
+			stmt = insertStmt;
+			insertStmt = null;
 		}
-		statements.setObjTypes(objTypes);
-		statements.setSubjTypes(subjTypes);
-		return addedCount;
+		if (stmt == null)
+			return 0;
+		return flush(stmt);
 	}
 
 	protected String buildInsertSelect() throws SQLException {
@@ -142,13 +133,6 @@ public class TransactionTable {
 		sb.append(" AND st.obj = tr.obj");
 		sb.append(")");
 		return sb.toString();
-	}
-
-	public synchronized void cleanup() throws SQLException {
-		if (insertStmt != null) {
-			insertStmt.close();
-			insertStmt = null;
-		}
 	}
 
 	public void committed() throws SQLException {
@@ -200,6 +184,39 @@ public class TransactionTable {
 
 	protected boolean isPredColumnPresent() {
 		return statements.isPredColumnPresent();
+	}
+
+	private int flush(PreparedStatement stmt)
+		throws SQLException
+	{
+		try {
+			if (temporary == null) {
+				long start = System.currentTimeMillis();
+				int[] results = stmt.executeBatch();
+				long end = System.currentTimeMillis();
+				addedCount += results.length;
+				total_rows += results.length;
+				total_st += 1;
+				total_wait += end - start;
+			} else {
+				synchronized (temporary) {
+					long start = System.currentTimeMillis();
+					stmt.executeBatch();
+					int count = temporary.executeUpdate(buildInsertSelect());
+					long end = System.currentTimeMillis();
+					temporary.clear();
+					addedCount += count;
+					total_rows += count;
+					total_st += 2;
+					total_wait += end - start;
+				}
+			}
+			statements.setObjTypes(objTypes);
+			statements.setSubjTypes(subjTypes);
+			return addedCount;
+		} finally {
+			stmt.close();
+		}
 	}
 
 }

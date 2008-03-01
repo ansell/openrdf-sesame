@@ -6,40 +6,42 @@
 package org.openrdf.sail.rdbms.managers.base;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.collections.LRUMap;
 
+import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 
 public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 	public static final boolean STORE_VALUES = true;
-	public static int MAX_QUEUE = Integer.MAX_VALUE;//64;
 	private Logger logger = LoggerFactory.getLogger(ValueManagerBase.class);
-	boolean closed;
 	Exception exc;
 	private LRUMap<K, V> cache;
-	public LinkedList<Map<K, V>> queue = new LinkedList<Map<K, V>>();
-	private List<Object> threadFlush = new CopyOnWriteArrayList<Object>();
-	private List<Object> threadClose = new CopyOnWriteArrayList<Object>();
+	public BlockingQueue<V> queue;
+	private final Object working = new Object();
+	private Thread thread;
+	private V closedSignal;
+
+	public void init() {
+		cache = new LRUMap<K, V>(getBatchSize());
+		queue = new ArrayBlockingQueue<V>(getBatchSize());
+		thread = startThread(working);
+		closedSignal = createClosedSignal();
+	}
 
 	public void close() throws SQLException {
 		flush();
-		closed = true;
-		synchronized (queue) {
-			queue.notify();
+		try {
+			queue.put(closedSignal);
+			thread.join();
 		}
-		for (Object lock : threadClose) {
-			synchronized (lock) {
-				// wait for thread
-			}
+		catch (InterruptedException e) {
+			logger.warn(e.toString(), e);
 		}
 		throwException();
 	}
@@ -50,12 +52,6 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		synchronized (cache) {
 			if (cache.containsKey(key))
 				return cache.get(key);
-		}
-		synchronized (queue) {
-			for (Map<K,V> map : queue) {
-				if (map.containsKey(key))
-					return map.get(key);
-			}
 		}
 		return null;
 	}
@@ -68,33 +64,25 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		synchronized (cache) {
 			cache.put(key(value), value);
 		}
-		lookup(value);
+		putInQueue(value);
 		return value;
 	}
 
 	public void flush()
 		throws SQLException
 	{
-		throwException();
-		synchronized (queue) {
-			if (!queue.isEmpty()) {
-				while (!queue.isEmpty()) {
-					insert(queue.pop());
-				}
+		synchronized (working) {
+			throwException();
+			for (V taken = queue.poll(); taken != null; taken = queue.poll()) {
+				insert(taken);
 			}
-			queue.notify();
+			flushTable();
 		}
-		for (Object lock : threadFlush) {
-			synchronized (lock) {
-				// wait for thread
-			}
-		}
-		callFlushTable();
 	}
 
 	public long getInternalId(V val) throws SQLException {
 		if (needsId(val)) {
-			lookup(val);
+			putInQueue(val);
 		}
 		if (val.getInternalId() != null)
 			return val.getInternalId();
@@ -103,10 +91,7 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		return id;
 	}
 
-	public void init() {
-		cache = new LRUMap<K, V>(getBatchSize() * 2);
-		startThread();
-	}
+	protected abstract V createClosedSignal();
 
 	protected abstract void flushTable() throws SQLException;
 
@@ -123,56 +108,32 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 
 	protected abstract void optimize() throws SQLException;
 
-	void lookupThread(Object flushLock, Object closeLock)
+	void lookupThread(Object working)
 		throws SQLException, InterruptedException
 	{
-		logger.debug("Starting helper thread {}", Thread.currentThread().getName());
-		while (!closed) {
-			Map<K, V> values = null;
-			synchronized (queue) {
+		String name = Thread.currentThread().getName();
+		logger.debug("Starting helper thread {}", name);
+		while (true) {
+			V taken = queue.take();
+			if (taken == closedSignal)
+				break;
+			synchronized (working) {
+				insert(taken);
 				if (queue.isEmpty()) {
-					queue.wait();
-				}
-				if (closed)
-					return;
-			}
-			synchronized (flushLock) {
-				synchronized (queue) {
-					if (!queue.isEmpty()) {
-						values = queue.pop();
-					}
-				}
-				if (values != null) {
-					insert(values);
-				}
-				int size;
-				synchronized (queue) {
-					size = queue.size();
-				}
-				if (size < 2) {
-					callFlushTable();
+					flushTable();
 				}
 			}
-			synchronized (closeLock) {
-				if (!closed && values != null) {
-					values = null;
-					optimize();
-				}
-			}
+			optimize();
 		}
-		logger.debug("Closing helper thread {}", Thread.currentThread().getName());
+		logger.debug("Closing helper thread {}", name);
 	}
 
-	private void startThread() {
-		final Object flushLock = new Object();
-		final Object closeLock = new Object();
-		threadFlush.add(flushLock);
-		threadClose.add(closeLock);
-		String name = getClass().getSimpleName() + "-lookup-" + threadFlush.size();
+	private Thread startThread(final Object working) {
+		String name = getClass().getSimpleName() + "-lookup";
 		Thread lookupThread = new Thread(new Runnable() {
 			public void run() {
 				try {
-					lookupThread(flushLock, closeLock);
+					lookupThread(working);
 				} catch (Exception e) {
 					exc = e;
 					logger.error(e.toString(), e);
@@ -180,38 +141,34 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 			}
 		}, name);
 		lookupThread.start();
+		return lookupThread;
 	}
 
-	private void lookup(V value) throws SQLException {
-		Map<K, V> values = null;
-		synchronized (queue) {
-			if (queue.isEmpty() || queue.getLast().size() >= getBatchSize()) {
-				queue.add(new HashMap<K, V>(getBatchSize()));
-			}
-			queue.getLast().put(key(value), value);
-			queue.notify();
-			if (queue.size() > MAX_QUEUE) {
-				values = queue.pop();
+	private void putInQueue(V value) {
+		try {
+			if (!value.isQueued()) {
+				value.setQueued(true);
+				queue.put(value);
 			}
 		}
-		if (values != null) {
-			insert(values);
+		catch (InterruptedException e) {
+			throw new RdbmsRuntimeException(e);
 		}
 	}
 
-	private void insert(Map<K, V> values)
+	private void insert(V value)
 		throws SQLException
 	{
-		for (V value : values.values()) {
-			insert(getInternalId(value), value);
+		if (needsId(value)) {
+			Long id = value.getInternalId();
+			if (id == null) {
+				id = getMissingId(value);
+			}
+			value.setInternalId(id);
 			value.setVersion(getIdVersion());
+			insert(id, value);
 		}
-	}
-
-	private void callFlushTable()
-		throws SQLException
-	{
-		flushTable();
+		value.setQueued(false);
 	}
 
 	private boolean needsId(V value) {
