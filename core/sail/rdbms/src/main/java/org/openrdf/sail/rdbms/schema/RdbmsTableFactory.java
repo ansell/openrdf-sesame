@@ -71,10 +71,10 @@ public class RdbmsTableFactory {
 		return literals;
 	}
 
-	public PredicateTable createPredicateTable(Connection conn, String tableName) {
+	public TripleTable createTripleTable(Connection conn, String tableName) {
 		RdbmsTable table = newTable(tableName);
 		table.setConnection(conn);
-		return new PredicateTable(table);
+		return new TripleTable(table);
 	}
 
 	public RdbmsTable createTemporaryTable(Connection conn) {

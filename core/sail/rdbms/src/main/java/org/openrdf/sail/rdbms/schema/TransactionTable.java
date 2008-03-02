@@ -21,7 +21,7 @@ public class TransactionTable {
 	public static int total_st;
 	public static int total_wait;
 	private int batchSize;
-	private PredicateTable statements;
+	private TripleTable statements;
 	private int addedCount;
 	private int removedCount;
 	private PreparedStatement insertStmt;
@@ -39,7 +39,7 @@ public class TransactionTable {
 		this.conn = conn;
 	}
 
-	public void setPredicateTable(PredicateTable statements) {
+	public void setPredicateTable(TripleTable statements) {
 		this.statements = statements;
 	}
 

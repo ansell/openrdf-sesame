@@ -25,7 +25,7 @@ import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 import org.openrdf.sail.rdbms.optimizers.SelectQueryOptimizerFactory;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
-import org.openrdf.sail.rdbms.schema.PredicateTableManager;
+import org.openrdf.sail.rdbms.schema.TripleTableManager;
 import org.openrdf.sail.rdbms.schema.RdbmsTableFactory;
 import org.openrdf.sail.rdbms.schema.ResourceTable;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
@@ -48,7 +48,7 @@ public class RdbmsConnectionFactory {
 	private Connection index;
 	private LiteralTable literalTable;
 	private NamespaceManager namespaces;
-	private PredicateTableManager predicateTableManager;
+	private TripleTableManager predicateTableManager;
 	private ResourceTable uriTable;
 	private ResourceTable longUriTable;
 	private RdbmsValueFactory vf;
@@ -108,7 +108,7 @@ public class RdbmsConnectionFactory {
 			uriManager.init();
 			predicateManager = new PredicateManager();
 			predicateManager.setUriManager(uriManager);
-			predicateTableManager = new PredicateTableManager(tables);
+			predicateTableManager = new TripleTableManager(tables);
 			predicateTableManager.setConnection(index);
 			predicateTableManager.setBNodeTable(bnodeTable);
 			predicateTableManager.setURITable(uriTable);

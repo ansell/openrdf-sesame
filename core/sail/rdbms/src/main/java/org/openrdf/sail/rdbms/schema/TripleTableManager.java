@@ -27,12 +27,12 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.sail.rdbms.managers.PredicateManager;
 
 /**
- * Manages and delegates to the collection of {@link PredicateTable}.
+ * Manages and delegates to the collection of {@link TripleTable}.
  * 
  * @author James Leigh
  * 
  */
-public class PredicateTableManager {
+public class TripleTableManager {
 	private static final String DEFAULT_TABLE_PREFIX = "TRIPLES";
 	private static final String OTHER_TRIPLES_TABLE = "OTHER_TRIPLES";
 	public static int MAX_TABLES = Integer.MAX_VALUE;//1000;
@@ -43,16 +43,16 @@ public class PredicateTableManager {
 	private RdbmsTableFactory factory;
 	private Thread initThread;
 	private LiteralTable literals;
-	private Logger logger = LoggerFactory.getLogger(PredicateTableManager.class);
+	private Logger logger = LoggerFactory.getLogger(TripleTableManager.class);
 	private ResourceTable longUris;
 	private PredicateManager predicates;
-	private LinkedList<PredicateTable> queue = new LinkedList<PredicateTable>();
+	private LinkedList<TripleTable> queue = new LinkedList<TripleTable>();
 	private Pattern tablePrefix = Pattern.compile("\\W(\\w*)\\W*$");
-	private Map<Long, PredicateTable> tables = new HashMap<Long, PredicateTable>();
+	private Map<Long, TripleTable> tables = new HashMap<Long, TripleTable>();
 	private ResourceTable uris;
 	Exception exc;
 
-	public PredicateTableManager(RdbmsTableFactory factory) {
+	public TripleTableManager(RdbmsTableFactory factory) {
 		this.factory = factory;
 	}
 
@@ -100,11 +100,11 @@ public class PredicateTableManager {
 		synchronized (queue) {
 			queue.notify();
 		}
-		Iterator<Entry<Long, PredicateTable>> iter;
+		Iterator<Entry<Long, TripleTable>> iter;
 		iter = tables.entrySet().iterator();
 		while (iter.hasNext()) {
-			Entry<Long, PredicateTable> next = iter.next();
-			PredicateTable table = next.getValue();
+			Entry<Long, TripleTable> next = iter.next();
+			TripleTable table = next.getValue();
 			if (table.isEmpty()) {
 				predicates.remove(next.getKey());
 				table.drop();
@@ -117,7 +117,7 @@ public class PredicateTableManager {
 		return getPredicateTable(pred).getName();
 	}
 
-	public synchronized PredicateTable getExistingTable(long pred) {
+	public synchronized TripleTable getExistingTable(long pred) {
 		if (tables.containsKey(pred))
 			return tables.get(pred);
 		return tables.get(OTHER_PRED);
@@ -127,7 +127,7 @@ public class PredicateTableManager {
 		return new ArrayList<Long>(tables.keySet());
 	}
 
-	public synchronized PredicateTable getPredicateTable(long pred) throws SQLException {
+	public synchronized TripleTable getPredicateTable(long pred) throws SQLException {
 		assert pred != 0;
 			if (tables.containsKey(pred))
 				return tables.get(pred);
@@ -137,7 +137,7 @@ public class PredicateTableManager {
 			if (tables.size() >= MAX_TABLES) {
 				tableName = OTHER_TRIPLES_TABLE;
 			}
-			PredicateTable table = factory.createPredicateTable(conn, tableName);
+			TripleTable table = factory.createTripleTable(conn, tableName);
 			if (tables.size() >= MAX_TABLES) {
 				table.setPredColumnPresent(true);
 				initTable(table);
@@ -187,12 +187,12 @@ public class PredicateTableManager {
 		}
 	}
 
-	protected Map<Long, PredicateTable> findPredicateTables()
+	protected Map<Long, TripleTable> findPredicateTables()
 			throws SQLException {
-		Map<Long, PredicateTable> tables = new HashMap<Long, PredicateTable>();
+		Map<Long, TripleTable> tables = new HashMap<Long, TripleTable>();
 		Set<String> names = findPredicateTableNames();
 		for (String tableName : names) {
-			PredicateTable table = factory.createPredicateTable(conn, tableName);
+			TripleTable table = factory.createTripleTable(conn, tableName);
 			if (tableName.equalsIgnoreCase(OTHER_TRIPLES_TABLE)) {
 				table.setPredColumnPresent(true);
 			}
@@ -231,7 +231,7 @@ public class PredicateTableManager {
 
 	protected synchronized String getExpungeCondition() throws SQLException {
 		StringBuilder sb = new StringBuilder(1024);
-		for (Map.Entry<Long, PredicateTable> e : tables.entrySet()) {
+		for (Map.Entry<Long, TripleTable> e : tables.entrySet()) {
 			sb.append("\nAND id != ").append(e.getKey());
 			if (e.getValue().isEmpty())
 				continue;
@@ -278,7 +278,7 @@ public class PredicateTableManager {
 	void initThread() throws SQLException, InterruptedException {
 		logger.debug("Starting helper thread {}", initThread.getName());
 		while (!closed) {
-			PredicateTable table = null;
+			TripleTable table = null;
 			synchronized (queue) {
 				if (queue.isEmpty()) {
 					queue.wait();
@@ -303,7 +303,7 @@ public class PredicateTableManager {
 		return names;
 	}
 
-	private void initTable(PredicateTable table) throws SQLException {
+	private void initTable(TripleTable table) throws SQLException {
 		if (exc != null)
 			throwException();
 		synchronized (queue) {
@@ -312,7 +312,7 @@ public class PredicateTableManager {
 		}
 	}
 
-	private synchronized void putAll(Map<Long, PredicateTable> t) {
+	private synchronized void putAll(Map<Long, TripleTable> t) {
 		tables.putAll(t);
 	}
 

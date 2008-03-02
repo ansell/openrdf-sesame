@@ -5,7 +5,7 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
-import static org.openrdf.sail.rdbms.schema.PredicateTableManager.OTHER_PRED;
+import static org.openrdf.sail.rdbms.schema.TripleTableManager.OTHER_PRED;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,10 +26,10 @@ import java.util.Map.Entry;
  */
 public class TransTableManager {
 	public static final int POPULAR = 64;
-	public static int BATCH_SIZE = 512;
-	public static final boolean TEMPORARY_TABLE_USED = PredicateTable.UNIQUE_INDEX_TRIPLES;
+	public static int BATCH_SIZE = 256;
+	public static final boolean TEMPORARY_TABLE_USED = TripleTable.UNIQUE_INDEX_TRIPLES;
 	private RdbmsTableFactory factory;
-	private PredicateTableManager predicates;
+	private TripleTableManager triples;
 	private RdbmsTable temporaryTable;
 	private Map<Long, TransactionTable> tables = new HashMap<Long, TransactionTable>();
 	private List<TransactionTable> list;
@@ -52,8 +52,8 @@ public class TransTableManager {
 		this.factory = factory;
 	}
 
-	public void setStatementsTable(PredicateTableManager predicateTableManager) {
-		this.predicates = predicateTableManager;
+	public void setStatementsTable(TripleTableManager predicateTableManager) {
+		this.triples = predicateTableManager;
 	}
 
 	public void setFromDummyTable(String fromDummy) {
@@ -110,17 +110,17 @@ public class TransTableManager {
 	}
 
 	public String findTableName(long pred) throws SQLException {
-		return predicates.findTableName(pred);
+		return triples.findTableName(pred);
 	}
 
 	public String getCombinedTableName() throws SQLException {
 		String union = " UNION ALL ";
 		StringBuilder sb = new StringBuilder(1024);
 		sb.append("(");
-		for (Long pred : predicates.getPredicateIds()) {
-			PredicateTable predicate;
+		for (Long pred : triples.getPredicateIds()) {
+			TripleTable predicate;
 			try {
-				predicate = predicates.getPredicateTable(pred);
+				predicate = triples.getPredicateTable(pred);
 			} catch (SQLException e) {
 				throw new AssertionError(e);
 			}
@@ -148,7 +148,7 @@ public class TransTableManager {
 	public String getTableName(long pred) throws SQLException {
 		if (pred == ValueTable.NIL_ID)
 			return getCombinedTableName();
-		String tableName = predicates.getTableName(pred);
+		String tableName = triples.getTableName(pred);
 		if (tableName == null)
 			return getEmptyTableName();
 		return tableName;
@@ -181,7 +181,7 @@ public class TransTableManager {
 			tables.clear();
 		}
 		if (removedCount > 0) {
-			predicates.removed(removedCount, locked);
+			triples.removed(removedCount, locked);
 		}
 	}
 
@@ -194,7 +194,7 @@ public class TransTableManager {
 		synchronized (tables) {
 			TransactionTable table = tables.get(pred);
 			if (table == null) {
-				PredicateTable predicate = predicates.getPredicateTable(pred);
+				TripleTable predicate = triples.getPredicateTable(pred);
 				Long key = pred;
 				if (predicate.isPredColumnPresent()) {
 					key = OTHER_PRED;
@@ -215,34 +215,34 @@ public class TransTableManager {
 	}
 
 	public Collection<Long> getPredicateIds() {
-		return predicates.getPredicateIds();
+		return triples.getPredicateIds();
 	}
 
 	public boolean isPredColumnPresent(Long id) throws SQLException {
 		if (id == ValueTable.NIL_ID)
 			return true;
-		return predicates.getPredicateTable(id).isPredColumnPresent();
+		return triples.getPredicateTable(id).isPredColumnPresent();
 	}
 
 	public ValueTypes getObjTypes(long pred) {
-		PredicateTable table = predicates.getExistingTable(pred);
+		TripleTable table = triples.getExistingTable(pred);
 		if (table == null)
 			return ValueTypes.UNKNOWN;
 		return table.getObjTypes();
 	}
 
 	public ValueTypes getSubjTypes(long pred) {
-		PredicateTable table = predicates.getExistingTable(pred);
+		TripleTable table = triples.getExistingTable(pred);
 		if (table == null)
 			return ValueTypes.RESOURCE;
 		return table.getSubjTypes();
 	}
 
 	public boolean isEmpty() throws SQLException {
-		for (Long pred : predicates.getPredicateIds()) {
-			PredicateTable predicate;
+		for (Long pred : triples.getPredicateIds()) {
+			TripleTable predicate;
 			try {
-				predicate = predicates.getPredicateTable(pred);
+				predicate = triples.getPredicateTable(pred);
 			} catch (SQLException e) {
 				throw new AssertionError(e);
 			}
@@ -253,7 +253,7 @@ public class TransTableManager {
 		return true;
 	}
 
-	protected TransactionTable createTransactionTable(PredicateTable predicate)
+	protected TransactionTable createTransactionTable(TripleTable predicate)
 			throws SQLException {
 		if (temporaryTable == null && TEMPORARY_TABLE_USED) {
 			temporaryTable = createTemporaryTable(conn);
