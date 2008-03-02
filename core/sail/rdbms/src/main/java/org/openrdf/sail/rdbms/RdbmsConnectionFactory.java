@@ -7,6 +7,8 @@ package org.openrdf.sail.rdbms;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.sql.DataSource;
 
@@ -25,10 +27,11 @@ import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 import org.openrdf.sail.rdbms.optimizers.SelectQueryOptimizerFactory;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
-import org.openrdf.sail.rdbms.schema.TripleTableManager;
 import org.openrdf.sail.rdbms.schema.RdbmsTableFactory;
 import org.openrdf.sail.rdbms.schema.ResourceTable;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
+import org.openrdf.sail.rdbms.schema.TripleTableManager;
+import org.openrdf.sail.rdbms.schema.ValueBatch;
 
 /**
  * Responsible to initialise and wire all components together that will be
@@ -48,7 +51,7 @@ public class RdbmsConnectionFactory {
 	private Connection index;
 	private LiteralTable literalTable;
 	private NamespaceManager namespaces;
-	private TripleTableManager predicateTableManager;
+	private TripleTableManager tripleTableManager;
 	private ResourceTable uriTable;
 	private ResourceTable longUriTable;
 	private RdbmsValueFactory vf;
@@ -94,33 +97,37 @@ public class RdbmsConnectionFactory {
 			nsTable.initialize();
 			namespaces.setNamespacesTable(nsTable);
 			namespaces.initialize();
-			bnodeTable = tables.createBNodeTable(lookup);
+			bnodeManager = new BNodeManager();
+			uriManager = new UriManager();
+			bnodeTable = tables.createBNodeTable(lookup, bnodeManager.getQueue());
 			bnodeTable.initialize();
-			uriTable = tables.createURITable(lookup);
+			uriTable = tables.createURITable(lookup, uriManager.getQueue());
 			uriTable.initialize();
-			longUriTable = tables.createLongURITable(lookup);
+			longUriTable = tables.createLongURITable(lookup, uriManager.getQueue());
 			longUriTable.initialize();
-			literalTable = tables.createLiteralTable(literalLookup);
+			literalManager = new LiteralManager();
+			literalTable = tables.createLiteralTable(literalLookup, literalManager.getQueue());
 			literalTable.initialize();
 			vf = new RdbmsValueFactory();
 			vf.setDelegate(ValueFactoryImpl.getInstance());
-			uriManager = new UriManager(uriTable, longUriTable);
+			uriManager.setLonger(longUriTable);
+			uriManager.setShorter(uriTable);
 			uriManager.init();
 			predicateManager = new PredicateManager();
 			predicateManager.setUriManager(uriManager);
-			predicateTableManager = new TripleTableManager(tables);
-			predicateTableManager.setConnection(index);
-			predicateTableManager.setBNodeTable(bnodeTable);
-			predicateTableManager.setURITable(uriTable);
-			predicateTableManager.setLongUriTable(longUriTable);
-			predicateTableManager.setLiteralTable(literalTable);
-			predicateTableManager.setPredicateManager(predicateManager);
-			predicateTableManager.initialize();
-			bnodeManager = new BNodeManager(bnodeTable);
+			tripleTableManager = new TripleTableManager(tables);
+			tripleTableManager.setConnection(index);
+			tripleTableManager.setBNodeTable(bnodeTable);
+			tripleTableManager.setURITable(uriTable);
+			tripleTableManager.setLongUriTable(longUriTable);
+			tripleTableManager.setLiteralTable(literalTable);
+			tripleTableManager.setPredicateManager(predicateManager);
+			tripleTableManager.initialize();
+			bnodeManager.setTable(bnodeTable);
 			bnodeManager.init();
 			vf.setBNodeManager(bnodeManager);
 			vf.setURIManager(uriManager);
-			literalManager = new LiteralManager(literalTable);
+			literalManager.setTable(literalTable);
 			literalManager.init();
 			vf.setLiteralManager(literalManager);
 			vf.setPredicateManager(predicateManager);
@@ -153,7 +160,7 @@ public class RdbmsConnectionFactory {
 			TransTableManager trans = createTransTableManager();
 			trans.setConnection(db);
 			trans.setRdbmsTableFactory(tables);
-			trans.setStatementsTable(predicateTableManager);
+			trans.setStatementsTable(tripleTableManager);
 			trans.setFromDummyTable(getFromDummyTable());
 			trans.initialize();
 			s.setTransaction(trans);
@@ -185,8 +192,8 @@ public class RdbmsConnectionFactory {
 
 	public void shutDown() throws SailException {
 		try {
-			if (predicateTableManager != null) {
-				predicateTableManager.close();
+			if (tripleTableManager != null) {
+				tripleTableManager.close();
 			}
 			if (uriManager != null) {
 				uriManager.close();

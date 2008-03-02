@@ -7,7 +7,6 @@ package org.openrdf.sail.rdbms.managers;
 
 import java.sql.SQLException;
 
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.schema.IdCode;
@@ -25,21 +24,21 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	private ResourceTable shorter;
 	private ResourceTable longer;
 
-	public UriManager(ResourceTable shorter, ResourceTable longer) {
-		this.shorter = shorter;
-		this.longer = longer;
+	public UriManager() {
 		instance = this;
+	}
+
+	public void setShorter(ResourceTable shorter) {
+		this.shorter = shorter;
+	}
+
+	public void setLonger(ResourceTable longer) {
+		this.longer = longer;
 	}
 
 	@Override
 	public int getIdVersion() {
 		return shorter.getIdVersion() + longer.getIdVersion();
-	}
-
-	@Override
-	protected void flushTable() throws SQLException {
-		shorter.flush();
-		longer.flush();
 	}
 
 	@Override
@@ -53,7 +52,7 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	}
 
 	@Override
-	protected void insert(long id, RdbmsURI resource) throws SQLException {
+	protected void insert(long id, RdbmsURI resource) throws SQLException, InterruptedException {
 		String uri = resource.stringValue();
 		if (IdCode.decode(id).isLong()) {
 			longer.insert(id, uri);
@@ -74,11 +73,6 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	protected void optimize() throws SQLException {
 		shorter.optimize();
 		longer.optimize();
-	}
-
-	@Override
-	protected RdbmsURI createClosedSignal() {
-		return new RdbmsURI(new URIImpl("urn:closedSignal"));
 	}
 
 }

@@ -16,7 +16,6 @@ import org.openrdf.model.Value;
 public abstract class RdbmsValue implements Value {
 	private transient Long id;
 	private transient Integer version;
-	private transient boolean queued;
 
 	public RdbmsValue() {
 	}
@@ -40,13 +39,5 @@ public abstract class RdbmsValue implements Value {
 
 	public void setVersion(Integer version) {
 		this.version = version;
-	}
-
-	public boolean isQueued() {
-		return queued;
-	}
-
-	public void setQueued(boolean queued) {
-		this.queued = queued;
 	}
 }

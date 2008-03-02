@@ -11,6 +11,7 @@ import static java.sql.Types.VARCHAR;
 import static java.sql.Types.LONGVARCHAR;
 
 import java.sql.Connection;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Factory class used to create or load the database tables.
@@ -39,28 +40,28 @@ public class RdbmsTableFactory {
 		return new NamespacesTable(createTable(conn, NAMESPACES));
 	}
 
-	public ResourceTable createBNodeTable(Connection conn) {
-		ValueTable table = createValueTable(conn, BNODE_VALUES, VARCHAR, VCS);
+	public ResourceTable createBNodeTable(Connection conn, BlockingQueue<ValueBatch> queue) {
+		ValueTable table = createValueTable(conn, queue, BNODE_VALUES, VARCHAR, VCS);
 		return new ResourceTable(table);
 	}
 
-	public ResourceTable createURITable(Connection conn) {
-		ValueTable table = createValueTable(conn, URI_VALUES, VARCHAR, VCL);
+	public ResourceTable createURITable(Connection conn, BlockingQueue<ValueBatch> queue) {
+		ValueTable table = createValueTable(conn, queue, URI_VALUES, VARCHAR, VCL);
 		return new ResourceTable(table);
 	}
 
-	public ResourceTable createLongURITable(Connection conn) {
-		ValueTable table = createValueTable(conn, LURI_VALUES, LONGVARCHAR);
+	public ResourceTable createLongURITable(Connection conn, BlockingQueue<ValueBatch> queue) {
+		ValueTable table = createValueTable(conn, queue, LURI_VALUES, LONGVARCHAR);
 		return new ResourceTable(table);
 	}
 
-	public LiteralTable createLiteralTable(Connection conn) {
-		ValueTable lbs = createValueTable(conn, LBS, VARCHAR, VCL);
-		ValueTable llbs = createValueTable(conn, LLBS, LONGVARCHAR);
-		ValueTable lgs = createValueTable(conn, LANGS, VARCHAR, VCS);
-		ValueTable dt = createValueTable(conn, DTS, VARCHAR, VCL);
-		ValueTable num = createValueTable(conn, NUM_VALUES, DOUBLE);
-		ValueTable dateTime = createValueTable(conn, TIMES, BIGINT);
+	public LiteralTable createLiteralTable(Connection conn, BlockingQueue<ValueBatch> queue) {
+		ValueTable lbs = createValueTable(conn, queue, LBS, VARCHAR, VCL);
+		ValueTable llbs = createValueTable(conn, queue, LLBS, LONGVARCHAR);
+		ValueTable lgs = createValueTable(conn, queue, LANGS, VARCHAR, VCS);
+		ValueTable dt = createValueTable(conn, queue, DTS, VARCHAR, VCL);
+		ValueTable num = createValueTable(conn, queue, NUM_VALUES, DOUBLE);
+		ValueTable dateTime = createValueTable(conn, queue, TIMES, BIGINT);
 		LiteralTable literals = new LiteralTable();
 		literals.setLabelTable(lbs);
 		literals.setLongLabelTable(llbs);
@@ -95,15 +96,16 @@ public class RdbmsTableFactory {
 		return new RdbmsTable(name);
 	}
 
-	protected ValueTable createValueTable(Connection conn, String name, int sqlType) {
-		return createValueTable(conn, name, sqlType, -1);
+	protected ValueTable createValueTable(Connection conn, BlockingQueue<ValueBatch> queue, String name, int sqlType) {
+		return createValueTable(conn, queue, name, sqlType, -1);
 	}
 
-	protected ValueTable createValueTable(Connection conn, String name, int sqlType,
+	protected ValueTable createValueTable(Connection conn, BlockingQueue<ValueBatch> queue, String name, int sqlType,
 			int length) {
 		ValueTable table = newValueTable();
 		table.setRdbmsTable(createTable(conn, name));
 		table.setTemporaryTable(createTemporaryTable(conn, "INSERT_" + name));
+		table.setQueue(queue);
 		table.setSqlType(sqlType);
 		table.setLength(length);
 		return table;

@@ -113,7 +113,7 @@ public class LiteralTable {
 		return version;
 	}
 
-	public void insertSimple(long id, String label) throws SQLException {
+	public void insertSimple(long id, String label) throws SQLException, InterruptedException {
 		if (IdCode.decode(id).isLong()) {
 			longLabels.insert(id, label);
 		} else {
@@ -122,38 +122,29 @@ public class LiteralTable {
 	}
 
 	public void insertLanguage(long id, String label, String language)
-			throws SQLException {
+			throws SQLException, InterruptedException {
 		insertSimple(id, label);
 		languages.insert(id, language);
 	}
 
 	public void insertDatatype(long id, String label, String datatype)
-			throws SQLException {
+			throws SQLException, InterruptedException {
 		insertSimple(id, label);
 		datatypes.insert(id, datatype);
 	}
 
 	public void insertNumeric(long id, String label, String datatype,
-			double value) throws SQLException {
+			double value) throws SQLException, InterruptedException {
 		labels.insert(id, label);
 		datatypes.insert(id, datatype);
 		numeric.insert(id, value);
 	}
 
 	public void insertDateTime(long id, String label, String datatype,
-			long value) throws SQLException {
+			long value) throws SQLException, InterruptedException {
 		labels.insert(id, label);
 		datatypes.insert(id, datatype);
 		dateTime.insert(id, value);
-	}
-
-	public void flush() throws SQLException {
-		labels.flush();
-		longLabels.flush();
-		languages.flush();
-		datatypes.flush();
-		numeric.flush();
-		dateTime.flush();
 	}
 
 	public void optimize() throws SQLException {

@@ -32,10 +32,6 @@ public class ResourceTable {
 		table.initialize();
 	}
 
-	public int flush() throws SQLException {
-		return table.flush();
-	}
-
 	public String getName() {
 		return table.getName();
 	}
@@ -48,7 +44,7 @@ public class ResourceTable {
 		return version;
 	}
 
-	public void insert(long id, String value) throws SQLException {
+	public void insert(long id, String value) throws SQLException, InterruptedException {
 		table.insert(id, value);
 	}
 
@@ -68,7 +64,6 @@ public class ResourceTable {
 
 	public void removedStatements(int count, String condition)
 			throws SQLException {
-		flush();
 		if (table.expungeRemovedStatements(count, condition)) {
 			version++;
 		}

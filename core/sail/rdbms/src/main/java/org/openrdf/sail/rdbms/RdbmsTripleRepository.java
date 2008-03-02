@@ -207,6 +207,9 @@ public class RdbmsTripleRepository {
 		Lock writeLock = vf.getIdWriteLock();
 		boolean locked = writeLock.tryLock();
 		try {
+			if (locked) {
+				vf.flush();
+			}
 			statements.committed(locked);
 		} finally {
 			if (locked) {

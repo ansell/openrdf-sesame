@@ -7,7 +7,6 @@ package org.openrdf.sail.rdbms.managers;
 
 import java.sql.SQLException;
 
-import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsBNode;
 import org.openrdf.sail.rdbms.schema.IdCode;
@@ -24,19 +23,17 @@ public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
 	public static BNodeManager instance;
 	private ResourceTable table;
 
-	public BNodeManager(ResourceTable table) {
-		this.table = table;
+	public BNodeManager() {
 		instance = this;
+	}
+
+	public void setTable(ResourceTable table) {
+		this.table = table;
 	}
 
 	@Override
 	public int getIdVersion() {
 		return table.getIdVersion();
-	}
-
-	@Override
-	protected void flushTable() throws SQLException {
-		table.flush();
 	}
 
 	@Override
@@ -55,18 +52,13 @@ public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
 	}
 
 	@Override
-	protected void insert(long id, RdbmsBNode resource) throws SQLException {
+	protected void insert(long id, RdbmsBNode resource) throws SQLException, InterruptedException {
 		table.insert(id, resource.stringValue());
 	}
 
 	@Override
 	protected long getMissingId(RdbmsBNode value) {
 		return IdCode.BNODE.getId(value.stringValue());
-	}
-
-	@Override
-	protected RdbmsBNode createClosedSignal() {
-		return new RdbmsBNode(new BNodeImpl(""));
 	}
 
 }

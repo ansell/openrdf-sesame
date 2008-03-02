@@ -5,6 +5,7 @@
  */
 package org.openrdf.sail.rdbms.postgresql;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -22,6 +23,7 @@ public class PgSqlValueTable extends ValueTable {
 	@Override
 	public void initialize() throws SQLException {
 		super.initialize();
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("PREPARE ").append(getTemporaryTable().getName());
 		sb.append("_insert (bigint, ");
@@ -31,10 +33,7 @@ public class PgSqlValueTable extends ValueTable {
 		sb.append("INSERT INTO ").append(getTemporaryTable().getName());
 		sb.append(" VALUES ($1, $2)");
 		getTemporaryTable().execute(sb.toString());
-		sb.delete(0, sb.length());
-		sb.append("EXECUTE ").append(getTemporaryTable().getName());
-		sb.append("_insert(?, ?)");
-		INSERT = sb.toString();
+
 		sb.delete(0, sb.length());
 		sb.append("PREPARE ").append(getTemporaryTable().getName());
 		sb.append("_insert_select AS\n");
@@ -44,10 +43,26 @@ public class PgSqlValueTable extends ValueTable {
 		sb.append("WHERE NOT EXISTS (SELECT id FROM ").append(getRdbmsTable().getName());
 		sb.append(" val WHERE val.id = tmp.id)");
 		getTemporaryTable().execute(sb.toString());
-		sb.delete(0, sb.length());
+	}
+
+	@Override
+	protected PreparedStatement prepareInsert(String sql)
+		throws SQLException
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("EXECUTE ").append(getTemporaryTable().getName());
+		sb.append("_insert(?, ?)");
+		return super.prepareInsert(sb.toString());
+	}
+
+	@Override
+	protected PreparedStatement prepareInsertSelect(String sql)
+		throws SQLException
+	{
+		StringBuilder sb = new StringBuilder();
 		sb.append("EXECUTE ").append(getTemporaryTable().getName());
 		sb.append("_insert_select");
-		INSERT_SELECT = sb.toString();
+		return super.prepareInsertSelect(sb.toString());
 	}
 
 	@Override
