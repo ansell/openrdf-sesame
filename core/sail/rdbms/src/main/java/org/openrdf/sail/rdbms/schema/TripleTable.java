@@ -13,7 +13,7 @@ import java.sql.SQLException;
  * @author James Leigh
  * 
  */
-public class PredicateTable {
+public class TripleTable {
 	public static int tables_created;
 	public static int total_st;
 	public static final boolean UNIQUE_INDEX_TRIPLES = true;
@@ -47,7 +47,7 @@ public class PredicateTable {
 	private boolean initialize;
 	private boolean predColumnPresent;
 
-	public PredicateTable(RdbmsTable table) {
+	public TripleTable(RdbmsTable table) {
 		this.table = table;
 	}
 
