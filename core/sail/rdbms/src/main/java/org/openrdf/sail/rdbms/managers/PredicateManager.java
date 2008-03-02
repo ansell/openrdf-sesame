@@ -15,7 +15,7 @@ public class PredicateManager {
 		this.uris = uris;
 	}
 
-	public long getIdOfPredicate(RdbmsURI uri) throws SQLException {
+	public long getIdOfPredicate(RdbmsURI uri) throws SQLException, InterruptedException {
 		Long id = uris.getInternalId(uri);
 		synchronized(predicates) {
 			predicates.put(id, uri.stringValue());

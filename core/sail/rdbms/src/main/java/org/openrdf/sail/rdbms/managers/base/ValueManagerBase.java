@@ -5,39 +5,43 @@
  */
 package org.openrdf.sail.rdbms.managers.base;
 
+import static org.openrdf.sail.rdbms.schema.ValueBatch.CLOSE_SIGNAL;
+
 import java.sql.SQLException;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.collections.LRUMap;
 
-import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
+import org.openrdf.sail.rdbms.schema.ValueBatch;
 
 public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 	public static final boolean STORE_VALUES = true;
 	private Logger logger = LoggerFactory.getLogger(ValueManagerBase.class);
 	Exception exc;
 	private LRUMap<K, V> cache;
-	public BlockingQueue<V> queue;
+	public BlockingQueue<ValueBatch> queue = new LinkedBlockingQueue<ValueBatch>();
 	private final Object working = new Object();
 	private Thread thread;
-	private V closedSignal;
+
+	public BlockingQueue<ValueBatch> getQueue() {
+		return queue;
+	}
 
 	public void init() {
 		cache = new LRUMap<K, V>(getBatchSize());
-		queue = new ArrayBlockingQueue<V>(getBatchSize());
 		thread = startThread(working);
-		closedSignal = createClosedSignal();
 	}
 
 	public void close() throws SQLException {
 		flush();
+		throwException();
 		try {
-			queue.put(closedSignal);
+			queue.put(CLOSE_SIGNAL);
 			thread.join();
 		}
 		catch (InterruptedException e) {
@@ -56,7 +60,7 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		return null;
 	}
 
-	public V cache(V value) throws SQLException {
+	public V cache(V value) throws SQLException, InterruptedException {
 		if (!STORE_VALUES)
 			return value;
 		if (!needsId(value))
@@ -64,7 +68,7 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		synchronized (cache) {
 			cache.put(key(value), value);
 		}
-		putInQueue(value);
+		insert(value);
 		return value;
 	}
 
@@ -73,17 +77,17 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 	{
 		synchronized (working) {
 			throwException();
-			for (V taken = queue.poll(); taken != null; taken = queue.poll()) {
-				insert(taken);
+			ValueBatch taken;
+			for (taken = queue.poll(); taken != null; taken = queue.poll()) {
+				if (taken == CLOSE_SIGNAL)
+					break;
+				taken.flush();
 			}
-			flushTable();
 		}
 	}
 
-	public long getInternalId(V val) throws SQLException {
-		if (needsId(val)) {
-			putInQueue(val);
-		}
+	public long getInternalId(V val) throws SQLException, InterruptedException {
+		insert(val);
 		if (val.getInternalId() != null)
 			return val.getInternalId();
 		long id = getMissingId(val);
@@ -91,16 +95,12 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		return id;
 	}
 
-	protected abstract V createClosedSignal();
-
-	protected abstract void flushTable() throws SQLException;
-
 	protected abstract int getIdVersion();
 
 	protected abstract int getBatchSize();
 
-	protected abstract void insert(long internalId, V value)
-			throws SQLException;
+	protected abstract void insert(long id, V value)
+			throws SQLException, InterruptedException;
 
 	protected abstract K key(V value);
 
@@ -114,14 +114,11 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		String name = Thread.currentThread().getName();
 		logger.debug("Starting helper thread {}", name);
 		while (true) {
-			V taken = queue.take();
-			if (taken == closedSignal)
+			ValueBatch taken = queue.take();
+			if (taken == CLOSE_SIGNAL)
 				break;
 			synchronized (working) {
-				insert(taken);
-				if (queue.isEmpty()) {
-					flushTable();
-				}
+				taken.flush();
 			}
 			optimize();
 		}
@@ -144,20 +141,8 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 		return lookupThread;
 	}
 
-	private void putInQueue(V value) {
-		try {
-			if (!value.isQueued()) {
-				value.setQueued(true);
-				queue.put(value);
-			}
-		}
-		catch (InterruptedException e) {
-			throw new RdbmsRuntimeException(e);
-		}
-	}
-
 	private void insert(V value)
-		throws SQLException
+		throws SQLException, InterruptedException
 	{
 		if (needsId(value)) {
 			Long id = value.getInternalId();
@@ -168,7 +153,6 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> {
 			value.setVersion(getIdVersion());
 			insert(id, value);
 		}
-		value.setQueued(false);
 	}
 
 	private boolean needsId(V value) {

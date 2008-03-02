@@ -8,6 +8,7 @@ package org.openrdf.sail.rdbms.schema;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Manages the rows in a value table. These tables have two columns: an internal
@@ -17,8 +18,6 @@ import java.sql.Types;
  * 
  */
 public class ValueTable {
-	public static int total_rows;
-	public static int total_st;
 	public static int BATCH_SIZE = 8192;
 	public static final boolean INDEX_VALUES = false;
 	public static final long NIL_ID = 0;
@@ -26,14 +25,18 @@ public class ValueTable {
 	private static final String[] VALUE_INDEX = { "value" };
 	private int length = -1;
 	private int sqlType;
-	protected String INSERT;
-	protected String INSERT_SELECT;
+	private String INSERT;
+	private String INSERT_SELECT;
 	private String EXPUNGE;
 	private RdbmsTable table;
 	private RdbmsTable temporary;
-	private PreparedStatement insertStmt;
-	private int uploadCount;
+	private ValueBatch batch;
 	private int removedStatementsSinceExpunge;
+	private BlockingQueue<ValueBatch> queue;
+
+	public void setQueue(BlockingQueue<ValueBatch> queue) {
+		this.queue = queue;
+	}
 
 	public int getLength() {
 		return length;
@@ -109,36 +112,17 @@ public class ValueTable {
 		}
 	}
 
-	public void insert(long id, Object value) throws SQLException {
-		PreparedStatement stmt = null;
-		synchronized (this) {
-			if (insertStmt == null) {
-				insertStmt = prepareInsert();
-			}
-			insertStmt.setLong(1, id);
-			insertStmt.setObject(2, value);
-			insertStmt.addBatch();
-			if (++uploadCount > getBatchSize()) {
-				uploadCount = 0;
-				stmt = insertStmt;
-				insertStmt = null;
-			}
+	public synchronized void insert(long id, Object value) throws SQLException, InterruptedException {
+		if (batch == null || batch.isFull() || !queue.remove(batch)) {
+			batch = newValueBatch();
+			batch.setTable(table);
+			batch.setTemporary(temporary);
+			batch.setBatch(prepareInsert(INSERT));
+			batch.setMaxBatchSize(getBatchSize());
+			batch.setInsert(prepareInsertSelect(INSERT_SELECT));
 		}
-		if (stmt != null) {
-			flush(stmt);
-		}
-	}
-
-	public int flush() throws SQLException {
-		PreparedStatement stmt;
-		synchronized (this) {
-			uploadCount = 0;
-			stmt = insertStmt;
-			insertStmt = null;
-		}
-		if (stmt == null)
-			return 0;
-		return flush(stmt);
+		batch.insert(id, value);
+		queue.put(batch);
 	}
 
 	public void optimize() throws SQLException {
@@ -147,7 +131,6 @@ public class ValueTable {
 
 	public boolean expungeRemovedStatements(int count, String condition)
 			throws SQLException {
-		flush();
 		removedStatementsSinceExpunge += count;
 		if (condition != null && timeToExpunge()) {
 			expunge(condition);
@@ -157,10 +140,6 @@ public class ValueTable {
 		return false;
 	}
 
-	protected boolean timeToExpunge() {
-		return removedStatementsSinceExpunge > table.size() / 4;
-	}
-
 	public void expunge(String condition) throws SQLException {
 		synchronized (table) {
 			int count = table.executeUpdate(EXPUNGE + condition);
@@ -168,8 +147,25 @@ public class ValueTable {
 		}
 	}
 
-	protected PreparedStatement prepareInsert() throws SQLException {
-		return temporary.prepareStatement(INSERT);
+	@Override
+	public String toString() {
+		return getName();
+	}
+
+	protected ValueBatch newValueBatch() {
+		return new ValueBatch();
+	}
+
+	protected boolean timeToExpunge() {
+		return removedStatementsSinceExpunge > table.size() / 4;
+	}
+
+	protected PreparedStatement prepareInsert(String sql) throws SQLException {
+		return temporary.prepareStatement(sql);
+	}
+
+	protected PreparedStatement prepareInsertSelect(String sql) throws SQLException {
+		return temporary.prepareStatement(sql);
 	}
 
 	protected void createTable(RdbmsTable table) throws SQLException {
@@ -214,34 +210,6 @@ public class ValueTable {
 			return "TIMESTAMP";
 		default:
 			throw new AssertionError("Unsupported SQL Type: " + type);
-		}
-	}
-
-	@Override
-	public String toString() {
-		return getName();
-	}
-
-	private int flush(PreparedStatement stmt)
-		throws SQLException
-	{
-		try {
-			synchronized (table) {
-				int count = 0;
-				synchronized(temporary) {
-					stmt.executeBatch();
-					total_st += 1;
-					count = temporary.executeUpdate(INSERT_SELECT);
-					total_st += 1;
-					total_rows += count;
-					temporary.clear();
-					total_st += 1;
-				}
-				table.modified(count, 0);
-				return count;
-			}
-		} finally {
-			stmt.close();
 		}
 	}
 

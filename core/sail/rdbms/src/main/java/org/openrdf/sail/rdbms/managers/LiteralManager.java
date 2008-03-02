@@ -14,7 +14,6 @@ import java.sql.SQLException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsLiteral;
@@ -47,24 +46,17 @@ public class LiteralManager extends ValueManagerBase<Literal, RdbmsLiteral> {
 	public static LiteralManager instance;
 	private LiteralTable table;
 
-	public LiteralManager(LiteralTable table) {
-		this.table = table;
+	public LiteralManager() {
 		instance = this;
 	}
 
-	@Override
-	protected RdbmsLiteral createClosedSignal() {
-		return new RdbmsLiteral(new LiteralImpl(""));
+	public void setTable(LiteralTable table) {
+		this.table = table;
 	}
 
 	@Override
 	public int getIdVersion() {
 		return table.getIdVersion();
-	}
-
-	@Override
-	protected void flushTable() throws SQLException {
-		table.flush();
 	}
 
 	@Override
@@ -78,7 +70,7 @@ public class LiteralManager extends ValueManagerBase<Literal, RdbmsLiteral> {
 	}
 
 	@Override
-	protected void insert(long id, RdbmsLiteral literal) throws SQLException {
+	protected void insert(long id, RdbmsLiteral literal) throws SQLException, InterruptedException {
 		String label = literal.getLabel();
 		String language = literal.getLanguage();
 		URI datatype = literal.getDatatype();

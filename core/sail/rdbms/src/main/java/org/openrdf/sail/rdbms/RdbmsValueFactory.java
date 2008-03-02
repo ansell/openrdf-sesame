@@ -92,6 +92,8 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				resource = bnodes.cache(new RdbmsBNode(impl));
 			} catch (SQLException e) {
 				throw new RdbmsRuntimeException(e);
+			} catch (InterruptedException e) {
+				throw new RdbmsRuntimeException(e);
 			}
 		}
 		return resource;
@@ -135,6 +137,8 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				resource = uris.cache(new RdbmsURI(impl));
 			} catch (SQLException e) {
 				throw new RdbmsRuntimeException(e);
+			} catch (InterruptedException e) {
+				throw new RdbmsRuntimeException(e);
 			}
 		}
 		return resource;
@@ -170,6 +174,8 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				return bnodes.cache((RdbmsBNode) node);
 			} catch (SQLException e) {
 				throw new RdbmsRuntimeException(e);
+			} catch (InterruptedException e) {
+				throw new RdbmsRuntimeException(e);
 			}
 		}
 		return createBNode(((BNode) node).getID());
@@ -182,6 +188,8 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 			try {
 				return uris.cache((RdbmsURI) uri);
 			} catch (SQLException e) {
+				throw new RdbmsRuntimeException(e);
+			} catch (InterruptedException e) {
 				throw new RdbmsRuntimeException(e);
 			}
 		}
@@ -205,6 +213,8 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				lit = literals.cache(new RdbmsLiteral(literal));
 			return lit;
 		} catch (SQLException e) {
+			throw new RdbmsRuntimeException(e);
+		} catch (InterruptedException e) {
 			throw new RdbmsRuntimeException(e);
 		}
 	}
@@ -242,6 +252,8 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
+		} catch (InterruptedException e) {
+			throw new RdbmsRuntimeException(e);
 		}
 	}
 
@@ -250,6 +262,8 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 			return predicates.getIdOfPredicate(predicate);
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
+		} catch (InterruptedException e) {
+			throw new RdbmsRuntimeException(e);
 		}
 	}
 
