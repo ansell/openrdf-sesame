@@ -13,7 +13,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents and controls the underlying database table.
@@ -117,6 +119,10 @@ public class RdbmsTable {
 		}
 	}
 
+	public void dropIndex(String name) throws SQLException {
+		execute(buildDropIndex(name));
+	}
+
 	public boolean isCreated() throws SQLException {
 		DatabaseMetaData metaData = conn.getMetaData();
 		String c = getCatalog();
@@ -127,6 +133,29 @@ public class RdbmsTable {
 			return tables.next();
 		} finally {
 			tables.close();
+		}
+	}
+
+	public Map<String, List<String>> getIndexes() throws SQLException {
+		DatabaseMetaData metaData = conn.getMetaData();
+		String c = getCatalog();
+		String s = getSchema();
+		String n = getName();
+		ResultSet indexes = metaData.getIndexInfo(c, s, n, false, false);
+		try {
+			Map<String, List<String>> names = new HashMap<String,List<String>>();
+			while(indexes.next()) {
+				String index = indexes.getString(6);
+				String column = indexes.getString(9);
+				List<String> columns = names.get(index);
+				if (columns == null) {
+					names.put(index, columns = new ArrayList<String>());
+				}
+				columns.add(column);
+			}
+			return names;
+		} finally {
+			indexes.close();
 		}
 	}
 
@@ -288,6 +317,12 @@ public class RdbmsTable {
 
 	protected String buildLongIndex(String... columns) {
 		return buildIndex(columns);
+	}
+
+	protected String buildDropIndex(String name) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("DROP INDEX ").append(name);
+		return sb.toString();
 	}
 
 	/**

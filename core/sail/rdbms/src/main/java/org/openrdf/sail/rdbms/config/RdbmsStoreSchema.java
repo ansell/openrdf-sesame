@@ -22,6 +22,7 @@ public class RdbmsStoreSchema {
 	public final static URI USER;
 	public final static URI PASSWORD;
 	public final static URI LAYOUT;
+	public final static URI INDEXED;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -30,5 +31,6 @@ public class RdbmsStoreSchema {
 		USER = factory.createURI(NAMESPACE, "user");
 		PASSWORD = factory.createURI(NAMESPACE, "password");
 		LAYOUT = factory.createURI(NAMESPACE, "layout");
+		INDEXED = factory.createURI(NAMESPACE, "indexed");
 	}
 }

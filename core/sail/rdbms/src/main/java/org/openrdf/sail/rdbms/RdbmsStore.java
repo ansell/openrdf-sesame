@@ -36,6 +36,7 @@ public class RdbmsStore extends SailBase {
 	private String user;
 	private String password;
 	private int maxTripleTables;
+	private boolean triplesIndexed = true;
 
 	public RdbmsStore() {
 		super();
@@ -64,14 +65,33 @@ public class RdbmsStore extends SailBase {
 		this.password = password;
 	}
 
+	public int getMaxNumberOfTripleTables() {
+		return maxTripleTables;
+	}
+
 	public void setMaxNumberOfTripleTables(int max) {
 		maxTripleTables = max;
+	}
+
+	public boolean isIndexed() {
+		return triplesIndexed;
+	}
+
+	public void setIndexed(boolean indexed)
+		throws SailException
+	{
+		triplesIndexed = indexed;
+		if (factory != null) {
+			factory.setTriplesIndexed(triplesIndexed);
+		}
 	}
 
 	public void initialize() throws SailException {
 		if (factory == null) {
 			try {
 				factory = createFactory(jdbcDriver, url, user, password);
+			} catch (SailException e) {
+				throw e;
 			} catch (Exception e) {
 				throw new RdbmsException(e);
 			}
@@ -110,8 +130,7 @@ public class RdbmsStore extends SailBase {
 	}
 
 	private RdbmsConnectionFactory createFactory(String jdbcDriver, String url,
-			String user, String password) throws SQLException,
-			ClassNotFoundException, NamingException {
+			String user, String password) throws Exception {
 		if (jdbcDriver != null) {
 			Class.forName(jdbcDriver);
 		}
@@ -132,6 +151,7 @@ public class RdbmsStore extends SailBase {
 				factory.setDataSource(ds, user, password);
 			}
 			factory.setMaxNumberOfTripleTables(maxTripleTables);
+			factory.setTriplesIndexed(triplesIndexed);
 			return factory;
 		} finally {
 			con.close();

@@ -61,6 +61,7 @@ public class RdbmsConnectionFactory {
 	private LiteralManager literalManager;
 	private PredicateManager predicateManager;
 	private int maxTripleTables;
+	private boolean triplesIndexed = true;
 
 	public void setSail(RdbmsStore sail) {
 		this.sail = sail;
@@ -80,8 +81,35 @@ public class RdbmsConnectionFactory {
 		this.password = password;
 	}
 
+	public int getMaxNumberOfTripleTables() {
+		return maxTripleTables;
+	}
+
 	public void setMaxNumberOfTripleTables(int max) {
 		maxTripleTables = max;
+	}
+
+	public boolean isTriplesIndexed() {
+		return triplesIndexed;
+	}
+
+	public void setTriplesIndexed(boolean triplesIndexed)
+		throws SailException
+	{
+		this.triplesIndexed = triplesIndexed;
+		if (tripleTableManager != null) {
+			try {
+				if (triplesIndexed) {
+					tripleTableManager.createTripleIndexes();
+				}
+				else {
+					tripleTableManager.dropTripleIndexes();
+				}
+			}
+			catch (SQLException e) {
+				throw new RdbmsException(e);
+			}
+		}
 	}
 
 	public RdbmsValueFactory getValueFactory() {
@@ -129,7 +157,14 @@ public class RdbmsConnectionFactory {
 			tripleTableManager.setLiteralTable(literalTable);
 			tripleTableManager.setPredicateManager(predicateManager);
 			tripleTableManager.setMaxNumberOfTripleTables(maxTripleTables);
+			tripleTableManager.setIndexingTriples(triplesIndexed);
 			tripleTableManager.initialize();
+			if (triplesIndexed) {
+				tripleTableManager.createTripleIndexes();
+			}
+			else {
+				tripleTableManager.dropTripleIndexes();
+			}
 			bnodeManager.setTable(bnodeTable);
 			bnodeManager.init();
 			vf.setBNodeManager(bnodeManager);

@@ -5,6 +5,7 @@
  */
 package org.openrdf.sail.rdbms.config;
 
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
@@ -39,11 +40,21 @@ public class RdbmsStoreFactory implements SailFactory {
 		String user = rdbms.getUser();
 		String password = rdbms.getPassword();
 		String layout = rdbms.getLayout();
+		String indexed = rdbms.getIndexed();
 		RdbmsStore store = new RdbmsStore(jdbcDriver, url, user, password);
 		if ("layout2".equals(layout)) {
 			store.setMaxNumberOfTripleTables(1);
 		} else {
 			assert "layout3".equals(layout) : layout;
+		}
+		if (indexed != null) {
+			try {
+				store.setIndexed(Boolean.valueOf(indexed));
+			}
+			catch (SailException e) {
+				// this shouldn't happen
+				throw new AssertionError(e);
+			}
 		}
 		return store;
 	}

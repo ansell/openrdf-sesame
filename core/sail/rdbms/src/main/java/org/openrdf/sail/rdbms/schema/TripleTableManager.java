@@ -34,8 +34,9 @@ import org.openrdf.sail.rdbms.managers.PredicateManager;
  */
 public class TripleTableManager {
 	private static final String DEFAULT_TABLE_PREFIX = "TRIPLES";
-	private static final String OTHER_TRIPLES_TABLE = "OTHER_TRIPLES";
+	private static final String OTHER_TRIPLES_TABLE = "TRIPLES";
 	public static int MAX_TABLES = Integer.MAX_VALUE;//1000;
+	public static final boolean INDEX_TRIPLES = true;
 	public static Long OTHER_PRED = Long.valueOf(-1);
 	private ResourceTable bnodes;
 	private boolean closed;
@@ -51,6 +52,7 @@ public class TripleTableManager {
 	private Map<Long, TripleTable> tables = new HashMap<Long, TripleTable>();
 	private ResourceTable uris;
 	private int maxTables = MAX_TABLES;
+	private boolean indexingTriples = INDEX_TRIPLES;
 	Exception exc;
 
 	public TripleTableManager(RdbmsTableFactory factory) {
@@ -81,12 +83,26 @@ public class TripleTableManager {
 		this.uris = uriTable;
 	}
 
+	public int getMaxNumberOfTripleTables() {
+		if (maxTables == Integer.MAX_VALUE)
+			return 0;
+		return maxTables + 1;
+	}
+
 	public void setMaxNumberOfTripleTables(int max) {
 		if (max < 1) {
 			maxTables = MAX_TABLES;
 		} else {
 			maxTables = max - 1;
 		}
+	}
+
+	public boolean isIndexingTriples() {
+		return indexingTriples;
+	}
+
+	public void setIndexingTriples(boolean indexingTriples) {
+		this.indexingTriples = indexingTriples;
 	}
 
 	public void initialize() throws SQLException {
@@ -118,6 +134,24 @@ public class TripleTableManager {
 				predicates.remove(next.getKey());
 				table.drop();
 				iter.remove();
+			}
+		}
+	}
+
+	public void createTripleIndexes() throws SQLException {
+		indexingTriples = true;
+		for (TripleTable table : tables.values()) {
+			if (!table.isIndexed()) {
+				table.createIndex();
+			}
+		}
+	}
+
+	public void dropTripleIndexes() throws SQLException {
+		indexingTriples = false;
+		for (TripleTable table : tables.values()) {
+			if (table.isIndexed()) {
+				table.dropIndex();
 			}
 		}
 	}
@@ -204,6 +238,9 @@ public class TripleTableManager {
 			TripleTable table = factory.createTripleTable(conn, tableName);
 			if (tableName.equalsIgnoreCase(OTHER_TRIPLES_TABLE)) {
 				table.setPredColumnPresent(true);
+			}
+			if (indexingTriples && !table.isIndexed()) {
+				table.createIndex();
 			}
 			table.reload();
 			tables.put(key(tableName), table);
@@ -298,6 +335,9 @@ public class TripleTableManager {
 			}
 			if (table != null) {
 				table.initTable();
+				if (indexingTriples) {
+					table.createIndex();
+				}
 				table = null;
 			}
 		}
