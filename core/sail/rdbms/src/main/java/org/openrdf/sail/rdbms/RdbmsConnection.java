@@ -54,7 +54,6 @@ public class RdbmsConnection extends SailConnectionBase {
 		this.sail = sail;
 		this.vf = sail.getValueFactory();
 		this.triples = triples;
-		triples.setSailChangedEvent(new DefaultSailChangedEvent(sail));
 	}
 
 	public void setNamespaces(NamespaceManager namespaces) {
@@ -81,6 +80,9 @@ public class RdbmsConnection extends SailConnectionBase {
 				}
 			}
 		} catch (SQLException e) {
+			throw new RdbmsException(e);
+		}
+		catch (InterruptedException e) {
 			throw new RdbmsException(e);
 		}
 	}

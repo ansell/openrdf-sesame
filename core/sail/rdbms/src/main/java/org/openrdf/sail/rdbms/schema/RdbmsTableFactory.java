@@ -7,8 +7,8 @@ package org.openrdf.sail.rdbms.schema;
 
 import static java.sql.Types.BIGINT;
 import static java.sql.Types.DOUBLE;
-import static java.sql.Types.VARCHAR;
 import static java.sql.Types.LONGVARCHAR;
+import static java.sql.Types.VARCHAR;
 
 import java.sql.Connection;
 import java.util.concurrent.BlockingQueue;
@@ -40,22 +40,22 @@ public class RdbmsTableFactory {
 		return new NamespacesTable(createTable(conn, NAMESPACES));
 	}
 
-	public ResourceTable createBNodeTable(Connection conn, BlockingQueue<ValueBatch> queue) {
+	public ResourceTable createBNodeTable(Connection conn, BlockingQueue<Batch> queue) {
 		ValueTable table = createValueTable(conn, queue, BNODE_VALUES, VARCHAR, VCS);
 		return new ResourceTable(table);
 	}
 
-	public ResourceTable createURITable(Connection conn, BlockingQueue<ValueBatch> queue) {
+	public ResourceTable createURITable(Connection conn, BlockingQueue<Batch> queue) {
 		ValueTable table = createValueTable(conn, queue, URI_VALUES, VARCHAR, VCL);
 		return new ResourceTable(table);
 	}
 
-	public ResourceTable createLongURITable(Connection conn, BlockingQueue<ValueBatch> queue) {
+	public ResourceTable createLongURITable(Connection conn, BlockingQueue<Batch> queue) {
 		ValueTable table = createValueTable(conn, queue, LURI_VALUES, LONGVARCHAR);
 		return new ResourceTable(table);
 	}
 
-	public LiteralTable createLiteralTable(Connection conn, BlockingQueue<ValueBatch> queue) {
+	public LiteralTable createLiteralTable(Connection conn, BlockingQueue<Batch> queue) {
 		ValueTable lbs = createValueTable(conn, queue, LBS, VARCHAR, VCL);
 		ValueTable llbs = createValueTable(conn, queue, LLBS, LONGVARCHAR);
 		ValueTable lgs = createValueTable(conn, queue, LANGS, VARCHAR, VCS);
@@ -96,11 +96,11 @@ public class RdbmsTableFactory {
 		return new RdbmsTable(name);
 	}
 
-	protected ValueTable createValueTable(Connection conn, BlockingQueue<ValueBatch> queue, String name, int sqlType) {
+	protected ValueTable createValueTable(Connection conn, BlockingQueue<Batch> queue, String name, int sqlType) {
 		return createValueTable(conn, queue, name, sqlType, -1);
 	}
 
-	protected ValueTable createValueTable(Connection conn, BlockingQueue<ValueBatch> queue, String name, int sqlType,
+	protected ValueTable createValueTable(Connection conn, BlockingQueue<Batch> queue, String name, int sqlType,
 			int length) {
 		ValueTable table = newValueTable();
 		table.setRdbmsTable(createTable(conn, name));

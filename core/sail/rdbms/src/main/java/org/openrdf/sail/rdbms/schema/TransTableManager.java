@@ -9,13 +9,12 @@ import static org.openrdf.sail.rdbms.schema.TripleTableManager.OTHER_PRED;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
+
+import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 
 
 /**
@@ -25,24 +24,17 @@ import java.util.Map.Entry;
  * 
  */
 public class TransTableManager {
-	public static final int POPULAR = 64;
-	public static int BATCH_SIZE = 256;
+	public static int BATCH_SIZE = 8 * 1024;
 	public static final boolean TEMPORARY_TABLE_USED = TripleTable.UNIQUE_INDEX_TRIPLES;
 	private RdbmsTableFactory factory;
 	private TripleTableManager triples;
 	private RdbmsTable temporaryTable;
 	private Map<Long, TransactionTable> tables = new HashMap<Long, TransactionTable>();
-	private List<TransactionTable> list;
-	private LinkedHashMap<TransactionTable, Boolean> popular = new LinkedHashMap<TransactionTable, Boolean>(POPULAR) {
-		private static final long serialVersionUID = 4679235006378767952L;
-
-		@Override
-		protected boolean removeEldestEntry(Entry<TransactionTable, Boolean> eldest) {
-			return size() > POPULAR;
-		}};
 	private int removedCount;
 	private String fromDummy;
 	private Connection conn;
+	private BlockingQueue<Batch> batchQueue;
+	private DefaultSailChangedEvent sailChangedEvent;
 
 	public void setConnection(Connection conn) {
 		this.conn = conn;
@@ -60,49 +52,24 @@ public class TransTableManager {
 		this.fromDummy = fromDummy;
 	}
 
-	public int getBatchSize() {
-		return BATCH_SIZE;
+	public void setBatchQueue(BlockingQueue<Batch> queue) {
+		this.batchQueue = queue;
 	}
 
-	public int getAvgUncommittedRowCount() throws SQLException {
-		List<TransactionTable> tables = getTables();
-		if (tables.size() == 0)
-			return 0;
-		long sum = 0;
-		for (TransactionTable table : tables) {
-			sum += table.getUncommittedRowCount();
-		}
-		return (int) (sum / tables.size());
+	public void setSailChangedEvent(DefaultSailChangedEvent sailChangedEvent) {
+		this.sailChangedEvent = sailChangedEvent;
+	}
+
+	public int getBatchSize() {
+		return BATCH_SIZE;
 	}
 
 	public void initialize() throws SQLException {
 	}
 
 	public void insert(long ctx, long subj, long pred, long obj)
-			throws SQLException {
+			throws SQLException, InterruptedException {
 		getTable(pred).insert(ctx, subj, pred, obj);
-	}
-
-	public int flush() throws SQLException {
-		int count = 0;
-		for (TransactionTable table : getTables()) {
-			count += table.flush();
-		}
-		return count;
-	}
-
-	public int flushUnpopular() throws SQLException {
-		int count = 0;
-		for (TransactionTable table : getTables()) {
-			synchronized (popular) {
-				if (popular.containsKey(table))
-					continue;
-			}
-			if (!table.isReady())
-				continue;
-			count += table.flush();
-		}
-		return count;
 	}
 
 	public void close() throws SQLException {
@@ -154,30 +121,11 @@ public class TransTableManager {
 		return tableName;
 	}
 
-	private String getEmptyTableName() {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("(");
-		sb.append("SELECT ");
-		sb.append(getZeroBigInt()).append(" AS ctx, ");
-		sb.append(getZeroBigInt()).append(" AS subj, ");
-		sb.append(getZeroBigInt()).append(" AS pred, ");
-		sb.append(getZeroBigInt()).append(" AS obj ");
-		sb.append(fromDummy);
-		sb.append("\nWHERE 1=0");
-		sb.append(")");
-		return sb.toString();
-	}
-
-	protected String getZeroBigInt() {
-		return "0";
-	}
-
 	public void committed(boolean locked) throws SQLException {
 		synchronized (tables) {
 			for (TransactionTable table : tables.values()) {
 				table.committed();
 			}
-			list = null;
 			tables.clear();
 		}
 		if (removedCount > 0) {
@@ -188,30 +136,6 @@ public class TransTableManager {
 	public void removed(Long pred, int count) throws SQLException {
 		getTable(pred).removed(count);
 		removedCount += count;
-	}
-
-	protected TransactionTable getTable(long pred) throws SQLException {
-		synchronized (tables) {
-			TransactionTable table = tables.get(pred);
-			if (table == null) {
-				TripleTable predicate = triples.getPredicateTable(pred);
-				Long key = pred;
-				if (predicate.isPredColumnPresent()) {
-					key = OTHER_PRED;
-					table = tables.get(key);
-					if (table != null)
-						return table;
-				}
-				table = createTransactionTable(predicate);
-				tables.put(key, table);
-				list = null;
-			}
-			synchronized (popular) {
-				popular.remove(table);
-				popular.put(table, Boolean.TRUE);
-			}
-			return table;
-		}
 	}
 
 	public Collection<Long> getPredicateIds() {
@@ -253,6 +177,29 @@ public class TransTableManager {
 		return true;
 	}
 
+	protected String getZeroBigInt() {
+		return "0";
+	}
+
+	protected TransactionTable getTable(long pred) throws SQLException {
+		synchronized (tables) {
+			TransactionTable table = tables.get(pred);
+			if (table == null) {
+				TripleTable predicate = triples.getPredicateTable(pred);
+				Long key = pred;
+				if (predicate.isPredColumnPresent()) {
+					key = OTHER_PRED;
+					table = tables.get(key);
+					if (table != null)
+						return table;
+				}
+				table = createTransactionTable(predicate);
+				tables.put(key, table);
+			}
+			return table;
+		}
+	}
+
 	protected TransactionTable createTransactionTable(TripleTable predicate)
 			throws SQLException {
 		if (temporaryTable == null && TEMPORARY_TABLE_USED) {
@@ -262,11 +209,12 @@ public class TransTableManager {
 			}
 		}
 		TransactionTable table = createTransactionTable();
-		table.setPredicateTable(predicate);
+		table.setSailChangedEvent(sailChangedEvent);
+		table.setQueue(batchQueue);
+		table.setTripleTable(predicate);
 		table.setTemporaryTable(temporaryTable);
 		table.setConnection(conn);
 		table.setBatchSize(getBatchSize());
-		table.initialize();
 		return table;
 	}
 
@@ -287,14 +235,18 @@ public class TransTableManager {
 		table.createTemporaryTable(sb);
 	}
 
-	private List<TransactionTable> getTables() {
-		List<TransactionTable> list = this.list;
-		synchronized (tables) {
-			if (list == null || list.size() != tables.size()) {
-				this.list = list = new ArrayList(tables.values());
-			}
-		}
-		return list;
+	private String getEmptyTableName() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("(");
+		sb.append("SELECT ");
+		sb.append(getZeroBigInt()).append(" AS ctx, ");
+		sb.append(getZeroBigInt()).append(" AS subj, ");
+		sb.append(getZeroBigInt()).append(" AS pred, ");
+		sb.append(getZeroBigInt()).append(" AS obj ");
+		sb.append(fromDummy);
+		sb.append("\nWHERE 1=0");
+		sb.append(")");
+		return sb.toString();
 	}
 
 	private TransactionTable findTable(Long pred) {

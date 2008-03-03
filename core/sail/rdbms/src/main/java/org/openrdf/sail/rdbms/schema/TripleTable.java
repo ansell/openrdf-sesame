@@ -118,7 +118,7 @@ public class TripleTable {
 	}
 
 	public String getName() throws SQLException {
-		blockUntilReady();
+		// TODO blockUntilReady();
 		return table.getName();
 	}
 
