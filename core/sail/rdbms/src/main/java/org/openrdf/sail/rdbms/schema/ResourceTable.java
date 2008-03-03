@@ -32,6 +32,10 @@ public class ResourceTable {
 		table.initialize();
 	}
 
+	public void close() throws SQLException {
+		table.close();
+	}
+
 	public String getName() {
 		return table.getName();
 	}

@@ -60,6 +60,14 @@ public class LiteralManager extends ValueManagerBase<Literal, RdbmsLiteral> {
 	}
 
 	@Override
+	public void close()
+		throws SQLException
+	{
+		super.close();
+		table.close();
+	}
+
+	@Override
 	protected void optimize() throws SQLException {
 		table.optimize();
 	}

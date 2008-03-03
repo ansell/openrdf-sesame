@@ -112,6 +112,10 @@ public class ValueTable {
 		}
 	}
 
+	public void close() throws SQLException {
+		// allow subclasses to override
+	}
+
 	public synchronized void insert(long id, Object value) throws SQLException, InterruptedException {
 		if (batch == null || batch.isFull() || !queue.remove(batch)) {
 			batch = newValueBatch();

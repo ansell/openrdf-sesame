@@ -105,6 +105,15 @@ public class LiteralTable {
 		dateTime.initialize();
 	}
 
+	public void close() throws SQLException {
+		labels.close();
+		longLabels.close();
+		languages.close();
+		datatypes.close();
+		numeric.close();
+		dateTime.close();
+	}
+
 	public int getBatchSize() {
 		return labels.getBatchSize();
 	}

@@ -74,7 +74,6 @@ public class TripleTable {
 				total_st++;
 			}
 		}
-		createIndex();
 		initialize = true;
 		tables_created++;
 	}
