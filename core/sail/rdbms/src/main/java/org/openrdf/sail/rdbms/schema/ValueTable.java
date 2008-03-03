@@ -114,15 +114,12 @@ public class ValueTable {
 
 	public synchronized void insert(long id, Object value) throws SQLException, InterruptedException {
 		if (batch == null || batch.isFull() || !queue.remove(batch)) {
-			ValueBatch previous = batch;
 			batch = newValueBatch();
-			batch.setPrevious(previous);
 			batch.setTable(table);
 			batch.setTemporary(temporary);
 			batch.setBatchStatement(prepareInsert(INSERT));
 			batch.setMaxBatchSize(getBatchSize());
 			batch.setInsertStatement(prepareInsertSelect(INSERT_SELECT));
-			batch.init();
 		}
 		batch.setLong(1, id);
 		batch.setObject(2, value);

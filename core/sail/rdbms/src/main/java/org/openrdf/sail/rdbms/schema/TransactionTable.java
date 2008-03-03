@@ -61,16 +61,13 @@ public class TransactionTable {
 	public synchronized void insert(long ctx, long subj, long pred, long obj)
 			throws SQLException, InterruptedException {
 		if (batch == null || batch.isFull() || !queue.remove(batch)) {
-			TripleBatch previous = batch;
 			batch = newTripleBatch();
-			batch.setPrevious(previous);
 			batch.setTable(triples);
 			batch.setSailChangedEvent(sailChangedEvent);
 			batch.setTemporary(temporary);
 			batch.setMaxBatchSize(getBatchSize());
 			batch.setBatchStatement(prepareInsert());
 			batch.setInsertStatement(prepareInsertSelect(buildInsertSelect()));
-			batch.init();
 		}
 		batch.setLong(1, ctx);
 		batch.setLong(2, subj);
