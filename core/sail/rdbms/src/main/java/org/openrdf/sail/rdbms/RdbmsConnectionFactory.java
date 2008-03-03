@@ -60,6 +60,7 @@ public class RdbmsConnectionFactory {
 	private BNodeManager bnodeManager;
 	private LiteralManager literalManager;
 	private PredicateManager predicateManager;
+	private int maxTripleTables;
 
 	public void setSail(RdbmsStore sail) {
 		this.sail = sail;
@@ -77,6 +78,10 @@ public class RdbmsConnectionFactory {
 		this.ds = ds;
 		this.user = user;
 		this.password = password;
+	}
+
+	public void setMaxNumberOfTripleTables(int max) {
+		maxTripleTables = max;
 	}
 
 	public RdbmsValueFactory getValueFactory() {
@@ -123,6 +128,7 @@ public class RdbmsConnectionFactory {
 			tripleTableManager.setLongUriTable(longUriTable);
 			tripleTableManager.setLiteralTable(literalTable);
 			tripleTableManager.setPredicateManager(predicateManager);
+			tripleTableManager.setMaxNumberOfTripleTables(maxTripleTables);
 			tripleTableManager.initialize();
 			bnodeManager.setTable(bnodeTable);
 			bnodeManager.init();

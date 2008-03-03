@@ -38,7 +38,14 @@ public class RdbmsStoreFactory implements SailFactory {
 		String url = rdbms.getUrl();
 		String user = rdbms.getUser();
 		String password = rdbms.getPassword();
-		return new RdbmsStore(jdbcDriver, url, user, password);
+		String layout = rdbms.getLayout();
+		RdbmsStore store = new RdbmsStore(jdbcDriver, url, user, password);
+		if ("layout2".equals(layout)) {
+			store.setMaxNumberOfTripleTables(1);
+		} else {
+			assert "layout3".equals(layout) : layout;
+		}
+		return store;
 	}
 
 }

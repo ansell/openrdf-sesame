@@ -7,6 +7,7 @@ package org.openrdf.sail.rdbms.config;
 
 import static org.openrdf.model.util.GraphUtil.getOptionalObjectLiteral;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.JDBC_DRIVER;
+import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.LAYOUT;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.PASSWORD;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.URL;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.USER;
@@ -30,6 +31,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 	private String url;
 	private String user;
 	private String password;
+	private String layout;
 
 	public RdbmsStoreConfig() {
 		super(RdbmsStoreFactory.SAIL_TYPE);
@@ -67,6 +69,14 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		this.password = password;
 	}
 
+	public String getLayout() {
+		return layout;
+	}
+
+	public void setLayout(String layout) {
+		this.layout = layout;
+	}
+
 	@Override
 	public Resource export(Graph graph) {
 		Resource implNode = super.export(graph);
@@ -74,6 +84,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		set(graph, implNode, URL, url);
 		set(graph, implNode, USER, user);
 		set(graph, implNode, PASSWORD, password);
+		set(graph, implNode, LAYOUT, layout);
 		return implNode;
 	}
 
@@ -87,6 +98,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 			url = get(graph, implNode, URL);
 			user = get(graph, implNode, USER);
 			password = get(graph, implNode, PASSWORD);
+			layout = get(graph, implNode, LAYOUT);
 		} catch (GraphUtilException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}

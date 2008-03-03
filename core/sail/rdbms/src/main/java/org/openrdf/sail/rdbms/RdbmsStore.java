@@ -35,6 +35,7 @@ public class RdbmsStore extends SailBase {
 	private String url;
 	private String user;
 	private String password;
+	private int maxTripleTables;
 
 	public RdbmsStore() {
 		super();
@@ -61,6 +62,10 @@ public class RdbmsStore extends SailBase {
 		this.url = jdbcUrl;
 		this.user = user;
 		this.password = password;
+	}
+
+	public void setMaxNumberOfTripleTables(int max) {
+		maxTripleTables = max;
 	}
 
 	public void initialize() throws SailException {
@@ -126,6 +131,7 @@ public class RdbmsStore extends SailBase {
 			} else {
 				factory.setDataSource(ds, user, password);
 			}
+			factory.setMaxNumberOfTripleTables(maxTripleTables);
 			return factory;
 		} finally {
 			con.close();
