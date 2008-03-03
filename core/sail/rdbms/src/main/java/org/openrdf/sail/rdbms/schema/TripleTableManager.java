@@ -284,7 +284,7 @@ public class TripleTableManager {
 					queue.wait();
 				}
 				if (!queue.isEmpty()) {
-					table = queue.pop();
+					table = queue.removeFirst();
 				}
 			}
 			if (table != null) {
