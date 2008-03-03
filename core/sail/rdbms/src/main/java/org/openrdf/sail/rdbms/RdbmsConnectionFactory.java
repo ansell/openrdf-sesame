@@ -7,14 +7,13 @@ package org.openrdf.sail.rdbms;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.sql.DataSource;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
@@ -22,6 +21,7 @@ import org.openrdf.sail.rdbms.managers.BNodeManager;
 import org.openrdf.sail.rdbms.managers.LiteralManager;
 import org.openrdf.sail.rdbms.managers.NamespaceManager;
 import org.openrdf.sail.rdbms.managers.PredicateManager;
+import org.openrdf.sail.rdbms.managers.TripleManager;
 import org.openrdf.sail.rdbms.managers.UriManager;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 import org.openrdf.sail.rdbms.optimizers.SelectQueryOptimizerFactory;
@@ -31,7 +31,6 @@ import org.openrdf.sail.rdbms.schema.RdbmsTableFactory;
 import org.openrdf.sail.rdbms.schema.ResourceTable;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
 import org.openrdf.sail.rdbms.schema.TripleTableManager;
-import org.openrdf.sail.rdbms.schema.ValueBatch;
 
 /**
  * Responsible to initialise and wire all components together that will be
@@ -149,15 +148,22 @@ public class RdbmsConnectionFactory {
 			Connection db = getConnection();
 			db.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 			db.setAutoCommit(true);
+			TripleManager tripleManager = new TripleManager();
 			RdbmsTripleRepository s = new RdbmsTripleRepository();
+			s.setTripleManager(tripleManager);
 			s.setValueFactory(vf);
 			s.setConnection(db);
 			s.setBNodeTable(bnodeTable);
 			s.setURITable(uriTable);
 			s.setLongUriTable(longUriTable);
 			s.setLiteralTable(literalTable);
+			DefaultSailChangedEvent sailChangedEvent = new DefaultSailChangedEvent(sail);
+			s.setSailChangedEvent(sailChangedEvent);
 			RdbmsTableFactory tables = createRdbmsTableFactory();
 			TransTableManager trans = createTransTableManager();
+			tripleManager.setTransTableManager(trans);
+			trans.setBatchQueue(tripleManager.getQueue());
+			trans.setSailChangedEvent(sailChangedEvent);
 			trans.setConnection(db);
 			trans.setRdbmsTableFactory(tables);
 			trans.setStatementsTable(tripleTableManager);

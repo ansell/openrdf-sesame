@@ -13,18 +13,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
@@ -36,12 +29,12 @@ import org.openrdf.sail.rdbms.iteration.EmptyRdbmsResourceIteration;
 import org.openrdf.sail.rdbms.iteration.EmptyRdbmsStatementIteration;
 import org.openrdf.sail.rdbms.iteration.RdbmsResourceIteration;
 import org.openrdf.sail.rdbms.iteration.RdbmsStatementIteration;
+import org.openrdf.sail.rdbms.managers.TripleManager;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsStatement;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
-import org.openrdf.sail.rdbms.schema.TripleTableManager;
 import org.openrdf.sail.rdbms.schema.ResourceTable;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
 import org.openrdf.sail.rdbms.schema.ValueTable;
@@ -55,13 +48,6 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * 
  */
 public class RdbmsTripleRepository {
-	public static int MIN_BATCH_SIZE = 128;
-	public static int BATCH_SIZE = TransTableManager.BATCH_SIZE;
-	public static int MAX_THREADS = Math.max(3, TripleTableManager.MAX_TABLES + 1);
-	public static int MAX_QUEUE = (MAX_THREADS * 2 + 1) * BATCH_SIZE;
-	public static int FLUSH_EVERY = 100000;
-	public static int COMMIT_EVERY = Integer.MAX_VALUE;//20000;
-	private Logger logger = LoggerFactory.getLogger(RdbmsTripleRepository.class);
 	private Connection conn;
 	private RdbmsValueFactory vf;
 	private TransTableManager statements;
@@ -72,17 +58,7 @@ public class RdbmsTripleRepository {
 	private LiteralTable literals;
 	private Lock readLock;
 	private DefaultSailChangedEvent sailChangedEvent;
-	private BlockingQueue<RdbmsStatement> queue = new ArrayBlockingQueue(MAX_QUEUE);
-	private int addedSinceFlush;
-	private int addedSinceCommit;
-	private List<Object> workThread = new CopyOnWriteArrayList<Object>();
-	private List<Thread> threads = new CopyOnWriteArrayList<Thread>();
-	Exception exc;
-	RdbmsStatement closedSignal;
-	{
-		RdbmsURI uri = new RdbmsURI(new URIImpl("urn:closedSignal"));
-		closedSignal = new RdbmsStatement(uri, uri, uri);
-	}
+	private TripleManager manager;
 
 	public Connection getConnection() {
 		return conn;
@@ -130,44 +106,32 @@ public class RdbmsTripleRepository {
 
 	public void setTransaction(TransTableManager temporary) {
 		this.statements = temporary;
+	}
 
+	public void setTripleManager(TripleManager tripleManager) {
+		this.manager = tripleManager;
 	}
 
 	public void flush() throws RdbmsException {
-		flushQueue();
 		vf.flush();
-	}
-
-	public void add(RdbmsStatement st) throws SailException, SQLException {
-		if (readLock == null) {
-			readLock = vf.getIdReadLock();
-			readLock.lock();
-		}
-		if (queue.size() >= MIN_BATCH_SIZE && workThread.isEmpty() && workThread.size() < MAX_THREADS) {
-			Object lock = new Object();
-			workThread.add(lock);
-			threads.add(startInsentThread(lock, true));
-		} else if (queue.size() >= 2 * MIN_BATCH_SIZE && workThread.size() < MAX_THREADS) {
-			Object lock = new Object();
-			workThread.add(lock);
-			threads.add(startInsentThread(lock, false));
-		} else if (isTimeToCommit()) {
-			logger.warn("TRANSACTION TOO LONG - forcing commit");
-			commit();
-			begin();
-		}
 		try {
-			queue.put(st);
-			addedSinceFlush++;
-			addedSinceCommit++;
+			manager.flush();
 		}
-		catch (InterruptedException e) {
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 	}
 
-	protected boolean isTimeToCommit() throws SQLException {
-		return addedSinceCommit > COMMIT_EVERY;
+	public void add(RdbmsStatement st) throws SailException, SQLException, InterruptedException {
+		if (readLock == null) {
+			readLock = vf.getIdReadLock();
+			readLock.lock();
+		}
+		long ctx = vf.getInternalId(st.getContext());
+		long subj = vf.getInternalId(st.getSubject());
+		long pred = vf.getPredicateId(st.getPredicate());
+		long obj = vf.getInternalId(st.getObject());
+		manager.insert(ctx, subj, pred, obj);
 	}
 
 	public synchronized void begin() throws SQLException {
@@ -175,19 +139,7 @@ public class RdbmsTripleRepository {
 	}
 
 	public synchronized void close() throws SQLException {
-		queue.clear();
-		try {
-			for (int i = 0, n = threads.size(); i < n; i++) {
-				queue.put(closedSignal);
-			}
-			for (Thread thread : threads) {
-				thread.join();
-			}
-		}
-		catch (InterruptedException e) {
-			logger.warn(e.toString(), e);
-		}
-		statements.close();
+		manager.close();
 		if (!conn.getAutoCommit()) {
 			conn.rollback();
 		}
@@ -196,10 +148,9 @@ public class RdbmsTripleRepository {
 	}
 
 	public synchronized void commit() throws SQLException, RdbmsException {
-		flushQueue();
+		manager.flush();
 		conn.commit();
 		conn.setAutoCommit(true);
-		addedSinceCommit = 0;
 		if (readLock != null) {
 			readLock.unlock();
 			readLock = null;
@@ -306,12 +257,9 @@ public class RdbmsTripleRepository {
 	}
 
 	public void rollback() throws SQLException, SailException {
-		synchronized(queue) {
-			queue.clear();
-		}
+		manager.clear();
 		conn.rollback();
 		conn.setAutoCommit(true);
-		addedSinceCommit = 0;
 		if (readLock != null) {
 			readLock.unlock();
 			readLock = null;
@@ -336,63 +284,6 @@ public class RdbmsTripleRepository {
 			}
 		} finally {
 			stmt.close();
-		}
-	}
-
-	void insertThread(Object working, boolean primary) throws InterruptedException, RdbmsException,
-			SQLException {
-		String name = Thread.currentThread().getName();
-		logger.debug("Starting helper thread {}", name);
-		while (true) {
-			RdbmsStatement taken = queue.take();
-			if (taken == closedSignal)
-				break;
-			synchronized (working) {
-				insert(taken);
-				if (primary && addedSinceFlush >= FLUSH_EVERY) {
-					addedSinceFlush = 0;
-					if (statements.flushUnpopular() > 0) {
-						sailChangedEvent.setStatementsAdded(true);
-					}
-				}
-			}
-		}
-		logger.debug("Closing helper thread {}", name);
-	}
-
-	private Thread startInsentThread(final Object lock, final boolean primary) {
-		String currentName = Thread.currentThread().getName();
-		String name = currentName + "-statement-insert-" + workThread.size();
-		Thread insertThread = new Thread(new Runnable() {
-			public void run() {
-				try {
-					insertThread(lock, primary);
-				} catch (Exception e) {
-					exc = e;
-					logger.error(e.toString(), e);
-				}
-			}
-		}, name);
-		insertThread.start();
-		return insertThread;
-	}
-
-	private void flushQueue() throws RdbmsException {
-		try {
-			for (RdbmsStatement st = queue.poll(); st != null; st = queue.poll()) {
-				insert(st);
-			}
-			for (Object o : workThread) {
-				synchronized (o) {
-					// wait for thread to finish
-				}
-			}
-			addedSinceFlush = 0;
-			if (statements.flush() > 0) {
-				sailChangedEvent.setStatementsAdded(true);
-			}
-		} catch (SQLException e) {
-			throw new RdbmsException(e);
 		}
 	}
 
@@ -566,23 +457,6 @@ public class RdbmsTripleRepository {
 		if (obj != null) {
 			stmt.setLong(++p, vf.getInternalId(obj));
 		}
-	}
-
-	private void insert(List<RdbmsStatement> list) throws SQLException,
-			RdbmsException {
-		for (RdbmsStatement triple : list) {
-			insert(triple);
-		}
-	}
-
-	private void insert(RdbmsStatement triple)
-		throws RdbmsException, SQLException
-	{
-		long ctx = vf.getInternalId(triple.getContext());
-		long subj = vf.getInternalId(triple.getSubject());
-		long pred = vf.getPredicateId(triple.getPredicate());
-		long obj = vf.getInternalId(triple.getObject());
-		statements.insert(ctx, subj, pred, obj);
 	}
 
 }

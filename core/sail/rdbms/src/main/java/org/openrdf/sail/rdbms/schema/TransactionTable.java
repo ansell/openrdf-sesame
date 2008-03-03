@@ -8,6 +8,9 @@ package org.openrdf.sail.rdbms.schema;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.concurrent.BlockingQueue;
+
+import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 
 /**
  * Manages a temporary table used when uploading new statements with the same
@@ -17,19 +20,19 @@ import java.sql.SQLException;
  * 
  */
 public class TransactionTable {
-	public static int total_rows;
-	public static int total_st;
-	public static int total_wait;
 	private int batchSize;
-	private TripleTable statements;
+	private TripleTable triples;
 	private int addedCount;
 	private int removedCount;
-	private PreparedStatement insertStmt;
 	private RdbmsTable temporary;
-	private int uploadCount;
-	private ValueTypes objTypes;
-	private ValueTypes subjTypes;
 	private Connection conn;
+	private TripleBatch batch;
+	private BlockingQueue<Batch> queue;
+	private DefaultSailChangedEvent sailChangedEvent;
+
+	public void setQueue(BlockingQueue<Batch> queue) {
+		this.queue = queue;
+	}
 
 	public void setTemporaryTable(RdbmsTable table) {
 		this.temporary = table;
@@ -39,12 +42,12 @@ public class TransactionTable {
 		this.conn = conn;
 	}
 
-	public void setPredicateTable(TripleTable statements) {
-		this.statements = statements;
+	public void setTripleTable(TripleTable statements) {
+		this.triples = statements;
 	}
 
-	public int getUncommittedRowCount() {
-		return addedCount + uploadCount;
+	public void setSailChangedEvent(DefaultSailChangedEvent sailChangedEvent) {
+		this.sailChangedEvent = sailChangedEvent;
 	}
 
 	public int getBatchSize() {
@@ -55,88 +58,37 @@ public class TransactionTable {
 		this.batchSize = size;
 	}
 
-	public void initialize() throws SQLException {
-		objTypes = statements.getObjTypes().clone();
-		subjTypes = statements.getSubjTypes().clone();
-	}
-
-	public void insert(long ctx, long subj, long pred, long obj)
-			throws SQLException {
-		PreparedStatement stmt = null;
-		synchronized (this) {
-			if (insertStmt == null) {
-				insertStmt = prepareInsert();
-			}
-			insertStmt.setLong(1, ctx);
-			insertStmt.setLong(2, subj);
-			if (temporary == null && !statements.isPredColumnPresent()) {
-				insertStmt.setLong(3, obj);
-			} else {
-				insertStmt.setLong(3, pred);
-				insertStmt.setLong(4, obj);
-			}
-			insertStmt.addBatch();
-			subjTypes.add(IdCode.decode(subj));
-			objTypes.add(IdCode.decode(obj));
-			if (++uploadCount == getBatchSize()) {
-				uploadCount = 0;
-				stmt = insertStmt;
-				insertStmt = null;
-			}
+	public synchronized void insert(long ctx, long subj, long pred, long obj)
+			throws SQLException, InterruptedException {
+		if (batch == null || batch.isFull() || !queue.remove(batch)) {
+			TripleBatch previous = batch;
+			batch = newTripleBatch();
+			batch.setPrevious(previous);
+			batch.setTable(triples);
+			batch.setSailChangedEvent(sailChangedEvent);
+			batch.setTemporary(temporary);
+			batch.setMaxBatchSize(getBatchSize());
+			batch.setBatchStatement(prepareInsert());
+			batch.setInsertStatement(prepareInsertSelect(buildInsertSelect()));
+			batch.init();
 		}
-		if (stmt != null) {
-			flush(stmt);
+		batch.setLong(1, ctx);
+		batch.setLong(2, subj);
+		if (temporary == null && !triples.isPredColumnPresent()) {
+			batch.setLong(3, obj);
+		} else {
+			batch.setLong(3, pred);
+			batch.setLong(4, obj);
 		}
-	}
-
-	public boolean isReady() {
-		return statements.isReady();
-	}
-
-	public int flush() throws SQLException {
-		if (insertStmt == null)
-			return 0;
-		statements.blockUntilReady();
-		PreparedStatement stmt;
-		synchronized (this) {
-			uploadCount = 0;
-			stmt = insertStmt;
-			insertStmt = null;
-		}
-		if (stmt == null)
-			return 0;
-		return flush(stmt);
-	}
-
-	protected String buildInsertSelect() throws SQLException {
-		String tableName = statements.getName();
-		StringBuilder sb = new StringBuilder();
-		sb.append("INSERT INTO ").append(tableName).append("\n");
-		sb.append("SELECT DISTINCT ctx, subj, ");
-		if (statements.isPredColumnPresent()) {
-			sb.append("pred, ");
-		}
-		sb.append("obj FROM ");
-		sb.append(temporary.getName()).append(" tr\n");
-		sb.append("WHERE NOT EXISTS (");
-		sb.append("SELECT ctx, subj, ");
-		if (statements.isPredColumnPresent()) {
-			sb.append("pred, ");
-		}
-		sb.append("obj FROM ");
-		sb.append(tableName).append(" st\n");
-		sb.append("WHERE st.ctx = tr.ctx");
-		sb.append(" AND st.subj = tr.subj");
-		if (statements.isPredColumnPresent()) {
-			sb.append(" AND st.pred = tr.pred");
-		}
-		sb.append(" AND st.obj = tr.obj");
-		sb.append(")");
-		return sb.toString();
+		batch.addBatch();
+		queue.put(batch);
+		addedCount++;
+		triples.getSubjTypes().add(IdCode.decode(subj));
+		triples.getObjTypes().add(IdCode.decode(obj));
 	}
 
 	public void committed() throws SQLException {
-		statements.modified(addedCount, removedCount);
+		triples.modified(addedCount, removedCount);
 		addedCount = 0;
 		removedCount = 0;
 	}
@@ -145,10 +97,54 @@ public class TransactionTable {
 		removedCount += count;
 	}
 
+	public boolean isEmpty() throws SQLException {
+		return triples.isEmpty() && addedCount == 0;
+	}
+
+	@Override
+	public String toString() {
+		return triples.toString();
+	}
+
+	protected TripleBatch newTripleBatch() {
+		return new TripleBatch();
+	}
+
+	protected PreparedStatement prepareInsertSelect(String sql) throws SQLException {
+		return conn.prepareStatement(sql);
+	}
+
+	protected String buildInsertSelect() throws SQLException {
+		String tableName = triples.getName();
+		StringBuilder sb = new StringBuilder();
+		sb.append("INSERT INTO ").append(tableName).append("\n");
+		sb.append("SELECT DISTINCT ctx, subj, ");
+		if (triples.isPredColumnPresent()) {
+			sb.append("pred, ");
+		}
+		sb.append("obj FROM ");
+		sb.append(temporary.getName()).append(" tr\n");
+		sb.append("WHERE NOT EXISTS (");
+		sb.append("SELECT ctx, subj, ");
+		if (triples.isPredColumnPresent()) {
+			sb.append("pred, ");
+		}
+		sb.append("obj FROM ");
+		sb.append(tableName).append(" st\n");
+		sb.append("WHERE st.ctx = tr.ctx");
+		sb.append(" AND st.subj = tr.subj");
+		if (triples.isPredColumnPresent()) {
+			sb.append(" AND st.pred = tr.pred");
+		}
+		sb.append(" AND st.obj = tr.obj");
+		sb.append(")");
+		return sb.toString();
+	}
+
 	protected PreparedStatement prepareInsert() throws SQLException {
 		if (temporary == null) {
-			boolean present = statements.isPredColumnPresent();
-			String sql = buildInsert(statements.getName(), present);
+			boolean present = triples.isPredColumnPresent();
+			String sql = buildInsert(triples.getName(), present);
 			return conn.prepareStatement(sql);
 		}
 		String sql = buildInsert(temporary.getName(), true);
@@ -173,50 +169,8 @@ public class TransactionTable {
 		return sb.toString();
 	}
 
-	public boolean isEmpty() throws SQLException {
-		return statements.isEmpty() && addedCount == 0 && uploadCount == 0;
-	}
-
-	@Override
-	public String toString() {
-		return statements.toString();
-	}
-
 	protected boolean isPredColumnPresent() {
-		return statements.isPredColumnPresent();
-	}
-
-	private int flush(PreparedStatement stmt)
-		throws SQLException
-	{
-		try {
-			if (temporary == null) {
-				long start = System.currentTimeMillis();
-				int[] results = stmt.executeBatch();
-				long end = System.currentTimeMillis();
-				addedCount += results.length;
-				total_rows += results.length;
-				total_st += 1;
-				total_wait += end - start;
-			} else {
-				synchronized (temporary) {
-					long start = System.currentTimeMillis();
-					stmt.executeBatch();
-					int count = temporary.executeUpdate(buildInsertSelect());
-					long end = System.currentTimeMillis();
-					temporary.clear();
-					addedCount += count;
-					total_rows += count;
-					total_st += 2;
-					total_wait += end - start;
-				}
-			}
-			statements.setObjTypes(objTypes);
-			statements.setSubjTypes(subjTypes);
-			return addedCount;
-		} finally {
-			stmt.close();
-		}
+		return triples.isPredColumnPresent();
 	}
 
 }
