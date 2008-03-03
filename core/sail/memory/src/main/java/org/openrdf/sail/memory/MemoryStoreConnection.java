@@ -20,7 +20,6 @@ import info.aduna.iteration.IteratorIteration;
 import info.aduna.iteration.LockingIteration;
 import info.aduna.iteration.UnionIteration;
 
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -245,8 +244,6 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	protected long sizeInternal(Resource... contexts)
 		throws SailException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
@@ -360,21 +357,23 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 			Resource... contexts)
 		throws SailException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
-		if (contexts.length == 0) {
-			contexts = new Resource[] { null };
-		}
-
 		Statement st = null;
 
-		for (Resource context : contexts) {
-			st = store.addStatement(subj, pred, obj, context, explicit);
+		if (contexts.length == 0) {
+			st = store.addStatement(subj, pred, obj, null, explicit);
 			if (st != null) {
 				notifyStatementAdded(st);
 			}
 		}
-
+		else {
+			for (Resource context : contexts) {
+				st = store.addStatement(subj, pred, obj, context, explicit);
+				if (st != null) {
+					notifyStatementAdded(st);
+				}
+			}
+		}
+		
 		// FIXME: this return type is invalid in case multiple contexts were
 		// specified
 		return st != null;
