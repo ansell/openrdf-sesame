@@ -5,6 +5,8 @@
  */
 package org.openrdf.sail.rdbms;
 
+import static java.sql.Connection.TRANSACTION_READ_COMMITTED;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -146,8 +148,10 @@ public class RdbmsConnectionFactory {
 	public SailConnection createConnection() throws SailException {
 		try {
 			Connection db = getConnection();
-			db.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 			db.setAutoCommit(true);
+			if (db.getTransactionIsolation() != TRANSACTION_READ_COMMITTED) {
+				db.setTransactionIsolation(TRANSACTION_READ_COMMITTED);
+			}
 			TripleManager tripleManager = new TripleManager();
 			RdbmsTripleRepository s = new RdbmsTripleRepository();
 			s.setTripleManager(tripleManager);
