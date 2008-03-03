@@ -102,8 +102,9 @@ public class TransTableManager {
 			}
 			sb.append(" obj");
 			sb.append("\nFROM ");
-			sb.append(predicate.getName());
+			sb.append(predicate.getNameWhenReady());
 			sb.append(union);
+			predicate.blockUntilReady();
 		}
 		if (sb.length() < union.length())
 			return getEmptyTableName();

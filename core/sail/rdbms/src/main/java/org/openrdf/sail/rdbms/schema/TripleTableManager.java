@@ -114,7 +114,7 @@ public class TripleTableManager {
 	}
 
 	public String findTableName(long pred) throws SQLException {
-		return getPredicateTable(pred).getName();
+		return getPredicateTable(pred).getNameWhenReady();
 	}
 
 	public synchronized TripleTable getExistingTable(long pred) {
@@ -151,9 +151,9 @@ public class TripleTableManager {
 
 	public synchronized String getTableName(long pred) throws SQLException {
 		if (tables.containsKey(pred))
-			return tables.get(pred).getName();
+			return tables.get(pred).getNameWhenReady();
 		if (tables.containsKey(OTHER_PRED))
-			return tables.get(OTHER_PRED).getName();
+			return tables.get(OTHER_PRED).getNameWhenReady();
 		return null;
 	}
 
@@ -236,7 +236,7 @@ public class TripleTableManager {
 			if (e.getValue().isEmpty())
 				continue;
 			sb.append(" AND NOT EXISTS (SELECT * FROM ");
-			sb.append(e.getValue().getName());
+			sb.append(e.getValue().getNameWhenReady());
 			sb.append(" WHERE ctx = id OR subj = id OR obj = id");
 			if (e.getValue().isPredColumnPresent()) {
 				sb.append(" OR pred = id");

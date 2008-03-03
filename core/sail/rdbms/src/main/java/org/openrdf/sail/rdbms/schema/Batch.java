@@ -23,17 +23,9 @@ public class Batch {
 
 	private PreparedStatement insertSelect;
 
-	private boolean closed;
-
 	private int maxBatchSize;
 
-	private Batch previous;
-
 	private int batchCount;
-
-	public void setPrevious(Batch previous) {
-		this.previous = previous;
-	}
 
 	public int getMaxBatchSize() {
 		return maxBatchSize;
@@ -58,20 +50,6 @@ public class Batch {
 		this.insertSelect = insert;
 	}
 
-	/**
-	 * Can only have up to two batches for the same table in the queue at once.
-	 * 
-	 * @throws InterruptedException
-	 */
-	public void init()
-		throws InterruptedException
-	{
-		if (previous != null && previous.previous != null) {
-			//previous.previous.waitUntilClosed();
-			previous.previous = null;
-		}
-	}
-
 	public int size() {
 		return batchCount;
 	}
@@ -82,14 +60,6 @@ public class Batch {
 
 	public boolean isReady() {
 		return true;
-	}
-
-	private synchronized void waitUntilClosed()
-		throws InterruptedException
-	{
-		if (!closed) {
-			wait();
-		}
 	}
 
 	public void setLong(int parameterIndex, long x)
@@ -134,8 +104,6 @@ public class Batch {
 			insertBatch = null;
 			insertSelect.close();
 			insertSelect = null;
-			closed = true;
-			notify();
 		}
 	}
 
