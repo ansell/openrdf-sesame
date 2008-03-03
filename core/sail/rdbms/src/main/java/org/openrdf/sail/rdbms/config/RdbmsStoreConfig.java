@@ -6,6 +6,7 @@
 package org.openrdf.sail.rdbms.config;
 
 import static org.openrdf.model.util.GraphUtil.getOptionalObjectLiteral;
+import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.INDEXED;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.JDBC_DRIVER;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.LAYOUT;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.PASSWORD;
@@ -32,6 +33,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 	private String user;
 	private String password;
 	private String layout;
+	private String indexed;
 
 	public RdbmsStoreConfig() {
 		super(RdbmsStoreFactory.SAIL_TYPE);
@@ -77,6 +79,14 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		this.layout = layout;
 	}
 
+	public String getIndexed() {
+		return indexed;
+	}
+
+	public void setIndexed(String indexed) {
+		this.indexed = indexed;
+	}
+
 	@Override
 	public Resource export(Graph graph) {
 		Resource implNode = super.export(graph);
@@ -85,6 +95,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		set(graph, implNode, USER, user);
 		set(graph, implNode, PASSWORD, password);
 		set(graph, implNode, LAYOUT, layout);
+		set(graph, implNode, INDEXED, indexed);
 		return implNode;
 	}
 
@@ -99,6 +110,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 			user = get(graph, implNode, USER);
 			password = get(graph, implNode, PASSWORD);
 			layout = get(graph, implNode, LAYOUT);
+			indexed = get(graph, implNode, INDEXED);
 		} catch (GraphUtilException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}

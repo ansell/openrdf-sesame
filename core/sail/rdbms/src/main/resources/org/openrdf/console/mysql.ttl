@@ -18,6 +18,7 @@
          ns:url "jdbc:mysql://{%Host|localhost%}/{%Database|sesame_store%}?useUnicode=yes&characterEncoding=UTF-8&characterSetResults=UTF-8{%Connection Properties|&connectTimeout=0%}";
          ns:user "{%JDBC User Name%}";
          ns:password "{%JDBC Password%}";
-         ns:layout "{%Schema Layout|layout3%}"
+         ns:layout "{%Schema Layout|layout3%}";
+         ns:indexed "{%Index Data|true%}"
       ]
    ].

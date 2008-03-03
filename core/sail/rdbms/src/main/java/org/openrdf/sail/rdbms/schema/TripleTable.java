@@ -6,6 +6,8 @@
 package org.openrdf.sail.rdbms.schema;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Manages the life-cycle of the rows in a single predicate table.
@@ -17,7 +19,6 @@ public class TripleTable {
 	public static int tables_created;
 	public static int total_st;
 	public static final boolean UNIQUE_INDEX_TRIPLES = true;
-	public static final boolean INDEX_TRIPLES = true;
 	private static final String[] PKEY = { "obj", "subj", "ctx" };
 	private static final String[] SUBJ_INDEX = { "subj" };
 	private static final String[] CTX_INDEX = { "ctx" };
@@ -73,16 +74,7 @@ public class TripleTable {
 				total_st++;
 			}
 		}
-		if (INDEX_TRIPLES) {
-			if (isPredColumnPresent()) {
-				table.index(PRED_INDEX);
-				total_st++;
-			}
-			table.index(SUBJ_INDEX);
-			total_st++;
-			table.index(CTX_INDEX);
-			total_st++;
-		}
+		createIndex();
 		initialize = true;
 		tables_created++;
 	}
@@ -105,6 +97,35 @@ public class TripleTable {
 		
 		}
 		initialize = true;
+	}
+
+	public boolean isIndexed()
+		throws SQLException
+	{
+		return table.getIndexes().size() > 1;
+	}
+
+	public void createIndex()
+		throws SQLException
+	{
+		if (isPredColumnPresent()) {
+			table.index(PRED_INDEX);
+			total_st++;
+		}
+		table.index(SUBJ_INDEX);
+		total_st++;
+		table.index(CTX_INDEX);
+		total_st++;
+	}
+
+	public void dropIndex()
+		throws SQLException
+	{
+		for (Map.Entry<String, List<String>> e : table.getIndexes().entrySet()) {
+			if (!e.getValue().contains("OBJ") && !e.getValue().contains("obj")) {
+				table.dropIndex(e.getKey());
+			}
+		}
 	}
 
 	public boolean isReady() {

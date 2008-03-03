@@ -18,6 +18,7 @@
          ns:url "{%JDBC URL|jdbc:postgresql:sesame_store%}";
          ns:user "{%JDBC User Name%}";
          ns:password "{%JDBC Password%}";
-         ns:layout "{%Schema Layout|layout3%}"
+         ns:layout "{%Schema Layout|layout3%}";
+         ns:indexed "{%Index Data|true%}"
       ]
    ].
