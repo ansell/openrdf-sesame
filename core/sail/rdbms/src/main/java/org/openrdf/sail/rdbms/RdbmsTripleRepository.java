@@ -258,8 +258,10 @@ public class RdbmsTripleRepository {
 
 	public void rollback() throws SQLException, SailException {
 		manager.clear();
-		conn.rollback();
-		conn.setAutoCommit(true);
+		if (!conn.getAutoCommit()) {
+			conn.rollback();
+			conn.setAutoCommit(true);
+		}
 		if (readLock != null) {
 			readLock.unlock();
 			readLock = null;

@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.openrdf.sail.rdbms.schema.RdbmsTable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
@@ -43,6 +44,16 @@ public class PgSqlValueTable extends ValueTable {
 		sb.append("WHERE NOT EXISTS (SELECT id FROM ").append(getRdbmsTable().getName());
 		sb.append(" val WHERE val.id = tmp.id)");
 		getTemporaryTable().execute(sb.toString());
+	}
+
+	@Override
+	public void close()
+		throws SQLException
+	{
+		RdbmsTable tmp = getTemporaryTable();
+		tmp.execute("DEALLOCATE " + tmp.getName() + "_insert");
+		tmp.execute("DEALLOCATE " + tmp.getName() + "_insert_select");
+		super.close();
 	}
 
 	@Override

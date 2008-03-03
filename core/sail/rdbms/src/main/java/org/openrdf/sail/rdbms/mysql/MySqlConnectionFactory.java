@@ -9,7 +9,6 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Types;
 
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.ValueConstant;
@@ -39,19 +38,7 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 
 			@Override
 			protected ValueTable newValueTable() {
-				return new ValueTable() {
-					@Override
-					protected String getDeclaredSqlType(int type, int length) {
-						String declare = super.getDeclaredSqlType(type, length);
-						if (type == Types.VARCHAR) {
-							return declare + FEILD_COLLATE;
-						} else if (type == Types.LONGVARCHAR) {
-							return declare + FEILD_COLLATE;
-						} else {
-							return declare;
-						}
-					}
-				};
+				return new MySqlValueTable();
 			}
 
 			@Override

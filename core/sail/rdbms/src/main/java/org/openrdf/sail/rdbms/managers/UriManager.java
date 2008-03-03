@@ -42,6 +42,15 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	}
 
 	@Override
+	public void close()
+		throws SQLException
+	{
+		super.close();
+		shorter.close();
+		longer.close();
+	}
+
+	@Override
 	protected int getBatchSize() {
 		return shorter.getBatchSize();
 	}

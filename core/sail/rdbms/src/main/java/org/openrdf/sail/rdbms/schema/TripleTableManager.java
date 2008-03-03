@@ -334,9 +334,11 @@ public class TripleTableManager {
 				}
 			}
 			if (table != null) {
-				table.initTable();
-				if (indexingTriples) {
-					table.createIndex();
+				synchronized (table) {
+					table.initTable();
+					if (indexingTriples) {
+						table.createIndex();
+					}
 				}
 				table = null;
 			}
