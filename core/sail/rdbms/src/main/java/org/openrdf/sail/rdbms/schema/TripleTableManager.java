@@ -50,6 +50,7 @@ public class TripleTableManager {
 	private Pattern tablePrefix = Pattern.compile("\\W(\\w*)\\W*$");
 	private Map<Long, TripleTable> tables = new HashMap<Long, TripleTable>();
 	private ResourceTable uris;
+	private int maxTables = MAX_TABLES;
 	Exception exc;
 
 	public TripleTableManager(RdbmsTableFactory factory) {
@@ -78,6 +79,14 @@ public class TripleTableManager {
 
 	public void setURITable(ResourceTable uriTable) {
 		this.uris = uriTable;
+	}
+
+	public void setMaxNumberOfTripleTables(int max) {
+		if (max < 1) {
+			maxTables = MAX_TABLES;
+		} else {
+			maxTables = max - 1;
+		}
 	}
 
 	public void initialize() throws SQLException {
@@ -134,11 +143,11 @@ public class TripleTableManager {
 			if (tables.containsKey(OTHER_PRED))
 				return tables.get(OTHER_PRED);
 			String tableName = getNewTableName(pred);
-			if (tables.size() >= MAX_TABLES) {
+			if (tables.size() >= maxTables) {
 				tableName = OTHER_TRIPLES_TABLE;
 			}
 			TripleTable table = factory.createTripleTable(conn, tableName);
-			if (tables.size() >= MAX_TABLES) {
+			if (tables.size() >= maxTables) {
 				table.setPredColumnPresent(true);
 				initTable(table);
 				tables.put(OTHER_PRED, table);
