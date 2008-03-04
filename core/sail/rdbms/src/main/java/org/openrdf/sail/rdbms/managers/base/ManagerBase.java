@@ -101,15 +101,18 @@ public abstract class ManagerBase {
 	{
 		String name = Thread.currentThread().getName();
 		logger.debug("Starting helper thread {}", name);
+		int notReadyCount = 0;
 		for (Batch b = queue.take(); isFlushable(b); b = queue.take()) {
-			if (b.isReady()) {
+			if (b.isReady() || queue.size() <= notReadyCount) {
 				synchronized (working) {
 					b.flush();
 				}
 				optimize();
+				notReadyCount = 0;
 			}
 			else {
 				queue.add(b);
+				notReadyCount++;
 			}
 		}
 		logger.debug("Closing helper thread {}", name);

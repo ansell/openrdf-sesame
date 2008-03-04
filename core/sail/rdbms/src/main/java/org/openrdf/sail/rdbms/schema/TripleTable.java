@@ -47,6 +47,7 @@ public class TripleTable {
 	private ValueTypes subjTypes = new ValueTypes();
 	private boolean initialize;
 	private boolean predColumnPresent;
+	private boolean indexed;
 
 	public TripleTable(RdbmsTable table) {
 		this.table = table;
@@ -60,10 +61,15 @@ public class TripleTable {
 		predColumnPresent = present;
 	}
 
+	public void setIndexed(boolean indexingTriples) {
+		indexed = true;
+	}
+
 	public synchronized void initTable() throws SQLException {
 		if (initialize)
 			return;
 		table.createTransactionalTable(buildTableColumns());
+		tables_created++;
 		total_st++;
 		if (UNIQUE_INDEX_TRIPLES) {
 			if (isPredColumnPresent()) {
@@ -74,8 +80,10 @@ public class TripleTable {
 				total_st++;
 			}
 		}
+		if (indexed) {
+			createIndex();
+		}
 		initialize = true;
-		tables_created++;
 	}
 
 	public void reload() throws SQLException {

@@ -96,6 +96,8 @@ public class RdbmsStore extends SailBase {
 				throw new RdbmsException(e);
 			}
 		}
+		factory.setMaxNumberOfTripleTables(maxTripleTables);
+		factory.setTriplesIndexed(triplesIndexed);
 		factory.init();
 	}
 
@@ -150,8 +152,6 @@ public class RdbmsStore extends SailBase {
 			} else {
 				factory.setDataSource(ds, user, password);
 			}
-			factory.setMaxNumberOfTripleTables(maxTripleTables);
-			factory.setTriplesIndexed(triplesIndexed);
 			return factory;
 		} finally {
 			con.close();

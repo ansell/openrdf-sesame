@@ -334,12 +334,7 @@ public class TripleTableManager {
 				}
 			}
 			if (table != null) {
-				synchronized (table) {
-					table.initTable();
-					if (indexingTriples) {
-						table.createIndex();
-					}
-				}
+				table.initTable();
 				table = null;
 			}
 		}
@@ -357,6 +352,7 @@ public class TripleTableManager {
 	private void initTable(TripleTable table) throws SQLException {
 		if (exc != null)
 			throwException();
+		table.setIndexed(indexingTriples);
 		synchronized (queue) {
 			queue.add(table);
 			queue.notify();
