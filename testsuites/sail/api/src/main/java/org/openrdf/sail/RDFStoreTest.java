@@ -541,16 +541,6 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		assertEquals("statements without context should equal 2", 2, countElements(con.getStatements(null,
 				null, null, false, (Resource)null)));
 
-		try {
-			// test if IllegalArgumentException is thrown if no explicit cast is
-			// done.
-			con.getStatements(null, null, null, false, null);
-			fail("no cast on vararg parameter should result in IllegalArgumentException");
-		}
-		catch (IllegalArgumentException e) {
-			// do nothing, this is what should happen
-		}
-
 		assertEquals("Statements without context and statements in context 1 together should total 5", 5,
 				countElements(con.getStatements(null, null, null, false, null, context1)));
 
