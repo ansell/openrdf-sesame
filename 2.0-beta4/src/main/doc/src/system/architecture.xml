@@ -1,0 +1,52 @@
+<chapter id="chapter-introduction"> 
+	<title>Architecture</title>
+	<para>
+		The following figure shows the main components and APIs in Sesame and
+		how they are built on top of each other:
+	</para>
+	<figure id="figure-sesame-arch" float="1">
+		<title>The Sesame architecture</title>
+		<mediaobject>
+			<imageobject>
+				<imagedata fileref="figures/block-diagram.png"/>
+			</imageobject>
+		</mediaobject>
+	</figure>
+	<para>
+		Being an RDF-oriented framework, all parts of Sesame are to some extend
+		related to the RDF model. This model defines interfaces for the RDF
+		entities "URI", "blank node", "literal" and "statement".
+	</para>
+	<para>
+		Sesame has two main communication interfaces: the Sail API and the
+		Repository API. The Storage And Inference Layer (Sail) API is a low
+		level system API (or: SPI) for RDF stores and inferencers. It's
+		purpose is to abstract from the storage details, allowing various types
+		of storage and inference to be used.
+	</para>
+	<para>
+		The Repository API is a higer level API and is meant to be the main API
+		that people can program against. It offers various methods for uploading
+		data files, querying, and extracting and manipulating data. It comes in
+		two flavours: local and remote. The local Repository API can be used for
+		"local" repositories, as in "running in the same Java Virtual Machine".
+		The remote Repository API can be used in client-server settings, where
+		the application communicates with a Sesame server. The two flavours
+		share a common interface so that applications can be developed to work
+		with both local and remote repositories transparently.
+	</para>
+	<para>
+		Part of the Sail API is the Sail Query Model, which can be used to build
+		object models representing queries. A query engine like the SeRQL engine
+		takes care of parsing query strings and building such query object model
+		from them. These query object models can then be passed to Sail objects,
+		which take care of their evaluation.
+	</para>
+	<para>
+		Rio stands for "RDF I/O" and consists of a set of parsers and writers
+		for various RDF file formats. The parsers can be used to translate RDF
+		files to lists of statements, and the writers for the reverse operation.
+		Rio is used by the Repository API for data import and export, but can
+		also be used directly by applications.
+	</para>
+</chapter>

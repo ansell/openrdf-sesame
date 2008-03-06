@@ -1,0 +1,998 @@
+<chapter id="chapter-repository-api">
+	<title>The Repository API</title>
+
+	<para>
+		The Repository API is the central access point for Sesame repositories.
+		Its purpose is to give a developer-friendly access point to RDF
+		repositories, offering various methods for querying and updating the
+		data, while hiding a lot of the nitty gritty details of the underlying
+		machinery.
+	</para>
+	<para>
+		In this chapter, we will try to explain the basics of how to program
+		against the Repository API. The interfaces for the Repository API
+		can be found in package
+		<classname>org.openrdf.repository</classname>.  Several
+		implementations for these interface exist in various sub-packages.
+		The Javadoc reference for the API is available <ulink
+			url="http://www.openrdf.org/doc/sesame2/api/">online</ulink> and
+		can also be found in the <filename>doc</filename> directory of the
+		download.
+	</para>
+
+	<section>
+		<title>Creating a Repository object</title>
+
+		<para>
+			The first step in any action that involves Sesame repositories
+			is to create a <classname>Repository</classname> for it.
+			Repository objects operate on (stacks of) Sail object(s) for
+			storage and retrieval of RDF data. An important thing to
+			remember is that the behaviour of a repository is determined by
+			the Sail(s) that it operates on; for example, the repository
+			will only support RDF Schema or OWL semantics if the Sail stack
+			includes an inferencer for this.
+		</para>
+		<para>
+			The central interface of the repository API is the
+			<classname>Repository</classname> interface. There are several
+			implementations available of this interface:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<classname>org.openrdf.repository.sail.SailRepository</classname>
+				is <classname>Repository</classname> that operates directly on
+				top of a <classname>Sail</classname>. This is the class most
+				commonly used when accessing a local Sesame repository.
+			</listitem>
+			<listitem>
+				<classname>org.openrdf.repository.http.HTTPRepository</classname>
+				is, as the name implies, a <classname>Repository</classname>
+				implementation that acts as a proxy to a Sesame repository
+				available on a remote Sesame server, accessible through
+				HTTP.
+			</listitem>
+		</itemizedlist>
+		<para>
+			In the following section, we will first take a look at the use of
+			the <classname>SailRepository</classname> class in order to
+			create and use a local Sesame repository.
+		</para>
+		<section>
+			<title>Creating a main memory RDF Repository</title>
+			<para>
+				One of the simplest configurations is a repository that just
+				stores RDF data in main memory without applying any
+				inferencing or whatsoever. This is also by far the fastest
+				type of repository that can be used. The following code
+				creates and initialize a non-inferencing main-memory
+				repository:
+			</para>
+			<programlisting><![CDATA[
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.memory.MemoryStore;
+
+
+...
+
+Repository myRepository = new SailRepository(new MemoryStore());
+myRepository.initialize();]]></programlisting>
+			<para>
+				The constructor of the <classname>SailRepository</classname>
+				class accepts any object of type <classname>Sail</classname>,
+				so we simply pass it a new main-memory store object (which is,
+				of course, a <classname>Sail</classname> implementation).
+				Following this, the repository needs to be initialized to
+				prepare the Sail(s) that it operates on, which includes
+				operations such as restoring previously stored data, setting
+				up connections to a relational database, etc.
+			</para>
+			<para>
+				The repository that is created by the above code is
+				<emphasis>volatile</emphasis>: its contents are lost when the
+				object is garbage collected or when the program is shut down.
+				This is fine for cases where, for example, the repository is
+				used as a means for manipulating an RDF model in memory.
+			</para>
+			<para>
+				Different types of Sail objects take parameters in their
+				constructor that change their behaviour. The
+				<classname>MemoryStore</classname> for example takes a data
+				directory parameter that specifies a data directory for
+				persisent storage. If specified, the MemoryStore will write its
+				contents to this directory so that it can restore it when it is
+				initialized in a future session:
+			</para>
+			<programlisting><![CDATA[
+File dataDir = new File("c:\\temp\\myRepository\\");
+Repository myRepository = new SailRepository( new MemoryStore(dataDir) );
+myRepository.initialize();]]></programlisting>
+			<para>
+				As you can see, we can fine-tune the configuration of our
+				repository by passing parameters to the constructor of the
+				Sail object. Some Sail types may offer additional
+				configuration methods, all of which need to be called before
+				the repository is initialized. The
+				<classname>MemoryStore</classname> currently has one such
+				method: <function>setSyncDelay(long)</function>, which can
+				be used to control the strategy that is used for writing to
+				the data file, e.g.:
+			</para>
+			<programlisting><![CDATA[
+File dataDir = new File("c:\\temp\\myRepository\\");
+MemoryStore memStore = new MemoryStore(dataDir);
+memStore.setSyncDelay(1000L);
+
+Repository myRepository = new SailRepository(memStore);
+myRepository.initialize();]]></programlisting>
+		</section> <!-- Creating a main memory RDF Repository -->
+
+		<section>
+			<title>Creating a main memory RDF Schema Repository</title>
+			<para>
+				As we have seen, we can create <classname>Repository</classname>
+				objects for any kind of back-end store by passing them a
+				reference to the appropriate Sail object. We can pass any
+				stack of Sails this way, allowing all kinds of different
+				repository configurations to be created quite easily. For
+				example, to stack an RDF Schema inferencer on top of a
+				memory store, we simply create a repository like so:
+			</para>
+			<programlisting><![CDATA[
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.memory.MemoryStore;
+import org.openrdf.sail.memory.MemoryStoreRDFSInferencer;
+
+...
+
+Repository myRepository = new SailRepository(
+                          new MemoryStoreRDFSInferencer(
+                          new MemoryStore()));
+myRepository.initialize();]]></programlisting>
+			<para>
+				Each layer in the Sail stack is created by a constructor
+				that takes the underlying Sail as a parameter. Finally, we
+				create the <classname>SailRepository</classname> object as a
+				functional wrapper around the Sail stack.
+			</para>
+		</section> <!-- Creating a main memory RDF Schema store -->
+
+		<section>
+			<title>Accessing a remote repository</title>
+			<para>
+				Working with remote repositories is just as easy as working
+				with local ones. We can simply use a different
+				<classname>Repository</classname> object, the
+				<classname>HTTPRepository</classname>, instead of the
+				<classname>SailRepository</classname> class.
+			</para>
+			<para>
+				A requirement is of course that there is a Sesame 2 server
+				running on some remote system, which is accessible over HTTP.
+				For example, suppose that at
+				<filename>http://example.org/sesame2/</filename> a
+				Sesame server is running, which has a repository with the
+				identification 'example-db'. We can access this repository in
+				our code as follows:
+			</para>
+			<programlisting><![CDATA[
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.http.HTTPRepository;
+
+...
+
+String sesameServer = "http://example.org/sesame2";
+String repositoryID = "example-db";
+
+Repository myRepository = new HTTPRepository(sesameServer, repositoryID);
+myRepository.initialize();]]></programlisting>
+		</section> <!-- Accessing a remote repository -->
+	</section> <!-- Creating a Repository object -->
+
+	<section>
+		<title>Using a repository: RepositoryConnections</title>
+		<para>
+			Now that we have created a <classname>Repository</classname>, we
+			want to do something with it. In Sesame 2, this is achieved through
+			the use of <classname>RepositoryConnection</classname> objects, which can be
+			created by the <classname>Repository</classname>.
+		</para>
+		<para>
+			A <classname>RepositoryConnection</classname> represents - as the name
+			suggests - an open connection to the actual store. We can issue
+			operations over this connection, and close it when we are done to
+			make sure we are not keeping resources unnnecessarily occupied.
+		</para>
+		<para>
+			In the following sections, we will show some examples of basic
+			operations.
+		</para>
+		<section>
+			<title>Adding RDF to a repository</title>
+			<para>
+				The Repository API offers various methods for adding data to a
+				repository. Data can be added by specifying the location of a file
+				that contains RDF data, and statements can be added individually or in
+				collections.
+			</para>
+			<para>
+				We perform operations on a repository by requesting a
+				<classname>RepositoryConnection</classname> from the repository. On this
+				<classname>RepositoryConnection</classname> object we can the various
+				operations, such as query evaluation, getting, adding, or
+				removing statements, etc.
+			</para>
+			<para>
+				The following example code adds two files, one local and one
+				available through HTTP, to a repository:
+				</para>
+			<programlisting><![CDATA[
+import org.openrdf.OpenRDFException;
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.rio.RDFFormat;
+import java.io.File;
+import java.net.URL;
+
+...
+
+File file = new File("/path/to/example.rdf");
+String baseURI = "http://example.org/example/local";
+
+try {
+   RepositoryConnection con = myRepository.getConnection();
+   con.add(file, baseURI, RDFFormat.RDFXML);
+
+   URL url = new URL("http://example.org/example/remote");
+   con.add(url, url.toString(), RDFFormat.RDFXML);
+
+   con.close();
+}
+catch (OpenRDFException e) {
+   // handle exception
+}
+catch (java.io.IOEXception e) {
+   // handle io exception
+}]]></programlisting>
+			<para>
+				More information on other available methods can be found in the
+				javadoc reference of the <classname>RepositoryConnection</classname> interface.
+			</para>
+		</section> <!-- adding RDF to a repository -->
+
+		<section>
+			<title>Querying a repository</title>
+			<para>
+				The Repository API has a number of methods for creating and
+				evaluating queries.  Two types of queries are distinguished:
+				tuple queries and graph queries.  The query types differ in the
+				type of results that they produce.
+			</para>
+			<para>
+				The result of a tuple query is a set of tuples (or variable
+				bindings), where each tuple represents a solution of a query.
+				This type of query is commonly used to get specific values (URIs,
+				blank nodes, literals) from the stored RDF data.
+			</para>
+			<para>
+				The result of Graph queries is an RDF graph (or set of statements).
+				This type of query is very useful for extracting sub-graphs from
+				the stored RDF data, which can then be queried further, serialized
+				to an RDF document, etc.
+			</para>
+			<para>
+				<emphasis>Note:</emphasis> Sesame 2 currently supports two query
+				languages: SeRQL and SPARQL. The former is explained in
+				<xref linkend="chapter-serql"/>, the specification for the latter is
+				available
+				<ulink url="http://www.w3.org/TR/rdf-sparql-query/">online</ulink>.
+			</para>
+
+			<section>
+				<title>Evaluating a tuple query</title>
+				<para>
+					To evaluate a tuple query we simply do the following:
+				</para>
+				<programlisting><![CDATA[
+import java.util.List;
+import org.openrdf.OpenRDFException;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.query.TupleQuery;
+import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.BindingSet;
+
+...
+
+try {
+   RepositoryConnection con = myRepository.getConnection();
+   try {
+      String queryString = "SELECT x, y FROM {x} p {y}";
+      TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SERQL, queryString);
+      TupleQueryResult result = tupleQuery.evaluate();
+      try {
+         .... // do something with the result
+      }
+      finally {
+         result.close();
+      }
+   }
+   finally {
+      con.close();
+   }
+}
+catch (OpenRDFException e) {
+   // handle exception
+}]]></programlisting>
+				<para>
+					This evaluates a SeRQL query and returns a
+					<classname>TupleQueryResult</classname>, which consists of a
+					sequence of <classname>BindingSet</classname> objects. Each
+					binding set is a set of <classname>Binding</classname>
+					objects. A binding is pair relating a name (as used in the
+					projection) with a value.
+				</para>
+				<para>
+					We can use the <classname>TupleQueryResult</classname> to iterate
+					over all results and get each individual result for
+					<varname>x</varname> and <varname>y</varname>:
+				</para>
+				<programlisting><![CDATA[
+while (result.hasNext()) {
+   BindingSet bindingSet = result.next();
+   Value valueOfX = bindingSet.getValue("x");
+   Value valueOfY = bindingSet.getValue("y");
+
+   // do something interesting with the values here...
+}]]></programlisting>
+
+				<para>
+					As you can see, we retrieve values by name rather than by an
+					index. The names used should be the names as used in the
+					projection of your query. The
+					<classname>TupleQueryResult.getBindingNames()</classname> method
+					returns a list of binding names, in the order in which they were
+					specified in the query. To process the bindings in each binding
+					set in the order specified by the projection, you can do the
+					following:
+				</para>
+				<programlisting><![CDATA[
+List<String> bindingNames = result.getBindingNames();
+while (result.hasNext()) {
+   BindingSet bindingSet = result.next();
+   Value firstValue = bindingSet.getValue(bindingNames.get(0));
+   Value secondValue = bindingSet.getValue(bindingNames.get(1));
+
+   // do something interesting with the values here...
+}]]></programlisting>
+				<para>
+					It is important to invoke the <function>close()</function>
+					operation on the <classname>TupleQueryResult</classname>,
+					after we are done with it. A
+					<classname>TupleQueryResult</classname> evaluates lazily and
+					keeps resources (such as connections to the underlying
+					database) open. Closing the
+					<classname>TupleQueryResult</classname> frees up these
+					resources. Do not forget that iterating over a result may
+					cause exceptions! The best way to make sure no connections are
+					kept open unnecessarily is to invoke
+					<function>close()</function> in the
+					<classname>finally</classname> clause.
+				</para>
+				<para>
+					An alternative to producing a
+					<classname>TupleQueryResult</classname> is to supply an object
+					that implements the
+					<classname>TupleQueryResultHandler</classname> interface to
+					the query's <function>evaluate()</function> method. The main
+					difference is that when using a return object, the client has
+					control over when the next answer is retrieved, whereas with
+					the use of a handler, the server side simply pushes answers to
+					the handler object as soon as it has them available.
+				</para>
+				<para>
+					As an example we will use
+					<classname>SPARQLResultsXMLWriter</classname>, which is a
+					<classname>TupleQueryResultHandler</classname> implementation that writes
+					SPARQL Results XML documents to an outputstream or to a writer:
+				</para>
+				<programlisting><![CDATA[
+import org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLWriter;
+
+...
+
+FileOutputStream out = new FileOutputStream("/path/to/result.srx");
+try {
+   SPARQLResultsXMLWriter sparqlWriter = new SPARQLResultsXMLWriter(out);
+
+   RepositoryConnection con = myRepository.getConnection();
+   try {
+      String queryString = "SELECT * FROM {x} p {y}";
+      TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SERQL, queryString);
+      tupleQuery.evaluate(sparqlWriter);
+   }
+   finally {
+      con.close();
+   }
+}
+finally {
+   out.close();
+}]]></programlisting>
+				<para>
+					You can just as easily supply your own application-specific
+					implementation of <classname>TupleQueryResultHandler</classname> though.
+				</para>
+				<para>
+					Lastly, an important warning: as soon as you are done with the
+					<classname>RepositoryConnection</classname> object, you should close it.
+					Notice that during processing of the
+					<classname>TupleQueryResult</classname> object (for example,
+					when iterating over its contents), the
+					<classname>RepositoryConnection</classname> should still be open. We can
+					invoke <function>con.close()</function> after we have finished
+					with the result.
+				</para>
+			</section> <!-- Evaluating a tuple query -->
+
+			<section>
+				<title>Evaluating a graph query</title>
+				<para>
+					The following code evaluates a graph query on a repository:
+				</para>
+				<programlisting><![CDATA[
+import org.openrdf.query.GraphQueryResult;
+
+GraphQueryResult graphResult = con.prepareGraphQuery(
+      QueryLanguage.SERQL, "CONSTRUCT * FROM {x} p {y}").evaluate();]]></programlisting>
+				<para>
+					A <classname>GraphQueryResult</classname> is similar to
+					<classname>TupleQueryResult</classname> in that is an object
+					that iterates over the query results. However, for graph queries
+					the query results are RDF statements, so a
+					<classname>GraphQueryResult</classname> iterates over
+					statements:
+				<programlisting><![CDATA[
+while (graphResult.hasNext()) {
+   Statement st = graphResult.next();
+   // ... do something with the resulting statement here.
+}]]></programlisting>
+
+				<para>
+					The <classname>TupleQueryResultHandler</classname> equivalent
+					for graph queries is
+					<classname>org.openrdf.rio.RDFHandler</classname>. Again, this
+					is a generic interface, each object implementing it can
+					process the reported RDF statements in any way it wants.
+				</para>
+				<para>
+					All writers from Rio (such as the
+					<classname>N3Writer</classname>,
+					<classname>RDFXMLWriter</classname>,
+					<classname>TurtleWriter</classname>, etc.) implement the
+					<classname>RDFHandler</classname> interface. This allows them to
+					be used in combination with querying quite easily. In the
+					following example, we use a <classname>TurtleWriter</classname>
+					to write the result of a SeRQL graph query to standard output
+					in Turtle format:
+				</para>
+				<programlisting><![CDATA[
+import org.openrdf.rio.turtle.TurtleWriter;
+
+...
+
+RepositoryConnection con = myRepository.getConnection();
+try {
+   TurtleWriter turtleWriter = new TurtleWriter(System.out);
+
+   con.prepareGraphQuery(QueryLanguage.SERQL,
+         "CONSTRUCT * FROM {x} p {y}").evaluate(turtleWriter);
+}
+finally {
+   con.close();
+}]]></programlisting>
+				<para>
+					Again, note that as soon as we are done with the result of the query
+					(either after iterating over the contents of the
+					<classname>GraphQueryResult</classname> or after invoking the
+					<classname>RDFHandler</classname>), we invoke
+					<function>con.close()</function> to close the connection and free
+					resources.
+				</para>
+				</para>
+			</section> <!-- Evaluating a graph query -->
+			<section>
+				<title>Preparing and Reusing Queries</title>
+				<para>
+					In the previous sections we have simply created a query from a
+					string and immediately evaluated it. However, the
+					<function>prepareTupleQuery</function> and
+					<function>prepareGraphQuery</function> methods return objects of
+					type <classname>Query</classname>, specifically
+					<classname>TupleQuery</classname> and
+					<classname>GraphQuery</classname>.
+				</para>
+				<para>
+					A <classname>Query</classname> object, once created, can be
+					(re)used. For example, we can evaluate a Query object , then add
+					some data to our repository, and evaluate the same query
+					again.
+				</para>
+				<para>
+					The <classname>Query</classname> object also has a
+					<function>setBinding</function> method, which can be used to
+					fill in certain prepared values in the query. As a simple
+					example, suppose we have a repository containing names and
+					e-mail addresses of people, and we want to do a query for each
+					person, retrieve his/her e-mail address, for example, but we
+					want to do a separate query for each person. This can be
+					achieved using the <function>setBinding</function>
+					functionality, as follows:
+				</para>
+				<programlisting><![CDATA[
+RepositoryConnection con = myRepository.getConnection();
+
+// First, prepare a query that retrieves all names of persons
+TupleQuery nameQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
+      "SELECT name FROM {person} ex:name {name}");
+
+// Then, prepare another query that retrieves all e-mail addresses of persons:
+TupleQuery mailQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
+      "SELECT mail FROM {person} ex:mail {mail}; ex:name {name}");
+
+// Evaluate the first query to get all names
+TupleQueryResult nameResult = nameQuery.evaluate();
+try {
+   // Loop over all names, and retrieve the corresponding e-mail address.
+   while (nameResult.hasNext()) {
+      BindingSet bindingSet = nameResult.next();
+      Value name = bindingSet.get("name");
+
+      // Retrieve the matching mailbox, by setting the binding for
+      // the variable 'name' to the retrieved value:
+      mailQuery.setBinding("name", name);
+
+      TupleQueryResult mailResult = mailQuery.evaluate();
+
+      // mailResult now contains the e-mail addresses for one particular person
+      try {
+         ....
+      }
+      finally {
+         // after we are done, close the result
+         mailResult.close();
+      }
+   }
+}
+finally {
+   nameResult.close();
+}
+con.close();]]></programlisting>
+				<para>
+					The values with which you perform the
+					<function>setBinding</function> operation of course do not
+					necessarily have to come from a previous query result (as they do
+					in the above example). Using a <classname>ValueFactory</classname>
+					we can create our own value objects from string values. Thus, we
+					can very easily use this functionality to for example query for a
+					particular keyword that is given by user input:
+				</para>
+				<programlisting><![CDATA[
+ValueFactory factory = myRepository.getValueFactory();
+
+// In this example, we specify the keyword string. Of course, this
+// could just as easily be obtained by user input, or by reading from
+// a file, or...
+String keyword = "foobar";
+
+// We prepare a query that retrieves all documents for a keyword.
+// Notice that in this query the 'keyword' variable is not bound to
+// any specific value yet.
+TupleQuery keywordQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
+      "SELECT document FROM {document} ex:keyword {keyword}");
+
+// Then we set the binding to a literal representation of our keyword.
+// Evaluation of the query object will now effectively be the same as
+// if we had specified the query as follows:
+//   SELECT document FROM {document} ex:keyword {"foobar"}
+keywordQuery.setBinding("keyword", factory.createLiteral(keyword));
+
+// we then evaluate the prepared query and can process the result.
+TupleQueryResult keywordQueryResult = keywordQuery.evaluate();]]></programlisting>
+			</section> <!-- Prepared Queries -->
+		</section> <!-- Querying a repository -->
+
+		<section>
+			<title>Creating, retrieving, removing individual statements</title>
+			<para>
+				The <classname>RepositoryConnection</classname> can also be used
+				for adding, retrieving, removing or otherwise manipulating
+				individual statements, or sets of statements.
+			</para>
+			<para>
+				To be able to add new statements, we can use a
+				<classname>ValueFactory</classname> to create the
+				<classname>Value</classname>s out of which the statements consist.
+				For example, we want to add a few statements about two resources,
+				Alice and Bob:
+			</para>
+			<programlisting><![CDATA[
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.RDFS;
+...
+
+ValueFactory f = myRepository.getValueFactory();
+
+// create some resources and literals to make statements out of
+URI alice = f.createURI("http://example.org/people/alice");
+URI bob = f.createURI("http://example.org/people/bob");
+URI name = f.createURI("http://example.org/ontology/name");
+URI person = f.createURI("http://example.org/ontology/Person");
+Literal bobsName = f.createLiteral("Bob");
+Literal alicesName = f.createLiteral("Alice");
+
+try {
+   RepositoryConnection con = myRepository.getConnection();
+
+   try {
+      // alice is a person
+      con.add(alice, RDF.TYPE, person);
+      // alice's name is "Alice"
+      con.add(alice, name, alicesName);
+
+      // bob is a person
+      con.add(bob, RDF.TYPE, person);
+      // bob's name is "Bob"
+      con.add(bob, name, bobsName);
+   }
+      finally {
+      con.close();
+   }
+}
+catch (OpenRDFException e) {
+   // handle exception
+}]]></programlisting>
+			<para>
+				Of course, it will not always be necessary to use a
+				<classname>ValueFactory</classname> to create URIs. In practice,
+				you will find that you quite often retrieve existing URIs from the
+				repository (for example, by evaluating a query) and then reusing
+				those values to add new statements.
+			</para>
+			<para>
+				As you can see in the above code, for the default RDF and RDF Schema
+				properties (such as 'rdf:type' and 'rdfs:subClassOf') it is not
+				necessary to create new <classname>URI</classname> objects. Instead,
+				you can import the vocabulary classes
+				<classname>org.openrdf.model.vocabulary.RDF</classname> and
+				<classname>RDFS</classname> which provide you static references to
+				the vocabulary primitives.
+			</para>
+			<para>
+				Retrieving statements works in a very similar way. One way of
+				retrieving statements we have already seen actually: we can get a
+				<classname>GraphQueryResult</classname> containing statements by
+				evaluating a graph query.
+				However, we can also use direct method calls to retrieve (sets of)
+				statements. For example, to retrieve all statements about
+				Alice, we could do:
+			</para>
+			<programlisting><![CDATA[
+RepositoryResult<Statement> statements = con.getStatements(alice, null, null, true);]]></programlisting>
+			<para>
+				The additional boolean parameter at the end (set to
+				'true' in this example) indicates wether inferred
+				triples should be included in the result. Of course,
+				this parameter only makes a difference if your repository
+				uses an inferencer.
+			</para>
+			<para>
+				The <classname>RepositoryResult</classname> is an iterator-like
+				object that that lazily retrieves each matching statement from the
+				repository when its <function>next()</function> method is called.
+				Note that, like is the case with
+				<classname>QueryResult</classname> objects, iterating over a
+				<classname>RepositoryResult</classname> may result in exceptions
+				which you should catch to make sure that the
+				<classname>RepositoryResult</classname> is always properly closed
+				after use:
+			</para>
+			<programlisting><![CDATA[
+RepositoryResult<Statement> statements = con.getStatements(alice, null, null, true);
+
+try {
+   while (statements.hasNext()) {
+      Statement st = statements.next();
+
+      ... // do something with the statement
+   }
+}
+finally {
+   statements.close(); // make sure the result object is closed properly
+}]]></programlisting>
+			<para>
+				In the above method invocation, we see four parameters being
+				passed. The first three represent the subject, predicate and object
+				of the RDF statements which should be retrieved. A
+				<classname>null</classname> value indicates a wildcard, so the
+				above method call retrieves all statements which have as their
+				subject Alice, and have any kind of predicate and object. The
+				fourth parameter indicates whether or not inferred statements
+				should be included or not.
+			</para>
+			<para>
+				Removing statements again works in a very similar fashion. Suppose
+				we want to retract the statement that the name of Alice is
+				"Alice"):
+			</para>
+			<programlisting><![CDATA[
+con.remove(alice, name, alicesName);]]></programlisting>
+			<para>
+				Or, if we want to erase all statements about Alice completely, we
+				can do:
+			</para>
+			<programlisting><![CDATA[
+con.remove(alice, null, null);]]></programlisting>
+		</section>
+
+		<section>
+			<title>Working with Collections and Iterations</title>
+			<para>
+				Most of these examples have been on the level of individual
+				statements. However, the Repository API offers several methods
+				that work with <classname>Collection</classname>s of statements,
+				allowing more batch-like update operations.
+			</para>
+			<para>
+				For example, in the following bit of code, we first retrieve all
+				statements about Alice, put them in a
+				<classname>Collection</classname> and then remove them:
+			</para>
+			<programlisting><![CDATA[
+import info.aduna.commons.collections.util.iterations.Iterations;
+
+// Retrieve all statements about Alice and put them in a list
+RepositoryResult<Statement> statements = con.getStatements(alice, null, null, true));
+List<Statement> aboutAlice = Iterations.addAll(statements, new ArrayList<Statement>());
+
+// Then, remove them from the repository
+con.remove(aboutAlice);]]></programlisting>
+			<para>
+				As you can see, the
+				<classname>info.aduna.iteration.Iterations</classname>
+				class provides a convenient method that takes an
+				<classname>Iteration</classname> (of which
+				<classname>RepositoryResult</classname> is a subclass) and a
+				Collection as input, and returns the Collection with the contents
+				of the iterator added to it. It also automatically closes the
+				Iteration for you.
+			</para>
+			<para>
+				In the above code, you first retrieve all statements, put them in
+				a list, and then remove them. Although this works fine, it can be
+				done in an easier fashion, by simply supplying the resulting
+				object directly:
+			</para>
+			<programlisting><![CDATA[
+con.remove(con.getStatements(alice, null, null, true));]]></programlisting>
+			<para>
+				The <classname>RepositoryConnection</classname> interface has several variations of
+				add, retrieve and remove operations. See the Javadoc API
+				documentation for a full overview of the options.
+			</para>
+		</section>
+
+		<section>
+			<title>Using context</title>
+			<para>
+				Sesame 2 supports the notion of <emphasis>context</emphasis>, which
+				you can think of as a way to group sets of statements together
+				through a single group identifier (this identifier can be a blank
+				node or a URI).
+			</para>
+			<para>
+				A very typical way to use context is tracking
+				<emphasis>provenance</emphasis> of the statements in a repository,
+				that is, which file these statements originate from. For example,
+				consider an application where you add RDF data from different files
+				to a repository, and then one of those files is updated. You would
+				then like to replace the data from that single file in the
+				repository, and to be able to do this you need a way to figure out
+				which statements need to be removed. The context mechanism gives you
+				a way to do that.
+			</para>
+			<para>
+				In the following example, we add an RDF document from the Web to our
+				repository, in a context. In the example, we make the context
+				identifier equal to the Web location of the file being uploaded.
+			</para>
+			<programlisting><![CDATA[
+String location = "http://example.org/example/example.rdf";
+String baseURI = location;
+URL url = new URL(location);
+URI context = f.createURI(location);
+
+con.add(url, baseURI, RDFFormat.RDFXML, context);]]></programlisting>
+			<para>
+				We can now use the context mechanism to specifically address these
+				statements in the repository for retrieve and remove operations:
+			</para>
+			<programlisting><![CDATA[
+// Get all statements in the context
+RepositoryResult<Statement> result =
+      con.getStatements(null, null, null, true, context);
+
+try {
+   while (result.hasNext()) {
+      Statement st = result.next();
+      ... // do something interesting with the result
+   }
+}
+finally {
+   result.close();
+}
+
+// Export all statements in the context to System.out, in RDF/XML format
+RDFHandler rdfxmlWriter = new RDFXMLWriter(System.out);
+con.export(context, rdfxmlWriter);
+
+// Remove all statements in the context from the repository
+con.clear(context);]]></programlisting>
+			<para>
+				In most methods in the Repository API, the context parameter is a
+				<emphasis>vararg</emphasis>, meaning that you can specify an
+				arbitrary number (zero, one, or more) of context identifiers. This
+				way, you can very flexibly combine different contexts together. For
+				example, we can very easily retrieve statements that appear in
+				either 'context1' or 'context2'.
+			</para>
+			<para>
+				In the following example we add information about Bob and Alice
+				again, but this time each has their own context. We also create a
+				new property called 'creator' that has as its value the name of the
+				person who is the creator a particular context. The knowledge about
+				creators of contexts we do not add to any particular context,
+				however:
+			</para>
+			<programlisting><![CDATA[
+URI context1 = f.createURI("http://example.org/context1");
+URI context2 = f.createURI("http://example.org/context2");
+URI creator = f.createURI("http://example.org/ontology/creator");
+
+// Add stuff about Alice to context1
+con.add(alice, RDF.TYPE, person, context1);
+con.add(alice, name, alicesName, context1);
+
+// Alice is the creator of context1
+con.add(context1, creator, alicesName);
+
+// Add stuff about Bob to context2
+con.add(bob, RDF.TYPE, person, context2);
+con.add(bob, name, bobsName, context2);
+
+// Bob is the creator of context2
+con.add(context2, creator, bobsName);]]></programlisting>
+			<para>
+				Once we have this information in our repository, we can retrieve all
+				statements about either Alice or Bob by using the context vararg:
+			</para>
+			<programlisting><![CDATA[
+// Get all statements in either context1 or context2
+RepositoryResult<Statement> result =
+      con.getStatements(null, null, null, true, context1, context2);]]></programlisting>
+			<para>
+				You should observe that the above RepositoryResult will not contain the
+				information that context1 was created by Alice and context2 by Bob. This
+				is because those statements were added without any context, thus they do
+				not appear in context1 or context2, themselves.
+			</para>
+			<para>
+				To explicitly retrieve statements that do not have an associated
+				context, we do the following:
+			</para>
+			<programlisting><![CDATA[
+// Get all statements that do not have an associated context
+RepositoryResult<Statement> result =
+      con.getStatements(null, null, null, true, (Resource)null);]]></programlisting>
+			<para>
+				This will give us <emphasis>only</emphasis> the statements about the
+				creators of the contexts, because those are the only statements that do
+				not have an associated context. Note that we have to explicitly cast the
+				null argument to <classname>Resource</classname>, because otherwise it
+				is ambiguous whether we are specifying a single value or an entire array
+				that is null (a vararg is internally treated as an array). Simply
+				invoking <function>getStatements(s, p, o, true, null)</function> without
+				an explicit cast will result in an <classname>IllegalArgumentException</classname>.
+			</para>
+			<para>
+				We can also get everything that either has no context or is in context1:
+			</para>
+			<programlisting><![CDATA[
+// Get all statements that do not have an associated context, or that are in context1
+RepositoryResult<Statement> result =
+      con.getStatements(null, null, null, true, (Resource)null, context1);]]></programlisting>
+			<para>
+				So as you can see, you can freely combine contexts in this fashion.
+			</para>
+			<para>
+				<emphasis>Important:</emphasis>
+			</para>
+			<programlisting><![CDATA[getStatements(null, null, null, true);]]></programlisting>
+			<para>
+				is not the same as:
+			</para>
+			<programlisting><![CDATA[getStatements(null, null, null, true, (Resource)null);]]></programlisting>
+			<para>
+				The former (without any context id parameter) retrieves all statements
+				in the repository, ignoring any context information. The latter,
+				however, only retrieves statements that explicitly do not have
+				any associated context.
+			</para>
+		</section> <!-- using context -->
+
+		<section id="section-transactions">
+			<title>Transactions</title>
+			<para>
+				So far, we have shown individual operations on repositories:
+				adding statements, removing them, etc. By default, a
+				<classname>RepositoryConnection</classname>
+				runs in <emphasis>autoCommit</emphasis> mode, meaning that each
+				operation on a <classname>RepositoryConnection</classname> is immediately sent
+				to the store and committed.
+			</para>
+			<para>
+				The <classname>RepositoryConnection</classname> interface supports a full
+				transactional mechanism that allows one to group modification
+				operations together and treat them as a single update: before the
+				transaction is committed, none of the operations in the transaction
+				has taken effect, and after, they all take effect. If something goes
+				wrong at any point during a transaction, it can be
+				<emphasis>rolled back</emphasis> so that the state of the repository
+				is the same as before the transaction started. Bundling update
+				operations in a single transaction often also improves update
+				performance compared to multiple smaller transactions.
+			</para>
+			<para>
+				We can achieve this behaviour by switching off the
+				<classname>RepositoryConnection</classname>'s autoCommit mode. In
+				the following example, we use a non-autocommit connection to
+				bundle two file addition operations in a single transaction:
+			</para>
+			<programlisting><![CDATA[
+File inputFile1 = new File("/path/to/example1.rdf");
+String baseURI1 = "http://example.org/example1/";
+
+File inputFile2 = new File("/path/to/example2.rdf");
+String baseURI2 = "http://example.org/example2/";
+
+RepositoryConnection con = myRepository.getConnection();
+try {
+   con.setAutoCommit(false);
+
+   // Add the first file
+   con.add(inputFile1, baseURI1, RDFFormat.RDFXML);
+
+   // Add the second file
+   con.add(inputFile2, baseURI2, RDFFormat.RDFXML);
+
+   // If everything went as planned, we can commit the result
+   con.commit();
+}
+catch (RepositoryException e) {
+   // Something went wrong during the transaction, so we roll it back
+   con.rollback();
+}
+finally {
+   // Whatever happens, we want to close the connection when we are done.
+   con.close();
+}]]></programlisting>
+			<para>
+				In the above example, we use a transaction to add two files to the
+				repository. Only if both files can be successfully added will the
+				repository change. If one of the files can not be added (for example
+				because it can not be read), then the entire transaction is
+				cancelled and none of the files is added to the repository.
+			</para>
+		</section> <!-- transaction -->
+	</section> <!-- using a repository -->
+</chapter>

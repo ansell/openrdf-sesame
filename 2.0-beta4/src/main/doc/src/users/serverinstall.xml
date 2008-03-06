@@ -1,0 +1,266 @@
+<chapter id="chapter-serverinstall">
+	<title>Sesame 2.0 HTTP Server Installation</title>
+	<para>
+		In this chapter, we explain how you can install a Sesame 2.0 Server. You
+		can skip chapter if you are not planning to run a Sesame server but
+		intend to use Sesame as a library to program against.
+	</para>
+	<section>
+		<title>Required software</title>
+
+		<para>
+			The Sesame 2.0 HTTP Server requires the following software:
+		</para>
+
+		<itemizedlist>
+			<listitem>Java 5 (we recommend Sun J2SDK 1.5.0 or better)</listitem>
+			<listitem>
+				A Java Servlet Container with the following minimal
+				specifications:
+				<itemizedlist>
+					<listitem>Support for Java Servlet API 2.4</listitem>
+					<listitem>Support for Java Server Pages (JSP) 2.0</listitem>
+				</itemizedlist>
+				We recommend using a recent, stable version of
+				<ulink url="http://tomcat.apache.org/">Apache Tomcat</ulink>,
+				which is either version 5.5.x or 6.x at the time of writing.
+			</listitem>
+		</itemizedlist>
+	</section>
+
+	<section id="section-sesame-server-installation" xreflabel="Sesame server installation">
+		<title>Sesame server installation</title>
+		<para>
+			The Sesame 2.0 server software comes in the form of two Java Web
+			Applications: the Sesame HTTP server and the OpenRDF Workbench. The
+			former provides HTTP access to Sesame repositories and is meant to
+			be accessed by other applications. OpenRDF Workbench is a web
+			application that provides a user interface to Sesame servers. Both
+			webapps can be installed independently of one another.
+		</para>
+		<para>
+			If you haven't done so already, you will first need to download the
+			<ulink url="http://www.openrdf.org/download.jsp">Sesame 2.0 SDK</ulink>.
+			Both the Sesame server webapp and the Workbench webapp are included
+			in this SDK, they can be found in the <filename>war</filename>
+			directory. The war-files in this directory need to be deployed in a
+			Java Servlet Container, for example in
+			<ulink url="http://tomcat.apache.org/">Apache Tomcat</ulink>. The
+			deployment process is container-specific, please consult the
+			documentation for your container on how to deploy a web application.
+		</para>
+		<para>
+			After you have deployed the Sesame server webapp, you should have a
+			running Sesame 2.0 server that can be accessed at path
+			<filename>/openrdf-sesame</filename>. You can point your browser at
+			this location to verify that the deployment succeeded. Your browser
+			should show the Sesame welcome screen as well as some options to
+			view the server logs, among other things. Similarly, the OpenRDF
+			Workbench should be available at path
+			<filename>/openrdf-workbench</filename>.
+		</para>
+	</section>
+
+	<section id="section-config">
+		<title>Configuring the Data Directory</title>
+		<para>
+			A Sesame server stores all its configuration files and repository
+			data in a single directory (with subdirectories). On Windows
+			machines, this directory is
+			<filename>%APPDATA%\Aduna\openrdf\server\</filename>
+			by default, where %APPDATA% is the application data directory of the
+			user that runs the server. For example, in case the server runs
+			under the 'LocalService' user account on Windows XP, the directory is
+			<filename>C:\Documents and Settings\LocalService\Application Data\Aduna\OpenRDF Sesame</filename>.
+			On Linux/UNIX, the default location is
+			<filename>$HOME/.aduna/openrdf/server/</filename>, where $HOME is
+			the home directory of the user that runs the server, for example
+			<filename>/home/tomcat/.aduna/openrdf/server/</filename>.
+		</para>
+		<para>
+			The location of this data directory can be reconfigured using the
+			Java system property
+			<property>info.aduna.platform.appdata.basedir</property>. When you
+			are using Tomcat as the servlet container than you can set this
+			property using the <parameter>JAVA_OPTS</parameter> parameter, for
+			example:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<parameter>set JAVA_OPTS='-Dinfo.aduna.platform.appdata.basedir=\path\to\other\dir\'</parameter>
+				(on Windows)
+			</listitem>
+			<listitem>
+				<parameter>export JAVA_OPTS='-Dinfo.aduna.platform.appdata.basedir=/path/to/other/dir/'</parameter>
+				(on Linux/UNIX)
+			</listitem>
+		</itemizedlist>
+		<para>
+			If you are using Apache Tomcat as a Windows Service you should use
+			the Windows Service Configure tool to set this property. Other users
+			can either edit the Tomcat startup script or set the property some
+			other way.
+		</para>
+		<para>
+			In the rest of this manual, we will refer to the Sesame Server's
+			data directory as <filename>[SESAME_DATA]</filename>.
+		</para>
+	</section>
+
+	<section>
+		<title>Repository Configuration</title>
+		<para>
+			A clean installation of a Sesame server has a single repository by
+			default: the SYSTEM repository. This SYSTEM repository contains all
+			configuration data for the server, including what other repositories
+			exists and (in future releases) the access rights on these
+			repositories. This SYSTEM repository <emphasis>should not</emphasis>
+			be used to store data that is not related to the server
+			configuration.
+		</para>
+		<para>
+			The easiest way to create/manager repositories in a SYSTEM
+			repository is to use the Sesame Console. The Sesame Console can be
+			started using the <filename>start-console.bat/.sh</filename> scripts
+			that can be found in the <filename>bin</filename> directory of the
+			Sesame SDK.
+		</para>
+		<para>
+			On startup, the Sesame console will show you the repositories that
+			are available. It's important to realize that these repostories are
+			not related to the server's repositories: the console has it's own
+			set of repositories and it can be used independently of the Sesame
+			server for various purposes. We can, however, access the server's
+			SYSTEM repository from the console by creating a "remote repository"
+			for it. You can accomplish this by entering the following command in
+			the console:
+		</para>
+		<screen>create remote.</screen>
+		<para>
+			The console will then ask you to fill in a number of parameters for
+			the remote repository. The default values will create a remote
+			repository that connects to the SYSTEM repository on localhost,
+			assuming a default installation. After entering the correct values
+			for the parameters, you should now have a new repository that
+			represents the SYSTEM repository on the server. Open this repository
+			by executing the 'open' command with the repository's ID
+			('SYSTEM@localhost' by default):
+		</para>
+		<screen>open SYSTEM@localhost.</screen>
+		<para>
+			You can now use the same 'create' command to create repositories on
+			the server. Next to 'remote', you can also use 'memory',
+			'memory-rdfs' and 'native' as arguments for the create command,
+			which will respectively create a memory store, a memory store with
+			RDF Schema inferencing, and a native store. The following sections
+			describe the various parameters that can be specified for these
+			repository types.
+		</para>
+
+		<section>
+			<title>Memory store configuration</title>
+			<para>
+				A memory store is an RDF repository that stores its data in main
+				memory. Apart from the standard <parameter>ID</parameter> and
+				<parameter>title</parameter> parameters, this type of repository
+				has a <parameter>Persist</parameter> and
+				<parameter>Sync delay</parameter> parameter.
+			</para>
+
+			<section>
+				<title>Memory Store persistence</title>
+				<para>
+					The <parameter>Persist</parameter> parameter controls
+					whether the memory store will use a data file for
+					persistence over sessions. Persistent memory stores write
+					their data to disk before being shut down and read this data
+					back in the next time they are initialized. Non-persistent
+					memory stores are always empty upon initialization.
+				</para>
+			</section>
+
+			<section>
+				<title>Synchronization delay</title>
+				<para>
+					By default, the memory store persistence mechanism
+					synchronizes the disk backup directly upon any change to the
+					contents of the store. That means that directly after any
+					change (upload, removal) completes, the disk backup is
+					updated. It is possible to configure a synchronization delay
+					however. This can be useful if your application performs
+					several transactions in sequence and you want to prevent disk
+					synchronization in the middle of this sequence.
+				</para>
+				<para>
+					The synchronization delay is specified by a number,
+					indicating the time in milliseconds that the store will wait
+					before it synchronizes changes to disk. The value 0
+					indicates that there should be no delay. Negative values can
+					be used to postpone the synchronization indefinitely, i.e.
+					until the store is shut down.
+				</para>
+			</section>
+		</section> <!-- memory store configuration -->
+
+		<section>
+			<title>Native store configuration</title>
+			<para>
+				A native store stores and retrieves its data directly to/from
+				disk. The advantage of this over the memory store is that it
+				scales much better as it isn't limited to the size of available
+				memory. Of course, since it has to access the disk, it is also
+				slower than the in-memory store, but it is a good solution for
+				larger data sets.
+			</para>
+
+			<section>
+				<title>Native store indexes</title>  
+				<para>
+					The native store uses on-disk <emphasis>indexes</emphasis>
+					to speed up querying. It uses B-Trees for indexing
+					statements, where the index key consists of four fields:
+					subject (s), predicate (p), object (o) and context (c). The
+					order in which each of these fields is used in the key
+					determines the usability of an index on a specify statement
+					query pattern: searching statements with a specific subject
+					in an index that has the subject as the first field is
+					signifantly faster than searching these same statements in an
+					index where the subject field is second or third. In the worst
+					case, the 'wrong' statement pattern will result in a sequential
+					scan over the entire set of statements.
+				</para>
+				<para>
+					By default, the native repository only uses two indexes, one
+					with a subject-predicate-object-context (spoc) key pattern
+					and one with a predicate-object-subject-context (posc) key
+					pattern.  However, it is possible to define more or other
+					indexes for the native repository, using the
+					<parameter>Triple indexes</parameter> parameter. This can be
+					used to optimize performance for query patterns that occur
+					frequently.
+				</para>
+				<para>
+					The subject, predicate, object and context fields are
+					represented by the characters 's', 'p', 'o' and 'c'
+					respectively. Indexes can be specified by creating 4-letter
+					words from these four characters. Multiple indexes can be
+					specified by separating these words with commas, spaces
+					and/or tabs. For example, the string "spoc, posc" specifies
+					two indexes; a subject-predicate-object-context index and a
+					predicate-object-subject-context index.
+				</para>
+				<para>
+					Creating more indexes potentially speeds up querying (a
+					lot), but also adds overhead for maintaining the indexes.
+					Also, every added index takes up additional disk space.
+				</para>
+				<para>
+					The native store automatically creates/drops indexes upon
+					(re)initialization, so the parameter can be adjusted and
+					upon the first refresh of the configuration the native store
+					will change its indexing strategy, without loss of data.
+				</para>
+			</section>
+		</section> <!-- native repository configuration -->
+	</section>
+</chapter>

@@ -1,0 +1,14 @@
+	<table class="dataentry">
+		<tbody>
+			<tr>
+				<th>Base URI:</th>
+				<td><form:input path="baseUri" /></td>
+			</tr>
+			<tr>
+				<th>Data format:</th>
+				<td>
+					<form:select path="format">
+						<form:options items="${formats}" itemValue="formatId" itemLabel="formatName"/>
+					</form:select>				
+				</td>
+			</tr>

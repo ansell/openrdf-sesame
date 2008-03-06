@@ -1,0 +1,34 @@
+<?xml version="1.0" standalone="no"?>
+
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2CR3//EN"
+                      "../docbook/docbookx.dtd" [
+
+<!ENTITY sesame2-whats-new SYSTEM "sesame2-whats-new.xml">
+<!ENTITY sesame-intro SYSTEM "sesame-intro.xml">
+<!ENTITY serverinstall SYSTEM "serverinstall.xml">
+<!ENTITY repository-api SYSTEM "repository-api.xml">
+<!ENTITY serql-usermanual SYSTEM "serql-usermanual.xml">
+
+]>
+
+<book>
+	<title>User Guide for Sesame 2.0 (DRAFT)</title>
+
+	<bookinfo>
+		<releaseinfo>
+			DRAFT Updated for Sesame release 2.0-beta4
+		</releaseinfo>
+		<copyright>
+			<year>2002-2007</year>
+			<holder>Aduna B.V.</holder>
+		</copyright>
+	</bookinfo>
+
+<!-- chapters -->
+&sesame2-whats-new;
+&sesame-intro;
+&serverinstall;
+&repository-api;
+&serql-usermanual;
+
+</book>
