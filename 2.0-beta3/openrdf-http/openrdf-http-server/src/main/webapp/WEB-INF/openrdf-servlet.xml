@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- RESOURCES -->
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>messages</value>
+				<value>system.messages</value>
+			</list>
+		</property>
+	</bean>
+
+    <bean id="appVersion" class="info.aduna.app.AppVersion">
+    	<property name="major" value="2" />
+    	<property name="minor" value="0" />
+    	<property name="modifier" value="beta3" />
+    </bean>
+    
+    <bean id="appConfig" class="info.aduna.app.AppConfiguration" init-method="init" destroy-method="destroy">
+    	<property name="applicationId" value="openrdf server" />
+    	<property name="longName" value="Aduna OpenRDF - Sesame Server" />
+    	<property name="version" ref="appVersion" />
+    </bean>
+
+	<bean id="navigation" class="info.aduna.webapp.navigation.NavigationModel">
+		<property name="keepParent" value="true" />
+		<property name="navigationModels">
+			<list>
+				<value>/navigation.xml</value>
+				<value>/system/navigation.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- INTERCEPTORS -->
+	<bean id="common" class="info.aduna.webapp.CommonValuesHandlerInterceptor" />
+
+	<bean id="navigationInterceptor" class="info.aduna.webapp.navigation.NavigationHandlerInterceptor">
+		<property name="navigationModel" ref="navigation" />
+	</bean>
+	
+	<!-- MAPPINGS -->
+    <bean id="webappBaseUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+				<prop key="/system/overview.view">systemOverviewController</prop>
+                <prop key="/system/info/overview.view">filenameViewController</prop>
+                <prop key="/system/info/debug.view">filenameViewController</prop>
+                <prop key="/system/logging/overview.view">loggingOverviewController</prop>
+            </props>
+        </property>
+        <property name="order" value="0" />
+		<property name="interceptors">
+			<list>
+				<ref bean="common" />
+				<ref bean="navigationInterceptor" />
+			</list>
+		</property>
+    </bean>
+
+	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<props>
+				<prop key="/overview.view">filenameViewController</prop>
+                <prop key="/home/overview.view">filenameViewController</prop>
+			</props>
+		</property>
+        <property name="order" value="1" />
+  		<property name="interceptors">
+			<list>
+				<ref bean="common" />
+				<ref bean="navigationInterceptor" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- CONTROLLERS -->
+    <bean id="filenameViewController" class="org.springframework.web.servlet.mvc.UrlFilenameViewController"/>
+    
+    <bean id="systemOverviewController" class="info.aduna.webapp.system.SystemOverviewController">
+    	<property name="view" value="system/overview" />
+    	<property name="config" ref="appConfig" />
+    </bean> 
+ 
+    <bean id="loggingOverviewController" class="info.aduna.webapp.system.logging.LoggingOverviewController">
+    	<property name="config" ref="appConfig" />
+    </bean> 
+    
+	<!-- RESOLVERS -->
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+</beans>

@@ -1,0 +1,5 @@
+org.openrdf.rio.rdfxml.RDFXMLWriterFactory
+org.openrdf.rio.turtle.TurtleWriterFactory
+org.openrdf.rio.ntriples.NTriplesWriterFactory
+org.openrdf.rio.n3.N3WriterFactory
+org.openrdf.rio.trix.TriXWriterFactory

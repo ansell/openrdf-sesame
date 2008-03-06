@@ -1,0 +1,55 @@
+<chapter id="chapter-sesame2-whats-new">
+	<title>Sesame 2: what's new?</title>
+	<para>
+		For those who have previously worked with Sesame 1.x:
+		Sesame 2 is an important step forward from the Sesame 1.x
+		series, building on the feedback that has been gathered
+		during the past years. A lot of improvements have been
+		made to various APIs as well as the framework as a whole.
+	</para>
+	<para>
+		Unfortunately, because of all the changes to APIs and the like,
+		<emphasis>Sesame 2 is not backwards compatible with earlier
+		  releases</emphasis>. Therefore, we suggest you read through this
+		user guide before starting to port any applications to Sesame 2.
+		Please also note that Sesame 2 is currently in beta stage, meaning
+		that although the core APIs are now stable, many features are not
+		yet implemented (for example, the custom inferencer and the RDBMS
+		backend are not yet available).
+	</para>
+	<para>
+		So what's new in Sesame 2? Well, in short:
+	</para>
+
+	<itemizedlist>
+		<listitem>
+			Sesame 2 is completely targeted at Java 5. All APIs use
+			Java 5 features such as typed collections and iterators.
+		</listitem>
+		<listitem>
+			Revised Repository API that is much more targeted at
+			the use of Sesame as a library.
+		</listitem>
+		<listitem>
+			Support for context/provenance, allowing you to keep track
+			of individual RDF data units (like files, for instance).
+		</listitem>
+		<listitem>
+			Proper transaction/rollback support.
+		</listitem>
+		<listitem>
+			A REST-ful HTTP protocol that includes support for the
+			<ulink url="http://www.w3.org/TR/rdf-sparql-protocol/">SPARQL protocol</ulink> and
+			<ulink url="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results XML Format</ulink>,
+			which are currently both Last Call Working Drafts from the W3C.
+		</listitem>
+		<listitem>
+			Support for the
+			<ulink url="http://www.w3.org/TR/rdf-sparql-query/">SPARQL Query Language</ulink>.
+		</listitem>
+	</itemizedlist>
+
+	<para>
+		A lot of these new features will be covered in the next chapters.
+	</para>
+</chapter>

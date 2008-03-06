@@ -1,0 +1,19 @@
+<assembly>
+  <id>sdk</id>
+  
+  <formats>
+    <format>tar.gz</format>
+    <format>zip</format>
+  </formats>
+
+  <fileSets>
+    <fileSet>
+      <directory>target/${artifactId}-${version}-release.dir/${artifactId}-${version}</directory>
+      <outputDirectory/>
+      <excludes>
+        <exclude>**/${artifactId}-${version}.jar</exclude>
+      </excludes>
+    </fileSet>    
+  </fileSets>
+    
+</assembly>

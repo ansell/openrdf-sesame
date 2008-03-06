@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="sesame2" default="help" basedir=".">
+
+	<target name="help" description="Usage information">
+		<echo message="Sesame 2 Release Builder" />
+		<echo message="========================" />
+		<echo message="The purpose of this Ant build file is to create releases for Sesame 2." />
+		<echo message="It is not intended to capture every aspect of project development. Please use Maven for development purposes." />
+		<echo message=" " />
+		<echo message="Available targets: " />
+		<echo message=" " />
+		<echo message="- package: package all of Sesame for release" />
+	</target>
+	
+	<target name="package" depends="mvn" description="Create release artifacts">
+	</target>
+	
+	<target name="mvn">
+		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+			<arg line="clean" />
+		</exec>
+		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+			<arg line="source:jar javadoc:javadoc install" />
+		</exec>
+		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+			<arg line="-f release.xml assembly:assembly" />
+		</exec>
+
+		<exec os="Linux" executable="mvn" failonerror="true">
+			<arg line="clean" />
+		</exec>
+		<exec os="Linux" executable="mvn" failonerror="true">
+			<arg line="source:jar javadoc:javadoc install" />
+		</exec>
+		<exec os="Linux" executable="mvn" failonerror="true">
+			<arg line="-f release.xml assembly:assembly" />
+		</exec>
+	</target>	
+</project>
