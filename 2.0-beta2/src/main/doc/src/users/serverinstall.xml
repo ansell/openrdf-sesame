@@ -1,0 +1,345 @@
+<chapter id="chapter-serverinstall">
+  <title>Sesame 2.0 HTTP Server Installation</title>
+  <para>
+	 In this chapter, we explain how you can install a Sesame 2.0 Server on
+	 your machine.
+  </para>
+  <section>
+	 <title>Required software</title>
+
+	 <para>
+		The Sesame 2.0 HTTP Server requires the following software:
+	 </para>
+
+	 <itemizedlist>
+		<listitem>Java 5 (we recommend Sun J2SDK 1.5.0 or better)</listitem>
+		<listitem>A Java Servlet Container with the following minimal
+		  specifications:
+		  <itemizedlist>
+			 <listitem>Support for Java Servlet API 2.4</listitem>
+			 <listitem>Support for Java Server Pages (JSP) 2.0</listitem>
+		  </itemizedlist>
+		  We recommend using the latest stable version of <ulink
+			 url="http://tomcat.apache.org/">Apache Tomcat</ulink> (version 5.5).
+		</listitem>
+	 </itemizedlist>
+  </section>
+
+  <section id="section-install-tomcat" xreflabel="Installation under Tomcat 5.5">
+	 <title>Installation under Tomcat 5.5</title>
+	 <para>
+		The following steps describe the easiest procedure to install the
+		Sesame 2.0 server on Tomcat 5.5, using a default configuration of
+		Sesame.
+	 </para>
+	 <orderedlist>
+		<listitem>
+		  <ulink url="http://www.openrdf.org/download.jsp">Download Sesame
+			 2.0</ulink> and unpack the downloaded archive in a location of
+		  your choice on your local harddisk. We will refer to this location
+		  as [SESAME_DIST].
+		</listitem>
+		<listitem> Donwload Tomcat 5.5 from <ulink
+			 url="http://tomcat.apache.org/">http://tomcat.apache.org/</ulink>.
+		</listitem>
+		<listitem>
+		  Install and configure Tomcat. See the <ulink
+			 url="http://tomcat.apache.org/tomcat-5.5-doc/setup.html">Tomcat
+			 5.5 Setup Documentation</ulink> for details on how to do this, for
+		  a variety of platforms. We will refer to the directory in which you
+		  have installed tomcat as [CATALINA_HOME] in the rest of this
+		  document.
+		</listitem>
+		<listitem>Configure the Tomcat Manager Application. See the <ulink
+			 url="http://tomcat.apache.org/tomcat-5.5-doc/manager-howto.html">Tomcat
+			 Manager Documentation</ulink> for details.
+		</listitem>
+		<listitem>
+		  (Re)start your Tomcat server and use a browser to access the Tomcat Manager
+		  Application (typically at http://localhost:8080/manager/html/). You
+		  will be asked for a Tomcat user name and password, fill in the
+		  usernamme and password you configured in the previous step to gain
+		  access.
+		</listitem>
+		<listitem>
+		  In the Manager Application, go the section marked "Deploy". Under
+		  'Select WAR file to deploy' fill in the location of the Sesame 2.0
+		  WAR file on your local harddisk (this should be in [SESAME_DIST]/war/)
+		  or use the 'Browse' button to navigate to the correct file. After
+		  clicking the 'Deploy' button the Sesame server will be automatically
+		  installed and started.
+		</listitem>
+	 </orderedlist>
+	 <para>
+		After you have followed these steps, you will have a Sesame 2.0
+		server running, using a default configuration. In <xref
+		  linkend="section-config"/> and further we will look at Sesame's configuration
+		options in detail.
+	 </para>
+  </section>
+	 <section id="section-config">
+		<title>Configuring the Data Directory</title>
+		<para>
+		  The data directory is the location where the Sesame server stores
+		  the repository configuration settings and also stores actual data
+		  stored in a repository (for example, for a native store). 
+		</para>
+		<para>
+		  By default, the location of the data directory is <filename>[HOMEDIR]\Application Data\Aduna\openrdf\server\</filename> on MS Windows (for example: <filename>C:\Documents and Settings\username\Application Data\Aduna\openrdf\server\</filename>).
+		</para>
+		<para>
+		  On Linux/UNIX, the default location is
+		  <filename>[HOMEDIR]/.aduna/openrdf/server/</filename>  (for
+		  example
+		  <filename>/home/username/.aduna/openrdf/server/</filename>).
+		</para>
+		<para>
+		  The location of this data directory can be reconfigured using the
+		  Java system property
+		  <property>aduna.platform.applicationdata.dir</property>. To set
+		  this property, you will either need to set the
+		  <parameter>JAVA_OPTS</parameter> parameter to include this, for
+		  example:
+		</para>
+		  <itemizedlist>
+			 <listitem><parameter>set
+				  JAVA_OPTS='-Daduna.platform.applicationdata.dir=/path/to/other/dir/'</parameter>
+				(on MS Windows)</listitem>
+			 <listitem><parameter>export
+				  JAVA_OPTS='-Daduna.platform.applicationdata.dir=/path/to/other/dir/'</parameter>(on Linux/UNIX)</listitem></itemizedlist>
+		  <para>
+			 If you are using Apache Tomcat as a Windows Service you should use the Windows
+			 Service Configure tool to set this property. Other users can
+			 either edit the Tomcat startup script
+			 (<filename>startup.bat</filename> or
+			 <filename>startup.sh</filename>) or set the property some other
+			 way (e.g. using a wrapper script).
+		  </para>
+		  <para>
+			 In the rest of this manual, we will refer to Sesame's data
+			 directory as <filename>[SESAME_DATA]</filename>.
+		  </para>
+		</section>
+		<section>
+		  <title>Repository Configuration</title>
+		  <para>
+			 Repositories are configured in the file
+			 <filename>[SESAME_DATA]/repositories.xml</filename>. This XML
+			 file contains entries for repositories and their parameters. 
+		  </para>
+		  <para>
+			 By default, it only contains a single entry, for an in-memory
+			 repository with the ID 'default':
+		  </para>
+		  <programlisting>
+<![CDATA[<repository id="default">
+  <title>Default Repository</title>
+  <sailstack>
+    <sail class="org.openrdf.sail.memory.MemoryStore" />
+  </sailstack>
+  <acl worldReadable="true" worldWriteable="true" />
+</repository>]]>
+</programlisting>
+		  <para>
+			 In Sesame 2, the nature of a repository (if it is in-memory, on
+			 disk, or uses an RDBMS as backend, if it does RDFS entailment or
+			 not) is determined by the configuration of the <emphasis>sail
+				stack</emphasis>. There are several options for configuring
+			 Sesame repositories.  In the following sections we will look at
+			 the options per type of repository.
+		  </para>
+		  <section>
+			 <title>RDF vs. RDFS Repositories</title>
+			 <para>
+				There are two basic types of repositories: RDF repository and
+				RDF Schema (RDFS) repositories. The RDF repository stores and
+				returns the RDF triples you explicitly added, the RDF Schema
+				repository does RDF Schema entailment (i.e. it computes RDF
+				triples that logically follow from the explicitly added
+				triples, see the <ulink
+				  url="http://www.w3.org/TR/rdf-mt/#rdfs_interp">W3C RDF
+				  Semantics specification</ulink> for an explanation)
+			 </para>
+			 <para>
+				In Sesame 2, a RDFS repository is always configured by adding
+				a <emphasis>Stacked Sail</emphasis> on top of the
+				<emphasis>Base Sail</emphasis>. In the 'default' repository we
+				saw earlier, only a base sail
+				(<classname>org.openrdf.sail.MemoryStore</classname>) is
+				included, we will show some examples of other configurations
+				next.
+			 </para>
+		  </section>
+		  <section>
+			 <title>In-memory Repositories</title>
+			 <para>
+				The configuration of the  'default' repository is a
+				configuration of an in-memory repository. In the default setup
+				this configuration contains only a base sail:
+				<classname>org.openrdf.sail.MemoryStore</classname>. This
+				means that the 'default' repository is a simple in-memory
+				store, that does not do backup on disk and does not do RDFS
+				entailment.
+			 </para>
+			 <section>
+				<title>Memory Store persistence</title>
+			 <para>
+				To configure the repository to backup its contents on disk, we
+				can add a <parameter>persist</parameter> parameter with value
+				<parameter>true</parameter>:
+			 </para>
+<programlisting>
+<![CDATA[<repository id="default">
+  <title>Default Repository</title>
+  <sailstack>
+	 <sail class="org.openrdf.sail.memory.MemoryStore">
+		<param name="persist" value="true"/>
+	 </sail>
+  </sailstack>
+  <acl worldReadable="true" worldWriteable="true" />
+</repository>]]>
+</programlisting>
+			 <para>
+				If this parameter is set to value <parameter>true</parameter>,
+				the repository will create an on-disk data dump (in the Sesame
+				datadir), which will be read back into the main repository
+				upon (re)initialization - for example, when the server is
+				restarted.
+			 </para>
+		  </section>
+		  <section>
+			 <title>Synchronization delay</title>
+			 <para>
+				By default, the in-memory store persistence mechanism
+				synchronizes the disk backup directly upon any change to the
+				contents of the store. That means that directly after any
+				change (upload, removal) completes, the disk backup is
+				updated.
+			 </para>
+			 <para>
+				It is possible to configure a synchronization delay however.
+				This can be useful if your application performs several
+				transactions in sequence and you want to prevent disk
+				synchronization in the middle of this sequence. The
+				synchronization delay is specified as a parameter of the sail
+				as follows: 
+			 </para>
+<programlisting>
+<![CDATA[<sailstack>
+  <sail class="org.openrdf.sail.memory.MemoryStore">
+    <param name="persist" value="true"/>
+	 <param name="syncDelay" value="1000"/>
+  </sail>
+</sailstack>]]>
+</programlisting>
+			 <para>
+				In the above example the synchronization is set to a delay
+				of 1,000 milliseconds. This means that after every completed
+				update the disk synchronization is delayed for 1,000ms. If in
+				that time a new change operation (an upload or removal) is
+				started, the synchronization is further delayed until after
+				that operation completes (and so forth).
+			 </para>
+		  </section>
+		  <section>
+			 <title>In-Memory Repository with RDF Schema Entailment</title>
+			 <para>
+				To configure an in-memory repository with RDF Schema
+				entailment, we need to add an additional Sail to the Sail
+				stack of the repository. The name of the Sail that performs
+				inferencing for in-memory repositories is
+				<classname>org.openrdf.sail.inferencer.MemoryStoreRDFSInferencer</classname>
+				and it is configured as follows:
+			 </para>
+<programlisting>
+<![CDATA[<sailstack>
+  <sail class="org.openrdf.sail.inferencer.MemoryStoreRDFSInferencer"/>
+  <sail class="org.openrdf.sail.memory.MemoryStore"/>
+</sailstack>]]>
+</programlisting>
+		  </section>
+		</section> <!-- in-memory repository configuration -->
+		<section>
+		  <title>Native Repositories</title>
+		  <para>
+			 Sesame 2.0 supports a Native Repository that stores and
+			 retrieves its data directly from disk. The advantage of this is
+			 that it consumes a lot less memory than the in-memory
+			 repository, and is therefore also a lot more scalable. Of
+			 course, since it has to access the disk, it is slightly slower
+			 than the in-memory store, but it is a good solution for larger
+			 data sets.
+		  </para>
+		  <para>
+			 The Sail for the native repository is
+			 <classname>org.openrdf.sail.nativerdf.NativeStore</classname>
+			 and the configuration looks as follows:
+		  </para>
+<programlisting>
+<![CDATA[<repository id="native">
+  <title>Native Repository</title>
+  <sailstack>
+	 <sail class="org.openrdf.sail.nativerdf.NativeStore"/>
+  </sailstack>
+  <acl worldReadable="true" worldWriteable="true" />
+</repository>]]>
+</programlisting>
+        <section>
+			 <title>Configuration of Native Repository Indexes</title>  
+			 <para> 
+				The Native Repository uses on-disk
+				<emphasis>indexes</emphasis> to speed up querying. It uses
+				B-Trees for indexing statements, where the index key consists
+				of four fields: subject (s), predicate (p), object (o) and
+				context (c).  The order in which each of these fields is used
+				in the key determines the usability of an index on a specify
+				statement query pattern: searching statements with a specific
+				subject in an index that has the subject as the first field is
+				signifantly faster than searching these same statements in an
+				index where the subject field is second or third. In the worst
+				case, the 'wrong' statement pattern will result in a sequential
+				scan over the entire set of statements.
+		</para>
+		<para>
+			By default, the native repository only uses one index, with a
+			subject-predicate-object-conctext (spoc) key pattern.  However,
+			it is possible to define more indexes for the native repository,
+			using the <parameter>triple-indexes</parameter> parameter This
+			can be used to optimize performance for query patterns that occur
+			frequently:
+		 </para>
+<programlisting>
+<![CDATA[<repository id="native">
+  <title>Native Repository</title>
+  <sailstack>
+	 <sail class="org.openrdf.sail.nativerdf.NativeStore">
+		<param name="triple-indexes" value="spoc, posc"/>
+  </sailstack>
+  <acl worldReadable="true" worldWriteable="true" />
+</repository>]]>
+</programlisting>
+		<para>
+			The subject, predicate, object and context fields are represented by the
+			characters 's', 'p', 'o' and 'c' respectively. Indexes can be specified
+			by creating 4-letter words from these three characters. Multiple
+			indexes can be specified by separating these words with commas,
+			spaces and/or tabs.  For example, the string "spoc, posc" specifies
+			two indexes; a subject-predicate-object-context index and a
+			predicate-object-subject-context index.
+		</para>
+		<para>
+			Of course, creating multiple indexes speeds up querying, but there
+			is a cost factor to take into account as well: adding and removing
+			data will become more expensive, because each index will have to be
+			updated. Also, each index takes up additional disk space.
+		</para>
+		<para>
+			The native store automatically creates/drops indexes upon
+			(re)initialization, so the parameter can be adjusted and upon the
+			first refresh of the configuration the native store will change its
+			indexing strategy, without loss of data.
+		</para>
+		  </section>
+		</section> <!-- native repository configuration -->
+	 </section>
+</chapter>

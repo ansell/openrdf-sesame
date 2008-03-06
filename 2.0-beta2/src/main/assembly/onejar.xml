@@ -1,0 +1,26 @@
+<assembly>
+  <id>onejar</id>
+  
+  <formats>
+    <format>jar</format>
+  </formats>
+  
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <includeSiteDirectory>false</includeSiteDirectory>
+  
+  <dependencySets>
+  	<dependencySet>
+      <outputDirectory>/</outputDirectory>
+      <unpack>true</unpack>
+      <scope>runtime</scope>
+      <excludes>
+        <exclude>commons-codec:commons-codec</exclude>
+        <exclude>commons-logging:commons-logging</exclude>
+        <exclude>commons-httpclient:commons-httpclient</exclude>
+        <exclude>junit:junit</exclude>
+        <exclude>org.slf4j:slf4j-api</exclude>
+        <exclude>org.slf4j:slf4j-simple</exclude>
+      </excludes>
+	</dependencySet>
+  </dependencySets>
+</assembly>

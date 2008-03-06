@@ -1,0 +1,130 @@
+ParseUnit        ::= Query [NamespaceDeclList]
+
+NamespaceDeclList::= "using" "namespace" NamespaceDecl ("," NamespaceDecl)*
+NamespaceDecl    ::= <PREFIX_NAME> "=" <URI>
+
+Query            ::= TupleQuerySet
+                   | GraphQuerySet
+
+TupleQuerySet    ::= TupleQuery [SetOperator TupleQuerySet]
+TupleQuery       ::= "(" TupleQuerySet ")"
+                   | SelectQuery
+
+GraphQuerySet    ::= GraphQuery [SetOperator GraphQuerySet]
+GraphQuery       ::= "(" GraphQuerySet ")"
+                   | ConstructQuery
+
+SetOperator      ::= "union" ["all"]
+                   | "minus"
+                   | "intersect"
+
+SelectQuery      ::= "select" ["distinct"] Projection [QueryBody]
+Projection       ::= "*"
+                   | [ ProjectionElem ("," ProjectionElem)* ]
+ProjectionElem   ::= ValueExpr ["as" <STRING>]
+
+ConstructQuery   ::= "construct" ["distinct"] ConstructClause [QueryBody]
+ConstructClause  ::= "*"
+                   | PathExprList
+
+QueryBody        ::= ("from" ["context" ContextID] PathExprList)+
+                     ["where" BooleanExpr]
+                     ["limit" <POS_INTEGER>]
+                     ["offset" <POS_INTEGER>]
+
+ContextID        ::= Var
+                   | Uri
+                   | QName
+                   | BNode
+
+PathExprList     ::= PathExpr ("," PathExpr)*
+PathExpr          ::= BasicPathExpr
+                   | OptGraphPattern
+BasicPathExpr    ::= Node Edge Node [[";"] PathExprTail]
+OptGraphPattern  ::= "[" PathExprList ["where" BooleanExpr] "]"
+
+PathExprTail     ::= Edge Node [[";"] PathExprTail]
+                   | OptPathExprTail [";" PathExprTail]
+OptPathExprTail  ::= "[" Edge Node [[";"] PathExprTail] ["where" BooleanExpr] "]"
+
+PathExprCont     ::= PathExprBranch
+                   | PathExprTail
+
+PathExprBranch   ::= ";" PathExprTail
+
+PathExprTail     ::= Edge Node
+                   | "[" Edge Node [PathExprCont] ["where" BooleanExpr] "]"
+
+Edge             ::= Var
+                   | Uri
+                   | QName
+Node             ::= "{" [ NodeElem ("," NodeElem)* ] "}"
+NodeElem         ::= Var
+                   | Value
+                   | ReifiedStat
+ReifiedStat      ::= "{" [NodeElem] "}" Edge "{" [NodeElem] "}"
+
+BooleanExpr      ::= OrExpr
+OrExpr           ::= AndExpr ["or" BooleanExpr]
+AndExpr          ::= BooleanElem ["and" AndExpr]
+BooleanElem      ::= "(" BooleanExpr ")"
+                   | "true"
+                   | "false"
+                   | "not" BooleanElem
+                   | ValueExpr CompOp ValueExpr
+                   | ValueExpr CompOp ("any"|"all") "(" TupleQuerySet ")"
+                   | ValueExpr "like" <STRING>
+                   | ValueExpr "in" "(" TupleQuerySet ")"
+                   | "exists" "(" TupleQuerySet ")"
+                   | "isResource" "(" Var ")"
+                   | "isURI" "(" Var ")"
+                   | "isBNode" "(" Var ")"
+                   | "isLiteral" "(" Var ")"
+
+CompOp           ::= "=" | "!=" | "<" | "<=" | ">" | ">="
+
+ValueExpr        ::= Var
+                   | Value
+                   | "null"
+                   | "datatype" "(" Var ")"
+                   | "lang" "(" Var ")"
+                   | "label" "(" Var ")"
+                   | "namespace" "(" Var ")"
+                   | "localname" "(" Var ")"
+
+Var              ::= <NC_NAME>
+
+Value            ::= Uri
+                   | QName
+                   | BNode
+                   | Literal
+
+Uri              ::= <URI>
+QName            ::= <QNAME>
+BNode            ::= <BNODE>
+
+Literal          ::= <STRING>
+                   | <LANG_LITERAL>
+                   | <DT_LITERAL>
+                   | <POS_INTEGER>
+                   | <NEG_INTEGER>
+                   | <DECIMAL>
+
+<URI>            ::= "<" (* a legal URI, see http://www.ietf.org/rfc/rfc2396.txt *) ">"
+<QNAME>          ::= <PREFIX_NAME> ":" <NC_NAME_CHAR>*
+<BNODE>          ::= "_:" <NC_NAME>
+
+<STRING>         ::= (* A quoted character string with escapes *)
+<LANG_LITERAL>   ::= <STRING> "@" <LIT_LANG>
+<DT_LITERAL>     ::= <STRING> "^^" (<URI>|<QNAME>)
+
+<POS_INTEGER>    ::= "+"? [0-9]+
+<NEG_INTEGER>    ::= "-" [0-9]+
+<DECIMAL>        ::= ("+"|"-")? [0-9]* "." [0-9]+
+
+<PREFIX_NAME>    ::= <LETTER> <NC_NAME_CHAR>*
+                   | "_" <NC_NAME_CHAR>+
+
+<NC_NAME>        ::= (<LETTER>|"_") <NC_NAME_CHAR>*
+<NC_NAME_CHAR>   ::= (* see http://www.w3.org/TR/REC-xml-names/#NT-NCNameChar *)
+<LETTER>         ::= (* see http://www.w3.org/TR/REC-xml/#NT-Letter *)

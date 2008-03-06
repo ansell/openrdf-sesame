@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<navigation id="">
+	<!-- Default prefixes and suffixes -->
+
+	<!-- for views -->
+	<path-prefix></path-prefix>
+	<path-separator>/</path-separator>
+	<path-suffix>.view</path-suffix>
+
+	<!-- for icons -->
+	<icon-prefix>/images/icons/icon</icon-prefix>
+	<icon-separator>_</icon-separator>
+	<icon-suffix>.png</icon-suffix>
+
+	<!-- for I18N keys -->
+	<i18n-prefix></i18n-prefix>
+	<i18n-separator>.</i18n-separator>
+	<i18n-suffix>.title</i18n-suffix>
+
+	<!-- Group definitions -->
+	<group id="server">
+		<view id="overview" />
+		<view id="select">
+			<path-suffix>.form</path-suffix>
+		</view>
+		<group id="modify" enabled="false">
+			<view id="overview" />
+		</group>
+	</group>
+
+	<group id="repository">
+		<view id="overview" />
+		<group id="modify">
+			<view id="overview" />
+			<group id="add">
+				<view id="file">
+					<path-suffix>.form</path-suffix>
+				</view>
+				<view id="url">
+					<path-suffix>.form</path-suffix>
+				</view>
+				<view id="text">
+					<path-suffix>.form</path-suffix>
+				</view>
+			</group>
+			<group id="remove">
+				<view id="statements">
+					<path-suffix>.form</path-suffix>
+				</view>
+				<view id="clear">
+					<path-suffix>.form</path-suffix>
+				</view>
+			</group>
+		</group>
+		<group id="query">
+			<view id="select">
+				<path-suffix>.form</path-suffix>
+			</view>
+			<view id="construct">
+				<path-suffix>.form</path-suffix>
+			</view>
+		</group>
+		<group id="explore">
+			<view id="overview" hidden="true" />
+			<view id="resource" hidden="true" />
+		</group>
+		<group id="extract">
+			<view id="overview">
+				<path-suffix>.form</path-suffix>
+			</view>
+		</group>
+	</group>
+
+</navigation>

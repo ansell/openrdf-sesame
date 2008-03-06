@@ -1,0 +1,2517 @@
+<chapter id="chapter-serql">
+	<title>The SeRQL query language (revision 2.0)</title>
+
+	<section>
+		<title>Revisions</title>
+		<section>
+			<title>revision 1.1</title>
+			<para>
+				SeRQL revision 1.1 is a syntax revision (see issue tracker item
+				<ulink
+					url="http://www.openrdf.org/issues/secure/ViewIssue.jspa?key=SES-75">SES-75</ulink>).
+				This document describes the revised syntax. From Sesame release
+				1.2-RC1 onwards, the old syntax is no longer supported.
+			</para>
+		</section>
+		<section>
+			<title>revision 1.2</title>
+			<para>
+				SeRQL revision 1.2 covers a set of new functions and operators:
+			</para>
+			<itemizedlist>
+				<listitem>
+					Specification of blank node identifiers
+					(<xref linkend="section-blanknodes"/>).
+				</listitem>
+				<listitem>
+					Case sensitive string matching
+					(<xref linkend="section-like"/>).
+				</listitem>
+				<listitem>
+					New functions isBNode(), isURI()
+					(<xref linkend="section-isuri"/>).
+				</listitem>
+				<listitem>
+					Nested WHERE clause for optional path expressions
+					(<xref linkend="nested-where"/>).
+				</listitem>
+				<listitem>
+					New functions namespace(), localName()
+					(<xref linkend="section-namespace"/>).
+				</listitem>
+				<listitem>
+					OWL default namespace
+					(<xref linkend="section-usingns"/>).
+				</listitem>
+				<listitem>
+					Set operations
+					(<xref linkend="section-setoper"/>).
+				</listitem>
+				<listitem>
+					Nested queries
+					(<xref linkend="section-nesting"/>).
+				</listitem>
+				<listitem>
+					Set membership operator
+					(<xref linkend="section-in"/>).
+				</listitem>
+				<listitem>
+					ANY and ALL keywords
+					(<xref linkend="section-any"/>).
+				</listitem>
+				<listitem>
+					Existential quantification
+					(<xref linkend="section-exists"/>).
+				</listitem>
+			</itemizedlist>
+			<para>
+				New operations have been marked with (R1.2) where appropriate in
+				this document.
+			</para>
+		</section>
+		<section>
+			<title>revision 2.0</title>
+			<para>
+				SeRQL revision 2.0 is an extension of SeRQL that offers
+				functionality for querying contexts. See <xref
+					linkend="section-context"/> for details.
+			</para>
+		</section>
+	</section> <!-- Revisions -->
+	<section>
+		<title>Introduction</title>
+		<para>
+			SeRQL ("Sesame RDF Query Language", pronounced "circle") is a new
+			RDF/RDFS query language that is currently being developed by
+			Aduna as part of Sesame. It combines the best
+			features of other (query) languages (RQL, RDQL, N-Triples, N3) and
+			adds some of its own. This document briefly shows all of these
+			features. After reading through this document one should be able
+			to write SeRQL queries.
+		</para>
+		<para>
+			Some of SeRQL's most important features are:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<emphasis role="strong">Graph transformation</emphasis>.
+			</listitem>
+			<listitem>
+				<emphasis role="strong">RDF Schema support</emphasis>.
+			</listitem>
+			<listitem>
+				<emphasis role="strong">XML Schema datatype support</emphasis>.
+			</listitem>
+			<listitem>
+				<emphasis role="strong">Expressive path expression syntax</emphasis>.
+			</listitem>
+			<listitem>
+				<emphasis role="strong">Optional path matching</emphasis>.
+			</listitem>
+		</itemizedlist>
+	</section> <!-- Introduction -->
+
+	<section>
+		<title>URIs, literals and variables</title>
+		<para>
+			URIs and literals are the basic building blocks of RDF. For a query
+			language like SeRQL, variables are added to this list. The following
+			sections will show how to write these down in SeRQL.
+		</para>
+
+		<section>
+			<title>Variables</title>
+			<para>
+				Variables are identified by names. These names must start with a
+				letter or an underscore ('_') and can be followed by zero or
+				more letters, numbers, underscores, dashes ('-') or dots ('.').
+				Examples variable names are:
+			</para>
+			<itemizedlist>
+				<listitem>Var1</listitem>
+				<listitem>_var2</listitem>
+				<listitem>unwise.var-name_isnt-it</listitem>
+			</itemizedlist>
+			<para>
+				SeRQL keywords are not allowed to be used as variable names.
+				Currently, the following keywords are used or reserved for
+				future use in SeRQL: select, construct, from, where, using,
+				namespace, true, false, not, and, or, like, label, lang,
+				datatype, null, isresource, isliteral, sort, in, union,
+				intersect, minus, exists, forall, distinct, limit, offset.
+			</para>
+			<para>
+				Keywords in SeRQL are all case-insensitive, this in contrast to
+				variable names; these are case-sensitive.
+			</para>
+		</section>
+
+		<section>
+			<title>URIs</title>
+			<para>
+				There are two ways to write down URIs in SeRQL: either as full
+				URIs or as abbreviated URIs. Full URIs must be surrounded with
+				"&lt;" and "&gt;". Examples of this are:
+			</para>
+			<itemizedlist>
+				<listitem><![CDATA[<http://www.openrdf.org/index.html>]]></listitem>
+				<listitem><![CDATA[<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>]]></listitem>
+				<listitem><![CDATA[<mailto:sesame@openrdf.org>]]></listitem>
+				<listitem><![CDATA[<file:///C:\rdffiles\test.rdf>]]></listitem>
+			</itemizedlist>
+			<para>
+				As URIs tend to be long strings with the first part being shared
+				by several of them (i.e. the namespace), SeRQL allows one to use
+				abbreviated URIs (or QNames) by defining (short) names for these
+				namespaces which are called "prefixes". A QName always starts
+				with one of the defined prefixes and a colon (":"). After this
+				colon, the part of the URI that is not part of the namespace
+				follows. The first part, consisting of the prefix and the colon,
+				is replaced by the full namespace by the query engine. Some
+				example QNames are:
+			</para>
+			<itemizedlist>
+				<listitem>sesame:index.html</listitem>
+				<listitem>rdf:type</listitem>
+				<listitem>foaf:Person</listitem>
+			</itemizedlist>
+		</section>
+
+		<section>
+			<title>Literals</title>
+			<para>
+				RDF literals consist of three parts: a label, a language tag,
+				and a datatype. The language tag and the datatype are optional
+				and at most one of these two can accompany a label (a literal
+				can not have both a language tag and a datatype). The notation
+				of literals in SeRQL has been modelled after their notation in
+				N-Triples; literals start with the label, which is surrounded by
+				double quotes, optionally followed by a language tag with a "@"
+				prefix or by a datatype URI with a "^^" prefix. Example literals
+				are:
+			</para>
+			<itemizedlist>
+				<listitem>"foo"</listitem>
+				<listitem>"foo"@en</listitem>
+				<listitem><![CDATA["<foo/>"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>]]></listitem>
+			</itemizedlist>
+			<para>
+				The SeRQL notation for abbreviated URIs can also be used. When the
+				prefix rdf is mapped to the namespace
+				http://www.w3.org/1999/02/22-rdf-syntax-ns#, the last example
+				literal could also have been written down like:
+			</para>
+			<itemizedlist>
+				<listitem><![CDATA["<foo/>"^^rdf:XMLLiteral]]></listitem>
+			</itemizedlist>
+			<para>
+				SeRQL has also adopted the character escapes from N-Triples;
+				special characters can be escaped by prefixing them with a
+				backslash. One of the special characters is the double quote.
+				Normally, a double quote would signal the end of a literal's
+				label. If the double quote is part of the label, it needs to be
+				escaped. For example, the sentence John said: "Hi!" can be
+				encoded in a SeRQL literals as: "John said: \"Hi!\"".
+			</para>
+			<para>
+				As the backslash is a special character itself, it also needs
+				to be escaped. To encode a single backslash in a literal's
+				label, two backslashes need to be written in the label. For
+				example, a Windows directory would be encoded as:
+				"C:\\Program Files\\Apache Tomcat\\".
+			</para>
+			<para>
+				SeRQL has functions for extracting each of the three parts of a
+				literal. These functions are label, lang, and datatype.
+				label("foo"@en) extracts the label "foo", lang("foo"@en) extracts
+				the language tag "en", and datatype("foo"^^rdf:XMLLiteral)
+				extracts the datatype rdf:XMLLiteral. The use of these functions
+				is explained later.
+			</para>
+		</section>
+		<section id="section-blanknodes">
+			<title>Blank Nodes (R1.2)</title>
+			<para>
+				RDF has a notion of blank nodes. These are nodes in the RDF graph
+				that are not labeled with a URI or a literal. The interpretation
+				of such blank nodes is as a form of existential quantification:
+				it allows one to assert that "there exists a node such that..."
+				without specifying what that particular node is. Blank nodes do in
+				fact often have identifiers, but these identifiers are assigned
+				internally by whatever processor is processing the graph and they
+				are only valid in the local context, not as global identifiers
+				(unlike URIs). 
+			</para>
+			<para>
+				Strictly speaking blank nodes are only addressable indirectly, by
+				querying for one or more properties of the node. However, SeRQL,
+				as a practical shortcut, allows blank node identifiers to be used
+				in queries. The syntax for blank nodes is adopted from N-Triples,
+				using a QName-like syntax with "_" as the namespace prefix, and
+				the internal blank node identifier as the local name. For example:
+			</para>
+			<itemizedlist>
+				<listitem><![CDATA[_:bnode1]]></listitem>
+			</itemizedlist>
+			<para>
+				This identifies the blank node with internal identifier "bnode1".
+				These blank node identifiers can be used in the same way that
+				normal URIs or QNames can be used.
+			</para>
+			<para> 
+				<emphasis role="strong">Caution:</emphasis> It is important to
+				realize that addressing blank nodes in this way makes SeRQL
+				queries non-portable across repositories. There is no guarantee
+				that in two repositories, even if they contain identical datasets,
+				the blank node identifiers will be identical. It may well be that
+				"bnode1" in repository A is a completely different blank node than
+				"bnode1" in repository B. Even in the same repository, it is not
+				guaranteed that blank node identifiers are stable over updates: if
+				certain statements are added to or removed from a repository, it
+				is not guaranteed "bnode1" still identifies the same blank node
+				that it did before the update operation.
+			</para>
+		</section>
+	</section> <!-- URIs, literals and variables -->
+
+	<section>
+		<title>Path expressions</title>
+		<para>
+			One of the most prominent parts of SeRQL are path expressions. Path
+			expressions are expressions that match specific paths through an RDF
+			graph. Most current RDF query languages allow you to define path
+			expressions of length 1, which can be used to find (combinations of)
+			triples in an RDF graph. SeRQL, like RQL, allows you to define path
+			expressions of arbitrary length.
+		</para>
+
+		<section>
+			<title>Basic path expressions</title>
+			<para>
+				Imagine that we want to query an RDF graph for persons who work
+				for companies that are IT companies. Querying for this
+				information comes down to finding the following pattern in the
+				RDF graph (gray nodes denote variables):
+			</para>
+			<figure id="figure-serql-basic-pe" float="1">
+				<title>A basic path expression</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="figures/serql-basic-pe.png"/>
+					</imageobject>
+				</mediaobject>
+			</figure>
+			<para>
+				The SeRQL notation for path expressions resembles the picture
+				above; it is written down as:
+			</para>
+			<screen><![CDATA[
+{Person} ex:worksFor {Company} rdf:type {ex:ITCompany}]]></screen>
+			<para>
+				The parts surrounded by curly brackets represent the nodes in
+				the RDF graph, the parts between these nodes represent the
+				edges in the graph. The direction of the arcs (properties) in
+				SeRQL path expressions is always from left to right.
+			</para>
+			<para>
+				In SeRQL queries, multiple path expressions can be specified by
+				seperating them with commas. For example, the path expression
+				show before can also be written down as two smaller path
+				expressions:
+			</para>
+			<screen><![CDATA[
+{Person} ex:worksFor {Company},
+{Company} rdf:type {ex:ITCompany}]]></screen>
+			<para>
+				The nodes and edges in the path expressions can be variables,
+				URIs and literals. Also, a node can be left empty in case one is
+				not interested in the value of that node. Here are some more
+				example path expressions to illustrate this:
+			</para>
+			<itemizedlist>
+				<listitem>
+<![CDATA[{Person} ex:worksFor {} rdf:type {ex:ITCompany}]]>
+				</listitem>
+				<listitem>
+<![CDATA[{Painting} ex:painted_by {} ex:name {"Picasso"}]]>
+				</listitem>
+				<listitem>
+<![CDATA[{comic:RoadRunner} SomeRelation {foo:WillyECoyote}]]>
+				</listitem>
+			</itemizedlist>
+		</section>
+
+		<section>
+			<title>Path expression short cuts</title>
+			<para>
+				Each and every path can be constructed using a set of basic path
+				expressions. Sometimes, however, it is nicer to use one of the
+				available short cuts. There are three types of short cuts, all
+				of them are explained below.
+			</para>
+
+			<section>
+				<title>Multi-value nodes</title>
+				<para>
+					In situations where one wants to query for two or more
+					triples with identical subject and predicate, the subject
+					and predicate do not have to be repeated over and over
+					again. Instead, a multi-value node can be used:
+				</para>
+				<screen><![CDATA[
+{subj1} pred1 {obj1, obj2, obj3}]]></screen>
+				<para>
+					A built-in constraint on this construction is that each value
+					for the variables in the multi-value node is unique (i.e. they
+					are pairwise disjoint). Therefore, this path expression is
+					equivalent to the following combination of path expressions and
+					boolean constraints:
+				</para>
+				<screen><![CDATA[
+FROM
+  {subj1} pred1 {obj1},
+  {subj1} pred1 {obj2},
+  {subj1} pred1 {obj3}
+WHERE obj1 != obj2 AND obj1 != obj3 AND obj2 != obj3]]></screen>
+				<para>
+					Or graphically:
+				</para>
+				<figure id="figure-serql-multival-nodes" float="1">
+					<title>Multi-value nodes</title>
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="figures/serql-multival-nodes.png"/>
+						</imageobject>
+					</mediaobject>
+				</figure>
+				<para>
+					Multi-value nodes can also be used when statements share the
+					predicate and object, e.g.:
+				</para>
+				<screen><![CDATA[
+{subj1, subj2, subj3} pred1 {obj1}]]></screen>
+				<para>
+					When used in a longer path expression, multi-value nodes
+					apply to both the part left of the node and the part right
+					of the node. The following path expression:
+				</para>
+				<screen><![CDATA[
+{first} pred1 {middle1, middle2} pred2 {last}]]></screen>
+				<para>
+					matches the following graph:
+				</para>
+				<figure id="figure-serql-multival-nodes2" float="1">
+					<title>Multi-value nodes in a longer path expression</title>
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="figures/serql-multival-nodes2.png"/>
+						</imageobject>
+					</mediaobject>
+				</figure>
+				<para>
+					When using variables in multi-value nodes, a constraint on
+					its values is implicitly added: the variable's value is not
+					allowed to be equal to any other value in the multi-value
+					node. So, in the first example, the variables obj1, obj2 and
+					obj3 will not match identical values at the same time. This
+					prevents the path from matching a single triple three times.
+				</para>
+			</section>
+
+			<section>
+				<title>Branches</title>
+				<para>
+					One of the shorts cuts that is likely going to be used most,
+					is the notation for branches in path expressions. There are
+					lots of situations where one wants to query multiple
+					properties of a single subject. Instead of repeating the
+					subject over and over again, one can use a semi-colon to
+					attach a predicate-object combination to the subject of the
+					last part of a path expression, e.g.:
+				</para>
+				<screen><![CDATA[
+{subj1} pred1 {obj1};
+        pred2 {obj2}]]></screen>
+				<para>
+					Which is equivalent to:
+				</para>
+				<screen><![CDATA[
+{subj1} pred1 {obj1},
+{subj1} pred2 {obj2}]]></screen>
+				<para>
+					Or graphically:
+				</para>
+				<figure id="figure-serql-branch" float="1">
+					<title>Branches in a path expression</title>
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="figures/serql-branch.png"/>
+						</imageobject>
+					</mediaobject>
+				</figure>
+				<para>
+					Or a slightly more complicated example:
+				</para>
+				<screen><![CDATA[
+{first} pred {} pred1 {obj1};
+                pred2 {obj2} pred3 {obj3}]]></screen>
+				<para>
+					Which matches the following graph:
+				</para>
+				<figure id="figure-serql-branch2" float="1">
+					<title>Branches in a longer path expression</title>
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="figures/serql-branch2.png"/>
+						</imageobject>
+					</mediaobject>
+				</figure>
+				<para>
+					Note that an anonymous variable is used in the middle of
+					the path expressions.
+				</para>
+			</section>
+
+			<section>
+				<title>Reified statements</title>
+				<para>
+					The last short cut is a short cut for reified statements. A
+					path expression representing a single statement
+					(i.e. {node} edge {node}) can be written between the curly
+					brackets of a node, e.g.:
+				</para>
+				<screen><![CDATA[
+{ {reifSubj} reifPred {reifObj} } pred {obj}]]></screen>
+				<para>
+					This would be equivalent to querying (using "rdf:" as a
+					prefix for the RDF namespace, and "_Statement" as a
+					variable for storing the statement's URI):
+				</para>
+				<screen><![CDATA[
+{_Statement} rdf:type {rdf:Statement},
+{_Statement} rdf:subject {reifSubj},
+{_Statement} rdf:predicate {reifPred},
+{_Statement} rdf:object {reifObj},
+{_Statement} pred {obj}]]></screen>
+				<para>
+					Again, graphically:
+				</para>
+				<figure id="figure-serql-reif" float="1">
+					<title>A reification path expression</title>
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="figures/serql-reif.png"/>
+						</imageobject>
+					</mediaobject>
+				</figure>
+			</section>
+		</section>
+
+		<section id="section-optional">
+			<title>Optional path expressions</title>
+			<para>
+				Optional path expressions differ from 'normal' path expressions
+				in that they do not <emphasis>have</emphasis> to be matched to
+				find query results. The SeRQL query engine will try to find
+				paths in the RDF graph matching the path expression, but when
+				it cannot find any paths it will skip the expression and leave
+				any variables in it uninstantiated (they will have the value
+				null).
+			</para>
+			<para>
+				Consider an RDF graph that contains information about people
+				that have names, ages, and <emphasis>optionally</emphasis>
+				e-mail addresses. This is a situation that is likely to be very
+				common in RDF data. A logical query on this data is a query that
+				yields all names, ages and, when available, e-mail addresses of
+				people, e.g.:
+			</para>
+			<screen><![CDATA[
+{Person} ex:name {Name};
+         ex:age  {Age};
+         ex:email {EmailAddress}]]></screen>
+		 	<para>
+				However, using normal path expressions like in the query above,
+				people without e-mail address will not be returned by the SeRQL
+				query engine. With optional path expressions, one can indicate
+				that a specific (part of a) path expression is optional. This is
+				done using square brackets, i.e.:
+			</para>
+			<screen><![CDATA[
+{Person} ex:name {Name};
+         ex:age  {Age};
+        [ex:email {EmailAddress}]]]></screen>
+		 	<para>
+				Or alternatively:
+			</para>
+			<screen><![CDATA[
+ {Person} ex:name {Name};
+          ex:age  {Age},
+[{Person} ex:email {EmailAddress}]]]></screen>
+		 	<para>
+				In contrast to the first path expressions, this expression will
+				also match with people without an e-mail address. For these
+				people, the variable EmailAddress will not be assigned a value.
+			</para>
+			<para>
+				Optional path expressions can also be nested. This is useful in
+				situations where the existence of a specific path is dependent
+				on the existence of another path. For example, the following
+				path expression queries for the titles of all known documents
+				and, if the author of the document is known, the name of the
+				author (if it is known) and his e-mail address (if it is known):
+			</para>
+			<screen><![CDATA[
+{Document} ex:title {Title};
+          [ex:author {Author} [ex:name {Name}];
+                              [ex:email {Email}]]]]></screen>
+			<para>
+				With this path expression, the SeRQL query engine will not try
+				to find the name and e-mail address of an author when it cannot
+				even find the resource representing the author.
+			</para>
+
+		</section>
+	</section> <!-- Path expressions -->
+
+	<section>
+		<title>Select- and construct queries</title>
+		<para>
+			The SeRQL query language supports two querying concepts. The first
+			one can be characterized as returning a table of values, or a set of
+			variable-value bindings. The second one returns a true RDF graph,
+			which can be a subgraph of the graph being queried, or a graph
+			containing information that is derived from it. The first type of
+			queries are called "select queries", the second type of queries are
+			called "construct queries".
+		</para>
+		<para>
+			A SeRQL query is typically built up from one to seven clauses. For
+			select queries these clauses are: SELECT, FROM, FROM CONTEXT, WHERE, LIMIT, OFFSET
+			and USING NAMESPACE. One might recognize some of these clauses from
+			SQL, but their usage is slightly different. For construct queries
+			the clauses are the same with the exception of the first; construct
+			queries start with a CONSTRUCT clause instead of a SELECT clause.
+		</para>
+		<para>
+			The first clause (i.e. SELECT or CONSTRUCT) determines what is done
+			with the results that are found. In a SELECT clause, one can specify
+			which variable values should be returned and in what order. In a
+			CONSTRUCT clause, one can specify which triples should be returned.
+		</para>
+		<para>
+			The FROM clause is optional and always contains path expressions,
+			which were explained in the previous section. It defines the paths
+			in an RDF graph that are relevant to the query.  Note that when the
+			FROM clause is not specified, the query will simply return the
+			constants specified in the SELECT or CONSTRUCT clause.
+		</para>
+		<para>
+			The FROM CONTEXT clause is new in SeRQL revision 2.0. It is a
+			variant of the FROM clause that allows one to constrain the path
+			expressions in the clause to a context. Using context in querying
+			will be explained in more detail in <xref
+				linkend="section-context"/>.
+		</para>
+		<para>
+			The WHERE clause is optional and can contain additional (Boolean)
+			constraints on the values in the path expressions. These are
+			constraints on the nodes and edges of the paths, which cannot be
+			expressed in the path expressions themselves.
+		</para>
+		<para>
+			The LIMIT and OFFSET clauses are also optional. These clauses can
+			be used separately or combined in order to get a subset of all query
+			answers. Their usage is very similar to the LIMIT and OFFSET
+			clauses in SQL queries. The LIMIT clause determines the (maximum)
+			amount of query answers that will be returned. The OFFSET clause
+			determines which query answer will be returned as the first result,
+			skipping as many query results as specified in this clause.
+		</para>
+		<para>
+			Finally, the USING NAMESPACE clause is also optional and it can
+			contain namespace declarations; these are the mappings from prefixes
+			to namespaces that were referred to in one of previous sections
+			about (abbreviated) URIs.
+		</para>
+		<para>
+			The WHERE, LIMIT, OFFSET and USING NAMESPACE clauses will be
+			explained in one of the next sections. The following section will
+			explain the SELECT and FROM clause.
+		</para>
+	</section> <!-- Select- and construct queries -->
+
+	<section>
+		<title>Select queries</title>
+		<para>
+			As said before, select queries return tables of values, or sets of
+			variable-value bindings. Which values are returned can be specified
+			in the select clause. One can specify variables and/or values in
+			the select clause, seperated by commas. The following example query
+			returns all URIs of classes:
+		</para>
+		<screen><![CDATA[
+SELECT C
+FROM {C} rdf:type {rdfs:Class}]]></screen>
+		<para>
+			It is also possible to use a '*' in the SELECT clause. In that case,
+			all variable values will be returned in the order in which they
+			appear in the query, e.g.:
+		</para>
+		<screen><![CDATA[
+SELECT *
+FROM {S} rdfs:label {O}]]></screen>
+		<para>
+			This query will return the values of the variables S and O, in that
+			order. If a different order is preferred, one needs to specify the
+			variables in the select clause, e.g.:
+		</para>
+		<screen><![CDATA[
+SELECT O, S
+FROM {S} rdfs:label {O}]]></screen>
+		<para>
+			By default, the results of a select query are not filtered for
+			duplicate rows. Because of the nature of the above queries, these
+			queries will never return duplicates. However, more complex queries
+			might result in duplicate result rows. These duplicates can be
+			filtered out by the SeRQL query engine. To enable this
+			functionality, one needs to specify the DISTINCT keyword after the
+			select keyword. For example:
+		</para>
+		<screen><![CDATA[
+SELECT DISTINCT *
+FROM {Country1} ex:borders {} ex:borders {Country2}
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+	</section> <!-- Select queries -->
+
+	<section>
+		<title>Construct queries</title>
+		<para>
+			Construct queries return RDF graphs as set of triples. The triples
+			that a query should return can be specified in the construct clause
+			using the previously explained path expressions. The following is an
+			example construct query:
+		</para>
+		<screen><![CDATA[
+CONSTRUCT {Parent} ex:hasChild {Child}
+FROM {Child} ex:hasParent {Parent}
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+		<para>
+			This query defines the inverse of the property foo:hasParent to be
+			foo:hasChild. This is just one example of a query that produces
+			information that is derived from the original information. Here is
+			one more example:
+		</para>
+		<screen><![CDATA[
+CONSTRUCT
+    {Artist} rdf:type {ex:Painter};
+             ex:hasPainted {Painting}
+FROM
+    {Artist} rdf:type {ex:Artist};
+             ex:hasCreated {Painting} rdf:type {ex:Painting}
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+		<para>
+			This query derives that an artist who has created a painting, is a
+			painter. The relation between the painter and the painting is
+			modelled to be art:hasPainted.
+		</para>
+		<para>
+			Instead of specifying a path expression in the CONSTRUCT clause, one
+			can also use a '*'. In that case, the CONSTRUCT clause is identical
+			to the FROM clause. This allows one to extract a subgraph from a
+			larger graph, e.g.:
+		</para>
+		<screen><![CDATA[
+CONSTRUCT *
+FROM {SUB} rdfs:subClassOf {SUPER}]]></screen>
+		<para>
+			This query extracts all rdfs:subClassOf relations from an RDF graph.
+		</para>
+		<para>
+			Just like with select queries, the results of a construct query are
+			not filtered for duplicate triples by default. Again, these
+			duplicates are filtered out by the SeRQL query engine if the
+			DISTINCT keyword is specified after the construct keyword, for example:
+		</para>
+		<screen><![CDATA[
+CONSTRUCT DISTINCT
+    {Artist} rdf:type {ex:Painter}
+FROM
+    {Artist} rdf:type {ex:Artist};
+             ex:hasCreated {} rdf:type {ex:Painting}
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+	</section> <!-- Construct queries -->
+
+	<section>
+		<title>The WHERE clause</title>
+		<para>
+			The third clause in a query is the WHERE clause. This is an optional
+			clause in which one can specify Boolean constraints on variables. 
+		</para>
+		<para>
+			The following sections will explain the available Boolean
+			expressions for use in the WHERE clause. <xref
+				linkend="nested-where"/> will explain how WHERE clauses can be
+			nested inside optional path expressions.
+		</para>
+
+		<section>
+			<title>Boolean constants</title>
+			<para>
+				There are two Boolean constants, TRUE and FALSE. The first one
+				is simply always true, the last one is always false. The
+				following query will never produce any results because the
+				constraint in the where clause will never evaluate to true:
+			</para>
+			<screen><![CDATA[
+SELECT *
+FROM {X} Y {Z}
+WHERE FALSE]]></screen>
+		</section>
+
+		<section>
+			<title>Value (in)equality</title>
+			<para>
+				The most common boolean constraint is equality or inequality of
+				values. Values can be compared using the operators "="
+				(equality) and "!=" (inequality). The expression
+			</para>
+			<screen><![CDATA[Var = <foo:bar>]]></screen>
+			<para>
+				is true if the variable Var contains the URI &lt;foo:bar&gt;,
+				and the expression
+			</para>
+			<screen><![CDATA[Var1 != Var2]]></screen>
+			<para>
+				checks whether two variables are not equal.
+			</para>
+		</section>
+
+		<section>
+			<title>Numerical comparisons</title>
+			<para>
+				Numbers can be compared to each other using the operators "&lt;"
+				(lower than), "&lt;=" (lower than or equal to), "&gt;" (greater
+				than) and "&gt;=" (greater than or equal to). SeRQL uses a
+				literal's datatype to determine whether its value is numerical.
+				All XML Schema built-in numerical datatypes are supported, i.e.:
+				xsd:float, xsd:double, xsd:decimal and all subtypes of
+				xsd:decimal (xsd:long, xsd:nonPositiveInteger, xsd:byte, etc.),
+				where the prefix xsd is used to reference the XML Schema
+				namespace.
+			</para>
+			<para>
+				In the following query, a comparison between values of type
+				xsd:positiveInteger is used to retrieve all countries that have
+				a population of less than 1 million:
+			</para>
+			<screen><![CDATA[
+SELECT Country
+FROM {Country} ex:population {Population}
+WHERE Population < "1000000"^^xsd:positiveInteger
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+			<para>
+				SeRQL is currently restricted to numerical comparisons between
+				values with identical datatypes. This means that e.g. xsd:int
+				values cannot (yet) be compared to xsd:byte values.
+			</para>
+			<para>
+				<!-- TODO change this to explicit casting -->
+				If only one of the parameters of a comparison has a datatype,
+				SeRQL will try to assign the other parameter the same datatype.
+				This means that the above query can still be used when the
+				population literals don't have any datatype. SeRQL will try to
+				interpret the literal as a positive integer and compare it to
+				the one million constant.
+			</para>
+		</section>
+
+		<section id="section-like">
+			<title>The LIKE operator (R1.2)</title>
+			<para>
+				The LIKE operator can check whether a value matches a specified
+				pattern of characters. '*' characters can be used as wildcards,
+				matching with zero or more characters. The rest of the
+				characters are compared lexically. The pattern is
+				surrounded with double quotes, just like a literal's label.
+			</para>
+			<screen><![CDATA[
+SELECT Country
+FROM {Country} ex:name {Name}
+WHERE Name LIKE "Belgium"
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+			<para>
+				By default, the LIKE operator does a case-sensitive comparison:
+				in the above query, the operator fails is the variable Name is
+				bound to the value "belgium" instead of "Belgium". Optionally,
+				one can specify that the operator should perform a
+				case-insensitive comparison:
+			</para>
+			<screen><![CDATA[
+SELECT Country
+FROM {Country} ex:name {Name}
+WHERE Name LIKE "belgium" IGNORE CASE
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+			<para>
+				In this query, the operator will succeed for "Belgium",
+				"belgium", "BELGIUM", etc.
+			</para>
+			<para>
+				The '*' character can be used as a wildcard to indicate
+				substring matches, for example:
+			</para>
+			<screen><![CDATA[
+SELECT Country
+FROM {Country} ex:name {Name}
+WHERE Name LIKE "*Netherlands"
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+			<para>
+				This query will match any country names that end with the string
+				"Netherlands", for example "The Netherlands".
+			</para>
+		</section>
+			<section>
+				<title>isResource() and isLiteral()</title>
+				<para>
+					The isResource() and isLiteral() boolean functions check whether a variable
+					contains a resource or a literal, respectively. For example:
+				</para>
+				<screen><![CDATA[
+SELECT *
+FROM {R} rdfs:label {L}
+WHERE isLiteral(L)]]></screen>
+			</section>
+			<section id="section-isuri">
+				<title>isURI() and isBNode() (R1.2)</title>
+				<para>
+					The isURI() and isBNode() boolean functions are more specific versions of
+					isResource(). They check whether a variable is bound to a URI value
+					or a BNode value, respectively. For example, the following query
+					returns only URIs (and filters out all bNodes and literals):
+				</para>
+				<screen><![CDATA[
+SELECT V
+FROM {R} prop {V}
+WHERE isURI(V)]]></screen>
+			</section>
+
+		<section>
+			<title>AND, OR, NOT</title>
+			<para>
+				Boolean constraints and functions can be combined using the AND and OR
+				operators, and negated using the NOT operator. The NOT operator
+				has the highest presedence, then the AND operator, and finally
+				the OR operator. Parentheses can be used to override the default
+				presedence of these operators. The following query is a (kind of
+				artifical) example of this:
+			</para>
+			<screen><![CDATA[
+SELECT *
+FROM {X} Prop {Y} rdfs:label {L}
+WHERE NOT L LIKE "*FooBar*" AND
+      (Y = <foo:bar> OR Y = <bar:foo>) AND
+      isLiteral(L)]]></screen>
+		</section>
+		<section id="nested-where">
+			<title>Nested WHERE clauses (R1.2)</title>
+		<para>
+				In order to be able to express boolean constraints on variables in
+				optional path expressions, it is possible to use a <emphasis>nested
+					WHERE clause</emphasis>. The constraints in such a nested
+				WHERE clause restrict the potential matches of the optional path
+				expressions, without causing the entire query to fail if the boolean
+				constraint fails. 
+			</para>
+			<para>
+				To illustrate the difference between a nested WHERE clause and a
+				'normal' WHERE clause, consider the following two queries on the
+				same data:
+			</para>
+			<para>Data (using Turtle format):</para>
+			<screen><![CDATA[
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix ex:   <http://example.org/> .
+
+_:a  foaf:name   "Michael" .
+
+_:b  foaf:name   "Rubens" .
+_:b  ex:email    "rubinho@example.work".
+
+_:b  foaf:name   "Giancarlo" .
+_:b  ex:email    "giancarlo@example.work".
+	]]></screen>
+<para>Query 1 (normal WHERE-clause):</para>
+<screen><![CDATA[
+SELECT 
+   Name, EmailAddress
+FROM
+  {Person} foaf:name {Name};
+          [ex:email {EmailAddress}]
+WHERE EmailAddress LIKE "g*"
+	]]></screen>
+<para>Query 2 (nested WHERE-clause):</para>
+<screen><![CDATA[
+SELECT 
+   Name, EmailAddress
+FROM
+  {Person} foaf:name {Name};
+          [ex:email {EmailAddress} WHERE EmailAddress LIKE "g*"]
+	]]></screen>
+<para>
+	In query 1, a normal WHERE clause specifies that the EmailAddress found
+	by the optional expression must begin with the letter "g". The result of this query
+	will be:
+</para>
+				<informaltable frame="all">
+					<tgroup cols="2" align="left">
+						<thead>
+							<row>
+								<entry align="center">Name</entry>
+								<entry align="center">EmailAddress</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>Giancarlo</entry>
+								<entry>"giancarlo@example.work"</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</informaltable>
+				<para>
+					Despite the fact that the match on EmailAddress is defined as
+					optional, the persons named "Michael" and "Rubens" are
+					not returned. The reason is that the WHERE clause explicitly
+					says that the value bound to the optional variable must start
+					with the letter "g". For Michael, no value is found, hence the
+					variable is equal to NULL, and the comparison operator fails on
+					this. For Rubens, a value is found, but it does not start with
+					the letter "g".
+				</para>
+				<para>
+					In query 2, however, a nested WHERE-clause is used. This
+					specifies that any binding the optional expression does must
+					begin with the letter "g", otherwise NULL is returned. The
+					result of this query is:
+				</para>
+				<informaltable frame="all">
+					<tgroup cols="2" align="left">
+						<thead>
+							<row>
+								<entry align="center">Name</entry>
+								<entry align="center">EmailAddress</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>Michael</entry>
+								<entry></entry>
+							</row>
+							<row>
+								<entry>Rubens</entry>
+								<entry></entry>
+							</row>
+							<row>
+								<entry>Giancarlo</entry>
+								<entry>"giancarlo@example.work"</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</informaltable>
+				<para>
+					The person "Michael" is returned without a result for his email
+					address because there is no email address known for him at all.
+					The person "Rubens" is returned without a result for his email
+					address because, although he does have an email address, it does
+					not start with the letter "g".
+				</para>
+				<para>
+					A query can contain at most one nested WHERE-clause per
+					optional path expression, and at most one 'normal' WHERE-clause. 
+				</para>
+			</section>
+	</section> <!-- The where clause -->
+
+	<section>
+		<title>Other functions</title>
+		<para>
+			Apart from the boolean functions and operators introduced in the
+			previous section, SeRQL supports several other functions that return
+			RDF terms rather than non-boolean values. These functions can be
+			used in both the SELECT and the WHERE clause.
+		</para>
+			<section>
+				<title>label(), lang() and datatype()</title>
+				<para>
+					The three functions label(), lang() and datatype() all operate on
+					literals. The result of the label() function is the lexical form
+					of the supplied literal. The lang() function returns the
+					language attribute. Both functions return their result as an
+					untyped literal, which can again be compared with other literals using
+					(in)equality-, comparison-, and like operators. The
+					result of the datatype() function is a URI, which can be
+					compared to other URIs. These functions can also be used in
+					SELECT clauses, but not in path expressions.
+				</para>
+				<para>
+					An example query:
+				</para>
+				<screen><![CDATA[
+SELECT label(L)
+FROM {R} rdfs:label {L}
+WHERE isLiteral(L) AND lang(L) LIKE "en*"]]></screen>
+			</section>
+			<section id="section-namespace">
+				<title>namespace() and localName() (R1.2)</title>
+				<para>
+					The functions namespace() and localName() operate on URIs. The
+					namespace() function returns the namespace of the supplied URI,
+					as a URI object. The localName() function returns the local name
+					part of the supplied URI, as a literal. These functions can also be used in
+					SELECT clauses, but not in path expressions.
+				</para>
+				<para>
+					The following query retrieves all properties of foaf:Person
+					instances that are in the FOAF namespace. Notice that as a
+					shorthand for the full URI, we can use a namespace prefix
+					(followed by a colon) as an argument.
+				</para>
+				<para>Data:</para>
+				<screen><![CDATA[
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix ex:   <http://example.org/> .
+
+_:a  rdf:type         foaf:Person .
+_:a  my:nick          "Schumi" .
+_:a  foaf:firstName   "Michael" .
+_:a  foaf:knows       _:b .
+
+_:b  rdf:type         foaf:Person .
+_:b  foaf:firstName   "Rubens" .
+_:b  foaf:nick        "Rubinho" .]]></screen>
+				<para>Query:</para>
+				<screen><![CDATA[
+SELECT foafProp, Value
+FROM {} foafProp {Value}
+WHERE namespace(foafProp) = foaf:
+USING NAMESPACE
+    foaf = <http://xmlns.com/foaf/0.1/>]]></screen>
+				<para>Result:</para>
+				<informaltable frame="all">
+					<tgroup cols="2" align="left">
+						<thead>
+							<row>
+								<entry align="center">foafProp</entry>
+								<entry align="center">Value</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry><![CDATA[<http://xmlns.com/foaf/0.1/firstName]]></entry>
+								<entry>"Michael"</entry>
+							</row>
+							<row>
+								<entry><![CDATA[<http://xmlns.com/foaf/0.1/knows]]></entry>
+								<entry>_:b</entry>
+							</row>
+							<row>
+								<entry><![CDATA[<http://xmlns.com/foaf/0.1/firstName]]></entry>
+								<entry>"Rubens"</entry>
+							</row>
+							<row>
+								<entry><![CDATA[<http://xmlns.com/foaf/0.1/nick]]></entry>
+								<entry>"Rubinho"</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</informaltable>
+				<para>
+					In the following example, the localName() function is used to
+					match two equivalent properties from different namespaces (using
+					the above data).
+				</para>
+				<para>Query:</para>
+				<screen><![CDATA[
+SELECT nick
+FROM {} rdf:type {foaf:Person};
+        nickProp {nick}
+WHERE localName(nickProp) LIKE "nick"
+USING NAMESPACE
+    foaf = <http://xmlns.com/foaf/0.1/>]]></screen>
+				<para>Result:</para>
+				<informaltable frame="all">
+					<tgroup cols="1" align="left">
+						<thead>
+							<row>
+								<entry align="center">nick</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>"Schumi"</entry>
+							</row>
+							<row>
+								<entry>"Rubinho"</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</informaltable>
+			</section>
+		</section> <!-- other functions -->
+
+	<section>
+		<title>The LIMIT and OFFSET clauses</title>
+		<para>
+			LIMIT and OFFSET allow you to retrieve just a portion of the results
+			that are generated by the query. If a limit count is given, no more
+			than that many results will be returned (but possibly less, if the
+			query itself yields less results).
+		</para>
+		<para>
+			OFFSET says to skip that many results before beginning to return
+			results. OFFSET 0 is the same as omitting the OFFSET clause. If both
+			OFFSET and LIMIT appear, then OFFSET rows are skipped before
+			starting to count the LIMIT results that are returned.
+		</para>
+	</section>
+
+	<section id="section-usingns">
+		<title>The USING NAMESPACE clause</title>
+		<para>
+			The USING NAMESPACE clause can be used to define short prefixes for
+			namespaces, which can then be used in abbreviated URIs. Multiple
+			prefixes can be defined, but each declaration must have a unique
+			prefix. The following query shows the use of namespace prefixes:
+		</para>
+		<screen><![CDATA[
+CONSTRUCT
+    {Artist} rdf:type {art:Painter};
+             art:hasPainted {Painting}
+FROM
+    {Artist} rdf:type {art:Artist};
+             art:hasCreated {Painting} rdf:type {art:Painting}
+USING NAMESPACE
+    rdf = <http://www.w3.org/1999/02/22-rdf-syntax-ns#>,
+    art = <http://example.org/arts/>]]></screen>
+		<para>
+			The query engine will replace every occurence of rdf: in an
+			abbreviated URI with http://www.w3.org/1999/02/22-rdf-syntax-ns#,
+			and art: with http://example.org/arts/. So art:hasPainted
+			will be resolved to the URI
+			http://example.org/arts/hasPainted.
+		</para>
+		<para>
+			Four namespaces that are used very frequently have been assigned
+			prefixes by default:
+		</para>
+		<table>
+			<title>Default namespaces</title>
+			<tgroup cols="2" align="left">
+			<thead>
+				<row>
+					<entry>Prefix</entry>
+					<entry>Namespace</entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry>rdf</entry>
+					<entry>http://www.w3.org/1999/02/22-rdf-syntax-ns#</entry>
+				</row>
+				<row>
+					<entry>rdfs</entry>
+					<entry>http://www.w3.org/2000/01/rdf-schema#</entry>
+				</row>
+				<row>
+					<entry>xsd</entry>
+					<entry>http://www.w3.org/2001/XMLSchema#</entry>
+				</row>
+				<row>
+					<entry>owl</entry>
+					<entry>http://www.w3.org/2002/07/owl#</entry>
+				</row>
+				<row>
+					<entry>serql</entry>
+					<entry>http://www.openrdf.org/schema/serql#</entry>
+				</row>
+			</tbody>
+			</tgroup>
+		</table>
+		<para>
+			These prefixes can be used without declaring them. If either of
+			these prefixes is declared explicitly in a query, this declaration
+			will override the default mapping.
+		</para>
+	</section> <!-- The using namespace clause -->
+
+	<section>
+		<title>Built-in predicates</title>
+		<para>
+			SeRQL contains a number of built-in predicates. These built-ins can
+			be used like any other predicate, as part of a path expression.  The
+			difference with normal predicates is that the built-ins act as
+			operators on the underlying rdf graph: they can be used to query for
+			relations between RDF resources that are not explicitly modeled, nor
+			immediately apparant from the RDF Semantics, but which are
+			nevertheless very useful.
+		</para>
+		<para>
+			Currently, the following built-in predicates are supported:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<screen><![CDATA[{X} sesame:directSubClassOf {Y}]]></screen>
+				<para>
+					This relation holds for every X and Y where:
+				</para>
+				<orderedlist>
+					<listitem>X rdfs:subClassOf Y.</listitem>
+					<listitem>X != Y.</listitem>
+					<listitem>
+						There is no class Z (Z != Y and Z != X) such that
+						X rdfs:subClassOf Z and
+						Z rdfs:subClassOf Y.
+					</listitem>
+				</orderedlist>
+			</listitem>
+			<listitem>
+				<screen><![CDATA[{X} sesame:directSubPropertyOf {Y}]]></screen>
+				<para>
+					This relation holds for every X and Y where:
+				</para>
+				<orderedlist>
+					<listitem>X rdfs:subPropertyOf Y.</listitem>
+					<listitem>X != Y.</listitem>
+					<listitem>
+						There is no property Z (Z != X and Z != Y) such that
+						X rdfs:subPropertyOf Z and
+						Z rdfs:subPropertyOf Y.
+					</listitem>
+				</orderedlist>
+			</listitem>
+			<listitem>
+				<screen><![CDATA[{X} sesame:directType {Y}]]></screen>
+				<para>
+					This relation holds for every X and Y where:
+				</para>
+				<orderedlist>
+					<listitem>X rdf:type Y.</listitem>
+					<listitem>
+						There is no class Z (Z != Y) such that
+						X rdf:type Z and Z rdfs:subClassOf Y.
+					</listitem>
+				</orderedlist>
+			</listitem>
+		</itemizedlist>
+		<para>
+			<emphasis>Note:</emphasis> the above definition takes class/property
+			equivalence through cyclic subClassOf/subPropertyOf relations into account. This
+			means that if A rdfs:subClassOf B, and B rdfs:subClassOf A, it holds that A = B.
+		</para>
+		<para>
+			The namespace prefix 'sesame' is built-in and does not have to be
+			defined in the query.
+		</para>
+	</section> <!-- SeRQL built-in predicates -->
+
+	<section id="section-setoper">
+		<title>Set combinatory operations</title>
+		<para>
+			SeRQL offers three combinatory operations that can be used to
+			combine sets of query results.
+		</para>
+		<section>
+			<title>UNION (R1.2)</title>
+			<para>
+				UNION is a combinatory operation the result of which is the set of
+				query answers of both its operands. This allows one to specify
+				alternatives in a query solution.
+			</para>
+			<para>
+				By default, UNION filters out duplicate answers from its operands.
+				Specifying the ALL keyword ("UNION ALL") disables this filter.
+			</para>
+			<para>
+				The following example query retrieves the titles of books in the
+				data, where the property used to describe the title can be either
+				from the DC 1.0 or DC 1.1 specification.
+			</para>
+			<para>Data:</para>
+			<screen><![CDATA[
+@prefix dc10:  <http://purl.org/dc/elements/1.0/> .
+@prefix dc11:  <http://purl.org/dc/elements/1.1/> .
+
+_:a  dc10:title     "The SeRQL Query Language" .
+_:b  dc11:title     "The SeRQL Query Language (revision 1.2)" .
+
+_:c  dc10:title     "SeRQL" .
+_:c  dc11:title     "SeRQL (updated)" .]]></screen>
+			<para>Query:</para>
+			<screen><![CDATA[
+SELECT title
+FROM {book} dc10:title {title}
+
+UNION
+
+SELECT title
+FROM {book} dc11:title {title}
+
+USING NAMESPACE
+    dc10 = <http://purl.org/dc/elements/1.0/>,
+    dc11 = <http://purl.org/dc/elements/1.1/>]]></screen>
+			<para>Result:</para>
+			<informaltable frame="all">
+				<tgroup cols="1" align="left">
+					<thead>
+						<row>
+							<entry align="center">title</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>"The SeRQL Query Language"</entry>
+						</row>
+						<row>
+							<entry>"The SeRQL Query Language (revision 1.2)"</entry>
+						</row>
+						<row>
+							<entry>"SeRQL"</entry>
+						</row>
+						<row>
+							<entry>"SeRQL (updated)"</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+			<para>
+				The union operator matches the projection items in order without
+				taking the name of the projection item into account:
+			</para>
+			<screen><![CDATA[
+SELECT title, "1.0" AS "version"
+FROM {book} dc10:title {title}
+
+UNION
+
+SELECT y, NULL
+FROM {x} dc11:title {y}
+
+USING NAMESPACE
+    dc10 = <http://purl.org/dc/elements/1.0/>,
+    dc11 = <http://purl.org/dc/elements/1.1/>]]></screen>
+			<para>Result:</para>
+			<informaltable frame="all">
+				<tgroup cols="2" align="left">
+					<thead>
+						<row>
+							<entry align="center">title</entry>
+							<entry align="center">version</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>"The SeRQL Query Language"</entry>
+							<entry>"1.0"</entry>
+						</row>
+						<row>
+							<entry>"The SeRQL Query Language (revision 1.2)"</entry>
+							<entry></entry>
+						</row>
+						<row>
+							<entry>"SeRQL"</entry>
+							<entry>"1.0"</entry>
+						</row>
+						<row>
+							<entry>"SeRQL (updated)"</entry>
+							<entry></entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+			<para>
+				SeRQL will use the names of the variables in the first operand of
+				the union in the query result.
+			</para>
+		</section>
+		<section>
+			<title>INTERSECT (R1.2)</title>
+			<para>
+				The INTERSECT operation retrieves query results that occur in both
+				its operands.
+			</para>
+			<para>
+				The following query only retrieves those album creators for
+				which the name is specified identically in both DC 1.0 and DC 1.1.
+			</para>
+			<para>Data:</para>
+			<screen><![CDATA[
+@prefix dc10:  <http://purl.org/dc/elements/1.0/> .
+@prefix dc11:  <http://purl.org/dc/elements/1.1/> .
+
+_:a  dc10:creator     "George" .
+_:a  dc10:creator     "Ringo" .
+
+_:b  dc11:creator     "George" .
+_:b  dc11:creator     "Ringo" .
+
+_:c  dc10:creator     "Paul" .
+_:c  dc11:creator     "Paul C." .]]></screen>
+			<para>Query:</para>
+			<screen><![CDATA[
+SELECT creator
+FROM {album} dc10:creator {creator}
+
+INTERSECT
+
+SELECT creator
+FROM {album} dc11:creator {creator}
+
+USING NAMESPACE
+    dc10 = <http://purl.org/dc/elements/1.0/>,
+    dc11 = <http://purl.org/dc/elements/1.1/>]]></screen>
+			<para>Result:</para>
+			<informaltable frame="all">
+				<tgroup cols="1" align="left">
+					<thead>
+						<row>
+							<entry align="center">creator</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>"George"</entry>
+						</row>
+						<row>
+							<entry>"Ringo"</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</section>
+		<section>
+			<title>MINUS (R1.2)</title>
+			<para>
+				The Minus operation returns query results from its first operand
+				which do not occur in the results from its second operand.
+			</para>
+			<para>
+				The following query returns the titles of all albums of which
+				"Paul" is not a creator.
+			</para>
+			<para>Data:</para>
+			<screen><![CDATA[
+@prefix dc10:  <http://purl.org/dc/elements/1.0/> .
+
+_:a  dc10:creator     "George" .
+_:a  dc10:title       "Sergeant Pepper" .
+
+_:b  dc10:creator     "Paul" .
+_:b  dc10:title       "Yellow Submarine" .
+
+_:c  dc10:creator     "Paul" .
+_:c  dc10:creator     "Ringo" .
+_:c  dc10:title       "Let it Be" .]]></screen>
+			<para>Query:</para>
+			<screen><![CDATA[
+SELECT title
+FROM {album} dc10:title {title}
+
+MINUS
+
+SELECT title
+FROM {album} dc10:title {title};
+             dc10:creator {creator}
+WHERE creator like "Paul"
+
+USING NAMESPACE
+    dc10 = <http://purl.org/dc/elements/1.0/>,
+    dc11 = <http://purl.org/dc/elements/1.1/>]]></screen>
+			<para>Result:</para>
+			<informaltable frame="all">
+				<tgroup cols="1" align="left">
+					<thead>
+						<row>
+							<entry align="center">title</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>"Sergeant Pepper"</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</section>
+	</section> <!-- Union, Intersection, Minus -->
+
+	<section>
+		<title>NULL values</title>
+		<para>
+			Just like SQL and most programming languages, SeRQL also has a
+			NULL value. This value can be used just like any other value in
+			SeRQL. For example, it can be used in the where clause to check
+			that a literal doesn't have a datatype:
+		</para>
+		<screen><![CDATA[
+SELECT *
+FROM {X} Y {Z}
+WHERE isLiteral(Z) AND datatype(L) = NULL]]></screen>
+	</section> <!-- Null values -->
+
+	<section id="section-nesting">
+		<title>Query Nesting</title>
+		<para>
+			SeRQL has several constructs for nested queries. Nested queries can
+			occur as operands for several boolean operators, which are explained
+			in more detail in the following sections.
+		</para>
+		<para>
+			<!-- TODO better formulation please -->
+			SeRQL applies variable scoping for nested queries. This means that
+			when a variable is assigned in the outer query, its value will be
+			carried over to the inner query when that variable is reused there.
+		</para>
+		<section id="section-in">
+			<title>The IN operator (R1.2)</title>
+			<para>
+				The IN operator allows set membership checking where the set is
+				defined by a nested SELECT-query.
+			</para>
+			<para>
+				The following example query uses the IN operator to retrieve all
+				names of Persons, but only those names that also appear as
+				names of Authors.
+			</para>
+			<screen><![CDATA[
+@prefix ex: <http://example.org/things#> .
+
+_:a  rdf:type         ex:Person .
+_:a  ex:name          "John" .
+
+_:b  rdf:type         ex:Person .
+_:b  ex:name          "Ringo" .
+
+_:c  rdf:type         ex:Author .
+_:c  ex:name          "John" .
+
+_:d  rdf:type         ex:Author .
+_:d  ex:name          "George" .]]></screen>
+			<para>Query:</para>
+<screen><![CDATA[
+SELECT name
+FROM {} rdf:type {ex:Person};
+        ex:name {name}
+WHERE name IN ( SELECT n
+                FROM {} rdf:type {ex:Author};
+                        ex:name {n}
+              )
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+			<para>Result:</para>
+			<informaltable frame="all">
+				<tgroup cols="1" align="left">
+					<thead>
+						<row>
+							<entry align="center">name</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>"John"</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</section>
+		<section id="section-any">
+			<title>ANY and ALL (R1.2)</title>
+			<para>
+				The ANY and ALL keywords can be used for existential and universal
+				quantification on the right operand of a boolean operator, if this
+				operand is a set, defined by a nested query. The ALL keyword
+				indicates that for every value of the nested query the boolean
+				condition must hold. The ANY keyword indicates that the boolean
+				condition must hold for at least one value of the nested query.
+			</para>
+			<para>
+				The following query selects the highest value from a set of values
+				using the ALL keyword and a nested query.
+			</para>
+			<para>Data:</para>
+		<screen><![CDATA[
+@prefix ex:  <http://example.org/things#> .
+
+_:a  ex:value     "10"^^xsd:int .
+_:b  ex:value     "11"^^xsd:int .
+_:c  ex:value     "12"^^xsd:int .
+_:d  ex:value     "13"^^xsd:int .
+_:e  ex:value     "14"^^xsd:int .]]></screen>
+			<para>Query:</para>
+			<screen><![CDATA[
+SELECT highestValue
+FROM {node} ex:value {highestValue}
+WHERE highestValue >= ALL ( SELECT value
+                            FROM {} ex:value {value}
+                          )
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+			<para>Result:</para>
+			<informaltable frame="all">
+				<tgroup cols="1" align="left">
+					<thead>
+						<row>
+							<entry align="center">highestValue</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>"14"^^xsd:int</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</section>
+		<section id="section-exists">
+			<title>EXISTS (R1.2)</title>
+			<para>
+				EXISTS is a unary operator that has a nested SELECT-query as its
+				operand. The operator is an existential quantifier that succeeds
+				when the nested query has at least one result.
+			</para>
+			<para>
+				In the following example, we use EXIST to determine whether any
+				authors are known that share a name with a person, and if so, to
+				retrieve that person's names and hobbies.
+			</para>
+			<para>Data:</para>
+			<screen><![CDATA[
+@prefix ex: <http://example.org/things#> .
+
+_:a  rdf:type         ex:Person .
+_:a  ex:name          "John" .
+_:a  ex:hobby         "Stamp collecting" .
+
+_:b  rdf:type         ex:Person .
+_:b  ex:name          "Ringo" .
+_:b  ex:hobby         "Crossword puzzles" .
+
+_:c  rdf:type         ex:Author .
+_:c  ex:name          "John" .
+_:c  ex:authorOf      "Let it be".]]></screen>
+			<para>Query:</para>
+			<screen><![CDATA[
+SELECT name, hobby
+FROM {} rdf:type {ex:Person};
+        ex:name {name};
+        ex:hobby {hobby}
+WHERE EXISTS ( SELECT n
+               FROM {} rdf:type {ex:Author};
+                       ex:name {n};
+                       ex:authorOf {}
+               WHERE n = name
+             )
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+				 <para>Result:</para>
+			<informaltable frame="all">
+				<tgroup cols="2" align="left">
+					<thead>
+						<row>
+							<entry align="center">name</entry>
+							<entry align="center">hobby</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>"John"</entry>
+							<entry>"Stamp collecting"</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</section>
+	</section> <!-- query nesting -->
+
+	<section id="section-context">
+		<title>Querying context (R2.0)</title>
+		<para>
+			A new clause, FROM CONTEXT, is introduced in SeRQL 2.0 to allow
+			querying of <emphasis>context</emphasis>. Context can be seen as a
+			grouping mechanism of statements inside a repository, where the
+			group is identified with a <emphasis>context identifier</emphasis>
+			(a URI or a blank node).
+		</para>
+		<para>
+			A very typical way to use context is tracking
+			<emphasis>provenance</emphasis> of the statements in a repository,
+			that is, which location (on the Web, or on the file system) these
+			statements originate from. For example, consider an application
+			where you add RDF data from different files to a repository, and
+			then one of those files is updated. You would then like to replace
+			the data from that one file in the repository, and to be able to do
+			this you need a way to figure out which statements need to be
+			removed. The context mechanism gives you a way to do that.
+		</para>
+		<para>
+			By default, a SeRQL query ranges over the total repository. This is
+			known as the <emphasis>default context</emphasis>: we do not specify a
+			context, therefore, the default context is queried. In practice this
+			means that all statements in all contexts in the repository are
+			queried.
+		</para>
+		<para>
+			In the following example, we have a repository that contains three
+			sets of data. The first set is added without context, the other two
+			each have their own, specific, named context.
+		</para>
+		<para>Data set 1 (no context):</para>
+			<screen><![CDATA[
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix g:  <http://example.org/contexts/>
+
+g:graph1 dc:publisher "Bob" .
+g:graph1 dc:date "2004-12-06T00:00:00Z"^^xsd:dateTime .
+
+g:graph2 dc:publisher "Bob" .
+g:graph2 dc:date "2005-01-10T00:00:00Z"^^xsd:dateTime .
+]]></screen>
+<para>Data set 2 (context http://example.org/contexts/graph1):</para>
+			<screen><![CDATA[
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+_:a1 foaf:name "Alice" .
+_:a1 foaf:mbox <mailto:alice@work.example> .
+
+_:b1 foaf:name "Bob" .
+_:b1 foaf:mbox <mailto:bob@oldcorp.example.org> .]]></screen>
+<para>Data set 3 (context http://example.org/contexts/graph2):</para>
+			<screen><![CDATA[
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+_:a2 foaf:name "Alice" .
+_:a2 foaf:mbox <mailto:alice@work.example> .
+
+_:b2 foaf:name "Bob" .
+_:b2 foaf:mbox <mailto:bob@newcorp.example.org> .
+	]]></screen>
+<para>
+	As you can see, the data in each of the named contexts contains
+	different information about the e-mail address of Bob. Using a 'normal'
+	SeRQL query (that is, without using context information), we can
+	retrieve all e-mail addresses quite easily: 
+</para>
+			<para>Query:</para>
+			<screen><![CDATA[
+SELECT DISTINCT name, mbox
+FROM {x} foaf:name {name};
+         foaf:mbox {mbox}
+USING NAMESPACE
+foaf = <http://xmlns.com/foaf/0.1/>]]></screen>
+			<para>Result:</para>
+			<informaltable frame="all">
+				<tgroup cols="2" align="left">
+					<thead>
+						<row>
+							<entry align="center">name</entry>
+							<entry align="center">mbox</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>Alice</entry>
+							<entry>mailto:alice@work.example</entry>
+						</row>
+						<row>
+							<entry>Bob</entry>
+							<entry>mailto:bob@oldcorp.example.org</entry>
+						</row>
+						<row>
+							<entry>Bob</entry>
+							<entry>mailto:bob@newcorp.example.org</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+			<para>
+				However, we can not identify the source of each e-mail address using such
+				a query, because all the triples in the three files are just
+				merged together in a single repository. We can, however, retrieve
+				this information using a context query:
+			</para>
+			<para>Query:</para>
+			<screen><![CDATA[
+SELECT DISTINCT source, name, mbox
+FROM CONTEXT source
+     {x} foaf:name {name};
+         foaf:mbox {mbox}
+USING NAMESPACE
+foaf = <http://xmlns.com/foaf/0.1/>]]></screen>
+			<para>Result:</para>
+			<informaltable frame="all">
+				<tgroup cols="3" align="left">
+					<thead>
+						<row>
+							<entry align="center">source</entry>
+							<entry align="center">name</entry>
+							<entry align="center">mbox</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>http://example.org/context/graph1</entry>
+							<entry>Alice</entry>
+							<entry>mailto:alice@work.example</entry>
+						</row>
+						<row>
+							<entry>http://example.org/context/graph2</entry>
+							<entry>Alice</entry>
+							<entry>mailto:alice@work.example</entry>
+						</row>
+						<row>
+							<entry>http://example.org/context/graph1</entry>
+							<entry>Bob</entry>
+							<entry>mailto:bob@oldcorp.example.org</entry>
+						</row>
+						<row>
+							<entry>http://example.org/context/graph2</entry>
+							<entry>Bob</entry>
+							<entry>mailto:bob@newcorp.example.org</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+			<para>
+				As you can see, by specifying a variable <varname>source</varname>
+				in the FROM CONTEXT clause we can retrieve the named context from
+				which the information comes.
+			</para>
+			<para>
+				We can also specify a named context explicitly by using a URI
+				directly, for example if we only want to query source graph2:
+			</para>
+			<para>Query:</para>
+			<screen><![CDATA[
+SELECT name, mbox
+FROM CONTEXT <http://example.org/context/graph2>
+     {x} foaf:name {name};
+         foaf:mbox {mbox}
+USING NAMESPACE
+foaf = <http://xmlns.com/foaf/0.1/>]]></screen>
+			<para>Result:</para>
+			<informaltable frame="all">
+				<tgroup cols="2" align="left">
+					<thead>
+						<row>
+							<entry align="center">name</entry>
+							<entry align="center">mbox</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>Alice</entry>
+							<entry>mailto:alice@work.example</entry>
+						</row>
+						<row>
+							<entry>Bob</entry>
+							<entry>mailto:bob@newcorp.example.org</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+			<para>
+				A SeRQL query may contain any number of FROM CONTEXT clauses and may
+				additionally contain a 'normal' FROM clause as well.
+			</para>
+			<para>
+				For example, in the following query we combine information from
+				the default context and from the different named contexts to
+				retrieve the most recently published e-mail information:
+			</para>
+			<para>Query:</para>
+			<screen><![CDATA[
+SELECT date, source, name, mbox
+FROM {source} dc:date {date}	
+FROM CONTEXT source
+     {x} foaf:name {name};
+         foaf:mbox {mbox}
+WHERE date >= ALL (SELECT d FROM {} dc:date {d})
+USING NAMESPACE
+   foaf = <http://xmlns.com/foaf/0.1/>,
+   dc = <http://purl.org/dc/elements/1.1/>]]></screen>
+			<para>Result:</para>
+			<informaltable frame="all">
+				<tgroup cols="4" align="left">
+					<thead>
+						<row>
+							<entry align="center">date</entry>
+							<entry align="center">source</entry>
+							<entry align="center">name</entry>
+							<entry align="center">mbox</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>"2005-01-10T00:00:00Z"^^xsd:dateTime</entry>
+							<entry>http://example.org/context/graph2</entry>
+							<entry>Alice</entry>
+							<entry>mailto:alice@work.example</entry>
+						</row>
+						<row>
+							<entry>"2005-01-10T00:00:00Z"^^xsd:dateTime</entry>
+							<entry>http://example.org/context/graph2</entry>
+							<entry>Bob</entry>
+							<entry>mailto:bob@newcorp.example.org</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</section> <!-- querying context -->
+		
+	<section>
+		<title>Example SeRQL queries</title>
+
+		<section>
+			<title>Query 1</title>
+			<para>
+				Description: Find all papers that are about "RDF" and about
+				"Querying", and their authors.
+			</para>
+			<screen><![CDATA[
+SELECT
+   Author, Paper
+FROM
+   {Paper} rdf:type {foo:Paper};
+           ex:keyword {"RDF", "Querying"};
+           dc:author {Author}
+USING NAMESPACE
+   dc = <http://purl.org/dc/elements/1.0/>,
+   ex = <http://example.org/things#>]]></screen>
+			<para>
+				Depicted as a graph, this query searches through the RDF graph
+				for all subgraphs matching the following template:
+			</para>
+			<figure id="figure-query1" float="1">
+				<title>Path expression for query 1</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="figures/serql-query1.png"/>
+					</imageobject>
+				</mediaobject>
+			</figure>
+		</section>
+
+		<section>
+			<title>Query 2</title>
+			<para>
+				Description: Find all artefacts whose English title contains
+				the string "night" and the museum where they are exhibited. The
+				artefact must have been created by someone with first name
+				"Rembrandt". The artefact and museum should both be represented
+				by their titles.
+			</para>
+			<screen><![CDATA[
+SELECT DISTINCT
+   label(ArtefactTitle), MuseumName
+FROM
+   {Artefact} arts:created_by {} arts:first_name {"Rembrandt"},
+   {Artefact} arts:exhibited {} dc:title {MuseumName},
+   {Artefact} dc:title {ArtefactTitle}
+WHERE
+   isLiteral(ArtefactTitle) AND
+   lang(ArtefactTitle) = "en" AND
+   label(ArtefactTitle) LIKE "*night*"
+USING NAMESPACE
+   dc   = <http://purl.org/dc/elements/1.0/>,
+   arts = <http://example.org/arts/>]]></screen>
+			<para>
+				Again, depicted as a subgraph template:
+			</para>
+			<figure id="figure-query2" float="1">
+				<title>Path expression for query 2</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="figures/serql-query2.png"/>
+					</imageobject>
+				</mediaobject>
+			</figure>
+			<para>
+				Note that this figure only shows the path expressions from the
+				from clause. The where clause poses additional constraints on
+				the values of the variables which can't be as easily depicted
+				graphically.
+			</para>
+		</section>
+
+		<section>
+			<title>Query 3</title>
+			<para>
+				Description: Find all siblings of class foo:bar.
+			</para>
+			<screen><![CDATA[
+SELECT DISTINCT
+   Sibling
+FROM
+   {Sibling, <foo:bar>} rdfs:subClassOf {ParentClass}]]></screen>
+			<para>
+				Or graphically:
+			</para>
+			<figure id="figure-query3" float="1">
+				<title>Path expression for query 3</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="figures/serql-query3.png"/>
+					</imageobject>
+				</mediaobject>
+			</figure>
+			<para>
+				Note that the URI foo:bar is not returned as a result (there is
+				an implicit constraint that doesn't allow Sibling to be equal to
+				values that occur in the same multi-value node).
+			</para>
+		</section>
+	</section> <!-- Example SeRQL queries -->
+
+	<section>
+		<title>Comments/feedback</title>
+		<para>
+			Feedback on this document and/or the SeRQL language is highly
+			appreciated and can be posted on the forum at
+			<ulink url="http://www.openrdf.org">www.openrdf.org</ulink>.
+		</para>
+	</section> <!-- Comments/feedback -->
+
+	<section>
+		<title>References</title>
+		<itemizedlist>
+			<listitem>
+<ulink url="http://139.91.183.30:9090/RDF/RQL/">RQL</ulink>
+			</listitem>
+			<listitem>
+<ulink url="http://www.openrdf.org/doc/rql-tutorial.html">RQL tutorial</ulink>
+			</listitem>
+			<listitem>
+<ulink url="http://www.hpl.hp.com/semweb/rdql.html">RDQL</ulink>
+			</listitem>
+			<listitem>
+<ulink url="http://www.w3.org/TR/1999/REC-rdf-syntax-19990222/">RDF/XML syntax (W3C Recommandation)</ulink>
+			</listitem>
+			<listitem>
+<ulink url="http://www.w3.org/TR/rdf-syntax-grammar/">Revised RDF/XML syntax (W3C Technical Report)</ulink>
+			</listitem>
+			<listitem>
+<ulink url="http://www.w3.org/tr/rdf-mt/">RDF Semantics (W3C Recommandation)</ulink>
+			</listitem>
+			<listitem>
+<ulink url="http://www.w3.org/TR/rdf-testcases/#ntriples">N-Triples</ulink>
+			</listitem>
+			<listitem>
+<ulink url="http://www.ilrt.bris.ac.uk/discovery/2004/01/turtle/">Turtle</ulink>
+			</listitem>
+			<listitem>
+<ulink url="http://www.w3.org/DesignIssues/Notation3.html">N3</ulink>
+			</listitem>
+			<listitem>
+<ulink url="http://www.ietf.org/rfc/rfc2396.txt">URI (RFC 2396)</ulink>
+			</listitem>
+			<listitem>
+<ulink url="http://www.w3.org/TR/REC-xml-names/">Namespace in XML (W3C Recommandation)</ulink>
+			</listitem>
+		</itemizedlist>
+	</section> <!--References -->
+	<!--
+	TODO draft, unfinished.
+	<section>
+		<title>SeRQL formal interpretation</title>
+			<para>
+				The <ulink url="http://www.w3.org/tr/rdf-mt/">RDF Semantics W3C
+					specification</ulink> specifies a model theoretical semantics
+				for RDF and RDF Schema. In this section, we will use this model
+				theory to specify a formal interpretation of SeRQL query
+				constructs.
+			</para>
+			<para>
+				Without repeating here the entire model theory, we briefly summarize a
+				couple of its notions for reference:
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>
+						The sets <symbol>IR</symbol>, <symbol>IP</symbol>, <symbol>IC</symbol>
+						are sets of resources, properties, and classes, respectively.
+						<symbol>LV</symbol> is a distinguished subset of
+						<symbol>IR</symbol> and is defined as the set of literals.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<symbol>IEXT</symbol> is defined as a mapping from
+						<symbol>IP</symbol> to the powerset of <symbol>IR x IR</symbol>.
+						Given <symbol>p is in IP</symbol> it holds that
+						<symbol>IEXT(I(p))</symbol> is the set of pairs <symbol>&lt;x, y&gt;
+							such that x, y in IR</symbol> for which the relation
+						<symbol>p</symbol> holds, that is,
+						for which <symbol>&lt;x, p, y&gt;</symbol> is a statement in the RDF graph.
+					</para>
+				</listitem>
+			</itemizedlist>
+		<section>
+			<title>Path expressions</title>
+			<para>
+				For an <emphasis>RDF interpretation</emphasis>, the following semantic condition
+				holds:
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para><symbol>x is in IP if and only if &lt;x, I(rdf:Property)&gt; is
+							in IEXT(I(rdf:type))</symbol>
+					</para>
+				</listitem>
+			</itemizedlist>
+			<para>
+				Additionally, we define a NULL value, that is <symbol>I(x) =
+					NULL</symbol> if no value is assigned to <symbol>x</symbol> in
+				the current interpretation.  We will first characterize SeRQL in
+				terms of RDF only, i.e. give an RDF interpretation:
+			</para>
+			<table>
+				<title>RDF interpretation of basic SeRQL path expressions</title>
+				<tgroup cols="2" align="left">
+					<tbody>
+						<row>
+							<entry><screen>{x} p {y}</screen></entry>
+							<entry><symbol>{&lt;x, p, y&gt; such that &lt;x,y&gt; is in IEXT(I(p))}</symbol></entry>
+						</row>
+						<row>
+							<entry><screen>{x} p {y}; q {z}</screen></entry>
+							<entry>{&lt;x, p, y&gt; such that &lt;x,y&gt; is in IEXT(I(p))}<sbr/>
+								union<sbr/>
+									   {&lt;x', q, z&gt; such that &lt;x',z&gt; is in IEXT(I(q))} where x = x'</entry>
+						</row>
+						<row>
+							<entry><screen>{x} p {y,z}</screen></entry>
+							<entry>{&lt;x, p, y&gt; such that &lt;x,y&gt; is in IEXT(I(p))}<sbr/>
+								union<sbr/>
+									   {&lt;x', p', z&gt; such that &lt;x',z&gt; is in IEXT(I(p\))} where x = x' and p = p'</entry>
+							</entry>
+						</row>
+						<row>
+							<entry><screen>[{x} p {y}]</screen></entry>
+							<entry>
+									{&lt;x, p, y&gt; such that &lt;x,y&gt; is in IEXT(I(p))}<sbr/>
+									union<sbr/>
+									{&lt;NULL, p, y&gt; such that there is no x' for which &lt;x',y&gt; is in IEXT(I(p))}<sbr/>
+									union<sbr/>
+									{&lt;x, NULL, y&gt; such that there is no p' for which &lt;x,y&gt; is in IEXT(I(p'))}<sbr/>
+									union<sbr/>
+									{&lt;x, p, NULL&gt; such that there is no y' for which &lt;x,y'&gt; is in IEXT(I(p))}<sbr/>
+									union<sbr/>
+									{&lt;NULL, p, NULL&gt; such that IEXT(I(p)) is empty}<sbr/>
+									union<sbr/>
+									{&lt;x, NULL, NULL&gt; such that there is no p' for which &lt;x,y'&gt; is in IEXT(I(p'))}<sbr/>
+									union<sbr/>
+									{&lt;NULL, NULL, y&gt; such that there is no p' for which &lt;x',y&gt; is in IEXT(I(p'))}
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+			<para>
+				An extended interpretation takes into account RDF Schema semantics. For an
+				<emphasis>RDFS interpretation</emphasis> the following semantic conditions
+				hold in addition to those specified by an RDF interpretation:
+			</para>
+			<itemizedlist>
+				<listitem>
+					<symbol>x is in ICEXT(y)</symbol> if and only if
+					<symbol>&lt;x,y&gt; is in IEXT(I(rdf:type))</symbol>
+				</listitem>
+				<listitem>
+					<symbol>IC = ICEXT(I(rdfs:Class))</symbol>
+				</listitem>
+				<listitem>
+					<symbol>IR = ICEXT(I(rdfs:Resource))</symbol>
+				</listitem>
+				<listitem>
+					<symbol>LV = ICEXT(I(rdfs:Literal))</symbol>
+				</listitem>
+				<listitem>
+					if <symbol>&lt;x,y&gt; is in IEXT(I(rdfs:domain))</symbol> and
+					<symbol>&lt;u,v&gt; is in IEXT(x)</symbol> then
+					<symbol>u is in ICEXT(y)</symbol>
+				</listitem>
+				<listitem>
+					if <symbol>&lt;x,y&gt; is in IEXT(I(rdfs:range))</symbol> and
+					<symbol>&lt;u,v&gt; is in IEXT(x)</symbol> then
+					<symbol>v is in ICEXT(y)</symbol>
+				</listitem>
+				<listitem>
+					<symbol>IEXT(I(rdfs:subPropertyOf))</symbol> is transitive and
+					reflexive on <symbol>IP</symbol>
+				</listitem>
+				<listitem>
+					if <symbol>&lt;x,y&gt; is in
+						IEXT(I(rdfs:subPropertyOf))</symbol> then <symbol>x and y are
+						in IP</symbol> and <symbol>IEXT(x) is a subset of IEXT(y)</symbol>
+				</listitem>
+				<listitem>
+					<symbol>IEXT(I(rdfs:subClassOf))</symbol> is transitive and
+					reflexive on <symbol>IC</symbol>
+				</listitem>
+				<listitem>
+					if <symbol>&lt;x,y&gt; is in
+						IEXT(I(rdfs:subClassOf))</symbol> then <symbol>x and y are
+						in IC</symbol> and <symbol>IEXT(x) is a subset of IEXT(y)</symbol>
+				</listitem>
+				<listitem>
+					if <symbol>x is in IC</symbol> then
+					<symbol>&lt;x,IR&gt; is in IEXT(I(rdfs:subClassOf))</symbol>
+				</listitem>
+				<listitem>
+					if <symbol>x is in ICEXT(I(rdfs:ContainerMembershipProperty))</symbol> then
+					<symbol>&lt;x,I(rdfs:member)&gt; is in IEXT(I(rdfs:subPropertyOf))</symbol>
+				</listitem>
+				<listitem>
+					if <symbol>x is in ICEXT(I(rdfs:Datatype))</symbol> and
+					<symbol>y is in ICEXT(x)</symbol>then
+					<symbol>&lt;y,I(rdfs:Literal)&gt; is in IEXT(I(rdf:type))</symbol>
+				</listitem>
+			</itemizedlist>
+			<para>
+				In the following table, the extended interpretations of SeRQL path
+				expressions are shown:
+			</para>
+			<table>
+				<title>RDFS interpretation of basic SeRQL path expressions</title>
+				<tgroup cols="2" align="left">
+					<tbody>
+						<row>
+							<entry><screen>{x} rdf:type {y}</screen></entry>
+							<entry>{&lt;x,y&gt; such that x is in ICEXT(y)}</entry>
+						</row>
+						<row>
+							<entry><screen>{x} serql:directType {y}</screen></entry>
+							<entry>{&lt;x,y&gt; such that x is in ICEXT(y) and there is
+								no z such that:
+								<itemizedlist>
+									<listitem>z is not equal to y</listitem>
+									<listitem>x is in ICEXT(z)</listitem>
+									<listitem>&lt;z,y&gt; is in IEXT(I(rdfs:subClassOf))</listitem>
+								</itemizedlist>
+							</entry>
+						</row>
+						<row>
+							<entry><screen>{x} rdfs:subClassOf {y}</screen></entry>
+							<entry>{&lt;x,y&gt; such that x is in IEXT(I(rdfs:subClassOf)}</entry>
+						</row>
+						<row>
+							<entry><screen>{x} serql:directSubClassOf {y}</screen></entry>
+							<entry>{&lt;x,y&gt; such that x is not equal to y and
+								&lt;x,y&gt; is in IEXT(I(rdfs:subClassOf)) and there is
+								no z such that:
+								<itemizedlist>
+									<listitem>x, y and z are pairwise unequal</listitem>
+									<listitem>&lt;x,z&gt; is in IEXT(I(rdfs:subClassOf))</listitem>
+									<listitem>&lt;z,y&gt; is in IEXT(I(rdfs:subClassOf))</listitem>
+								</itemizedlist>
+							</entry>
+						</row>
+						<row>
+							<entry><screen>{p} rdfs:subPropertyOf {q}</screen></entry>
+							<entry>{&lt;p,q&gt; such that &lt;p,q&gt; is in IEXT(I(rdfs:subPropertyOf)}</entry>
+						</row>
+						<row>
+							<entry><screen>{p} serql:directSubPropertyOf {q}</screen></entry>
+							<entry>{&lt;p,q&gt; such that p is not equal to q and
+								&lt;p,q&gt; is in IEXT(I(rdfs:subPropertyOf)) and there is
+								no r such that:
+								<itemizedlist>
+									<listitem>p, q and r are pairwise unequal</listitem>
+									<listitem>&lt;p,r&gt; is in IEXT(I(rdfs:subPropertyOf))</listitem>
+									<listitem>&lt;r,q&gt; is in IEXT(I(rdfs:subPropertyOf))</listitem>
+								</itemizedlist>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+		</section>
+		<section>
+			<title>Functions and operators</title>
+			<table>
+				<title>SeRQL functions</title>
+				<tgroup cols="2" align="left">
+					<tbody>
+						<row>
+							<entry>
+								<screen>isResource(x)</screen>
+							</entry>
+							<entry>
+								TRUE if <symbol>I(x) is in IR</symbol>; FALSE otherwise.
+							</entry>
+						</row>
+						<row>
+							<entry>
+								<screen>isURI(x)</screen>
+							</entry>
+							<entry>
+								TRUE if <symbol>I(x) is in IR</symbol> and x is a URI; FALSE otherwise.
+							</entry>
+						</row>
+						<row>
+							<entry>
+								<screen>isBNode(x)</screen>
+							</entry>
+							<entry>
+								TRUE if <symbol>I(x) is in IR</symbol> and x is a blank node; FALSE otherwise.
+							</entry>
+						</row>
+						<row>
+							<entry>
+								<screen>isLiteral(x)</screen>
+							</entry>
+							<entry>
+								TRUE if <symbol>I(x) is in LV</symbol>; FALSE otherwise.
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+		</section>
+	</section>
+	-->
+	<section>
+		<title>SeRQL grammar</title>
+		<para>
+			The following is the BNF grammar of SeRQL, revision 2.0:
+		</para>
+		<screen><![CDATA[
+Query            ::= Table_query_set (Namespace_list)?
+                   | Graph_query_set (Namespace_list)?
+
+Namespace_list   ::= "using" "namespace" Namespace ("," Namespace)*
+Namespace        ::= <PREFIX_NAME> "=" <FULL_URI>
+
+Table_query_set  ::= Table_query (Set_operator Table_query_set)?
+Table_query      ::= "(" Table_query_set ")"
+                   | Select_query
+
+Graph_query_set  ::= Graph_query (Set_operator Graph_query_set)?
+Graph_query      ::= "(" Graph_query_set ")"
+                   | Construct_query
+
+Set_operator     ::= "union" | "minus" | "intersect"
+
+Select_query     ::= "select" ("distinct")? Projection
+                     ("from" ("context" ( Var | URI | BNode ))? Graph_pattern)*
+                     ("where" Boolean_expr)?
+                     ("limit" <POS_INTEGER>)?
+                     ("offset" <POS_INTEGER>)?
+
+Projection       ::= "*"
+                   | Projection_elem ("," Projection_elem)*
+
+Projection_elem  ::= Var_or_value ("as" <STRING>)?
+
+Construct_query  ::= "construct" ("distinct")? Construct_clause
+                     ("from" Graph_pattern)?
+                     ("limit" <POS_INTEGER>)?
+                     ("offset" <POS_INTEGER>)?
+
+Construct_clause ::= "*"
+                   | Path_expr_list
+
+Graph_pattern    ::= Path_expr_list 
+Path_expr_list   ::= Path_expr ("," Path_expr)*
+Path_expr        ::= Path_expr_head ((";")? Path_expr_tail)?
+                   | "[" Graph_pattern ("where" Boolean_expr)? "]"
+Path_expr_head   ::= Node Edge Node
+Path_expr_tail   ::= Edge Node ((";")? Path_expr_tail)?
+                   | "[" Edge Node ((";")? Path_expr_tail)? ("where" Boolean_expr)? "]"
+                     (";" Path_expr_tail)?
+
+Edge             ::= Var
+                   | Uri
+Node             ::= "{" (Node_elem_list)? "}"
+Node_elem_list   ::= Node_elem  ("," Node_elem)*
+Node_elem        ::= Var
+                   | Uri
+                   | BNode
+                   | Literal
+                   | Reified_stat
+Reified_stat     ::= Node Edge Node
+
+Boolean_expr     ::= And_expr ("or" Boolean_expr)?
+And_expr         ::= Boolean_elem ("and" And_expr)?
+Boolean_elem     ::= "(" Boolean_expr ")"
+                   | "true"
+                   | "false"
+                   | "not" Boolean_elem
+                   | Var_or_value Comp_op Var_or_value
+                   | Var_or_value Comp_op ("any"|"all") "(" Table_query_set ")"
+                   | Var_or_value "like" <STRING>
+                   | Var_or_value "in" "(" Table_query_set ")"
+                   | "exists" "(" Table_query_set ")"
+                   | "isResource" "(" Var ")"
+                   | "isURI" "(" Var ")"
+                   | "isBNode" "(" Var ")"
+                   | "isLiteral" "(" Var ")"
+
+Comp_op          ::= "=" | "!=" | "<" | "<=" | ">" | ">="
+
+Var_or_value     ::= Var | Value
+
+Var              ::= <NC_NAME>
+Value            ::= Uri
+                   | BNode
+                   | Literal
+                   | "null"
+                   | "datatype" "(" Var ")"
+                   | "lang" "(" Var ")"
+                   | "label" "(" Var ")"
+                   | "namespace" "(" Var ")"
+                   | "localname" "(" Var ")"
+
+Uri              ::= <FULL_URI>
+                   | <QNAME>
+
+BNode            ::= <BNODE>
+
+Literal          ::= (* A SeRQL literal, see section on literals *)
+                   | <POS_INTEGER>
+                   | <NEG_INTEGER>
+                   | <DECIMAL>
+
+<FULL_URI>       ::= "<" (* a legal URI, see http://www.ietf.org/rfc/rfc2396.txt *) ">"
+
+<QNAME>          ::= <PREFIX_NAME> ":" <NC_NAME_CHAR>*
+
+<BNODE>          ::= "_:" <NC_NAME>
+
+<POS_INTEGER>    ::= "+"? [0-9]+
+<NEG_INTEGER>    ::= "-" [0-9]+
+<DECIMAL>        ::= ("+"|"-")? [0-9]* "." [0-9]+
+
+<STRING>         ::= '"' (* zero or more (encoded) characters *) '"'
+
+<PREFIX_NAME>    ::= <LETTER> <NC_NAME_CHAR>*
+                   | "_" <NC_NAME_CHAR>+
+
+<NC_NAME>        ::= (<LETTER>|"_") <NC_NAME_CHAR>*
+<NC_NAME_CHAR>   ::= (* see http://www.w3.org/TR/REC-xml-names/#NT-NCNameChar *)
+<LETTER>         ::= (* see http://www.w3.org/TR/REC-xml/#NT-Letter *)]]></screen>
+		<para>
+			Note: all keywords are assumed to be case-insensitive. Whitespace
+			characters between tokens are not significant other than for
+			separating the tokens. Production rules with a head that is
+			surrounded by angular brackets define tokens (aka "terminals").
+		</para>
+	</section> <!-- SeRQL grammar -->
+</chapter>
