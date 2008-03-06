@@ -1,0 +1,27 @@
+No Open Source project can exist without a community to support it. This file
+lists the people and organizations at the foundation of the OpenRDF community.
+
+===============================================================================
+ORGANIZATIONS
+===============================================================================
+Aduna - http://www.aduna-software.com/
+Stichting NLnet - http://www.nlnet.nl/
+
+===============================================================================
+DEVELOPERS
+===============================================================================
+Aduna - http://www.aduna-software.com/
+- Arjohn Kampman
+- Herko ter Horst
+- Jeen Broekstra
+
+DFKI - http://www.dfki.de/
+- Gunnar Aastrand Grimnes
+- Leo Sauermann
+- Sebastian Weber
+
+Independent:
+- James Leigh
+
+
+and of course all members of the OpenRDF forum!

@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<link rel="stylesheet" type="text/css" href="basic.css" />
+	<title>RDF Transaction Protocol</title>
+	<body>
+		<h1>RDF Transaction Protocol</h1>
+		<p>
+			This document is about a proposal to serialize RDF-based operations which constitute a transaction. Such a serialization represents 
+			a transaction which is made up of operations which can be executed on a RDF-repository. 
+		</p>
+		<p>
+			The described protocol is very simple and consists only of three different RDF-based operations. To understand this document you should 
+			have a basic understanding of RDF.
+		</p>
+		<p>
+			Listing 1 is an listing of a transaction:
+		</p>
+		<table class="listing" cellspacing="0"><tr>
+		<td class="listing">
+			Listing 1
+		</td>
+		</tr><tr>
+		<td>			<pre>
+&lt;?xml version='1.0'?&gt;
+&lt;transaction&gt;
+	&lt;add&gt;
+		&lt;TriX xmlns='http://www.w3.org/2004/03/trix/trix-1/'&gt;
+			&lt;graph&gt;
+				&lt;uri&gt;urn:ctx1&lt;/uri&gt;
+				&lt;triple&gt;
+					&lt;uri&gt;urn:subj1&lt;/uri&gt;
+					&lt;uri&gt;urn:pred1&lt;/uri&gt;
+					&lt;uri&gt;urn:obj1&lt;/uri&gt;
+				&lt;/triple&gt;
+			&lt;/graph&gt;
+			&lt;graph&gt;
+				&lt;uri&gt;urn:ctx3&lt;/uri&gt;
+				&lt;triple&gt;
+					&lt;uri&gt;urn:subj3&lt;/uri&gt;
+					&lt;uri&gt;urn:pred3&lt;/uri&gt;
+					&lt;uri&gt;urn:obj3&lt;/uri&gt;
+				&lt;/triple&gt;
+			&lt;/graph&gt;
+		&lt;/TriX&gt;
+	&lt;/add&gt;
+	&lt;remove&gt;
+		&lt;TriX xmlns='http://www.w3.org/2004/03/trix/trix-1/'&gt;
+			&lt;graph&gt;
+				&lt;uri&gt;urn:ctx1&lt;/uri&gt;
+				&lt;triple&gt;
+					&lt;uri&gt;urn:subj1&lt;/uri&gt;
+					&lt;uri&gt;urn:pred1&lt;/uri&gt;
+					&lt;uri&gt;urn:obj1&lt;/uri&gt;
+				&lt;/triple&gt;
+			&lt;/graph&gt;
+		&lt;/TriX&gt;
+	&lt;/remove&gt;
+&lt;/transaction&gt;
+
+			</pre>		</td></tr></table>
+	</body>
+</html>
+	<p>
+		As you can see this is an ordinary XML document. The general structure is as follows:
+	</p>
+	<table class="listing" cellspacing="0"><tr>
+		<td class="listing">
+			Listing 2
+		</td>
+		</tr><tr>
+		<td>			<pre>
+&lt;?xml version='1.0'?&gt;
+&lt;transaction&gt;
+	// define operations as sub-elements of transaction here
+&lt;/transaction&gt;
+
+			</pre>	</td></tr></table>
+	<p>
+		There exists three different types of operations:
+		<ul>
+			<li>simple operations such as clear</li>
+			<li>operations associated with a context such as clearcontext</li>
+			<li>operations associated with a statement such as add</li>
+		</ul>
+	</p>	
+	<p>
+		Simple operations are serialized as an empty element. Look at listing 3.
+	</p>
+	<table class="listing" cellspacing="0"><tr><td class="listing">
+			Listing 3
+		</td>
+		</tr><tr>
+		<td>			<pre>
+&lt;?xml version='1.0'?&gt;
+&lt;transaction&gt;
+	&lt;clear/&gt;
+&lt;/transaction&gt;
+			</pre>	</td></tr></table>
+	<p>
+		Now an example for an operation associated with a context. Listing 4 clears the context which is addressed with the uri sub-element. The content of the uri element must be a valid URI.
+	</p>
+<table class="listing" cellspacing="0"><tr><td class="listing">
+			Listing 4
+		</td>
+		</tr><tr>
+		<td>
+			<pre>
+&lt;?xml version='1.0'?&gt;
+&lt;transaction&gt;
+	&lt;clearcontext&gt;
+		&lt;uri&gt;urn:ctx&lt;/uri&gt;
+	&lt;/clearcontext&gt;
+&lt;/transaction&gt;
+			</pre>
+	</td></tr></table>	
+	<p>
+		Finally an example for the third type of operation. Such operations are associated with one or more RDF-statements as shown in listing 5.
+	</p>
+	<table class="listing" cellspacing="0"><tr><td class="listing">
+			Listing 5
+		</td>
+		</tr><tr>
+		<td>			<pre>
+&lt;?xml version='1.0'?&gt;
+&lt;transaction&gt;
+	&lt;add&gt;
+		&lt;TriX xmlns='http://www.w3.org/2004/03/trix/trix-1/'&gt;
+			&lt;graph&gt;
+				&lt;uri&gt;urn:ctx1&lt;/uri&gt;
+				&lt;triple&gt;
+					&lt;uri&gt;urn:subj1&lt;/uri&gt;
+					&lt;uri&gt;urn:pred1&lt;/uri&gt;
+					&lt;uri&gt;urn:obj1&lt;/uri&gt;
+				&lt;/triple&gt;
+			&lt;/graph&gt;
+			&lt;graph&gt;
+				&lt;uri&gt;urn:ctx2&lt;/uri&gt;
+				&lt;triple&gt;
+					&lt;uri&gt;urn:subj2&lt;/uri&gt;
+					&lt;uri&gt;urn:pred2&lt;/uri&gt;
+					&lt;uri&gt;urn:obj2&lt;/uri&gt;
+				&lt;/triple&gt;
+			&lt;/graph&gt;
+			&lt;graph&gt;
+				&lt;uri&gt;urn:ctx3&lt;/uri&gt;
+				&lt;triple&gt;
+					&lt;uri&gt;urn:subj3&lt;/uri&gt;
+					&lt;uri&gt;urn:pred3&lt;/uri&gt;
+					&lt;uri&gt;urn:obj3&lt;/uri&gt;
+				&lt;/triple&gt;
+			&lt;/graph&gt;
+		&lt;/TriX&gt;
+	&lt;/add&gt;
+	&lt;remove&gt;
+		&lt;TriX xmlns='http://www.w3.org/2004/03/trix/trix-1/'&gt;
+			&lt;graph&gt;
+				&lt;uri&gt;urn:ctx1&lt;/uri&gt;
+				&lt;triple&gt;
+					&lt;uri&gt;urn:subj1&lt;/uri&gt;
+					&lt;uri&gt;urn:pred1&lt;/uri&gt;
+					&lt;uri&gt;urn:obj1&lt;/uri&gt;
+				&lt;/triple&gt;
+			&lt;/graph&gt;
+		&lt;/TriX&gt;
+	&lt;/remove&gt;
+	&lt;add&gt;
+		&lt;TriX xmlns='http://www.w3.org/2004/03/trix/trix-1/'&gt;
+			&lt;graph&gt;
+				&lt;triple&gt;
+					&lt;uri&gt;urn:subj4&lt;/uri&gt;
+					&lt;uri&gt;urn:pred4&lt;/uri&gt;
+					&lt;uri&gt;urn:obj4&lt;/uri&gt;
+				&lt;/triple&gt;
+			&lt;/graph&gt;
+		&lt;/TriX&gt;
+	&lt;/add&gt;
+&lt;/transaction&gt;
+			</pre>	</td></tr></table>
+	<p>
+		This transaction has three operations. An add operation is followed by a remove operation and again by an add operation. 
+		Operations which are associated with statements have a RDF serialization embedded. TriX serializations are used over the entire 
+		document, but this is only one possibility (it must be a XML-based serialization). The parser which handles this transactions can 
+		discover the type of serialization by the namespace declaration of the first sub element. In listing 5 we have three embedded TriX 
+		serializations. Every TriX serialization must contain at least one statement. To get some basic understandings of TriX take a look at 
+		<a href="http://www.hpl.hp.com/techreports/2003/HPL-2003-268.html" target="_blank">http://www.hpl.hp.com/techreports/2003/HPL-2003-268.html</a>. 
+		As you can see three successive add operations are grouped in one single add operation.
+	</p>
+	<p>
+		<h1>TODO</h1>
+		<ul>
+			<li>bisher nur über 3 Gruppen von Operationen gesprochen. Falls es DTD gibt, in denen genau definiert ist welche Operationen erlaubt 
+			sind, könnte man auch zu jeder Gruppe alle erlaubten Operationen auflisten und erklären.</li> 
+			<li>Wie kann man mit DTD oder Schema beschreiben, dass eine RDF-Serialisierung eingebettet wird?</li>
+			<li>Namespace für transaction-Element definieren und eventuell dieses Dokument da zugänglich machen</li>
+			<li>mehr schreiben?</li>
+		</ul>
+	</p>
+	</body>
+</html>

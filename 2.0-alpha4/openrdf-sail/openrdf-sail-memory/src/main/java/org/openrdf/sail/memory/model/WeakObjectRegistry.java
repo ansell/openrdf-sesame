@@ -1,0 +1,130 @@
+/*
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ *
+ * Licensed under the Aduna BSD-style license.
+ */
+package org.openrdf.sail.memory.model;
+
+import java.lang.ref.WeakReference;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.WeakHashMap;
+
+/**
+ * An object registry that uses weak references to keep track of the stored
+ * objects. The registry can be used to retrieve stored objects using another,
+ * equivalent object. As such, it can be used to prevent the use of duplicates
+ * in another data structure, reducing memory usage. The objects that are being
+ * stored should properly implement the {@link Object#equals} and
+ * {@link Object#hashCode} methods.
+ */
+public class WeakObjectRegistry<E> extends AbstractSet<E> {
+
+	/*-----------*
+	 * Variables *
+	 *-----------*/
+
+	/**
+	 * The hash map that is used to store the objects.
+	 */
+	private Map<E, WeakReference<E>> _objectMap = new WeakHashMap<E, WeakReference<E>>();
+
+	/*--------------*
+	 * Constructors *
+	 *--------------*/
+
+	/**
+	 * Constructs a new, empty object registry.
+	 */
+	public WeakObjectRegistry() {
+		super();
+	}
+
+	/**
+	 * Constructs a new WeakObjectRegistry containing the elements in the
+	 * specified collection.
+	 * 
+	 * @param c
+	 *        The collection whose elements are to be placed into this object
+	 *        registry.
+	 * @throws NullPointerException
+	 *         If the specified collection is null.
+	 */
+	public WeakObjectRegistry(Collection<? extends E> c) {
+		this();
+		addAll(c);
+	}
+
+	/*---------*
+	 * Methods *
+	 *---------*/
+
+	/**
+	 * Retrieves the stored object that is equal to the supplied <tt>key</tt>
+	 * object.
+	 * 
+	 * @param key
+	 *        The object that should be used as the search key for the operation.
+	 * @return A stored object that is equal to the supplied key, or
+	 *         <tt>null</tt> if no such object was found.
+	 */
+	public E get(Object key) {
+		WeakReference<E> weakRef = _objectMap.get(key);
+
+		if (weakRef != null) {
+			return weakRef.get();
+		}
+
+		return null;
+	}
+
+	@Override
+	public Iterator<E> iterator()
+	{
+		return _objectMap.keySet().iterator();
+	}
+
+	@Override
+	public int size()
+	{
+		return _objectMap.size();
+	}
+
+	@Override
+	public boolean contains(Object o)
+	{
+		return get(o) != null;
+	}
+
+	@Override
+	public boolean add(E object)
+	{
+		WeakReference<E> ref = new WeakReference<E>(object);
+
+		ref = _objectMap.put(object, ref);
+
+		if (ref != null && ref.get() != null) {
+			// A duplicate was added which replaced the existing object. Undo this
+			// operation.
+			_objectMap.put(ref.get(), ref);
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
+	public boolean remove(Object o)
+	{
+		WeakReference<E> ref = _objectMap.remove(o);
+		return ref != null && ref.get() != null;
+	}
+
+	@Override
+	public void clear()
+	{
+		_objectMap.clear();
+	}
+}

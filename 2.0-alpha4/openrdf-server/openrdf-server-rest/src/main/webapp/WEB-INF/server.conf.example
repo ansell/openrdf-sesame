@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<system-conf>
+
+	<admin password="admin"/>
+
+	<log dir="WEB-INF/logs" level="3"/>
+
+	<tmp dir="WEB-INF/tmp"/>
+
+	<userlist>
+		<user login="testuser">
+			<fullname>Test User</fullname>
+			<password>opensesame</password>
+		</user>
+	</userlist>
+
+	<repositorylist>
+		<repository id="mem-rdf">
+			<title>Main Memory RDF repository</title>
+
+			<sailstack>
+				<sail class="org.openrdf.sail.memory.MemoryStore"/>
+			</sailstack>
+
+			<acl worldReadable="true" worldWriteable="false">
+				<user login="testuser" readAccess="true" writeAccess="true"/>
+			</acl>
+		</repository>
+
+		<repository id="mem-rdfs">
+			<title>Main Memory RDF Schema repository</title>
+
+			<sailstack>
+				<sail class="org.openrdf.sail.memory.MemoryStoreRDFSInferencer"/>
+				<sail class="org.openrdf.sail.memory.MemoryStore"/>
+			</sailstack>
+
+			<acl worldReadable="true" worldWriteable="false">
+				<user login="testuser" readAccess="true" writeAccess="true"/>
+			</acl>
+		</repository>
+
+		<repository id="native-rdf">
+			<title>Native RDF repository</title>
+
+			<sailstack>
+				<sail class="org.openrdf.sail.nativerdf.NativeStore">
+					<param name="dir" value="c:\tmp\nativerdf"/>
+					<param name="triple-indexes" value="spoc,posc"/>
+				</sail>
+			</sailstack>
+
+			<acl worldReadable="true" worldWriteable="false">
+				<user login="testuser" readAccess="true" writeAccess="true"/>
+			</acl>
+		</repository>
+	</repositorylist>
+</system-conf>

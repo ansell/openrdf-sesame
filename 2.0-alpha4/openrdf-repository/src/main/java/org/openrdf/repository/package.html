@@ -1,0 +1,29 @@
+<html>
+<body>
+<p>
+The Repository API: the main API for handling Sesame repositories.
+<p>
+The class {@link org.openrdf.sesame.repository.Repository} is the main access
+object for Sesame repositories. It provides all sorts of operations for
+manipulating RDF in various ways.
+<p>
+An important notion in a Sesame repository is that of <strong>context</strong>.
+Within one repository, subsets of statements can be identified by their context.
+<ul>
+<li>The <strong>default context</strong> is the subset of the repository that is
+queried when no explicit context is defined. Normally, the default context is
+simply the complete repository, that is, the merge of all statements in all
+contexts.
+<li>A <strong>named context</strong> that has a specific context identifier (a
+URI). {@link org.openrdf.sesame.repository.Repository#getContextIDs} returns all
+known named contexts in a repository.
+</ul>
+<p>
+<strong>Note:</strong> although currently not yet supported, it will be possible
+in future versions of Sesame to configure the SAIL in such a way that the
+default context does not contain the merge of all statements in all context, but
+only the statements for which no context has been defined. For such
+repositories, the query- and retrieval methods in the Repository API will
+therefore behave differently.
+</body>
+</html>

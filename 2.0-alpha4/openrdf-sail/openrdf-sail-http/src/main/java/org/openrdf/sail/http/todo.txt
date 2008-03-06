@@ -1,0 +1,9 @@
+Still to implement:
+- HTTPTransaction.setNamespace() and .removeNamespace() -> protocol erweitern
+
+Later:
+- what's about the username and password?
+
+Never:
+- how to link one DTD into another (for embedding TriX DTD into DTD for transaction)? 
+is this the right thing? http://www.w3.org/TR/xhtml-modularization/

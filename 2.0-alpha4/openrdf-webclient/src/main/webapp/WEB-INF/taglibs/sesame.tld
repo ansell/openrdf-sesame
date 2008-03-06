@@ -1,0 +1,23 @@
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee web-jsptaglibrary_2_0.xsd"
+    version="2.0">
+  <description>
+    Tag Library to support Sesame Web Clients
+  </description>
+  <tlib-version>1.1</tlib-version>
+  <short-name>ses</short-name>
+  <uri>/sesame</uri>
+
+  <tag>
+    <name>queryResultTable</name>
+    <tag-class>org.openrdf.sesame.webclient.tags.QueryResultTag</tag-class>
+    <body-content>empty</body-content>
+    <attribute>
+        <name>showHeaders</name>
+        <required>false</required>
+        <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+
+</taglib>

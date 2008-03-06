@@ -1,0 +1,7 @@
+<div id="header">
+	<div id="mainmenu">
+		<ul>
+			<li><a href="<%=path%>/">Home</a></li>
+		</ul>
+	</div>
+</div>

@@ -1,0 +1,754 @@
+<chapter id="chapter-http-protocol">
+	<title>HTTP communication protocol for Sesame 2.0</title>
+	<para>
+		The following is a description of the HTTP-based communication protocol
+		for Sesame 2.0. Design consideration for the protocol included the rules
+		for the REST architectural style. In brief, this means that URLs are
+		used to represent resources and that standard HTTP methods (GET, PUT,
+		etc.) are used to access these resources. Client properties such as the
+		data formats that it can process are communicated to the server using
+		HTTP headers and are not part of the URLs. This way, a resource
+		identified by a specific URL can, for example, be presented as an HTML
+		page to a web browser and as a binary content stream to a client
+		library.For information about REST see
+		<ulink url="http://en.wikipedia.org/wiki/REST"/>,
+		<ulink url="http://rest.blueoxen.net/"/> and
+		<ulink url="http://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm"/>.
+	</para>
+	<para>
+		The rest of this chapter describes the resources that are available on
+		a Sesame server. The URLs for the resources are all given as paths
+		relative to the location of the Sesame server. The Sesame server
+		location is represented by the string &lt;SESAME_URL&gt;, which includes
+		a host name and optional path and directory.
+	</para>
+
+	<section>
+		<title>Protocol version</title>
+		<para>
+			The version of the protocol that the server uses to communicate over
+			HTTP is available at: &lt;SESAME_URL&gt;/protocol
+		</para>
+		<para>
+			Supported methods on this URL are:
+		</para>
+		<itemizedlist>
+			<listitem>GET: Gets the protocol version string, e.g. "1", "2", etc.</listitem>
+		</itemizedlist>
+
+		<section>
+			<title>Request examples</title>
+
+			<section>
+				<title>Fetch the protocol version</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+GET /sesame/protocol HTTP/1.1
+Host: localhost]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 200 OK
+Content-Type: text/plain;charset=ISO-8859-1
+Content-Length: 1
+
+1]]></screen>
+			</section>
+		</section>
+	</section>
+
+	<section>
+		<title>Server configuration</title>
+		<para>
+			The configuration of a Sesame server is available at:
+			&lt;SESAME_URL&gt;/config
+		</para>
+		<para>
+			Supported methods on this URL are:
+		</para>
+		<itemizedlist>
+			<listitem>GET: Gets the XML-encoded server configuration.</listitem>
+
+			<listitem>PUT: Updates the server configuration. The data supplied
+			with this request is expected to contain a valid XML-encoded server
+			configuration.</listitem>
+		</itemizedlist>
+
+		<para>
+			Note: by default, access to the server configuration is restricted,
+			requiring basic authentication for the realm "Sesame Server
+			Configuration". If not properly authenticated, the server will
+			respond with a "401 Unauthorized".
+		</para>
+
+		<section>
+			<title>Request examples</title>
+
+			<section>
+				<title>Fetch the server configuration</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+GET /sesame/config HTTP/1.1
+Host: localhost
+Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+Accept: application/xml]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 200 OK
+Content-Type: application/xml
+
+[SERVER CONFIGURATION DATA]]]></screen>
+			</section>
+			<section>
+				<title>Update the server configuration</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+PUT /sesame/config HTTP/1.1
+Host: localhost
+Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+Content-Type: application/xml
+
+[SERVER CONFIGURATION DATA]]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 204 NO CONTENT]]></screen>
+			</section>
+		</section>
+	</section>
+
+	<section>
+		<title>Repository list</title>
+		<para>
+			An overview of available repository is available at:
+  			&lt;SESAME_URL&gt;/repositories
+		</para>
+		<para>
+			Supported methods on this URL are:
+		</para>
+		<itemizedlist>
+			<listitem>GET: Gets a list of available repositories, including ID,
+			title, read- and write access parameters for each listed repository.
+			The list is formatted as a tuple query result with variables "uri",
+			"title", "readable" and "writeable". The "uri" value gives the
+			URI/URL for the repository and the "readable" and "writeable" values
+			are xsd:boolean typed literals indicating read- and write
+			permissions.</listitem>
+		</itemizedlist>
+		<para>
+			Request headers:
+		</para>
+		<itemizedlist>
+			<listitem>The 'Accept' request header can be used to specify
+			acceptable content types, as is specified in
+			<ulink url="http://www.faqs.org/rfcs/rfc2616.html">RFC 2616</ulink>.
+			Acceptable values are the
+			<link linkend="table-tuple-set-formats">MIME types of supported
+				query result formats</link>. If not specified, this value will
+			default to the SPARQL format.</listitem>
+		</itemizedlist>
+
+		<section>
+			<title>Request examples</title>
+
+			<section>
+				<title>Fetch the repository list</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+GET /sesame/repositories HTTP/1.1
+Host: localhost
+Accept: application/sparql-results+xml]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 200 OK
+Content-Type: application/sparql-results+xml
+
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+  <head>
+    <variable name='uri'/>
+    <variable name='title'/>
+    <variable name='readable'/>
+    <variable name='writeable'/>
+  </head>
+  <results ordered='false' distinct='false'>
+    <result>
+      <binding name='uri'>
+        <uri>http://localhost/sesame/repositories/mem-rdf</uri>
+      </binding>
+      <binding name='title'>
+        <literal>Main Memory RDF repository</literal>
+      </binding>
+      <binding name='readable'>
+        <literal datatype='http://www.w3.org/2001/XMLSchema#boolean'>true</literal>
+      </binding>
+      <binding name='writeable'>
+        <literal datatype='http://www.w3.org/2001/XMLSchema#boolean'>false</literal>
+      </binding>
+    </result>
+  </results>
+</sparql>]]></screen>
+			</section>
+		</section>
+	</section>
+
+	<section>
+		<title>Repository data</title>
+		<para>
+			The data for a specific repository with ID &lt;ID&gt; is available
+			at: &lt;SESAME_URL&gt;/repositories/&lt;ID&gt;
+		</para>
+		<para>
+			Supported methods on this URL are:
+		</para>
+		<itemizedlist>
+			<listitem>
+				GET: Fetches (explicit) statements from the repository.
+			</listitem>
+			<listitem>
+				PUT: Updates data in the repository, replacing any existing data
+				with the supplied data. The data supplied with this request is
+				expected to contain an RDF document in
+				<link linkend="table-rdf-formats">one of the supported
+					formats</link>.
+			</listitem>
+			<listitem>
+				DELETE: Deletes data from the repository.
+			</listitem>
+			<listitem>
+				POST: Performs updates on the data in the repository. The data
+				supplied with this request is expected to contain either an RDF
+				document or a special purpose transaction document. In case of
+				the former, the statements found in the RDF document will be
+				added to the repository. In case of the latter, the updates
+				specified in the transaction document will be performed.
+			</listitem>
+		</itemizedlist>
+
+		<para>
+			Optional parameters:
+		</para>
+		<itemizedlist>
+			<listitem>
+				'context': If specified, restricts the operation to a specific
+				context in the repository. The value of this parameter is either
+				a URI ('urn:x-local:graph1') or bnode ID ('n1234x5678')
+				specifying the name of a named context, or an empty string
+				specifying the null context. If no context is specified, the
+				operation is executed on all data that is in the repository.
+			</listitem>
+			<listitem>
+				'baseURI': Specifies the base URI to resolve any relative URIs
+				found in uploaded data against. This parameter only applies to
+				the PUT and POST method.
+			</listitem>
+		</itemizedlist>
+
+		<para>
+			Request headers:
+		</para>
+		<itemizedlist>
+			<listitem>
+				The 'Accept' request header should be used to specify acceptable
+				content types for GET requests, as is specified in
+				<ulink url="http://www.faqs.org/rfcs/rfc2616.html">RFC 2616</ulink>.
+				Acceptable values are the <link linkend="table-rdf-formats">MIME
+					types of supported RDF encodings</link>. If not specified,
+				this value will default to RDF/XML encoding.
+			</listitem>
+			<listitem>
+				The 'Content-Type' request header should be used to specify the
+				<link linkend="table-rdf-formats">encoding of the data</link>
+				supplied with PUT or POST requests. If not specified,
+				RDF/XML-encoded data is assumed for PUT requests.
+			</listitem>
+		</itemizedlist>
+
+		<section>
+			<title>Request examples</title>
+
+			<section>
+				<title>Fetch all data from repository "mem-rdf"</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+GET /sesame/repositories/mem-rdf HTTP/1.1
+Host: localhost
+Accept: application/rdf+xml]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 200 OK
+Content-Type: application/rdf+xml
+
+[RDF/XML ENCODED RDF DATA]]]></screen>
+			</section>
+
+			<section>
+				<title>Fetch all data from a specific context in repository "mem-rdf"</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+GET /sesame/repositories/mem-rdf?context=n1234x5678 HTTP/1.1
+Host: localhost
+Accept: application/rdf+xml]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 200 OK
+Content-Type: application/rdf+xml
+
+[RDF/XML ENCODED RDF DATA]]]></screen>
+			</section>
+
+			<section>
+				<title>Clear the entire "mem-rdf" repository</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+DELETE /sesame/repositories/mem-rdf HTTP/1.1
+Host: localhost]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 204 NO CONTENT]]></screen>
+			</section>
+
+			<section>
+				<title>Add data to the "mem-rdf" repository</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+POST /sesame/repositories/mem-rdf HTTP/1.1
+Host: localhost
+Content-Type: application/rdf+xml
+  
+[RDF/XML ENCODED RDF DATA]]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 204 NO CONTENT]]></screen>
+			</section>
+
+			<section>
+				<title>Add data to the "mem-rdf" repository, replacing any and
+					all existing data</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+PUT /sesame/repositories/mem-rdf HTTP/1.1
+Host: localhost
+Content-Type: application/rdf+xml
+  
+[RDF/XML ENCODED RDF DATA]]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 204 NO CONTENT]]></screen>
+			</section>
+
+			<section>
+				<title>Add data to a specific context in the "mem-rdf"
+					repository, replacing any data that is currently in this
+					context</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+PUT /sesame/repositories/mem-rdf?context=urn:x-local:graph1&baseURI=urn:x-local:graph1 HTTP/1.1
+Host: localhost
+Content-Type: application/x-turtle
+
+[TURTLE ENCODED RDF DATA]]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 204 NO CONTENT]]></screen>
+			</section>
+
+			<section>
+				<title>Add data to the null context in the "mem-rdf" repository,
+					replacing any data that is currently in the null context</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+PUT /sesame/repositories/mem-rdf?context= HTTP/1.1
+Host: localhost
+Content-Type: application/x-turtle
+
+[TURTLE ENCODED RDF DATA]]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 204 NO CONTENT]]></screen>
+			</section>
+
+			<section>
+				<title>Perform updates described in a transaction document and
+					treat it as a single transaction</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+POST /sesame/repositories/mem-rdf HTTP/1.1
+Host: localhost
+Content-Length: ...
+
+[TRANSACTION DATA]]]></screen>
+				<para>
+					<emphasis>Note: not implemented yet</emphasis>
+				</para>
+			</section>
+		</section>
+	</section>
+
+	<section>
+		<title>Repository queries</title>
+		<para>
+			Queries on a specific repository with ID &lt;ID&gt; can be evaluated
+			by sending requests to: &lt;SESAME_URL&gt;/repositories/&lt;ID&gt;
+		</para>
+		<para>
+			Note that the same URL is used for handling data (see previous
+			section) and for evaluating queries. Whenever a query parameter is
+			supplied in the requests, the query evaluation takes precedense over
+			the operation described in the previous section.
+		</para>
+		<para>
+			Both GET and POST methods are supported. The GET method is preferred
+			as it adheres to the REST architectural style. The POST method
+			should be used in cases where the length of the (URL-encoded) query
+			exceeds practicable limits of proxies, servers, etc.
+		</para>
+		<para>
+			Parameters:
+		</para>
+		<itemizedlist>
+			<listitem>
+				'query': The query to evaluate.
+			</listitem>
+			<listitem>
+				'queryLn': Specifies the query language that is used for the
+				query. Acceptable values are strings denoting the query
+				languages supported by the server, i.e. "serql" for SeRQL
+				queries and "sparql" for SPARQL queries. If not specified, the
+				server assumes the query is a SPARQL query.
+			</listitem>
+		</itemizedlist>
+
+		<para>
+			Request headers:
+		</para>
+		<itemizedlist>
+			<listitem>
+				The 'Accept' request header should be used to specify acceptable
+				content types for requests, as is specified in
+				<ulink url="http://www.faqs.org/rfcs/rfc2616.html">RFC 2616</ulink>.
+				Acceptable values are the <link linkend="table-rdf-formats">MIME
+					types of supported RDF encodings</link> for queries that
+				return RDF statements (defaults to RDF/XML encoding), and the
+				<link linkend="table-tuple-set-formats">MIME types of
+					supported tuple set formats</link> for queries that return
+				tuple set/variable bindings (defaults to the SPARQL format).
+			</listitem>
+		</itemizedlist>
+
+		<section>
+			<title>Requests examples</title>
+
+			<section>
+				<title>Evaluate a SeRQL-select query on repository "mem-ref"</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+GET /sesame/repositories/mem-rdf?query=select%20%3Cfoo:bar%3E&queryLn=serql HTTP/1.1
+Host: localhost
+Accept: application/sparql-results+xml]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+  <head>
+    <variable name='&lt;foo:bar&gt;'/>
+  </head>
+  <results ordered='false' distinct='false'>
+    <result>
+      <binding name='&lt;foo:bar&gt;'>
+        <uri>foo:bar</uri>
+      </binding>
+    </result>
+  </results>
+</sparql>]]></screen>
+			</section>
+
+			<section>
+				<title>Evaluate a SPARQL-construct query on repository "mem-ref"</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+GET /sesame/repositories/mem-rdf?query=construct%20{?s%20?p%20?o}%20where%20{?s%20?p%20?o} HTTP/1.1
+Host: localhost
+Accept: application/rdf+xml]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 200 OK
+Content-Type: application/rdf+xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+</rdf:RDF>]]></screen>
+			</section>
+		</section>
+	</section>
+
+	<section>
+		<title>Context lists</title>
+		<para>
+			A list of resources that are used as context identifiers in a
+			repository with ID &lt;ID&gt; is available at:
+			&lt;SESAME_URL&gt;/repositories/&lt;ID&gt;/contexts
+		</para>
+		<para>
+			Supported methods on this URL are:
+		</para>
+		<itemizedlist>
+			<listitem>
+				GET: Gets a list of resources that are used as context
+				identifiers. The list is formatted as a tuple query result with
+				a single variable "contextID", which is bound to URIs and bnodes
+				that are used as context identifiers.
+			</listitem>
+		</itemizedlist>
+
+		<para>
+			Request headers:
+		</para>
+		<itemizedlist>
+			<listitem>
+				The 'Accept' request header should be used to specify acceptable
+				content types for requests, as is specified in
+				<ulink url="http://www.faqs.org/rfcs/rfc2616.html">RFC 2616</ulink>.
+				Acceptable values are the
+				<link linkend="table-tuple-set-formats">MIME types of supported
+					tuple set formats</link> for queries that return tuple
+				set/variable bindings (defaults to the SPARQL format).
+			</listitem>
+		</itemizedlist>
+
+		<section>
+			<title>Request examples</title>
+
+			<section>
+				<title>Fetch all context identifiers from repository "mem-rdf"</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+GET /sesame/repositories/mem-rdf/contexts HTTP/1.1
+Host: localhost]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 200 OK
+Content-Type: application/sparql-results+xml
+
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+  <head>
+    <variable name='contextID'/>
+  </head>
+  <results ordered='false' distinct='false'>
+    <result>
+      <binding name='contextID'>
+        <uri>urn:x-local:graph1</uri>
+      </binding>
+    </result>
+  </results>
+</sparql>]]></screen>
+			</section>
+		</section>
+	</section>
+
+	<section>
+		<title>Namespace declarations</title>
+		<para>
+			Namespace declaration lists for a repository with ID &lt;ID&gt; is
+			available at: &lt;SESAME_URL&gt;/repositories/&lt;ID&gt;/namespaces
+		</para>
+		<para>
+			Supported methods on this URL are:
+		</para>
+		<itemizedlist>
+			<listitem>
+				GET: Gets a list of namespaces that are used in the data in the
+				repository, including any prefixes that are assigned to them.
+				The list is formatted as a tuple query result with variables
+				"prefix" and "namespace", which are both bound to literals.
+			</listitem>
+			<listitem>
+				POST: Performs updates on the namespace declarations. This can
+				be used to change the prefix that is assigned to a specific
+				namespace. This method requires the parameters 'ns' and 'prefix'
+				to be specified.
+			</listitem>
+		</itemizedlist>
+
+		<para>
+			Parameters for POST requests:
+		</para>
+		<itemizedlist>
+			<listitem>
+				'ns': Specifies the URI of the namespace declaration for which
+				the prefix should be changed.
+			</listitem>
+			<listitem>
+				'prefix': Specifies the new prefix for the namespace declaration
+				that should be changed.
+			</listitem>
+		</itemizedlist>
+
+		<para>
+			Request headers:
+		</para>
+		<itemizedlist>
+			<listitem>
+				The 'Accept' request header should be used to specify acceptable
+				content types for GET requests, as is specified in
+				<ulink url="http://www.faqs.org/rfcs/rfc2616.html">RFC 2616</ulink>.
+				Acceptable values are the
+				<link linkend="table-tuple-set-formats">MIME types of supported
+					tuple set formats</link> for queries that return tuple
+				set/variable bindings (defaults to the SPARQL format).
+			</listitem>
+		</itemizedlist>
+
+		<section>
+			<title>Request examples</title>
+
+			<section>
+				<title>Fetch all namespace information</title>
+				<para>Request</para>
+				<screen><![CDATA[
+GET /sesame/repositories/mem-rdf/namespaces HTTP/1.1
+Host: localhost]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 200 OK
+Content-Type: application/sparql-results+xml
+
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+  <head>
+    <variable name='prefix'/>
+    <variable name='namespace'/>
+  </head>
+  <results ordered='false' distinct='false'>
+    <result>
+      <binding name='prefix'>
+        <literal>rdf</literal>
+      </binding>
+      <binding name='namespace'>
+        <literal>http://www.w3.org/1999/02/22-rdf-syntax-ns#</literal>
+      </binding>
+    </result>
+  </results>
+</sparql>]]></screen>
+			</section>
+
+			<section>
+				<title>Change the prefix of a specific namespace</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+POST /sesame/repositories/mem-rdf/namespaces HTTP/1.1
+Host: localhost
+Content-Length: ...
+
+[URL-ENCODED NAMESPACE AND PREFIX PARAMETER]]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 204 NO CONTENT]]></screen>
+			</section>
+		</section>
+	</section>
+
+	<section>
+		<title>Content types</title>
+
+		<para>
+			The following table summarizes the MIME types for various document
+			formats that are relevant to this protocol.
+		</para>
+
+		<table id="table-rdf-formats" xreflabel="MIME types for RDF documents">
+			<title>MIME types for RDF documents</title>
+			<tgroup cols="2" align="left">
+			<thead>
+				<row>
+					<entry>Format</entry>
+					<entry>MIME type</entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry><ulink url="http://www.w3.org/TR/rdf-syntax-grammar/">RDF/XML</ulink></entry>
+					<entry>application/rdf+xml</entry>
+				</row>
+				<row>
+					<entry><ulink url="http://www.w3.org/TR/rdf-testcases/#ntriples">N-Triples</ulink></entry>
+					<entry>text/plain</entry>
+				</row>
+				<row>
+					<entry><ulink url="http://www.dajobe.org/2004/01/turtle/">Turtle</ulink></entry>
+					<entry>application/x-turtle</entry>
+				</row>
+				<row>
+					<entry><ulink url="http://www.w3.org/DesignIssues/Notation3.html">N3</ulink></entry>
+					<entry>text/rdf+n3</entry>
+				</row>
+				<row>
+					<entry><ulink url="http://swdev.nokia.com/trix/TriX.html">TriX</ulink></entry>
+					<entry>application/trix</entry>
+				</row>
+			</tbody>
+			</tgroup>
+		</table>
+
+		<table id="table-tuple-set-formats" xreflabel="MIME types for tuple set query results">
+			<title>MIME types for tuple set query results</title>
+			<tgroup cols="2" align="left">
+			<thead>
+				<row>
+					<entry>Format</entry>
+					<entry>MIME type</entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry><ulink url="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL
+						Query Results XML Format</ulink></entry>
+					<entry>application/sparql-results+xml</entry>
+				</row>
+				<row>
+					<entry>binary RDF results table format</entry>
+					<entry>application/x-binary-rdf-results-table</entry>
+				</row>
+			</tbody>
+			</tgroup>
+		</table>
+
+		<para>
+			<emphasis>
+				Note: Sesame currently does not support N3 as an input format.
+				For N3 documents that only use the basic N3 features, the Turtle
+				format can be used instead.
+			</emphasis>
+		</para>
+	</section>
+
+	<section>
+		<title>Protocol summary</title>
+		<screen><![CDATA[
+<SESAME_URL>
+  /protocol       : protocol version (GET)
+  /config         : server configuration (GET/PUT)
+  /repositories   : overview of available repositories (GET)
+    /<ID>         : repository data & querying (GET/PUT/DELETE/POST)
+      /contexts   : context overview (GET)
+      /namespaces : namespace definitions (GET/POST)]]></screen>
+	</section>
+
+	<section>
+		<title>TODO</title>
+		<itemizedlist>
+			<listitem>
+				Decide on authentication/login mechanism
+			</listitem>
+			<listitem>
+				Define document format for transactions
+			</listitem>
+			<listitem>
+				Decide whether a DELETE request on the repository should delete
+				the repository instead of clearing its contents
+			</listitem>
+			<listitem>
+				Describe use of HEAD and OPTIONS methods
+			</listitem>
+		</itemizedlist>
+	</section>
+</chapter>

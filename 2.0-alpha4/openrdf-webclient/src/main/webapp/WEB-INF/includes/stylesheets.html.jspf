@@ -1,0 +1,4 @@
+	<link title="Default" rel="stylesheet" type="text/css" href="<%=path%>/styles/default/screen.css" media="screen" />
+	<link title="Default" rel="stylesheet" type="text/css" href="<%=path%>/styles/default/print.css" media="print" />
+	<link title="Basic" rel="alternate stylesheet" type="text/css" href="<%=path%>/styles/basic/all.css" media="all" />
+	

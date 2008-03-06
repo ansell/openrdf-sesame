@@ -1,0 +1,64 @@
+
+                          Sesame 2.0-alpha4
+                            Release Notes
+
+INTRODUCTION
+============
+
+This document contains the release notes for this version of the Sesame, and
+highlights the most important changes since the previous version. More detailed
+information about Sesame is available from the community web site:
+
+    http://www.openrdf.org/
+
+
+A WORD OF CAUTION FOR USERS OF ALPHA RELEASES
+=============================================
+
+This release of Sesame is an ALPHA release, meaning that APIs are not considered
+to be stable yet and are likely to change in future releases. Alpha release are
+mainly meant for the evaluation of APIs and debugging of the software. As such,
+we invite you to evaluate this release and share your findings with us.
+
+WHAT'S NEW
+==========
+
+* Sesame is now available under a BSD-style license, previous releases are still
+  available under LGPL.
+
+* The Repository and Sail APIs have been revised to use JDBC-style connections.
+
+* The SeRQL query engine has been been replaced with an all new generic query
+  engine that is modelled after the relational algebra for RDBMS's.
+
+* Sesame now has partial support for SPARQL. Ask and describe queries are not
+  yet supported, as well as a number of the SPARQL built-in functions.
+
+* Sesame now has an HTTPSail, which allows clients to transparently communicate
+  with a server over HTTP.
+
+* The semantics of SeRQL set operations have changed: the results of the
+  operands are now combined based on the variable bindings they produce. This
+  means that you have to take care that the operands use the same variables
+  names (or use aliases).
+
+* The REST-style HTTP protocol has been improved. The new protocol is NOT
+  backwards compatible with older versions.
+
+* The Sesame code has been completely modularized into logical units, which
+  makes it easier to reuse parts of Sesame in other projects.
+
+* The Ant-based build system has been replaced with a Maven-based build system.
+
+* The source code has been moved from SourceForge's CVS server to Aduna's SVN
+  server: https://src.aduna-software.org/svn/org.openrdf/
+
+
+KNOWN ISSUES
+============
+
+* This release contains a HUGE amount of changes to the code and, as a result,
+  is expected to contain a considerable number of bugs.
+
+* The new query engine currently lacks a query optimizer. Because of this you
+  may see inferior query evaluation performance compared to earlier releases.

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee web-app_2_4.xsd"
+    version="2.4">
+
+	<display-name>Aduna Sesame 2 RDF Server</display-name>
+	<description>Aduna Sesame 2 RDF Server</description>
+	
+	<servlet>
+		<servlet-name>config</servlet-name>
+		<servlet-class>org.openrdf.server.rest.RepositoryManagerConfigServlet</servlet-class>
+		<init-param>
+			<param-name>serverConfigFile</param-name>
+			<param-value>WEB-INF/server.conf</param-value>
+			<description>Server configuration file</description>
+		</init-param>
+		<load-on-startup>10</load-on-startup>
+	</servlet>
+
+	<servlet>
+		<servlet-name>protocol</servlet-name>
+		<servlet-class>org.openrdf.server.rest.ProtocolVersionServlet</servlet-class>
+		<load-on-startup>20</load-on-startup>
+	</servlet>
+
+	<servlet>
+		<servlet-name>repository</servlet-name>
+		<servlet-class>org.openrdf.server.rest.RepositoryServlet</servlet-class>
+		<load-on-startup>30</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>config</servlet-name>
+		<url-pattern>/config</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>protocol</servlet-name>
+		<url-pattern>/protocol</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>repository</servlet-name>
+		<url-pattern>/repositories/*</url-pattern>
+	</servlet-mapping>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>config</web-resource-name>
+			<url-pattern>/config</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>PUT</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>sesame-admin</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>Sesame Server Configuration</realm-name>
+	</login-config>
+
+	<security-role>
+		<description>
+			The role that is required to access the Sesame Server configuration
+		</description>
+		<role-name>sesame-admin</role-name>
+	</security-role>
+	
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <welcome-file-list>
+		<welcome-file>
+            index.jsp
+        </welcome-file>
+		<welcome-file>
+            index.html
+        </welcome-file>
+		<welcome-file>
+            index.htm
+        </welcome-file>
+    </welcome-file-list>
+</web-app>

@@ -1,0 +1,111 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.openrdf</groupId>
+	<artifactId>openrdf-sesame</artifactId>
+	<packaging>pom</packaging>
+	<version>2.0-alpha4</version>
+	<name>OpenRDF Sesame</name>
+	<description>An extensible framework for RDF and RDF Schema data.</description>
+	<url>http://www.openrdf.org/</url>
+
+	<organization>
+		<name>Aduna</name>
+		<url>http://www.aduna-software.com/</url>
+	</organization>
+
+	<inceptionYear>2001</inceptionYear>
+
+	<licenses>
+		<license>
+			<name>Open Software License version 3.0</name>
+			<url>http://www.opensource.org/licenses/osl-3.0.php</url>
+			<distribution>repo</distribution>
+		</license>
+		<license>
+			<name>GNU Lesser General Public License (LGPL)</name>
+			<url>http://www.gnu.org/copyleft/lesser.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<modules>
+		<module>openrdf-console</module>
+		<module>openrdf-model</module>
+		<module>openrdf-query</module>
+		<module>openrdf-queryresult</module>
+		<module>openrdf-repository</module>
+		<module>openrdf-rio</module>
+		<module>openrdf-runtime</module>
+		<module>openrdf-sail</module>
+		<module>openrdf-server</module>
+		<module>openrdf-util</module>
+		<module>openrdf-webclient</module>
+	</modules>
+
+	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ftp</artifactId>
+			</extension>
+		</extensions>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<reporting>
+		<outputDirectory>${project.build.directory}/docs</outputDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<aggregate>true</aggregate>
+					<source>1.5</source>
+					<reportOutputDir>${project.reporting.outputDirectory}/apidoc</reportOutputDir>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<repositories>
+		<repository>
+			<id>aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>http://repository.aduna-software.org/maven2</url>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>ftp-aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
+		</repository>
+		<snapshotRepository>
+			<id>ftp-aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
+			<uniqueVersion>false</uniqueVersion>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<scm>
+		<connection>scm:svn:https://src.aduna-software.org/svn/org.openrdf/releases/sesame2/2.0-alpha4</connection>
+		<developerConnection>scm:svn:https://src.aduna-software.org/svn/org.openrdf/releases/sesame2/2.0-alpha4</developerConnection>
+		<url>http://src.aduna-software.org/viewvc/org.openrdf/releases/sesame2/2.0-alpha4</url>
+	</scm>
+
+</project>

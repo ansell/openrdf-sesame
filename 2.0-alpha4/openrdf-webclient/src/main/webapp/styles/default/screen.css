@@ -1,0 +1,97 @@
+@import url(../w3-html40-recommended.css);
+
+html, body {
+	margin: 0;
+	border: 0;
+	padding: 0;
+
+	color: #000;
+
+	line-height: 100%;
+	font-size: 100%;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+body {
+    background-color: white;
+    background-image: url("images/openrdf-doc-bg.png");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    font-family: arial, helvetica, sans-serif;
+    margin-top:  8px;
+    margin-left: 130px;
+    margin-right: 50px;
+}
+
+A:link {
+    text-decoration: none;
+    }
+
+A:visited {
+    text-decoration: none;
+}
+
+A:hover {
+    text-decoration: underline;
+}
+    
+A.nav {
+    text-decoration: none;
+}
+
+h1 {
+    font-size: 90%;
+    color: #FFFFFF;
+    background-color: #FF7B00;
+}
+
+p, ul, ol {
+    text-align: justify
+}
+
+p.right {
+    text-align: right
+}
+
+p.querydescription {
+    font-size: 80%;
+	background-color: #EFEFFF;
+	text-align: left;
+	font-style: italic;
+}
+
+pre.query { 
+    font-size: 80%;
+    background-color: #FFFFEF;
+    text-align: left;
+    font-family: fixed, courier;
+}
+
+pre.queryResult { 
+    font-size: 80%;
+    background-color: #EFEFFF;
+    text-align: left;
+    font-family: fixed, courier;
+}
+
+
+table.queryResult {
+}
+
+.queryResult th {
+    border: solid;
+    margin: 1px;
+    padding: 2px;
+    border-width: 1px;
+    background-color: #FF7B00;
+    color: #FFFFFF;
+    text-align: left;
+
+}
+
+.queryResult td {
+    text-align: left;
+    margin: 1px;
+    padding: 2px;
+    background-color: #EFEFFF;
+}

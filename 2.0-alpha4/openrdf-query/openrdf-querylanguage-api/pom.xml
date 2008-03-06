@@ -1,0 +1,105 @@
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.openrdf</groupId>
+	<artifactId>openrdf-querylanguage-api</artifactId>
+	<packaging>jar</packaging>
+	<version>2.0-alpha4</version>
+	<name>OpenRDF query language API</name>
+	<description>An API for RDF query language parsers.</description>
+	<url>http://www.openrdf.org/</url>
+
+	<organization>
+		<name>Aduna</name>
+		<url>http://www.aduna-software.com/</url>
+	</organization>
+
+	<inceptionYear>2001</inceptionYear>
+
+	<licenses>
+		<license>
+			<name>Aduna BSD-style license</name>
+			<url>http://www.aduna-software.com/documents/legal/licenses/aduna-bsd.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.openrdf</groupId>
+			<artifactId>openrdf-querymodel</artifactId>
+			<version>2.0-alpha4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openrdf</groupId>
+			<artifactId>openrdf-model</artifactId>
+			<version>2.0-alpha4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openrdf</groupId>
+			<artifactId>openrdf-util</artifactId>
+			<version>2.0-alpha4</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ftp</artifactId>
+			</extension>
+		</extensions>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<tagBase>https://src.aduna-software.org/svn/org.openrdf/releases/sesame2/openrdf-query/openrdf-querylanguage-api</tagBase>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>http://repository.aduna-software.org/maven2</url>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>ftp-aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
+		</repository>
+		<snapshotRepository>
+			<id>ftp-aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
+			<uniqueVersion>false</uniqueVersion>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<scm>
+		<connection>scm:svn:https://src.aduna-software.org/svn/org.openrdf/releases/sesame2/2.0-alpha4/openrdf-query/openrdf-querylanguage-api</connection>
+		<developerConnection>scm:svn:https://src.aduna-software.org/svn/org.openrdf/releases/sesame2/2.0-alpha4/openrdf-query/openrdf-querylanguage-api</developerConnection>
+		<url>http://src.aduna-software.org/viewvc/org.openrdf/releases/sesame2/2.0-alpha4/openrdf-query/openrdf-querylanguage-api</url>
+	</scm>
+
+</project>

@@ -1,0 +1,3 @@
+<div id="footer">
+	<p>copyright Aduna &copy; 1997-<%=Calendar.getInstance().get(Calendar.YEAR)%></p>
+</div>

@@ -1,0 +1,788 @@
+/*
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ *
+ * Licensed under the Aduna BSD-style license.
+ */
+
+/*
+ * SPARQL JJTree input file for JavaCC, a Java Compiler Compiler. JavaCC can be
+ * downloaded from https://javacc.dev.java.net/
+ *
+ * author: Arjohn Kampman
+ */
+
+options {
+	MULTI=true;
+	VISITOR=true;
+	VISITOR_EXCEPTION="VisitorException";
+	STATIC=false;
+	UNICODE_INPUT=true;
+	JAVA_UNICODE_ESCAPE=true; // pre-process unicode escapes, see section A.2 of spec
+}
+
+PARSER_BEGIN(SyntaxTreeBuilder)
+
+package org.openrdf.querylanguage.sparql.ast;
+
+import java.io.StringReader;
+
+import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.querymodel.Compare;
+import org.openrdf.querymodel.MathExpr;
+
+public class SyntaxTreeBuilder {
+
+	/**
+	 * Parses the supplied SPARQL query and builds a syntax tree from it.
+	 *
+	 * @param query A SPARQL query string.
+	 * @return The root of the syntax tree.
+	 * @throws TokenMgrError If the query was syntactically incorrect.
+	 * @throws ParseException If the query was syntactically incorrect.
+	 */
+	public static ASTQueryContainer parseQuery(String query)
+		throws TokenMgrError, ParseException
+	{
+		SyntaxTreeBuilder stb = new SyntaxTreeBuilder( new StringReader(query) );
+		return stb.QueryContainer();
+	}
+	
+	/**
+	 * Trims <tt>n</tt> character from the start and end of the supplied string.
+	 */
+	private static String _trimString(String s, int n) {
+		if (s.length() >= 2) {
+			s = s.substring(n, s.length() - n);
+		}
+		return s;
+	}
+}
+PARSER_END(SyntaxTreeBuilder)
+
+//
+// tokens
+//
+
+TOKEN :
+{
+	// Whitespace characters
+	<#WS_CHAR: " " | "\t" | "\n" | "\r" | "\f">
+}
+
+SKIP :
+{
+	<WHITESPACE: <WS_CHAR>>
+}
+
+SPECIAL_TOKEN :
+{
+	<SINGLE_LINE_COMMENT: "#" (~["\n","\r"])*>
+}
+
+// Special characters
+TOKEN :
+{
+	<LPAREN: "(">
+|	<RPAREN: ")">
+|	<LBRACE: "{">
+|	<RBRACE: "}">
+|	<LBRACK: "[">
+|	<RBRACK: "]">
+|	<SEMICOLON: ";">
+|	<COMMA: ",">
+|	<DOT: ".">
+|	<EQ: "=">
+|	<NE: "!=">
+|	<GT: ">">
+|	<LT: "<">
+|	<LE: "<=">
+|	<GE: ">=">
+|	<NOT: "!">
+|	<OR: "||">
+|	<AND: "&&">
+|	<PLUS: "+">
+|	<MINUS: "-">
+|	<STAR: "*">
+|	<SLASH: "/">
+|	<DT_PREFIX: "^^">
+|	<NIL: <LPAREN> (<WS_CHAR>)* <RPAREN>>
+|	<ANON: <LBRACK> (<WS_CHAR>)* <RBRACK>>
+}
+
+TOKEN :
+{
+	<IS_A: "a"> // Note: case-sensitive!
+}
+
+TOKEN [IGNORE_CASE] :
+{
+	<BASE: "base">
+|	<PREFIX: "prefix">
+|	<SELECT: "select">
+|	<CONSTRUCT: "construct">
+|	<DESCRIBE: "describe">
+|	<ASK: "ask">
+|	<DISTINCT: "distinct">
+|	<FROM: "from">
+|	<NAMED: "named">
+|	<WHERE: "where">
+|	<ORDER: "order">
+|	<BY: "by">
+|	<ASC: "asc">
+|	<DESC: "desc">
+|	<LIMIT: "limit">
+|	<OFFSET: "offset">
+|	<OPTIONAL: "optional">
+|	<GRAPH: "graph">
+|	<UNION: "union">
+|	<FILTER: "filter">
+|	<STR: "str">
+|	<LANG: "lang">
+|	<LANGMATCHES: "langmatches">
+|	<DATATYPE: "datatype">
+|	<BOUND: "bound">
+|	<IS_IRI: ("isIRI"|"isURI")>
+|	<IS_BLANK: "isBlank">
+|	<IS_LITERAL: "isLiteral">
+|	<REGEX: "regex">
+|	<TRUE: "true">
+|	<FALSE: "false">
+}
+
+TOKEN:
+{
+	<Q_IRI_REF: "<" (~["<", ">", "'", "{", "}", "|", "^", "`", "\u0000"-"\u0020"])* ">">
+
+|	<QNAME_NS: (<NCNAME_PREFIX>)? ":">
+|	<QNAME: (<NCNAME_PREFIX>)? ":" <NCNAME>> // Note: NCNAME not optional, case handled by QNAME_NS
+
+|	<BLANK_NODE_LABEL: "_:" <NCNAME>>
+
+|	<VAR1: "?" <VARNAME>>
+|	<VAR2: "$" <VARNAME>>
+|	<LANGTAG: "@" (<ALPHA>)+ ("-" (<ALPHA>|<NUM>)+)*>
+|	<INTEGER: (<NUM>)+>
+|	<DECIMAL: (<DECIMAL1>|<DECIMAL2>)>
+|	<#DECIMAL1: (<NUM>)+ "." (<NUM>)*>
+|	<#DECIMAL2: "." (<NUM>)+>
+|	<DOUBLE: (<DOUBLE1>|<DOUBLE2>|<DOUBLE3>)>
+|	<#DOUBLE1: (<NUM>)+ "." (<NUM>)* <EXPONENT>>
+|	<#DOUBLE2: "." (<NUM>)+ <EXPONENT>>
+|	<#DOUBLE3: (<NUM>)+ <EXPONENT>>
+|	<#EXPONENT: ["e","E"] (["+","-"])? (<NUM>)+>
+|	<STRING_LITERAL1: "'" (<SAFE_CHAR1>|<ECHAR>)* "'">
+|	<STRING_LITERAL2: "\"" (<SAFE_CHAR2>|<ECHAR>)* "\"">
+|	<STRING_LITERAL_LONG1: "'''" ( ("'"|"''")? (<SAFE_CHAR_LONG1>|<ECHAR>) )* "'''">
+|	<STRING_LITERAL_LONG2: "\"\"\"" ( ("\""|"\"\"")? (<SAFE_CHAR_LONG2>|<ECHAR>) )* "\"\"\"">
+|	<#SAFE_CHAR1: (~["'", "\\", "\r", "\n"])>
+|	<#SAFE_CHAR2: (~["\"", "\\", "\r", "\n"])>
+|	<#SAFE_CHAR_LONG1: (~["'","\\"])>
+|	<#SAFE_CHAR_LONG2: (~["\"","\\"])>
+|	<#ECHAR: "\\" ["t", "b", "n", "r", "f", "\\", "\"", "'"]>
+|	<#HEX: ["0"-"9"] | ["A"-"F"] | ["a"-"f"]>
+|	<#ALPHA: ["a"-"z","A"-"Z"]>
+|	<#NUM: ["0"-"9"]>
+}
+
+TOKEN:
+{
+	<#PREFIX_START_CHAR:
+	    <ALPHA> | ["\u00C0"-"\u00D6"] | ["\u00D8"-"\u00F6"] | ["\u00F8"-"\u02FF"] | ["\u0370"-"\u037D"]
+	  | ["\u037F"-"\u1FFF"] | ["\u200C"-"\u200D"] | ["\u2070"-"\u218F"] | ["\u2C00"-"\u2FEF"]
+	  | ["\u3001"-"\uD7FF"] | ["\uF900"-"\uFDCF"]
+	  // | ["\u10000"-"\uEFFFF"] FIXME: JavaCC/Java can't handle this?
+	>
+|	<#NCNAME_START_CHAR: <PREFIX_START_CHAR> | "_">
+|	<#VAR_START_CHAR: <NCNAME_START_CHAR> | <NUM>>
+|	<#VAR_CHAR: <VAR_START_CHAR> | "\u00B7" | ["\u0300"-"\u036F"] | ["\u203F"-"\u2040"]>
+|	<#NCNAME_END_CHAR: <VAR_CHAR> | "-">
+|	<#NCCHAR: <NCNAME_END_CHAR> | ".">
+
+|	<#NCNAME_PREFIX: <PREFIX_START_CHAR> ( (<NCCHAR>)* <NCNAME_END_CHAR> )?>
+|	<#NCNAME: <NCNAME_START_CHAR> ( (<NCCHAR>)* <NCNAME_END_CHAR> )?>
+|	<#VARNAME: <VAR_START_CHAR> (<VAR_CHAR>)*>
+}
+
+// Prevent unhelpful TokenMgrError's from being thrown by catching any
+// illegal input in an 'UNKNOWN' token.
+TOKEN:
+{
+	<#UNKNOWN: (~[" ","\t","\n","\r","\f" ])+>
+}
+
+//
+// grammar
+//
+
+ASTQueryContainer QueryContainer():
+{}
+{
+	Prolog() Query() <EOF>
+	{ return jjtThis; }
+}
+
+void Prolog() #void :
+{}
+{
+	[ BaseDecl() ] ( PrefixDecl() )*
+}
+
+void BaseDecl() :
+{ Token t; }
+{
+	<BASE> t = <Q_IRI_REF> {jjtThis.setIRI(_trimString(t.image, 1));}
+}
+
+void PrefixDecl() :
+{ Token prefix; }
+{
+	<PREFIX> prefix = <QNAME_NS> IRI()
+	{
+		// Remove trailing colon from prefix
+		String prefixStr = prefix.image;
+		prefixStr = prefixStr.substring(0, prefixStr.length() - 1);
+
+		jjtThis.setPrefix(prefixStr);
+	}
+}
+
+void Query() #void :
+{}
+{
+	SelectQuery()
+|	ConstructQuery()
+|	DescribeQuery()
+|	AskQuery()
+}
+
+void SelectQuery() :
+{}
+{
+	Select()
+	( DatasetClause() )*
+	WhereClause()
+	[ OrderClause() ]
+	[ LimitOffsetClauses() ]
+}
+
+void Select() :
+{}
+{
+	<SELECT> [ <DISTINCT> {jjtThis.setDistinct(true);} ]
+
+	(
+		<STAR> { jjtThis.setWildcard(true); }
+	|
+		( Var() )*
+	)
+}
+
+void ConstructQuery() :
+{}
+{
+	Construct()
+	( DatasetClause() )*
+	WhereClause()
+	[ OrderClause() ]
+	[ LimitOffsetClauses() ]
+}
+
+void Construct() :
+{}
+{
+	// Note: replaced ConstructTriples ref with equivalent BasicGraphPattern ref
+	<CONSTRUCT> <LBRACE> [ BasicGraphPattern() ] <RBRACE>
+}
+
+void DescribeQuery() :
+{}
+{
+	Describe()
+	( DatasetClause() )*
+	[ WhereClause() ]
+	[ OrderClause() ]
+	[ LimitOffsetClauses() ]
+}
+
+void Describe() :
+{}
+{
+	<DESCRIBE>
+	(
+		<STAR> { jjtThis.setWildcard(true); }
+	|
+		( VarOrIRIref() )+
+	)
+}
+
+void AskQuery() :
+{}
+{
+	<ASK>
+	( DatasetClause() )*
+	WhereClause()
+}
+
+void DatasetClause() :
+{}
+{
+	<FROM> [<NAMED> {jjtThis.setNamed(true);}] IRIref()
+}
+
+void WhereClause() :
+{}
+{
+	 [<WHERE>] GroupGraphPattern()
+}
+
+void OrderClause() :
+{}
+{
+	<ORDER> <BY> ( OrderCondition() )+
+}
+
+void OrderCondition() :
+{}
+{
+	[ <ASC> | <DESC> {jjtThis.setAscending(false);}] BrackettedExpression()
+|	FunctionCall()
+|	BuiltInCall()
+|	Var()
+}
+
+void LimitOffsetClauses() #void :
+{}
+{
+	Limit() [ Offset() ]
+|
+	Offset() [ Limit() ]
+}
+
+void Limit() :
+{ Token t; }
+{
+	<LIMIT> t = <INTEGER>
+	{ jjtThis.setValue(Integer.parseInt(t.image)); }
+}
+
+void Offset() :
+{ Token t; }
+{
+	<OFFSET> t = <INTEGER>
+	{ jjtThis.setValue(Integer.parseInt(t.image)); }
+}
+
+void GroupGraphPattern() #GraphPatternGroup :
+{}
+{
+	<LBRACE> GraphPattern() <RBRACE>
+}
+
+void GraphPattern() #void :
+{}
+{
+	[BasicGraphPattern()] [ GraphPatternNotTriples() [<DOT>] GraphPattern() ]
+}
+
+void BasicGraphPattern() :
+{}
+{
+	// Note: recursive rule rewriten to non-recursive rule, requires lookahead
+	TriplesSameSubject() ( LOOKAHEAD(2) <DOT> TriplesSameSubject() )* [<DOT>]
+}
+
+void GraphPatternNotTriples() #void :
+{}
+{
+	OptionalGraphPattern()
+|	GroupOrUnionGraphPattern()
+|	GraphGraphPattern()
+|	Constraint()
+}
+
+void OptionalGraphPattern() :
+{}
+{
+	<OPTIONAL> GroupGraphPattern()
+}
+
+void GraphGraphPattern() :
+{}
+{
+	<GRAPH> VarOrIRIref() GroupGraphPattern()
+}
+
+void GroupOrUnionGraphPattern() #void :
+{}
+{
+	GroupGraphPattern() [ <UNION> GroupOrUnionGraphPattern() #UnionGraphPattern(2) ]
+}
+
+void Constraint() :
+{}
+{
+	<FILTER> ( BrackettedExpression() | BuiltInCall() | FunctionCall() )
+}
+
+void FunctionCall() :
+{}
+{
+	IRIref() ArgList()
+}
+
+void ArgList() #void :
+{}
+{
+	<NIL>
+|
+	<LPAREN> Expression() ( <COMMA> Expression() )* <RPAREN>
+}
+
+void TriplesSameSubject() :
+{}
+{
+	VarOrTerm() PropertyList()
+|
+	TriplesNode() [PropertyList()]
+}
+
+void PropertyList() :
+{}
+{
+	Verb() ObjectList() [ <SEMICOLON> [PropertyList()] ]
+}
+
+void ObjectList():
+{}
+{
+	GraphNode() ( <COMMA> GraphNode() )*
+}
+
+void Verb() #void :
+{}
+{
+	VarOrIRIref()
+|
+	<IS_A> { jjtThis.setValue(RDF.TYPE.toString()); } #IRI
+}
+
+void TriplesNode() #void :
+{}
+{
+	Collection()
+|
+	BlankNodePropertyList()
+}
+
+void BlankNodePropertyList() :
+{}
+{
+	<LBRACK> PropertyList() <RBRACK>
+}
+
+void Collection() :
+{}
+{
+	<LPAREN> ( GraphNode() )+ <RPAREN>
+}
+
+void GraphNode() #void :
+{}
+{
+	VarOrTerm()
+|
+	TriplesNode()
+}
+
+void VarOrTerm() #void :
+{}
+{
+	Var()
+|
+	GraphTerm()
+}
+
+void VarOrIRIref() #void :
+{}
+{
+	Var()
+|
+	IRIref()
+}
+
+void Var() :
+{ Token t; }
+{
+	( t = <VAR1> | t = <VAR2> )
+	{ jjtThis.setName(t.image.substring(1)); }
+}
+
+void GraphTerm() #void :
+{
+	boolean positive = true;
+}
+{
+	IRIref()
+|
+	RDFLiteral()
+|
+	[ <MINUS> {positive=false;} | <PLUS> ]
+	NumericLiteral(positive)
+|
+	BooleanLiteral()
+|
+	BlankNode()
+|
+	<NIL> {jjtThis.setValue(RDF.NIL.toString());} #IRI
+}
+
+void Expression() #void :
+{}
+{
+	ConditionalOrExpression()
+}
+
+void ConditionalOrExpression() #void :
+{}
+{
+	ConditionalAndExpression() [ <OR> ConditionalOrExpression() #Or(2) ]
+}
+
+void ConditionalAndExpression() #void :
+{}
+{
+	ValueLogical() [ <AND> ConditionalAndExpression() #And(2) ]
+}
+
+void ValueLogical() #void :
+{}
+{
+	RelationalExpression()
+}
+
+void RelationalExpression() #void :
+{}
+{
+	NumericExpression()
+	[
+		<EQ> NumericExpression() {jjtThis.setOperator(Compare.Operator.EQ);} #Compare(2)
+	|	<NE> NumericExpression() {jjtThis.setOperator(Compare.Operator.NE);} #Compare(2)
+	|	<LT> NumericExpression() {jjtThis.setOperator(Compare.Operator.LT);} #Compare(2)
+	|	<LE> NumericExpression() {jjtThis.setOperator(Compare.Operator.LE);} #Compare(2)
+	|	<GE> NumericExpression() {jjtThis.setOperator(Compare.Operator.GE);} #Compare(2)
+	|	<GT> NumericExpression() {jjtThis.setOperator(Compare.Operator.GT);} #Compare(2)
+	]
+}
+
+void NumericExpression () #void :
+{}
+{
+	AdditiveExpression()
+}
+
+void AdditiveExpression() #void :
+{}
+{
+	MultiplicativeExpression()
+	(
+	  <PLUS> MultiplicativeExpression() {jjtThis.setOperator(MathExpr.Operator.PLUS);} #Math(2)
+	| <MINUS> MultiplicativeExpression() {jjtThis.setOperator(MathExpr.Operator.MINUS);} #Math(2)
+	)*
+}
+
+void MultiplicativeExpression() #void :
+{}
+{
+	UnaryExpression()
+	(
+	  <STAR> UnaryExpression() {jjtThis.setOperator(MathExpr.Operator.MULTIPLY);} #Math(2)
+	| <SLASH> UnaryExpression() {jjtThis.setOperator(MathExpr.Operator.DIVIDE);} #Math(2)
+	)*
+}
+
+void UnaryExpression() #void :
+{}
+{
+	<NOT> PrimaryExpression() #Not
+|
+	[<PLUS>] PrimaryExpression()
+|
+	UnaryMinus() PrimaryExpression() {jjtThis.setOperator(MathExpr.Operator.MULTIPLY);} #Math(2)
+}
+
+void UnaryMinus() #NumericLiteral :
+{}
+{
+	<MINUS>
+	{
+		jjtThis.setValue("-1");
+		jjtThis.setDatatype(XMLSchema.INTEGER);
+	}
+}
+
+void PrimaryExpression() #void :
+{}
+{
+	BrackettedExpression()
+|	BuiltInCall()
+|	LOOKAHEAD(2) FunctionCall()
+|	IRIref()
+|	RDFLiteral()
+|	NumericLiteral(true)
+|	BooleanLiteral()
+|	Var()
+}
+
+void BrackettedExpression() #void :
+{}
+{
+	<LPAREN> Expression() <RPAREN>
+}
+
+void BuiltInCall() #void :
+{}
+{
+	Str()
+|	Lang()
+|	LangMatches()
+|	Datatype()
+|	Bound()
+|	IsIRI()
+|	IsBlank()
+|	IsLiteral()
+|	RegexExpression()
+}
+
+void Str() :
+{}
+{
+	<STR> <LPAREN> Expression() <RPAREN>
+}
+
+void Lang() :
+{}
+{
+	<LANG> <LPAREN> Expression() <RPAREN>
+}
+
+void LangMatches() :
+{}
+{
+	<LANGMATCHES> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void Datatype() :
+{}
+{
+	<DATATYPE> <LPAREN> Expression() <RPAREN>
+}
+
+void Bound() :
+{}
+{
+	<BOUND> <LPAREN> Var() <RPAREN>
+}
+
+void IsIRI() :
+{}
+{
+	<IS_IRI> <LPAREN> Expression() <RPAREN>
+}
+
+void IsBlank() :
+{}
+{
+	<IS_BLANK> <LPAREN> Expression() <RPAREN>
+}
+
+void IsLiteral() :
+{}
+{
+	<IS_LITERAL> <LPAREN> Expression() <RPAREN>
+}
+
+void RegexExpression() :
+{}
+{
+	<REGEX> <LPAREN> Expression() <COMMA> Expression() [ <COMMA> Expression() ] <RPAREN>
+}
+
+void RDFLiteral() :
+{ Token t; }
+{
+	String()
+	[
+		t = <LANGTAG> {jjtThis.setLang(t.image.substring(1));}
+	|
+		<DT_PREFIX> IRIref()
+	]
+}
+
+void NumericLiteral(boolean positive) :
+{ Token t; URI datatype; }
+{
+	(
+		t = <INTEGER> { datatype = XMLSchema.INTEGER; }
+	|	t = <DECIMAL> { datatype = XMLSchema.DECIMAL; }
+	|	t = <DOUBLE> { datatype = XMLSchema.DOUBLE; }
+	)
+
+	{
+		String value = t.image;
+
+		if (!positive) {
+			value = "-" + value;
+		}
+
+		jjtThis.setValue(value);
+		jjtThis.setDatatype(datatype);
+	}
+}
+
+void BooleanLiteral() #void :
+{}
+{
+	<TRUE> #True
+|	<FALSE> #False
+}
+
+void String() :
+{ Token t; }
+{
+	( t = <STRING_LITERAL1> | t= <STRING_LITERAL2> )
+	{jjtThis.setValue(_trimString(t.image, 1));}
+|
+	( t = <STRING_LITERAL_LONG1> | t = <STRING_LITERAL_LONG2>)
+	{jjtThis.setValue(_trimString(t.image, 3));}
+}
+
+void IRIref() #void :
+{}
+{
+	IRI()
+|
+	QName()
+}
+
+void QName() :
+{ Token t; }
+{
+	(t = <QNAME> | t = <QNAME_NS>)
+	{jjtThis.setValue(t.image);}
+}
+
+void BlankNode() :
+{ Token t; }
+{
+	t = <BLANK_NODE_LABEL> {jjtThis.setID(t.image.substring(2));}
+|
+	<ANON>
+}
+
+void IRI() :
+{ Token t; }
+{
+	t = <Q_IRI_REF> {jjtThis.setValue(_trimString(t.image, 1));}
+}

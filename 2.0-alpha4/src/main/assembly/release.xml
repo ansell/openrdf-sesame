@@ -1,0 +1,55 @@
+<assembly>
+  <id>release</id>
+  
+  <formats>
+    <format>dir</format>
+  </formats>
+
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <excludes>
+        <exclude>org.openrdf:sesame</exclude>
+        <exclude>junit:junit</exclude>
+      </excludes>
+    </dependencySet>
+  </dependencySets>
+  
+  <fileSets>
+    <fileSet>
+      <directory>/</directory>
+      <outputDirectory/>
+      <includes>
+        <include>*.txt</include>
+      </includes>
+    </fileSet>
+    
+    <fileSet>
+      <directory>openrdf-server/openrdf-server-rest/target</directory>
+      <outputDirectory>war</outputDirectory>
+      <includes>
+        <include>*.war</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>target/docs</directory>
+      <outputDirectory>docs</outputDirectory>
+    </fileSet>
+  </fileSets>
+ 
+  <files>
+    <file>
+      <source>src/main/dist/bin/start-console.bat</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+    </file>  
+    <file>
+      <source>src/main/dist/bin/start-console.sh</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>744</fileMode>
+    </file>  
+  </files>
+    
+</assembly>

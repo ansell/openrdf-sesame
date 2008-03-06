@@ -1,0 +1,126 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.openrdf</groupId>
+	<artifactId>openrdf-server-rest</artifactId>
+	<packaging>war</packaging>
+	<version>2.0-alpha4</version>
+	<name>OpenRDF REST server</name>
+	<description>HTTP server implementing the REST protocol</description>
+	<url>http://www.openrdf.org/</url>
+
+	<organization>
+		<name>Aduna</name>
+		<url>http://www.aduna-software.com/</url>
+	</organization>
+
+	<inceptionYear>2001</inceptionYear>
+
+	<licenses>
+		<license>
+			<name>Aduna BSD-style license</name>
+			<url>http://www.aduna-software.com/documents/legal/licenses/aduna-bsd.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.openrdf</groupId>
+			<artifactId>openrdf-runtime</artifactId>
+			<version>2.0-alpha4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openrdf</groupId>
+			<artifactId>openrdf-protocol-rest</artifactId>
+			<version>2.0-alpha4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.4</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.2</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ftp</artifactId>
+			</extension>
+		</extensions>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<archiveClasses>true</archiveClasses>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<tagBase>
+						https://src.aduna-software.org/svn/org.openrdf/releases/sesame2/openrdf-server/openrdf-server-rest
+					</tagBase>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>http://repository.aduna-software.org/maven2</url>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>ftp-aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
+		</repository>
+		<snapshotRepository>
+			<id>ftp-aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
+			<uniqueVersion>false</uniqueVersion>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<scm>
+		<connection>
+			scm:svn:https://src.aduna-software.org/svn/org.openrdf/releases/sesame2/2.0-alpha4/openrdf-server/openrdf-server-rest</connection>
+		<developerConnection>
+			scm:svn:https://src.aduna-software.org/svn/org.openrdf/releases/sesame2/2.0-alpha4/openrdf-server/openrdf-server-rest</developerConnection>
+		<url>
+			https://src.aduna-software.org/svn/org.openrdf/releases/sesame2/2.0-alpha4/openrdf-server/openrdf-server-rest
+		</url>
+	</scm>
+
+</project>
