@@ -1,0 +1,53 @@
+<chapter id="chapter-download">
+	<title>Source code and binaries</title>
+	<para>
+		If you follow the download links from the
+		<ulink url="http://www.openrdf.org/download.jsp">download section</ulink>
+		at openRDF.org you'll find that there are a number of different files that
+		you can download. Which one you need depends on what you want to do with it:
+	</para>
+	<itemizedlist>
+		<listitem>
+			<filename>openrdf-sesame-(version)-sdk.tar.gz</filename>.
+			This is a GNU-zipped tar archive of the complete binary version of
+			the Sesame SDK. It includes all the Sesame libraries packaged as
+			jar files and a set of Web Archive (.war) files for easy
+			deployment of Sesame's Web applications (see <xref
+				linkend="chapter-server-install"/>). It also includes
+			documentation (such as  this user manual, and the API JavaDoc).
+		</listitem>
+		<listitem>
+			<filename>openrdf-sesame-(version)-sdk.zip</filename>.
+			This is a zip archive that has the same contents as the tar.gz
+			file mentioned before.
+		</listitem>
+		<listitem>
+			<filename>openrdf-sesame-(version)-onejar.jar</filename>.
+			This is a Java Archive (.jar) file containing all the relevant
+			Sesame libraries. The main purpose of this jar file is easy
+			inclusion of all Sesame components when using it as an embedded
+			component/library in your own application: you only need to add
+			this one jar file to your classpath and you can start programming
+			against it.
+		</listitem>
+	</itemizedlist>
+	<para>
+		Apart from these binary downloads, the Sesame libraries are also
+		available as maven artifacts in a <emphasis>maven repository</emphasis>.
+		This maven repository is located at
+		<ulink url="http://repository.aduna-software.org/maven2/"/>. Developers
+		using maven can use this repository to automatically resolve library
+		dependencies and to get the latest released versions of each library.
+		For instructions how to use the maven build system, see
+		<ulink url="http://maven.apache.org/"/>.
+	</para>
+	<para>
+		Sesame's source code is available from our Subversion (SVN) repository:
+		<ulink url="https://src.aduna-software.org/svn/org.openrdf/"/>.
+		There is an SVN Web Viewer available as well at
+		<ulink url="http://src.aduna-software.org/viewvc/org.openrdf/"/>.
+		Source code for each release is located in the
+		<filename>releases</filename> directory, the development version of
+		the code is in the <filename>projects</filename> directory.
+	</para>
+</chapter>

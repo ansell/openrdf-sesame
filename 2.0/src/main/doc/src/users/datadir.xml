@@ -1,0 +1,46 @@
+<chapter id="chapter-datadir-config">
+	<title>Application directory configuration</title>
+	<para>
+		In this chapter, we explain how to change the default data directory for
+		OpenRDF applications. You can skip this chapter if you only use Sesame
+		as a library, or if you consider the defaults to be fine.
+	</para>
+	<para>
+		All OpenRDF applications (Sesame Server, Workbench, and
+		Console) store configuration files and repository data in a
+		single directory (with subdirectories). On Windows machines, this
+		directory is <filename>%APPDATA%\Aduna\</filename> by default,
+		where <filename>%APPDATA%</filename> is the application data
+		directory of the user that runs the application. For example, in
+		case the application runs under the 'LocalService' user account
+		on Windows XP, the directory is <filename>C:\Documents and
+			Settings\LocalService\Application Data\Aduna\</filename>. On
+		Linux/UNIX, the default location is <filename>$HOME/.aduna/</filename>,
+		for example <filename>/home/tomcat/.aduna/</filename>. We will refer to
+		this data directory as <filename>[ADUNA_DATA]</filename> in the rest of
+		this manual.
+	</para>
+	<para>
+		The location of this data directory can be reconfigured using the Java
+		system property <parameter>info.aduna.platform.appdata.basedir</parameter>.
+		When you are using Tomcat as the servlet container then you can set this
+		property using the <parameter>JAVA_OPTS</parameter> parameter, for
+		example:
+	</para>
+	<itemizedlist>
+		<listitem>
+			<parameter>set JAVA_OPTS=-Dinfo.aduna.platform.appdata.basedir=\path\to\other\dir\</parameter>
+			(on Windows)
+		</listitem>
+		<listitem>
+			<parameter>export JAVA_OPTS='-Dinfo.aduna.platform.appdata.basedir=/path/to/other/dir/'</parameter>
+			(on Linux/UNIX)
+		</listitem>
+	</itemizedlist>
+	<para>
+		If you are using Apache Tomcat as a Windows Service you should use
+		the Windows Services configuration tool to set this property. Other users
+		can either edit the Tomcat startup script or set the property some
+		other way.
+	</para>
+</chapter>

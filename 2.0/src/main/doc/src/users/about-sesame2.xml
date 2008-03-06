@@ -1,0 +1,116 @@
+<chapter id="chapter-sesame2-whats-new">
+	<title>rdf:about Sesame 2</title>
+
+	<section>
+		<title>What is it?</title>
+		<para>
+			Sesame is an open source Java framework for storage and querying of
+			RDF data. The framework is fully extensible and configurable with
+			respect to storage mechanisms, inferencers, RDF file formats, query
+			result formats and query languages. Sesame offers a JBDC-like user
+			API, streamlined system APIs and a RESTful HTTP interface supporting
+			the SPARQL Protocol for RDF.
+		</para>
+		<para>
+			Of course, a framework isn't very useful without implementations of
+			the various APIs. Out of the box, Sesame supports SPARQL and SeRQL
+			querying, a memory-based and a disk-based RDF store and RDF Schema
+			inferencers. It also supports most popular RDF file formats and
+			query result formats. Various extensions are available or are being
+			worked at elsewhere.
+		</para>
+		<para>
+			Originally, Sesame was developed by
+			<ulink url="http://www.aduna-software.com/">Aduna</ulink> (then
+			known as Aidministrator) as a research prototype for the hugely
+			successful EU research project
+			<ulink url="http://www.ontoknowledge.org/">On-To-Knowledge</ulink>.
+			When this worked ended in 2001, Aduna continued the development in
+			cooperation with NLnet Foundation, developers from Ontotext, and a
+			number of volunteer developers who contribute ideas, bug reports and
+			fixes.
+		</para>
+		<para>
+			Sesame is currently developed as a community project, with Aduna as
+			the project leader. Community support is available from
+			<ulink url="http://www.openrdf.org/">www.openrdf.org</ulink>. Aduna
+			also offers commercial support and consultency services, feel free
+			to <ulink url="http://www.aduna-software.com/contact/">contact
+				us</ulink> for more information.
+		</para>
+	</section>
+
+	<section>
+		<title>What's new?</title>
+		<para>
+			For those who have previously worked with Sesame 1.x: Sesame 2 is an
+			important step forward from the Sesame 1.x series, building on the
+			feedback that has been gathered during the past years. A lot of
+			improvements have been made to various APIs as well as the framework
+			as a whole.
+		</para>
+		<para>
+			Unfortunately, because of all the changes to APIs and the like,
+			<emphasis>Sesame 2 is not backwards compatible with earlier
+				releases</emphasis>. Therefore, we suggest you read through this
+			user guide before starting to port any applications to Sesame 2.
+		</para>
+		<para>
+			So what's new in Sesame 2? Well, in short:
+		</para>
+
+		<itemizedlist>
+			<listitem>
+				Sesame 2 is completely targeted at Java 5. All APIs use
+				Java 5 features such as typed collections and iterators.
+			</listitem>
+			<listitem>
+				Revised Repository API that is much more targeted at
+				the use of Sesame as a library.
+			</listitem>
+			<listitem>
+				Support for context/provenance, allowing you to keep track
+				of individual RDF data units (like files, for instance).
+			</listitem>
+			<listitem>
+				Proper transaction/rollback support.
+			</listitem>
+			<listitem>
+				A REST-ful HTTP protocol that includes support for the
+				<ulink url="http://www.w3.org/TR/rdf-sparql-protocol/">SPARQL protocol</ulink> and
+				<ulink url="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results XML Format</ulink>,
+				which are currently both Proposed Recommendations from the W3C.
+			</listitem>
+			<listitem>
+				Support for the
+				<ulink url="http://www.w3.org/TR/rdf-sparql-query/">SPARQL Query Language</ulink>.
+			</listitem>
+		</itemizedlist>
+
+		<para>
+			A lot of these new features will be covered in the next chapters.
+		</para>
+	</section>
+
+	<section>
+		<title>Quo vadis?</title>
+		<para>
+			Sesame 2 has now reached the 2.0-final status, which means that APIs are
+			stable and that all <emphasis>known</emphasis> bugs have been fixed. The
+			developement of Sesame will, of course, continue with new releases on a
+			regular basis.
+		</para>
+		<para>
+			The prime focus for the upcoming releases is the performance and scalability
+			of the various RDF stores. An RDBMS-based Sail implementation is currently
+			under development and the first results look very promising. The performance
+			of the native- and memory stores will also be improved. As there hasn't been
+			put a lot of effort into this so far, we expect to achieve good results here.
+		</para>
+		<para>
+			Subjects that we will look into after that are support for aggregate functions
+			(COUNT, MIN, MAX) in SeRQL and improvements of the web- and desktop user
+			interfaces.
+		</para>
+	</section>
+</chapter>
