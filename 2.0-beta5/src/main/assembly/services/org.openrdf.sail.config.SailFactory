@@ -1,0 +1,3 @@
+org.openrdf.sail.memory.config.MemoryStoreFactory
+org.openrdf.sail.memory.config.MemoryStoreRDFSInferencerFactory
+org.openrdf.sail.nativerdf.config.NativeStoreFactory

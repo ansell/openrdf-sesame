@@ -1,0 +1,3 @@
+org.openrdf.query.resultio.binary.BinaryQueryResultWriterFactory
+org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLWriterFactory
+org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONWriterFactory

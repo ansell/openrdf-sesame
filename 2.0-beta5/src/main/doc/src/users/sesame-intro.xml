@@ -1,0 +1,83 @@
+<chapter id="chapter-sesame-intro">
+	<title>Short introduction to Sesame's components</title>
+	<para>
+		Before diving into the internals of Sesame, we will start with a short
+		introduction to Sesame, giving a high-level overview of its components.
+		It's important to have some basic knowledge about this as the rest of
+		this document will often refer to various components that are touched
+		upon here. It is assumed that the reader has at least some basic
+		knowledge about RDF, RDF Schema, OWL, etc. If this is not the case, some
+		introductory articles can be found at the following locations:
+	</para>
+	<itemizedlist>
+		<listitem><ulink url="http://www.rdfabout.net/"/></listitem>
+		<listitem><ulink url="http://www.w3.org/TR/rdf-primer/"/></listitem>
+	</itemizedlist>
+	<para>
+		We will try to explain the Sesame framework using the following figure,
+		which shows the most prominent components and APIs in Sesame and how
+		they are built on top of each other. Each component/API depends on the
+		components/APIs that are directly beneath them.
+	</para>
+	<figure id="figure-sesame-components" float="1">
+		<title>A high-level overview of Sesame's most prominent components and their dependencies</title>
+		<mediaobject>
+			<imageobject>
+				<imagedata fileref="figures/sesame-components.png"/>
+			</imageobject>
+		</mediaobject>
+	</figure>
+	<para> 
+		All the way at the bottom of the diagram is the RDF Model, the
+		foundation of the Sesame framework. Being an RDF-oriented framework,
+		all parts of Sesame are to some extent dependent on this RDF model,
+		which defines interfaces and implementation for all basic RDF
+		entities: URI, blank node, literal and statement.
+	</para>
+	<para>
+		Rio, which stands for "RDF I/O", consists of a set of parsers and
+		writers for various RDF file formats. The parsers can be used to
+		translate RDF files to lists of statements, and the writers for the
+		reverse operation. Rio can also be used independent of the rest of
+		Sesame.
+	</para>
+	<para> 
+		The Storage And Inference Layer (Sail) API is a low level System API
+		(SPI) for RDF stores and inferencers. Its purpose is to abstract from
+		the storage and inference details, allowing various types of storage and
+		inference to be used. The Sail API is mainly of interest for those who
+		are developing Sail implementations, for all others it suffices to know
+		how to create and configure one. There are several implementations of
+		the Sail API, for example the <classname>MemoryStore</classname> which
+		stores RDF data in main memory, and the
+		<classname>NativeStore</classname> which uses dedicated on-disk data
+		structures for storage.
+	</para>
+	<para> 
+		The Repository API is a higer level API that offers a large number of
+		developer-oriented methods for handling RDF data. The main goal of this
+		API is to make the life of application developers as easy as possible.
+		It offers various methods for uploading data files, querying, and
+		extracting and manipulating data. There are several implementations of
+		this API, the ones shown in this figure are the
+		<classname>SailRepository</classname> and the
+		<classname>HTTPRepository</classname>. The former translates calls to a
+		Sail implementation of choice, the latter offers transparent
+		client-server communication with a Sesame server over HTTP.
+	</para>
+	<para>
+		The top-most component in the diagram is the HTTP Server. The HTTP
+		Server consists of a number of Java Servlets that implement a protocol
+		for accessing Sesame repositories over HTTP. The details of this
+		protocol can be found in Sesame's system documentation, but most people
+		can simply use a client library to handle the communication. The
+		<classname>HTTPClient</classname> that is used by the
+		<classname>HTTPRepository</classname> is one such library.
+	</para>
+	<para>
+		While each part of the Sesame code is publicly available and extensible,
+		most application developers will be primarily interested in the
+		Repository API. This API is described in more detail in one of the
+		following chapters.
+	</para>
+</chapter>

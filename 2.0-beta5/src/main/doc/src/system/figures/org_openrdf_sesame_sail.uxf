@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><umlet_diagram><element><type>com.umlet.element.base.Relation</type><coordinates><x>304</x><y>260</y><w>132</w><h>120</h></coordinates><panel_attributes>lt=.&gt;
+&lt;&lt;generates&gt;&gt;</panel_attributes><additional_attributes>66;20;66;100</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>280</x><y>430</y><w>157</w><h>90</h></coordinates><panel_attributes>lt=.&gt;
+&lt;&lt;processes&gt;&gt;</panel_attributes><additional_attributes>20;70;90;70;90;20</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>195</x><y>260</y><w>130</w><h>210</h></coordinates><panel_attributes>lt=.&gt;
+&lt;&lt;reports to&gt;&gt;</panel_attributes><additional_attributes>65;20;65;190</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>10</x><y>450</y><w>290</w><h>60</h></coordinates><panel_attributes>&lt;&lt;interface&gt;&gt;
+SailChangedListener
+--
+void sailChanged(SailChangedEvent event)</panel_attributes><additional_attributes></additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>300</x><y>360</y><w>210</w><h>80</h></coordinates><panel_attributes>&lt;&lt;interface&gt;&gt;
+SailChangedEvent
+--
+boolean statementsAdded()
+boolean statementsRemoved()</panel_attributes><additional_attributes></additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>520</x><y>230</y><w>410</w><h>240</h></coordinates><panel_attributes>&lt;&lt;interface&gt;&gt;
+Transaction
+--
+boolean isActive()
+void commit()
+void rollback()
+void addStatement(Statement st)
+void addStatement(Statement st, Resource context)
+void removeStatement(Statement st)
+void removeStatement(Statement st, Resource context)
+void clearDefaultContext()
+void clearContext(Resource context)
+void clear()
+void changeNamespacePrefix(String namespace, String prefix)</panel_attributes><additional_attributes></additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>10</x><y>320</y><w>210</w><h>80</h></coordinates><panel_attributes>&lt;&lt;interface&gt;&gt;
+StackableSail
+--
+void setBaseSail(Sail baseSail)
+Sail getBaseSail()</panel_attributes><additional_attributes></additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>400</x><y>66</y><w>140</w><h>54</h></coordinates><panel_attributes>lt=.&gt;
+&lt;&lt;creates&gt;&gt;</panel_attributes><additional_attributes>20;34;120;34</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>400</x><y>116</y><w>320</w><h>54</h></coordinates><panel_attributes>lt=.&gt;
+&lt;&lt;creates&gt;&gt;</panel_attributes><additional_attributes>20;34;300;34</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>400</x><y>216</y><w>140</w><h>54</h></coordinates><panel_attributes>lt=.&gt;
+&lt;&lt;creates&gt;&gt;</panel_attributes><additional_attributes>20;34;120;34</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>400</x><y>156</y><w>210</w><h>54</h></coordinates><panel_attributes>lt=.&gt;
+&lt;&lt;evaluates&gt;&gt;</panel_attributes><additional_attributes>20;34;190;34</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>10</x><y>10</y><w>410</w><h>270</h></coordinates><panel_attributes>&lt;&lt;interface&gt;&gt;
+Sail
+--
+void initialize(Map params)
+void shutDown()
+void evaluate(Query query, QueryAnswerListener listener)
+StatementIterator getStatements()
+StatementIterator getDefaultContext()
+StatementIterator getContext(Resource context)
+NamespaceIterator getNamespaces()
+boolean isWritable()
+Transaction startTransaction()
+void clear()
+ValueFactory getValueFactory()
+void addSailChangedListener(SailChangedListener listener)
+void removeSailChangedListener(SailChangedListener listener)</panel_attributes><additional_attributes></additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>590</x><y>170</y><w>240</w><h>50</h></coordinates><panel_attributes>&lt;&lt;interface&gt;&gt;
+org.openrdf.sesame.sail.query.Query
+--</panel_attributes><additional_attributes></additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>700</x><y>30</y><w>130</w><h>130</h></coordinates><panel_attributes>&lt;&lt;interface&gt;&gt;
+NamespaceIterator
+--
+boolean hasNext()
+void next()
+String getName()
+String getPrefix()
+void close()</panel_attributes><additional_attributes></additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>520</x><y>10</y><w>160</w><h>120</h></coordinates><panel_attributes>&lt;&lt;interface&gt;&gt;
+StatementIterator
+--
+boolean hasNext()
+Statement next()
+Resource getContext()
+void close()</panel_attributes><additional_attributes></additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>100</x><y>260</y><w>40</w><h>80</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>20;20;20;60</additional_attributes></element></umlet_diagram>

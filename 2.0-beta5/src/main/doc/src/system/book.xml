@@ -1,0 +1,41 @@
+<?xml version="1.0" standalone="no"?>
+
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+                      "../docbook/docbookx.dtd" [
+<!ENTITY introduction SYSTEM "introduction.xml">
+<!ENTITY architecture SYSTEM "architecture.xml">
+<!ENTITY rdfmodel SYSTEM "rdf-model.xml">
+<!ENTITY rio SYSTEM "rio.xml">
+<!ENTITY sailapi SYSTEM "sail-api.xml">
+<!ENTITY sailquerymodel SYSTEM "sail-query-model.xml">
+<!ENTITY repository SYSTEM "repository.xml">
+<!ENTITY http-protocol SYSTEM "http-protocol.xml">
+<!ENTITY codingstyle SYSTEM "codingstyle.xml">
+
+]>
+
+<book>
+	<title>System documentation for Sesame 2.0 (DRAFT)</title>
+
+	<bookinfo>
+		<releaseinfo>
+			Draft
+		</releaseinfo>
+		<copyright>
+			<year>2002-2007</year>
+			<holder>Aduna B.V.</holder>
+		</copyright>
+	</bookinfo>
+
+<!-- chapters -->
+&introduction;
+&architecture;
+&rdfmodel;
+&rio;
+&sailapi;
+&sailquerymodel;
+&repository;
+&http-protocol;
+&codingstyle;
+
+</book>
