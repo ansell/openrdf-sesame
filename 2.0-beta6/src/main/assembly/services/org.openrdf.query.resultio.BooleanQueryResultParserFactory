@@ -1,0 +1,2 @@
+org.openrdf.query.resultio.text.BooleanTextParserFactory
+org.openrdf.query.resultio.sparqlxml.SPARQLBooleanXMLParserFactory

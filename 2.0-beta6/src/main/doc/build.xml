@@ -1,0 +1,82 @@
+<project name="sesame-documentation" default="userdoc" basedir=".">
+
+	<!-- NOTE: this build file is setup to be run from Maven -->
+
+	<target name="init">
+		<property name="target.dir" value="${basedir}/target" />
+	
+		<property name="doc.dir" value="${basedir}/src/main/doc" />
+		<property name="doc-src.dir" value="${doc.dir}/src/" />
+		<property name="userdoc.dir" value="${doc.dir}/users" />
+		<property name="systemdoc.dir" value="${doc.dir}/system" />
+		<property name="api.dir" value="${doc.dir}/api" />
+
+		<property name="docbook-xsl.dir" value="${doc-src.dir}/docbook-xsl-1.68.1"/>
+
+		<property name="doc.target.dir" value="${target.dir}/docs" />
+		<property name="userdoc.target.dir" value="${doc.target.dir}/users" />
+		<property name="systemdoc.target.dir" value="${doc.target.dir}/system" />
+
+		<path id="docbook-classpath">
+			<path refid="maven.plugin.classpath" />
+			<pathelement location="${doc-src.dir}/docbook-xsl-1.68.1/extensions/saxon653.jar"/>
+		</path>
+	</target>
+
+	<target name="createdirs" depends="init">
+		<!-- Create Directories -->
+		<mkdir dir="${doc.target.dir}" />
+	</target>
+
+	<target name="userdoc" depends="createdirs">
+		<echo message="Generating single-page user documentation"/>
+		
+		<copy todir="${userdoc.target.dir}">
+			<fileset dir="${userdoc.dir}" />
+		</copy>
+		
+		<java classname="com.icl.saxon.StyleSheet" fork="true" logError="true"
+			output="${userdoc.target.dir}/userguide.html">
+			<classpath refid="docbook-classpath"/>
+			<arg value="${doc-src.dir}/users/book.xml"/>
+			<arg value="${doc-src.dir}/users/openrdf.xsl"/>
+			<arg value="use.extensions=1"/>
+		</java>
+
+		<echo message="Generating multi-page user documentation"/>
+		<java classname="com.icl.saxon.StyleSheet" fork="true" logError="true"
+			dir="${userdoc.target.dir}">
+			<classpath refid="docbook-classpath"/>
+			<arg value="${doc-src.dir}/users/book.xml"/>
+			<arg value="${doc-src.dir}/users/openrdf-chunk.xsl"/>
+			<arg value="chunk.section.depth=0"/>
+			<arg value="use.extensions=1"/>
+		</java>
+	</target>
+
+	<target name="systemdoc" depends="createdirs">
+		<echo message="Generating single-page system documentation"/>
+
+		<copy todir="${systemdoc.target.dir}">
+			<fileset dir="${systemdoc.dir}" />
+		</copy>
+
+		<java classname="com.icl.saxon.StyleSheet" fork="true" logError="true"
+			output="${systemdoc.target.dir}/systemdoc.html">
+			<classpath refid="docbook-classpath"/>
+			<arg value="${doc-src.dir}/system/book.xml"/>
+			<arg value="${doc-src.dir}/system/openrdf.xsl"/>
+			<arg value="use.extensions=1"/>
+		</java>
+
+		<echo message="Generating multi-page system documentation"/>
+		<java classname="com.icl.saxon.StyleSheet" fork="true" logError="true"
+			dir="${systemdoc.target.dir}">
+			<classpath refid="docbook-classpath"/>
+			<arg value="${doc-src.dir}/system/book.xml"/>
+			<arg value="${doc-src.dir}/system/openrdf-chunk.xsl"/>
+			<arg value="chunk.section.depth=0"/>
+			<arg value="use.extensions=1"/>
+		</java>
+	</target>
+</project>

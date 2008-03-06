@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<navigation id="">
+
+	<!-- Group definitions -->
+	<group id="server">
+		<view id="overview" />
+		<view id="select">
+			<view-suffix>.form</view-suffix>
+		</view>
+		<group id="modify" enabled="false">
+			<view id="overview" />
+		</group>
+	</group>
+
+	<group id="repository">
+		<view id="overview" />
+		<group id="modify">
+			<view id="overview" />
+			<group id="add">
+				<view id="file">
+					<view-suffix>.form</view-suffix>
+				</view>
+				<view id="url">
+					<view-suffix>.form</view-suffix>
+				</view>
+				<view id="text">
+					<view-suffix>.form</view-suffix>
+				</view>
+			</group>
+			<group id="remove">
+				<view id="statements">
+					<view-suffix>.form</view-suffix>
+				</view>
+				<view id="clear">
+					<view-suffix>.form</view-suffix>
+				</view>
+			</group>
+		</group>
+		<group id="query">
+			<view id="select">
+				<view-suffix>.form</view-suffix>
+			</view>
+			<view id="construct">
+				<view-suffix>.form</view-suffix>
+			</view>
+		</group>
+		<group id="explore">
+			<view id="overview" hidden="true" />
+			<view id="resource" hidden="true" />
+			<view id="namespaces" />
+			<view id="contexts" />
+		</group>
+		<group id="extract">
+			<view id="overview">
+				<view-suffix>.form</view-suffix>
+			</view>
+		</group>
+	</group>
+
+</navigation>

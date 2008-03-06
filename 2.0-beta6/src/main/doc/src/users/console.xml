@@ -1,0 +1,240 @@
+<chapter id="chapter-console">
+	<title>Sesame Console</title>
+	<para>
+		This chapter describes Sesame Console, a command-line application for
+		interacting with Sesame, a UI-version of this application is currently
+		being developed. For now, the easiest way to create and manage repositories
+		in a SYSTEM repository is to use the Sesame Console.
+	</para>
+
+	<section>
+		<title>Getting started</title>
+		<para>
+			Sesame Console can be started using the
+			<filename>start-console.bat/.sh</filename> scripts that can be found in
+			the <filename>bin</filename> directory of the Sesame SDK. By default,
+			the console will connect to the "default data directory", which contains
+			the console's own set of repositories. See
+			<xref linkend="chapter-datadir-config"/> for more info on data directories.
+		</para>
+		<para>
+			The console can be operated by typing commands. Commands can span multiple
+			lines and end with a '.' at the end of a line. For example, to get an
+			overview of the available commands, type:
+		</para>
+		<screen><![CDATA[help.]]></screen>
+		<para>
+			To get help for a specific command, type 'help' followed by the command name,
+			e.g.:
+		</para>
+		<screen><![CDATA[help connect.]]></screen>
+	</section>
+
+	<section>
+		<title>Connecting to a set of repositories</title>
+		<para>
+			As indicating in the previous section, the console connects to its own
+			set of repositories by default. Using the <command>connect</command>
+			command you can make the console connect to a Sesame Server or to a
+			set of repositories of your file system. For example, to connect to a
+			Sesame Server running on localhost, enter the following command:
+		</para>
+		<screen><![CDATA[connect http://localhost:8080/openrdf-sesame.]]></screen>
+	</section>
+
+	<section>
+		<title>Repository list</title>
+		<para>
+			To get an overview of the repositories that are available in the set
+			that your console is connected to, use the 'show' command:
+		</para>
+		<screen><![CDATA[show repositories.]]></screen>
+	</section>
+
+	<section>
+		<title>Creating a repository</title>
+		<para>
+			The 'create' command can be used to add new repositories to the set
+			that the console is connected to. This command expects the name of
+			a template that describes the repository's configuration. Currently,
+			there are four templates that are included with the console by default:
+		</para>
+		<itemizedlist>
+			<listitem>"memory", a memory based RDF repository</listitem>
+			<listitem>"memory-rdfs", a memory based RDF repository with RDF Schema inferencing</listitem>
+			<listitem>"native", a repository that uses on-disk data structure</listitem>
+			<listitem>"remote", a repository that serves as a proxy for a repository on a Sesame Server.</listitem>
+		</itemizedlist>
+		<para>
+			When the 'create' command is executed, the console will then ask you
+			to fill in a number of parameters for the type of repository that you
+			chose. For example, to create a native repository, you execute the following
+			command:
+		</para>
+		<screen><![CDATA[create native.]]></screen>
+		<para>
+			The console will then ask you to provide an ID and title for the repository,
+			as well as the triple indexes that need to be created for this kind of store.
+			The values between square brackets indicate default values which you can select
+			by simply hitting enter. The output of this dialogue looks something like this:
+		</para>
+		<screen><![CDATA[
+Please specify values for the following variables:
+Repository ID [native]: myRepo
+Repository title [Native store]: My repository
+Triple indexes [spoc,posc]: 
+Repository created]]></screen>
+		<para>
+			Please see <xref linkend="section-repository-config"/> for more info on the
+			repository configuration options.
+		</para>
+	</section>
+
+	<section>
+		<title>Other commands</title>
+		<para>
+			Please check the documentation that is provided by the console itself for
+			help on how to use the other commands. Most commands should be self
+			explanatory.
+		</para>
+	</section>
+
+	<section id="section-repository-config">
+		<title>Repository configuration</title>
+		<section>
+			<title>Memory store configuration</title>
+			<para>
+				A memory store is an RDF repository that stores its data in main
+				memory. Apart from the standard <parameter>ID</parameter> and
+				<parameter>title</parameter> parameters, this type of repository
+				has a <parameter>Persist</parameter> and
+				<parameter>Sync delay</parameter> parameter.
+			</para>
+	
+			<section>
+				<title>Memory Store persistence</title>
+				<para>
+					The <parameter>Persist</parameter> parameter controls
+					whether the memory store will use a data file for
+					persistence over sessions. Persistent memory stores write
+					their data to disk before being shut down and read this data
+					back in the next time they are initialized. Non-persistent
+					memory stores are always empty upon initialization.
+				</para>
+			</section>
+	
+			<section>
+				<title>Synchronization delay</title>
+				<para>
+					By default, the memory store persistence mechanism synchronizes
+					the disk backup directly upon any change to the contents of the
+					store. That means that directly after an update operation (upload,
+					removal) completes, the disk backup is updated. It is possible
+					to configure a synchronization delay however. This can be useful
+					if your application performs several transactions in sequence and
+					you want to prevent disk synchronization in the middle of this
+					sequence to improve update performance.
+				</para>
+				<para>
+					The synchronization delay is specified by a number, indicating
+					the time in milliseconds that the store will wait before it
+					synchronizes changes to disk. The value 0 indicates that there
+					should be no delay. Negative values can be used to postpone the
+					synchronization indefinitely, i.e. until the store is shut down.
+				</para>
+			</section>
+		</section> <!-- memory store configuration -->
+	
+		<section id="section-native-store-config">
+			<title>Native store configuration</title>
+			<para>
+				A native store stores and retrieves its data directly to/from
+				disk. The advantage of this over the memory store is that it
+				scales much better as it isn't limited to the size of available
+				memory. Of course, since it has to access the disk, it is also
+				slower than the in-memory store, but it is a good solution for
+				larger data sets.
+			</para>
+	
+			<section>
+				<title>Native store indexes</title>  
+				<para>
+					The native store uses on-disk <emphasis>indexes</emphasis>
+					to speed up querying. It uses B-Trees for indexing
+					statements, where the index key consists of four fields:
+					subject (s), predicate (p), object (o) and context (c). The
+					order in which each of these fields is used in the key
+					determines the usability of an index on a specify statement
+					query pattern: searching statements with a specific subject
+					in an index that has the subject as the first field is
+					signifantly faster than searching these same statements in an
+					index where the subject field is second or third. In the worst
+					case, the 'wrong' statement pattern will result in a sequential
+					scan over the entire set of statements.
+				</para>
+				<para>
+					By default, the native repository only uses two indexes, one
+					with a subject-predicate-object-context (spoc) key pattern
+					and one with a predicate-object-subject-context (posc) key
+					pattern.  However, it is possible to define more or other
+					indexes for the native repository, using the
+					<parameter>Triple indexes</parameter> parameter. This can be
+					used to optimize performance for query patterns that occur
+					frequently.
+				</para>
+				<para>
+					The subject, predicate, object and context fields are
+					represented by the characters 's', 'p', 'o' and 'c'
+					respectively. Indexes can be specified by creating 4-letter
+					words from these four characters. Multiple indexes can be
+					specified by separating these words with commas, spaces
+					and/or tabs. For example, the string "spoc, posc" specifies
+					two indexes; a subject-predicate-object-context index and a
+					predicate-object-subject-context index.
+				</para>
+				<para>
+					Creating more indexes potentially speeds up querying (a
+					lot), but also adds overhead for maintaining the indexes.
+					Also, every added index takes up additional disk space.
+				</para>
+				<para>
+					The native store automatically creates/drops indexes upon
+					(re)initialization, so the parameter can be adjusted and
+					upon the first refresh of the configuration the native store
+					will change its indexing strategy, without loss of data.
+				</para>
+			</section>
+		</section> <!-- native repository configuration -->
+	
+		<section>
+			<title>HTTP repository configuration</title>
+			<para>
+				An HTTP repository isn't an actual store, but serves as a proxy for
+				a store on a (remote) Sesame server. Apart from the standard
+				<parameter>ID</parameter> and <parameter>title</parameter> parameters,
+				this type of repository has a <parameter>Sesame server location</parameter>
+				and a <parameter>Remote repository ID</parameter> parameter.
+			</para>
+	
+			<section>
+				<title>Sesame server location</title>
+				<para>
+					This parameter specifies the URL of the Sesame Server that the
+					repository should communicate with. Default value is
+					http://localhost:8080/openrdf-sesame, which corresponds to a Sesame
+					Server that is running on your own machine.
+				</para>
+			</section>
+	
+			<section>
+				<title>Remote repository ID</title>
+				<para>
+					This is the ID of the <emphasis>remote</emphasis> repository that the
+					HTTP repository should communicate with. Please note an HTTP repository
+					two repository ID parameters: one identifying the remote repository and
+					one that specifies the HTTP repository's own ID.
+				</para>
+			</section>
+		</section> <!-- HTTP repository configuration -->
+	</section>
+</chapter>
