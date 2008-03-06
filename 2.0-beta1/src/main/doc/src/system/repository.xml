@@ -1,0 +1,74 @@
+<chapter id="chapter-repository"> 
+	<title>Repository API</title>
+	<para>
+		The following figure shows an outline of the Repository API of Sesame
+		2, the main access API for developers:
+	</para>
+	<figure id="figure-sesame-rep" float="1">
+		<title>The Sesame 2 Repository API</title>
+		<mediaobject>
+			<imageobject>
+				<imagedata fileref="figures/org_openrdf_sesame_repository.jpg"/>
+			</imageobject>
+		</mediaobject>
+	</figure>
+	<para>
+		As can be seen, the new Repository API has roughly the functionality of
+		the repository from Sesame 1.x: it allows declarative
+		querying through SeRQL and other query languages, as well as direct
+		API access on individual statements.
+	</para>
+	<para>
+		The RepositoryImpl class is an implementation of the Repository
+		interface. The Connection interface allows one to do modification operations
+		directly on the repository. 
+	</para>
+	<para>
+		By default, <classname>autoCommit</classname> will be set to true.
+		This means that any add or remove operation carried out on the
+		repository will be an isolated transaction. It can be switched to
+		false to allow batch operations in a single transaction, improving
+		performance of such operations significantly.
+	</para>
+	<para>
+		Some code examples:
+	</para>
+	<programlisting><![CDATA[
+// create a new repository (no inferencing, in memory storage)
+Repository repository = new RepositoryImpl(MemoryStore.create());
+
+// create a statement and add it to the store
+ValueFactory factory = repository.getValueFactory();
+URI subject = factory.createURI("http://example.org/foo");
+URI object = factory.createUR("http://example.org/bar");
+
+Connection con = repository.getConnection();
+con.add(subject, RDF.TYPE, object);
+
+// now we want to export the contents of the store as N-Triples to
+// standard output:
+RDFHandler ntriplesWriter = new NTriplesWriter(System.out);
+con.getStatements(ntriplesWriter);
+
+// now we want the result of a query to be written as N-Triples
+String query = "SELECT * FROM {X} P {Y}";
+con.evaluateGraphQuery(QueryLanguage.SERQL, query, ntriplesWriter);
+
+// done, close the connection
+con.close();
+
+// we open an explicit transaction for uploading a file to the store
+File file = new File("/foo/bar/example.rdf");
+try { 
+  Connection newCon = repository.getConnection();
+  newCon.setAutoCommit(false);
+  
+  con.add(file, "http://www.foo.bar/", RDFFormat.RDFXML);
+  con.commit();
+}
+catch (Exception e) { // on any exception, we cancel the transaction
+  if (con != null) {
+    con.rollback();
+  }
+}]]></programlisting>
+</chapter>

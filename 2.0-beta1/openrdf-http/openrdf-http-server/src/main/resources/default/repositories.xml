@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<openrdf-sesame>
+
+	<admin password="admin"/>
+
+	<repositorylist>
+		<repository id="default">
+			<title>Default Repository</title>
+			<sailstack>
+				<sail class="org.openrdf.sail.memory.MemoryStore" />
+			</sailstack>
+
+			<acl worldReadable="true" worldWriteable="true" />
+		</repository>
+	</repositorylist>
+	
+</openrdf-sesame>
