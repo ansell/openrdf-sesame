@@ -1,0 +1,8 @@
+# Input file for RDF Model Theory inferencer test case base on the RDF MT
+# specification of 23 January 2003
+# Description: Statement inheritance does not apply when the "superproperty"
+# is a literal.
+# Relevant inferencing rules: rdfs6
+# Author: Arjohn Kampman (arjohn.kampman@aidministrator.nl)
+<http://example.org/subProp> <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> "Hello World!".
+<http://example.org/A> <http://example.org/subProp> <http://example.org/B>.

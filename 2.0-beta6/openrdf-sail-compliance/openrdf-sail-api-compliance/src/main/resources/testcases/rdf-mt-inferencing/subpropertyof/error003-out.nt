@@ -1,0 +1,6 @@
+# Output file for RDF Model Theory inferencer test case
+# The inferrencer just needs to handle the exotic input correctly. No specific
+# inferred statements are expected.
+# FIXME: how do we properly evaluate whether the test case has been handled
+# correctly?
+<http://example.org/A> _:bNode <http://example.org/B>
