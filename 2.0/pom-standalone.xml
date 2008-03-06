@@ -1,0 +1,94 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.openrdf</groupId>
+	<artifactId>openrdf-sesame2-tck</artifactId>
+	<packaging>pom</packaging>
+	<version>2.0</version>
+	<name>OpenRDF Sesame 2 Technology Compatibility Kit</name>
+	<description>Sesame is an RDF/RDFS database.</description>
+	<url>http://www.openrdf.org/</url>
+
+	<organization>
+		<name>Aduna</name>
+		<url>http://www.aduna-software.com/</url>
+	</organization>
+
+	<inceptionYear>2001</inceptionYear>
+
+	<licenses>
+		<license>
+			<name>Aduna BSD-style license</name>
+			<url>http://www.aduna-software.com/documents/legal/licenses/aduna-bsd.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<modules>
+		<module>openrdf-queryparser-compliance</module>
+		<module>openrdf-queryresultio-compliance</module>
+		<module>openrdf-http-compliance</module>
+		<module>openrdf-repository-compliance</module>
+		<module>openrdf-rio-compliance</module>
+		<module>openrdf-sail-compliance</module>
+	</modules>
+
+	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ftp</artifactId>
+			</extension>
+		</extensions>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<tagBase>
+						https://src.aduna-software.org/svn/org.openrdf/releases/sesame2-tck/openrdf-server-compliance
+					</tagBase>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>http://repository.aduna-software.org/maven2</url>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>ftp-aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
+		</repository>
+		<snapshotRepository>
+			<id>ftp-aduna-repo</id>
+			<name>Aduna Repository</name>
+			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
+			<uniqueVersion>false</uniqueVersion>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<scm>
+		<connection>scm:svn:https://src.aduna-software.org/svn/org.openrdf/projects/sesame2-tck</connection>
+		<developerConnection>scm:svn:https://src.aduna-software.org/svn/org.openrdf/projects/sesame2-tck</developerConnection>
+		<url>http://src.aduna-software.org/viewvc/org.openrdf/projects/sesame2-tck</url>
+	</scm>
+
+</project>
