@@ -1,0 +1,5 @@
+#Thu Nov 22 13:47:41 CET 2007
+eclipse.preferences.version=1
+encoding//src/main/java/org/openrdf/query/algebra/evaluation/impl/EvaluationStrategyImpl.java=UTF-8
+encoding//src/test/java/org/openrdf/query/algebra/evaluation/util/LiteralComparatorTest.java=UTF-8
+encoding//src/test/java/org/openrdf/query/algebra/evaluation/util/ValueComparatorTest.java=UTF-8

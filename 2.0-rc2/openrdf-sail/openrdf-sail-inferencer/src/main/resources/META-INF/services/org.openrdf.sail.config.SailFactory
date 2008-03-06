@@ -1,0 +1,2 @@
+org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerFactory
+org.openrdf.sail.inferencer.fc.config.DirectTypeHierarchyInferencerFactory

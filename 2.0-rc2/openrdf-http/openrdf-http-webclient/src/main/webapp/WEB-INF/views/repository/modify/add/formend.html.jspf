@@ -1,0 +1,7 @@
+			<tr>
+				<td>&nbsp;</td>
+				<td><input type="submit" value="<fmt:message key="form.submit" />" /></td>
+				<td>&nbsp;</td>
+			</tr>
+		</tbody>
+	</table>

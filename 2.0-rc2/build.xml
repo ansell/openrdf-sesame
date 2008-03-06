@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="sesame2" default="help" basedir=".">
+
+	<target name="help" description="Usage information">
+		<echo message="Sesame 2 Release Builder" />
+		<echo message="========================" />
+		<echo message="The purpose of this Ant build file is to create releases for Sesame 2." />
+		<echo message="It is not intended to capture every aspect of project development. Please use Maven for development purposes." />
+		<echo message=" " />
+		<echo message="Available targets: " />
+		<echo message=" " />
+		<echo message="- package: package all of Sesame for release" />
+		<echo message="- docs:    create user and system documentation only" />
+	</target>
+
+	<target name="package" depends="issuewarnings,mvn,override-onejar-services" description="Create release artifacts">
+	</target>
+
+	<target name="mvn">
+		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+			<arg line="clean source:jar install site assembly:assembly" />
+		</exec>
+
+		<exec os="Linux" executable="mvn" failonerror="true">
+			<arg line="clean source:jar install site assembly:assembly" />
+		</exec>
+	</target>
+
+	<target name="issuewarnings">
+	  <echo message="WARNING: Do not forget to update version numbers in:" />
+	  <echo message=" - org.openrdf.console.Console" />
+	  <echo message=" - openrdf-http/openrdf-http-server/src/main/webapp/WEB-INF/openrdf-servlet.xml" />
+	  <echo message=" - openrdf-http/openrdf-http-webclient/src/main/webapp/WEB-INF/openrdf-webclient-servlet.xml" />
+	  <echo message=" - src/main/dist/bin/* (console startup scripts)" />
+	  <input>Press return to continue</input>
+	</target>
+
+	<target name="docs" depends="mvn-docs" description="Create user and system documentation only">
+	</target>
+
+	<target name="mvn-docs">
+		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+			<arg line="-N clean site" />
+		</exec>
+
+		<exec os="Linux" executable="mvn" failonerror="true">
+			<arg line="-N clean site" />
+		</exec>
+	</target>
+
+  <target name="override-onejar-services">
+    <xmlproperty file="pom.xml" />
+    <antcall target="concat-service-file">
+      <param name="service" value="org.openrdf.query.algebra.evaluation.function.Function"/>
+    </antcall>
+    <antcall target="concat-service-file">
+      <param name="service" value="org.openrdf.query.parser.QueryParserFactory"/>
+    </antcall>
+    <antcall target="concat-service-file">
+      <param name="service" value="org.openrdf.query.resultio.BooleanQueryResultParserFactory"/>
+    </antcall>
+    <antcall target="concat-service-file">
+      <param name="service" value="org.openrdf.query.resultio.BooleanQueryResultWriterFactory"/>
+    </antcall>
+    <antcall target="concat-service-file">
+      <param name="service" value="org.openrdf.query.resultio.TupleQueryResultParserFactory"/>
+    </antcall>
+    <antcall target="concat-service-file">
+      <param name="service" value="org.openrdf.query.resultio.TupleQueryResultWriterFactory"/>
+    </antcall>
+    <antcall target="concat-service-file">
+      <param name="service" value="org.openrdf.repository.config.RepositoryFactory"/>
+    </antcall>
+    <antcall target="concat-service-file">
+      <param name="service" value="org.openrdf.rio.RDFParserFactory"/>
+    </antcall>
+    <antcall target="concat-service-file">
+      <param name="service" value="org.openrdf.rio.RDFWriterFactory"/>
+    </antcall>
+    <antcall target="concat-service-file">
+      <param name="service" value="org.openrdf.sail.config.SailFactory"/>
+    </antcall>
+    <zip destfile="target/openrdf-sesame-${project.version}-onejar.jar" update="true">
+      <fileset dir="target/services"/>
+    </zip>
+  </target>
+
+  <target name="concat-service-file">
+    <echo message="META-INF/services/${service}"/>
+    <concat destfile="target/services/META-INF/services/${service}" fixlastline="yes">
+      <fileset dir="." includes="**/src/main/resources/META-INF/services/${service}"/>
+    </concat>
+  </target>
+
+</project>
