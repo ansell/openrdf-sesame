@@ -1,0 +1,119 @@
+<chapter id="chapter-server-install">
+	<title>Server software installation</title>
+	<para>
+		In this section, we explain how you can install a Sesame HTTP 
+		Server. You can skip this if you are not planning to run a Sesame
+		server but intend to use Sesame as a library to program against.
+	</para>
+
+	<section id="section-server-required-software">
+		<title>Required software</title>
+
+		<para>
+			The Sesame server software requires the following software:
+		</para>
+
+		<itemizedlist>
+			<listitem>Java 5 or newer</listitem>
+			<listitem>
+				A Java Servlet Container that supports Java Servlet API 2.4 and
+				Java Server Pages (JSP) 2.0, or newer. We recommend using a
+				recent, stable version of
+				<ulink url="http://tomcat.apache.org/">Apache Tomcat</ulink>.
+				At the time of writing, this is either version 5.5.x or 6.x.
+			</listitem>
+		</itemizedlist>
+	</section>
+
+	<section id="section-sesame-server-installation" xreflabel="Sesame server installation">
+		<title>Sesame server installation</title>
+		<para>
+			The Sesame 2.0 server software comes in the form of two Java Web
+			Applications: <emphasis>Sesame (HTTP) server</emphasis> and
+			<emphasis>OpenRDF Workbench</emphasis>.
+		</para>
+		<para>
+			Sesame Server provides HTTP access to Sesame repositories and is
+			meant to be accessed by other applications. Apart from some
+			functionality to view the server's log messages, it doesn't provide
+			any user oriented functionality. Instead, the user oriented
+			functionality is part of OpenRDF Workbench. OpenRDF Workbench
+			provides a web interface for querying, updating and exploring the
+			repositories of a Sesame Server.
+		</para>
+		<para>
+			If you have not done so already, you will first need to download the
+			<ulink url="http://www.openrdf.org/download.jsp">Sesame 2.0 SDK</ulink>.
+			Both Sesame Server and OpenRDF Workbench can be found in the
+			<filename>war</filename> directory of the SDK. The war-files in this
+			directory need to be deployed in a Java Servlet Container (see
+			<xref linkend="section-server-required-software"/>). The deployment
+			process is container-specific, please consult the documentation for
+			your container on how to deploy a web application.
+		</para>
+		<para>
+			After you have deployed the Sesame Server webapp, you should be able
+			to access it, by default, at path <filename>/openrdf-sesame</filename>.
+			You can point your browser at this location to verify that the
+			deployment succeeded. Your browser should show the Sesame welcome
+			screen as well as some options to view the server logs, among other
+			things. Similarly, after deployment, the OpenRDF Workbench should be
+			available at path <filename>/openrdf-workbench</filename>.
+		</para>
+	</section>
+
+	<section>
+		<title>Logging Configuration</title>
+		<para>
+			Both Sesame Server and OpenRDF Workbench use the
+			<ulink url="http://logging.apache.org/log4j/docs/">Apache log4j</ulink>
+			logging framework. In its default configuration, all Sesame Server
+			log messages are sent to the log file
+			<filename>[ADUNA_DATA]/OpenRDF Sesame/logs/main.log</filename>
+			(and log messages for the Workbench to the same file in
+			<filename>[ADUNA_DATA]/OpenRDF workbench</filename>). See
+			<xref linkend="chapter-datadir-config"/> for more info about data
+			directories.
+		</para>
+		<para>
+			The default log level is <parameter>INFO</parameter>, indicating
+			that only important status messages, warnings and errors are logged.
+			The log level can be adjusted by modifying the
+			<filename>.../conf/log4j.properties</filename> file. This file does
+			exist by default, but the server will generate a
+			<filename>log4j.properties.default</filename> file when it is
+			started. This file can be copied/renamed to
+			<filename>log4j.properties</filename>.
+		</para>
+		<para>	
+			To set the log level to, for example, <parameter>DEBUG</parameter>
+			level, modify the line setting the log level for the org.openrdf
+			classes:
+		</para>
+		<screen>log4j.logger.org.openrdf=DEBUG</screen>
+		<para>	
+			For other logging configuration options, please consult the log4j
+			documentation.
+		</para>
+	</section>
+
+	<section>
+		<title>Repository Configuration</title>
+		<para>
+			A clean installation of a Sesame Server has a single repository by
+			default: the SYSTEM repository. This SYSTEM repository contains all
+			configuration data for the server, including data on which other
+			repositories exists and (in future releases) the access rights on
+			these repositories. This SYSTEM repository <emphasis>should
+					not</emphasis> be used to store data that is not related to
+			the server configuration.
+		</para>
+		<para>
+			For now, the easiest way to create and manage repositories in a SYSTEM
+			repository is to use the Sesame Console. The Sesame Console is a
+			command-line application for interacting with Sesame, a UI-version of
+			this application is currently being developed. See
+			<xref linkend="chapter-console"/>.
+		</para>
+	</section>
+</chapter>

@@ -1,0 +1,88 @@
+body {
+    background-color: white;
+    background-image: url("figures/openrdf-doc-bg.png");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    font-family: arial, helvetica, sans-serif;
+    margin-top:  8px;
+    margin-left: 130px;
+    margin-right: 50px;
+}
+
+frameset {
+    border-width: 0;
+}
+
+A:link {
+    text-decoration: none;
+    }
+
+A:visited {
+    text-decoration: none;
+}
+
+A:hover {
+    text-decoration: underline;
+}
+    
+A.nav {
+    text-decoration: none;
+}
+
+h1, h2, h3,h4, h5, h6, th, td {
+}
+
+p, ul, ol {
+    text-align: justify
+}
+
+p.right {
+    text-align: right
+}
+
+p.caption{
+    font-style: italic;
+}
+
+pre { 
+    text-align: left;
+    font-family: fixed, courier;
+}
+
+pre.programlisting {
+    font-size: 80%;
+	padding: 4px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: #FFD0D0;
+	background-color: #FFEFEF
+}
+
+pre.screen {
+    font-size: 80%;
+    padding: 4px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #D0D0FF;
+    background-color: #EFEFFF
+}
+
+.informaltable table {
+    font-size: 90%;
+    padding: 4px;
+    border-style: none
+}
+
+.informaltable th, .informaltable td {
+    font-size: 90%;
+    padding: 4px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #D0F0B0;
+    background-color: #DFF0C0;
+}
+
+
+img {
+}
+
