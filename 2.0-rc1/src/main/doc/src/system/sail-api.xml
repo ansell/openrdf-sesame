@@ -1,0 +1,81 @@
+<chapter id="chapter-sailapi" xreflabel="Sail API">
+	<title>Sail API</title>
+
+	<figure id="figure-sail-api-uml" float="1">
+		<title>Class diagram for the Sail API</title>
+		<mediaobject>
+			<imageobject>
+				<imagedata fileref="figures/org_openrdf_sesame_sail.jpg"/>
+			</imageobject>
+		</mediaobject>
+	</figure>
+
+	<para>
+		The class diagram above shows the main Sail interfaces from package
+			<ulink url="../api/org/openrdf/sesame/sail/package-summary.html">
+			org.openrdf.sesame.sail</ulink>.
+		The Sail API defines a set of interfaces for RDF stores and inferencers.
+		The main interface is Sail, which defines methods to initialize, query,
+		modify and shut down the Sail object.
+	</para>
+	<para>
+		For scalability reasons, all data that is extracted from a Sail object
+		is returned in the form of (forward-only) iterators. This allows one to
+		fetch the entire set of stored statements, even if the set is to large
+		to store in main memory. Queries are expressed in terms of the Sail
+		Query Model (see <xref linkend="chapter-sailquerymodel"/>).
+	</para>
+	<para>
+		New in Sesame 2.0 is the concept of statement contexts; a grouping
+		mechanism for statements. Statements can now be stored in contexts which
+		are identified by a URI or a blank node. Statements that are not stored
+		in a specific context are stored in the "default context". The Sail
+		interface defines methods for extracting the statements from a specific
+		context, from the default context, or from all contexts combined.
+	</para>
+	<para>
+		Also new in Sesame 2.0 is proper transaction support. Transactions are
+		modelled as separate objects, which is thought to be the most general
+		approach to modelling transactions: it allows the caller to create
+		transactions per object, per thread, or even per application.
+		Alternatives for matching commits or rollbacks to the appropriate
+		transaction are all more specific, e.g.: based on threads or calling
+		objects.
+	</para>
+	<para>
+		A Sail implementation may or may not support features like concurrent
+		transactions or transaction isolation; this is not defined by the Sail
+		API. Sails that do not have isolated transaction may block any query
+		calls during transactions; Sails that do not support concurrent
+		transactions might do the same for calls to startTransaction(). Sail
+		implementations should clearly document their behaviour with respect to
+		concurrent access.
+	</para>
+	<para>
+		Some Sails can be stacked on top of other Sails. These Sails should
+		implement the StackableSail interface. By stacking a Sail on top of
+		another, all calls for the bottom Sail will pass through the Sails that
+		are on top of it (see <xref linkend="figure-sail-stack"/>). This feature
+		can be used for a whole range of applications: access control,
+		pluggable inferencers, hooks to external services, etc. A concrete
+		example is a mixed forward-/backward-chaining inferencer, which will
+		wrap transactions to do its forward-chaining work upon commit and
+		extend queries to do its backward-chaining work.
+	</para>
+
+	<figure id="figure-sail-stack" float="1">
+		<title>Example Sail stack</title>
+		<mediaobject>
+			<imageobject>
+				<imagedata fileref="figures/sail-stack.png"/>
+			</imageobject>
+		</mediaobject>
+	</figure>
+
+	<para>
+		SailChangedListener's can register themselves with Sail objects in
+		order to be notified of any changes in the stored data. Whenever this
+		happens, the Sail will generate a SailChangedEvent and pass it to all
+		regsitered listeners.
+	</para>
+</chapter>

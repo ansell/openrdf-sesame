@@ -1,0 +1,39 @@
+<chapter id="chapter-sailquerymodel" xreflabel="Sail Query Model">
+	<title>Sail Query model</title>
+
+	<figure id="figure-sail-query-model-uml" float="1">
+		<title>Class diagram for the Sail Query Model</title>
+		<mediaobject>
+			<imageobject>
+				<imagedata fileref="figures/org_openrdf_sesame_sail_query.jpg"/>
+			</imageobject>
+		</mediaobject>
+	</figure>
+
+	<para>
+		The class diagram above shows the Sail Query model from package
+			<ulink url="../api/org/openrdf/sesame/sail/query/package-summary.html">
+			org.openrdf.sesame.sail.query</ulink>.
+		The Sail Query Model is a generic model for RDF queries. Queries in
+		various languages (SeRQL, RDQL, ...) are parsed to models built from
+		these classes. Objects of type Query can be handed over to Sail objects
+		for evaluation.
+	</para>
+	<para>
+		Sails are free to evaluate query models in a way that suits them best; a
+		Sail that operates on a powerful relational database supporting SQL, for
+		example, can translate (parts of) the query model to SQL queries. The
+		query model is also able to evaluate itself: The TripleSource interface
+		defines all methods that are needed by the query model to do this. By
+		implementing this interface, a Sail can use the self-evaluating feature.
+		The heuristics-based QueryOptimizer can be used to apply some general
+		optimizations to query models, resulting in lower evaluation times.
+	</para>
+	<para>
+		TODO:
+	</para>
+	<itemizedlist>
+		<listitem>Explain the Sail Query Model in more detail.</listitem>
+		<listitem>Reorganize the class diagram a little.</listitem>
+	</itemizedlist>
+</chapter>
