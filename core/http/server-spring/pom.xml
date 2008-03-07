@@ -23,11 +23,7 @@
 
 		<dependency>
 			<groupId>info.aduna.appbase</groupId>
-			<artifactId>aduna-appbase-webapp-standard-spring</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>info.aduna.appbase</groupId>
-			<artifactId>aduna-appbase-webapp-core</artifactId>
+			<artifactId>aduna-appbase-webapp-base-core</artifactId>
 		</dependency>
 
 		<dependency>
@@ -37,6 +33,10 @@
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-io</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-webapp-core</artifactId>
 		</dependency>
 
 		<dependency>
