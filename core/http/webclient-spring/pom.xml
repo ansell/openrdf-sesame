@@ -35,7 +35,7 @@
 
 		<dependency>
 			<groupId>info.aduna.appbase</groupId>
-			<artifactId>aduna-appbase-webapp-standard-spring</artifactId>
+			<artifactId>aduna-appbase-webapp-base-core</artifactId>
 		</dependency>
 
 		<dependency>
