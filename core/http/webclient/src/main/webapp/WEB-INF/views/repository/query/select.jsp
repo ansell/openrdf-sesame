@@ -19,11 +19,7 @@
 		<tbody>
 			<tr>
 				<th><fmt:message key="repository.query.querylanguage" /></th>
-				<td>
-					<form:select path="queryLanguage">
-						<form:options items="${queryLanguages}" itemValue="qlId" itemLabel="qlName"/>
-					</form:select>				
-				</td>
+				<td><form:select path="queryLanguage" items="${queryLanguages}" /></td>
 				<td><form:errors path="queryLanguage" cssClass="error" /></td>
 			</tr>
 			<tr>
