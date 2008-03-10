@@ -9,27 +9,35 @@
 	<description>OpenRDF Sesame</description>
 
 	<filter>
-		<filter-name>CssPathFilter</filter-name>
-		<filter-class>info.aduna.webapp.filters.CssPathFilter</filter-class>
+		<filter-name>PathFilter</filter-name>
+		<filter-class>
+			info.aduna.webapp.filters.PathFilter
+		</filter-class>
 	</filter>
 
 	<filter>
-		<filter-name>WelcomeRedirectFilter</filter-name>
-		<filter-class>info.aduna.webapp.filters.WelcomeRedirectFilter</filter-class>
+		<filter-name>UrlRewriteFilter</filter-name>
+		<filter-class>
+			org.tuckey.web.filters.urlrewrite.UrlRewriteFilter
+		</filter-class>
 		<init-param>
-			<param-name>welcome-view</param-name>
-			<param-value>overview.view</param-value>
+			<param-name>logLevel</param-name>
+			<param-value>log4j</param-value>
+		</init-param>
+		<init-param>
+			<param-name>statusEnabled</param-name>
+			<param-value>false</param-value>
 		</init-param>
 	</filter>
 
 	<filter-mapping>
-		<filter-name>CssPathFilter</filter-name>
-		<url-pattern>*.css</url-pattern>
+		<filter-name>UrlRewriteFilter</filter-name>
+		<url-pattern>/</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
-		<filter-name>WelcomeRedirectFilter</filter-name>
-		<url-pattern>/</url-pattern>
+		<filter-name>PathFilter</filter-name>
+		<url-pattern>*.css</url-pattern>
 	</filter-mapping>
 
 	<servlet>

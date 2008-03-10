@@ -16,11 +16,7 @@
 		<tbody>
 			<tr>
 				<th><fmt:message key="repository.rdf.format" /></th>
-				<td>
-					<form:select path="resultFormat">
-						<form:options items="${resultFormats}" itemValue="rfId" itemLabel="rfName"/>
-					</form:select>				
-				</td>
+				<td><form:select path="resultFormat" items="${resultFormats}" /></td>
 				<td><form:errors path="resultFormat" cssClass="error" /></td>
 			</tr>
 			<tr>
