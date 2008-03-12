@@ -11,6 +11,7 @@ import org.openrdf.sail.rdbms.algebra.DatatypeColumn;
 import org.openrdf.sail.rdbms.algebra.DateTimeColumn;
 import org.openrdf.sail.rdbms.algebra.DoubleValue;
 import org.openrdf.sail.rdbms.algebra.FalseValue;
+import org.openrdf.sail.rdbms.algebra.HashColumn;
 import org.openrdf.sail.rdbms.algebra.IdColumn;
 import org.openrdf.sail.rdbms.algebra.JoinItem;
 import org.openrdf.sail.rdbms.algebra.LabelColumn;
@@ -69,6 +70,10 @@ public class RdbmsQueryModelVisitorBase<X extends Exception> extends
 
 	public void meet(FalseValue node) throws X {
 		meetSqlConstant(node);
+	}
+
+	public void meet(HashColumn node) throws X {
+		meetValueColumnBase(node);
 	}
 
 	public void meet(IdColumn node) throws X {

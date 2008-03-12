@@ -26,6 +26,7 @@ public class SqlExprFactory {
 	private TimeExprFactory time;
 	private URIExprFactory uri;
 	private ZonedExprFactory zoned;
+	private HashExprFactory hash;
 
 	public void setBNodeExprFactory(BNodeExprFactory bnode) {
 		this.bnode = bnode;
@@ -61,6 +62,10 @@ public class SqlExprFactory {
 
 	public void setZonedExprFactory(ZonedExprFactory zoned) {
 		this.zoned = zoned;
+	}
+
+	public void setHashExprFactory(HashExprFactory hash) {
+		this.hash = hash;
 	}
 
 	public SqlExpr createBNodeExpr(ValueExpr arg)
@@ -106,5 +111,11 @@ public class SqlExprFactory {
 	public SqlExpr createUriExpr(ValueExpr arg)
 			throws UnsupportedRdbmsOperatorException {
 		return uri.createUriExpr(arg);
+	}
+
+	public SqlExpr createHashExpr(ValueExpr arg)
+		throws UnsupportedRdbmsOperatorException
+	{
+		return hash.createHashExpr(arg);
 	}
 }

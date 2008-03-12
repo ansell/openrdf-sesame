@@ -51,6 +51,7 @@ import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.algebra.BNodeColumn;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
 import org.openrdf.sail.rdbms.algebra.DatatypeColumn;
+import org.openrdf.sail.rdbms.algebra.HashColumn;
 import org.openrdf.sail.rdbms.algebra.IdColumn;
 import org.openrdf.sail.rdbms.algebra.JoinItem;
 import org.openrdf.sail.rdbms.algebra.LabelColumn;
@@ -72,6 +73,7 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
+import org.openrdf.sail.rdbms.schema.IdCode;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
 
 /**
@@ -244,12 +246,8 @@ public class SelectQueryOptimizer extends
 				IdColumn existing = new IdColumn(vars.get(var.getName()));
 				from.addFilter(new SqlEq(new IdColumn(var), existing));
 			} else if (value != null && !var.isImplied()) {
-				try {
-					LongValue vc = new LongValue(vf.getInternalId(value));
-					from.addFilter(new SqlEq(new IdColumn(var), vc));
-				} catch (RdbmsException e) {
-					throw new RdbmsRuntimeException(e);
-				}
+				LongValue vc = new LongValue(IdCode.valueOf(value).hash(value));
+				from.addFilter(new SqlEq(new HashColumn(var), vc));
 			} else {
 				vars.put(var.getName(), var);
 			}
@@ -318,8 +316,8 @@ public class SelectQueryOptimizer extends
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
 			SelectQuery query = (SelectQuery) node.getArg();
-			Map<String, String> bindingNames = new HashMap();
-			List<SelectProjection> selection = new ArrayList();
+			Map<String, String> bindingNames = new HashMap<String, String>();
+			List<SelectProjection> selection = new ArrayList<SelectProjection>();
 			ProjectionElemList list = node.getProjectionElemList();
 			for (ProjectionElem e : list.getElements()) {
 				String source = e.getSourceName();

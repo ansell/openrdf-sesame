@@ -149,7 +149,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	}
 
 	public RdbmsResource getRdbmsResource(long id, String stringValue) {
-		IdCode code = IdCode.decode(id);
+		IdCode code = IdCode.valueOf(id);
 		if (code.isURI())
 			return new RdbmsURI(id, uris.getIdVersion(), vf.createURI(stringValue));
 		return new RdbmsBNode(id, bnodes.getIdVersion(), vf.createBNode(stringValue));

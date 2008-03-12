@@ -16,6 +16,7 @@ import org.openrdf.sail.rdbms.algebra.DatatypeColumn;
 import org.openrdf.sail.rdbms.algebra.DateTimeColumn;
 import org.openrdf.sail.rdbms.algebra.DoubleValue;
 import org.openrdf.sail.rdbms.algebra.FalseValue;
+import org.openrdf.sail.rdbms.algebra.HashColumn;
 import org.openrdf.sail.rdbms.algebra.IdColumn;
 import org.openrdf.sail.rdbms.algebra.JoinItem;
 import org.openrdf.sail.rdbms.algebra.LabelColumn;
@@ -149,6 +150,11 @@ public class QueryBuilder {
 
 	private void append(FalseValue expr, SqlExprBuilder filter) {
 		filter.appendBoolean(false);
+	}
+
+	private void append(HashColumn expr, SqlExprBuilder filter) {
+		// TODO what if id is not a hash?
+		filter.column(expr.getAlias(), expr.getColumn());
 	}
 
 	private void append(IdColumn expr, SqlExprBuilder filter) {
@@ -392,7 +398,7 @@ public class QueryBuilder {
 		}
 	}
 
-	private void dispatchSqlConstant(SqlConstant expr, SqlExprBuilder filter)
+	private void dispatchSqlConstant(SqlConstant<?> expr, SqlExprBuilder filter)
 			throws UnsupportedRdbmsOperatorException {
 		if (expr instanceof DoubleValue) {
 			append((DoubleValue) expr, filter);
@@ -434,6 +440,8 @@ public class QueryBuilder {
 			append((BNodeColumn) expr, filter);
 		} else if (expr instanceof DatatypeColumn) {
 			append((DatatypeColumn) expr, filter);
+		} else if (expr instanceof HashColumn) {
+			append((HashColumn) expr, filter);
 		} else if (expr instanceof DateTimeColumn) {
 			append((DateTimeColumn) expr, filter);
 		} else if (expr instanceof LabelColumn) {

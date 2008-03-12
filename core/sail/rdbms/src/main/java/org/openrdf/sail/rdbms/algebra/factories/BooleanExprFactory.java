@@ -178,14 +178,24 @@ public class BooleanExprFactory extends
 	public void meet(SameTerm node) throws UnsupportedRdbmsOperatorException {
 		ValueExpr left = node.getLeftArg();
 		ValueExpr right = node.getRightArg();
-		SqlExpr bnodes = eqComparingNull(bNode(left), bNode(right));
-		SqlExpr uris = eqComparingNull(uri(left), uri(right));
-		SqlExpr langs = eqComparingNull(lang(left), lang(right));
-		SqlExpr datatype = eqComparingNull(type(left), type(right));
-		SqlExpr labels = eqComparingNull(label(left), label(right));
+		boolean leftIsVar = left instanceof Var;
+		boolean rightIsVar = right instanceof Var;
+		boolean leftIsConst = left instanceof ValueConstant;
+		boolean rightIsConst = right instanceof ValueConstant;
+		if (leftIsVar && rightIsVar) {
+			result = eq(new RefIdColumn((Var) left), new RefIdColumn((Var) right));
+		} else if ((leftIsVar || leftIsConst) && (rightIsVar || rightIsConst)) {
+			result = eq(hash(left), hash(right));
+		} else {
+			SqlExpr bnodes = eqComparingNull(bNode(left), bNode(right));
+			SqlExpr uris = eqComparingNull(uri(left), uri(right));
+			SqlExpr langs = eqComparingNull(lang(left), lang(right));
+			SqlExpr datatype = eqComparingNull(type(left), type(right));
+			SqlExpr labels = eqComparingNull(label(left), label(right));
 
-		SqlExpr literals = and(langs, and(datatype, labels));
-		result = and(bnodes, and(uris, literals));
+			SqlExpr literals = and(langs, and(datatype, labels));
+			result = and(bnodes, and(uris, literals));
+		}
 	}
 
 	@Override
@@ -224,6 +234,12 @@ public class BooleanExprFactory extends
 	protected SqlExpr lang(ValueExpr arg)
 			throws UnsupportedRdbmsOperatorException {
 		return sql.createLanguageExpr(arg);
+	}
+
+	protected SqlExpr hash(ValueExpr arg)
+		throws UnsupportedRdbmsOperatorException
+	{
+		return sql.createHashExpr(arg);
 	}
 
 	@Override

@@ -63,7 +63,7 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 	@Override
 	protected void insert(long id, RdbmsURI resource) throws SQLException, InterruptedException {
 		String uri = resource.stringValue();
-		if (IdCode.decode(id).isLong()) {
+		if (IdCode.valueOf(id).isLong()) {
 			longer.insert(id, uri);
 		} else {
 			shorter.insert(id, uri);
@@ -72,10 +72,7 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 
 	@Override
 	protected long getMissingId(RdbmsURI value) {
-		String uri = value.stringValue();
-		if (uri.length() > IdCode.LONG)
-			return IdCode.URI_LONG.getId(uri);
-		return IdCode.URI.getId(uri);
+		return IdCode.valueOf(value).hash(value);
 	}
 
 	@Override

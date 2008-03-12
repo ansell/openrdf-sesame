@@ -5,39 +5,31 @@
  */
 package org.openrdf.sail.rdbms.algebra.factories;
 
-import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.num;
-import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.shift;
-import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.sqlNull;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
-import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
-import org.openrdf.query.algebra.Datatype;
-import org.openrdf.query.algebra.Lang;
-import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
-import org.openrdf.sail.rdbms.algebra.RefIdColumn;
+import org.openrdf.sail.rdbms.algebra.HashColumn;
+import org.openrdf.sail.rdbms.algebra.LongValue;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 import org.openrdf.sail.rdbms.schema.IdCode;
 
+
 /**
- * Creates a binary SQL expression for a dateTime zoned value.
- * 
+ *
  * @author James Leigh
- * 
  */
-public class ZonedExprFactory extends
+public class HashExprFactory extends
 		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 	protected SqlExpr result;
 
-	public SqlExpr createZonedExpr(ValueExpr expr)
+	public SqlExpr createHashExpr(ValueExpr expr)
 			throws UnsupportedRdbmsOperatorException {
 		result = null;
 		if (expr == null)
@@ -49,36 +41,16 @@ public class ZonedExprFactory extends
 	}
 
 	@Override
-	public void meet(Datatype node) {
-		result = sqlNull();
-	}
-
-	@Override
-	public void meet(Lang node) throws UnsupportedRdbmsOperatorException {
-		result = sqlNull();
-	}
-
-	@Override
-	public void meet(MathExpr node) throws UnsupportedRdbmsOperatorException {
-		result = sqlNull();
-	}
-
-	@Override
-	public void meet(Str node) {
-		result = sqlNull();
-	}
-
-	@Override
 	public void meet(ValueConstant vc) {
 		result = valueOf(vc.getValue());
 	}
 
 	@Override
-	public void meet(Var node) {
-		if (node.getValue() == null) {
-			result = shift(new RefIdColumn(node));
+	public void meet(Var var) {
+		if (var.getValue() == null) {
+			result = new HashColumn(var);
 		} else {
-			result = valueOf(node.getValue());
+			result = valueOf(var.getValue());
 		}
 	}
 
@@ -89,9 +61,11 @@ public class ZonedExprFactory extends
 	}
 
 	private SqlExpr valueOf(Value value) {
-		if (value instanceof Literal) {
-			return num(IdCode.valueOf((Literal) value).code());
-		}
-		return null;
+		return new LongValue(hashOf(value));
 	}
+
+	public static long hashOf(Value value) {
+		return IdCode.valueOf(value).hash(value);
+	}
+
 }

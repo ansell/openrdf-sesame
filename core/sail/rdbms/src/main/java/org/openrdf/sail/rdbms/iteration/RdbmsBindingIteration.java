@@ -84,7 +84,7 @@ public class RdbmsBindingIteration extends
 
 	private RdbmsValue createValue(ResultSet rs, int index) throws SQLException {
 		long id = rs.getLong(index);
-		if (IdCode.decode(id).isLiteral()) {
+		if (IdCode.valueOf(id).isLiteral()) {
 			String label = rs.getString(index + 1);
 			String language = rs.getString(index + 2);
 			String datatype = rs.getString(index + 3);
