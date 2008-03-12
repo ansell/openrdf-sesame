@@ -7,6 +7,8 @@ package org.openrdf.sail.rdbms.algebra;
 
 import static org.openrdf.sail.rdbms.schema.LiteralTable.getCalendarValue;
 
+import java.math.BigInteger;
+
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;

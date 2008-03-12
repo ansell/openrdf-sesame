@@ -5,11 +5,20 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
+import static org.openrdf.model.datatypes.XMLDatatypeUtil.isCalendarDatatype;
+import static org.openrdf.model.datatypes.XMLDatatypeUtil.isNumericDatatype;
+
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+
+import org.openrdf.model.BNode;
+import org.openrdf.model.Literal;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
 
 /**
  * Indicates the different type of internal id used within the store and some
@@ -45,7 +54,7 @@ public enum IdCode {
 		}
 	}
 
-	public static IdCode decode(long id) {
+	public static IdCode valueOf(long id) {
 		int idx = (int) (id >>> SHIFT);
 		IdCode[] values = values();
 		if (idx < 0 || idx >= values.length)
@@ -53,30 +62,78 @@ public enum IdCode {
 		return values[idx];
 	}
 
-	private long minId;
-
-	public long getId(String value) {
-		try {
-			MessageDigest digest = md5.get();
-			digest.update(value.getBytes(UTF_8));
-			long id = new BigInteger(1, digest.digest()).longValue();
-			return id & SPAN | minId;
-		} catch (UnsupportedEncodingException e) {
-			throw new AssertionError(e);
-		}
+	public static IdCode valueOf(Value value) {
+		if (value instanceof URI)
+			return valueOf((URI) value);
+		if (value instanceof Literal)
+			return valueOf((Literal) value);
+		assert value instanceof BNode : value;
+		return valueOf((BNode) value);
 	}
 
-	public long getId(String prefix, String value) {
-		try {
-			MessageDigest digest = md5.get();
-			digest.update(prefix.getBytes(UTF_8));
-			long m = new BigInteger(1, digest.digest()).longValue();
-			digest.update(value.getBytes(UTF_8));
-			long id = new BigInteger(1, digest.digest()).longValue();
-			return (m * 31 + id) & SPAN | minId;
-		} catch (UnsupportedEncodingException e) {
-			throw new AssertionError(e);
+	public static IdCode valueOf(BNode value) {
+		return BNODE;
+	}
+
+	public static IdCode valueOf(URI value) {
+		if (value.stringValue().length() > LONG)
+			return URI_LONG;
+		return URI;
+	}
+
+	public static IdCode valueOf(Literal lit) {
+		String lang = lit.getLanguage();
+		URI dt = lit.getDatatype();
+		int length = lit.stringValue().length();
+		if (lang != null) {
+			// language
+			if (length > IdCode.LONG)
+				return IdCode.LANG_LONG;
+			return IdCode.LANG;
 		}
+		if (dt == null) {
+			// simple
+			if (length > IdCode.LONG)
+				return IdCode.SIMPLE_LONG;
+			return IdCode.SIMPLE;
+		}
+		if (isNumericDatatype(dt))
+			return IdCode.NUMERIC;
+		if (isCalendarDatatype(dt)) {
+			// calendar
+			if (isZoned(lit))
+				return IdCode.DATETIME_ZONED;
+			return IdCode.DATETIME;
+		}
+		if (RDF.XMLLITERAL.equals(dt))
+			return IdCode.XML;
+		if (length > IdCode.LONG)
+			return IdCode.TYPED_LONG;
+		return IdCode.TYPED;
+	}
+
+	private static boolean isZoned(Literal lit) {
+		String stringValue = lit.stringValue();
+		int length = stringValue.length();
+		if (length < 1)
+			return false;
+		if (stringValue.charAt(length - 1) == 'Z')
+			return true;
+		if (length < 6)
+			return false;
+		if (stringValue.charAt(length - 3) != ':')
+			return false;
+		char chr = stringValue.charAt(length - 6);
+		return chr == '+' || chr == '-';
+	}
+
+	private long minId;
+
+	public long hash(Value value) {
+		MessageDigest digest = md5.get();
+		long type = hashLiteralType(digest, value);
+		long hash = type * 31 + hash(digest, value.stringValue());
+		return hash & SPAN | minId;
 	}
 
 	public boolean isBNode() {
@@ -132,5 +189,26 @@ public enum IdCode {
 		return URI_LONG.equals(this) || SIMPLE_LONG.equals(this)
 				|| LANG_LONG.equals(this) || TYPED_LONG.equals(this)
 				|| XML.equals(this);
+	}
+
+	private long hashLiteralType(MessageDigest digest, Value value) {
+		if (value instanceof Literal) {
+			Literal lit = (Literal) value;
+			if (lit.getDatatype() != null)
+				return hash(digest, lit.getDatatype().stringValue());
+			if (lit.getLanguage() != null)
+				return hash(digest, lit.getLanguage());
+		}
+		return 0;
+	}
+
+	private long hash(MessageDigest digest, String str) {
+		try {
+			digest.update(str.getBytes(UTF_8));
+			return new BigInteger(1, digest.digest()).longValue();
+		}
+		catch (UnsupportedEncodingException e) {
+			throw new AssertionError(e);
+		}
 	}
 }

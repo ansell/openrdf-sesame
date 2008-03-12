@@ -9,6 +9,7 @@ import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.algebra.factories.BNodeExprFactory;
 import org.openrdf.sail.rdbms.algebra.factories.BooleanExprFactory;
 import org.openrdf.sail.rdbms.algebra.factories.DatatypeExprFactory;
+import org.openrdf.sail.rdbms.algebra.factories.HashExprFactory;
 import org.openrdf.sail.rdbms.algebra.factories.LabelExprFactory;
 import org.openrdf.sail.rdbms.algebra.factories.LanguageExprFactory;
 import org.openrdf.sail.rdbms.algebra.factories.NumericExprFactory;
@@ -52,6 +53,7 @@ public class SelectQueryOptimizerFactory {
 		sql.setNumericExprFactory(new NumericExprFactory());
 		sql.setTimeExprFactory(new TimeExprFactory());
 		sql.setZonedExprFactory(new ZonedExprFactory());
+		sql.setHashExprFactory(new HashExprFactory());
 		sql.setURIExprFactory(uri);
 		label.setSqlExprFactory(sql);
 		uri.setSqlExprFactory(sql);

@@ -80,8 +80,8 @@ public class TransactionTable {
 		batch.addBatch();
 		queue.put(batch);
 		addedCount++;
-		triples.getSubjTypes().add(IdCode.decode(subj));
-		triples.getObjTypes().add(IdCode.decode(obj));
+		triples.getSubjTypes().add(IdCode.valueOf(subj));
+		triples.getObjTypes().add(IdCode.valueOf(obj));
 	}
 
 	public void committed() throws SQLException {

@@ -123,7 +123,7 @@ public class LiteralTable {
 	}
 
 	public void insertSimple(long id, String label) throws SQLException, InterruptedException {
-		if (IdCode.decode(id).isLong()) {
+		if (IdCode.valueOf(id).isLong()) {
 			longLabels.insert(id, label);
 		} else {
 			labels.insert(id, label);

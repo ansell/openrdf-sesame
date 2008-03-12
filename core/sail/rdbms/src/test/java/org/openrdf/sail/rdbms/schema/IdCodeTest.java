@@ -2,6 +2,8 @@ package org.openrdf.sail.rdbms.schema;
 
 import java.util.Arrays;
 
+import org.openrdf.model.impl.URIImpl;
+
 import junit.framework.TestCase;
 
 public class IdCodeTest extends TestCase {
@@ -22,10 +24,10 @@ public class IdCodeTest extends TestCase {
 
 	public void testDecode() throws Exception {
 		for (IdCode code : IdCode.values()) {
-			assertEquals(code, IdCode.decode(code.minId()));
-			assertEquals(code, IdCode.decode(code.minId() + 1));
-			assertEquals(code, IdCode.decode(code.maxId()));
-			assertEquals(code, IdCode.decode(code.maxId() - 1));
+			assertEquals(code, IdCode.valueOf(code.minId()));
+			assertEquals(code, IdCode.valueOf(code.minId() + 1));
+			assertEquals(code, IdCode.valueOf(code.maxId()));
+			assertEquals(code, IdCode.valueOf(code.maxId() - 1));
 		}
 	}
 
@@ -49,8 +51,8 @@ public class IdCodeTest extends TestCase {
 
 	public void testEncode() throws Exception {
 		for (IdCode code : IdCode.values()) {
-			assertEquals(code, IdCode.decode(code.getId("")));
-			assertEquals(code, IdCode.decode(code.getId("The quick brown fox jumps over the lazy dog")));
+			assertEquals(code, IdCode.valueOf(code.hash(new URIImpl("urn:root"))));
+			assertEquals(code, IdCode.valueOf(code.hash(new URIImpl("urn:The quick brown fox jumps over the lazy dog"))));
 		}
 	}
 

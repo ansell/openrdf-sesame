@@ -66,7 +66,7 @@ public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
 
 	@Override
 	protected long getMissingId(RdbmsBNode value) {
-		return IdCode.BNODE.getId(value.stringValue());
+		return IdCode.BNODE.hash(value);
 	}
 
 }
