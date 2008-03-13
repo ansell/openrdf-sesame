@@ -20,7 +20,6 @@ import info.aduna.iteration.IteratorIteration;
 import info.aduna.iteration.LockingIteration;
 import info.aduna.iteration.UnionIteration;
 
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -42,6 +41,7 @@ import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.algebra.evaluation.impl.FilterOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.sail.SailException;
@@ -130,7 +130,8 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 			optimizerList.add(new CompareOptimizer());
 			optimizerList.add(new ConjunctiveConstraintSplitter());
 			optimizerList.add(new SameTermFilterOptimizer());
-			optimizerList.add(new QueryJoinOptimizer());
+			optimizerList.add(new QueryModelPruner());
+			optimizerList.add(new QueryJoinOptimizer(new MemEvaluationStatistics()));
 			optimizerList.add(new FilterOptimizer());
 
 			optimizerList.optimize(tupleExpr, dataset, bindings);
@@ -243,8 +244,6 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	protected long sizeInternal(Resource... contexts)
 		throws SailException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
@@ -296,7 +295,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 		// Prevent concurrent transactions by acquiring an exclusive txn lock
 		txnLock = store.getTransactionLock();
-		store.cancelSyncTask();
+		store.startTransaction();
 	}
 
 	@Override
@@ -358,21 +357,23 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 			Resource... contexts)
 		throws SailException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
-		if (contexts.length == 0) {
-			contexts = new Resource[] { null };
-		}
-
 		Statement st = null;
 
-		for (Resource context : contexts) {
-			st = store.addStatement(subj, pred, obj, context, explicit);
+		if (contexts.length == 0) {
+			st = store.addStatement(subj, pred, obj, null, explicit);
 			if (st != null) {
 				notifyStatementAdded(st);
 			}
 		}
-
+		else {
+			for (Resource context : contexts) {
+				st = store.addStatement(subj, pred, obj, context, explicit);
+				if (st != null) {
+					notifyStatementAdded(st);
+				}
+			}
+		}
+		
 		// FIXME: this return type is invalid in case multiple contexts were
 		// specified
 		return st != null;

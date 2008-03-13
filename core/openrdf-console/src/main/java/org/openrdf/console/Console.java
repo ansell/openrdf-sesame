@@ -48,7 +48,6 @@ import info.aduna.text.StringUtil;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.Graph;
-import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -109,7 +108,7 @@ public class Console {
 	 * Static constants *
 	 *------------------*/
 
-	private static final AppVersion VERSION = new AppVersion(2, 0);
+	private static final AppVersion VERSION = new AppVersion(2, 0, "1");
 
 	private static final String APP_NAME = "OpenRDF Sesame console";
 
@@ -891,12 +890,12 @@ public class Console {
 						writeln("+----------");
 						while (queryResult.hasNext()) {
 							BindingSet bindings = queryResult.next();
-							Literal idLiteral = (Literal)bindings.getValue("ID");
-							Literal titleLiteral = (Literal)bindings.getValue("Title");
+							String id = bindings.getValue("ID").stringValue();
+							String title = bindings.getValue("Title").stringValue();
 
-							write("|" + idLiteral.getLabel());
-							if (titleLiteral != null) {
-								write(" (\"" + titleLiteral.getLabel() + "\")");
+							write("|" + id);
+							if (title != null) {
+								write(" (\"" + title + "\")");
 							}
 							writeln();
 						}
@@ -1060,7 +1059,7 @@ public class Console {
 			Resource contextURI = null;
 			if (context != null) {
 				if (context.startsWith("_:")) {
-					contextURI = repository.getValueFactory().createBNode(context);
+					contextURI = repository.getValueFactory().createBNode(context.substring(2));
 				}
 				else {
 					contextURI = repository.getValueFactory().createURI(context);

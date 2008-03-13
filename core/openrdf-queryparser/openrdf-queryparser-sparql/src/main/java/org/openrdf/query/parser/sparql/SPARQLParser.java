@@ -56,7 +56,7 @@ public class SPARQLParser implements QueryParser {
 				query = new ParsedBooleanQuery(tupleExpr);
 			}
 			else if (queryNode instanceof ASTDescribeQuery) {
-				throw new RuntimeException("SPARQL DESCRIBE queries not yet supported");
+				query = new ParsedGraphQuery(tupleExpr, prefixes);
 			}
 			else {
 				throw new RuntimeException("Unexpected query type: " + queryNode.getClass());

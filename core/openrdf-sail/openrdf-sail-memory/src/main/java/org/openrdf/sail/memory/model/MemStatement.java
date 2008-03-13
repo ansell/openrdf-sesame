@@ -56,7 +56,17 @@ public class MemStatement extends ContextStatementImpl {
 	public MemStatement(MemResource subject, MemURI predicate, MemValue object, MemResource context,
 			int sinceSnapshot)
 	{
-		this(subject, predicate, object, context, sinceSnapshot, true);
+		this(subject, predicate, object, context, true, sinceSnapshot);
+	}
+
+	/**
+	 * Creates a new MemStatement with the supplied subject, predicate, object
+	 * and context and marks it as 'explicit'.
+	 */
+	public MemStatement(MemResource subject, MemURI predicate, MemValue object, MemResource context,
+			boolean explicit, int sinceSnapshot)
+	{
+		this(subject, predicate, object, context, explicit, sinceSnapshot, TxnStatus.NEUTRAL);
 	}
 
 	/**
@@ -65,11 +75,12 @@ public class MemStatement extends ContextStatementImpl {
 	 * this statement is marked as 'explicit' or not.
 	 */
 	public MemStatement(MemResource subject, MemURI predicate, MemValue object, MemResource context,
-			int sinceSnapshot, boolean explicit)
+			boolean explicit, int sinceSnapshot, TxnStatus txnStatus)
 	{
 		super(subject, predicate, object, context);
-		setSinceSnapshot(sinceSnapshot);
 		setExplicit(explicit);
+		setSinceSnapshot(sinceSnapshot);
+		setTxnStatus(txnStatus);
 	}
 
 	/*---------*
@@ -77,26 +88,22 @@ public class MemStatement extends ContextStatementImpl {
 	 *---------*/
 
 	@Override
-	public MemResource getSubject()
-	{
+	public MemResource getSubject() {
 		return (MemResource)super.getSubject();
 	}
 
 	@Override
-	public MemURI getPredicate()
-	{
+	public MemURI getPredicate() {
 		return (MemURI)super.getPredicate();
 	}
 
 	@Override
-	public MemValue getObject()
-	{
+	public MemValue getObject() {
 		return (MemValue)super.getObject();
 	}
 
 	@Override
-	public MemResource getContext()
-	{
+	public MemResource getContext() {
 		return (MemResource)super.getContext();
 	}
 
@@ -149,7 +156,6 @@ public class MemStatement extends ContextStatementImpl {
 		if (context != null) {
 			context.addContextStatement(this);
 		}
-		txnStatus = TxnStatus.NEW;
 	}
 
 	/**
@@ -165,6 +171,5 @@ public class MemStatement extends ContextStatementImpl {
 		if (context != null) {
 			context.removeContextStatement(this);
 		}
-		txnStatus = null;
 	}
 }

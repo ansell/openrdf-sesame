@@ -40,11 +40,11 @@ public class MemoryStoreFactory implements SailFactory {
 	public Sail getSail(SailImplConfig config)
 		throws SailConfigException
 	{
-		MemoryStore memoryStore = new MemoryStore();
-
 		if (!SAIL_TYPE.equals(config.getType())) {
 			throw new SailConfigException("Invalid Sail type: " + config.getType());
 		}
+
+		MemoryStore memoryStore = new MemoryStore();
 
 		if (config instanceof MemoryStoreConfig) {
 			MemoryStoreConfig memConfig = (MemoryStoreConfig)config;

@@ -25,8 +25,10 @@ public interface Sail {
 	public File getDataDir();
 
 	/**
-	 * Initializes the Sail. Parameters to be used in the initialization can be
-	 * set using {@link #setParameter}.
+	 * Initializes the Sail. Care should be taken that required initialization
+	 * parameters have been set before this method is called. Please consult the
+	 * specific Sail implementation for information about the relevant
+	 * parameters.
 	 * 
 	 * @throws SailException
 	 *         If the Sail could not be initialized.

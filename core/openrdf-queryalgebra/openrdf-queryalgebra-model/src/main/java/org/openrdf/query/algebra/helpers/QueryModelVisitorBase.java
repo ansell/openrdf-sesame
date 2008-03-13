@@ -395,6 +395,32 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetNode(node);
 	}
 
+	public void meetOther(QueryModelNode node)
+		throws X
+	{
+		if (node instanceof UnaryTupleOperator) {
+			meetUnaryTupleOperator((UnaryTupleOperator)node);
+		}
+		else if (node instanceof BinaryTupleOperator) {
+			meetBinaryTupleOperator((BinaryTupleOperator)node);
+		}
+		else if (node instanceof CompareSubQueryValueOperator) {
+			meetCompareSubQueryValueOperator((CompareSubQueryValueOperator)node);
+		}
+		else if (node instanceof SubQueryValueOperator) {
+			meetSubQueryValueOperator((SubQueryValueOperator)node);
+		}
+		else if (node instanceof UnaryValueOperator) {
+			meetUnaryValueOperator((UnaryValueOperator)node);
+		}
+		else if (node instanceof BinaryValueOperator) {
+			meetBinaryValueOperator((BinaryValueOperator)node);
+		}
+		else {
+			meetNode(node);
+		}
+	}
+
 	/**
 	 * Method called by all <tt>meet</tt> methods with a
 	 * {@link UnaryTupleOperator} node as argument. Forwards the call to

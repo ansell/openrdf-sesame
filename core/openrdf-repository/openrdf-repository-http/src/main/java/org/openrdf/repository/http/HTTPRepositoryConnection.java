@@ -78,8 +78,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 *---------*/
 
 	@Override
-	public HTTPRepository getRepository()
-	{
+	public HTTPRepository getRepository() {
 		return (HTTPRepository)super.getRepository();
 	}
 
@@ -208,16 +207,24 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		HTTPClient httpClient = getRepository().getHTTPClient();
-		if (inputStreamOrReader instanceof InputStream) {
-			httpClient.upload(((InputStream)inputStreamOrReader), baseURI, dataFormat, false, contexts);
-		}
-		else if (inputStreamOrReader instanceof Reader) {
-			httpClient.upload(((Reader)inputStreamOrReader), baseURI, dataFormat, false, contexts);
+		if (isAutoCommit()) {
+			// Send bytes directly to the server
+			HTTPClient httpClient = getRepository().getHTTPClient();
+			if (inputStreamOrReader instanceof InputStream) {
+				httpClient.upload(((InputStream)inputStreamOrReader), baseURI, dataFormat, false, contexts);
+			}
+			else if (inputStreamOrReader instanceof Reader) {
+				httpClient.upload(((Reader)inputStreamOrReader), baseURI, dataFormat, false, contexts);
+			}
+			else {
+				throw new IllegalArgumentException(
+						"inputStreamOrReader must be an InputStream or a Reader, is a: "
+								+ inputStreamOrReader.getClass());
+			}
 		}
 		else {
-			throw new IllegalArgumentException("inputStreamOrReader must be an InputStream or a Reader, is a: "
-					+ inputStreamOrReader.getClass());
+			// Parse files locally
+			super.addInputStreamOrReader(inputStreamOrReader, baseURI, dataFormat, contexts);
 		}
 	}
 

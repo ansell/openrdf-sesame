@@ -15,6 +15,6 @@ goto setupArgs
 
 set SESAME2_HOME=%0\..\..
 cd %SESAME2_HOME%\lib
-java -jar openrdf-console-2.0.jar %CMD_LINE_ARGS%
+java -jar openrdf-console-${version}.jar %CMD_LINE_ARGS%
 cd ..
 

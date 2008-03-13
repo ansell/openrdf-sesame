@@ -6,7 +6,11 @@
 package org.openrdf.query.algebra;
 
 /**
- * 
+ * An interface for query model visitors, implementing the Visitor pattern. Core
+ * query model nodes will call their type-specific method when
+ * {@link QueryModelNode#visit(QueryModelVisitor)} is called. The method
+ * {@link #meetOther(QueryModelNode)} is provided as a hook for foreign query
+ * model nodes.
  */
 public interface QueryModelVisitor<X extends Exception> {
 
@@ -167,5 +171,8 @@ public interface QueryModelVisitor<X extends Exception> {
 		throws X;
 
 	public void meet(Var node)
+		throws X;
+
+	public void meetOther(QueryModelNode node)
 		throws X;
 }

@@ -177,23 +177,23 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	public void close()
 		throws IOException
 	{
-		if (writingStarted) {
-			try {
+		try {
+			if (writingStarted) {
 				endRDF();
 			}
-			catch (RDFHandlerException e) {
-				if (e.getCause() instanceof IOException) {
-					throw (IOException)e.getCause();
-				}
-				else {
-					IOException ioe = new IOException(e.getMessage());
-					ioe.initCause(e);
-					throw ioe;
-				}
+		}
+		catch (RDFHandlerException e) {
+			if (e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
 			}
-			finally {
-				writer.close();
+			else {
+				IOException ioe = new IOException(e.getMessage());
+				ioe.initCause(e);
+				throw ioe;
 			}
+		}
+		finally {
+			writer.close();
 		}
 	}
 

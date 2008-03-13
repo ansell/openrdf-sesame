@@ -17,7 +17,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public class SailConfigSchema {
 
-	/** The SailRepository schema namespace (<tt>http://www.openrdf.org/config/sail#</tt>). */
+	/** The Sail API schema namespace (<tt>http://www.openrdf.org/config/sail#</tt>). */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail#";
 
 	/** <tt>http://www.openrdf.org/config/sail#sailType</tt> */

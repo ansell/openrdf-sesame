@@ -82,7 +82,7 @@ public class SailRepository implements Repository {
 			sail.initialize();
 		}
 		catch (SailException e) {
-			throw new RepositoryException(e);
+			throw new RepositoryException(e.getMessage(), e);
 		}
 	}
 

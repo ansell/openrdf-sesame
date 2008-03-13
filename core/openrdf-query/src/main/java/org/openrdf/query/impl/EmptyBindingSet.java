@@ -21,13 +21,25 @@ import org.openrdf.query.BindingSet;
  */
 public class EmptyBindingSet implements BindingSet {
 
+	/*-----------*
+	 * Constants *
+	 *-----------*/
+
 	private static final EmptyBindingSet singleton = new EmptyBindingSet();
 
 	public static BindingSet getInstance() {
 		return singleton;
 	}
 
+	/*-----------*
+	 * Variables *
+	 *-----------*/
+
 	private EmptyBindingIterator iter = new EmptyBindingIterator();
+
+	/*---------*
+	 * Methods *
+	 *---------*/
 
 	public Iterator<Binding> iterator() {
 		return iter;
@@ -54,8 +66,7 @@ public class EmptyBindingSet implements BindingSet {
 	}
 
 	@Override
-	public boolean equals(Object o)
-	{
+	public boolean equals(Object o) {
 		if (o instanceof BindingSet) {
 			return ((BindingSet)o).size() == 0;
 		}
@@ -64,16 +75,18 @@ public class EmptyBindingSet implements BindingSet {
 	}
 
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		return 0;
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "[]";
 	}
+
+	/*----------------------------------*
+	 * Inner class EmptyBindingIterator *
+	 *----------------------------------*/
 
 	private static class EmptyBindingIterator implements Iterator<Binding> {
 

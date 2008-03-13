@@ -1283,7 +1283,7 @@ USING NAMESPACE
 		<para>
 		  <emphasis>Note:</emphasis> in Sesame 2.0 built-in predicates are
 		  only supported on repositories that have a
-		  <classname>VirtualPropertyInferencer</classname> Sail in the Sail
+		  <classname>DirectTypeHierarchyInferencer</classname> Sail in the Sail
 		  stack. This inferencer is a stacked Sail that can be deployed on
 		  top of a normal
 		  <classname>ForwardChainingRDFSInferencer</classname>.

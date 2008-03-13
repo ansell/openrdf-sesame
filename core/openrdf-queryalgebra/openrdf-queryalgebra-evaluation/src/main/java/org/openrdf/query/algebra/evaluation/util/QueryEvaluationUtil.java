@@ -150,12 +150,11 @@ public class QueryEvaluationUtil {
 			if (leftDatatype.equals(rightDatatype)) {
 				commonDatatype = leftDatatype;
 			}
-			else {
+			else if (XMLDatatypeUtil.isNumericDatatype(leftDatatype)
+					&& XMLDatatypeUtil.isNumericDatatype(rightDatatype))
+			{
 				// left and right arguments have different datatypes, try to find a
 				// more general, shared datatype
-				if (XMLDatatypeUtil.isNumericDatatype(leftDatatype)
-						&& XMLDatatypeUtil.isNumericDatatype(rightDatatype))
-				{
 					if (leftDatatype.equals(XMLSchema.DOUBLE) || rightDatatype.equals(XMLSchema.DOUBLE)) {
 						commonDatatype = XMLSchema.DOUBLE;
 					}
@@ -169,7 +168,6 @@ public class QueryEvaluationUtil {
 						commonDatatype = XMLSchema.INTEGER;
 					}
 				}
-			}
 
 			if (commonDatatype != null) {
 				try {
@@ -252,11 +250,18 @@ public class QueryEvaluationUtil {
 			boolean literalsEqual = leftLit.equals(rightLit);
 
 			if (!literalsEqual) {
-				// For literals with unsupported datatypes we don't know if their
-				// values are equal
-				if (leftDatatype != null && rightLit.getLanguage() == null || rightDatatype != null
+				if (leftDatatype != null && rightDatatype != null
+						&& XMLDatatypeUtil.isCalendarDatatype(leftDatatype)
+						&& XMLDatatypeUtil.isCalendarDatatype(rightDatatype))
+				{
+					// left and right arguments have different date/time datatypes,
+					// these are always unequal
+				}
+				else if (leftDatatype != null && rightLit.getLanguage() == null || rightDatatype != null
 						&& leftLit.getLanguage() == null)
 				{
+				// For literals with unsupported datatypes we don't know if their
+				// values are equal
 					throw new ValueExprEvaluationException("Unable to compare literals with unsupported types");
 				}
 			}

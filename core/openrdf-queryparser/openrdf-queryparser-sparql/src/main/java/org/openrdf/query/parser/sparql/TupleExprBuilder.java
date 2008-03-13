@@ -27,10 +27,12 @@ import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
+import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
 import org.openrdf.query.algebra.IsURI;
+import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
@@ -45,7 +47,6 @@ import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
-import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Str;
@@ -354,10 +355,10 @@ class TupleExprBuilder extends ASTVisitorBase {
 	public TupleExpr visit(ASTDescribeQuery node, Object data)
 		throws VisitorException
 	{
-		TupleExpr tupleExpr;
+		TupleExpr tupleExpr = null;
 
-		// Start with building the graph pattern
 		if (node.getWhereClause() != null) {
+			// Start with building the graph pattern
 			graphPattern = new GraphPattern();
 			node.getWhereClause().jjtAccept(this, null);
 			tupleExpr = graphPattern.buildTupleExpr();
@@ -369,7 +370,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 				tupleExpr = new Order(tupleExpr, orderElemements);
 			}
 
-			// process limit and offset clauses
+			// Process limit and offset clauses
 			ASTLimit limitNode = node.getLimit();
 			int limit = -1;
 			if (limitNode != null) {
@@ -386,9 +387,6 @@ class TupleExprBuilder extends ASTVisitorBase {
 				tupleExpr = new Slice(tupleExpr, offset, limit);
 			}
 		}
-		else {
-			tupleExpr = new SingletonSet();
-		}
 
 		// Process describe clause last
 		return (TupleExpr)node.getDescribe().jjtAccept(this, tupleExpr);
@@ -400,7 +398,42 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		TupleExpr result = (TupleExpr)data;
 
-		// FIXME: implement
+		// Create a graph query that produces the statements that have the
+		// requests resources as subject or object
+		Var subjVar = createAnonVar("-descr-subj");
+		Var predVar = createAnonVar("-descr-pred");
+		Var objVar = createAnonVar("-descr-obj");
+		StatementPattern sp = new StatementPattern(subjVar, predVar, objVar);
+
+		if (result == null) {
+			result = sp;
+		}
+		else {
+			result = new Join(result, sp);
+		}
+
+		List<SameTerm> sameTerms = new ArrayList<SameTerm>(2 * node.jjtGetNumChildren());
+
+		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+			ValueExpr resource = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
+
+			sameTerms.add(new SameTerm(subjVar.clone(), resource));
+			sameTerms.add(new SameTerm(objVar.clone(), resource));
+		}
+
+		ValueExpr constraint = sameTerms.get(0);
+		for (int i = 0; i < sameTerms.size(); i++) {
+			constraint = new Or(constraint, sameTerms.get(i));
+		}
+
+		result = new Filter(result, constraint);
+
+		ProjectionElemList projElemList = new ProjectionElemList();
+		projElemList.addElement(new ProjectionElem(subjVar.getName(), "subject"));
+		projElemList.addElement(new ProjectionElem(predVar.getName(), "predicate"));
+		projElemList.addElement(new ProjectionElem(objVar.getName(), "object"));
+		result = new Projection(result, projElemList);
+
 		return result;
 	}
 

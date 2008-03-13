@@ -807,7 +807,7 @@ http://www.w3.org/1999/02/22-rdf-syntax-ns#]]></screen>
 				<title>Set the namespace for a specific prefix</title>
 				<para>Request:</para>
 				<screen><![CDATA[
-POST /sesame/repositories/mem-rdf/namespaces/example HTTP/1.1
+PUT /sesame/repositories/mem-rdf/namespaces/example HTTP/1.1
 Host: localhost
 Content-Type: text/plain
 
