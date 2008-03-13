@@ -98,11 +98,14 @@ class ConfigTemplate {
 				if (!values.isEmpty()) {
 					value = values.get(0);
 				}
+				else {
+					value = "";
+				}
 			}
 
-			if (value == null) {
-				throw new IllegalArgumentException("No value specified for variable " + var);
-			}
+//			if (value == null) {
+//				throw new IllegalArgumentException("No value specified for variable " + var);
+//			}
 
 			matcher.appendReplacement(result, value);
 		}

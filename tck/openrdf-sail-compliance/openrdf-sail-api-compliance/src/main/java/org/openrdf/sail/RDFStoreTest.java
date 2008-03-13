@@ -170,11 +170,9 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		throws Exception
 	{
 		// repository should be empty
-		assertEquals("Empty repository should not return any statements", 0, countElements(con.getStatements(
-				null, null, null, false)));
+		assertEquals("Empty repository should not return any statements", 0, countAllElements());
 
-		assertEquals("Named context should be empty", 0, countElements(con.getStatements(null, null, null,
-				false, context1)));
+		assertEquals("Named context should be empty", 0, countContext1Elements());
 
 		assertEquals("Empty repository should not return any context identifiers", 0,
 				countElements(con.getContextIDs()));
@@ -233,6 +231,48 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	public void testLongURIRoundTrip()
+		throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		for (int i=0;i<512;i++) {
+			sb.append(Character.toChars('A' + (i%26)));
+		}
+		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
+		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
+		URI obj = new URIImpl(EXAMPLE_NS + GUERNICA + sb.toString());
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
+	public void testLongLiteralRoundTrip()
+		throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		for (int i=0;i<512;i++) {
+			sb.append(Character.toChars('A' + (i%26)));
+		}
+		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
+		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
+		Literal obj = new LiteralImpl("guernica" + sb.toString());
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
+	public void testLongLangRoundTrip()
+		throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		for (int i=0;i<512;i++) {
+			sb.append(Character.toChars('A' + (i%26)));
+		}
+		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
+		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
+		Literal obj = new LiteralImpl("guernica" + sb.toString(), "es");
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
 	private void testValueRoundTrip(Resource subj, URI pred, Value obj)
 		throws Exception
 	{
@@ -249,9 +289,29 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 			assertEquals(subj, st.getSubject());
 			assertEquals(pred, st.getPredicate());
 			assertEquals(obj, st.getObject());
+			assertTrue(!stIter.hasNext());
 		}
 		finally {
 			stIter.close();
+		}
+
+		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
+				"SELECT S, P, O FROM {S} P {O} WHERE P = <" + pred.stringValue() + ">", null);
+
+		CloseableIteration<? extends BindingSet, QueryEvaluationException> iter;
+		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
+
+		try {
+			assertTrue(iter.hasNext());
+
+			BindingSet bindings = iter.next();
+			assertEquals(subj, bindings.getValue("S"));
+			assertEquals(pred, bindings.getValue("P"));
+			assertEquals(obj, bindings.getValue("O"));
+			assertTrue(!iter.hasNext());
+		}
+		finally {
+			iter.close();
 		}
 	}
 
@@ -315,11 +375,9 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		con.addStatement(picasso, paints, guernica, context1);
 		con.commit();
 
-		assertEquals("Repository should contain 5 statements in total", 5, countElements(con.getStatements(
-				null, null, null, false)));
+		assertEquals("Repository should contain 5 statements in total", 5, countAllElements());
 
-		assertEquals("Named context should contain 3 statements", 3, countElements(con.getStatements(null,
-				null, null, false, context1)));
+		assertEquals("Named context should contain 3 statements", 3, countContext1Elements());
 
 		assertEquals("Repository should have 1 context identifier", 1, countElements(con.getContextIDs()));
 
@@ -418,11 +476,9 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		con.removeStatements(painting, RDF.TYPE, RDFS.CLASS);
 		con.commit();
 
-		assertEquals("Repository should contain 4 statements in total", 4, countElements(con.getStatements(
-				null, null, null, false)));
+		assertEquals("Repository should contain 4 statements in total", 4, countAllElements());
 
-		assertEquals("Named context should contain 3 statements", 3, countElements(con.getStatements(null,
-				null, null, false, context1)));
+		assertEquals("Named context should contain 3 statements", 3, countContext1Elements());
 
 		assertEquals("Statement (Painting, type, Class) should no longer be in the repository", 0,
 				countQueryResults("select 1 from {ex:Painting} rdf:type {rdfs:Class}"));
@@ -430,17 +486,14 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		con.removeStatements(null, null, null, context1);
 		con.commit();
 
-		assertEquals("Repository should contain 1 statement in total", 1, countElements(con.getStatements(null,
-				null, null, false)));
+		assertEquals("Repository should contain 1 statement in total", 1, countAllElements());
 
-		assertEquals("Named context should be empty", 0, countElements(con.getStatements(null, null, null,
-				false, context1)));
+		assertEquals("Named context should be empty", 0, countContext1Elements());
 
 		con.clear();
 		con.commit();
 
-		assertEquals("Repository should no longer contain any statements", 0, countElements(con.getStatements(
-				null, null, null, false)));
+		assertEquals("Repository should no longer contain any statements", 0, countAllElements());
 
 		// test if event listener works properly.
 		assertEquals("There should have been 1 event in which statements were added", 1, addEventCount);
@@ -481,24 +534,12 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 
 		con.commit();
 
-		assertEquals("context1 should contain 3 statements", 3, countElements(con.getStatements(null, null,
-				null, false, context1)));
+		assertEquals("context1 should contain 3 statements", 3, countContext1Elements());
 		assertEquals("context2 should contain 3 statements", 3, countElements(con.getStatements(null, null,
 				null, false, context2)));
-		assertEquals("Repository should contain 8 statements", 8, countElements(con.getStatements(null, null,
-				null, false)));
+		assertEquals("Repository should contain 8 statements", 8, countAllElements());
 		assertEquals("statements without context should equal 2", 2, countElements(con.getStatements(null,
 				null, null, false, (Resource)null)));
-
-		try {
-			// test if IllegalArgumentException is thrown if no explicit cast is
-			// done.
-			con.getStatements(null, null, null, false, null);
-			fail("no cast on vararg parameter should result in IllegalArgumentException");
-		}
-		catch (IllegalArgumentException e) {
-			// do nothing, this is what should happen
-		}
 
 		assertEquals("Statements without context and statements in context 1 together should total 5", 5,
 				countElements(con.getStatements(null, null, null, false, null, context1)));
@@ -513,11 +554,9 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		con.removeStatements(picasso, null, null, context1);
 		con.commit();
 
-		assertEquals("context1 should contain 1 statements", 1, countElements(con.getStatements(null, null,
-				null, false, context1)));
+		assertEquals("context1 should contain 1 statements", 1, countContext1Elements());
 
-		assertEquals("Repository should contain 6 statements", 6, countElements(con.getStatements(null, null,
-				null, false)));
+		assertEquals("Repository should contain 6 statements", 6, countAllElements());
 
 		assertEquals("Statements without context and statements in context 1 together should total 3", 3,
 				countElements(con.getStatements(null, null, null, false, null, context1)));
@@ -717,6 +756,83 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		assertNull(con.getNamespace("rdf"));
 	}
 
+	public void testGetContextIDs()
+		throws Exception
+	{
+		assertEquals(0, countElements(con.getContextIDs()));
+
+		// load data
+		con.addStatement(picasso, paints, guernica, context1);
+		assertEquals(1, countElements(con.getContextIDs()));
+		assertEquals(context1, first(con.getContextIDs()));
+
+		con.removeStatements(picasso, paints, guernica, context1);
+		assertEquals(0, countElements(con.getContextIDs()));
+		con.commit();
+
+		assertEquals(0, countElements(con.getContextIDs()));
+
+		con.addStatement(picasso, paints, guernica, context2);
+		assertEquals(1, countElements(con.getContextIDs()));
+		assertEquals(context2, first(con.getContextIDs()));
+	}
+
+	public void testOldURI()
+		throws Exception
+	{
+		assertEquals(0, countAllElements());
+		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
+		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
+		con.addStatement(picasso, RDF.TYPE, painter, context1);
+		con.addStatement(guernica, RDF.TYPE, painting, context1);
+		con.addStatement(picasso, paints, guernica, context1);
+		assertEquals(5, countAllElements());
+		con.commit();
+		con.clear();
+		con.commit();
+		con.addStatement(picasso, paints, guernica, context1);
+		con.commit();
+		assertEquals(1, countAllElements());
+	}
+
+	public void testDualConnections()
+		throws Exception
+	{
+		SailConnection con2 = sail.getConnection();
+		try {
+		assertEquals(0, countAllElements());
+		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
+		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
+		con.addStatement(picasso, RDF.TYPE, painter, context1);
+		con.addStatement(guernica, RDF.TYPE, painting, context1);
+		con.commit();
+		assertEquals(4, countAllElements());
+		con2.addStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
+		String query = "SELECT S, P, O FROM {S} P {O}";
+		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, query, null);
+		assertEquals(5, countElements(con2.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false)));
+		Runnable clearer = new Runnable() {
+			public void run() {
+				try {
+					con.clear();
+					con.commit();
+				}
+				catch (SailException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		};
+		Thread thread = new Thread(clearer);
+		thread.start();
+		Thread.yield();
+		Thread.yield();
+		con2.commit();
+		thread.join();
+		} finally {
+			con2.close();
+		}
+	}
+
 	public void sailChanged(SailChangedEvent event) {
 		if (event.statementsAdded()) {
 			addEventCount++;
@@ -724,6 +840,35 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		if (event.statementsRemoved()) {
 			removeEventCount++;
 		}
+	}
+
+	private <T> T first(Iteration<T, ?> iter)
+		throws Exception
+	{
+		try {
+			if (iter.hasNext()) {
+				return iter.next();
+			}
+		}
+		finally {
+			Iterations.closeCloseable(iter);
+		}
+
+		return null;
+	}
+
+	private int countContext1Elements()
+		throws Exception, SailException
+	{
+		return countElements(con.getStatements(null, null, null,
+				false, context1));
+	}
+
+	private int countAllElements()
+		throws Exception, SailException
+	{
+		return countElements(con.getStatements(
+				null, null, null, false));
 	}
 
 	private int countElements(Iteration<?, ?> iter)

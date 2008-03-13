@@ -21,7 +21,9 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 public class BindingAssigner implements QueryOptimizer {
 
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new VarVisitor(bindings));
+		if (bindings.size() > 0) {
+			tupleExpr.visit(new VarVisitor(bindings));
+		}
 	}
 
 	protected class VarVisitor extends QueryModelVisitorBase<RuntimeException> {
@@ -33,8 +35,7 @@ public class BindingAssigner implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(Var var)
-		{
+		public void meet(Var var) {
 			if (!var.hasValue() && bindings.hasBinding(var.getName())) {
 				Value value = bindings.getValue(var.getName());
 				var.setValue(value);

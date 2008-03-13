@@ -17,9 +17,8 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
-import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.ProtocolUtil;
-import org.openrdf.model.Literal;
+import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
@@ -93,8 +92,8 @@ public class RepositoryListController extends AbstractController {
 					while (queryResult.hasNext()) {
 						QueryBindingSet bindings = new QueryBindingSet(queryResult.next());
 
-						Literal idValue = (Literal)bindings.getValue("id");
-						bindings.addBinding("uri", vf.createURI(namespace, idValue.getLabel()));
+						String id = bindings.getValue("id").stringValue();
+						bindings.addBinding("uri", vf.createURI(namespace, id));
 
 						bindingSets.add(bindings);
 					}

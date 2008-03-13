@@ -7,7 +7,9 @@ package org.openrdf.sail.memory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -17,9 +19,7 @@ import info.aduna.concurrent.locks.ReadPrefReadWriteLockManager;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
-import info.aduna.iteration.UnionIteration;
 
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -73,6 +73,11 @@ public class MemoryStore extends SailBase {
 	private MemStatementList statements;
 
 	/**
+	 * Set of all statements that have been affected by a transaction.
+	 */
+	private IdentityHashMap<MemStatement, MemStatement> txnStatements;
+
+	/**
 	 * Identifies the current snapshot.
 	 */
 	private int currentSnapshot;
@@ -83,7 +88,8 @@ public class MemoryStore extends SailBase {
 	private MemNamespaceStore namespaceStore;
 
 	/**
-	 * Lock manager used to prevent concurrent transactions.
+	 * Lock manager used to give the snapshot cleanup thread exclusive access to
+	 * the statement list.
 	 */
 	private ReadWriteLockManager statementListLockManager;
 
@@ -428,8 +434,6 @@ public class MemoryStore extends SailBase {
 			Class<X> excClass, Resource subj, URI pred, Value obj, boolean explicitOnly, int snapshot,
 			ReadMode readMode, Resource... contexts)
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		// Perform look-ups for value-equivalents of the specified values
 		MemResource memSubj = valueFactory.getMemResource(subj);
 		if (subj != null && memSubj == null) {
@@ -449,85 +453,65 @@ public class MemoryStore extends SailBase {
 			return new EmptyIteration<MemStatement, X>();
 		}
 
-		ArrayList<MemResource> memContextList = new ArrayList<MemResource>(contexts.length);
-		for (Resource context : contexts) {
-			MemResource memContext = valueFactory.getMemResource(context);
-			if (context == null || memContext != null) {
-				// either null- or known context
-				memContextList.add(memContext);
-			}
+		MemResource[] memContexts;
+		MemStatementList smallestList;
+
+		if (contexts.length == 0) {
+			memContexts = new MemResource[0];
+			smallestList = statements;
 		}
+		else if (contexts.length == 1 && contexts[0] != null) {
+			MemResource memContext = valueFactory.getMemResource(contexts[0]);
+			if (memContext == null) {
+				// non-existent context
+				return new EmptyIteration<MemStatement, X>();
+			}
 
-		// Search for the smallest list that can be used by the iterator
-		MemStatementList smallestList = null;
+			memContexts = new MemResource[] { memContext };
+			smallestList = memContext.getContextStatementList();
+		}
+		else {
+			Set<MemResource> contextSet = new LinkedHashSet<MemResource>(2 * contexts.length);
 
-		if (contexts.length > 0) { // contexts specified
-			if (memContextList.size() == 0) {
+			for (Resource context : contexts) {
+				MemResource memContext = valueFactory.getMemResource(context);
+				if (context == null || memContext != null) {
+					contextSet.add(memContext);
+				}
+			}
+
+			if (contextSet.isEmpty()) {
 				// no known contexts specified
 				return new EmptyIteration<MemStatement, X>();
 			}
-			else {
-				ArrayList<MemStatementIterator<X>> perContextIters = new ArrayList<MemStatementIterator<X>>(
-						memContextList.size());
 
-				for (MemResource memContext : memContextList) {
-					// reset for each iteration.
-					smallestList = statements;
-
-					if (memSubj != null) {
-						MemStatementList l = memSubj.getSubjectStatementList();
-						if (l.size() < smallestList.size()) {
-							smallestList = l;
-						}
-					}
-					if (memPred != null) {
-						MemStatementList l = memPred.getPredicateStatementList();
-						if (l.size() < smallestList.size()) {
-							smallestList = l;
-						}
-					}
-					if (memObj != null) {
-						MemStatementList l = memObj.getObjectStatementList();
-						if (l.size() < smallestList.size()) {
-							smallestList = l;
-						}
-					}
-					if (memContext != null) {
-						MemStatementList l = memContext.getContextStatementList();
-						if (l.size() < smallestList.size()) {
-							smallestList = l;
-						}
-					}
-					perContextIters.add(new MemStatementIterator<X>(smallestList, memSubj, memPred, memObj,
-							explicitOnly, snapshot, readMode, memContext));
-				} // end for
-
-				return new UnionIteration<MemStatement, X>(perContextIters);
-			}
-		}
-		else { // no contexts specified, simply search triple patterns
+			memContexts = contextSet.toArray(new MemResource[contextSet.size()]);
 			smallestList = statements;
-			if (memSubj != null) {
-				MemStatementList l = memSubj.getSubjectStatementList();
-				if (l.size() < smallestList.size()) {
-					smallestList = l;
-				}
-			}
-			if (memPred != null) {
-				MemStatementList l = memPred.getPredicateStatementList();
-				if (l.size() < smallestList.size()) {
-					smallestList = l;
-				}
-			}
-			if (memObj != null) {
-				MemStatementList l = memObj.getObjectStatementList();
-				if (l.size() < smallestList.size()) {
-					smallestList = l;
-				}
-			}
-			return new MemStatementIterator<X>(smallestList, memSubj, memPred, memObj, explicitOnly, snapshot,
-					readMode);
 		}
+
+		if (memSubj != null) {
+			MemStatementList l = memSubj.getSubjectStatementList();
+			if (l.size() < smallestList.size()) {
+				smallestList = l;
+			}
+		}
+
+		if (memPred != null) {
+			MemStatementList l = memPred.getPredicateStatementList();
+			if (l.size() < smallestList.size()) {
+				smallestList = l;
+			}
+		}
+
+		if (memObj != null) {
+			MemStatementList l = memObj.getObjectStatementList();
+			if (l.size() < smallestList.size()) {
+				smallestList = l;
+			}
+		}
+
+		return new MemStatementIterator<X>(smallestList, memSubj, memPred, memObj, explicitOnly, snapshot,
+				readMode, memContexts);
 	}
 
 	protected Statement addStatement(Resource subj, URI pred, Value obj, Resource context, boolean explicit)
@@ -569,6 +553,9 @@ public class MemoryStore extends SailBase {
 					// statement is already present, update its transaction
 					// status if appropriate
 					MemStatement st = stIter.next();
+
+					txnStatements.put(st, st);
+
 					TxnStatus txnStatus = st.getTxnStatus();
 
 					if (txnStatus == TxnStatus.NEUTRAL && !st.isExplicit() && explicit) {
@@ -619,9 +606,12 @@ public class MemoryStore extends SailBase {
 		}
 
 		// completely new statement
-		MemStatement st = new MemStatement(memSubj, memPred, memObj, memContext, currentSnapshot + 1, explicit);
+		MemStatement st = new MemStatement(memSubj, memPred, memObj, memContext, explicit, currentSnapshot + 1,
+				TxnStatus.NEW);
 		statements.add(st);
 		st.addToComponentLists();
+
+		txnStatements.put(st, st);
 
 		return st;
 	}
@@ -654,7 +644,17 @@ public class MemoryStore extends SailBase {
 			st.setTxnStatus(TxnStatus.NEUTRAL);
 		}
 
+		txnStatements.put(st, st);
+
 		return statementsRemoved;
+	}
+
+	protected void startTransaction()
+		throws SailException
+	{
+		cancelSyncTask();
+
+		txnStatements = new IdentityHashMap<MemStatement, MemStatement>();
 	}
 
 	protected void commit()
@@ -666,8 +666,7 @@ public class MemoryStore extends SailBase {
 
 		int txnSnapshot = currentSnapshot + 1;
 
-		for (int i = statements.size() - 1; i >= 0; i--) {
-			MemStatement st = statements.get(i);
+		for (MemStatement st : txnStatements.keySet()) {
 			TxnStatus txnStatus = st.getTxnStatus();
 
 			if (txnStatus == TxnStatus.NEUTRAL) {
@@ -691,13 +690,15 @@ public class MemoryStore extends SailBase {
 
 				// ...and add a clone with modified explicit/implicit flag
 				MemStatement explSt = new MemStatement(st.getSubject(), st.getPredicate(), st.getObject(),
-						st.getContext(), txnSnapshot, txnStatus == TxnStatus.EXPLICIT);
+						st.getContext(), txnStatus == TxnStatus.EXPLICIT, txnSnapshot);
 				statements.add(explSt);
 				explSt.addToComponentLists();
 			}
 
 			st.setTxnStatus(TxnStatus.NEUTRAL);
 		}
+
+		txnStatements = null;
 
 		if (statementsAdded || statementsRemoved || statementsDeprecated) {
 			currentSnapshot = txnSnapshot;
@@ -725,9 +726,7 @@ public class MemoryStore extends SailBase {
 
 		int txnSnapshot = currentSnapshot + 1;
 
-		for (int i = statements.size() - 1; i >= 0; i--) {
-			MemStatement st = statements.get(i);
-
+		for (MemStatement st : txnStatements.keySet()) {
 			TxnStatus txnStatus = st.getTxnStatus();
 			if (txnStatus == TxnStatus.NEW || txnStatus == TxnStatus.ZOMBIE) {
 				// Statement has been added during this transaction
@@ -738,6 +737,8 @@ public class MemoryStore extends SailBase {
 				st.setTxnStatus(TxnStatus.NEUTRAL);
 			}
 		}
+
+		txnStatements = null;
 
 		scheduleSnapshotCleanup();
 	}

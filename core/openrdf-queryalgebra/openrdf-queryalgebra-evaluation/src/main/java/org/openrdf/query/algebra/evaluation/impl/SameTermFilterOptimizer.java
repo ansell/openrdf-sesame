@@ -12,6 +12,7 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
@@ -29,7 +30,7 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
  * operators in statement patterns as much as possible. Operators like
  * sameTerm(X, Y) are processed by renaming X to Y (or vice versa). Operators
  * like sameTerm(X, <someURI>) are processed by assigning the URI to all
- * occurrnig variables with name X.
+ * occurring variables with name X.
  * 
  * @author Arjohn Kampman
  */
@@ -56,16 +57,15 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 			if (sameTerm.getParentNode() instanceof Filter) {
 				// SameTerm applies to the filter's argument
 				Filter filter = (Filter)sameTerm.getParentNode();
-				TupleExpr filterArg = filter.getArg();
 
 				ValueExpr leftArg = sameTerm.getLeftArg();
 				ValueExpr rightArg = sameTerm.getRightArg();
 
 				// Verify that vars are bound by filterArg
-				Set<String> boundVars = filterArg.getBindingNames();
+				Set<String> bindingNames = filter.getArg().getBindingNames();
 
-				if (leftArg instanceof Var && !boundVars.contains(((Var)leftArg).getName())
-						|| rightArg instanceof Var && !boundVars.contains(((Var)rightArg).getName()))
+				if (leftArg instanceof Var && !bindingNames.contains(((Var)leftArg).getName())
+						|| rightArg instanceof Var && !bindingNames.contains(((Var)rightArg).getName()))
 				{
 					// One or both var(s) are unbound, this expression will never
 					// return any results
@@ -75,31 +75,35 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 
 				if (leftArg instanceof Var && rightArg instanceof Var) {
 					// Rename rightArg to leftArg
-					String leftVarName = ((Var)leftArg).getName();
-					String rightVarName = ((Var)rightArg).getName();
-
-					filterArg.visit(new VarRenamer(rightVarName, leftVarName));
-
-					// Replace SameTerm-filter with an Extension
-					Extension extension = new Extension(filterArg);
-					extension.addElement(new ExtensionElem(new Var(leftVarName), rightVarName));
-					filter.replaceWith(extension);
+					renameVar((Var)rightArg, (Var)leftArg, filter);
 				}
 				else if (leftArg instanceof Var && rightArg instanceof ValueConstant) {
-					// Assign right value to left var
-					String leftVarName = ((Var)leftArg).getName();
-					Value rightValue = ((ValueConstant)rightArg).getValue();
-
-					filterArg.visit(new VarBinder(leftVarName, rightValue));
+					bindVar((Var)leftArg, (ValueConstant)rightArg, filter);
 				}
 				else if (rightArg instanceof Var && leftArg instanceof ValueConstant) {
-					// Assign left value to right var
-					String rightVarName = ((Var)rightArg).getName();
-					Value leftValue = ((ValueConstant)leftArg).getValue();
-
-					filterArg.visit(new VarBinder(rightVarName, leftValue));
+					bindVar((Var)rightArg, (ValueConstant)leftArg, filter);
 				}
 			}
+		}
+
+		private void renameVar(Var oldVar, Var newVar, Filter filter) {
+			filter.getArg().visit(new VarRenamer(oldVar.getName(), newVar.getName()));
+
+			// Replace SameTerm-filter with an Extension, the old variable name
+			// might still be relevant to nodes higher in the tree
+			Extension extension = new Extension(filter.getArg());
+			extension.addElement(new ExtensionElem(new Var(newVar.getName()), oldVar.getName()));
+			filter.replaceWith(extension);
+		}
+
+		private void bindVar(Var var, ValueConstant valueConstant, Filter filter) {
+			filter.getArg().visit(new VarBinder(var.getName(), valueConstant.getValue()));
+
+			// No need to keep the comparison, but we do need to make sure
+			// that the variable is not null in case it comes from an
+			// optional statement pattern. Replace the SameTerm constraint with a
+			// Bound constraint.
+			filter.setCondition(new Bound(var));
 		}
 	}
 

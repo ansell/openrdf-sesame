@@ -19,7 +19,6 @@ import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 import info.aduna.iteration.CloseableIteration;
 
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -202,8 +201,6 @@ public abstract class SailConnectionBase implements SailConnection {
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		Lock conLock = getSharedConnectionLock();
 		try {
 			verifyIsOpen();
@@ -217,8 +214,6 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final long size(Resource... contexts)
 		throws SailException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		Lock conLock = getSharedConnectionLock();
 		try {
 			verifyIsOpen();
@@ -295,8 +290,6 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		Lock conLock = getSharedConnectionLock();
 		try {
 			verifyIsOpen();
@@ -318,8 +311,6 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		Lock conLock = getSharedConnectionLock();
 		try {
 			verifyIsOpen();
@@ -341,8 +332,6 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void clear(Resource... contexts)
 		throws SailException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		Lock conLock = getSharedConnectionLock();
 		try {
 			verifyIsOpen();

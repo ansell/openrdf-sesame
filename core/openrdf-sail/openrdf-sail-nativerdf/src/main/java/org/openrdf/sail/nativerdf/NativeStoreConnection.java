@@ -42,6 +42,7 @@ import org.openrdf.query.algebra.evaluation.impl.ConstantOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.algebra.evaluation.impl.FilterOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
@@ -124,6 +125,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			optimizerList.add(new CompareOptimizer());
 			optimizerList.add(new ConjunctiveConstraintSplitter());
 			optimizerList.add(new SameTermFilterOptimizer());
+			optimizerList.add(new QueryModelPruner());
 			optimizerList.add(new QueryJoinOptimizer());
 			optimizerList.add(new FilterOptimizer());
 

@@ -11,10 +11,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.openrdf.model.Value;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
-
-import org.openrdf.model.Value;
 
 /**
  * A List-based implementation of the {@link BindingSet} interface.
@@ -119,8 +118,7 @@ public class ListBindingSet implements BindingSet {
 	}
 
 	@Override
-	public boolean equals(Object other)
-	{
+	public boolean equals(Object other) {
 		if (this == other) {
 			return true;
 		}
@@ -156,8 +154,7 @@ public class ListBindingSet implements BindingSet {
 	}
 
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		int hashCode = 0;
 
 		for (Binding binding : this) {
@@ -168,8 +165,7 @@ public class ListBindingSet implements BindingSet {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		StringBuilder sb = new StringBuilder(32 * size());
 
 		sb.append('[');

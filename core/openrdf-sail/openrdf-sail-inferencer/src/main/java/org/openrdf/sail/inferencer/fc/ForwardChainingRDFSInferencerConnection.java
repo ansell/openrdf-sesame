@@ -394,9 +394,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return result;
 	}
 
-	/*
-	 * rdf1. xxx aaa yyy --> aaa rdf:type rdf:Property
-	 */
+	// xxx aaa yyy --> aaa rdf:type rdf:Property
 	private int applyRuleRdf1()
 		throws SailException
 	{
@@ -417,10 +415,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs2. 2_1. xxx aaa yyy && (nt) aaa rdfs:domain zzz --> (t1) xxx rdf:type
-	 * zzz (t2)
-	 */
+	// xxx aaa yyy (nt) && aaa rdfs:domain zzz (t1) --> xxx rdf:type zzz
 	private int applyRuleRdfs2_1()
 		throws SailException
 	{
@@ -454,10 +449,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs2. 2_2. aaa rdfs:domain zzz && (nt) xxx aaa yyy --> (t1) xxx rdf:type
-	 * zzz (t2)
-	 */
+	// aaa rdfs:domain zzz (nt) && xxx aaa yyy (t1) --> xxx rdf:type zzz
 	private int applyRuleRdfs2_2()
 		throws SailException
 	{
@@ -491,10 +483,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs3. 3_1. xxx aaa uuu && (nt) aaa rdfs:range zzz --> (t1) uuu rdf:type
-	 * zzz (t2)
-	 */
+	// xxx aaa uuu (nt) && aaa rdfs:range zzz (t1) --> uuu rdf:type zzz
 	private int applyRuleRdfs3_1()
 		throws SailException
 	{
@@ -529,10 +518,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs3. 3_2. aaa rdfs:range zzz && (nt) xxx aaa uuu --> (t1) uuu rdf:type
-	 * zzz (t2)
-	 */
+	// aaa rdfs:range zzz (nt) && xxx aaa uuu (t1) --> uuu rdf:type zzz
 	private int applyRuleRdfs3_2()
 		throws SailException
 	{
@@ -569,9 +555,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	}
 
-	/*
-	 * rdfs4a. xxx aaa yyy --> xxx rdf:type rdfs:Resource
-	 */
+	// xxx aaa yyy --> xxx rdf:type rdfs:Resource
 	private int applyRuleRdfs4a()
 		throws SailException
 	{
@@ -591,9 +575,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs4b. xxx aaa uuu --> uuu rdf:type rdfs:Resource
-	 */
+	// xxx aaa uuu --> uuu rdf:type rdfs:Resource
 	private int applyRuleRdfs4b()
 		throws SailException
 	{
@@ -616,10 +598,8 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs5. 5_1. aaa rdfs:subPropertyOf bbb && (nt) bbb rdfs:subPropertyOf ccc
-	 * --> (t1) aaa rdfs:subPropertyOf ccc (t2)
-	 */
+	// aaa rdfs:subPropertyOf bbb (nt) && bbb rdfs:subPropertyOf ccc (t1)
+	// --> aaa rdfs:subPropertyOf ccc
 	private int applyRuleRdfs5_1()
 		throws SailException
 	{
@@ -656,10 +636,8 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs5. 5_2. bbb rdfs:subPropertyOf ccc && (nt) aaa rdfs:subPropertyOf bbb
-	 * --> (t1) aaa rdfs:subPropertyOf ccc (t2)
-	 */
+	// bbb rdfs:subPropertyOf ccc (nt) && aaa rdfs:subPropertyOf bbb (t1)
+	// --> aaa rdfs:subPropertyOf ccc
 	private int applyRuleRdfs5_2()
 		throws SailException
 	{
@@ -693,10 +671,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs6. xxx rdf:type rdf:Property --> xxx rdfs:subPropertyOf xxx
-	 * reflexivity of rdfs:subPropertyOf
-	 */
+	// xxx rdf:type rdf:Property --> xxx rdfs:subPropertyOf xxx
 	private int applyRuleRdfs6()
 		throws SailException
 	{
@@ -717,10 +692,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs7. 7_1. xxx aaa yyy && (nt) aaa rdfs:subPropertyOf bbb --> (t1) xxx
-	 * bbb yyy (t2)
-	 */
+	// xxx aaa yyy (nt) && aaa rdfs:subPropertyOf bbb (t1) --> xxx bbb yyy
 	private int applyRuleRdfs7_1()
 		throws SailException
 	{
@@ -755,10 +727,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs7. 7_2. aaa rdfs:subPropertyOf bbb && (nt) xxx aaa yyy --> (t1) xxx
-	 * bbb yyy (t2)
-	 */
+	// aaa rdfs:subPropertyOf bbb (nt) && xxx aaa yyy (t1) --> xxx bbb yyy
 	private int applyRuleRdfs7_2()
 		throws SailException
 	{
@@ -794,9 +763,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs8. xxx rdf:type rdfs:Class --> xxx rdfs:subClassOf rdfs:Resource
-	 */
+	// xxx rdf:type rdfs:Class --> xxx rdfs:subClassOf rdfs:Resource
 	private int applyRuleRdfs8()
 		throws SailException
 	{
@@ -818,10 +785,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs9. 9_1. xxx rdfs:subClassOf yyy && (nt) aaa rdf:type xxx --> (t1) aaa
-	 * rdf:type yyy (t2)
-	 */
+	// xxx rdfs:subClassOf yyy (nt) && aaa rdf:type xxx (t1) --> aaa rdf:type yyy
 	private int applyRuleRdfs9_1()
 		throws SailException
 	{
@@ -856,10 +820,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs9. 9_2. aaa rdf:type xxx && (nt) xxx rdfs:subClassOf yyy --> (t1) aaa
-	 * rdf:type yyy (t2)
-	 */
+	// aaa rdf:type xxx (nt) && xxx rdfs:subClassOf yyy (t1) --> aaa rdf:type yyy
 	private int applyRuleRdfs9_2()
 		throws SailException
 	{
@@ -896,10 +857,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs10. xxx rdf:type rdfs:Class --> xxx rdfs:subClassOf xxx reflexivity of
-	 * rdfs:subClassOf
-	 */
+	// xxx rdf:type rdfs:Class --> xxx rdfs:subClassOf xxx
 	private int applyRuleRdfs10()
 		throws SailException
 	{
@@ -921,10 +879,8 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs11. 11_1. xxx rdfs:subClassOf yyy && (nt) yyy rdfs:subClassOf zzz -->
-	 * (t1) xxx rdfs:subClassOf zzz (t2)
-	 */
+	// xxx rdfs:subClassOf yyy (nt) && yyy rdfs:subClassOf zzz (t1)
+	// --> xxx rdfs:subClassOf zzz
 	private int applyRuleRdfs11_1()
 		throws SailException
 	{
@@ -961,10 +917,8 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs11. 11_2. yyy rdfs:subClassOf zzz && (nt) xxx rdfs:subClassOf yyy -->
-	 * (t1) xxx rdfs:subClassOf zzz (t2)
-	 */
+	// yyy rdfs:subClassOf zzz (nt) && xxx rdfs:subClassOf yyy (t1)
+	// --> xxx rdfs:subClassOf zzz
 	private int applyRuleRdfs11_2()
 		throws SailException
 	{
@@ -999,10 +953,8 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs12. xxx rdf:type rdfs:ContainerMembershipProperty --> xxx
-	 * rdfs:subPropertyOf rdfs:member
-	 */
+	// xxx rdf:type rdfs:ContainerMembershipProperty
+	// --> xxx rdfs:subPropertyOf rdfs:member
 	private int applyRuleRdfs12()
 		throws SailException
 	{
@@ -1024,9 +976,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * rdfs13. xxx rdf:type rdfs:Datatype --> xxx rdfs:subClassOf rdfs:Literal
-	 */
+	// xxx rdf:type rdfs:Datatype --> xxx rdfs:subClassOf rdfs:Literal
 	private int applyRuleRdfs13()
 		throws SailException
 	{
@@ -1048,11 +998,9 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		return nofInferred;
 	}
 
-	/*
-	 * X1. xxx rdf:_* yyy --> rdf:_* rdf:type rdfs:ContainerMembershipProperty
-	 * This is an extra rule for list membership properties (_1, _2, _3, ...).
-	 * The RDF MT does not specificy a production for this.
-	 */
+	// xxx rdf:_* yyy --> rdf:_* rdf:type rdfs:ContainerMembershipProperty
+	// This is an extra rule for list membership properties (_1, _2, _3, ...).
+	// The RDF MT does not specificy a production for this.
 	private int applyRuleX1()
 		throws SailException
 	{

@@ -6,6 +6,7 @@
 package org.openrdf.repository.manager;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,9 +14,7 @@ import java.util.List;
 
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
-import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
+import org.openrdf.model.util.LiteralUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
@@ -158,26 +157,30 @@ public class RemoteRepositoryManager extends RepositoryManager {
 				BindingSet bindingSet = responseFromServer.next();
 				RepositoryInfo repInfo = new RepositoryInfo();
 
-				URI uri = (URI)bindingSet.getValue("uri");
-				String id = ((Literal)bindingSet.getValue("id")).getLabel();
+				String id = LiteralUtil.getLabel(bindingSet.getValue("id"), null);
 
-				if (!skipSystemRepo || !id.equals(SystemRepository.ID)) {
-					Value title = bindingSet.getValue("title");
-					String description = null;
-					if (title instanceof Literal) {
-						description = ((Literal)title).getLabel();
-					}
-					boolean readable = ((Literal)bindingSet.getValue("readable")).booleanValue();
-					boolean writable = ((Literal)bindingSet.getValue("writable")).booleanValue();
-
-					repInfo.setLocation(new URL(uri.toString()));
-					repInfo.setId(id);
-					repInfo.setDescription(description);
-					repInfo.setReadable(readable);
-					repInfo.setWritable(writable);
-
-					result.add(repInfo);
+				if (skipSystemRepo && id.equals(SystemRepository.ID)) {
+					continue;
 				}
+
+				String uri = LiteralUtil.getLabel(bindingSet.getValue("uri"), null);
+				String description = LiteralUtil.getLabel(bindingSet.getValue("title"), null);
+				boolean readable = LiteralUtil.getBooleanValue(bindingSet.getValue("readable"), false);
+				boolean writable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
+
+				try {
+					repInfo.setLocation(new URL(uri));
+				}
+				catch (MalformedURLException e) {
+					logger.warn("Server reported malformed repository URL: {}", uri);
+				}
+
+				repInfo.setId(id);
+				repInfo.setDescription(description);
+				repInfo.setReadable(readable);
+				repInfo.setWritable(writable);
+
+				result.add(repInfo);
 			}
 		}
 		catch (IOException ioe) {

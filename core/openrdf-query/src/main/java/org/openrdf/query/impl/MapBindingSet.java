@@ -113,8 +113,7 @@ public class MapBindingSet implements BindingSet {
 	}
 
 	@Override
-	public boolean equals(Object other)
-	{
+	public boolean equals(Object other) {
 		if (this == other) {
 			return true;
 		}
@@ -142,8 +141,7 @@ public class MapBindingSet implements BindingSet {
 	}
 
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		int hashCode = 0;
 
 		for (Binding binding : this) {
@@ -154,8 +152,7 @@ public class MapBindingSet implements BindingSet {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		StringBuilder sb = new StringBuilder(32 * size());
 
 		sb.append('[');

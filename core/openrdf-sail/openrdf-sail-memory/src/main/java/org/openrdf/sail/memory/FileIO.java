@@ -32,7 +32,6 @@ import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.ReadMode;
-import org.openrdf.sail.memory.model.TxnStatus;
 
 /**
  * Functionality to read and write MemoryStore to/from a file.
@@ -221,11 +220,9 @@ class FileIO {
 			memContext = (MemResource)readValue(store, dataIn);
 		}
 
-		MemStatement st = new MemStatement(memSubj, memPred, memObj, memContext, store.getCurrentSnapshot(),
-				isExplicit);
+		MemStatement st = new MemStatement(memSubj, memPred, memObj, memContext, isExplicit, store.getCurrentSnapshot());
 		store.getStatements().add(st);
 		st.addToComponentLists();
-		st.setTxnStatus(TxnStatus.NEUTRAL);
 	}
 
 	private static void writeValue(Value value, DataOutputStream dataOut)

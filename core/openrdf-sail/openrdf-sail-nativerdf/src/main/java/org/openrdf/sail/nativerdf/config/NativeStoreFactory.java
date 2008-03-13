@@ -40,11 +40,11 @@ public class NativeStoreFactory implements SailFactory {
 	public Sail getSail(SailImplConfig config)
 		throws SailConfigException
 	{
-		NativeStore nativeStore = new NativeStore();
-
 		if (!SAIL_TYPE.equals(config.getType())) {
 			throw new SailConfigException("Invalid Sail type: " + config.getType());
 		}
+
+		NativeStore nativeStore = new NativeStore();
 
 		if (config instanceof NativeStoreConfig) {
 			NativeStoreConfig nativeConfig = (NativeStoreConfig)config;

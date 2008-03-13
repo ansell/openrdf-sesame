@@ -9,11 +9,10 @@ import java.io.File;
 import java.io.IOException;
 
 import org.openrdf.http.client.HTTPClient;
-import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.LiteralUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
@@ -129,12 +128,8 @@ public class HTTPRepository implements Repository {
 					BindingSet bindingSet = repositoryList.next();
 					Value uri = bindingSet.getValue("uri");
 
-					if (uri instanceof URI && ((URI)uri).toString().equals(repositoryURL)) {
-						Value writable = bindingSet.getValue("writable");
-						if (writable instanceof Literal) {
-							isWritable = ((Literal)writable).booleanValue();
-						}
-
+					if (uri != null && uri.stringValue().equals(repositoryURL)) {
+						isWritable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
 						break;
 					}
 				}
