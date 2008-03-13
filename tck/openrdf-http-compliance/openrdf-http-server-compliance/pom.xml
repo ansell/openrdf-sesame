@@ -7,7 +7,7 @@
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-http-server-compliance</artifactId>
 	<packaging>war</packaging>
-	<version>2.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF HTTP server compliance tests</name>
 	<description>Tests for the HTTP server.</description>
 	<url>http://www.openrdf.org/</url>
@@ -30,52 +30,52 @@
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-http-protocol</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryparser-api</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryresultio-api</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryresultio-binary</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryresultio-sparqljson</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryresultio-sparqlxml</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-rio-api</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-rio-rdfxml</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -94,14 +94,14 @@
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-http-server</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 			<type>war</type>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-http-testserver</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>

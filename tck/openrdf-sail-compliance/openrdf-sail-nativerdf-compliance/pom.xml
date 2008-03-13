@@ -8,7 +8,7 @@
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-sail-nativerdf-compliance</artifactId>
 	<packaging>jar</packaging>
-	<version>2.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF native store compliance tests</name>
 	<description>Tests for the native RDF Sail.</description>
 	<url>http://www.openrdf.org/</url>
@@ -32,19 +32,19 @@
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-sail-api-compliance</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>		
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-sail-api</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>		
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-sail-nativerdf</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>		
 		<dependency>
 			<groupId>edu.lehigh.swat.bench</groupId>

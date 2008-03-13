@@ -8,7 +8,7 @@
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-repository-manager</artifactId>
 	<packaging>jar</packaging>
-	<version>2.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF repository manager</name>
 	<description>Repository manager</description>
 	<url>http://www.openrdf.org/</url>
@@ -32,61 +32,61 @@
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-repository-api</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-repository-event</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-repository-sail</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-sail-api</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-sail-memory</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-repository-http</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-http-client</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-http-protocol</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-query</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-model</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>

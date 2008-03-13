@@ -8,7 +8,7 @@
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-repository-compliance</artifactId>
 	<packaging>pom</packaging>
-	<version>2.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF Repository API compliance test</name>
 	<description>Tests for the Repository API</description>
 	<url>http://www.openrdf.org/</url>

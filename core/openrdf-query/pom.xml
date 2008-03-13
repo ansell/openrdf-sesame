@@ -8,7 +8,7 @@
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-query</artifactId>
 	<packaging>jar</packaging>
-	<version>2.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF query</name>
 	<description>Query interfaces and implementations</description>
 	<url>http://www.openrdf.org/</url>
@@ -32,13 +32,13 @@
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-model</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-rio-api</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>

@@ -7,7 +7,7 @@
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-http</artifactId>
 	<packaging>pom</packaging>
-	<version>2.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF HTTP protocol client and server</name>
 	<description>Client and server for repository communication over HTTP.</description>
 	<url>http://www.openrdf.org/</url>

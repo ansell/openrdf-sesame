@@ -8,7 +8,7 @@
   <groupId>org.openrdf</groupId>
   <artifactId>openrdf-sail-api</artifactId>
   <packaging>jar</packaging>
-  <version>2.0</version>
+  <version>2.0.1-SNAPSHOT</version>
   <name>OpenRDF Sail API</name>
   <description>RDF Storage And Inference Layer ("Sail") API.</description>
   <url>http://www.openrdf.org/</url>
@@ -32,19 +32,19 @@
 	 <dependency>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-query</artifactId>
-		<version>2.0</version>
+		<version>2.0.1-SNAPSHOT</version>
 	 </dependency>
 
 	 <dependency>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-queryalgebra-model</artifactId>
-		<version>2.0</version>
+		<version>2.0.1-SNAPSHOT</version>
 	 </dependency>
 
 	 <dependency>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-model</artifactId>
-		<version>2.0</version>
+		<version>2.0.1-SNAPSHOT</version>
 	 </dependency>
 
 	 <dependency>
