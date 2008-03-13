@@ -56,7 +56,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
-					<webappDirectory>${project.build.directory}/openrdf-sesame</webappDirectory>    
+					<webappDirectory>${project.build.directory}/openrdf-sesame</webappDirectory>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -75,11 +75,11 @@
 						<configuration>
 							<skip>false</skip>
 							<forkMode>always</forkMode>
-							<argLine>-Xmx512M -XX:MaxPermSize=128M</argLine>
+							<argLine>-Xmx512M -XX:MaxPermSize=256M</argLine>
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>			
+			</plugin>
 		</plugins>
 	</build>
 
