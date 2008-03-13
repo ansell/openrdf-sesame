@@ -41,7 +41,7 @@ public class TripleTableManager {
 	private BNodeTable bnodes;
 	private boolean closed;
 	private Connection conn;
-	private RdbmsTableFactory factory;
+	private ValueTableFactory factory;
 	private Thread initThread;
 	private LiteralTable literals;
 	private Logger logger = LoggerFactory.getLogger(TripleTableManager.class);
@@ -54,7 +54,7 @@ public class TripleTableManager {
 	private boolean indexingTriples = INDEX_TRIPLES;
 	Exception exc;
 
-	public TripleTableManager(RdbmsTableFactory factory) {
+	public TripleTableManager(ValueTableFactory factory) {
 		this.factory = factory;
 	}
 

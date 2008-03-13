@@ -23,6 +23,7 @@ public class LiteralTable {
 	private ValueTable datatypes;
 	private ValueTable numeric;
 	private ValueTable dateTime;
+	private HashTable hashTable;
 	private int version;
 
 	public ValueTable getLabelTable() {
@@ -73,13 +74,8 @@ public class LiteralTable {
 		this.dateTime = dateTime;
 	}
 
-	public void initialize() throws SQLException {
-		labels.initialize();
-		longLabels.initialize();
-		languages.initialize();
-		datatypes.initialize();
-		numeric.initialize();
-		dateTime.initialize();
+	public void setHashTable(HashTable hash) {
+		this.hashTable = hash;
 	}
 
 	public void close() throws SQLException {
@@ -89,6 +85,7 @@ public class LiteralTable {
 		datatypes.close();
 		numeric.close();
 		dateTime.close();
+		hashTable.close();
 	}
 
 	public int getBatchSize() {
@@ -100,6 +97,7 @@ public class LiteralTable {
 	}
 
 	public void insertSimple(long id, long hash, String label) throws SQLException, InterruptedException {
+		hashTable.insert(id, hash);
 		if (IdCode.valueOf(id).isLong()) {
 			longLabels.insert(id, label);
 		} else {
@@ -121,6 +119,7 @@ public class LiteralTable {
 
 	public void insertNumeric(long id, long hash, String label, String datatype,
 			double value) throws SQLException, InterruptedException {
+		hashTable.insert(id, hash);
 		labels.insert(id, label);
 		datatypes.insert(id, datatype);
 		numeric.insert(id, value);
@@ -128,12 +127,14 @@ public class LiteralTable {
 
 	public void insertDateTime(long id, long hash, String label, String datatype,
 			long value) throws SQLException, InterruptedException {
+		hashTable.insert(id, hash);
 		labels.insert(id, label);
 		datatypes.insert(id, datatype);
 		dateTime.insert(id, value);
 	}
 
 	public void optimize() throws SQLException {
+		hashTable.optimize();
 		labels.optimize();
 		longLabels.optimize();
 		languages.optimize();
@@ -144,6 +145,7 @@ public class LiteralTable {
 
 	public void removedStatements(int count, String condition)
 			throws SQLException {
+		hashTable.expungeRemovedStatements(count, condition);
 		boolean bool = false;
 		bool |= labels.expungeRemovedStatements(count, condition);
 		bool |= longLabels.expungeRemovedStatements(count, condition);

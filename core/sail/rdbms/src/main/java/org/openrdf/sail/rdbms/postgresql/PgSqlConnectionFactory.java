@@ -8,11 +8,11 @@ package org.openrdf.sail.rdbms.postgresql;
 import org.openrdf.sail.rdbms.RdbmsConnectionFactory;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
-import org.openrdf.sail.rdbms.schema.RdbmsTableFactory;
+import org.openrdf.sail.rdbms.schema.ValueTableFactory;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
 
 /**
- * Overrides {@link RdbmsTableFactory}, {@link QueryBuilderFactory}, and
+ * Overrides {@link ValueTableFactory}, {@link QueryBuilderFactory}, and
  * {@link RdbmsQueryOptimizer}. This class also indicates that PostgreSQL does
  * not require a FROM clause.
  * 
@@ -22,7 +22,7 @@ import org.openrdf.sail.rdbms.schema.TransTableManager;
 public class PgSqlConnectionFactory extends RdbmsConnectionFactory {
 
 	@Override
-	protected RdbmsTableFactory createRdbmsTableFactory() {
+	protected ValueTableFactory createValueTableFactory() {
 		return new PgSqlTableFactory();
 	}
 

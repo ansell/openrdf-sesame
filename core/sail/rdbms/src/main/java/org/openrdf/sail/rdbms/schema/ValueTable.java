@@ -146,16 +146,16 @@ public class ValueTable {
 		return false;
 	}
 
-	public void expunge(String condition) throws SQLException {
+	@Override
+	public String toString() {
+		return getName();
+	}
+
+	protected void expunge(String condition) throws SQLException {
 		synchronized (table) {
 			int count = table.executeUpdate(EXPUNGE + condition);
 			table.modified(0, count);
 		}
-	}
-
-	@Override
-	public String toString() {
-		return getName();
 	}
 
 	protected ValueBatch newValueBatch() {
