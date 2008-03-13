@@ -13,6 +13,7 @@ import org.openrdf.sail.rdbms.algebra.BNodeColumn;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
 import org.openrdf.sail.rdbms.algebra.DatatypeColumn;
 import org.openrdf.sail.rdbms.algebra.DateTimeColumn;
+import org.openrdf.sail.rdbms.algebra.HashColumn;
 import org.openrdf.sail.rdbms.algebra.IdColumn;
 import org.openrdf.sail.rdbms.algebra.JoinItem;
 import org.openrdf.sail.rdbms.algebra.LabelColumn;
@@ -27,6 +28,7 @@ import org.openrdf.sail.rdbms.algebra.URIColumn;
 import org.openrdf.sail.rdbms.algebra.base.FromItem;
 import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
+import org.openrdf.sail.rdbms.schema.HashTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.URITable;
 
@@ -41,6 +43,7 @@ public class ValueJoinOptimizer extends
 	private URITable uris;
 	private BNodeTable bnodes;
 	private LiteralTable literals;
+	private HashTable hashes;
 	private FromItem join;
 	private FromItem parent;
 	private SelectQuery query;
@@ -55,6 +58,10 @@ public class ValueJoinOptimizer extends
 
 	public void setLiteralTable(LiteralTable literals) {
 		this.literals = literals;
+	}
+
+	public void setHashTable(HashTable hashes) {
+		this.hashes = hashes;
 	}
 
 	public void optimize(TupleExpr tupleExpr, Dataset dataset,
@@ -82,6 +89,18 @@ public class ValueJoinOptimizer extends
 		join = null;
 		parent = null;
 		query = null;
+	}
+
+	@Override
+	public void meet(HashColumn node) throws RuntimeException {
+		if (hashes == null || hashes.getName() == null) {
+			super.meet(node);
+		} else {
+			ColumnVar var = node.getRdbmsVar();
+			String alias = "h" + getDBName(var);
+			String tableName = hashes.getName();
+			join(var, alias, tableName);
+		}
 	}
 
 	@Override

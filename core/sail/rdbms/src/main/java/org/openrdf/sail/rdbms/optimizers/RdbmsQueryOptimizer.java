@@ -19,6 +19,7 @@ import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
+import org.openrdf.sail.rdbms.schema.HashTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.URITable;
 
@@ -34,6 +35,7 @@ public class RdbmsQueryOptimizer {
 	private BNodeTable bnodes;
 	private LiteralTable literals;
 	private SelectQueryOptimizerFactory factory;
+	private HashTable hashTable;
 
 	public void setSelectQueryOptimizerFactory(
 			SelectQueryOptimizerFactory factory) {
@@ -54,6 +56,10 @@ public class RdbmsQueryOptimizer {
 
 	public void setLiteralTable(LiteralTable literals) {
 		this.literals = literals;
+	}
+
+	public void setHashTable(HashTable hashTable) {
+		this.hashTable = hashTable;
 	}
 
 	public TupleExpr optimize(TupleExpr expr, Dataset dataset,
@@ -94,6 +100,7 @@ public class RdbmsQueryOptimizer {
 		valueJoins.setBnodeTable(bnodes);
 		valueJoins.setUriTable(uris);
 		valueJoins.setLiteralTable(literals);
+		valueJoins.setHashTable(hashTable);
 		optimizerList.add(valueJoins);
 	}
 

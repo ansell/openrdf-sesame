@@ -28,6 +28,7 @@ import org.openrdf.sail.rdbms.managers.UriManager;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 import org.openrdf.sail.rdbms.optimizers.SelectQueryOptimizerFactory;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
+import org.openrdf.sail.rdbms.schema.HashTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
 import org.openrdf.sail.rdbms.schema.ValueTableFactory;
@@ -46,11 +47,13 @@ import org.openrdf.sail.rdbms.schema.URITable;
 public class RdbmsConnectionFactory {
 	private RdbmsStore sail;
 	private BNodeTable bnodeTable;
+	private HashTable hashTable;
 	private DataSource ds;
 	private String user;
 	private String password;
 	private Connection lookup;
 	private Connection literalLookup;
+	private Connection hashLookup;
 	private Connection index;
 	private LiteralTable literalTable;
 	private NamespaceManager namespaces;
@@ -63,6 +66,7 @@ public class RdbmsConnectionFactory {
 	private PredicateManager predicateManager;
 	private int maxTripleTables;
 	private boolean triplesIndexed = true;
+	private boolean usingHashTable;
 
 	public void setSail(RdbmsStore sail) {
 		this.sail = sail;
@@ -88,6 +92,14 @@ public class RdbmsConnectionFactory {
 
 	public void setMaxNumberOfTripleTables(int max) {
 		maxTripleTables = max;
+	}
+
+	public boolean isUsingHashTable() {
+		return usingHashTable || hashTable != null;
+	}
+
+	public void setUsingHashTable(boolean usingHashTable) {
+		this.usingHashTable = usingHashTable;
 	}
 
 	public boolean isTriplesIndexed() {
@@ -122,10 +134,16 @@ public class RdbmsConnectionFactory {
 			index = getConnection();
 			lookup = getConnection();
 			literalLookup = getConnection();
+			hashLookup = getConnection();
 			index.setAutoCommit(true);
 			lookup.setAutoCommit(true);
 			literalLookup.setAutoCommit(true);
+			hashLookup.setAutoCommit(true);
 			ValueTableFactory tables = createValueTableFactory();
+			if (usingHashTable) {
+				hashTable = tables.createHashTable(hashLookup, null);
+				tables.setHashTable(hashTable);
+			}
 			namespaces = new NamespaceManager();
 			namespaces.setConnection(lookup);
 			NamespacesTable nsTable = tables.createNamespacesTable(index);
@@ -210,6 +228,7 @@ public class RdbmsConnectionFactory {
 			s.setTransaction(trans);
 			QueryBuilderFactory bfactory = createQueryBuilderFactory();
 			bfactory.setValueFactory(vf);
+			bfactory.setUsingHashTable(hashTable != null);
 			s.setQueryBuilderFactory(bfactory);
 			RdbmsConnection conn = new RdbmsConnection(sail, s);
 			conn.setNamespaces(namespaces);
@@ -226,6 +245,7 @@ public class RdbmsConnectionFactory {
 			optimizer.setBnodeTable(bnodeTable);
 			optimizer.setUriTable(uriTable);
 			optimizer.setLiteralTable(literalTable);
+			optimizer.setHashTable(hashTable);
 			conn.setRdbmsQueryOptimizer(optimizer);
 			return conn;
 		} catch (SQLException e) {
@@ -247,6 +267,9 @@ public class RdbmsConnectionFactory {
 			if (literalManager != null) {
 				literalManager.close();
 			}
+			if (hashTable != null) {
+				hashTable.close();
+			}
 			if (lookup != null) {
 				lookup.close();
 				lookup = null;
@@ -254,6 +277,10 @@ public class RdbmsConnectionFactory {
 			if (literalLookup != null) {
 				literalLookup.close();
 				literalLookup = null;
+			}
+			if (hashLookup != null) {
+				hashLookup.close();
+				hashLookup = null;
 			}
 			if (index != null) {
 				index.close();

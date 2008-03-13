@@ -31,14 +31,18 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 	private static final String FEILD_COLLATE = " CHARACTER SET utf8 COLLATE utf8_bin";
 
 	@Override
-	protected ValueTableFactory createValueTableFactory() {
-		return new ValueTableFactory(new TableFactory() {
-
+	protected TableFactory createTableFactory() {
+		return new TableFactory() {
 			@Override
 			protected RdbmsTable newTable(String name) {
 				return new MySqlTable(name);
 			}
-		})
+		};
+	}
+
+	@Override
+	protected ValueTableFactory createValueTableFactory() {
+		return new ValueTableFactory(createTableFactory())
 		{
 
 			@Override

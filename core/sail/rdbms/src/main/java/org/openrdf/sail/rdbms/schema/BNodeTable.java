@@ -26,7 +26,6 @@ public class BNodeTable {
 
 	public void close() throws SQLException {
 		table.close();
-		hashTable.close();
 	}
 
 	public String getName() {

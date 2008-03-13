@@ -73,7 +73,13 @@ public class TransTableManager {
 	}
 
 	public void close() throws SQLException {
-		// allow subclasses to override
+		try {
+			if (temporaryTable != null) {
+				temporaryTable.drop();
+			}
+		} catch (SQLException e) {
+			// ignore
+		}
 	}
 
 	public String findTableName(long pred) throws SQLException {

@@ -15,14 +15,20 @@ import org.openrdf.sail.rdbms.RdbmsValueFactory;
  */
 public class QueryBuilderFactory {
 	private RdbmsValueFactory vf;
+	private boolean usingHashTable;
 
 	public void setValueFactory(RdbmsValueFactory vf) {
 		this.vf = vf;
 	}
 
+	public void setUsingHashTable(boolean b) {
+		this.usingHashTable = b;
+	}
+
 	public QueryBuilder createQueryBuilder() {
 		QueryBuilder query = new QueryBuilder(createSqlQueryBuilder());
 		query.setValueFactory(vf);
+		query.setUsingHashTable(usingHashTable);
 		return query;
 	}
 
