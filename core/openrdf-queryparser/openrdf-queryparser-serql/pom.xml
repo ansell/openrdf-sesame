@@ -8,7 +8,7 @@
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-queryparser-serql</artifactId>
 	<packaging>jar</packaging>
-	<version>2.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF SeRQL query parser</name>
 	<description>Query language parser implementation for SeRQL.</description>
 	<url>http://www.openrdf.org/</url>
@@ -32,25 +32,25 @@
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryparser-api</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-query</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryalgebra-model</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-model</artifactId>
-			<version>2.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>

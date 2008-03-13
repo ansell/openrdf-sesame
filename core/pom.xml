@@ -7,7 +7,7 @@
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-sesame</artifactId>
 	<packaging>pom</packaging>
-	<version>2.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF Sesame</name>
 	<description>An extensible framework for RDF and RDF Schema data.</description>
 	<url>http://www.openrdf.org/</url>

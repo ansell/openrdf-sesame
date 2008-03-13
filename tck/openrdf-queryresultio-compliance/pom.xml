@@ -7,7 +7,7 @@
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-queryresultio-compliance</artifactId>
 	<packaging>pom</packaging>
-	<version>2.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF query result compliance tests</name>
 	<description>Test for various query result format implementations.</description>
 	<url>http://www.openrdf.org/</url>

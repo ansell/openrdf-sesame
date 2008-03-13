@@ -7,7 +7,7 @@
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-sail-compliance</artifactId>
 	<packaging>pom</packaging>
-	<version>2.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF Sail compliance tests</name>
 	<description>Tests for various Sail implementations.</description>
 	<url>http://www.openrdf.org/</url>

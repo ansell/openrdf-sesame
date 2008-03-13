@@ -8,7 +8,7 @@
 	<groupId>org.openrdf</groupId>
 	<artifactId>openrdf-model</artifactId>
 	<packaging>jar</packaging>
-	<version>2.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF RDF model</name>
 	<description>RDF model interfaces and implementations.</description>
 	<url>http://www.openrdf.org/</url>
