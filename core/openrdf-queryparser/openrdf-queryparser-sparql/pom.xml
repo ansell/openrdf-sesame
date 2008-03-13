@@ -134,9 +134,9 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame2/openrdf-queryparser/${artifactId}</connection>
-		<developerConnection>scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame2/openrdf-queryparser/${artifactId}</developerConnection>
-		<url>http://src.aduna-software.org/viewvc/${groupId}/projects/sesame2/openrdf-queryparser/${artifactId}</url>
+		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-queryparser/${artifactId}</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-queryparser/${artifactId}</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.0/core/openrdf-queryparser/${artifactId}</url>
 	</scm>
 
 </project>

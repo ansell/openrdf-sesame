@@ -173,13 +173,13 @@
 
 	<scm>
 		<connection>
-			scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame2-tck/openrdf-queryparser-compliance/${artifactId}
+			scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/tck/openrdf-queryparser-compliance/${artifactId}
 		</connection>
 		<developerConnection>
-			scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame2-tck/openrdf-queryparser-compliance/${artifactId}
+			scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/tck/openrdf-queryparser-compliance/${artifactId}
 		</developerConnection>
 		<url>
-			http://src.aduna-software.org/viewvc/${groupId}/projects/sesame2-tck/openrdf-queryparser-compliance/${artifactId}
+			http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.0/tck/openrdf-queryparser-compliance/${artifactId}
 		</url>
 	</scm>
 

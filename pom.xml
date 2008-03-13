@@ -5,11 +5,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.openrdf</groupId>
-	<artifactId>openrdf-sail</artifactId>
+	<artifactId>openrdf-sesame-root</artifactId>
 	<packaging>pom</packaging>
 	<version>2.0.1-SNAPSHOT</version>
-	<name>OpenRDF Sail</name>
-	<description>Sail API and implementations.</description>
+	<name>OpenRDF Sesame</name>
+	<description>An extensible framework for RDF and RDF Schema data.</description>
 	<url>http://www.openrdf.org/</url>
 
 	<organization>
@@ -28,10 +28,8 @@
 	</licenses>
 
 	<modules>
-		<module>openrdf-sail-api</module>
-		<module>openrdf-sail-inferencer</module>
-		<module>openrdf-sail-memory</module>
-		<module>openrdf-sail-nativerdf</module>
+		<module>core</module>
+		<module>tck</module>
 	</modules>
 
 	<build>
@@ -41,16 +39,6 @@
 				<artifactId>wagon-ftp</artifactId>
 			</extension>
 		</extensions>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
-		</plugins>
 	</build>
 
 	<repositories>
@@ -102,11 +90,9 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/${artifactId}</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/${artifactId}</developerConnection>
-		<url>
-			http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.0/core/${artifactId}
-		</url>
+		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.0</url>
 	</scm>
 
 </project>
