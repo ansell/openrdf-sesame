@@ -16,7 +16,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsLiteral;
-import org.openrdf.sail.rdbms.schema.IdCode;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 
 /**
@@ -107,11 +106,6 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 	@Override
 	protected int getBatchSize() {
 		return table.getBatchSize();
-	}
-
-	@Override
-	protected long getMissingId(RdbmsLiteral lit) {
-		return IdCode.valueOf(lit).hash(lit);
 	}
 
 }

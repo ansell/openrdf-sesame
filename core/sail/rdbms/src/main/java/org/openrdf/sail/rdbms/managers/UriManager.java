@@ -73,11 +73,6 @@ public class UriManager extends ValueManagerBase<RdbmsURI> {
 	}
 
 	@Override
-	protected long getMissingId(RdbmsURI value) {
-		return IdCode.valueOf(value).hash(value);
-	}
-
-	@Override
 	protected void optimize() throws SQLException {
 		super.optimize();
 		table.optimize();
