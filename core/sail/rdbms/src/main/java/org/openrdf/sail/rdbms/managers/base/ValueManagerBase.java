@@ -11,15 +11,15 @@ import info.aduna.collections.LRUMap;
 
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 
-public abstract class ValueManagerBase<K, V extends RdbmsValue> extends ManagerBase {
+public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase {
 	public static final boolean STORE_VALUES = true;
-	private LRUMap<K, V> cache;
+	private LRUMap<Object, V> cache;
 
 	public void init() {
-		cache = new LRUMap<K, V>(getBatchSize());
+		cache = new LRUMap<Object, V>(getBatchSize());
 	}
 
-	public V findInCache(K key) {
+	public V findInCache(Object key) {
 		if (!STORE_VALUES)
 			return null;
 		synchronized (cache) {
@@ -57,7 +57,7 @@ public abstract class ValueManagerBase<K, V extends RdbmsValue> extends ManagerB
 	protected abstract void insert(long id, V value)
 			throws SQLException, InterruptedException;
 
-	protected abstract K key(V value);
+	protected abstract Object key(V value);
 
 	protected abstract long getMissingId(V value);
 

@@ -24,7 +24,7 @@ import org.openrdf.sail.rdbms.schema.LiteralTable;
  * @author James Leigh
  * 
  */
-public class LiteralManager extends ValueManagerBase<Literal, RdbmsLiteral> {
+public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 
 	public static LiteralManager instance;
 	private LiteralTable table;

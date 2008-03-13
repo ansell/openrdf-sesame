@@ -40,19 +40,15 @@ public class RdbmsTableFactory {
 		return new NamespacesTable(createTable(conn, NAMESPACES));
 	}
 
-	public ResourceTable createBNodeTable(Connection conn, BlockingQueue<Batch> queue) {
+	public BNodeTable createBNodeTable(Connection conn, BlockingQueue<Batch> queue) {
 		ValueTable table = createValueTable(conn, queue, BNODE_VALUES, VARCHAR, VCS);
-		return new ResourceTable(table);
+		return new BNodeTable(table);
 	}
 
-	public ResourceTable createURITable(Connection conn, BlockingQueue<Batch> queue) {
-		ValueTable table = createValueTable(conn, queue, URI_VALUES, VARCHAR, VCL);
-		return new ResourceTable(table);
-	}
-
-	public ResourceTable createLongURITable(Connection conn, BlockingQueue<Batch> queue) {
-		ValueTable table = createValueTable(conn, queue, LURI_VALUES, LONGVARCHAR);
-		return new ResourceTable(table);
+	public URITable createURITable(Connection conn, BlockingQueue<Batch> queue) {
+		ValueTable shorter = createValueTable(conn, queue, URI_VALUES, VARCHAR, VCL);
+		ValueTable longer = createValueTable(conn, queue, LURI_VALUES, LONGVARCHAR);
+		return new URITable(shorter, longer);
 	}
 
 	public LiteralTable createLiteralTable(Connection conn, BlockingQueue<Batch> queue) {

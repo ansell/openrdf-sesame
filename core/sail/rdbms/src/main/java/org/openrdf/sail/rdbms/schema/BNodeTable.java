@@ -5,25 +5,19 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Manages the rows in either the URI table or the BNode table.
+ * Manages the rows in the BNode table.
  * 
  * @author James Leigh
  * 
  */
-public class ResourceTable {
-	public interface HandleIdValue {
-		void handleIdValue(long id, String value);
-	}
-
+public class BNodeTable {
 	private ValueTable table;
 	private int version;
 
-	public ResourceTable(ValueTable table) {
+	public BNodeTable(ValueTable table) {
 		super();
 		this.table = table;
 	}
@@ -50,20 +44,6 @@ public class ResourceTable {
 
 	public void insert(long id, String value) throws SQLException, InterruptedException {
 		table.insert(id, value);
-	}
-
-	protected void importNeededIds(PreparedStatement stmt, HandleIdValue handler)
-			throws SQLException {
-		ResultSet rs = stmt.executeQuery();
-		try {
-			while (rs.next()) {
-				long id = rs.getLong(1);
-				String value = rs.getString(2);
-				handler.handleIdValue(id, value);
-			}
-		} finally {
-			rs.close();
-		}
 	}
 
 	public void removedStatements(int count, String condition)

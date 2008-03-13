@@ -26,8 +26,9 @@ import org.openrdf.sail.rdbms.algebra.SqlEq;
 import org.openrdf.sail.rdbms.algebra.URIColumn;
 import org.openrdf.sail.rdbms.algebra.base.FromItem;
 import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
+import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
-import org.openrdf.sail.rdbms.schema.ResourceTable;
+import org.openrdf.sail.rdbms.schema.URITable;
 
 /**
  * Adds LEFT JOINs to the query for value tables.
@@ -37,23 +38,18 @@ import org.openrdf.sail.rdbms.schema.ResourceTable;
  */
 public class ValueJoinOptimizer extends
 		RdbmsQueryModelVisitorBase<RuntimeException> implements QueryOptimizer {
-	private ResourceTable uris;
-	private ResourceTable longUris;
-	private ResourceTable bnodes;
+	private URITable uris;
+	private BNodeTable bnodes;
 	private LiteralTable literals;
 	private FromItem join;
 	private FromItem parent;
 	private SelectQuery query;
 
-	public void setUriTable(ResourceTable uris) {
+	public void setUriTable(URITable uris) {
 		this.uris = uris;
 	}
 
-	public void setLongUriTable(ResourceTable longUris) {
-		this.longUris = longUris;
-	}
-
-	public void setBnodeTable(ResourceTable bnodes) {
+	public void setBnodeTable(BNodeTable bnodes) {
 		this.bnodes = bnodes;
 	}
 
@@ -148,7 +144,7 @@ public class ValueJoinOptimizer extends
 	public void meet(LongURIColumn node) throws RuntimeException {
 		ColumnVar var = node.getRdbmsVar();
 		String alias = "lu" + getDBName(var);
-		String tableName = longUris.getName();
+		String tableName = uris.getLongTableName();
 		join(var, alias, tableName);
 	}
 
@@ -156,7 +152,7 @@ public class ValueJoinOptimizer extends
 	public void meet(URIColumn node) throws RuntimeException {
 		ColumnVar var = node.getRdbmsVar();
 		String alias = "u" + getDBName(var);
-		String tableName = uris.getName();
+		String tableName = uris.getShortTableName();
 		join(var, alias, tableName);
 	}
 

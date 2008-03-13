@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.schema.IdCode;
-import org.openrdf.sail.rdbms.schema.ResourceTable;
+import org.openrdf.sail.rdbms.schema.URITable;
 
 /**
  * Manages URIs. Including creating, inserting, and looking up their
@@ -19,26 +19,21 @@ import org.openrdf.sail.rdbms.schema.ResourceTable;
  * @author James Leigh
  * 
  */
-public class UriManager extends ValueManagerBase<String, RdbmsURI> {
+public class UriManager extends ValueManagerBase<RdbmsURI> {
 	public static UriManager instance;
-	private ResourceTable shorter;
-	private ResourceTable longer;
+	private URITable table;
 
 	public UriManager() {
 		instance = this;
 	}
 
-	public void setShorter(ResourceTable shorter) {
-		this.shorter = shorter;
-	}
-
-	public void setLonger(ResourceTable longer) {
-		this.longer = longer;
+	public void setUriTable(URITable shorter) {
+		this.table = shorter;
 	}
 
 	@Override
 	public int getIdVersion() {
-		return shorter.getIdVersion() + longer.getIdVersion();
+		return table.getIdVersion();
 	}
 
 	@Override
@@ -46,13 +41,12 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 		throws SQLException
 	{
 		super.close();
-		shorter.close();
-		longer.close();
+		table.close();
 	}
 
 	@Override
 	protected int getBatchSize() {
-		return shorter.getBatchSize();
+		return table.getBatchSize();
 	}
 
 	@Override
@@ -62,12 +56,7 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 
 	@Override
 	protected void insert(long id, RdbmsURI resource) throws SQLException, InterruptedException {
-		String uri = resource.stringValue();
-		if (IdCode.valueOf(id).isLong()) {
-			longer.insert(id, uri);
-		} else {
-			shorter.insert(id, uri);
-		}
+		table.insert(id, resource.stringValue());
 	}
 
 	@Override
@@ -77,8 +66,7 @@ public class UriManager extends ValueManagerBase<String, RdbmsURI> {
 
 	@Override
 	protected void optimize() throws SQLException {
-		shorter.optimize();
-		longer.optimize();
+		table.optimize();
 	}
 
 }

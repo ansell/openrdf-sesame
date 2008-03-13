@@ -38,19 +38,18 @@ public class TripleTableManager {
 	public static int MAX_TABLES = Integer.MAX_VALUE;//1000;
 	public static final boolean INDEX_TRIPLES = true;
 	public static Long OTHER_PRED = Long.valueOf(-1);
-	private ResourceTable bnodes;
+	private BNodeTable bnodes;
 	private boolean closed;
 	private Connection conn;
 	private RdbmsTableFactory factory;
 	private Thread initThread;
 	private LiteralTable literals;
 	private Logger logger = LoggerFactory.getLogger(TripleTableManager.class);
-	private ResourceTable longUris;
 	private PredicateManager predicates;
 	private LinkedList<TripleTable> queue = new LinkedList<TripleTable>();
 	private Pattern tablePrefix = Pattern.compile("\\W(\\w*)\\W*$");
 	private Map<Long, TripleTable> tables = new HashMap<Long, TripleTable>();
-	private ResourceTable uris;
+	private URITable uris;
 	private int maxTables = MAX_TABLES;
 	private boolean indexingTriples = INDEX_TRIPLES;
 	Exception exc;
@@ -59,7 +58,7 @@ public class TripleTableManager {
 		this.factory = factory;
 	}
 
-	public void setBNodeTable(ResourceTable bnodeTable) {
+	public void setBNodeTable(BNodeTable bnodeTable) {
 		this.bnodes = bnodeTable;
 	}
 
@@ -71,15 +70,11 @@ public class TripleTableManager {
 		this.literals = literalTable;
 	}
 
-	public void setLongUriTable(ResourceTable longUriTable) {
-		this.longUris = longUriTable;
-	}
-
 	public void setPredicateManager(PredicateManager predicates) {
 		this.predicates = predicates;
 	}
 
-	public void setURITable(ResourceTable uriTable) {
+	public void setURITable(URITable uriTable) {
 		this.uris = uriTable;
 	}
 
@@ -207,7 +202,6 @@ public class TripleTableManager {
 		}
 		bnodes.removedStatements(count, condition);
 		uris.removedStatements(count, condition);
-		longUris.removedStatements(count, condition);
 		literals.removedStatements(count, condition);
 	}
 
