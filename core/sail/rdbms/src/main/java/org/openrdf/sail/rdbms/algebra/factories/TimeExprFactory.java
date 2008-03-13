@@ -7,6 +7,7 @@ package org.openrdf.sail.rdbms.algebra.factories;
 
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.sqlNull;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
+import static org.openrdf.sail.rdbms.managers.LiteralManager.getCalendarValue;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -94,7 +95,7 @@ public class TimeExprFactory extends
 			URI dt = lit.getDatatype();
 			if (dt != null && XMLDatatypeUtil.isCalendarDatatype(dt)) {
 				try {
-					return new LongValue(lit.calendarValue());
+					return new LongValue(getCalendarValue(lit.calendarValue()));
 				} catch (IllegalArgumentException e) {
 					return null;
 				}

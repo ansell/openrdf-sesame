@@ -5,16 +5,7 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.URIImpl;
 
 /**
  * A Facade to the five literal value tables. Which are labels, languages,
@@ -25,20 +16,6 @@ import org.openrdf.model.impl.URIImpl;
  */
 public class LiteralTable {
 	public static final boolean ONLY_INSERT_LABEL = false;
-	private static TimeZone Z = TimeZone.getTimeZone("GMT");
-
-	public static long getCalendarValue(XMLGregorianCalendar xcal) {
-		return xcal.toGregorianCalendar(Z, Locale.US, null).getTimeInMillis();
-	}
-
-	public interface LiteralHandler {
-		public abstract void handleLiteral(long id, String label);
-
-		public abstract void handleLiteral(long id, String label,
-				String language);
-
-		public abstract void handleLiteral(long id, String label, URI datatype);
-	}
 
 	private ValueTable labels;
 	private ValueTable longLabels;
@@ -122,7 +99,7 @@ public class LiteralTable {
 		return version;
 	}
 
-	public void insertSimple(long id, String label) throws SQLException, InterruptedException {
+	public void insertSimple(long id, long hash, String label) throws SQLException, InterruptedException {
 		if (IdCode.valueOf(id).isLong()) {
 			longLabels.insert(id, label);
 		} else {
@@ -130,26 +107,26 @@ public class LiteralTable {
 		}
 	}
 
-	public void insertLanguage(long id, String label, String language)
+	public void insertLanguage(long id, long hash, String label, String language)
 			throws SQLException, InterruptedException {
-		insertSimple(id, label);
+		insertSimple(id, hash, label);
 		languages.insert(id, language);
 	}
 
-	public void insertDatatype(long id, String label, String datatype)
+	public void insertDatatype(long id, long hash, String label, String datatype)
 			throws SQLException, InterruptedException {
-		insertSimple(id, label);
+		insertSimple(id, hash, label);
 		datatypes.insert(id, datatype);
 	}
 
-	public void insertNumeric(long id, String label, String datatype,
+	public void insertNumeric(long id, long hash, String label, String datatype,
 			double value) throws SQLException, InterruptedException {
 		labels.insert(id, label);
 		datatypes.insert(id, datatype);
 		numeric.insert(id, value);
 	}
 
-	public void insertDateTime(long id, String label, String datatype,
+	public void insertDateTime(long id, long hash, String label, String datatype,
 			long value) throws SQLException, InterruptedException {
 		labels.insert(id, label);
 		datatypes.insert(id, datatype);
@@ -163,27 +140,6 @@ public class LiteralTable {
 		datatypes.optimize();
 		numeric.optimize();
 		dateTime.optimize();
-	}
-	protected void importNeededIds(PreparedStatement stmt,
-			LiteralHandler handler) throws SQLException {
-		ResultSet rs = stmt.executeQuery();
-		try {
-			while (rs.next()) {
-				long id = rs.getLong(1);
-				String label = rs.getString(2);
-				String language = rs.getString(3);
-				String datatype = rs.getString(4);
-				if (datatype != null) {
-					handler.handleLiteral(id, label, new URIImpl(datatype));
-				} else if (language != null) {
-					handler.handleLiteral(id, label, language);
-				} else {
-					handler.handleLiteral(id, label);
-				}
-			}
-		} finally {
-			rs.close();
-		}
 	}
 
 	public void removedStatements(int count, String condition)

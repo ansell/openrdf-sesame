@@ -56,7 +56,12 @@ public class UriManager extends ValueManagerBase<RdbmsURI> {
 
 	@Override
 	protected void insert(long id, RdbmsURI resource) throws SQLException, InterruptedException {
-		table.insert(id, resource.stringValue());
+		String uri = resource.stringValue();
+		if (IdCode.valueOf(id).isLong()) {
+			table.insertLong(id, IdCode.URI_LONG.hash(resource), uri);
+		} else {
+			table.insertShort(id, IdCode.URI.hash(resource), uri);
+		}
 	}
 
 	@Override
