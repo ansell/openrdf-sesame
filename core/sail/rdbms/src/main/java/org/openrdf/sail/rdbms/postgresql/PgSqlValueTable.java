@@ -25,25 +25,26 @@ public class PgSqlValueTable extends ValueTable {
 	public void initialize() throws SQLException {
 		super.initialize();
 
+		RdbmsTable tmp = getTemporaryTable();
 		StringBuilder sb = new StringBuilder();
-		sb.append("PREPARE ").append(getTemporaryTable().getName());
+		sb.append("PREPARE ").append(tmp.getName());
 		sb.append("_insert (bigint, ");
 		sb.append(getDeclaredSqlType(getSqlType(), getLength())
 				.replaceAll("\\(.*\\)", ""));
 		sb.append(") AS\n");
-		sb.append("INSERT INTO ").append(getTemporaryTable().getName());
+		sb.append("INSERT INTO ").append(tmp.getName());
 		sb.append(" VALUES ($1, $2)");
-		getTemporaryTable().execute(sb.toString());
+		tmp.execute(sb.toString());
 
 		sb.delete(0, sb.length());
-		sb.append("PREPARE ").append(getTemporaryTable().getName());
+		sb.append("PREPARE ").append(tmp.getName());
 		sb.append("_insert_select AS\n");
 		sb.append("INSERT INTO ").append(getRdbmsTable().getName());
 		sb.append(" (id, value) SELECT DISTINCT id, value FROM ");
-		sb.append(getTemporaryTable().getName()).append(" tmp\n");
+		sb.append(tmp.getName()).append(" tmp\n");
 		sb.append("WHERE NOT EXISTS (SELECT id FROM ").append(getRdbmsTable().getName());
 		sb.append(" val WHERE val.id = tmp.id)");
-		getTemporaryTable().execute(sb.toString());
+		tmp.execute(sb.toString());
 	}
 
 	@Override

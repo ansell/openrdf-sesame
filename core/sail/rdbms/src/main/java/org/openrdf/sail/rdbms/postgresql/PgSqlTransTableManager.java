@@ -16,22 +16,19 @@ public class PgSqlTransTableManager extends TransTableManager {
 
 	@Override
 	public void close() throws SQLException {
-		super.close();
 		if (table != null) {
 			try {
 				table.execute("DEALLOCATE " + table.getName() + "_insert");
-				table.drop();
 			} catch (SQLException e) {
 				try {
 					table.rollback();
 					table.execute("DEALLOCATE " + table.getName() + "_insert");
-					table.drop();
 				} catch (SQLException e1) {
 					// ignore
 				}
 			}
-			table = null;
 		}
+		super.close();
 	}
 
 	@Override

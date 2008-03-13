@@ -265,16 +265,12 @@ public class SelectQueryOptimizer extends
 		}
 		if (contexts.length > 0) {
 			RdbmsResource[] ids = vf.asRdbmsResource(contexts);
-			IdColumn var = new IdColumn(c);
+			HashColumn var = new HashColumn(c);
 			SqlExpr in = null;
 			for (RdbmsResource id : ids) {
 				LongValue longValue;
-				try {
-					longValue = new LongValue(vf.getInternalId(id));
-				} catch (RdbmsException e) {
-					throw new RdbmsRuntimeException(e);
-				}
-				SqlEq eq = new SqlEq(var, longValue);
+				longValue = new LongValue(IdCode.valueOf(id).hash(id));
+				SqlEq eq = new SqlEq(var.clone(), longValue);
 				if (in == null) {
 					in = eq;
 				} else {

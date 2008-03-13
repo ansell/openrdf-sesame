@@ -85,7 +85,6 @@ public class LiteralTable {
 		datatypes.close();
 		numeric.close();
 		dateTime.close();
-		hashTable.close();
 	}
 
 	public int getBatchSize() {

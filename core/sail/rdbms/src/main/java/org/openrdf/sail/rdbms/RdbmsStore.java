@@ -37,6 +37,7 @@ public class RdbmsStore extends SailBase {
 	private String password;
 	private int maxTripleTables;
 	private boolean triplesIndexed = true;
+	private boolean usingHashTable = false;
 
 	public RdbmsStore() {
 		super();
@@ -86,6 +87,14 @@ public class RdbmsStore extends SailBase {
 		}
 	}
 
+	public boolean isUsingHashTable() {
+		return usingHashTable;
+	}
+
+	public void setUsingHashTable(boolean usingHashTable) {
+		this.usingHashTable = usingHashTable;
+	}
+
 	public void initialize() throws SailException {
 		if (factory == null) {
 			try {
@@ -98,6 +107,7 @@ public class RdbmsStore extends SailBase {
 		}
 		factory.setMaxNumberOfTripleTables(maxTripleTables);
 		factory.setTriplesIndexed(triplesIndexed);
+		factory.setUsingHashTable(usingHashTable);
 		factory.init();
 	}
 

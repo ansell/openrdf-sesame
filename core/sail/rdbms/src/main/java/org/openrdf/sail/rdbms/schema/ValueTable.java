@@ -19,7 +19,6 @@ import java.util.concurrent.BlockingQueue;
  */
 public class ValueTable {
 	public static int BATCH_SIZE = 8 * 1024;
-	public static final boolean INDEX_VALUES = false;
 	public static final long NIL_ID = 0;
 	private static final String[] PKEY = { "id" };
 	private static final String[] VALUE_INDEX = { "value" };
@@ -33,9 +32,18 @@ public class ValueTable {
 	private int removedStatementsSinceExpunge;
 	private ValueBatch batch;
 	private BlockingQueue<Batch> queue;
+	private boolean indexingValues;
 
 	public void setQueue(BlockingQueue<Batch> queue) {
 		this.queue = queue;
+	}
+
+	public boolean isIndexingValues() {
+		return indexingValues;
+	}
+
+	public void setIndexingValues(boolean indexingValues) {
+		this.indexingValues = indexingValues;
 	}
 
 	public int getLength() {
@@ -101,7 +109,7 @@ public class ValueTable {
 		if (!table.isCreated()) {
 			createTable(table);
 			table.index(PKEY);
-			if (INDEX_VALUES) {
+			if (isIndexingValues()) {
 				table.index(VALUE_INDEX);
 			}
 		} else {
@@ -117,7 +125,7 @@ public class ValueTable {
 	}
 
 	public synchronized void insert(long id, Object value) throws SQLException, InterruptedException {
-		if (batch == null || batch.isFull() || !queue.remove(batch)) {
+		if (timeForNewBatch()) {
 			batch = newValueBatch();
 			batch.setTable(table);
 			batch.setTemporary(temporary);
@@ -128,7 +136,11 @@ public class ValueTable {
 		batch.setLong(1, id);
 		batch.setObject(2, value);
 		batch.addBatch();
-		queue.put(batch);
+		if (queue == null) {
+			batch.flush();
+		} else {
+			queue.put(batch);
+		}
 	}
 
 	public void optimize() throws SQLException {
@@ -202,6 +214,8 @@ public class ValueTable {
 			return "TEXT";
 		case Types.BIGINT:
 			return "BIGINT";
+		case Types.INTEGER:
+			return "INTEGER";
 		case Types.SMALLINT:
 			return "SMALLINT";
 		case Types.FLOAT:
@@ -217,6 +231,12 @@ public class ValueTable {
 		default:
 			throw new AssertionError("Unsupported SQL Type: " + type);
 		}
+	}
+
+	private boolean timeForNewBatch() {
+		if (batch == null || batch.isFull())
+			return true;
+		return queue == null || !queue.remove(batch);
 	}
 
 }

@@ -5,12 +5,8 @@
  */
 package org.openrdf.sail.rdbms.postgresql;
 
-import java.sql.Connection;
-
-import org.openrdf.sail.rdbms.schema.TableFactory;
-import org.openrdf.sail.rdbms.schema.TripleTable;
 import org.openrdf.sail.rdbms.schema.RdbmsTable;
-import org.openrdf.sail.rdbms.schema.ValueTableFactory;
+import org.openrdf.sail.rdbms.schema.TableFactory;
 
 /**
  * Overrides PostgreSQL specific table commands.
@@ -18,24 +14,10 @@ import org.openrdf.sail.rdbms.schema.ValueTableFactory;
  * @author James Leigh
  * 
  */
-public class PgSqlTableFactory extends ValueTableFactory {
-
-	public PgSqlTableFactory() {
-		super(new TableFactory() {
-			@Override
-			protected RdbmsTable newTable(String name) {
-				return new PgSqlTable(name);
-			}
-		});
-	}
+public class PgSqlTableFactory extends TableFactory {
 
 	@Override
-	public PgSqlValueTable newValueTable() {
-		return new PgSqlValueTable();
-	}
-
-	@Override
-	public TripleTable createTripleTable(Connection conn, String tableName) {
-		return super.createTripleTable(conn, tableName.toLowerCase());
+	protected RdbmsTable newTable(String name) {
+		return new PgSqlTable(name);
 	}
 }

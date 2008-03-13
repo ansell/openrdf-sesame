@@ -7,7 +7,6 @@ package org.openrdf.sail.rdbms.schema;
 
 import static java.sql.Types.BIGINT;
 import static java.sql.Types.DOUBLE;
-import static java.sql.Types.INTEGER;
 import static java.sql.Types.LONGVARCHAR;
 import static java.sql.Types.VARCHAR;
 
@@ -24,6 +23,7 @@ import java.util.concurrent.BlockingQueue;
 public class ValueTableFactory {
 	private static final int VCS = 127;
 	private static final int VCL = 255;
+	public static final boolean INDEX_VALUES = false;
 	protected static final String LANGUAGES = "LANGUAGES";
 	protected static final String NAMESPACES = "NAMESPACE_PREFIXES";
 	protected static final String RESOURCES = "RESOURCES";
@@ -50,7 +50,10 @@ public class ValueTableFactory {
 	}
 
 	public HashTable createHashTable(Connection conn, BlockingQueue<Batch> queue) throws SQLException {
-		ValueTable table = createValueTable(conn, queue, HASH_TABLE, INTEGER);
+		ValueTable table = newValueTable();
+		table.setRdbmsTable(createTable(conn, HASH_TABLE));
+		table.setTemporaryTable(factory.createTemporaryTable(conn, "INSERT_" + HASH_TABLE));
+		initValueTable(table, queue, BIGINT, -1, true);
 		return new HashTable(table);
 	}
 
@@ -112,11 +115,18 @@ public class ValueTableFactory {
 		ValueTable table = newValueTable();
 		table.setRdbmsTable(createTable(conn, name));
 		table.setTemporaryTable(factory.createTemporaryTable(conn, "INSERT_" + name));
+		initValueTable(table, queue, sqlType, length, INDEX_VALUES);
+		return table;
+	}
+
+	private void initValueTable(ValueTable table, BlockingQueue<Batch> queue, int sqlType, int length, boolean indexValues)
+		throws SQLException
+	{
 		table.setQueue(queue);
 		table.setSqlType(sqlType);
 		table.setLength(length);
+		table.setIndexingValues(indexValues);
 		table.initialize();
-		return table;
 	}
 
 	protected ValueTable newValueTable() {

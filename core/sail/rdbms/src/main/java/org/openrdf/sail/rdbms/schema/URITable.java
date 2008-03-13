@@ -29,7 +29,6 @@ public class URITable {
 	public void close() throws SQLException {
 		shorter.close();
 		longer.close();
-		hashTable.close();
 	}
 
 	public int getBatchSize() {

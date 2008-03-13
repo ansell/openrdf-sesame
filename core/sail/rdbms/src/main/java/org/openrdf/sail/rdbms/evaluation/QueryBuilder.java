@@ -63,10 +63,19 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 public class QueryBuilder {
 	private SqlQueryBuilder query;
 	private RdbmsValueFactory vf;
+	private boolean usingHashTable;
 
 	public QueryBuilder(SqlQueryBuilder builder) {
 		super();
 		this.query = builder;
+	}
+
+	public void setValueFactory(RdbmsValueFactory vf) {
+		this.vf = vf;
+	}
+
+	public void setUsingHashTable(boolean usingHashTable) {
+		this.usingHashTable = usingHashTable;
 	}
 
 	public void distinct() {
@@ -112,10 +121,6 @@ public class QueryBuilder {
 		return this;
 	}
 
-	public void setValueFactory(RdbmsValueFactory vf) {
-		this.vf = vf;
-	}
-
 	@Override
 	public String toString() {
 		return query.toString();
@@ -152,9 +157,13 @@ public class QueryBuilder {
 		filter.appendBoolean(false);
 	}
 
-	private void append(HashColumn expr, SqlExprBuilder filter) {
-		// TODO what if id is not a hash?
-		filter.column(expr.getAlias(), expr.getColumn());
+	private void append(HashColumn var, SqlExprBuilder filter) {
+		if (usingHashTable) {
+			String alias = getHashAlias(var.getRdbmsVar());
+			filter.column(alias, "value");
+		} else {
+			filter.column(var.getAlias(), var.getColumn());
+		}
 	}
 
 	private void append(IdColumn expr, SqlExprBuilder filter) {
@@ -492,6 +501,10 @@ public class QueryBuilder {
 		if (name.indexOf('-') >= 0)
 			return name.replace('-', '_');
 		return "_" + name; // might be a keyword otherwise
+	}
+
+	private String getHashAlias(ColumnVar var) {
+		return "h" + getDBName(var);
 	}
 
 	private String getLabelAlias(ColumnVar var) {
