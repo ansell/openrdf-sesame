@@ -136,7 +136,7 @@ public class BTreeTest extends TestCase {
 		btree.insert(TEST_VALUES.get(meanIdx));
 		btree.insert(TEST_VALUES.get(meanIdx + 1));
 
-		RecordIterator iter1 = btree.iterateAll()	;
+		RecordIterator iter1 = btree.iterateAll();
 		iter1.next();
 
 		RecordIterator iter2 = btree.iterateAll();
@@ -147,8 +147,36 @@ public class BTreeTest extends TestCase {
 		for (byte[] value : TEST_VALUES) {
 			btree.insert(value);
 		}
-		
+
 		iter2.close();
 		iter1.close();
 	}
+
+/* Test for SES-527
+	public void testRootNodeSplit()
+		throws Exception
+	{
+		// Fill the root node
+		for (int i = 0; i < 15; i++) {
+			btree.insert(TEST_VALUES.get(i));
+		}
+
+		// Fire up an iterator
+		RecordIterator iter = btree.iterateAll();
+		iter.next();
+
+		// Force the root node to split
+		btree.insert(TEST_VALUES.get(15));
+
+		// Verify that the iterator returns all 15 elements
+		int count = 0;
+		while (iter.next() != null) {
+			count++;
+		}
+
+		iter.close();
+		
+		assertEquals(15, count);
+	}
+*/
 }
