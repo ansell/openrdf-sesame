@@ -5,12 +5,6 @@
  */
 package org.openrdf.sail.rdbms.algebra;
 
-import static org.openrdf.sail.rdbms.schema.LiteralTable.getCalendarValue;
-
-import java.math.BigInteger;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
 import org.openrdf.sail.rdbms.algebra.base.SqlConstant;
 
@@ -24,10 +18,6 @@ public class LongValue extends SqlConstant<Long> {
 
 	public LongValue(Long value) {
 		super(value);
-	}
-
-	public LongValue(XMLGregorianCalendar value) {
-		this(getCalendarValue(value));
 	}
 
 	@Override

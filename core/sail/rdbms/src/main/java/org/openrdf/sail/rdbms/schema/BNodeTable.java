@@ -42,7 +42,7 @@ public class BNodeTable {
 		return version;
 	}
 
-	public void insert(long id, String value) throws SQLException, InterruptedException {
+	public void insert(long id, long hash, String value) throws SQLException, InterruptedException {
 		table.insert(id, value);
 	}
 

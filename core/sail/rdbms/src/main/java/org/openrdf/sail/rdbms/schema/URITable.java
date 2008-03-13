@@ -50,12 +50,12 @@ public class URITable {
 		return longer.getName();
 	}
 
-	public void insert(long id, String value) throws SQLException, InterruptedException {
-		if (IdCode.valueOf(id).isLong()) {
-			longer.insert(id, value);
-		} else {
-			shorter.insert(id, value);
-		}
+	public void insertShort(long id, long hash, String value) throws SQLException, InterruptedException {
+		shorter.insert(id, value);
+	}
+
+	public void insertLong(long id, long hash, String value) throws SQLException, InterruptedException {
+		longer.insert(id, value);
 	}
 
 	public void removedStatements(int count, String condition)
