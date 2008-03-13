@@ -22,19 +22,24 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 import org.openrdf.sail.rdbms.optimizers.SelectQueryOptimizerFactory;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
 import org.openrdf.sail.rdbms.schema.RdbmsTable;
-import org.openrdf.sail.rdbms.schema.RdbmsTableFactory;
+import org.openrdf.sail.rdbms.schema.TableFactory;
 import org.openrdf.sail.rdbms.schema.ValueTable;
+import org.openrdf.sail.rdbms.schema.ValueTableFactory;
 
 public class MySqlConnectionFactory extends RdbmsConnectionFactory {
+
 	private static final String FEILD_COLLATE = " CHARACTER SET utf8 COLLATE utf8_bin";
 
 	@Override
-	protected RdbmsTableFactory createRdbmsTableFactory() {
-		return new RdbmsTableFactory() {
+	protected ValueTableFactory createValueTableFactory() {
+		return new ValueTableFactory(new TableFactory() {
+
 			@Override
 			protected RdbmsTable newTable(String name) {
 				return new MySqlTable(name);
 			}
+		})
+		{
 
 			@Override
 			protected ValueTable newValueTable() {
@@ -44,8 +49,11 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 			@Override
 			public NamespacesTable createNamespacesTable(Connection conn) {
 				return new NamespacesTable(createTable(conn, NAMESPACES)) {
+
 					@Override
-					protected void createTable() throws SQLException {
+					protected void createTable()
+						throws SQLException
+					{
 						StringBuilder sb = new StringBuilder();
 						sb.append("  prefix VARCHAR(127)");
 						sb.append(FEILD_COLLATE);
@@ -62,23 +70,29 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 	@Override
 	protected SelectQueryOptimizerFactory createSelectQueryOptimizerFactory() {
 		return new SelectQueryOptimizerFactory() {
+
 			@Override
 			protected BooleanExprFactory createBooleanExprFactory() {
 				return new BooleanExprFactory() {
+
 					@Override
 					public void meet(Regex node)
-							throws UnsupportedRdbmsOperatorException {
+						throws UnsupportedRdbmsOperatorException
+					{
 						ValueExpr flagsArg = node.getFlagsArg();
 						if (flagsArg == null) {
 							super.meet(node);
-						} else if (flagsArg instanceof ValueConstant) {
-							ValueConstant flags = (ValueConstant) flagsArg;
+						}
+						else if (flagsArg instanceof ValueConstant) {
+							ValueConstant flags = (ValueConstant)flagsArg;
 							if (flags.getValue().stringValue().equals("i")) {
 								super.meet(node);
-							} else {
+							}
+							else {
 								throw unsupported(node);
 							}
-						} else {
+						}
+						else {
 							throw unsupported(node);
 						}
 					}
@@ -90,9 +104,11 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 	@Override
 	protected QueryBuilderFactory createQueryBuilderFactory() {
 		return new QueryBuilderFactory() {
+
 			@Override
 			public SqlRegexBuilder createSqlRegexBuilder(SqlExprBuilder where) {
 				return new SqlRegexBuilder(where, this) {
+
 					@Override
 					protected void appendRegExp(SqlExprBuilder where) {
 						appendValue(where);

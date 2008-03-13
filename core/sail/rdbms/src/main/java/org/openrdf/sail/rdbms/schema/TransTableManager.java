@@ -26,7 +26,7 @@ import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 public class TransTableManager {
 	public static int BATCH_SIZE = 8 * 1024;
 	public static final boolean TEMPORARY_TABLE_USED = TripleTable.UNIQUE_INDEX_TRIPLES;
-	private RdbmsTableFactory factory;
+	private TableFactory factory;
 	private TripleTableManager triples;
 	private RdbmsTable temporaryTable;
 	private Map<Long, TransactionTable> tables = new HashMap<Long, TransactionTable>();
@@ -40,7 +40,7 @@ public class TransTableManager {
 		this.conn = conn;
 	}
 
-	public void setRdbmsTableFactory(RdbmsTableFactory factory) {
+	public void setTemporaryTableFactory(TableFactory factory) {
 		this.factory = factory;
 	}
 

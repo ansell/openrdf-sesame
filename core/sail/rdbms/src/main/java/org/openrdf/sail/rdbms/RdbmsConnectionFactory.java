@@ -30,7 +30,8 @@ import org.openrdf.sail.rdbms.optimizers.SelectQueryOptimizerFactory;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
-import org.openrdf.sail.rdbms.schema.RdbmsTableFactory;
+import org.openrdf.sail.rdbms.schema.ValueTableFactory;
+import org.openrdf.sail.rdbms.schema.TableFactory;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
 import org.openrdf.sail.rdbms.schema.TripleTableManager;
 import org.openrdf.sail.rdbms.schema.URITable;
@@ -124,7 +125,7 @@ public class RdbmsConnectionFactory {
 			index.setAutoCommit(true);
 			lookup.setAutoCommit(true);
 			literalLookup.setAutoCommit(true);
-			RdbmsTableFactory tables = createRdbmsTableFactory();
+			ValueTableFactory tables = createValueTableFactory();
 			namespaces = new NamespaceManager();
 			namespaces.setConnection(lookup);
 			NamespacesTable nsTable = tables.createNamespacesTable(index);
@@ -134,12 +135,9 @@ public class RdbmsConnectionFactory {
 			bnodeManager = new BNodeManager();
 			uriManager = new UriManager();
 			bnodeTable = tables.createBNodeTable(lookup, bnodeManager.getQueue());
-			bnodeTable.initialize();
 			uriTable = tables.createURITable(lookup, uriManager.getQueue());
-			uriTable.initialize();
 			literalManager = new LiteralManager();
 			literalTable = tables.createLiteralTable(literalLookup, literalManager.getQueue());
-			literalTable.initialize();
 			vf = new RdbmsValueFactory();
 			vf.setDelegate(ValueFactoryImpl.getInstance());
 			uriManager.setUriTable(uriTable);
@@ -199,13 +197,13 @@ public class RdbmsConnectionFactory {
 			s.setLiteralTable(literalTable);
 			DefaultSailChangedEvent sailChangedEvent = new DefaultSailChangedEvent(sail);
 			s.setSailChangedEvent(sailChangedEvent);
-			RdbmsTableFactory tables = createRdbmsTableFactory();
+			TableFactory tables = createTableFactory();
 			TransTableManager trans = createTransTableManager();
 			tripleManager.setTransTableManager(trans);
 			trans.setBatchQueue(tripleManager.getQueue());
 			trans.setSailChangedEvent(sailChangedEvent);
 			trans.setConnection(db);
-			trans.setRdbmsTableFactory(tables);
+			trans.setTemporaryTableFactory(tables);
 			trans.setStatementsTable(tripleTableManager);
 			trans.setFromDummyTable(getFromDummyTable());
 			trans.initialize();
@@ -270,8 +268,12 @@ public class RdbmsConnectionFactory {
 		return new QueryBuilderFactory();
 	}
 
-	protected RdbmsTableFactory createRdbmsTableFactory() {
-		return new RdbmsTableFactory();
+	protected ValueTableFactory createValueTableFactory() {
+		return new ValueTableFactory(createTableFactory());
+	}
+
+	protected TableFactory createTableFactory() {
+		return new TableFactory();
 	}
 
 	protected TransTableManager createTransTableManager() {
