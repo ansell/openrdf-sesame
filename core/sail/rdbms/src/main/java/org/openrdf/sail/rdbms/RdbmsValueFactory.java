@@ -20,6 +20,7 @@ import org.openrdf.model.impl.ValueFactoryBase;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.managers.BNodeManager;
+import org.openrdf.sail.rdbms.managers.HashManager;
 import org.openrdf.sail.rdbms.managers.LiteralManager;
 import org.openrdf.sail.rdbms.managers.PredicateManager;
 import org.openrdf.sail.rdbms.managers.UriManager;

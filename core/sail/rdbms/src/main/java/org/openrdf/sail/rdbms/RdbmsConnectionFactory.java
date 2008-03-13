@@ -20,10 +20,13 @@ import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.managers.BNodeManager;
+import org.openrdf.sail.rdbms.managers.HashManager;
 import org.openrdf.sail.rdbms.managers.LiteralManager;
 import org.openrdf.sail.rdbms.managers.NamespaceManager;
 import org.openrdf.sail.rdbms.managers.PredicateManager;
+import org.openrdf.sail.rdbms.managers.TransTableManager;
 import org.openrdf.sail.rdbms.managers.TripleManager;
+import org.openrdf.sail.rdbms.managers.TripleTableManager;
 import org.openrdf.sail.rdbms.managers.UriManager;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 import org.openrdf.sail.rdbms.optimizers.SelectQueryOptimizerFactory;
@@ -33,8 +36,6 @@ import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
 import org.openrdf.sail.rdbms.schema.ValueTableFactory;
 import org.openrdf.sail.rdbms.schema.TableFactory;
-import org.openrdf.sail.rdbms.schema.TransTableManager;
-import org.openrdf.sail.rdbms.schema.TripleTableManager;
 import org.openrdf.sail.rdbms.schema.URITable;
 
 /**
@@ -46,8 +47,6 @@ import org.openrdf.sail.rdbms.schema.URITable;
  */
 public class RdbmsConnectionFactory {
 	private RdbmsStore sail;
-	private BNodeTable bnodeTable;
-	private HashTable hashTable;
 	private DataSource ds;
 	private String user;
 	private String password;
@@ -55,10 +54,9 @@ public class RdbmsConnectionFactory {
 	private Connection literalLookup;
 	private Connection hashLookup;
 	private Connection index;
-	private LiteralTable literalTable;
 	private NamespaceManager namespaces;
 	private TripleTableManager tripleTableManager;
-	private URITable uriTable;
+	private HashManager hashManager;
 	private RdbmsValueFactory vf;
 	private UriManager uriManager;
 	private BNodeManager bnodeManager;
@@ -67,6 +65,10 @@ public class RdbmsConnectionFactory {
 	private int maxTripleTables;
 	private boolean triplesIndexed = true;
 	private boolean usingHashTable;
+	private HashTable hashTable;
+	private URITable uriTable;
+	private BNodeTable bnodeTable;
+	private LiteralTable literalTable;
 
 	public void setSail(RdbmsStore sail) {
 		this.sail = sail;
@@ -95,7 +97,7 @@ public class RdbmsConnectionFactory {
 	}
 
 	public boolean isUsingHashTable() {
-		return usingHashTable || hashTable != null;
+		return usingHashTable || hashManager != null;
 	}
 
 	public void setUsingHashTable(boolean usingHashTable) {
@@ -141,8 +143,9 @@ public class RdbmsConnectionFactory {
 			hashLookup.setAutoCommit(true);
 			ValueTableFactory tables = createValueTableFactory();
 			if (usingHashTable) {
-				hashTable = tables.createHashTable(hashLookup, null);
-				tables.setHashTable(hashTable);
+				hashManager = new HashManager();
+				hashTable = tables.createHashTable(hashLookup, hashManager.getQueue());
+				hashManager.setHashTable(hashTable);
 			}
 			namespaces = new NamespaceManager();
 			namespaces.setConnection(lookup);
@@ -151,10 +154,13 @@ public class RdbmsConnectionFactory {
 			namespaces.setNamespacesTable(nsTable);
 			namespaces.initialize();
 			bnodeManager = new BNodeManager();
+			bnodeManager.setHashManager(hashManager);
 			uriManager = new UriManager();
+			uriManager.setHashManager(hashManager);
 			bnodeTable = tables.createBNodeTable(lookup, bnodeManager.getQueue());
 			uriTable = tables.createURITable(lookup, uriManager.getQueue());
 			literalManager = new LiteralManager();
+			literalManager.setHashManager(hashManager);
 			literalTable = tables.createLiteralTable(literalLookup, literalManager.getQueue());
 			vf = new RdbmsValueFactory();
 			vf.setDelegate(ValueFactoryImpl.getInstance());
@@ -164,9 +170,9 @@ public class RdbmsConnectionFactory {
 			predicateManager.setUriManager(uriManager);
 			tripleTableManager = new TripleTableManager(tables);
 			tripleTableManager.setConnection(index);
-			tripleTableManager.setBNodeTable(bnodeTable);
-			tripleTableManager.setURITable(uriTable);
-			tripleTableManager.setLiteralTable(literalTable);
+			tripleTableManager.setBNodeManager(bnodeManager);
+			tripleTableManager.setUriManager(uriManager);
+			tripleTableManager.setLiteralManager(literalManager);
 			tripleTableManager.setPredicateManager(predicateManager);
 			tripleTableManager.setMaxNumberOfTripleTables(maxTripleTables);
 			tripleTableManager.setIndexingTriples(triplesIndexed);
@@ -228,7 +234,7 @@ public class RdbmsConnectionFactory {
 			s.setTransaction(trans);
 			QueryBuilderFactory bfactory = createQueryBuilderFactory();
 			bfactory.setValueFactory(vf);
-			bfactory.setUsingHashTable(hashTable != null);
+			bfactory.setUsingHashTable(hashManager != null);
 			s.setQueryBuilderFactory(bfactory);
 			RdbmsConnection conn = new RdbmsConnection(sail, s);
 			conn.setNamespaces(namespaces);
@@ -267,8 +273,8 @@ public class RdbmsConnectionFactory {
 			if (literalManager != null) {
 				literalManager.close();
 			}
-			if (hashTable != null) {
-				hashTable.close();
+			if (hashManager != null) {
+				hashManager.close();
 			}
 			if (lookup != null) {
 				lookup.close();

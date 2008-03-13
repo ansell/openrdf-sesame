@@ -72,9 +72,9 @@ import org.openrdf.sail.rdbms.algebra.factories.SqlExprFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
+import org.openrdf.sail.rdbms.managers.TransTableManager;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.schema.IdCode;
-import org.openrdf.sail.rdbms.schema.TransTableManager;
 
 /**
  * Rewrites the core algebra model with a relation optimised model, using SQL.

@@ -29,6 +29,7 @@ import org.openrdf.sail.rdbms.iteration.EmptyRdbmsResourceIteration;
 import org.openrdf.sail.rdbms.iteration.EmptyRdbmsStatementIteration;
 import org.openrdf.sail.rdbms.iteration.RdbmsResourceIteration;
 import org.openrdf.sail.rdbms.iteration.RdbmsStatementIteration;
+import org.openrdf.sail.rdbms.managers.TransTableManager;
 import org.openrdf.sail.rdbms.managers.TripleManager;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsStatement;
@@ -36,7 +37,6 @@ import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
-import org.openrdf.sail.rdbms.schema.TransTableManager;
 import org.openrdf.sail.rdbms.schema.URITable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 

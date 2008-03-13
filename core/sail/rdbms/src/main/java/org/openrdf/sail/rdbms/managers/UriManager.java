@@ -32,16 +32,24 @@ public class UriManager extends ValueManagerBase<RdbmsURI> {
 	}
 
 	@Override
-	public int getIdVersion() {
-		return table.getIdVersion();
-	}
-
-	@Override
 	public void close()
 		throws SQLException
 	{
 		super.close();
 		table.close();
+	}
+
+	@Override
+	public void removedStatements(int count, String condition)
+		throws SQLException
+	{
+		super.removedStatements(count, condition);
+		table.removedStatements(count, condition);
+	}
+
+	@Override
+	protected int getTableVersion() {
+		return table.getVersion();
 	}
 
 	@Override
@@ -58,9 +66,9 @@ public class UriManager extends ValueManagerBase<RdbmsURI> {
 	protected void insert(long id, RdbmsURI resource) throws SQLException, InterruptedException {
 		String uri = resource.stringValue();
 		if (IdCode.valueOf(id).isLong()) {
-			table.insertLong(id, IdCode.URI_LONG.hash(resource), uri);
+			table.insertLong(id, uri);
 		} else {
-			table.insertShort(id, IdCode.URI.hash(resource), uri);
+			table.insertShort(id, uri);
 		}
 	}
 
@@ -71,6 +79,7 @@ public class UriManager extends ValueManagerBase<RdbmsURI> {
 
 	@Override
 	protected void optimize() throws SQLException {
+		super.optimize();
 		table.optimize();
 	}
 

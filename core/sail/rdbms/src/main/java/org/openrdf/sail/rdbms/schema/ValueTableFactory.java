@@ -38,15 +38,10 @@ public class ValueTableFactory {
 	protected static final String TIMES = "DATETIME_VALUES";
 	protected static final String HASH_TABLE = "HASH_VALUES";
 	private TableFactory factory;
-	private HashTable hashTable = new NoHashTable();
 
 	public ValueTableFactory(TableFactory factory) {
 		super();
 		this.factory = factory;
-	}
-
-	public void setHashTable(HashTable table) {
-		this.hashTable = table;
 	}
 
 	public HashTable createHashTable(Connection conn, BlockingQueue<Batch> queue) throws SQLException {
@@ -63,15 +58,13 @@ public class ValueTableFactory {
 
 	public BNodeTable createBNodeTable(Connection conn, BlockingQueue<Batch> queue) throws SQLException {
 		ValueTable table = createValueTable(conn, queue, BNODE_VALUES, VARCHAR, VCS);
-		HashTable hash = getHashTable();
-		return new BNodeTable(table, hash);
+		return new BNodeTable(table);
 	}
 
 	public URITable createURITable(Connection conn, BlockingQueue<Batch> queue) throws SQLException {
 		ValueTable shorter = createValueTable(conn, queue, URI_VALUES, VARCHAR, VCL);
 		ValueTable longer = createValueTable(conn, queue, LURI_VALUES, LONGVARCHAR);
-		HashTable hash = getHashTable();
-		return new URITable(shorter, longer, hash);
+		return new URITable(shorter, longer);
 	}
 
 	public LiteralTable createLiteralTable(Connection conn, BlockingQueue<Batch> queue) throws SQLException {
@@ -81,7 +74,6 @@ public class ValueTableFactory {
 		ValueTable dt = createValueTable(conn, queue, DTS, VARCHAR, VCL);
 		ValueTable num = createValueTable(conn, queue, NUM_VALUES, DOUBLE);
 		ValueTable dateTime = createValueTable(conn, queue, TIMES, BIGINT);
-		HashTable hash = getHashTable();
 		LiteralTable literals = new LiteralTable();
 		literals.setLabelTable(lbs);
 		literals.setLongLabelTable(llbs);
@@ -89,17 +81,12 @@ public class ValueTableFactory {
 		literals.setDatatypeTable(dt);
 		literals.setNumericTable(num);
 		literals.setDateTimeTable(dateTime);
-		literals.setHashTable(hash);
 		return literals;
 	}
 
 	public TripleTable createTripleTable(Connection conn, String tableName) {
 		RdbmsTable table = createTable(conn, tableName);
 		return new TripleTable(table);
-	}
-
-	protected HashTable getHashTable() {
-		return hashTable;
 	}
 
 	protected RdbmsTable createTable(Connection conn, String name) {

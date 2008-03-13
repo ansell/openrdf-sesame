@@ -3,9 +3,9 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail.rdbms.schema;
+package org.openrdf.sail.rdbms.managers;
 
-import static org.openrdf.sail.rdbms.schema.TripleTableManager.OTHER_PRED;
+import static org.openrdf.sail.rdbms.managers.TripleTableManager.OTHER_PRED;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -15,6 +15,13 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
+import org.openrdf.sail.rdbms.schema.Batch;
+import org.openrdf.sail.rdbms.schema.RdbmsTable;
+import org.openrdf.sail.rdbms.schema.TableFactory;
+import org.openrdf.sail.rdbms.schema.TransactionTable;
+import org.openrdf.sail.rdbms.schema.TripleTable;
+import org.openrdf.sail.rdbms.schema.ValueTable;
+import org.openrdf.sail.rdbms.schema.ValueTypes;
 
 
 /**

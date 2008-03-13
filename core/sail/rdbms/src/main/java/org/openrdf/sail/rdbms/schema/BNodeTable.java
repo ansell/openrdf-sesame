@@ -15,13 +15,11 @@ import java.sql.SQLException;
  */
 public class BNodeTable {
 	private ValueTable table;
-	private HashTable hashTable;
 	private int version;
 
-	public BNodeTable(ValueTable table, HashTable hash) {
+	public BNodeTable(ValueTable table) {
 		super();
 		this.table = table;
-		this.hashTable = hash;
 	}
 
 	public void close() throws SQLException {
@@ -40,14 +38,12 @@ public class BNodeTable {
 		return version;
 	}
 
-	public void insert(long id, long hash, String value) throws SQLException, InterruptedException {
-		hashTable.insert(id, hash);
+	public void insert(long id, String value) throws SQLException, InterruptedException {
 		table.insert(id, value);
 	}
 
 	public void removedStatements(int count, String condition)
 			throws SQLException {
-		hashTable.expungeRemovedStatements(count, condition);
 		if (table.expungeRemovedStatements(count, condition)) {
 			version++;
 		}
@@ -59,7 +55,6 @@ public class BNodeTable {
 	}
 
 	public void optimize() throws SQLException {
-		hashTable.optimize();
 		table.optimize();
 	}
 }

@@ -9,14 +9,31 @@ import java.sql.SQLException;
 
 import info.aduna.collections.LRUMap;
 
+import org.openrdf.sail.rdbms.managers.HashManager;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
+import org.openrdf.sail.rdbms.schema.IdCode;
 
 public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase {
 	public static final boolean STORE_VALUES = true;
 	private LRUMap<Object, V> cache;
+	private HashManager hashes;
+
+	public void setHashManager(HashManager hashes) {
+		this.hashes = hashes;
+	}
 
 	public void init() {
 		cache = new LRUMap<Object, V>(getBatchSize());
+	}
+
+	@Override
+	public void flush()
+		throws SQLException
+	{
+		super.flush();
+		if (hashes != null) {
+			hashes.flush();
+		}
 	}
 
 	public V findInCache(Object key) {
@@ -50,7 +67,11 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 		return id;
 	}
 
-	protected abstract int getIdVersion();
+	public int getIdVersion() {
+		return getTableVersion() + (hashes == null ? 0 : hashes.getIdVersion());
+	}
+
+	protected abstract int getTableVersion();
 
 	protected abstract int getBatchSize();
 
@@ -61,7 +82,12 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 
 	protected abstract long getMissingId(V value);
 
-	protected abstract void optimize() throws SQLException;
+	@Override
+	protected void optimize() throws SQLException {
+		if (hashes != null) {
+			hashes.optimize();
+		}
+	}
 
 	private void insert(V value)
 		throws SQLException, InterruptedException
@@ -73,8 +99,10 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 			}
 			value.setInternalId(id);
 			value.setVersion(getIdVersion());
+			if (hashes != null) {
+				hashes.insert(id, IdCode.valueOf(value).hash(value));
+			}
 			insert(id, value);
-			super.queued();
 		}
 	}
 
@@ -82,6 +110,14 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 		if (value.getVersion() == null)
 			return true;
 		return value.getVersion().intValue() != getIdVersion();
+	}
+
+	public void removedStatements(int count, String condition)
+		throws SQLException
+	{
+		if (hashes != null) {
+			hashes.removedStatements(count, condition);
+		}
 	}
 
 }

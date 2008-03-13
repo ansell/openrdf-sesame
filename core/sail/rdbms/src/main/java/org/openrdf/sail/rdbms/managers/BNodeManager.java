@@ -32,11 +32,6 @@ public class BNodeManager extends ValueManagerBase<RdbmsBNode> {
 	}
 
 	@Override
-	public int getIdVersion() {
-		return table.getIdVersion();
-	}
-
-	@Override
 	public void close()
 		throws SQLException
 	{
@@ -45,7 +40,21 @@ public class BNodeManager extends ValueManagerBase<RdbmsBNode> {
 	}
 
 	@Override
+	public void removedStatements(int count, String condition)
+		throws SQLException
+	{
+		super.removedStatements(count, condition);
+		table.removedStatements(count, condition);
+	}
+
+	@Override
+	protected int getTableVersion() {
+		return table.getIdVersion();
+	}
+
+	@Override
 	protected void optimize() throws SQLException {
+		super.optimize();
 		table.optimize();
 	}
 
@@ -61,7 +70,7 @@ public class BNodeManager extends ValueManagerBase<RdbmsBNode> {
 
 	@Override
 	protected void insert(long id, RdbmsBNode resource) throws SQLException, InterruptedException {
-		table.insert(id, IdCode.BNODE.hash(resource), resource.stringValue());
+		table.insert(id, resource.stringValue());
 	}
 
 	@Override

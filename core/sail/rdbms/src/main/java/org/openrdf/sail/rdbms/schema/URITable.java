@@ -16,14 +16,12 @@ import java.sql.SQLException;
 public class URITable {
 	private ValueTable shorter;
 	private ValueTable longer;
-	private HashTable hashTable;
 	private int version;
 
-	public URITable(ValueTable shorter, ValueTable longer, HashTable hash) {
+	public URITable(ValueTable shorter, ValueTable longer) {
 		super();
 		this.shorter = shorter;
 		this.longer = longer;
-		this.hashTable = hash;
 	}
 
 	public void close() throws SQLException {
@@ -35,7 +33,7 @@ public class URITable {
 		return shorter.getBatchSize();
 	}
 
-	public int getIdVersion() {
+	public int getVersion() {
 		return version;
 	}
 
@@ -47,19 +45,16 @@ public class URITable {
 		return longer.getName();
 	}
 
-	public void insertShort(long id, long hash, String value) throws SQLException, InterruptedException {
-		hashTable.insert(id, hash);
+	public void insertShort(long id, String value) throws SQLException, InterruptedException {
 		shorter.insert(id, value);
 	}
 
-	public void insertLong(long id, long hash, String value) throws SQLException, InterruptedException {
-		hashTable.insert(id, hash);
+	public void insertLong(long id, String value) throws SQLException, InterruptedException {
 		longer.insert(id, value);
 	}
 
 	public void removedStatements(int count, String condition)
 			throws SQLException {
-		hashTable.expungeRemovedStatements(count, condition);
 		if (shorter.expungeRemovedStatements(count, condition)) {
 			version++;
 		}
@@ -76,6 +71,5 @@ public class URITable {
 	public void optimize() throws SQLException {
 		shorter.optimize();
 		longer.optimize();
-		hashTable.optimize();
 	}
 }
