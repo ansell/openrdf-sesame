@@ -105,11 +105,11 @@
 
 	<scm>
 		<connection>
-			scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame2/${artifactId}</connection>
+			scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/${artifactId}</connection>
 		<developerConnection>
-			scm:svn:https://src.aduna-software.org/svn/${groupId}/projects/sesame2/${artifactId}</developerConnection>
+			scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/${artifactId}</developerConnection>
 		<url>
-			https://src.aduna-software.org/svn/${groupId}/projects/sesame2/${artifactId}
+			https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/${artifactId}
 		</url>
 	</scm>
 
