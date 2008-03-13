@@ -13,6 +13,7 @@ import org.openrdf.sail.rdbms.algebra.BNodeColumn;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
 import org.openrdf.sail.rdbms.algebra.DatatypeColumn;
 import org.openrdf.sail.rdbms.algebra.DateTimeColumn;
+import org.openrdf.sail.rdbms.algebra.HashColumn;
 import org.openrdf.sail.rdbms.algebra.IdColumn;
 import org.openrdf.sail.rdbms.algebra.LabelColumn;
 import org.openrdf.sail.rdbms.algebra.LanguageColumn;
@@ -160,6 +161,11 @@ public class VarColumnLookupOptimizer extends
 
 	@Override
 	public void meet(RefIdColumn node) throws RuntimeException {
+		replaceVar(node);
+	}
+
+	@Override
+	public void meet(HashColumn node) throws RuntimeException {
 		replaceVar(node);
 	}
 
