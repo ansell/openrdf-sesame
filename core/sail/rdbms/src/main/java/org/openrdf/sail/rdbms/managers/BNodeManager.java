@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsBNode;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
-import org.openrdf.sail.rdbms.schema.IdCode;
 
 /**
  * Manages BNodes. Including creating, inserting, and looking up their
@@ -71,11 +70,6 @@ public class BNodeManager extends ValueManagerBase<RdbmsBNode> {
 	@Override
 	protected void insert(long id, RdbmsBNode resource) throws SQLException, InterruptedException {
 		table.insert(id, resource.stringValue());
-	}
-
-	@Override
-	protected long getMissingId(RdbmsBNode value) {
-		return IdCode.BNODE.hash(value);
 	}
 
 }

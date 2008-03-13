@@ -80,13 +80,15 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 
 	protected abstract Object key(V value);
 
-	protected abstract long getMissingId(V value);
-
 	@Override
 	protected void optimize() throws SQLException {
 		if (hashes != null) {
 			hashes.optimize();
 		}
+	}
+
+	private long getMissingId(V value) {
+		return IdCode.valueOf(value).hash(value);
 	}
 
 	private void insert(V value)
