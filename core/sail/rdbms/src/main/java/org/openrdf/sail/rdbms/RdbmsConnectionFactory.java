@@ -27,12 +27,13 @@ import org.openrdf.sail.rdbms.managers.TripleManager;
 import org.openrdf.sail.rdbms.managers.UriManager;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 import org.openrdf.sail.rdbms.optimizers.SelectQueryOptimizerFactory;
+import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
 import org.openrdf.sail.rdbms.schema.RdbmsTableFactory;
-import org.openrdf.sail.rdbms.schema.ResourceTable;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
 import org.openrdf.sail.rdbms.schema.TripleTableManager;
+import org.openrdf.sail.rdbms.schema.URITable;
 
 /**
  * Responsible to initialise and wire all components together that will be
@@ -43,7 +44,7 @@ import org.openrdf.sail.rdbms.schema.TripleTableManager;
  */
 public class RdbmsConnectionFactory {
 	private RdbmsStore sail;
-	private ResourceTable bnodeTable;
+	private BNodeTable bnodeTable;
 	private DataSource ds;
 	private String user;
 	private String password;
@@ -53,8 +54,7 @@ public class RdbmsConnectionFactory {
 	private LiteralTable literalTable;
 	private NamespaceManager namespaces;
 	private TripleTableManager tripleTableManager;
-	private ResourceTable uriTable;
-	private ResourceTable longUriTable;
+	private URITable uriTable;
 	private RdbmsValueFactory vf;
 	private UriManager uriManager;
 	private BNodeManager bnodeManager;
@@ -137,15 +137,12 @@ public class RdbmsConnectionFactory {
 			bnodeTable.initialize();
 			uriTable = tables.createURITable(lookup, uriManager.getQueue());
 			uriTable.initialize();
-			longUriTable = tables.createLongURITable(lookup, uriManager.getQueue());
-			longUriTable.initialize();
 			literalManager = new LiteralManager();
 			literalTable = tables.createLiteralTable(literalLookup, literalManager.getQueue());
 			literalTable.initialize();
 			vf = new RdbmsValueFactory();
 			vf.setDelegate(ValueFactoryImpl.getInstance());
-			uriManager.setLonger(longUriTable);
-			uriManager.setShorter(uriTable);
+			uriManager.setUriTable(uriTable);
 			uriManager.init();
 			predicateManager = new PredicateManager();
 			predicateManager.setUriManager(uriManager);
@@ -153,7 +150,6 @@ public class RdbmsConnectionFactory {
 			tripleTableManager.setConnection(index);
 			tripleTableManager.setBNodeTable(bnodeTable);
 			tripleTableManager.setURITable(uriTable);
-			tripleTableManager.setLongUriTable(longUriTable);
 			tripleTableManager.setLiteralTable(literalTable);
 			tripleTableManager.setPredicateManager(predicateManager);
 			tripleTableManager.setMaxNumberOfTripleTables(maxTripleTables);
@@ -200,7 +196,6 @@ public class RdbmsConnectionFactory {
 			s.setConnection(db);
 			s.setBNodeTable(bnodeTable);
 			s.setURITable(uriTable);
-			s.setLongUriTable(longUriTable);
 			s.setLiteralTable(literalTable);
 			DefaultSailChangedEvent sailChangedEvent = new DefaultSailChangedEvent(sail);
 			s.setSailChangedEvent(sailChangedEvent);
@@ -232,7 +227,6 @@ public class RdbmsConnectionFactory {
 			optimizer.setValueFactory(vf);
 			optimizer.setBnodeTable(bnodeTable);
 			optimizer.setUriTable(uriTable);
-			optimizer.setLongUriTable(longUriTable);
 			optimizer.setLiteralTable(literalTable);
 			conn.setRdbmsQueryOptimizer(optimizer);
 			return conn;

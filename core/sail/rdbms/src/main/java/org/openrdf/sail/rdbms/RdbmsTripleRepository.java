@@ -34,9 +34,10 @@ import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsStatement;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
+import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
-import org.openrdf.sail.rdbms.schema.ResourceTable;
 import org.openrdf.sail.rdbms.schema.TransTableManager;
+import org.openrdf.sail.rdbms.schema.URITable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
@@ -52,9 +53,8 @@ public class RdbmsTripleRepository {
 	private RdbmsValueFactory vf;
 	private TransTableManager statements;
 	private QueryBuilderFactory factory;
-	private ResourceTable bnodes;
-	private ResourceTable uris;
-	private ResourceTable longUris;
+	private BNodeTable bnodes;
+	private URITable uris;
 	private LiteralTable literals;
 	private Lock readLock;
 	private DefaultSailChangedEvent sailChangedEvent;
@@ -88,16 +88,12 @@ public class RdbmsTripleRepository {
 		this.factory = factory;
 	}
 
-	public void setBNodeTable(ResourceTable bnodes) {
+	public void setBNodeTable(BNodeTable bnodes) {
 		this.bnodes = bnodes;
 	}
 
-	public void setURITable(ResourceTable uris) {
+	public void setURITable(URITable uris) {
 		this.uris = uris;
-	}
-
-	public void setLongUriTable(ResourceTable longUris) {
-		this.longUris = longUris;
 	}
 
 	public void setLiteralTable(LiteralTable literals) {
@@ -301,7 +297,7 @@ public class RdbmsTripleRepository {
 						"CASE WHEN MIN(u.value) IS NOT NULL THEN MIN(u.value) ELSE MIN(b.value) END");
 		SqlJoinBuilder join = query.from(tableName, "t");
 		join.leftjoin(bnodes.getName(), "b").on("id", "t.ctx");
-		join.leftjoin(uris.getName(), "u").on("id", "t.ctx");
+		join.leftjoin(uris.getShortTableName(), "u").on("id", "t.ctx");
 		SqlBracketBuilder open = query.filter().and().open();
 		open.column("u", "value").isNotNull();
 		open.or();
@@ -356,23 +352,23 @@ public class RdbmsTripleRepository {
 		query.select().column("og", "value");
 		SqlJoinBuilder join;
 		if (pred != null) {
-			join = query.from(uris.getName(), "pu");
+			join = query.from(uris.getShortTableName(), "pu");
 			// TODO what about long predicate URIs? 
 			join = join.join(tableName, "t");
 		} else {
 			join = query.from(tableName, "t");
 		}
 		if (pred == null) {
-			join.join(uris.getName(), "pu").on("id", "t.pred");
+			join.join(uris.getShortTableName(), "pu").on("id", "t.pred");
 		}
-		join.leftjoin(uris.getName(), "cu").on("id", "t.ctx");
-		join.leftjoin(longUris.getName(), "clu").on("id", "t.ctx");
+		join.leftjoin(uris.getShortTableName(), "cu").on("id", "t.ctx");
+		join.leftjoin(uris.getLongTableName(), "clu").on("id", "t.ctx");
 		join.leftjoin(bnodes.getName(), "cb").on("id", "t.ctx");
-		join.leftjoin(uris.getName(), "su").on("id", "t.subj");
-		join.leftjoin(longUris.getName(), "slu").on("id", "t.subj");
+		join.leftjoin(uris.getShortTableName(), "su").on("id", "t.subj");
+		join.leftjoin(uris.getLongTableName(), "slu").on("id", "t.subj");
 		join.leftjoin(bnodes.getName(), "sb").on("id", "t.subj");
-		join.leftjoin(uris.getName(), "ou").on("id", "t.obj");
-		join.leftjoin(longUris.getName(), "olu").on("id", "t.obj");
+		join.leftjoin(uris.getShortTableName(), "ou").on("id", "t.obj");
+		join.leftjoin(uris.getLongTableName(), "olu").on("id", "t.obj");
 		join.leftjoin(bnodes.getName(), "ob").on("id", "t.obj");
 		join.leftjoin(literals.getLabelTable().getName(), "ol").on("id", "t.obj");
 		join.leftjoin(literals.getLongLabelTable().getName(), "oll").on("id", "t.obj");

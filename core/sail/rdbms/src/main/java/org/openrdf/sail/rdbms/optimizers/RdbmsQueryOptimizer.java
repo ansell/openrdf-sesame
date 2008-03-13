@@ -18,8 +18,9 @@ import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
+import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
-import org.openrdf.sail.rdbms.schema.ResourceTable;
+import org.openrdf.sail.rdbms.schema.URITable;
 
 /**
  * Facade to the underlying RDBMS optimizations.
@@ -29,9 +30,8 @@ import org.openrdf.sail.rdbms.schema.ResourceTable;
  */
 public class RdbmsQueryOptimizer {
 	private RdbmsValueFactory vf;
-	private ResourceTable uris;
-	private ResourceTable longUris;
-	private ResourceTable bnodes;
+	private URITable uris;
+	private BNodeTable bnodes;
 	private LiteralTable literals;
 	private SelectQueryOptimizerFactory factory;
 
@@ -44,15 +44,11 @@ public class RdbmsQueryOptimizer {
 		this.vf = vf;
 	}
 
-	public void setUriTable(ResourceTable uris) {
+	public void setUriTable(URITable uris) {
 		this.uris = uris;
 	}
 
-	public void setLongUriTable(ResourceTable longUris) {
-		this.longUris = longUris;
-	}
-
-	public void setBnodeTable(ResourceTable bnodes) {
+	public void setBnodeTable(BNodeTable bnodes) {
 		this.bnodes = bnodes;
 	}
 
@@ -97,7 +93,6 @@ public class RdbmsQueryOptimizer {
 		ValueJoinOptimizer valueJoins = new ValueJoinOptimizer();
 		valueJoins.setBnodeTable(bnodes);
 		valueJoins.setUriTable(uris);
-		valueJoins.setLongUriTable(longUris);
 		valueJoins.setLiteralTable(literals);
 		optimizerList.add(valueJoins);
 	}

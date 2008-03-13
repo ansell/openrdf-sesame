@@ -9,8 +9,8 @@ import java.sql.SQLException;
 
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsBNode;
+import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.IdCode;
-import org.openrdf.sail.rdbms.schema.ResourceTable;
 
 /**
  * Manages BNodes. Including creating, inserting, and looking up their
@@ -19,15 +19,15 @@ import org.openrdf.sail.rdbms.schema.ResourceTable;
  * @author James Leigh
  * 
  */
-public class BNodeManager extends ValueManagerBase<String, RdbmsBNode> {
+public class BNodeManager extends ValueManagerBase<RdbmsBNode> {
 	public static BNodeManager instance;
-	private ResourceTable table;
+	private BNodeTable table;
 
 	public BNodeManager() {
 		instance = this;
 	}
 
-	public void setTable(ResourceTable table) {
+	public void setTable(BNodeTable table) {
 		this.table = table;
 	}
 
