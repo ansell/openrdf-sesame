@@ -17,7 +17,7 @@ import org.openrdf.sail.rdbms.algebra.factories.SqlExprFactory;
 import org.openrdf.sail.rdbms.algebra.factories.TimeExprFactory;
 import org.openrdf.sail.rdbms.algebra.factories.URIExprFactory;
 import org.openrdf.sail.rdbms.algebra.factories.ZonedExprFactory;
-import org.openrdf.sail.rdbms.schema.TransTableManager;
+import org.openrdf.sail.rdbms.managers.TransTableManager;
 
 /**
  * Initialises the {@link SelectQueryOptimizer} with the SQL expression

@@ -8,15 +8,12 @@ package org.openrdf.sail.rdbms.managers;
 import java.sql.SQLException;
 
 import org.openrdf.sail.rdbms.managers.base.ManagerBase;
-import org.openrdf.sail.rdbms.schema.TransTableManager;
 
 /**
  * 
  * @author James Leigh
  */
 public class TripleManager extends ManagerBase {
-
-	public static int MIN_QUEUE = 128;
 
 	public static TripleManager instance;
 
@@ -31,11 +28,6 @@ public class TripleManager extends ManagerBase {
 	}
 
 	@Override
-	protected int getBatchSize() {
-		return statements.getBatchSize();
-	}
-
-	@Override
 	public void close()
 		throws SQLException
 	{
@@ -47,7 +39,6 @@ public class TripleManager extends ManagerBase {
 		throws SQLException, InterruptedException
 	{
 		statements.insert(ctx, subj, pred, obj);
-		queued();
 	}
 
 }

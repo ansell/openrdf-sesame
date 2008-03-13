@@ -5,6 +5,9 @@
  */
 package org.openrdf.sail.rdbms.managers.base;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
 
@@ -15,6 +18,7 @@ import org.openrdf.sail.rdbms.managers.helpers.BatchBlockingQueue;
 import org.openrdf.sail.rdbms.schema.Batch;
 
 public abstract class ManagerBase {
+	public static int BATCH_SIZE = 8 * 1024;
 
 	public static int MIN_QUEUE = 128;
 
@@ -24,7 +28,7 @@ public abstract class ManagerBase {
 
 	private Logger logger = LoggerFactory.getLogger(ManagerBase.class);
 
-	public BlockingQueue<Batch> queue = new BatchBlockingQueue(MAX_QUEUE);
+	public final BlockingQueue<Batch> queue = new BatchBlockingQueue(MAX_QUEUE);
 
 	private final Object working = new Object();
 
@@ -32,8 +36,22 @@ public abstract class ManagerBase {
 
 	private int count;
 
+	@SuppressWarnings("unchecked")
 	public BlockingQueue<Batch> getQueue() {
-		return queue;
+		ClassLoader cl = getClass().getClassLoader();
+		Class<?>[] classes = new Class[] { BlockingQueue.class };
+		InvocationHandler h = new InvocationHandler() {
+
+			public Object invoke(Object proxy, Method method, Object[] args)
+				throws Throwable
+			{
+				Object result = method.invoke(queue, args);
+				checkQueueSize();
+				return result;
+			}
+		};
+		Object proxy = Proxy.newProxyInstance(cl, classes, h);
+		return (BlockingQueue<Batch>) proxy;
 	}
 
 	public void close()
@@ -69,15 +87,13 @@ public abstract class ManagerBase {
 		queue.clear();
 	}
 
-	protected abstract int getBatchSize();
-
 	protected void optimize()
 		throws SQLException
 	{
 		// allow subclasses to optimise table
 	}
 
-	protected void queued() {
+	void checkQueueSize() {
 		if (++count >= MIN_QUEUE && thread == null) {
 			String name = getClass().getSimpleName() + "-flusher";
 			thread = new Thread(new Runnable() {

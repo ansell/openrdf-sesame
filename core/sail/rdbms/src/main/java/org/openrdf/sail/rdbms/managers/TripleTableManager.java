@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail.rdbms.schema;
+package org.openrdf.sail.rdbms.managers;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -24,7 +24,8 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.sail.rdbms.managers.PredicateManager;
+import org.openrdf.sail.rdbms.schema.TripleTable;
+import org.openrdf.sail.rdbms.schema.ValueTableFactory;
 
 /**
  * Manages and delegates to the collection of {@link TripleTable}.
@@ -38,18 +39,18 @@ public class TripleTableManager {
 	public static int MAX_TABLES = Integer.MAX_VALUE;//1000;
 	public static final boolean INDEX_TRIPLES = true;
 	public static Long OTHER_PRED = Long.valueOf(-1);
-	private BNodeTable bnodes;
+	private BNodeManager bnodes;
 	private boolean closed;
 	private Connection conn;
 	private ValueTableFactory factory;
 	private Thread initThread;
-	private LiteralTable literals;
+	private LiteralManager literals;
 	private Logger logger = LoggerFactory.getLogger(TripleTableManager.class);
 	private PredicateManager predicates;
 	private LinkedList<TripleTable> queue = new LinkedList<TripleTable>();
 	private Pattern tablePrefix = Pattern.compile("\\W(\\w*)\\W*$");
 	private Map<Long, TripleTable> tables = new HashMap<Long, TripleTable>();
-	private URITable uris;
+	private UriManager uris;
 	private int maxTables = MAX_TABLES;
 	private boolean indexingTriples = INDEX_TRIPLES;
 	Exception exc;
@@ -58,7 +59,7 @@ public class TripleTableManager {
 		this.factory = factory;
 	}
 
-	public void setBNodeTable(BNodeTable bnodeTable) {
+	public void setBNodeManager(BNodeManager bnodeTable) {
 		this.bnodes = bnodeTable;
 	}
 
@@ -66,7 +67,7 @@ public class TripleTableManager {
 		this.conn = conn;
 	}
 
-	public void setLiteralTable(LiteralTable literalTable) {
+	public void setLiteralManager(LiteralManager literalTable) {
 		this.literals = literalTable;
 	}
 
@@ -74,7 +75,7 @@ public class TripleTableManager {
 		this.predicates = predicates;
 	}
 
-	public void setURITable(URITable uriTable) {
+	public void setUriManager(UriManager uriTable) {
 		this.uris = uriTable;
 	}
 

@@ -7,8 +7,8 @@ package org.openrdf.sail.rdbms.postgresql;
 
 import java.sql.SQLException;
 
+import org.openrdf.sail.rdbms.managers.TransTableManager;
 import org.openrdf.sail.rdbms.schema.RdbmsTable;
-import org.openrdf.sail.rdbms.schema.TransTableManager;
 import org.openrdf.sail.rdbms.schema.TransactionTable;
 
 public class PgSqlTransTableManager extends TransTableManager {

@@ -45,11 +45,6 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 	}
 
 	@Override
-	public int getIdVersion() {
-		return table.getIdVersion();
-	}
-
-	@Override
 	public void close()
 		throws SQLException
 	{
@@ -58,7 +53,21 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 	}
 
 	@Override
+	public void removedStatements(int count, String condition)
+		throws SQLException
+	{
+		super.removedStatements(count, condition);
+		table.removedStatements(count, condition);
+	}
+
+	@Override
+	protected int getTableVersion() {
+		return table.getIdVersion();
+	}
+
+	@Override
 	protected void optimize() throws SQLException {
+		super.optimize();
 		table.optimize();
 	}
 
@@ -69,29 +78,28 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 
 	@Override
 	protected void insert(long id, RdbmsLiteral literal) throws SQLException, InterruptedException {
-		long hash = IdCode.valueOf(literal).hash(literal);
 		String label = literal.getLabel();
 		String language = literal.getLanguage();
 		URI datatype = literal.getDatatype();
 		if (datatype == null && language == null) {
-			table.insertSimple(id, hash, label);
+			table.insertSimple(id, label);
 		} else if (datatype == null) {
-			table.insertLanguage(id, hash, label, language);
+			table.insertLanguage(id, label, language);
 		} else {
 			String dt = datatype.stringValue();
 			try {
 				if (XMLDatatypeUtil.isNumericDatatype(datatype)) {
-					table.insertNumeric(id, hash, label, dt, literal.doubleValue());
+					table.insertNumeric(id, label, dt, literal.doubleValue());
 				} else if (XMLDatatypeUtil.isCalendarDatatype(datatype)) {
 					long value = getCalendarValue(literal.calendarValue());
-					table.insertDateTime(id, hash, label, dt, value);
+					table.insertDateTime(id, label, dt, value);
 				} else {
-					table.insertDatatype(id, hash, label, dt);
+					table.insertDatatype(id, label, dt);
 				}
 			} catch (NumberFormatException e) {
-				table.insertDatatype(id, hash, label, dt);
+				table.insertDatatype(id, label, dt);
 			} catch (IllegalArgumentException e) {
-				table.insertDatatype(id, hash, label, dt);
+				table.insertDatatype(id, label, dt);
 			}
 		}
 	}
