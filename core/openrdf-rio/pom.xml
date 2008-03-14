@@ -4,10 +4,14 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.openrdf</groupId>
+	<parent>
+		<groupId>org.openrdf</groupId>
+		<artifactId>openrdf-sesame</artifactId>
+		<version>2.0.1-SNAPSHOT</version>
+	</parent>
+
 	<artifactId>openrdf-rio</artifactId>
 	<packaging>pom</packaging>
-	<version>2.0.1-SNAPSHOT</version>
 	<name>OpenRDF Rio</name>
 	<description>Rio (RDF I/O) is an API for parsers and writers of various RDF	file formats.</description>
 	<url>http://www.openrdf.org/</url>
@@ -36,73 +40,6 @@
 		<module>openrdf-rio-turtle</module>
 		<module>openrdf-rio-trig</module>
 	</modules>
-
-	<build>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ftp</artifactId>
-			</extension>
-		</extensions>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
-	<repositories>
-		<repository>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</snapshots>
-			<id>aduna-repo</id>
-			<name>Aduna Repository</name>
-			<url>http://repository.aduna-software.org/maven2</url>
-		</repository>
-		<repository>
-			<releases>
-				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>daily</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
-			</snapshots>
-			<id>aduna-snapshot-repo</id>
-			<name>Aduna Snapshot Repository</name>
-			<url>http://repository.aduna-software.org/maven2-snapshots</url>
-		</repository>
-	</repositories>
-
-	<distributionManagement>
-		<repository>
-			<id>ftp-aduna-repo</id>
-			<name>Aduna Repository</name>
-			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
-			<uniqueVersion>true</uniqueVersion>
-		</repository>
-		<snapshotRepository>
-			<id>ftp-aduna-repo</id>
-			<name>Aduna Snapshot Repository</name>
-			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2-snapshots</url>
-			<uniqueVersion>true</uniqueVersion>
-		</snapshotRepository>
-	</distributionManagement>
 
 	<scm>
 		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/${artifactId}</connection>
