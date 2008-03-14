@@ -76,18 +76,38 @@
 
 	<distributionManagement>
 		<repository>
-			<id>ftp-aduna-repo</id>
+			<id>aduna-releases-repository</id>
 			<name>Aduna Repository</name>
-			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
-			<uniqueVersion>true</uniqueVersion>
+			<url>scp://repository.aduna-software.org:2222/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
+			<uniqueVersion>false</uniqueVersion>
 		</repository>
 		<snapshotRepository>
-			<id>ftp-aduna-repo</id>
+			<id>aduna-snapshots-repository</id>
 			<name>Aduna Snapshot Repository</name>
-			<url>ftp://repository.aduna-software.org//space/aduna/hosts/repository.aduna-software.org/htdocs/maven2-snapshots</url>
-			<uniqueVersion>true</uniqueVersion>
+			<url>scp://repository.aduna-software.org:2222/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2-snapshots</url>
+			<uniqueVersion>false</uniqueVersion>
 		</snapshotRepository>
 	</distributionManagement>
+
+	<profiles>
+		<profile>
+			<id>continuous-integration</id>
+			<distributionManagement>
+				<repository>
+					<id>aduna-releases-repository</id>
+					<name>Aduna Repository</name>
+					<url>file:/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
+					<uniqueVersion>false</uniqueVersion>
+				</repository>
+				<snapshotRepository>
+					<id>aduna-snapshots-repository</id>
+					<name>Aduna Snapshot Repository</name>
+					<url>file:/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2-snapshots</url>
+					<uniqueVersion>false</uniqueVersion>
+				</snapshotRepository>
+			</distributionManagement>
+		</profile>
+	</profiles>
 
 	<scm>
 		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0</connection>
