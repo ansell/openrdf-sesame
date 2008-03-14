@@ -37,6 +37,11 @@
 			<artifactId>aduna-collections</artifactId>
 			<version>1.4</version>
 		</dependency>
+		<dependency>
+			<groupId>info.aduna</groupId>
+			<artifactId>aduna-iteration</artifactId>
+			<version>1.5</version>
+		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
