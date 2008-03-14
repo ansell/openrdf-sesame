@@ -32,6 +32,23 @@
 		<module>tck</module>
 	</modules>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>info.aduna</groupId>
+				<artifactId>aduna-collections</artifactId>
+				<version>1.4</version>
+				<!-- references wrong iteration version -->
+				<exclusions>
+					<exclusion>
+						<groupId>info.aduna</groupId>
+						<artifactId>aduna-iteration</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<build>
 		<extensions>
 			<extension>
