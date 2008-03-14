@@ -49,6 +49,9 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
+				<inherited>false</inherited>
+				<!-- FIXME: Version 2.2-beta-2 causes a lot of duplicate jars to be included in the SDK's -->
+				<version>2.2-beta-1</version>
 				<configuration>
 					<descriptors>
 						<descriptor>src/main/assembly/onejar.xml</descriptor>
@@ -59,6 +62,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
+				<inherited>false</inherited>
 				<executions>
 					<execution>
 						<phase>site</phase>
