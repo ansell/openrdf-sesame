@@ -5,13 +5,14 @@
  */
 package org.openrdf.sail.rdbms.managers.base;
 
+import static org.openrdf.sail.rdbms.algebra.factories.HashExprFactory.hashOf;
+
 import java.sql.SQLException;
 
 import info.aduna.collections.LRUMap;
 
 import org.openrdf.sail.rdbms.managers.HashManager;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
-import org.openrdf.sail.rdbms.schema.IdCode;
 
 public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase {
 	public static final boolean STORE_VALUES = true;
@@ -37,8 +38,6 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 	}
 
 	public V findInCache(Object key) {
-		if (!STORE_VALUES)
-			return null;
 		synchronized (cache) {
 			if (cache.containsKey(key))
 				return cache.get(key);
@@ -46,25 +45,23 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 		return null;
 	}
 
-	public V cache(V value) throws SQLException, InterruptedException {
-		if (!STORE_VALUES)
-			return value;
-		if (!needsId(value))
-			return value;
-		synchronized (cache) {
-			cache.put(key(value), value);
+	public void cache(V value) throws SQLException, InterruptedException {
+		if (needsId(value)) {
+			synchronized (cache) {
+				cache.put(key(value), value);
+			}
+			if (hashes != null) {
+				hashes.cache(value);
+			}
 		}
-		insert(value);
-		return value;
 	}
 
 	public long getInternalId(V val) throws SQLException, InterruptedException {
+		if (val.getInternalId() == null) {
+			val.setInternalId(getMissingId(val));
+		}
 		insert(val);
-		if (val.getInternalId() != null)
-			return val.getInternalId();
-		long id = getMissingId(val);
-		val.setInternalId(id);
-		return id;
+		return val.getInternalId();
 	}
 
 	public int getIdVersion() {
@@ -88,23 +85,23 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 	}
 
 	private long getMissingId(V value) {
-		return IdCode.valueOf(value).hash(value);
+		if (hashes == null) {
+			return hashOf(value);
+		} else {
+			return hashes.getInternalId(value);
+		}
 	}
 
 	private void insert(V value)
 		throws SQLException, InterruptedException
 	{
-		if (needsId(value)) {
+		if (STORE_VALUES && needsId(value)) {
 			Long id = value.getInternalId();
-			if (id == null) {
-				id = getMissingId(value);
-			}
-			value.setInternalId(id);
 			value.setVersion(getIdVersion());
-			if (hashes != null) {
-				hashes.insert(id, IdCode.valueOf(value).hash(value));
-			}
 			insert(id, value);
+			if (hashes != null) {
+				hashes.insert(id, value);
+			}
 		}
 	}
 

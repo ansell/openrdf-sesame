@@ -20,7 +20,6 @@ import org.openrdf.model.impl.ValueFactoryBase;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.managers.BNodeManager;
-import org.openrdf.sail.rdbms.managers.HashManager;
 import org.openrdf.sail.rdbms.managers.LiteralManager;
 import org.openrdf.sail.rdbms.managers.PredicateManager;
 import org.openrdf.sail.rdbms.managers.UriManager;
@@ -90,7 +89,8 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		if (resource == null) {
 			try {
 				BNode impl = vf.createBNode(nodeID);
-				resource = bnodes.cache(new RdbmsBNode(impl));
+				resource = new RdbmsBNode(impl);
+				bnodes.cache(resource);
 			} catch (SQLException e) {
 				throw new RdbmsRuntimeException(e);
 			} catch (InterruptedException e) {
@@ -135,7 +135,8 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		if (resource == null) {
 			try {
 				URI impl = vf.createURI(uri);
-				resource = uris.cache(new RdbmsURI(impl));
+				resource = new RdbmsURI(impl);
+				uris.cache(resource);
 			} catch (SQLException e) {
 				throw new RdbmsRuntimeException(e);
 			} catch (InterruptedException e) {
@@ -172,7 +173,8 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 			return asRdbmsURI((URI) node);
 		if (node instanceof RdbmsBNode) {
 			try {
-				return bnodes.cache((RdbmsBNode) node);
+				bnodes.cache((RdbmsBNode) node);
+				return (RdbmsBNode) node;
 			} catch (SQLException e) {
 				throw new RdbmsRuntimeException(e);
 			} catch (InterruptedException e) {
@@ -187,7 +189,8 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 			return null;
 		if (uri instanceof RdbmsURI) {
 			try {
-				return uris.cache((RdbmsURI) uri);
+				uris.cache((RdbmsURI) uri);
+				return (RdbmsURI) uri;
 			} catch (SQLException e) {
 				throw new RdbmsRuntimeException(e);
 			} catch (InterruptedException e) {
@@ -207,11 +210,15 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 
 	public RdbmsLiteral asRdbmsLiteral(Literal literal) {
 		try {
-			if (literal instanceof RdbmsLiteral)
-				return literals.cache((RdbmsLiteral) literal);
+			if (literal instanceof RdbmsLiteral) {
+				literals.cache((RdbmsLiteral) literal);
+				return (RdbmsLiteral) literal;
+			}
 			RdbmsLiteral lit = literals.findInCache(literal);
-			if (lit == null)
-				lit = literals.cache(new RdbmsLiteral(literal));
+			if (lit == null) {
+				lit = new RdbmsLiteral(literal);
+				literals.cache(lit);
+			}
 			return lit;
 		} catch (SQLException e) {
 			throw new RdbmsRuntimeException(e);

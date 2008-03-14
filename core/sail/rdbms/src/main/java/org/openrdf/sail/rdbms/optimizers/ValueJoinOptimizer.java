@@ -99,7 +99,7 @@ public class ValueJoinOptimizer extends
 			ColumnVar var = node.getRdbmsVar();
 			String alias = "h" + getDBName(var);
 			String tableName = hashes.getName();
-			join(var, alias, tableName);
+			join(var, alias, tableName, false);
 		}
 	}
 
@@ -183,8 +183,12 @@ public class ValueJoinOptimizer extends
 	}
 
 	private void join(ColumnVar var, String alias, String tableName) {
+		join(var, alias, tableName, true);
+	}
+
+	private void join(ColumnVar var, String alias, String tableName, boolean left) {
 		if (query.getFromItem(alias) == null) {
-			FromItem valueJoin = valueJoin(alias, tableName, var);
+			FromItem valueJoin = valueJoin(alias, tableName, var, left);
 			if (join == parent || join.getFromItem(var.getAlias()) != null) {
 				join.addJoin(valueJoin);
 			} else {
@@ -193,9 +197,9 @@ public class ValueJoinOptimizer extends
 		}
 	}
 
-	private FromItem valueJoin(String alias, String tableName, ColumnVar using) {
+	private FromItem valueJoin(String alias, String tableName, ColumnVar using, boolean left) {
 		JoinItem j = new JoinItem(alias, tableName);
-		j.setLeft(true);
+		j.setLeft(left);
 		j.addFilter(new SqlEq(new IdColumn(alias), new RefIdColumn(using)));
 		return j;
 	}

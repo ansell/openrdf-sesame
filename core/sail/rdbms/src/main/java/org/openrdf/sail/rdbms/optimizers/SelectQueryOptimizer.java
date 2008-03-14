@@ -13,6 +13,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.coalesce;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.eq;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.isNull;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.or;
+import static org.openrdf.sail.rdbms.algebra.factories.HashExprFactory.valueOf;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -58,7 +59,6 @@ import org.openrdf.sail.rdbms.algebra.LabelColumn;
 import org.openrdf.sail.rdbms.algebra.LanguageColumn;
 import org.openrdf.sail.rdbms.algebra.LongLabelColumn;
 import org.openrdf.sail.rdbms.algebra.LongURIColumn;
-import org.openrdf.sail.rdbms.algebra.LongValue;
 import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SelectProjection;
 import org.openrdf.sail.rdbms.algebra.SelectQuery;
@@ -74,7 +74,6 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 import org.openrdf.sail.rdbms.managers.TransTableManager;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
-import org.openrdf.sail.rdbms.schema.IdCode;
 
 /**
  * Rewrites the core algebra model with a relation optimised model, using SQL.
@@ -246,8 +245,7 @@ public class SelectQueryOptimizer extends
 				IdColumn existing = new IdColumn(vars.get(var.getName()));
 				from.addFilter(new SqlEq(new IdColumn(var), existing));
 			} else if (value != null && !var.isImplied()) {
-				LongValue vc = new LongValue(IdCode.valueOf(value).hash(value));
-				from.addFilter(new SqlEq(new HashColumn(var), vc));
+				from.addFilter(new SqlEq(new HashColumn(var), valueOf(value)));
 			} else {
 				vars.put(var.getName(), var);
 			}
@@ -268,9 +266,7 @@ public class SelectQueryOptimizer extends
 			HashColumn var = new HashColumn(c);
 			SqlExpr in = null;
 			for (RdbmsResource id : ids) {
-				LongValue longValue;
-				longValue = new LongValue(IdCode.valueOf(id).hash(id));
-				SqlEq eq = new SqlEq(var.clone(), longValue);
+				SqlEq eq = new SqlEq(var.clone(), valueOf(id));
 				if (in == null) {
 					in = eq;
 				} else {

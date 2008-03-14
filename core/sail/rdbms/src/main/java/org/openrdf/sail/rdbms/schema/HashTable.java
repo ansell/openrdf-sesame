@@ -29,6 +29,10 @@ public class HashTable {
 		return version;
 	}
 
+	public int getBatchSize() {
+		return table.getBatchSize();
+	}
+
 	public void initialize()
 		throws SQLException
 	{
@@ -44,7 +48,15 @@ public class HashTable {
 	public void insert(long id, long hash)
 		throws SQLException, InterruptedException
 	{
-		table.insert(id, hash);
+		synchronized (table) {
+			HashBatch batch = (HashBatch)table.getValueBatch();
+			if (table.isExpired(batch)) {
+				batch = newHashBatch();
+				table.initBatch(batch);
+			}
+			batch.addBatch(id, hash);
+			table.queue(batch);
+		}
 	}
 
 	public void removedStatements(int count, String condition)
@@ -62,6 +74,10 @@ public class HashTable {
 
 	public String toString() {
 		return table.toString();
+	}
+
+	protected HashBatch newHashBatch() {
+		return new HashBatch();
 	}
 
 }
