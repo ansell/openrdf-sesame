@@ -8,6 +8,7 @@ package org.openrdf.sail.rdbms.managers.base;
 import static org.openrdf.sail.rdbms.algebra.factories.HashExprFactory.hashOf;
 
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import info.aduna.collections.LRUMap;
 
@@ -15,9 +16,9 @@ import org.openrdf.sail.rdbms.managers.HashManager;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 
 public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase {
-	public static final boolean STORE_VALUES = true;
 	private LRUMap<Object, V> cache;
 	private HashManager hashes;
+	private AtomicInteger version = new AtomicInteger();
 
 	public void setHashManager(HashManager hashes) {
 		this.hashes = hashes;
@@ -29,7 +30,7 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 
 	@Override
 	public void flush()
-		throws SQLException
+		throws SQLException, InterruptedException
 	{
 		super.flush();
 		if (hashes != null) {
@@ -45,30 +46,47 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 		return null;
 	}
 
-	public void cache(V value) throws SQLException, InterruptedException {
-		if (needsId(value)) {
+	public void cache(V value)
+		throws SQLException, InterruptedException
+	{
+		if (value.isExpired(getIdVersion())) {
 			synchronized (cache) {
 				cache.put(key(value), value);
 			}
 			if (hashes != null) {
-				hashes.cache(value);
+				hashes.lookupId(value);
 			}
 		}
 	}
 
-	public long getInternalId(V val) throws SQLException, InterruptedException {
-		if (val.getInternalId() == null) {
-			val.setInternalId(getMissingId(val));
+	public long getInternalId(V value)
+		throws SQLException, InterruptedException
+	{
+		if (value.isExpired(getIdVersion())) {
+			if (hashes == null) {
+				long id = hashOf(value);
+				value.setInternalId(id);
+				value.setVersion(getIdVersion());
+				insert(id, value);
+			}
+			else if (value.isExpired(getIdVersion())) {
+				hashes.assignId(value, getIdVersion());
+			}
 		}
-		insert(val);
-		return val.getInternalId();
+		return value.getInternalId();
 	}
 
 	public int getIdVersion() {
-		return getTableVersion() + (hashes == null ? 0 : hashes.getIdVersion());
+		return version.intValue() + (hashes == null ? 0 : hashes.getIdVersion());
 	}
 
-	protected abstract int getTableVersion();
+	public void removedStatements(int count, String condition)
+		throws SQLException
+	{
+		if (expungeRemovedStatements(count, condition)) {
+			version.addAndGet(1);
+		}
+	}
 
 	protected abstract int getBatchSize();
 
@@ -77,45 +95,12 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 
 	protected abstract Object key(V value);
 
+	protected abstract boolean expungeRemovedStatements(int count, String condition) throws SQLException;
+
 	@Override
 	protected void optimize() throws SQLException {
 		if (hashes != null) {
 			hashes.optimize();
-		}
-	}
-
-	private long getMissingId(V value) {
-		if (hashes == null) {
-			return hashOf(value);
-		} else {
-			return hashes.getInternalId(value);
-		}
-	}
-
-	private void insert(V value)
-		throws SQLException, InterruptedException
-	{
-		if (STORE_VALUES && needsId(value)) {
-			Long id = value.getInternalId();
-			value.setVersion(getIdVersion());
-			insert(id, value);
-			if (hashes != null) {
-				hashes.insert(id, value);
-			}
-		}
-	}
-
-	private boolean needsId(V value) {
-		if (value.getVersion() == null)
-			return true;
-		return value.getVersion().intValue() != getIdVersion();
-	}
-
-	public void removedStatements(int count, String condition)
-		throws SQLException
-	{
-		if (hashes != null) {
-			hashes.removedStatements(count, condition);
 		}
 	}
 

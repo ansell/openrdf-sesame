@@ -52,16 +52,10 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 	}
 
 	@Override
-	public void removedStatements(int count, String condition)
+	protected boolean expungeRemovedStatements(int count, String condition)
 		throws SQLException
 	{
-		super.removedStatements(count, condition);
-		table.removedStatements(count, condition);
-	}
-
-	@Override
-	protected int getTableVersion() {
-		return table.getIdVersion();
+		return table.expungeRemovedStatements(count, condition);
 	}
 
 	@Override

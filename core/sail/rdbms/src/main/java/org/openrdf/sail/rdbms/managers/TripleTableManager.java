@@ -51,6 +51,7 @@ public class TripleTableManager {
 	private Pattern tablePrefix = Pattern.compile("\\W(\\w*)\\W*$");
 	private Map<Long, TripleTable> tables = new HashMap<Long, TripleTable>();
 	private UriManager uris;
+	private HashManager hashes;
 	private int maxTables = MAX_TABLES;
 	private boolean indexingTriples = INDEX_TRIPLES;
 	Exception exc;
@@ -59,24 +60,28 @@ public class TripleTableManager {
 		this.factory = factory;
 	}
 
-	public void setBNodeManager(BNodeManager bnodeTable) {
-		this.bnodes = bnodeTable;
-	}
-
 	public void setConnection(Connection conn) {
 		this.conn = conn;
-	}
-
-	public void setLiteralManager(LiteralManager literalTable) {
-		this.literals = literalTable;
 	}
 
 	public void setPredicateManager(PredicateManager predicates) {
 		this.predicates = predicates;
 	}
 
+	public void setBNodeManager(BNodeManager bnodeTable) {
+		this.bnodes = bnodeTable;
+	}
+
+	public void setLiteralManager(LiteralManager literalTable) {
+		this.literals = literalTable;
+	}
+
 	public void setUriManager(UriManager uriTable) {
 		this.uris = uriTable;
+	}
+
+	public void setHashManager(HashManager hashes) {
+		this.hashes = hashes;
 	}
 
 	public int getMaxNumberOfTripleTables() {
@@ -201,9 +206,11 @@ public class TripleTableManager {
 		if (locked) {
 			condition = getExpungeCondition();
 		}
-		bnodes.removedStatements(count, condition);
-		uris.removedStatements(count, condition);
-		literals.removedStatements(count, condition);
+		if (hashes == null || hashes.removedStatements(count, condition)) {
+			bnodes.removedStatements(count, condition);
+			uris.removedStatements(count, condition);
+			literals.removedStatements(count, condition);
+		}
 	}
 
 	protected Set<String> findAllTables() throws SQLException {

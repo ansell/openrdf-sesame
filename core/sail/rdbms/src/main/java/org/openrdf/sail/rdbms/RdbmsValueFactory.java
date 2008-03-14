@@ -82,6 +82,9 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
+		catch (InterruptedException e) {
+			throw new RdbmsException(e);
+		}
 	}
 
 	public RdbmsBNode createBNode(String nodeID) {

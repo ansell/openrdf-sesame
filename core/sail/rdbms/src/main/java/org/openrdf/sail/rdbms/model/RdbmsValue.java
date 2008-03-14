@@ -40,4 +40,12 @@ public abstract class RdbmsValue implements Value {
 	public void setVersion(Integer version) {
 		this.version = version;
 	}
+
+	public boolean isExpired(int v) {
+		if (id == null)
+			return true;
+		if (version == null)
+			return true;
+		return version.intValue() != v;
+	}
 }
