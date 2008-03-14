@@ -57,8 +57,8 @@ public abstract class ManagerBase {
 	public void close()
 		throws SQLException
 	{
-		flush();
 		try {
+			flush();
 			if (thread != null) {
 				queue.put(Batch.CLOSED_SIGNAL);
 				thread.join();
@@ -71,7 +71,7 @@ public abstract class ManagerBase {
 	}
 
 	public void flush()
-		throws SQLException
+		throws SQLException, InterruptedException
 	{
 		throwException();
 		synchronized (working) {
@@ -100,7 +100,7 @@ public abstract class ManagerBase {
 
 				public void run() {
 					try {
-						lookupThread(working);
+						insertThread(working);
 					}
 					catch (Exception e) {
 						exc = e;
@@ -118,7 +118,7 @@ public abstract class ManagerBase {
 		batch.flush();
 	}
 
-	void lookupThread(Object working)
+	void insertThread(Object working)
 		throws SQLException, InterruptedException
 	{
 		String name = Thread.currentThread().getName();

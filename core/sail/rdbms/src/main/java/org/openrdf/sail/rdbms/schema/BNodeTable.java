@@ -15,7 +15,6 @@ import java.sql.SQLException;
  */
 public class BNodeTable {
 	private ValueTable table;
-	private int version;
 
 	public BNodeTable(ValueTable table) {
 		super();
@@ -34,19 +33,13 @@ public class BNodeTable {
 		return table.getBatchSize();
 	}
 
-	public int getIdVersion() {
-		return version;
-	}
-
 	public void insert(long id, String value) throws SQLException, InterruptedException {
 		table.insert(id, value);
 	}
 
-	public void removedStatements(int count, String condition)
+	public boolean expungeRemovedStatements(int count, String condition)
 			throws SQLException {
-		if (table.expungeRemovedStatements(count, condition)) {
-			version++;
-		}
+		return table.expungeRemovedStatements(count, condition);
 	}
 
 	@Override

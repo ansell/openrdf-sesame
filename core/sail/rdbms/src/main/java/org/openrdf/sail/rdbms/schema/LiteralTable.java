@@ -133,7 +133,7 @@ public class LiteralTable {
 		dateTime.optimize();
 	}
 
-	public void removedStatements(int count, String condition)
+	public boolean expungeRemovedStatements(int count, String condition)
 			throws SQLException {
 		boolean bool = false;
 		bool |= labels.expungeRemovedStatements(count, condition);
@@ -142,8 +142,6 @@ public class LiteralTable {
 		bool |= datatypes.expungeRemovedStatements(count, condition);
 		bool |= numeric.expungeRemovedStatements(count, condition);
 		bool |= dateTime.expungeRemovedStatements(count, condition);
-		if (bool) {
-			version++;
-		}
+		return bool;
 	}
 }

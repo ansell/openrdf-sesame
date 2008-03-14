@@ -14,7 +14,6 @@ import java.sql.SQLException;
  */
 public class HashTable {
 	private ValueTable table;
-	private int version;
 
 	public HashTable(ValueTable table) {
 		super();
@@ -23,10 +22,6 @@ public class HashTable {
 
 	public String getName() {
 		return table.getName();
-	}
-
-	public int getIdVersion() {
-		return version;
 	}
 
 	public int getBatchSize() {
@@ -59,11 +54,9 @@ public class HashTable {
 		}
 	}
 
-	public void removedStatements(int count, String condition)
+	public boolean expungeRemovedStatements(int count, String condition)
 			throws SQLException {
-		if (table.expungeRemovedStatements(count, condition)) {
-			version++;
-		}
+		return table.expungeRemovedStatements(count, condition);
 	}
 
 	public void optimize()

@@ -8,11 +8,24 @@ package org.openrdf.sail.rdbms.managers;
 
 import static org.openrdf.sail.rdbms.algebra.factories.HashExprFactory.hashOf;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openrdf.sail.rdbms.managers.base.ManagerBase;
+import org.openrdf.sail.rdbms.model.RdbmsBNode;
+import org.openrdf.sail.rdbms.model.RdbmsLiteral;
+import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.Batch;
 import org.openrdf.sail.rdbms.schema.HashBatch;
@@ -23,12 +36,27 @@ import org.openrdf.sail.rdbms.schema.HashTable;
  * @author James Leigh
  */
 public class HashManager extends ManagerBase {
-
+	/**
+	 * 
+	 */
+	private static final int CHUNK_SIZE = 15;
 	public static HashManager instance;
-
+	private Logger logger = LoggerFactory.getLogger(HashManager.class);
+	private Connection conn;
 	private HashTable table;
-
 	private Map<Long, Long> ids;
+	private AtomicInteger version = new AtomicInteger();
+	private BNodeManager bnodes;
+	private UriManager uris;
+	private LiteralManager literals;
+	private Thread lookupThread;
+	private Object working = new Object();
+	private BlockingQueue<RdbmsValue> queue;
+	Exception exc;
+	RdbmsValue closeSignal = new RdbmsValue() {
+		public String stringValue() {
+			return null;
+		}}; 
 
 	public HashManager() {
 		instance = this;
@@ -39,33 +67,56 @@ public class HashManager extends ManagerBase {
 		ids = new HashMap<Long, Long>(table.getBatchSize());
 	}
 
+	public void setConnection(Connection conn) {
+		this.conn = conn;
+	}
+
+	public void setBNodeManager(BNodeManager bnodeTable) {
+		this.bnodes = bnodeTable;
+	}
+
+	public void setLiteralManager(LiteralManager literalTable) {
+		this.literals = literalTable;
+	}
+
+	public void setUriManager(UriManager uriTable) {
+		this.uris = uriTable;
+	}
+
+	public void init() {
+		queue = new ArrayBlockingQueue<RdbmsValue>(table.getBatchSize());
+		lookupThread = new Thread(new Runnable() {
+			public void run() {
+				try {
+					lookupThread(working);
+				} catch (Exception e) {
+					exc = e;
+					logger.error(e.toString(), e);
+				}
+			}
+		}, "id-lookup");
+		lookupThread.start();
+	}
+
 	@Override
 	public void close()
 		throws SQLException
 	{
+		try {
+			flush();
+			if (lookupThread != null) {
+				queue.put(closeSignal);
+				lookupThread.join();
+			}
+		} catch (InterruptedException e) {
+			logger.warn(e.toString(), e);
+		}
 		super.close();
 		table.close();
 	}
 
 	public int getIdVersion() {
-		return table.getIdVersion();
-	}
-
-	public void cache(RdbmsValue value) {
-		long id = hashOf(value);
-		synchronized (ids) {
-			ids.put(hashOf(value), id);
-		}
-	}
-
-	public long getInternalId(RdbmsValue value) {
-		return hashOf(value);
-	}
-
-	public void insert(long id, RdbmsValue value)
-		throws SQLException, InterruptedException
-	{
-		table.insert(id, hashOf(value));
+		return version.intValue();
 	}
 
 	public void optimize()
@@ -74,8 +125,53 @@ public class HashManager extends ManagerBase {
 		table.optimize();
 	}
 
-	public void removedStatements(int count, String condition) throws SQLException {
-		table.removedStatements(count, condition);
+	public boolean removedStatements(int count, String condition) throws SQLException {
+		if (table.expungeRemovedStatements(count, condition)) {
+			version.addAndGet(1);
+			return true;
+		}
+		return false;
+	}
+
+	public void lookupId(RdbmsValue value) throws InterruptedException {
+		queue.put(value);
+	}
+
+	public void assignId(RdbmsValue value, int version)
+		throws InterruptedException, SQLException
+	{
+		synchronized (working) {
+			throwException();
+			if (value.isExpired(version)) {
+				List<RdbmsValue> values = new ArrayList<RdbmsValue>(getChunkSize());
+				Map<Long, Long> map = new HashMap<Long, Long>(getChunkSize());
+				values.add(value);
+				assignIds(values, map);
+			}
+		}
+	}
+
+	@Override
+	public void flush()
+		throws SQLException, InterruptedException
+	{
+		synchronized (working) {
+			throwException();
+			List<RdbmsValue> values = new ArrayList<RdbmsValue>(getChunkSize());
+			Map<Long, Long> map = new HashMap<Long, Long>(getChunkSize());
+			RdbmsValue taken = queue.poll();
+			while (taken != null) {
+				values.add(taken);
+				assignIds(values, map);
+				values.clear();
+				taken = queue.poll();
+			}
+		}
+		super.flush();
+	}
+
+	protected int getChunkSize() {
+		return CHUNK_SIZE;
 	}
 
 	@Override
@@ -83,11 +179,118 @@ public class HashManager extends ManagerBase {
 		throws SQLException
 	{
 		super.flush(batch);
-		synchronized (ids) {
-			HashBatch hb = (HashBatch) batch;
-			for (Long hash : hb.getHashes()) {
-				ids.remove(hash);
+		synchronized (working) {
+			synchronized (ids) {
+				HashBatch hb = (HashBatch) batch;
+				for (Long hash : hb.getHashes()) {
+					ids.remove(hash);
+				}
 			}
+		}
+	}
+
+	void lookupThread(Object working)
+		throws InterruptedException, SQLException
+	{
+		List<RdbmsValue> values = new ArrayList<RdbmsValue>(getChunkSize());
+		Map<Long, Long> map = new HashMap<Long, Long>(getChunkSize());
+		RdbmsValue taken = queue.take();
+		for (; taken != closeSignal; taken = queue.take()) {
+			synchronized (working) {
+				values.add(taken);
+				assignIds(values, map);
+				values.clear();
+				map.clear();
+			}
+		}
+	}
+
+	private void assignIds(List<RdbmsValue> values, Map<Long, Long> map)
+		throws SQLException, InterruptedException
+	{
+		while (values.size() < getChunkSize()) {
+			RdbmsValue taken = queue.poll();
+			if (taken == closeSignal) {
+				queue.add(taken);
+				break;
+			}
+			if (taken == null)
+				break;
+			values.add(taken);
+		}
+		Map<Long, Long> existing = lookup(values, map);
+		for (RdbmsValue value : values) {
+			Long hash = hashOf(value);
+			if (existing.containsKey(hash)) {
+				// already in database
+				value.setInternalId(existing.get(hash));
+				value.setVersion(getIdVersion(value));
+			}
+			else {
+				synchronized (ids) {
+					if (ids.containsKey(hash)) {
+						// already inserting this value
+						value.setInternalId(ids.get(hash));
+						value.setVersion(getIdVersion(value));
+					}
+					else {
+						Long id = nextId(value);
+						value.setInternalId(id);
+						value.setVersion(getIdVersion(value));
+						ids.put(hash, id);
+						table.insert(id, hash);
+						insert(id, value);
+					}
+				}
+			}
+		}
+	}
+
+	private Map<Long, Long> lookup(Collection<RdbmsValue> values, Map<Long, Long> map) {
+		// TODO Auto-generated method stub
+		return map;
+	}
+
+	private Long nextId(RdbmsValue value) {
+		return hashOf(value); // TODO use sequence
+	}
+
+	private Integer getIdVersion(RdbmsValue value) {
+		if (value instanceof RdbmsLiteral)
+			return literals.getIdVersion();
+		if (value instanceof RdbmsURI)
+			return uris.getIdVersion();
+		assert value instanceof RdbmsBNode;
+		return bnodes.getIdVersion();
+	}
+
+	private void insert(Long id, RdbmsValue value)
+		throws SQLException, InterruptedException
+	{
+		if (value instanceof RdbmsLiteral) {
+			literals.insert(id, (RdbmsLiteral)value);
+		}
+		else if (value instanceof RdbmsURI) {
+			uris.insert(id, (RdbmsURI)value);
+		}
+		else {
+			assert value instanceof RdbmsBNode;
+			bnodes.insert(id, (RdbmsBNode)value);
+		}
+	}
+
+	private void throwException()
+		throws SQLException
+	{
+		if (exc instanceof SQLException) {
+			SQLException e = (SQLException)exc;
+			exc = null;
+			throw e;
+		}
+		else if (exc instanceof RuntimeException) {
+			RuntimeException e = (RuntimeException)exc;
+			exc = null;
+			throw e;
 		}
 	}
 

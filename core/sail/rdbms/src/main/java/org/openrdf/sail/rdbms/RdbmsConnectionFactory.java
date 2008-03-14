@@ -50,10 +50,11 @@ public class RdbmsConnectionFactory {
 	private DataSource ds;
 	private String user;
 	private String password;
-	private Connection lookup;
-	private Connection literalLookup;
-	private Connection hashLookup;
-	private Connection index;
+	private Connection resourceInserts;
+	private Connection literalInserts;
+	private Connection hashInserts;
+	private Connection hashLookups;
+	private Connection nsAndTableIndexes;
 	private NamespaceManager namespaces;
 	private TripleTableManager tripleTableManager;
 	private HashManager hashManager;
@@ -133,35 +134,42 @@ public class RdbmsConnectionFactory {
 
 	public void init() throws SailException {
 		try {
-			index = getConnection();
-			lookup = getConnection();
-			literalLookup = getConnection();
-			hashLookup = getConnection();
-			index.setAutoCommit(true);
-			lookup.setAutoCommit(true);
-			literalLookup.setAutoCommit(true);
-			hashLookup.setAutoCommit(true);
+			nsAndTableIndexes = getConnection();
+			resourceInserts = getConnection();
+			literalInserts = getConnection();
+			nsAndTableIndexes.setAutoCommit(true);
+			resourceInserts.setAutoCommit(true);
+			literalInserts.setAutoCommit(true);
 			ValueTableFactory tables = createValueTableFactory();
+			bnodeManager = new BNodeManager();
+			uriManager = new UriManager();
+			literalManager = new LiteralManager();
 			if (usingHashTable) {
+				hashInserts = getConnection();
+				hashLookups = getConnection();
+				hashInserts.setAutoCommit(true);
+				hashLookups.setAutoCommit(true);
 				hashManager = new HashManager();
-				hashTable = tables.createHashTable(hashLookup, hashManager.getQueue());
+				hashTable = tables.createHashTable(hashInserts, hashManager.getQueue());
 				hashManager.setHashTable(hashTable);
+				hashManager.setConnection(hashLookups);
+				hashManager.setBNodeManager(bnodeManager);
+				hashManager.setLiteralManager(literalManager);
+				hashManager.setUriManager(uriManager);
+				hashManager.init();
 			}
 			namespaces = new NamespaceManager();
-			namespaces.setConnection(lookup);
-			NamespacesTable nsTable = tables.createNamespacesTable(index);
+			namespaces.setConnection(resourceInserts);
+			NamespacesTable nsTable = tables.createNamespacesTable(nsAndTableIndexes);
 			nsTable.initialize();
 			namespaces.setNamespacesTable(nsTable);
 			namespaces.initialize();
-			bnodeManager = new BNodeManager();
 			bnodeManager.setHashManager(hashManager);
-			uriManager = new UriManager();
 			uriManager.setHashManager(hashManager);
-			bnodeTable = tables.createBNodeTable(lookup, bnodeManager.getQueue());
-			uriTable = tables.createURITable(lookup, uriManager.getQueue());
-			literalManager = new LiteralManager();
+			bnodeTable = tables.createBNodeTable(resourceInserts, bnodeManager.getQueue());
+			uriTable = tables.createURITable(resourceInserts, uriManager.getQueue());
 			literalManager.setHashManager(hashManager);
-			literalTable = tables.createLiteralTable(literalLookup, literalManager.getQueue());
+			literalTable = tables.createLiteralTable(literalInserts, literalManager.getQueue());
 			vf = new RdbmsValueFactory();
 			vf.setDelegate(ValueFactoryImpl.getInstance());
 			uriManager.setUriTable(uriTable);
@@ -169,10 +177,11 @@ public class RdbmsConnectionFactory {
 			predicateManager = new PredicateManager();
 			predicateManager.setUriManager(uriManager);
 			tripleTableManager = new TripleTableManager(tables);
-			tripleTableManager.setConnection(index);
+			tripleTableManager.setConnection(nsAndTableIndexes);
 			tripleTableManager.setBNodeManager(bnodeManager);
 			tripleTableManager.setUriManager(uriManager);
 			tripleTableManager.setLiteralManager(literalManager);
+			tripleTableManager.setHashManager(hashManager);
 			tripleTableManager.setPredicateManager(predicateManager);
 			tripleTableManager.setMaxNumberOfTripleTables(maxTripleTables);
 			tripleTableManager.setIndexingTriples(triplesIndexed);
@@ -198,7 +207,7 @@ public class RdbmsConnectionFactory {
 
 	public boolean isWritable() throws SailException {
 		try {
-			return !index.isReadOnly();
+			return !nsAndTableIndexes.isReadOnly();
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
@@ -276,21 +285,25 @@ public class RdbmsConnectionFactory {
 			if (hashManager != null) {
 				hashManager.close();
 			}
-			if (lookup != null) {
-				lookup.close();
-				lookup = null;
+			if (resourceInserts != null) {
+				resourceInserts.close();
+				resourceInserts = null;
 			}
-			if (literalLookup != null) {
-				literalLookup.close();
-				literalLookup = null;
+			if (literalInserts != null) {
+				literalInserts.close();
+				literalInserts = null;
 			}
-			if (hashLookup != null) {
-				hashLookup.close();
-				hashLookup = null;
+			if (hashInserts != null) {
+				hashInserts.close();
+				hashInserts = null;
 			}
-			if (index != null) {
-				index.close();
-				index = null;
+			if (hashLookups != null) {
+				hashLookups.close();
+				hashLookups = null;
+			}
+			if (nsAndTableIndexes != null) {
+				nsAndTableIndexes.close();
+				nsAndTableIndexes = null;
 			}
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
