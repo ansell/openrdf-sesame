@@ -77,7 +77,7 @@ public abstract class ManagerBase {
 		synchronized (working) {
 			throwException();
 			for (Batch b = queue.poll(); isFlushable(b); b = queue.poll()) {
-				b.flush();
+				flush(b);
 			}
 			count = 0;
 		}
@@ -112,6 +112,12 @@ public abstract class ManagerBase {
 		}
 	}
 
+	protected void flush(Batch batch)
+		throws SQLException
+	{
+		batch.flush();
+	}
+
 	void lookupThread(Object working)
 		throws SQLException, InterruptedException
 	{
@@ -121,7 +127,7 @@ public abstract class ManagerBase {
 		for (Batch b = queue.take(); isFlushable(b); b = queue.take()) {
 			if (b.isReady() || queue.size() <= notReadyCount) {
 				synchronized (working) {
-					b.flush();
+					flush(b);
 				}
 				optimize();
 				notReadyCount = 0;

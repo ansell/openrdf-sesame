@@ -6,9 +6,16 @@
 package org.openrdf.sail.rdbms.managers;
 
 
+import static org.openrdf.sail.rdbms.algebra.factories.HashExprFactory.hashOf;
+
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.openrdf.sail.rdbms.managers.base.ManagerBase;
+import org.openrdf.sail.rdbms.model.RdbmsValue;
+import org.openrdf.sail.rdbms.schema.Batch;
+import org.openrdf.sail.rdbms.schema.HashBatch;
 import org.openrdf.sail.rdbms.schema.HashTable;
 
 /**
@@ -21,12 +28,15 @@ public class HashManager extends ManagerBase {
 
 	private HashTable table;
 
+	private Map<Long, Long> ids;
+
 	public HashManager() {
 		instance = this;
 	}
 
 	public void setHashTable(HashTable table) {
 		this.table = table;
+		ids = new HashMap<Long, Long>(table.getBatchSize());
 	}
 
 	@Override
@@ -41,10 +51,21 @@ public class HashManager extends ManagerBase {
 		return table.getIdVersion();
 	}
 
-	public void insert(long id, long hash)
+	public void cache(RdbmsValue value) {
+		long id = hashOf(value);
+		synchronized (ids) {
+			ids.put(hashOf(value), id);
+		}
+	}
+
+	public long getInternalId(RdbmsValue value) {
+		return hashOf(value);
+	}
+
+	public void insert(long id, RdbmsValue value)
 		throws SQLException, InterruptedException
 	{
-		table.insert(id, hash);
+		table.insert(id, hashOf(value));
 	}
 
 	public void optimize()
@@ -55,6 +76,19 @@ public class HashManager extends ManagerBase {
 
 	public void removedStatements(int count, String condition) throws SQLException {
 		table.removedStatements(count, condition);
+	}
+
+	@Override
+	protected void flush(Batch batch)
+		throws SQLException
+	{
+		super.flush(batch);
+		synchronized (ids) {
+			HashBatch hb = (HashBatch) batch;
+			for (Long hash : hb.getHashes()) {
+				ids.remove(hash);
+			}
+		}
 	}
 
 }

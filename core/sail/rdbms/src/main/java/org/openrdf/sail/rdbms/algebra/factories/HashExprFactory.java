@@ -60,7 +60,7 @@ public class HashExprFactory extends
 		throw unsupported(arg);
 	}
 
-	private SqlExpr valueOf(Value value) {
+	public static SqlExpr valueOf(Value value) {
 		return new LongValue(hashOf(value));
 	}
 

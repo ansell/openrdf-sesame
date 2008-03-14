@@ -125,17 +125,44 @@ public class ValueTable {
 	}
 
 	public synchronized void insert(long id, Object value) throws SQLException, InterruptedException {
-		if (timeForNewBatch()) {
+		ValueBatch batch = getValueBatch();
+		if (isExpired(batch)) {
 			batch = newValueBatch();
-			batch.setTable(table);
-			batch.setTemporary(temporary);
-			batch.setBatchStatement(prepareInsert(INSERT));
-			batch.setMaxBatchSize(getBatchSize());
-			batch.setInsertStatement(prepareInsertSelect(INSERT_SELECT));
+			initBatch(batch);
 		}
 		batch.setLong(1, id);
 		batch.setObject(2, value);
 		batch.addBatch();
+		queue(batch);
+	}
+
+	public ValueBatch getValueBatch() {
+		return this.batch;
+	}
+
+	public boolean isExpired(ValueBatch batch) {
+		if (batch == null || batch.isFull())
+			return true;
+		return queue == null || !queue.remove(batch);
+	}
+
+	public ValueBatch newValueBatch() {
+		return new ValueBatch();
+	}
+
+	public void initBatch(ValueBatch batch)
+		throws SQLException
+	{
+		batch.setTable(table);
+		batch.setTemporary(temporary);
+		batch.setBatchStatement(prepareInsert(INSERT));
+		batch.setMaxBatchSize(getBatchSize());
+		batch.setInsertStatement(prepareInsertSelect(INSERT_SELECT));
+	}
+
+	public void queue(ValueBatch batch)
+		throws SQLException, InterruptedException
+	{
 		if (queue == null) {
 			batch.flush();
 		} else {
@@ -168,10 +195,6 @@ public class ValueTable {
 			int count = table.executeUpdate(EXPUNGE + condition);
 			table.modified(0, count);
 		}
-	}
-
-	protected ValueBatch newValueBatch() {
-		return new ValueBatch();
 	}
 
 	protected boolean timeToExpunge() {
@@ -232,11 +255,4 @@ public class ValueTable {
 			throw new AssertionError("Unsupported SQL Type: " + type);
 		}
 	}
-
-	private boolean timeForNewBatch() {
-		if (batch == null || batch.isFull())
-			return true;
-		return queue == null || !queue.remove(batch);
-	}
-
 }

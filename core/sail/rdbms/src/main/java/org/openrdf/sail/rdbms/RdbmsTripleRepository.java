@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 
@@ -49,6 +50,7 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * 
  */
 public class RdbmsTripleRepository {
+	public static int STMT_BUFFER = 32; 
 	private Connection conn;
 	private RdbmsValueFactory vf;
 	private TransTableManager statements;
@@ -59,6 +61,7 @@ public class RdbmsTripleRepository {
 	private Lock readLock;
 	private DefaultSailChangedEvent sailChangedEvent;
 	private TripleManager manager;
+	private LinkedList<RdbmsStatement> queue = new LinkedList<RdbmsStatement>(); 
 
 	public Connection getConnection() {
 		return conn;
@@ -109,25 +112,21 @@ public class RdbmsTripleRepository {
 	}
 
 	public void flush() throws RdbmsException {
-		vf.flush();
 		try {
+			synchronized (queue) {
+				while (!queue.isEmpty()) {
+					insert(queue.removeFirst());
+				}
+			}
+			vf.flush();
 			manager.flush();
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
-	}
-
-	public void add(RdbmsStatement st) throws SailException, SQLException, InterruptedException {
-		if (readLock == null) {
-			readLock = vf.getIdReadLock();
-			readLock.lock();
+		catch (InterruptedException e) {
+			throw new RdbmsException(e);
 		}
-		long ctx = vf.getInternalId(st.getContext());
-		long subj = vf.getInternalId(st.getSubject());
-		long pred = vf.getPredicateId(st.getPredicate());
-		long obj = vf.getInternalId(st.getObject());
-		manager.insert(ctx, subj, pred, obj);
 	}
 
 	public synchronized void begin() throws SQLException {
@@ -143,7 +142,12 @@ public class RdbmsTripleRepository {
 		conn.close();
 	}
 
-	public synchronized void commit() throws SQLException, RdbmsException {
+	public synchronized void commit() throws SQLException, RdbmsException, InterruptedException {
+		synchronized (queue) {
+			while (!queue.isEmpty()) {
+				insert(queue.removeFirst());
+			}
+		}
 		manager.flush();
 		conn.commit();
 		conn.setAutoCommit(true);
@@ -161,6 +165,34 @@ public class RdbmsTripleRepository {
 		} finally {
 			if (locked) {
 				writeLock.unlock();
+			}
+		}
+	}
+
+	public void rollback() throws SQLException, SailException {
+		synchronized (queue) {
+			queue.clear();
+		}
+		manager.clear();
+		if (!conn.getAutoCommit()) {
+			conn.rollback();
+			conn.setAutoCommit(true);
+		}
+		if (readLock != null) {
+			readLock.unlock();
+			readLock = null;
+		}
+	}
+
+	public void add(RdbmsStatement st) throws SailException, SQLException, InterruptedException {
+		if (readLock == null) {
+			readLock = vf.getIdReadLock();
+			readLock.lock();
+		}
+		synchronized (queue) {
+			queue.add(st);
+			if (queue.size() > getMaxQueueSize()) {
+				insert(queue.removeFirst());
 			}
 		}
 	}
@@ -252,18 +284,6 @@ public class RdbmsTripleRepository {
 		}
 	}
 
-	public void rollback() throws SQLException, SailException {
-		manager.clear();
-		if (!conn.getAutoCommit()) {
-			conn.rollback();
-			conn.setAutoCommit(true);
-		}
-		if (readLock != null) {
-			readLock.unlock();
-			readLock = null;
-		}
-	}
-
 	public long size(RdbmsResource... ctxs) throws SQLException, SailException {
 		flush();
 		String qry = buildCountQuery(ctxs);
@@ -283,6 +303,10 @@ public class RdbmsTripleRepository {
 		} finally {
 			stmt.close();
 		}
+	}
+
+	protected int getMaxQueueSize() {
+		return STMT_BUFFER;
 	}
 
 	private String buildContextQuery() throws SQLException {
@@ -422,6 +446,16 @@ public class RdbmsTripleRepository {
 			sb.append(" AND obj = ?");
 		}
 		return sb.toString();
+	}
+
+	private void insert(RdbmsStatement st)
+		throws RdbmsException, SQLException, InterruptedException
+	{
+		long ctx = vf.getInternalId(st.getContext());
+		long subj = vf.getInternalId(st.getSubject());
+		long pred = vf.getPredicateId(st.getPredicate());
+		long obj = vf.getInternalId(st.getObject());
+		manager.insert(ctx, subj, pred, obj);
 	}
 
 	private void setCountQuery(PreparedStatement stmt, RdbmsResource... ctxs)

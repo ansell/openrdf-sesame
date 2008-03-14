@@ -108,6 +108,9 @@ public class RdbmsConnection extends SailConnectionBase {
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
+		catch (InterruptedException e) {
+			throw new RdbmsException(e);
+		}
 
 		sail.notifySailChanged(triples.getSailChangedEvent());
 		// create a fresh event object.
