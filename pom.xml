@@ -36,22 +36,42 @@
 		<extensions>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ftp</artifactId>
+				<artifactId>wagon-ssh</artifactId>
 			</extension>
 		</extensions>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+					<encoding>utf8</encoding>
+				</configuration>
+			</plugin>
+			<!--
+			<plugin>
+				<groupId>ch.elca.el4j.maven.plugins</groupId>
+				<artifactId>maven-depgraph-plugin</artifactId>
+				<configuration>
+					<outDir>target/site/images</outDir>
+					<dotFile>${pom.artifactId}.dot</dotFile>
+					<outFile>${pom.artifactId}.png</outFile>
+					<filterEmptyArtifacts>true</filterEmptyArtifacts>
+				</configuration>
+			</plugin>
+			-->
+		</plugins>
 	</build>
 
 	<repositories>
 		<repository>
 			<releases>
 				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
 			</snapshots>
 			<id>aduna-repo</id>
 			<name>Aduna Repository</name>
@@ -73,6 +93,18 @@
 			<url>http://repository.aduna-software.org/maven2-snapshots</url>
 		</repository>
 	</repositories>
+
+	<!--
+	<pluginRepositories>
+		<pluginRepository>
+			<id>elca-services</id>
+			<url>http://el4.elca-services.ch/el4j/maven2repository</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
+	-->
 
 	<distributionManagement>
 		<repository>
