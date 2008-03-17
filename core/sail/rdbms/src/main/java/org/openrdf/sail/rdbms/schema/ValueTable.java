@@ -27,6 +27,7 @@ public class ValueTable {
 	private static final String[] VALUE_INDEX = { "value" };
 	private int length = -1;
 	private int sqlType;
+	private int idType;
 	private String INSERT;
 	private String INSERT_SELECT;
 	private String EXPUNGE;
@@ -63,6 +64,14 @@ public class ValueTable {
 
 	public void setSqlType(int sqlType) {
 		this.sqlType = sqlType;
+	}
+
+	public int getIdType() {
+		return idType;
+	}
+
+	public void setIdType(int sqlType) {
+		this.idType = sqlType;
 	}
 
 	public RdbmsTable getRdbmsTable() {
@@ -245,22 +254,22 @@ public class ValueTable {
 
 	protected void createTable(RdbmsTable table) throws SQLException {
 		StringBuilder sb = new StringBuilder();
-		sb.append("  id BIGINT NOT NULL,\n");
-		sb.append("  value ").append(getDeclaredSqlType(sqlType, length));
+		sb.append("  id ").append(sql(idType, -1)).append(" NOT NULL,\n");
+		sb.append("  value ").append(sql(sqlType, length));
 		sb.append(" NOT NULL\n");
 		table.createTable(sb);
 	}
 
 	protected void createTemporaryTable(RdbmsTable table) throws SQLException {
 		StringBuilder sb = new StringBuilder();
-		sb.append("  id BIGINT NOT NULL,\n");
-		sb.append("  value ").append(getDeclaredSqlType(sqlType, length));
+		sb.append("  id ").append(sql(idType, -1)).append(" NOT NULL,\n");
+		sb.append("  value ").append(sql(sqlType, length));
 		sb.append(" NOT NULL\n");
 		table.createTemporaryTable(sb);
 	}
 
-	protected String getDeclaredSqlType(int type, int length) {
-		switch (sqlType) {
+	protected String sql(int type, int length) {
+		switch (type) {
 		case Types.VARCHAR:
 			if (length > 0)
 				return "VARCHAR(" + length + ")";

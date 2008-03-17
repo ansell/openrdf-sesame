@@ -95,7 +95,7 @@ public class SqlExprBuilder {
 		where.append(" AS ").append(column);
 	}
 
-	public SqlExprBuilder bigint(Number time) {
+	public SqlExprBuilder number(Number time) {
 		where.append(" ? ");
 		parameters.add(time);
 		return this;
@@ -111,7 +111,7 @@ public class SqlExprBuilder {
 	}
 
 	public SqlExprBuilder columnEquals(String alias, String column, Number id) {
-		return column(alias, column).eq().bigint(id);
+		return column(alias, column).eq().number(id);
 	}
 
 	public SqlExprBuilder columnEquals(String alias, String column, String label) {
@@ -129,7 +129,7 @@ public class SqlExprBuilder {
 			}
 			open.column(alias, column);
 			open.eq();
-			open.bigint(ids[i]);
+			open.number(ids[i]);
 		}
 		open.close();
 		return this;

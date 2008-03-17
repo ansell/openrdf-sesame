@@ -30,9 +30,14 @@ public class TripleTable {
 	private boolean initialize;
 	private boolean predColumnPresent;
 	private boolean indexed;
+	private IdSequence ids;
 
 	public TripleTable(RdbmsTable table) {
 		this.table = table;
+	}
+
+	public void setIdSequence(IdSequence ids) {
+		this.ids = ids;
 	}
 
 	public boolean isPredColumnPresent() {
@@ -68,7 +73,7 @@ public class TripleTable {
 		initialize = true;
 	}
 
-	public void reload(IdSequence ids) throws SQLException {
+	public void reload() throws SQLException {
 		table.count();
 		if (table.size() > 0) {
 			ValueType[] values = ValueType.values();

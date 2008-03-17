@@ -204,7 +204,7 @@ public class QueryBuilder {
 	}
 
 	private void append(LongValue expr, SqlExprBuilder filter) {
-		filter.bigint(expr.getValue());
+		filter.number(expr.getValue());
 	}
 
 	private void append(NumericColumn var, SqlExprBuilder filter) {

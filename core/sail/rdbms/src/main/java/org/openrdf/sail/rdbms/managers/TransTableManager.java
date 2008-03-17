@@ -248,11 +248,12 @@ public class TransTableManager {
 	}
 
 	protected void createTemporaryTable(RdbmsTable table) throws SQLException {
+		String type = ids.getSqlType();
 		StringBuilder sb = new StringBuilder();
-		sb.append("  ctx BIGINT NOT NULL,\n");
-		sb.append("  subj BIGINT NOT NULL,\n");
-		sb.append("  pred BIGINT NOT NULL,\n");
-		sb.append("  obj BIGINT NOT NULL\n");
+		sb.append("  ctx ").append(type).append(" NOT NULL,\n");
+		sb.append("  subj ").append(type).append(" NOT NULL,\n");
+		sb.append("  pred ").append(type).append(" NOT NULL,\n");
+		sb.append("  obj ").append(type).append(" NOT NULL\n");
 		table.createTemporaryTable(sb);
 	}
 

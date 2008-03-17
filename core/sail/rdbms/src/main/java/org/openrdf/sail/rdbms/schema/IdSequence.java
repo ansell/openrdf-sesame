@@ -13,6 +13,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -67,6 +68,14 @@ public class IdSequence {
 
 	public int getShift() {
 		return SHIFT;
+	}
+
+	public int getJdbcIdType() {
+		return Types.BIGINT;
+	}
+
+	public String getSqlType() {
+		return "BIGINT";
 	}
 
 	public void setHashTable(HashTable table) {
