@@ -81,14 +81,14 @@ public class RdbmsBindingIteration extends
 
 	private RdbmsResource createResource(ResultSet rs, int index)
 			throws SQLException {
-		long id = rs.getLong(index);
-		if (id == ValueTable.NIL_ID)
+		Number id = ids.idOf(rs.getLong(index));
+		if (id.longValue() == ValueTable.NIL_ID)
 			return null;
 		return vf.getRdbmsResource(id, rs.getString(index + 1));
 	}
 
 	private RdbmsValue createValue(ResultSet rs, int index) throws SQLException {
-		long id = rs.getLong(index);
+		Number id = ids.idOf(rs.getLong(index));
 		if (ids.isLiteral(id)) {
 			String label = rs.getString(index + 1);
 			String language = rs.getString(index + 2);

@@ -27,7 +27,7 @@ public class RdbmsLiteral extends RdbmsValue implements Literal {
 		this.lit = lit;
 	}
 
-	public RdbmsLiteral(Long id, Integer version, Literal lit) {
+	public RdbmsLiteral(Number id, Integer version, Literal lit) {
 		super(id, version);
 		this.lit = lit;
 	}
