@@ -49,7 +49,9 @@ public class ValueTableFactory {
 		table.setRdbmsTable(createTable(conn, HASH_TABLE));
 		table.setTemporaryTable(factory.createTemporaryTable(conn, "INSERT_" + HASH_TABLE));
 		initValueTable(table, queue, BIGINT, -1, true);
-		return new HashTable(table);
+		HashTable hashTable = new HashTable(table);
+		hashTable.init();
+		return hashTable;
 	}
 
 	public NamespacesTable createNamespacesTable(Connection conn) {

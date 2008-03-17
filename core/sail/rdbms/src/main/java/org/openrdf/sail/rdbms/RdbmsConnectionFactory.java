@@ -65,7 +65,7 @@ public class RdbmsConnectionFactory {
 	private PredicateManager predicateManager;
 	private int maxTripleTables;
 	private boolean triplesIndexed = true;
-	private boolean usingHashTable;
+	private boolean sequenced;
 	private HashTable hashTable;
 	private URITable uriTable;
 	private BNodeTable bnodeTable;
@@ -97,12 +97,12 @@ public class RdbmsConnectionFactory {
 		maxTripleTables = max;
 	}
 
-	public boolean isUsingHashTable() {
-		return usingHashTable || hashManager != null;
+	public boolean isSequenced() {
+		return sequenced || hashManager != null;
 	}
 
-	public void setUsingHashTable(boolean usingHashTable) {
-		this.usingHashTable = usingHashTable;
+	public void setSequenced(boolean useSequence) {
+		this.sequenced = useSequence;
 	}
 
 	public boolean isTriplesIndexed() {
@@ -144,7 +144,7 @@ public class RdbmsConnectionFactory {
 			bnodeManager = new BNodeManager();
 			uriManager = new UriManager();
 			literalManager = new LiteralManager();
-			if (usingHashTable) {
+			if (sequenced) {
 				hashInserts = getConnection();
 				hashLookups = getConnection();
 				hashInserts.setAutoCommit(true);

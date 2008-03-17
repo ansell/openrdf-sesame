@@ -6,6 +6,7 @@
 package org.openrdf.sail.rdbms.schema;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.concurrent.BlockingQueue;
@@ -183,6 +184,40 @@ public class ValueTable {
 			return true;
 		}
 		return false;
+	}
+
+	public long[] maxIds() throws SQLException {
+		String column = "id";
+		StringBuilder shift = new StringBuilder();
+		shift.append("MOD((").append(column);
+		shift.append(" >> ").append(IdCode.SHIFT);
+		shift.append(") + ").append(IdCode.MOD).append(", ");
+		shift.append(IdCode.MOD);
+		shift.append(")");
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT ").append(shift);
+		sb.append(", MAX(").append(column);
+		sb.append("), COUNT(*)\n");
+		sb.append("FROM ").append(getName());
+		sb.append("\nGROUP BY ").append(shift);
+		String query = sb.toString();
+		PreparedStatement st = table.prepareStatement(query);
+		try {
+			ResultSet rs = st.executeQuery();
+			try {
+				long[] result = new long[IdCode.values().length];
+				while (rs.next()) {
+					int idx = rs.getInt(1);
+					result[idx] = rs.getLong(2);
+					assert IdCode.valueOf(result[idx]).equals(IdCode.values()[idx]);
+				}
+				return result;
+			} finally {
+				rs.close();
+			}
+		} finally {
+			st.close();
+		}
 	}
 
 	@Override
