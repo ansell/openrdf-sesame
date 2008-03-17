@@ -37,7 +37,7 @@ public class RdbmsStore extends SailBase {
 	private String password;
 	private int maxTripleTables;
 	private boolean triplesIndexed = true;
-	private boolean usingHashTable = false;
+	private boolean sequenced = false;
 
 	public RdbmsStore() {
 		super();
@@ -87,12 +87,12 @@ public class RdbmsStore extends SailBase {
 		}
 	}
 
-	public boolean isUsingHashTable() {
-		return usingHashTable;
+	public boolean isSequenced() {
+		return sequenced;
 	}
 
-	public void setUsingHashTable(boolean usingHashTable) {
-		this.usingHashTable = usingHashTable;
+	public void setSequenced(boolean useSequence) {
+		this.sequenced = useSequence;
 	}
 
 	public void initialize() throws SailException {
@@ -107,7 +107,7 @@ public class RdbmsStore extends SailBase {
 		}
 		factory.setMaxNumberOfTripleTables(maxTripleTables);
 		factory.setTriplesIndexed(triplesIndexed);
-		factory.setUsingHashTable(usingHashTable);
+		factory.setSequenced(sequenced);
 		factory.init();
 	}
 

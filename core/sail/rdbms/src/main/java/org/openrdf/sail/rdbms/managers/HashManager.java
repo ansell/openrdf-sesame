@@ -30,16 +30,13 @@ import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.Batch;
 import org.openrdf.sail.rdbms.schema.HashBatch;
 import org.openrdf.sail.rdbms.schema.HashTable;
+import org.openrdf.sail.rdbms.schema.IdCode;
 
 /**
  * 
  * @author James Leigh
  */
 public class HashManager extends ManagerBase {
-	/**
-	 * 
-	 */
-	private static final int CHUNK_SIZE = 15;
 	public static HashManager instance;
 	private Logger logger = LoggerFactory.getLogger(HashManager.class);
 	private Connection conn;
@@ -54,6 +51,8 @@ public class HashManager extends ManagerBase {
 	private BlockingQueue<RdbmsValue> queue;
 	Exception exc;
 	RdbmsValue closeSignal = new RdbmsValue() {
+		private static final long serialVersionUID = -2211413309013905712L;
+
 		public String stringValue() {
 			return null;
 		}}; 
@@ -165,13 +164,17 @@ public class HashManager extends ManagerBase {
 				assignIds(values, map);
 				values.clear();
 				taken = queue.poll();
+				if (taken == closeSignal) {
+					queue.add(taken);
+					taken = null;
+				}
 			}
 		}
 		super.flush();
 	}
 
 	protected int getChunkSize() {
-		return CHUNK_SIZE;
+		return table.getSelectChunkSize();
 	}
 
 	@Override
@@ -200,7 +203,6 @@ public class HashManager extends ManagerBase {
 				values.add(taken);
 				assignIds(values, map);
 				values.clear();
-				map.clear();
 			}
 		}
 	}
@@ -221,7 +223,7 @@ public class HashManager extends ManagerBase {
 		Map<Long, Long> existing = lookup(values, map);
 		for (RdbmsValue value : values) {
 			Long hash = hashOf(value);
-			if (existing.containsKey(hash)) {
+			if (existing.get(hash) != null) {
 				// already in database
 				value.setInternalId(existing.get(hash));
 				value.setVersion(getIdVersion(value));
@@ -234,6 +236,7 @@ public class HashManager extends ManagerBase {
 						value.setVersion(getIdVersion(value));
 					}
 					else {
+						// new id to be inserted
 						Long id = nextId(value);
 						value.setInternalId(id);
 						value.setVersion(getIdVersion(value));
@@ -246,13 +249,18 @@ public class HashManager extends ManagerBase {
 		}
 	}
 
-	private Map<Long, Long> lookup(Collection<RdbmsValue> values, Map<Long, Long> map) {
-		// TODO Auto-generated method stub
-		return map;
+	private Map<Long, Long> lookup(Collection<RdbmsValue> values, Map<Long, Long> map) throws SQLException {
+		assert !values.isEmpty();
+		assert values.size() <= getChunkSize();
+		map.clear();
+		for (RdbmsValue value : values) {
+			map.put(hashOf(value), null);
+		}
+		return table.load(conn, map);
 	}
 
 	private Long nextId(RdbmsValue value) {
-		return hashOf(value); // TODO use sequence
+		return table.nextId(IdCode.valueOf(value));
 	}
 
 	private Integer getIdVersion(RdbmsValue value) {

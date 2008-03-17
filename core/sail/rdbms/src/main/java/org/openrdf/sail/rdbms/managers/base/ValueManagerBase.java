@@ -32,10 +32,10 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 	public void flush()
 		throws SQLException, InterruptedException
 	{
-		super.flush();
 		if (hashes != null) {
 			hashes.flush();
 		}
+		super.flush();
 	}
 
 	public V findInCache(Object key) {
