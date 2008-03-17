@@ -54,15 +54,15 @@ public class RdbmsStatementIteration extends
 
 	private RdbmsResource createResource(ResultSet rs, int index)
 			throws SQLException {
-		long id = rs.getLong(index);
-		if (id == ValueTable.NIL_ID)
+		Number id = ids.idOf(rs.getLong(index));
+		if (id.longValue() == ValueTable.NIL_ID)
 			return null;
 		String stringValue = rs.getString(index + 1);
 		return vf.getRdbmsResource(id, stringValue);
 	}
 
 	private RdbmsValue createValue(ResultSet rs, int index) throws SQLException {
-		long id = rs.getLong(index);
+		Number id = ids.idOf(rs.getLong(index));
 		if (ids.isLiteral(id)) {
 			String label = rs.getString(index + 1);
 			String datatype = rs.getString(index + 2);

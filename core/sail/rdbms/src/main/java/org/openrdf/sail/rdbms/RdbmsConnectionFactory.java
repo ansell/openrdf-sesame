@@ -33,7 +33,9 @@ import org.openrdf.sail.rdbms.optimizers.SelectQueryOptimizerFactory;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.HashTable;
 import org.openrdf.sail.rdbms.schema.IdSequence;
+import org.openrdf.sail.rdbms.schema.IntegerIdSequence;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
+import org.openrdf.sail.rdbms.schema.LongIdSequence;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
 import org.openrdf.sail.rdbms.schema.TableFactory;
 import org.openrdf.sail.rdbms.schema.URITable;
@@ -142,13 +144,13 @@ public class RdbmsConnectionFactory {
 			nsAndTableIndexes.setAutoCommit(true);
 			resourceInserts.setAutoCommit(true);
 			literalInserts.setAutoCommit(true);
-			ids = new IdSequence();
-			ValueTableFactory tables = createValueTableFactory();
-			tables.setIdSequence(ids);
 			bnodeManager = new BNodeManager();
 			uriManager = new UriManager();
 			literalManager = new LiteralManager();
+			ValueTableFactory tables = createValueTableFactory();
 			if (sequenced) {
+				ids = new IntegerIdSequence();
+				tables.setIdSequence(ids);
 				hashInserts = getConnection();
 				hashLookups = getConnection();
 				hashInserts.setAutoCommit(true);
@@ -156,6 +158,7 @@ public class RdbmsConnectionFactory {
 				hashManager = new HashManager();
 				hashTable = tables.createHashTable(hashInserts, hashManager.getQueue());
 				ids.setHashTable(hashTable);
+				ids.init();
 				hashManager.setHashTable(hashTable);
 				hashManager.setConnection(hashLookups);
 				hashManager.setBNodeManager(bnodeManager);
@@ -163,8 +166,11 @@ public class RdbmsConnectionFactory {
 				hashManager.setUriManager(uriManager);
 				hashManager.setIdSequence(ids);
 				hashManager.init();
+			} else {
+				ids = new LongIdSequence();
+				ids.init();
+				tables.setIdSequence(ids);
 			}
-			ids.init();
 			namespaces = new NamespaceManager();
 			namespaces.setConnection(resourceInserts);
 			NamespacesTable nsTable = tables.createNamespacesTable(nsAndTableIndexes);

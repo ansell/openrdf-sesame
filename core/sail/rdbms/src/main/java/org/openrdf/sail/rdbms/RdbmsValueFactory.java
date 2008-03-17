@@ -158,14 +158,16 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		return createURI(namespace + localName);
 	}
 
-	public RdbmsResource getRdbmsResource(long id, String stringValue) {
+	public RdbmsResource getRdbmsResource(Number num, String stringValue) {
+		Number id = ids.idOf(num);
 		if (ids.isURI(id))
 			return new RdbmsURI(id, uris.getIdVersion(), vf.createURI(stringValue));
 		return new RdbmsBNode(id, bnodes.getIdVersion(), vf.createBNode(stringValue));
 	}
 
-	public RdbmsLiteral getRdbmsLiteral(long id, String label, String language,
+	public RdbmsLiteral getRdbmsLiteral(Number num, String label, String language,
 			String datatype) {
+		Number id = ids.idOf(num);
 		if (datatype == null && language == null)
 			return new RdbmsLiteral(id, literals.getIdVersion(), vf.createLiteral(label));
 		if (datatype == null)

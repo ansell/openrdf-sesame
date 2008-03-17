@@ -5,8 +5,6 @@
  */
 package org.openrdf.sail.rdbms.managers;
 
-import static org.openrdf.sail.rdbms.managers.TripleTableManager.OTHER_PRED;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -208,7 +206,7 @@ public class TransTableManager {
 				TripleTable predicate = triples.getPredicateTable(pred);
 				Number key = pred;
 				if (predicate.isPredColumnPresent()) {
-					key = OTHER_PRED;
+					key = ids.idOf(-1);
 					table = tables.get(key);
 					if (table != null)
 						return table;

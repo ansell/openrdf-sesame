@@ -21,7 +21,7 @@ import org.openrdf.model.URI;
 		this.uri = uri;
 	}
 
-	public RdbmsURI(Long id, Integer version, URI uri) {
+	public RdbmsURI(Number id, Integer version, URI uri) {
 		super(id, version);
 		this.uri = uri;
 	}

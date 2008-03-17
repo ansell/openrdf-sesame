@@ -228,7 +228,7 @@ public class HashManager extends ManagerBase {
 			Long hash = idseq.hashOf(value);
 			if (existing.get(hash) != null) {
 				// already in database
-				value.setInternalId(existing.get(hash));
+				value.setInternalId(idseq.idOf(existing.get(hash)));
 				value.setVersion(getIdVersion(value));
 			}
 			else {

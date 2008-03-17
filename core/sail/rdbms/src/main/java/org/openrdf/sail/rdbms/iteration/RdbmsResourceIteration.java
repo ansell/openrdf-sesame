@@ -33,7 +33,7 @@ public class RdbmsResourceIteration extends
 
 	@Override
 	protected RdbmsResource convert(ResultSet rs) throws SQLException {
-		long id = rs.getLong(0 + 1);
+		Number id = rs.getLong(0 + 1);
 		return vf.getRdbmsResource(id, rs.getString(0 + 2));
 	}
 

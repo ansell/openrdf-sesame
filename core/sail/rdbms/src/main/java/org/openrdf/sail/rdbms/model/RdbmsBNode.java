@@ -21,7 +21,7 @@ public class RdbmsBNode extends RdbmsResource implements BNode {
 		this.bnode = bnode;
 	}
 
-	public RdbmsBNode(Long id, Integer version, BNode bnode) {
+	public RdbmsBNode(Number id, Integer version, BNode bnode) {
 		super(id, version);
 		this.bnode = bnode;
 	}

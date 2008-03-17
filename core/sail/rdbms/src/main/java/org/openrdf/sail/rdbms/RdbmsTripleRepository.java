@@ -403,7 +403,7 @@ public class RdbmsTripleRepository {
 		join.leftjoin(literals.getLanguageTable().getName(), "og").on("id", "t.obj");
 		join.leftjoin(literals.getDatatypeTable().getName(), "od").on("id", "t.obj");
 		if (ctxs != null && ctxs.length > 0) {
-			Number[] ids = new Long[ctxs.length];
+			Number[] ids = new Number[ctxs.length];
 			for (int i = 0; i < ids.length; i++) {
 				ids[i] = vf.getInternalId(ctxs[i]);
 			}

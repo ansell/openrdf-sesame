@@ -38,7 +38,7 @@ public class RdbmsStore extends SailBase {
 	private String password;
 	private int maxTripleTables;
 	private boolean triplesIndexed = true;
-	private boolean sequenced = true;
+	private boolean sequenced = false;
 
 	public RdbmsStore() {
 		super();

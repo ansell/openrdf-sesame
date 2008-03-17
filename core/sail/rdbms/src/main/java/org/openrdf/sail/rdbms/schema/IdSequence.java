@@ -13,23 +13,18 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.sail.rdbms.model.RdbmsValue;
 
 /**
  * 
  * @author James Leigh
  */
-public class IdSequence {
+public abstract class IdSequence {
 
 	private static final String UTF_8 = "UTF-8";
 
@@ -47,69 +42,51 @@ public class IdSequence {
 
 	};
 
-	private long SPAN = 1152921504606846975l;
-
-	private int SHIFT = Long.toBinaryString(SPAN).length();
-
 	/** 255 */
 	private int LONG = 255;
 
 	private int MOD = 16;
 
-	private long[] minIds;
-
 	private HashTable table;
-
-	private ConcurrentMap<ValueType, AtomicLong> seq;
 
 	public int getMod() {
 		return MOD;
 	}
 
-	public int getShift() {
-		return SHIFT;
-	}
+	public abstract int getShift();
 
-	public int getJdbcIdType() {
-		return Types.BIGINT;
-	}
+	public abstract int getJdbcIdType();
 
-	public String getSqlType() {
-		return "BIGINT";
+	public abstract String getSqlType();
+
+	public HashTable getHashTable() {
+		return table;
 	}
 
 	public void setHashTable(HashTable table) {
 		this.table = table;
 	}
 
-	public void init()
-		throws SQLException
-	{
-		minIds = new long[ValueType.values().length];
-		for (int i = 0; i < minIds.length; i++) {
-			minIds[i] = i * (SPAN + 1);
-		}
-		if (table != null) {
-			seq = new ConcurrentHashMap<ValueType, AtomicLong>();
-			for (Number max : table.maxIds(getShift(), getMod())) {
-				ValueType code = valueOf(max);
-				if (max.longValue() > minId(code).longValue()) {
-					seq.put(code, new AtomicLong(max.longValue()));
-				}
-			}
-		}
-	}
+	public abstract void init()
+		throws SQLException;
+
+	public abstract Number maxId(ValueType type);
+
+	public abstract Number minId(ValueType type);
 
 	public int code(Literal value) {
-		return (int)(minId(valueOf(value)).longValue() >>> SHIFT);
+		return shift(minId(valueOf(value)));
 	}
 
 	public long hashOf(Value value) {
+		final long span = 1152921504606846975l;
 		MessageDigest digest = md5.get();
 		long type = hashLiteralType(digest, value);
 		long hash = type * 31 + hash(digest, value.stringValue());
-		return hash & SPAN | minId(valueOf(value)).longValue();
+		return hash & span | valueOf(value).index() * (span + 1);
 	}
+
+	public abstract Number nextId(Value value);
 
 	public boolean isLiteral(Number id) {
 		return valueOf(id).isLiteral();
@@ -123,36 +100,23 @@ public class IdSequence {
 		return valueOf(id).isURI();
 	}
 
-	public Number maxId(ValueType type) {
-		return minId(type).longValue() + SPAN;
+	public Number idOf(Value value) {
+		return idOf(hashOf(value));
 	}
 
-	public Number minId(ValueType type) {
-		return minIds[type.index()];
-	}
-
-	public Number idOf(RdbmsValue value) {
-		assert seq == null;
-		return hashOf(value);
-	}
-
-	public Number nextId(RdbmsValue value) {
-		ValueType code = valueOf(value);
-		if (!seq.containsKey(code)) {
-			seq.putIfAbsent(code, new AtomicLong(minId(code).longValue()));
-		}
-		return seq.get(code).incrementAndGet();
-	}
+	public abstract Number idOf(Number number);
 
 	public ValueType valueOf(Number id) {
-		int idx = (int)(id.longValue() >>> SHIFT);
+		int idx = shift(id);
 		ValueType[] values = ValueType.values();
 		if (idx < 0 || idx >= values.length)
 			throw new IllegalArgumentException("Invalid ID " + id);
 		return values[idx];
 	}
 
-	private long hash(MessageDigest digest, String str) {
+	protected abstract int shift(Number id);
+
+	protected long hash(MessageDigest digest, String str) {
 		try {
 			digest.update(str.getBytes(UTF_8));
 			return new BigInteger(1, digest.digest()).longValue();
@@ -162,7 +126,7 @@ public class IdSequence {
 		}
 	}
 
-	private long hashLiteralType(MessageDigest digest, Value value) {
+	protected long hashLiteralType(MessageDigest digest, Value value) {
 		if (value instanceof Literal) {
 			Literal lit = (Literal)value;
 			if (lit.getDatatype() != null)
@@ -192,7 +156,7 @@ public class IdSequence {
 		return ValueType.BNODE;
 	}
 
-	private ValueType valueOf(Literal lit) {
+	protected ValueType valueOf(Literal lit) {
 		String lang = lit.getLanguage();
 		URI dt = lit.getDatatype();
 		int length = lit.stringValue().length();
@@ -229,7 +193,7 @@ public class IdSequence {
 		return ValueType.URI;
 	}
 
-	private ValueType valueOf(Value value) {
+	protected ValueType valueOf(Value value) {
 		if (value instanceof URI)
 			return valueOf((URI)value);
 		if (value instanceof Literal)

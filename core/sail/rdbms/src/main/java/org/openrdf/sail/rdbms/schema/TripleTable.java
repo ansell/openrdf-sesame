@@ -201,12 +201,12 @@ public class TripleTable {
 
 	protected CharSequence buildTableColumns() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("  ctx BIGINT NOT NULL,\n");
-		sb.append("  subj BIGINT NOT NULL,\n");
+		sb.append("  ctx ").append(ids.getSqlType()).append(" NOT NULL,\n");
+		sb.append("  subj ").append(ids.getSqlType()).append(" NOT NULL,\n");
 		if (isPredColumnPresent()) {
-			sb.append("  pred BIGINT NOT NULL,\n");
+			sb.append("  pred ").append(ids.getSqlType()).append(" NOT NULL,\n");
 		}
-		sb.append("  obj BIGINT NOT NULL\n");
+		sb.append("  obj ").append(ids.getSqlType()).append(" NOT NULL\n");
 		return sb;
 	}
 }

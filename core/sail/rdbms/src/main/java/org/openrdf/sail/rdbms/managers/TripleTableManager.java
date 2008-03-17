@@ -39,7 +39,7 @@ public class TripleTableManager {
 	private static final String OTHER_TRIPLES_TABLE = "TRIPLES";
 	public static int MAX_TABLES = Integer.MAX_VALUE;//1000;
 	public static final boolean INDEX_TRIPLES = true;
-	public static Long OTHER_PRED = Long.valueOf(-1);
+	public Number OTHER_PRED;
 	private BNodeManager bnodes;
 	private boolean closed;
 	private Connection conn;
@@ -68,6 +68,7 @@ public class TripleTableManager {
 
 	public void setIdSequence(IdSequence ids) {
 		this.ids = ids;
+		this.OTHER_PRED = ids.idOf(Long.valueOf(-1));
 	}
 
 	public void setPredicateManager(PredicateManager predicates) {
@@ -113,7 +114,7 @@ public class TripleTableManager {
 	}
 
 	public void initialize() throws SQLException {
-		putAll(findPredicateTables());
+		tables.putAll(findPredicateTables());
 		initThread = new Thread(new Runnable() {
 			public void run() {
 				try {
@@ -178,7 +179,8 @@ public class TripleTableManager {
 	}
 
 	public synchronized TripleTable getPredicateTable(Number pred) throws SQLException {
-		assert pred.intValue() != 0;
+		assert pred.longValue() != 0;
+		assert pred.equals(ids.idOf(pred));
 			if (tables.containsKey(pred))
 				return tables.get(pred);
 			if (tables.containsKey(OTHER_PRED))
@@ -188,6 +190,7 @@ public class TripleTableManager {
 				tableName = OTHER_TRIPLES_TABLE;
 			}
 			TripleTable table = factory.createTripleTable(conn, tableName);
+			table.setIdSequence(ids);
 			if (tables.size() >= maxTables) {
 				table.setPredColumnPresent(true);
 				initTable(table);
@@ -238,9 +241,9 @@ public class TripleTableManager {
 		}
 	}
 
-	protected Map<Long, TripleTable> findPredicateTables()
+	protected Map<Number, TripleTable> findPredicateTables()
 			throws SQLException {
-		Map<Long, TripleTable> tables = new HashMap<Long, TripleTable>();
+		Map<Number, TripleTable> tables = new HashMap<Number, TripleTable>();
 		Set<String> names = findPredicateTableNames();
 		for (String tableName : names) {
 			TripleTable table = factory.createTripleTable(conn, tableName);
@@ -307,11 +310,11 @@ public class TripleTableManager {
 		return tableName;
 	}
 
-	protected long key(String tn) {
+	protected Number key(String tn) {
 		if (tn.equalsIgnoreCase(OTHER_TRIPLES_TABLE))
 			return OTHER_PRED;
-		Long id = Long.valueOf(tn.substring(tn.lastIndexOf('_') + 1));
-		assert id != 0;
+		Number id = ids.idOf(Long.valueOf(tn.substring(tn.lastIndexOf('_') + 1)));
+		assert id.longValue() != 0;
 		return id;
 	}
 
@@ -362,14 +365,14 @@ public class TripleTableManager {
 		if (exc != null)
 			throwException();
 		table.setIndexed(indexingTriples);
-		synchronized (queue) {
-			queue.add(table);
-			queue.notify();
+		if (true || queue == null) {
+			table.initTable();
+		} else {
+			synchronized (queue) {
+				queue.add(table);
+				queue.notify();
+			}
 		}
-	}
-
-	private synchronized void putAll(Map<Long, TripleTable> t) {
-		tables.putAll(t);
 	}
 
 	private void throwException() throws SQLException {

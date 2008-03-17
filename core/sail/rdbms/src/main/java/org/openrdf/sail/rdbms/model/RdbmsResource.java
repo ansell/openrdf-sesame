@@ -17,7 +17,7 @@ public abstract class RdbmsResource extends RdbmsValue implements Resource {
 	public RdbmsResource() {
 	}
 
-	public RdbmsResource(Long id, Integer version) {
+	public RdbmsResource(Number id, Integer version) {
 		super(id, version);
 	}
 }
