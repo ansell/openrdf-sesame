@@ -70,7 +70,7 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 	}
 
 	@Override
-	protected void insert(long id, RdbmsLiteral literal) throws SQLException, InterruptedException {
+	protected void insert(Number id, RdbmsLiteral literal) throws SQLException, InterruptedException {
 		String label = literal.getLabel();
 		String language = literal.getLanguage();
 		URI datatype = literal.getDatatype();

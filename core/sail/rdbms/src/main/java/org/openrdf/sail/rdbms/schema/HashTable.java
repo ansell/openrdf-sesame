@@ -63,7 +63,7 @@ public class HashTable {
 		return table.maxIds(shift, mod);
 	}
 
-	public void insert(long id, long hash)
+	public void insert(Number id, long hash)
 		throws SQLException, InterruptedException
 	{
 		synchronized (table) {
@@ -100,7 +100,7 @@ public class HashTable {
 		return conn.prepareStatement(sql);
 	}
 
-	public Map<Long,Long> load(Connection conn, Map<Long, Long> hashes) throws SQLException {
+	public Map<Long, Number> load(Connection conn, Map<Long, Number> hashes) throws SQLException {
 		assert !hashes.isEmpty();
 		assert hashes.size() <= getSelectChunkSize();
 		PreparedStatement stmt = prepareSelect(conn, select);

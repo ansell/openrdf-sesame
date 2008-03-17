@@ -63,7 +63,7 @@ public class TransactionTable {
 		this.batchSize = size;
 	}
 
-	public synchronized void insert(long ctx, long subj, long pred, long obj)
+	public synchronized void insert(Number ctx, Number subj, Number pred, Number obj)
 			throws SQLException, InterruptedException {
 		if (batch == null || batch.isFull() || !queue.remove(batch)) {
 			batch = newTripleBatch();
@@ -74,13 +74,13 @@ public class TransactionTable {
 			batch.setBatchStatement(prepareInsert());
 			batch.setInsertStatement(prepareInsertSelect(buildInsertSelect()));
 		}
-		batch.setLong(1, ctx);
-		batch.setLong(2, subj);
+		batch.setObject(1, ctx);
+		batch.setObject(2, subj);
 		if (temporary == null && !triples.isPredColumnPresent()) {
-			batch.setLong(3, obj);
+			batch.setObject(3, obj);
 		} else {
-			batch.setLong(3, pred);
-			batch.setLong(4, obj);
+			batch.setObject(3, pred);
+			batch.setObject(4, obj);
 		}
 		batch.addBatch();
 		queue.put(batch);

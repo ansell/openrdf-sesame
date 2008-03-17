@@ -50,7 +50,7 @@ public class TripleTableManager {
 	private PredicateManager predicates;
 	private LinkedList<TripleTable> queue = new LinkedList<TripleTable>();
 	private Pattern tablePrefix = Pattern.compile("\\W(\\w*)\\W*$");
-	private Map<Long, TripleTable> tables = new HashMap<Long, TripleTable>();
+	private Map<Number, TripleTable> tables = new HashMap<Number, TripleTable>();
 	private UriManager uris;
 	private HashManager hashes;
 	private int maxTables = MAX_TABLES;
@@ -132,10 +132,10 @@ public class TripleTableManager {
 		synchronized (queue) {
 			queue.notify();
 		}
-		Iterator<Entry<Long, TripleTable>> iter;
+		Iterator<Entry<Number, TripleTable>> iter;
 		iter = tables.entrySet().iterator();
 		while (iter.hasNext()) {
-			Entry<Long, TripleTable> next = iter.next();
+			Entry<Number, TripleTable> next = iter.next();
 			TripleTable table = next.getValue();
 			if (table.isEmpty()) {
 				predicates.remove(next.getKey());
@@ -163,22 +163,22 @@ public class TripleTableManager {
 		}
 	}
 
-	public String findTableName(long pred) throws SQLException {
+	public String findTableName(Number pred) throws SQLException {
 		return getPredicateTable(pred).getNameWhenReady();
 	}
 
-	public synchronized TripleTable getExistingTable(long pred) {
+	public synchronized TripleTable getExistingTable(Number pred) {
 		if (tables.containsKey(pred))
 			return tables.get(pred);
 		return tables.get(OTHER_PRED);
 	}
 
-	public synchronized Collection<Long> getPredicateIds() {
-		return new ArrayList<Long>(tables.keySet());
+	public synchronized Collection<Number> getPredicateIds() {
+		return new ArrayList<Number>(tables.keySet());
 	}
 
-	public synchronized TripleTable getPredicateTable(long pred) throws SQLException {
-		assert pred != 0;
+	public synchronized TripleTable getPredicateTable(Number pred) throws SQLException {
+		assert pred.intValue() != 0;
 			if (tables.containsKey(pred))
 				return tables.get(pred);
 			if (tables.containsKey(OTHER_PRED))
@@ -199,7 +199,7 @@ public class TripleTableManager {
 			return table;
 	}
 
-	public synchronized String getTableName(long pred) throws SQLException {
+	public synchronized String getTableName(Number pred) throws SQLException {
 		if (tables.containsKey(pred))
 			return tables.get(pred).getNameWhenReady();
 		if (tables.containsKey(OTHER_PRED))
@@ -285,7 +285,7 @@ public class TripleTableManager {
 
 	protected synchronized String getExpungeCondition() throws SQLException {
 		StringBuilder sb = new StringBuilder(1024);
-		for (Map.Entry<Long, TripleTable> e : tables.entrySet()) {
+		for (Map.Entry<Number, TripleTable> e : tables.entrySet()) {
 			sb.append("\nAND id != ").append(e.getKey());
 			if (e.getValue().isEmpty())
 				continue;
@@ -300,7 +300,7 @@ public class TripleTableManager {
 		return sb.toString();
 	}
 
-	protected String getNewTableName(long pred) throws SQLException {
+	protected String getNewTableName(Number pred) throws SQLException {
 		String prefix = getTableNamePrefix(pred);
 		String tableName = prefix + "_" + pred;
 		return tableName;
@@ -314,7 +314,7 @@ public class TripleTableManager {
 		return id;
 	}
 
-	protected String getTableNamePrefix(long pred) throws SQLException {
+	protected String getTableNamePrefix(Number pred) throws SQLException {
 		String uri = predicates.getPredicateUri(pred);
 		if (uri == null)
 			return DEFAULT_TABLE_PREFIX;

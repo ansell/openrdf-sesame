@@ -26,12 +26,12 @@ public class HashBatch extends ValueBatch {
 		return hashes;
 	}
 
-	public void addBatch(long id, long hash)
+	public void addBatch(Number id, long hash)
 		throws SQLException
 	{
 		hashes.add(hash);
-		setLong(1, id);
-		setLong(2, hash);
+		setObject(1, id);
+		setObject(2, hash);
 		addBatch();
 	}
 

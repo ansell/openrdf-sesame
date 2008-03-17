@@ -45,11 +45,11 @@ public class URITable {
 		return longer.getName();
 	}
 
-	public void insertShort(long id, String value) throws SQLException, InterruptedException {
+	public void insertShort(Number id, String value) throws SQLException, InterruptedException {
 		shorter.insert(id, value);
 	}
 
-	public void insertLong(long id, String value) throws SQLException, InterruptedException {
+	public void insertLong(Number id, String value) throws SQLException, InterruptedException {
 		longer.insert(id, value);
 	}
 

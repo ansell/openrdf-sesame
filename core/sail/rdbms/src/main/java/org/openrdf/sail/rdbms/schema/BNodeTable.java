@@ -33,7 +33,7 @@ public class BNodeTable {
 		return table.getBatchSize();
 	}
 
-	public void insert(long id, String value) throws SQLException, InterruptedException {
+	public void insert(Number id, String value) throws SQLException, InterruptedException {
 		table.insert(id, value);
 	}
 

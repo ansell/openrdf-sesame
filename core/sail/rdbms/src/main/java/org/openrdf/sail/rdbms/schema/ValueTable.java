@@ -22,7 +22,7 @@ import java.util.concurrent.BlockingQueue;
  */
 public class ValueTable {
 	public static int BATCH_SIZE = 8 * 1024;
-	public static final long NIL_ID = 0;
+	public static final long NIL_ID = 0; // TODO
 	private static final String[] PKEY = { "id" };
 	private static final String[] VALUE_INDEX = { "value" };
 	private int length = -1;
@@ -127,13 +127,13 @@ public class ValueTable {
 		// allow subclasses to override
 	}
 
-	public synchronized void insert(long id, Object value) throws SQLException, InterruptedException {
+	public synchronized void insert(Number id, Object value) throws SQLException, InterruptedException {
 		ValueBatch batch = getValueBatch();
 		if (isExpired(batch)) {
 			batch = newValueBatch();
 			initBatch(batch);
 		}
-		batch.setLong(1, id);
+		batch.setObject(1, id);
 		batch.setObject(2, value);
 		batch.addBatch();
 		queue(batch);

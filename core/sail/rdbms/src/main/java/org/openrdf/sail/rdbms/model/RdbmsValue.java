@@ -14,22 +14,22 @@ import org.openrdf.model.Value;
  * 
  */
 public abstract class RdbmsValue implements Value {
-	private transient Long id;
+	private transient Number id;
 	private transient Integer version;
 
 	public RdbmsValue() {
 	}
 
-	public RdbmsValue(Long id, Integer version) {
+	public RdbmsValue(Number id, Integer version) {
 		this.id = id;
 		this.version = version;
 	}
 
-	public Long getInternalId() {
+	public Number getInternalId() {
 		return id;
 	}
 
-	public void setInternalId(Long id) {
+	public void setInternalId(Number id) {
 		this.id = id;
 	}
 

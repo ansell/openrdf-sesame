@@ -9,27 +9,27 @@ import org.openrdf.sail.rdbms.model.RdbmsURI;
 
 public class PredicateManager {
 	private UriManager uris;
-	private Map<Long, String> predicates = new LRUMap<Long, String>(64);
+	private Map<Number, String> predicates = new LRUMap<Number, String>(64);
 
 	public void setUriManager(UriManager uris) {
 		this.uris = uris;
 	}
 
-	public long getIdOfPredicate(RdbmsURI uri) throws SQLException, InterruptedException {
-		Long id = uris.getInternalId(uri);
+	public Number getIdOfPredicate(RdbmsURI uri) throws SQLException, InterruptedException {
+		Number id = uris.getInternalId(uri);
 		synchronized(predicates) {
 			predicates.put(id, uri.stringValue());
 		}
 		return id;
 	}
 
-	public String getPredicateUri(long id) {
+	public String getPredicateUri(Number id) {
 		synchronized(predicates) {
 			return predicates.get(id);
 		}
 	}
 
-	public void remove(long id) {
+	public void remove(Number id) {
 		synchronized(predicates) {
 			predicates.remove(id);
 		}

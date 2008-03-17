@@ -222,7 +222,7 @@ public class SelectQueryOptimizer extends
 			return;
 
 		String alias = getTableAlias(predValue) + aliasCount++;
-		long predId = getInternalId(predValue);
+		Number predId = getInternalId(predValue);
 		String tableName;
 		boolean present;
 		try {
@@ -392,14 +392,12 @@ public class SelectQueryOptimizer extends
 		}
 	}
 
-	private long getInternalId(Value predValue) {
-		long predId;
+	private Number getInternalId(Value predValue) {
 		try {
-			predId = vf.getInternalId(predValue);
+			return vf.getInternalId(predValue);
 		} catch (RdbmsException e) {
 			throw new RdbmsRuntimeException(e);
 		}
-		return predId;
 	}
 
 	private Resource[] getContexts(StatementPattern sp, Value ctxValue) {
