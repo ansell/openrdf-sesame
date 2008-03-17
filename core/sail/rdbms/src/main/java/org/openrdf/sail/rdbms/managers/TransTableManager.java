@@ -16,6 +16,7 @@ import java.util.concurrent.BlockingQueue;
 
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.rdbms.schema.Batch;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.RdbmsTable;
 import org.openrdf.sail.rdbms.schema.TableFactory;
 import org.openrdf.sail.rdbms.schema.TransactionTable;
@@ -42,6 +43,7 @@ public class TransTableManager {
 	private Connection conn;
 	private BlockingQueue<Batch> batchQueue;
 	private DefaultSailChangedEvent sailChangedEvent;
+	private IdSequence ids;
 
 	public void setConnection(Connection conn) {
 		this.conn = conn;
@@ -65,6 +67,10 @@ public class TransTableManager {
 
 	public void setSailChangedEvent(DefaultSailChangedEvent sailChangedEvent) {
 		this.sailChangedEvent = sailChangedEvent;
+	}
+
+	public void setIdSequence(IdSequence ids) {
+		this.ids = ids;
 	}
 
 	public int getBatchSize() {
@@ -223,6 +229,7 @@ public class TransTableManager {
 			}
 		}
 		TransactionTable table = createTransactionTable();
+		table.setIdSequence(ids);
 		table.setSailChangedEvent(sailChangedEvent);
 		table.setQueue(batchQueue);
 		table.setTripleTable(predicate);

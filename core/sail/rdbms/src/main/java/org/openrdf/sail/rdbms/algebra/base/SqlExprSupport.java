@@ -25,10 +25,8 @@ import org.openrdf.sail.rdbms.algebra.SqlNot;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
 import org.openrdf.sail.rdbms.algebra.SqlOr;
 import org.openrdf.sail.rdbms.algebra.SqlRegex;
-import org.openrdf.sail.rdbms.algebra.SqlShift;
 import org.openrdf.sail.rdbms.algebra.StringValue;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
-import org.openrdf.sail.rdbms.schema.IdCode;
 
 /**
  * Support method to create SQL expressions.
@@ -170,10 +168,6 @@ public class SqlExprSupport {
 
 	public static SqlExpr regex(SqlExpr value, SqlExpr pattern, SqlExpr flags) {
 		return new SqlRegex(value, pattern, flags);
-	}
-
-	public static SqlExpr shift(SqlExpr arg) {
-		return new SqlShift(arg, IdCode.SHIFT, IdCode.MOD);
 	}
 
 	public static SqlExpr simple(SqlExpr arg) {

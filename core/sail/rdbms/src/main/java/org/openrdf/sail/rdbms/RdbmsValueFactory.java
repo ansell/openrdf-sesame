@@ -29,7 +29,7 @@ import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsStatement;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
-import org.openrdf.sail.rdbms.schema.IdCode;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
@@ -53,6 +53,11 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	private LiteralManager literals;
 	private PredicateManager predicates;
 	private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+	private IdSequence ids;
+
+	public void setIdSequence(IdSequence ids) {
+		this.ids = ids;
+	}
 
 	public void setBNodeManager(BNodeManager bnodes) {
 		this.bnodes = bnodes;
@@ -154,8 +159,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	}
 
 	public RdbmsResource getRdbmsResource(long id, String stringValue) {
-		IdCode code = IdCode.valueOf(id);
-		if (code.isURI())
+		if (ids.isURI(id))
 			return new RdbmsURI(id, uris.getIdVersion(), vf.createURI(stringValue));
 		return new RdbmsBNode(id, bnodes.getIdVersion(), vf.createBNode(stringValue));
 	}

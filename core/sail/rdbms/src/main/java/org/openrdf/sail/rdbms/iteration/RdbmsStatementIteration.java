@@ -17,7 +17,7 @@ import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsStatement;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
-import org.openrdf.sail.rdbms.schema.IdCode;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
@@ -29,11 +29,13 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
 public class RdbmsStatementIteration extends
 		RdbmIterationBase<RdbmsStatement, SailException> {
 	private RdbmsValueFactory vf;
+	private IdSequence ids;
 
-	public RdbmsStatementIteration(RdbmsValueFactory vf, PreparedStatement stmt)
+	public RdbmsStatementIteration(RdbmsValueFactory vf, PreparedStatement stmt, IdSequence ids)
 			throws SQLException {
 		super(stmt);
 		this.vf = vf;
+		this.ids = ids;
 	}
 
 	@Override
@@ -61,7 +63,7 @@ public class RdbmsStatementIteration extends
 
 	private RdbmsValue createValue(ResultSet rs, int index) throws SQLException {
 		long id = rs.getLong(index);
-		if (IdCode.valueOf(id).isLiteral()) {
+		if (ids.isLiteral(id)) {
 			String label = rs.getString(index + 1);
 			String datatype = rs.getString(index + 2);
 			String language = rs.getString(index + 3);

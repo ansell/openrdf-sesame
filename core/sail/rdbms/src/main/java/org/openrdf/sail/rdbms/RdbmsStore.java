@@ -16,6 +16,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.SailBase;

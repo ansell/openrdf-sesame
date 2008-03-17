@@ -5,10 +5,10 @@
  */
 package org.openrdf.sail.rdbms;
 
-import info.aduna.iteration.CloseableIteration;
-
 import java.sql.SQLException;
 import java.util.Collection;
+
+import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;

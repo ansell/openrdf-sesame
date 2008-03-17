@@ -38,10 +38,15 @@ public class ValueTableFactory {
 	protected static final String TIMES = "DATETIME_VALUES";
 	protected static final String HASH_TABLE = "HASH_VALUES";
 	private TableFactory factory;
+	private IdSequence ids;
 
 	public ValueTableFactory(TableFactory factory) {
 		super();
 		this.factory = factory;
+	}
+
+	public void setIdSequence(IdSequence ids) {
+		this.ids = ids;
 	}
 
 	public HashTable createHashTable(Connection conn, BlockingQueue<Batch> queue) throws SQLException {

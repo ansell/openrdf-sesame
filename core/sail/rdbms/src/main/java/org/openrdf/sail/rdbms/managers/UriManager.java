@@ -9,7 +9,6 @@ import java.sql.SQLException;
 
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
-import org.openrdf.sail.rdbms.schema.IdCode;
 import org.openrdf.sail.rdbms.schema.URITable;
 
 /**
@@ -59,7 +58,7 @@ public class UriManager extends ValueManagerBase<RdbmsURI> {
 	@Override
 	protected void insert(long id, RdbmsURI resource) throws SQLException, InterruptedException {
 		String uri = resource.stringValue();
-		if (IdCode.valueOf(id).isLong()) {
+		if (getIdSequence().isLong(id)) {
 			table.insertLong(id, uri);
 		} else {
 			table.insertShort(id, uri);

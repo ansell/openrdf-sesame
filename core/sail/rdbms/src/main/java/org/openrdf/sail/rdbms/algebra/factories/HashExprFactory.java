@@ -18,7 +18,7 @@ import org.openrdf.sail.rdbms.algebra.LongValue;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
-import org.openrdf.sail.rdbms.schema.IdCode;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 
 
 /**
@@ -28,6 +28,12 @@ import org.openrdf.sail.rdbms.schema.IdCode;
 public class HashExprFactory extends
 		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 	protected SqlExpr result;
+	private IdSequence ids;
+
+	public HashExprFactory(IdSequence ids) {
+		super();
+		this.ids = ids;
+	}
 
 	public SqlExpr createHashExpr(ValueExpr expr)
 			throws UnsupportedRdbmsOperatorException {
@@ -60,12 +66,8 @@ public class HashExprFactory extends
 		throw unsupported(arg);
 	}
 
-	public static SqlExpr valueOf(Value value) {
-		return new LongValue(hashOf(value));
-	}
-
-	public static long hashOf(Value value) {
-		return IdCode.valueOf(value).hash(value);
+	public SqlExpr valueOf(Value value) {
+		return new LongValue(ids.hashOf(value));
 	}
 
 }

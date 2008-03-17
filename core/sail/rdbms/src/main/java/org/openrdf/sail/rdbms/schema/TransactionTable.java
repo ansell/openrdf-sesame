@@ -29,6 +29,11 @@ public class TransactionTable {
 	private TripleBatch batch;
 	private BlockingQueue<Batch> queue;
 	private DefaultSailChangedEvent sailChangedEvent;
+	private IdSequence ids;
+
+	public void setIdSequence(IdSequence ids) {
+		this.ids = ids;
+	}
 
 	public void setQueue(BlockingQueue<Batch> queue) {
 		this.queue = queue;
@@ -80,8 +85,8 @@ public class TransactionTable {
 		batch.addBatch();
 		queue.put(batch);
 		addedCount++;
-		triples.getSubjTypes().add(IdCode.valueOf(subj));
-		triples.getObjTypes().add(IdCode.valueOf(obj));
+		triples.getSubjTypes().add(ids.valueOf(subj));
+		triples.getObjTypes().add(ids.valueOf(obj));
 	}
 
 	public void committed() throws SQLException {

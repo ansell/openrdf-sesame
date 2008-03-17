@@ -5,8 +5,6 @@
  */
 package org.openrdf.sail.rdbms.managers.base;
 
-import static org.openrdf.sail.rdbms.algebra.factories.HashExprFactory.hashOf;
-
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -14,14 +12,24 @@ import info.aduna.collections.LRUMap;
 
 import org.openrdf.sail.rdbms.managers.HashManager;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 
 public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase {
 	private LRUMap<Object, V> cache;
 	private HashManager hashes;
 	private AtomicInteger version = new AtomicInteger();
+	private IdSequence ids;
 
 	public void setHashManager(HashManager hashes) {
 		this.hashes = hashes;
+	}
+
+	public IdSequence getIdSequence() {
+		return ids;
+	}
+
+	public void setIdSequence(IdSequence ids) {
+		this.ids = ids;
 	}
 
 	public void init() {
@@ -64,7 +72,7 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 	{
 		if (value.isExpired(getIdVersion())) {
 			if (hashes == null) {
-				long id = hashOf(value);
+				long id = ids.idOf(value);
 				value.setInternalId(id);
 				value.setVersion(getIdVersion());
 				insert(id, value);
