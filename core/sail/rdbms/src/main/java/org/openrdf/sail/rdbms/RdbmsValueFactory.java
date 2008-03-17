@@ -252,7 +252,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		return createStatement(s, p, o, c);
 	}
 
-	public long getInternalId(Value r)
+	public Number getInternalId(Value r)
 		throws RdbmsException
 	{
 		try {
@@ -272,7 +272,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		}
 	}
 
-	public long getPredicateId(RdbmsURI predicate) throws RdbmsException {
+	public Number getPredicateId(RdbmsURI predicate) throws RdbmsException {
 		try {
 			return predicates.getIdOfPredicate(predicate);
 		} catch (SQLException e) {

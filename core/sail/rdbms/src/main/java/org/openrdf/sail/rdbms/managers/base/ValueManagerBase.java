@@ -67,12 +67,12 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 		}
 	}
 
-	public long getInternalId(V value)
+	public Number getInternalId(V value)
 		throws SQLException, InterruptedException
 	{
 		if (value.isExpired(getIdVersion())) {
 			if (hashes == null) {
-				long id = ids.idOf(value);
+				Number id = ids.idOf(value);
 				value.setInternalId(id);
 				value.setVersion(getIdVersion());
 				insert(id, value);
@@ -98,7 +98,7 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 
 	protected abstract int getBatchSize();
 
-	protected abstract void insert(long id, V value)
+	protected abstract void insert(Number id, V value)
 			throws SQLException, InterruptedException;
 
 	protected abstract Object key(V value);

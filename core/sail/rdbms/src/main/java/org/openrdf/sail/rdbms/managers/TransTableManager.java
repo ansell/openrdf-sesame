@@ -37,7 +37,7 @@ public class TransTableManager {
 	private TableFactory factory;
 	private TripleTableManager triples;
 	private RdbmsTable temporaryTable;
-	private Map<Long, TransactionTable> tables = new HashMap<Long, TransactionTable>();
+	private Map<Number, TransactionTable> tables = new HashMap<Number, TransactionTable>();
 	private int removedCount;
 	private String fromDummy;
 	private Connection conn;
@@ -80,7 +80,7 @@ public class TransTableManager {
 	public void initialize() throws SQLException {
 	}
 
-	public void insert(long ctx, long subj, long pred, long obj)
+	public void insert(Number ctx, Number subj, Number pred, Number obj)
 			throws SQLException, InterruptedException {
 		getTable(pred).insert(ctx, subj, pred, obj);
 	}
@@ -95,7 +95,7 @@ public class TransTableManager {
 		}
 	}
 
-	public String findTableName(long pred) throws SQLException {
+	public String findTableName(Number pred) throws SQLException {
 		return triples.findTableName(pred);
 	}
 
@@ -103,7 +103,7 @@ public class TransTableManager {
 		String union = " UNION ALL ";
 		StringBuilder sb = new StringBuilder(1024);
 		sb.append("(");
-		for (Long pred : triples.getPredicateIds()) {
+		for (Number pred : triples.getPredicateIds()) {
 			TripleTable predicate;
 			try {
 				predicate = triples.getPredicateTable(pred);
@@ -132,8 +132,8 @@ public class TransTableManager {
 		return sb.toString();
 	}
 
-	public String getTableName(long pred) throws SQLException {
-		if (pred == ValueTable.NIL_ID)
+	public String getTableName(Number pred) throws SQLException {
+		if (pred.equals(ValueTable.NIL_ID))
 			return getCombinedTableName();
 		String tableName = triples.getTableName(pred);
 		if (tableName == null)
@@ -153,29 +153,29 @@ public class TransTableManager {
 		}
 	}
 
-	public void removed(Long pred, int count) throws SQLException {
+	public void removed(Number pred, int count) throws SQLException {
 		getTable(pred).removed(count);
 		removedCount += count;
 	}
 
-	public Collection<Long> getPredicateIds() {
+	public Collection<Number> getPredicateIds() {
 		return triples.getPredicateIds();
 	}
 
-	public boolean isPredColumnPresent(Long id) throws SQLException {
-		if (id == ValueTable.NIL_ID)
+	public boolean isPredColumnPresent(Number id) throws SQLException {
+		if (id.longValue() == ValueTable.NIL_ID)
 			return true;
 		return triples.getPredicateTable(id).isPredColumnPresent();
 	}
 
-	public ValueTypes getObjTypes(long pred) {
+	public ValueTypes getObjTypes(Number pred) {
 		TripleTable table = triples.getExistingTable(pred);
 		if (table == null)
 			return ValueTypes.UNKNOWN;
 		return table.getObjTypes();
 	}
 
-	public ValueTypes getSubjTypes(long pred) {
+	public ValueTypes getSubjTypes(Number pred) {
 		TripleTable table = triples.getExistingTable(pred);
 		if (table == null)
 			return ValueTypes.RESOURCE;
@@ -183,7 +183,7 @@ public class TransTableManager {
 	}
 
 	public boolean isEmpty() throws SQLException {
-		for (Long pred : triples.getPredicateIds()) {
+		for (Number pred : triples.getPredicateIds()) {
 			TripleTable predicate;
 			try {
 				predicate = triples.getPredicateTable(pred);
@@ -201,12 +201,12 @@ public class TransTableManager {
 		return "0";
 	}
 
-	protected TransactionTable getTable(long pred) throws SQLException {
+	protected TransactionTable getTable(Number pred) throws SQLException {
 		synchronized (tables) {
 			TransactionTable table = tables.get(pred);
 			if (table == null) {
 				TripleTable predicate = triples.getPredicateTable(pred);
-				Long key = pred;
+				Number key = pred;
 				if (predicate.isPredColumnPresent()) {
 					key = OTHER_PRED;
 					table = tables.get(key);
@@ -270,7 +270,7 @@ public class TransTableManager {
 		return sb.toString();
 	}
 
-	private TransactionTable findTable(Long pred) {
+	private TransactionTable findTable(Number pred) {
 		synchronized (tables) {
 			return tables.get(pred);
 		}

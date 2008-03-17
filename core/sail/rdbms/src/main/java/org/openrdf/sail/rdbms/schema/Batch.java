@@ -62,12 +62,6 @@ public class Batch {
 		return true;
 	}
 
-	public void setLong(int parameterIndex, long x)
-		throws SQLException
-	{
-		insertBatch.setLong(parameterIndex, x);
-	}
-
 	public void setObject(int parameterIndex, Object x)
 		throws SQLException
 	{

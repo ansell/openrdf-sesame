@@ -19,10 +19,10 @@ import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
  */
 public class JoinItem extends FromItem {
 	private String tableName;
-	private long predId;
+	private Number predId;
 	private List<ColumnVar> vars = new ArrayList<ColumnVar>();
 
-	public JoinItem(String alias, String tableName, long predId) {
+	public JoinItem(String alias, String tableName, Number predId) {
 		super(alias);
 		this.tableName = tableName;
 		this.predId = predId;
@@ -38,7 +38,7 @@ public class JoinItem extends FromItem {
 		return tableName;
 	}
 
-	public long getPredId() {
+	public Number getPredId() {
 		return predId;
 	}
 

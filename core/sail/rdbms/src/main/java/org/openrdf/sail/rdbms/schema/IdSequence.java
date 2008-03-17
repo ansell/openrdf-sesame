@@ -82,61 +82,61 @@ public class IdSequence {
 		}
 		if (table != null) {
 			seq = new ConcurrentHashMap<ValueType, AtomicLong>();
-			for (long max : table.maxIds(getShift(), getMod())) {
+			for (Number max : table.maxIds(getShift(), getMod())) {
 				ValueType code = valueOf(max);
-				if (max > minId(code)) {
-					seq.put(code, new AtomicLong(max));
+				if (max.longValue() > minId(code).longValue()) {
+					seq.put(code, new AtomicLong(max.longValue()));
 				}
 			}
 		}
 	}
 
-	public double code(Literal value) {
-		return (int)(minId(valueOf(value)) >>> SHIFT);
+	public int code(Literal value) {
+		return (int)(minId(valueOf(value)).longValue() >>> SHIFT);
 	}
 
 	public long hashOf(Value value) {
 		MessageDigest digest = md5.get();
 		long type = hashLiteralType(digest, value);
 		long hash = type * 31 + hash(digest, value.stringValue());
-		return hash & SPAN | minId(valueOf(value));
+		return hash & SPAN | minId(valueOf(value)).longValue();
 	}
 
-	public boolean isLiteral(long id) {
+	public boolean isLiteral(Number id) {
 		return valueOf(id).isLiteral();
 	}
 
-	public boolean isLong(long id) {
+	public boolean isLong(Number id) {
 		return valueOf(id).isLong();
 	}
 
-	public boolean isURI(long id) {
+	public boolean isURI(Number id) {
 		return valueOf(id).isURI();
 	}
 
-	public long maxId(ValueType type) {
-		return minId(type) + SPAN;
+	public Number maxId(ValueType type) {
+		return minId(type).longValue() + SPAN;
 	}
 
-	public long minId(ValueType type) {
+	public Number minId(ValueType type) {
 		return minIds[type.index()];
 	}
 
-	public long idOf(RdbmsValue value) {
+	public Number idOf(RdbmsValue value) {
 		assert seq == null;
 		return hashOf(value);
 	}
 
-	public long nextId(RdbmsValue value) {
+	public Number nextId(RdbmsValue value) {
 		ValueType code = valueOf(value);
 		if (!seq.containsKey(code)) {
-			seq.putIfAbsent(code, new AtomicLong(minId(code)));
+			seq.putIfAbsent(code, new AtomicLong(minId(code).longValue()));
 		}
 		return seq.get(code).incrementAndGet();
 	}
 
-	public ValueType valueOf(long id) {
-		int idx = (int)(id >>> SHIFT);
+	public ValueType valueOf(Number id) {
+		int idx = (int)(id.longValue() >>> SHIFT);
 		ValueType[] values = ValueType.values();
 		if (idx < 0 || idx >= values.length)
 			throw new IllegalArgumentException("Invalid ID " + id);

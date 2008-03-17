@@ -62,7 +62,7 @@ public class BNodeManager extends ValueManagerBase<RdbmsBNode> {
 	}
 
 	@Override
-	protected void insert(long id, RdbmsBNode resource) throws SQLException, InterruptedException {
+	protected void insert(Number id, RdbmsBNode resource) throws SQLException, InterruptedException {
 		table.insert(id, resource.stringValue());
 	}
 

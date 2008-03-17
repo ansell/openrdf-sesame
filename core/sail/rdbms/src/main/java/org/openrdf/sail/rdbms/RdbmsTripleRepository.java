@@ -256,14 +256,14 @@ public class RdbmsTripleRepository {
 		RdbmsResource[] c = vf.asRdbmsResource(ctxs);
 		flush();
 		try {
-			Collection<Long> predicates;
+			Collection<Number> predicates;
 			if (p == null) {
 				predicates = statements.getPredicateIds();
 			} else {
 				predicates = Collections.singleton(vf.getInternalId(p));
 			}
 			int total = 0;
-			for (Long id : predicates) {
+			for (Number id : predicates) {
 				String tableName = statements.findTableName(id);
 				if (!statements.isPredColumnPresent(id)) {
 					p = null;
@@ -403,25 +403,25 @@ public class RdbmsTripleRepository {
 		join.leftjoin(literals.getLanguageTable().getName(), "og").on("id", "t.obj");
 		join.leftjoin(literals.getDatatypeTable().getName(), "od").on("id", "t.obj");
 		if (ctxs != null && ctxs.length > 0) {
-			Long[] ids = new Long[ctxs.length];
+			Number[] ids = new Long[ctxs.length];
 			for (int i = 0; i < ids.length; i++) {
 				ids[i] = vf.getInternalId(ctxs[i]);
 			}
 			query.filter().and().columnIn("t", "ctx", ids);
 		}
 		if (subj != null) {
-			long id = vf.getInternalId(subj);
+			Number id = vf.getInternalId(subj);
 			query.filter().and().columnEquals("t", "subj", id);
 		}
 		if (pred != null) {
-			long id = vf.getInternalId(pred);
+			Number id = vf.getInternalId(pred);
 			query.filter().and().columnEquals("pu", "id", id);
 			if (statements.isPredColumnPresent(id)) {
 				query.filter().and().columnEquals("t", "pred", id);
 			}
 		}
 		if (obj != null) {
-			long id = vf.getInternalId(obj);
+			Number id = vf.getInternalId(obj);
 			query.filter().and().columnEquals("t", "obj", id);
 		}
 		return query;
@@ -455,10 +455,10 @@ public class RdbmsTripleRepository {
 	private void insert(RdbmsStatement st)
 		throws RdbmsException, SQLException, InterruptedException
 	{
-		long ctx = vf.getInternalId(st.getContext());
-		long subj = vf.getInternalId(st.getSubject());
-		long pred = vf.getPredicateId(st.getPredicate());
-		long obj = vf.getInternalId(st.getObject());
+		Number ctx = vf.getInternalId(st.getContext());
+		Number subj = vf.getInternalId(st.getSubject());
+		Number pred = vf.getPredicateId(st.getPredicate());
+		Number obj = vf.getInternalId(st.getObject());
 		manager.insert(ctx, subj, pred, obj);
 	}
 
@@ -466,7 +466,7 @@ public class RdbmsTripleRepository {
 			throws SQLException, RdbmsException {
 		if (ctxs != null && ctxs.length > 0) {
 			for (int i = 0; i < ctxs.length; i++) {
-				stmt.setLong(i + 1, vf.getInternalId(ctxs[i]));
+				stmt.setObject(i + 1, vf.getInternalId(ctxs[i]));
 			}
 		}
 	}
@@ -480,18 +480,18 @@ public class RdbmsTripleRepository {
 				if (ctxs[i] == null) {
 					stmt.setLong(++p, ValueTable.NIL_ID);
 				} else {
-					stmt.setLong(++p, vf.getInternalId(ctxs[i]));
+					stmt.setObject(++p, vf.getInternalId(ctxs[i]));
 				}
 			}
 		}
 		if (subj != null) {
-			stmt.setLong(++p, vf.getInternalId(subj));
+			stmt.setObject(++p, vf.getInternalId(subj));
 		}
 		if (pred != null) {
-			stmt.setLong(++p, vf.getInternalId(pred));
+			stmt.setObject(++p, vf.getInternalId(pred));
 		}
 		if (obj != null) {
-			stmt.setLong(++p, vf.getInternalId(obj));
+			stmt.setObject(++p, vf.getInternalId(obj));
 		}
 	}
 
