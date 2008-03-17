@@ -1,13 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-http</artifactId>
-		<version>2.0.1-SNAPSHOT</version>
+		<version>2.0.1</version>
 	</parent>
 
 	<artifactId>openrdf-http-webclient</artifactId>
@@ -56,7 +54,7 @@
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-http-webclient-spring</artifactId>
-			<version>2.0.1-SNAPSHOT</version>
+			<version>2.0.1</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -83,9 +81,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-http/${artifactId}</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-http/${artifactId}</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.0/core/openrdf-http/${artifactId}</url>
+		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core/openrdf-http/openrdf-http-webclient</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core/openrdf-http/openrdf-http-webclient</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.0.1/core/openrdf-http/openrdf-http-webclient</url>
 	</scm>
 
 </project>

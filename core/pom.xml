@@ -1,17 +1,15 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-sesame-root</artifactId>
-		<version>2.0.1-SNAPSHOT</version>
+		<version>2.0.1</version>
 	</parent>
 
 	<artifactId>openrdf-sesame</artifactId>
-	<version>2.0.1-SNAPSHOT</version>
+	<version>2.0.1</version>
 	<packaging>pom</packaging>
 	<name>OpenRDF Sesame</name>
 	<description>An extensible framework for RDF and RDF Schema data.</description>
@@ -70,10 +68,10 @@
 						<configuration>
 							<tasks>
 								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
-									<target name="userdoc"/>
+									<target name="userdoc" />
 								</ant>
 								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
-									<target name="systemdoc"/>
+									<target name="systemdoc" />
 								</ant>
 							</tasks>
 						</configuration>
@@ -146,9 +144,9 @@
 	</reporting>
 
 	<scm>
-		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.0/core</url>
+		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.0.1/core</url>
 	</scm>
 
 </project>
