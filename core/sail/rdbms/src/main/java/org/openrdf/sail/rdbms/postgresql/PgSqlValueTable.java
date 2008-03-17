@@ -28,8 +28,8 @@ public class PgSqlValueTable extends ValueTable {
 		RdbmsTable tmp = getTemporaryTable();
 		StringBuilder sb = new StringBuilder();
 		sb.append("PREPARE ").append(tmp.getName());
-		sb.append("_insert (bigint, ");
-		sb.append(getDeclaredSqlType(getSqlType(), getLength())
+		sb.append("_insert (").append(sql(getIdType(), -1)).append(", ");
+		sb.append(sql(getSqlType(), getLength())
 				.replaceAll("\\(.*\\)", ""));
 		sb.append(") AS\n");
 		sb.append("INSERT INTO ").append(tmp.getName());
@@ -78,12 +78,12 @@ public class PgSqlValueTable extends ValueTable {
 	}
 
 	@Override
-	protected String getDeclaredSqlType(int type, int length) {
+	protected String sql(int type, int length) {
 		switch (type) {
 		case Types.DOUBLE:
 			return "double precision";
 		default:
-			return super.getDeclaredSqlType(type, length);
+			return super.sql(type, length);
 		}
 	}
 

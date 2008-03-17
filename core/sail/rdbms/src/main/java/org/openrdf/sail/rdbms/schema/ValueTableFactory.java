@@ -118,6 +118,7 @@ public class ValueTableFactory {
 	{
 		table.setQueue(queue);
 		table.setSqlType(sqlType);
+		table.setIdType(ids.getJdbcIdType());
 		table.setLength(length);
 		table.setIndexingValues(indexValues);
 		table.initialize();

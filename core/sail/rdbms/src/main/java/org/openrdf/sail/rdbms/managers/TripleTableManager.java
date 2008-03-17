@@ -244,13 +244,14 @@ public class TripleTableManager {
 		Set<String> names = findPredicateTableNames();
 		for (String tableName : names) {
 			TripleTable table = factory.createTripleTable(conn, tableName);
+			table.setIdSequence(ids);
 			if (tableName.equalsIgnoreCase(OTHER_TRIPLES_TABLE)) {
 				table.setPredColumnPresent(true);
 			}
 			if (indexingTriples && !table.isIndexed()) {
 				table.createIndex();
 			}
-			table.reload(ids);
+			table.reload();
 			tables.put(key(tableName), table);
 		}
 		return tables;

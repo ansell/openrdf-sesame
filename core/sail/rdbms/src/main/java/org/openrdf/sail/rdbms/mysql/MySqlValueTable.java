@@ -18,8 +18,8 @@ public class MySqlValueTable extends ValueTable {
 	private static final String FEILD_COLLATE = " CHARACTER SET utf8 COLLATE utf8_bin";
 
 	@Override
-	protected String getDeclaredSqlType(int type, int length) {
-		String declare = super.getDeclaredSqlType(type, length);
+	protected String sql(int type, int length) {
+		String declare = super.sql(type, length);
 		if (type == Types.VARCHAR) {
 			return declare + FEILD_COLLATE;
 		} else if (type == Types.LONGVARCHAR) {

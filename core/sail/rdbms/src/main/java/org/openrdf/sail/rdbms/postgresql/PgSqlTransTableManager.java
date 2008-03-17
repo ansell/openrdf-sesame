@@ -8,11 +8,19 @@ package org.openrdf.sail.rdbms.postgresql;
 import java.sql.SQLException;
 
 import org.openrdf.sail.rdbms.managers.TransTableManager;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.RdbmsTable;
 import org.openrdf.sail.rdbms.schema.TransactionTable;
 
 public class PgSqlTransTableManager extends TransTableManager {
 	private RdbmsTable table;
+	private IdSequence ids;
+
+	@Override
+	public void setIdSequence(IdSequence ids) {
+		super.setIdSequence(ids);
+		this.ids = ids;
+	}
 
 	@Override
 	public void close() throws SQLException {
@@ -36,7 +44,11 @@ public class PgSqlTransTableManager extends TransTableManager {
 		super.createTemporaryTable(table);
 		StringBuilder sb = new StringBuilder();
 		sb.append("PREPARE ").append(table.getName());
-		sb.append("_insert (bigint, bigint, bigint, bigint) AS\n");
+		sb.append("_insert (");
+		sb.append(ids.getSqlType()).append(", ");
+		sb.append(ids.getSqlType()).append(", ");
+		sb.append(ids.getSqlType()).append(", ");
+		sb.append(ids.getSqlType()).append(") AS\n");
 		sb.append("INSERT INTO ").append(table.getName());
 		sb.append(" VALUES ($1, $2, $3, $4)");
 		table.execute(sb.toString());
