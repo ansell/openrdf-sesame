@@ -123,13 +123,13 @@
 
 	<distributionManagement>
 		<repository>
-			<id>aduna-releases-repository</id>
+			<id>aduna-repo</id>
 			<name>Aduna Repository</name>
 			<url>scp://repository.aduna-software.org:2222/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
 			<uniqueVersion>false</uniqueVersion>
 		</repository>
 		<snapshotRepository>
-			<id>aduna-snapshots-repository</id>
+			<id>aduna-snapshot-repo</id>
 			<name>Aduna Snapshot Repository</name>
 			<url>scp://repository.aduna-software.org:2222/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2-snapshots</url>
 			<uniqueVersion>false</uniqueVersion>
@@ -141,13 +141,13 @@
 			<id>continuous-integration</id>
 			<distributionManagement>
 				<repository>
-					<id>aduna-releases-repository</id>
+					<id>aduna-repo</id>
 					<name>Aduna Repository</name>
 					<url>file:/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2</url>
 					<uniqueVersion>false</uniqueVersion>
 				</repository>
 				<snapshotRepository>
-					<id>aduna-snapshots-repository</id>
+					<id>aduna-snapshot-repo</id>
 					<name>Aduna Snapshot Repository</name>
 					<url>file:/home/aduna/hosts/repository.aduna-software.org/htdocs/maven2-snapshots</url>
 					<uniqueVersion>false</uniqueVersion>
