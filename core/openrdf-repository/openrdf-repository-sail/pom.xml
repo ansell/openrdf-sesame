@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-repository</artifactId>
-		<version>2.0.1</version>
+		<version>2.0.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>openrdf-repository-sail</artifactId>
@@ -32,43 +32,43 @@
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-repository-api</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-sail-api</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryparser-api</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryalgebra-model</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-query</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-rio-api</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-model</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -85,9 +85,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core/openrdf-repository/openrdf-repository-sail</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core/openrdf-repository/openrdf-repository-sail</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.0.1/core/openrdf-repository/openrdf-repository-sail</url>
+		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-repository/openrdf-repository-sail</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-repository/openrdf-repository-sail</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.0/core/openrdf-repository/openrdf-repository-sail</url>
 	</scm>
 
 </project>

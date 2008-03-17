@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-http</artifactId>
-		<version>2.0.1</version>
+		<version>2.0.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>openrdf-http-webclient-spring</artifactId>
@@ -38,25 +38,25 @@
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-runtime</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-http-client</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-repository-http</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryparser-api</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -156,9 +156,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core/openrdf-http/openrdf-http-webclient-spring</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core/openrdf-http/openrdf-http-webclient-spring</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.0.1/core/openrdf-http/openrdf-http-webclient-spring</url>
+		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-http/openrdf-http-webclient-spring</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-http/openrdf-http-webclient-spring</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.0/core/openrdf-http/openrdf-http-webclient-spring</url>
 	</scm>
 
 </project>

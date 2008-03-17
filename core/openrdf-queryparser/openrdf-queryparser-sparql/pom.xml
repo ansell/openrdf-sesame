@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-queryparser</artifactId>
-		<version>2.0.1</version>
+		<version>2.0.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>openrdf-queryparser-sparql</artifactId>
@@ -32,25 +32,25 @@
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryparser-api</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-query</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-queryalgebra-model</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-model</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -67,9 +67,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core/openrdf-queryparser/openrdf-queryparser-sparql</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core/openrdf-queryparser/openrdf-queryparser-sparql</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.0.1/core/openrdf-queryparser/openrdf-queryparser-sparql</url>
+		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-queryparser/openrdf-queryparser-sparql</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-queryparser/openrdf-queryparser-sparql</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.0/core/openrdf-queryparser/openrdf-queryparser-sparql</url>
 	</scm>
 
 </project>

@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-http</artifactId>
-		<version>2.0.1</version>
+		<version>2.0.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>openrdf-http-server</artifactId>
@@ -40,7 +40,7 @@
 		<dependency>
 			<groupId>org.openrdf</groupId>
 			<artifactId>openrdf-http-server-spring</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2-SNAPSHOT</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -74,9 +74,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core/openrdf-http/openrdf-http-server</developerConnection>
-		<url>https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.0.1/core/openrdf-http/openrdf-http-server</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-http/openrdf-http-server</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-http/openrdf-http-server</developerConnection>
+		<url>https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-http/openrdf-http-server</url>
 	</scm>
 
 </project>
