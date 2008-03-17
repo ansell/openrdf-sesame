@@ -18,6 +18,7 @@ import org.openrdf.sail.rdbms.algebra.factories.TimeExprFactory;
 import org.openrdf.sail.rdbms.algebra.factories.URIExprFactory;
 import org.openrdf.sail.rdbms.algebra.factories.ZonedExprFactory;
 import org.openrdf.sail.rdbms.managers.TransTableManager;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 
 /**
  * Initialises the {@link SelectQueryOptimizer} with the SQL expression
@@ -29,6 +30,7 @@ import org.openrdf.sail.rdbms.managers.TransTableManager;
 public class SelectQueryOptimizerFactory {
 	private RdbmsValueFactory vf;
 	private TransTableManager tables;
+	private IdSequence ids;
 
 	public void setValueFactory(RdbmsValueFactory vf) {
 		this.vf = vf;
@@ -36,6 +38,10 @@ public class SelectQueryOptimizerFactory {
 
 	public void setTransTableManager(TransTableManager tables) {
 		this.tables = tables;
+	}
+
+	public void setIdSequence(IdSequence ids) {
+		this.ids = ids;
 	}
 
 	public SelectQueryOptimizer createRdbmsFilterOptimizer() {
@@ -52,8 +58,8 @@ public class SelectQueryOptimizerFactory {
 		sql.setLanguageExprFactory(language);
 		sql.setNumericExprFactory(new NumericExprFactory());
 		sql.setTimeExprFactory(new TimeExprFactory());
-		sql.setZonedExprFactory(new ZonedExprFactory());
-		sql.setHashExprFactory(new HashExprFactory());
+		sql.setZonedExprFactory(new ZonedExprFactory(ids));
+		sql.setHashExprFactory(new HashExprFactory(ids));
 		sql.setURIExprFactory(uri);
 		label.setSqlExprFactory(sql);
 		uri.setSqlExprFactory(sql);
@@ -62,6 +68,7 @@ public class SelectQueryOptimizerFactory {
 		optimizer.setSqlExprFactory(sql);
 		optimizer.setValueFactory(vf);
 		optimizer.setTransTableManager(tables);
+		optimizer.setIdSequence(ids);
 		return optimizer;
 	}
 

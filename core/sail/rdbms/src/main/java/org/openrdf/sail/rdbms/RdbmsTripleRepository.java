@@ -37,6 +37,7 @@ import org.openrdf.sail.rdbms.model.RdbmsStatement;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.URITable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
@@ -61,7 +62,8 @@ public class RdbmsTripleRepository {
 	private Lock readLock;
 	private DefaultSailChangedEvent sailChangedEvent;
 	private TripleManager manager;
-	private LinkedList<RdbmsStatement> queue = new LinkedList<RdbmsStatement>(); 
+	private LinkedList<RdbmsStatement> queue = new LinkedList<RdbmsStatement>();
+	private IdSequence ids; 
 
 	public Connection getConnection() {
 		return conn;
@@ -69,6 +71,10 @@ public class RdbmsTripleRepository {
 
 	public void setConnection(Connection conn) {
 		this.conn = conn;
+	}
+
+	public void setIdSequence(IdSequence ids) {
+		this.ids = ids;
 	}
 
 	public RdbmsValueFactory getValueFactory() {
@@ -212,7 +218,7 @@ public class RdbmsTripleRepository {
 				for (int i = 0, n = parameters.size(); i < n; i++) {
 					stmt.setObject(i + 1, parameters.get(i));
 				}
-				return new RdbmsStatementIteration(vf, stmt);
+				return new RdbmsStatementIteration(vf, stmt, ids);
 			} catch (SQLException e) {
 				stmt.close();
 				throw e;

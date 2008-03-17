@@ -30,6 +30,8 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.RdbmsQueryEvaluationException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 import org.openrdf.sail.rdbms.iteration.RdbmsBindingIteration;
+import org.openrdf.sail.rdbms.schema.IdSequence;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +47,15 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 	private QueryBuilderFactory factory;
 	private RdbmsValueFactory vf;
 	private RdbmsTripleRepository triples;
+	private IdSequence ids;
 
 	public RdbmsEvaluation(QueryBuilderFactory factory,
-			RdbmsTripleRepository triples, Dataset dataset) {
+			RdbmsTripleRepository triples, Dataset dataset, IdSequence ids) {
 		super(new RdbmsTripleSource(triples), dataset);
 		this.factory = factory;
 		this.triples = triples;
 		this.vf = triples.getValueFactory();
+		this.ids = ids;
 	}
 
 	@Override
@@ -83,6 +87,7 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 				result.setProjections(proj);
 				result.setBindings(bindings);
 				result.setValueFactory(vf);
+				result.setIdSequence(ids);
 				return result;
 			} catch (SQLException e) {
 				throw new RdbmsQueryEvaluationException(e.toString() + "\n"

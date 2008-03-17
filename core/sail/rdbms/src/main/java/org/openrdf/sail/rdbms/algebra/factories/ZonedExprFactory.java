@@ -6,7 +6,6 @@
 package org.openrdf.sail.rdbms.algebra.factories;
 
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.num;
-import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.shift;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.sqlNull;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
@@ -23,9 +22,10 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
+import org.openrdf.sail.rdbms.algebra.SqlShift;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
-import org.openrdf.sail.rdbms.schema.IdCode;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 
 /**
  * Creates a binary SQL expression for a dateTime zoned value.
@@ -36,6 +36,12 @@ import org.openrdf.sail.rdbms.schema.IdCode;
 public class ZonedExprFactory extends
 		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 	protected SqlExpr result;
+	private IdSequence ids;
+
+	public ZonedExprFactory(IdSequence ids) {
+		super();
+		this.ids = ids;
+	}
 
 	public SqlExpr createZonedExpr(ValueExpr expr)
 			throws UnsupportedRdbmsOperatorException {
@@ -76,7 +82,7 @@ public class ZonedExprFactory extends
 	@Override
 	public void meet(Var node) {
 		if (node.getValue() == null) {
-			result = shift(new RefIdColumn(node));
+			result = new SqlShift(new RefIdColumn(node), ids.getShift(), ids.getMod());
 		} else {
 			result = valueOf(node.getValue());
 		}
@@ -90,7 +96,7 @@ public class ZonedExprFactory extends
 
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
-			return num(IdCode.valueOf((Literal) value).code());
+			return num(ids.code((Literal) value));
 		}
 		return null;
 	}

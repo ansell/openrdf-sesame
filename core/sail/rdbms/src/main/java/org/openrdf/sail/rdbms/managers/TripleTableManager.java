@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.TripleTable;
 import org.openrdf.sail.rdbms.schema.ValueTableFactory;
 
@@ -54,6 +55,7 @@ public class TripleTableManager {
 	private HashManager hashes;
 	private int maxTables = MAX_TABLES;
 	private boolean indexingTriples = INDEX_TRIPLES;
+	private IdSequence ids;
 	Exception exc;
 
 	public TripleTableManager(ValueTableFactory factory) {
@@ -62,6 +64,10 @@ public class TripleTableManager {
 
 	public void setConnection(Connection conn) {
 		this.conn = conn;
+	}
+
+	public void setIdSequence(IdSequence ids) {
+		this.ids = ids;
 	}
 
 	public void setPredicateManager(PredicateManager predicates) {
@@ -244,7 +250,7 @@ public class TripleTableManager {
 			if (indexingTriples && !table.isIndexed()) {
 				table.createIndex();
 			}
-			table.reload();
+			table.reload(ids);
 			tables.put(key(tableName), table);
 		}
 		return tables;

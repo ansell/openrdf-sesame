@@ -5,6 +5,7 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
+
 /**
  * A bit array of the possible value types that have been stored in an object
  * column.
@@ -87,7 +88,7 @@ public class ValueTypes implements Cloneable {
 		longValues = false;
 	}
 
-	public void add(IdCode code) {
+	public void add(ValueType code) {
 		bnodes |= code.isBNode();
 		uris |= code.isURI();
 		literals |= code.isLiteral();

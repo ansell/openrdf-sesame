@@ -9,6 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -186,30 +188,27 @@ public class ValueTable {
 		return false;
 	}
 
-	public long[] maxIds() throws SQLException {
+	public List<Long> maxIds(int shift, int mod) throws SQLException {
 		String column = "id";
-		StringBuilder shift = new StringBuilder();
-		shift.append("MOD((").append(column);
-		shift.append(" >> ").append(IdCode.SHIFT);
-		shift.append(") + ").append(IdCode.MOD).append(", ");
-		shift.append(IdCode.MOD);
-		shift.append(")");
+		StringBuilder expr = new StringBuilder();
+		expr.append("MOD((").append(column);
+		expr.append(" >> ").append(shift);
+		expr.append(") + ").append(mod).append(", ");
+		expr.append(mod);
+		expr.append(")");
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT ").append(shift);
+		sb.append("SELECT ").append(expr);
 		sb.append(", MAX(").append(column);
-		sb.append("), COUNT(*)\n");
-		sb.append("FROM ").append(getName());
-		sb.append("\nGROUP BY ").append(shift);
+		sb.append(")\nFROM ").append(getName());
+		sb.append("\nGROUP BY ").append(expr);
 		String query = sb.toString();
 		PreparedStatement st = table.prepareStatement(query);
 		try {
 			ResultSet rs = st.executeQuery();
 			try {
-				long[] result = new long[IdCode.values().length];
+				List<Long> result = new ArrayList<Long>();
 				while (rs.next()) {
-					int idx = rs.getInt(1);
-					result[idx] = rs.getLong(2);
-					assert IdCode.valueOf(result[idx]).equals(IdCode.values()[idx]);
+					result.add(rs.getLong(2));
 				}
 				return result;
 			} finally {

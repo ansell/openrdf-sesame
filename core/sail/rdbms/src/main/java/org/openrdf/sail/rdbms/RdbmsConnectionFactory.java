@@ -32,11 +32,12 @@ import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 import org.openrdf.sail.rdbms.optimizers.SelectQueryOptimizerFactory;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.HashTable;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
-import org.openrdf.sail.rdbms.schema.ValueTableFactory;
 import org.openrdf.sail.rdbms.schema.TableFactory;
 import org.openrdf.sail.rdbms.schema.URITable;
+import org.openrdf.sail.rdbms.schema.ValueTableFactory;
 
 /**
  * Responsible to initialise and wire all components together that will be
@@ -70,6 +71,7 @@ public class RdbmsConnectionFactory {
 	private URITable uriTable;
 	private BNodeTable bnodeTable;
 	private LiteralTable literalTable;
+	private IdSequence ids;
 
 	public void setSail(RdbmsStore sail) {
 		this.sail = sail;
@@ -140,7 +142,9 @@ public class RdbmsConnectionFactory {
 			nsAndTableIndexes.setAutoCommit(true);
 			resourceInserts.setAutoCommit(true);
 			literalInserts.setAutoCommit(true);
+			ids = new IdSequence();
 			ValueTableFactory tables = createValueTableFactory();
+			tables.setIdSequence(ids);
 			bnodeManager = new BNodeManager();
 			uriManager = new UriManager();
 			literalManager = new LiteralManager();
@@ -151,13 +155,16 @@ public class RdbmsConnectionFactory {
 				hashLookups.setAutoCommit(true);
 				hashManager = new HashManager();
 				hashTable = tables.createHashTable(hashInserts, hashManager.getQueue());
+				ids.setHashTable(hashTable);
 				hashManager.setHashTable(hashTable);
 				hashManager.setConnection(hashLookups);
 				hashManager.setBNodeManager(bnodeManager);
 				hashManager.setLiteralManager(literalManager);
 				hashManager.setUriManager(uriManager);
+				hashManager.setIdSequence(ids);
 				hashManager.init();
 			}
+			ids.init();
 			namespaces = new NamespaceManager();
 			namespaces.setConnection(resourceInserts);
 			NamespacesTable nsTable = tables.createNamespacesTable(nsAndTableIndexes);
@@ -165,19 +172,25 @@ public class RdbmsConnectionFactory {
 			namespaces.setNamespacesTable(nsTable);
 			namespaces.initialize();
 			bnodeManager.setHashManager(hashManager);
+			bnodeManager.setIdSequence(ids);
 			uriManager.setHashManager(hashManager);
+			uriManager.setIdSequence(ids);
 			bnodeTable = tables.createBNodeTable(resourceInserts, bnodeManager.getQueue());
 			uriTable = tables.createURITable(resourceInserts, uriManager.getQueue());
 			literalManager.setHashManager(hashManager);
+			literalManager.setIdSequence(ids);
 			literalTable = tables.createLiteralTable(literalInserts, literalManager.getQueue());
+			literalTable.setIdSequence(ids);
 			vf = new RdbmsValueFactory();
 			vf.setDelegate(ValueFactoryImpl.getInstance());
+			vf.setIdSequence(ids);
 			uriManager.setUriTable(uriTable);
 			uriManager.init();
 			predicateManager = new PredicateManager();
 			predicateManager.setUriManager(uriManager);
 			tripleTableManager = new TripleTableManager(tables);
 			tripleTableManager.setConnection(nsAndTableIndexes);
+			tripleTableManager.setIdSequence(ids);
 			tripleTableManager.setBNodeManager(bnodeManager);
 			tripleTableManager.setUriManager(uriManager);
 			tripleTableManager.setLiteralManager(literalManager);
@@ -228,10 +241,12 @@ public class RdbmsConnectionFactory {
 			s.setBNodeTable(bnodeTable);
 			s.setURITable(uriTable);
 			s.setLiteralTable(literalTable);
+			s.setIdSequence(ids);
 			DefaultSailChangedEvent sailChangedEvent = new DefaultSailChangedEvent(sail);
 			s.setSailChangedEvent(sailChangedEvent);
 			TableFactory tables = createTableFactory();
 			TransTableManager trans = createTransTableManager();
+			trans.setIdSequence(ids);
 			tripleManager.setTransTableManager(trans);
 			trans.setBatchQueue(tripleManager.getQueue());
 			trans.setSailChangedEvent(sailChangedEvent);
@@ -250,11 +265,13 @@ public class RdbmsConnectionFactory {
 			RdbmsEvaluationFactory efactory = new RdbmsEvaluationFactory();
 			efactory.setQueryBuilderFactory(bfactory);
 			efactory.setRdbmsTripleRepository(s);
+			efactory.setIdSequence(ids);
 			conn.setRdbmsEvaluationFactory(efactory);
 			RdbmsQueryOptimizer optimizer = createOptimizer();
 			SelectQueryOptimizerFactory selectOptimizerFactory = createSelectQueryOptimizerFactory();
 			selectOptimizerFactory.setTransTableManager(trans);
 			selectOptimizerFactory.setValueFactory(vf);
+			selectOptimizerFactory.setIdSequence(ids);
 			optimizer.setSelectQueryOptimizerFactory(selectOptimizerFactory);
 			optimizer.setValueFactory(vf);
 			optimizer.setBnodeTable(bnodeTable);

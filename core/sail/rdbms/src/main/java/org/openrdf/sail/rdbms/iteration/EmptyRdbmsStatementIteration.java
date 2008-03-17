@@ -18,7 +18,7 @@ import org.openrdf.sail.SailException;
 public class EmptyRdbmsStatementIteration extends RdbmsStatementIteration {
 
 	public EmptyRdbmsStatementIteration() throws SQLException {
-		super(null, null);
+		super(null, null, null);
 	}
 
 	@Override

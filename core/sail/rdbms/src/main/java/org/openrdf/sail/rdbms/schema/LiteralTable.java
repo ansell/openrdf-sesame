@@ -24,6 +24,11 @@ public class LiteralTable {
 	private ValueTable numeric;
 	private ValueTable dateTime;
 	private int version;
+	private IdSequence ids;
+
+	public void setIdSequence(IdSequence ids) {
+		this.ids = ids;
+	}
 
 	public ValueTable getLabelTable() {
 		return labels;
@@ -91,7 +96,7 @@ public class LiteralTable {
 	}
 
 	public void insertSimple(long id, String label) throws SQLException, InterruptedException {
-		if (IdCode.valueOf(id).isLong()) {
+		if (ids.isLong(id)) {
 			longLabels.insert(id, label);
 		} else {
 			labels.insert(id, label);

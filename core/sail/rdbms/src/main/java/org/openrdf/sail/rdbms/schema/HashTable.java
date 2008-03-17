@@ -10,10 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -24,7 +22,6 @@ public class HashTable {
 	private static final int CHUNK_SIZE = 15;
 	private ValueTable table;
 	private String select;
-	private ConcurrentMap<IdCode, AtomicLong> seq = new ConcurrentHashMap<IdCode, AtomicLong>();
 
 	public HashTable(ValueTable table) {
 		super();
@@ -52,12 +49,6 @@ public class HashTable {
 		}
 		sb.setCharAt(sb.length() - 1, ')');
 		select = sb.toString();
-		for (long max : table.maxIds()) {
-			IdCode code = IdCode.valueOf(max);
-			if (max > code.minId()) {
-				seq.put(code, new AtomicLong(max));
-			}
-		}
 	}
 
 	public void close()
@@ -66,11 +57,10 @@ public class HashTable {
 		table.close();
 	}
 
-	public long nextId(IdCode code) {
-		if (!seq.containsKey(code)) {
-			seq.putIfAbsent(code, new AtomicLong(code.minId()));
-		}
-		return seq.get(code).incrementAndGet();
+	public List<Long> maxIds(int shift, int mod)
+		throws SQLException
+	{
+		return table.maxIds(shift, mod);
 	}
 
 	public void insert(long id, long hash)

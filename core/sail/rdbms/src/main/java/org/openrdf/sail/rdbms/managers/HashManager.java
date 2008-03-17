@@ -6,8 +6,6 @@
 package org.openrdf.sail.rdbms.managers;
 
 
-import static org.openrdf.sail.rdbms.algebra.factories.HashExprFactory.hashOf;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,7 +28,7 @@ import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.Batch;
 import org.openrdf.sail.rdbms.schema.HashBatch;
 import org.openrdf.sail.rdbms.schema.HashTable;
-import org.openrdf.sail.rdbms.schema.IdCode;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 
 /**
  * 
@@ -49,13 +47,14 @@ public class HashManager extends ManagerBase {
 	private Thread lookupThread;
 	private Object working = new Object();
 	private BlockingQueue<RdbmsValue> queue;
+	private IdSequence idseq; 
 	Exception exc;
 	RdbmsValue closeSignal = new RdbmsValue() {
 		private static final long serialVersionUID = -2211413309013905712L;
 
 		public String stringValue() {
 			return null;
-		}}; 
+		}};
 
 	public HashManager() {
 		instance = this;
@@ -80,6 +79,10 @@ public class HashManager extends ManagerBase {
 
 	public void setUriManager(UriManager uriTable) {
 		this.uris = uriTable;
+	}
+
+	public void setIdSequence(IdSequence idseq) {
+		this.idseq = idseq;
 	}
 
 	public void init() {
@@ -222,7 +225,7 @@ public class HashManager extends ManagerBase {
 		}
 		Map<Long, Long> existing = lookup(values, map);
 		for (RdbmsValue value : values) {
-			Long hash = hashOf(value);
+			Long hash = idseq.hashOf(value);
 			if (existing.get(hash) != null) {
 				// already in database
 				value.setInternalId(existing.get(hash));
@@ -254,13 +257,13 @@ public class HashManager extends ManagerBase {
 		assert values.size() <= getChunkSize();
 		map.clear();
 		for (RdbmsValue value : values) {
-			map.put(hashOf(value), null);
+			map.put(idseq.hashOf(value), null);
 		}
 		return table.load(conn, map);
 	}
 
 	private Long nextId(RdbmsValue value) {
-		return table.nextId(IdCode.valueOf(value));
+		return idseq.nextId(value);
 	}
 
 	private Integer getIdVersion(RdbmsValue value) {
