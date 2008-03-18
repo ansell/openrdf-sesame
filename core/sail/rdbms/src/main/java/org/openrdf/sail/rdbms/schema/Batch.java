@@ -96,10 +96,6 @@ public class Batch {
 		finally {
 			insertBatch.close();
 			insertBatch = null;
-			if (insertSelect != null) {
-				insertSelect.close();
-				insertSelect = null;
-			}
 		}
 	}
 

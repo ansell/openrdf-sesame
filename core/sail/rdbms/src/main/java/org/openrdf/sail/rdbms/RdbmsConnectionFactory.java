@@ -55,7 +55,6 @@ public class RdbmsConnectionFactory {
 	private String password;
 	private Connection resourceInserts;
 	private Connection literalInserts;
-	private Connection hashInserts;
 	private Connection hashLookups;
 	private Connection nsAndTableIndexes;
 	private NamespaceManager namespaces;
@@ -152,16 +151,13 @@ public class RdbmsConnectionFactory {
 			if (sequenced) {
 				ids = new IntegerIdSequence();
 				tables.setIdSequence(ids);
-				hashInserts = getConnection();
 				hashLookups = getConnection();
-				hashInserts.setAutoCommit(true);
 				hashLookups.setAutoCommit(true);
 				hashManager = new HashManager();
-				hashTable = tables.createHashTable(hashInserts, hashManager.getQueue());
+				hashTable = tables.createHashTable(hashLookups, hashManager.getQueue());
 				ids.setHashTable(hashTable);
 				ids.init();
 				hashManager.setHashTable(hashTable);
-				hashManager.setConnection(hashLookups);
 				hashManager.setBNodeManager(bnodeManager);
 				hashManager.setLiteralManager(literalManager);
 				hashManager.setUriManager(uriManager);
@@ -316,10 +312,6 @@ public class RdbmsConnectionFactory {
 			if (literalInserts != null) {
 				literalInserts.close();
 				literalInserts = null;
-			}
-			if (hashInserts != null) {
-				hashInserts.close();
-				hashInserts = null;
 			}
 			if (hashLookups != null) {
 				hashLookups.close();

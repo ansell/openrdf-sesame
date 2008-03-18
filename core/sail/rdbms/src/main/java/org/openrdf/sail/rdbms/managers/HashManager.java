@@ -6,7 +6,6 @@
 package org.openrdf.sail.rdbms.managers;
 
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,7 +37,6 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
 public class HashManager extends ManagerBase {
 	public static HashManager instance;
 	private Logger logger = LoggerFactory.getLogger(HashManager.class);
-	private Connection conn;
 	private HashTable table;
 	private Map<Long, Number> ids;
 	private AtomicInteger version = new AtomicInteger();
@@ -64,10 +62,6 @@ public class HashManager extends ManagerBase {
 	public void setHashTable(HashTable table) {
 		this.table = table;
 		ids = new HashMap<Long, Number>(table.getBatchSize());
-	}
-
-	public void setConnection(Connection conn) {
-		this.conn = conn;
 	}
 
 	public void setBNodeManager(BNodeManager bnodeTable) {
@@ -272,7 +266,7 @@ public class HashManager extends ManagerBase {
 		for (RdbmsValue value : values) {
 			map.put(idseq.hashOf(value), null);
 		}
-		return table.load(conn, map);
+		return table.load(map);
 	}
 
 	private Integer getIdVersion(RdbmsValue value) {

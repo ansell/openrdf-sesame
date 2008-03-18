@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +20,7 @@ import java.util.Map;
 public class HashTable {
 	private static final int CHUNK_SIZE = 15;
 	private ValueTable table;
-	private String select;
+	private PreparedStatement select;
 
 	public HashTable(ValueTable table) {
 		super();
@@ -41,19 +40,14 @@ public class HashTable {
 	}
 
 	public void init() throws SQLException {
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT id, value\nFROM ").append(getName());
-		sb.append("\nWHERE value IN (");
-		for (int i = 0, n = getSelectChunkSize(); i < n; i++) {
-			sb.append("?,");
-		}
-		sb.setCharAt(sb.length() - 1, ')');
-		select = sb.toString();
 	}
 
 	public void close()
 		throws SQLException
 	{
+		if (select != null) {
+			select.close();
+		}
 		table.close();
 	}
 
@@ -92,30 +86,38 @@ public class HashTable {
 		return table.toString();
 	}
 
-	public Map<Long, Number> load(Connection conn, Map<Long, Number> hashes) throws SQLException {
+	public Map<Long, Number> load(Map<Long, Number> hashes)
+		throws SQLException
+	{
 		assert !hashes.isEmpty();
 		assert hashes.size() <= getSelectChunkSize();
-		PreparedStatement stmt = prepareSelect(conn, select);
+		if (select == null) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT id, value\nFROM ").append(getName());
+			sb.append("\nWHERE value IN (");
+			for (int i = 0, n = getSelectChunkSize(); i < n; i++) {
+				sb.append("?,");
+			}
+			sb.setCharAt(sb.length() - 1, ')');
+			select = prepareSelect(sb.toString());
+		}
+		int p = 0;
+		for (Long hash : hashes.keySet()) {
+			select.setLong(++p, hash);
+		}
+		while (p < getSelectChunkSize()) {
+			select.setNull(++p, Types.BIGINT);
+		}
+		ResultSet rs = select.executeQuery();
 		try {
-			int p = 0;
-			for (Long hash : hashes.keySet()) {
-				stmt.setLong(++p, hash);
+			while (rs.next()) {
+				long id = rs.getLong(1);
+				long hash = rs.getLong(2);
+				hashes.put(hash, id);
 			}
-			while (p < getSelectChunkSize()) {
-				stmt.setNull(++p, Types.BIGINT);
-			}
-			ResultSet rs = stmt.executeQuery();
-			try {
-				while (rs.next()) {
-					long id = rs.getLong(1);
-					long hash = rs.getLong(2);
-					hashes.put(hash, id);
-				}
-			} finally {
-				rs.close();
-			}
-		} finally {
-			stmt.close();
+		}
+		finally {
+			rs.close();
 		}
 		return hashes;
 	}
@@ -124,8 +126,8 @@ public class HashTable {
 		return new HashBatch();
 	}
 
-	protected PreparedStatement prepareSelect(Connection conn, String sql) throws SQLException {
-		return conn.prepareStatement(sql);
+	protected PreparedStatement prepareSelect(String sql) throws SQLException {
+		return table.getRdbmsTable().prepareStatement(sql);
 	}
 
 }

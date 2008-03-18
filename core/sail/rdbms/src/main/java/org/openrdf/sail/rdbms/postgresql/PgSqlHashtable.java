@@ -5,10 +5,8 @@
  */
 package org.openrdf.sail.rdbms.postgresql;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.openrdf.sail.rdbms.schema.HashTable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
@@ -19,11 +17,12 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * @author james
  */
 public class PgSqlHashtable extends HashTable {
+	private ValueTable table;
 	private String execute;
-	private Connection conn;
 
 	public PgSqlHashtable(ValueTable table) {
 		super(table);
+		this.table = table;
 	}
 
 	@Override
@@ -31,22 +30,16 @@ public class PgSqlHashtable extends HashTable {
 		throws SQLException
 	{
 		if (execute != null) {
-			Statement stmt = conn.createStatement();
-			try {
-				stmt.execute("DEALLOCATE " + getName() + "_select");
-			} finally {
-				stmt.close();
-			}
+			table.getRdbmsTable().execute("DEALLOCATE " + getName() + "_select");
 		}
 		super.close();
 	}
 
 	@Override
-	protected PreparedStatement prepareSelect(Connection conn, String sql)
+	protected PreparedStatement prepareSelect(String sql)
 		throws SQLException
 	{
 		if (execute == null) {
-			this.conn = conn;
 			StringBuilder sb = new StringBuilder();
 			sb.append("PREPARE ").append(getName()).append("_select (");
 			for (int i = 0, n = getSelectChunkSize(); i < n; i++) {
@@ -60,12 +53,7 @@ public class PgSqlHashtable extends HashTable {
 				sb.append("$").append(i + 1).append(",");
 			}
 			sb.setCharAt(sb.length() - 1, ')');
-			Statement stmt = conn.createStatement();
-			try {
-				stmt.execute(sb.toString());
-			} finally {
-				stmt.close();
-			}
+			table.getRdbmsTable().execute(sb.toString());
 			sb.delete(0, sb.length());
 			sb.append("EXECUTE ").append(getName()).append("_select (");
 			for (int i = 0, n = getSelectChunkSize(); i < n; i++) {
@@ -74,7 +62,7 @@ public class PgSqlHashtable extends HashTable {
 			sb.setCharAt(sb.length() - 1, ')');
 			execute = sb.toString();
 		}
-		return super.prepareSelect(conn, execute);
+		return super.prepareSelect(execute);
 	}
 
 }

@@ -37,6 +37,7 @@ public class ValueTable {
 	private ValueBatch batch;
 	private BlockingQueue<Batch> queue;
 	private boolean indexingValues;
+	private PreparedStatement insertSelect;
 
 	public void setQueue(BlockingQueue<Batch> queue) {
 		this.queue = queue;
@@ -140,6 +141,9 @@ public class ValueTable {
 	}
 
 	public void close() throws SQLException {
+		if (insertSelect != null) {
+			insertSelect.close();
+		}
 		if (temporary != null) {
 			temporary.close();
 		}
@@ -180,7 +184,10 @@ public class ValueTable {
 		batch.setMaxBatchSize(getBatchSize());
 		if (temporary != null) {
 			batch.setTemporary(temporary);
-			batch.setInsertStatement(prepareInsertSelect(INSERT_SELECT));
+			if (insertSelect == null) {
+				insertSelect = prepareInsertSelect(INSERT_SELECT);
+			}
+			batch.setInsertStatement(insertSelect);
 		}
 	}
 
