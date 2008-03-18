@@ -112,18 +112,18 @@ public class ValueTable {
 		}
 		sb.append(" (id, value) VALUES (?, ?)");
 		INSERT = sb.toString();
-		if (temporary != null) {
-		sb.delete(0, sb.length());
-		sb.append("INSERT INTO ").append(table.getName());
-		sb.append(" (id, value) SELECT DISTINCT id, value FROM ");
-		sb.append(temporary.getName()).append(" tmp\n");
-		sb.append("WHERE NOT EXISTS (SELECT id FROM ").append(table.getName());
-		sb.append(" val WHERE val.id = tmp.id)");
-		INSERT_SELECT = sb.toString();
 		sb.delete(0, sb.length());
 		sb.append("DELETE FROM ").append(table.getName()).append("\n");
 		sb.append("WHERE 1=1 ");
 		EXPUNGE = sb.toString();
+		if (temporary != null) {
+			sb.delete(0, sb.length());
+			sb.append("INSERT INTO ").append(table.getName());
+			sb.append(" (id, value) SELECT DISTINCT id, value FROM ");
+			sb.append(temporary.getName()).append(" tmp\n");
+			sb.append("WHERE NOT EXISTS (SELECT id FROM ").append(table.getName());
+			sb.append(" val WHERE val.id = tmp.id)");
+			INSERT_SELECT = sb.toString();
 		}
 		if (!table.isCreated()) {
 			createTable(table);
