@@ -91,6 +91,7 @@ public class RdbmsTable {
 				st.execute(command);
 			} catch (SQLException e) {
 				logger.warn(e.getMessage() + '\n' + command);
+				throw e;
 			} finally {
 				st.close();
 			}
@@ -109,6 +110,9 @@ public class RdbmsTable {
 				}
 			}
 			return st.executeUpdate();
+		} catch (SQLException e) {
+			logger.warn(e.getMessage() + '\n' + command);
+			throw e;
 		} finally {
 			st.close();
 		}
