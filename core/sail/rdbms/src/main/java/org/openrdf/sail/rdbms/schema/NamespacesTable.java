@@ -47,6 +47,12 @@ public class NamespacesTable {
 		}
 	}
 
+	public void close()
+		throws SQLException
+	{
+		table.close();
+	}
+
 	protected void createTable() throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("  prefix VARCHAR(127),\n");

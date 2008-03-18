@@ -92,14 +92,6 @@ public class HashTable {
 		return table.toString();
 	}
 
-	protected HashBatch newHashBatch() {
-		return new HashBatch();
-	}
-
-	protected PreparedStatement prepareSelect(Connection conn, String sql) throws SQLException {
-		return conn.prepareStatement(sql);
-	}
-
 	public Map<Long, Number> load(Connection conn, Map<Long, Number> hashes) throws SQLException {
 		assert !hashes.isEmpty();
 		assert hashes.size() <= getSelectChunkSize();
@@ -126,6 +118,14 @@ public class HashTable {
 			stmt.close();
 		}
 		return hashes;
+	}
+
+	protected HashBatch newHashBatch() {
+		return new HashBatch();
+	}
+
+	protected PreparedStatement prepareSelect(Connection conn, String sql) throws SQLException {
+		return conn.prepareStatement(sql);
 	}
 
 }

@@ -148,6 +148,7 @@ public class RdbmsConnectionFactory {
 			uriManager = new UriManager();
 			literalManager = new LiteralManager();
 			ValueTableFactory tables = createValueTableFactory();
+			tables.setSequenced(sequenced);
 			if (sequenced) {
 				ids = new IntegerIdSequence();
 				tables.setIdSequence(ids);

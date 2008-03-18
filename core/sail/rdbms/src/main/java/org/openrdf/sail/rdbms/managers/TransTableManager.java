@@ -87,9 +87,13 @@ public class TransTableManager {
 		try {
 			if (temporaryTable != null) {
 				temporaryTable.drop();
+				temporaryTable.close();
 			}
 		} catch (SQLException e) {
 			// ignore
+		}
+		for (TransactionTable table : tables.values()) {
+			table.close();
 		}
 	}
 

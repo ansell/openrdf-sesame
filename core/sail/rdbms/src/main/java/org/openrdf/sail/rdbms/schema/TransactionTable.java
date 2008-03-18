@@ -63,6 +63,12 @@ public class TransactionTable {
 		this.batchSize = size;
 	}
 
+	public void close()
+		throws SQLException
+	{
+		temporary.close();
+	}
+
 	public synchronized void insert(Number ctx, Number subj, Number pred, Number obj)
 			throws SQLException, InterruptedException {
 		if (batch == null || batch.isFull() || !queue.remove(batch)) {

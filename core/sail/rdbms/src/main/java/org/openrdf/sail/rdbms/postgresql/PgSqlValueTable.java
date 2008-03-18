@@ -25,7 +25,7 @@ public class PgSqlValueTable extends ValueTable {
 	public void initialize() throws SQLException {
 		super.initialize();
 
-		RdbmsTable tmp = getTemporaryTable();
+		RdbmsTable tmp = getInsertTable();
 		StringBuilder sb = new StringBuilder();
 		sb.append("PREPARE ").append(tmp.getName());
 		sb.append("_insert (").append(sql(getIdType(), -1)).append(", ");
@@ -51,10 +51,20 @@ public class PgSqlValueTable extends ValueTable {
 	public void close()
 		throws SQLException
 	{
-		RdbmsTable tmp = getTemporaryTable();
+		RdbmsTable tmp = getInsertTable();
 		tmp.execute("DEALLOCATE " + tmp.getName() + "_insert");
 		tmp.execute("DEALLOCATE " + tmp.getName() + "_insert_select");
 		super.close();
+	}
+
+	@Override
+	public String sql(int type, int length) {
+		switch (type) {
+		case Types.DOUBLE:
+			return "double precision";
+		default:
+			return super.sql(type, length);
+		}
 	}
 
 	@Override
@@ -62,7 +72,7 @@ public class PgSqlValueTable extends ValueTable {
 		throws SQLException
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("EXECUTE ").append(getTemporaryTable().getName());
+		sb.append("EXECUTE ").append(getInsertTable().getName());
 		sb.append("_insert(?, ?)");
 		return super.prepareInsert(sb.toString());
 	}
@@ -72,19 +82,17 @@ public class PgSqlValueTable extends ValueTable {
 		throws SQLException
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("EXECUTE ").append(getTemporaryTable().getName());
+		sb.append("EXECUTE ").append(getInsertTable().getName());
 		sb.append("_insert_select");
 		return super.prepareInsertSelect(sb.toString());
 	}
 
-	@Override
-	protected String sql(int type, int length) {
-		switch (type) {
-		case Types.DOUBLE:
-			return "double precision";
-		default:
-			return super.sql(type, length);
+	private RdbmsTable getInsertTable() {
+		RdbmsTable tmp = getTemporaryTable();
+		if (tmp == null) {
+			tmp = getRdbmsTable();
 		}
+		return tmp;
 	}
 
 }
