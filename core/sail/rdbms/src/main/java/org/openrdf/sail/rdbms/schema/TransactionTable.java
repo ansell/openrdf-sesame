@@ -30,6 +30,7 @@ public class TransactionTable {
 	private BlockingQueue<Batch> queue;
 	private DefaultSailChangedEvent sailChangedEvent;
 	private IdSequence ids;
+	private PreparedStatement insertSelect;
 
 	public void setIdSequence(IdSequence ids) {
 		this.ids = ids;
@@ -66,6 +67,9 @@ public class TransactionTable {
 	public void close()
 		throws SQLException
 	{
+		if (insertSelect != null) {
+			insertSelect.close();
+		}
 		temporary.close();
 	}
 
@@ -78,7 +82,10 @@ public class TransactionTable {
 			batch.setTemporary(temporary);
 			batch.setMaxBatchSize(getBatchSize());
 			batch.setBatchStatement(prepareInsert());
-			batch.setInsertStatement(prepareInsertSelect(buildInsertSelect()));
+			if (insertSelect == null) {
+				insertSelect = prepareInsertSelect(buildInsertSelect());
+			}
+			batch.setInsertStatement(insertSelect);
 		}
 		batch.setObject(1, ctx);
 		batch.setObject(2, subj);
