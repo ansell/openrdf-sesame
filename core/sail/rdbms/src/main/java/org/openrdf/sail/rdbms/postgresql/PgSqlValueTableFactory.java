@@ -7,7 +7,9 @@ package org.openrdf.sail.rdbms.postgresql;
 
 import java.sql.Connection;
 
+import org.openrdf.sail.rdbms.schema.HashTable;
 import org.openrdf.sail.rdbms.schema.TripleTable;
+import org.openrdf.sail.rdbms.schema.ValueTable;
 import org.openrdf.sail.rdbms.schema.ValueTableFactory;
 
 /**
@@ -30,5 +32,10 @@ public class PgSqlValueTableFactory extends ValueTableFactory {
 	@Override
 	public TripleTable createTripleTable(Connection conn, String tableName) {
 		return super.createTripleTable(conn, tableName.toLowerCase());
+	}
+
+	@Override
+	protected HashTable newHashtable(ValueTable table) {
+		return new PgSqlHashtable(table);
 	}
 }

@@ -110,6 +110,12 @@ public class TripleTable {
 		initialize = true;
 	}
 
+	public void close()
+		throws SQLException
+	{
+		table.close();
+	}
+
 	public boolean isIndexed()
 		throws SQLException
 	{

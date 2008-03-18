@@ -104,9 +104,15 @@ public class ValueTable {
 
 	public void initialize() throws SQLException {
 		StringBuilder sb = new StringBuilder();
-		sb.append("INSERT INTO ").append(temporary.getName());
+		sb.append("INSERT INTO ");
+		if (temporary == null) {
+			sb.append(table.getName());
+		} else {
+			sb.append(temporary.getName());
+		}
 		sb.append(" (id, value) VALUES (?, ?)");
 		INSERT = sb.toString();
+		if (temporary != null) {
 		sb.delete(0, sb.length());
 		sb.append("INSERT INTO ").append(table.getName());
 		sb.append(" (id, value) SELECT DISTINCT id, value FROM ");
@@ -118,6 +124,7 @@ public class ValueTable {
 		sb.append("DELETE FROM ").append(table.getName()).append("\n");
 		sb.append("WHERE 1=1 ");
 		EXPUNGE = sb.toString();
+		}
 		if (!table.isCreated()) {
 			createTable(table);
 			table.index(PKEY);
@@ -127,13 +134,16 @@ public class ValueTable {
 		} else {
 			table.count();
 		}
-		if (!temporary.isCreated()) {
+		if (temporary != null && !temporary.isCreated()) {
 			createTemporaryTable(temporary);
 		}
 	}
 
 	public void close() throws SQLException {
-		// allow subclasses to override
+		if (temporary != null) {
+			temporary.close();
+		}
+		table.close();
 	}
 
 	public synchronized void insert(Number id, Object value) throws SQLException, InterruptedException {
@@ -166,15 +176,18 @@ public class ValueTable {
 		throws SQLException
 	{
 		batch.setTable(table);
-		batch.setTemporary(temporary);
 		batch.setBatchStatement(prepareInsert(INSERT));
 		batch.setMaxBatchSize(getBatchSize());
-		batch.setInsertStatement(prepareInsertSelect(INSERT_SELECT));
+		if (temporary != null) {
+			batch.setTemporary(temporary);
+			batch.setInsertStatement(prepareInsertSelect(INSERT_SELECT));
+		}
 	}
 
 	public void queue(ValueBatch batch)
 		throws SQLException, InterruptedException
 	{
+		this.batch = batch;
 		if (queue == null) {
 			batch.flush();
 		} else {
@@ -228,47 +241,7 @@ public class ValueTable {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return getName();
-	}
-
-	protected void expunge(String condition) throws SQLException {
-		synchronized (table) {
-			int count = table.executeUpdate(EXPUNGE + condition);
-			table.modified(0, count);
-		}
-	}
-
-	protected boolean timeToExpunge() {
-		return removedStatementsSinceExpunge > table.size() / 4;
-	}
-
-	protected PreparedStatement prepareInsert(String sql) throws SQLException {
-		return temporary.prepareStatement(sql);
-	}
-
-	protected PreparedStatement prepareInsertSelect(String sql) throws SQLException {
-		return temporary.prepareStatement(sql);
-	}
-
-	protected void createTable(RdbmsTable table) throws SQLException {
-		StringBuilder sb = new StringBuilder();
-		sb.append("  id ").append(sql(idType, -1)).append(" NOT NULL,\n");
-		sb.append("  value ").append(sql(sqlType, length));
-		sb.append(" NOT NULL\n");
-		table.createTable(sb);
-	}
-
-	protected void createTemporaryTable(RdbmsTable table) throws SQLException {
-		StringBuilder sb = new StringBuilder();
-		sb.append("  id ").append(sql(idType, -1)).append(" NOT NULL,\n");
-		sb.append("  value ").append(sql(sqlType, length));
-		sb.append(" NOT NULL\n");
-		table.createTemporaryTable(sb);
-	}
-
-	protected String sql(int type, int length) {
+	public String sql(int type, int length) {
 		switch (type) {
 		case Types.VARCHAR:
 			if (length > 0)
@@ -297,5 +270,45 @@ public class ValueTable {
 		default:
 			throw new AssertionError("Unsupported SQL Type: " + type);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return getName();
+	}
+
+	protected void expunge(String condition) throws SQLException {
+		synchronized (table) {
+			int count = table.executeUpdate(EXPUNGE + condition);
+			table.modified(0, count);
+		}
+	}
+
+	protected boolean timeToExpunge() {
+		return removedStatementsSinceExpunge > table.size() / 4;
+	}
+
+	protected PreparedStatement prepareInsert(String sql) throws SQLException {
+		return table.prepareStatement(sql);
+	}
+
+	protected PreparedStatement prepareInsertSelect(String sql) throws SQLException {
+		return table.prepareStatement(sql);
+	}
+
+	protected void createTable(RdbmsTable table) throws SQLException {
+		StringBuilder sb = new StringBuilder();
+		sb.append("  id ").append(sql(idType, -1)).append(" NOT NULL,\n");
+		sb.append("  value ").append(sql(sqlType, length));
+		sb.append(" NOT NULL\n");
+		table.createTable(sb);
+	}
+
+	protected void createTemporaryTable(RdbmsTable table) throws SQLException {
+		StringBuilder sb = new StringBuilder();
+		sb.append("  id ").append(sql(idType, -1)).append(" NOT NULL,\n");
+		sb.append("  value ").append(sql(sqlType, length));
+		sb.append(" NOT NULL\n");
+		table.createTemporaryTable(sb);
 	}
 }

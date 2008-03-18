@@ -39,6 +39,7 @@ public class ValueTableFactory {
 	protected static final String HASH_TABLE = "HASH_VALUES";
 	private TableFactory factory;
 	private IdSequence ids;
+	private boolean sequenced;
 
 	public ValueTableFactory(TableFactory factory) {
 		super();
@@ -49,12 +50,16 @@ public class ValueTableFactory {
 		this.ids = ids;
 	}
 
+	public void setSequenced(boolean sequenced) {
+		this.sequenced = sequenced;
+	}
+
 	public HashTable createHashTable(Connection conn, BlockingQueue<Batch> queue) throws SQLException {
 		ValueTable table = newValueTable();
 		table.setRdbmsTable(createTable(conn, HASH_TABLE));
-		table.setTemporaryTable(factory.createTemporaryTable(conn, "INSERT_" + HASH_TABLE));
+		//table.setTemporaryTable(factory.createTemporaryTable(conn, "INSERT_" + HASH_TABLE));
 		initValueTable(table, queue, BIGINT, -1, true);
-		HashTable hashTable = new HashTable(table);
+		HashTable hashTable = newHashtable(table);
 		hashTable.init();
 		return hashTable;
 	}
@@ -108,9 +113,19 @@ public class ValueTableFactory {
 			int length) throws SQLException {
 		ValueTable table = newValueTable();
 		table.setRdbmsTable(createTable(conn, name));
-		table.setTemporaryTable(factory.createTemporaryTable(conn, "INSERT_" + name));
+		if (!sequenced) {
+			table.setTemporaryTable(factory.createTemporaryTable(conn, "INSERT_" + name));
+		}
 		initValueTable(table, queue, sqlType, length, INDEX_VALUES);
 		return table;
+	}
+
+	protected HashTable newHashtable(ValueTable table) {
+		return new HashTable(table);
+	}
+
+	protected ValueTable newValueTable() {
+		return new ValueTable();
 	}
 
 	private void initValueTable(ValueTable table, BlockingQueue<Batch> queue, int sqlType, int length, boolean indexValues)
@@ -122,9 +137,5 @@ public class ValueTableFactory {
 		table.setLength(length);
 		table.setIndexingValues(indexValues);
 		table.initialize();
-	}
-
-	protected ValueTable newValueTable() {
-		return new ValueTable();
 	}
 }

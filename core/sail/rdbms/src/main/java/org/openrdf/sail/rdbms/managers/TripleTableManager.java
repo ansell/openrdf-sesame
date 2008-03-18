@@ -143,6 +143,7 @@ public class TripleTableManager {
 				table.drop();
 				iter.remove();
 			}
+			table.close();
 		}
 	}
 

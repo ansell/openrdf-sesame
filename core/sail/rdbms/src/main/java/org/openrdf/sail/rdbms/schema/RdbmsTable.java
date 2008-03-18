@@ -17,6 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Represents and controls the underlying database table.
  * 
@@ -27,11 +30,13 @@ public class RdbmsTable {
 	public static int total_opt;
 	public static int MAX_DELTA_TO_FORCE_OPTIMIZE = 10000;
 	private static final String[] TYPE_TABLE = new String[] { "TABLE" };
+	private Logger logger = LoggerFactory.getLogger(RdbmsTable.class);
 	private int addedCount;
 	private Connection conn;
 	private String name;
 	private int removedCount;
 	private long rowCount;
+	private PreparedStatement clear;
 
 	public RdbmsTable(String name) {
 		super();
@@ -42,13 +47,22 @@ public class RdbmsTable {
 		this.conn = conn;
 	}
 
+	public void close() throws SQLException {
+		if (clear != null) {
+			clear.close();
+		}
+	}
+
 	public long size() {
 		assert rowCount >= 0 : rowCount;
 		return rowCount;
 	}
 
 	public void clear() throws SQLException {
-		execute(buildClear());
+		if (clear == null) {
+			clear = conn.prepareStatement(buildClear());
+		}
+		clear.execute();
 		rowCount = 0;
 	}
 
@@ -75,6 +89,8 @@ public class RdbmsTable {
 			Statement st = conn.createStatement();
 			try {
 				st.execute(command);
+			} catch (SQLException e) {
+				logger.warn(e.getMessage() + '\n' + command);
 			} finally {
 				st.close();
 			}

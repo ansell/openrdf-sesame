@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -142,14 +143,17 @@ public class HashManager extends ManagerBase {
 	public void assignId(RdbmsValue value, int version)
 		throws InterruptedException, SQLException
 	{
+		List<RdbmsValue> values = new ArrayList<RdbmsValue>(getChunkSize());
 		synchronized (working) {
 			throwException();
 			if (value.isExpired(version)) {
-				List<RdbmsValue> values = new ArrayList<RdbmsValue>(getChunkSize());
 				Map<Long, Number> map = new HashMap<Long, Number>(getChunkSize());
 				values.add(value);
 				assignIds(values, map);
 			}
+		}
+		for (RdbmsValue v : values) {
+			insert(v);
 		}
 	}
 
@@ -157,20 +161,23 @@ public class HashManager extends ManagerBase {
 	public void flush()
 		throws SQLException, InterruptedException
 	{
-		synchronized (working) {
-			throwException();
-			List<RdbmsValue> values = new ArrayList<RdbmsValue>(getChunkSize());
-			Map<Long, Number> map = new HashMap<Long, Number>(getChunkSize());
-			RdbmsValue taken = queue.poll();
-			while (taken != null) {
-				values.add(taken);
+		throwException();
+		List<RdbmsValue> values = new ArrayList<RdbmsValue>(getChunkSize());
+		Map<Long, Number> map = new HashMap<Long, Number>(getChunkSize());
+		RdbmsValue taken = queue.poll();
+		while (taken != null) {
+			values.clear();
+			values.add(taken);
+			synchronized (working) {
 				assignIds(values, map);
-				values.clear();
-				taken = queue.poll();
-				if (taken == closeSignal) {
-					queue.add(taken);
-					taken = null;
-				}
+			}
+			for (RdbmsValue v : values) {
+				insert(v);
+			}
+			taken = queue.poll();
+			if (taken == closeSignal) {
+				queue.add(taken);
+				taken = null;
 			}
 		}
 		super.flush();
@@ -202,10 +209,13 @@ public class HashManager extends ManagerBase {
 		Map<Long, Number> map = new HashMap<Long, Number>(getChunkSize());
 		RdbmsValue taken = queue.take();
 		for (; taken != closeSignal; taken = queue.take()) {
+			values.clear();
+			values.add(taken);
 			synchronized (working) {
-				values.add(taken);
 				assignIds(values, map);
-				values.clear();
+			}
+			for (RdbmsValue v : values) {
+				insert(v);
 			}
 		}
 	}
@@ -224,12 +234,15 @@ public class HashManager extends ManagerBase {
 			values.add(taken);
 		}
 		Map<Long, Number> existing = lookup(values, map);
-		for (RdbmsValue value : values) {
+		Iterator<RdbmsValue> iter = values.iterator();
+		while (iter.hasNext()) {
+			RdbmsValue value = iter.next();
 			Long hash = idseq.hashOf(value);
 			if (existing.get(hash) != null) {
 				// already in database
 				value.setInternalId(idseq.idOf(existing.get(hash)));
 				value.setVersion(getIdVersion(value));
+				iter.remove();
 			}
 			else {
 				synchronized (ids) {
@@ -237,6 +250,7 @@ public class HashManager extends ManagerBase {
 						// already inserting this value
 						value.setInternalId(ids.get(hash));
 						value.setVersion(getIdVersion(value));
+						iter.remove();
 					}
 					else {
 						// new id to be inserted
@@ -244,8 +258,7 @@ public class HashManager extends ManagerBase {
 						value.setInternalId(id);
 						value.setVersion(getIdVersion(value));
 						ids.put(hash, id);
-						table.insert(id, hash);
-						insert(id, value);
+						// keep on list for later insert
 					}
 				}
 			}
@@ -271,9 +284,11 @@ public class HashManager extends ManagerBase {
 		return bnodes.getIdVersion();
 	}
 
-	private void insert(Number id, RdbmsValue value)
+	private void insert(RdbmsValue value)
 		throws SQLException, InterruptedException
 	{
+		Number id = value.getInternalId();
+		table.insert(id, idseq.hashOf(value));
 		if (value instanceof RdbmsLiteral) {
 			literals.insert(id, (RdbmsLiteral)value);
 		}
