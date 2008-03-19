@@ -74,6 +74,11 @@ public class BatchInsertStatement extends DelegatingPreparedStatement {
 	}
 
 	@Override
+	public boolean isClosed() {
+		return super.isClosed();
+	}
+
+	@Override
 	public void setObject(int idx, Object obj)
 		throws SQLException
 	{
