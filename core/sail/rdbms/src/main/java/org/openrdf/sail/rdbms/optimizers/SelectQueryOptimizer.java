@@ -51,14 +51,13 @@ import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.algebra.BNodeColumn;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
 import org.openrdf.sail.rdbms.algebra.DatatypeColumn;
-import org.openrdf.sail.rdbms.algebra.HashColumn;
 import org.openrdf.sail.rdbms.algebra.IdColumn;
 import org.openrdf.sail.rdbms.algebra.JoinItem;
 import org.openrdf.sail.rdbms.algebra.LabelColumn;
 import org.openrdf.sail.rdbms.algebra.LanguageColumn;
 import org.openrdf.sail.rdbms.algebra.LongLabelColumn;
 import org.openrdf.sail.rdbms.algebra.LongURIColumn;
-import org.openrdf.sail.rdbms.algebra.LongValue;
+import org.openrdf.sail.rdbms.algebra.NumberValue;
 import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SelectProjection;
 import org.openrdf.sail.rdbms.algebra.SelectQuery;
@@ -251,8 +250,12 @@ public class SelectQueryOptimizer extends
 				IdColumn existing = new IdColumn(vars.get(var.getName()));
 				from.addFilter(new SqlEq(new IdColumn(var), existing));
 			} else if (value != null && !var.isImplied()) {
-				LongValue hash = new LongValue(ids.hashOf(value));
-				from.addFilter(new SqlEq(new HashColumn(var), hash));
+				try {
+					NumberValue vc = new NumberValue(vf.getInternalId(value));
+					from.addFilter(new SqlEq(new RefIdColumn(var), vc));
+				} catch (RdbmsException e) {
+					throw new RdbmsRuntimeException(e);
+				}
 			} else {
 				vars.put(var.getName(), var);
 			}
@@ -270,11 +273,16 @@ public class SelectQueryOptimizer extends
 		}
 		if (contexts.length > 0) {
 			RdbmsResource[] ids = vf.asRdbmsResource(contexts);
-			HashColumn var = new HashColumn(c);
+			RefIdColumn var = new RefIdColumn(c);
 			SqlExpr in = null;
 			for (RdbmsResource id : ids) {
-				LongValue hash = new LongValue(this.ids.hashOf(id));
-				SqlEq eq = new SqlEq(var.clone(), hash);
+				NumberValue longValue;
+				try {
+					longValue = new NumberValue(vf.getInternalId(id));
+				} catch (RdbmsException e) {
+					throw new RdbmsRuntimeException(e);
+				}
+				SqlEq eq = new SqlEq(var.clone(), longValue);
 				if (in == null) {
 					in = eq;
 				} else {

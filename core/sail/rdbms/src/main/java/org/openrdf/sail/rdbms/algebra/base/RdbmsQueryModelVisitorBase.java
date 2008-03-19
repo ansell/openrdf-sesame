@@ -18,7 +18,7 @@ import org.openrdf.sail.rdbms.algebra.LabelColumn;
 import org.openrdf.sail.rdbms.algebra.LanguageColumn;
 import org.openrdf.sail.rdbms.algebra.LongLabelColumn;
 import org.openrdf.sail.rdbms.algebra.LongURIColumn;
-import org.openrdf.sail.rdbms.algebra.LongValue;
+import org.openrdf.sail.rdbms.algebra.NumberValue;
 import org.openrdf.sail.rdbms.algebra.NumericColumn;
 import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SelectProjection;
@@ -100,7 +100,7 @@ public class RdbmsQueryModelVisitorBase<X extends Exception> extends
 		meetValueColumnBase(node);
 	}
 
-	public void meet(LongValue node) throws X {
+	public void meet(NumberValue node) throws X {
 		meetSqlConstant(node);
 	}
 

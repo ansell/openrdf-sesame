@@ -14,9 +14,9 @@ import org.openrdf.sail.rdbms.algebra.base.SqlConstant;
  * @author James Leigh
  * 
  */
-public class LongValue extends SqlConstant<Long> {
+public class NumberValue extends SqlConstant<Number> {
 
-	public LongValue(Long value) {
+	public NumberValue(Number value) {
 		super(value);
 	}
 

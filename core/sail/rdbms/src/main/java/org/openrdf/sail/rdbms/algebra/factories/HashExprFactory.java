@@ -13,12 +13,14 @@ import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
-import org.openrdf.sail.rdbms.algebra.HashColumn;
-import org.openrdf.sail.rdbms.algebra.LongValue;
+import org.openrdf.sail.rdbms.RdbmsValueFactory;
+import org.openrdf.sail.rdbms.algebra.NumberValue;
+import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
+import org.openrdf.sail.rdbms.exceptions.RdbmsException;
+import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
-import org.openrdf.sail.rdbms.schema.IdSequence;
 
 
 /**
@@ -28,11 +30,11 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
 public class HashExprFactory extends
 		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 	protected SqlExpr result;
-	private IdSequence ids;
+	private RdbmsValueFactory vf;
 
-	public HashExprFactory(IdSequence ids) {
+	public HashExprFactory(RdbmsValueFactory vf) {
 		super();
-		this.ids = ids;
+		this.vf = vf;
 	}
 
 	public SqlExpr createHashExpr(ValueExpr expr)
@@ -54,7 +56,7 @@ public class HashExprFactory extends
 	@Override
 	public void meet(Var var) {
 		if (var.getValue() == null) {
-			result = new HashColumn(var);
+			result = new RefIdColumn(var);
 		} else {
 			result = valueOf(var.getValue());
 		}
@@ -67,7 +69,12 @@ public class HashExprFactory extends
 	}
 
 	public SqlExpr valueOf(Value value) {
-		return new LongValue(ids.hashOf(value));
+		try {
+			return new NumberValue(vf.getInternalId(value));
+		}
+		catch (RdbmsException e) {
+			throw new RdbmsRuntimeException(e);
+		}
 	}
 
 }

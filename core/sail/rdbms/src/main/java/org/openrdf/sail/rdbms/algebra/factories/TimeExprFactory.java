@@ -23,7 +23,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.sail.rdbms.algebra.DateTimeColumn;
-import org.openrdf.sail.rdbms.algebra.LongValue;
+import org.openrdf.sail.rdbms.algebra.NumberValue;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
@@ -95,7 +95,7 @@ public class TimeExprFactory extends
 			URI dt = lit.getDatatype();
 			if (dt != null && XMLDatatypeUtil.isCalendarDatatype(dt)) {
 				try {
-					return new LongValue(getCalendarValue(lit.calendarValue()));
+					return new NumberValue(getCalendarValue(lit.calendarValue()));
 				} catch (IllegalArgumentException e) {
 					return null;
 				}

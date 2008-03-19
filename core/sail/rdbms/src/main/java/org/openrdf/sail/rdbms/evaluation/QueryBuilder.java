@@ -23,7 +23,7 @@ import org.openrdf.sail.rdbms.algebra.LabelColumn;
 import org.openrdf.sail.rdbms.algebra.LanguageColumn;
 import org.openrdf.sail.rdbms.algebra.LongLabelColumn;
 import org.openrdf.sail.rdbms.algebra.LongURIColumn;
-import org.openrdf.sail.rdbms.algebra.LongValue;
+import org.openrdf.sail.rdbms.algebra.NumberValue;
 import org.openrdf.sail.rdbms.algebra.NumericColumn;
 import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SqlAbs;
@@ -203,7 +203,7 @@ public class QueryBuilder {
 		filter.column(alias, "value");
 	}
 
-	private void append(LongValue expr, SqlExprBuilder filter) {
+	private void append(NumberValue expr, SqlExprBuilder filter) {
 		filter.number(expr.getValue());
 	}
 
@@ -415,8 +415,8 @@ public class QueryBuilder {
 			append((FalseValue) expr, filter);
 		} else if (expr instanceof TrueValue) {
 			append((TrueValue) expr, filter);
-		} else if (expr instanceof LongValue) {
-			append((LongValue) expr, filter);
+		} else if (expr instanceof NumberValue) {
+			append((NumberValue) expr, filter);
 		} else if (expr instanceof SqlNull) {
 			append((SqlNull) expr, filter);
 		} else if (expr instanceof StringValue) {
