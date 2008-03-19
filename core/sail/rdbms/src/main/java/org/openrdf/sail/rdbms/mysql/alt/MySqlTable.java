@@ -1,4 +1,4 @@
-package org.openrdf.sail.rdbms.mysql;
+package org.openrdf.sail.rdbms.mysql.alt;
 
 import java.sql.SQLException;
 
