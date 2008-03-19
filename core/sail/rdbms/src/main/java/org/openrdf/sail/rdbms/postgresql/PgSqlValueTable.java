@@ -87,12 +87,4 @@ public class PgSqlValueTable extends ValueTable {
 		return super.prepareInsertSelect(sb.toString());
 	}
 
-	private RdbmsTable getInsertTable() {
-		RdbmsTable tmp = getTemporaryTable();
-		if (tmp == null) {
-			tmp = getRdbmsTable();
-		}
-		return tmp;
-	}
-
 }

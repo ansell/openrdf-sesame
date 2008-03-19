@@ -105,12 +105,7 @@ public class ValueTable {
 
 	public void initialize() throws SQLException {
 		StringBuilder sb = new StringBuilder();
-		sb.append("INSERT INTO ");
-		if (temporary == null) {
-			sb.append(table.getName());
-		} else {
-			sb.append(temporary.getName());
-		}
+		sb.append("INSERT INTO ").append(getInsertTable().getName());
 		sb.append(" (id, value) VALUES (?, ?)");
 		INSERT = sb.toString();
 		sb.delete(0, sb.length());
@@ -293,6 +288,14 @@ public class ValueTable {
 
 	protected boolean timeToExpunge() {
 		return removedStatementsSinceExpunge > table.size() / 4;
+	}
+
+	protected RdbmsTable getInsertTable() {
+		RdbmsTable tmp = getTemporaryTable();
+		if (tmp == null) {
+			tmp = getRdbmsTable();
+		}
+		return tmp;
 	}
 
 	protected PreparedStatement prepareInsert(String sql) throws SQLException {

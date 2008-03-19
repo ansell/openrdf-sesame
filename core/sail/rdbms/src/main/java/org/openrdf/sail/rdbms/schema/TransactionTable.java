@@ -48,6 +48,10 @@ public class TransactionTable {
 		this.conn = conn;
 	}
 
+	public TripleTable getTripleTable() {
+		return triples;
+	}
+
 	public void setTripleTable(TripleTable statements) {
 		this.triples = statements;
 	}
@@ -156,13 +160,7 @@ public class TransactionTable {
 		return sb.toString();
 	}
 
-	protected PreparedStatement prepareInsert() throws SQLException {
-		if (temporary == null) {
-			boolean present = triples.isPredColumnPresent();
-			String sql = buildInsert(triples.getName(), present);
-			return conn.prepareStatement(sql);
-		}
-		String sql = buildInsert(temporary.getName(), true);
+	protected PreparedStatement prepareInsert(String sql) throws SQLException {
 		return conn.prepareStatement(sql);
 	}
 
@@ -186,6 +184,16 @@ public class TransactionTable {
 
 	protected boolean isPredColumnPresent() {
 		return triples.isPredColumnPresent();
+	}
+
+	private PreparedStatement prepareInsert() throws SQLException {
+		if (temporary == null) {
+			boolean present = triples.isPredColumnPresent();
+			String sql = buildInsert(triples.getName(), present);
+			return prepareInsert(sql);
+		}
+		String sql = buildInsert(temporary.getName(), true);
+		return prepareInsert(sql);
 	}
 
 }
