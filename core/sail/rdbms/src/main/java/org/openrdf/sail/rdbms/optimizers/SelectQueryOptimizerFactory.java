@@ -59,7 +59,7 @@ public class SelectQueryOptimizerFactory {
 		sql.setNumericExprFactory(new NumericExprFactory());
 		sql.setTimeExprFactory(new TimeExprFactory());
 		sql.setZonedExprFactory(new ZonedExprFactory(ids));
-		sql.setHashExprFactory(new HashExprFactory(ids));
+		sql.setHashExprFactory(new HashExprFactory(vf));
 		sql.setURIExprFactory(uri);
 		label.setSqlExprFactory(sql);
 		uri.setSqlExprFactory(sql);
