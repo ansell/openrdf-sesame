@@ -77,4 +77,10 @@
 		</plugins>
 	</build>
 
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/rio/n3</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/rio/n3</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/testsuites/rio/n3</url>
+	</scm>
+
 </project>

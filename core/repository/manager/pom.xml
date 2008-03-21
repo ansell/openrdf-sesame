@@ -68,4 +68,10 @@
 		</dependency>
 	</dependencies>
 
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/repository/manager</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/repository/manager</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/repository/manager</url>
+	</scm>
+
 </project>
