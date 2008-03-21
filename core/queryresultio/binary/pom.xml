@@ -35,4 +35,10 @@
 		</dependency>
 	</dependencies>
 
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/queryresultio/binary</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/queryresultio/binary</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/queryresultio/binary</url>
+	</scm>
+
 </project>

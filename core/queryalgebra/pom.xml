@@ -21,4 +21,10 @@
 		<module>evaluation</module>
 	</modules>
 
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/queryalgebra</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/queryalgebra</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/queryalgebra</url>
+	</scm>
+
 </project>

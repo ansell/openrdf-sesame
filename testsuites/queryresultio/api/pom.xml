@@ -68,4 +68,10 @@
 		</plugins>
 	</build>
 
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/queryresultio/api</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/queryresultio/api</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/testsuites/queryresultio/api</url>
+	</scm>
+
 </project>
