@@ -137,11 +137,13 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 			@Override
 			protected TransactionTable createTransactionTable() {
 				return new TransactionTable() {
+					private boolean predColumnPresent;
 
 					@Override
 					protected String buildInsert(String tableName, boolean predColumnPresent)
 						throws SQLException
 					{
+						this.predColumnPresent = predColumnPresent;
 						return BatchInsertStatement.prepareSql(tableName, getColumns());
 					}
 
@@ -155,7 +157,6 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 					}
 
 					private String[] getColumns() {
-						boolean predColumnPresent = getTripleTable().isPredColumnPresent();
 						if (predColumnPresent)
 							return new String[]{"ctx","subj","pred","obj"};
 						return new String[]{"ctx","subj","obj"};
