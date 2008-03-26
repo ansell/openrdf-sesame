@@ -32,6 +32,8 @@ public abstract class ManagerBase {
 
 	private final Object working = new Object();
 
+	private Batch wb;
+
 	private Thread thread;
 
 	private int count;
@@ -79,6 +81,10 @@ public abstract class ManagerBase {
 			for (Batch b = queue.poll(); isFlushable(b); b = queue.poll()) {
 				flush(b);
 			}
+			if (wb != null) {
+				flush(wb);
+				wb = null;
+			}
 			count = 0;
 		}
 	}
@@ -124,16 +130,19 @@ public abstract class ManagerBase {
 		String name = Thread.currentThread().getName();
 		logger.debug("Starting helper thread {}", name);
 		int notReadyCount = 0;
-		for (Batch b = queue.take(); isFlushable(b); b = queue.take()) {
-			if (b.isReady() || queue.size() <= notReadyCount) {
+		for (wb = queue.take(); isFlushable(wb); wb = queue.take()) {
+			if (wb.isReady() || queue.size() <= notReadyCount) {
 				synchronized (working) {
-					flush(b);
+					if (wb != null) {
+						flush(wb);
+						wb = null;
+					}
 				}
 				optimize();
 				notReadyCount = 0;
 			}
 			else {
-				queue.add(b);
+				queue.add(wb);
 				notReadyCount++;
 			}
 		}
