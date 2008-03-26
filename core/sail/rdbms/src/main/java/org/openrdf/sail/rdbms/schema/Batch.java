@@ -75,9 +75,16 @@ public class Batch {
 		batchCount++;
 	}
 
+	/**
+	 * 
+	 * @return <code>-1</code> if already flushed
+	 * @throws SQLException
+	 */
 	public int flush()
 		throws SQLException
 	{
+		if (insertBatch == null)
+			return -1;
 		try {
 			int count;
 			if (temporary == null) {
