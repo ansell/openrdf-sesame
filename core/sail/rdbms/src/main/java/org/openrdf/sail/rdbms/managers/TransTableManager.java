@@ -255,7 +255,8 @@ public class TransTableManager {
 		sb.append("  ctx ").append(type).append(" NOT NULL,\n");
 		sb.append("  subj ").append(type).append(" NOT NULL,\n");
 		sb.append("  pred ").append(type).append(" NOT NULL,\n");
-		sb.append("  obj ").append(type).append(" NOT NULL\n");
+		sb.append("  obj ").append(type).append(" NOT NULL,\n");
+		sb.append("  expl ").append("BOOL").append(" NOT NULL\n");
 		table.createTemporaryTable(sb);
 	}
 

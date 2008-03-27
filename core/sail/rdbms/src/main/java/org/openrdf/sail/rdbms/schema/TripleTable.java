@@ -19,11 +19,12 @@ public class TripleTable {
 	public static int tables_created;
 	public static int total_st;
 	public static final boolean UNIQUE_INDEX_TRIPLES = true;
-	private static final String[] PKEY = { "obj", "subj", "ctx" };
+	private static final String[] PKEY = { "obj", "subj", "ctx", "expl" };
 	private static final String[] SUBJ_INDEX = { "subj" };
 	private static final String[] CTX_INDEX = { "ctx" };
-	private static final String[] PRED_PKEY = { "obj", "subj", "pred", "ctx" };
+	private static final String[] PRED_PKEY = { "obj", "subj", "pred", "ctx", "expl" };
 	private static final String[] PRED_INDEX = { "pred" };
+	private static final String[] EXPL_INDEX = { "expl" };
 	private RdbmsTable table;
 	private ValueTypes objTypes = new ValueTypes();
 	private ValueTypes subjTypes = new ValueTypes();
@@ -133,6 +134,8 @@ public class TripleTable {
 		total_st++;
 		table.index(CTX_INDEX);
 		total_st++;
+		table.index(EXPL_INDEX);
+		total_st++;
 	}
 
 	public void dropIndex()
@@ -212,7 +215,8 @@ public class TripleTable {
 		if (isPredColumnPresent()) {
 			sb.append("  pred ").append(ids.getSqlType()).append(" NOT NULL,\n");
 		}
-		sb.append("  obj ").append(ids.getSqlType()).append(" NOT NULL\n");
+		sb.append("  obj ").append(ids.getSqlType()).append(" NOT NULL,\n");
+		sb.append("  expl ").append("BOOL").append(" NOT NULL\n");
 		return sb;
 	}
 }
