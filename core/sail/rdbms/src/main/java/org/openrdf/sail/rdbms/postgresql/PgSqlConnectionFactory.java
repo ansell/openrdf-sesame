@@ -7,7 +7,6 @@ package org.openrdf.sail.rdbms.postgresql;
 
 import org.openrdf.sail.rdbms.RdbmsConnectionFactory;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
-import org.openrdf.sail.rdbms.managers.TransTableManager;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 import org.openrdf.sail.rdbms.schema.TableFactory;
 import org.openrdf.sail.rdbms.schema.ValueTableFactory;
@@ -45,10 +44,5 @@ public class PgSqlConnectionFactory extends RdbmsConnectionFactory {
 	@Override
 	protected RdbmsQueryOptimizer createOptimizer() {
 		return new PgSqlQueryOptimizer();
-	}
-
-	@Override
-	protected TransTableManager createTransTableManager() {
-		return new PgSqlTransTableManager();
 	}
 }
