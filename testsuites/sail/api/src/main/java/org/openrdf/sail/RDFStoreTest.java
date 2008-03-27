@@ -158,7 +158,10 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		throws Exception
 	{
 		try {
-			con.close();
+			if (con.isOpen()) {
+				con.rollback();
+				con.close();
+			}
 		}
 		finally {
 			sail.shutDown();
@@ -250,6 +253,20 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 	{
 		StringBuffer sb = new StringBuffer();
 		for (int i=0;i<512;i++) {
+			sb.append(Character.toChars('A' + (i%26)));
+		}
+		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
+		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
+		Literal obj = new LiteralImpl("guernica" + sb.toString());
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
+	public void testReallyLongLiteralRoundTrip()
+		throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		for (int i=0;i<1024000;i++) {
 			sb.append(Character.toChars('A' + (i%26)));
 		}
 		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
