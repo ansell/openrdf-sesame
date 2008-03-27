@@ -44,6 +44,7 @@ public class HashManager extends ManagerBase {
 	private UriManager uris;
 	private LiteralManager literals;
 	private Thread lookupThread;
+	private Object assignIds = new Object();
 	private Object working = new Object();
 	private BlockingQueue<RdbmsValue> queue;
 	private IdSequence idseq; 
@@ -54,6 +55,7 @@ public class HashManager extends ManagerBase {
 		public String stringValue() {
 			return null;
 		}};
+	private RdbmsValue taken;
 
 	public HashManager() {
 		instance = this;
@@ -85,7 +87,7 @@ public class HashManager extends ManagerBase {
 		lookupThread = new Thread(new Runnable() {
 			public void run() {
 				try {
-					lookupThread(working);
+					lookupThread(working, assignIds);
 				} catch (Exception e) {
 					exc = e;
 					logger.error(e.toString(), e);
@@ -138,7 +140,7 @@ public class HashManager extends ManagerBase {
 		throws InterruptedException, SQLException
 	{
 		List<RdbmsValue> values = new ArrayList<RdbmsValue>(getChunkSize());
-		synchronized (working) {
+		synchronized (assignIds) {
 			throwException();
 			if (value.isExpired(version)) {
 				Map<Long, Number> map = new HashMap<Long, Number>(getChunkSize());
@@ -162,7 +164,7 @@ public class HashManager extends ManagerBase {
 		while (taken != null) {
 			values.clear();
 			values.add(taken);
-			synchronized (working) {
+			synchronized (assignIds) {
 				assignIds(values, map);
 			}
 			for (RdbmsValue v : values) {
@@ -172,6 +174,19 @@ public class HashManager extends ManagerBase {
 			if (taken == closeSignal) {
 				queue.add(taken);
 				taken = null;
+			}
+		}
+		synchronized (working) {
+			values.clear();
+			synchronized (assignIds) {
+				if (this.taken != null && this.taken != closeSignal) {
+					values.add(this.taken);
+					assignIds(values, map);
+					this.taken = null;
+				}
+			}
+			for (RdbmsValue v : values) {
+				insert(v);
 			}
 		}
 		super.flush();
@@ -186,7 +201,7 @@ public class HashManager extends ManagerBase {
 		throws SQLException
 	{
 		super.flush(batch);
-		synchronized (working) {
+		synchronized (assignIds) {
 			synchronized (ids) {
 				HashBatch hb = (HashBatch) batch;
 				for (Long hash : hb.getHashes()) {
@@ -196,20 +211,25 @@ public class HashManager extends ManagerBase {
 		}
 	}
 
-	void lookupThread(Object working)
+	void lookupThread(Object working, Object assignIds)
 		throws InterruptedException, SQLException
 	{
 		List<RdbmsValue> values = new ArrayList<RdbmsValue>(getChunkSize());
 		Map<Long, Number> map = new HashMap<Long, Number>(getChunkSize());
-		RdbmsValue taken = queue.take();
+		taken = queue.take();
 		for (; taken != closeSignal; taken = queue.take()) {
-			values.clear();
-			values.add(taken);
 			synchronized (working) {
-				assignIds(values, map);
-			}
-			for (RdbmsValue v : values) {
-				insert(v);
+				values.clear();
+				synchronized (assignIds) {
+					if (taken != null) {
+						values.add(taken);
+						assignIds(values, map);
+						taken = null;
+					}
+				}
+				for (RdbmsValue v : values) {
+					insert(v);
+				}
 			}
 		}
 	}

@@ -7,6 +7,7 @@ package org.openrdf.sail.rdbms;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.concurrent.locks.Lock;
 
 import info.aduna.iteration.CloseableIteration;
 
@@ -48,6 +49,8 @@ public class RdbmsConnection extends SailConnectionBase {
 	private NamespaceManager namespaces;
 	private RdbmsQueryOptimizer optimizer;
 	private RdbmsEvaluationFactory factory;
+	private Lock lock;
+	private boolean locked;
 
 	public RdbmsConnection(RdbmsStore sail, RdbmsTripleRepository triples) {
 		super(sail);
@@ -66,6 +69,10 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	public void setRdbmsEvaluationFactory(RdbmsEvaluationFactory factory) {
 		this.factory = factory;
+	}
+
+	public void setLock(Lock lock) {
+		this.lock = lock;
 	}
 
 	@Override
@@ -98,6 +105,8 @@ public class RdbmsConnection extends SailConnectionBase {
 			triples.close();
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
+		} finally {
+			unlock();
 		}
 	}
 
@@ -105,6 +114,7 @@ public class RdbmsConnection extends SailConnectionBase {
 	protected void commitInternal() throws SailException {
 		try {
 			triples.commit();
+			unlock();
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
@@ -154,6 +164,8 @@ public class RdbmsConnection extends SailConnectionBase {
 			triples.rollback();
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
+		} finally {
+			unlock();
 		}
 	}
 
@@ -216,9 +228,32 @@ public class RdbmsConnection extends SailConnectionBase {
 	@Override
 	protected void startTransactionInternal() throws SailException {
 		try {
+			lock();
 			triples.begin();
 		} catch (SQLException e) {
 			throw new RdbmsException(e);
+		}
+	}
+
+	@Override
+	protected void finalize()
+		throws Throwable
+	{
+		unlock();
+		super.finalize();
+	}
+
+	private void lock() {
+		if (lock != null) {
+			lock.lock();
+			locked = true;
+		}
+	}
+
+	private void unlock() {
+		if (locked && lock != null) {
+			locked = false;
+			lock.unlock();
 		}
 	}
 
