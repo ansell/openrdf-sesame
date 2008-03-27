@@ -9,6 +9,8 @@ import static java.sql.Connection.TRANSACTION_READ_COMMITTED;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.sql.DataSource;
 
@@ -73,6 +75,7 @@ public class RdbmsConnectionFactory {
 	private BNodeTable bnodeTable;
 	private LiteralTable literalTable;
 	private IdSequence ids;
+	private final Lock lock = new ReentrantLock(); 
 
 	public void setSail(RdbmsStore sail) {
 		this.sail = sail;
@@ -282,6 +285,7 @@ public class RdbmsConnectionFactory {
 			optimizer.setLiteralTable(literalTable);
 			optimizer.setHashTable(hashTable);
 			conn.setRdbmsQueryOptimizer(optimizer);
+			conn.setLock(lock);
 			return conn;
 		} catch (SQLException e) {
 			throw new RdbmsException(e);

@@ -146,6 +146,10 @@ public class RdbmsTripleRepository {
 		}
 		conn.setAutoCommit(true);
 		conn.close();
+		if (readLock != null) {
+			readLock.unlock();
+			readLock = null;
+		}
 	}
 
 	public synchronized void commit() throws SQLException, RdbmsException, InterruptedException {
@@ -186,6 +190,17 @@ public class RdbmsTripleRepository {
 			readLock.unlock();
 			readLock = null;
 		}
+	}
+
+	@Override
+	protected void finalize()
+		throws Throwable
+	{
+		if (readLock != null) {
+			readLock.unlock();
+			readLock = null;
+		}
+		super.finalize();
 	}
 
 	public void add(RdbmsStatement st) throws SailException, SQLException, InterruptedException {
