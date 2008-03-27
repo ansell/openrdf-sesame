@@ -95,9 +95,11 @@ public class TransactionTable {
 		batch.setObject(2, subj);
 		if (temporary == null && !triples.isPredColumnPresent()) {
 			batch.setObject(3, obj);
+			batch.setObject(4, true); // TODO explicit
 		} else {
 			batch.setObject(3, pred);
 			batch.setObject(4, obj);
+			batch.setObject(5, true); // TODO explicit
 		}
 		batch.addBatch();
 		queue.put(batch);
@@ -141,14 +143,14 @@ public class TransactionTable {
 		if (triples.isPredColumnPresent()) {
 			sb.append("pred, ");
 		}
-		sb.append("obj FROM ");
+		sb.append("obj, expl FROM ");
 		sb.append(temporary.getName()).append(" tr\n");
 		sb.append("WHERE NOT EXISTS (");
 		sb.append("SELECT ctx, subj, ");
 		if (triples.isPredColumnPresent()) {
 			sb.append("pred, ");
 		}
-		sb.append("obj FROM ");
+		sb.append("obj, expl FROM ");
 		sb.append(tableName).append(" st\n");
 		sb.append("WHERE st.ctx = tr.ctx");
 		sb.append(" AND st.subj = tr.subj");
@@ -156,6 +158,7 @@ public class TransactionTable {
 			sb.append(" AND st.pred = tr.pred");
 		}
 		sb.append(" AND st.obj = tr.obj");
+		sb.append(" AND st.expl = tr.expl");
 		sb.append(")");
 		return sb.toString();
 	}
@@ -173,12 +176,12 @@ public class TransactionTable {
 		if (predColumnPresent) {
 			sb.append("pred, ");
 		}
-		sb.append("obj)\n");
+		sb.append("obj, expl)\n");
 		sb.append("VALUES (?, ?, ");
 		if (predColumnPresent) {
 			sb.append("?, ");
 		}
-		sb.append("?)");
+		sb.append("?, ?)");
 		return sb.toString();
 	}
 
