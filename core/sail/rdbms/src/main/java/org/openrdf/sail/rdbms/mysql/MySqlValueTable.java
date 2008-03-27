@@ -23,7 +23,7 @@ public class MySqlValueTable extends ValueTable {
 		if (type == Types.VARCHAR) {
 			return declare + FEILD_COLLATE;
 		} else if (type == Types.LONGVARCHAR) {
-			return declare + FEILD_COLLATE;
+			return "LONGTEXT" + FEILD_COLLATE;
 		} else {
 			return declare;
 		}
