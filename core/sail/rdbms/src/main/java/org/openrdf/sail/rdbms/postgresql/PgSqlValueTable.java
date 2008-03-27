@@ -5,11 +5,8 @@
  */
 package org.openrdf.sail.rdbms.postgresql;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Types;
 
-import org.openrdf.sail.rdbms.schema.RdbmsTable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
@@ -22,42 +19,6 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
 public class PgSqlValueTable extends ValueTable {
 
 	@Override
-	public void initialize() throws SQLException {
-		super.initialize();
-
-		RdbmsTable tmp = getInsertTable();
-		StringBuilder sb = new StringBuilder();
-		sb.append("PREPARE ").append(tmp.getName());
-		sb.append("_insert (").append(sql(getIdType(), -1)).append(", ");
-		sb.append(sql(getSqlType(), getLength())
-				.replaceAll("\\(.*\\)", ""));
-		sb.append(") AS\n");
-		sb.append("INSERT INTO ").append(tmp.getName());
-		sb.append(" VALUES ($1, $2)");
-		tmp.execute(sb.toString());
-
-		sb.delete(0, sb.length());
-		sb.append("PREPARE ").append(tmp.getName());
-		sb.append("_insert_select AS\n");
-		sb.append("INSERT INTO ").append(getRdbmsTable().getName());
-		sb.append(" (id, value) SELECT DISTINCT id, value FROM ");
-		sb.append(tmp.getName()).append(" tmp\n");
-		sb.append("WHERE NOT EXISTS (SELECT id FROM ").append(getRdbmsTable().getName());
-		sb.append(" val WHERE val.id = tmp.id)");
-		tmp.execute(sb.toString());
-	}
-
-	@Override
-	public void close()
-		throws SQLException
-	{
-		RdbmsTable tmp = getInsertTable();
-		tmp.execute("DEALLOCATE " + tmp.getName() + "_insert");
-		tmp.execute("DEALLOCATE " + tmp.getName() + "_insert_select");
-		super.close();
-	}
-
-	@Override
 	public String sql(int type, int length) {
 		switch (type) {
 		case Types.DOUBLE:
@@ -65,26 +26,6 @@ public class PgSqlValueTable extends ValueTable {
 		default:
 			return super.sql(type, length);
 		}
-	}
-
-	@Override
-	protected PreparedStatement prepareInsert(String sql)
-		throws SQLException
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append("EXECUTE ").append(getInsertTable().getName());
-		sb.append("_insert(?, ?)");
-		return super.prepareInsert(sb.toString());
-	}
-
-	@Override
-	protected PreparedStatement prepareInsertSelect(String sql)
-		throws SQLException
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append("EXECUTE ").append(getInsertTable().getName());
-		sb.append("_insert_select");
-		return super.prepareInsertSelect(sb.toString());
 	}
 
 }
