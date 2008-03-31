@@ -501,7 +501,7 @@ public class Console {
 
 	private boolean connectLocal(String path) {
 		File dir = new File(path);
-		if (!dir.exists() && !dir.isDirectory()) {
+		if (!dir.exists() || !dir.isDirectory()) {
 			writeError("Specified path is not an (existing) directory: " + path);
 			return false;
 		}
