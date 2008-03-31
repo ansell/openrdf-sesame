@@ -31,6 +31,7 @@ public class RdbmsException extends SailException {
 	}
 
 	public RdbmsException(Exception e) {
+		super(e);
 	}
 
 }
