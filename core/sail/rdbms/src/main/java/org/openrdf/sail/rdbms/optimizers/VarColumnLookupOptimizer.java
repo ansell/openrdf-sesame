@@ -35,23 +35,27 @@ import org.openrdf.sail.rdbms.algebra.base.ValueColumnBase;
  * @author James Leigh
  * 
  */
-public class VarColumnLookupOptimizer extends
-		RdbmsQueryModelVisitorBase<RuntimeException> implements QueryOptimizer {
+public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<RuntimeException> implements
+		QueryOptimizer
+{
+
 	private FromItem parent;
+
 	private FromItem gparent;
 
 	public VarColumnLookupOptimizer() {
 		super();
 	}
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset,
-			BindingSet bindings) {
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		parent = null;
 		tupleExpr.visit(this);
 	}
 
 	@Override
-	public void meetFromItem(FromItem node) throws RuntimeException {
+	public void meetFromItem(FromItem node)
+		throws RuntimeException
+	{
 		FromItem top = gparent;
 		gparent = parent;
 		parent = node;
@@ -61,7 +65,9 @@ public class VarColumnLookupOptimizer extends
 	}
 
 	@Override
-	public void meet(SelectQuery node) throws RuntimeException {
+	public void meet(SelectQuery node)
+		throws RuntimeException
+	{
 		gparent = node.getFrom();
 		parent = node.getFrom();
 		super.meet(node);
@@ -70,7 +76,9 @@ public class VarColumnLookupOptimizer extends
 	}
 
 	@Override
-	public void meet(BNodeColumn node) throws RuntimeException {
+	public void meet(BNodeColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = replaceVar(node);
 		if (var == null)
 			return;
@@ -80,7 +88,9 @@ public class VarColumnLookupOptimizer extends
 	}
 
 	@Override
-	public void meet(DatatypeColumn node) throws RuntimeException {
+	public void meet(DatatypeColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = replaceVar(node);
 		if (var == null)
 			return;
@@ -90,7 +100,9 @@ public class VarColumnLookupOptimizer extends
 	}
 
 	@Override
-	public void meet(DateTimeColumn node) throws RuntimeException {
+	public void meet(DateTimeColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = replaceVar(node);
 		if (var == null)
 			return;
@@ -100,7 +112,9 @@ public class VarColumnLookupOptimizer extends
 	}
 
 	@Override
-	public void meet(LabelColumn node) throws RuntimeException {
+	public void meet(LabelColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = replaceVar(node);
 		if (var == null)
 			return;
@@ -110,7 +124,9 @@ public class VarColumnLookupOptimizer extends
 	}
 
 	@Override
-	public void meet(LongLabelColumn node) throws RuntimeException {
+	public void meet(LongLabelColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = replaceVar(node);
 		if (var == null)
 			return;
@@ -120,7 +136,9 @@ public class VarColumnLookupOptimizer extends
 	}
 
 	@Override
-	public void meet(LanguageColumn node) throws RuntimeException {
+	public void meet(LanguageColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = replaceVar(node);
 		if (var == null)
 			return;
@@ -130,7 +148,9 @@ public class VarColumnLookupOptimizer extends
 	}
 
 	@Override
-	public void meet(NumericColumn node) throws RuntimeException {
+	public void meet(NumericColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = replaceVar(node);
 		if (var == null)
 			return;
@@ -140,7 +160,9 @@ public class VarColumnLookupOptimizer extends
 	}
 
 	@Override
-	public void meet(LongURIColumn node) throws RuntimeException {
+	public void meet(LongURIColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = replaceVar(node);
 		if (var == null)
 			return;
@@ -150,7 +172,9 @@ public class VarColumnLookupOptimizer extends
 	}
 
 	@Override
-	public void meet(URIColumn node) throws RuntimeException {
+	public void meet(URIColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = replaceVar(node);
 		if (var == null)
 			return;
@@ -160,12 +184,16 @@ public class VarColumnLookupOptimizer extends
 	}
 
 	@Override
-	public void meet(RefIdColumn node) throws RuntimeException {
+	public void meet(RefIdColumn node)
+		throws RuntimeException
+	{
 		replaceVar(node);
 	}
 
 	@Override
-	public void meet(HashColumn node) throws RuntimeException {
+	public void meet(HashColumn node)
+		throws RuntimeException
+	{
 		replaceVar(node);
 	}
 
@@ -173,14 +201,17 @@ public class VarColumnLookupOptimizer extends
 		ColumnVar var;
 		if (gparent == parent) {
 			var = parent.getVar(node.getVarName());
-		} else {
+		}
+		else {
 			var = gparent.getVarForChildren(node.getVarName());
 		}
 		if (var == null) {
 			node.replaceWith(new SqlNull());
-		} else if (var.isImplied() && node.getParentNode() instanceof SqlIsNull) {
+		}
+		else if (var.isImplied() && node.getParentNode() instanceof SqlIsNull) {
 			node.replaceWith(new IdColumn(var.getAlias(), "subj"));
-		} else {
+		}
+		else {
 			node.setRdbmsVar(var);
 		}
 		return var;

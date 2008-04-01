@@ -14,35 +14,36 @@ import org.openrdf.model.impl.ContextStatementImpl;
  * 
  */
 public class RdbmsStatement extends ContextStatementImpl {
+
 	private static final long serialVersionUID = -5970166748706214658L;
 
 	public RdbmsStatement(RdbmsResource subject, RdbmsURI predicate, RdbmsValue object) {
 		this(subject, predicate, object, null);
 	}
 
-	public RdbmsStatement(RdbmsResource subject, RdbmsURI predicate, RdbmsValue object,
-			RdbmsResource context) {
+	public RdbmsStatement(RdbmsResource subject, RdbmsURI predicate, RdbmsValue object, RdbmsResource context)
+	{
 		super(subject, predicate, object, context);
 	}
 
 	@Override
 	public RdbmsResource getSubject() {
-		return (RdbmsResource) super.getSubject();
+		return (RdbmsResource)super.getSubject();
 	}
 
 	@Override
 	public RdbmsURI getPredicate() {
-		return (RdbmsURI) super.getPredicate();
+		return (RdbmsURI)super.getPredicate();
 	}
 
 	@Override
 	public RdbmsValue getObject() {
-		return (RdbmsValue) super.getObject();
+		return (RdbmsValue)super.getObject();
 	}
 
 	@Override
 	public RdbmsResource getContext() {
-		return (RdbmsResource) super.getContext();
+		return (RdbmsResource)super.getContext();
 	}
 
 }

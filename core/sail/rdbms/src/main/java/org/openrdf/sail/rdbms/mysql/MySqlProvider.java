@@ -17,8 +17,7 @@ import org.openrdf.sail.rdbms.RdbmsProvider;
  */
 public class MySqlProvider implements RdbmsProvider {
 
-	public RdbmsConnectionFactory createRdbmsConnectionFactory(String dbName,
-			String dbVersion) {
+	public RdbmsConnectionFactory createRdbmsConnectionFactory(String dbName, String dbVersion) {
 		if ("MySQL".equalsIgnoreCase(dbName))
 			return new MySqlConnectionFactory();
 		return null;

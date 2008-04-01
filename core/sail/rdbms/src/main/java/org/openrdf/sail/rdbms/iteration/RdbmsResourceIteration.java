@@ -21,18 +21,21 @@ import org.openrdf.sail.rdbms.model.RdbmsResource;
  * @author James Leigh
  * 
  */
-public class RdbmsResourceIteration extends
-		RdbmIterationBase<RdbmsResource, SailException> {
+public class RdbmsResourceIteration extends RdbmIterationBase<RdbmsResource, SailException> {
+
 	private RdbmsValueFactory vf;
 
 	public RdbmsResourceIteration(RdbmsValueFactory vf, PreparedStatement stmt)
-			throws SQLException {
+		throws SQLException
+	{
 		super(stmt);
 		this.vf = vf;
 	}
 
 	@Override
-	protected RdbmsResource convert(ResultSet rs) throws SQLException {
+	protected RdbmsResource convert(ResultSet rs)
+		throws SQLException
+	{
 		Number id = rs.getLong(0 + 1);
 		return vf.getRdbmsResource(id, rs.getString(0 + 2));
 	}

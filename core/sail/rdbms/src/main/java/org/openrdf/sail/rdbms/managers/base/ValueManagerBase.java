@@ -15,9 +15,13 @@ import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.IdSequence;
 
 public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase {
+
 	private LRUMap<Object, V> cache;
+
 	private HashManager hashes;
+
 	private AtomicInteger version = new AtomicInteger();
+
 	private IdSequence ids;
 
 	public void setHashManager(HashManager hashes) {
@@ -99,14 +103,17 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 	protected abstract int getBatchSize();
 
 	protected abstract void insert(Number id, V value)
-			throws SQLException, InterruptedException;
+		throws SQLException, InterruptedException;
 
 	protected abstract Object key(V value);
 
-	protected abstract boolean expunge(String condition) throws SQLException;
+	protected abstract boolean expunge(String condition)
+		throws SQLException;
 
 	@Override
-	protected void optimize() throws SQLException {
+	protected void optimize()
+		throws SQLException
+	{
 		if (hashes != null) {
 			hashes.optimize();
 		}

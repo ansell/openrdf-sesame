@@ -18,9 +18,13 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
  * 
  */
 public class NamespacesTable {
+
 	private RdbmsTable table;
+
 	private String INSERT;
+
 	private String UPDATE;
+
 	private String UPDATE_ALL_NULL;
 
 	public NamespacesTable(RdbmsTable table) {
@@ -41,7 +45,9 @@ public class NamespacesTable {
 		UPDATE_ALL_NULL = sb.toString();
 	}
 
-	public void initialize() throws SQLException {
+	public void initialize()
+		throws SQLException
+	{
 		if (!table.isCreated()) {
 			createTable();
 		}
@@ -53,18 +59,24 @@ public class NamespacesTable {
 		table.close();
 	}
 
-	protected void createTable() throws SQLException {
+	protected void createTable()
+		throws SQLException
+	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("  prefix VARCHAR(127),\n");
 		sb.append("  namespace TEXT NOT NULL\n");
 		createTable(sb);
 	}
 
-	protected void createTable(CharSequence sb) throws SQLException {
+	protected void createTable(CharSequence sb)
+		throws SQLException
+	{
 		table.createTable(sb);
 	}
 
-	public void insert(String prefix, String namespace) throws SQLException {
+	public void insert(String prefix, String namespace)
+		throws SQLException
+	{
 		int result = table.executeUpdate(INSERT, prefix, namespace);
 		if (result != 1 && result != Statement.SUCCESS_NO_INFO)
 			throw new RdbmsRuntimeException("Namespace could not be created");
@@ -73,18 +85,22 @@ public class NamespacesTable {
 	}
 
 	public void updatePrefix(String prefix, String namespace)
-			throws SQLException {
+		throws SQLException
+	{
 		int result = table.executeUpdate(UPDATE, prefix, namespace);
 		if (result != 1 && result != Statement.SUCCESS_NO_INFO)
-			throw new RdbmsRuntimeException(
-					"Namespace prefix could not be changed");
+			throw new RdbmsRuntimeException("Namespace prefix could not be changed");
 	}
 
-	public void clearPrefixes() throws SQLException {
+	public void clearPrefixes()
+		throws SQLException
+	{
 		table.execute(UPDATE_ALL_NULL);
 	}
 
-	public List<Object[]> selectAll() throws SQLException {
+	public List<Object[]> selectAll()
+		throws SQLException
+	{
 		return table.select("prefix", "namespace");
 	}
 

@@ -17,8 +17,12 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * 
  */
 public class SqlCompare extends BinarySqlOperator {
+
 	public enum Operator {
-		GT, LT, GE, LE
+		GT,
+		LT,
+		GE,
+		LE
 	}
 
 	private Operator op;
@@ -26,20 +30,20 @@ public class SqlCompare extends BinarySqlOperator {
 	public SqlCompare(SqlExpr leftArg, CompareOp op, SqlExpr rightArg) {
 		super(leftArg, rightArg);
 		switch (op) {
-		case GT:
-			this.op = Operator.GT;
-			break;
-		case LT:
-			this.op = Operator.LT;
-			break;
-		case GE:
-			this.op = Operator.GE;
-			break;
-		case LE:
-			this.op = Operator.LE;
-			break;
-		default:
-			throw new AssertionError(op);
+			case GT:
+				this.op = Operator.GT;
+				break;
+			case LT:
+				this.op = Operator.LT;
+				break;
+			case GE:
+				this.op = Operator.GE;
+				break;
+			case LE:
+				this.op = Operator.LE;
+				break;
+			default:
+				throw new AssertionError(op);
 		}
 	}
 
@@ -53,8 +57,9 @@ public class SqlCompare extends BinarySqlOperator {
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 
@@ -74,11 +79,12 @@ public class SqlCompare extends BinarySqlOperator {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final SqlCompare other = (SqlCompare) obj;
+		final SqlCompare other = (SqlCompare)obj;
 		if (op == null) {
 			if (other.op != null)
 				return false;
-		} else if (!op.equals(other.op))
+		}
+		else if (!op.equals(other.op))
 			return false;
 		return true;
 	}

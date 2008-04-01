@@ -16,7 +16,9 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * 
  */
 public class IdColumn extends RdbmsQueryModelNodeBase implements SqlExpr {
+
 	private String alias;
+
 	private String column;
 
 	public IdColumn(String alias) {
@@ -51,14 +53,15 @@ public class IdColumn extends RdbmsQueryModelNodeBase implements SqlExpr {
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 
 	@Override
 	public IdColumn clone() {
-		return (IdColumn) super.clone();
+		return (IdColumn)super.clone();
 	}
 
 	@Override
@@ -78,16 +81,18 @@ public class IdColumn extends RdbmsQueryModelNodeBase implements SqlExpr {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final IdColumn other = (IdColumn) obj;
+		final IdColumn other = (IdColumn)obj;
 		if (alias == null) {
 			if (other.alias != null)
 				return false;
-		} else if (!alias.equals(other.alias))
+		}
+		else if (!alias.equals(other.alias))
 			return false;
 		if (column == null) {
 			if (other.column != null)
 				return false;
-		} else if (!column.equals(other.column))
+		}
+		else if (!column.equals(other.column))
 			return false;
 		return true;
 	}

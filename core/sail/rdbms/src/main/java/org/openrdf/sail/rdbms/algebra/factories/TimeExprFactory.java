@@ -34,12 +34,13 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * @author James Leigh
  * 
  */
-public class TimeExprFactory extends
-		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class TimeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+
 	protected SqlExpr result;
 
 	public SqlExpr createTimeExpr(ValueExpr expr)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = null;
 		if (expr == null)
 			return new SqlNull();
@@ -55,12 +56,16 @@ public class TimeExprFactory extends
 	}
 
 	@Override
-	public void meet(Lang node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Lang node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
 	@Override
-	public void meet(MathExpr node) throws UnsupportedRdbmsOperatorException {
+	public void meet(MathExpr node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
@@ -78,25 +83,28 @@ public class TimeExprFactory extends
 	public void meet(Var node) {
 		if (node.getValue() == null) {
 			result = new DateTimeColumn(node);
-		} else {
+		}
+		else {
 			result = valueOf(node.getValue());
 		}
 	}
 
 	@Override
 	protected void meetNode(QueryModelNode arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		throw unsupported(arg);
 	}
 
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
-			Literal lit = (Literal) value;
+			Literal lit = (Literal)value;
 			URI dt = lit.getDatatype();
 			if (dt != null && XMLDatatypeUtil.isCalendarDatatype(dt)) {
 				try {
 					return new NumberValue(getCalendarValue(lit.calendarValue()));
-				} catch (IllegalArgumentException e) {
+				}
+				catch (IllegalArgumentException e) {
 					return null;
 				}
 			}

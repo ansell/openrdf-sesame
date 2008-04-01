@@ -6,6 +6,7 @@
 package org.openrdf.sail.rdbms.model;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.impl.BNodeImpl;
 
 /**
  * Wraps a {@link BNodeImpl} providing an internal id and version.
@@ -14,7 +15,9 @@ import org.openrdf.model.BNode;
  * 
  */
 public class RdbmsBNode extends RdbmsResource implements BNode {
+
 	private static final long serialVersionUID = 861142250999359435L;
+
 	private BNode bnode;
 
 	public RdbmsBNode(BNode bnode) {

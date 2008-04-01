@@ -48,11 +48,14 @@ import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
  * @author James Leigh
  * 
  */
-public class SqlConstantOptimizer extends
-		RdbmsQueryModelVisitorBase<RuntimeException> implements QueryOptimizer {
+public class SqlConstantOptimizer extends RdbmsQueryModelVisitorBase<RuntimeException> implements
+		QueryOptimizer
+{
 
 	@Override
-	public void meet(SelectQuery node) throws RuntimeException {
+	public void meet(SelectQuery node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		List<SqlExpr> filters = node.getFilters();
 		for (int i = filters.size() - 1; i >= 0; i--) {
@@ -63,37 +66,49 @@ public class SqlConstantOptimizer extends
 	}
 
 	@Override
-	public void meet(SqlAnd node) throws RuntimeException {
+	public void meet(SqlAnd node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		SqlExpr left = node.getLeftArg();
 		SqlExpr right = node.getRightArg();
 		if (left instanceof FalseValue || right instanceof FalseValue) {
 			replace(node, new FalseValue());
-		} else if (left instanceof TrueValue && right instanceof TrueValue) {
+		}
+		else if (left instanceof TrueValue && right instanceof TrueValue) {
 			replace(node, new TrueValue());
-		} else if (left instanceof TrueValue) {
+		}
+		else if (left instanceof TrueValue) {
 			replace(node, right.clone());
-		} else if (right instanceof TrueValue) {
+		}
+		else if (right instanceof TrueValue) {
 			replace(node, left.clone());
-		} else if (right instanceof SqlNull || left instanceof SqlNull) {
+		}
+		else if (right instanceof SqlNull || left instanceof SqlNull) {
 			replace(node, new SqlNull());
-		} else if (right instanceof SqlNot && ((SqlNot) right).getArg().equals(left)) {
+		}
+		else if (right instanceof SqlNot && ((SqlNot)right).getArg().equals(left)) {
 			replace(node, new FalseValue());
-		} else if (left instanceof SqlNot && ((SqlNot) left).getArg().equals(right)) {
+		}
+		else if (left instanceof SqlNot && ((SqlNot)left).getArg().equals(right)) {
 			replace(node, new FalseValue());
 		}
 	}
 
 	@Override
-	public void meet(SqlCase node) throws RuntimeException {
+	public void meet(SqlCase node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		List<Entry> entries = node.getEntries();
 		for (SqlCase.Entry e : entries) {
 			if (e.getCondition() instanceof SqlNull) {
 				node.removeEntry(e);
-			} else if (e.getCondition() instanceof FalseValue) {
+			}
+			else if (e.getCondition() instanceof FalseValue) {
 				node.removeEntry(e);
-			} else if (e.getCondition() instanceof TrueValue) {
+			}
+			else if (e.getCondition() instanceof TrueValue) {
 				node.truncateEntries(e);
 				break;
 			}
@@ -101,16 +116,19 @@ public class SqlConstantOptimizer extends
 		entries = node.getEntries();
 		if (entries.isEmpty()) {
 			replace(node, new SqlNull());
-		} else if (entries.size() == 1) {
+		}
+		else if (entries.size() == 1) {
 			Entry entry = entries.get(0);
 			if (entry.getCondition() instanceof TrueValue) {
 				replace(node, entry.getResult().clone());
-			} else if (entry.getCondition() instanceof FalseValue) {
+			}
+			else if (entry.getCondition() instanceof FalseValue) {
 				replace(node, new SqlNull());
-			} else if (entry.getCondition() instanceof SqlNot) {
-				SqlNot not = (SqlNot) entry.getCondition();
+			}
+			else if (entry.getCondition() instanceof SqlNot) {
+				SqlNot not = (SqlNot)entry.getCondition();
 				if (not.getArg() instanceof SqlIsNull) {
-					SqlIsNull is = (SqlIsNull) not.getArg();
+					SqlIsNull is = (SqlIsNull)not.getArg();
 					if (is.getArg().equals(entry.getResult())) {
 						replace(node, entry.getResult().clone());
 					}
@@ -120,7 +138,9 @@ public class SqlConstantOptimizer extends
 	}
 
 	@Override
-	public void meet(SqlCompare node) throws RuntimeException {
+	public void meet(SqlCompare node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		SqlExpr left = node.getLeftArg();
 		SqlExpr right = node.getRightArg();
@@ -130,54 +150,64 @@ public class SqlConstantOptimizer extends
 	}
 
 	@Override
-	public void meet(SqlConcat node) throws RuntimeException {
+	public void meet(SqlConcat node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		SqlExpr left = node.getLeftArg();
 		SqlExpr right = node.getRightArg();
 		if (left instanceof StringValue && right instanceof StringValue) {
-			StringValue l = (StringValue) left;
-			StringValue r = (StringValue) right;
+			StringValue l = (StringValue)left;
+			StringValue r = (StringValue)right;
 			replace(node, new StringValue(l.getValue() + r.getValue()));
 		}
 	}
 
 	@Override
-	public void meet(SqlEq node) throws RuntimeException {
+	public void meet(SqlEq node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		SqlExpr left = node.getLeftArg();
 		SqlExpr right = node.getRightArg();
 		if (left instanceof SqlNull || right instanceof SqlNull) {
 			replace(node, new SqlNull());
-		} else if (left instanceof SqlConstant<?>
-				&& right instanceof SqlConstant<?>) {
-			SqlConstant<?> l = (SqlConstant<?>) left;
-			SqlConstant<?> r = (SqlConstant<?>) right;
+		}
+		else if (left instanceof SqlConstant<?> && right instanceof SqlConstant<?>) {
+			SqlConstant<?> l = (SqlConstant<?>)left;
+			SqlConstant<?> r = (SqlConstant<?>)right;
 			if (l.getValue().equals(r.getValue())) {
 				replace(node, new TrueValue());
-			} else {
+			}
+			else {
 				replace(node, new FalseValue());
 			}
 		}
 	}
 
 	@Override
-	public void meet(SqlIsNull node) throws RuntimeException {
+	public void meet(SqlIsNull node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		SqlExpr arg = node.getArg();
 		if (arg instanceof SqlNull) {
 			replace(node, new TrueValue());
-		} else if (arg instanceof SqlConstant<?>) {
+		}
+		else if (arg instanceof SqlConstant<?>) {
 			replace(node, new FalseValue());
-		} else if (arg instanceof SqlCase) {
+		}
+		else if (arg instanceof SqlCase) {
 			SqlExpr rep = null;
 			SqlExpr prev = null;
-			SqlCase scase = (SqlCase) arg;
+			SqlCase scase = (SqlCase)arg;
 			for (Entry entry : scase.getEntries()) {
 				SqlExpr condition = entry.getCondition();
 				if (rep == null) {
 					rep = and(condition.clone(), isNull(entry.getResult().clone()));
 					prev = not(condition.clone());
-				} else {
+				}
+				else {
 					rep = or(rep, and(and(prev.clone(), condition.clone()), isNull(entry.getResult().clone())));
 					prev = and(prev, not(condition.clone()));
 				}
@@ -187,73 +217,93 @@ public class SqlConstantOptimizer extends
 	}
 
 	@Override
-	public void meet(SqlLowerCase node) throws RuntimeException {
+	public void meet(SqlLowerCase node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		if (node.getArg() instanceof SqlNull) {
 			replace(node, new SqlNull());
-		} else if (node.getArg() instanceof SqlConstant) {
-			SqlConstant arg = (SqlConstant) node.getArg();
+		}
+		else if (node.getArg() instanceof SqlConstant) {
+			SqlConstant arg = (SqlConstant)node.getArg();
 			String lower = arg.getValue().toString().toLowerCase(Locale.US);
 			replace(node, str(lower));
 		}
 	}
 
 	@Override
-	public void meet(SqlNot node) throws RuntimeException {
+	public void meet(SqlNot node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		SqlExpr arg = node.getArg();
 		if (arg instanceof TrueValue) {
 			replace(node, new FalseValue());
-		} else if (arg instanceof FalseValue) {
+		}
+		else if (arg instanceof FalseValue) {
 			replace(node, new TrueValue());
-		} else if (arg instanceof SqlNull) {
+		}
+		else if (arg instanceof SqlNull) {
 			replace(node, new SqlNull());
-		} else if (arg instanceof SqlNot) {
-			SqlNot not = (SqlNot) arg;
+		}
+		else if (arg instanceof SqlNot) {
+			SqlNot not = (SqlNot)arg;
 			replace(node, not.getArg().clone());
-		} else if (arg instanceof SqlOr) {
-			SqlOr or = (SqlOr) arg;
+		}
+		else if (arg instanceof SqlOr) {
+			SqlOr or = (SqlOr)arg;
 			replace(node, and(not(or.getLeftArg().clone()), not(or.getRightArg().clone())));
 		}
 	}
 
 	@Override
-	public void meet(SqlOr node) throws RuntimeException {
+	public void meet(SqlOr node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		SqlExpr left = node.getLeftArg();
 		SqlExpr right = node.getRightArg();
 		if (left instanceof TrueValue || right instanceof TrueValue) {
 			replace(node, new TrueValue());
-		} else if (left instanceof FalseValue && right instanceof FalseValue) {
+		}
+		else if (left instanceof FalseValue && right instanceof FalseValue) {
 			replace(node, new FalseValue());
-		} else if (left instanceof FalseValue) {
+		}
+		else if (left instanceof FalseValue) {
 			replace(node, right.clone());
-		} else if (right instanceof FalseValue) {
+		}
+		else if (right instanceof FalseValue) {
 			replace(node, left.clone());
-		} else if (right instanceof SqlNull && andAllTheWay(node)) {
+		}
+		else if (right instanceof SqlNull && andAllTheWay(node)) {
 			replace(node, left.clone());
-		} else if (left instanceof SqlNull && andAllTheWay(node)) {
+		}
+		else if (left instanceof SqlNull && andAllTheWay(node)) {
 			replace(node, right.clone());
-		} else if (right instanceof SqlNull && left instanceof SqlNull) {
+		}
+		else if (right instanceof SqlNull && left instanceof SqlNull) {
 			replace(node, new SqlNull());
-		} else if (left instanceof SqlNull && right instanceof SqlOr) {
-			SqlOr r = (SqlOr) right;
+		}
+		else if (left instanceof SqlNull && right instanceof SqlOr) {
+			SqlOr r = (SqlOr)right;
 			SqlExpr rleft = r.getLeftArg();
 			SqlExpr rright = r.getRightArg();
 			if (rleft instanceof SqlNull || rright instanceof SqlNull) {
 				replace(node, right.clone());
 			}
-		} else if (right instanceof SqlNull && left instanceof SqlOr) {
-			SqlOr l = (SqlOr) left;
+		}
+		else if (right instanceof SqlNull && left instanceof SqlOr) {
+			SqlOr l = (SqlOr)left;
 			SqlExpr lleft = l.getLeftArg();
 			SqlExpr lright = l.getRightArg();
 			if (lleft instanceof SqlNull || lright instanceof SqlNull) {
 				replace(node, left.clone());
 			}
-		} else if (right instanceof SqlNull && left instanceof SqlAnd) {
+		}
+		else if (right instanceof SqlNull && left instanceof SqlAnd) {
 			// value IS NOT NULL AND value = ? OR NULL
 			// -> value = ?
-			SqlAnd l = (SqlAnd) left;
+			SqlAnd l = (SqlAnd)left;
 			SqlExpr lleft = l.getLeftArg();
 			SqlExpr lright = l.getRightArg();
 			SqlExpr isNotNull = arg(arg(lleft, SqlNot.class), SqlIsNull.class);
@@ -268,8 +318,7 @@ public class SqlConstantOptimizer extends
 		sqlExpr.visit(this);
 	}
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset,
-			BindingSet bindings) {
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		tupleExpr.visit(this);
 	}
 

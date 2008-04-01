@@ -29,14 +29,19 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * @author James Leigh
  * 
  */
-public class RdbmsBindingIteration extends
-		RdbmIterationBase<BindingSet, QueryEvaluationException> {
+public class RdbmsBindingIteration extends RdbmIterationBase<BindingSet, QueryEvaluationException> {
+
 	private BindingSet bindings;
+
 	private Collection<ColumnVar> projections;
+
 	private RdbmsValueFactory vf;
+
 	private IdSequence ids;
 
-	public RdbmsBindingIteration(PreparedStatement stmt) throws SQLException {
+	public RdbmsBindingIteration(PreparedStatement stmt)
+		throws SQLException
+	{
 		super(stmt);
 	}
 
@@ -57,7 +62,9 @@ public class RdbmsBindingIteration extends
 	}
 
 	@Override
-	protected BindingSet convert(ResultSet rs) throws SQLException {
+	protected BindingSet convert(ResultSet rs)
+		throws SQLException
+	{
 		QueryBindingSet result = new QueryBindingSet(bindings);
 		for (ColumnVar var : projections) {
 			String name = var.getName();
@@ -80,14 +87,17 @@ public class RdbmsBindingIteration extends
 	}
 
 	private RdbmsResource createResource(ResultSet rs, int index)
-			throws SQLException {
+		throws SQLException
+	{
 		Number id = ids.idOf(rs.getLong(index));
 		if (id.longValue() == ValueTable.NIL_ID)
 			return null;
 		return vf.getRdbmsResource(id, rs.getString(index + 1));
 	}
 
-	private RdbmsValue createValue(ResultSet rs, int index) throws SQLException {
+	private RdbmsValue createValue(ResultSet rs, int index)
+		throws SQLException
+	{
 		Number id = ids.idOf(rs.getLong(index));
 		if (ids.isLiteral(id)) {
 			String label = rs.getString(index + 1);

@@ -14,6 +14,7 @@ import java.sql.SQLException;
  * 
  */
 public class RdbmsRuntimeException extends RuntimeException {
+
 	private static final long serialVersionUID = 9001754124114839089L;
 
 	public RdbmsRuntimeException(SQLException e) {

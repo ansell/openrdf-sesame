@@ -31,13 +31,21 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
  * 
  */
 public class RdbmsStore extends SailBase {
+
 	private RdbmsConnectionFactory factory;
+
 	private String jdbcDriver;
+
 	private String url;
+
 	private String user;
+
 	private String password;
+
 	private int maxTripleTables;
+
 	private boolean triplesIndexed = true;
+
 	private boolean sequenced = true;
 
 	public RdbmsStore() {
@@ -59,8 +67,7 @@ public class RdbmsStore extends SailBase {
 		this.url = jdbcUrl;
 	}
 
-	public RdbmsStore(String jdbcDriver, String jdbcUrl, String user,
-			String password) {
+	public RdbmsStore(String jdbcDriver, String jdbcUrl, String user, String password) {
 		this.jdbcDriver = jdbcDriver;
 		this.url = jdbcUrl;
 		this.user = user;
@@ -96,13 +103,17 @@ public class RdbmsStore extends SailBase {
 		this.sequenced = useSequence;
 	}
 
-	public void initialize() throws SailException {
+	public void initialize()
+		throws SailException
+	{
 		if (factory == null) {
 			try {
 				factory = createFactory(jdbcDriver, url, user, password);
-			} catch (SailException e) {
+			}
+			catch (SailException e) {
 				throw e;
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				throw new RdbmsException(e);
 			}
 		}
@@ -112,7 +123,9 @@ public class RdbmsStore extends SailBase {
 		factory.init();
 	}
 
-	public boolean isWritable() throws SailException {
+	public boolean isWritable()
+		throws SailException
+	{
 		return factory.isWritable();
 	}
 
@@ -121,18 +134,23 @@ public class RdbmsStore extends SailBase {
 	}
 
 	@Override
-	protected SailConnection getConnectionInternal() throws SailException {
+	protected SailConnection getConnectionInternal()
+		throws SailException
+	{
 		return factory.createConnection();
 	}
 
 	@Override
-	protected void shutDownInternal() throws SailException {
+	protected void shutDownInternal()
+		throws SailException
+	{
 		DataSource ds = factory.getDataSource();
 		factory.shutDown();
 		if (ds instanceof BasicDataSource) {
 			try {
-				((BasicDataSource) ds).close();
-			} catch (SQLException e) {
+				((BasicDataSource)ds).close();
+			}
+			catch (SQLException e) {
 				throw new RdbmsException(e);
 			}
 		}
@@ -142,8 +160,9 @@ public class RdbmsStore extends SailBase {
 		this.factory = factory;
 	}
 
-	private RdbmsConnectionFactory createFactory(String jdbcDriver, String url,
-			String user, String password) throws Exception {
+	private RdbmsConnectionFactory createFactory(String jdbcDriver, String url, String user, String password)
+		throws Exception
+	{
 		if (jdbcDriver != null) {
 			Class.forName(jdbcDriver);
 		}
@@ -151,7 +170,8 @@ public class RdbmsStore extends SailBase {
 		Connection con;
 		if (user == null || url.startsWith("jdbc:")) {
 			con = ds.getConnection();
-		} else {
+		}
+		else {
 			con = ds.getConnection(user, password);
 		}
 		try {
@@ -160,17 +180,20 @@ public class RdbmsStore extends SailBase {
 			factory.setSail(this);
 			if (user == null || url.startsWith("jdbc:")) {
 				factory.setDataSource(ds);
-			} else {
+			}
+			else {
 				factory.setDataSource(ds, user, password);
 			}
 			return factory;
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 	}
 
 	private DataSource lookupDataSource(String url, String user, String password)
-			throws NamingException {
+		throws NamingException
+	{
 		if (url.startsWith("jdbc:")) {
 			BasicDataSource ds = new BasicDataSource();
 			ds.setUrl(url);
@@ -178,11 +201,12 @@ public class RdbmsStore extends SailBase {
 			ds.setPassword(password);
 			return ds;
 		}
-		return (DataSource) new InitialContext().lookup(url);
+		return (DataSource)new InitialContext().lookup(url);
 	}
 
 	private RdbmsConnectionFactory newFactory(DatabaseMetaData metaData)
-			throws SQLException {
+		throws SQLException
+	{
 		String dbn = metaData.getDatabaseProductName();
 		String dbv = metaData.getDatabaseProductVersion();
 		RdbmsConnectionFactory factory;

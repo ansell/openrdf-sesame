@@ -15,17 +15,24 @@ import java.util.List;
  * 
  */
 public class SqlJoinBuilder {
+
 	private boolean left;
+
 	private SqlQueryBuilder subquery;
+
 	private String table;
+
 	private String alias;
+
 	private QueryBuilderFactory factory;
+
 	private List<SqlJoinBuilder> joins = new ArrayList<SqlJoinBuilder>();
+
 	private SqlExprBuilder on;
+
 	private List<SqlJoinBuilder> leftJoins = new ArrayList<SqlJoinBuilder>();
 
-	public SqlJoinBuilder(String table, String alias,
-			QueryBuilderFactory factory) {
+	public SqlJoinBuilder(String table, String alias, QueryBuilderFactory factory) {
 		super();
 		this.table = table;
 		this.alias = alias;
@@ -164,16 +171,18 @@ public class SqlJoinBuilder {
 	protected void appendJoin(StringBuilder from, SqlJoinBuilder join) {
 		if (join.isLeft()) {
 			from.append("\n LEFT JOIN ").append(join.getJoinClause());
-		} else if (join.on().isEmpty()) {
+		}
+		else if (join.on().isEmpty()) {
 			from.append(getSqlCrossJoin()).append(join.getJoinClause());
-		} else {
+		}
+		else {
 			from.append("\n INNER JOIN ").append(join.getJoinClause());
 		}
 		if (!join.on().isEmpty()) {
 			from.append(" ON (").append(join.on()).append(")");
-		} else if (join.isLeft()) {
-			from.append(" ON (").append(alias).append(".ctx = ").append(alias)
-					.append(".ctx)");
+		}
+		else if (join.isLeft()) {
+			from.append(" ON (").append(alias).append(".ctx = ").append(alias).append(".ctx)");
 		}
 	}
 

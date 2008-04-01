@@ -39,12 +39,13 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * @author James Leigh
  * 
  */
-public class DatatypeExprFactory extends
-		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class DatatypeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+
 	protected SqlExpr result;
 
 	public SqlExpr createDatatypeExpr(ValueExpr expr)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = null;
 		if (expr == null)
 			return new SqlNull();
@@ -60,12 +61,16 @@ public class DatatypeExprFactory extends
 	}
 
 	@Override
-	public void meet(Lang node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Lang node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
 	@Override
-	public void meet(MathExpr node) throws UnsupportedRdbmsOperatorException {
+	public void meet(MathExpr node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		boolean divide = node.getParentNode().equals(MathExpr.MathOp.DIVIDE);
 		ValueExpr left = node.getLeftArg();
 		ValueExpr right = node.getRightArg();
@@ -78,7 +83,9 @@ public class DatatypeExprFactory extends
 	}
 
 	@Override
-	public void meet(Str node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Str node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
@@ -91,27 +98,31 @@ public class DatatypeExprFactory extends
 	public void meet(Var var) {
 		if (var.getValue() == null) {
 			result = new DatatypeColumn(var);
-		} else {
+		}
+		else {
 			result = valueOf(var.getValue());
 		}
 	}
 
 	@Override
 	protected void meetNode(QueryModelNode arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		throw unsupported(arg);
 	}
 
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
-			URI datatype = ((Literal) value).getDatatype();
+			URI datatype = ((Literal)value).getDatatype();
 			if (datatype != null)
 				return str(datatype.stringValue());
 		}
 		return sqlNull();
 	}
 
-	private SqlExpr type(ValueExpr expr) throws UnsupportedRdbmsOperatorException {
+	private SqlExpr type(ValueExpr expr)
+		throws UnsupportedRdbmsOperatorException
+	{
 		return createDatatypeExpr(expr);
 	}
 

@@ -33,12 +33,13 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * @author James Leigh
  * 
  */
-public class BNodeExprFactory extends
-		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class BNodeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+
 	protected SqlExpr result;
 
 	public SqlExpr createBNodeExpr(ValueExpr expr)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = null;
 		if (expr == null)
 			return new SqlNull();
@@ -54,12 +55,16 @@ public class BNodeExprFactory extends
 	}
 
 	@Override
-	public void meet(Lang node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Lang node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
 	@Override
-	public void meet(MathExpr node) throws UnsupportedRdbmsOperatorException {
+	public void meet(MathExpr node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
@@ -77,20 +82,22 @@ public class BNodeExprFactory extends
 	public void meet(Var var) {
 		if (var.getValue() == null) {
 			result = new BNodeColumn(var);
-		} else {
+		}
+		else {
 			result = valueOf(var.getValue());
 		}
 	}
 
 	@Override
 	protected void meetNode(QueryModelNode arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		throw unsupported(arg);
 	}
 
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof BNode)
-			return str(((BNode) value).stringValue());
+			return str(((BNode)value).stringValue());
 		return sqlNull();
 	}
 }

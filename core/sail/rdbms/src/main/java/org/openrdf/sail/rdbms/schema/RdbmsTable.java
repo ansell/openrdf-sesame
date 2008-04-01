@@ -27,15 +27,25 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class RdbmsTable {
+
 	public static int total_opt;
+
 	public static int MAX_DELTA_TO_FORCE_OPTIMIZE = 10000;
+
 	private static final String[] TYPE_TABLE = new String[] { "TABLE" };
+
 	private Logger logger = LoggerFactory.getLogger(RdbmsTable.class);
+
 	private int addedCount;
+
 	private Connection conn;
+
 	private String name;
+
 	private int removedCount;
+
 	private long rowCount;
+
 	private PreparedStatement clear;
 
 	public RdbmsTable(String name) {
@@ -47,7 +57,9 @@ public class RdbmsTable {
 		this.conn = conn;
 	}
 
-	public void close() throws SQLException {
+	public void close()
+		throws SQLException
+	{
 		if (clear != null) {
 			clear.close();
 		}
@@ -58,7 +70,9 @@ public class RdbmsTable {
 		return rowCount;
 	}
 
-	public void clear() throws SQLException {
+	public void clear()
+		throws SQLException
+	{
 		if (clear == null) {
 			clear = conn.prepareStatement(buildClear());
 		}
@@ -66,54 +80,69 @@ public class RdbmsTable {
 		rowCount = 0;
 	}
 
-	public void createTable(CharSequence columns) throws SQLException {
+	public void createTable(CharSequence columns)
+		throws SQLException
+	{
 		execute(buildCreateTable(columns));
 		rowCount = 0;
 	}
 
-	public void createTransactionalTable(CharSequence columns) throws SQLException {
+	public void createTransactionalTable(CharSequence columns)
+		throws SQLException
+	{
 		execute(buildCreateTransactionalTable(columns));
 		rowCount = 0;
 	}
 
-	public void createTemporaryTable(CharSequence columns) throws SQLException {
+	public void createTemporaryTable(CharSequence columns)
+		throws SQLException
+	{
 		try {
 			execute(buildCreateTemporaryTable(columns));
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			// must already exist
 		}
 	}
 
-	public void execute(String command) throws SQLException {
+	public void execute(String command)
+		throws SQLException
+	{
 		if (command != null) {
 			Statement st = conn.createStatement();
 			try {
 				st.execute(command);
-			} catch (SQLException e) {
+			}
+			catch (SQLException e) {
 				logger.warn(e.getMessage() + '\n' + command);
 				throw e;
-			} finally {
+			}
+			finally {
 				st.close();
 			}
 		}
 	}
 
 	public int executeUpdate(String command, Object... parameters)
-			throws SQLException {
+		throws SQLException
+	{
 		PreparedStatement st = conn.prepareStatement(command);
 		try {
 			for (int i = 0; i < parameters.length; i++) {
 				if (parameters[i] == null) {
 					st.setNull(i + 1, Types.VARCHAR);
-				} else {
+				}
+				else {
 					st.setObject(i + 1, parameters[i]);
 				}
 			}
 			return st.executeUpdate();
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			logger.warn(e.getMessage() + '\n' + command);
 			throw e;
-		} finally {
+		}
+		finally {
 			st.close();
 		}
 	}
@@ -130,24 +159,34 @@ public class RdbmsTable {
 		return null;
 	}
 
-	public void primaryIndex(String... columns) throws SQLException {
+	public void primaryIndex(String... columns)
+		throws SQLException
+	{
 		execute(buildPrimaryIndex(columns));
 	}
 
-	public void index(String... columns) throws SQLException {
+	public void index(String... columns)
+		throws SQLException
+	{
 		if (columns.length == 1 && columns[0].equalsIgnoreCase("value")
-				&& getName().toUpperCase().contains("LONG_")) {
+				&& getName().toUpperCase().contains("LONG_"))
+		{
 			execute(buildLongIndex(columns));
-		} else {
+		}
+		else {
 			execute(buildIndex(columns));
 		}
 	}
 
-	public void dropIndex(String name) throws SQLException {
+	public void dropIndex(String name)
+		throws SQLException
+	{
 		execute(buildDropIndex(name));
 	}
 
-	public boolean isCreated() throws SQLException {
+	public boolean isCreated()
+		throws SQLException
+	{
 		DatabaseMetaData metaData = conn.getMetaData();
 		String c = getCatalog();
 		String s = getSchema();
@@ -155,20 +194,23 @@ public class RdbmsTable {
 		ResultSet tables = metaData.getTables(c, s, n, TYPE_TABLE);
 		try {
 			return tables.next();
-		} finally {
+		}
+		finally {
 			tables.close();
 		}
 	}
 
-	public Map<String, List<String>> getIndexes() throws SQLException {
+	public Map<String, List<String>> getIndexes()
+		throws SQLException
+	{
 		DatabaseMetaData metaData = conn.getMetaData();
 		String c = getCatalog();
 		String s = getSchema();
 		String n = getName();
 		ResultSet indexes = metaData.getIndexInfo(c, s, n, false, false);
 		try {
-			Map<String, List<String>> names = new HashMap<String,List<String>>();
-			while(indexes.next()) {
+			Map<String, List<String>> names = new HashMap<String, List<String>>();
+			while (indexes.next()) {
 				String index = indexes.getString(6);
 				String column = indexes.getString(9);
 				List<String> columns = names.get(index);
@@ -178,12 +220,15 @@ public class RdbmsTable {
 				columns.add(column);
 			}
 			return names;
-		} finally {
+		}
+		finally {
 			indexes.close();
 		}
 	}
 
-	public long count() throws SQLException {
+	public long count()
+		throws SQLException
+	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT COUNT(*)\n");
 		sb.append("FROM ").append(name);
@@ -198,15 +243,19 @@ public class RdbmsTable {
 					return rowCount;
 				}
 				return 0;
-			} finally {
+			}
+			finally {
 				rs.close();
 			}
-		} finally {
+		}
+		finally {
 			st.close();
 		}
 	}
 
-	public void modified(int inserted, int deleted) throws SQLException {
+	public void modified(int inserted, int deleted)
+		throws SQLException
+	{
 		if (inserted < 1 && deleted < 1)
 			return;
 		addedCount += inserted;
@@ -215,7 +264,9 @@ public class RdbmsTable {
 		assert rowCount >= 0 : rowCount;
 	}
 
-	public void optimize() throws SQLException {
+	public void optimize()
+		throws SQLException
+	{
 		if (optimize(addedCount + removedCount, rowCount)) {
 			execute(buildOptimize());
 			addedCount = removedCount = 0;
@@ -223,20 +274,27 @@ public class RdbmsTable {
 		}
 	}
 
-	public PreparedStatement prepareStatement(String sql) throws SQLException {
+	public PreparedStatement prepareStatement(String sql)
+		throws SQLException
+	{
 		return conn.prepareStatement(sql);
 	}
 
-	public void rollback() throws SQLException {
+	public void rollback()
+		throws SQLException
+	{
 		conn.rollback();
 	}
 
-	public List<Object[]> select(String... columns) throws SQLException {
+	public List<Object[]> select(String... columns)
+		throws SQLException
+	{
 		StringBuilder sb = new StringBuilder();
 		for (String column : columns) {
 			if (sb.length() == 0) {
 				sb.append("SELECT ");
-			} else {
+			}
+			else {
 				sb.append(", ");
 			}
 			sb.append(column);
@@ -259,15 +317,19 @@ public class RdbmsTable {
 				rowCount = result.size();
 				assert rowCount >= 0 : rowCount;
 				return result;
-			} finally {
+			}
+			finally {
 				rs.close();
 			}
-		} finally {
+		}
+		finally {
 			st.close();
 		}
 	}
 
-	public int[] aggregate(String... expressions) throws SQLException {
+	public int[] aggregate(String... expressions)
+		throws SQLException
+	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT COUNT(*)");
 		for (String expression : expressions) {
@@ -289,10 +351,12 @@ public class RdbmsTable {
 				rowCount = rs.getLong(1);
 				assert rowCount >= 0 : rowCount;
 				return result;
-			} finally {
+			}
+			finally {
 				rs.close();
 			}
-		} finally {
+		}
+		finally {
 			st.close();
 		}
 	}
@@ -365,8 +429,8 @@ public class RdbmsTable {
 	}
 
 	/**
-	 * Creates an index name based on the name of the columns and table that
-	 * it's supposed to index.
+	 * Creates an index name based on the name of the columns and table that it's
+	 * supposed to index.
 	 */
 	protected String buildIndexName(String... columns) {
 		StringBuffer sb = new StringBuffer(32);
@@ -378,7 +442,9 @@ public class RdbmsTable {
 		return sb.toString();
 	}
 
-	protected String buildOptimize() throws SQLException {
+	protected String buildOptimize()
+		throws SQLException
+	{
 		// There is no default for this in SQL92.
 		return null;
 	}
@@ -399,16 +465,19 @@ public class RdbmsTable {
 			return false;
 		if (!(obj instanceof RdbmsTable))
 			return false;
-		final RdbmsTable other = (RdbmsTable) obj;
+		final RdbmsTable other = (RdbmsTable)obj;
 		if (name == null) {
 			if (other.name != null)
 				return false;
-		} else if (!name.equals(other.name))
+		}
+		else if (!name.equals(other.name))
 			return false;
 		return true;
 	}
 
-	public void drop() throws SQLException {
+	public void drop()
+		throws SQLException
+	{
 		execute("DROP TABLE " + name);
 	}
 

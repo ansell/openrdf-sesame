@@ -6,15 +6,18 @@
 package org.openrdf.sail.rdbms.model;
 
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.URIImpl;
 
 /**
  * Wraps a {@link URIImpl} providing an internal id and version.
  * 
  * @author James Leigh
- *
+ * 
  */
- public class RdbmsURI extends RdbmsResource implements URI {
+public class RdbmsURI extends RdbmsResource implements URI {
+
 	private static final long serialVersionUID = 3317398596013196032L;
+
 	private URI uri;
 
 	public RdbmsURI(URI uri) {

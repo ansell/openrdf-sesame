@@ -18,10 +18,15 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * 
  */
 public class SelectProjection extends RdbmsQueryModelNodeBase {
+
 	private ColumnVar var;
+
 	private RefIdColumn id;
+
 	private SqlExpr stringValue;
+
 	private SqlExpr datatype;
+
 	private SqlExpr language;
 
 	public ColumnVar getVar() {
@@ -69,14 +74,16 @@ public class SelectProjection extends RdbmsQueryModelNodeBase {
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 
 	@Override
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-			throws X {
+		throws X
+	{
 		id.visit(visitor);
 		stringValue.visit(visitor);
 		datatype.visit(visitor);
@@ -84,24 +91,27 @@ public class SelectProjection extends RdbmsQueryModelNodeBase {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current,
-			QueryModelNode replacement) {
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (id == current) {
-			setId((RefIdColumn) replacement);
-		} else if (stringValue == current) {
-			setStringValue((SqlExpr) replacement);
-		} else if (datatype == current) {
-			setDatatype((SqlExpr) replacement);
-		} else if (language == current) {
-			setLanguage((SqlExpr) replacement);
-		} else {
+			setId((RefIdColumn)replacement);
+		}
+		else if (stringValue == current) {
+			setStringValue((SqlExpr)replacement);
+		}
+		else if (datatype == current) {
+			setDatatype((SqlExpr)replacement);
+		}
+		else if (language == current) {
+			setLanguage((SqlExpr)replacement);
+		}
+		else {
 			super.replaceChildNode(current, replacement);
 		}
 	}
 
 	@Override
 	public SelectProjection clone() {
-		SelectProjection clone = (SelectProjection) super.clone();
+		SelectProjection clone = (SelectProjection)super.clone();
 		clone.setId(getId().clone());
 		clone.setStringValue(getStringValue().clone());
 		clone.setDatatype(getDatatype().clone());
@@ -113,13 +123,10 @@ public class SelectProjection extends RdbmsQueryModelNodeBase {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((datatype == null) ? 0 : datatype.hashCode());
+		result = prime * result + ((datatype == null) ? 0 : datatype.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result
-				+ ((language == null) ? 0 : language.hashCode());
-		result = prime * result
-				+ ((stringValue == null) ? 0 : stringValue.hashCode());
+		result = prime * result + ((language == null) ? 0 : language.hashCode());
+		result = prime * result + ((stringValue == null) ? 0 : stringValue.hashCode());
 		result = prime * result + ((var == null) ? 0 : var.hashCode());
 		return result;
 	}
@@ -132,31 +139,36 @@ public class SelectProjection extends RdbmsQueryModelNodeBase {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final SelectProjection other = (SelectProjection) obj;
+		final SelectProjection other = (SelectProjection)obj;
 		if (datatype == null) {
 			if (other.datatype != null)
 				return false;
-		} else if (!datatype.equals(other.datatype))
+		}
+		else if (!datatype.equals(other.datatype))
 			return false;
 		if (id == null) {
 			if (other.id != null)
 				return false;
-		} else if (!id.equals(other.id))
+		}
+		else if (!id.equals(other.id))
 			return false;
 		if (language == null) {
 			if (other.language != null)
 				return false;
-		} else if (!language.equals(other.language))
+		}
+		else if (!language.equals(other.language))
 			return false;
 		if (stringValue == null) {
 			if (other.stringValue != null)
 				return false;
-		} else if (!stringValue.equals(other.stringValue))
+		}
+		else if (!stringValue.equals(other.stringValue))
 			return false;
 		if (var == null) {
 			if (other.var != null)
 				return false;
-		} else if (!var.equals(other.var))
+		}
+		else if (!var.equals(other.var))
 			return false;
 		return true;
 	}

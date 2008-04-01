@@ -16,6 +16,7 @@ import org.openrdf.sail.SailException;
  * 
  */
 public class RdbmsException extends SailException {
+
 	private static final long serialVersionUID = -4004800841908629772L;
 
 	public RdbmsException(SQLException e) {

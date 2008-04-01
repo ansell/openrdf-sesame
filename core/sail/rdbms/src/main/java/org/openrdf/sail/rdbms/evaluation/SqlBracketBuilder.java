@@ -12,7 +12,9 @@ package org.openrdf.sail.rdbms.evaluation;
  * 
  */
 public class SqlBracketBuilder extends SqlExprBuilder {
+
 	private SqlExprBuilder where;
+
 	private String closing = ")";
 
 	public SqlBracketBuilder(SqlExprBuilder where, QueryBuilderFactory factory) {

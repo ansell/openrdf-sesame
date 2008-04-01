@@ -16,21 +16,37 @@ import java.util.Map;
  * 
  */
 public class TripleTable {
+
 	public static int tables_created;
+
 	public static int total_st;
+
 	public static final boolean UNIQUE_INDEX_TRIPLES = true;
+
 	private static final String[] PKEY = { "obj", "subj", "ctx", "expl" };
+
 	private static final String[] SUBJ_INDEX = { "subj" };
+
 	private static final String[] CTX_INDEX = { "ctx" };
+
 	private static final String[] PRED_PKEY = { "obj", "subj", "pred", "ctx", "expl" };
+
 	private static final String[] PRED_INDEX = { "pred" };
+
 	private static final String[] EXPL_INDEX = { "expl" };
+
 	private RdbmsTable table;
+
 	private ValueTypes objTypes = new ValueTypes();
+
 	private ValueTypes subjTypes = new ValueTypes();
+
 	private boolean initialize;
+
 	private boolean predColumnPresent;
+
 	private boolean indexed;
+
 	private IdSequence ids;
 
 	public TripleTable(RdbmsTable table) {
@@ -53,7 +69,9 @@ public class TripleTable {
 		indexed = true;
 	}
 
-	public synchronized void initTable() throws SQLException {
+	public synchronized void initTable()
+		throws SQLException
+	{
 		if (initialize)
 			return;
 		table.createTransactionalTable(buildTableColumns());
@@ -63,7 +81,8 @@ public class TripleTable {
 			if (isPredColumnPresent()) {
 				table.primaryIndex(PRED_PKEY);
 				total_st++;
-			} else {
+			}
+			else {
 				table.primaryIndex(PKEY);
 				total_st++;
 			}
@@ -74,7 +93,9 @@ public class TripleTable {
 		initialize = true;
 	}
 
-	public void reload() throws SQLException {
+	public void reload()
+		throws SQLException
+	{
 		table.count();
 		if (table.size() > 0) {
 			ValueType[] values = ValueType.values();
@@ -106,7 +127,7 @@ public class TripleTable {
 					subjTypes.add(values[i]);
 				}
 			}
-		
+
 		}
 		initialize = true;
 	}
@@ -152,17 +173,23 @@ public class TripleTable {
 		return initialize;
 	}
 
-	public void blockUntilReady() throws SQLException {
+	public void blockUntilReady()
+		throws SQLException
+	{
 		if (initialize)
 			return;
 		initTable();
 	}
 
-	public String getName() throws SQLException {
+	public String getName()
+		throws SQLException
+	{
 		return table.getName();
 	}
 
-	public String getNameWhenReady() throws SQLException {
+	public String getNameWhenReady()
+		throws SQLException
+	{
 		blockUntilReady();
 		return table.getName();
 	}
@@ -183,7 +210,9 @@ public class TripleTable {
 		this.subjTypes.merge(valueTypes);
 	}
 
-	public void modified(int addedCount, int removedCount) throws SQLException {
+	public void modified(int addedCount, int removedCount)
+		throws SQLException
+	{
 		blockUntilReady();
 		table.modified(addedCount, removedCount);
 		table.optimize();
@@ -193,7 +222,9 @@ public class TripleTable {
 		}
 	}
 
-	public boolean isEmpty() throws SQLException {
+	public boolean isEmpty()
+		throws SQLException
+	{
 		blockUntilReady();
 		return table.size() == 0;
 	}
@@ -203,7 +234,9 @@ public class TripleTable {
 		return table.getName();
 	}
 
-	public void drop() throws SQLException {
+	public void drop()
+		throws SQLException
+	{
 		blockUntilReady();
 		table.drop();
 	}

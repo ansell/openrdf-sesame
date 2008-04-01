@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.rdbms.managers;
 
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,26 +34,44 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
  * @author James Leigh
  */
 public class HashManager extends ManagerBase {
+
 	public static HashManager instance;
+
 	private Logger logger = LoggerFactory.getLogger(HashManager.class);
+
 	private HashTable table;
+
 	private Map<Long, Number> ids;
+
 	private AtomicInteger version = new AtomicInteger();
+
 	private BNodeManager bnodes;
+
 	private UriManager uris;
+
 	private LiteralManager literals;
+
 	private Thread lookupThread;
+
 	private Object assignIds = new Object();
+
 	private Object working = new Object();
+
 	private BlockingQueue<RdbmsValue> queue;
-	private IdSequence idseq; 
+
+	private IdSequence idseq;
+
 	Exception exc;
+
 	RdbmsValue closeSignal = new RdbmsValue() {
+
 		private static final long serialVersionUID = -2211413309013905712L;
 
 		public String stringValue() {
 			return null;
-		}};
+		}
+	};
+
 	private RdbmsValue taken;
 
 	public HashManager() {
@@ -85,10 +102,12 @@ public class HashManager extends ManagerBase {
 	public void init() {
 		queue = new ArrayBlockingQueue<RdbmsValue>(table.getBatchSize());
 		lookupThread = new Thread(new Runnable() {
+
 			public void run() {
 				try {
 					lookupThread(working, assignIds);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					exc = e;
 					logger.error(e.toString(), e);
 				}
@@ -107,7 +126,8 @@ public class HashManager extends ManagerBase {
 				queue.put(closeSignal);
 				lookupThread.join();
 			}
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			logger.warn(e.toString(), e);
 		}
 		super.close();
@@ -124,7 +144,9 @@ public class HashManager extends ManagerBase {
 		table.optimize();
 	}
 
-	public boolean removedStatements(int count, String condition) throws SQLException {
+	public boolean removedStatements(int count, String condition)
+		throws SQLException
+	{
 		if (table.expungeRemovedStatements(count, condition)) {
 			version.addAndGet(1);
 			return true;
@@ -132,7 +154,9 @@ public class HashManager extends ManagerBase {
 		return false;
 	}
 
-	public void lookupId(RdbmsValue value) throws InterruptedException {
+	public void lookupId(RdbmsValue value)
+		throws InterruptedException
+	{
 		queue.put(value);
 	}
 
@@ -210,7 +234,7 @@ public class HashManager extends ManagerBase {
 		super.flush(batch);
 		synchronized (assignIds) {
 			synchronized (ids) {
-				HashBatch hb = (HashBatch) batch;
+				HashBatch hb = (HashBatch)batch;
 				for (Long hash : hb.getHashes()) {
 					ids.remove(hash);
 				}
@@ -288,7 +312,9 @@ public class HashManager extends ManagerBase {
 		}
 	}
 
-	private Map<Long, Number> lookup(Collection<RdbmsValue> values, Map<Long, Number> map) throws SQLException {
+	private Map<Long, Number> lookup(Collection<RdbmsValue> values, Map<Long, Number> map)
+		throws SQLException
+	{
 		assert !values.isEmpty();
 		assert values.size() <= getChunkSize();
 		map.clear();

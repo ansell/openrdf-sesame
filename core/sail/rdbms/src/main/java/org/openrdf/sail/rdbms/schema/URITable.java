@@ -14,8 +14,11 @@ import java.sql.SQLException;
  * 
  */
 public class URITable {
+
 	private ValueTable shorter;
+
 	private ValueTable longer;
+
 	private int version;
 
 	public URITable(ValueTable shorter, ValueTable longer) {
@@ -24,7 +27,9 @@ public class URITable {
 		this.longer = longer;
 	}
 
-	public void close() throws SQLException {
+	public void close()
+		throws SQLException
+	{
 		shorter.close();
 		longer.close();
 	}
@@ -45,16 +50,21 @@ public class URITable {
 		return longer.getName();
 	}
 
-	public void insertShort(Number id, String value) throws SQLException, InterruptedException {
+	public void insertShort(Number id, String value)
+		throws SQLException, InterruptedException
+	{
 		shorter.insert(id, value);
 	}
 
-	public void insertLong(Number id, String value) throws SQLException, InterruptedException {
+	public void insertLong(Number id, String value)
+		throws SQLException, InterruptedException
+	{
 		longer.insert(id, value);
 	}
 
 	public boolean expunge(String condition)
-			throws SQLException {
+		throws SQLException
+	{
 		boolean bool = false;
 		bool |= shorter.expunge(condition);
 		bool |= longer.expunge(condition);
@@ -66,7 +76,9 @@ public class URITable {
 		return shorter.getName() + " UNION ALL " + longer.getName();
 	}
 
-	public void optimize() throws SQLException {
+	public void optimize()
+		throws SQLException
+	{
 		shorter.optimize();
 		longer.optimize();
 	}

@@ -17,14 +17,16 @@ import org.openrdf.query.algebra.QueryModelVisitor;
 public abstract class RdbmsQueryModelNodeBase extends QueryModelNodeBase {
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
-			throws X {
+		throws X
+	{
 		if (visitor instanceof RdbmsQueryModelVisitorBase) {
-			visit((RdbmsQueryModelVisitorBase<X>) visitor);
-		} else {
+			visit((RdbmsQueryModelVisitorBase<X>)visitor);
+		}
+		else {
 			visitor.meetOther(this);
 		}
 	}
 
-	public abstract <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X;
+	public abstract <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X;
 }

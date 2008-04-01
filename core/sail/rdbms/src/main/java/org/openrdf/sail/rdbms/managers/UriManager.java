@@ -12,14 +12,15 @@ import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.schema.URITable;
 
 /**
- * Manages URIs. Including creating, inserting, and looking up their
- * IDs.
+ * Manages URIs. Including creating, inserting, and looking up their IDs.
  * 
  * @author James Leigh
  * 
  */
 public class UriManager extends ValueManagerBase<RdbmsURI> {
+
 	public static UriManager instance;
+
 	private URITable table;
 
 	public UriManager() {
@@ -56,17 +57,22 @@ public class UriManager extends ValueManagerBase<RdbmsURI> {
 	}
 
 	@Override
-	protected void insert(Number id, RdbmsURI resource) throws SQLException, InterruptedException {
+	protected void insert(Number id, RdbmsURI resource)
+		throws SQLException, InterruptedException
+	{
 		String uri = resource.stringValue();
 		if (getIdSequence().isLong(id)) {
 			table.insertLong(id, uri);
-		} else {
+		}
+		else {
 			table.insertShort(id, uri);
 		}
 	}
 
 	@Override
-	protected void optimize() throws SQLException {
+	protected void optimize()
+		throws SQLException
+	{
 		super.optimize();
 		table.optimize();
 	}

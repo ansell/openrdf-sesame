@@ -21,10 +21,10 @@ public class PgSqlValueTable extends ValueTable {
 	@Override
 	public String sql(int type, int length) {
 		switch (type) {
-		case Types.DOUBLE:
-			return "double precision";
-		default:
-			return super.sql(type, length);
+			case Types.DOUBLE:
+				return "double precision";
+			default:
+				return super.sql(type, length);
 		}
 	}
 

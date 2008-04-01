@@ -21,21 +21,37 @@ import java.util.concurrent.BlockingQueue;
  * 
  */
 public class ValueTable {
+
 	public static int BATCH_SIZE = 8 * 1024;
+
 	public static final long NIL_ID = 0; // TODO
+
 	private static final String[] PKEY = { "id" };
+
 	private static final String[] VALUE_INDEX = { "value" };
+
 	private int length = -1;
+
 	private int sqlType;
+
 	private int idType;
+
 	private String INSERT;
+
 	private String INSERT_SELECT;
+
 	private String EXPUNGE;
+
 	private RdbmsTable table;
+
 	private RdbmsTable temporary;
+
 	private ValueBatch batch;
+
 	private BlockingQueue<Batch> queue;
+
 	private boolean indexingValues;
+
 	private PreparedStatement insertSelect;
 
 	public void setQueue(BlockingQueue<Batch> queue) {
@@ -102,7 +118,9 @@ public class ValueTable {
 		return BATCH_SIZE;
 	}
 
-	public void initialize() throws SQLException {
+	public void initialize()
+		throws SQLException
+	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ").append(getInsertTable().getName());
 		sb.append(" (id, value) VALUES (?, ?)");
@@ -126,7 +144,8 @@ public class ValueTable {
 			if (isIndexingValues()) {
 				table.index(VALUE_INDEX);
 			}
-		} else {
+		}
+		else {
 			table.count();
 		}
 		if (temporary != null && !temporary.isCreated()) {
@@ -134,7 +153,9 @@ public class ValueTable {
 		}
 	}
 
-	public void close() throws SQLException {
+	public void close()
+		throws SQLException
+	{
 		if (insertSelect != null) {
 			insertSelect.close();
 		}
@@ -144,7 +165,9 @@ public class ValueTable {
 		table.close();
 	}
 
-	public synchronized void insert(Number id, Object value) throws SQLException, InterruptedException {
+	public synchronized void insert(Number id, Object value)
+		throws SQLException, InterruptedException
+	{
 		ValueBatch batch = getValueBatch();
 		if (isExpired(batch)) {
 			batch = newValueBatch();
@@ -191,16 +214,21 @@ public class ValueTable {
 		this.batch = batch;
 		if (queue == null) {
 			batch.flush();
-		} else {
+		}
+		else {
 			queue.put(batch);
 		}
 	}
 
-	public void optimize() throws SQLException {
+	public void optimize()
+		throws SQLException
+	{
 		table.optimize();
 	}
 
-	public boolean expunge(String condition) throws SQLException {
+	public boolean expunge(String condition)
+		throws SQLException
+	{
 		synchronized (table) {
 			int count = table.executeUpdate(EXPUNGE + condition);
 			if (count < 1)
@@ -210,7 +238,9 @@ public class ValueTable {
 		}
 	}
 
-	public List<Long> maxIds(int shift, int mod) throws SQLException {
+	public List<Long> maxIds(int shift, int mod)
+		throws SQLException
+	{
 		String column = "id";
 		StringBuilder expr = new StringBuilder();
 		expr.append("MOD((").append(column);
@@ -233,42 +263,44 @@ public class ValueTable {
 					result.add(rs.getLong(2));
 				}
 				return result;
-			} finally {
+			}
+			finally {
 				rs.close();
 			}
-		} finally {
+		}
+		finally {
 			st.close();
 		}
 	}
 
 	public String sql(int type, int length) {
 		switch (type) {
-		case Types.VARCHAR:
-			if (length > 0)
-				return "VARCHAR(" + length + ")";
-			return "TEXT";
-		case Types.LONGVARCHAR:
-			if (length > 0)
-				return "LONGVARCHAR(" + length + ")";
-			return "TEXT";
-		case Types.BIGINT:
-			return "BIGINT";
-		case Types.INTEGER:
-			return "INTEGER";
-		case Types.SMALLINT:
-			return "SMALLINT";
-		case Types.FLOAT:
-			return "FLOAT";
-		case Types.DOUBLE:
-			return "DOUBLE";
-		case Types.DECIMAL:
-			return "DECIMAL";
-		case Types.BOOLEAN:
-			return "BOOLEAN";
-		case Types.TIMESTAMP:
-			return "TIMESTAMP";
-		default:
-			throw new AssertionError("Unsupported SQL Type: " + type);
+			case Types.VARCHAR:
+				if (length > 0)
+					return "VARCHAR(" + length + ")";
+				return "TEXT";
+			case Types.LONGVARCHAR:
+				if (length > 0)
+					return "LONGVARCHAR(" + length + ")";
+				return "TEXT";
+			case Types.BIGINT:
+				return "BIGINT";
+			case Types.INTEGER:
+				return "INTEGER";
+			case Types.SMALLINT:
+				return "SMALLINT";
+			case Types.FLOAT:
+				return "FLOAT";
+			case Types.DOUBLE:
+				return "DOUBLE";
+			case Types.DECIMAL:
+				return "DECIMAL";
+			case Types.BOOLEAN:
+				return "BOOLEAN";
+			case Types.TIMESTAMP:
+				return "TIMESTAMP";
+			default:
+				throw new AssertionError("Unsupported SQL Type: " + type);
 		}
 	}
 
@@ -285,15 +317,21 @@ public class ValueTable {
 		return tmp;
 	}
 
-	protected PreparedStatement prepareInsert(String sql) throws SQLException {
+	protected PreparedStatement prepareInsert(String sql)
+		throws SQLException
+	{
 		return table.prepareStatement(sql);
 	}
 
-	protected PreparedStatement prepareInsertSelect(String sql) throws SQLException {
+	protected PreparedStatement prepareInsertSelect(String sql)
+		throws SQLException
+	{
 		return table.prepareStatement(sql);
 	}
 
-	protected void createTable(RdbmsTable table) throws SQLException {
+	protected void createTable(RdbmsTable table)
+		throws SQLException
+	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("  id ").append(sql(idType, -1)).append(" NOT NULL,\n");
 		sb.append("  value ").append(sql(sqlType, length));
@@ -301,7 +339,9 @@ public class ValueTable {
 		table.createTable(sb);
 	}
 
-	protected void createTemporaryTable(RdbmsTable table) throws SQLException {
+	protected void createTemporaryTable(RdbmsTable table)
+		throws SQLException
+	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("  id ").append(sql(idType, -1)).append(" NOT NULL,\n");
 		sb.append("  value ").append(sql(sqlType, length));

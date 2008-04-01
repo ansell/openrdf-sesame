@@ -38,14 +38,22 @@ import org.openrdf.sail.rdbms.schema.URITable;
  * @author James Leigh
  * 
  */
-public class ValueJoinOptimizer extends
-		RdbmsQueryModelVisitorBase<RuntimeException> implements QueryOptimizer {
+public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeException> implements
+		QueryOptimizer
+{
+
 	private URITable uris;
+
 	private BNodeTable bnodes;
+
 	private LiteralTable literals;
+
 	private HashTable hashes;
+
 	private FromItem join;
+
 	private FromItem parent;
+
 	private SelectQuery query;
 
 	public void setUriTable(URITable uris) {
@@ -64,14 +72,15 @@ public class ValueJoinOptimizer extends
 		this.hashes = hashes;
 	}
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset,
-			BindingSet bindings) {
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		join = null;
 		tupleExpr.visit(this);
 	}
 
 	@Override
-	public void meetFromItem(FromItem node) throws RuntimeException {
+	public void meetFromItem(FromItem node)
+		throws RuntimeException
+	{
 		FromItem top = parent;
 		parent = join;
 		join = node;
@@ -81,7 +90,9 @@ public class ValueJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(SelectQuery node) throws RuntimeException {
+	public void meet(SelectQuery node)
+		throws RuntimeException
+	{
 		query = node;
 		parent = node.getFrom();
 		join = node.getFrom();
@@ -92,10 +103,13 @@ public class ValueJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(HashColumn node) throws RuntimeException {
+	public void meet(HashColumn node)
+		throws RuntimeException
+	{
 		if (hashes == null || hashes.getName() == null) {
 			super.meet(node);
-		} else {
+		}
+		else {
 			ColumnVar var = node.getRdbmsVar();
 			String alias = "h" + getDBName(var);
 			String tableName = hashes.getName();
@@ -104,7 +118,9 @@ public class ValueJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(BNodeColumn node) throws RuntimeException {
+	public void meet(BNodeColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = node.getRdbmsVar();
 		String alias = "b" + getDBName(var);
 		String tableName = bnodes.getName();
@@ -112,7 +128,9 @@ public class ValueJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(DatatypeColumn node) throws RuntimeException {
+	public void meet(DatatypeColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = node.getRdbmsVar();
 		String alias = "d" + getDBName(var);
 		String tableName = literals.getDatatypeTable().getName();
@@ -120,7 +138,9 @@ public class ValueJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(DateTimeColumn node) throws RuntimeException {
+	public void meet(DateTimeColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = node.getRdbmsVar();
 		String alias = "t" + getDBName(var);
 		String tableName = literals.getDateTimeTable().getName();
@@ -128,7 +148,9 @@ public class ValueJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(LabelColumn node) throws RuntimeException {
+	public void meet(LabelColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = node.getRdbmsVar();
 		String alias = "l" + getDBName(var);
 		String tableName = literals.getLabelTable().getName();
@@ -136,7 +158,9 @@ public class ValueJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(LongLabelColumn node) throws RuntimeException {
+	public void meet(LongLabelColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = node.getRdbmsVar();
 		String alias = "ll" + getDBName(var);
 		String tableName = literals.getLongLabelTable().getName();
@@ -144,7 +168,9 @@ public class ValueJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(LanguageColumn node) throws RuntimeException {
+	public void meet(LanguageColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = node.getRdbmsVar();
 		String alias = "g" + getDBName(var);
 		String tableName = literals.getLanguageTable().getName();
@@ -152,7 +178,9 @@ public class ValueJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(NumericColumn node) throws RuntimeException {
+	public void meet(NumericColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = node.getRdbmsVar();
 		String alias = "n" + getDBName(var);
 		String tableName = literals.getNumericTable().getName();
@@ -160,7 +188,9 @@ public class ValueJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(LongURIColumn node) throws RuntimeException {
+	public void meet(LongURIColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = node.getRdbmsVar();
 		String alias = "lu" + getDBName(var);
 		String tableName = uris.getLongTableName();
@@ -168,7 +198,9 @@ public class ValueJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(URIColumn node) throws RuntimeException {
+	public void meet(URIColumn node)
+		throws RuntimeException
+	{
 		ColumnVar var = node.getRdbmsVar();
 		String alias = "u" + getDBName(var);
 		String tableName = uris.getShortTableName();
@@ -191,7 +223,8 @@ public class ValueJoinOptimizer extends
 			FromItem valueJoin = valueJoin(alias, tableName, var, left);
 			if (join == parent || join.getFromItem(var.getAlias()) != null) {
 				join.addJoin(valueJoin);
-			} else {
+			}
+			else {
 				parent.addJoinBefore(valueJoin, join);
 			}
 		}

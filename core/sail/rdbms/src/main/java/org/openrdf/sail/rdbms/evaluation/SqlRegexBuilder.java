@@ -12,9 +12,13 @@ package org.openrdf.sail.rdbms.evaluation;
  * 
  */
 public class SqlRegexBuilder {
+
 	private SqlExprBuilder where;
+
 	private SqlExprBuilder value;
+
 	private SqlExprBuilder pattern;
+
 	private SqlExprBuilder flags;
 
 	public SqlRegexBuilder(SqlExprBuilder where, QueryBuilderFactory factory) {

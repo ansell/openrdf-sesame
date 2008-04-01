@@ -28,11 +28,17 @@ import org.openrdf.sail.config.SailImplConfigBase;
  * 
  */
 public class RdbmsStoreConfig extends SailImplConfigBase {
+
 	private String jdbcDriver;
+
 	private String url;
+
 	private String user;
+
 	private String password;
+
 	private String layout;
+
 	private String indexed;
 
 	public RdbmsStoreConfig() {
@@ -101,7 +107,8 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 
 	@Override
 	public void parse(Graph graph, Resource implNode)
-			throws SailConfigException {
+		throws SailConfigException
+	{
 		super.parse(graph, implNode);
 
 		try {
@@ -111,13 +118,15 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 			password = get(graph, implNode, PASSWORD);
 			layout = get(graph, implNode, LAYOUT);
 			indexed = get(graph, implNode, INDEXED);
-		} catch (GraphUtilException e) {
+		}
+		catch (GraphUtilException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}
 
 	private String get(Graph graph, Resource implNode, URI predicate)
-			throws GraphUtilException {
+		throws GraphUtilException
+	{
 		Literal lit = getOptionalObjectLiteral(graph, implNode, predicate);
 		if (lit == null)
 			return null;

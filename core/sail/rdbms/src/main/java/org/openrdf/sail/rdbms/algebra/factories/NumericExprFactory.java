@@ -35,12 +35,13 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * @author James Leigh
  * 
  */
-public class NumericExprFactory extends
-		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class NumericExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+
 	protected SqlExpr result;
 
 	public SqlExpr createNumericExpr(ValueExpr expr)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = null;
 		if (expr == null)
 			return new SqlNull();
@@ -56,12 +57,16 @@ public class NumericExprFactory extends
 	}
 
 	@Override
-	public void meet(Lang node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Lang node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
 	@Override
-	public void meet(MathExpr node) throws UnsupportedRdbmsOperatorException {
+	public void meet(MathExpr node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlExpr left = createNumericExpr(node.getLeftArg());
 		SqlExpr right = createNumericExpr(node.getRightArg());
 		MathOp op = node.getOperator();
@@ -82,25 +87,28 @@ public class NumericExprFactory extends
 	public void meet(Var var) {
 		if (var.getValue() == null) {
 			result = new NumericColumn(var);
-		} else {
+		}
+		else {
 			result = valueOf(var.getValue());
 		}
 	}
 
 	@Override
 	protected void meetNode(QueryModelNode arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		throw unsupported(arg);
 	}
 
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
-			Literal lit = (Literal) value;
+			Literal lit = (Literal)value;
 			URI dt = lit.getDatatype();
 			if (dt != null && XMLDatatypeUtil.isNumericDatatype(dt)) {
 				try {
 					return new DoubleValue(lit.doubleValue());
-				} catch (NumberFormatException e) {
+				}
+				catch (NumberFormatException e) {
 					return null;
 				}
 			}

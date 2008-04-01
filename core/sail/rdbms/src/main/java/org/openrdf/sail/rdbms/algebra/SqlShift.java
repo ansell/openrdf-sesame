@@ -16,7 +16,9 @@ import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
  * 
  */
 public class SqlShift extends UnarySqlOperator {
+
 	private int shift;
+
 	private int range;
 
 	public SqlShift(SqlExpr arg, int shift, int range) {
@@ -34,8 +36,9 @@ public class SqlShift extends UnarySqlOperator {
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 

@@ -12,14 +12,15 @@ import org.openrdf.sail.rdbms.model.RdbmsBNode;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
 
 /**
- * Manages BNodes. Including creating, inserting, and looking up their
- * IDs.
+ * Manages BNodes. Including creating, inserting, and looking up their IDs.
  * 
  * @author James Leigh
  * 
  */
 public class BNodeManager extends ValueManagerBase<RdbmsBNode> {
+
 	public static BNodeManager instance;
+
 	private BNodeTable table;
 
 	public BNodeManager() {
@@ -46,7 +47,9 @@ public class BNodeManager extends ValueManagerBase<RdbmsBNode> {
 	}
 
 	@Override
-	protected void optimize() throws SQLException {
+	protected void optimize()
+		throws SQLException
+	{
 		super.optimize();
 		table.optimize();
 	}
@@ -62,7 +65,9 @@ public class BNodeManager extends ValueManagerBase<RdbmsBNode> {
 	}
 
 	@Override
-	protected void insert(Number id, RdbmsBNode resource) throws SQLException, InterruptedException {
+	protected void insert(Number id, RdbmsBNode resource)
+		throws SQLException, InterruptedException
+	{
 		table.insert(id, resource.stringValue());
 	}
 

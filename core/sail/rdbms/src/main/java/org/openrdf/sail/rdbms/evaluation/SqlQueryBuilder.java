@@ -14,14 +14,23 @@ import java.util.List;
  * 
  */
 public class SqlQueryBuilder {
+
 	private QueryBuilderFactory factory;
+
 	private boolean distinct;
+
 	private SqlExprBuilder select;
+
 	private SqlJoinBuilder from;
+
 	private StringBuilder group = new StringBuilder();
+
 	private SqlExprBuilder order;
+
 	private SqlQueryBuilder union;
+
 	private Integer offset;
+
 	private Integer limit;
 
 	public SqlQueryBuilder(QueryBuilderFactory factory) {
@@ -72,7 +81,8 @@ public class SqlQueryBuilder {
 		for (String expr : expressions) {
 			if (group.length() == 0) {
 				group.append("\nGROUP BY ");
-			} else {
+			}
+			else {
 				group.append(", ");
 			}
 			group.append(expr);
@@ -98,7 +108,8 @@ public class SqlQueryBuilder {
 		}
 		if (select.isEmpty()) {
 			sb.append("*");
-		} else {
+		}
+		else {
 			sb.append(select.toSql());
 		}
 		if (from != null) {

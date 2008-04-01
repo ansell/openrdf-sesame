@@ -70,7 +70,8 @@ public class SqlRegex extends BinarySqlOperator {
 
 	@Override
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-			throws X {
+		throws X
+	{
 		super.visitChildren(visitor);
 		if (flagsArg != null) {
 			flagsArg.visit(visitor);
@@ -79,7 +80,7 @@ public class SqlRegex extends BinarySqlOperator {
 
 	@Override
 	public SqlRegex clone() {
-		SqlRegex clone = (SqlRegex) super.clone();
+		SqlRegex clone = (SqlRegex)super.clone();
 		if (flagsArg != null) {
 			clone.setFlagsArg(flagsArg.clone());
 		}
@@ -87,8 +88,9 @@ public class SqlRegex extends BinarySqlOperator {
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 
@@ -96,8 +98,7 @@ public class SqlRegex extends BinarySqlOperator {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((flagsArg == null) ? 0 : flagsArg.hashCode());
+		result = prime * result + ((flagsArg == null) ? 0 : flagsArg.hashCode());
 		return result;
 	}
 
@@ -109,11 +110,12 @@ public class SqlRegex extends BinarySqlOperator {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final SqlRegex other = (SqlRegex) obj;
+		final SqlRegex other = (SqlRegex)obj;
 		if (flagsArg == null) {
 			if (other.flagsArg != null)
 				return false;
-		} else if (!flagsArg.equals(other.flagsArg))
+		}
+		else if (!flagsArg.equals(other.flagsArg))
 			return false;
 		return true;
 	}

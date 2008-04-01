@@ -28,8 +28,11 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
  * 
  */
 public class SelectQueryOptimizerFactory {
+
 	private RdbmsValueFactory vf;
+
 	private TransTableManager tables;
+
 	private IdSequence ids;
 
 	public void setValueFactory(RdbmsValueFactory vf) {

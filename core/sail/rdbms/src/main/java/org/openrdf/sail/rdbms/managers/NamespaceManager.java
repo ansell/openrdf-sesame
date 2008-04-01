@@ -24,9 +24,13 @@ import org.openrdf.sail.rdbms.schema.NamespacesTable;
  * 
  */
 public class NamespaceManager {
+
 	private Map<String, NamespaceImpl> byNamespace = new ConcurrentHashMap<String, NamespaceImpl>();
+
 	private Map<String, NamespaceImpl> byPrefix = new ConcurrentHashMap<String, NamespaceImpl>();
+
 	private Connection conn;
+
 	private NamespacesTable table;
 
 	public void setConnection(Connection conn) {
@@ -37,40 +41,51 @@ public class NamespaceManager {
 		this.table = table;
 	}
 
-	public void close() throws RdbmsException {
+	public void close()
+		throws RdbmsException
+	{
 		try {
 			conn.close();
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 	}
 
-	public void initialize() throws RdbmsException {
+	public void initialize()
+		throws RdbmsException
+	{
 		try {
 			load();
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 	}
 
-	public NamespaceImpl findNamespace(String namespace) throws RdbmsException {
+	public NamespaceImpl findNamespace(String namespace)
+		throws RdbmsException
+	{
 		if (namespace == null)
 			return null;
 		if (byNamespace.containsKey(namespace))
 			return byNamespace.get(namespace);
 		try {
 			return create(namespace);
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 	}
 
-	private void load() throws SQLException {
+	private void load()
+		throws SQLException
+	{
 		Map<String, NamespaceImpl> map = new HashMap<String, NamespaceImpl>();
 		Map<String, NamespaceImpl> prefixes = new HashMap<String, NamespaceImpl>();
 		for (Object[] row : table.selectAll()) {
-			String prefix = (String) row[0];
-			String namespace = (String) row[1];
+			String prefix = (String)row[0];
+			String namespace = (String)row[1];
 			NamespaceImpl ns = new NamespaceImpl(prefix, namespace);
 			map.put(namespace, ns);
 			if (prefix != null) {
@@ -83,7 +98,8 @@ public class NamespaceManager {
 	}
 
 	private synchronized NamespaceImpl create(String namespace)
-			throws SQLException {
+		throws SQLException
+	{
 		if (byNamespace.containsKey(namespace))
 			return byNamespace.get(namespace);
 		table.insert(null, namespace);
@@ -92,11 +108,14 @@ public class NamespaceManager {
 		return ns;
 	}
 
-	public void setPrefix(String prefix, String name) throws RdbmsException {
+	public void setPrefix(String prefix, String name)
+		throws RdbmsException
+	{
 		NamespaceImpl ns = findNamespace(name);
 		try {
 			table.updatePrefix(prefix, name);
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 		ns.setPrefix(prefix);
@@ -107,13 +126,16 @@ public class NamespaceManager {
 		return byPrefix.get(prefix);
 	}
 
-	public void removePrefix(String prefix) throws RdbmsException {
+	public void removePrefix(String prefix)
+		throws RdbmsException
+	{
 		NamespaceImpl ns = findByPrefix(prefix);
 		if (ns == null)
 			return;
 		try {
 			table.updatePrefix(prefix, ns.getName());
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 		ns.setPrefix(null);
@@ -121,15 +143,19 @@ public class NamespaceManager {
 	}
 
 	public Collection<? extends Namespace> getNamespacesWithPrefix()
-			throws RdbmsException {
+		throws RdbmsException
+	{
 		return byPrefix.values();
 	}
 
-	public void clearPrefixes() throws RdbmsException {
+	public void clearPrefixes()
+		throws RdbmsException
+	{
 		try {
 			table.clearPrefixes();
 			load();
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 	}

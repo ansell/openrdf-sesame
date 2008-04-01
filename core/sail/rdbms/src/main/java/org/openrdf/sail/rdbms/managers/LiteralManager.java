@@ -26,6 +26,7 @@ import org.openrdf.sail.rdbms.schema.LiteralTable;
  * 
  */
 public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
+
 	private static TimeZone Z = TimeZone.getTimeZone("GMT");
 
 	public static long getCalendarValue(XMLGregorianCalendar xcal) {
@@ -33,6 +34,7 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 	}
 
 	public static LiteralManager instance;
+
 	private LiteralTable table;
 
 	public LiteralManager() {
@@ -59,7 +61,9 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 	}
 
 	@Override
-	protected void optimize() throws SQLException {
+	protected void optimize()
+		throws SQLException
+	{
 		super.optimize();
 		table.optimize();
 	}
@@ -70,28 +74,36 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 	}
 
 	@Override
-	protected void insert(Number id, RdbmsLiteral literal) throws SQLException, InterruptedException {
+	protected void insert(Number id, RdbmsLiteral literal)
+		throws SQLException, InterruptedException
+	{
 		String label = literal.getLabel();
 		String language = literal.getLanguage();
 		URI datatype = literal.getDatatype();
 		if (datatype == null && language == null) {
 			table.insertSimple(id, label);
-		} else if (datatype == null) {
+		}
+		else if (datatype == null) {
 			table.insertLanguage(id, label, language);
-		} else {
+		}
+		else {
 			String dt = datatype.stringValue();
 			try {
 				if (XMLDatatypeUtil.isNumericDatatype(datatype)) {
 					table.insertNumeric(id, label, dt, literal.doubleValue());
-				} else if (XMLDatatypeUtil.isCalendarDatatype(datatype)) {
+				}
+				else if (XMLDatatypeUtil.isCalendarDatatype(datatype)) {
 					long value = getCalendarValue(literal.calendarValue());
 					table.insertDateTime(id, label, dt, value);
-				} else {
+				}
+				else {
 					table.insertDatatype(id, label, dt);
 				}
-			} catch (NumberFormatException e) {
+			}
+			catch (NumberFormatException e) {
 				table.insertDatatype(id, label, dt);
-			} catch (IllegalArgumentException e) {
+			}
+			catch (IllegalArgumentException e) {
 				table.insertDatatype(id, label, dt);
 			}
 		}

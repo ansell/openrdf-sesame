@@ -18,6 +18,7 @@ import org.openrdf.sail.rdbms.managers.helpers.BatchBlockingQueue;
 import org.openrdf.sail.rdbms.schema.Batch;
 
 public abstract class ManagerBase {
+
 	public static int BATCH_SIZE = 8 * 1024;
 
 	public static int MIN_QUEUE = 128;
@@ -53,7 +54,7 @@ public abstract class ManagerBase {
 			}
 		};
 		Object proxy = Proxy.newProxyInstance(cl, classes, h);
-		return (BlockingQueue<Batch>) proxy;
+		return (BlockingQueue<Batch>)proxy;
 	}
 
 	public void close()

@@ -18,6 +18,7 @@ import org.openrdf.sail.rdbms.RdbmsStore;
  * 
  */
 public class RdbmsStoreFactory implements SailFactory {
+
 	public static final String SAIL_TYPE = "openrdf:RdbmsStore";
 
 	public String getSailType() {
@@ -28,13 +29,14 @@ public class RdbmsStoreFactory implements SailFactory {
 		return new RdbmsStoreConfig();
 	}
 
-	public RdbmsStore getSail(SailImplConfig config) throws SailConfigException {
+	public RdbmsStore getSail(SailImplConfig config)
+		throws SailConfigException
+	{
 		if (!SAIL_TYPE.equals(config.getType())) {
-			throw new SailConfigException("Invalid Sail type: "
-					+ config.getType());
+			throw new SailConfigException("Invalid Sail type: " + config.getType());
 		}
 
-		RdbmsStoreConfig rdbms = (RdbmsStoreConfig) config;
+		RdbmsStoreConfig rdbms = (RdbmsStoreConfig)config;
 		String jdbcDriver = rdbms.getJdbcDriver();
 		String url = rdbms.getUrl();
 		String user = rdbms.getUser();
@@ -44,17 +46,22 @@ public class RdbmsStoreFactory implements SailFactory {
 		RdbmsStore store = new RdbmsStore(jdbcDriver, url, user, password);
 		if ("layout2".equals(layout)) {
 			store.setMaxNumberOfTripleTables(1);
-		} else if ("layout2/hash".equals(layout)) {
+		}
+		else if ("layout2/hash".equals(layout)) {
 			store.setMaxNumberOfTripleTables(1);
 			store.setSequenced(false);
-		} else if ("layout2/index".equals(layout)) {
+		}
+		else if ("layout2/index".equals(layout)) {
 			store.setMaxNumberOfTripleTables(1);
 			store.setSequenced(true);
-		} else if ("layout3/hash".equals(layout)) {
+		}
+		else if ("layout3/hash".equals(layout)) {
 			store.setSequenced(false);
-		} else if ("layout3/index".equals(layout)) {
+		}
+		else if ("layout3/index".equals(layout)) {
 			store.setSequenced(true);
-		} else {
+		}
+		else {
 			assert "layout3".equals(layout);
 		}
 		if (indexed != null) {

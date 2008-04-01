@@ -5,10 +5,11 @@
  */
 package org.openrdf.sail.rdbms.iteration;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.IteratorIteration;
-
 import java.util.Iterator;
+
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.Iteration;
+import info.aduna.iteration.IteratorIteration;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.sail.SailException;
@@ -19,15 +20,17 @@ import org.openrdf.sail.SailException;
  * @author James Leigh
  * 
  */
-public class NamespaceIteration extends
-		IteratorIteration<Namespace, SailException> implements
-		CloseableIteration<Namespace, SailException> {
+public class NamespaceIteration extends IteratorIteration<Namespace, SailException> implements
+		CloseableIteration<Namespace, SailException>
+{
 
 	public NamespaceIteration(Iterator<? extends Namespace> iter) {
 		super(iter);
 	}
 
-	public void close() throws SailException {
+	public void close()
+		throws SailException
+	{
 		// do nothing
 	}
 

@@ -20,15 +20,25 @@ import org.openrdf.sail.rdbms.schema.ValueTypes;
  * 
  */
 public class ColumnVar implements Cloneable {
+
 	private int index;
+
 	private boolean anonymous;
+
 	private boolean hidden;
+
 	private boolean implied;
+
 	private String name;
+
 	private Value value;
+
 	private String alias;
+
 	private String column;
+
 	private boolean nullable;
+
 	private ValueTypes types;
 
 	private ColumnVar() {
@@ -66,7 +76,8 @@ public class ColumnVar implements Cloneable {
 		var.types = ValueTypes.UNKNOWN;
 		if (value instanceof RdbmsURI) {
 			var.types = ValueTypes.URI;
-		} else if (value instanceof RdbmsResource) {
+		}
+		else if (value instanceof RdbmsResource) {
 			var.types = ValueTypes.RESOURCE;
 		}
 		return var;
@@ -77,11 +88,11 @@ public class ColumnVar implements Cloneable {
 		var.alias = alias;
 		var.column = "ctx";
 		if (v == null) {
-			var.name = "__ctx"
-					+ Integer.toHexString(System.identityHashCode(var));
+			var.name = "__ctx" + Integer.toHexString(System.identityHashCode(var));
 			var.anonymous = true;
 			var.hidden = true;
-		} else {
+		}
+		else {
 			var.name = v.getName();
 			var.anonymous = v.isAnonymous();
 		}
@@ -159,22 +170,24 @@ public class ColumnVar implements Cloneable {
 
 	public ColumnVar as(String name) {
 		try {
-			ColumnVar clone = (ColumnVar) super.clone();
+			ColumnVar clone = (ColumnVar)super.clone();
 			clone.name = name;
 			return clone;
-		} catch (CloneNotSupportedException e) {
+		}
+		catch (CloneNotSupportedException e) {
 			throw new AssertionError(e);
 		}
 	}
 
 	public ColumnVar as(String alias, String column) {
 		try {
-			ColumnVar clone = (ColumnVar) super.clone();
+			ColumnVar clone = (ColumnVar)super.clone();
 			clone.alias = alias;
 			clone.column = column;
 			clone.nullable = true;
 			return clone;
-		} catch (CloneNotSupportedException e) {
+		}
+		catch (CloneNotSupportedException e) {
 			throw new AssertionError(e);
 		}
 	}
@@ -182,7 +195,7 @@ public class ColumnVar implements Cloneable {
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof ColumnVar) {
-			return name.equals(((ColumnVar) other).name);
+			return name.equals(((ColumnVar)other).name);
 		}
 
 		return false;

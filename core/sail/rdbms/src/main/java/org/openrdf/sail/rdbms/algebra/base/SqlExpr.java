@@ -14,5 +14,6 @@ import org.openrdf.query.algebra.QueryModelNode;
  * 
  */
 public interface SqlExpr extends QueryModelNode {
+
 	public abstract SqlExpr clone();
 }

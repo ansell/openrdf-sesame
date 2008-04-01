@@ -14,6 +14,7 @@ import java.sql.SQLException;
  * 
  */
 public class BNodeTable {
+
 	private ValueTable table;
 
 	public BNodeTable(ValueTable table) {
@@ -21,7 +22,9 @@ public class BNodeTable {
 		this.table = table;
 	}
 
-	public void close() throws SQLException {
+	public void close()
+		throws SQLException
+	{
 		table.close();
 	}
 
@@ -33,11 +36,15 @@ public class BNodeTable {
 		return table.getBatchSize();
 	}
 
-	public void insert(Number id, String value) throws SQLException, InterruptedException {
+	public void insert(Number id, String value)
+		throws SQLException, InterruptedException
+	{
 		table.insert(id, value);
 	}
 
-	public boolean expunge(String condition) throws SQLException {
+	public boolean expunge(String condition)
+		throws SQLException
+	{
 		return table.expunge(condition);
 	}
 
@@ -46,7 +53,9 @@ public class BNodeTable {
 		return getName();
 	}
 
-	public void optimize() throws SQLException {
+	public void optimize()
+		throws SQLException
+	{
 		table.optimize();
 	}
 }

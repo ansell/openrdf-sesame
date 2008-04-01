@@ -15,15 +15,23 @@ import java.sql.SQLException;
  * 
  */
 public class LiteralTable {
+
 	public static final boolean ONLY_INSERT_LABEL = false;
 
 	private ValueTable labels;
+
 	private ValueTable longLabels;
+
 	private ValueTable languages;
+
 	private ValueTable datatypes;
+
 	private ValueTable numeric;
+
 	private ValueTable dateTime;
+
 	private int version;
+
 	private IdSequence ids;
 
 	public void setIdSequence(IdSequence ids) {
@@ -78,7 +86,9 @@ public class LiteralTable {
 		this.dateTime = dateTime;
 	}
 
-	public void close() throws SQLException {
+	public void close()
+		throws SQLException
+	{
 		labels.close();
 		longLabels.close();
 		languages.close();
@@ -95,41 +105,50 @@ public class LiteralTable {
 		return version;
 	}
 
-	public void insertSimple(Number id, String label) throws SQLException, InterruptedException {
+	public void insertSimple(Number id, String label)
+		throws SQLException, InterruptedException
+	{
 		if (ids.isLong(id)) {
 			longLabels.insert(id, label);
-		} else {
+		}
+		else {
 			labels.insert(id, label);
 		}
 	}
 
 	public void insertLanguage(Number id, String label, String language)
-			throws SQLException, InterruptedException {
+		throws SQLException, InterruptedException
+	{
 		insertSimple(id, label);
 		languages.insert(id, language);
 	}
 
 	public void insertDatatype(Number id, String label, String datatype)
-			throws SQLException, InterruptedException {
+		throws SQLException, InterruptedException
+	{
 		insertSimple(id, label);
 		datatypes.insert(id, datatype);
 	}
 
-	public void insertNumeric(Number id, String label, String datatype,
-			double value) throws SQLException, InterruptedException {
+	public void insertNumeric(Number id, String label, String datatype, double value)
+		throws SQLException, InterruptedException
+	{
 		labels.insert(id, label);
 		datatypes.insert(id, datatype);
 		numeric.insert(id, value);
 	}
 
-	public void insertDateTime(Number id, String label, String datatype,
-			long value) throws SQLException, InterruptedException {
+	public void insertDateTime(Number id, String label, String datatype, long value)
+		throws SQLException, InterruptedException
+	{
 		labels.insert(id, label);
 		datatypes.insert(id, datatype);
 		dateTime.insert(id, value);
 	}
 
-	public void optimize() throws SQLException {
+	public void optimize()
+		throws SQLException
+	{
 		labels.optimize();
 		longLabels.optimize();
 		languages.optimize();
@@ -139,7 +158,8 @@ public class LiteralTable {
 	}
 
 	public boolean expunge(String condition)
-			throws SQLException {
+		throws SQLException
+	{
 		boolean bool = false;
 		bool |= labels.expunge(condition);
 		bool |= longLabels.expunge(condition);

@@ -13,9 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.openrdf.model.Value;
 
-
 /**
- *
+ * 
  * @author James Leigh
  */
 public class IntegerIdSequence extends IdSequence {

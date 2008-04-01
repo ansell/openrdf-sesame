@@ -8,7 +8,6 @@ package org.openrdf.sail.rdbms.schema;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-
 /**
  * 
  * @author James Leigh
@@ -105,6 +104,5 @@ public class Batch {
 			insertBatch = null;
 		}
 	}
-
 
 }

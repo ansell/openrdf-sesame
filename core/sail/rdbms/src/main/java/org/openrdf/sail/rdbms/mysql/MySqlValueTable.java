@@ -9,12 +9,12 @@ import java.sql.Types;
 
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
-
 /**
- *
+ * 
  * @author James Leigh
  */
 public class MySqlValueTable extends ValueTable {
+
 	private static final String FEILD_COLLATE = " CHARACTER SET utf8 COLLATE utf8_bin";
 
 	@Override
@@ -22,9 +22,11 @@ public class MySqlValueTable extends ValueTable {
 		String declare = super.sql(type, length);
 		if (type == Types.VARCHAR) {
 			return declare + FEILD_COLLATE;
-		} else if (type == Types.LONGVARCHAR) {
+		}
+		else if (type == Types.LONGVARCHAR) {
 			return "LONGTEXT" + FEILD_COLLATE;
-		} else {
+		}
+		else {
 			return declare;
 		}
 	}

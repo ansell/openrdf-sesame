@@ -14,7 +14,9 @@ import org.openrdf.sail.rdbms.RdbmsValueFactory;
  * 
  */
 public class QueryBuilderFactory {
+
 	private RdbmsValueFactory vf;
+
 	private boolean usingHashTable;
 
 	public void setValueFactory(RdbmsValueFactory vf) {

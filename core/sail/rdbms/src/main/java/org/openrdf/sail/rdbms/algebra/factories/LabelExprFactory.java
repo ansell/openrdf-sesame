@@ -35,9 +35,10 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * @author James Leigh
  * 
  */
-public class LabelExprFactory extends
-		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class LabelExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+
 	protected SqlExpr result;
+
 	private SqlExprFactory sql;
 
 	public void setSqlExprFactory(SqlExprFactory sql) {
@@ -45,7 +46,8 @@ public class LabelExprFactory extends
 	}
 
 	public SqlExpr createLabelExpr(ValueExpr expr)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = null;
 		if (expr == null)
 			return new SqlNull();
@@ -56,12 +58,16 @@ public class LabelExprFactory extends
 	}
 
 	@Override
-	public void meet(Datatype node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Datatype node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
 	@Override
-	public void meet(Lang node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Lang node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlCase sqlCase = new SqlCase();
 		sqlCase.when(isNotNull(lang(node.getArg())), lang(node.getArg()));
 		sqlCase.when(isNotNull(createLabelExpr(node.getArg())), str(""));
@@ -69,12 +75,16 @@ public class LabelExprFactory extends
 	}
 
 	@Override
-	public void meet(MathExpr node) throws UnsupportedRdbmsOperatorException {
+	public void meet(MathExpr node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = num(node);
 	}
 
 	@Override
-	public void meet(Str str) throws UnsupportedRdbmsOperatorException {
+	public void meet(Str str)
+		throws UnsupportedRdbmsOperatorException
+	{
 		ValueExpr arg = str.getArg();
 		result = coalesce(uri(arg), createLabelExpr(arg));
 	}
@@ -88,32 +98,40 @@ public class LabelExprFactory extends
 	public void meet(Var var) {
 		if (var.getValue() == null) {
 			result = coalesce(new LabelColumn(var), new LongLabelColumn(var));
-		} else {
+		}
+		else {
 			result = valueOf(var.getValue());
 		}
 	}
 
 	@Override
 	protected void meetNode(QueryModelNode arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		throw unsupported(arg);
 	}
 
-	private SqlExpr lang(ValueExpr arg) throws UnsupportedRdbmsOperatorException {
+	private SqlExpr lang(ValueExpr arg)
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createLanguageExpr(arg);
 	}
 
-	private SqlExpr uri(ValueExpr arg) throws UnsupportedRdbmsOperatorException {
+	private SqlExpr uri(ValueExpr arg)
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createUriExpr(arg);
 	}
 
-	private SqlExpr num(ValueExpr arg) throws UnsupportedRdbmsOperatorException {
+	private SqlExpr num(ValueExpr arg)
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createNumericExpr(arg);
 	}
 
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
-			return str(((Literal) value).getLabel());
+			return str(((Literal)value).getLabel());
 		}
 		return sqlNull();
 	}

@@ -16,9 +16,10 @@ import org.openrdf.sail.rdbms.optimizers.SqlConstantOptimizer;
  * @author James Leigh
  * 
  */
-public abstract class BinarySqlOperator extends RdbmsQueryModelNodeBase
-		implements SqlExpr {
+public abstract class BinarySqlOperator extends RdbmsQueryModelNodeBase implements SqlExpr {
+
 	private SqlExpr leftArg;
+
 	private SqlExpr rightArg;
 
 	public BinarySqlOperator() {
@@ -51,26 +52,28 @@ public abstract class BinarySqlOperator extends RdbmsQueryModelNodeBase
 
 	@Override
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-			throws X {
+		throws X
+	{
 		leftArg.visit(visitor);
 		rightArg.visit(visitor);
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current,
-			QueryModelNode replacement) {
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (leftArg == current) {
-			setLeftArg((SqlExpr) replacement);
-		} else if (rightArg == current) {
-			setRightArg((SqlExpr) replacement);
-		} else {
+			setLeftArg((SqlExpr)replacement);
+		}
+		else if (rightArg == current) {
+			setRightArg((SqlExpr)replacement);
+		}
+		else {
 			super.replaceChildNode(current, replacement);
 		}
 	}
 
 	@Override
 	public BinarySqlOperator clone() {
-		BinarySqlOperator clone = (BinarySqlOperator) super.clone();
+		BinarySqlOperator clone = (BinarySqlOperator)super.clone();
 		clone.setLeftArg(leftArg.clone());
 		clone.setRightArg(rightArg.clone());
 		return clone;
@@ -81,8 +84,7 @@ public abstract class BinarySqlOperator extends RdbmsQueryModelNodeBase
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((leftArg == null) ? 0 : leftArg.hashCode());
-		result = prime * result
-				+ ((rightArg == null) ? 0 : rightArg.hashCode());
+		result = prime * result + ((rightArg == null) ? 0 : rightArg.hashCode());
 		return result;
 	}
 
@@ -94,16 +96,18 @@ public abstract class BinarySqlOperator extends RdbmsQueryModelNodeBase
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final BinarySqlOperator other = (BinarySqlOperator) obj;
+		final BinarySqlOperator other = (BinarySqlOperator)obj;
 		if (leftArg == null) {
 			if (other.leftArg != null)
 				return false;
-		} else if (!leftArg.equals(other.leftArg))
+		}
+		else if (!leftArg.equals(other.leftArg))
 			return false;
 		if (rightArg == null) {
 			if (other.rightArg != null)
 				return false;
-		} else if (!rightArg.equals(other.rightArg))
+		}
+		else if (!rightArg.equals(other.rightArg))
 			return false;
 		return true;
 	}
@@ -112,12 +116,15 @@ public abstract class BinarySqlOperator extends RdbmsQueryModelNodeBase
 	public String toString() {
 		QueryModelTreePrinter treePrinter = new QueryModelTreePrinter();
 		BinarySqlOperator clone = this.clone();
-		UnarySqlOperator parent = new UnarySqlOperator(clone){
+		UnarySqlOperator parent = new UnarySqlOperator(clone) {
+
 			@Override
-			public <X extends Exception> void visit(
-					RdbmsQueryModelVisitorBase<X> visitor) throws X {
+			public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+				throws X
+			{
 				visitor.meetOther(this);
-			}};
+			}
+		};
 		new SqlConstantOptimizer().optimize(clone);
 		parent.getArg().visit(treePrinter);
 		return treePrinter.getTreeString();

@@ -16,13 +16,15 @@ import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
  * 
  */
 public class SqlLowerCase extends UnarySqlOperator {
+
 	public SqlLowerCase(SqlExpr arg) {
 		super(arg);
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 

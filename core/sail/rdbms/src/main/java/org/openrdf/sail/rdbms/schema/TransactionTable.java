@@ -20,16 +20,27 @@ import org.openrdf.sail.helpers.DefaultSailChangedEvent;
  * 
  */
 public class TransactionTable {
+
 	private int batchSize;
+
 	private TripleTable triples;
+
 	private int addedCount;
+
 	private int removedCount;
+
 	private RdbmsTable temporary;
+
 	private Connection conn;
+
 	private TripleBatch batch;
+
 	private BlockingQueue<Batch> queue;
+
 	private DefaultSailChangedEvent sailChangedEvent;
+
 	private IdSequence ids;
+
 	private PreparedStatement insertSelect;
 
 	public void setIdSequence(IdSequence ids) {
@@ -78,7 +89,8 @@ public class TransactionTable {
 	}
 
 	public synchronized void insert(Number ctx, Number subj, Number pred, Number obj)
-			throws SQLException, InterruptedException {
+		throws SQLException, InterruptedException
+	{
 		if (batch == null || batch.isFull() || !queue.remove(batch)) {
 			batch = newTripleBatch();
 			batch.setTable(triples);
@@ -96,7 +108,8 @@ public class TransactionTable {
 		if (temporary == null && !triples.isPredColumnPresent()) {
 			batch.setObject(3, obj);
 			batch.setObject(4, true); // TODO explicit
-		} else {
+		}
+		else {
 			batch.setObject(3, pred);
 			batch.setObject(4, obj);
 			batch.setObject(5, true); // TODO explicit
@@ -108,17 +121,23 @@ public class TransactionTable {
 		triples.getObjTypes().add(ids.valueOf(obj));
 	}
 
-	public void committed() throws SQLException {
+	public void committed()
+		throws SQLException
+	{
 		triples.modified(addedCount, removedCount);
 		addedCount = 0;
 		removedCount = 0;
 	}
 
-	public void removed(int count) throws SQLException {
+	public void removed(int count)
+		throws SQLException
+	{
 		removedCount += count;
 	}
 
-	public boolean isEmpty() throws SQLException {
+	public boolean isEmpty()
+		throws SQLException
+	{
 		return triples.isEmpty() && addedCount == 0;
 	}
 
@@ -131,11 +150,15 @@ public class TransactionTable {
 		return new TripleBatch();
 	}
 
-	protected PreparedStatement prepareInsertSelect(String sql) throws SQLException {
+	protected PreparedStatement prepareInsertSelect(String sql)
+		throws SQLException
+	{
 		return conn.prepareStatement(sql);
 	}
 
-	protected String buildInsertSelect() throws SQLException {
+	protected String buildInsertSelect()
+		throws SQLException
+	{
 		String tableName = triples.getName();
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ").append(tableName).append("\n");
@@ -163,7 +186,9 @@ public class TransactionTable {
 		return sb.toString();
 	}
 
-	protected PreparedStatement prepareInsert(String sql) throws SQLException {
+	protected PreparedStatement prepareInsert(String sql)
+		throws SQLException
+	{
 		return conn.prepareStatement(sql);
 	}
 
@@ -189,7 +214,9 @@ public class TransactionTable {
 		return triples.isPredColumnPresent();
 	}
 
-	private PreparedStatement prepareInsert() throws SQLException {
+	private PreparedStatement prepareInsert()
+		throws SQLException
+	{
 		if (temporary == null) {
 			boolean present = triples.isPredColumnPresent();
 			String sql = buildInsert(triples.getName(), present);
