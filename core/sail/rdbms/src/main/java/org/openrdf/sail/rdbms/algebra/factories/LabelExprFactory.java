@@ -9,6 +9,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.coalesce;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.isNotNull;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.sqlNull;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.str;
+import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.text;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
 import org.openrdf.model.Literal;
@@ -78,7 +79,7 @@ public class LabelExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOper
 	public void meet(MathExpr node)
 		throws UnsupportedRdbmsOperatorException
 	{
-		result = num(node);
+		result = text(num(node));
 	}
 
 	@Override

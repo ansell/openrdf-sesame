@@ -9,6 +9,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.ValueConstant;
@@ -16,6 +17,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.sail.rdbms.RdbmsConnectionFactory;
 import org.openrdf.sail.rdbms.algebra.factories.BooleanExprFactory;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
+import org.openrdf.sail.rdbms.evaluation.SqlCastBuilder;
 import org.openrdf.sail.rdbms.evaluation.SqlExprBuilder;
 import org.openrdf.sail.rdbms.evaluation.SqlRegexBuilder;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
@@ -121,6 +123,22 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 						}
 						where.append(" REGEXP ");
 						appendPattern(where);
+					}
+				};
+			}
+
+			@Override
+			public SqlCastBuilder createSqlCastBuilder(SqlExprBuilder where, int type) {
+				return new SqlCastBuilder(where, this, type) {
+
+					@Override
+					protected CharSequence getSqlType(int type) {
+						switch (type) {
+							case Types.VARCHAR:
+								return "CHAR";
+							default:
+								return super.getSqlType(type);
+						}
 					}
 				};
 			}

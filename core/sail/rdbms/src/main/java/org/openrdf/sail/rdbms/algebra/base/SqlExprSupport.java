@@ -5,6 +5,8 @@
  */
 package org.openrdf.sail.rdbms.algebra.base;
 
+import java.sql.Types;
+
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.MathExpr;
@@ -14,6 +16,7 @@ import org.openrdf.sail.rdbms.algebra.FalseValue;
 import org.openrdf.sail.rdbms.algebra.SqlAbs;
 import org.openrdf.sail.rdbms.algebra.SqlAnd;
 import org.openrdf.sail.rdbms.algebra.SqlCase;
+import org.openrdf.sail.rdbms.algebra.SqlCast;
 import org.openrdf.sail.rdbms.algebra.SqlCompare;
 import org.openrdf.sail.rdbms.algebra.SqlConcat;
 import org.openrdf.sail.rdbms.algebra.SqlEq;
@@ -192,6 +195,10 @@ public class SqlExprSupport {
 
 	public static SqlExpr sub(SqlExpr left, SqlExpr right) {
 		return new SqlMathExpr(left, MathExpr.MathOp.MINUS, right);
+	}
+
+	public static SqlExpr text(SqlExpr arg) {
+		return new SqlCast(arg, Types.VARCHAR);
 	}
 
 	public static UnsupportedRdbmsOperatorException unsupported(Object arg) {

@@ -53,4 +53,8 @@ public class QueryBuilderFactory {
 	public SqlJoinBuilder createSqlJoinBuilder(String table, String alias) {
 		return new SqlJoinBuilder(table, alias, this);
 	}
+
+	public SqlCastBuilder createSqlCastBuilder(SqlExprBuilder where, int type) {
+		return new SqlCastBuilder(where, this, type);
+	}
 }

@@ -26,6 +26,7 @@ import org.openrdf.sail.rdbms.algebra.SelectQuery;
 import org.openrdf.sail.rdbms.algebra.SqlAbs;
 import org.openrdf.sail.rdbms.algebra.SqlAnd;
 import org.openrdf.sail.rdbms.algebra.SqlCase;
+import org.openrdf.sail.rdbms.algebra.SqlCast;
 import org.openrdf.sail.rdbms.algebra.SqlCompare;
 import org.openrdf.sail.rdbms.algebra.SqlConcat;
 import org.openrdf.sail.rdbms.algebra.SqlEq;
@@ -170,6 +171,12 @@ public class RdbmsQueryModelVisitorBase<X extends Exception> extends QueryModelV
 		throws X
 	{
 		meetNode(node);
+	}
+
+	public void meet(SqlCast node)
+		throws X
+	{
+		meetUnarySqlOperator(node);
 	}
 
 	public void meet(SqlCompare node)

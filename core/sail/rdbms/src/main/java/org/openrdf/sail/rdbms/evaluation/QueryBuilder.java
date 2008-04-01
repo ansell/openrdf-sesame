@@ -29,6 +29,7 @@ import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SqlAbs;
 import org.openrdf.sail.rdbms.algebra.SqlAnd;
 import org.openrdf.sail.rdbms.algebra.SqlCase;
+import org.openrdf.sail.rdbms.algebra.SqlCast;
 import org.openrdf.sail.rdbms.algebra.SqlCompare;
 import org.openrdf.sail.rdbms.algebra.SqlConcat;
 import org.openrdf.sail.rdbms.algebra.SqlEq;
@@ -262,6 +263,14 @@ public class QueryBuilder {
 			dispatch(e.getResult(), filter);
 		}
 		caseExpr.end();
+	}
+
+	private void append(SqlCast expr, SqlExprBuilder filter)
+		throws UnsupportedRdbmsOperatorException
+	{
+		SqlCastBuilder cast = filter.cast(expr.getType());
+		dispatch(expr.getArg(), cast);
+		cast.close();
 	}
 
 	private void append(SqlCompare expr, SqlExprBuilder filter)
@@ -498,6 +507,9 @@ public class QueryBuilder {
 		}
 		else if (expr instanceof SqlLowerCase) {
 			append((SqlLowerCase)expr, filter);
+		}
+		else if (expr instanceof SqlCast) {
+			append((SqlCast)expr, filter);
 		}
 		else {
 			throw unsupported(expr);

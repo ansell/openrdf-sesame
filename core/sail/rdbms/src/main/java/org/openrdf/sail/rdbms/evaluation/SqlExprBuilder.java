@@ -112,6 +112,10 @@ public class SqlExprBuilder {
 		return new SqlCaseBuilder(this);
 	}
 
+	public SqlCastBuilder cast(int jdbcType) {
+		return factory.createSqlCastBuilder(this, jdbcType);
+	}
+
 	public SqlExprBuilder column(String alias, String column) {
 		where.append(alias).append(".").append(column);
 		return this;
