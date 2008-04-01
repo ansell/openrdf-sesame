@@ -53,11 +53,11 @@ public class URITable {
 		longer.insert(id, value);
 	}
 
-	public boolean expungeRemovedStatements(int count, String condition)
+	public boolean expunge(String condition)
 			throws SQLException {
 		boolean bool = false;
-		bool |= shorter.expungeRemovedStatements(count, condition);
-		bool |= longer.expungeRemovedStatements(count, condition);
+		bool |= shorter.expunge(condition);
+		bool |= longer.expunge(condition);
 		return bool;
 	}
 

@@ -217,9 +217,10 @@ public class TripleTableManager {
 			condition = getExpungeCondition();
 		}
 		if (hashes == null || hashes.removedStatements(count, condition)) {
-			bnodes.removedStatements(count, condition);
-			uris.removedStatements(count, condition);
-			literals.removedStatements(count, condition);
+			condition = hashes.getExpungeCondition();
+			bnodes.removedStatements(condition);
+			uris.removedStatements(condition);
+			literals.removedStatements(condition);
 		}
 	}
 

@@ -88,10 +88,10 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 		return version.intValue() + (hashes == null ? 0 : hashes.getIdVersion());
 	}
 
-	public void removedStatements(int count, String condition)
+	public void removedStatements(String condition)
 		throws SQLException
 	{
-		if (expungeRemovedStatements(count, condition)) {
+		if (expunge(condition)) {
 			version.addAndGet(1);
 		}
 	}
@@ -103,7 +103,7 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 
 	protected abstract Object key(V value);
 
-	protected abstract boolean expungeRemovedStatements(int count, String condition) throws SQLException;
+	protected abstract boolean expunge(String condition) throws SQLException;
 
 	@Override
 	protected void optimize() throws SQLException {

@@ -74,7 +74,8 @@ public class IntegerIdSequence extends IdSequence {
 		if (!seq.containsKey(code)) {
 			seq.putIfAbsent(code, new AtomicInteger(minId(code).intValue()));
 		}
-		return seq.get(code).incrementAndGet();
+		int id = seq.get(code).incrementAndGet();
+		return id;
 	}
 
 	@Override

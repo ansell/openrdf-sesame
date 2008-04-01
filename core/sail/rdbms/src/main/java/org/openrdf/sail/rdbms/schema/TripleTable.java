@@ -61,10 +61,10 @@ public class TripleTable {
 		total_st++;
 		if (UNIQUE_INDEX_TRIPLES) {
 			if (isPredColumnPresent()) {
-				table.index(PRED_PKEY);
+				table.primaryIndex(PRED_PKEY);
 				total_st++;
 			} else {
-				table.index(PKEY);
+				table.primaryIndex(PKEY);
 				total_st++;
 			}
 		}
