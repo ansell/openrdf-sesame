@@ -14,6 +14,7 @@ import java.util.List;
  * @author James Leigh
  */
 public class HashBatch extends ValueBatch {
+
 	private List<Long> hashes;
 
 	@Override

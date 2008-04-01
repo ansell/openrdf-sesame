@@ -51,19 +51,32 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * 
  */
 public class RdbmsTripleRepository {
-	public static int STMT_BUFFER = 32; 
+
+	public static int STMT_BUFFER = 32;
+
 	private Connection conn;
+
 	private RdbmsValueFactory vf;
+
 	private TransTableManager statements;
+
 	private QueryBuilderFactory factory;
+
 	private BNodeTable bnodes;
+
 	private URITable uris;
+
 	private LiteralTable literals;
+
 	private Lock readLock;
+
 	private DefaultSailChangedEvent sailChangedEvent;
+
 	private TripleManager manager;
+
 	private LinkedList<RdbmsStatement> queue = new LinkedList<RdbmsStatement>();
-	private IdSequence ids; 
+
+	private IdSequence ids;
 
 	public Connection getConnection() {
 		return conn;
@@ -117,7 +130,9 @@ public class RdbmsTripleRepository {
 		this.manager = tripleManager;
 	}
 
-	public void flush() throws RdbmsException {
+	public void flush()
+		throws RdbmsException
+	{
 		try {
 			synchronized (queue) {
 				while (!queue.isEmpty()) {
@@ -135,11 +150,15 @@ public class RdbmsTripleRepository {
 		}
 	}
 
-	public synchronized void begin() throws SQLException {
+	public synchronized void begin()
+		throws SQLException
+	{
 		conn.setAutoCommit(false);
 	}
 
-	public synchronized void close() throws SQLException {
+	public synchronized void close()
+		throws SQLException
+	{
 		manager.close();
 		if (!conn.getAutoCommit()) {
 			conn.rollback();
@@ -152,7 +171,9 @@ public class RdbmsTripleRepository {
 		}
 	}
 
-	public synchronized void commit() throws SQLException, RdbmsException, InterruptedException {
+	public synchronized void commit()
+		throws SQLException, RdbmsException, InterruptedException
+	{
 		synchronized (queue) {
 			while (!queue.isEmpty()) {
 				insert(queue.removeFirst());
@@ -170,14 +191,17 @@ public class RdbmsTripleRepository {
 		try {
 			vf.flush();
 			statements.committed(locked);
-		} finally {
+		}
+		finally {
 			if (locked) {
 				writeLock.unlock();
 			}
 		}
 	}
 
-	public void rollback() throws SQLException, SailException {
+	public void rollback()
+		throws SQLException, SailException
+	{
 		synchronized (queue) {
 			queue.clear();
 		}
@@ -203,7 +227,9 @@ public class RdbmsTripleRepository {
 		super.finalize();
 	}
 
-	public void add(RdbmsStatement st) throws SailException, SQLException, InterruptedException {
+	public void add(RdbmsStatement st)
+		throws SailException, SQLException, InterruptedException
+	{
 		if (readLock == null) {
 			readLock = vf.getIdReadLock();
 			readLock.lock();
@@ -216,8 +242,9 @@ public class RdbmsTripleRepository {
 		}
 	}
 
-	public RdbmsStatementIteration find(Resource subj, URI pred, Value obj,
-			Resource... ctxs) throws RdbmsException {
+	public RdbmsStatementIteration find(Resource subj, URI pred, Value obj, Resource... ctxs)
+		throws RdbmsException
+	{
 		try {
 			RdbmsResource s = vf.asRdbmsResource(subj);
 			RdbmsURI p = vf.asRdbmsURI(pred);
@@ -234,18 +261,21 @@ public class RdbmsTripleRepository {
 					stmt.setObject(i + 1, parameters.get(i));
 				}
 				return new RdbmsStatementIteration(vf, stmt, ids);
-			} catch (SQLException e) {
+			}
+			catch (SQLException e) {
 				stmt.close();
 				throw e;
 			}
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 
 	}
 
-	public RdbmsResourceIteration findContexts() throws SQLException,
-			RdbmsException {
+	public RdbmsResourceIteration findContexts()
+		throws SQLException, RdbmsException
+	{
 		flush();
 		String qry = buildContextQuery();
 		if (qry == null)
@@ -253,18 +283,22 @@ public class RdbmsTripleRepository {
 		PreparedStatement stmt = conn.prepareStatement(qry);
 		try {
 			return new RdbmsResourceIteration(vf, stmt);
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			stmt.close();
 			throw e;
 		}
 	}
 
-	public boolean isClosed() throws SQLException {
+	public boolean isClosed()
+		throws SQLException
+	{
 		return conn.isClosed();
 	}
 
 	public int remove(Resource subj, URI pred, Value obj, Resource... ctxs)
-			throws RdbmsException {
+		throws RdbmsException
+	{
 		RdbmsResource s = vf.asRdbmsResource(subj);
 		RdbmsURI p = vf.asRdbmsURI(pred);
 		RdbmsValue o = vf.asRdbmsValue(obj);
@@ -274,7 +308,8 @@ public class RdbmsTripleRepository {
 			Collection<Number> predicates;
 			if (p == null) {
 				predicates = statements.getPredicateIds();
-			} else {
+			}
+			else {
 				predicates = Collections.singleton(vf.getInternalId(p));
 			}
 			int total = 0;
@@ -290,7 +325,8 @@ public class RdbmsTripleRepository {
 					int count = stmt.executeUpdate();
 					statements.removed(id, count);
 					total += count;
-				} finally {
+				}
+				finally {
 					stmt.close();
 				}
 			}
@@ -298,12 +334,15 @@ public class RdbmsTripleRepository {
 				sailChangedEvent.setStatementsRemoved(true);
 			}
 			return total;
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 	}
 
-	public long size(RdbmsResource... ctxs) throws SQLException, SailException {
+	public long size(RdbmsResource... ctxs)
+		throws SQLException, SailException
+	{
 		flush();
 		String qry = buildCountQuery(ctxs);
 		if (qry == null)
@@ -316,10 +355,12 @@ public class RdbmsTripleRepository {
 				if (rs.next())
 					return rs.getLong(1);
 				throw new RdbmsException("Could not determine size");
-			} finally {
+			}
+			finally {
 				rs.close();
 			}
-		} finally {
+		}
+		finally {
 			stmt.close();
 		}
 	}
@@ -328,16 +369,15 @@ public class RdbmsTripleRepository {
 		return STMT_BUFFER;
 	}
 
-	private String buildContextQuery() throws SQLException {
+	private String buildContextQuery()
+		throws SQLException
+	{
 		if (statements.isEmpty())
 			return null;
 		String tableName = statements.getCombinedTableName();
 		SqlQueryBuilder query = factory.createSqlQueryBuilder();
 		query.select().column("t", "ctx");
-		query
-				.select()
-				.append(
-						"CASE WHEN MIN(u.value) IS NOT NULL THEN MIN(u.value) ELSE MIN(b.value) END");
+		query.select().append("CASE WHEN MIN(u.value) IS NOT NULL THEN MIN(u.value) ELSE MIN(b.value) END");
 		SqlJoinBuilder join = query.from(tableName, "t");
 		join.leftjoin(bnodes.getName(), "b").on("id", "t.ctx");
 		join.leftjoin(uris.getShortTableName(), "u").on("id", "t.ctx");
@@ -350,7 +390,9 @@ public class RdbmsTripleRepository {
 		return query.toString();
 	}
 
-	private String buildCountQuery(RdbmsResource... ctxs) throws SQLException {
+	private String buildCountQuery(RdbmsResource... ctxs)
+		throws SQLException
+	{
 		String tableName = statements.getCombinedTableName();
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT COUNT(*) FROM ");
@@ -367,38 +409,43 @@ public class RdbmsTripleRepository {
 		return sb.toString();
 	}
 
-	private String buildDeleteQuery(String tableName, RdbmsResource subj,
-			RdbmsURI pred, RdbmsValue obj, RdbmsResource... ctxs)
-			throws RdbmsException, SQLException {
+	private String buildDeleteQuery(String tableName, RdbmsResource subj, RdbmsURI pred, RdbmsValue obj,
+			RdbmsResource... ctxs)
+		throws RdbmsException, SQLException
+	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("DELETE FROM ").append(tableName);
 		return buildWhere(sb, subj, pred, obj, ctxs);
 	}
 
-	private SqlQueryBuilder buildSelectQuery(RdbmsResource subj, RdbmsURI pred,
-			RdbmsValue obj, RdbmsResource... ctxs) throws RdbmsException,
-			SQLException {
+	private SqlQueryBuilder buildSelectQuery(RdbmsResource subj, RdbmsURI pred, RdbmsValue obj,
+			RdbmsResource... ctxs)
+		throws RdbmsException, SQLException
+	{
 		String tableName = statements.getTableName(vf.getInternalId(pred));
 		SqlQueryBuilder query = factory.createSqlQueryBuilder();
 		query.select().column("t", "ctx");
-		query.select().append("CASE WHEN cu.value IS NOT NULL THEN cu.value WHEN clu.value IS NOT NULL THEN clu.value ELSE cb.value END");
+		query.select().append(
+				"CASE WHEN cu.value IS NOT NULL THEN cu.value WHEN clu.value IS NOT NULL THEN clu.value ELSE cb.value END");
 		query.select().column("t", "subj");
-		query.select().append("CASE WHEN su.value IS NOT NULL THEN su.value WHEN slu.value IS NOT NULL THEN slu.value ELSE sb.value END");
+		query.select().append(
+				"CASE WHEN su.value IS NOT NULL THEN su.value WHEN slu.value IS NOT NULL THEN slu.value ELSE sb.value END");
 		query.select().column("pu", "id");
 		query.select().column("pu", "value");
 		query.select().column("t", "obj");
-		query.select().append("CASE WHEN ou.value IS NOT NULL THEN ou.value" +
-				" WHEN olu.value IS NOT NULL THEN olu.value" +
-				" WHEN ob.value IS NOT NULL THEN ob.value" +
-				" WHEN ol.value IS NOT NULL THEN ol.value ELSE oll.value END");
+		query.select().append(
+				"CASE WHEN ou.value IS NOT NULL THEN ou.value" + " WHEN olu.value IS NOT NULL THEN olu.value"
+						+ " WHEN ob.value IS NOT NULL THEN ob.value"
+						+ " WHEN ol.value IS NOT NULL THEN ol.value ELSE oll.value END");
 		query.select().column("od", "value");
 		query.select().column("og", "value");
 		SqlJoinBuilder join;
 		if (pred != null) {
 			join = query.from(uris.getShortTableName(), "pu");
-			// TODO what about long predicate URIs? 
+			// TODO what about long predicate URIs?
 			join = join.join(tableName, "t");
-		} else {
+		}
+		else {
 			join = query.from(tableName, "t");
 		}
 		if (pred == null) {
@@ -442,8 +489,9 @@ public class RdbmsTripleRepository {
 		return query;
 	}
 
-	private String buildWhere(StringBuilder sb, RdbmsResource subj,
-			RdbmsURI pred, RdbmsValue obj, RdbmsResource... ctxs) {
+	private String buildWhere(StringBuilder sb, RdbmsResource subj, RdbmsURI pred, RdbmsValue obj,
+			RdbmsResource... ctxs)
+	{
 		sb.append("\nWHERE 1=1");
 		if (ctxs != null && ctxs.length > 0) {
 			sb.append(" AND (");
@@ -478,7 +526,8 @@ public class RdbmsTripleRepository {
 	}
 
 	private void setCountQuery(PreparedStatement stmt, RdbmsResource... ctxs)
-			throws SQLException, RdbmsException {
+		throws SQLException, RdbmsException
+	{
 		if (ctxs != null && ctxs.length > 0) {
 			for (int i = 0; i < ctxs.length; i++) {
 				stmt.setObject(i + 1, vf.getInternalId(ctxs[i]));
@@ -486,15 +535,17 @@ public class RdbmsTripleRepository {
 		}
 	}
 
-	private void setSelectQuery(PreparedStatement stmt, RdbmsResource subj,
-			RdbmsURI pred, RdbmsValue obj, RdbmsResource... ctxs)
-			throws SQLException, RdbmsException {
+	private void setSelectQuery(PreparedStatement stmt, RdbmsResource subj, RdbmsURI pred, RdbmsValue obj,
+			RdbmsResource... ctxs)
+		throws SQLException, RdbmsException
+	{
 		int p = 0;
 		if (ctxs != null && ctxs.length > 0) {
 			for (int i = 0; i < ctxs.length; i++) {
 				if (ctxs[i] == null) {
 					stmt.setLong(++p, ValueTable.NIL_ID);
-				} else {
+				}
+				else {
 					stmt.setObject(++p, vf.getInternalId(ctxs[i]));
 				}
 			}

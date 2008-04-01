@@ -64,14 +64,17 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * @author James Leigh
  * 
  */
-public class BooleanExprFactory extends
-		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class BooleanExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+
 	private static final double HR14 = 14 * 60 * 60 * 1000;
+
 	protected SqlExpr result;
+
 	private SqlExprFactory sql;
 
 	public SqlExpr createBooleanExpr(ValueExpr expr)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = null;
 		if (expr == null)
 			return new SqlNull();
@@ -82,73 +85,91 @@ public class BooleanExprFactory extends
 	}
 
 	@Override
-	public void meet(And node) throws UnsupportedRdbmsOperatorException {
+	public void meet(And node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = and(bool(node.getLeftArg()), bool(node.getRightArg()));
 	}
 
 	@Override
-	public void meet(Bound node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Bound node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = not(isNull(new RefIdColumn(node.getArg())));
 	}
 
 	@Override
-	public void meet(Compare compare) throws UnsupportedRdbmsOperatorException {
+	public void meet(Compare compare)
+		throws UnsupportedRdbmsOperatorException
+	{
 		ValueExpr left = compare.getLeftArg();
 		ValueExpr right = compare.getRightArg();
 		CompareOp op = compare.getOperator();
 		switch (op) {
-		case EQ:
-			if (isTerm(left) && isTerm(right)) {
-				result = termsEqual(left, right);
-			} else {
-				result = equal(left, right);
-			}
-			break;
-		case NE:
-			if (isTerm(left) && isTerm(right)) {
-				result = not(termsEqual(left, right));
-			} else {
-				result = not(equal(left, right));
-			}
-			break;
-		case GE:
-		case GT:
-		case LE:
-		case LT:
-			SqlExpr simple = and(simple(type(left)), simple(type(right)));
-			SqlExpr labels = and(cmp(label(left), op, label(right)), simple);
-			SqlExpr time = cmp(time(left), op, time(right));
-			SqlExpr within = cmp(time(left), op, sub(time(right), num(HR14)));
-			SqlExpr comp = or(eq(zoned(left), zoned(right)), within);
-			SqlExpr dateTime = and(eq(type(left), type(right)), and(comp, time));
-			result = or(cmp(numeric(left), op, numeric(right)), or(dateTime, labels));
-			break;
+			case EQ:
+				if (isTerm(left) && isTerm(right)) {
+					result = termsEqual(left, right);
+				}
+				else {
+					result = equal(left, right);
+				}
+				break;
+			case NE:
+				if (isTerm(left) && isTerm(right)) {
+					result = not(termsEqual(left, right));
+				}
+				else {
+					result = not(equal(left, right));
+				}
+				break;
+			case GE:
+			case GT:
+			case LE:
+			case LT:
+				SqlExpr simple = and(simple(type(left)), simple(type(right)));
+				SqlExpr labels = and(cmp(label(left), op, label(right)), simple);
+				SqlExpr time = cmp(time(left), op, time(right));
+				SqlExpr within = cmp(time(left), op, sub(time(right), num(HR14)));
+				SqlExpr comp = or(eq(zoned(left), zoned(right)), within);
+				SqlExpr dateTime = and(eq(type(left), type(right)), and(comp, time));
+				result = or(cmp(numeric(left), op, numeric(right)), or(dateTime, labels));
+				break;
 		}
 	}
 
 	@Override
-	public void meet(IsBNode node) throws UnsupportedRdbmsOperatorException {
+	public void meet(IsBNode node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = isNotNull(sql.createBNodeExpr(node.getArg()));
 	}
 
 	@Override
-	public void meet(IsLiteral node) throws UnsupportedRdbmsOperatorException {
+	public void meet(IsLiteral node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = isNotNull(sql.createLabelExpr(node.getArg()));
 	}
 
 	@Override
-	public void meet(IsResource node) throws UnsupportedRdbmsOperatorException {
+	public void meet(IsResource node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlExpr isBNode = isNotNull(sql.createBNodeExpr(node.getArg()));
 		result = or(isBNode, isNotNull(sql.createUriExpr(node.getArg())));
 	}
 
 	@Override
-	public void meet(IsURI node) throws UnsupportedRdbmsOperatorException {
+	public void meet(IsURI node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = isNotNull(sql.createUriExpr(node.getArg()));
 	}
 
 	@Override
-	public void meet(LangMatches node) throws UnsupportedRdbmsOperatorException {
+	public void meet(LangMatches node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		ValueExpr left = node.getLeftArg();
 		ValueExpr right = node.getRightArg();
 		SqlCase sqlCase = new SqlCase();
@@ -159,23 +180,30 @@ public class BooleanExprFactory extends
 	}
 
 	@Override
-	public void meet(Not node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Not node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = not(bool(node.getArg()));
 	}
 
 	@Override
-	public void meet(Or node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Or node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = or(bool(node.getLeftArg()), bool(node.getRightArg()));
 	}
 
 	@Override
-	public void meet(Regex node) throws UnsupportedRdbmsOperatorException {
-		result = regex(label(node.getArg()), label(node.getPatternArg()),
-				label(node.getFlagsArg()));
+	public void meet(Regex node)
+		throws UnsupportedRdbmsOperatorException
+	{
+		result = regex(label(node.getArg()), label(node.getPatternArg()), label(node.getFlagsArg()));
 	}
 
 	@Override
-	public void meet(SameTerm node) throws UnsupportedRdbmsOperatorException {
+	public void meet(SameTerm node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		ValueExpr left = node.getLeftArg();
 		ValueExpr right = node.getRightArg();
 		boolean leftIsVar = left instanceof Var;
@@ -183,10 +211,12 @@ public class BooleanExprFactory extends
 		boolean leftIsConst = left instanceof ValueConstant;
 		boolean rightIsConst = right instanceof ValueConstant;
 		if (leftIsVar && rightIsVar) {
-			result = eq(new RefIdColumn((Var) left), new RefIdColumn((Var) right));
-		} else if ((leftIsVar || leftIsConst) && (rightIsVar || rightIsConst)) {
+			result = eq(new RefIdColumn((Var)left), new RefIdColumn((Var)right));
+		}
+		else if ((leftIsVar || leftIsConst) && (rightIsVar || rightIsConst)) {
 			result = eq(hash(left), hash(right));
-		} else {
+		}
+		else {
 			SqlExpr bnodes = eqComparingNull(bNode(left), bNode(right));
 			SqlExpr uris = eqComparingNull(uri(left), uri(right));
 			SqlExpr langs = eqComparingNull(lang(left), lang(right));
@@ -199,15 +229,20 @@ public class BooleanExprFactory extends
 	}
 
 	@Override
-	public void meet(ValueConstant vc) throws UnsupportedRdbmsOperatorException {
+	public void meet(ValueConstant vc)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = valueOf(vc.getValue());
 	}
 
 	@Override
-	public void meet(Var var) throws UnsupportedRdbmsOperatorException {
+	public void meet(Var var)
+		throws UnsupportedRdbmsOperatorException
+	{
 		if (var.getValue() == null) {
 			result = effectiveBooleanValue(var);
-		} else {
+		}
+		else {
 			result = valueOf(var.getValue());
 		}
 	}
@@ -217,22 +252,26 @@ public class BooleanExprFactory extends
 	}
 
 	protected SqlExpr bNode(ValueExpr arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createBNodeExpr(arg);
 	}
 
 	protected SqlExpr bool(ValueExpr arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createBooleanExpr(arg);
 	}
 
 	protected SqlExpr label(ValueExpr arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createLabelExpr(arg);
 	}
 
 	protected SqlExpr lang(ValueExpr arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createLanguageExpr(arg);
 	}
 
@@ -244,40 +283,49 @@ public class BooleanExprFactory extends
 
 	@Override
 	protected void meetNode(QueryModelNode arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		if (arg instanceof ValueExpr) {
-			result = effectiveBooleanValue((ValueExpr) arg);
-		} else {
+			result = effectiveBooleanValue((ValueExpr)arg);
+		}
+		else {
 			throw unsupported(arg);
 		}
 	}
 
 	protected SqlExpr numeric(ValueExpr arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createNumericExpr(arg);
 	}
 
 	protected SqlExpr time(ValueExpr arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createTimeExpr(arg);
 	}
 
 	protected SqlExpr type(ValueExpr arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createDatatypeExpr(arg);
 	}
 
-	protected SqlExpr uri(ValueExpr arg) throws UnsupportedRdbmsOperatorException {
+	protected SqlExpr uri(ValueExpr arg)
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createUriExpr(arg);
 	}
 
 	protected SqlExpr zoned(ValueExpr arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createZonedExpr(arg);
 	}
 
 	private SqlExpr effectiveBooleanValue(ValueExpr v)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		String bool = XMLSchema.BOOLEAN.stringValue();
 		SqlCase sqlCase = new SqlCase();
 		sqlCase.when(eq(type(v), str(bool)), eq(label(v), str("true")));
@@ -287,7 +335,8 @@ public class BooleanExprFactory extends
 	}
 
 	private SqlExpr equal(ValueExpr left, ValueExpr right)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlExpr bnodes = eq(bNode(left), bNode(right));
 		SqlExpr uris = eq(uri(left), uri(right));
 		SqlCase scase = new SqlCase();
@@ -301,7 +350,8 @@ public class BooleanExprFactory extends
 	}
 
 	private SqlExpr literalEqual(ValueExpr left, ValueExpr right, SqlCase scase)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		// TODO What about xsd:booleans?
 		SqlExpr labels = eq(label(left), label(right));
 		SqlExpr langs = and(eqIfNotNull(lang(left), lang(right)), labels.clone());
@@ -321,7 +371,8 @@ public class BooleanExprFactory extends
 	}
 
 	private SqlExpr termsEqual(ValueExpr left, ValueExpr right)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlExpr bnodes = eqIfNotNull(bNode(left), bNode(right));
 		SqlExpr uris = eqIfNotNull(uri(left), uri(right));
 		SqlCase scase = new SqlCase();
@@ -332,7 +383,7 @@ public class BooleanExprFactory extends
 
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
-			if (((Literal) value).booleanValue()) {
+			if (((Literal)value).booleanValue()) {
 				return new TrueValue();
 			}
 			return new FalseValue();

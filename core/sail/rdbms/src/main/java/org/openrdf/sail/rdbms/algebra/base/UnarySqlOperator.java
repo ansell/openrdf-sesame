@@ -16,8 +16,8 @@ import org.openrdf.sail.rdbms.optimizers.SqlConstantOptimizer;
  * @author James Leigh
  * 
  */
-public abstract class UnarySqlOperator extends RdbmsQueryModelNodeBase
-		implements SqlExpr {
+public abstract class UnarySqlOperator extends RdbmsQueryModelNodeBase implements SqlExpr {
+
 	private SqlExpr arg;
 
 	public UnarySqlOperator() {
@@ -40,23 +40,24 @@ public abstract class UnarySqlOperator extends RdbmsQueryModelNodeBase
 
 	@Override
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-			throws X {
+		throws X
+	{
 		arg.visit(visitor);
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current,
-			QueryModelNode replacement) {
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (arg == current) {
-			setArg((SqlExpr) replacement);
-		} else {
+			setArg((SqlExpr)replacement);
+		}
+		else {
 			super.replaceChildNode(current, replacement);
 		}
 	}
 
 	@Override
 	public UnarySqlOperator clone() {
-		UnarySqlOperator clone = (UnarySqlOperator) super.clone();
+		UnarySqlOperator clone = (UnarySqlOperator)super.clone();
 		clone.setArg(arg.clone());
 		return clone;
 	}
@@ -77,11 +78,12 @@ public abstract class UnarySqlOperator extends RdbmsQueryModelNodeBase
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final UnarySqlOperator other = (UnarySqlOperator) obj;
+		final UnarySqlOperator other = (UnarySqlOperator)obj;
 		if (arg == null) {
 			if (other.arg != null)
 				return false;
-		} else if (!arg.equals(other.arg))
+		}
+		else if (!arg.equals(other.arg))
 			return false;
 		return true;
 	}
@@ -90,12 +92,15 @@ public abstract class UnarySqlOperator extends RdbmsQueryModelNodeBase
 	public String toString() {
 		QueryModelTreePrinter treePrinter = new QueryModelTreePrinter();
 		UnarySqlOperator clone = this.clone();
-		UnarySqlOperator parent = new UnarySqlOperator(clone){
+		UnarySqlOperator parent = new UnarySqlOperator(clone) {
+
 			@Override
-			public <X extends Exception> void visit(
-					RdbmsQueryModelVisitorBase<X> visitor) throws X {
+			public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+				throws X
+			{
 				visitor.meetOther(this);
-			}};
+			}
+		};
 		new SqlConstantOptimizer().optimize(clone);
 		parent.getArg().visit(treePrinter);
 		return treePrinter.getTreeString();

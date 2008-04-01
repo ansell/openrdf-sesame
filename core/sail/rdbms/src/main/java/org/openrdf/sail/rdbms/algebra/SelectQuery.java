@@ -29,8 +29,11 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * 
  */
 public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
+
 	public static class OrderElem {
+
 		public final SqlExpr sqlExpr;
+
 		public final boolean isAscending;
 
 		protected OrderElem(SqlExpr sqlExpr, boolean isAscending) {
@@ -40,11 +43,17 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 	}
 
 	private Map<String, SelectProjection> projections = new HashMap();
+
 	private Map<String, String> bindingNames;
+
 	private boolean distinct;
+
 	private FromItem from;
+
 	private List<OrderElem> order = new ArrayList<OrderElem>();
+
 	private Integer offset;
+
 	private Integer limit;
 
 	public boolean isDistinct() {
@@ -136,29 +145,27 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current,
-			QueryModelNode replacement) {
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		for (String name : projections.keySet()) {
 			if (projections.get(name) == current) {
-				projections.put(name, (SelectProjection) replacement);
+				projections.put(name, (SelectProjection)replacement);
 				replacement.setParentNode(this);
 				return;
 			}
 		}
 		if (from == current) {
-			from = (FromItem) replacement;
+			from = (FromItem)replacement;
 			replacement.setParentNode(this);
 			return;
 		}
 		for (int i = 0, n = order.size(); i < n; i++) {
 			if (order.get(i).sqlExpr == current) {
-				if (replacement instanceof SqlNull
-						|| order instanceof SqlConstant<?>) {
+				if (replacement instanceof SqlNull || order instanceof SqlConstant<?>) {
 					order.remove(i);
 					return;
 				}
 				boolean asc = order.get(i).isAscending;
-				order.set(i, new OrderElem((SqlExpr) replacement, asc));
+				order.set(i, new OrderElem((SqlExpr)replacement, asc));
 				replacement.setParentNode(this);
 				return;
 			}
@@ -168,7 +175,8 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 
 	@Override
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-			throws X {
+		throws X
+	{
 		super.visitChildren(visitor);
 		from.visit(visitor);
 		ArrayList<SelectProjection> list = new ArrayList(projections.values());
@@ -182,7 +190,7 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 
 	@Override
 	public SelectQuery clone() {
-		SelectQuery clone = (SelectQuery) super.clone();
+		SelectQuery clone = (SelectQuery)super.clone();
 		clone.distinct = distinct;
 		clone.projections = new HashMap<String, SelectProjection>();
 		for (SelectProjection expr : projections.values()) {
@@ -194,8 +202,9 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 

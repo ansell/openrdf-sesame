@@ -35,27 +35,49 @@ import org.openrdf.sail.rdbms.schema.ValueTableFactory;
  * 
  */
 public class TripleTableManager {
+
 	private static final String DEFAULT_TABLE_PREFIX = "TRIPLES";
+
 	private static final String OTHER_TRIPLES_TABLE = "TRIPLES";
-	public static int MAX_TABLES = Integer.MAX_VALUE;//1000;
+
+	public static int MAX_TABLES = Integer.MAX_VALUE;// 1000;
+
 	public static final boolean INDEX_TRIPLES = true;
+
 	public Number OTHER_PRED;
+
 	private BNodeManager bnodes;
+
 	private boolean closed;
+
 	private Connection conn;
+
 	private ValueTableFactory factory;
+
 	private Thread initThread;
+
 	private LiteralManager literals;
+
 	private Logger logger = LoggerFactory.getLogger(TripleTableManager.class);
+
 	private PredicateManager predicates;
+
 	private LinkedList<TripleTable> queue = new LinkedList<TripleTable>();
+
 	private Pattern tablePrefix = Pattern.compile("\\W(\\w*)\\W*$");
+
 	private Map<Number, TripleTable> tables = new HashMap<Number, TripleTable>();
+
 	private UriManager uris;
+
 	private HashManager hashes;
+
 	private int maxTables = MAX_TABLES;
+
 	private boolean indexingTriples = INDEX_TRIPLES;
+
 	private IdSequence ids;
+
 	Exception exc;
 
 	public TripleTableManager(ValueTableFactory factory) {
@@ -100,7 +122,8 @@ public class TripleTableManager {
 	public void setMaxNumberOfTripleTables(int max) {
 		if (max < 1) {
 			maxTables = MAX_TABLES;
-		} else {
+		}
+		else {
 			maxTables = max - 1;
 		}
 	}
@@ -113,13 +136,17 @@ public class TripleTableManager {
 		this.indexingTriples = indexingTriples;
 	}
 
-	public void initialize() throws SQLException {
+	public void initialize()
+		throws SQLException
+	{
 		tables.putAll(findPredicateTables());
 		initThread = new Thread(new Runnable() {
+
 			public void run() {
 				try {
 					initThread();
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					exc = e;
 					logger.error(e.toString(), e);
 				}
@@ -128,7 +155,9 @@ public class TripleTableManager {
 		initThread.start();
 	}
 
-	public void close() throws SQLException {
+	public void close()
+		throws SQLException
+	{
 		closed = true;
 		synchronized (queue) {
 			queue.notify();
@@ -147,7 +176,9 @@ public class TripleTableManager {
 		}
 	}
 
-	public void createTripleIndexes() throws SQLException {
+	public void createTripleIndexes()
+		throws SQLException
+	{
 		indexingTriples = true;
 		for (TripleTable table : tables.values()) {
 			if (!table.isIndexed()) {
@@ -156,7 +187,9 @@ public class TripleTableManager {
 		}
 	}
 
-	public void dropTripleIndexes() throws SQLException {
+	public void dropTripleIndexes()
+		throws SQLException
+	{
 		indexingTriples = false;
 		for (TripleTable table : tables.values()) {
 			if (table.isIndexed()) {
@@ -165,7 +198,9 @@ public class TripleTableManager {
 		}
 	}
 
-	public String findTableName(Number pred) throws SQLException {
+	public String findTableName(Number pred)
+		throws SQLException
+	{
 		return getPredicateTable(pred).getNameWhenReady();
 	}
 
@@ -179,31 +214,36 @@ public class TripleTableManager {
 		return new ArrayList<Number>(tables.keySet());
 	}
 
-	public synchronized TripleTable getPredicateTable(Number pred) throws SQLException {
+	public synchronized TripleTable getPredicateTable(Number pred)
+		throws SQLException
+	{
 		assert pred.longValue() != 0;
 		assert pred.equals(ids.idOf(pred));
-			if (tables.containsKey(pred))
-				return tables.get(pred);
-			if (tables.containsKey(OTHER_PRED))
-				return tables.get(OTHER_PRED);
-			String tableName = getNewTableName(pred);
-			if (tables.size() >= maxTables) {
-				tableName = OTHER_TRIPLES_TABLE;
-			}
-			TripleTable table = factory.createTripleTable(conn, tableName);
-			table.setIdSequence(ids);
-			if (tables.size() >= maxTables) {
-				table.setPredColumnPresent(true);
-				initTable(table);
-				tables.put(OTHER_PRED, table);
-			} else {
-				initTable(table);
-				tables.put(pred, table);
-			}
-			return table;
+		if (tables.containsKey(pred))
+			return tables.get(pred);
+		if (tables.containsKey(OTHER_PRED))
+			return tables.get(OTHER_PRED);
+		String tableName = getNewTableName(pred);
+		if (tables.size() >= maxTables) {
+			tableName = OTHER_TRIPLES_TABLE;
+		}
+		TripleTable table = factory.createTripleTable(conn, tableName);
+		table.setIdSequence(ids);
+		if (tables.size() >= maxTables) {
+			table.setPredColumnPresent(true);
+			initTable(table);
+			tables.put(OTHER_PRED, table);
+		}
+		else {
+			initTable(table);
+			tables.put(pred, table);
+		}
+		return table;
 	}
 
-	public synchronized String getTableName(Number pred) throws SQLException {
+	public synchronized String getTableName(Number pred)
+		throws SQLException
+	{
 		if (tables.containsKey(pred))
 			return tables.get(pred).getNameWhenReady();
 		if (tables.containsKey(OTHER_PRED))
@@ -211,7 +251,9 @@ public class TripleTableManager {
 		return null;
 	}
 
-	public void removed(int count, boolean locked) throws SQLException {
+	public void removed(int count, boolean locked)
+		throws SQLException
+	{
 		String condition = null;
 		if (locked) {
 			condition = getExpungeCondition();
@@ -224,7 +266,9 @@ public class TripleTableManager {
 		}
 	}
 
-	protected Set<String> findAllTables() throws SQLException {
+	protected Set<String> findAllTables()
+		throws SQLException
+	{
 		Set<String> tables = new HashSet<String>();
 		DatabaseMetaData metaData = conn.getMetaData();
 		String c = null;
@@ -238,13 +282,15 @@ public class TripleTableManager {
 				tables.add(tableName);
 			}
 			return tables;
-		} finally {
+		}
+		finally {
 			rs.close();
 		}
 	}
 
 	protected Map<Number, TripleTable> findPredicateTables()
-			throws SQLException {
+		throws SQLException
+	{
 		Map<Number, TripleTable> tables = new HashMap<Number, TripleTable>();
 		Set<String> names = findPredicateTableNames();
 		for (String tableName : names) {
@@ -263,7 +309,8 @@ public class TripleTableManager {
 	}
 
 	protected Set<String> findTablesWithColumn(String column)
-			throws SQLException {
+		throws SQLException
+	{
 		Set<String> tables = findTablesWithExactColumn(column.toUpperCase());
 		if (tables.isEmpty())
 			return findTablesWithExactColumn(column.toLowerCase());
@@ -271,7 +318,8 @@ public class TripleTableManager {
 	}
 
 	protected Set<String> findTablesWithExactColumn(String column)
-			throws SQLException {
+		throws SQLException
+	{
 		Set<String> tables = new HashSet<String>();
 		DatabaseMetaData metaData = conn.getMetaData();
 		String c = null;
@@ -284,12 +332,15 @@ public class TripleTableManager {
 				tables.add(tableName);
 			}
 			return tables;
-		} finally {
+		}
+		finally {
 			rs.close();
 		}
 	}
 
-	protected synchronized String getExpungeCondition() throws SQLException {
+	protected synchronized String getExpungeCondition()
+		throws SQLException
+	{
 		StringBuilder sb = new StringBuilder(1024);
 		for (Map.Entry<Number, TripleTable> e : tables.entrySet()) {
 			sb.append("\nAND id != ").append(e.getKey());
@@ -306,7 +357,9 @@ public class TripleTableManager {
 		return sb.toString();
 	}
 
-	protected String getNewTableName(Number pred) throws SQLException {
+	protected String getNewTableName(Number pred)
+		throws SQLException
+	{
 		String prefix = getTableNamePrefix(pred);
 		String tableName = prefix + "_" + pred;
 		return tableName;
@@ -320,7 +373,9 @@ public class TripleTableManager {
 		return id;
 	}
 
-	protected String getTableNamePrefix(Number pred) throws SQLException {
+	protected String getTableNamePrefix(Number pred)
+		throws SQLException
+	{
 		String uri = predicates.getPredicateUri(pred);
 		if (uri == null)
 			return DEFAULT_TABLE_PREFIX;
@@ -335,7 +390,9 @@ public class TripleTableManager {
 		return localName;
 	}
 
-	void initThread() throws SQLException, InterruptedException {
+	void initThread()
+		throws SQLException, InterruptedException
+	{
 		logger.debug("Starting helper thread {}", initThread.getName());
 		while (!closed) {
 			TripleTable table = null;
@@ -355,7 +412,9 @@ public class TripleTableManager {
 		logger.debug("Closing helper thread {}", initThread.getName());
 	}
 
-	private Set<String> findPredicateTableNames() throws SQLException {
+	private Set<String> findPredicateTableNames()
+		throws SQLException
+	{
 		Set<String> names = findAllTables();
 		names.retainAll(findTablesWithColumn("ctx"));
 		names.retainAll(findTablesWithColumn("subj"));
@@ -363,13 +422,16 @@ public class TripleTableManager {
 		return names;
 	}
 
-	private void initTable(TripleTable table) throws SQLException {
+	private void initTable(TripleTable table)
+		throws SQLException
+	{
 		if (exc != null)
 			throwException();
 		table.setIndexed(indexingTriples);
 		if (true || queue == null) {
 			table.initTable();
-		} else {
+		}
+		else {
 			synchronized (queue) {
 				queue.add(table);
 				queue.notify();
@@ -377,13 +439,16 @@ public class TripleTableManager {
 		}
 	}
 
-	private void throwException() throws SQLException {
+	private void throwException()
+		throws SQLException
+	{
 		if (exc instanceof SQLException) {
-			SQLException e = (SQLException) exc;
+			SQLException e = (SQLException)exc;
 			exc = null;
 			throw e;
-		} else if (exc instanceof RuntimeException) {
-			RuntimeException e = (RuntimeException) exc;
+		}
+		else if (exc instanceof RuntimeException) {
+			RuntimeException e = (RuntimeException)exc;
 			exc = null;
 			throw e;
 		}

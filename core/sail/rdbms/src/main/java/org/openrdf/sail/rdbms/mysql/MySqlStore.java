@@ -6,6 +6,7 @@
 package org.openrdf.sail.rdbms.mysql;
 
 import org.apache.commons.dbcp.BasicDataSource;
+
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.rdbms.RdbmsStore;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
@@ -17,11 +18,17 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
  * 
  */
 public class MySqlStore extends RdbmsStore {
+
 	private String name = genName();
+
 	private String serverName = "localhost";
+
 	private String databaseName;
+
 	private int portNumber;
+
 	private String user;
+
 	private String password;
 
 	public MySqlStore() {
@@ -81,10 +88,13 @@ public class MySqlStore extends RdbmsStore {
 	}
 
 	@Override
-	public void initialize() throws SailException {
+	public void initialize()
+		throws SailException
+	{
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
+		}
+		catch (ClassNotFoundException e) {
 			throw new RdbmsException(e.toString(), e);
 		}
 		StringBuilder url = new StringBuilder();
@@ -102,7 +112,8 @@ public class MySqlStore extends RdbmsStore {
 		ds.setUrl(url.toString());
 		if (user != null) {
 			ds.setUsername(user);
-		} else {
+		}
+		else {
 			ds.setUsername(System.getProperty("user.name"));
 		}
 		if (password != null) {

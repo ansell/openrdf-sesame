@@ -17,6 +17,7 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * 
  */
 public class SqlMathExpr extends BinarySqlOperator {
+
 	private MathOp op;
 
 	public SqlMathExpr(SqlExpr leftArg, MathOp op, SqlExpr rightArg) {
@@ -29,8 +30,9 @@ public class SqlMathExpr extends BinarySqlOperator {
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 }

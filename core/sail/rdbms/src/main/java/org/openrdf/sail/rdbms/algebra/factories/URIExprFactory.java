@@ -38,9 +38,10 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * @author James Leigh
  * 
  */
-public class URIExprFactory extends
-		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class URIExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+
 	protected SqlExpr result;
+
 	private SqlExprFactory sql;
 
 	public void setSqlExprFactory(SqlExprFactory sql) {
@@ -48,7 +49,8 @@ public class URIExprFactory extends
 	}
 
 	public SqlExpr createUriExpr(ValueExpr expr)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = null;
 		if (expr == null)
 			return new SqlNull();
@@ -59,20 +61,27 @@ public class URIExprFactory extends
 	}
 
 	@Override
-	public void meet(Datatype node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Datatype node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlCase sqlCase = new SqlCase();
 		sqlCase.when(isNotNull(type(node.getArg())), type(node.getArg()));
-		sqlCase.when(and(isNull(lang(node.getArg())), isNotNull(label(node.getArg()))), str(XMLSchema.STRING.stringValue()));
+		sqlCase.when(and(isNull(lang(node.getArg())), isNotNull(label(node.getArg()))),
+				str(XMLSchema.STRING.stringValue()));
 		result = sqlCase;
 	}
 
 	@Override
-	public void meet(Lang node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Lang node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
 	@Override
-	public void meet(MathExpr node) throws UnsupportedRdbmsOperatorException {
+	public void meet(MathExpr node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
@@ -90,35 +99,40 @@ public class URIExprFactory extends
 	public void meet(Var var) {
 		if (var.getValue() == null) {
 			result = coalesce(new URIColumn(var), new LongURIColumn(var));
-		} else {
+		}
+		else {
 			result = valueOf(var.getValue());
 		}
 	}
 
 	@Override
 	protected void meetNode(QueryModelNode arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		throw unsupported(arg);
 	}
 
 	private SqlExpr label(ValueExpr arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createLabelExpr(arg);
 	}
 
 	private SqlExpr lang(ValueExpr arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createLanguageExpr(arg);
 	}
 
 	private SqlExpr type(ValueExpr arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return sql.createDatatypeExpr(arg);
 	}
 
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof URI) {
-			return str(((URI) value).stringValue());
+			return str(((URI)value).stringValue());
 		}
 		return sqlNull();
 	}

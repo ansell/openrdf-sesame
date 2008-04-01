@@ -11,8 +11,9 @@ import org.openrdf.sail.rdbms.algebra.base.ValueColumnBase;
 
 /**
  * Represents a variable's time value in an SQL expression.
+ * 
  * @author James Leigh
- *
+ * 
  */
 public class DateTimeColumn extends ValueColumnBase {
 
@@ -21,8 +22,9 @@ public class DateTimeColumn extends ValueColumnBase {
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 

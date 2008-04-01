@@ -17,8 +17,7 @@ import org.openrdf.sail.rdbms.RdbmsProvider;
  */
 public class PgSqlProvider implements RdbmsProvider {
 
-	public RdbmsConnectionFactory createRdbmsConnectionFactory(String dbName,
-			String dbVersion) {
+	public RdbmsConnectionFactory createRdbmsConnectionFactory(String dbName, String dbVersion) {
 		if ("PostgreSQL".equalsIgnoreCase(dbName))
 			return new PgSqlConnectionFactory();
 		return null;

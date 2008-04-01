@@ -17,16 +17,22 @@ import org.openrdf.sail.SailException;
  */
 public class EmptyRdbmsResourceIteration extends RdbmsResourceIteration {
 
-	public EmptyRdbmsResourceIteration() throws SQLException {
+	public EmptyRdbmsResourceIteration()
+		throws SQLException
+	{
 		super(null, null);
 	}
 
 	@Override
-	public void close() throws SailException {
+	public void close()
+		throws SailException
+	{
 	}
 
 	@Override
-	public boolean hasNext() throws SailException {
+	public boolean hasNext()
+		throws SailException
+	{
 		return false;
 	}
 

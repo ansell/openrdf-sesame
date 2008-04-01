@@ -11,8 +11,9 @@ import org.openrdf.sail.rdbms.algebra.base.ValueColumnBase;
 
 /**
  * Represents a variable's datatype value in an SQL expression.
+ * 
  * @author James Leigh
- *
+ * 
  */
 public class DatatypeColumn extends ValueColumnBase {
 
@@ -25,8 +26,9 @@ public class DatatypeColumn extends ValueColumnBase {
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 

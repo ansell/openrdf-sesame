@@ -21,6 +21,7 @@ public class PgQueryBuilderFactory extends QueryBuilderFactory {
 	@Override
 	public SqlRegexBuilder createSqlRegexBuilder(SqlExprBuilder where) {
 		return new SqlRegexBuilder(where, this) {
+
 			@Override
 			protected void appendRegExp(SqlExprBuilder where) {
 				appendValue(where);

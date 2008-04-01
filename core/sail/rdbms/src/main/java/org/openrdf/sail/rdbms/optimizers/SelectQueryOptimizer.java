@@ -81,15 +81,24 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
  * @author James Leigh
  * 
  */
-public class SelectQueryOptimizer extends
-		RdbmsQueryModelVisitorBase<RuntimeException> implements QueryOptimizer {
+public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeException> implements
+		QueryOptimizer
+{
+
 	private static final String ALIAS = "t";
+
 	private SqlExprFactory sql;
+
 	private int aliasCount = 0;
+
 	private BindingSet bindings;
+
 	private Dataset dataset;
+
 	private RdbmsValueFactory vf;
+
 	private TransTableManager tables;
+
 	private IdSequence ids;
 
 	public void setSqlExprFactory(SqlExprFactory sql) {
@@ -108,32 +117,35 @@ public class SelectQueryOptimizer extends
 		this.ids = ids;
 	}
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset,
-			BindingSet bindings) {
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		this.dataset = dataset;
 		this.bindings = bindings;
 		tupleExpr.visit(this);
 	}
 
 	@Override
-	public void meet(Distinct node) throws RuntimeException {
+	public void meet(Distinct node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
-			SelectQuery query = (SelectQuery) node.getArg();
+			SelectQuery query = (SelectQuery)node.getArg();
 			query.setDistinct(true);
 			node.replaceWith(query);
 		}
 	}
 
 	@Override
-	public void meet(Union node) throws RuntimeException {
+	public void meet(Union node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		TupleExpr l = node.getLeftArg();
 		TupleExpr r = node.getRightArg();
 		if (!(l instanceof SelectQuery && r instanceof SelectQuery))
 			return;
-		SelectQuery left = (SelectQuery) l;
-		SelectQuery right = (SelectQuery) r;
+		SelectQuery left = (SelectQuery)l;
+		SelectQuery right = (SelectQuery)r;
 		if (left.isComplex() || right.isComplex())
 			return;
 		UnionItem union = new UnionItem("u" + aliasCount++);
@@ -147,14 +159,16 @@ public class SelectQueryOptimizer extends
 	}
 
 	@Override
-	public void meet(Join node) throws RuntimeException {
+	public void meet(Join node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		TupleExpr l = node.getLeftArg();
 		TupleExpr r = node.getRightArg();
 		if (!(l instanceof SelectQuery && r instanceof SelectQuery))
 			return;
-		SelectQuery left = (SelectQuery) l;
-		SelectQuery right = (SelectQuery) r;
+		SelectQuery left = (SelectQuery)l;
+		SelectQuery right = (SelectQuery)r;
 		if (left.isComplex() || right.isComplex())
 			return;
 		left = left.clone();
@@ -166,14 +180,16 @@ public class SelectQueryOptimizer extends
 	}
 
 	@Override
-	public void meet(LeftJoin node) throws RuntimeException {
+	public void meet(LeftJoin node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		TupleExpr l = node.getLeftArg();
 		TupleExpr r = node.getRightArg();
 		if (!(l instanceof SelectQuery && r instanceof SelectQuery))
 			return;
-		SelectQuery left = (SelectQuery) l;
-		SelectQuery right = (SelectQuery) r;
+		SelectQuery left = (SelectQuery)l;
+		SelectQuery right = (SelectQuery)r;
 		if (left.isComplex() || right.isComplex())
 			return;
 		left = left.clone();
@@ -186,7 +202,8 @@ public class SelectQueryOptimizer extends
 			for (ValueExpr expr : flatten(node.getCondition())) {
 				try {
 					filters.add(sql.createBooleanExpr(expr));
-				} catch (UnsupportedRdbmsOperatorException e) {
+				}
+				catch (UnsupportedRdbmsOperatorException e) {
 					return;
 				}
 			}
@@ -210,8 +227,9 @@ public class SelectQueryOptimizer extends
 		Value objValue = getVarValue(objVar, bindings);
 		Value ctxValue = getVarValue(ctxVar, bindings);
 
-		if (subjValue instanceof Literal || predValue instanceof Literal
-				|| predValue instanceof BNode || ctxValue instanceof Literal) {
+		if (subjValue instanceof Literal || predValue instanceof Literal || predValue instanceof BNode
+				|| ctxValue instanceof Literal)
+		{
 			// subj and ctx must be a Resource and pred must be a URI
 			return;
 		}
@@ -227,15 +245,16 @@ public class SelectQueryOptimizer extends
 		try {
 			tableName = tables.getTableName(predId);
 			present = tables.isPredColumnPresent(predId);
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsRuntimeException(e);
 		}
 		JoinItem from = new JoinItem(alias, tableName, predId);
 
-		ColumnVar s = createSubj(alias, subjVar, (Resource) subjValue);
-		ColumnVar p = createPred(alias, predVar, (URI) predValue, !present);
+		ColumnVar s = createSubj(alias, subjVar, (Resource)subjValue);
+		ColumnVar p = createPred(alias, predVar, (URI)predValue, !present);
 		ColumnVar o = createObj(alias, objVar, objValue);
-		ColumnVar c = createCtx(alias, ctxVar, (Resource) ctxValue);
+		ColumnVar c = createCtx(alias, ctxVar, (Resource)ctxValue);
 
 		s.setTypes(tables.getSubjTypes(predId));
 		o.setTypes(tables.getObjTypes(predId));
@@ -249,22 +268,24 @@ public class SelectQueryOptimizer extends
 			if (vars.containsKey(var.getName())) {
 				IdColumn existing = new IdColumn(vars.get(var.getName()));
 				from.addFilter(new SqlEq(new IdColumn(var), existing));
-			} else if (value != null && !var.isImplied()) {
+			}
+			else if (value != null && !var.isImplied()) {
 				try {
 					NumberValue vc = new NumberValue(vf.getInternalId(value));
 					from.addFilter(new SqlEq(new RefIdColumn(var), vc));
-				} catch (RdbmsException e) {
+				}
+				catch (RdbmsException e) {
 					throw new RdbmsRuntimeException(e);
 				}
-			} else {
+			}
+			else {
 				vars.put(var.getName(), var);
 			}
 			if (!var.isHidden() && value == null) {
 				SelectProjection proj = new SelectProjection();
 				proj.setVar(var);
 				proj.setId(new RefIdColumn(var));
-				proj.setStringValue(coalesce(new URIColumn(var),
-						new BNodeColumn(var), new LabelColumn(var),
+				proj.setStringValue(coalesce(new URIColumn(var), new BNodeColumn(var), new LabelColumn(var),
 						new LongLabelColumn(var), new LongURIColumn(var)));
 				proj.setDatatype(new DatatypeColumn(var));
 				proj.setLanguage(new LanguageColumn(var));
@@ -279,13 +300,15 @@ public class SelectQueryOptimizer extends
 				NumberValue longValue;
 				try {
 					longValue = new NumberValue(vf.getInternalId(id));
-				} catch (RdbmsException e) {
+				}
+				catch (RdbmsException e) {
 					throw new RdbmsRuntimeException(e);
 				}
 				SqlEq eq = new SqlEq(var.clone(), longValue);
 				if (in == null) {
 					in = eq;
-				} else {
+				}
+				else {
 					in = new SqlOr(in, eq);
 				}
 			}
@@ -295,35 +318,42 @@ public class SelectQueryOptimizer extends
 	}
 
 	@Override
-	public void meet(Filter node) throws RuntimeException {
+	public void meet(Filter node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
-			SelectQuery query = (SelectQuery) node.getArg();
+			SelectQuery query = (SelectQuery)node.getArg();
 			ValueExpr condition = null;
 			for (ValueExpr expr : flatten(node.getCondition())) {
 				try {
 					query.addFilter(sql.createBooleanExpr(expr));
-				} catch (UnsupportedRdbmsOperatorException e) {
+				}
+				catch (UnsupportedRdbmsOperatorException e) {
 					if (condition == null) {
 						condition = expr;
-					} else {
+					}
+					else {
 						condition = new And(condition, expr);
 					}
 				}
 			}
 			if (condition == null) {
 				node.replaceWith(node.getArg());
-			} else {
+			}
+			else {
 				node.setCondition(condition);
 			}
 		}
 	}
 
 	@Override
-	public void meet(Projection node) throws RuntimeException {
+	public void meet(Projection node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
-			SelectQuery query = (SelectQuery) node.getArg();
+			SelectQuery query = (SelectQuery)node.getArg();
 			Map<String, String> bindingNames = new HashMap<String, String>();
 			List<SelectProjection> selection = new ArrayList<SelectProjection>();
 			ProjectionElemList list = node.getProjectionElemList();
@@ -343,10 +373,12 @@ public class SelectQueryOptimizer extends
 	}
 
 	@Override
-	public void meet(Slice node) throws RuntimeException {
+	public void meet(Slice node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
-			SelectQuery query = (SelectQuery) node.getArg();
+			SelectQuery query = (SelectQuery)node.getArg();
 			if (node.getOffset() > 0) {
 				query.setOffset(node.getOffset());
 			}
@@ -358,11 +390,13 @@ public class SelectQueryOptimizer extends
 	}
 
 	@Override
-	public void meet(Order node) throws RuntimeException {
+	public void meet(Order node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		if (!(node.getArg() instanceof SelectQuery))
 			return;
-		SelectQuery query = (SelectQuery) node.getArg();
+		SelectQuery query = (SelectQuery)node.getArg();
 		try {
 			for (OrderElem e : node.getElements()) {
 				ValueExpr expr = e.getExpr();
@@ -376,7 +410,8 @@ public class SelectQueryOptimizer extends
 				query.addOrder(sql.createLabelExpr(expr), asc);
 			}
 			node.replaceWith(query);
-		} catch (UnsupportedRdbmsOperatorException e) {
+		}
+		catch (UnsupportedRdbmsOperatorException e) {
 			// unsupported
 		}
 	}
@@ -403,7 +438,8 @@ public class SelectQueryOptimizer extends
 	private Number getInternalId(Value predValue) {
 		try {
 			return vf.getInternalId(predValue);
-		} catch (RdbmsException e) {
+		}
+		catch (RdbmsException e) {
 			throw new RdbmsRuntimeException(e);
 		}
 	}
@@ -411,7 +447,7 @@ public class SelectQueryOptimizer extends
 	private Resource[] getContexts(StatementPattern sp, Value ctxValue) {
 		if (dataset == null) {
 			if (ctxValue != null)
-				return new Resource[] { (Resource) ctxValue };
+				return new Resource[] { (Resource)ctxValue };
 			return new Resource[0];
 		}
 		Set<URI> graphs = getGraphs(sp);
@@ -421,7 +457,7 @@ public class SelectQueryOptimizer extends
 			return graphs.toArray(new Resource[graphs.size()]);
 
 		if (graphs.contains(ctxValue))
-			return new Resource[] { (Resource) ctxValue };
+			return new Resource[] { (Resource)ctxValue };
 		// pattern specifies a context that is not part of the dataset
 		return null;
 	}
@@ -434,7 +470,7 @@ public class SelectQueryOptimizer extends
 
 	private String getTableAlias(Value predValue) {
 		if (predValue != null) {
-			String localName = ((URI) predValue).getLocalName();
+			String localName = ((URI)predValue).getLocalName();
 			if (localName.length() >= 1) {
 				String alias = localName.substring(0, 1);
 				if (isLetters(alias)) {
@@ -448,9 +484,11 @@ public class SelectQueryOptimizer extends
 	private Value getVarValue(Var var, BindingSet bindings) {
 		if (var == null) {
 			return null;
-		} else if (var.hasValue()) {
+		}
+		else if (var.hasValue()) {
 			return var.getValue();
-		} else {
+		}
+		else {
 			return bindings.getValue(var.getName());
 		}
 	}
@@ -482,13 +520,13 @@ public class SelectQueryOptimizer extends
 		return flatten(condition, new ArrayList<ValueExpr>());
 	}
 
-	private List<ValueExpr> flatten(ValueExpr condition,
-			List<ValueExpr> conditions) {
+	private List<ValueExpr> flatten(ValueExpr condition, List<ValueExpr> conditions) {
 		if (condition instanceof And) {
-			And and = (And) condition;
+			And and = (And)condition;
 			flatten(and.getLeftArg(), conditions);
 			flatten(and.getRightArg(), conditions);
-		} else {
+		}
+		else {
 			conditions.add(condition);
 		}
 		return conditions;

@@ -21,24 +21,43 @@ import java.util.concurrent.BlockingQueue;
  * 
  */
 public class ValueTableFactory {
+
 	private static final int VCS = 127;
+
 	private static final int VCL = 255;
+
 	public static final boolean INDEX_VALUES = false;
+
 	protected static final String LANGUAGES = "LANGUAGES";
+
 	protected static final String NAMESPACES = "NAMESPACE_PREFIXES";
+
 	protected static final String RESOURCES = "RESOURCES";
+
 	protected static final String BNODE_VALUES = "BNODE_VALUES";
+
 	protected static final String URI_VALUES = "URI_VALUES";
+
 	protected static final String LURI_VALUES = "LONG_URI_VALUES";
+
 	protected static final String LBS = "LABEL_VALUES";
+
 	protected static final String LLBS = "LONG_LABEL_VALUES";
+
 	protected static final String LANGS = "LANGUAGE_VALUES";
+
 	protected static final String DTS = "DATATYPE_VALUES";
+
 	protected static final String NUM_VALUES = "NUMERIC_VALUES";
+
 	protected static final String TIMES = "DATETIME_VALUES";
+
 	protected static final String HASH_TABLE = "HASH_VALUES";
+
 	private TableFactory factory;
+
 	private IdSequence ids;
+
 	private boolean sequenced;
 
 	public ValueTableFactory(TableFactory factory) {
@@ -54,10 +73,13 @@ public class ValueTableFactory {
 		this.sequenced = sequenced;
 	}
 
-	public HashTable createHashTable(Connection conn, BlockingQueue<Batch> queue) throws SQLException {
+	public HashTable createHashTable(Connection conn, BlockingQueue<Batch> queue)
+		throws SQLException
+	{
 		ValueTable table = newValueTable();
 		table.setRdbmsTable(createTable(conn, HASH_TABLE));
-		//table.setTemporaryTable(factory.createTemporaryTable(conn, "INSERT_" + HASH_TABLE));
+		// table.setTemporaryTable(factory.createTemporaryTable(conn, "INSERT_" +
+		// HASH_TABLE));
 		initValueTable(table, queue, BIGINT, -1, true);
 		HashTable hashTable = newHashtable(table);
 		hashTable.init();
@@ -68,18 +90,24 @@ public class ValueTableFactory {
 		return new NamespacesTable(createTable(conn, NAMESPACES));
 	}
 
-	public BNodeTable createBNodeTable(Connection conn, BlockingQueue<Batch> queue) throws SQLException {
+	public BNodeTable createBNodeTable(Connection conn, BlockingQueue<Batch> queue)
+		throws SQLException
+	{
 		ValueTable table = createValueTable(conn, queue, BNODE_VALUES, VARCHAR, VCS);
 		return new BNodeTable(table);
 	}
 
-	public URITable createURITable(Connection conn, BlockingQueue<Batch> queue) throws SQLException {
+	public URITable createURITable(Connection conn, BlockingQueue<Batch> queue)
+		throws SQLException
+	{
 		ValueTable shorter = createValueTable(conn, queue, URI_VALUES, VARCHAR, VCL);
 		ValueTable longer = createValueTable(conn, queue, LURI_VALUES, LONGVARCHAR);
 		return new URITable(shorter, longer);
 	}
 
-	public LiteralTable createLiteralTable(Connection conn, BlockingQueue<Batch> queue) throws SQLException {
+	public LiteralTable createLiteralTable(Connection conn, BlockingQueue<Batch> queue)
+		throws SQLException
+	{
 		ValueTable lbs = createValueTable(conn, queue, LBS, VARCHAR, VCL);
 		ValueTable llbs = createValueTable(conn, queue, LLBS, LONGVARCHAR);
 		ValueTable lgs = createValueTable(conn, queue, LANGS, VARCHAR, VCS);
@@ -105,12 +133,16 @@ public class ValueTableFactory {
 		return factory.createTable(conn, name);
 	}
 
-	protected ValueTable createValueTable(Connection conn, BlockingQueue<Batch> queue, String name, int sqlType) throws SQLException {
+	protected ValueTable createValueTable(Connection conn, BlockingQueue<Batch> queue, String name, int sqlType)
+		throws SQLException
+	{
 		return createValueTable(conn, queue, name, sqlType, -1);
 	}
 
-	protected ValueTable createValueTable(Connection conn, BlockingQueue<Batch> queue, String name, int sqlType,
-			int length) throws SQLException {
+	protected ValueTable createValueTable(Connection conn, BlockingQueue<Batch> queue, String name,
+			int sqlType, int length)
+		throws SQLException
+	{
 		ValueTable table = newValueTable();
 		table.setRdbmsTable(createTable(conn, name));
 		if (!sequenced) {
@@ -128,7 +160,8 @@ public class ValueTableFactory {
 		return new ValueTable();
 	}
 
-	private void initValueTable(ValueTable table, BlockingQueue<Batch> queue, int sqlType, int length, boolean indexValues)
+	private void initValueTable(ValueTable table, BlockingQueue<Batch> queue, int sqlType, int length,
+			boolean indexValues)
 		throws SQLException
 	{
 		table.setQueue(queue);

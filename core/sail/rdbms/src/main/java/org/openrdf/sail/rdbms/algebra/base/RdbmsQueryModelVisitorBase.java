@@ -50,173 +50,257 @@ import org.openrdf.sail.rdbms.algebra.UnionItem;
  * @author James Leigh
  * 
  */
-public class RdbmsQueryModelVisitorBase<X extends Exception> extends
-		QueryModelVisitorBase<X> {
-	public void meet(BNodeColumn node) throws X {
+public class RdbmsQueryModelVisitorBase<X extends Exception> extends QueryModelVisitorBase<X> {
+
+	public void meet(BNodeColumn node)
+		throws X
+	{
 		meetValueColumnBase(node);
 	}
 
-	public void meet(DatatypeColumn node) throws X {
+	public void meet(DatatypeColumn node)
+		throws X
+	{
 		meetValueColumnBase(node);
 	}
 
-	public void meet(DateTimeColumn node) throws X {
+	public void meet(DateTimeColumn node)
+		throws X
+	{
 		meetValueColumnBase(node);
 	}
 
-	public void meet(DoubleValue node) throws X {
+	public void meet(DoubleValue node)
+		throws X
+	{
 		meetSqlConstant(node);
 	}
 
-	public void meet(FalseValue node) throws X {
+	public void meet(FalseValue node)
+		throws X
+	{
 		meetSqlConstant(node);
 	}
 
-	public void meet(HashColumn node) throws X {
+	public void meet(HashColumn node)
+		throws X
+	{
 		meetValueColumnBase(node);
 	}
 
-	public void meet(IdColumn node) throws X {
+	public void meet(IdColumn node)
+		throws X
+	{
 		meetSqlExpr(node);
 	}
 
-	public void meet(JoinItem node) throws X {
+	public void meet(JoinItem node)
+		throws X
+	{
 		meetFromItem(node);
 	}
 
-	public void meet(LabelColumn node) throws X {
+	public void meet(LabelColumn node)
+		throws X
+	{
 		meetValueColumnBase(node);
 	}
 
-	public void meet(LanguageColumn node) throws X {
+	public void meet(LanguageColumn node)
+		throws X
+	{
 		meetValueColumnBase(node);
 	}
 
-	public void meet(LongLabelColumn node) throws X {
+	public void meet(LongLabelColumn node)
+		throws X
+	{
 		meetValueColumnBase(node);
 	}
 
-	public void meet(LongURIColumn node) throws X {
+	public void meet(LongURIColumn node)
+		throws X
+	{
 		meetValueColumnBase(node);
 	}
 
-	public void meet(NumberValue node) throws X {
+	public void meet(NumberValue node)
+		throws X
+	{
 		meetSqlConstant(node);
 	}
 
-	public void meet(NumericColumn node) throws X {
+	public void meet(NumericColumn node)
+		throws X
+	{
 		meetValueColumnBase(node);
 	}
 
-	public void meet(RefIdColumn node) throws X {
+	public void meet(RefIdColumn node)
+		throws X
+	{
 		meetValueColumnBase(node);
 	}
 
-	public void meet(SelectProjection node) throws X {
+	public void meet(SelectProjection node)
+		throws X
+	{
 		meetNode(node);
 	}
 
-	public void meet(SelectQuery node) throws X {
+	public void meet(SelectQuery node)
+		throws X
+	{
 		meetNode(node);
 	}
 
-	public void meet(SqlAbs node) throws X {
+	public void meet(SqlAbs node)
+		throws X
+	{
 		meetUnarySqlOperator(node);
 	}
 
-	public void meet(SqlAnd node) throws X {
+	public void meet(SqlAnd node)
+		throws X
+	{
 		meetBinarySqlOperator(node);
 	}
 
-	public void meet(SqlCase node) throws X {
+	public void meet(SqlCase node)
+		throws X
+	{
 		meetNode(node);
 	}
 
-	public void meet(SqlCompare node) throws X {
+	public void meet(SqlCompare node)
+		throws X
+	{
 		meetBinarySqlOperator(node);
 	}
 
-	public void meet(SqlConcat node) throws X {
+	public void meet(SqlConcat node)
+		throws X
+	{
 		meetBinarySqlOperator(node);
 	}
 
-	public void meet(SqlEq node) throws X {
+	public void meet(SqlEq node)
+		throws X
+	{
 		meetBinarySqlOperator(node);
 	}
 
-	public void meet(SqlIsNull node) throws X {
+	public void meet(SqlIsNull node)
+		throws X
+	{
 		meetUnarySqlOperator(node);
 	}
 
-	public void meet(SqlLike node) throws X {
+	public void meet(SqlLike node)
+		throws X
+	{
 		meetBinarySqlOperator(node);
 	}
 
-	public void meet(SqlLowerCase node) throws X {
+	public void meet(SqlLowerCase node)
+		throws X
+	{
 		meetUnarySqlOperator(node);
 	}
 
-	public void meet(SqlMathExpr node) throws X {
+	public void meet(SqlMathExpr node)
+		throws X
+	{
 		meetBinarySqlOperator(node);
 	}
 
-	public void meet(SqlNot node) throws X {
+	public void meet(SqlNot node)
+		throws X
+	{
 		meetUnarySqlOperator(node);
 	}
 
-	public void meet(SqlNull node) throws X {
+	public void meet(SqlNull node)
+		throws X
+	{
 		meetSqlConstant(node);
 	}
 
-	public void meet(SqlOr node) throws X {
+	public void meet(SqlOr node)
+		throws X
+	{
 		meetBinarySqlOperator(node);
 	}
 
-	public void meet(SqlRegex node) throws X {
+	public void meet(SqlRegex node)
+		throws X
+	{
 		meetBinarySqlOperator(node);
 	}
 
-	public void meet(SqlShift node) throws X {
+	public void meet(SqlShift node)
+		throws X
+	{
 		meetUnarySqlOperator(node);
 	}
 
-	public void meet(StringValue node) throws X {
+	public void meet(StringValue node)
+		throws X
+	{
 		meetSqlConstant(node);
 	}
 
-	public void meet(TrueValue node) throws X {
+	public void meet(TrueValue node)
+		throws X
+	{
 		meetSqlConstant(node);
 	}
 
-	public void meet(UnionItem node) throws X {
+	public void meet(UnionItem node)
+		throws X
+	{
 		meetFromItem(node);
 	}
 
-	public void meet(URIColumn node) throws X {
+	public void meet(URIColumn node)
+		throws X
+	{
 		meetValueColumnBase(node);
 	}
 
-	protected void meetBinarySqlOperator(BinarySqlOperator node) throws X {
+	protected void meetBinarySqlOperator(BinarySqlOperator node)
+		throws X
+	{
 		meetNode(node);
 	}
 
-	protected void meetFromItem(FromItem node) throws X {
+	protected void meetFromItem(FromItem node)
+		throws X
+	{
 		meetNode(node);
 	}
 
-	protected void meetSqlConstant(SqlConstant<?> node) throws X {
+	protected void meetSqlConstant(SqlConstant<?> node)
+		throws X
+	{
 		meetNode(node);
 	}
 
-	protected void meetSqlExpr(SqlExpr node) throws X {
+	protected void meetSqlExpr(SqlExpr node)
+		throws X
+	{
 		meetNode(node);
 	}
 
-	protected void meetUnarySqlOperator(UnarySqlOperator node) throws X {
+	protected void meetUnarySqlOperator(UnarySqlOperator node)
+		throws X
+	{
 		meetNode(node);
 	}
 
-	protected void meetValueColumnBase(ValueColumnBase node) throws X {
+	protected void meetValueColumnBase(ValueColumnBase node)
+		throws X
+	{
 		meetSqlExpr(node);
 	}
 }

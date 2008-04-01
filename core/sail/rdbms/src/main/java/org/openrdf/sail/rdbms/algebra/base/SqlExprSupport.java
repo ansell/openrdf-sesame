@@ -104,7 +104,8 @@ public class SqlExprSupport {
 		for (SqlExpr value : values) {
 			if (expr == null) {
 				expr = new SqlEq(compare, value);
-			} else {
+			}
+			else {
 				expr = or(expr, new SqlEq(compare.clone(), value));
 			}
 		}

@@ -22,14 +22,14 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 
-
 /**
- *
+ * 
  * @author James Leigh
  */
-public class HashExprFactory extends
-		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class HashExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+
 	protected SqlExpr result;
+
 	private RdbmsValueFactory vf;
 
 	public HashExprFactory(RdbmsValueFactory vf) {
@@ -38,7 +38,8 @@ public class HashExprFactory extends
 	}
 
 	public SqlExpr createHashExpr(ValueExpr expr)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = null;
 		if (expr == null)
 			return new SqlNull();
@@ -57,14 +58,16 @@ public class HashExprFactory extends
 	public void meet(Var var) {
 		if (var.getValue() == null) {
 			result = new RefIdColumn(var);
-		} else {
+		}
+		else {
 			result = valueOf(var.getValue());
 		}
 	}
 
 	@Override
 	protected void meetNode(QueryModelNode arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		throw unsupported(arg);
 	}
 

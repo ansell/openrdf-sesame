@@ -13,9 +13,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.openrdf.model.Value;
 
-
 /**
- *
+ * 
  * @author James Leigh
  */
 public class LongIdSequence extends IdSequence {

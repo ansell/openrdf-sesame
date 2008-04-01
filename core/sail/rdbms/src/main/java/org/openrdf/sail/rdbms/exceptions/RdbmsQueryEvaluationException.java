@@ -16,6 +16,7 @@ import org.openrdf.query.QueryEvaluationException;
  * 
  */
 public class RdbmsQueryEvaluationException extends QueryEvaluationException {
+
 	private static final long serialVersionUID = 8026425066876739868L;
 
 	public RdbmsQueryEvaluationException(SQLException e) {

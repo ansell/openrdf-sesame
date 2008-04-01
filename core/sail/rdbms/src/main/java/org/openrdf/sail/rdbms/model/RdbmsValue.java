@@ -14,7 +14,9 @@ import org.openrdf.model.Value;
  * 
  */
 public abstract class RdbmsValue implements Value {
+
 	private transient Number id;
+
 	private transient Integer version;
 
 	public RdbmsValue() {

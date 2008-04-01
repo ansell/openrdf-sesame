@@ -14,6 +14,7 @@ import org.openrdf.model.Resource;
  * 
  */
 public abstract class RdbmsResource extends RdbmsValue implements Resource {
+
 	public RdbmsResource() {
 	}
 

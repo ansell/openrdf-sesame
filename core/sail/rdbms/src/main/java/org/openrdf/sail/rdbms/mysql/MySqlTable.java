@@ -29,7 +29,9 @@ public class MySqlTable extends RdbmsTable {
 	}
 
 	@Override
-	protected String buildOptimize() throws SQLException {
+	protected String buildOptimize()
+		throws SQLException
+	{
 		return "OPTIMIZE TABLE " + getName();
 	}
 

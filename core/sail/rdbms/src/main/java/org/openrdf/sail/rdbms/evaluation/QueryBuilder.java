@@ -61,8 +61,11 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * 
  */
 public class QueryBuilder {
+
 	private SqlQueryBuilder query;
+
 	private RdbmsValueFactory vf;
+
 	private boolean usingHashTable;
 
 	public QueryBuilder(SqlQueryBuilder builder) {
@@ -82,15 +85,18 @@ public class QueryBuilder {
 		query.distinct();
 	}
 
-	public QueryBuilder filter(ColumnVar var, Value val) throws RdbmsException {
+	public QueryBuilder filter(ColumnVar var, Value val)
+		throws RdbmsException
+	{
 		String alias = var.getAlias();
 		String column = var.getColumn();
 		query.filter().and().columnEquals(alias, column, vf.getInternalId(val));
 		return this;
 	}
 
-	public void from(FromItem from) throws RdbmsException,
-			UnsupportedRdbmsOperatorException {
+	public void from(FromItem from)
+		throws RdbmsException, UnsupportedRdbmsOperatorException
+	{
 		from(query, from);
 	}
 
@@ -107,7 +113,8 @@ public class QueryBuilder {
 	}
 
 	public void orderBy(SqlExpr expr, boolean isAscending)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlExprBuilder orderBy = query.orderBy();
 		dispatch(expr, orderBy);
 		if (!isAscending) {
@@ -116,7 +123,8 @@ public class QueryBuilder {
 	}
 
 	public QueryBuilder select(SqlExpr expr)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		dispatch(expr, query.select());
 		return this;
 	}
@@ -134,7 +142,8 @@ public class QueryBuilder {
 	private void append(DatatypeColumn var, SqlExprBuilder filter) {
 		if (var.getRdbmsVar().isResource()) {
 			filter.appendNull();
-		} else {
+		}
+		else {
 			String alias = getDatatypeAlias(var.getRdbmsVar());
 			filter.column(alias, "value");
 		}
@@ -143,7 +152,8 @@ public class QueryBuilder {
 	private void append(DateTimeColumn var, SqlExprBuilder filter) {
 		if (var.getRdbmsVar().isResource()) {
 			filter.appendNull();
-		} else {
+		}
+		else {
 			String alias = getDateTimeAlias(var.getRdbmsVar());
 			filter.column(alias, "value");
 		}
@@ -161,7 +171,8 @@ public class QueryBuilder {
 		if (usingHashTable) {
 			String alias = getHashAlias(var.getRdbmsVar());
 			filter.column(alias, "value");
-		} else {
+		}
+		else {
 			filter.column(var.getAlias(), var.getColumn());
 		}
 	}
@@ -173,7 +184,8 @@ public class QueryBuilder {
 	private void append(LabelColumn var, SqlExprBuilder filter) {
 		if (var.getRdbmsVar().isResource()) {
 			filter.appendNull();
-		} else {
+		}
+		else {
 			String alias = getLabelAlias(var.getRdbmsVar());
 			filter.column(alias, "value");
 		}
@@ -182,7 +194,8 @@ public class QueryBuilder {
 	private void append(LongLabelColumn var, SqlExprBuilder filter) {
 		if (var.getRdbmsVar().isResource()) {
 			filter.appendNull();
-		} else {
+		}
+		else {
 			String alias = getLongLabelAlias(var.getRdbmsVar());
 			filter.column(alias, "value");
 		}
@@ -191,7 +204,8 @@ public class QueryBuilder {
 	private void append(LanguageColumn var, SqlExprBuilder filter) {
 		if (var.getRdbmsVar().isResource()) {
 			filter.appendNull();
-		} else {
+		}
+		else {
 			String alias = getLanguageAlias(var.getRdbmsVar());
 			filter.column(alias, "value");
 		}
@@ -210,7 +224,8 @@ public class QueryBuilder {
 	private void append(NumericColumn var, SqlExprBuilder filter) {
 		if (var.getRdbmsVar().isResource()) {
 			filter.appendNull();
-		} else {
+		}
+		else {
 			String alias = getNumericAlias(var.getRdbmsVar());
 			filter.column(alias, "value");
 		}
@@ -221,21 +236,24 @@ public class QueryBuilder {
 	}
 
 	private void append(SqlAbs expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlBracketBuilder abs = filter.abs();
 		dispatch(expr.getArg(), abs);
 		abs.close();
 	}
 
 	private void append(SqlAnd expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		dispatch(expr.getLeftArg(), filter);
 		filter.and();
 		dispatch(expr.getRightArg(), filter);
 	}
 
 	private void append(SqlCase expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlCaseBuilder caseExpr = filter.caseBegin();
 		for (SqlCase.Entry e : expr.getEntries()) {
 			caseExpr.when();
@@ -247,14 +265,16 @@ public class QueryBuilder {
 	}
 
 	private void append(SqlCompare expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		dispatch(expr.getLeftArg(), filter);
 		filter.appendOperator(expr.getOperator());
 		dispatch(expr.getRightArg(), filter);
 	}
 
 	private void append(SqlConcat expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlBracketBuilder open = filter.open();
 		dispatch(expr.getLeftArg(), open);
 		open.concat();
@@ -263,46 +283,53 @@ public class QueryBuilder {
 	}
 
 	private void append(SqlEq expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		dispatch(expr.getLeftArg(), filter);
 		filter.eq();
 		dispatch(expr.getRightArg(), filter);
 	}
 
 	private void append(SqlIsNull expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		dispatch(expr.getArg(), filter);
 		filter.isNull();
 	}
 
 	private void append(SqlLike expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		dispatch(expr.getLeftArg(), filter);
 		filter.like();
 		dispatch(expr.getRightArg(), filter);
 	}
 
 	private void append(SqlLowerCase expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlBracketBuilder lower = filter.lowerCase();
 		dispatch(expr.getArg(), lower);
 		lower.close();
 	}
 
 	private void append(SqlMathExpr expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		dispatch(expr.getLeftArg(), filter);
 		filter.math(expr.getOperator());
 		dispatch(expr.getRightArg(), filter);
 	}
 
 	private void append(SqlNot expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		if (expr.getArg() instanceof SqlIsNull) {
-			SqlIsNull arg = (SqlIsNull) expr.getArg();
+			SqlIsNull arg = (SqlIsNull)expr.getArg();
 			dispatch(arg.getArg(), filter);
 			filter.isNotNull();
-		} else {
+		}
+		else {
 			SqlBracketBuilder open = filter.not();
 			dispatch(expr.getArg(), open);
 			open.close();
@@ -314,7 +341,8 @@ public class QueryBuilder {
 	}
 
 	private void append(SqlOr expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlBracketBuilder open = filter.open();
 		dispatch(expr.getLeftArg(), open);
 		open.or();
@@ -323,7 +351,8 @@ public class QueryBuilder {
 	}
 
 	private void append(SqlRegex expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlRegexBuilder regex = filter.regex();
 		dispatch(expr.getArg(), regex.value());
 		dispatch(expr.getPatternArg(), regex.pattern());
@@ -334,7 +363,9 @@ public class QueryBuilder {
 		regex.close();
 	}
 
-	private void append(SqlShift expr, SqlExprBuilder filter) throws UnsupportedRdbmsOperatorException {
+	private void append(SqlShift expr, SqlExprBuilder filter)
+		throws UnsupportedRdbmsOperatorException
+	{
 		SqlBracketBuilder mod = filter.mod(expr.getRange());
 		SqlBracketBuilder open = mod.open();
 		dispatch(expr.getArg(), open);
@@ -359,127 +390,171 @@ public class QueryBuilder {
 	}
 
 	private void dispatch(SqlExpr expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		if (expr instanceof ValueColumnBase) {
-			dispatchValueColumnBase((ValueColumnBase) expr, filter);
-		} else if (expr instanceof IdColumn) {
-			append((IdColumn) expr, filter);
-		} else if (expr instanceof SqlConstant<?>) {
-			dispatchSqlConstant((SqlConstant<?>) expr, filter);
-		} else if (expr instanceof UnarySqlOperator) {
-			dispatchUnarySqlOperator((UnarySqlOperator) expr, filter);
-		} else if (expr instanceof BinarySqlOperator) {
-			dispatchBinarySqlOperator((BinarySqlOperator) expr, filter);
-		} else {
+			dispatchValueColumnBase((ValueColumnBase)expr, filter);
+		}
+		else if (expr instanceof IdColumn) {
+			append((IdColumn)expr, filter);
+		}
+		else if (expr instanceof SqlConstant<?>) {
+			dispatchSqlConstant((SqlConstant<?>)expr, filter);
+		}
+		else if (expr instanceof UnarySqlOperator) {
+			dispatchUnarySqlOperator((UnarySqlOperator)expr, filter);
+		}
+		else if (expr instanceof BinarySqlOperator) {
+			dispatchBinarySqlOperator((BinarySqlOperator)expr, filter);
+		}
+		else {
 			dispatchOther(expr, filter);
 		}
 	}
 
-	private void dispatchBinarySqlOperator(BinarySqlOperator expr,
-			SqlExprBuilder filter) throws UnsupportedRdbmsOperatorException {
+	private void dispatchBinarySqlOperator(BinarySqlOperator expr, SqlExprBuilder filter)
+		throws UnsupportedRdbmsOperatorException
+	{
 		if (expr instanceof SqlAnd) {
-			append((SqlAnd) expr, filter);
-		} else if (expr instanceof SqlEq) {
-			append((SqlEq) expr, filter);
-		} else if (expr instanceof SqlOr) {
-			append((SqlOr) expr, filter);
-		} else if (expr instanceof SqlCompare) {
-			append((SqlCompare) expr, filter);
-		} else if (expr instanceof SqlRegex) {
-			append((SqlRegex) expr, filter);
-		} else if (expr instanceof SqlConcat) {
-			append((SqlConcat) expr, filter);
-		} else if (expr instanceof SqlMathExpr) {
-			append((SqlMathExpr) expr, filter);
-		} else if (expr instanceof SqlLike) {
-			append((SqlLike) expr, filter);
-		} else {
+			append((SqlAnd)expr, filter);
+		}
+		else if (expr instanceof SqlEq) {
+			append((SqlEq)expr, filter);
+		}
+		else if (expr instanceof SqlOr) {
+			append((SqlOr)expr, filter);
+		}
+		else if (expr instanceof SqlCompare) {
+			append((SqlCompare)expr, filter);
+		}
+		else if (expr instanceof SqlRegex) {
+			append((SqlRegex)expr, filter);
+		}
+		else if (expr instanceof SqlConcat) {
+			append((SqlConcat)expr, filter);
+		}
+		else if (expr instanceof SqlMathExpr) {
+			append((SqlMathExpr)expr, filter);
+		}
+		else if (expr instanceof SqlLike) {
+			append((SqlLike)expr, filter);
+		}
+		else {
 			throw unsupported(expr);
 		}
 	}
 
 	private void dispatchOther(SqlExpr expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		if (expr instanceof SqlCase) {
-			append((SqlCase) expr, filter);
-		} else {
+			append((SqlCase)expr, filter);
+		}
+		else {
 			throw unsupported(expr);
 		}
 	}
 
 	private void dispatchSqlConstant(SqlConstant<?> expr, SqlExprBuilder filter)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		if (expr instanceof DoubleValue) {
-			append((DoubleValue) expr, filter);
-		} else if (expr instanceof FalseValue) {
-			append((FalseValue) expr, filter);
-		} else if (expr instanceof TrueValue) {
-			append((TrueValue) expr, filter);
-		} else if (expr instanceof NumberValue) {
-			append((NumberValue) expr, filter);
-		} else if (expr instanceof SqlNull) {
-			append((SqlNull) expr, filter);
-		} else if (expr instanceof StringValue) {
-			append((StringValue) expr, filter);
-		} else {
+			append((DoubleValue)expr, filter);
+		}
+		else if (expr instanceof FalseValue) {
+			append((FalseValue)expr, filter);
+		}
+		else if (expr instanceof TrueValue) {
+			append((TrueValue)expr, filter);
+		}
+		else if (expr instanceof NumberValue) {
+			append((NumberValue)expr, filter);
+		}
+		else if (expr instanceof SqlNull) {
+			append((SqlNull)expr, filter);
+		}
+		else if (expr instanceof StringValue) {
+			append((StringValue)expr, filter);
+		}
+		else {
 			throw unsupported(expr);
 		}
 	}
 
-	private void dispatchUnarySqlOperator(UnarySqlOperator expr,
-			SqlExprBuilder filter) throws UnsupportedRdbmsOperatorException {
+	private void dispatchUnarySqlOperator(UnarySqlOperator expr, SqlExprBuilder filter)
+		throws UnsupportedRdbmsOperatorException
+	{
 		if (expr instanceof SqlAbs) {
-			append((SqlAbs) expr, filter);
-		} else if (expr instanceof SqlIsNull) {
-			append((SqlIsNull) expr, filter);
-		} else if (expr instanceof SqlNot) {
-			append((SqlNot) expr, filter);
-		} else if (expr instanceof SqlShift) {
-			append((SqlShift) expr, filter);
-		} else if (expr instanceof SqlLowerCase) {
-			append((SqlLowerCase) expr, filter);
-		} else {
+			append((SqlAbs)expr, filter);
+		}
+		else if (expr instanceof SqlIsNull) {
+			append((SqlIsNull)expr, filter);
+		}
+		else if (expr instanceof SqlNot) {
+			append((SqlNot)expr, filter);
+		}
+		else if (expr instanceof SqlShift) {
+			append((SqlShift)expr, filter);
+		}
+		else if (expr instanceof SqlLowerCase) {
+			append((SqlLowerCase)expr, filter);
+		}
+		else {
 			throw unsupported(expr);
 		}
 	}
 
-	private void dispatchValueColumnBase(ValueColumnBase expr,
-			SqlExprBuilder filter) throws UnsupportedRdbmsOperatorException {
+	private void dispatchValueColumnBase(ValueColumnBase expr, SqlExprBuilder filter)
+		throws UnsupportedRdbmsOperatorException
+	{
 		if (expr instanceof BNodeColumn) {
-			append((BNodeColumn) expr, filter);
-		} else if (expr instanceof DatatypeColumn) {
-			append((DatatypeColumn) expr, filter);
-		} else if (expr instanceof HashColumn) {
-			append((HashColumn) expr, filter);
-		} else if (expr instanceof DateTimeColumn) {
-			append((DateTimeColumn) expr, filter);
-		} else if (expr instanceof LabelColumn) {
-			append((LabelColumn) expr, filter);
-		} else if (expr instanceof LongLabelColumn) {
-			append((LongLabelColumn) expr, filter);
-		} else if (expr instanceof LongURIColumn) {
-			append((LongURIColumn) expr, filter);
-		} else if (expr instanceof LanguageColumn) {
-			append((LanguageColumn) expr, filter);
-		} else if (expr instanceof NumericColumn) {
-			append((NumericColumn) expr, filter);
-		} else if (expr instanceof URIColumn) {
-			append((URIColumn) expr, filter);
-		} else if (expr instanceof RefIdColumn) {
-			append((RefIdColumn) expr, filter);
-		} else {
+			append((BNodeColumn)expr, filter);
+		}
+		else if (expr instanceof DatatypeColumn) {
+			append((DatatypeColumn)expr, filter);
+		}
+		else if (expr instanceof HashColumn) {
+			append((HashColumn)expr, filter);
+		}
+		else if (expr instanceof DateTimeColumn) {
+			append((DateTimeColumn)expr, filter);
+		}
+		else if (expr instanceof LabelColumn) {
+			append((LabelColumn)expr, filter);
+		}
+		else if (expr instanceof LongLabelColumn) {
+			append((LongLabelColumn)expr, filter);
+		}
+		else if (expr instanceof LongURIColumn) {
+			append((LongURIColumn)expr, filter);
+		}
+		else if (expr instanceof LanguageColumn) {
+			append((LanguageColumn)expr, filter);
+		}
+		else if (expr instanceof NumericColumn) {
+			append((NumericColumn)expr, filter);
+		}
+		else if (expr instanceof URIColumn) {
+			append((URIColumn)expr, filter);
+		}
+		else if (expr instanceof RefIdColumn) {
+			append((RefIdColumn)expr, filter);
+		}
+		else {
 			throw unsupported(expr);
 		}
 	}
 
 	private void from(SqlQueryBuilder subquery, FromItem item)
-			throws RdbmsException, UnsupportedRdbmsOperatorException {
+		throws RdbmsException, UnsupportedRdbmsOperatorException
+	{
 		assert !item.isLeft() : item;
 		String alias = item.getAlias();
 		if (item instanceof JoinItem) {
-			String tableName = ((JoinItem) item).getTableName();
+			String tableName = ((JoinItem)item).getTableName();
 			subJoinAndFilter(subquery.from(tableName, alias), item);
-		} else {
+		}
+		else {
 			subJoinAndFilter(subquery.from(alias), item);
 		}
 	}
@@ -532,28 +607,33 @@ public class QueryBuilder {
 	}
 
 	private void join(SqlJoinBuilder query, FromItem join)
-			throws RdbmsException, UnsupportedRdbmsOperatorException {
+		throws RdbmsException, UnsupportedRdbmsOperatorException
+	{
 		String alias = join.getAlias();
 		if (join instanceof JoinItem) {
-			String tableName = ((JoinItem) join).getTableName();
+			String tableName = ((JoinItem)join).getTableName();
 			if (join.isLeft()) {
 				subJoinAndFilter(query.leftjoin(tableName, alias), join);
-			} else {
+			}
+			else {
 				subJoinAndFilter(query.join(tableName, alias), join);
 			}
-		} else {
+		}
+		else {
 			if (join.isLeft()) {
 				subJoinAndFilter(query.leftjoin(alias), join);
-			} else {
+			}
+			else {
 				subJoinAndFilter(query.join(alias), join);
 			}
 		}
 	}
 
 	private SqlJoinBuilder subJoinAndFilter(SqlJoinBuilder query, FromItem from)
-			throws RdbmsException, UnsupportedRdbmsOperatorException {
+		throws RdbmsException, UnsupportedRdbmsOperatorException
+	{
 		if (from instanceof UnionItem) {
-			UnionItem union = (UnionItem) from;
+			UnionItem union = (UnionItem)from;
 			List<String> names = union.getSelectVarNames();
 			List<ColumnVar> vars = union.appendVars(new ArrayList<ColumnVar>());
 			SqlQueryBuilder subquery = query.subquery();
@@ -563,7 +643,8 @@ public class QueryBuilder {
 					SqlExprBuilder select = subquery.select();
 					if (var == null) {
 						select.appendNull();
-					} else {
+					}
+					else {
 						select.column(var.getAlias(), var.getColumn());
 					}
 					select.as(vars.get(i).getColumn());
@@ -582,7 +663,8 @@ public class QueryBuilder {
 	}
 
 	private UnsupportedRdbmsOperatorException unsupported(Object object)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		return new UnsupportedRdbmsOperatorException(object.toString());
 	}
 

@@ -10,8 +10,8 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.sail.rdbms.algebra.SqlConcat;
-import org.openrdf.sail.rdbms.algebra.SqlRegex;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
+import org.openrdf.sail.rdbms.algebra.SqlRegex;
 import org.openrdf.sail.rdbms.algebra.StringValue;
 import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
@@ -23,16 +23,18 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * @author James Leigh
  * 
  */
-public class PgSqlRegexFlagsInliner extends
-		RdbmsQueryModelVisitorBase<RuntimeException> implements QueryOptimizer {
+public class PgSqlRegexFlagsInliner extends RdbmsQueryModelVisitorBase<RuntimeException> implements
+		QueryOptimizer
+{
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset,
-			BindingSet bindings) {
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		tupleExpr.visit(this);
 	}
 
 	@Override
-	public void meet(SqlRegex node) throws RuntimeException {
+	public void meet(SqlRegex node)
+		throws RuntimeException
+	{
 		super.meet(node);
 		SqlExpr flags = node.getFlagsArg();
 		if (!(flags instanceof SqlNull)) {
@@ -52,7 +54,8 @@ public class PgSqlRegexFlagsInliner extends
 		for (SqlExpr expr : exprs) {
 			if (concat == null) {
 				concat = expr;
-			} else {
+			}
+			else {
 				concat = new SqlConcat(concat, expr);
 			}
 		}

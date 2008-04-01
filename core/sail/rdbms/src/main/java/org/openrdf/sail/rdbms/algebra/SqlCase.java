@@ -21,10 +21,13 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * 
  */
 public class SqlCase extends RdbmsQueryModelNodeBase implements SqlExpr {
+
 	private List<Entry> entries = new ArrayList<Entry>();
 
 	public class Entry {
+
 		private SqlExpr condition;
+
 		private SqlExpr result;
 
 		public Entry(SqlExpr condition, SqlExpr result) {
@@ -55,10 +58,8 @@ public class SqlCase extends RdbmsQueryModelNodeBase implements SqlExpr {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result
-					+ ((condition == null) ? 0 : condition.hashCode());
-			result = prime * result
-					+ ((this.result == null) ? 0 : this.result.hashCode());
+			result = prime * result + ((condition == null) ? 0 : condition.hashCode());
+			result = prime * result + ((this.result == null) ? 0 : this.result.hashCode());
 			return result;
 		}
 
@@ -70,16 +71,18 @@ public class SqlCase extends RdbmsQueryModelNodeBase implements SqlExpr {
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			final Entry other = (Entry) obj;
+			final Entry other = (Entry)obj;
 			if (condition == null) {
 				if (other.condition != null)
 					return false;
-			} else if (!condition.equals(other.condition))
+			}
+			else if (!condition.equals(other.condition))
 				return false;
 			if (result == null) {
 				if (other.result != null)
 					return false;
-			} else if (!result.equals(other.result))
+			}
+			else if (!result.equals(other.result))
 				return false;
 			return true;
 		}
@@ -97,7 +100,8 @@ public class SqlCase extends RdbmsQueryModelNodeBase implements SqlExpr {
 
 	@Override
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-			throws X {
+		throws X
+	{
 		for (Entry e : entries) {
 			e.getCondition().visit(visitor);
 			e.getResult().visit(visitor);
@@ -105,20 +109,20 @@ public class SqlCase extends RdbmsQueryModelNodeBase implements SqlExpr {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current,
-			QueryModelNode replacement) {
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		for (Entry e : entries) {
 			if (e.getCondition() == current) {
-				e.setCondition((SqlExpr) replacement);
-			} else if (e.getResult() == current) {
-				e.setResult((SqlExpr) replacement);
+				e.setCondition((SqlExpr)replacement);
+			}
+			else if (e.getResult() == current) {
+				e.setResult((SqlExpr)replacement);
 			}
 		}
 	}
 
 	@Override
 	public SqlCase clone() {
-		SqlCase clone = (SqlCase) super.clone();
+		SqlCase clone = (SqlCase)super.clone();
 		clone.entries = new ArrayList<Entry>();
 		for (Entry e : entries) {
 			clone.when(e.getCondition().clone(), e.getResult().clone());
@@ -127,8 +131,9 @@ public class SqlCase extends RdbmsQueryModelNodeBase implements SqlExpr {
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 
@@ -159,11 +164,12 @@ public class SqlCase extends RdbmsQueryModelNodeBase implements SqlExpr {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final SqlCase other = (SqlCase) obj;
+		final SqlCase other = (SqlCase)obj;
 		if (entries == null) {
 			if (other.entries != null)
 				return false;
-		} else if (!entries.equals(other.entries))
+		}
+		else if (!entries.equals(other.entries))
 			return false;
 		return true;
 	}

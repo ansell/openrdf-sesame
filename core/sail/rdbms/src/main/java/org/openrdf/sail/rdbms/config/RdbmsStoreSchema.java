@@ -16,12 +16,19 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  * 
  */
 public class RdbmsStoreSchema {
+
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/rdbms#";
+
 	public final static URI JDBC_DRIVER;
+
 	public final static URI URL;
+
 	public final static URI USER;
+
 	public final static URI PASSWORD;
+
 	public final static URI LAYOUT;
+
 	public final static URI INDEXED;
 
 	static {

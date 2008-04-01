@@ -26,23 +26,27 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * @author James Leigh
  * 
  */
-public class RdbmsStatementIteration extends
-		RdbmIterationBase<RdbmsStatement, SailException> {
+public class RdbmsStatementIteration extends RdbmIterationBase<RdbmsStatement, SailException> {
+
 	private RdbmsValueFactory vf;
+
 	private IdSequence ids;
 
 	public RdbmsStatementIteration(RdbmsValueFactory vf, PreparedStatement stmt, IdSequence ids)
-			throws SQLException {
+		throws SQLException
+	{
 		super(stmt);
 		this.vf = vf;
 		this.ids = ids;
 	}
 
 	@Override
-	protected RdbmsStatement convert(ResultSet rs) throws SQLException {
+	protected RdbmsStatement convert(ResultSet rs)
+		throws SQLException
+	{
 		RdbmsResource ctx = createResource(rs, 1);
 		RdbmsResource subj = createResource(rs, 3);
-		RdbmsURI pred = (RdbmsURI) createResource(rs, 5);
+		RdbmsURI pred = (RdbmsURI)createResource(rs, 5);
 		RdbmsValue obj = createValue(rs, 7);
 		return new RdbmsStatement(subj, pred, obj, ctx);
 	}
@@ -53,7 +57,8 @@ public class RdbmsStatementIteration extends
 	}
 
 	private RdbmsResource createResource(ResultSet rs, int index)
-			throws SQLException {
+		throws SQLException
+	{
 		Number id = ids.idOf(rs.getLong(index));
 		if (id.longValue() == ValueTable.NIL_ID)
 			return null;
@@ -61,7 +66,9 @@ public class RdbmsStatementIteration extends
 		return vf.getRdbmsResource(id, stringValue);
 	}
 
-	private RdbmsValue createValue(ResultSet rs, int index) throws SQLException {
+	private RdbmsValue createValue(ResultSet rs, int index)
+		throws SQLException
+	{
 		Number id = ids.idOf(rs.getLong(index));
 		if (ids.isLiteral(id)) {
 			String label = rs.getString(index + 1);

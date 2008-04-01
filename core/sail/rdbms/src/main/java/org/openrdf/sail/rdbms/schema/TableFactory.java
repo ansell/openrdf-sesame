@@ -7,12 +7,12 @@ package org.openrdf.sail.rdbms.schema;
 
 import java.sql.Connection;
 
-
 /**
- *
+ * 
  * @author James Leigh
  */
 public class TableFactory {
+
 	protected static final String TRANS_STATEMENTS = "TRANSACTION_STATEMENTS";
 
 	public RdbmsTable createTemporaryTable(Connection conn) {

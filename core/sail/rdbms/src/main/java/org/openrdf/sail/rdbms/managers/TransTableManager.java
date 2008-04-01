@@ -22,7 +22,6 @@ import org.openrdf.sail.rdbms.schema.TripleTable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 import org.openrdf.sail.rdbms.schema.ValueTypes;
 
-
 /**
  * Manages and delegates to a collection of {@link TransactionTable}s.
  * 
@@ -30,17 +29,29 @@ import org.openrdf.sail.rdbms.schema.ValueTypes;
  * 
  */
 public class TransTableManager {
+
 	public static int BATCH_SIZE = 8 * 1024;
+
 	public static final boolean TEMPORARY_TABLE_USED = TripleTable.UNIQUE_INDEX_TRIPLES;
+
 	private TableFactory factory;
+
 	private TripleTableManager triples;
+
 	private RdbmsTable temporaryTable;
+
 	private Map<Number, TransactionTable> tables = new HashMap<Number, TransactionTable>();
+
 	private int removedCount;
+
 	private String fromDummy;
+
 	private Connection conn;
+
 	private BlockingQueue<Batch> batchQueue;
+
 	private DefaultSailChangedEvent sailChangedEvent;
+
 	private IdSequence ids;
 
 	public void setConnection(Connection conn) {
@@ -75,21 +86,27 @@ public class TransTableManager {
 		return BATCH_SIZE;
 	}
 
-	public void initialize() throws SQLException {
+	public void initialize()
+		throws SQLException
+	{
 	}
 
 	public void insert(Number ctx, Number subj, Number pred, Number obj)
-			throws SQLException, InterruptedException {
+		throws SQLException, InterruptedException
+	{
 		getTable(pred).insert(ctx, subj, pred, obj);
 	}
 
-	public void close() throws SQLException {
+	public void close()
+		throws SQLException
+	{
 		try {
 			if (temporaryTable != null) {
 				temporaryTable.drop();
 				temporaryTable.close();
 			}
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			// ignore
 		}
 		for (TransactionTable table : tables.values()) {
@@ -97,11 +114,15 @@ public class TransTableManager {
 		}
 	}
 
-	public String findTableName(Number pred) throws SQLException {
+	public String findTableName(Number pred)
+		throws SQLException
+	{
 		return triples.findTableName(pred);
 	}
 
-	public String getCombinedTableName() throws SQLException {
+	public String getCombinedTableName()
+		throws SQLException
+	{
 		String union = " UNION ALL ";
 		StringBuilder sb = new StringBuilder(1024);
 		sb.append("(");
@@ -109,7 +130,8 @@ public class TransTableManager {
 			TripleTable predicate;
 			try {
 				predicate = triples.getPredicateTable(pred);
-			} catch (SQLException e) {
+			}
+			catch (SQLException e) {
 				throw new AssertionError(e);
 			}
 			TransactionTable table = findTable(pred);
@@ -118,7 +140,8 @@ public class TransTableManager {
 			sb.append("SELECT ctx, subj, ");
 			if (predicate.isPredColumnPresent()) {
 				sb.append(" pred,");
-			} else {
+			}
+			else {
 				sb.append(pred).append(" AS pred,");
 			}
 			sb.append(" obj");
@@ -134,7 +157,9 @@ public class TransTableManager {
 		return sb.toString();
 	}
 
-	public String getTableName(Number pred) throws SQLException {
+	public String getTableName(Number pred)
+		throws SQLException
+	{
 		if (pred.equals(ValueTable.NIL_ID))
 			return getCombinedTableName();
 		String tableName = triples.getTableName(pred);
@@ -143,7 +168,9 @@ public class TransTableManager {
 		return tableName;
 	}
 
-	public void committed(boolean locked) throws SQLException {
+	public void committed(boolean locked)
+		throws SQLException
+	{
 		synchronized (tables) {
 			for (TransactionTable table : tables.values()) {
 				table.committed();
@@ -155,7 +182,9 @@ public class TransTableManager {
 		}
 	}
 
-	public void removed(Number pred, int count) throws SQLException {
+	public void removed(Number pred, int count)
+		throws SQLException
+	{
 		getTable(pred).removed(count);
 		removedCount += count;
 	}
@@ -164,7 +193,9 @@ public class TransTableManager {
 		return triples.getPredicateIds();
 	}
 
-	public boolean isPredColumnPresent(Number id) throws SQLException {
+	public boolean isPredColumnPresent(Number id)
+		throws SQLException
+	{
 		if (id.longValue() == ValueTable.NIL_ID)
 			return true;
 		return triples.getPredicateTable(id).isPredColumnPresent();
@@ -184,12 +215,15 @@ public class TransTableManager {
 		return table.getSubjTypes();
 	}
 
-	public boolean isEmpty() throws SQLException {
+	public boolean isEmpty()
+		throws SQLException
+	{
 		for (Number pred : triples.getPredicateIds()) {
 			TripleTable predicate;
 			try {
 				predicate = triples.getPredicateTable(pred);
-			} catch (SQLException e) {
+			}
+			catch (SQLException e) {
 				throw new AssertionError(e);
 			}
 			TransactionTable table = findTable(pred);
@@ -203,7 +237,9 @@ public class TransTableManager {
 		return "0";
 	}
 
-	protected TransactionTable getTable(Number pred) throws SQLException {
+	protected TransactionTable getTable(Number pred)
+		throws SQLException
+	{
 		synchronized (tables) {
 			TransactionTable table = tables.get(pred);
 			if (table == null) {
@@ -223,7 +259,8 @@ public class TransTableManager {
 	}
 
 	protected TransactionTable createTransactionTable(TripleTable predicate)
-			throws SQLException {
+		throws SQLException
+	{
 		if (temporaryTable == null && TEMPORARY_TABLE_USED) {
 			temporaryTable = createTemporaryTable(conn);
 			if (!temporaryTable.isCreated()) {
@@ -249,7 +286,9 @@ public class TransTableManager {
 		return new TransactionTable();
 	}
 
-	protected void createTemporaryTable(RdbmsTable table) throws SQLException {
+	protected void createTemporaryTable(RdbmsTable table)
+		throws SQLException
+	{
 		String type = ids.getSqlType();
 		StringBuilder sb = new StringBuilder();
 		sb.append("  ctx ").append(type).append(" NOT NULL,\n");

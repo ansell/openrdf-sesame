@@ -5,14 +5,17 @@
  */
 package org.openrdf.sail.rdbms.evaluation;
 
-import info.aduna.iteration.CloseableIteration;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -32,9 +35,6 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 import org.openrdf.sail.rdbms.iteration.RdbmsBindingIteration;
 import org.openrdf.sail.rdbms.schema.IdSequence;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Extends the default strategy by accepting {@link SelectQuery} and evaluating
  * them on a database.
@@ -43,14 +43,20 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class RdbmsEvaluation extends EvaluationStrategyImpl {
+
 	private Logger logger = LoggerFactory.getLogger(RdbmsEvaluation.class);
+
 	private QueryBuilderFactory factory;
+
 	private RdbmsValueFactory vf;
+
 	private RdbmsTripleRepository triples;
+
 	private IdSequence ids;
 
-	public RdbmsEvaluation(QueryBuilderFactory factory,
-			RdbmsTripleRepository triples, Dataset dataset, IdSequence ids) {
+	public RdbmsEvaluation(QueryBuilderFactory factory, RdbmsTripleRepository triples, Dataset dataset,
+			IdSequence ids)
+	{
 		super(new RdbmsTripleSource(triples), dataset);
 		this.factory = factory;
 		this.triples = triples;
@@ -59,18 +65,18 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 	}
 
 	@Override
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
-			TupleExpr expr, BindingSet bindings)
-			throws QueryEvaluationException {
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(TupleExpr expr,
+			BindingSet bindings)
+		throws QueryEvaluationException
+	{
 		if (expr instanceof SelectQuery)
-			return evaluate((SelectQuery) expr, bindings);
+			return evaluate((SelectQuery)expr, bindings);
 		return super.evaluate(expr, bindings);
 	}
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
-			SelectQuery qb, BindingSet b)
-			throws UnsupportedRdbmsOperatorException,
-			RdbmsQueryEvaluationException {
+	private CloseableIteration<BindingSet, QueryEvaluationException> evaluate(SelectQuery qb, BindingSet b)
+		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
+	{
 		List<Object> parameters = new ArrayList<Object>();
 		try {
 			QueryBindingSet bindings = new QueryBindingSet(b);
@@ -89,18 +95,19 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 				result.setValueFactory(vf);
 				result.setIdSequence(ids);
 				return result;
-			} catch (SQLException e) {
-				throw new RdbmsQueryEvaluationException(e.toString() + "\n"
-						+ query, e);
 			}
-		} catch (RdbmsException e) {
+			catch (SQLException e) {
+				throw new RdbmsQueryEvaluationException(e.toString() + "\n" + query, e);
+			}
+		}
+		catch (RdbmsException e) {
 			throw new RdbmsQueryEvaluationException(e);
 		}
 	}
 
-	private String toQueryString(SelectQuery qb, QueryBindingSet bindings,
-			List<Object> parameters) throws RdbmsException,
-			UnsupportedRdbmsOperatorException {
+	private String toQueryString(SelectQuery qb, QueryBindingSet bindings, List<Object> parameters)
+		throws RdbmsException, UnsupportedRdbmsOperatorException
+	{
 		QueryBuilder query = factory.createQueryBuilder();
 		if (qb.isDistinct()) {
 			query.distinct();
@@ -110,8 +117,9 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 			String name = qb.getBindingName(var);
 			if (var.getValue() == null && bindings.hasBinding(name)) {
 				query.filter(var, bindings.getValue(name));
-			} else if (var.getValue() != null && !bindings.hasBinding(name)
-					&& qb.getBindingNames().contains(name)) {
+			}
+			else if (var.getValue() != null && !bindings.hasBinding(name) && qb.getBindingNames().contains(name))
+			{
 				bindings.addBinding(name, var.getValue());
 			}
 		}

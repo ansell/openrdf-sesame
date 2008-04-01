@@ -11,8 +11,8 @@ package org.openrdf.sail.rdbms.algebra.base;
  * @author James Leigh
  * 
  */
-public abstract class SqlConstant<T> extends RdbmsQueryModelNodeBase implements
-		SqlExpr {
+public abstract class SqlConstant<T> extends RdbmsQueryModelNodeBase implements SqlExpr {
+
 	private T value;
 
 	public SqlConstant() {
@@ -39,7 +39,7 @@ public abstract class SqlConstant<T> extends RdbmsQueryModelNodeBase implements
 
 	@Override
 	public SqlConstant<T> clone() {
-		SqlConstant<T> clone = (SqlConstant<T>) super.clone();
+		SqlConstant<T> clone = (SqlConstant<T>)super.clone();
 		clone.setValue(value);
 		return clone;
 	}
@@ -60,11 +60,12 @@ public abstract class SqlConstant<T> extends RdbmsQueryModelNodeBase implements
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final SqlConstant other = (SqlConstant) obj;
+		final SqlConstant other = (SqlConstant)obj;
 		if (value == null) {
 			if (other.value != null)
 				return false;
-		} else if (!value.equals(other.value))
+		}
+		else if (!value.equals(other.value))
 			return false;
 		return true;
 	}

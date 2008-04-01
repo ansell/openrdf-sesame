@@ -16,7 +16,22 @@ import java.util.Arrays;
  */
 public enum ValueType {
 	// 0000 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101
-	URI, URI_LONG, BNODE, SIMPLE, SIMPLE_LONG, TYPED, TYPED_LONG, NUMERIC, DATETIME, DATETIME_ZONED, LANG, LANG_LONG, XML, B14, B15, B16;
+	URI,
+	URI_LONG,
+	BNODE,
+	SIMPLE,
+	SIMPLE_LONG,
+	TYPED,
+	TYPED_LONG,
+	NUMERIC,
+	DATETIME,
+	DATETIME_ZONED,
+	LANG,
+	LANG_LONG,
+	XML,
+	B14,
+	B15,
+	B16;
 
 	private int index;
 	static {
@@ -38,8 +53,7 @@ public enum ValueType {
 	}
 
 	public boolean isLiteral() {
-		return !BNODE.equals(this) && !URI.equals(this)
-				&& !URI_LONG.equals(this);
+		return !BNODE.equals(this) && !URI.equals(this) && !URI_LONG.equals(this);
 	}
 
 	public boolean isSimpleLiteral() {
@@ -63,8 +77,7 @@ public enum ValueType {
 	}
 
 	public boolean isLong() {
-		return URI_LONG.equals(this) || SIMPLE_LONG.equals(this)
-				|| LANG_LONG.equals(this) || TYPED_LONG.equals(this)
-				|| XML.equals(this);
+		return URI_LONG.equals(this) || SIMPLE_LONG.equals(this) || LANG_LONG.equals(this)
+				|| TYPED_LONG.equals(this) || XML.equals(this);
 	}
 }

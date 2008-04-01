@@ -23,6 +23,7 @@ import org.openrdf.sail.rdbms.schema.ValueTypes;
  * 
  */
 public class UnionItem extends FromItem {
+
 	private List<FromItem> union = new ArrayList<FromItem>();
 
 	public UnionItem(String alias) {
@@ -69,7 +70,8 @@ public class UnionItem extends FromItem {
 				ValueTypes types = selectVars.get(var.getName()).getTypes();
 				types = types.clone().merge(var.getTypes());
 				selectVars.get(var.getName()).setTypes(types);
-			} else {
+			}
+			else {
 				String name = var.getAlias() + var.getColumn();
 				ColumnVar as = var.as(getAlias(), name);
 				columns.add(as);
@@ -116,7 +118,7 @@ public class UnionItem extends FromItem {
 
 	@Override
 	public UnionItem clone() {
-		UnionItem clone = (UnionItem) super.clone();
+		UnionItem clone = (UnionItem)super.clone();
 		clone.union = new ArrayList<FromItem>();
 		for (FromItem from : union) {
 			clone.addUnion(from.clone());
@@ -125,17 +127,17 @@ public class UnionItem extends FromItem {
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current,
-			QueryModelNode replacement) {
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		for (int i = 0, n = union.size(); i < n; i++) {
 			if (current == union.get(i)) {
-				union.set(i, (FromItem) replacement);
+				union.set(i, (FromItem)replacement);
 				return;
 			}
 		}
@@ -144,7 +146,8 @@ public class UnionItem extends FromItem {
 
 	@Override
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-			throws X {
+		throws X
+	{
 		super.visitChildren(visitor);
 		for (FromItem join : new ArrayList<FromItem>(union)) {
 			join.visit(visitor);

@@ -16,13 +16,15 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * 
  */
 public class SqlLike extends BinarySqlOperator {
+
 	public SqlLike(SqlExpr left, SqlExpr right) {
 		super(left, right);
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 

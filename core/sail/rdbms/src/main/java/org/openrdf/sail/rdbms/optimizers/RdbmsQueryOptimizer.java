@@ -30,15 +30,20 @@ import org.openrdf.sail.rdbms.schema.URITable;
  * 
  */
 public class RdbmsQueryOptimizer {
+
 	private RdbmsValueFactory vf;
+
 	private URITable uris;
+
 	private BNodeTable bnodes;
+
 	private LiteralTable literals;
+
 	private SelectQueryOptimizerFactory factory;
+
 	private HashTable hashTable;
 
-	public void setSelectQueryOptimizerFactory(
-			SelectQueryOptimizerFactory factory) {
+	public void setSelectQueryOptimizerFactory(SelectQueryOptimizerFactory factory) {
 		this.factory = factory;
 	}
 
@@ -62,8 +67,8 @@ public class RdbmsQueryOptimizer {
 		this.hashTable = hashTable;
 	}
 
-	public TupleExpr optimize(TupleExpr expr, Dataset dataset,
-			BindingSet bindings, EvaluationStrategy strategy) {
+	public TupleExpr optimize(TupleExpr expr, Dataset dataset, BindingSet bindings, EvaluationStrategy strategy)
+	{
 		// Clone the tuple expression to allow for more aggressive optimisations
 		TupleExpr tupleExpr = expr.clone();
 
@@ -82,8 +87,7 @@ public class RdbmsQueryOptimizer {
 		return tupleExpr;
 	}
 
-	protected void addCoreOptimizations(EvaluationStrategy strategy,
-			QueryOptimizerList optimizerList) {
+	protected void addCoreOptimizations(EvaluationStrategy strategy, QueryOptimizerList optimizerList) {
 		optimizerList.add(new BindingAssigner());
 		optimizerList.add(new ConstantOptimizer(strategy));
 		optimizerList.add(new CompareOptimizer());

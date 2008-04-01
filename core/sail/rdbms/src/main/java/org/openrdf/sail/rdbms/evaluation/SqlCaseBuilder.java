@@ -12,6 +12,7 @@ package org.openrdf.sail.rdbms.evaluation;
  * 
  */
 public class SqlCaseBuilder {
+
 	private SqlExprBuilder where;
 
 	public SqlCaseBuilder(SqlExprBuilder where) {

@@ -33,9 +33,10 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
  * @author James Leigh
  * 
  */
-public class ZonedExprFactory extends
-		QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class ZonedExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+
 	protected SqlExpr result;
+
 	private IdSequence ids;
 
 	public ZonedExprFactory(IdSequence ids) {
@@ -44,7 +45,8 @@ public class ZonedExprFactory extends
 	}
 
 	public SqlExpr createZonedExpr(ValueExpr expr)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = null;
 		if (expr == null)
 			return new SqlNull();
@@ -60,12 +62,16 @@ public class ZonedExprFactory extends
 	}
 
 	@Override
-	public void meet(Lang node) throws UnsupportedRdbmsOperatorException {
+	public void meet(Lang node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
 	@Override
-	public void meet(MathExpr node) throws UnsupportedRdbmsOperatorException {
+	public void meet(MathExpr node)
+		throws UnsupportedRdbmsOperatorException
+	{
 		result = sqlNull();
 	}
 
@@ -83,20 +89,22 @@ public class ZonedExprFactory extends
 	public void meet(Var node) {
 		if (node.getValue() == null) {
 			result = new SqlShift(new RefIdColumn(node), ids.getShift(), ids.getMod());
-		} else {
+		}
+		else {
 			result = valueOf(node.getValue());
 		}
 	}
 
 	@Override
 	protected void meetNode(QueryModelNode arg)
-			throws UnsupportedRdbmsOperatorException {
+		throws UnsupportedRdbmsOperatorException
+	{
 		throw unsupported(arg);
 	}
 
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
-			return num(ids.code((Literal) value));
+			return num(ids.code((Literal)value));
 		}
 		return null;
 	}

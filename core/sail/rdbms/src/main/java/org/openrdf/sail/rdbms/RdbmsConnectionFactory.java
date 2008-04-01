@@ -51,31 +51,56 @@ import org.openrdf.sail.rdbms.schema.ValueTableFactory;
  * 
  */
 public class RdbmsConnectionFactory {
+
 	private RdbmsStore sail;
+
 	private DataSource ds;
+
 	private String user;
+
 	private String password;
+
 	private Connection resourceInserts;
+
 	private Connection literalInserts;
+
 	private Connection hashLookups;
+
 	private Connection nsAndTableIndexes;
+
 	private NamespaceManager namespaces;
+
 	private TripleTableManager tripleTableManager;
+
 	private HashManager hashManager;
+
 	private RdbmsValueFactory vf;
+
 	private UriManager uriManager;
+
 	private BNodeManager bnodeManager;
+
 	private LiteralManager literalManager;
+
 	private PredicateManager predicateManager;
+
 	private int maxTripleTables;
+
 	private boolean triplesIndexed = true;
+
 	private boolean sequenced;
+
 	private HashTable hashTable;
+
 	private URITable uriTable;
+
 	private BNodeTable bnodeTable;
+
 	private LiteralTable literalTable;
+
 	private IdSequence ids;
-	private final Lock lock = new ReentrantLock(); 
+
+	private final Lock lock = new ReentrantLock();
 
 	public void setSail(RdbmsStore sail) {
 		this.sail = sail;
@@ -138,7 +163,9 @@ public class RdbmsConnectionFactory {
 		return vf;
 	}
 
-	public void init() throws SailException {
+	public void init()
+		throws SailException
+	{
 		try {
 			nsAndTableIndexes = getConnection();
 			resourceInserts = getConnection();
@@ -166,7 +193,8 @@ public class RdbmsConnectionFactory {
 				hashManager.setUriManager(uriManager);
 				hashManager.setIdSequence(ids);
 				hashManager.init();
-			} else {
+			}
+			else {
 				ids = new LongIdSequence();
 				ids.init();
 				tables.setIdSequence(ids);
@@ -219,20 +247,26 @@ public class RdbmsConnectionFactory {
 			literalManager.init();
 			vf.setLiteralManager(literalManager);
 			vf.setPredicateManager(predicateManager);
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 	}
 
-	public boolean isWritable() throws SailException {
+	public boolean isWritable()
+		throws SailException
+	{
 		try {
 			return !nsAndTableIndexes.isReadOnly();
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 	}
 
-	public SailConnection createConnection() throws SailException {
+	public SailConnection createConnection()
+		throws SailException
+	{
 		try {
 			Connection db = getConnection();
 			db.setAutoCommit(true);
@@ -287,12 +321,15 @@ public class RdbmsConnectionFactory {
 			conn.setRdbmsQueryOptimizer(optimizer);
 			conn.setLock(lock);
 			return conn;
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 	}
 
-	public void shutDown() throws SailException {
+	public void shutDown()
+		throws SailException
+	{
 		try {
 			if (tripleTableManager != null) {
 				tripleTableManager.close();
@@ -325,7 +362,8 @@ public class RdbmsConnectionFactory {
 				nsAndTableIndexes.close();
 				nsAndTableIndexes = null;
 			}
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 	}
@@ -358,7 +396,9 @@ public class RdbmsConnectionFactory {
 		return "FROM DUAL";
 	}
 
-	protected Connection getConnection() throws SQLException {
+	protected Connection getConnection()
+		throws SQLException
+	{
 		if (user == null)
 			return ds.getConnection();
 		return ds.getConnection(user, password);

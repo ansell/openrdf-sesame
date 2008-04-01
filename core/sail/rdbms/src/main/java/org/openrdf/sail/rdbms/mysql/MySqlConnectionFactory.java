@@ -33,6 +33,7 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 	@Override
 	protected TableFactory createTableFactory() {
 		return new TableFactory() {
+
 			@Override
 			protected RdbmsTable newTable(String name) {
 				return new MySqlTable(name);
@@ -42,8 +43,7 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 
 	@Override
 	protected ValueTableFactory createValueTableFactory() {
-		return new ValueTableFactory(createTableFactory())
-		{
+		return new ValueTableFactory(createTableFactory()) {
 
 			@Override
 			protected ValueTable newValueTable() {

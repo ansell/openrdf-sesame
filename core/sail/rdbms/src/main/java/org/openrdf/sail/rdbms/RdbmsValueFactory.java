@@ -45,14 +45,22 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * 
  */
 public class RdbmsValueFactory extends ValueFactoryBase {
+
 	@Deprecated
 	public static final String NIL_LABEL = "nil";
+
 	private ValueFactory vf;
+
 	private BNodeManager bnodes;
+
 	private UriManager uris;
+
 	private LiteralManager literals;
+
 	private PredicateManager predicates;
+
 	private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
 	private IdSequence ids;
 
 	public void setIdSequence(IdSequence ids) {
@@ -79,12 +87,15 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		this.vf = vf;
 	}
 
-	public void flush() throws RdbmsException {
+	public void flush()
+		throws RdbmsException
+	{
 		try {
 			bnodes.flush();
 			uris.flush();
 			literals.flush();
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
 		catch (InterruptedException e) {
@@ -99,9 +110,11 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				BNode impl = vf.createBNode(nodeID);
 				resource = new RdbmsBNode(impl);
 				bnodes.cache(resource);
-			} catch (SQLException e) {
+			}
+			catch (SQLException e) {
 				throw new RdbmsRuntimeException(e);
-			} catch (InterruptedException e) {
+			}
+			catch (InterruptedException e) {
 				throw new RdbmsRuntimeException(e);
 			}
 		}
@@ -124,13 +137,11 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		return asRdbmsLiteral(vf.createLiteral(label, datatype));
 	}
 
-	public RdbmsStatement createStatement(Resource subject, URI predicate,
-			Value object) {
+	public RdbmsStatement createStatement(Resource subject, URI predicate, Value object) {
 		return createStatement(subject, predicate, object, null);
 	}
 
-	public RdbmsStatement createStatement(Resource subject, URI predicate,
-			Value object, Resource context) {
+	public RdbmsStatement createStatement(Resource subject, URI predicate, Value object, Resource context) {
 		RdbmsResource subj = asRdbmsResource(subject);
 		RdbmsURI pred = asRdbmsURI(predicate);
 		RdbmsValue obj = asRdbmsValue(object);
@@ -145,9 +156,11 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				URI impl = vf.createURI(uri);
 				resource = new RdbmsURI(impl);
 				uris.cache(resource);
-			} catch (SQLException e) {
+			}
+			catch (SQLException e) {
 				throw new RdbmsRuntimeException(e);
-			} catch (InterruptedException e) {
+			}
+			catch (InterruptedException e) {
 				throw new RdbmsRuntimeException(e);
 			}
 		}
@@ -165,8 +178,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		return new RdbmsBNode(id, bnodes.getIdVersion(), vf.createBNode(stringValue));
 	}
 
-	public RdbmsLiteral getRdbmsLiteral(Number num, String label, String language,
-			String datatype) {
+	public RdbmsLiteral getRdbmsLiteral(Number num, String label, String language, String datatype) {
 		Number id = ids.idOf(num);
 		if (datatype == null && language == null)
 			return new RdbmsLiteral(id, literals.getIdVersion(), vf.createLiteral(label));
@@ -179,18 +191,20 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		if (node == null)
 			return null;
 		if (node instanceof URI)
-			return asRdbmsURI((URI) node);
+			return asRdbmsURI((URI)node);
 		if (node instanceof RdbmsBNode) {
 			try {
-				bnodes.cache((RdbmsBNode) node);
-				return (RdbmsBNode) node;
-			} catch (SQLException e) {
+				bnodes.cache((RdbmsBNode)node);
+				return (RdbmsBNode)node;
+			}
+			catch (SQLException e) {
 				throw new RdbmsRuntimeException(e);
-			} catch (InterruptedException e) {
+			}
+			catch (InterruptedException e) {
 				throw new RdbmsRuntimeException(e);
 			}
 		}
-		return createBNode(((BNode) node).getID());
+		return createBNode(((BNode)node).getID());
 	}
 
 	public RdbmsURI asRdbmsURI(URI uri) {
@@ -198,11 +212,13 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 			return null;
 		if (uri instanceof RdbmsURI) {
 			try {
-				uris.cache((RdbmsURI) uri);
-				return (RdbmsURI) uri;
-			} catch (SQLException e) {
+				uris.cache((RdbmsURI)uri);
+				return (RdbmsURI)uri;
+			}
+			catch (SQLException e) {
 				throw new RdbmsRuntimeException(e);
-			} catch (InterruptedException e) {
+			}
+			catch (InterruptedException e) {
 				throw new RdbmsRuntimeException(e);
 			}
 		}
@@ -213,15 +229,15 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		if (value == null)
 			return null;
 		if (value instanceof Literal)
-			return asRdbmsLiteral((Literal) value);
-		return asRdbmsResource((Resource) value);
+			return asRdbmsLiteral((Literal)value);
+		return asRdbmsResource((Resource)value);
 	}
 
 	public RdbmsLiteral asRdbmsLiteral(Literal literal) {
 		try {
 			if (literal instanceof RdbmsLiteral) {
-				literals.cache((RdbmsLiteral) literal);
-				return (RdbmsLiteral) literal;
+				literals.cache((RdbmsLiteral)literal);
+				return (RdbmsLiteral)literal;
 			}
 			RdbmsLiteral lit = literals.findInCache(literal);
 			if (lit == null) {
@@ -229,9 +245,11 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				literals.cache(lit);
 			}
 			return lit;
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsRuntimeException(e);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			throw new RdbmsRuntimeException(e);
 		}
 	}
@@ -246,7 +264,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 
 	public RdbmsStatement asRdbmsStatement(Statement stmt) {
 		if (stmt instanceof RdbmsStatement)
-			return (RdbmsStatement) stmt;
+			return (RdbmsStatement)stmt;
 		Resource s = stmt.getSubject();
 		URI p = stmt.getPredicate();
 		Value o = stmt.getObject();
@@ -269,17 +287,22 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			throw new RdbmsRuntimeException(e);
 		}
 	}
 
-	public Number getPredicateId(RdbmsURI predicate) throws RdbmsException {
+	public Number getPredicateId(RdbmsURI predicate)
+		throws RdbmsException
+	{
 		try {
 			return predicates.getIdOfPredicate(predicate);
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new RdbmsException(e);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			throw new RdbmsRuntimeException(e);
 		}
 	}

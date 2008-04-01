@@ -19,9 +19,13 @@ import org.openrdf.sail.rdbms.algebra.ColumnVar;
  * 
  */
 public abstract class FromItem extends RdbmsQueryModelNodeBase {
+
 	private String alias;
+
 	private boolean left;
+
 	private List<FromItem> joins = new ArrayList<FromItem>();
+
 	private List<SqlExpr> filters = new ArrayList<SqlExpr>();
 
 	public FromItem(String alias) {
@@ -127,7 +131,7 @@ public abstract class FromItem extends RdbmsQueryModelNodeBase {
 
 	@Override
 	public FromItem clone() {
-		FromItem clone = (FromItem) super.clone();
+		FromItem clone = (FromItem)super.clone();
 		clone.joins = new ArrayList<FromItem>();
 		for (FromItem join : joins) {
 			clone.addJoin(join.clone());
@@ -141,7 +145,8 @@ public abstract class FromItem extends RdbmsQueryModelNodeBase {
 
 	@Override
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-			throws X {
+		throws X
+	{
 		super.visitChildren(visitor);
 		for (FromItem join : new ArrayList<FromItem>(joins)) {
 			join.visit(visitor);
@@ -152,18 +157,17 @@ public abstract class FromItem extends RdbmsQueryModelNodeBase {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current,
-			QueryModelNode replacement) {
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		for (int i = 0, n = joins.size(); i < n; i++) {
 			if (current == joins.get(i)) {
-				joins.set(i, (FromItem) replacement);
-				joinAdded((FromItem) replacement);
+				joins.set(i, (FromItem)replacement);
+				joinAdded((FromItem)replacement);
 				return;
 			}
 		}
 		for (int i = 0, n = filters.size(); i < n; i++) {
 			if (current == filters.get(i)) {
-				filters.set(i, (SqlExpr) replacement);
+				filters.set(i, (SqlExpr)replacement);
 				replacement.setParentNode(this);
 				return;
 			}

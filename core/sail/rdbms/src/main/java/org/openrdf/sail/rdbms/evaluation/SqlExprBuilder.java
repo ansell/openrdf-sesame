@@ -18,8 +18,11 @@ import org.openrdf.sail.rdbms.algebra.SqlCompare;
  * 
  */
 public class SqlExprBuilder {
+
 	protected class Mark {
+
 		int length;
+
 		int size;
 
 		Mark(int length, int size) {
@@ -29,8 +32,11 @@ public class SqlExprBuilder {
 	}
 
 	private static final String NULL = " NULL ";
+
 	private QueryBuilderFactory factory;
+
 	private List<Object> parameters = new ArrayList<Object>();
+
 	private StringBuilder where = new StringBuilder();
 
 	public SqlExprBuilder(QueryBuilderFactory factory) {
@@ -58,7 +64,8 @@ public class SqlExprBuilder {
 	public void appendBoolean(boolean booleanValue) {
 		if (booleanValue) {
 			where.append(" 1=1 ");
-		} else {
+		}
+		else {
 			where.append(" 0=1 ");
 		}
 	}
@@ -76,18 +83,18 @@ public class SqlExprBuilder {
 
 	public void appendOperator(SqlCompare.Operator op) {
 		switch (op) {
-		case GE:
-			where.append(" >= ");
-			break;
-		case GT:
-			where.append(" > ");
-			break;
-		case LE:
-			where.append(" <= ");
-			break;
-		case LT:
-			where.append(" < ");
-			break;
+			case GE:
+				where.append(" >= ");
+				break;
+			case GT:
+				where.append(" > ");
+				break;
+			case LE:
+				where.append(" <= ");
+				break;
+			case LT:
+				where.append(" < ");
+				break;
 		}
 	}
 
@@ -135,8 +142,7 @@ public class SqlExprBuilder {
 		return this;
 	}
 
-	public SqlExprBuilder columnsEqual(String al1, String col1, String al2,
-			String col2) {
+	public SqlExprBuilder columnsEqual(String al1, String col1, String al2, String col2) {
 		return column(al1, col1).eq().column(al2, col2);
 	}
 
@@ -230,7 +236,8 @@ public class SqlExprBuilder {
 	public SqlExprBuilder varchar(String stringValue) {
 		if (stringValue == null) {
 			appendNull();
-		} else {
+		}
+		else {
 			where.append(" ? ");
 			parameters.add(stringValue);
 		}

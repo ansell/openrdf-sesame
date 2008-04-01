@@ -16,8 +16,11 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
  * 
  */
 public class RdbmsEvaluationFactory {
+
 	private QueryBuilderFactory factory;
+
 	private RdbmsTripleRepository triples;
+
 	private IdSequence ids;
 
 	public void setQueryBuilderFactory(QueryBuilderFactory factory) {

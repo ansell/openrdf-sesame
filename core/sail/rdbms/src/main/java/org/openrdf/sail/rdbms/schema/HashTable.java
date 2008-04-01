@@ -12,15 +12,18 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
-
 /**
- *
+ * 
  * @author James Leigh
  */
 public class HashTable {
+
 	private static final int CHUNK_SIZE = 15;
+
 	private ValueTable table;
+
 	private PreparedStatement select;
+
 	private int removedStatementsSinceExpunge;
 
 	public HashTable(ValueTable table) {
@@ -40,7 +43,9 @@ public class HashTable {
 		return CHUNK_SIZE;
 	}
 
-	public void init() throws SQLException {
+	public void init()
+		throws SQLException
+	{
 	}
 
 	public void close()
@@ -73,7 +78,8 @@ public class HashTable {
 	}
 
 	public boolean expungeRemovedStatements(int count, String condition)
-			throws SQLException {
+		throws SQLException
+	{
 		removedStatementsSinceExpunge += count;
 		if (condition != null && timeToExpunge()) {
 			boolean removed = table.expunge(condition);
@@ -137,7 +143,9 @@ public class HashTable {
 		return new HashBatch();
 	}
 
-	protected PreparedStatement prepareSelect(String sql) throws SQLException {
+	protected PreparedStatement prepareSelect(String sql)
+		throws SQLException
+	{
 		return table.getRdbmsTable().prepareStatement(sql);
 	}
 

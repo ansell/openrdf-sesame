@@ -28,7 +28,9 @@ public class PgSqlTable extends RdbmsTable {
 	}
 
 	@Override
-	protected String buildOptimize() throws SQLException {
+	protected String buildOptimize()
+		throws SQLException
+	{
 		return "VACUUM ANALYZE " + getName();
 	}
 

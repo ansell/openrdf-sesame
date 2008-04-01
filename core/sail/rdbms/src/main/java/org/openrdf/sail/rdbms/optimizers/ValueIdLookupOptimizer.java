@@ -20,6 +20,7 @@ import org.openrdf.sail.rdbms.RdbmsValueFactory;
  * 
  */
 public class ValueIdLookupOptimizer implements QueryOptimizer {
+
 	RdbmsValueFactory vf;
 
 	public ValueIdLookupOptimizer(RdbmsValueFactory vf) {
@@ -27,8 +28,7 @@ public class ValueIdLookupOptimizer implements QueryOptimizer {
 		this.vf = vf;
 	}
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset,
-			BindingSet bindings) {
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		tupleExpr.visit(new VarVisitor());
 	}
 

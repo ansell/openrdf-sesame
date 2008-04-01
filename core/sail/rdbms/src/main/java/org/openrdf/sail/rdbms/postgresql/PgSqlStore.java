@@ -6,6 +6,7 @@
 package org.openrdf.sail.rdbms.postgresql;
 
 import org.apache.commons.dbcp.BasicDataSource;
+
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.rdbms.RdbmsStore;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
@@ -17,10 +18,15 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
  * 
  */
 public class PgSqlStore extends RdbmsStore {
+
 	private String serverName;
+
 	private String databaseName;
+
 	private int portNumber;
+
 	private String user;
+
 	private String password;
 
 	public PgSqlStore() {
@@ -72,10 +78,13 @@ public class PgSqlStore extends RdbmsStore {
 	}
 
 	@Override
-	public void initialize() throws SailException {
+	public void initialize()
+		throws SailException
+	{
 		try {
 			Class.forName("org.postgresql.Driver");
-		} catch (ClassNotFoundException e) {
+		}
+		catch (ClassNotFoundException e) {
 			throw new RdbmsException(e.toString(), e);
 		}
 		StringBuilder url = new StringBuilder();
@@ -92,7 +101,8 @@ public class PgSqlStore extends RdbmsStore {
 		ds.setUrl(url.toString());
 		if (user != null) {
 			ds.setUsername(user);
-		} else {
+		}
+		else {
 			ds.setUsername(System.getProperty("user.name"));
 		}
 		if (password != null) {

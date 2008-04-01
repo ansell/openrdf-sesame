@@ -15,6 +15,6 @@ package org.openrdf.sail.rdbms;
  * 
  */
 public interface RdbmsProvider {
-	RdbmsConnectionFactory createRdbmsConnectionFactory(String dbName,
-			String dbVersion);
+
+	RdbmsConnectionFactory createRdbmsConnectionFactory(String dbName, String dbVersion);
 }

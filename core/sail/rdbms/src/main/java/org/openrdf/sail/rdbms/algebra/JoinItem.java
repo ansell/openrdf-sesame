@@ -18,8 +18,11 @@ import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
  * 
  */
 public class JoinItem extends FromItem {
+
 	private String tableName;
+
 	private Number predId;
+
 	private List<ColumnVar> vars = new ArrayList<ColumnVar>();
 
 	public JoinItem(String alias, String tableName, Number predId) {
@@ -75,14 +78,15 @@ public class JoinItem extends FromItem {
 
 	@Override
 	public JoinItem clone() {
-		JoinItem clone = (JoinItem) super.clone();
+		JoinItem clone = (JoinItem)super.clone();
 		clone.vars = new ArrayList<ColumnVar>(vars);
 		return clone;
 	}
 
 	@Override
-	public <X extends Exception> void visit(
-			RdbmsQueryModelVisitorBase<X> visitor) throws X {
+	public <X extends Exception> void visit(RdbmsQueryModelVisitorBase<X> visitor)
+		throws X
+	{
 		visitor.meet(this);
 	}
 

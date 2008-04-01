@@ -14,9 +14,10 @@ import org.openrdf.sail.rdbms.algebra.ColumnVar;
  * @author James Leigh
  * 
  */
-public abstract class ValueColumnBase extends RdbmsQueryModelNodeBase implements
-		SqlExpr {
+public abstract class ValueColumnBase extends RdbmsQueryModelNodeBase implements SqlExpr {
+
 	private String name;
+
 	private ColumnVar var;
 
 	public ValueColumnBase(Var var) {
@@ -58,7 +59,7 @@ public abstract class ValueColumnBase extends RdbmsQueryModelNodeBase implements
 
 	@Override
 	public ValueColumnBase clone() {
-		return (ValueColumnBase) super.clone();
+		return (ValueColumnBase)super.clone();
 	}
 
 	@Override
@@ -77,11 +78,12 @@ public abstract class ValueColumnBase extends RdbmsQueryModelNodeBase implements
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final ValueColumnBase other = (ValueColumnBase) obj;
+		final ValueColumnBase other = (ValueColumnBase)obj;
 		if (name == null) {
 			if (other.name != null)
 				return false;
-		} else if (!name.equals(other.name))
+		}
+		else if (!name.equals(other.name))
 			return false;
 		return true;
 	}

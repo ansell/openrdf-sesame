@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
-
 /**
  * A bit array of the possible value types that have been stored in an object
  * column.
@@ -14,6 +13,7 @@ package org.openrdf.sail.rdbms.schema;
  * 
  */
 public class ValueTypes implements Cloneable {
+
 	public static ValueTypes UNKNOWN = new ValueTypes();
 	static {
 		UNKNOWN.bnodes = true;
@@ -25,24 +25,34 @@ public class ValueTypes implements Cloneable {
 		UNKNOWN.languages = true;
 		UNKNOWN.longValues = true;
 	}
+
 	public static ValueTypes RESOURCE = new ValueTypes();
 	static {
 		RESOURCE.bnodes = true;
 		RESOURCE.uris = true;
 		RESOURCE.longValues = true;
 	}
+
 	public static ValueTypes URI = new ValueTypes();
 	static {
 		URI.uris = true;
 		URI.longValues = true;
 	}
+
 	private boolean bnodes;
+
 	private boolean uris;
+
 	private boolean literals;
+
 	private boolean typed;
+
 	private boolean numeric;
+
 	private boolean calendar;
+
 	private boolean languages;
+
 	private boolean longValues;
 
 	public boolean isBNodes() {
@@ -114,8 +124,9 @@ public class ValueTypes implements Cloneable {
 	@Override
 	public ValueTypes clone() {
 		try {
-			return (ValueTypes) super.clone();
-		} catch (CloneNotSupportedException e) {
+			return (ValueTypes)super.clone();
+		}
+		catch (CloneNotSupportedException e) {
 			throw new AssertionError();
 		}
 	}

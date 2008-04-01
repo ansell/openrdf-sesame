@@ -26,6 +26,7 @@ import org.openrdf.sail.rdbms.model.RdbmsValue;
  * 
  */
 public class RdbmsTripleSource implements TripleSource {
+
 	private RdbmsTripleRepository triples;
 
 	public RdbmsTripleSource(RdbmsTripleRepository triples) {
@@ -37,8 +38,9 @@ public class RdbmsTripleSource implements TripleSource {
 		return triples.getValueFactory();
 	}
 
-	public CloseableIteration getStatements(Resource subj, URI pred, Value obj,
-			Resource... contexts) throws QueryEvaluationException {
+	public CloseableIteration getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws QueryEvaluationException
+	{
 		try {
 			RdbmsValueFactory vf = triples.getValueFactory();
 			RdbmsResource s = vf.asRdbmsResource(subj);
@@ -46,7 +48,8 @@ public class RdbmsTripleSource implements TripleSource {
 			RdbmsValue o = vf.asRdbmsValue(obj);
 			RdbmsResource[] c = vf.asRdbmsResource(contexts);
 			return triples.find(s, p, o, c);
-		} catch (SailException e) {
+		}
+		catch (SailException e) {
 			throw new QueryEvaluationException(e);
 		}
 	}
