@@ -138,15 +138,15 @@ public class LiteralTable {
 		dateTime.optimize();
 	}
 
-	public boolean expungeRemovedStatements(int count, String condition)
+	public boolean expunge(String condition)
 			throws SQLException {
 		boolean bool = false;
-		bool |= labels.expungeRemovedStatements(count, condition);
-		bool |= longLabels.expungeRemovedStatements(count, condition);
-		bool |= languages.expungeRemovedStatements(count, condition);
-		bool |= datatypes.expungeRemovedStatements(count, condition);
-		bool |= numeric.expungeRemovedStatements(count, condition);
-		bool |= dateTime.expungeRemovedStatements(count, condition);
+		bool |= labels.expunge(condition);
+		bool |= longLabels.expunge(condition);
+		bool |= languages.expunge(condition);
+		bool |= datatypes.expunge(condition);
+		bool |= numeric.expunge(condition);
+		bool |= dateTime.expunge(condition);
 		return bool;
 	}
 }

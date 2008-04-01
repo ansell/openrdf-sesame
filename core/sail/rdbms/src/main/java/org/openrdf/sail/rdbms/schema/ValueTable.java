@@ -33,7 +33,6 @@ public class ValueTable {
 	private String EXPUNGE;
 	private RdbmsTable table;
 	private RdbmsTable temporary;
-	private int removedStatementsSinceExpunge;
 	private ValueBatch batch;
 	private BlockingQueue<Batch> queue;
 	private boolean indexingValues;
@@ -123,7 +122,7 @@ public class ValueTable {
 		}
 		if (!table.isCreated()) {
 			createTable(table);
-			table.index(PKEY);
+			table.primaryIndex(PKEY);
 			if (isIndexingValues()) {
 				table.index(VALUE_INDEX);
 			}
@@ -201,15 +200,14 @@ public class ValueTable {
 		table.optimize();
 	}
 
-	public boolean expungeRemovedStatements(int count, String condition)
-			throws SQLException {
-		removedStatementsSinceExpunge += count;
-		if (condition != null && timeToExpunge()) {
-			expunge(condition);
-			removedStatementsSinceExpunge = 0;
+	public boolean expunge(String condition) throws SQLException {
+		synchronized (table) {
+			int count = table.executeUpdate(EXPUNGE + condition);
+			if (count < 1)
+				return false;
+			table.modified(0, count);
 			return true;
 		}
-		return false;
 	}
 
 	public List<Long> maxIds(int shift, int mod) throws SQLException {
@@ -277,17 +275,6 @@ public class ValueTable {
 	@Override
 	public String toString() {
 		return getName();
-	}
-
-	protected void expunge(String condition) throws SQLException {
-		synchronized (table) {
-			int count = table.executeUpdate(EXPUNGE + condition);
-			table.modified(0, count);
-		}
-	}
-
-	protected boolean timeToExpunge() {
-		return removedStatementsSinceExpunge > table.size() / 4;
 	}
 
 	protected RdbmsTable getInsertTable() {

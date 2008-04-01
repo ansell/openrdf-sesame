@@ -130,6 +130,10 @@ public class RdbmsTable {
 		return null;
 	}
 
+	public void primaryIndex(String... columns) throws SQLException {
+		execute(buildPrimaryIndex(columns));
+	}
+
 	public void index(String... columns) throws SQLException {
 		if (columns.length == 1 && columns[0].equalsIgnoreCase("value")
 				&& getName().toUpperCase().contains("LONG_")) {
@@ -318,6 +322,21 @@ public class RdbmsTable {
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE TEMPORARY TABLE ").append(name);
 		sb.append(" (\n").append(columns).append(")");
+		return sb.toString();
+	}
+
+	protected String buildPrimaryIndex(String... columns) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("ALTER TABLE ");
+		sb.append(getName());
+		sb.append(" ADD PRIMARY KEY (");
+		for (int i = 0; i < columns.length; i++) {
+			if (i > 0) {
+				sb.append(", ");
+			}
+			sb.append(columns[i]);
+		}
+		sb.append(")");
 		return sb.toString();
 	}
 

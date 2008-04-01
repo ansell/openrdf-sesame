@@ -192,6 +192,13 @@ public class HashManager extends ManagerBase {
 		super.flush();
 	}
 
+	public String getExpungeCondition() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("AND id NOT IN (SELECT id FROM ");
+		sb.append(table.getName()).append(")");
+		return sb.toString();
+	}
+
 	protected int getChunkSize() {
 		return table.getSelectChunkSize();
 	}
@@ -254,7 +261,8 @@ public class HashManager extends ManagerBase {
 			Long hash = idseq.hashOf(value);
 			if (existing.get(hash) != null) {
 				// already in database
-				value.setInternalId(idseq.idOf(existing.get(hash)));
+				Number id = idseq.idOf(existing.get(hash));
+				value.setInternalId(id);
 				value.setVersion(getIdVersion(value));
 				iter.remove();
 			}
@@ -262,7 +270,8 @@ public class HashManager extends ManagerBase {
 				synchronized (ids) {
 					if (ids.containsKey(hash)) {
 						// already inserting this value
-						value.setInternalId(ids.get(hash));
+						Number id = ids.get(hash);
+						value.setInternalId(id);
 						value.setVersion(getIdVersion(value));
 						iter.remove();
 					}

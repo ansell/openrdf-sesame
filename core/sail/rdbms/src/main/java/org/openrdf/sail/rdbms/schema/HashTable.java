@@ -21,6 +21,7 @@ public class HashTable {
 	private static final int CHUNK_SIZE = 15;
 	private ValueTable table;
 	private PreparedStatement select;
+	private int removedStatementsSinceExpunge;
 
 	public HashTable(ValueTable table) {
 		super();
@@ -73,7 +74,17 @@ public class HashTable {
 
 	public boolean expungeRemovedStatements(int count, String condition)
 			throws SQLException {
-		return table.expungeRemovedStatements(count, condition);
+		removedStatementsSinceExpunge += count;
+		if (condition != null && timeToExpunge()) {
+			boolean removed = table.expunge(condition);
+			removedStatementsSinceExpunge = 0;
+			return removed;
+		}
+		return false;
+	}
+
+	protected boolean timeToExpunge() {
+		return removedStatementsSinceExpunge > table.size() / 4;
 	}
 
 	public void optimize()

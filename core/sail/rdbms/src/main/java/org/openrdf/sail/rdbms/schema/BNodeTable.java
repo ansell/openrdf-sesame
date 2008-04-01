@@ -37,9 +37,8 @@ public class BNodeTable {
 		table.insert(id, value);
 	}
 
-	public boolean expungeRemovedStatements(int count, String condition)
-			throws SQLException {
-		return table.expungeRemovedStatements(count, condition);
+	public boolean expunge(String condition) throws SQLException {
+		return table.expunge(condition);
 	}
 
 	@Override
