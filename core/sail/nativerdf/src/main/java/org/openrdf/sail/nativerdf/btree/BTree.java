@@ -13,8 +13,11 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import info.aduna.io.ByteArrayUtil;
 
@@ -43,7 +46,9 @@ public class BTree {
 
 	private static final int HEADER_LENGTH = 16;
 
-	private static final int MRU_CACHE_SIZE = 8;
+	private static final int NODE_CACHE_SIZE = 10;
+	
+	private static final int MIN_MRU_CACHE_SIZE = 4;
 
 	/*-----------*
 	 * Constants *
@@ -78,14 +83,18 @@ public class BTree {
 	private final RecordComparator comparator;
 
 	/**
-	 * List containing nodes that are currently "in use", used for caching.
+	 * Map containing cached nodes, indexed by their ID.
 	 */
-	private final LinkedList<Node> nodesInUse = new LinkedList<Node>();
+	private final Map<Integer, Node> nodeCache = new HashMap<Integer, Node>(NODE_CACHE_SIZE);
 
 	/**
-	 * List containing the most recently released nodes, used for caching.
+	 * Map of cached nodes that are no longer "in use", sorted from least
+	 * recently used to most recently used. This collection is used to remove
+	 * nodes from the cache when it is full. Note: needs to be synchronized
+	 * through nodeCache (data strucures should prob be merged in a NodeCache
+	 * class)
 	 */
-	private final LinkedList<Node> mruNodes = new LinkedList<Node>();;
+	private final Map<Integer, Node> mruNodes = new LinkedHashMap<Integer, Node>(NODE_CACHE_SIZE);
 
 	/**
 	 * Bit set recording which nodes have been allocated, using node IDs as
@@ -350,10 +359,8 @@ public class BTree {
 	{
 		sync();
 
-		synchronized (nodesInUse) {
-			nodesInUse.clear();
-		}
-		synchronized (mruNodes) {
+		synchronized (nodeCache) {
+			nodeCache.clear();
 			mruNodes.clear();
 		}
 
@@ -369,16 +376,8 @@ public class BTree {
 		throws IOException
 	{
 		// Write any changed nodes that still reside in the cache to disk
-		synchronized (nodesInUse) {
-			for (Node node : nodesInUse) {
-				if (node.dataChanged()) {
-					node.write();
-				}
-			}
-		}
-
-		synchronized (mruNodes) {
-			for (Node node : mruNodes) {
+		synchronized (nodeCache) {
+			for (Node node : nodeCache.values()) {
 				if (node.dataChanged()) {
 					node.write();
 				}
@@ -808,10 +807,8 @@ public class BTree {
 	public void clear()
 		throws IOException
 	{
-		synchronized (nodesInUse) {
-			nodesInUse.clear();
-		}
-		synchronized (mruNodes) {
+		synchronized (nodeCache) {
+			nodeCache.clear();
 			mruNodes.clear();
 		}
 		fileChannel.truncate(HEADER_LENGTH);
@@ -838,11 +835,20 @@ public class BTree {
 			maxNodeID = newNodeID;
 		}
 
-		Node node = new Node(newNodeID);
-		node.use();
-		synchronized (nodesInUse) {
-			nodesInUse.add(node);
+		Node node;
+
+		synchronized (nodeCache) {
+			if (nodeCache.size() >= NODE_CACHE_SIZE && mruNodes.size() > MIN_MRU_CACHE_SIZE) {
+				// Make some room for the new node
+				expelNodeFromCache();
+			}
+
+			node = new Node(newNodeID);
+			node.use();
+
+			nodeCache.put(node.getID(), node);
 		}
+
 		return node;
 	}
 
@@ -853,37 +859,35 @@ public class BTree {
 			throw new IllegalArgumentException("id must be larger than 0, is: " + id);
 		}
 
-		// Check nodesInUse list
-		synchronized (nodesInUse) {
-			for (Node node : nodesInUse) {
-				if (node.getID() == id) {
-					node.use();
-					return node;
+		// Check node cache
+		synchronized (nodeCache) {
+			Node node = nodeCache.get(id);
+
+			if (node != null) {
+				// Found node in cache
+				int usageCount = node.use();
+				if (usageCount == 1) {
+					mruNodes.remove(id);
 				}
 			}
-
-			// Check mruNodes list
-			synchronized (mruNodes) {
-				Iterator<Node> iter = mruNodes.iterator();
-				while (iter.hasNext()) {
-					Node node = iter.next();
-
-					if (node.getID() == id) {
-						iter.remove();
-						nodesInUse.add(node);
-
-						node.use();
-						return node;
-					}
+			else {
+				if (nodeCache.size() >= NODE_CACHE_SIZE && mruNodes.size() > MIN_MRU_CACHE_SIZE) {
+					// Make some room for the new node
+					expelNodeFromCache();
 				}
+
+				// Read node from disk and add to cache
+				node = new Node(id);
+
+				// FIXME: this blocks the (synchronized) access to the cache for
+				// quite some time
+				node.read();
+
+				nodeCache.put(id, node);
+
+				node.use();
 			}
 
-			// Read node from disk
-			Node node = new Node(id);
-			node.read();
-			nodesInUse.add(node);
-
-			node.use();
 			return node;
 		}
 	}
@@ -891,41 +895,49 @@ public class BTree {
 	private void releaseNode(Node node)
 		throws IOException
 	{
-		synchronized (nodesInUse) {
-			nodesInUse.remove(node);
-
+		synchronized (nodeCache) {
 			if (node.isEmpty() && node.isLeaf()) {
 				// Discard node
+				node.write();
+				nodeCache.remove(node.getID());
+
+				// allow the node ID to be reused
 				synchronized (allocatedNodes) {
 					initAllocatedNodes();
 					allocatedNodes.clear(node.id);
-				}
-				synchronized (mruNodes) {
-					mruNodes.remove(node);
-				}
 
-				node.write();
-
-				if (node.id == maxNodeID) {
-					// Shrink file
-					synchronized (allocatedNodes) {
+					if (node.id == maxNodeID) {
+						// Shrink file
 						maxNodeID = Math.max(0, allocatedNodes.length() - 1);
+						fileChannel.truncate(nodeID2offset(maxNodeID) + nodeSize);
 					}
-					fileChannel.truncate(nodeID2offset(maxNodeID) + nodeSize);
 				}
 			}
 			else {
-				synchronized (mruNodes) {
-					if (mruNodes.size() >= MRU_CACHE_SIZE) {
-						// Remove least recently used node
-						Node lruNode = mruNodes.removeLast();
-						if (lruNode.dataChanged()) {
-							lruNode.write();
-						}
-					}
-					mruNodes.addFirst(node);
+				mruNodes.put(node.getID(), node);
+
+				if (nodeCache.size() > NODE_CACHE_SIZE && mruNodes.size() > MIN_MRU_CACHE_SIZE) {
+					expelNodeFromCache();
 				}
 			}
+		}
+	}
+
+	/**
+	 * Tries to expel the least recently used node from the cache.
+	 */
+	private void expelNodeFromCache()
+		throws IOException
+	{
+		if (!mruNodes.isEmpty()) {
+			Iterator<Node> iter = mruNodes.values().iterator();
+			Node lruNode = iter.next();
+
+			if (lruNode.dataChanged()) {
+				lruNode.write();
+			}
+			iter.remove();
+			nodeCache.remove(lruNode.getID());
 		}
 	}
 
@@ -1029,12 +1041,16 @@ public class BTree {
 			return id;
 		}
 
+		public String toString() {
+			return "node " + getID();
+		}
+
 		public boolean isLeaf() {
 			return getChildNodeID(0) == 0;
 		}
 
-		public void use() {
-			usageCount++;
+		public int use() {
+			return ++usageCount;
 		}
 
 		public void release()
