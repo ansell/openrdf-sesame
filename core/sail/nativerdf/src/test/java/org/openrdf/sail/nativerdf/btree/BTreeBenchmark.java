@@ -100,6 +100,22 @@ public class BTreeBenchmark extends TestCase {
 		printTime(startTime, endTime, "testUpdate");
 	}
 
+	public void testRemove()
+		throws Exception
+	{
+		addAscending(0L, 1L, VALUE_COUNT);
+		btree.sync();
+		
+		Thread.sleep(500L);
+		long startTime = System.currentTimeMillis();
+
+		remove(0L, 4L, VALUE_COUNT / 4);
+		btree.sync();
+
+		long endTime = System.currentTimeMillis();
+		printTime(startTime, endTime, "testRemove");
+	}
+
 	public void testFullScan()
 		throws Exception
 	{
@@ -214,6 +230,19 @@ public class BTreeBenchmark extends TestCase {
 			btree.remove(oldData);
 
 			oldValue += increment;
+		}
+	}
+
+	private void remove(long startValue, long increment, int valueCount)
+		throws IOException
+	{
+		long value = startValue;
+		byte[] data = new byte[8];
+
+		for (int i = 0; i < valueCount; i++) {
+			ByteArrayUtil.putLong(value, data, 0);
+			btree.remove(data);
+			value += increment;
 		}
 	}
 
