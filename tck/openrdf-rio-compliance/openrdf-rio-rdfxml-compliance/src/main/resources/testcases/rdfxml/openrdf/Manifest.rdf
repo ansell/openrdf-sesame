@@ -17,7 +17,7 @@
    </test:inputDocument>
 
    <test:outputDocument>
-      <test:NT-Document rdf:about="rdfms-empty-property-elements/test001.nt" />
+      <test:NT-Document rdf:about="rdfms-empty-property-elements/test001a.nt" />
    </test:outputDocument>
 </test:PositiveParserTest>
 
@@ -32,7 +32,7 @@
    </test:inputDocument>
 
    <test:outputDocument>
-      <test:NT-Document rdf:about="rdfms-empty-property-elements/test001.nt" />
+      <test:NT-Document rdf:about="rdfms-empty-property-elements/test001b.nt" />
    </test:outputDocument>
 </test:PositiveParserTest>
 
