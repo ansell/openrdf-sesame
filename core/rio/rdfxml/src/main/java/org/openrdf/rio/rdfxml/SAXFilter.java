@@ -270,6 +270,8 @@ class SAXFilter implements ContentHandler {
 					// Don't report the new element to the RDF parser just yet.
 					deferredElement = elInfo;
 				}
+
+				charBuf.setLength(0);
 			}
 		}
 		catch (RDFParseException e) {
@@ -364,17 +366,20 @@ class SAXFilter implements ContentHandler {
 					// Insert any used namespace prefixes from the XML literal's
 					// context that are not defined in the XML literal itself.
 					insertUsedContextPrefixes();
-				}
 
-				// Check if any character data has been collected in the charBuf
-				String s = charBuf.toString().trim();
-				charBuf.setLength(0);
-
-				if (s.length() > 0 || parseLiteralMode) {
-					rdfParser.text(s);
+					rdfParser.text(charBuf.toString());
 
 					parseLiteralMode = false;
 				}
+				else {
+					String s = charBuf.toString().trim();
+
+					if (s.length() > 0) {
+						rdfParser.text(s);
+					}
+				}
+
+				charBuf.setLength(0);
 
 				// Handle the end tag
 				elInfoStack.pop();

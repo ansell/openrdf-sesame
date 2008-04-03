@@ -5,18 +5,31 @@
  */
 package org.openrdf.rio.rdfxml;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.c14n.Canonicalizer;
+import org.apache.xml.security.c14n.InvalidCanonicalizerException;
+import org.xml.sax.SAXException;
+
+import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
@@ -159,6 +172,7 @@ public class RDFXMLParserTest {
 		{
 			// Parse input data
 			RDFXMLParser rdfxmlParser = new RDFXMLParser();
+			rdfxmlParser.setValueFactory(new CanonXMLValueFactory());
 			rdfxmlParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 			rdfxmlParser.setParseStandAloneDocuments(true);
 
@@ -172,6 +186,7 @@ public class RDFXMLParserTest {
 
 			// Parse expected output data
 			NTriplesParser ntriplesParser = new NTriplesParser();
+			ntriplesParser.setValueFactory(new CanonXMLValueFactory());
 			ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
 			Set<Statement> outputCollection = new LinkedHashSet<Statement>();
@@ -252,4 +267,44 @@ public class RDFXMLParserTest {
 		}
 
 	} // end inner class NegativeParserTest
+
+	private static class CanonXMLValueFactory extends ValueFactoryImpl {
+
+		private Canonicalizer c14n;
+
+		public CanonXMLValueFactory()
+			throws InvalidCanonicalizerException, ParserConfigurationException
+		{
+			org.apache.xml.security.Init.init();
+
+			c14n = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
+		}
+
+		@Override
+		public Literal createLiteral(String value, URI datatype) {
+			if (RDF.XMLLITERAL.equals(datatype)) {
+				// Canonicalize the literal value
+				try {
+					value = new String(c14n.canonicalize(value.getBytes("UTF-8")), "UTF-8");
+				}
+				catch (UnsupportedEncodingException e) {
+					throw new RuntimeException(e);
+				}
+				catch (CanonicalizationException e) {
+					// ignore
+				}
+				catch (ParserConfigurationException e) {
+					throw new RuntimeException(e);
+				}
+				catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+				catch (SAXException e) {
+					// ignore
+				}
+			}
+
+			return super.createLiteral(value, datatype);
+		}
+	}
 }
