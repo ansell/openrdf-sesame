@@ -14,6 +14,8 @@ import java.util.List;
 
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.util.LiteralUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -163,16 +165,18 @@ public class RemoteRepositoryManager extends RepositoryManager {
 					continue;
 				}
 
-				String uri = LiteralUtil.getLabel(bindingSet.getValue("uri"), null);
+				Value uri = bindingSet.getValue("uri");
 				String description = LiteralUtil.getLabel(bindingSet.getValue("title"), null);
 				boolean readable = LiteralUtil.getBooleanValue(bindingSet.getValue("readable"), false);
 				boolean writable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
 
-				try {
-					repInfo.setLocation(new URL(uri));
-				}
-				catch (MalformedURLException e) {
-					logger.warn("Server reported malformed repository URL: {}", uri);
+				if (uri instanceof URI) {
+					try {
+						repInfo.setLocation(new URL(uri.toString()));
+					}
+					catch (MalformedURLException e) {
+						logger.warn("Server reported malformed repository URL: {}", uri);
+					}
 				}
 
 				repInfo.setId(id);
