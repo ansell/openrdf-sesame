@@ -21,6 +21,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
+import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
@@ -208,7 +209,7 @@ public class RdbmsConnection extends SailConnectionBase {
 			EvaluationStrategy strategy;
 			strategy = factory.createRdbmsEvaluation(dataset);
 			tupleExpr = optimizer.optimize(expr, dataset, bindings, strategy);
-			return strategy.evaluate(tupleExpr, bindings);
+			return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
 		}
 		catch (QueryEvaluationException e) {
 			throw new SailException(e);
