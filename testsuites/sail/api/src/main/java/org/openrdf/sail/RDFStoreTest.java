@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Iterator;
 
 import junit.framework.TestCase;
 
@@ -30,6 +31,7 @@ import org.openrdf.model.impl.NumericLiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -238,8 +240,8 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		throws Exception
 	{
 		StringBuffer sb = new StringBuffer();
-		for (int i=0;i<512;i++) {
-			sb.append(Character.toChars('A' + (i%26)));
+		for (int i = 0; i < 512; i++) {
+			sb.append(Character.toChars('A' + (i % 26)));
 		}
 		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
 		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
@@ -252,8 +254,8 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		throws Exception
 	{
 		StringBuffer sb = new StringBuffer();
-		for (int i=0;i<512;i++) {
-			sb.append(Character.toChars('A' + (i%26)));
+		for (int i = 0; i < 512; i++) {
+			sb.append(Character.toChars('A' + (i % 26)));
 		}
 		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
 		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
@@ -266,8 +268,8 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		throws Exception
 	{
 		StringBuffer sb = new StringBuffer();
-		for (int i=0;i<1024000;i++) {
-			sb.append(Character.toChars('A' + (i%26)));
+		for (int i = 0; i < 1024000; i++) {
+			sb.append(Character.toChars('A' + (i % 26)));
 		}
 		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
 		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
@@ -280,8 +282,8 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		throws Exception
 	{
 		StringBuffer sb = new StringBuffer();
-		for (int i=0;i<512;i++) {
-			sb.append(Character.toChars('A' + (i%26)));
+		for (int i = 0; i < 512; i++) {
+			sb.append(Character.toChars('A' + (i % 26)));
 		}
 		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
 		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
@@ -604,19 +606,24 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> iter;
 		iter = con.evaluate(tupleExpr, null, bindings, false);
-		assertEquals(2, countElements(iter));
+
+		int resultCount = verifyQueryResult(iter, 1);
+		assertEquals("Wrong number of query results", 2, resultCount);
 
 		bindings.addBinding("Y", painter);
 		iter = con.evaluate(tupleExpr, null, bindings, false);
-		assertEquals(1, countElements(iter));
+		resultCount = verifyQueryResult(iter, 1);
+		assertEquals("Wrong number of query results", 1, resultCount);
 
 		bindings.addBinding("Z", painting);
 		iter = con.evaluate(tupleExpr, null, bindings, false);
-		assertEquals(1, countElements(iter));
+		resultCount = verifyQueryResult(iter, 1);
+		assertEquals("Wrong number of query results", 1, resultCount);
 
 		bindings.removeBinding("Y");
 		iter = con.evaluate(tupleExpr, null, bindings, false);
-		assertEquals(2, countElements(iter));
+		resultCount = verifyQueryResult(iter, 1);
+		assertEquals("Wrong number of query results", 2, resultCount);
 	}
 
 	public void testMultiThreadedAccess() {
@@ -817,35 +824,38 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 	{
 		SailConnection con2 = sail.getConnection();
 		try {
-		assertEquals(0, countAllElements());
-		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
-		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
-		con.addStatement(picasso, RDF.TYPE, painter, context1);
-		con.addStatement(guernica, RDF.TYPE, painting, context1);
-		con.commit();
-		assertEquals(4, countAllElements());
-		con2.addStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
-		String query = "SELECT S, P, O FROM {S} P {O}";
-		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, query, null);
-		assertEquals(5, countElements(con2.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false)));
-		Runnable clearer = new Runnable() {
-			public void run() {
-				try {
-					con.clear();
-					con.commit();
+			assertEquals(0, countAllElements());
+			con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
+			con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
+			con.addStatement(picasso, RDF.TYPE, painter, context1);
+			con.addStatement(guernica, RDF.TYPE, painting, context1);
+			con.commit();
+			assertEquals(4, countAllElements());
+			con2.addStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
+			String query = "SELECT S, P, O FROM {S} P {O}";
+			ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, query, null);
+			assertEquals(5, countElements(con2.evaluate(tupleQuery.getTupleExpr(), null,
+					EmptyBindingSet.getInstance(), false)));
+			Runnable clearer = new Runnable() {
+
+				public void run() {
+					try {
+						con.clear();
+						con.commit();
+					}
+					catch (SailException e) {
+						throw new RuntimeException(e);
+					}
 				}
-				catch (SailException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		};
-		Thread thread = new Thread(clearer);
-		thread.start();
-		Thread.yield();
-		Thread.yield();
-		con2.commit();
-		thread.join();
-		} finally {
+			};
+			Thread thread = new Thread(clearer);
+			thread.start();
+			Thread.yield();
+			Thread.yield();
+			con2.commit();
+			thread.join();
+		}
+		finally {
 			con2.close();
 		}
 	}
@@ -877,15 +887,13 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 	private int countContext1Elements()
 		throws Exception, SailException
 	{
-		return countElements(con.getStatements(null, null, null,
-				false, context1));
+		return countElements(con.getStatements(null, null, null, false, context1));
 	}
 
 	private int countAllElements()
 		throws Exception, SailException
 	{
-		return countElements(con.getStatements(
-				null, null, null, false));
+		return countElements(con.getStatements(null, null, null, false));
 	}
 
 	private int countElements(Iteration<?, ?> iter)
@@ -913,5 +921,32 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 				+ " using namespace ex = <" + EXAMPLE_NS + ">", null);
 
 		return countElements(con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false));
+	}
+
+	private int verifyQueryResult(
+			CloseableIteration<? extends BindingSet, QueryEvaluationException> resultIter,
+			int expectedBindingCount)
+		throws QueryEvaluationException
+	{
+		int resultCount = 0;
+
+		while (resultIter.hasNext()) {
+			BindingSet resultBindings = resultIter.next();
+			resultCount++;
+
+			assertEquals("Wrong number of binding names for binding set", expectedBindingCount,
+					resultBindings.getBindingNames().size());
+
+			int bindingCount = 0;
+			Iterator<Binding> bindingIter = resultBindings.iterator();
+			while (bindingIter.hasNext()) {
+				bindingIter.next();
+				bindingCount++;
+			}
+
+			assertEquals("Wrong number of bindings in binding set", expectedBindingCount, bindingCount);
+		}
+
+		return resultCount;
 	}
 }
