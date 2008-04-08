@@ -112,7 +112,6 @@
 						</goals>
 						<configuration>
 							<skip>false</skip>
-							<testFailureIgnore>true</testFailureIgnore>
 						</configuration>
 					</execution>
 				</executions>
