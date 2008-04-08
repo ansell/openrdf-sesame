@@ -46,6 +46,7 @@ import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.SailConnectionBase;
@@ -132,7 +133,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			optimizerList.optimize(tupleExpr, dataset, bindings);
 
 			CloseableIteration<BindingSet, QueryEvaluationException> iter;
-			iter = strategy.evaluate(tupleExpr, bindings);
+			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
 			return new LockingIteration<BindingSet, QueryEvaluationException>(readLock, iter);
 		}
 		catch (QueryEvaluationException e) {

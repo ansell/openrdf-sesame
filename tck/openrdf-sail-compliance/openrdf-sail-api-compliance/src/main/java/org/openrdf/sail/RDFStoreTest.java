@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Iterator;
 
 import junit.framework.TestCase;
 
@@ -30,6 +31,7 @@ import org.openrdf.model.impl.NumericLiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -587,19 +589,24 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> iter;
 		iter = con.evaluate(tupleExpr, null, bindings, false);
-		assertEquals(2, countElements(iter));
+
+		int resultCount = verifyQueryResult(iter, 1);
+		assertEquals("Wrong number of query results", 2, resultCount);
 
 		bindings.addBinding("Y", painter);
 		iter = con.evaluate(tupleExpr, null, bindings, false);
-		assertEquals(1, countElements(iter));
+		resultCount = verifyQueryResult(iter, 1);
+		assertEquals("Wrong number of query results", 1, resultCount);
 
 		bindings.addBinding("Z", painting);
 		iter = con.evaluate(tupleExpr, null, bindings, false);
-		assertEquals(1, countElements(iter));
+		resultCount = verifyQueryResult(iter, 1);
+		assertEquals("Wrong number of query results", 1, resultCount);
 
 		bindings.removeBinding("Y");
 		iter = con.evaluate(tupleExpr, null, bindings, false);
-		assertEquals(2, countElements(iter));
+		resultCount = verifyQueryResult(iter, 1);
+		assertEquals("Wrong number of query results", 2, resultCount);
 	}
 
 	public void testMultiThreadedAccess() {
@@ -896,5 +903,32 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 				+ " using namespace ex = <" + EXAMPLE_NS + ">", null);
 
 		return countElements(con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false));
+	}
+
+	private int verifyQueryResult(
+			CloseableIteration<? extends BindingSet, QueryEvaluationException> resultIter,
+			int expectedBindingCount)
+		throws QueryEvaluationException
+	{
+		int resultCount = 0;
+
+		while (resultIter.hasNext()) {
+			BindingSet resultBindings = resultIter.next();
+			resultCount++;
+
+			assertEquals("Wrong number of binding names for binding set", expectedBindingCount,
+					resultBindings.getBindingNames().size());
+
+			int bindingCount = 0;
+			Iterator<Binding> bindingIter = resultBindings.iterator();
+			while (bindingIter.hasNext()) {
+				bindingIter.next();
+				bindingCount++;
+			}
+
+			assertEquals("Wrong number of bindings in binding set", expectedBindingCount, bindingCount);
+		}
+
+		return resultCount;
 	}
 }
