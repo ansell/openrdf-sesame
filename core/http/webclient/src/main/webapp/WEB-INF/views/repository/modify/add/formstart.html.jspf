@@ -7,10 +7,6 @@
 			</tr>
 			<tr>
 				<th><fmt:message key="repository.modify.add.dataformat" /></th>
-				<td>
-					<form:select path="format">
-						<form:options items="${formats}" itemValue="formatId" itemLabel="formatName"/>
-					</form:select>				
-				</td>
+				<td><form:select path="format" items="${formats}" /></td>
 				<td><form:errors path="format" cssClass="error" /></td>
 			</tr>
