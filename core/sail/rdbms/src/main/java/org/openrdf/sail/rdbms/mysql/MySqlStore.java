@@ -19,8 +19,6 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
  */
 public class MySqlStore extends RdbmsStore {
 
-	private String name = genName();
-
 	private String serverName = "localhost";
 
 	private String databaseName;
@@ -37,14 +35,6 @@ public class MySqlStore extends RdbmsStore {
 
 	public MySqlStore(String databaseName) {
 		setDatabaseName(databaseName);
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getServerName() {
@@ -124,10 +114,5 @@ public class MySqlStore extends RdbmsStore {
 		factory.setDataSource(ds);
 		setConnectionFactory(factory);
 		super.initialize();
-	}
-
-	private String genName() {
-		String hex = Integer.toHexString(System.identityHashCode(this));
-		return getClass().getSimpleName() + "#" + hex;
 	}
 }
