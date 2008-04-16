@@ -35,6 +35,6 @@ public interface NotifyingRepository extends Repository {
 	 * Removes a registered <tt>RepositoryConnectionListener</tt> from this
 	 * repository.
 	 */
-	public void removeRepositoryConnectinoListener(RepositoryConnectionListener listener);
+	public void removeRepositoryConnectionListener(RepositoryConnectionListener listener);
 
 }
