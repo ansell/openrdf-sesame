@@ -47,7 +47,7 @@ public class SailImplConfigBase implements SailImplConfig {
 		throws SailConfigException
 	{
 		if (type == null) {
-			throw new SailConfigException("No type specified for repository implementation");
+			throw new SailConfigException("No type specified for sail implementation");
 		}
 	}
 
