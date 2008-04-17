@@ -6,7 +6,6 @@
 package org.openrdf.sail.rdbms.config;
 
 import static org.openrdf.model.util.GraphUtil.getOptionalObjectLiteral;
-import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.INDEXED;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.JDBC_DRIVER;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.LAYOUT;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.PASSWORD;
@@ -16,18 +15,27 @@ import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.USER;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfigBase;
 
 /**
- * Holds the JDBC Driver, URL, user, and password.
+ * Holds the JDBC Driver, URL, user and password, as well as the database
+ * layout.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsStoreConfig extends SailImplConfigBase {
+
+	public enum DatabaseLayout {
+		MONOLITHIC,
+		VERTICAL
+	}
+
+	/*-----------*
+	 * Variables *
+	 *-----------*/
 
 	private String jdbcDriver;
 
@@ -37,13 +45,19 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 
 	private String password;
 
-	private String layout;
+	private DatabaseLayout layout = DatabaseLayout.VERTICAL;
 
-	private String indexed;
+	/*--------------*
+	 * Constructors *
+	 *--------------*/
 
 	public RdbmsStoreConfig() {
 		super(RdbmsStoreFactory.SAIL_TYPE);
 	}
+
+	/*---------*
+	 * Methods *
+	 *---------*/
 
 	public String getJdbcDriver() {
 		return jdbcDriver;
@@ -77,31 +91,47 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		this.password = password;
 	}
 
-	public String getLayout() {
+	public DatabaseLayout getLayout() {
 		return layout;
 	}
 
-	public void setLayout(String layout) {
+	public void setLayout(DatabaseLayout layout) {
 		this.layout = layout;
 	}
 
-	public String getIndexed() {
-		return indexed;
+	@Override
+	public void validate()
+		throws SailConfigException
+	{
+		super.validate();
+		
+		if (url == null) {
+			throw new SailConfigException("No URL specified for RdbmsStore");
+		}
 	}
-
-	public void setIndexed(String indexed) {
-		this.indexed = indexed;
-	}
-
+	
 	@Override
 	public Resource export(Graph graph) {
 		Resource implNode = super.export(graph);
-		set(graph, implNode, JDBC_DRIVER, jdbcDriver);
-		set(graph, implNode, URL, url);
-		set(graph, implNode, USER, user);
-		set(graph, implNode, PASSWORD, password);
-		set(graph, implNode, LAYOUT, layout);
-		set(graph, implNode, INDEXED, indexed);
+
+		ValueFactory vf = graph.getValueFactory();
+
+		if (jdbcDriver != null) {
+			graph.add(implNode, JDBC_DRIVER, vf.createLiteral(jdbcDriver));
+		}
+		if (url != null) {
+			graph.add(implNode, URL, vf.createLiteral(url));
+		}
+		if (user != null) {
+			graph.add(implNode, USER, vf.createLiteral(user));
+		}
+		if (password != null) {
+			graph.add(implNode, PASSWORD, vf.createLiteral(password));
+		}
+		if (layout != null) {
+			graph.add(implNode, LAYOUT, vf.createLiteral(layout.toString()));
+		}
+
 		return implNode;
 	}
 
@@ -112,32 +142,38 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		super.parse(graph, implNode);
 
 		try {
-			jdbcDriver = get(graph, implNode, JDBC_DRIVER);
-			url = get(graph, implNode, URL);
-			user = get(graph, implNode, USER);
-			password = get(graph, implNode, PASSWORD);
-			layout = get(graph, implNode, LAYOUT);
-			indexed = get(graph, implNode, INDEXED);
+			Literal jdbcDriverLit = getOptionalObjectLiteral(graph, implNode, JDBC_DRIVER);
+			if (jdbcDriverLit != null) {
+				setJdbcDriver(jdbcDriverLit.getLabel());
+			}
+
+			Literal urlLit = getOptionalObjectLiteral(graph, implNode, URL);
+			if (urlLit != null) {
+				setUrl(urlLit.getLabel());
+			}
+
+			Literal userLit = getOptionalObjectLiteral(graph, implNode, USER);
+			if (userLit != null) {
+				setUser(userLit.getLabel());
+			}
+
+			Literal passwordLit = getOptionalObjectLiteral(graph, implNode, PASSWORD);
+			if (passwordLit != null) {
+				setPassword(passwordLit.getLabel());
+			}
+
+			Literal layoutLit = getOptionalObjectLiteral(graph, implNode, LAYOUT);
+			if (layoutLit != null) {
+				try {
+					setLayout(DatabaseLayout.valueOf(layoutLit.getLabel()));
+				}
+				catch (IllegalArgumentException e) {
+					throw new SailConfigException("Invalid database layout value: " + layout);
+				}
+			}
 		}
 		catch (GraphUtilException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}
-
-	private String get(Graph graph, Resource implNode, URI predicate)
-		throws GraphUtilException
-	{
-		Literal lit = getOptionalObjectLiteral(graph, implNode, predicate);
-		if (lit == null)
-			return null;
-		return lit.getLabel();
-	}
-
-	private void set(Graph graph, Resource implNode, URI predicate, String value) {
-		if (value != null) {
-			Literal lit = graph.getValueFactory().createLiteral(value);
-			graph.add(implNode, predicate, lit);
-		}
-	}
-
 }
