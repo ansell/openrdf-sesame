@@ -860,6 +860,19 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		}
 	}
 
+	public void testBNodeReuse() throws Exception {
+		con.addStatement(RDF.VALUE, RDF.VALUE, RDF.VALUE);
+		assertEquals(1, con.size());
+		BNode b1 = vf.createBNode();
+		con.addStatement(b1, RDF.VALUE, b1);
+		con.removeStatements(b1, RDF.VALUE, b1);
+		assertEquals(1, con.size());
+		BNode b2 = vf.createBNode();
+		con.addStatement(b2, RDF.VALUE, b2);
+		con.addStatement(b1, RDF.VALUE, b1);
+		assertEquals(3, con.size());
+	}
+
 	public void sailChanged(SailChangedEvent event) {
 		if (event.statementsAdded()) {
 			addEventCount++;
