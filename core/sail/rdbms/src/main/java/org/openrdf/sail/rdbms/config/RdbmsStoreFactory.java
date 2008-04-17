@@ -10,17 +10,26 @@ import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.rdbms.RdbmsStore;
+import org.openrdf.sail.rdbms.config.RdbmsStoreConfig.DatabaseLayout;
 
 /**
- * Creates a {@link RdbmsStore} from a {@link RdbmsStoreConfig}.
+ * A {@link SailFactory} that creates {@link RdbmsStore}s based on RDF
+ * configuration data.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsStoreFactory implements SailFactory {
 
+	/**
+	 * The type of repositories that are created by this factory.
+	 * 
+	 * @see SailFactory#getSailType()
+	 */
 	public static final String SAIL_TYPE = "openrdf:RdbmsStore";
 
+	/**
+	 * Returns the Sail's type: <tt>openrdf:RdbmsStore</tt>.
+	 */
 	public String getSailType() {
 		return SAIL_TYPE;
 	}
@@ -36,44 +45,25 @@ public class RdbmsStoreFactory implements SailFactory {
 			throw new SailConfigException("Invalid Sail type: " + config.getType());
 		}
 
-		RdbmsStoreConfig rdbms = (RdbmsStoreConfig)config;
-		String jdbcDriver = rdbms.getJdbcDriver();
-		String url = rdbms.getUrl();
-		String user = rdbms.getUser();
-		String password = rdbms.getPassword();
-		String layout = rdbms.getLayout();
-		String indexed = rdbms.getIndexed();
-		RdbmsStore store = new RdbmsStore(jdbcDriver, url, user, password);
-		if ("layout2".equals(layout)) {
-			store.setMaxNumberOfTripleTables(1);
-		}
-		else if ("layout2/hash".equals(layout)) {
-			store.setMaxNumberOfTripleTables(1);
-			store.setSequenced(false);
-		}
-		else if ("layout2/index".equals(layout)) {
-			store.setMaxNumberOfTripleTables(1);
-			store.setSequenced(true);
-		}
-		else if ("layout3/hash".equals(layout)) {
-			store.setSequenced(false);
-		}
-		else if ("layout3/index".equals(layout)) {
-			store.setSequenced(true);
-		}
-		else {
-			assert "layout3".equals(layout);
-		}
-		if (indexed != null) {
-			try {
-				store.setIndexed(Boolean.valueOf(indexed));
+		if (config instanceof RdbmsStoreConfig) {
+			RdbmsStoreConfig rdbmsConfig = (RdbmsStoreConfig)config;
+
+			String jdbcDriver = rdbmsConfig.getJdbcDriver();
+			String url = rdbmsConfig.getUrl();
+			String user = rdbmsConfig.getUser();
+			String password = rdbmsConfig.getPassword();
+
+			RdbmsStore store = new RdbmsStore(jdbcDriver, url, user, password);
+
+			DatabaseLayout layout = rdbmsConfig.getLayout();
+			if (DatabaseLayout.MONOLITHIC.equals(layout)) {
+				store.setMaxNumberOfTripleTables(1);
 			}
-			catch (SailException e) {
-				// this shouldn't happen
-				throw new AssertionError(e);
-			}
+
+			return store;
 		}
-		return store;
+		
+		throw new IllegalArgumentException("Supplied config objects should be a RdbmsStoreConfig, is: " + config.getClass());
 	}
 
 }
