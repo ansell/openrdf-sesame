@@ -54,7 +54,7 @@ public class TestServer extends EmbeddedServer {
 		File dataDir = new File(System.getProperty("user.dir") + "/target/datadir");
 		dataDir.mkdirs();
 		System.setProperty("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
-		System.setProperty("DEBUG", "true");
+//		System.setProperty("DEBUG", "true");
 
 		super.start();
 
