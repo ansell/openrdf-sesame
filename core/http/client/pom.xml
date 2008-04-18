@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-protocol</artifactId>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-query</artifactId>
@@ -59,8 +59,8 @@
 			<artifactId>commons-httpclient</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl104-over-slf4j</artifactId>
 		</dependency>
 
 		<dependency>
