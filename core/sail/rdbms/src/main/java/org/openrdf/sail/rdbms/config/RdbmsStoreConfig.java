@@ -12,6 +12,8 @@ import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.PASSWORD;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.URL;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.USER;
 
+import java.util.Locale;
+
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -104,12 +106,12 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		throws SailConfigException
 	{
 		super.validate();
-		
+
 		if (url == null) {
 			throw new SailConfigException("No URL specified for RdbmsStore");
 		}
 	}
-	
+
 	@Override
 	public Resource export(Graph graph) {
 		Resource implNode = super.export(graph);
@@ -164,11 +166,12 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 
 			Literal layoutLit = getOptionalObjectLiteral(graph, implNode, LAYOUT);
 			if (layoutLit != null) {
+				String layoutName = layoutLit.getLabel().toUpperCase(Locale.ENGLISH);
 				try {
-					setLayout(DatabaseLayout.valueOf(layoutLit.getLabel()));
+					setLayout(DatabaseLayout.valueOf(layoutName));
 				}
 				catch (IllegalArgumentException e) {
-					throw new SailConfigException("Invalid database layout value: " + layout);
+					throw new SailConfigException("Invalid database layout value: " + layoutName);
 				}
 			}
 		}
