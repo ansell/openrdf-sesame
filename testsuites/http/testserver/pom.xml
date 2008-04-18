@@ -32,13 +32,26 @@
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna</groupId>
-			<artifactId>aduna-net-http-server-embedded</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-net-http-server-embedded</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>info.aduna.appbase</groupId>
 			<artifactId>aduna-appbase-logging-file</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl104-over-slf4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
 		</dependency>
 	</dependencies>
 
