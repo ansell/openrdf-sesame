@@ -34,6 +34,12 @@
 			<artifactId>commons-fileupload</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<!-- Dependency for commons-fileupload, but declared to be optional -->
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
