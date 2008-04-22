@@ -33,11 +33,6 @@
 			<directory>target/docs</directory>
 			<outputDirectory>docs</outputDirectory>
 		</fileSet>
-
-		<fileSet>
-			<directory>src/main/dist/bin</directory>
-			<outputDirectory>bin</outputDirectory>
-		</fileSet>
 	</fileSets>
 
 	<files>
@@ -48,6 +43,20 @@
 		<file>
 			<source>http/webclient/target/openrdf-workbench.war</source>
 			<outputDirectory>war</outputDirectory>
+		</file>
+
+		<file>
+			<source>src/main/dist/bin/start-console.bat</source>
+			<outputDirectory>bin</outputDirectory>
+			<lineEnding>dos</lineEnding>
+			<filtered>true</filtered>
+		</file>
+		<file>
+			<source>src/main/dist/bin/start-console.sh</source>
+			<outputDirectory>bin</outputDirectory>
+			<fileMode>755</fileMode>
+			<lineEnding>unix</lineEnding>
+			<filtered>true</filtered>
 		</file>
 	</files>
 

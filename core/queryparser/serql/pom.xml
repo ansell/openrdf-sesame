@@ -11,6 +11,7 @@
 	</parent>
 
 	<artifactId>sesame-queryparser-serql</artifactId>
+	<version>2.1-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: Query parser - SeRQL</name>
 	<description>Query language parser implementation for SeRQL.</description>

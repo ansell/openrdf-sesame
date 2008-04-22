@@ -11,6 +11,7 @@
 	</parent>
 
 	<artifactId>sesame-repository-manager</artifactId>
+	<version>2.1-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: Repository manager</name>
 	<description>Repository manager</description>

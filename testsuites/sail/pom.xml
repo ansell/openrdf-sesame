@@ -11,6 +11,7 @@
 	</parent>
 
 	<artifactId>sesame-sail-compliance</artifactId>
+	<version>2.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>OpenRDF Sail compliance tests</name>

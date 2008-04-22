@@ -11,6 +11,7 @@
 	</parent>
 
 	<artifactId>sesame-rio-ntriples</artifactId>
+	<version>2.1-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: Rio - N-Triples</name>
 	<description>Rio parser and writer implementation for the N-Triples file format.</description>
