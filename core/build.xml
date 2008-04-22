@@ -33,7 +33,6 @@
 		<echo message=" - org.openrdf.console.Console" />
 		<echo message=" - openrdf-http/openrdf-http-server/src/main/webapp/WEB-INF/openrdf-servlet.xml" />
 		<echo message=" - openrdf-http/openrdf-http-webclient/src/main/webapp/WEB-INF/openrdf-webclient-servlet.xml" />
-		<echo message=" - src/main/dist/bin/* (console startup scripts)" />
 		<input>Press return to continue</input>
 	</target>
 
