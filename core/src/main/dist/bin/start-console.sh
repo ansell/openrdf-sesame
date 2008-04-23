@@ -1,5 +1,4 @@
 #!/bin/sh
 
-cd "`dirname "${0}"`/../lib"
-java -jar sesame-console-${version}.jar $1 $2 $3 $4 $5 $6 $7 $8 $9
-cd ..
+lib="$(dirname "${0}")/../lib"
+java -cp $lib/$(ls "$lib"|xargs |sed "s; ;:$lib/;g") org.openrdf.console.Console
