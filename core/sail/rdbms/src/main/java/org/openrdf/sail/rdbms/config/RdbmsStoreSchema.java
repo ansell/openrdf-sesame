@@ -27,14 +27,14 @@ public class RdbmsStoreSchema {
 
 	public final static URI PASSWORD;
 
-	public final static URI LAYOUT;
+	public final static URI MAX_TRIPLE_TABLES;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
-		JDBC_DRIVER = factory.createURI(NAMESPACE, "jdbc-driver");
+		JDBC_DRIVER = factory.createURI(NAMESPACE, "jdbcDriver");
 		URL = factory.createURI(NAMESPACE, "url");
 		USER = factory.createURI(NAMESPACE, "user");
 		PASSWORD = factory.createURI(NAMESPACE, "password");
-		LAYOUT = factory.createURI(NAMESPACE, "layout");
+		MAX_TRIPLE_TABLES = factory.createURI(NAMESPACE, "maxTripleTables");
 	}
 }

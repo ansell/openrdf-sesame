@@ -7,12 +7,10 @@ package org.openrdf.sail.rdbms.config;
 
 import static org.openrdf.model.util.GraphUtil.getOptionalObjectLiteral;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.JDBC_DRIVER;
-import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.LAYOUT;
+import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.MAX_TRIPLE_TABLES;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.PASSWORD;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.URL;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.USER;
-
-import java.util.Locale;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
@@ -30,11 +28,6 @@ import org.openrdf.sail.config.SailImplConfigBase;
  */
 public class RdbmsStoreConfig extends SailImplConfigBase {
 
-	public enum DatabaseLayout {
-		MONOLITHIC,
-		VERTICAL
-	}
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -47,7 +40,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 
 	private String password;
 
-	private DatabaseLayout layout = DatabaseLayout.VERTICAL;
+	private int maxTripleTables = 256;
 
 	/*--------------*
 	 * Constructors *
@@ -93,12 +86,12 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		this.password = password;
 	}
 
-	public DatabaseLayout getLayout() {
-		return layout;
+	public int getMaxTripleTables() {
+		return maxTripleTables;
 	}
 
-	public void setLayout(DatabaseLayout layout) {
-		this.layout = layout;
+	public void setMaxTripleTables(int maxTripleTables) {
+		this.maxTripleTables = maxTripleTables;
 	}
 
 	@Override
@@ -130,9 +123,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		if (password != null) {
 			graph.add(implNode, PASSWORD, vf.createLiteral(password));
 		}
-		if (layout != null) {
-			graph.add(implNode, LAYOUT, vf.createLiteral(layout.toString()));
-		}
+		graph.add(implNode, MAX_TRIPLE_TABLES, vf.createLiteral(maxTripleTables));
 
 		return implNode;
 	}
@@ -164,14 +155,13 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 				setPassword(passwordLit.getLabel());
 			}
 
-			Literal layoutLit = getOptionalObjectLiteral(graph, implNode, LAYOUT);
-			if (layoutLit != null) {
-				String layoutName = layoutLit.getLabel().toUpperCase(Locale.ENGLISH);
+			Literal maxTripleTablesLit = getOptionalObjectLiteral(graph, implNode, MAX_TRIPLE_TABLES);
+			if (maxTripleTablesLit != null) {
 				try {
-					setLayout(DatabaseLayout.valueOf(layoutName));
+					setMaxTripleTables(maxTripleTablesLit.intValue());
 				}
-				catch (IllegalArgumentException e) {
-					throw new SailConfigException("Invalid database layout value: " + layoutName);
+				catch (NumberFormatException e) {
+					throw new SailConfigException("Invalid value for maxTripleTables: " + maxTripleTablesLit);
 				}
 			}
 		}

@@ -14,10 +14,10 @@
       rep:repositoryType "openrdf:SailRepository" ;
       sr:sailImpl [
          sail:sailType "openrdf:RdbmsStore" ;
-         ns:jdbc-driver "{%JDBC Driver Class|com.mysql.jdbc.Driver%}";
+         ns:jdbcDriver "{%JDBC Driver Class|com.mysql.jdbc.Driver%}";
          ns:url "jdbc:mysql://{%Host|localhost%}/{%Database|sesame_store%}?useUnicode=yes&characterEncoding=UTF-8&characterSetResults=UTF-8{%Connection Properties|&connectTimeout=0%}";
          ns:user "{%JDBC User Name%}";
          ns:password "{%JDBC Password%}";
-         ns:layout "{%Schema Layout|vertical|monolithic%}"
+         ns:maxTripleTables "{%Max number of triple tables|256%}"
       ]
    ].
