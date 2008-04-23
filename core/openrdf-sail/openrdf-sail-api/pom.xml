@@ -75,7 +75,7 @@
 	<scm>
 		<connection>scm:svn:http://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-sail/openrdf-sail-api</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.0/core/openrdf-sail/openrdf-sail-api</developerConnection>
-		<url>http://src.aduna-software.org/viewvc/org.openrdf/projects/openrdf-sail/sesame2/openrdf-sail-api</url>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.0/core/openrdf-sail/openrdf-sail-api</url>
 	</scm>
 
 </project>
