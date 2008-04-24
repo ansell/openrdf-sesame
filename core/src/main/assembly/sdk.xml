@@ -6,7 +6,7 @@
 		<format>zip</format>
 	</formats>
 
-	<baseDirectory>openrdf-sesame</baseDirectory>
+	<baseDirectory>openrdf-sesame-${project.version}</baseDirectory>
 
 	<moduleSets>
 		<moduleSet>
