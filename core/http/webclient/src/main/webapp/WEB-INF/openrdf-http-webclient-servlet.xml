@@ -14,7 +14,7 @@
  
     <bean id="adunaAppVersion" class="info.aduna.app.AppVersion">
     	<property name="major" value="2" />
-    	<property name="minor" value="1" />
+    	<property name="minor" value="2" />
     	<property name="modifier" value="SNAPSHOT" />
     </bean>
     
