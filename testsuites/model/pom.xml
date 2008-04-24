@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-testsuites</artifactId>
-		<version>2.1</version>
+		<version>2.1.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-model-compliance</artifactId>
-	<version>2.1</version>
+	<version>2.1.1-SNAPSHOT</version>
 
 	<name>OpenRDF Model compliance test</name>
 	<description>Tests for OpenRDF Model</description>
@@ -57,9 +57,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1/testsuites/model</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1/testsuites/model</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.1/testsuites/model</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1/testsuites/model</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1/testsuites/model</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.1/testsuites/model</url>
 	</scm>
 
 </project>
