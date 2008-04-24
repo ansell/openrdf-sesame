@@ -16,12 +16,16 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-model</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-collections</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-iteration</artifactId>
 		</dependency>
 	</dependencies>
 

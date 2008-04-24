@@ -16,19 +16,19 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-runtime</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-http-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-repository-http</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-queryparser-api</artifactId>
 		</dependency>
 
@@ -39,7 +39,7 @@
 
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-collections</artifactId>
+			<artifactId>aduna-commons-iteration</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
