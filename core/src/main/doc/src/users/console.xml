@@ -11,7 +11,7 @@
 		<title>Getting started</title>
 		<para>
 			Sesame Console can be started using the
-			<filename>start-console.bat/.sh</filename> scripts that can be found in
+			<filename>console.bat/.sh</filename> scripts that can be found in
 			the <filename>bin</filename> directory of the Sesame SDK. By default,
 			the console will connect to the "default data directory", which contains
 			the console's own set of repositories. See
@@ -57,16 +57,45 @@
 			The 'create' command can be used to add new repositories to the set
 			that the console is connected to. This command expects the name of
 			a template that describes the repository's configuration. Currently,
-			there are seven templates that are included with the console by default:
+			there are nine templates that are included with the console by default:
 		</para>
 		<itemizedlist>
-			<listitem>"memory", a memory based RDF repository</listitem>
-			<listitem>"memory-rdfs", a main-memory repository with RDF Schema inferencing</listitem>
-			<listitem>"memory-rdfs-dt", a main-memory repository with RDF Schema and direct type hierarchy inferencing</listitem>
-			<listitem>"native", a repository that uses on-disk data structure</listitem>
-			<listitem>"native-rdfs", a native repository with RDF Schema inferencing</listitem>
-			<listitem>"native-rdfs-dt", a native repository with RDF Schema and direct type hierarchy inferencing</listitem>
-			<listitem>"remote", a repository that serves as a proxy for a repository on a Sesame Server</listitem>
+			<listitem>
+				<parameter>memory</parameter>
+				-- a memory based RDF repository
+			</listitem>
+			<listitem>
+				<parameter>memory-rdfs</parameter>
+				-- a main-memory repository with RDF Schema inferencing
+			</listitem>
+			<listitem>
+				<parameter>memory-rdfs-dt</parameter>
+				-- a main-memory repository with RDF Schema and direct type hierarchy inferencing
+			</listitem>
+			<listitem>
+				<parameter>native</parameter>
+				-- a repository that uses on-disk data structure
+			</listitem>
+			<listitem>
+				<parameter>native-rdfs</parameter>
+				-- a native repository with RDF Schema inferencing
+			</listitem>
+			<listitem>
+				<parameter>native-rdfs-dt</parameter>
+				-- a native repository with RDF Schema and direct type hierarchy inferencing
+			</listitem>
+			<listitem>
+				<parameter>pgsql</parameter>
+				-- a repository that stores data in a PostgreSQL database
+			</listitem>
+			<listitem>
+				<parameter>mysql</parameter>
+				-- a repository that stores data in a MySQL database
+			</listitem>
+			<listitem>
+				<parameter>remote</parameter>
+				-- a repository that serves as a proxy for a repository on a Sesame Server
+			</listitem>
 		</itemizedlist>
 		<para>
 			When the 'create' command is executed, the console will then ask you
@@ -207,7 +236,103 @@ Repository created]]></screen>
 					will change its indexing strategy, without loss of data.
 				</para>
 			</section>
-		</section> <!-- native repository configuration -->
+		</section> <!-- native store configuration -->
+	
+		<section id="section-rdbms-store-config">
+			<title>RDBMS store configuration</title>
+			<para>
+				An RDBMS store is an RDF repository that stores its data in a
+				relational database. Currently, PostgreSQL and MySQL are
+				supported. Both RDBMS's have their own configuration template,
+				"pgsql" and "mysql" respectively, but these have the same set
+				of parameters.
+			</para>
+			<section>
+				<title>JDBC driver</title>
+				<para>
+					The RDBMS store communicates with a database via a JDBC driver
+					for the concerning RDBMS. These JDBC drivers are not included
+					in the Sesame SDK; you will need to add these jar-files to the
+					Console and/or Sesame server for these to be able to run the
+					RDBMS store. Note that you don't need to add the driver to the
+					Console if you only use it to configure an RDBMS store on a
+					Sesame server.
+				</para>
+				<para>
+					To add the JDBC driver to the Sesame Console, just put the JDBC
+					jar-file in the SDK's <filename>lib</filename> directory with
+					all the other jar-files. To add it to a Sesame server, add the
+					jar-file to the web application's <filename>WEB-INF/lib</filename>
+					directory.
+				</para>
+			</section>
+
+			<section>
+				<title>JDBC parameters</title>
+				<para>
+					The database that the RDBMS should use is defined using the
+					following set of parameters:
+				</para>
+				<itemizedlist>
+					<listitem>
+						<parameter>JDBC driver</parameter> -- specifies which JDBC
+						driver an RDBMS store should use. The default value
+						specified by the configuration templates should used
+						in most cases.
+					</listitem>
+					<listitem>
+						<parameter>Host</parameter> -- specifies the name of the
+						machine that is running the database.
+					</listitem>
+					<listitem>
+						<parameter>Port</parameter> -- specifies the port to use
+						for communication with the host machine. The
+						configuration templates specify the default port
+						numbers for their RDBMS's.
+					</listitem>
+					<listitem>
+						<parameter>Database</parameter> -- specifies the name of
+						the database that should be used.
+					</listitem>
+					<listitem>
+						<parameter>Connection properties</parameter> -- can
+						optionally be used to specify additional properties for
+						the JDBC driver. Please consult the documentation of the
+						RDBMS's JDBC driver for more info.
+					</listitem>
+					<listitem>
+						<parameter>User name</parameter> -- the user name or role
+						that should be used to authenticate with the RDBMS.
+					</listitem>
+					<listitem>
+						<parameter>Password</parameter> -- the password for the
+						specified user name or role.
+					</listitem>
+				</itemizedlist>
+			</section>
+
+			<section>
+				<title>Table layout parameters</title>
+				<para>
+					The database's table layout can be tweaked using the
+					<parameter>Max number of triple tables</parameter> parameter. The
+					RDBMS store supports both a "monolithic" schema with a single
+					table that stores all statements, as well as a vertical schema
+					that stores statements in a per-predicate table.
+				</para>
+				<para>
+					The vertical layout has better query evaluation performance on
+					most data sets, but potentially leads to huge amounts of tables,
+					depending on the number of unique predicates in your data. If
+					the number of tables becomes too large, the database's performance
+					can start to decrease or it can even fail completely. To prevent
+					these problem, you can specify the maximum number of triple tables
+					that should be created. Setting this parameter to 1 results in a
+					monolithic schema, setting it to 0 or a negative value disables
+					the limit.
+				</para>
+			</section>
+		</section> <!-- RDBMS store configuration -->
 	
 		<section>
 			<title>HTTP repository configuration</title>
