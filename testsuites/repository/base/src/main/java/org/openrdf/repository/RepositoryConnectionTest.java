@@ -20,8 +20,10 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 import javax.xml.datatype.DatatypeFactory;
@@ -189,6 +191,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		RepositoryConnection con = tempRep.getConnection();
 
 		con.add(testCon.getStatements(null, null, null, false));
+		con.export(new org.openrdf.rio.rdfxml.RDFXMLWriter(System.err));
 
 		assertTrue("Temp Repository should contain newly added statement", con.hasStatement(bob, name, nameBob,
 				false));
@@ -442,8 +445,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 				Value nameResult = solution.getValue("name");
 				Value mboxResult = solution.getValue("mbox");
 
-				assertTrue("unexpected value for name: " + nameResult, nameBob.equals(nameResult));
-				assertTrue("unexpected value for mbox: " + mboxResult, mboxBob.equals(mboxResult));
+				assertEquals("unexpected value for name: " + nameResult, nameBob, nameResult);
+				assertEquals("unexpected value for mbox: " + mboxResult, mboxBob, mboxResult);
 			}
 		}
 		finally {
@@ -684,7 +687,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 			while (result.hasNext()) {
 				Statement st = result.next();
-				assertTrue("Statement should not be in a context ", st.getContext() == null);
+				assertNull("Statement should not be in a context ", st.getContext());
 				assertTrue("Statement predicate should be equal to name ", st.getPredicate().equals(name));
 			}
 		}
@@ -1366,6 +1369,30 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			list.add(result.next());
 		}
 		assertEquals(7, list.size());
+	}
+
+	public void testOptionalFilter() throws Exception {
+		String optional = "{ ?s :p1 ?v1 OPTIONAL {?s :p2 ?v2 FILTER(?v1<3) } }";
+		URI s = vf.createURI("urn:test:s");
+		URI p1 = vf.createURI("urn:test:p1");
+		URI p2 = vf.createURI("urn:test:p2");
+		Literal v1 = vf.createLiteral(1);
+		Literal v2 = vf.createLiteral(2);
+		Literal v3 = vf.createLiteral(3);
+		testCon.add(s, p1, v1);
+		testCon.add(s, p2, v2);
+		testCon.add(s, p1, v3);
+		String qry = "PREFIX :<urn:test:> SELECT ?s ?v1 ?v2 WHERE " + optional;
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, qry);
+		TupleQueryResult result = query.evaluate();
+		Set<List<Value>> set = new HashSet<List<Value>>();
+		while (result.hasNext()) {
+			BindingSet bindings = result.next();
+			set.add(Arrays.asList(bindings.getValue("v1"), bindings.getValue("v2")));
+		}
+		result.close();
+		assertTrue(set.contains(Arrays.asList(v1, v2)));
+		assertTrue(set.contains(Arrays.asList(v3, null)));
 	}
 
 	private int getTotalStatementCount(RepositoryConnection connection)
