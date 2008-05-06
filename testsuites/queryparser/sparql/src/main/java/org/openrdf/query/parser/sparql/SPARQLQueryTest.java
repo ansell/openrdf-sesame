@@ -519,7 +519,10 @@ public class SPARQLQueryTest extends TestCase {
 				}
 			}
 
-			suite.addTest(factory.createSPARQLQueryTest(testURI, testName, queryFile, resultFile, dataset));
+			SPARQLQueryTest test = factory.createSPARQLQueryTest(testURI, testName, queryFile, resultFile, dataset);
+			if (test != null) {
+				suite.addTest(test);
+			}
 		}
 
 		testCases.close();
