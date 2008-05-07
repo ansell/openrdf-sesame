@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +46,7 @@ public abstract class RepositoryManager {
 	 * Variables *
 	 *-----------*/
 
-	private final Map<String, Repository> repositories;
+	private final Map<String, Repository> initializedRepositories;
 
 	/*--------------*
 	 * Constructors *
@@ -60,7 +61,7 @@ public abstract class RepositoryManager {
 	 *        other things.
 	 */
 	public RepositoryManager() {
-		this.repositories = new HashMap<String, Repository>();
+		this.initializedRepositories = new HashMap<String, Repository>();
 	}
 
 	/*---------*
@@ -78,8 +79,8 @@ public abstract class RepositoryManager {
 	{
 		Repository systemRepository = createSystemRepository();
 
-		synchronized (repositories) {
-			repositories.put(SystemRepository.ID, systemRepository);
+		synchronized (initializedRepositories) {
+			initializedRepositories.put(SystemRepository.ID, systemRepository);
 		}
 	}
 
@@ -90,8 +91,8 @@ public abstract class RepositoryManager {
 	 * Gets the SYSTEM repository.
 	 */
 	public Repository getSystemRepository() {
-		synchronized (repositories) {
-			return repositories.get(SystemRepository.ID);
+		synchronized (initializedRepositories) {
+			return initializedRepositories.get(SystemRepository.ID);
 		}
 	}
 
@@ -159,12 +160,12 @@ public abstract class RepositoryManager {
 		logger.info("Removing repository configuration for {}.", repositoryID);
 		boolean isRemoved = false;
 
-		synchronized (repositories) {
+		synchronized (initializedRepositories) {
 			isRemoved = RepositoryConfigUtil.removeRepositoryConfigs(getSystemRepository(), repositoryID);
 
 			if (isRemoved) {
 				logger.debug("Shutdown repository {} after removal of configuration.", repositoryID);
-				Repository repository = repositories.remove(repositoryID);
+				Repository repository = initializedRepositories.remove(repositoryID);
 
 				if (repository != null) {
 					repository.shutDown();
@@ -189,15 +190,15 @@ public abstract class RepositoryManager {
 	public Repository getRepository(String id)
 		throws RepositoryConfigException, RepositoryException
 	{
-		synchronized (repositories) {
-			Repository result = repositories.get(id);
+		synchronized (initializedRepositories) {
+			Repository result = initializedRepositories.get(id);
 
 			if (result == null) {
 				// First call, create and initialize the repository.
 				result = createRepository(id);
 
 				if (result != null) {
-					repositories.put(id, result);
+					initializedRepositories.put(id, result);
 				}
 			}
 
@@ -209,13 +210,37 @@ public abstract class RepositoryManager {
 	 * Returns all inititalized repositories. This method returns fast as no lazy
 	 * creation of repositories takes place.
 	 * 
-	 * @return An unmodifiable collection containing the initialized
-	 *         repositories.
+	 * @return a collection containing the IDs of all initialized repositories.
+	 * @see #getRepositoryIDs()
+	 */
+	public Set<String> getInitializedRepositoryIDs() {
+		synchronized (initializedRepositories) {
+			return new HashSet<String>(initializedRepositories.keySet());
+		}
+	}
+
+	/**
+	 * Returns all inititalized repositories. This method returns fast as no lazy
+	 * creation of repositories takes place.
+	 * 
+	 * @return a set containing the initialized repositories.
 	 * @see #getAllRepositories()
 	 */
 	public Collection<Repository> getInitializedRepositories() {
-		synchronized (repositories) {
-			return new ArrayList<Repository>(repositories.values());
+		synchronized (initializedRepositories) {
+			return new ArrayList<Repository>(initializedRepositories.values());
+		}
+	}
+
+	Repository getInitializedRepository(String repositoryID) {
+		synchronized (initializedRepositories) {
+			return initializedRepositories.get(repositoryID);
+		}
+	}
+
+	Repository removeInitializedRepository(String repositoryID) {
+		synchronized (initializedRepositories) {
+			return initializedRepositories.remove(repositoryID);
 		}
 	}
 
@@ -295,53 +320,46 @@ public abstract class RepositoryManager {
 	 */
 	public void refresh() {
 		logger.debug("Refreshing repository information in manager...");
-		synchronized (repositories) {
-			Iterator<Map.Entry<String, Repository>> iter = repositories.entrySet().iterator();
+		Set<String> repositoryIDs;
+		try {
+			repositoryIDs = getRepositoryIDs();
+		}
+		catch (RepositoryException re) {
+			logger.error("Unable to retrieve repository IDs", re);
+			throw new RuntimeException(re);
+		}
 
-			while (iter.hasNext()) {
-				Map.Entry<String, Repository> entry = iter.next();
-				String repositoryID = entry.getKey();
-				Repository repository = entry.getValue();
+		try {
+			RepositoryConnection cleanupCon = getSystemRepository().getConnection();
+			try {
+				synchronized (initializedRepositories) {
+					repositoryIDs.removeAll(initializedRepositories.keySet());
+					Iterator<Map.Entry<String, Repository>> iter = initializedRepositories.entrySet().iterator();
 
-				if (!SystemRepository.ID.equals(repositoryID)) {
-					iter.remove();
+					while (iter.hasNext()) {
+						Map.Entry<String, Repository> entry = iter.next();
+						String repositoryID = entry.getKey();
+						Repository repository = entry.getValue();
 
-					try {
-						repository.shutDown();
-					}
-					catch (RepositoryException e) {
-						logger.error("Failed to shut down repository", e);
-					}
-
-					// FIXME: data dirs of removed but uninitialized repositories are
-					// not cleaned up
-					try {
-						RepositoryConnection con = getSystemRepository().getConnection();
-						try {
-							if (RepositoryConfigUtil.getContext(con, repositoryID) == null) {
-								logger.info("Cleaning up repository {}, its configuration has been removed",
-										repositoryID);
-
-								cleanUpRepository(repositoryID);
-							}
+						if (!SystemRepository.ID.equals(repositoryID)) {
+							// remove from initialized repositories
+							iter.remove();
+							// refresh single repository
+							refreshRepository(cleanupCon, repositoryID, repository);
 						}
-						finally {
-							con.close();
-						}
-					}
-					catch (RepositoryException e) {
-						logger.error("Failed to process repository configuration changes", e);
-					}
-					catch (RepositoryConfigException e) {
-						logger.warn(
-								"Unable to determine if configuration for {} is still present in the system repository",
-								repositoryID);
-					}
-					catch (IOException e) {
-						logger.warn("Unable to remove data dir for removed repository {} ", repositoryID);
 					}
 				}
+
+				for (String repositoryID : repositoryIDs) {
+					cleanupIfRemoved(cleanupCon, repositoryID);
+				}
 			}
+			finally {
+				cleanupCon.close();
+			}
+		}
+		catch (RepositoryException re) {
+			logger.error("Failed to refresh repositories", re);
 		}
 	}
 
@@ -351,8 +369,8 @@ public abstract class RepositoryManager {
 	 * @see #refresh()
 	 */
 	public void shutDown() {
-		synchronized (repositories) {
-			for (Repository repository : repositories.values()) {
+		synchronized (initializedRepositories) {
+			for (Repository repository : initializedRepositories.values()) {
 				try {
 					repository.shutDown();
 				}
@@ -361,7 +379,38 @@ public abstract class RepositoryManager {
 				}
 			}
 
-			repositories.clear();
+			initializedRepositories.clear();
+		}
+	}
+
+	void refreshRepository(RepositoryConnection con, String repositoryID, Repository repository) {
+		try {
+			repository.shutDown();
+		}
+		catch (RepositoryException e) {
+			logger.error("Failed to shut down repository", e);
+		}
+
+		cleanupIfRemoved(con, repositoryID);
+	}
+
+	void cleanupIfRemoved(RepositoryConnection con, String repositoryID) {
+		try {
+			if (RepositoryConfigUtil.getContext(con, repositoryID) == null) {
+				logger.info("Cleaning up repository {}, its configuration has been removed", repositoryID);
+
+				cleanUpRepository(repositoryID);
+			}
+		}
+		catch (RepositoryException e) {
+			logger.error("Failed to process repository configuration changes", e);
+		}
+		catch (RepositoryConfigException e) {
+			logger.warn("Unable to determine if configuration for {} is still present in the system repository",
+					repositoryID);
+		}
+		catch (IOException e) {
+			logger.warn("Unable to remove data dir for removed repository {} ", repositoryID);
 		}
 	}
 
