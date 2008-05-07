@@ -301,6 +301,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 			// *repositoryconfig* context was actually modified
 			Boolean fullRefreshNeeded = modifiedAllContexts.remove(con);
 			if (fullRefreshNeeded != null && fullRefreshNeeded.booleanValue()) {
+				logger.debug("Reacting to commit on SystemRepository for all contexts");
 				refresh();
 			}
 			// refresh only modified contexts that actually contain repository
@@ -308,32 +309,35 @@ public class LocalRepositoryManager extends RepositoryManager {
 			else {
 				Set<Resource> modifiedContexts = modifiedContextsByConnection.remove(con);
 				if (modifiedContexts != null) {
+					logger.debug("React to commit on SystemRepository for contexts {}", modifiedContexts);
 					try {
-						Set<String> repositoryIDs = getRepositoryIDs();
 						RepositoryConnection cleanupCon = getSystemRepository().getConnection();
+						
 						try {
 							// refresh all modified contexts
 							for (Resource context : modifiedContexts) {
+							logger.debug("Processing modified context {}.", context);
 								try {
 									if (isRepositoryConfigContext(cleanupCon, context)) {
 										String repositoryID = getRepositoryID(cleanupCon, context);
+										logger.debug("Reacting to modified repository config for {}", repositoryID);
 										Repository repository = removeInitializedRepository(repositoryID);
 										if (repository != null) {
-											// remove ID from set of all IDs
-											repositoryIDs.remove(repositoryID);
+											logger.debug("Modified repository {} has been initialized, refreshing...", repositoryID);
 											// refresh single repository
 											refreshRepository(cleanupCon, repositoryID, repository);
 										}
+										else {
+											logger.debug("Modified repository {} has not been initialized, skipping...", repositoryID);
+										}
+									}
+									else {
+										logger.debug("Context {} doesn't contain repository config information.", context);
 									}
 								}
 								catch (RepositoryException re) {
 									logger.error("Failed to process repository configuration changes", re);
 								}
-							}
-
-							// clean up any removed contexts
-							for (String repositoryID : repositoryIDs) {
-								cleanupIfRemoved(cleanupCon, repositoryID);
 							}
 						}
 						finally {
@@ -350,7 +354,8 @@ public class LocalRepositoryManager extends RepositoryManager {
 		private boolean isRepositoryConfigContext(RepositoryConnection con, Resource context)
 			throws RepositoryException
 		{
-			return con.hasStatement(null, RDF.TYPE, REPOSITORY_CONTEXT, true, context);
+			logger.debug("Is {} a repository config context?", context);
+			return con.hasStatement(context, RDF.TYPE, REPOSITORY_CONTEXT, true, (Resource)null);
 		}
 
 		private String getRepositoryID(RepositoryConnection con, Resource context)
