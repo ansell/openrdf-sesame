@@ -5,18 +5,31 @@
  */
 package org.openrdf.repository.manager;
 
+import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
+import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY_CONTEXT;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import info.aduna.io.FileUtil;
 
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.config.DelegatingRepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
@@ -230,9 +243,128 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 	class ConfigChangeListener extends RepositoryConnectionListenerAdapter {
 
+		private Map<RepositoryConnection, Set<Resource>> modifiedContextsByConnection = new HashMap<RepositoryConnection, Set<Resource>>();
+
+		private Map<RepositoryConnection, Boolean> modifiedAllContexts = new HashMap<RepositoryConnection, Boolean>();
+
+		private Set<Resource> getModifiedContexts(RepositoryConnection conn) {
+			Set<Resource> result = modifiedContextsByConnection.get(conn);
+			if (result == null) {
+				result = new HashSet<Resource>();
+				modifiedContextsByConnection.put(conn, result);
+			}
+			return result;
+		}
+
+		private void registerModifiedContexts(RepositoryConnection conn, Resource... contexts) {
+			Set<Resource> modifiedContexts = getModifiedContexts(conn);
+			// wildcard used for context
+			if (contexts == null) {
+				modifiedAllContexts.put(conn, true);
+			}
+			else {
+				for (Resource context : contexts) {
+					modifiedContexts.add(context);
+				}
+			}
+		}
+
+		@Override
+		public void add(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+				Resource... contexts)
+		{
+			registerModifiedContexts(conn, contexts);
+		}
+
+		@Override
+		public void clear(RepositoryConnection conn, Resource... contexts) {
+			registerModifiedContexts(conn, contexts);
+		}
+
+		@Override
+		public void remove(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+				Resource... contexts)
+		{
+			registerModifiedContexts(conn, contexts);
+		}
+
+		@Override
+		public void rollback(RepositoryConnection conn) {
+			modifiedContextsByConnection.remove(conn);
+			modifiedAllContexts.remove(conn);
+		}
+
 		@Override
 		public void commit(RepositoryConnection con) {
-			refresh();
+			// refresh all contexts when a wildcard was used
+			// REMIND: this could still be improved if we knew whether or not a
+			// *repositoryconfig* context was actually modified
+			Boolean fullRefreshNeeded = modifiedAllContexts.remove(con);
+			if (fullRefreshNeeded != null && fullRefreshNeeded.booleanValue()) {
+				refresh();
+			}
+			// refresh only modified contexts that actually contain repository
+			// configurations
+			else {
+				Set<Resource> modifiedContexts = modifiedContextsByConnection.remove(con);
+				if (modifiedContexts != null) {
+					try {
+						Set<String> repositoryIDs = getRepositoryIDs();
+						RepositoryConnection cleanupCon = getSystemRepository().getConnection();
+						try {
+							// refresh all modified contexts
+							for (Resource context : modifiedContexts) {
+								try {
+									if (isRepositoryConfigContext(cleanupCon, context)) {
+										String repositoryID = getRepositoryID(cleanupCon, context);
+										Repository repository = removeInitializedRepository(repositoryID);
+										if (repository != null) {
+											// remove ID from set of all IDs
+											repositoryIDs.remove(repositoryID);
+											// refresh single repository
+											refreshRepository(cleanupCon, repositoryID, repository);
+										}
+									}
+								}
+								catch (RepositoryException re) {
+									logger.error("Failed to process repository configuration changes", re);
+								}
+							}
+
+							// clean up any removed contexts
+							for (String repositoryID : repositoryIDs) {
+								cleanupIfRemoved(cleanupCon, repositoryID);
+							}
+						}
+						finally {
+							cleanupCon.close();
+						}
+					}
+					catch (RepositoryException re) {
+						logger.error("Failed to process repository configuration changes", re);
+					}
+				}
+			}
+		}
+
+		private boolean isRepositoryConfigContext(RepositoryConnection con, Resource context)
+			throws RepositoryException
+		{
+			return con.hasStatement(null, RDF.TYPE, REPOSITORY_CONTEXT, true, context);
+		}
+
+		private String getRepositoryID(RepositoryConnection con, Resource context)
+			throws RepositoryException
+		{
+			String result = null;
+
+			RepositoryResult<Statement> idStatements = con.getStatements(null, REPOSITORYID, null, true, context);
+			if (idStatements.hasNext()) {
+				Statement idStatement = idStatements.next();
+				result = idStatement.getObject().stringValue();
+			}
+
+			return result;
 		}
 	}
 
