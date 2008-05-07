@@ -19,7 +19,7 @@ import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryInfo;
 
-public class RepositoryUtil {
+public class RepositoryManagerUtil {
 
 	/**
 	 * Derives a ID from a specified base name. The base name may for example be
