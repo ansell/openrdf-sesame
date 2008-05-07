@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -251,23 +251,5 @@ public interface SailConnection {
 	 */
 	public void clearNamespaces()
 		throws SailException;
-
-	/**
-	 * Registers a SailConnection listener with this SailConnection. The listener
-	 * should be notified of any statements that are added or removed as part of
-	 * this SailConnection.
-	 * 
-	 * @param listener
-	 *        A SailConnectionListener.
-	 */
-	public void addConnectionListener(SailConnectionListener listener);
-
-	/**
-	 * Deregisters a SailConnection listener with this SailConnection.
-	 * 
-	 * @param listener
-	 *        A SailConnectionListener.
-	 */
-	public void removeConnectionListener(SailConnectionListener listener);
 
 }

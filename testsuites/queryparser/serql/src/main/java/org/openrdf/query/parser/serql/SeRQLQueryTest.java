@@ -36,7 +36,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RepositoryUtil;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.sail.Sail;
+import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.inferencer.fc.DirectTypeHierarchyInferencer;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
@@ -96,7 +96,7 @@ public class SeRQLQueryTest extends TestCase {
 
 		// Create a repository with the query data
 
-		Sail sail = new MemoryStore();
+		NotifyingSail sail = new MemoryStore();
 
 		if ("RDF".equals(entailment)) {
 			// do not add inferencers

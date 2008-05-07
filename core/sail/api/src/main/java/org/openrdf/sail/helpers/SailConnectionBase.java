@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -28,7 +28,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailException;
 
@@ -39,7 +39,7 @@ import org.openrdf.sail.SailException;
  * @author Arjohn Kampman
  * @author jeen
  */
-public abstract class SailConnectionBase implements SailConnection {
+public abstract class SailConnectionBase implements NotifyingSailConnection {
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 

@@ -9,14 +9,14 @@ import java.io.File;
 
 import info.aduna.io.FileUtil;
 
-import org.openrdf.sail.RDFStoreTest;
-import org.openrdf.sail.Sail;
+import org.openrdf.sail.NotifyingSail;
+import org.openrdf.sail.RDFNotifyingStoreTest;
 import org.openrdf.sail.SailException;
 
 /**
  * An extension of RDFStoreTest for testing the class {@link NativeStore}.
  */
-public class NativeStoreTest extends RDFStoreTest {
+public class NativeStoreTest extends RDFNotifyingStoreTest {
 
 	/*-----------*
 	 * Variables *
@@ -53,10 +53,10 @@ public class NativeStoreTest extends RDFStoreTest {
 	}
 
 	@Override
-	protected Sail createSail()
+	protected NotifyingSail createSail()
 		throws SailException
 	{
-		Sail sail = new NativeStore(dataDir, "spoc,posc");
+		NotifyingSail sail = new NativeStore(dataDir, "spoc,posc");
 		sail.initialize();
 		return sail;
 	}

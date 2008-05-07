@@ -17,7 +17,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
@@ -134,7 +134,7 @@ public class RdbmsStore extends SailBase {
 	}
 
 	@Override
-	protected SailConnection getConnectionInternal()
+	protected NotifyingSailConnection getConnectionInternal()
 		throws SailException
 	{
 		return factory.createConnection();

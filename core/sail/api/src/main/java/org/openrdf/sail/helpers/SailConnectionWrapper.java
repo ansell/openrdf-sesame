@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-208.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -16,7 +16,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailException;
 
@@ -26,7 +26,7 @@ import org.openrdf.sail.SailException;
  * 
  * @author jeen
  */
-public class SailConnectionWrapper implements SailConnection {
+public class SailConnectionWrapper implements NotifyingSailConnection {
 
 	/*-----------*
 	 * Variables *
@@ -35,7 +35,7 @@ public class SailConnectionWrapper implements SailConnection {
 	/**
 	 * The wrapped SailConnection.
 	 */
-	private SailConnection wrappedCon;
+	private NotifyingSailConnection wrappedCon;
 
 	/*--------------*
 	 * Constructors *
@@ -45,7 +45,7 @@ public class SailConnectionWrapper implements SailConnection {
 	 * Creates a new TransactionWrapper object that wraps the supplied
 	 * connection.
 	 */
-	public SailConnectionWrapper(SailConnection wrappedCon) {
+	public SailConnectionWrapper(NotifyingSailConnection wrappedCon) {
 		this.wrappedCon = wrappedCon;
 	}
 
@@ -59,7 +59,7 @@ public class SailConnectionWrapper implements SailConnection {
 	 * @return The SailConnection object that was supplied to the constructor of
 	 *         this class.
 	 */
-	protected SailConnection getWrappedConnection() {
+	protected NotifyingSailConnection getWrappedConnection() {
 		return wrappedCon;
 	}
 

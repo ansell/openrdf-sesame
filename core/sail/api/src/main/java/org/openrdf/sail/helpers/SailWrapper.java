@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-208.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,9 +8,10 @@ package org.openrdf.sail.helpers;
 import java.io.File;
 
 import org.openrdf.model.ValueFactory;
+import org.openrdf.sail.NotifyingSail;
+import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailChangedListener;
-import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.StackableSail;
 
@@ -20,7 +21,7 @@ import org.openrdf.sail.StackableSail;
  * 
  * @author Arjohn Kampman
  */
-public class SailWrapper implements StackableSail {
+public class SailWrapper implements StackableSail, NotifyingSail {
 
 	/*-----------*
 	 * Variables *
@@ -29,7 +30,7 @@ public class SailWrapper implements StackableSail {
 	/**
 	 * The base Sail for this SailWrapper.
 	 */
-	private Sail baseSail;
+	private NotifyingSail baseSail;
 
 	/*--------------*
 	 * Constructors *
@@ -45,7 +46,7 @@ public class SailWrapper implements StackableSail {
 	/**
 	 * Creates a new SailWrapper that wraps the supplied Sail.
 	 */
-	public SailWrapper(Sail baseSail) {
+	public SailWrapper(NotifyingSail baseSail) {
 		setBaseSail(baseSail);
 	}
 
@@ -54,7 +55,7 @@ public class SailWrapper implements StackableSail {
 	 *---------*/
 
 	public void setBaseSail(Sail baseSail) {
-		this.baseSail = baseSail;
+		this.baseSail = (NotifyingSail) baseSail;
 	}
 
 	public Sail getBaseSail() {
@@ -96,7 +97,7 @@ public class SailWrapper implements StackableSail {
 		return baseSail.isWritable();
 	}
 
-	public SailConnection getConnection()
+	public NotifyingSailConnection getConnection()
 		throws SailException
 	{
 		verifyBaseSailSet();
