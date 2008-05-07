@@ -771,6 +771,8 @@ public class MemoryStore extends SailBase {
 					@Override
 					public void run() {
 						try {
+							// Acquire read lock to guarantee that the statement list
+							// doesn't change while writing
 							Lock stLock = getStatementsReadLock();
 							try {
 								sync();
