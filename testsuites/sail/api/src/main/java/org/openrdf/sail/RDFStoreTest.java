@@ -192,7 +192,7 @@ public abstract class RDFStoreTest extends TestCase {
 	public void testValueRoundTrip2()
 		throws Exception
 	{
-		BNode subj = new BNodeImpl("foo");
+		BNode subj = vf.createBNode();
 		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
 		URI obj = new URIImpl(EXAMPLE_NS + GUERNICA);
 
