@@ -832,7 +832,16 @@ class TupleExprBuilder extends ASTVisitorBase {
 	public ValueConstant visit(ASTIRI node, Object data)
 		throws VisitorException
 	{
-		return new ValueConstant(valueFactory.createURI(node.getValue()));
+		URI uri;
+		try {
+			uri = valueFactory.createURI(node.getValue());
+		}
+		catch (IllegalArgumentException e) {
+			// invalid URI
+			throw new VisitorException(e.getMessage());
+		}
+
+		return new ValueConstant(uri);
 	}
 
 	@Override
@@ -860,7 +869,14 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		Literal literal;
 		if (datatypeNode != null) {
-			URI datatype = valueFactory.createURI(datatypeNode.getValue());
+			URI datatype;
+			try {
+				datatype = valueFactory.createURI(datatypeNode.getValue());
+			}
+			catch (IllegalArgumentException e) {
+				// invalid URI
+				throw new VisitorException(e.getMessage());
+			}
 			literal = valueFactory.createLiteral(label, datatype);
 		}
 		else if (lang != null) {
