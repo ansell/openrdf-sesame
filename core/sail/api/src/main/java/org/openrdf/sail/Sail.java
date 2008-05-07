@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -10,7 +10,7 @@ import java.io.File;
 import org.openrdf.model.ValueFactory;
 
 /**
- * An interface for an RDF Storage And Inference Layer. RDF Sails can store RDF
+ * An interface for an RDF Storage. RDF Sails can store RDF
  * statements and evaluate queries over them. Statements can be stored in named
  * contexts or in the null context. Contexts can be used to group sets of
  * statements that logically belong together, for example because they come from
@@ -76,16 +76,4 @@ public interface Sail {
 	 * @return a ValueFactory object for this Sail object.
 	 */
 	public ValueFactory getValueFactory();
-
-	/**
-	 * Adds the specified SailChangedListener to receive events when the data in
-	 * this Sail object changes.
-	 */
-	public void addSailChangedListener(SailChangedListener listener);
-
-	/**
-	 * Removes the specified SailChangedListener so that it no longer receives
-	 * events from this Sail object.
-	 */
-	public void removeSailChangedListener(SailChangedListener listener);
 }

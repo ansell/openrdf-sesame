@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -15,7 +15,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.sail.Sail;
+import org.openrdf.sail.NotifyingSail;
+import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailChangedEvent;
 import org.openrdf.sail.SailChangedListener;
 import org.openrdf.sail.SailConnection;
@@ -30,7 +31,7 @@ import org.openrdf.sail.SailException;
  * @author jeen
  * @author Arjohn Kampman
  */
-public abstract class SailBase implements Sail {
+public abstract class SailBase implements NotifyingSail {
 
 	/*-----------*
 	 * Constants *
@@ -97,14 +98,14 @@ public abstract class SailBase implements Sail {
 		return dataDir;
 	}
 
-	public SailConnection getConnection()
+	public NotifyingSailConnection getConnection()
 		throws SailException
 	{
 		if (shutDownInProgress) {
 			throw new IllegalStateException("shut down in progress");
 		}
 
-		SailConnection connection = getConnectionInternal();
+		NotifyingSailConnection connection = getConnectionInternal();
 
 		Throwable stackTrace = debugEnabled() ? new Throwable() : null;
 		activeConnections.put(connection, stackTrace);
@@ -118,7 +119,7 @@ public abstract class SailBase implements Sail {
 	 * @return a SailConnection
 	 * @throws SailException
 	 */
-	protected abstract SailConnection getConnectionInternal()
+	protected abstract NotifyingSailConnection getConnectionInternal()
 		throws SailException;
 
 	public void shutDown()

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -25,7 +25,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
@@ -237,7 +237,7 @@ public class NativeStore extends SailBase {
 	}
 
 	@Override
-	protected SailConnection getConnectionInternal()
+	protected NotifyingSailConnection getConnectionInternal()
 		throws SailException
 	{
 		if (!isInitialized()) {

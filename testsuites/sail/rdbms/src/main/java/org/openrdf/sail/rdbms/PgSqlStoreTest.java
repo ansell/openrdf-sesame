@@ -5,8 +5,8 @@
  */
 package org.openrdf.sail.rdbms;
 
-import org.openrdf.sail.RDFStoreTest;
-import org.openrdf.sail.Sail;
+import org.openrdf.sail.NotifyingSail;
+import org.openrdf.sail.RDFNotifyingStoreTest;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.rdbms.postgresql.PgSqlStore;
@@ -14,7 +14,7 @@ import org.openrdf.sail.rdbms.postgresql.PgSqlStore;
 /**
  * An extension of RDFStoreTest for testing the class {@link PgSqlStore}.
  */
-public class PgSqlStoreTest extends RDFStoreTest {
+public class PgSqlStoreTest extends RDFNotifyingStoreTest {
 
 	/*--------------*
 	 * Constructors *
@@ -29,10 +29,10 @@ public class PgSqlStoreTest extends RDFStoreTest {
 	 *---------*/
 
 	@Override
-	protected Sail createSail()
+	protected NotifyingSail createSail()
 		throws SailException
 	{
-		Sail sail = new PgSqlStore("sesame_test");
+		NotifyingSail sail = new PgSqlStore("sesame_test");
 		sail.initialize();
 		SailConnection conn = sail.getConnection();
 		try {

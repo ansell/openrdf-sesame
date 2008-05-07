@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.sql.DataSource;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
@@ -264,7 +264,7 @@ public class RdbmsConnectionFactory {
 		}
 	}
 
-	public SailConnection createConnection()
+	public NotifyingSailConnection createConnection()
 		throws SailException
 	{
 		try {

@@ -1,10 +1,11 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.sail.inferencer.fc;
 
+import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.SailWrapper;
@@ -27,7 +28,7 @@ public class ForwardChainingRDFSInferencer extends SailWrapper {
 		super();
 	}
 
-	public ForwardChainingRDFSInferencer(Sail baseSail) {
+	public ForwardChainingRDFSInferencer(NotifyingSail baseSail) {
 		super(baseSail);
 	}
 

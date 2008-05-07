@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -47,7 +47,7 @@ import org.openrdf.query.parser.QueryParserUtil;
  * inferencing or whatsoever is performed. This is an abstract class that should
  * be extended for specific Sail implementations.
  */
-public abstract class RDFStoreTest extends TestCase implements SailChangedListener {
+public abstract class RDFStoreTest extends TestCase {
 
 	/*-----------*
 	 * Constants *
@@ -77,33 +77,29 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 	 * Variables *
 	 *-----------*/
 
-	private URI painter;
+	protected URI painter;
 
-	private URI paints;
+	protected URI paints;
 
-	private URI painting;
+	protected URI painting;
 
-	private URI picasso;
+	protected URI picasso;
 
-	private URI rembrandt;
+	protected URI rembrandt;
 
-	private URI guernica;
+	protected URI guernica;
 
-	private URI nightwatch;
+	protected URI nightwatch;
 
-	private URI context1;
+	protected URI context1;
 
-	private URI context2;
+	protected URI context2;
 
-	private Sail sail;
+	protected Sail sail;
 
-	private SailConnection con;
+	protected SailConnection con;
 
-	private ValueFactory vf;
-
-	private int removeEventCount;
-
-	private int addEventCount;
+	protected ValueFactory vf;
 
 	/*--------------*
 	 * Constructors *
@@ -133,9 +129,6 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		throws Exception
 	{
 		sail = createSail();
-
-		// set self as listener
-		sail.addSailChangedListener(this);
 
 		con = sail.getConnection();
 
@@ -513,11 +506,6 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		con.commit();
 
 		assertEquals("Repository should no longer contain any statements", 0, countAllElements());
-
-		// test if event listener works properly.
-		assertEquals("There should have been 1 event in which statements were added", 1, addEventCount);
-
-		assertEquals("There should have been 3 events in which statements were removed", 3, removeEventCount);
 	}
 
 	public void testClose() {
@@ -873,15 +861,6 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		assertEquals(3, con.size());
 	}
 
-	public void sailChanged(SailChangedEvent event) {
-		if (event.statementsAdded()) {
-			addEventCount++;
-		}
-		if (event.statementsRemoved()) {
-			removeEventCount++;
-		}
-	}
-
 	private <T> T first(Iteration<T, ?> iter)
 		throws Exception
 	{
@@ -897,13 +876,13 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		return null;
 	}
 
-	private int countContext1Elements()
+	protected int countContext1Elements()
 		throws Exception, SailException
 	{
 		return countElements(con.getStatements(null, null, null, false, context1));
 	}
 
-	private int countAllElements()
+	protected int countAllElements()
 		throws Exception, SailException
 	{
 		return countElements(con.getStatements(null, null, null, false));
@@ -927,7 +906,7 @@ public abstract class RDFStoreTest extends TestCase implements SailChangedListen
 		return count;
 	}
 
-	private int countQueryResults(String query)
+	protected int countQueryResults(String query)
 		throws Exception
 	{
 		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, query

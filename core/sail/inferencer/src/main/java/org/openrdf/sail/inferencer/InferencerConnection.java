@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,6 +8,7 @@ package org.openrdf.sail.inferencer;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailException;
@@ -16,7 +17,7 @@ import org.openrdf.sail.SailException;
  * An extension of the {@link SailConnection} interface offering methods that
  * can be used by inferencers to store and remove inferred statements.
  */
-public interface InferencerConnection extends SailConnection {
+public interface InferencerConnection extends NotifyingSailConnection {
 
 	/**
 	 * Adds an inferred statement to a specific context.
