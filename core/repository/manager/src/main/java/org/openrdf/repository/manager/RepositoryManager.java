@@ -169,6 +169,13 @@ public abstract class RepositoryManager {
 
 				if (repository != null) {
 					repository.shutDown();
+					try {
+						cleanUpRepository(repositoryID);
+					}
+					catch (IOException e) {
+						throw new RepositoryException("Unable to clean up resources for removed repository"
+								+ repositoryID, e);
+					}
 				}
 			}
 		}
@@ -320,20 +327,12 @@ public abstract class RepositoryManager {
 	 */
 	public void refresh() {
 		logger.debug("Refreshing repository information in manager...");
-		Set<String> repositoryIDs;
-		try {
-			repositoryIDs = getRepositoryIDs();
-		}
-		catch (RepositoryException re) {
-			logger.error("Unable to retrieve repository IDs", re);
-			throw new RuntimeException(re);
-		}
 
+		// FIXME: uninitialized, removed repositories won't be cleaned up.
 		try {
 			RepositoryConnection cleanupCon = getSystemRepository().getConnection();
 			try {
 				synchronized (initializedRepositories) {
-					repositoryIDs.removeAll(initializedRepositories.keySet());
 					Iterator<Map.Entry<String, Repository>> iter = initializedRepositories.entrySet().iterator();
 
 					while (iter.hasNext()) {
@@ -348,10 +347,6 @@ public abstract class RepositoryManager {
 							refreshRepository(cleanupCon, repositoryID, repository);
 						}
 					}
-				}
-
-				for (String repositoryID : repositoryIDs) {
-					cleanupIfRemoved(cleanupCon, repositoryID);
 				}
 			}
 			finally {
@@ -384,6 +379,7 @@ public abstract class RepositoryManager {
 	}
 
 	void refreshRepository(RepositoryConnection con, String repositoryID, Repository repository) {
+		logger.info("Refreshing repository {}...", repositoryID);
 		try {
 			repository.shutDown();
 		}
@@ -400,6 +396,9 @@ public abstract class RepositoryManager {
 				logger.info("Cleaning up repository {}, its configuration has been removed", repositoryID);
 
 				cleanUpRepository(repositoryID);
+			}
+			else {
+				logger.debug("Repository {} should not be cleaned up.", repositoryID);
 			}
 		}
 		catch (RepositoryException e) {
