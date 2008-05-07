@@ -191,7 +191,6 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		RepositoryConnection con = tempRep.getConnection();
 
 		con.add(testCon.getStatements(null, null, null, false));
-		con.export(new org.openrdf.rio.rdfxml.RDFXMLWriter(System.err));
 
 		assertTrue("Temp Repository should contain newly added statement", con.hasStatement(bob, name, nameBob,
 				false));
@@ -1336,23 +1335,25 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals(Arrays.asList(context2), testCon.getContextIDs().asList());
 	}
 
-	public void testXmlCalendarZ() throws Exception {
+	public void testXmlCalendarZ()
+		throws Exception
+	{
 		String NS = "http://example.org/rdf/";
 		int OFFSET = TimeZone.getDefault().getOffset(new Date(2007, Calendar.NOVEMBER, 6).getTime()) / 1000 / 60;
 		String SELECT_BY_DATE = "SELECT ?s ?d WHERE { ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#value> ?d . FILTER (?d <= ?date) }";
 		DatatypeFactory data = DatatypeFactory.newInstance();
-		for (int i=1;i<5;i++) {
+		for (int i = 1; i < 5; i++) {
 			URI uri = vf.createURI(NS, "date" + i);
 			XMLGregorianCalendar xcal = data.newXMLGregorianCalendar();
 			xcal.setYear(2000);
 			xcal.setMonth(11);
-			xcal.setDay(i*2);
+			xcal.setDay(i * 2);
 			testCon.add(uri, RDF.VALUE, vf.createLiteral(xcal));
 			URI uriz = vf.createURI(NS, "dateZ" + i);
 			xcal = data.newXMLGregorianCalendar();
 			xcal.setYear(2007);
 			xcal.setMonth(11);
-			xcal.setDay(i*2);
+			xcal.setDay(i * 2);
 			xcal.setTimezone(OFFSET);
 			testCon.add(uriz, RDF.VALUE, vf.createLiteral(xcal));
 		}
@@ -1364,14 +1365,16 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, SELECT_BY_DATE);
 		query.setBinding("date", vf.createLiteral(xcal));
 		TupleQueryResult result = query.evaluate();
-		List list = new ArrayList();
+		List<BindingSet> list = new ArrayList<BindingSet>();
 		while (result.hasNext()) {
 			list.add(result.next());
 		}
 		assertEquals(7, list.size());
 	}
 
-	public void testOptionalFilter() throws Exception {
+	public void testOptionalFilter()
+		throws Exception
+	{
 		String optional = "{ ?s :p1 ?v1 OPTIONAL {?s :p2 ?v2 FILTER(?v1<3) } }";
 		URI s = vf.createURI("urn:test:s");
 		URI p1 = vf.createURI("urn:test:p1");
