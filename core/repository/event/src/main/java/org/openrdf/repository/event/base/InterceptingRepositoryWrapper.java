@@ -14,6 +14,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.event.InterceptingRepository;
 import org.openrdf.repository.event.InterceptingRepositoryConnection;
+import org.openrdf.repository.event.RepositoryConnectionInterceptor;
 import org.openrdf.repository.event.RepositoryInterceptor;
 
 /**
@@ -35,6 +36,8 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 	private boolean activated;
 
 	private Set<RepositoryInterceptor> interceptors = new CopyOnWriteArraySet<RepositoryInterceptor>();
+
+	private Set<RepositoryConnectionInterceptor> conInterceptors = new CopyOnWriteArraySet<RepositoryConnectionInterceptor>();
 
 	/*--------------*
 	 * Constructors *
@@ -70,6 +73,23 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 		activated = !interceptors.isEmpty();
 	}
 
+	/**
+	 * Registers a <tt>RepositoryConnectionInterceptor</tt> that will receive
+	 * notifications of operations that are performed on any connections that are
+	 * created by this repository.
+	 */
+	public void addRepositoryConnectionInterceptor(RepositoryConnectionInterceptor interceptor) {
+		conInterceptors.add(interceptor);
+	}
+
+	/**
+	 * Removes a registered <tt>RepositoryConnectionInterceptor</tt> from this
+	 * repository.
+	 */
+	public void removeRepositoryConnectionInterceptor(RepositoryConnectionInterceptor interceptor) {
+		conInterceptors.remove(interceptor);
+	}
+
 	@Override
 	public InterceptingRepositoryConnection getConnection()
 		throws RepositoryException
@@ -82,12 +102,18 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 
 			for (RepositoryInterceptor interceptor : interceptors) {
 				denied = interceptor.getConnection(this, conn);
-				if (!denied) {
+				if (denied) {
 					break;
 				}
 			}
-			if (!denied) {
+			if (denied) {
 				conn = null;
+			}
+		}
+
+		if (conn != null) {
+			for (RepositoryConnectionInterceptor conInterceptor : conInterceptors) {
+				conn.addRepositoryConnectionInterceptor(conInterceptor);
 			}
 		}
 
@@ -113,8 +139,7 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 	}
 
 	@Override
-	public void setDataDir(File dataDir)
-	{
+	public void setDataDir(File dataDir) {
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryInterceptor interceptor : interceptors) {
