@@ -9,12 +9,12 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.event.RepositoryConnectionListener;
+import org.openrdf.repository.event.RepositoryConnectionInterceptor;
 
 /**
  * @author Herko ter Horst
  */
-public class RepositoryConnectionInterceptorAdapter implements RepositoryConnectionListener {
+public class RepositoryConnectionInterceptorAdapter implements RepositoryConnectionInterceptor {
 
 	public boolean add(RepositoryConnection conn, Resource subject, URI predicate, Value object,
 			Resource... contexts)
