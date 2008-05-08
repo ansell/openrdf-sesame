@@ -33,6 +33,7 @@ import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.config.DelegatingRepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
@@ -245,7 +246,9 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 		private Map<RepositoryConnection, Set<Resource>> modifiedContextsByConnection = new HashMap<RepositoryConnection, Set<Resource>>();
 
-		private Map<RepositoryConnection, Boolean> modifiedAllContexts = new HashMap<RepositoryConnection, Boolean>();
+		private Map<RepositoryConnection, Boolean> modifiedAllContextsByConnection = new HashMap<RepositoryConnection, Boolean>();
+
+		private Map<RepositoryConnection, Set<Resource>> removedContextsByConnection = new HashMap<RepositoryConnection, Set<Resource>>();
 
 		private Set<Resource> getModifiedContexts(RepositoryConnection conn) {
 			Set<Resource> result = modifiedContextsByConnection.get(conn);
@@ -256,11 +259,20 @@ public class LocalRepositoryManager extends RepositoryManager {
 			return result;
 		}
 
+		private Set<Resource> getRemovedContexts(RepositoryConnection conn) {
+			Set<Resource> result = removedContextsByConnection.get(conn);
+			if (result == null) {
+				result = new HashSet<Resource>();
+				removedContextsByConnection.put(conn, result);
+			}
+			return result;
+		}
+
 		private void registerModifiedContexts(RepositoryConnection conn, Resource... contexts) {
 			Set<Resource> modifiedContexts = getModifiedContexts(conn);
 			// wildcard used for context
 			if (contexts == null) {
-				modifiedAllContexts.put(conn, true);
+				modifiedAllContextsByConnection.put(conn, true);
 			}
 			else {
 				for (Resource context : contexts) {
@@ -285,13 +297,22 @@ public class LocalRepositoryManager extends RepositoryManager {
 		public void remove(RepositoryConnection conn, Resource subject, URI predicate, Value object,
 				Resource... contexts)
 		{
+			if (object != null && object.equals(RepositoryConfigSchema.REPOSITORY_CONTEXT)) {
+				if (subject == null) {
+					modifiedAllContextsByConnection.put(conn, true);
+				}
+				else {
+					Set<Resource> removedContexts = getRemovedContexts(conn);
+					removedContexts.add(subject);
+				}
+			}
 			registerModifiedContexts(conn, contexts);
 		}
 
 		@Override
 		public void rollback(RepositoryConnection conn) {
 			modifiedContextsByConnection.remove(conn);
-			modifiedAllContexts.remove(conn);
+			modifiedAllContextsByConnection.remove(conn);
 		}
 
 		@Override
@@ -299,7 +320,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 			// refresh all contexts when a wildcard was used
 			// REMIND: this could still be improved if we knew whether or not a
 			// *repositoryconfig* context was actually modified
-			Boolean fullRefreshNeeded = modifiedAllContexts.remove(con);
+			Boolean fullRefreshNeeded = modifiedAllContextsByConnection.remove(con);
 			if (fullRefreshNeeded != null && fullRefreshNeeded.booleanValue()) {
 				logger.debug("Reacting to commit on SystemRepository for all contexts");
 				refresh();
@@ -308,6 +329,10 @@ public class LocalRepositoryManager extends RepositoryManager {
 			// configurations
 			else {
 				Set<Resource> modifiedContexts = modifiedContextsByConnection.remove(con);
+				Set<Resource> removedContexts = removedContextsByConnection.remove(con);
+				if(removedContexts != null && !removedContexts.isEmpty()) {
+					modifiedContexts.removeAll(removedContexts);
+				}
 				if (modifiedContexts != null) {
 					logger.debug("React to commit on SystemRepository for contexts {}", modifiedContexts);
 					try {
