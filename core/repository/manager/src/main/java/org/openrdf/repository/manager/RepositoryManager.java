@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -94,6 +94,66 @@ public abstract class RepositoryManager {
 		synchronized (initializedRepositories) {
 			return initializedRepositories.get(SystemRepository.ID);
 		}
+	}
+
+	/**
+	 * Generates an ID for a new repository based on the specified base name. The
+	 * base name may for example be a repository name entered by the user. The
+	 * generated ID will contain a variant of this name that does not occur as a
+	 * repository ID in this manager yet and is suitable for use as a file name
+	 * (e.g. for the repository's data directory).
+	 * 
+	 * @param baseName
+	 *        The String on which the returned ID should be based, must not be
+	 *        <tt>null</tt>.
+	 * @return A new repository ID derived from the specified base name.
+	 * @throws RepositoryException
+	 * @throws RepositoryConfigException
+	 */
+	public String getNewRepositoryID(String baseName)
+		throws RepositoryException, RepositoryConfigException
+	{
+		if (baseName != null) {
+			// Filter exotic characters from the base name
+			baseName = baseName.trim();
+
+			int length = baseName.length();
+			StringBuilder buffer = new StringBuilder(length);
+
+			for (char c : baseName.toCharArray()) {
+				if (Character.isLetter(c) || Character.isDigit(c) || c == '-' || c == '_' || c == '.') {
+					// Convert to lower case since file names are case insensitive on
+					// some/most platforms
+					buffer.append(Character.toLowerCase(c));
+				}
+				else if (c != '"' && c != '\'') {
+					buffer.append('-');
+				}
+			}
+
+			baseName = buffer.toString();
+		}
+
+		// First try if we can use the base name without an appended index
+		if (baseName != null && baseName.length() > 0 && !hasRepositoryConfig(baseName)) {
+			return baseName;
+		}
+
+		// When the base name is null or empty, generate one
+		if (baseName == null || baseName.length() == 0) {
+			baseName = "repository-";
+		}
+		else if (!baseName.endsWith("-")) {
+			baseName += "-";
+		}
+
+		// Keep appending numbers until we find an unused ID
+		int index = 2;
+		while (hasRepositoryConfig(baseName + index)) {
+			index++;
+		}
+
+		return baseName + index;
 	}
 
 	public Set<String> getRepositoryIDs()
