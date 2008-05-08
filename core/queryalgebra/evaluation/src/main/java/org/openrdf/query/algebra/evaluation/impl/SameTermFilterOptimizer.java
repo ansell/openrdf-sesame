@@ -13,18 +13,15 @@ import java.util.Set;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -44,43 +41,11 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 public class SameTermFilterOptimizer implements QueryOptimizer {
 
 	/**
-	 * Applies generally applicable optimizations to the supplied query:
-	 * <ul>
-	 * <li>OR SameTerms is replaced with UNION SameTerms.</li>
-	 * <li>variable assignments are inlined.</li>
-	 * <li>Unneeded BOUND functions are removed.</li>
-	 * </ul>
-	 * 
-	 * @param tupleExpr
-	 * @return optimized TupleExpr
-	 * @throws QueryEvaluationException
+	 * Applies generally applicable optimizations to the supplied query: variable
+	 * assignments are inlined.
 	 */
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new OrSameTermOptimizer());
 		tupleExpr.visit(new SameTermFilterVisitor());
-	}
-
-	protected class OrSameTermOptimizer extends
-			QueryModelVisitorBase<RuntimeException> {
-
-		@Override
-		public void meet(Or node) {
-			boolean top = node.getParentNode() instanceof Filter;
-			boolean leftIsSameTerm = node.getLeftArg() instanceof SameTerm;
-			boolean rightIsSameTerm = node.getRightArg() instanceof SameTerm;
-			if (top && (leftIsSameTerm || rightIsSameTerm)) {
-				Filter filter = (Filter) node.getParentNode();
-				Filter left = filter.clone();
-				Filter right = filter.clone();
-				left.setCondition(node.getLeftArg().clone());
-				right.setCondition(node.getRightArg().clone());
-				Union union = new Union(left, right);
-				filter.replaceWith(union);
-				meet(union);
-			} else {
-				super.meet(node);
-			}
-		}
 	}
 
 	protected class SameTermFilterVisitor extends QueryModelVisitorBase<RuntimeException> {
@@ -140,9 +105,11 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 			// Bound constraint.
 			filter.setCondition(new Bound(var));
 
+/*
 			// Check if the variable is used in a pattern outside of a left join.
 			// If so, removed this filter condition
 			filter.visit(new BoundOptimizer());
+*/
 		}
 	}
 
@@ -184,16 +151,18 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		}
 	}
 
-	protected class BoundOptimizer extends
-			QueryModelVisitorBase<RuntimeException> {
+	protected class BoundOptimizer extends QueryModelVisitorBase<RuntimeException> {
+
 		private boolean inSP;
+
 		private List<Boolean> innerJoins = new ArrayList<Boolean>();
+
 		private List<Var> vars = new ArrayList<Var>();
 
 		@Override
 		public void meet(Filter node) {
 			if (node.getCondition() instanceof Bound) {
-				Bound bound = (Bound) node.getCondition();
+				Bound bound = (Bound)node.getCondition();
 				vars.add(bound.getArg());
 				innerJoins.add(Boolean.FALSE);
 				node.getArg().visit(this);
@@ -201,25 +170,32 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 				if (innerJoins.remove(innerJoins.size() - 1)) {
 					node.replaceWith(node.getArg());
 				}
-			} else {
+			}
+			else {
 				super.meet(node);
 			}
 		}
 
 		@Override
-		public void meet(LeftJoin node) throws RuntimeException {
+		public void meet(LeftJoin node)
+			throws RuntimeException
+		{
 			// don't search any more
 		}
 
 		@Override
-		public void meet(StatementPattern node) throws RuntimeException {
+		public void meet(StatementPattern node)
+			throws RuntimeException
+		{
 			inSP = true;
 			super.meet(node);
 			inSP = false;
 		}
 
 		@Override
-		public void meet(Var node) throws RuntimeException {
+		public void meet(Var node)
+			throws RuntimeException
+		{
 			if (inSP && vars.contains(node)) {
 				innerJoins.set(vars.indexOf(node), Boolean.TRUE);
 			}
