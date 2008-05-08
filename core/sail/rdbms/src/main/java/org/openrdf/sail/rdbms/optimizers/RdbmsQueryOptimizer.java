@@ -14,6 +14,7 @@ import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
 import org.openrdf.query.algebra.evaluation.impl.ConstantOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
@@ -92,6 +93,7 @@ public class RdbmsQueryOptimizer {
 		optimizerList.add(new ConstantOptimizer(strategy));
 		optimizerList.add(new CompareOptimizer());
 		optimizerList.add(new ConjunctiveConstraintSplitter());
+		optimizerList.add(new DisjunctiveConstraintOptimizer());
 		optimizerList.add(new SameTermFilterOptimizer());
 		optimizerList.add(new QueryJoinOptimizer());
 	}
