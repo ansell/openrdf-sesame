@@ -8,11 +8,13 @@ package org.openrdf.query.algebra.evaluation.impl;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
+import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
@@ -36,26 +38,49 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 		@Override
 		public void meet(Or orNode) {
 			boolean top = orNode.getParentNode() instanceof Filter;
-			boolean leftIsSameTerm = orNode.getLeftArg() instanceof SameTerm;
-			boolean rightIsSameTerm = orNode.getRightArg() instanceof SameTerm;
-
-			if (top && (leftIsSameTerm || rightIsSameTerm)) {
+			if (top && containsSameTerm(orNode)) {
 				Filter filter = (Filter)orNode.getParentNode();
+				ValueExpr left = orNode.getLeftArg().clone();
+				ValueExpr right = orNode.getRightArg().clone();
 
-				Filter left = filter.clone();
-				Filter right = filter.clone();
+				// remove filter
+				filter.replaceWith(filter.getArg());
 
-				left.setCondition(orNode.getLeftArg().clone());
-				right.setCondition(orNode.getRightArg().clone());
+				// Push UNION down below other filters to avoid cloning them
+				TupleExpr node = findNotFilter(filter.getArg());
 
-				Union union = new Union(left, right);
-				filter.replaceWith(union);
+				Filter leftFilter = new Filter(node.clone(), left);
+				Filter rightFilter = new Filter(node.clone(), right);
+				Union union = new Union(leftFilter, rightFilter);
+				node.replaceWith(union);
 
-				meet(union);
+				filter.getParentNode().visit(this);
 			}
 			else {
 				super.meet(orNode);
 			}
+		}
+
+		private TupleExpr findNotFilter(TupleExpr node) {
+			if (node instanceof Filter)
+				return findNotFilter(((Filter) node).getArg());
+			return node;
+		}
+
+		private boolean containsSameTerm(ValueExpr node) {
+			if (node instanceof SameTerm)
+				return true;
+			if (node instanceof Or) {
+				Or or = (Or) node;
+				boolean left = containsSameTerm(or.getLeftArg());
+				return left || containsSameTerm(or.getRightArg());
+			}
+			if (node instanceof And) {
+				And and = (And) node;
+				boolean left = containsSameTerm(and.getLeftArg());
+				return left || containsSameTerm(and.getRightArg());
+			}
+			return false;
 		}
 	}
 }
