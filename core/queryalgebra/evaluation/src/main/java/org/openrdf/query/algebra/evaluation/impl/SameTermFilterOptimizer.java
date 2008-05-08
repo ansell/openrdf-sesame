@@ -13,15 +13,17 @@ import java.util.Set;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
-import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -105,11 +107,9 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 			// Bound constraint.
 			filter.setCondition(new Bound(var));
 
-/*
 			// Check if the variable is used in a pattern outside of a left join.
 			// If so, removed this filter condition
 			filter.visit(new BoundOptimizer());
-*/
 		}
 	}
 
@@ -172,14 +172,25 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 				}
 			}
 			else {
-				super.meet(node);
+				node.visitChildren(this);
 			}
 		}
 
 		@Override
-		public void meet(LeftJoin node)
-			throws RuntimeException
-		{
+		public void meet(Join node) throws RuntimeException {
+			// search for statement patterns
+			node.visitChildren(this);
+		}
+
+		@Override
+		protected void meetBinaryTupleOperator(BinaryTupleOperator node)
+				throws RuntimeException {
+			// don't search any more
+		}
+
+		@Override
+		protected void meetUnaryTupleOperator(UnaryTupleOperator node)
+				throws RuntimeException {
 			// don't search any more
 		}
 
