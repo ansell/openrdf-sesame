@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -34,6 +34,35 @@ import org.openrdf.repository.http.HTTPRepository;
  * @author Arjohn Kampman
  */
 public class RemoteRepositoryManager extends RepositoryManager {
+
+	/*------------------------*
+	 * Static utility methods *
+	 *------------------------*/
+
+	/**
+	 * Creates an initialized {@link RemoteRepositoryManager} with the specified
+	 * server URL.
+	 */
+	public static RemoteRepositoryManager getInstance(String serverURL)
+		throws RepositoryException
+	{
+		RemoteRepositoryManager manager = new RemoteRepositoryManager(serverURL);
+		manager.initialize();
+		return manager;
+	}
+
+	/**
+	 * Creates an initialized {@link RemoteRepositoryManager} with the specified
+	 * server URL and credentials.
+	 */
+	public static RemoteRepositoryManager getInstance(String serverURL, String username, String password)
+		throws RepositoryException
+	{
+		RemoteRepositoryManager manager = new RemoteRepositoryManager(serverURL);
+		manager.setUsernameAndPassword(username, password);
+		manager.initialize();
+		return manager;
+	}
 
 	/*-----------*
 	 * Variables *
