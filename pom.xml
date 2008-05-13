@@ -532,4 +532,29 @@
 		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.1</url>
 	</scm>
 
+	<repositories>
+		<repository>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>aduna-opensource.releases</id>
+			<name>Aduna Open Source - Maven releases</name>
+			<url>http://repo.aduna-software.org/maven2/releases</url>
+		</repository>
+		<repository>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<id>aduna-opensource.snapshots</id>
+			<name>Aduna Open Source - Maven snapshots</name>
+			<url>http://repo.aduna-software.org/maven2/snapshots</url>
+		</repository>
+	</repositories>
+
 </project>
