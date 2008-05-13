@@ -1651,7 +1651,7 @@ public class BTree {
 			this.started = false;
 		}
 
-		public byte[] next()
+		public synchronized byte[] next()
 			throws IOException
 		{
 			if (!started) {
@@ -1756,7 +1756,7 @@ public class BTree {
 			}
 		}
 
-		public void set(byte[] value) {
+		public synchronized void set(byte[] value) {
 			if (currentNode == null || currentIdx > currentNode.getValueCount()) {
 				throw new IllegalStateException();
 			}
@@ -1764,7 +1764,7 @@ public class BTree {
 			currentNode.setValue(currentIdx - 1, value);
 		}
 
-		public void close()
+		public synchronized void close()
 			throws IOException
 		{
 			while (currentNode != null) {
@@ -1793,7 +1793,7 @@ public class BTree {
 			return 0;
 		}
 
-		public boolean valueAdded(Node node, int index) {
+		public synchronized boolean valueAdded(Node node, int index) {
 			if (node == currentNode) {
 				if (index <= currentIdx) {
 					currentIdx++;
@@ -1814,7 +1814,7 @@ public class BTree {
 			return false;
 		}
 
-		public boolean valueRemoved(Node node, int index) {
+		public synchronized boolean valueRemoved(Node node, int index) {
 			if (node == currentNode) {
 				if (index <= currentIdx) {
 					currentIdx--;
@@ -1839,7 +1839,7 @@ public class BTree {
 			return false;
 		}
 
-		public boolean nodeSplit(Node node, Node newNode, int medianIdx)
+		public synchronized boolean nodeSplit(Node node, Node newNode, int medianIdx)
 			throws IOException
 		{
 			boolean deregister = false;
@@ -1882,7 +1882,7 @@ public class BTree {
 			return deregister;
 		}
 
-		public boolean nodeMergedWith(Node sourceNode, Node targetNode, int mergeIdx)
+		public synchronized boolean nodeMergedWith(Node sourceNode, Node targetNode, int mergeIdx)
 			throws IOException
 		{
 			boolean deregister = false;
