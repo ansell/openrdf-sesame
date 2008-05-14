@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-testsuites</artifactId>
-		<version>2.1.1</version>
+		<version>2.1.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-queryparser-compliance</artifactId>
-	<version>2.1.1</version>
+	<version>2.1.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>OpenRDF query compliance tests</name>
@@ -21,9 +21,9 @@
 	</modules>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1.1/testsuites/queryparser</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1.1/testsuites/queryparser</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.1.1/testsuites/queryparser</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1/testsuites/queryparser</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1/testsuites/queryparser</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.1/testsuites/queryparser</url>
 	</scm>
 
 </project>

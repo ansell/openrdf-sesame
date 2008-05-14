@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-rio-compliance</artifactId>
-		<version>2.1.1</version>
+		<version>2.1.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-rio-ntriples-compliance</artifactId>
-	<version>2.1.1</version>
+	<version>2.1.2-SNAPSHOT</version>
 
 	<name>OpenRDF N-Triples parser and writer compliance tests</name>
 	<description>Tests for the N-Triples file format.</description>
@@ -52,9 +52,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1.1/testsuites/rio/ntriples</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1.1/testsuites/rio/ntriples</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.1.1/testsuites/rio/ntriples</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1/testsuites/rio/ntriples</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1/testsuites/rio/ntriples</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.1/testsuites/rio/ntriples</url>
 	</scm>
 
 </project>
