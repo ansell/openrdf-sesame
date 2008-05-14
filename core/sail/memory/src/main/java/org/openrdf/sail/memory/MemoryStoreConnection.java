@@ -15,10 +15,7 @@ import java.util.Set;
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
-import info.aduna.iteration.FilterIteration;
-import info.aduna.iteration.IteratorIteration;
 import info.aduna.iteration.LockingIteration;
-import info.aduna.iteration.UnionIteration;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -160,61 +157,66 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 		// do nothing
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
 		throws SailException
 	{
+		// Note: we can't do this in a streaming fashion due to concurrency
+		// issues; iterating over the set of URIs or bnodes while another thread
+		// adds statements with new resources would result in
+		// ConcurrentModificationException's (issue SES-544).
+
+		// Create a list of all resources that are used as contexts
+		ArrayList<MemResource> contextIDs = new ArrayList<MemResource>(32);
+
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
-			// Iterate over all MemURIs and MemBNodes
-			CloseableIteration<MemResource, SailException> iter;
-
-			iter = new UnionIteration<MemResource, SailException>(
-					new IteratorIteration<MemResource, SailException>(
-							store.getValueFactory().getMemURIs().iterator()),
-					new IteratorIteration<MemResource, SailException>(
-							store.getValueFactory().getMemBNodes().iterator()));
-
 			final int snapshot = transactionActive() ? store.getCurrentSnapshot() + 1
 					: store.getCurrentSnapshot();
 			final ReadMode readMode = transactionActive() ? ReadMode.TRANSACTION : ReadMode.COMMITTED;
 
-			iter = new FilterIteration<MemResource, SailException>(iter) {
+			MemValueFactory valueFactory = store.getValueFactory();
 
-				@Override
-				protected boolean accept(MemResource memResource)
-					throws SailException
-				{
-					MemStatementList contextStatements = memResource.getContextStatementList();
-
-					// Filter resources that are not used as context identifier
-					if (contextStatements.size() == 0) {
-						return false;
-					}
-
-					// Filter more thoroughly by considering snapshot and read-mode
-					// parameters
-					MemStatementIterator<SailException> iter = new MemStatementIterator<SailException>(
-							contextStatements, null, null, null, false, snapshot, readMode);
-					try {
-						return iter.hasNext();
-					}
-					finally {
-						iter.close();
+			synchronized (valueFactory) {
+				for (MemResource memResource : valueFactory.getMemURIs()) {
+					if (isContextResource(memResource, snapshot, readMode)) {
+						contextIDs.add(memResource);
 					}
 				}
-			};
 
-			// Release query lock when iterator is closed
-			iter = new LockingIteration<MemResource, SailException>(stLock, iter);
-
-			return iter;
+				for (MemResource memResource : valueFactory.getMemBNodes()) {
+					if (isContextResource(memResource, snapshot, readMode)) {
+						contextIDs.add(memResource);
+					}
+				}
+			}
 		}
-		catch (RuntimeException e) {
+		finally {
 			stLock.release();
-			throw e;
+		}
+
+		return new CloseableIteratorIteration<MemResource, SailException>(contextIDs.iterator());
+	}
+
+	private boolean isContextResource(MemResource memResource, int snapshot, ReadMode readMode)
+		throws SailException
+	{
+		MemStatementList contextStatements = memResource.getContextStatementList();
+
+		// Filter resources that are not used as context identifier
+		if (contextStatements.size() == 0) {
+			return false;
+		}
+
+		// Filter more thoroughly by considering snapshot and read-mode parameters
+		MemStatementIterator<SailException> iter = new MemStatementIterator<SailException>(contextStatements,
+				null, null, null, false, snapshot, readMode);
+		try {
+			return iter.hasNext();
+		}
+		finally {
+			iter.close();
 		}
 	}
 
@@ -376,7 +378,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 				}
 			}
 		}
-		
+
 		// FIXME: this return type is invalid in case multiple contexts were
 		// specified
 		return st != null;
