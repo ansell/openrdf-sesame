@@ -119,7 +119,7 @@ public class MemValueFactory extends ValueFactoryBase {
 	/**
 	 * See getMemValue() for description.
 	 */
-	public MemURI getMemURI(URI uri) {
+	public synchronized MemURI getMemURI(URI uri) {
 		if (isOwnMemValue(uri)) {
 			return (MemURI)uri;
 		}
@@ -131,7 +131,7 @@ public class MemValueFactory extends ValueFactoryBase {
 	/**
 	 * See getMemValue() for description.
 	 */
-	public MemBNode getMemBNode(BNode bnode) {
+	public synchronized MemBNode getMemBNode(BNode bnode) {
 		if (isOwnMemValue(bnode)) {
 			return (MemBNode)bnode;
 		}
@@ -143,7 +143,7 @@ public class MemValueFactory extends ValueFactoryBase {
 	/**
 	 * See getMemValue() for description.
 	 */
-	public MemLiteral getMemLiteral(Literal literal) {
+	public synchronized MemLiteral getMemLiteral(Literal literal) {
 		if (isOwnMemValue(literal)) {
 			return (MemLiteral)literal;
 		}
@@ -162,6 +162,10 @@ public class MemValueFactory extends ValueFactoryBase {
 
 	/**
 	 * Gets all URIs that are managed by this value factory.
+	 * <p>
+	 * <b>Warning:</b> This method is not synchronized. To iterate over the
+	 * returned set in a thread-safe way, this method should only be called
+	 * while synchronizing on this object.
 	 * 
 	 * @return An unmodifiable Set of MemURI objects.
 	 */
@@ -171,6 +175,10 @@ public class MemValueFactory extends ValueFactoryBase {
 
 	/**
 	 * Gets all bnodes that are managed by this value factory.
+	 * <p>
+	 * <b>Warning:</b> This method is not synchronized. To iterate over the
+	 * returned set in a thread-safe way, this method should only be called
+	 * while synchronizing on this object.
 	 * 
 	 * @return An unmodifiable Set of MemBNode objects.
 	 */
@@ -180,6 +188,10 @@ public class MemValueFactory extends ValueFactoryBase {
 
 	/**
 	 * Gets all literals that are managed by this value factory.
+	 * <p>
+	 * <b>Warning:</b> This method is not synchronized. To iterate over the
+	 * returned set in a thread-safe way, this method should only be called
+	 * while synchronizing on this object.
 	 * 
 	 * @return An unmodifiable Set of MemURI objects.
 	 */
@@ -225,7 +237,7 @@ public class MemValueFactory extends ValueFactoryBase {
 	/**
 	 * See createMemValue() for description.
 	 */
-	public MemURI createMemURI(URI uri) {
+	public synchronized MemURI createMemURI(URI uri) {
 		// Namespace strings are relatively large objects and are shared
 		// between uris
 		String namespace = uri.getNamespace();
@@ -259,7 +271,7 @@ public class MemValueFactory extends ValueFactoryBase {
 	/**
 	 * See createMemValue() for description.
 	 */
-	public MemBNode createMemBNode(BNode bnode) {
+	public synchronized MemBNode createMemBNode(BNode bnode) {
 		MemBNode memBNode = new MemBNode(this, bnode.getID());
 
 		boolean wasNew = bnodeRegistry.add(memBNode);
@@ -271,7 +283,7 @@ public class MemValueFactory extends ValueFactoryBase {
 	/**
 	 * See createMemValue() for description.
 	 */
-	public MemLiteral createMemLiteral(Literal literal) {
+	public synchronized MemLiteral createMemLiteral(Literal literal) {
 		MemLiteral memLiteral = null;
 
 		String label = literal.getLabel();
@@ -318,7 +330,7 @@ public class MemValueFactory extends ValueFactoryBase {
 		return memLiteral;
 	}
 
-	public URI createURI(String uri) {
+	public synchronized URI createURI(String uri) {
 		URI tempURI = new URIImpl(uri);
 		MemURI memURI = getMemURI(tempURI);
 
@@ -329,7 +341,7 @@ public class MemValueFactory extends ValueFactoryBase {
 		return memURI;
 	}
 
-	public URI createURI(String namespace, String localName) {
+	public synchronized URI createURI(String namespace, String localName) {
 		URI tempURI = null;
 
 		// Reuse supplied namespace and local name strings if possible
@@ -353,7 +365,7 @@ public class MemValueFactory extends ValueFactoryBase {
 		return memURI;
 	}
 
-	public BNode createBNode(String nodeID) {
+	public synchronized BNode createBNode(String nodeID) {
 		BNode tempBNode = new BNodeImpl(nodeID);
 		MemBNode memBNode = getMemBNode(tempBNode);
 
@@ -364,7 +376,7 @@ public class MemValueFactory extends ValueFactoryBase {
 		return memBNode;
 	}
 
-	public Literal createLiteral(String value) {
+	public synchronized Literal createLiteral(String value) {
 		Literal tempLiteral = new LiteralImpl(value);
 		MemLiteral memLiteral = literalRegistry.get(tempLiteral);
 
@@ -375,7 +387,7 @@ public class MemValueFactory extends ValueFactoryBase {
 		return memLiteral;
 	}
 
-	public Literal createLiteral(String value, String language) {
+	public synchronized Literal createLiteral(String value, String language) {
 		Literal tempLiteral = new LiteralImpl(value, language);
 		MemLiteral memLiteral = literalRegistry.get(tempLiteral);
 
@@ -386,7 +398,7 @@ public class MemValueFactory extends ValueFactoryBase {
 		return memLiteral;
 	}
 
-	public Literal createLiteral(String value, URI datatype) {
+	public synchronized Literal createLiteral(String value, URI datatype) {
 		Literal tempLiteral = new LiteralImpl(value, datatype);
 		MemLiteral memLiteral = literalRegistry.get(tempLiteral);
 
@@ -398,29 +410,25 @@ public class MemValueFactory extends ValueFactoryBase {
 	}
 
 	@Override
-	public Literal createLiteral(boolean value)
-	{
+	public synchronized Literal createLiteral(boolean value) {
 		MemLiteral newLiteral = new BooleanMemLiteral(this, value);
 		return getSharedLiteral(newLiteral);
 	}
 
 	@Override
-	protected Literal createIntegerLiteral(Number n, URI datatype)
-	{
+	protected Literal createIntegerLiteral(Number n, URI datatype) {
 		MemLiteral newLiteral = new IntegerMemLiteral(this, BigInteger.valueOf(n.longValue()), datatype);
 		return getSharedLiteral(newLiteral);
 	}
 
 	@Override
-	protected Literal createFPLiteral(Number n, URI datatype)
-	{
+	protected Literal createFPLiteral(Number n, URI datatype) {
 		MemLiteral newLiteral = new NumericMemLiteral(this, n, datatype);
 		return getSharedLiteral(newLiteral);
 	}
 
 	@Override
-	public Literal createLiteral(XMLGregorianCalendar calendar)
-	{
+	public synchronized Literal createLiteral(XMLGregorianCalendar calendar) {
 		MemLiteral newLiteral = new CalendarMemLiteral(this, calendar);
 		return getSharedLiteral(newLiteral);
 	}

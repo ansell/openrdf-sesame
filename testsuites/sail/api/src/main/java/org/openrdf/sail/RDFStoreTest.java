@@ -786,6 +786,7 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso, paints, guernica, context2);
 		assertEquals(1, countElements(con.getContextIDs()));
 		assertEquals(context2, first(con.getContextIDs()));
+		con.commit();
 	}
 
 	public void testOldURI()
