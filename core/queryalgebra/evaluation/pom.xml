@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-queryalgebra</artifactId>
-		<version>2.2-SNAPSHOT</version>
+		<version>2.2-beta1</version>
 	</parent>
 
 	<artifactId>sesame-queryalgebra-evaluation</artifactId>
-	<version>2.2-SNAPSHOT</version>
+	<version>2.2-beta1</version>
 
 	<name>OpenRDF Sesame: Query algebra - evaluation</name>
 	<description>Evaluation strategy API and implementations for the query algebra model.</description>

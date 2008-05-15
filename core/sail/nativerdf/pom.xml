@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-sail</artifactId>
-		<version>2.2-SNAPSHOT</version>
+		<version>2.2-beta1</version>
 	</parent>
 
 	<artifactId>sesame-sail-nativerdf</artifactId>
-	<version>2.2-SNAPSHOT</version>
+	<version>2.2-beta1</version>
 
 	<name>OpenRDF Sesame: NativeStore</name>
 	<description>Sail implementation that stores data directly to disk in dedicated file formats.</description>

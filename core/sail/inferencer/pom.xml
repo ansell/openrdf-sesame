@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-sail</artifactId>
-		<version>2.2-SNAPSHOT</version>
+		<version>2.2-beta1</version>
 	</parent>
 
 	<artifactId>sesame-sail-inferencer</artifactId>
-	<version>2.2-SNAPSHOT</version>
+	<version>2.2-beta1</version>
 
 	<name>OpenRDF Sesame: Inferencer Sails</name>
 	<description>Stackable Sail implementation that adds RDF Schema inferencing to an RDF store.</description>

@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-queryresultio</artifactId>
-		<version>2.2-SNAPSHOT</version>
+		<version>2.2-beta1</version>
 	</parent>
 
 	<artifactId>sesame-queryresultio-api</artifactId>
-	<version>2.2-SNAPSHOT</version>
+	<version>2.2-beta1</version>
 
 	<name>OpenRDF Sesame: Query result IO - API</name>
 	<description>Query result IO API</description>

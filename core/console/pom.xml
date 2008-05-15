@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>2.2-SNAPSHOT</version>
+		<version>2.2-beta1</version>
 	</parent>
 
 	<artifactId>sesame-console</artifactId>
-	<version>2.2-SNAPSHOT</version>
+	<version>2.2-beta1</version>
 
 	<name>OpenRDF Sesame: Console</name>
 	<description>Command line user interface to Sesame repositories.</description>
