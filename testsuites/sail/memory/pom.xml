@@ -73,9 +73,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/sail/memory</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/sail/memory</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/testsuites/sail/memory</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2-beta1/testsuites/sail/memory</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2-beta1/testsuites/sail/memory</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2-beta1/testsuites/sail/memory</url>
 	</scm>
 
 </project>

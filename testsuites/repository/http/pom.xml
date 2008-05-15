@@ -83,9 +83,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/repository/http</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/repository/http</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/testsuites/repository/http</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2-beta1/testsuites/repository/http</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2-beta1/testsuites/repository/http</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2-beta1/testsuites/repository/http</url>
 	</scm>
 
 </project>
