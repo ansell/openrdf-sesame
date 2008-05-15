@@ -15,7 +15,7 @@
     <bean id="adunaAppVersion" class="info.aduna.app.AppVersion">
     	<property name="major" value="2" />
     	<property name="minor" value="2" />
-    	<property name="modifier" value="SNAPSHOT" />
+    	<property name="modifier" value="beta1" />
     </bean>
     
     <bean id="adunaAppConfig" class="info.aduna.app.AppConfiguration" init-method="init" destroy-method="destroy">
