@@ -83,7 +83,6 @@
 				<configuration>
 					<aggregate>true</aggregate>
 					<source>1.5</source>
-					<destDir>../docs/apidocs</destDir>
 					<groups>
 						<group>
 							<title>Repository API</title>
