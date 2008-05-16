@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import info.aduna.io.ByteArrayUtil;
 
@@ -47,7 +48,7 @@ public class BTree {
 	private static final int HEADER_LENGTH = 16;
 
 	private static final int NODE_CACHE_SIZE = 10;
-	
+
 	private static final int MIN_MRU_CACHE_SIZE = 4;
 
 	/*-----------*
@@ -81,6 +82,12 @@ public class BTree {
 	 * another value. This determines the order of values in the BTree.
 	 */
 	private final RecordComparator comparator;
+
+	/**
+	 * A read/write lock that is used to prevent changes to the BTree while
+	 * readers are active in order to prevent concurrency issues.
+	 */
+	private final ReentrantReadWriteLock btreeLock = new ReentrantReadWriteLock();
 
 	/**
 	 * Map containing cached nodes, indexed by their ID.
@@ -357,14 +364,20 @@ public class BTree {
 	public void close()
 		throws IOException
 	{
-		sync();
+		btreeLock.writeLock().lock();
+		try {
+			sync();
 
-		synchronized (nodeCache) {
-			nodeCache.clear();
-			mruNodes.clear();
+			synchronized (nodeCache) {
+				nodeCache.clear();
+				mruNodes.clear();
+			}
+
+			raf.close();
 		}
-
-		raf.close();
+		finally {
+			btreeLock.writeLock().unlock();
+		}
 	}
 
 	/**
@@ -375,17 +388,23 @@ public class BTree {
 	public void sync()
 		throws IOException
 	{
-		// Write any changed nodes that still reside in the cache to disk
-		synchronized (nodeCache) {
-			for (Node node : nodeCache.values()) {
-				if (node.dataChanged()) {
-					node.write();
+		btreeLock.readLock().lock();
+		try {
+			// Write any changed nodes that still reside in the cache to disk
+			synchronized (nodeCache) {
+				for (Node node : nodeCache.values()) {
+					if (node.dataChanged()) {
+						node.write();
+					}
 				}
 			}
-		}
 
-		if (forceSync) {
-			fileChannel.force(false);
+			if (forceSync) {
+				fileChannel.force(false);
+			}
+		}
+		finally {
+			btreeLock.readLock().unlock();
 		}
 	}
 
@@ -401,34 +420,40 @@ public class BTree {
 	public byte[] get(byte[] key)
 		throws IOException
 	{
-		if (rootNodeID == 0) {
-			// Empty BTree
-			return null;
-		}
-
-		Node node = readNode(rootNodeID);
-
-		while (true) {
-			int valueIdx = node.search(key);
-
-			if (valueIdx >= 0) {
-				// Return matching value
-				byte[] result = node.getValue(valueIdx);
-				node.release();
-				return result;
-			}
-			else if (!node.isLeaf()) {
-				// Returned index references the first value that is larger than
-				// the key, search the child node just left of it (==same index).
-				Node childNode = node.getChildNode(-valueIdx - 1);
-				node.release();
-				node = childNode;
-			}
-			else {
-				// value not found
-				node.release();
+		btreeLock.readLock().lock();
+		try {
+			if (rootNodeID == 0) {
+				// Empty BTree
 				return null;
 			}
+
+			Node node = readNode(rootNodeID);
+
+			while (true) {
+				int valueIdx = node.search(key);
+
+				if (valueIdx >= 0) {
+					// Return matching value
+					byte[] result = node.getValue(valueIdx);
+					node.release();
+					return result;
+				}
+				else if (!node.isLeaf()) {
+					// Returned index references the first value that is larger than
+					// the key, search the child node just left of it (==same index).
+					Node childNode = node.getChildNode(-valueIdx - 1);
+					node.release();
+					node = childNode;
+				}
+				else {
+					// value not found
+					node.release();
+					return null;
+				}
+			}
+		}
+		finally {
+			btreeLock.readLock().unlock();
 		}
 	}
 
@@ -498,35 +523,41 @@ public class BTree {
 	public byte[] insert(byte[] value)
 		throws IOException
 	{
-		Node rootNode = null;
+		btreeLock.writeLock().lock();
+		try {
+			Node rootNode = null;
 
-		if (rootNodeID == 0) {
-			// Empty B-Tree, create a root node
-			rootNode = createNewNode();
-			rootNodeID = rootNode.getID();
-			writeFileHeader();
+			if (rootNodeID == 0) {
+				// Empty B-Tree, create a root node
+				rootNode = createNewNode();
+				rootNodeID = rootNode.getID();
+				writeFileHeader();
+			}
+			else {
+				rootNode = readNode(rootNodeID);
+			}
+
+			InsertResult insertResult = insertInTree(value, 0, rootNode);
+
+			if (insertResult.overflowValue != null) {
+				// Root node overflowed, create a new root node and insert overflow
+				// value-nodeID pair in it
+				Node newRootNode = createNewNode();
+				newRootNode.setChildNodeID(0, rootNode.getID());
+				newRootNode.insertValueNodeIDPair(0, insertResult.overflowValue, insertResult.overflowNodeID);
+
+				rootNodeID = newRootNode.getID();
+				writeFileHeader();
+				newRootNode.release();
+			}
+
+			rootNode.release();
+
+			return insertResult.oldValue;
 		}
-		else {
-			rootNode = readNode(rootNodeID);
+		finally {
+			btreeLock.writeLock().unlock();
 		}
-
-		InsertResult insertResult = insertInTree(value, 0, rootNode);
-
-		if (insertResult.overflowValue != null) {
-			// Root node overflowed, create a new root node and insert overflow
-			// value-nodeID pair in it
-			Node newRootNode = createNewNode();
-			newRootNode.setChildNodeID(0, rootNode.getID());
-			newRootNode.insertValueNodeIDPair(0, insertResult.overflowValue, insertResult.overflowNodeID);
-
-			rootNodeID = newRootNode.getID();
-			writeFileHeader();
-			newRootNode.release();
-		}
-
-		rootNode.release();
-
-		return insertResult.oldValue;
 	}
 
 	private InsertResult insertInTree(byte[] value, int nodeID, Node node)
@@ -632,33 +663,39 @@ public class BTree {
 	public byte[] remove(byte[] key)
 		throws IOException
 	{
-		byte[] result = null;
+		btreeLock.writeLock().lock();
+		try {
+			byte[] result = null;
 
-		if (rootNodeID != 0) {
-			Node rootNode = readNode(rootNodeID);
+			if (rootNodeID != 0) {
+				Node rootNode = readNode(rootNodeID);
 
-			result = removeFromTree(key, rootNode);
+				result = removeFromTree(key, rootNode);
 
-			if (rootNode.isEmpty()) {
-				// Root node has become empty as a result of the removal
-				if (rootNode.isLeaf()) {
-					// Nothing's left
-					rootNodeID = 0;
+				if (rootNode.isEmpty()) {
+					// Root node has become empty as a result of the removal
+					if (rootNode.isLeaf()) {
+						// Nothing's left
+						rootNodeID = 0;
+					}
+					else {
+						// Collapse B-Tree one level
+						rootNodeID = rootNode.getChildNodeID(0);
+						rootNode.setChildNodeID(0, 0);
+					}
+
+					// Write new root node ID to file header
+					writeFileHeader();
 				}
-				else {
-					// Collapse B-Tree one level
-					rootNodeID = rootNode.getChildNodeID(0);
-					rootNode.setChildNodeID(0, 0);
-				}
 
-				// Write new root node ID to file header
-				writeFileHeader();
+				rootNode.release();
 			}
 
-			rootNode.release();
+			return result;
 		}
-
-		return result;
+		finally {
+			btreeLock.writeLock().unlock();
+		}
 	}
 
 	/**
@@ -807,17 +844,23 @@ public class BTree {
 	public void clear()
 		throws IOException
 	{
-		synchronized (nodeCache) {
-			nodeCache.clear();
-			mruNodes.clear();
+		btreeLock.writeLock().lock();
+		try {
+			synchronized (nodeCache) {
+				nodeCache.clear();
+				mruNodes.clear();
+			}
+			fileChannel.truncate(HEADER_LENGTH);
+
+			rootNodeID = 0;
+			maxNodeID = 0;
+			allocatedNodes.clear();
+
+			writeFileHeader();
 		}
-		fileChannel.truncate(HEADER_LENGTH);
-
-		rootNodeID = 0;
-		maxNodeID = 0;
-		allocatedNodes.clear();
-
-		writeFileHeader();
+		finally {
+			btreeLock.writeLock().unlock();
+		}
 	}
 
 	private Node createNewNode()
@@ -1107,7 +1150,6 @@ public class BTree {
 		public void setValue(int valueIdx, byte[] value) {
 			ByteArrayUtil.put(value, data, valueIdx2offset(valueIdx));
 			dataChanged = true;
-			notifyValueChanged(valueIdx);
 		}
 
 		/**
@@ -1362,19 +1404,6 @@ public class BTree {
 			}
 		}
 
-		private void notifyValueChanged(int index) {
-			synchronized (listeners) {
-				Iterator<NodeListener> iter = listeners.iterator();
-
-				while (iter.hasNext()) {
-					// Deregister if listener return true
-					if (iter.next().valueChanged(this, index)) {
-						iter.remove();
-					}
-				}
-			}
-		}
-
 		private void notifyNodeSplit(Node rightNode, int medianIdx)
 			throws IOException
 		{
@@ -1491,18 +1520,6 @@ public class BTree {
 		 *         result of this event.
 		 */
 		public boolean valueRemoved(Node node, int index);
-
-		/**
-		 * Signals to registered node listeners that a value has been changed.
-		 * 
-		 * @param node
-		 *        The node in which the value has been changed.
-		 * @param index
-		 *        The index of the changed value.
-		 * @return Indicates whether the node listener should be deregistered as a
-		 *         result of this event.
-		 */
-		public boolean valueChanged(Node node, int index);
 
 		/**
 		 * Signals to registered node listeners that a node has been split.
@@ -1651,34 +1668,40 @@ public class BTree {
 			this.started = false;
 		}
 
-		public synchronized byte[] next()
+		public byte[] next()
 			throws IOException
 		{
-			if (!started) {
-				started = true;
-				findMinimum();
-			}
+			btreeLock.readLock().lock();
+			try {
+				if (!started) {
+					started = true;
+					findMinimum();
+				}
 
-			byte[] value = findNext(false);
-			while (value != null) {
-				if (maxValue != null && comparator.compareBTreeValues(maxValue, value, 0, value.length) < 0) {
-					// Reached maximum value, stop iterating
-					close();
-					value = null;
-					break;
+				byte[] value = findNext(false);
+				while (value != null) {
+					if (maxValue != null && comparator.compareBTreeValues(maxValue, value, 0, value.length) < 0) {
+						// Reached maximum value, stop iterating
+						close();
+						value = null;
+						break;
+					}
+					else if (searchKey != null && !ByteArrayUtil.matchesPattern(value, searchMask, searchKey)) {
+						// Value doesn't match search key/mask
+						value = findNext(false);
+						continue;
+					}
+					else {
+						// Matching value found
+						break;
+					}
 				}
-				else if (searchKey != null && !ByteArrayUtil.matchesPattern(value, searchMask, searchKey)) {
-					// Value doesn't match search key/mask
-					value = findNext(false);
-					continue;
-				}
-				else {
-					// Matching value found
-					break;
-				}
-			}
 
-			return value;
+				return value;
+			}
+			finally {
+				btreeLock.readLock().unlock();
+			}
 		}
 
 		private void findMinimum()
@@ -1756,25 +1779,37 @@ public class BTree {
 			}
 		}
 
-		public synchronized void set(byte[] value) {
-			if (currentNode == null || currentIdx > currentNode.getValueCount()) {
-				throw new IllegalStateException();
-			}
+		public void set(byte[] value) {
+			btreeLock.readLock().lock();
+			try {
+				if (currentNode == null || currentIdx > currentNode.getValueCount()) {
+					throw new IllegalStateException();
+				}
 
-			currentNode.setValue(currentIdx - 1, value);
+				currentNode.setValue(currentIdx - 1, value);
+			}
+			finally {
+				btreeLock.readLock().unlock();
+			}
 		}
 
-		public synchronized void close()
+		public void close()
 			throws IOException
 		{
-			while (currentNode != null) {
-				currentNode.deregister(this);
-				currentNode.release();
-				currentNode = popNodeStack();
-			}
+			btreeLock.readLock().lock();
+			try {
+				while (currentNode != null) {
+					currentNode.deregister(this);
+					currentNode.release();
+					currentNode = popNodeStack();
+				}
 
-			assert parentNodeStack.isEmpty();
-			parentIndexStack.clear();
+				assert parentNodeStack.isEmpty();
+				parentIndexStack.clear();
+			}
+			finally {
+				btreeLock.readLock().unlock();
+			}
 		}
 
 		private Node popNodeStack() {
@@ -1793,17 +1828,20 @@ public class BTree {
 			return 0;
 		}
 
-		public synchronized boolean valueAdded(Node node, int index) {
+		public boolean valueAdded(Node node, int addedIndex) {
+			assert btreeLock.isWriteLockedByCurrentThread();
+
 			if (node == currentNode) {
-				if (index <= currentIdx) {
+				if (addedIndex < currentIdx) {
 					currentIdx++;
 				}
 			}
 			else {
 				for (int i = 0; i < parentNodeStack.size(); i++) {
 					if (node == parentNodeStack.get(i)) {
-						if (index <= parentIndexStack.get(i)) {
-							parentIndexStack.set(i, index + 1);
+						int parentIdx = parentIndexStack.get(i);
+						if (addedIndex < parentIdx) {
+							parentIndexStack.set(i, parentIdx + 1);
 						}
 
 						break;
@@ -1814,17 +1852,20 @@ public class BTree {
 			return false;
 		}
 
-		public synchronized boolean valueRemoved(Node node, int index) {
+		public boolean valueRemoved(Node node, int removedIndex) {
+			assert btreeLock.isWriteLockedByCurrentThread();
+
 			if (node == currentNode) {
-				if (index <= currentIdx) {
+				if (removedIndex < currentIdx) {
 					currentIdx--;
 				}
 			}
 			else {
 				for (int i = 0; i < parentNodeStack.size(); i++) {
 					if (node == parentNodeStack.get(i)) {
-						if (index <= parentIndexStack.get(i)) {
-							parentIndexStack.set(i, index - 1);
+						int parentIdx = parentIndexStack.get(i);
+						if (removedIndex < parentIdx) {
+							parentIndexStack.set(i, parentIdx - 1);
 						}
 
 						break;
@@ -1835,13 +1876,11 @@ public class BTree {
 			return false;
 		}
 
-		public boolean valueChanged(Node node, int index) {
-			return false;
-		}
-
-		public synchronized boolean nodeSplit(Node node, Node newNode, int medianIdx)
+		public boolean nodeSplit(Node node, Node newNode, int medianIdx)
 			throws IOException
 		{
+			assert btreeLock.isWriteLockedByCurrentThread();
+
 			boolean deregister = false;
 
 			if (node == currentNode) {
@@ -1882,9 +1921,11 @@ public class BTree {
 			return deregister;
 		}
 
-		public synchronized boolean nodeMergedWith(Node sourceNode, Node targetNode, int mergeIdx)
+		public boolean nodeMergedWith(Node sourceNode, Node targetNode, int mergeIdx)
 			throws IOException
 		{
+			assert btreeLock.isWriteLockedByCurrentThread();
+
 			boolean deregister = false;
 
 			if (sourceNode == currentNode) {
