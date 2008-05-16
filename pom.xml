@@ -242,30 +242,30 @@
 			<dependency>
 				<groupId>info.aduna.appbase</groupId>
 				<artifactId>aduna-appbase-core</artifactId>
-				<version>3.0</version>
+				<version>3.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.appbase</groupId>
 				<artifactId>aduna-appbase-logging-file</artifactId>
-				<version>3.0</version>
+				<version>3.1</version>
 				<scope>runtime</scope>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.appbase</groupId>
 				<artifactId>aduna-appbase-webapp-base-core</artifactId>
-				<version>3.0</version>
+				<version>3.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.appbase</groupId>
 				<artifactId>aduna-appbase-webapp-system</artifactId>
-				<version>3.0</version>
+				<version>3.1</version>
 				<type>war</type>
 				<scope>runtime</scope>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.appbase</groupId>
 				<artifactId>aduna-appbase-webapp-system-core</artifactId>
-				<version>3.0</version>
+				<version>3.1</version>
 			</dependency>
 
 			<!-- Aduna Commons -->
