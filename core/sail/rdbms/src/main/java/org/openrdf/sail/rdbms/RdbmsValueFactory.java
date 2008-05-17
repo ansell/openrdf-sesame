@@ -6,8 +6,8 @@
 package org.openrdf.sail.rdbms;
 
 import java.sql.SQLException;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -32,6 +32,7 @@ import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
+import org.openrdf.sail.rdbms.util.WritePrefReadWriteLockManager;
 
 /**
  * Provides basic value creation both for traditional values as well as values
@@ -59,7 +60,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 
 	private PredicateManager predicates;
 
-	private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+	private WritePrefReadWriteLockManager lock = new WritePrefReadWriteLockManager();
 
 	private IdSequence ids;
 
@@ -307,11 +308,15 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		}
 	}
 
-	public Lock getIdReadLock() {
-		return lock.readLock();
+	public Lock getIdReadLock() throws InterruptedException {
+		return lock.getReadLock();
 	}
 
-	public Lock getIdWriteLock() {
-		return lock.writeLock();
+	public Lock tryIdWriteLock() {
+		return lock.tryWriteLock();
+	}
+
+	public Lock getIdWriteLock() throws InterruptedException {
+		return lock.getWriteLock();
 	}
 }

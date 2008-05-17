@@ -7,8 +7,9 @@ package org.openrdf.sail.rdbms;
 
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.concurrent.locks.Lock;
 
+import info.aduna.concurrent.locks.ExclusiveLockManager;
+import info.aduna.concurrent.locks.Lock;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Namespace;
@@ -57,9 +58,9 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	private RdbmsEvaluationFactory factory;
 
-	private Lock lock;
+	private ExclusiveLockManager lockManager;
 
-	private boolean locked;
+	private Lock lock;
 
 	public RdbmsConnection(RdbmsStore sail, RdbmsTripleRepository triples) {
 		super(sail);
@@ -80,8 +81,8 @@ public class RdbmsConnection extends SailConnectionBase {
 		this.factory = factory;
 	}
 
-	public void setLock(Lock lock) {
-		this.lock = lock;
+	public void setLockManager(ExclusiveLockManager lock) {
+		this.lockManager = lock;
 	}
 
 	@Override
@@ -278,6 +279,9 @@ public class RdbmsConnection extends SailConnectionBase {
 		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
+		catch (InterruptedException e) {
+			throw new RdbmsException(e);
+		}
 	}
 
 	@Override
@@ -288,17 +292,16 @@ public class RdbmsConnection extends SailConnectionBase {
 		super.finalize();
 	}
 
-	private void lock() {
-		if (lock != null) {
-			lock.lock();
-			locked = true;
+	private void lock() throws InterruptedException {
+		if (lockManager != null) {
+			lock = lockManager.getExclusiveLock();
 		}
 	}
 
 	private void unlock() {
-		if (locked && lock != null) {
-			locked = false;
-			lock.unlock();
+		if (lockManager != null && lock != null) {
+			lock.release();
+			lock = null;
 		}
 	}
 

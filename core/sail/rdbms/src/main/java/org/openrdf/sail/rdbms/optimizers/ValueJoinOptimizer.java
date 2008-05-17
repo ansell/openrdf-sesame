@@ -5,6 +5,9 @@
  */
 package org.openrdf.sail.rdbms.optimizers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
@@ -25,6 +28,7 @@ import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SelectQuery;
 import org.openrdf.sail.rdbms.algebra.SqlEq;
 import org.openrdf.sail.rdbms.algebra.URIColumn;
+import org.openrdf.sail.rdbms.algebra.UnionItem;
 import org.openrdf.sail.rdbms.algebra.base.FromItem;
 import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
@@ -53,6 +57,8 @@ public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExcept
 	private FromItem join;
 
 	private FromItem parent;
+
+	private List<FromItem> stack = new ArrayList<FromItem>();
 
 	private SelectQuery query;
 
@@ -87,6 +93,15 @@ public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExcept
 		super.meetFromItem(node);
 		join = parent;
 		parent = top;
+	}
+
+	@Override
+	public void meet(UnionItem node)
+		throws RuntimeException
+	{
+		stack.add(node);
+		super.meet(node);
+		stack.remove(stack.size() - 1);
 	}
 
 	@Override
@@ -219,7 +234,7 @@ public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExcept
 	}
 
 	private void join(ColumnVar var, String alias, String tableName, boolean left) {
-		if (query.getFromItem(alias) == null) {
+		if (!isJoined(alias)) {
 			FromItem valueJoin = valueJoin(alias, tableName, var, left);
 			if (join == parent || join.getFromItem(var.getAlias()) != null) {
 				join.addJoin(valueJoin);
@@ -228,6 +243,12 @@ public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExcept
 				parent.addJoinBefore(valueJoin, join);
 			}
 		}
+	}
+
+	private boolean isJoined(String alias) {
+		if (stack.isEmpty())
+			return query.getFromItem(alias) != null;
+		return stack.get(stack.size() - 1).getFromItem(alias) != null;
 	}
 
 	private FromItem valueJoin(String alias, String tableName, ColumnVar using, boolean left) {

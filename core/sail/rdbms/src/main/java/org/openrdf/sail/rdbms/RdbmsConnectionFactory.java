@@ -9,10 +9,10 @@ import static java.sql.Connection.TRANSACTION_READ_COMMITTED;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.sql.DataSource;
+
+import info.aduna.concurrent.locks.ExclusiveLockManager;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.sail.NotifyingSailConnection;
@@ -100,7 +100,7 @@ public class RdbmsConnectionFactory {
 
 	private IdSequence ids;
 
-	private final Lock lock = new ReentrantLock();
+	private final ExclusiveLockManager lock = new ExclusiveLockManager();
 
 	public void setSail(RdbmsStore sail) {
 		this.sail = sail;
@@ -319,7 +319,7 @@ public class RdbmsConnectionFactory {
 			optimizer.setLiteralTable(literalTable);
 			optimizer.setHashTable(hashTable);
 			conn.setRdbmsQueryOptimizer(optimizer);
-			conn.setLock(lock);
+			conn.setLockManager(lock);
 			return conn;
 		}
 		catch (SQLException e) {

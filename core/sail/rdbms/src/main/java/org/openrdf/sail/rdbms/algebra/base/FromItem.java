@@ -102,6 +102,17 @@ public abstract class FromItem extends RdbmsQueryModelNodeBase {
 		return null;
 	}
 
+	public FromItem getFromItemNotInUnion(String alias) {
+		if (this.alias.equals(alias))
+			return this;
+		for (FromItem join : joins) {
+			FromItem result = join.getFromItemNotInUnion(alias);
+			if (result != null)
+				return result;
+		}
+		return null;
+	}
+
 	public void removeFilter(SqlExpr sqlExpr) {
 		for (int i = filters.size() - 1; i >= 0; i--) {
 			if (filters.get(i) == sqlExpr) {

@@ -5,7 +5,9 @@
  */
 package org.openrdf.sail.rdbms.postgresql;
 
-import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 
 /**
@@ -17,9 +19,9 @@ import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 public class PgSqlQueryOptimizer extends RdbmsQueryOptimizer {
 
 	@Override
-	protected void addRdbmsOptimizations(QueryOptimizerList optimizerList) {
-		super.addRdbmsOptimizations(optimizerList);
-		optimizerList.add(new PgSqlRegexFlagsInliner());
+	protected void rdbmsOptimizations(TupleExpr expr, Dataset dataset, BindingSet bindings) {
+		super.rdbmsOptimizations(expr, dataset, bindings);
+		new PgSqlRegexFlagsInliner().optimize(expr, dataset, bindings);
 	}
 
 }

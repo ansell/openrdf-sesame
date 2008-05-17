@@ -254,7 +254,7 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 	}
 
 	public FromItem getFromItem(String alias) {
-		return from.getFromItem(alias);
+		return from.getFromItemNotInUnion(alias);
 	}
 
 	public List<SqlExpr> getFilters() {
