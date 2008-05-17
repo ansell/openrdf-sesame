@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>2.1.2-SNAPSHOT</version>
+		<version>2.1.2</version>
 	</parent>
 
 	<artifactId>sesame-queryalgebra-model</artifactId>
-	<version>2.1.2-SNAPSHOT</version>
+	<version>2.1.2</version>
 
 	<name>OpenRDF Sesame: Query algebra - model</name>
 	<description>A generic query algebra for RDF queries.</description>
@@ -30,9 +30,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1/core/queryalgebra/model</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1/core/queryalgebra/model</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.1/core/queryalgebra/model</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1.2/core/queryalgebra/model</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1.2/core/queryalgebra/model</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.1.2/core/queryalgebra/model</url>
 	</scm>
 
 </project>
