@@ -878,7 +878,7 @@ public class BTree {
 			maxNodeID = newNodeID;
 		}
 
-		Node node;
+		Node node = new Node(newNodeID);
 
 		synchronized (nodeCache) {
 			if (nodeCache.size() >= NODE_CACHE_SIZE && mruNodes.size() > MIN_MRU_CACHE_SIZE) {
@@ -886,7 +886,6 @@ public class BTree {
 				expelNodeFromCache();
 			}
 
-			node = new Node(newNodeID);
 			node.use();
 
 			nodeCache.put(node.getID(), node);
@@ -938,32 +937,36 @@ public class BTree {
 	private void releaseNode(Node node)
 		throws IOException
 	{
-		synchronized (nodeCache) {
-			if (node.isEmpty() && node.isLeaf()) {
-				// Discard node
-				node.write();
-				nodeCache.remove(node.getID());
+		// Note: this method is called by Node.release(), which already
+		// synchronizes on nodeCache. This method should not be called directly to
+		// prevent concurrency issues!!!
 
-				// allow the node ID to be reused
-				synchronized (allocatedNodes) {
-					initAllocatedNodes();
-					allocatedNodes.clear(node.id);
+		// synchronized (nodeCache) {
+		if (node.isEmpty() && node.isLeaf()) {
+			// Discard node
+			node.write();
+			nodeCache.remove(node.getID());
 
-					if (node.id == maxNodeID) {
-						// Shrink file
-						maxNodeID = Math.max(0, allocatedNodes.length() - 1);
-						fileChannel.truncate(nodeID2offset(maxNodeID) + nodeSize);
-					}
-				}
-			}
-			else {
-				mruNodes.put(node.getID(), node);
+			// allow the node ID to be reused
+			synchronized (allocatedNodes) {
+				initAllocatedNodes();
+				allocatedNodes.clear(node.id);
 
-				if (nodeCache.size() > NODE_CACHE_SIZE && mruNodes.size() > MIN_MRU_CACHE_SIZE) {
-					expelNodeFromCache();
+				if (node.id == maxNodeID) {
+					// Shrink file
+					maxNodeID = Math.max(0, allocatedNodes.length() - 1);
+					fileChannel.truncate(nodeID2offset(maxNodeID) + nodeSize);
 				}
 			}
 		}
+		else {
+			mruNodes.put(node.getID(), node);
+
+			if (nodeCache.size() > NODE_CACHE_SIZE && mruNodes.size() > MIN_MRU_CACHE_SIZE) {
+				expelNodeFromCache();
+			}
+		}
+		// }
 	}
 
 	/**
@@ -1093,18 +1096,26 @@ public class BTree {
 		}
 
 		public int use() {
-			return ++usageCount;
+			// synchronize on nodeCache because release() can call
+			// releaseNode(Node) and readNode(int) calls this method
+			synchronized (nodeCache) {
+				return ++usageCount;
+			}
 		}
 
 		public void release()
 			throws IOException
 		{
-			assert usageCount > 0 : "Releasing node while usage count is " + usageCount;
+			// synchronize on nodeCache because this method can call
+			// releaseNode(Node) and readNode(int) can call use()
+			synchronized (nodeCache) {
+				assert usageCount > 0 : "Releasing node while usage count is " + usageCount;
 
-			usageCount--;
+				usageCount--;
 
-			if (usageCount == 0) {
-				releaseNode(this);
+				if (usageCount == 0) {
+					releaseNode(this);
+				}
 			}
 		}
 
