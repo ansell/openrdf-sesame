@@ -20,10 +20,12 @@ import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
+import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -180,6 +182,28 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		public void meet(Join node) throws RuntimeException {
 			// search for statement patterns
 			node.visitChildren(this);
+		}
+
+		@Override
+		public void meet(LeftJoin node) throws RuntimeException {
+			// search the left side, but not the optional right side
+			node.getLeftArg().visit(this);
+		}
+
+		@Override
+		public void meet(Union node) throws RuntimeException {
+			List<Boolean> orig = innerJoins;
+			// search left (independent of right)
+			List<Boolean> left = innerJoins = new ArrayList<Boolean>(orig);
+			node.getLeftArg().visit(this);
+			// search right (independent of left)
+			List<Boolean> right = innerJoins = new ArrayList<Boolean>(orig);
+			node.getRightArg().visit(this);
+			// compare results
+			if (!left.equals(right)) {
+				// not found on both sides
+				innerJoins = orig;
+			}
 		}
 
 		@Override
