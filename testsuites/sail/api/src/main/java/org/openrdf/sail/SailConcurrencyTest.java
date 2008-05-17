@@ -15,6 +15,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.impl.URIImpl;
 
 /**
+ * Tests concurrent read and write access to a Sail implementation.
+ * 
  * @author Arjohn Kampman
  */
 public abstract class SailConcurrencyTest extends TestCase {
@@ -23,10 +25,10 @@ public abstract class SailConcurrencyTest extends TestCase {
 	 * Constants *
 	 *-----------*/
 
-	private static final int MAX_STATEMENT_IDX = 100000;
+	private static final int MAX_STATEMENT_IDX = 1000;
 
-	private static final long MAX_TEST_TIME = 600 * 1000;
-	
+	private static final long MAX_TEST_TIME = 30 * 1000;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -124,7 +126,8 @@ public abstract class SailConcurrencyTest extends TestCase {
 									assertNotNull(context);
 									contextCount++;
 								}
-//								System.out.println("Found " + contextCount + " contexts");
+								// System.out.println("Found " + contextCount + "
+								// contexts");
 							}
 							finally {
 								contextIter.close();
@@ -146,7 +149,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 		Thread readerThread2 = new Thread(reader);
 		Thread writerThread1 = new Thread(writer);
 		Thread writerThread2 = new Thread(writer);
-		
+
 		System.out.println("Running concurrency test...");
 
 		continueRunning = true;

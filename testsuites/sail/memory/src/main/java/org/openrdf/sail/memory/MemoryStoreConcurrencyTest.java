@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -10,7 +10,8 @@ import org.openrdf.sail.SailConcurrencyTest;
 import org.openrdf.sail.SailException;
 
 /**
- * An extension of SailConcurrencyTest for testing the class {@link NativeStore}.
+ * An extension of {@link SailConcurrencyTest} for testing the class
+ * {@link MemoryStore}.
  */
 public class MemoryStoreConcurrencyTest extends SailConcurrencyTest {
 
