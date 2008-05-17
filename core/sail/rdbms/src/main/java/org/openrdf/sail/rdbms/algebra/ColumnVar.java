@@ -116,7 +116,11 @@ public class ColumnVar implements Cloneable {
 		return anonymous;
 	}
 
-	public boolean isHidden() {
+	public boolean isHiddenOrImplied() {
+		return hidden || implied;
+	}
+
+	public boolean isHiddenOrConstant() {
 		return hidden || value != null;
 	}
 

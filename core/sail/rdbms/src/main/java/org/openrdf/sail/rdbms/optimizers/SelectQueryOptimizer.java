@@ -281,7 +281,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 			else {
 				vars.put(var.getName(), var);
 			}
-			if (!var.isHidden() && value == null) {
+			if (!var.isHiddenOrConstant() && value == null) {
 				SelectProjection proj = new SelectProjection();
 				proj.setVar(var);
 				proj.setId(new RefIdColumn(var));

@@ -14,7 +14,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
+
+import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -165,10 +166,7 @@ public class RdbmsTripleRepository {
 		}
 		conn.setAutoCommit(true);
 		conn.close();
-		if (readLock != null) {
-			readLock.unlock();
-			readLock = null;
-		}
+		releaseLock();
 	}
 
 	public synchronized void commit()
@@ -182,19 +180,15 @@ public class RdbmsTripleRepository {
 		manager.flush();
 		conn.commit();
 		conn.setAutoCommit(true);
-		if (readLock != null) {
-			readLock.unlock();
-			readLock = null;
-		}
-		Lock writeLock = vf.getIdWriteLock();
-		boolean locked = writeLock.tryLock();
+		releaseLock();
+		Lock writeLock = vf.tryIdWriteLock();
 		try {
 			vf.flush();
-			statements.committed(locked);
+			statements.committed(writeLock != null);
 		}
 		finally {
-			if (locked) {
-				writeLock.unlock();
+			if (writeLock != null) {
+				writeLock.release();
 			}
 		}
 	}
@@ -210,30 +204,21 @@ public class RdbmsTripleRepository {
 			conn.rollback();
 			conn.setAutoCommit(true);
 		}
-		if (readLock != null) {
-			readLock.unlock();
-			readLock = null;
-		}
+		releaseLock();
 	}
 
 	@Override
 	protected void finalize()
 		throws Throwable
 	{
-		if (readLock != null) {
-			readLock.unlock();
-			readLock = null;
-		}
+		releaseLock();
 		super.finalize();
 	}
 
 	public void add(RdbmsStatement st)
 		throws SailException, SQLException, InterruptedException
 	{
-		if (readLock == null) {
-			readLock = vf.getIdReadLock();
-			readLock.lock();
-		}
+		acquireLock();
 		synchronized (queue) {
 			queue.add(st);
 			if (queue.size() > getMaxQueueSize()) {
@@ -367,6 +352,19 @@ public class RdbmsTripleRepository {
 
 	protected int getMaxQueueSize() {
 		return STMT_BUFFER;
+	}
+
+	private synchronized void acquireLock() throws InterruptedException {
+		if (readLock == null) {
+			readLock = vf.getIdReadLock();
+		}
+	}
+
+	private synchronized void releaseLock() {
+		if (readLock != null) {
+			readLock.release();
+			readLock = null;
+		}
 	}
 
 	private String buildContextQuery()

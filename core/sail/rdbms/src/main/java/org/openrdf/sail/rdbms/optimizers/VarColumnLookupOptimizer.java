@@ -198,11 +198,11 @@ public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<Runtime
 	}
 
 	private ColumnVar replaceVar(ValueColumnBase node) {
-		ColumnVar var;
-		if (gparent == parent) {
+		ColumnVar var = null;
+		if (var == null) {
 			var = parent.getVar(node.getVarName());
 		}
-		else {
+		if (var == null && gparent != parent) {
 			var = gparent.getVarForChildren(node.getVarName());
 		}
 		if (var == null) {

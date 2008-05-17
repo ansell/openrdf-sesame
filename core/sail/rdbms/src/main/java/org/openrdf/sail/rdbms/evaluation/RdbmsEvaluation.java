@@ -127,7 +127,7 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 		for (SelectProjection proj : qb.getSqlSelectVar()) {
 			ColumnVar var = proj.getVar();
 			String name = qb.getBindingName(var);
-			if (!var.isHidden() && !bindings.hasBinding(name)) {
+			if (!var.isHiddenOrConstant() && !bindings.hasBinding(name)) {
 				var.setIndex(index);
 				query.select(proj.getId());
 				query.select(proj.getStringValue());
