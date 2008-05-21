@@ -62,7 +62,14 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	 * can be closed silently (just like in JDBC).
 	 */
 	private static boolean debugEnabled() {
-		return System.getProperty("org.openrdf.repository.debug") != null;
+		try {
+			return System.getProperty("org.openrdf.repository.debug") != null;
+		}
+		catch (SecurityException e) {
+			// Thrown when not allowed to read system properties, for example
+			// when running in applets
+			return false;
+		}
 	}
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
