@@ -50,8 +50,15 @@ public abstract class SailBase implements NotifyingSail {
 	static final String DEBUG_PROP = "org.openrdf.repository.debug";
 
 	static boolean debugEnabled() {
-		String value = System.getProperty(DEBUG_PROP);
-		return value != null && !value.equals("false");
+		try {
+			String value = System.getProperty(DEBUG_PROP);
+			return value != null && !value.equals("false");
+		}
+		catch (SecurityException e) {
+			// Thrown when not allowed to read system properties, for example when
+			// running in applets
+			return false;
+		}
 	}
 
 	/*-----------*
