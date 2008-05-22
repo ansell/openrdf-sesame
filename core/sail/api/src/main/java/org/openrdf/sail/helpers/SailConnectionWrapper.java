@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-208.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -16,8 +16,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.sail.SailConnectionListener;
+import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
 /**
@@ -26,7 +25,7 @@ import org.openrdf.sail.SailException;
  * 
  * @author jeen
  */
-public class SailConnectionWrapper implements NotifyingSailConnection {
+public class SailConnectionWrapper implements SailConnection {
 
 	/*-----------*
 	 * Variables *
@@ -35,7 +34,7 @@ public class SailConnectionWrapper implements NotifyingSailConnection {
 	/**
 	 * The wrapped SailConnection.
 	 */
-	private NotifyingSailConnection wrappedCon;
+	private SailConnection wrappedCon;
 
 	/*--------------*
 	 * Constructors *
@@ -45,7 +44,7 @@ public class SailConnectionWrapper implements NotifyingSailConnection {
 	 * Creates a new TransactionWrapper object that wraps the supplied
 	 * connection.
 	 */
-	public SailConnectionWrapper(NotifyingSailConnection wrappedCon) {
+	public SailConnectionWrapper(SailConnection wrappedCon) {
 		this.wrappedCon = wrappedCon;
 	}
 
@@ -54,12 +53,12 @@ public class SailConnectionWrapper implements NotifyingSailConnection {
 	 *---------*/
 
 	/**
-	 * Gets the Connection that is wrapped by this object.
+	 * Gets the connection that is wrapped by this object.
 	 * 
 	 * @return The SailConnection object that was supplied to the constructor of
 	 *         this class.
 	 */
-	protected NotifyingSailConnection getWrappedConnection() {
+	protected SailConnection getWrappedConnection() {
 		return wrappedCon;
 	}
 
@@ -165,13 +164,5 @@ public class SailConnectionWrapper implements NotifyingSailConnection {
 		throws SailException
 	{
 		wrappedCon.clearNamespaces();
-	}
-
-	public void addConnectionListener(SailConnectionListener listener) {
-		wrappedCon.addConnectionListener(listener);
-	}
-
-	public void removeConnectionListener(SailConnectionListener listener) {
-		wrappedCon.addConnectionListener(listener);
 	}
 }

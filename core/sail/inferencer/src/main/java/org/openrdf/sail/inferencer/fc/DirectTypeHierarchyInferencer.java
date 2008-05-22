@@ -32,7 +32,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.helpers.SailWrapper;
+import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
 
@@ -64,7 +64,7 @@ import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
  *           b. I is of type U.
  * </pre>
  */
-public class DirectTypeHierarchyInferencer extends SailWrapper {
+public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
