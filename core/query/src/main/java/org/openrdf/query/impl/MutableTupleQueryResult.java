@@ -58,7 +58,6 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 
 	public <E extends Exception> MutableTupleQueryResult(Collection<String> bindingNames,
 			BindingSet... bindingSets)
-		throws E
 	{
 		this(bindingNames, Arrays.asList(bindingSets));
 	}
