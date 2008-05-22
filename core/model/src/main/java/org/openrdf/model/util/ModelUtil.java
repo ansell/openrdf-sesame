@@ -191,13 +191,7 @@ public class ModelUtil {
 		Resource subj1 = st1.getSubject();
 		Resource subj2 = st2.getSubject();
 
-		if (!(subj1 instanceof BNode)) {
-			if (!subj1.equals(subj2)) {
-				// subjects are not bNodes and don't match
-				return false;
-			}
-		}
-		else { // subj1 instanceof BNode
+		if (subj1 instanceof BNode && subj2 instanceof BNode) {
 			BNode mappedBNode = bNodeMapping.get(subj1);
 
 			if (mappedBNode != null) {
@@ -216,17 +210,17 @@ public class ModelUtil {
 				}
 			}
 		}
+		else {
+			// subjects are not (both) bNodes
+			if (!subj1.equals(subj2)) {
+				return false;
+			}
+		}
 
 		Value obj1 = st1.getObject();
 		Value obj2 = st2.getObject();
 
-		if (!(obj1 instanceof BNode)) {
-			if (!obj1.equals(obj2)) {
-				// objects are not bNodes and don't match
-				return false;
-			}
-		}
-		else { // obj1 instanceof BNode
+		if (obj1 instanceof BNode && obj2 instanceof BNode) {
 			BNode mappedBNode = bNodeMapping.get(obj1);
 
 			if (mappedBNode != null) {
@@ -243,6 +237,12 @@ public class ModelUtil {
 					// 'obj2' is already mapped to some other value.
 					return false;
 				}
+			}
+		}
+		else {
+			// objects are not (both) bNodes
+			if (!obj1.equals(obj2)) {
+				return false;
 			}
 		}
 
