@@ -33,6 +33,12 @@
 
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-rio-rdfxml</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-query</artifactId>
 		</dependency>
 
@@ -82,7 +88,7 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-sail-memory</artifactId>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-lang</artifactId>
