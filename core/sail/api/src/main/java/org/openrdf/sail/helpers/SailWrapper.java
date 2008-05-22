@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-208.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,10 +8,8 @@ package org.openrdf.sail.helpers;
 import java.io.File;
 
 import org.openrdf.model.ValueFactory;
-import org.openrdf.sail.NotifyingSail;
-import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.Sail;
-import org.openrdf.sail.SailChangedListener;
+import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.StackableSail;
 
@@ -21,7 +19,7 @@ import org.openrdf.sail.StackableSail;
  * 
  * @author Arjohn Kampman
  */
-public class SailWrapper implements StackableSail, NotifyingSail {
+public class SailWrapper implements StackableSail {
 
 	/*-----------*
 	 * Variables *
@@ -30,7 +28,7 @@ public class SailWrapper implements StackableSail, NotifyingSail {
 	/**
 	 * The base Sail for this SailWrapper.
 	 */
-	private NotifyingSail baseSail;
+	private Sail baseSail;
 
 	/*--------------*
 	 * Constructors *
@@ -46,7 +44,7 @@ public class SailWrapper implements StackableSail, NotifyingSail {
 	/**
 	 * Creates a new SailWrapper that wraps the supplied Sail.
 	 */
-	public SailWrapper(NotifyingSail baseSail) {
+	public SailWrapper(Sail baseSail) {
 		setBaseSail(baseSail);
 	}
 
@@ -55,14 +53,14 @@ public class SailWrapper implements StackableSail, NotifyingSail {
 	 *---------*/
 
 	public void setBaseSail(Sail baseSail) {
-		this.baseSail = (NotifyingSail) baseSail;
+		this.baseSail = baseSail;
 	}
 
 	public Sail getBaseSail() {
 		return baseSail;
 	}
 
-	private void verifyBaseSailSet() {
+	protected void verifyBaseSailSet() {
 		if (baseSail == null) {
 			throw new IllegalStateException("No base Sail has been set");
 		}
@@ -97,7 +95,7 @@ public class SailWrapper implements StackableSail, NotifyingSail {
 		return baseSail.isWritable();
 	}
 
-	public NotifyingSailConnection getConnection()
+	public SailConnection getConnection()
 		throws SailException
 	{
 		verifyBaseSailSet();
@@ -107,15 +105,5 @@ public class SailWrapper implements StackableSail, NotifyingSail {
 	public ValueFactory getValueFactory() {
 		verifyBaseSailSet();
 		return baseSail.getValueFactory();
-	}
-
-	public void addSailChangedListener(SailChangedListener listener) {
-		verifyBaseSailSet();
-		baseSail.addSailChangedListener(listener);
-	}
-
-	public void removeSailChangedListener(SailChangedListener listener) {
-		verifyBaseSailSet();
-		baseSail.removeSailChangedListener(listener);
 	}
 }

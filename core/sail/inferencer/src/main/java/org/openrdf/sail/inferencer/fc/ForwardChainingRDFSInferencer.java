@@ -8,7 +8,7 @@ package org.openrdf.sail.inferencer.fc;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.helpers.SailWrapper;
+import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 
 /**
@@ -18,7 +18,7 @@ import org.openrdf.sail.inferencer.InferencerConnection;
  * RDF Schema semantics to any Sail that returns {@link InferencerConnection}s
  * from their {@link Sail#getConnection()} method.
  */
-public class ForwardChainingRDFSInferencer extends SailWrapper {
+public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 
 	/*--------------*
 	 * Constructors *

@@ -16,7 +16,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.helpers.SailConnectionWrapper;
+import org.openrdf.sail.helpers.NotifyingSailConnectionWrapper;
 
 /**
  * An extension of ConnectionWrapper that implements the
@@ -24,7 +24,9 @@ import org.openrdf.sail.helpers.SailConnectionWrapper;
  * 
  * @author Arjohn Kampman
  */
-public class InferencerConnectionWrapper extends SailConnectionWrapper implements InferencerConnection {
+public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper implements
+		InferencerConnection
+{
 
 	/*--------------*
 	 * Constructors *
