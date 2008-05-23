@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -21,14 +21,15 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
 public class ValueStoreRevision implements Serializable {
 
 	/*-----------*
+	 * Constants *
+	 *-----------*/
+
+	private static final long serialVersionUID = -2434063125560285009L;
+
+	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -2434063125560285009L;
-	
 	transient private ValueStore valueStore;
 
 	/*--------------*
