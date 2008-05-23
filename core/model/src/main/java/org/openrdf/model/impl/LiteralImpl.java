@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -22,6 +22,10 @@ import org.openrdf.model.datatypes.XMLDatatypeUtil;
  */
 public class LiteralImpl implements Literal {
 
+	/*-----------*
+	 * Constants *
+	 *-----------*/
+
 	private static final long serialVersionUID = -1649571784782592271L;
 
 	/*-----------*
@@ -31,21 +35,24 @@ public class LiteralImpl implements Literal {
 	/**
 	 * The literal's label.
 	 */
-	private final String label;
+	private String label;
 
 	/**
 	 * The literal's language tag (null if not applicable).
 	 */
-	private final String language;
+	private String language;
 
 	/**
 	 * The literal's datatype (null if not applicable).
 	 */
-	private final URI datatype;
+	private URI datatype;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
+
+	protected LiteralImpl() {
+	}
 
 	/**
 	 * Creates a new plain literal with the supplied label.
@@ -88,21 +95,37 @@ public class LiteralImpl implements Literal {
 	private LiteralImpl(String label, String language, URI datatype) {
 		assert label != null;
 
-		this.label = label;
-		this.language = (language == null) ? null : language.toLowerCase();
-		this.datatype = datatype;
+		setLabel(label);
+		if (language != null) {
+			setLanguage(language.toLowerCase());
+		}
+		if (datatype != null) {
+			setDatatype(datatype);
+		}
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
+	protected void setLabel(String label) {
+		this.label = label;
+	}
+
 	public String getLabel() {
 		return label;
 	}
 
+	protected void setLanguage(String language) {
+		this.language = language;
+	}
+
 	public String getLanguage() {
 		return language;
+	}
+
+	protected void setDatatype(URI datatype) {
+		this.datatype = datatype;
 	}
 
 	public URI getDatatype() {
