@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,56 +11,62 @@ import org.openrdf.sail.nativerdf.ValueStoreRevision;
 
 public class NativeLiteral extends LiteralImpl implements NativeValue {
 
+	/*-----------*
+	 * Constants *
+	 *-----------*/
+
+	private static final long serialVersionUID = 5198968663650168819L;
+
 	/*----------*
 	 * Variable *
 	 *----------*/
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2258721720531482856L;
-
 	private ValueStoreRevision revision;
 
-	private int id;
+	private int internalID;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
+	protected NativeLiteral(ValueStoreRevision revision, int internalID) {
+		super();
+		setInternalID(internalID, revision);
+	}
+
 	public NativeLiteral(ValueStoreRevision revision, String label) {
 		this(revision, label, UNKNOWN_ID);
 	}
 
-	public NativeLiteral(ValueStoreRevision revision, String label, int id) {
+	public NativeLiteral(ValueStoreRevision revision, String label, int internalID) {
 		super(label);
-		setInternalID(id, revision);
+		setInternalID(internalID, revision);
 	}
 
 	public NativeLiteral(ValueStoreRevision revision, String label, String lang) {
 		this(revision, label, lang, UNKNOWN_ID);
 	}
 
-	public NativeLiteral(ValueStoreRevision revision, String label, String lang, int id) {
+	public NativeLiteral(ValueStoreRevision revision, String label, String lang, int internalID) {
 		super(label, lang);
-		setInternalID(id, revision);
+		setInternalID(internalID, revision);
 	}
 
 	public NativeLiteral(ValueStoreRevision revision, String label, URI datatype) {
 		this(revision, label, datatype, UNKNOWN_ID);
 	}
 
-	public NativeLiteral(ValueStoreRevision revision, String label, URI datatype, int id) {
+	public NativeLiteral(ValueStoreRevision revision, String label, URI datatype, int internalID) {
 		super(label, datatype);
-		setInternalID(id, revision);
+		setInternalID(internalID, revision);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public void setInternalID(int id, ValueStoreRevision revision) {
-		this.id = id;
+	public void setInternalID(int internalID, ValueStoreRevision revision) {
+		this.internalID = internalID;
 		this.revision = revision;
 	}
 
@@ -69,6 +75,29 @@ public class NativeLiteral extends LiteralImpl implements NativeValue {
 	}
 
 	public int getInternalID() {
-		return id;
+		return internalID;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+
+		if (o instanceof NativeLiteral && internalID != NativeValue.UNKNOWN_ID) {
+			NativeLiteral otherNativeLiteral = (NativeLiteral)o;
+
+			if (otherNativeLiteral.internalID != NativeValue.UNKNOWN_ID
+					&& revision.equals(otherNativeLiteral.revision))
+			{
+				System.out.println("NativeLiteral.equals");
+
+				// NativeLiteral's from the same revision of the same native store,
+				// with both ID's set
+				return internalID == otherNativeLiteral.internalID;
+			}
+		}
+
+		return super.equals(o);
 	}
 }
