@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,6 +14,10 @@ import org.openrdf.model.BNode;
  */
 public class BNodeImpl implements BNode {
 
+	/*-----------*
+	 * Constants *
+	 *-----------*/
+
 	private static final long serialVersionUID = 5273570771022125970L;
 
 	/*-----------*
@@ -23,11 +27,18 @@ public class BNodeImpl implements BNode {
 	/**
 	 * The blank node's identifier.
 	 */
-	private final String id;
+	private String id;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
+
+	/**
+	 * Creates a new, unitialized blank node. This blank node's ID needs to be
+	 * {@link #setID(String) set} before the normal methods can be used.
+	 */
+	protected BNodeImpl() {
+	}
 
 	/**
 	 * Creates a new blank node with the supplied identifier.
@@ -36,9 +47,8 @@ public class BNodeImpl implements BNode {
 	 *        The identifier for this blank node, must not be <tt>null</tt>.
 	 */
 	public BNodeImpl(String id) {
-		assert id != null;
-
-		this.id = id;
+		this();
+		setID(id);
 	}
 
 	/*---------*
@@ -47,6 +57,10 @@ public class BNodeImpl implements BNode {
 
 	public String getID() {
 		return id;
+	}
+
+	protected void setID(String id) {
+		this.id = id;
 	}
 
 	public String stringValue() {

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -19,14 +19,14 @@ public class URIImpl implements URI {
 
 	private static final long serialVersionUID = -7330406348751485330L;
 
-	/**
-	 * The URI string.
-	 */
-	private final String uriString;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	/**
+	 * The URI string.
+	 */
+	private String uriString;
 
 	/**
 	 * An index indicating the first character of the local name in the URI
@@ -39,6 +39,13 @@ public class URIImpl implements URI {
 	 *--------------*/
 
 	/**
+	 * Creates a new, unitialized URI. This URI's string value needs to be
+	 * {@link #setURIString(String) set} before the normal methods can be used.
+	 */
+	protected URIImpl() {
+	}
+
+	/**
 	 * Creates a new URI from the supplied string.
 	 * 
 	 * @param uriString
@@ -47,6 +54,14 @@ public class URIImpl implements URI {
 	 *         If the supplied URI is not a valid (absolute) URI.
 	 */
 	public URIImpl(String uriString) {
+		setURIString(uriString);
+	}
+
+	/*---------*
+	 * Methods *
+	 *---------*/
+
+	protected void setURIString(String uriString) {
 		assert uriString != null;
 
 		if (uriString.indexOf(':') < 0) {
@@ -56,10 +71,6 @@ public class URIImpl implements URI {
 		this.uriString = uriString;
 		this.localNameIdx = -1;
 	}
-
-	/*---------*
-	 * Methods *
-	 *---------*/
 
 	// Implements URI.toString()
 	@Override
