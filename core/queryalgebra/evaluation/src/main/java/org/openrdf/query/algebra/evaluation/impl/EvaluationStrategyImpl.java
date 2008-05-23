@@ -126,9 +126,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * Constants *
 	 *-----------*/
 
-	private final TripleSource tripleSource;
+	protected final TripleSource tripleSource;
 
-	private final Dataset dataset;
+	protected final Dataset dataset;
 
 	/*--------------*
 	 * Constructors *
@@ -315,7 +315,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		};
 	}
 
-	private Value getVarValue(Var var, BindingSet bindings) {
+	protected Value getVarValue(Var var, BindingSet bindings) {
 		if (var == null) {
 			return null;
 		}
