@@ -14,6 +14,7 @@ import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.ValueExpr;
 
+@Deprecated
 public class QueryModelNodeReplacer extends QueryModelVisitorBase<RuntimeException> {
 
 	private QueryModelNode former;
