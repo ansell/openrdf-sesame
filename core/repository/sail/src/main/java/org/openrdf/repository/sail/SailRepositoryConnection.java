@@ -53,10 +53,10 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 
 	/**
 	 * Creates a new repository connection that will wrap the supplied
-	 * SailConnection. ConnectionImpl objects are created by
+	 * SailConnection. SailRepositoryConnection objects are created by
 	 * {@link SailRepository#getConnection}.
 	 */
-	SailRepositoryConnection(SailRepository repository, SailConnection sailConnection) {
+	protected SailRepositoryConnection(SailRepository repository, SailConnection sailConnection) {
 		super(repository);
 		this.sailConnection = sailConnection;
 	}
