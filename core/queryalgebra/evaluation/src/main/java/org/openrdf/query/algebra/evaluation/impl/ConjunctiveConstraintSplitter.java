@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  * Copyright James Leigh (c) 2006.
  *
  * Licensed under the Aduna BSD-style license.
@@ -16,7 +16,6 @@ import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelNodeReplacer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
 /**
@@ -31,8 +30,6 @@ public class ConjunctiveConstraintSplitter implements QueryOptimizer {
 	}
 
 	protected class ConstraintVisitor extends QueryModelVisitorBase<RuntimeException> {
-
-		protected final QueryModelNodeReplacer replacer = new QueryModelNodeReplacer();
 
 		protected final TupleExpr tupleExpr;
 
