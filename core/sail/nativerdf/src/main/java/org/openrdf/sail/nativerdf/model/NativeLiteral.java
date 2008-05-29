@@ -90,8 +90,6 @@ public class NativeLiteral extends LiteralImpl implements NativeValue {
 			if (otherNativeLiteral.internalID != NativeValue.UNKNOWN_ID
 					&& revision.equals(otherNativeLiteral.revision))
 			{
-				System.out.println("NativeLiteral.equals");
-
 				// NativeLiteral's from the same revision of the same native store,
 				// with both ID's set
 				return internalID == otherNativeLiteral.internalID;

@@ -74,7 +74,6 @@ public class NativeURI extends URIImpl implements NativeResource {
 
 			if (otherNativeURI.internalID != NativeValue.UNKNOWN_ID && revision.equals(otherNativeURI.revision))
 			{
-				System.out.println("NativeURI.equals");
 				// NativeURI's from the same revision of the same native store, with
 				// both ID's set
 				return internalID == otherNativeURI.internalID;

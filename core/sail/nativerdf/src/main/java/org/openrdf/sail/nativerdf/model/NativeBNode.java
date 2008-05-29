@@ -71,7 +71,6 @@ public class NativeBNode extends BNodeImpl implements NativeResource {
 			if (otherNativeBNode.internalID != NativeValue.UNKNOWN_ID
 					&& revision.equals(otherNativeBNode.revision))
 			{
-				System.out.println("NativeBNode.equals");
 				// NativeBNode's from the same revision of the same native store,
 				// with both ID's set
 				return internalID == otherNativeBNode.internalID;
