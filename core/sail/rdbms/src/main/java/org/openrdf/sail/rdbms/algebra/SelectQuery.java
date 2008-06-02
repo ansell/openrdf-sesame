@@ -212,6 +212,10 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 		return projections.containsKey(node.getVar().getName());
 	}
 
+	public boolean hasSqlSelectVarName(String name) {
+		return projections.containsKey(name);
+	}
+
 	public void addSqlSelectVar(SelectProjection node) {
 		projections.put(node.getVar().getName(), node);
 		node.setParentNode(this);

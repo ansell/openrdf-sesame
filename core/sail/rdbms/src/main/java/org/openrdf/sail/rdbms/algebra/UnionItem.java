@@ -47,7 +47,7 @@ public class UnionItem extends FromItem {
 		}
 		List<String> selectVars = new ArrayList<String>();
 		for (ColumnVar var : vars) {
-			if (var.isHiddenOrImplied())
+			if (var.isHidden())
 				continue;
 			if (!selectVars.contains(var.getName())) {
 				selectVars.add(var.getName());
@@ -64,12 +64,14 @@ public class UnionItem extends FromItem {
 		List<ColumnVar> columns = new ArrayList<ColumnVar>();
 		Map<String, ColumnVar> selectVars = new HashMap<String, ColumnVar>();
 		for (ColumnVar var : vars) {
-			if (var.isHiddenOrImplied())
+			if (var.isHidden())
 				continue;
 			if (selectVars.containsKey(var.getName())) {
-				ValueTypes types = selectVars.get(var.getName()).getTypes();
+				ColumnVar existing = selectVars.get(var.getName());
+				existing.setValue(null);
+				ValueTypes types = existing.getTypes();
 				types = types.clone().merge(var.getTypes());
-				selectVars.get(var.getName()).setTypes(types);
+				existing.setTypes(types);
 			}
 			else {
 				String name = var.getAlias() + var.getColumn();

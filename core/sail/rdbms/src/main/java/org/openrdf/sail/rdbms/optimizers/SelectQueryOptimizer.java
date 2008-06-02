@@ -155,7 +155,27 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 		query.setFrom(union);
 		mergeSelectClause(query, left);
 		mergeSelectClause(query, right);
+		addProjectionsFromUnion(query, union);
 		node.replaceWith(query);
+	}
+
+	/**
+	 * This happens when both sides of the union have the same variable name with
+	 * an implied value.
+	 */
+	private void addProjectionsFromUnion(SelectQuery query, UnionItem union) {
+		for (ColumnVar var : union.getSelectColumns()) {
+			if (!query.hasSqlSelectVarName(var.getName())) {
+				SelectProjection proj = new SelectProjection();
+				proj.setVar(var);
+				proj.setId(new RefIdColumn(var));
+				proj.setStringValue(coalesce(new URIColumn(var), new BNodeColumn(var), new LabelColumn(var),
+						new LongLabelColumn(var), new LongURIColumn(var)));
+				proj.setDatatype(new DatatypeColumn(var));
+				proj.setLanguage(new LanguageColumn(var));
+				query.addSqlSelectVar(proj);
+			}
+		}
 	}
 
 	@Override

@@ -656,6 +656,9 @@ public class QueryBuilder {
 					if (var == null) {
 						select.appendNull();
 					}
+					else if (var.isImplied()) {
+						select.appendNumeric(vf.getInternalId(var.getValue()));
+					}
 					else {
 						select.column(var.getAlias(), var.getColumn());
 					}
