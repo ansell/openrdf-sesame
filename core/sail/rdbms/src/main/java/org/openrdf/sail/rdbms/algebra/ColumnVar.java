@@ -116,8 +116,8 @@ public class ColumnVar implements Cloneable {
 		return anonymous;
 	}
 
-	public boolean isHiddenOrImplied() {
-		return hidden || implied;
+	public boolean isHidden() {
+		return hidden;
 	}
 
 	public boolean isHiddenOrConstant() {
@@ -158,6 +158,9 @@ public class ColumnVar implements Cloneable {
 
 	public void setValue(Value value) {
 		this.value = value;
+		if (value == null) {
+			implied = false;
+		}
 	}
 
 	public String getColumn() {

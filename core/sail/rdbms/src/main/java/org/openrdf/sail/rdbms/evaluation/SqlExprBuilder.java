@@ -75,7 +75,7 @@ public class SqlExprBuilder {
 		return this;
 	}
 
-	public SqlExprBuilder appendNumeric(double doubleValue) {
+	public SqlExprBuilder appendNumeric(Number doubleValue) {
 		where.append(" ? ");
 		parameters.add(doubleValue);
 		return this;

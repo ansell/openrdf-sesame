@@ -1398,6 +1398,29 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(set.contains(Arrays.asList(v3, null)));
 	}
 
+	public void testOrPredicate()
+		throws Exception
+	{
+		String union = "{ :s ?p :o FILTER (?p = :p1 || ?p = :p2) }";
+		URI s = vf.createURI("urn:test:s");
+		URI p1 = vf.createURI("urn:test:p1");
+		URI p2 = vf.createURI("urn:test:p2");
+		URI o = vf.createURI("urn:test:o");
+		testCon.add(s, p1, o);
+		testCon.add(s, p2, o);
+		String qry = "PREFIX :<urn:test:> SELECT ?p WHERE " + union;
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, qry);
+		TupleQueryResult result = query.evaluate();
+		List<Value> list = new ArrayList<Value>();
+		while (result.hasNext()) {
+			BindingSet bindings = result.next();
+			list.add(bindings.getValue("p"));
+		}
+		result.close();
+		assertTrue(list.contains(p1));
+		assertTrue(list.contains(p2));
+	}
+
 	private int getTotalStatementCount(RepositoryConnection connection)
 		throws RepositoryException
 	{
