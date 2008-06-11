@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,16 +14,18 @@ import org.openrdf.sail.StackableSail;
 public class SailUtil {
 
 	/**
-	 * Searches a stack of Sails from top to bottom for a Sail that is
-	 * an instance of the suppied class or interface. The first Sail that
-	 * matches (i.e. the one closest to the top) is returned.
-	 *
-	 * @param topSail The top of the Sail stack.
-	 * @param sailClass A class or interface.
-	 * @return A Sail that is an instance of sailClass, or null if no such
-	 * Sail was found.
+	 * Searches a stack of Sails from top to bottom for a Sail that is an
+	 * instance of the suppied class or interface. The first Sail that matches
+	 * (i.e. the one closest to the top) is returned.
+	 * 
+	 * @param topSail
+	 *        The top of the Sail stack.
+	 * @param sailClass
+	 *        A class or interface.
+	 * @return A Sail that is an instance of sailClass, or null if no such Sail
+	 *         was found.
 	 */
-	public static Sail findSailInStack(Sail topSail, Class<? extends Sail> sailClass) {
+	public static <C extends Sail> C findSailInStack(Sail topSail, Class<C> sailClass) {
 		if (sailClass == null) {
 			return null;
 		}
@@ -48,8 +50,6 @@ public class SailUtil {
 			}
 		}
 
-		return currentSail;
+		return (C)currentSail;
 	}
-	
-
 }
