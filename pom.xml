@@ -471,13 +471,6 @@
 	</dependencyManagement>
 
 	<build>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-			</extension>
-		</extensions>
-
 		<pluginManagement>
 			<plugins>
 				<!-- FIXME: version 2.2-beta-2 causes a lot problems -->
