@@ -162,15 +162,6 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 			boolean includeInferred, Resource... contexts)
 		throws RepositoryException
 	{
-		if (logger.isDebugEnabled()) {
-			logger.debug("getStatements({}, {}, {}, {}, {})", new Object[] {
-					subj,
-					pred,
-					obj,
-					includeInferred,
-					contexts });
-		}
-
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		try {
