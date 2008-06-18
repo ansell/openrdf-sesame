@@ -5,6 +5,9 @@
  */
 package org.openrdf.sail.helpers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.IterationWrapper;
 
@@ -15,6 +18,8 @@ import info.aduna.iteration.IterationWrapper;
  * @author jeen
  */
 class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
+	
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private SailConnectionBase connection;
 
@@ -59,8 +64,8 @@ class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 		throws E
 	{
 		super.handleClose();
-		connection.iterationClosed(this);
-	}
+			connection.iterationClosed(this);
+		}
 
 	@Override
 	protected void finalize()
