@@ -59,7 +59,7 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 	{
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 		try {
-			client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred, handler);
+			client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred, handler, getBindingsArray());
 		}
 		catch (IOException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
