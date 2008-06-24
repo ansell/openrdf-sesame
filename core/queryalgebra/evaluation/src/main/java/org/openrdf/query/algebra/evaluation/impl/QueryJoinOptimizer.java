@@ -8,13 +8,13 @@ package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
@@ -49,30 +49,61 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 
 	protected class JoinVisitor extends QueryModelVisitorBase<RuntimeException> {
 
+		Set<String> boundVars = new HashSet<String>();
+
 		@Override
-		public void meet(Join node)
-		{
-			List<TupleExpr> joinArgs = new LinkedList<TupleExpr>();
-			getJoinArgs(node, joinArgs);
+		public void meet(LeftJoin leftJoin) {
+			leftJoin.getLeftArg().visit(this);
 
-			// Process rest of query model before reordering the joins
-			for (TupleExpr joinArg : joinArgs) {
-				joinArg.visit(this);
+			Set<String> origBoundVars = boundVars;
+			try {
+				boundVars = new HashSet<String>(boundVars);
+				boundVars.addAll(leftJoin.getLeftArg().getBindingNames());
+
+				leftJoin.getRightArg().visit(this);
 			}
+			finally {
+				boundVars = origBoundVars;
+			}
+		}
 
-			joinArgs = sortExpressions(joinArgs, new HashSet<String>());
+		@Override
+		public void meet(Join node) {
+			Set<String> origBoundVars = boundVars;
+			try {
+				boundVars = new HashSet<String>(boundVars);
+
+				// Reorder the (recursive) join arguments to a more optimal sequence
+				List<TupleExpr> joinArgs = getJoinArgs(node, new ArrayList<TupleExpr>());
+				List<TupleExpr> orderedJoinArgs = new ArrayList<TupleExpr>(joinArgs.size());
+
+				while (!joinArgs.isEmpty()) {
+					TupleExpr tupleExpr = selectNextTupleExpr(joinArgs, boundVars);
+
+					joinArgs.remove(tupleExpr);
+					orderedJoinArgs.add(tupleExpr);
+
+					// Recursively optimize join arguments
+					tupleExpr.visit(this);
+
+					boundVars.addAll(tupleExpr.getBindingNames());
+				}
 
 			// Build new join hierarchy
-			TupleExpr replacement = joinArgs.get(0);
-			for (int i = 1; i < joinArgs.size(); i++) {
-				replacement = new Join(replacement, joinArgs.get(i));
+				TupleExpr replacement = orderedJoinArgs.get(0);
+				for (int i = 1; i < orderedJoinArgs.size(); i++) {
+					replacement = new Join(replacement, orderedJoinArgs.get(i));
 			}
 
 			// Replace old join hierarchy
 			node.replaceWith(replacement);
 		}
+			finally {
+				boundVars = origBoundVars;
+			}
+		}
 
-		protected void getJoinArgs(TupleExpr tupleExpr, List<TupleExpr> joinArgs) {
+		protected <L extends List<TupleExpr>> L getJoinArgs(TupleExpr tupleExpr, L joinArgs) {
 			if (tupleExpr instanceof Join) {
 				Join join = (Join)tupleExpr;
 				getJoinArgs(join.getLeftArg(), joinArgs);
@@ -81,31 +112,8 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 			else {
 				joinArgs.add(tupleExpr);
 			}
-		}
 
-		/**
-		 * Merges the boolean constraints and the path expressions in one single
-		 * list. Path expressions are heuristically reordered to minimize query
-		 * evaluation time and boolean constraints are inserted between them. The
-		 * separate boolean constraints are moved to the start of the list as much
-		 * as possible, under the condition that all variables that are used in
-		 * the constraint are instantiated by the path expressions that are
-		 * earlier in the list. An example combined list might be:
-		 * <tt>[(A,B,C), A != foo:bar, (B,E,F), C != F, (F,G,H)]</tt>.
-		 */
-		protected List<TupleExpr> sortExpressions(List<TupleExpr> expressions, Set<String> boundVars) {
-			List<TupleExpr> orderedExpressions = new ArrayList<TupleExpr>(expressions.size());
-
-			while (!expressions.isEmpty()) {
-				TupleExpr tupleExpr = selectNextTupleExpr(expressions, boundVars);
-
-				expressions.remove(tupleExpr);
-				orderedExpressions.add(tupleExpr);
-
-				boundVars.addAll(tupleExpr.getBindingNames());
-			}
-
-			return orderedExpressions;
+			return joinArgs;
 		}
 
 		/**
