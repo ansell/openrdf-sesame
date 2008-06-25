@@ -104,6 +104,8 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException
 	{
+		logger.trace("Incoming query model:\n{}", tupleExpr.toString());
+
 		// Clone the tuple expression to allow for more aggressive optimizations
 		tupleExpr = tupleExpr.clone();
 
@@ -133,6 +135,8 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			optimizerList.add(new FilterOptimizer());
 
 			optimizerList.optimize(tupleExpr, dataset, bindings);
+
+			logger.trace("Optimized query model:\n{}", tupleExpr.toString());
 
 			CloseableIteration<BindingSet, QueryEvaluationException> iter;
 			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
