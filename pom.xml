@@ -30,6 +30,7 @@
 	<modules>
 		<module>core</module>
 		<module>testsuites</module>
+		<module>compliance</module>
 	</modules>
 
 	<properties>
