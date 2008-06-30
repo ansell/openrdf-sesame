@@ -23,8 +23,8 @@
 		<module>sail</module>
 	</modules>
 
-	<name>OpenRDF Sesame test suites</name>
-	<description>OpenRDF Sesame test suites</description>
+	<name>OpenRDF Sesame compliance tests</name>
+	<description>OpenRDF Sesame compliance tests</description>
 
 	<dependencyManagement>
 		<dependencies>		
