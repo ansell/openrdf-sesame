@@ -3,32 +3,33 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.repository.sail;
+package org.openrdf.repository.sail.rdbms;
 
 import junit.framework.TestSuite;
 
 import org.openrdf.repository.EquivalentTest;
 import org.openrdf.repository.Repository;
-import org.openrdf.sail.rdbms.postgresql.PgSqlStore;
+import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.rdbms.mysql.MySqlStore;
 
 
-public class PgSqlEquivalentTest extends EquivalentTest {
+public class MySqlEquivalentTest extends EquivalentTest {
 
 	public static TestSuite suite() throws Exception {
-		return EquivalentTest.suite(PgSqlEquivalentTest.class);
+		return EquivalentTest.suite(MySqlEquivalentTest.class);
 	}
 
-	public PgSqlEquivalentTest() {
+	public MySqlEquivalentTest() {
 		super();
 	}
 
-	public PgSqlEquivalentTest(String name) {
+	public MySqlEquivalentTest(String name) {
 		super(name);
 	}
 
 	@Override
 	protected Repository newRepository() {
-		return new SailRepository(new PgSqlStore("sesame_test"));
+		return new SailRepository(new MySqlStore("sesame_test"));
 	}
 
 }
