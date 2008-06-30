@@ -42,13 +42,13 @@
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-api-compliance</artifactId>
+				<artifactId>sesame-sail-testsuite</artifactId>
 				<version>2.2-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-compliance-base</artifactId>
+				<artifactId>sesame-repository-testsuite</artifactId>
 				<version>2.2-SNAPSHOT</version>
 			</dependency>
 
@@ -61,9 +61,9 @@
 	</dependencyManagement>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/testsuites</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/compliance</url>
 	</scm>
 
 </project>
