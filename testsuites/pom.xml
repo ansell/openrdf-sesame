@@ -13,13 +13,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>http</module>
-		<module>model</module>
-		<module>queryalgebra-evaluation</module>
-		<module>queryparser</module>
-		<module>queryresultio</module>
 		<module>repository</module>
-		<module>rio</module>
 		<module>sail</module>
 	</modules>
 

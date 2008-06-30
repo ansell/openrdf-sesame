@@ -4,11 +4,11 @@
 
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-sail-compliance</artifactId>
+		<artifactId>sesame-testsuites</artifactId>
 		<version>2.2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-sail-api-compliance</artifactId>
+	<artifactId>sesame-sail-testsuite</artifactId>
 	<version>2.2-SNAPSHOT</version>
 
 	<name>OpenRDF Sail API compliance test</name>

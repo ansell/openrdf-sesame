@@ -4,11 +4,11 @@
 
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-repository-compliance</artifactId>
+		<artifactId>sesame-testsuites</artifactId>
 		<version>2.2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-repository-compliance-base</artifactId>
+	<artifactId>sesame-repository-testsuite</artifactId>
 	<version>2.2-SNAPSHOT</version>
 
 	<name>OpenRDF Repository API compliance test</name>
