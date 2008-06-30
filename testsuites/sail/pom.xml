@@ -11,8 +11,8 @@
 	<artifactId>sesame-sail-testsuite</artifactId>
 	<version>2.2-SNAPSHOT</version>
 
-	<name>OpenRDF Sail API compliance test</name>
-	<description>Test for the Sail API</description>
+	<name>OpenRDF Sail API compliance testsuite</name>
+	<description>Testsuite for the Sail API</description>
 
 	<dependencies>
 		<dependency>

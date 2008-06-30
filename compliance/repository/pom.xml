@@ -12,8 +12,8 @@
 	<version>2.2-SNAPSHOT</version>
 	<packaging>war</packaging>
 
-	<name>OpenRDF HTTP Repository compliance test</name>
-	<description>Tests for the HTTP Repository</description>
+	<name>OpenRDF Repository compliance test</name>
+	<description>Tests for the core Repositories</description>
 
 	<dependencies>
 		<dependency>

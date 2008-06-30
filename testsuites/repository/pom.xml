@@ -11,8 +11,8 @@
 	<artifactId>sesame-repository-testsuite</artifactId>
 	<version>2.2-SNAPSHOT</version>
 
-	<name>OpenRDF Repository API compliance test</name>
-	<description>Tests for the Repository API</description>
+	<name>OpenRDF Repository API compliance testsuite</name>
+	<description>Testsuite for the Repository API</description>
 
 	<dependencies>
 		<dependency>

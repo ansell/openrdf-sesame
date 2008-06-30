@@ -11,8 +11,8 @@
 	<artifactId>sesame-sail-compliance</artifactId>
 	<version>2.2-SNAPSHOT</version>
 	
-	<name>OpenRDF memory store compliance tests</name>
-	<description>Test for the in-memory Sail.</description>
+	<name>OpenRDF store compliance tests</name>
+	<description>Test for core Sails.</description>
 
 	<dependencies>
 		<dependency>
