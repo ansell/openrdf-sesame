@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.repository.sail;
+package org.openrdf.repository.sail.nativerdf;
 
 import info.aduna.io.FileUtil;
 
@@ -12,6 +12,7 @@ import java.io.IOException;
 
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnectionTest;
+import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.nativerdf.NativeStore;
 
 public class NativeStoreConnectionTest extends RepositoryConnectionTest {

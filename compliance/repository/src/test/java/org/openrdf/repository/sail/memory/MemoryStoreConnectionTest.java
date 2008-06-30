@@ -3,10 +3,11 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.repository.sail;
+package org.openrdf.repository.sail.memory;
 
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnectionTest;
+import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class MemoryStoreConnectionTest extends RepositoryConnectionTest {
