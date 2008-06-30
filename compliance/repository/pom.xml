@@ -18,12 +18,32 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-repository-compliance-base</artifactId>
+			<artifactId>sesame-repository-testsuite</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-repository-http</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-repository-sail</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-sail-memory</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-sail-nativerdf</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-sail-rdbms</artifactId>
 		</dependency>
 
 		<dependency>
@@ -83,9 +103,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/repository/http</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/repository/http</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/testsuites/repository/http</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance/repository/http</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance/repository/http</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/compliance/repository/http</url>
 	</scm>
 
 </project>

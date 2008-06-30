@@ -25,9 +25,9 @@
 	</modules>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/rio</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/testsuites/rio</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/testsuites/rio</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance/rio</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance/rio</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/compliance/rio</url>
 	</scm>
 
 </project>
