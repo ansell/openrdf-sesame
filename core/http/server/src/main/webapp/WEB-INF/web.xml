@@ -22,7 +22,7 @@
 		</filter-class>
 		<init-param>
 			<param-name>logLevel</param-name>
-			<param-value>log4j</param-value>
+			<param-value>commons</param-value>
 		</init-param>
 		<init-param>
 			<param-name>statusEnabled</param-name>
