@@ -15,7 +15,6 @@
 	<modules>
 		<module>rio</module>
 		<module>repository</module>
-		<module>sail</module>
 	</modules>
 
 	<name>OpenRDF Sesame test suites</name>

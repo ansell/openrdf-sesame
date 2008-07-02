@@ -13,13 +13,12 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>http</module>
 		<module>model</module>
+		<module>rio</module>
+		<module>http</module>
+		<module>repository</module>
 		<module>serql</module>
 		<module>sparql</module>
-		<module>repository</module>
-		<module>rio</module>
-		<module>sail</module>
 	</modules>
 
 	<name>OpenRDF Sesame compliance tests</name>
