@@ -5,13 +5,12 @@
  */
 package org.openrdf.repository.http;
 
-import org.openrdf.http.server.TestServer;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnectionTest;
 
 public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
-	private TestServer server;
+	private HTTPMemServer server;
 
 	public HTTPStoreConnectionTest(String name) {
 		super(name);
@@ -21,7 +20,7 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	public void setUp()
 		throws Exception
 	{
-		server = new TestServer();
+		server = new HTTPMemServer();
 		try {
 			server.start();
 			super.setUp();
@@ -42,7 +41,7 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
 	@Override
 	protected Repository createRepository() {
-		return new HTTPRepository(TestServer.REPOSITORY_URL);
+		return new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
 	}
 
 	@Override
