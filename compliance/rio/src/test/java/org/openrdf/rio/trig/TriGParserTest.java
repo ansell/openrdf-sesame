@@ -55,7 +55,7 @@ public class TriGParserTest {
 		throws Exception
 	{
 		// Create test suite
-		TestSuite suite = new TestSuite();
+		TestSuite suite = new TestSuite(TriGParserTest.class.getName());
 
 		// Add the manifest for positive test cases to a repository and query it
 		Repository repository = new SailRepository(new MemoryStore());

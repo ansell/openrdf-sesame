@@ -83,7 +83,7 @@ public class RDFXMLParserTest {
 		con.add(localManifest, localManifest.toString(), RDFFormat.RDFXML);
 
 		// Create test suite
-		TestSuite suite = new TestSuite();
+		TestSuite suite = new TestSuite(RDFXMLParserTest.class.getName());
 
 		// Add all positive parser tests
 		String query = "select TESTCASE, INPUT, OUTPUT "
