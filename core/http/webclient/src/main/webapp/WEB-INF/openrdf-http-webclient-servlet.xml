@@ -8,6 +8,7 @@
 			<list>
 				<value>org.openrdf.http.webclient.messages</value>
 				<value>info.aduna.webapp.system.messages</value>
+				<value>info.aduna.webapp.messages</value>
 			</list>
 		</property>
 	</bean>
@@ -29,6 +30,7 @@
 			<list>
 				<value>/org/openrdf/http/webclient/navigation.xml</value>
 				<value>/info/aduna/webapp/system/navigation.xml</value>
+				<value>/info/aduna/webapp/navigation.xml</value>
 			</list>
 		</property>
 	</bean>

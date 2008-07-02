@@ -33,6 +33,7 @@
 	</modules>
 
 	<properties>
+		<appbase.version>3.2-SNAPSHOT</appbase.version>
 		<slf4j.version>1.5.0</slf4j.version>
 	</properties>
 
@@ -242,30 +243,30 @@
 			<dependency>
 				<groupId>info.aduna.appbase</groupId>
 				<artifactId>aduna-appbase-core</artifactId>
-				<version>3.2-SNAPSHOT</version>
+				<version>${appbase.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.appbase</groupId>
 				<artifactId>aduna-appbase-logging-file</artifactId>
-				<version>3.2-SNAPSHOT</version>
+				<version>${appbase.version}</version>
 				<scope>runtime</scope>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.appbase</groupId>
 				<artifactId>aduna-appbase-webapp-base-core</artifactId>
-				<version>3.2-SNAPSHOT</version>
+				<version>${appbase.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.appbase</groupId>
 				<artifactId>aduna-appbase-webapp-system</artifactId>
-				<version>3.2-SNAPSHOT</version>
+				<version>${appbase.version}</version>
 				<type>war</type>
 				<scope>runtime</scope>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.appbase</groupId>
 				<artifactId>aduna-appbase-webapp-system-core</artifactId>
-				<version>3.2-SNAPSHOT</version>
+				<version>${appbase.version}</version>
 			</dependency>
 
 			<!-- Aduna Commons -->
