@@ -8,12 +8,12 @@
 		<version>2.2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-repository-compliance</artifactId>
+	<artifactId>sesame-store-compliance</artifactId>
 	<version>2.2-SNAPSHOT</version>
 	<packaging>war</packaging>
 
-	<name>OpenRDF Repository compliance test</name>
-	<description>Tests for the core Repositories</description>
+	<name>OpenRDF SAIL and Repository compliance test</name>
+	<description>Tests for the core SAILs and Repositories</description>
 
 	<dependencies>
 		<dependency>
@@ -137,9 +137,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance/repository</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance/repository</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/compliance/repository</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance/store</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance/store</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/compliance/store</url>
 	</scm>
 
 </project>
