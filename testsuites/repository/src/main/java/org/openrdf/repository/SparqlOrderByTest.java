@@ -1,4 +1,4 @@
-package org.openrdf.query.algebra.evaluation.impl;
+package org.openrdf.repository;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,13 +13,8 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.memory.MemoryStore;
 
-public class SparqlOrderByTest extends TestCase {
+public abstract class SparqlOrderByTest extends TestCase {
 
 	private String query1 = "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\n"
 			+ "SELECT ?name\n" + "WHERE { ?x foaf:name ?name }\n"
@@ -58,14 +53,21 @@ public class SparqlOrderByTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		repository = new SailRepository(new MemoryStore());
-		repository.initialize();
+		repository = createRepository();
 		createEmployee("james", "James Leigh", 123);
 		createEmployee("jim", "James Leigh", 244);
 		createEmployee("megan", "Megan Leigh", 1234);
 		createEmployee("hunt", "James Leigh Hunt", 243);
 		conn = repository.getConnection();
 	}
+
+	protected Repository createRepository() throws RepositoryException {
+		Repository repository = newRepository();
+		repository.initialize();
+		return repository;
+	}
+
+	protected abstract Repository newRepository();
 
 	@Override
 	protected void tearDown() throws Exception {
