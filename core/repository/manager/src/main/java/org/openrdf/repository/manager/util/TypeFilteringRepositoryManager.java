@@ -216,7 +216,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 		for (RepositoryInfo repInfo : delegate.getAllRepositoryInfos(skipSystemRepo)) {
 			try {
-				if (!isCorrectType(repInfo.getId())) {
+				if (isCorrectType(repInfo.getId())) {
 					result.add(repInfo);
 				}
 			}
