@@ -34,7 +34,7 @@
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-compliance-base</artifactId>
+				<artifactId>sesame-rio-testsuite</artifactId>
 				<version>2.2-SNAPSHOT</version>
 			</dependency>
 
