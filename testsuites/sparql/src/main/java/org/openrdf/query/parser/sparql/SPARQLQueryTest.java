@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -15,7 +15,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -53,7 +52,6 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.dataset.DatasetRepository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.RDFFormat;
@@ -63,7 +61,7 @@ import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class SPARQLQueryTest extends TestCase {
+public abstract class SPARQLQueryTest extends TestCase {
 
 	/*-----------*
 	 * Constants *
@@ -118,10 +116,12 @@ public class SPARQLQueryTest extends TestCase {
 	protected Repository createRepository()
 		throws RepositoryException
 	{
-		Repository dataRep = new DatasetRepository(new SailRepository(new MemoryStore()));
-		dataRep.initialize();
-		return dataRep;
+		Repository repo = newRepository();
+		repo.initialize();
+		return repo;
 	}
+
+	protected abstract Repository newRepository();
 
 	@Override
 	protected void tearDown()
@@ -433,25 +433,10 @@ public class SPARQLQueryTest extends TestCase {
 		}
 	}
 
-	public static class Factory {
+	public interface Factory {
 
-		public SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
-				String resultFileURL, Dataset dataSet)
-		{
-			return new SPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet);
-		}
-	}
-
-	public static Test suite()
-		throws Exception
-	{
-		return new TestSuite();
-	}
-
-	public static TestSuite suite(String manifestFileURL)
-		throws Exception
-	{
-		return suite(manifestFileURL, new Factory());
+		SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+				String resultFileURL, Dataset dataSet);
 	}
 
 	public static TestSuite suite(String manifestFileURL, Factory factory)
@@ -466,7 +451,7 @@ public class SPARQLQueryTest extends TestCase {
 		manifestRep.initialize();
 		RepositoryConnection con = manifestRep.getConnection();
 
-		con.add(new URL(manifestFileURL), manifestFileURL, RDFFormat.TURTLE);
+		ManifestTest.addTurtle(con, new URL(manifestFileURL), manifestFileURL);
 
 		suite.setName(getManifestName(manifestRep, con, manifestFileURL));
 

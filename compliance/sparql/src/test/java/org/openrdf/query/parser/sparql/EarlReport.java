@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -78,7 +78,7 @@ public class EarlReport {
 		EarlTestListener listener = new EarlTestListener();
 		testResult.addListener(listener);
 
-		ManifestTest.suite().run(testResult);
+		MemorySPARQLQueryTest.suite().run(testResult);
 		SPARQLSyntaxTest.suite().run(testResult);
 
 		con.setAutoCommit(true);

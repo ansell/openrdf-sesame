@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -24,14 +24,12 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class SPARQLSyntaxTest extends TestCase {
+public abstract class SPARQLSyntaxTest extends TestCase {
 
 	/*-----------*
 	 * Constants *
@@ -106,13 +104,12 @@ public class SPARQLSyntaxTest extends TestCase {
 	protected void runTest()
 		throws Exception
 	{
-		// Read query from file
 		InputStream stream = new URL(queryFileURL).openStream();
 		String query = IOUtil.readString(new InputStreamReader(stream, "UTF-8"));
 		stream.close();
 
 		try {
-			QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, queryFileURL);
+			parseQuery(query, queryFileURL);
 
 			if (!positiveTest) {
 				fail("Negative test case should have failed to parse");
@@ -126,7 +123,20 @@ public class SPARQLSyntaxTest extends TestCase {
 		}
 	}
 
+	protected abstract void parseQuery(String query, String queryFileURL)
+			throws MalformedQueryException;
+
 	public static Test suite()
+		throws Exception
+	{
+		return new TestSuite();
+	}
+
+	public interface Factory {
+		SPARQLSyntaxTest createSPARQLSyntaxTest(String testURI, String testName, String testAction, boolean positiveTest);
+	}
+
+	public static Test suite(Factory factory)
 		throws Exception
 	{
 		TestSuite suite = new TestSuite();
@@ -139,8 +149,7 @@ public class SPARQLSyntaxTest extends TestCase {
 
 		logger.debug("Loading manifest data");
 		URL manifest = new URL(MANIFEST_FILE);
-		RDFFormat rdfFormat = RDFFormat.forFileName(MANIFEST_FILE, RDFFormat.TURTLE);
-		con.add(manifest, MANIFEST_FILE, rdfFormat);
+		ManifestTest.addTurtle(con, manifest, MANIFEST_FILE);
 
 		logger.info("Searching for sub-manifests");
 		List<String> subManifestList = new ArrayList<String>();
@@ -159,8 +168,7 @@ public class SPARQLSyntaxTest extends TestCase {
 			con.clear();
 
 			URL subManifestURL = new URL(subManifest);
-			rdfFormat = RDFFormat.forFileName(subManifest, RDFFormat.TURTLE);
-			con.add(subManifestURL, subManifest, rdfFormat);
+			ManifestTest.addTurtle(con, subManifestURL, subManifest);
 
 			TestSuite subSuite = new TestSuite(subManifest.substring(HOST.length()));
 
@@ -175,7 +183,7 @@ public class SPARQLSyntaxTest extends TestCase {
 				boolean positiveTest = bindingSet.getValue("Type").toString().equals(
 						"http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#PositiveSyntaxTest");
 
-				subSuite.addTest(new SPARQLSyntaxTest(testURI, testName, testAction, positiveTest));
+				subSuite.addTest(factory.createSPARQLSyntaxTest(testURI, testName, testAction, positiveTest));
 			}
 			tests.close();
 
