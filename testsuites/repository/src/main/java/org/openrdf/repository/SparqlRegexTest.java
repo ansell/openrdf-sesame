@@ -1,4 +1,4 @@
-package org.openrdf.query.algebra.evaluation.impl;
+package org.openrdf.repository;
 
 import junit.framework.TestCase;
 
@@ -9,13 +9,8 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.memory.MemoryStore;
 
-public class SparqlRegexTest extends TestCase {
+public abstract class SparqlRegexTest extends TestCase {
 	public String queryInline = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
 			+ "SELECT ?name ?mbox\n" + " WHERE { ?x foaf:name  ?name ;\n"
 			+ "            foaf:mbox  ?mbox .\n"
@@ -93,8 +88,7 @@ public class SparqlRegexTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		repository = new SailRepository(new MemoryStore());
-		repository.initialize();
+		repository = createRepository();
 		vf = repository.getValueFactory();
 		hunt = vf.createLiteral("James Leigh Hunt");
 		createUser("james", "James Leigh", "james@leigh");
@@ -102,6 +96,14 @@ public class SparqlRegexTest extends TestCase {
 		createUser("hunt", "James Leigh Hunt", "james@work.example");
 		conn = repository.getConnection();
 	}
+
+	protected Repository createRepository() throws RepositoryException {
+		Repository repository = newRepository();
+		repository.initialize();
+		return repository;
+	}
+
+	protected abstract Repository newRepository();
 
 	@Override
 	protected void tearDown() throws Exception {

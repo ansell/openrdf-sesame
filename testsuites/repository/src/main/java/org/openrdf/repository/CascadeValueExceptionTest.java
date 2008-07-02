@@ -1,4 +1,4 @@
-package org.openrdf.query.algebra.evaluation.impl;
+package org.openrdf.repository;
 
 import junit.framework.TestCase;
 
@@ -6,12 +6,8 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.memory.MemoryStore;
 
-public class CascadeValueExceptionTest extends TestCase {
+public abstract class CascadeValueExceptionTest extends TestCase {
 	private static String queryStr1 = "SELECT *\n"
 			+ "WHERE {\n"
 			+ "  ?s ?p ?o FILTER( !(\"2002\" < \"2007\"^^<http://www.w3.org/2001/XMLSchema#gYear>))\n"
@@ -50,11 +46,18 @@ public class CascadeValueExceptionTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		repository = new SailRepository(new MemoryStore());
-		repository.initialize();
+		repository = createRepository();
 		conn = repository.getConnection();
 		conn.add(RDF.NIL, RDF.TYPE, RDF.LIST);
 	}
+
+	protected Repository createRepository() throws RepositoryException {
+		Repository repository = newRepository();
+		repository.initialize();
+		return repository;
+	}
+
+	protected abstract Repository newRepository();
 
 	@Override
 	protected void tearDown() throws Exception {
