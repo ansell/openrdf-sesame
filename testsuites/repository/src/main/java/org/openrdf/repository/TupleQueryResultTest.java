@@ -1,9 +1,9 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.resultio;
+package org.openrdf.repository;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,16 +13,11 @@ import junit.framework.TestCase;
 
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
-import org.openrdf.sail.memory.MemoryStore;
 
-public class TupleQueryResultTest extends TestCase {
+public abstract class TupleQueryResultTest extends TestCase {
 
 	private Repository rep;
 
@@ -34,18 +29,25 @@ public class TupleQueryResultTest extends TestCase {
 
 	private String multipleResultQuery;
 
-	public TupleQueryResultTest(String name)
-		throws RepositoryException, IOException, UnsupportedRDFormatException, RDFParseException
-	{
-		super(name);
-
-		rep = new SailRepository(new MemoryStore());
-		rep.initialize();
+	protected void setUp() throws Exception {
+		rep = createRepository();
 		con = rep.getConnection();
 
 		buildQueries();
 		addData();
 	}
+
+	protected Repository createRepository() throws Exception {
+		Repository repository = newRepository();
+		repository.initialize();
+		RepositoryConnection con = repository.getConnection();
+		con.clear();
+		con.clearNamespaces();
+		con.close();
+		return repository;
+	}
+
+	protected abstract Repository newRepository();
 
 	/*
 	 * build some simple SeRQL queries to use for testing the result set object.
