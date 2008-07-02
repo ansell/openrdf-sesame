@@ -55,7 +55,7 @@ public class N3ParserTest {
 		throws Exception
 	{
 		// Create test suite
-		TestSuite suite = new TestSuite();
+		TestSuite suite = new TestSuite(N3ParserTest.class.getName());
 
 		// Add the manifest to a repository and query it
 		Repository repository = new SailRepository(new MemoryStore());

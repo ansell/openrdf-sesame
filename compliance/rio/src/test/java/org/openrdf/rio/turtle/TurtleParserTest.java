@@ -60,7 +60,7 @@ public class TurtleParserTest {
 		throws Exception
 	{
 		// Create test suite
-		TestSuite suite = new TestSuite();
+		TestSuite suite = new TestSuite(TurtleParserTest.class.getName());
 
 		// Add the N-Triples test
 		String testName = "N-Triples tests";
