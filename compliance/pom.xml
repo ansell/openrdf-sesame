@@ -16,7 +16,7 @@
 		<module>model</module>
 		<module>rio</module>
 		<module>http</module>
-		<module>repository</module>
+		<module>store</module>
 		<module>serql</module>
 		<module>sparql</module>
 	</modules>
@@ -40,13 +40,7 @@
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-testsuite</artifactId>
-				<version>2.2-SNAPSHOT</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-testsuite</artifactId>
+				<artifactId>sesame-store-testsuite</artifactId>
 				<version>2.2-SNAPSHOT</version>
 			</dependency>
 
