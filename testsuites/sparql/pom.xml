@@ -28,7 +28,6 @@
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-rio-turtle</artifactId>
-			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
