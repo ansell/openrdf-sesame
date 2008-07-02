@@ -16,7 +16,6 @@
 	<description>Tests for parsers and writers of various RDF file formats.</description>
 
 	<modules>
-		<module>base</module>
 		<module>n3</module>
 		<module>ntriples</module>
 		<module>rdfxml</module>
