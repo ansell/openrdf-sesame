@@ -15,7 +15,8 @@
 	<modules>
 		<module>http</module>
 		<module>model</module>
-		<module>queryparser</module>
+		<module>serql</module>
+		<module>sparql</module>
 		<module>repository</module>
 		<module>rio</module>
 		<module>sail</module>
