@@ -32,7 +32,7 @@
 
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-rio-compliance-base</artifactId>
+			<artifactId>sesame-rio-testsuite</artifactId>
 		</dependency>
 
 		<dependency>
