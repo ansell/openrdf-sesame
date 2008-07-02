@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -439,6 +440,12 @@ public class SPARQLQueryTest extends TestCase {
 		{
 			return new SPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet);
 		}
+	}
+
+	public static Test suite()
+		throws Exception
+	{
+		return new TestSuite();
 	}
 
 	public static TestSuite suite(String manifestFileURL)
