@@ -18,6 +18,7 @@ import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.repository.manager.SystemRepository;
 
 /**
  * @author Herko ter Horst
@@ -264,7 +265,13 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	protected boolean isCorrectType(String repositoryID)
 		throws RepositoryConfigException, RepositoryException
 	{
-		return isCorrectType(delegate.getRepositoryConfig(repositoryID));
+		// first, check for SystemRepository, because we can't get a repository
+		// config object for it
+		boolean result = !SystemRepository.ID.equals(repositoryID);
+		if (result) {
+			result = isCorrectType(delegate.getRepositoryConfig(repositoryID));
+		}
+		return result;
 	}
 
 	protected boolean isCorrectType(RepositoryConfig repositoryConfig) {
