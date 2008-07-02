@@ -18,7 +18,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-repository-testsuite</artifactId>
+			<artifactId>sesame-store-testsuite</artifactId>
 		</dependency>
 
 		<dependency>
