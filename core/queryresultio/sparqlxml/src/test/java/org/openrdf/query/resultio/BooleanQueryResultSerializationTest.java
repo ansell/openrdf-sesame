@@ -23,14 +23,6 @@ public class BooleanQueryResultSerializationTest extends TestCase {
 		testQueryResultFormat(BooleanQueryResultFormat.SPARQL, false);
 	}
 
-	public void testTextResultFormat()
-		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException,
-		QueryEvaluationException
-	{
-		testQueryResultFormat(BooleanQueryResultFormat.TEXT, true);
-		testQueryResultFormat(BooleanQueryResultFormat.TEXT, false);
-	}
-
 	private void testQueryResultFormat(BooleanQueryResultFormat format, boolean input)
 		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException,
 		QueryEvaluationException

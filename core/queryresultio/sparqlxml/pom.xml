@@ -32,6 +32,18 @@
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-xml</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<scm>
