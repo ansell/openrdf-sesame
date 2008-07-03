@@ -100,6 +100,13 @@ public abstract class SparqlRegexTest extends TestCase {
 	protected Repository createRepository() throws Exception {
 		Repository repository = newRepository();
 		repository.initialize();
+		RepositoryConnection con = repository.getConnection();
+		try {
+			con.clear();
+			con.clearNamespaces();
+		} finally {
+			con.close();
+		}
 		return repository;
 	}
 
