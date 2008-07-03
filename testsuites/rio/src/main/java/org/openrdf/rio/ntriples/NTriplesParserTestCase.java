@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -18,7 +18,7 @@ import org.openrdf.rio.helpers.RDFHandlerBase;
  * 
  * @author Arjohn Kampman
  */
-public abstract class NTriplesParserTest extends TestCase {
+public abstract class NTriplesParserTestCase extends TestCase {
 
 	/*-----------*
 	 * Constants *
