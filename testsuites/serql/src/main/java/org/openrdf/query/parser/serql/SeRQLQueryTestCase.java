@@ -8,7 +8,10 @@ package org.openrdf.query.parser.serql;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -104,12 +107,12 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 		RepositoryConnection dataCon = dataRep.getConnection();
 
-		// Add unnamed gaph
-		dataCon.add(new URL(dataFile), null, RDFFormat.forFileName(dataFile));
+		// Add unnamed graph
+		dataCon.add(url(dataFile), enc(dataFile), RDFFormat.forFileName(dataFile));
 
 		// add named graphs
 		for (String graphName : graphNames) {
-			dataCon.add(new URL(graphName), null, RDFFormat.forFileName(graphName), new URIImpl(graphName));
+			dataCon.add(url(graphName), enc(graphName), RDFFormat.forFileName(graphName), new URIImpl(graphName));
 		}
 
 		// Evaluate the query on the query data
@@ -126,7 +129,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 		RepositoryConnection erCon = expectedResultRep.getConnection();
 
-		erCon.add(new URL(resultFile), null, RDFFormat.forFileName(resultFile));
+		erCon.add(url(resultFile), enc(resultFile), RDFFormat.forFileName(resultFile));
 
 		Collection<Statement> expectedStatements = Iterations.addAll(erCon.getStatements(null, null, null,
 				false), new ArrayList<Statement>(1));
@@ -223,7 +226,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	private String readQuery()
 		throws IOException
 	{
-		InputStream stream = new URL(queryFile).openStream();
+		InputStream stream = url(queryFile).openStream();
 		try {
 			return IOUtil.readString(new InputStreamReader(stream, "UTF-8"));
 		}
@@ -248,7 +251,8 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 		RepositoryConnection con = manifestRep.getConnection();
 
 		URL manifestURL = SeRQLQueryTestCase.class.getResource(MANIFEST_FILE);
-		SeRQLParserTestCase.addTurtle(con, manifestURL, null);
+		RDFFormat format = RDFFormat.forFileName(MANIFEST_FILE, RDFFormat.TURTLE);
+		con.add(manifestURL, enc(manifestURL.toExternalForm()), format);
 
 		String query = "SELECT testName, entailment, input, query, result " + "FROM {} mf:name {testName};"
 				+ "        mf:result {result}; " + "        tck:entailment {entailment}; "
@@ -293,6 +297,33 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 		manifestRep.shutDown();
 
 		return suite;
+	}
+
+	private static URL url(String uri)
+			throws IOException {
+		return new URL(dec(uri));
+	}
+
+	private static String enc(String uri)
+			throws UnsupportedEncodingException {
+		if (!uri.startsWith("jar:"))
+			return uri;
+		int start = uri.indexOf(':') + 1;
+		int end = uri.lastIndexOf('!');
+		String jar = uri.substring(start, end);
+		String encoded = URLEncoder.encode(jar, "UTF-8");
+		return "injar://" + encoded + uri.substring(end + 1);
+	}
+
+	private static String dec(String uri)
+			throws UnsupportedEncodingException {
+		if (!uri.startsWith("injar:"))
+			return uri;
+		int start = uri.indexOf(':') + 3;
+		int end = uri.indexOf('/', start);
+		String encoded = uri.substring(start, end);
+		String jar = URLDecoder.decode(encoded, "UTF-8");
+		return "jar:" + jar + '!' + uri.substring(end);
 	}
 
 	protected abstract QueryLanguage getQueryLanguage();
