@@ -53,7 +53,7 @@ public class ManifestTest {
 
 	public static TestSuite suite(SPARQLQueryTest.Factory factory)
 			throws Exception {
-		TestSuite suite = new TestSuite();
+		TestSuite suite = new TestSuite(factory.getClass().getName());
 
 		Repository manifestRep = new SailRepository(new MemoryStore());
 		manifestRep.initialize();
@@ -74,10 +74,6 @@ public class ManifestTest {
 			BindingSet bindingSet = manifestResults.next();
 			String manifestFile = bindingSet.getValue("manifestFile")
 					.toString();
-			System.out.println();
-			System.out.println(MANIFEST_FILE);
-			System.out.println(manifestFile);
-			System.out.println();
 			suite.addTest(SPARQLQueryTest.suite(manifestFile, factory));
 		}
 
