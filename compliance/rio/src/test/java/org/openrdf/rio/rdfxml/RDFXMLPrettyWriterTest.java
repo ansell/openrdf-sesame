@@ -7,7 +7,7 @@ package org.openrdf.rio.rdfxml;
 
 import org.openrdf.rio.rdfxml.util.RDFXMLPrettyWriterFactory;
 
-public class RDFXMLPrettyWriterTest extends RDFXMLWriterTest {
+public class RDFXMLPrettyWriterTest extends RDFXMLWriterTestCase {
 
 	public RDFXMLPrettyWriterTest() {
 		super(new RDFXMLPrettyWriterFactory(), new RDFXMLParserFactory());

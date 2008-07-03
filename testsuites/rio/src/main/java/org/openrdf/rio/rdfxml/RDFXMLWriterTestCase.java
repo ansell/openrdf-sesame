@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -24,13 +24,9 @@ import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterTest;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class RDFXMLWriterTest extends RDFWriterTest {
+public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 
-	public RDFXMLWriterTest() {
-		this(new RDFXMLWriterFactory(), new RDFXMLParserFactory());
-	}
-
-	protected RDFXMLWriterTest(RDFWriterFactory writerF, RDFParserFactory parserF) {
+	protected RDFXMLWriterTestCase(RDFWriterFactory writerF, RDFParserFactory parserF) {
 		super(writerF, parserF);
 	}
 
