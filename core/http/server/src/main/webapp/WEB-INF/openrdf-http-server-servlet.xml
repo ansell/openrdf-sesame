@@ -12,6 +12,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			<list>
 				<value>org.openrdf.http.server.messages</value>
 				<value>info.aduna.webapp.system.messages</value>
+				<value>info.aduna.webapp.messages</value>
 			</list>
 		</property>
 	</bean>
@@ -33,6 +34,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			<list>
 				<value>/org/openrdf/http/server/navigation.xml</value>
 				<value>/info/aduna/webapp/system/navigation.xml</value>
+				<value>/info/aduna/webapp/navigation.xml</value>
 			</list>
 		</property>
 	</bean>
