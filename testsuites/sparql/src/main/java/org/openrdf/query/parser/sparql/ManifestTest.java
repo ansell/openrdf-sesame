@@ -35,8 +35,6 @@ import org.openrdf.sail.memory.MemoryStore;
 
 public class ManifestTest {
 
-	private static final String JAR_FILE = "jar:file:";
-
 	static final Logger logger = LoggerFactory.getLogger(ManifestTest.class);
 
 	private static final boolean REMOTE = false;
@@ -108,7 +106,7 @@ public class ManifestTest {
 				@Override
 				protected void setBaseURI(final String uriSpec) {
 					ParsedURI baseURI = new ParsedURI(uriSpec) {
-						private boolean jarFile = uriSpec.startsWith(JAR_FILE);
+						private boolean jarFile = uriSpec.startsWith("jar:file:");
 						private int idx = uriSpec.indexOf('!') + 1;
 						private ParsedURI file = new ParsedURI("file:"
 								+ uriSpec.substring(idx));
