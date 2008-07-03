@@ -47,7 +47,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 		return repository;
 	}
 
-	protected abstract Repository newRepository();
+	protected abstract Repository newRepository() throws Exception;
 
 	/*
 	 * build some simple SeRQL queries to use for testing the result set object.

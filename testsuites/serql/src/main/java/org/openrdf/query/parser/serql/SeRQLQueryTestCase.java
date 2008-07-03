@@ -37,12 +37,10 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RepositoryUtil;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.NotifyingSail;
-import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.fc.DirectTypeHierarchyInferencer;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
@@ -183,7 +181,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	}
 
 	protected Repository createRepository(String entailment)
-			throws SailException, RepositoryException {
+			throws Exception {
 		Repository dataRep;
 		if ("RDF".equals(entailment)) {
 			dataRep = newRepository();
@@ -194,15 +192,15 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 		return dataRep;
 	}
 
-	protected Repository newRepository() throws SailException {
+	protected Repository newRepository() throws Exception {
 		return new SailRepository(newSail());
 	}
 
-	protected Repository newRepository(String entailment) throws SailException {
+	protected Repository newRepository(String entailment) throws Exception {
 		return new SailRepository(createSail(entailment));
 	}
 
-	protected NotifyingSail createSail(String entailment) throws SailException {
+	protected NotifyingSail createSail(String entailment) throws Exception {
 		NotifyingSail sail = newSail();
 
 		if ("RDF".equals(entailment)) {
@@ -222,7 +220,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 		return sail;
 	}
 
-	protected abstract NotifyingSail newSail();
+	protected abstract NotifyingSail newSail() throws Exception;
 
 	private String readQuery()
 		throws IOException
@@ -243,7 +241,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	public static Test suite(Factory factory)
 		throws Exception
 	{
-		TestSuite suite = new TestSuite();
+		TestSuite suite = new TestSuite(factory.getClass().getName());
 
 		// Read manifest and create declared test cases
 		Repository manifestRep = new SailRepository(new MemoryStore());

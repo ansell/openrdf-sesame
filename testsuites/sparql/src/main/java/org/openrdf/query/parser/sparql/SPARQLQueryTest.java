@@ -114,14 +114,14 @@ public abstract class SPARQLQueryTest extends TestCase {
 	}
 
 	protected Repository createRepository()
-		throws RepositoryException
+		throws Exception
 	{
 		Repository repo = newRepository();
 		repo.initialize();
 		return repo;
 	}
 
-	protected abstract Repository newRepository();
+	protected abstract Repository newRepository() throws Exception;
 
 	@Override
 	protected void tearDown()
@@ -444,7 +444,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	{
 		logger.info("Building test suite for {}", manifestFileURL);
 
-		TestSuite suite = new TestSuite();
+		TestSuite suite = new TestSuite(factory.getClass().getName());
 
 		// Read manifest and create declared test cases
 		Repository manifestRep = new SailRepository(new MemoryStore());
