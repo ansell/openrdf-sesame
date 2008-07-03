@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -134,7 +135,7 @@ public abstract class SeRQLParserTestCase extends TestCase {
 
 		URL manifestURL = SeRQLParserTestCase.class.getResource(MANIFEST_FILE);
 		RDFFormat format = RDFFormat.forFileName(MANIFEST_FILE, RDFFormat.TURTLE);
-		con.add(manifestURL, enc(manifestURL.toExternalForm()), format);
+		con.add(manifestURL, base(manifestURL.toExternalForm()), format);
 
 		String query = "SELECT testName, query, result " + "FROM {} mf:name {testName}; "
 				+ "        mf:action {query}; " + "        mf:result {result} " + "USING NAMESPACE "
@@ -169,29 +170,31 @@ public abstract class SeRQLParserTestCase extends TestCase {
 	}
 
 	private static URL url(String uri)
-			throws IOException {
-		return new URL(dec(uri));
+			throws MalformedURLException {
+		if (!uri.startsWith("injar:"))
+			return new URL(uri);
+		int start = uri.indexOf(':') + 3;
+		int end = uri.indexOf('/', start);
+		String encoded = uri.substring(start, end);
+		try {
+			String jar = URLDecoder.decode(encoded, "UTF-8");
+			return new URL("jar:" + jar + '!' + uri.substring(end));
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertionError(e);
+		}
 	}
 
-	private static String enc(String uri)
-			throws UnsupportedEncodingException {
+	private static String base(String uri) {
 		if (!uri.startsWith("jar:"))
 			return uri;
 		int start = uri.indexOf(':') + 1;
 		int end = uri.lastIndexOf('!');
 		String jar = uri.substring(start, end);
-		String encoded = URLEncoder.encode(jar, "UTF-8");
-		return "injar://" + encoded + uri.substring(end + 1);
-	}
-
-	private static String dec(String uri)
-			throws UnsupportedEncodingException {
-		if (!uri.startsWith("injar:"))
-			return uri;
-		int start = uri.indexOf(':') + 3;
-		int end = uri.indexOf('/', start);
-		String encoded = uri.substring(start, end);
-		String jar = URLDecoder.decode(encoded, "UTF-8");
-		return "jar:" + jar + '!' + uri.substring(end);
+		try {
+			String encoded = URLEncoder.encode(jar, "UTF-8");
+			return "injar://" + encoded + uri.substring(end + 1);
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertionError(e);
+		}
 	}
 }
