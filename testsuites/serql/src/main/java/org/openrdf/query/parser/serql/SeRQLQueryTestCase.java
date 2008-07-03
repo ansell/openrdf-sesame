@@ -41,9 +41,9 @@ import org.openrdf.sail.inferencer.fc.DirectTypeHierarchyInferencer;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class SeRQLQueryTest extends TestCase {
+public abstract class SeRQLQueryTestCase extends TestCase {
 
-	static final Logger logger = LoggerFactory.getLogger(SeRQLQueryTest.class);
+	static final Logger logger = LoggerFactory.getLogger(SeRQLQueryTestCase.class);
 
 	/*-----------*
 	 * Constants *
@@ -69,10 +69,15 @@ public class SeRQLQueryTest extends TestCase {
 	 * Constructors *
 	 *--------------*/
 
+	public interface Factory {
+		Test createTest(String name, String dataFile, List<String> graphNames, String queryFile,
+				String resultFile, String entailment);
+	}
+
 	/**
 	 * Creates a new SeRQL Query test.
 	 */
-	public SeRQLQueryTest(String name, String dataFile, List<String> graphNames, String queryFile,
+	public SeRQLQueryTestCase(String name, String dataFile, List<String> graphNames, String queryFile,
 			String resultFile, String entailment)
 	{
 		super(name);
@@ -127,7 +132,7 @@ public class SeRQLQueryTest extends TestCase {
 		}
 
 		// Evaluate the query on the query data
-		GraphQueryResult result = dataCon.prepareGraphQuery(QueryLanguage.SERQL, query).evaluate();
+		GraphQueryResult result = dataCon.prepareGraphQuery(getQueryLanguage(), query).evaluate();
 		Collection<Statement> actualStatements = Iterations.addAll(result, new ArrayList<Statement>(1));
 		result.close();
 
@@ -208,7 +213,7 @@ public class SeRQLQueryTest extends TestCase {
 	 * Test methods *
 	 *--------------*/
 
-	public static Test suite()
+	public static Test suite(Factory factory)
 		throws Exception
 	{
 		TestSuite suite = new TestSuite();
@@ -219,8 +224,8 @@ public class SeRQLQueryTest extends TestCase {
 
 		RepositoryConnection con = manifestRep.getConnection();
 
-		URL manifestURL = SeRQLQueryTest.class.getResource(MANIFEST_FILE);
-		con.add(manifestURL, null, RDFFormat.forFileName(MANIFEST_FILE));
+		URL manifestURL = SeRQLQueryTestCase.class.getResource(MANIFEST_FILE);
+		SeRQLParserTestCase.addTurtle(con, manifestURL, null);
 
 		String query = "SELECT testName, entailment, input, query, result " + "FROM {} mf:name {testName};"
 				+ "        mf:result {result}; " + "        tck:entailment {entailment}; "
@@ -253,7 +258,7 @@ public class SeRQLQueryTest extends TestCase {
 			}
 			graphs.close();
 
-			suite.addTest(new SeRQLQueryTest(testName, inputFile, graphNames, queryFile, resultFile, entailment));
+			suite.addTest(factory.createTest(testName, inputFile, graphNames, queryFile, resultFile, entailment));
 		}
 
 		tests.close();
@@ -262,4 +267,6 @@ public class SeRQLQueryTest extends TestCase {
 
 		return suite;
 	}
+
+	protected abstract QueryLanguage getQueryLanguage();
 }
