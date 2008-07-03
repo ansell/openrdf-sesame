@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -38,7 +37,7 @@ import org.openrdf.sail.memory.MemoryStore;
 /**
  * JUnit test for the TriG parser.
  */
-public class TriGParserTest {
+public abstract class TriGParserTestCase {
 
 	/*-----------*
 	 * Constants *
@@ -54,18 +53,18 @@ public class TriGParserTest {
 	 * Static initializer *
 	 *--------------------*/
 
-	public static Test suite()
+	public TestSuite createTestSuite()
 		throws Exception
 	{
 		// Create test suite
-		TestSuite suite = new TestSuite(TriGParserTest.class.getName());
+		TestSuite suite = new TestSuite(TriGParserTestCase.class.getName());
 
 		// Add the manifest for positive test cases to a repository and query it
 		Repository repository = new SailRepository(new MemoryStore());
 		repository.initialize();
 		RepositoryConnection con = repository.getConnection();
 
-		URL url = TriGParserTest.class.getResource(MANIFEST_GOOD_URL);
+		URL url = TriGParserTestCase.class.getResource(MANIFEST_GOOD_URL);
 		con.add(url, base(url.toExternalForm()), RDFFormat.TURTLE);
 
 		String query = "SELECT testName, inputURL, outputURL " + "FROM {} mf:name {testName}; "
@@ -91,7 +90,7 @@ public class TriGParserTest {
 
 		// Add the manifest for negative test cases to a repository and query it
 		con.clear();
-		url = TriGParserTest.class.getResource(MANIFEST_BAD_URL);
+		url = TriGParserTestCase.class.getResource(MANIFEST_BAD_URL);
 		con.add(url, base(url.toExternalForm()), RDFFormat.TURTLE);
 
 		query = "SELECT testName, inputURL " + "FROM {} mf:name {testName}; "
@@ -118,11 +117,13 @@ public class TriGParserTest {
 		return suite;
 	}
 
+	protected abstract RDFParser createRDFParser();
+
 	/*--------------------------------*
 	 * Inner class PositiveParserTest *
 	 *--------------------------------*/
 
-	private static class PositiveParserTest extends TestCase {
+	private class PositiveParserTest extends TestCase {
 
 		/*-----------*
 		 * Variables *
@@ -156,7 +157,7 @@ public class TriGParserTest {
 			throws Exception
 		{
 			// Parse input data
-			TriGParser turtleParser = new TriGParser();
+			RDFParser turtleParser = createRDFParser();
 			turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
 			Set<Statement> inputCollection = new LinkedHashSet<Statement>();
@@ -205,7 +206,7 @@ public class TriGParserTest {
 	 * Inner class NegativeParserTest *
 	 *--------------------------------*/
 
-	private static class NegativeParserTest extends TestCase {
+	private class NegativeParserTest extends TestCase {
 
 		/*-----------*
 		 * Variables *
@@ -236,7 +237,7 @@ public class TriGParserTest {
 			try {
 				// Try parsing the input; this should result in an error being
 				// reported.
-				TriGParser turtleParser = new TriGParser();
+				RDFParser turtleParser = createRDFParser();
 				turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
 				turtleParser.setRDFHandler(new StatementCollector());

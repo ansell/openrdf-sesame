@@ -17,7 +17,6 @@ import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -50,7 +49,7 @@ import org.openrdf.sail.memory.MemoryStore;
  * available <a
  * href="http://www.w3.org/2000/10/rdf-tests/rdfcore/Manifest.rdf">online</a>.
  */
-public class RDFXMLParserTest {
+public abstract class RDFXMLParserTestCase {
 
 	/*-----------*
 	 * Constants *
@@ -68,7 +67,7 @@ public class RDFXMLParserTest {
 	 * Static initializer *
 	 *--------------------*/
 
-	public static Test suite()
+	public TestSuite createTestSuite()
 		throws Exception
 	{
 		// Create an RDF repository for the manifest data
@@ -85,7 +84,7 @@ public class RDFXMLParserTest {
 		con.add(localManifest, base(localManifest.toString()), RDFFormat.RDFXML);
 
 		// Create test suite
-		TestSuite suite = new TestSuite(RDFXMLParserTest.class.getName());
+		TestSuite suite = new TestSuite(RDFXMLParserTestCase.class.getName());
 
 		// Add all positive parser tests
 		String query = "select TESTCASE, INPUT, OUTPUT "
@@ -133,18 +132,20 @@ public class RDFXMLParserTest {
 		}
 
 		if (urlString.startsWith("/")) {
-			return RDFXMLParserTest.class.getResource(urlString);
+			return RDFXMLParserTestCase.class.getResource(urlString);
 		}
 		else {
 			return url(urlString);
 		}
 	}
 
+	protected abstract RDFParser createRDFParser();
+
 	/*--------------------------------*
 	 * Inner class PositiveParserTest *
 	 *--------------------------------*/
 
-	private static class PositiveParserTest extends TestCase {
+	private class PositiveParserTest extends TestCase {
 
 		/*-----------*
 		 * Variables *
@@ -173,10 +174,9 @@ public class RDFXMLParserTest {
 			throws Exception
 		{
 			// Parse input data
-			RDFXMLParser rdfxmlParser = new RDFXMLParser();
+			RDFParser rdfxmlParser = createRDFParser();
 			rdfxmlParser.setValueFactory(new CanonXMLValueFactory());
 			rdfxmlParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-			rdfxmlParser.setParseStandAloneDocuments(true);
 
 			Set<Statement> inputCollection = new LinkedHashSet<Statement>();
 			StatementCollector inputCollector = new StatementCollector(inputCollection);
@@ -222,7 +222,7 @@ public class RDFXMLParserTest {
 	 * Inner class NegativeParserTest *
 	 *--------------------------------*/
 
-	private static class NegativeParserTest extends TestCase {
+	private class NegativeParserTest extends TestCase {
 
 		/*-----------*
 		 * Variables *
@@ -248,9 +248,8 @@ public class RDFXMLParserTest {
 			try {
 				// Try parsing the input; this should result in an error being
 				// reported.
-				RDFXMLParser rdfxmlParser = new RDFXMLParser();
+				RDFParser rdfxmlParser = createRDFParser();
 				rdfxmlParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-				rdfxmlParser.setParseStandAloneDocuments(true);
 
 				rdfxmlParser.setRDFHandler(new StatementCollector());
 
