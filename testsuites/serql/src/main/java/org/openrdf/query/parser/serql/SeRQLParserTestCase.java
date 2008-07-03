@@ -8,7 +8,10 @@ package org.openrdf.query.parser.serql;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -18,13 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.io.IOUtil;
-import info.aduna.net.ParsedURI;
 
-import org.openrdf.OpenRDFUtil;
-import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
@@ -33,13 +32,8 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.parser.QueryParser;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.repository.util.RDFInserter;
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.turtle.TurtleParser;
+import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.memory.MemoryStore;
 
 public abstract class SeRQLParserTestCase extends TestCase {
@@ -94,7 +88,7 @@ public abstract class SeRQLParserTestCase extends TestCase {
 		throws Exception
 	{
 		// Read query from file
-		InputStream stream = new URL(queryFile).openStream();
+		InputStream stream = url(queryFile).openStream();
 		String query = IOUtil.readString(new InputStreamReader(stream, "UTF-8"));
 		stream.close();
 
@@ -139,7 +133,8 @@ public abstract class SeRQLParserTestCase extends TestCase {
 		RepositoryConnection con = manifestRep.getConnection();
 
 		URL manifestURL = SeRQLParserTestCase.class.getResource(MANIFEST_FILE);
-		addTurtle(con, manifestURL, null);
+		RDFFormat format = RDFFormat.forFileName(MANIFEST_FILE, RDFFormat.TURTLE);
+		con.add(manifestURL, enc(manifestURL.toExternalForm()), format);
 
 		String query = "SELECT testName, query, result " + "FROM {} mf:name {testName}; "
 				+ "        mf:action {query}; " + "        mf:result {result} " + "USING NAMESPACE "
@@ -173,73 +168,30 @@ public abstract class SeRQLParserTestCase extends TestCase {
 		return suite;
 	}
 
-	static void addTurtle(RepositoryConnection con, URL url,
-			String baseURI, Resource... contexts) throws IOException,
-			RepositoryException, RDFParseException {
-		if (baseURI == null) {
-			baseURI = url.toExternalForm();
-		}
+	private static URL url(String uri)
+			throws IOException {
+		return new URL(dec(uri));
+	}
 
-		InputStream in = url.openStream();
+	private static String enc(String uri)
+			throws UnsupportedEncodingException {
+		if (!uri.startsWith("jar:"))
+			return uri;
+		int start = uri.indexOf(':') + 1;
+		int end = uri.lastIndexOf('!');
+		String jar = uri.substring(start, end);
+		String encoded = URLEncoder.encode(jar, "UTF-8");
+		return "injar://" + encoded + uri.substring(end + 1);
+	}
 
-		try {
-			OpenRDFUtil.verifyContextNotNull(contexts);
-			final ValueFactory vf = con.getRepository().getValueFactory();
-			RDFParser rdfParser = new TurtleParser() {
-				@Override
-				protected void setBaseURI(final String uriSpec) {
-					ParsedURI baseURI = new ParsedURI(uriSpec) {
-						private boolean jarFile = uriSpec.startsWith("jar:file:");
-						private int idx = uriSpec.indexOf('!') + 1;
-						private ParsedURI file = new ParsedURI("file:"
-								+ uriSpec.substring(idx));
-
-						@Override
-						public ParsedURI resolve(ParsedURI uri) {
-							if (jarFile) {
-								String path = file.resolve(uri).toString()
-										.substring(5);
-								String c = uriSpec.substring(0, idx) + path;
-								return new ParsedURI(c);
-							}
-							return super.resolve(uri);
-						}
-					};
-					baseURI.normalize();
-					setBaseURI(baseURI);
-				}
-			};
-			rdfParser.setValueFactory(vf);
-
-			rdfParser.setVerifyData(false);
-			rdfParser.setStopAtFirstError(true);
-			rdfParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-
-			RDFInserter rdfInserter = new RDFInserter(con);
-			rdfInserter.enforceContext(contexts);
-			rdfParser.setRDFHandler(rdfInserter);
-
-			boolean autoCommit = con.isAutoCommit();
-			con.setAutoCommit(false);
-
-			try {
-				rdfParser.parse(in, baseURI);
-			} catch (RDFHandlerException e) {
-				if (autoCommit) {
-					con.rollback();
-				}
-				// RDFInserter only throws wrapped RepositoryExceptions
-				throw (RepositoryException) e.getCause();
-			} catch (RuntimeException e) {
-				if (autoCommit) {
-					con.rollback();
-				}
-				throw e;
-			} finally {
-				con.setAutoCommit(autoCommit);
-			}
-		} finally {
-			in.close();
-		}
+	private static String dec(String uri)
+			throws UnsupportedEncodingException {
+		if (!uri.startsWith("injar:"))
+			return uri;
+		int start = uri.indexOf(':') + 3;
+		int end = uri.indexOf('/', start);
+		String encoded = uri.substring(start, end);
+		String jar = URLDecoder.decode(encoded, "UTF-8");
+		return "jar:" + jar + '!' + uri.substring(end);
 	}
 }
