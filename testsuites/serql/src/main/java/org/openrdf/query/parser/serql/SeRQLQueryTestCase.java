@@ -189,6 +189,13 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 			dataRep = newRepository(entailment);
 		}
 		dataRep.initialize();
+		RepositoryConnection con = dataRep.getConnection();
+		try {
+			con.clear();
+			con.clearNamespaces();
+		} finally {
+			con.close();
+		}
 		return dataRep;
 	}
 
