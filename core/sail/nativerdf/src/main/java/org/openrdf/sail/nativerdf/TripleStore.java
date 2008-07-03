@@ -995,6 +995,7 @@ class TripleStore {
 						else {
 							return score;
 						}
+						break;
 					case 'c':
 						if (context >= 0) {
 							score++;
@@ -1002,6 +1003,10 @@ class TripleStore {
 						else {
 							return score;
 						}
+						break;
+					default:
+						throw new RuntimeException("invalid character '" + field + "' in field sequence: "
+								+ new String(tripleComparator.getFieldSeq()));
 				}
 			}
 
