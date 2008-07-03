@@ -46,6 +46,12 @@
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-serql-testsuite</artifactId>
+				<version>2.2-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sparql-testsuite</artifactId>
 				<version>2.2-SNAPSHOT</version>
 			</dependency>
