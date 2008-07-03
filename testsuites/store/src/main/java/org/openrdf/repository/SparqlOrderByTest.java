@@ -61,13 +61,13 @@ public abstract class SparqlOrderByTest extends TestCase {
 		conn = repository.getConnection();
 	}
 
-	protected Repository createRepository() throws RepositoryException {
+	protected Repository createRepository() throws Exception {
 		Repository repository = newRepository();
 		repository.initialize();
 		return repository;
 	}
 
-	protected abstract Repository newRepository();
+	protected abstract Repository newRepository() throws Exception;
 
 	@Override
 	protected void tearDown() throws Exception {

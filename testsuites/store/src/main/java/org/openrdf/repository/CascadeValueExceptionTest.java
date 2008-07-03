@@ -51,13 +51,13 @@ public abstract class CascadeValueExceptionTest extends TestCase {
 		conn.add(RDF.NIL, RDF.TYPE, RDF.LIST);
 	}
 
-	protected Repository createRepository() throws RepositoryException {
+	protected Repository createRepository() throws Exception {
 		Repository repository = newRepository();
 		repository.initialize();
 		return repository;
 	}
 
-	protected abstract Repository newRepository();
+	protected abstract Repository newRepository() throws Exception;
 
 	@Override
 	protected void tearDown() throws Exception {
