@@ -27,13 +27,6 @@ import org.openrdf.query.impl.TupleQueryResultImpl;
 
 public class TupleQueryResultSerializationTest extends TestCase {
 
-	public void testSPARQLResultFormat()
-		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
-		UnsupportedQueryResultFormatException, QueryEvaluationException
-	{
-		testQueryResultFormat(TupleQueryResultFormat.SPARQL);
-	}
-
 	public void testBinaryResultFormat()
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
 		UnsupportedQueryResultFormatException, QueryEvaluationException
