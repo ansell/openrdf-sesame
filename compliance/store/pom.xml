@@ -20,6 +20,12 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-store-testsuite</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-serql-testsuite</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-sparql-testsuite</artifactId>
