@@ -19,6 +19,6 @@ public class MemInferencingTest extends TestCase {
 		throws SailException
 	{
 		Sail sailStack = new ForwardChainingRDFSInferencer(new MemoryStore());
-		return InferencingTest.suite(sailStack);
+		return InferencingTest.suite(sailStack, MemInferencingTest.class.getName());
 	}
 }
