@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -199,18 +199,23 @@ class TripleStore {
 		Set<String> indexSpecs = parseIndexSpecList(indexSpecStr);
 
 		if (indexSpecs.isEmpty()) {
-			// Create default spoc and posc indexes
-			logger.info("No indexes specified, defaulting to indexes: spoc, posc");
-			indexSpecs.add("spoc");
-			indexSpecs.add("posc");
-			indexSpecStr = "spoc,posc";
+			// Create default indexes
+			indexSpecStr = getCurrentIndexSpecStr();
+			if (indexSpecStr == null) {
+				indexSpecStr = "spoc,posc";
+			}
+			logger.info("No indexes specified, defaulting to indexes: {}", indexSpecStr);
+			indexSpecs = parseIndexSpecList(indexSpecStr);
+			if (indexSpecs.isEmpty()) {
+				throw new SailException("Invalid index specification found in index properties");
+			}
 		}
 
 		// Initialize added indexes and delete removed ones:
 		reindex(indexSpecs);
 
 		if (!String.valueOf(SCHEME_VERSION).equals(properties.getProperty(VERSION_KEY))
-				|| !indexSpecStr.equals(properties.getProperty(INDEXES_KEY)))
+				|| !indexSpecStr.equals(getCurrentIndexSpecStr()))
 		{
 			// Store up-to-date properties
 			properties.setProperty(VERSION_KEY, String.valueOf(SCHEME_VERSION));
@@ -270,7 +275,7 @@ class TripleStore {
 	{
 		// Check if the index specification has changed and update indexes if
 		// necessary
-		String currentIndexSpecStr = properties.getProperty(INDEXES_KEY);
+		String currentIndexSpecStr = getCurrentIndexSpecStr();
 		if (currentIndexSpecStr == null) {
 			return;
 		}
@@ -333,6 +338,10 @@ class TripleStore {
 				logger.warn("Unable to delete file for removed " + fieldSeq + " index");
 			}
 		}
+	}
+
+	private String getCurrentIndexSpecStr() {
+		return properties.getProperty(INDEXES_KEY);
 	}
 
 	public void close()
