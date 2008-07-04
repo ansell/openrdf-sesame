@@ -189,7 +189,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		MutableTupleQueryResult queryResultTable = new MutableTupleQueryResult(queryResult);
 		MutableTupleQueryResult expectedResultTable = new MutableTupleQueryResult(expectedResult);
 
-		if (!QueryResultUtil.equals(queryResultTable, expectedResultTable)) {
+		if (!QueryResultUtil.equals(expectedResultTable, queryResultTable)) {
 			queryResultTable.beforeFirst();
 			expectedResultTable.beforeFirst();
 
