@@ -84,19 +84,17 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 	public void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
-		if (!getDelegate().hasStatement(subject, predicate, object, false, contexts)) {
-			boolean denied = false;
-			if (activated) {
-				for (RepositoryConnectionInterceptor interceptor : interceptors) {
-					denied = interceptor.add(this, subject, predicate, object, contexts);
-					if (denied) {
-						break;
-					}
+		boolean denied = false;
+		if (activated) {
+			for (RepositoryConnectionInterceptor interceptor : interceptors) {
+				denied = interceptor.add(this, subject, predicate, object, contexts);
+				if (denied) {
+					break;
 				}
 			}
-			if (!denied) {
-				getDelegate().add(subject, predicate, object, contexts);
-			}
+		}
+		if (!denied) {
+			getDelegate().add(subject, predicate, object, contexts);
 		}
 	}
 
