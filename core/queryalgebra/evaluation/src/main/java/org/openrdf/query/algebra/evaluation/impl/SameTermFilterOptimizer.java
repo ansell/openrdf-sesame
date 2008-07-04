@@ -19,8 +19,13 @@ import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.Projection;
+import org.openrdf.query.algebra.ProjectionElem;
+import org.openrdf.query.algebra.QueryModelNode;
+import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
@@ -90,14 +95,45 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 			}
 		}
 
-		private void renameVar(Var oldVar, Var newVar, Filter filter) {
-			filter.getArg().visit(new VarRenamer(oldVar.getName(), newVar.getName()));
+		/**
+		 * Stops at Projection (if it exists) since the newName may not be
+		 * available above it. This method also stops at Group because group
+		 * requires a specific set of variables names.
+		 * 
+		 * @param queryModelNode
+		 * @return Project, Group, or QueryRoot
+		 */
+		private UnaryTupleOperator findTop(QueryModelNode queryModelNode) {
+			if (queryModelNode.getParentNode() == null)
+				return (QueryRoot) queryModelNode;
+			if (queryModelNode instanceof Projection)
+				return (Projection) queryModelNode;
+			if (queryModelNode instanceof Group)
+				return (Group) queryModelNode;
+			return findTop(queryModelNode.getParentNode());
+		}
 
-			// Replace SameTerm-filter with an Extension, the old variable name
-			// might still be relevant to nodes higher in the tree
-			Extension extension = new Extension(filter.getArg());
+		private void renameVar(Var oldVar, Var newVar, Filter filter) {
+			TupleExpr arg = filter.getArg();
+			filter.replaceWith(arg);
+			UnaryTupleOperator top = findTop(arg);
+			top.visit(new VarRenamer(oldVar.getName(), newVar.getName()));
+			// Inject the new variable at the top if there is no Projection
+			if (!(top instanceof Projection)) {
+				addVariableAlias(top.getArg(), oldVar, newVar);
+			}
+		}
+
+		/**
+		 * 
+		 * Replace SameTerm-filter with an Extension, the old variable name
+		 * might still be relevant to nodes higher in the tree.
+		 */
+		private void addVariableAlias(TupleExpr arg, Var oldVar, Var newVar) {
+			Extension extension = new Extension();
+			arg.replaceWith(extension);
+			extension.setArg(arg);
 			extension.addElement(new ExtensionElem(new Var(newVar.getName()), oldVar.getName()));
-			filter.replaceWith(extension);
 		}
 
 		private void bindVar(Var var, ValueConstant valueConstant, Filter filter) {
@@ -130,6 +166,13 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		public void meet(Var var) {
 			if (var.getName().equals(oldName)) {
 				var.setName(newName);
+			}
+		}
+
+		@Override
+		public void meet(ProjectionElem node) throws RuntimeException {
+			if (node.getSourceName().equals(oldName)) {
+				node.setSourceName(newName);
 			}
 		}
 	}
