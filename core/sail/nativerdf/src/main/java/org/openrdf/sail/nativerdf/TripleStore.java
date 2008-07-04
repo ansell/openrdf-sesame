@@ -373,6 +373,26 @@ class TripleStore {
 		}
 	}
 
+	/**
+	 * If an index exists by context - use it, otherwise return null.
+	 * 
+	 * @param readTransaction
+	 * @return All triples sorted by context or null if no context index exists
+	 * @throws IOException
+	 */
+	public RecordIterator getAllTriplesSortedByContext(boolean readTransaction)
+		throws IOException
+	{
+		if (readTransaction) {
+			// Don't read removed statements
+			return getAllTriplesSortedByContext(0, TripleStore.REMOVED_FLAG);
+		}
+		else {
+			// Don't read added statements
+			return getAllTriplesSortedByContext(0, TripleStore.ADDED_FLAG);
+		}
+	}
+
 	public RecordIterator getTriples(int subj, int pred, int obj, int context, boolean explicit,
 			boolean readTransaction)
 		throws IOException
@@ -454,6 +474,21 @@ class TripleStore {
 		return getTriples(subj, pred, obj, context, flags, flagsMask, indexes);
 	}
 
+	private RecordIterator getAllTriplesSortedByContext(int flags, int flagsMask)
+		throws IOException
+	{
+		TripleIndex contextIndex = null;
+		for (TripleIndex index : indexes) {
+			if (index.getFieldSeq()[0] == 'c') {
+				contextIndex = index; 
+				break;
+			}
+		}
+		if (contextIndex == null)
+			return null;
+		return getTriplesUsingIndex(-1, -1, -1, -1, flags, flagsMask, contextIndex, false);
+	}
+
 	private RecordIterator getTriples(int subj, int pred, int obj, int context, int flags, int flagsMask,
 			TripleIndex... indexes)
 		throws IOException
@@ -469,19 +504,26 @@ class TripleStore {
 			}
 		}
 
+		return getTriplesUsingIndex(subj, pred, obj, context, flags, flagsMask,
+				bestIndex, bestScore > 0);
+	}
+
+	private RecordIterator getTriplesUsingIndex(int subj, int pred, int obj,
+			int context, int flags, int flagsMask, TripleIndex index,
+			boolean rangeSearch) {
 		byte[] searchKey = getSearchKey(subj, pred, obj, context, flags);
 		byte[] searchMask = getSearchMask(subj, pred, obj, context, flagsMask);
 
-		if (bestScore > 0) {
+		if (rangeSearch) {
 			// Use ranged search
 			byte[] minValue = getMinValue(subj, pred, obj, context);
 			byte[] maxValue = getMaxValue(subj, pred, obj, context);
 
-			return bestIndex.getBTree().iterateRangedValues(searchKey, searchMask, minValue, maxValue);
+			return index.getBTree().iterateRangedValues(searchKey, searchMask, minValue, maxValue);
 		}
 		else {
 			// Use sequential scan
-			return bestIndex.getBTree().iterateValues(searchKey, searchMask);
+			return index.getBTree().iterateValues(searchKey, searchMask);
 		}
 	}
 

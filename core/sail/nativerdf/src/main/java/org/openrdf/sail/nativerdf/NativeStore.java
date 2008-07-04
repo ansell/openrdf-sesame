@@ -17,7 +17,10 @@ import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.ConvertingIteration;
+import info.aduna.iteration.DistinctIteration;
 import info.aduna.iteration.EmptyIteration;
+import info.aduna.iteration.FilterIteration;
 import info.aduna.iteration.UnionIteration;
 
 import org.openrdf.model.Resource;
@@ -325,6 +328,54 @@ public class NativeStore extends SailBase {
 		}
 
 		return contextIDs;
+	}
+
+	protected CloseableIteration<Resource, IOException> getContextIDs(boolean readTransaction)
+		throws IOException
+	{
+		CloseableIteration<? extends Statement, IOException> stIter;
+		CloseableIteration<Resource, IOException> ctxIter;
+		RecordIterator btreeIter;
+		btreeIter = tripleStore.getAllTriplesSortedByContext(readTransaction);
+		if (btreeIter == null) {
+			// Iterator over all statements
+			stIter = createStatementIterator(null, null, null, true,
+					readTransaction);
+		} else {
+			stIter = new NativeStatementIterator(btreeIter, valueStore);
+		}
+		// Filter statements without context resource
+		stIter = new FilterIteration<Statement, IOException>(stIter) {
+			@Override
+			protected boolean accept(Statement st) {
+				return st.getContext() != null;
+			}
+		};
+		// Return the contexts of the statements
+		ctxIter = new ConvertingIteration<Statement, Resource, IOException>(
+				stIter) {
+			@Override
+			protected Resource convert(Statement st) {
+				return st.getContext();
+			}
+		};
+		if (btreeIter == null) {
+			// Filtering any duplicates
+			ctxIter = new DistinctIteration<Resource, IOException>(ctxIter);
+		} else {
+			// Filtering sorted duplicates
+			ctxIter = new FilterIteration<Resource, IOException>(ctxIter) {
+				private Resource last = null;
+
+				@Override
+				protected boolean accept(Resource ctx) throws IOException {
+					boolean equal = ctx.equals(last);
+					last = ctx;
+					return !equal;
+				}
+			};
+		}
+		return ctxIter;
 	}
 
 	/**

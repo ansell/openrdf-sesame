@@ -13,10 +13,7 @@ import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.ConvertingIteration;
-import info.aduna.iteration.DistinctIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
-import info.aduna.iteration.FilterIteration;
 import info.aduna.iteration.Iterations;
 import info.aduna.iteration.IteratorIteration;
 import info.aduna.iteration.LockingIteration;
@@ -176,31 +173,9 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 		// separately. Iterate over all statements and extract their context.
 		Lock readLock = nativeStore.getReadLock();
 		try {
-			// Iterator over all statements
-			CloseableIteration<? extends Statement, IOException> stIter;
-			stIter = nativeStore.createStatementIterator(null, null, null, true, transactionActive());
-
-			// Filter statements without context resource
-			stIter = new FilterIteration<Statement, IOException>(stIter) {
-
-				@Override
-				protected boolean accept(Statement st) {
-					return st.getContext() != null;
-				}
-			};
-
-			// Return the contexts of the statements, filtering any duplicates,
-			// releasing the read lock when the iterator is closed
 			CloseableIteration<? extends Resource, IOException> contextIter;
-			contextIter = new DistinctIteration<Resource, IOException>(
-					new ConvertingIteration<Statement, Resource, IOException>(stIter) {
-
-						@Override
-						protected Resource convert(Statement st) {
-							return st.getContext();
-						}
-					});
-
+			contextIter = nativeStore.getContextIDs(transactionActive());
+			// releasing the read lock when the iterator is closed
 			contextIter = new LockingIteration<Resource, IOException>(readLock, contextIter);
 
 			return new ExceptionConvertingIteration<Resource, SailException>(contextIter) {
