@@ -15,7 +15,17 @@ import info.aduna.io.FileUtil;
 import junit.framework.TestCase;
 
 public class DefaultIndexTest extends TestCase {
+
 	public void testDefaultIndex() throws Exception {
+		File dir = FileUtil.createTempDir("nativerdf");
+		TripleStore store = new TripleStore(dir, null);
+		store.close();
+		// check that the triple store used the default index
+		assertEquals("spoc,posc", findIndex(dir));
+		FileUtil.deleteDir(dir);
+	}
+
+	public void testExistingIndex() throws Exception {
 		File dir = FileUtil.createTempDir("nativerdf");
 		// set a non-default index
 		TripleStore store = new TripleStore(dir, "spoc,opsc");
@@ -34,8 +44,7 @@ public class DefaultIndexTest extends TestCase {
 		try {
 			properties.clear();
 			properties.load(in);
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 		return (String) properties.get("triple-indexes");
