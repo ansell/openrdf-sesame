@@ -191,8 +191,8 @@ public class InferencingTest extends TestCase {
 	 * Static methods *
 	 *----------------*/
 
-	public static Test suite(Sail sailStack) {
-		TestSuite suite = new TestSuite();
+	public static Test suite(Sail sailStack, String name) {
+		TestSuite suite = new TestSuite(name);
 
 		suite.addTest(createTestCase(sailStack, "subclassof", "test001", true));
 		suite.addTest(createTestCase(sailStack, "subclassof", "test002", true));

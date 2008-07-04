@@ -28,7 +28,7 @@ public class NativeStoreInferencingTest extends TestCase {
 		dataDir = FileUtil.createTempDir("nativestore");
 		NotifyingSail sailStack = new NativeStore(dataDir, "spoc,posc");
 		sailStack = new ForwardChainingRDFSInferencer(sailStack);
-		return InferencingTest.suite(sailStack);
+		return InferencingTest.suite(sailStack, NativeStoreInferencingTest.class.getName());
 	}
 
 	@Override
