@@ -15,7 +15,7 @@
       sr:sailImpl [
          sail:sailType "openrdf:RdbmsStore" ;
          ns:jdbcDriver "{%JDBC driver|com.mysql.jdbc.Driver%}";
-         ns:url "jdbc:mysql://{%Host|localhost%}:{%Port|3306%}/{%Database|sesame_store%}?useUnicode=yes&characterEncoding=UTF-8&characterSetResults=UTF-8{%Connection properties|&connectTimeout=0%}";
+         ns:url "jdbc:mysql://{%Host|localhost%}:{%Port|3306%}/{%Database|sesame_store%}?useUnicode=yes&characterEncoding=UTF-8&characterSetResults=UTF-8&{%Connection properties|connectTimeout=0%}";
          ns:user "{%User name%}";
          ns:password "{%Password%}";
          ns:maxTripleTables "{%Max number of triple tables|256%}"

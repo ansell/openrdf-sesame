@@ -59,7 +59,7 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 	}
 
 	public void cache(V value)
-		throws SQLException, InterruptedException
+		throws InterruptedException
 	{
 		if (value.isExpired(getIdVersion())) {
 			synchronized (cache) {

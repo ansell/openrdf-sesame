@@ -5,6 +5,14 @@
  */
 package org.openrdf.sail.rdbms.postgresql;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.dbcp.BasicDataSource;
 
 import org.openrdf.sail.SailException;
@@ -24,6 +32,8 @@ public class PgSqlStore extends RdbmsStore {
 	private String databaseName;
 
 	private int portNumber;
+
+	private Map<String, String> properties = Collections.emptyMap();
 
 	private String user;
 
@@ -59,6 +69,14 @@ public class PgSqlStore extends RdbmsStore {
 
 	public void setPortNumber(int portNumber) {
 		this.portNumber = portNumber;
+	}
+
+	public Map<String, String> getProperties() {
+		return Collections.unmodifiableMap(properties);
+	}
+
+	public void setProperties(Map<String, String> properties) {
+		this.properties = new HashMap<String, String>(properties);
 	}
 
 	public String getUser() {
@@ -97,6 +115,20 @@ public class PgSqlStore extends RdbmsStore {
 			url.append("/");
 		}
 		url.append(databaseName);
+		Iterator<Entry<String, String>> iter;
+		iter = getProperties().entrySet().iterator();
+		if (iter.hasNext()) {
+			url.append("?");
+		}
+		while (iter.hasNext()) {
+			Entry<String, String> e = iter.next();
+			url.append(enc(e.getKey()));
+			url.append("=");
+			url.append(enc(e.getValue()));
+			if (iter.hasNext()) {
+				url.append("&");
+			}
+		}
 		BasicDataSource ds = new BasicDataSource();
 		ds.setUrl(url.toString());
 		if (user != null) {
@@ -113,5 +145,13 @@ public class PgSqlStore extends RdbmsStore {
 		factory.setDataSource(ds);
 		setConnectionFactory(factory);
 		super.initialize();
+	}
+
+	private String enc(String text) {
+		try {
+			return URLEncoder.encode(text, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertionError(e);
+		}
 	}
 }

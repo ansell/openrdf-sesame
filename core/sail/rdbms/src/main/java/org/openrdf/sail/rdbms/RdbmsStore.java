@@ -52,21 +52,49 @@ public class RdbmsStore extends SailBase {
 		super();
 	}
 
+	/**
+	 * Creates a new RDBMS RDF Store using the provided database connection.
+	 * 
+	 * @param url
+	 *            JDNI url of a DataSource
+	 */
 	public RdbmsStore(String url) {
 		this.url = url;
 	}
 
+	/**
+	 * Creates a new RDBMS RDF Store using the provided database connection.
+	 * 
+	 * @param url
+	 *            JDNI url of a DataSource
+	 * @param user
+	 * @param password
+	 */
 	public RdbmsStore(String url, String user, String password) {
 		this.url = url;
 		this.user = user;
 		this.password = password;
 	}
 
+	/**
+	 * Creates a new RDBMS RDF Store using the provided database connection.
+	 * 
+	 * @param jdbcDriver
+	 * @param jdbcUrl
+	 */
 	public RdbmsStore(String jdbcDriver, String jdbcUrl) {
 		this.jdbcDriver = jdbcDriver;
 		this.url = jdbcUrl;
 	}
 
+	/**
+	 * Creates a new RDBMS RDF Store using the provided database connection.
+	 * 
+	 * @param jdbcDriver
+	 * @param jdbcUrl
+	 * @param user
+	 * @param password
+	 */
 	public RdbmsStore(String jdbcDriver, String jdbcUrl, String user, String password) {
 		this.jdbcDriver = jdbcDriver;
 		this.url = jdbcUrl;
