@@ -59,5 +59,6 @@ public class BooleanQueryResultView extends QueryResultView {
 		finally {
 			out.close();
 		}
+		logEndOfRequest(request);
 	}
 }

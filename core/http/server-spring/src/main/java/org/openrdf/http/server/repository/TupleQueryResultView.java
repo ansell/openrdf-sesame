@@ -78,5 +78,6 @@ public class TupleQueryResultView extends QueryResultView {
 		finally {
 			out.close();
 		}
+		logEndOfRequest(request);
 	}
 }

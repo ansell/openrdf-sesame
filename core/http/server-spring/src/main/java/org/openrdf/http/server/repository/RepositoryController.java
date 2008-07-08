@@ -79,21 +79,25 @@ public class RepositoryController extends AbstractController {
 		Repository repository = RepositoryInterceptor.getRepository(request);
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 
+		String queryStr = request.getParameter(QUERY_PARAM_NAME);
+		int qryCode = 0;
+		if (logger.isInfoEnabled() || logger.isDebugEnabled()) {
+			qryCode = String.valueOf(queryStr).hashCode();
+		}
+
 		String reqMethod = request.getMethod();
 		if (METHOD_GET.equals(reqMethod)) {
-			logger.info("GET query");
+			logger.info("GET query {}", qryCode);
 		}
 		else if (METHOD_POST.equals(reqMethod)) {
-			logger.info("POST query");
+			logger.info("POST query {}", qryCode);
 
 			String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
 			if (!Protocol.FORM_MIME_TYPE.equals(mimeType)) {
 				throw new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported MIME type: " + mimeType);
 			}
 		}
-
-		String queryStr = request.getParameter(QUERY_PARAM_NAME);
-		logger.debug("query = {}", queryStr);
+		logger.debug("query {} = {}", qryCode, queryStr);
 
 		if (queryStr != null) {
 			Query query = getQuery(repository, repositoryCon, queryStr, request, response);

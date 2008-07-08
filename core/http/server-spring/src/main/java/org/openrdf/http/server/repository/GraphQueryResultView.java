@@ -78,5 +78,6 @@ public class GraphQueryResultView extends QueryResultView {
 		finally {
 			out.close();
 		}
+		logEndOfRequest(request);
 	}
 }
