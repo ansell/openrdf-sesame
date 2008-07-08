@@ -31,8 +31,8 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
  * File-based indexed storage and retrieval of RDF statements. TripleStore
  * stores statements in the form of four integer IDs. Each ID represent an RDF
  * value that is stored in a {@link ValueStore}. The four IDs refer to the
- * statement's subject, predicate, object and context. The ID <tt>0</tt> is
- * used to represent the "null" context and doesn't map to an actual RDF value.
+ * statement's subject, predicate, object and context. The ID <tt>0</tt> is used
+ * to represent the "null" context and doesn't map to an actual RDF value.
  * 
  * @author Arjohn Kampman
  */
@@ -43,6 +43,11 @@ class TripleStore {
 	/*-----------*
 	 * Constants *
 	 *-----------*/
+
+	/**
+	 * The default triple indexes.
+	 */
+	private static final String DEFAULT_INDEXES = "spoc,posc";
 
 	/**
 	 * The file name for the properties file.
@@ -67,8 +72,8 @@ class TripleStore {
 	 * version did not have a properties file yet.
 	 * <li>version 1: Introduces configurable triple indexes and the properties
 	 * file.
-	 * <li>version 10: Introduces a context field, essentially making this a
-	 * quad store.
+	 * <li>version 10: Introduces a context field, essentially making this a quad
+	 * store.
 	 * <li>version 10a: Introduces transaction flags, this is backwards
 	 * compatible with version 10.
 	 * </ul>
@@ -199,15 +204,18 @@ class TripleStore {
 		Set<String> indexSpecs = parseIndexSpecList(indexSpecStr);
 
 		if (indexSpecs.isEmpty()) {
-			// Create default indexes
+			// No indexes specified, use existing indexes if possible
 			indexSpecStr = getCurrentIndexSpecStr();
-			if (indexSpecStr == null) {
-				indexSpecStr = "spoc,posc";
-			}
-			logger.info("No indexes specified, defaulting to indexes: {}", indexSpecStr);
 			indexSpecs = parseIndexSpecList(indexSpecStr);
-			if (indexSpecs.isEmpty()) {
-				throw new SailException("Invalid index specification found in index properties");
+
+			if (indexSpecs.size() > 0) {
+				logger.info("No indexes specified, using existing indexes: {}", indexSpecStr);
+			}
+			else {
+				// Create default indexes
+				indexSpecStr = DEFAULT_INDEXES;
+				indexSpecs = parseIndexSpecList(indexSpecStr);
+				logger.info("No indexes specified or found, defaulting to indexes: {}", indexSpecStr);
 			}
 		}
 
@@ -480,7 +488,7 @@ class TripleStore {
 		TripleIndex contextIndex = null;
 		for (TripleIndex index : indexes) {
 			if (index.getFieldSeq()[0] == 'c') {
-				contextIndex = index; 
+				contextIndex = index;
 				break;
 			}
 		}
@@ -504,13 +512,12 @@ class TripleStore {
 			}
 		}
 
-		return getTriplesUsingIndex(subj, pred, obj, context, flags, flagsMask,
-				bestIndex, bestScore > 0);
+		return getTriplesUsingIndex(subj, pred, obj, context, flags, flagsMask, bestIndex, bestScore > 0);
 	}
 
-	private RecordIterator getTriplesUsingIndex(int subj, int pred, int obj,
-			int context, int flags, int flagsMask, TripleIndex index,
-			boolean rangeSearch) {
+	private RecordIterator getTriplesUsingIndex(int subj, int pred, int obj, int context, int flags,
+			int flagsMask, TripleIndex index, boolean rangeSearch)
+	{
 		byte[] searchKey = getSearchKey(subj, pred, obj, context, flags);
 		byte[] searchMask = getSearchMask(subj, pred, obj, context, flagsMask);
 
@@ -635,8 +642,8 @@ class TripleStore {
 	 * @param explicit
 	 *        Flag indicating whether explicit or inferred statements should be
 	 *        removed; <tt>true</tt> removes explicit statements that match the
-	 *        pattern, <tt>false</tt> removes inferred statements that match
-	 *        the pattern.
+	 *        pattern, <tt>false</tt> removes inferred statements that match the
+	 *        pattern.
 	 * @return The number of triples that were removed.
 	 * @throws IOException
 	 */
