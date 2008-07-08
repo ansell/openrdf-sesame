@@ -5,12 +5,17 @@
  */
 package org.openrdf.http.server.repository;
 
+import static org.openrdf.http.protocol.Protocol.QUERY_PARAM_NAME;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.View;
 
 import info.aduna.lang.FileFormat;
@@ -22,6 +27,8 @@ import info.aduna.lang.FileFormat;
  * @author Arjohn Kampman
  */
 public abstract class QueryResultView implements View {
+
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * Key by which the query result is stored in the model.
@@ -67,5 +74,13 @@ public abstract class QueryResultView implements View {
 		}
 
 		response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+	}
+
+	protected void logEndOfRequest(HttpServletRequest request) {
+		if (logger.isInfoEnabled()) {
+			String queryStr = request.getParameter(QUERY_PARAM_NAME);
+			int qryCode = String.valueOf(queryStr).hashCode();
+			logger.info("Request for query {} is finished", qryCode);
+		}
 	}
 }
