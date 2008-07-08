@@ -112,9 +112,6 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				resource = new RdbmsBNode(impl);
 				bnodes.cache(resource);
 			}
-			catch (SQLException e) {
-				throw new RdbmsRuntimeException(e);
-			}
 			catch (InterruptedException e) {
 				throw new RdbmsRuntimeException(e);
 			}
@@ -158,9 +155,6 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				resource = new RdbmsURI(impl);
 				uris.cache(resource);
 			}
-			catch (SQLException e) {
-				throw new RdbmsRuntimeException(e);
-			}
 			catch (InterruptedException e) {
 				throw new RdbmsRuntimeException(e);
 			}
@@ -198,9 +192,6 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				bnodes.cache((RdbmsBNode)node);
 				return (RdbmsBNode)node;
 			}
-			catch (SQLException e) {
-				throw new RdbmsRuntimeException(e);
-			}
 			catch (InterruptedException e) {
 				throw new RdbmsRuntimeException(e);
 			}
@@ -215,9 +206,6 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 			try {
 				uris.cache((RdbmsURI)uri);
 				return (RdbmsURI)uri;
-			}
-			catch (SQLException e) {
-				throw new RdbmsRuntimeException(e);
 			}
 			catch (InterruptedException e) {
 				throw new RdbmsRuntimeException(e);
@@ -246,9 +234,6 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				literals.cache(lit);
 			}
 			return lit;
-		}
-		catch (SQLException e) {
-			throw new RdbmsRuntimeException(e);
 		}
 		catch (InterruptedException e) {
 			throw new RdbmsRuntimeException(e);

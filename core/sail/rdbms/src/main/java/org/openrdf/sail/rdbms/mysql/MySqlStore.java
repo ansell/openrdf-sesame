@@ -5,6 +5,13 @@
  */
 package org.openrdf.sail.rdbms.mysql;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.dbcp.BasicDataSource;
 
 import org.openrdf.sail.SailException;
@@ -24,6 +31,8 @@ public class MySqlStore extends RdbmsStore {
 	private String databaseName;
 
 	private int portNumber;
+
+	private Map<String, String> properties = Collections.emptyMap();
 
 	private String user;
 
@@ -59,6 +68,14 @@ public class MySqlStore extends RdbmsStore {
 
 	public void setPortNumber(int portNumber) {
 		this.portNumber = portNumber;
+	}
+
+	public Map<String, String> getProperties() {
+		return Collections.unmodifiableMap(properties);
+	}
+
+	public void setProperties(Map<String, String> properties) {
+		this.properties = new HashMap<String, String>(properties);
 	}
 
 	public String getUser() {
@@ -98,6 +115,12 @@ public class MySqlStore extends RdbmsStore {
 		}
 		url.append(databaseName);
 		url.append("?useUnicode=yes&characterEncoding=UTF-8");
+		for (Entry<String, String> e : getProperties().entrySet()) {
+			url.append("&");
+			url.append(enc(e.getKey()));
+			url.append("=");
+			url.append(enc(e.getValue()));
+		}
 		BasicDataSource ds = new BasicDataSource();
 		ds.setUrl(url.toString());
 		if (user != null) {
@@ -114,5 +137,13 @@ public class MySqlStore extends RdbmsStore {
 		factory.setDataSource(ds);
 		setConnectionFactory(factory);
 		super.initialize();
+	}
+
+	private String enc(String text) {
+		try {
+			return URLEncoder.encode(text, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertionError(e);
+		}
 	}
 }
