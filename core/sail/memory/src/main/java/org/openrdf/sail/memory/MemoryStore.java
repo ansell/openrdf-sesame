@@ -293,6 +293,9 @@ public class MemoryStore extends SailBase {
 				}
 				// try to create a lock for later writing
 				dirLock = locker.tryLock();
+				if (dirLock == null) {
+					logger.warn("Failed to lock directory: {}", dataDir);
+				}
 				// Don't try to read empty files: this will result in an
 				// IOException, and the file doesn't contain any data anyway.
 				if (dataFile.length() == 0L) {
@@ -323,7 +326,7 @@ public class MemoryStore extends SailBase {
 					// try to lock directory
 					dirLock = locker.tryLock();
 					if (dirLock == null) {
-						logger.debug("Failed to lock directory: {}", dataDir);
+						logger.error("Failed to lock directory: {}", dataDir);
 						throw new SailException("Failed to lock directory: " + dataDir);
 					}
 
