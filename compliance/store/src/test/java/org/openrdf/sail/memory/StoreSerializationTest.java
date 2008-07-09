@@ -101,6 +101,8 @@ public class StoreSerializationTest extends TestCase {
 		assertEquals(bindingSet.getValue("Y"), bar);
 
 		iter.close();
+		con.addStatement(bar, RDF.TYPE, foo);
+		con.commit();
 		con.close();
 	}
 }

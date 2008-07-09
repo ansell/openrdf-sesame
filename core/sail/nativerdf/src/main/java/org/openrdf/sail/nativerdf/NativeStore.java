@@ -30,6 +30,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
@@ -81,6 +82,11 @@ public class NativeStore extends SailBase {
 	 * Flag indicating whether the Sail has been initialized.
 	 */
 	private boolean initialized;
+
+	/**
+	 * Data directory lock.
+	 */
+	private Lock dirLock;
 
 	/*--------------*
 	 * Constructors *
@@ -178,6 +184,12 @@ public class NativeStore extends SailBase {
 			throw new SailException("Not allowed to read from the specified directory: " + dataDir);
 		}
 
+		// try to lock the directory
+		dirLock = new DirectoryLockManager(dataDir).tryLock();
+		if (dirLock == null) {
+			throw new SailException("Could not lock directory: " + dataDir);
+		}
+
 		logger.debug("Data dir is " + dataDir);
 
 		try {
@@ -231,6 +243,7 @@ public class NativeStore extends SailBase {
 			}
 			finally {
 				txnLock.release();
+				dirLock.release();
 			}
 		}
 	}
