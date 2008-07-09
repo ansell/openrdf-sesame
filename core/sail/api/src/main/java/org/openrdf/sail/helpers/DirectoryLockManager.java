@@ -50,7 +50,7 @@ public class DirectoryLockManager {
 	}
 
 	private Lock createLock(final File lockDir, final File lockFile) {
-		Lock lock = new Lock() {
+		return new Lock() {
 			private boolean active = true;
 
 			public boolean isActive() {
@@ -71,7 +71,6 @@ public class DirectoryLockManager {
 				super.finalize();
 			}
 		};
-		return lock;
 	}
 
 	private void sign(File lockFile) throws IOException {

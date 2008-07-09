@@ -37,6 +37,13 @@ public abstract class TupleQueryResultTest extends TestCase {
 		addData();
 	}
 
+	@Override
+	protected void tearDown() throws Exception {
+		con.close();
+		rep.shutDown();
+		super.tearDown();
+	}
+
 	protected Repository createRepository() throws Exception {
 		Repository repository = newRepository();
 		repository.initialize();

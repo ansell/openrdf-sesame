@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import info.aduna.concurrent.locks.ExclusiveLockManager;
+import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.sail.NotifyingSailConnection;
@@ -42,6 +43,7 @@ import org.openrdf.sail.rdbms.schema.NamespacesTable;
 import org.openrdf.sail.rdbms.schema.TableFactory;
 import org.openrdf.sail.rdbms.schema.URITable;
 import org.openrdf.sail.rdbms.schema.ValueTableFactory;
+import org.openrdf.sail.rdbms.util.DatabaseLockManager;
 
 /**
  * Responsible to initialise and wire all components together that will be
@@ -101,6 +103,8 @@ public class RdbmsConnectionFactory {
 	private IdSequence ids;
 
 	private final ExclusiveLockManager lock = new ExclusiveLockManager();
+
+	private Lock databaseLock;
 
 	public void setSail(RdbmsStore sail) {
 		this.sail = sail;
@@ -166,6 +170,7 @@ public class RdbmsConnectionFactory {
 	public void init()
 		throws SailException
 	{
+		databaseLock = createDatabaseLock();
 		try {
 			nsAndTableIndexes = getConnection();
 			resourceInserts = getConnection();
@@ -365,7 +370,17 @@ public class RdbmsConnectionFactory {
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
+		} finally {
+			databaseLock.release();
 		}
+	}
+
+	protected Lock createDatabaseLock() throws SailException {
+		Lock lock = new DatabaseLockManager(ds, user, password).tryLock();
+		if (lock == null) {
+			throw new SailException("Faild to lock database");
+		}
+		return lock;
 	}
 
 	protected QueryBuilderFactory createQueryBuilderFactory() {
