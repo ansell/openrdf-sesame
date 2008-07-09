@@ -27,6 +27,7 @@ import org.openrdf.model.Value;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
+import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
@@ -116,6 +117,11 @@ public class MemoryStore extends SailBase {
 	 * The file used for serialising data, null if this is a volatile RDF store.
 	 */
 	private File syncFile;
+
+	/**
+	 * The directory lock, null if this is read-only or a volatile RDF store.
+	 */
+	private Lock dirLock;
 
 	/**
 	 * Flag indicating whether the contents of this repository have changed.
@@ -272,8 +278,10 @@ public class MemoryStore extends SailBase {
 		currentSnapshot = 1;
 
 		if (persist) {
-			dataFile = new File(getDataDir(), DATA_FILE_NAME);
-			syncFile = new File(getDataDir(), SYNC_FILE_NAME);
+			File dataDir = getDataDir();
+			DirectoryLockManager locker = new DirectoryLockManager(dataDir);
+			dataFile = new File(dataDir, DATA_FILE_NAME);
+			syncFile = new File(dataDir, SYNC_FILE_NAME);
 
 			if (dataFile.exists()) {
 				logger.debug("Reading data from {}...", dataFile);
@@ -283,6 +291,8 @@ public class MemoryStore extends SailBase {
 					logger.error("Data file is not readable: {}", dataFile);
 					throw new SailException("Can't read data file: " + dataFile);
 				}
+				// try to create a lock for later writing
+				dirLock = locker.tryLock();
 				// Don't try to read empty files: this will result in an
 				// IOException, and the file doesn't contain any data anyway.
 				if (dataFile.length() == 0L) {
@@ -309,6 +319,12 @@ public class MemoryStore extends SailBase {
 							logger.debug("Failed to create directory for data file: {}", dir);
 							throw new SailException("Failed to create directory for data file: " + dir);
 						}
+					}
+					// try to lock directory
+					dirLock = locker.tryLock();
+					if (dirLock == null) {
+						logger.debug("Failed to lock directory: {}", dataDir);
+						throw new SailException("Failed to lock directory: " + dataDir);
 					}
 
 					logger.debug("Initializing data file...");
@@ -361,6 +377,9 @@ public class MemoryStore extends SailBase {
 			}
 			finally {
 				stLock.release();
+				if (dirLock != null) {
+					dirLock.release();
+				}
 			}
 		}
 	}
@@ -370,8 +389,8 @@ public class MemoryStore extends SailBase {
 	 * if a read-only data file is used.
 	 */
 	public boolean isWritable() {
-		// Sail is not writable when it has a data file that is not writable
-		return dataFile == null || dataFile.canWrite();
+		// Sail is not writable when it has a dataDir, but no directory lock
+		return !persist || dirLock != null;
 	}
 
 	@Override
