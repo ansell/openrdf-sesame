@@ -58,6 +58,8 @@ public class MemoryStore extends SailBase {
 
 	protected static final String DATA_FILE_NAME = "memorystore.data";
 
+	protected static final String SYNC_FILE_NAME = "memorystore.sync";
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -109,6 +111,11 @@ public class MemoryStore extends SailBase {
 	 * The file used for data persistence, null if this is a volatile RDF store.
 	 */
 	private File dataFile;
+
+	/**
+	 * The file used for serialising data, null if this is a volatile RDF store.
+	 */
+	private File syncFile;
 
 	/**
 	 * Flag indicating whether the contents of this repository have changed.
@@ -266,6 +273,7 @@ public class MemoryStore extends SailBase {
 
 		if (persist) {
 			dataFile = new File(getDataDir(), DATA_FILE_NAME);
+			syncFile = new File(getDataDir(), SYNC_FILE_NAME);
 
 			if (dataFile.exists()) {
 				logger.debug("Reading data from {}...", dataFile);
@@ -304,7 +312,7 @@ public class MemoryStore extends SailBase {
 					}
 
 					logger.debug("Initializing data file...");
-					FileIO.write(this, dataFile);
+					FileIO.write(this, syncFile, dataFile);
 					logger.debug("Data file initialized");
 				}
 				catch (IOException e) {
@@ -348,6 +356,7 @@ public class MemoryStore extends SailBase {
 				valueFactory = null;
 				statements = null;
 				dataFile = null;
+				syncFile = null;
 				initialized = false;
 			}
 			finally {
@@ -822,7 +831,7 @@ public class MemoryStore extends SailBase {
 			if (persist && contentsChanged) {
 				logger.debug("syncing data to file...");
 				try {
-					FileIO.write(this, dataFile);
+					FileIO.write(this, syncFile, dataFile);
 					contentsChanged = false;
 					logger.debug("Data synced to file");
 				}

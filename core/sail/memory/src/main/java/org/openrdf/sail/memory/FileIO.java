@@ -69,6 +69,26 @@ class FileIO {
 
 	public static final int EOF_MARKER = 127;
 
+	public static void write(MemoryStore store, File syncFile, File dataFile)
+		throws IOException, SailException
+	{
+		write(store, syncFile);
+		// prefer atom renameTo operations
+		boolean renamed = syncFile.renameTo(dataFile);
+		if (!renamed) {
+			// tolerate renameTo that does not work if destination exists
+			if (syncFile.exists() && dataFile.exists()) {
+				dataFile.delete();
+				renamed = syncFile.renameTo(dataFile);
+			}
+		}
+		if (!renamed) {
+			String path = syncFile.getAbsolutePath();
+			String name = dataFile.getName();
+			throw new IOException("Could not rename " + path + " to " + name);
+		}
+	}
+
 	public static void write(MemoryStore store, File dataFile)
 		throws IOException, SailException
 	{
