@@ -2092,6 +2092,9 @@ public class BTree {
 		out.println("node size       = " + nodeSize);
 		out.println("max node ID     = " + maxNodeID);
 		out.println();
+		
+		int nodeCount = 0;
+		int valueCount = 0;
 
 		ByteBuffer buf = ByteBuffer.allocate(nodeSize);
 		for (long offset = blockSize; offset < fileChannel.size(); offset += blockSize) {
@@ -2100,6 +2103,8 @@ public class BTree {
 
 			int nodeID = offset2nodeID(offset);
 			int count = buf.getInt();
+			nodeCount++;
+			valueCount += count;
 			out.print("node " + nodeID + ": ");
 			out.print("count=" + count + " ");
 
@@ -2120,6 +2125,8 @@ public class BTree {
 
 			buf.clear();
 		}
+		out.println("#nodes          = " + nodeCount);
+		out.println("#values         = " + valueCount);
 		out.println("---end of BTree file---");
 	}
 }
