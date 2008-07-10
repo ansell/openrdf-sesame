@@ -250,9 +250,9 @@ public class ValueTable {
 		expr.append(")");
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT ").append(expr);
-		sb.append(", MAX(").append(column);
+		sb.append(" AS grp, MAX(").append(column);
 		sb.append(")\nFROM ").append(getName());
-		sb.append("\nGROUP BY ").append(expr);
+		sb.append("\nGROUP BY grp");
 		String query = sb.toString();
 		PreparedStatement st = table.prepareStatement(query);
 		try {
