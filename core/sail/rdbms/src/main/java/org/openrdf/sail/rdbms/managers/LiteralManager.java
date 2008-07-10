@@ -50,7 +50,9 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 		throws SQLException
 	{
 		super.close();
-		table.close();
+		if (table != null) {
+			table.close();
+		}
 	}
 
 	@Override

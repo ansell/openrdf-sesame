@@ -371,7 +371,9 @@ public class RdbmsConnectionFactory {
 		catch (SQLException e) {
 			throw new RdbmsException(e);
 		} finally {
-			databaseLock.release();
+			if (databaseLock != null) {
+				databaseLock.release();
+			}
 		}
 	}
 

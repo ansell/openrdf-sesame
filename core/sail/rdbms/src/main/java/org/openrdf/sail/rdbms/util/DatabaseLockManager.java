@@ -22,6 +22,8 @@ import info.aduna.concurrent.locks.Lock;
  * @author James Leigh
  */
 public class DatabaseLockManager {
+	private static final String CREATE_LOCKED = "CREATE TABLE LOCKED ( process VARCHAR(128) )";
+	private static final String INSERT = "INSERT INTO LOCKED VALUES ('";
 	private Logger logger = LoggerFactory.getLogger(DatabaseLockManager.class);
 	private DataSource ds;
 
@@ -40,23 +42,27 @@ public class DatabaseLockManager {
 	}
 
 	public Lock tryLock() {
+		Lock lock = null;
 		try {
+			Statement st = null;
 			Connection con = getConnection();
 			try {
-				Statement st = con.createStatement();
-				try {
-					st.execute("CREATE TABLE LOCKED ( process VARCHAR(128) )");
-					Lock lock = createLock();
-					st.execute("INSERT INTO LOCKED VALUES ('" + getProcessName() + "')");
-					return lock;
-				} finally {
+				st = con.createStatement();
+				st.execute(CREATE_LOCKED);
+				lock = createLock();
+				st.execute(INSERT + getProcessName() + "')");
+				return lock;
+			} finally {
+				if (st != null) {
 					st.close();
 				}
-			} finally {
 				con.close();
 			}
 		} catch (SQLException exc) {
 			logger.warn(exc.toString(), exc);
+			if (lock != null) {
+				lock.release();
+			}
 			return null;
 		}
 	}

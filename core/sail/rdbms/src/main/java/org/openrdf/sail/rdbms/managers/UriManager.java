@@ -36,7 +36,9 @@ public class UriManager extends ValueManagerBase<RdbmsURI> {
 		throws SQLException
 	{
 		super.close();
-		table.close();
+		if (table != null) {
+			table.close();
+		}
 	}
 
 	@Override

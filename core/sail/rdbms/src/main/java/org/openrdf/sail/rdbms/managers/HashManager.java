@@ -120,6 +120,8 @@ public class HashManager extends ManagerBase {
 	public void close()
 		throws SQLException
 	{
+		if (queue == null)
+			return;
 		try {
 			flush();
 			if (lookupThread != null) {
