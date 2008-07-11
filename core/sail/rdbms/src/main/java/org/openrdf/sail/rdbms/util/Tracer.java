@@ -80,16 +80,21 @@ public class Tracer implements InvocationHandler {
 				return Tracer.trace(returnVar, result, type, out);
 			return result;
 		} catch (InvocationTargetException exc) {
-			out.println("/* ERROR in " + method.getName() + ": " + exc.getCause().getMessage());
-			exc.getCause().printStackTrace(out);
-			if (exc.getCause() instanceof SQLException) {
-				SQLException se = (SQLException) exc.getCause();
-				SQLException next = se.getNextException();
-				if (next != null) {
-					next.printStackTrace(out);
+			String name = method.getName();
+			String msg = exc.getCause().getMessage();
+			String line = "/* ERROR in " + var + "." + name + ": " + msg;
+			synchronized (out) {
+				out.println(line);
+				exc.getCause().printStackTrace(out);
+				if (exc.getCause() instanceof SQLException) {
+					SQLException se = (SQLException) exc.getCause();
+					SQLException next = se.getNextException();
+					if (next != null) {
+						next.printStackTrace(out);
+					}
 				}
+				out.println("*/");
 			}
-			out.println("*/");
 			out.flush();
 			throw exc.getCause();
 		}

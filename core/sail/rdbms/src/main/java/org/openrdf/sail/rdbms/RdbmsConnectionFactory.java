@@ -383,8 +383,10 @@ public class RdbmsConnectionFactory {
 	}
 
 	protected Lock createDatabaseLock() throws SailException {
-		Lock lock = new DatabaseLockManager(ds, user, password).tryLock();
-		if (lock == null) {
+		DatabaseLockManager manager;
+		manager = new DatabaseLockManager(ds, user, password);
+		Lock lock = manager.tryLock();
+		if (lock == null && !manager.isDebugEnabled()) {
 			throw new SailException("Faild to lock database");
 		}
 		return lock;
