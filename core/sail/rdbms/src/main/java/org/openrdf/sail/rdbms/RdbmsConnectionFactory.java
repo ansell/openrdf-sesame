@@ -44,6 +44,7 @@ import org.openrdf.sail.rdbms.schema.TableFactory;
 import org.openrdf.sail.rdbms.schema.URITable;
 import org.openrdf.sail.rdbms.schema.ValueTableFactory;
 import org.openrdf.sail.rdbms.util.DatabaseLockManager;
+import org.openrdf.sail.rdbms.util.Tracer;
 
 /**
  * Responsible to initialise and wire all components together that will be
@@ -115,11 +116,15 @@ public class RdbmsConnectionFactory {
 	}
 
 	public void setDataSource(DataSource ds) {
-		this.ds = ds;
+		if (Tracer.isDebugEnabled()) {
+			this.ds = Tracer.traceDataSource(ds);
+		} else {
+			this.ds = ds;
+		}
 	}
 
 	public void setDataSource(DataSource ds, String user, String password) {
-		this.ds = ds;
+		setDataSource(ds);
 		this.user = user;
 		this.password = password;
 	}
@@ -409,8 +414,13 @@ public class RdbmsConnectionFactory {
 		return new SelectQueryOptimizerFactory();
 	}
 
+	/**
+	 * FROM DUAL
+	 * 
+	 * @return from clause or empty string
+	 */
 	protected String getFromDummyTable() {
-		return "FROM DUAL";
+		return "";
 	}
 
 	protected Connection getConnection()

@@ -123,7 +123,7 @@ public class RdbmsTable {
 		}
 	}
 
-	public int executeUpdate(String command, Object... parameters)
+	public int executeUpdate(String command, String... parameters)
 		throws SQLException
 	{
 		PreparedStatement st = conn.prepareStatement(command);
@@ -133,7 +133,7 @@ public class RdbmsTable {
 					st.setNull(i + 1, Types.VARCHAR);
 				}
 				else {
-					st.setObject(i + 1, parameters[i]);
+					st.setString(i + 1, parameters[i]);
 				}
 			}
 			return st.executeUpdate();

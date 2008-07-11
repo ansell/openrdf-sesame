@@ -25,6 +25,8 @@ public abstract class ManagerBase {
 
 	public static int MAX_QUEUE = 96 * 1024;
 
+	private static final boolean USE_THREAD = true;
+
 	Exception exc;
 
 	private Logger logger = LoggerFactory.getLogger(ManagerBase.class);
@@ -101,7 +103,7 @@ public abstract class ManagerBase {
 	}
 
 	void checkQueueSize() {
-		if (++count >= MIN_QUEUE && thread == null) {
+		if (++count >= MIN_QUEUE && thread == null && USE_THREAD) {
 			String name = getClass().getSimpleName() + "-flusher";
 			thread = new Thread(new Runnable() {
 

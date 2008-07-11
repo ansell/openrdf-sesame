@@ -169,11 +169,7 @@ public class TransactionTable {
 		sb.append("obj, expl FROM ");
 		sb.append(temporary.getName()).append(" tr\n");
 		sb.append("WHERE NOT EXISTS (");
-		sb.append("SELECT ctx, subj, ");
-		if (triples.isPredColumnPresent()) {
-			sb.append("pred, ");
-		}
-		sb.append("obj, expl FROM ");
+		sb.append("SELECT * FROM ");
 		sb.append(tableName).append(" st\n");
 		sb.append("WHERE st.ctx = tr.ctx");
 		sb.append(" AND st.subj = tr.subj");

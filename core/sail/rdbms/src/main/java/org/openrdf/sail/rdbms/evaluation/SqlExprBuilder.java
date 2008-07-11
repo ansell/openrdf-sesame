@@ -203,7 +203,7 @@ public class SqlExprBuilder {
 	}
 
 	public SqlExprBuilder notEqual() {
-		where.append(" != ");
+		where.append(" <> ");
 		return this;
 	}
 
