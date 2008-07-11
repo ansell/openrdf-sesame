@@ -50,7 +50,10 @@ public class IntegerIdSequence extends IdSequence {
 			for (Number max : getHashTable().maxIds(getShift(), getMod())) {
 				ValueType code = valueOf(max);
 				if (max.intValue() > minId(code).intValue()) {
-					seq.put(code, new AtomicInteger(max.intValue()));
+					if (!seq.containsKey(code)
+							|| seq.get(code).intValue() < max.intValue()) {
+						seq.put(code, new AtomicInteger(max.intValue()));
+					}
 				}
 			}
 		}

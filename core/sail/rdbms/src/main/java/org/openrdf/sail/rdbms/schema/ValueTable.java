@@ -249,9 +249,11 @@ public class ValueTable {
 		expr.append(mod);
 		expr.append(")");
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT ").append(expr);
-		sb.append(" AS grp, MAX(").append(column);
-		sb.append(")\nFROM ").append(getName());
+		sb.append("SELECT ");
+		sb.append("MAX(");
+		sb.append(column);
+		sb.append("), ").append(expr).append(" AS grp");
+		sb.append("\nFROM ").append(getName());
 		sb.append("\nGROUP BY grp");
 		String query = sb.toString();
 		PreparedStatement st = table.prepareStatement(query);
@@ -260,7 +262,7 @@ public class ValueTable {
 			try {
 				List<Long> result = new ArrayList<Long>();
 				while (rs.next()) {
-					result.add(rs.getLong(2));
+					result.add(rs.getLong(1));
 				}
 				return result;
 			}
