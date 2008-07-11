@@ -41,6 +41,10 @@ public class DatabaseLockManager {
 		this.password = password;
 	}
 
+	public boolean isDebugEnabled() {
+		return logger.isDebugEnabled();
+	}
+
 	public Lock tryLock() {
 		Lock lock = null;
 		try {
