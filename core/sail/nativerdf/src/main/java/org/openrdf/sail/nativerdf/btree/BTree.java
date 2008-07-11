@@ -949,13 +949,14 @@ public class BTree {
 
 			// allow the node ID to be reused
 			synchronized (allocatedNodes) {
-				initAllocatedNodes();
-				allocatedNodes.clear(node.id);
+				if (allocatedNodesInitialized) {
+					allocatedNodes.clear(node.id);
 
-				if (node.id == maxNodeID) {
-					// Shrink file
-					maxNodeID = Math.max(0, allocatedNodes.length() - 1);
-					fileChannel.truncate(nodeID2offset(maxNodeID) + nodeSize);
+					if (node.id == maxNodeID) {
+						// Shrink file
+						maxNodeID = Math.max(0, allocatedNodes.length() - 1);
+						fileChannel.truncate(nodeID2offset(maxNodeID) + nodeSize);
+					}
 				}
 			}
 		}
@@ -991,9 +992,9 @@ public class BTree {
 		throws IOException
 	{
 		if (!allocatedNodesInitialized) {
-			if (rootNodeID != 0) {
-				initAllocatedNodes(rootNodeID);
-			}
+				if (rootNodeID != 0) {
+					initAllocatedNodes(rootNodeID);
+				}
 			allocatedNodesInitialized = true;
 		}
 	}
@@ -1036,7 +1037,7 @@ public class BTree {
 
 		fileChannel.write(buf, 0L);
 	}
-
+	
 	/*------------------*
 	 * Inner class Node *
 	 *------------------*/
@@ -2092,7 +2093,7 @@ public class BTree {
 		out.println("node size       = " + nodeSize);
 		out.println("max node ID     = " + maxNodeID);
 		out.println();
-		
+
 		int nodeCount = 0;
 		int valueCount = 0;
 
