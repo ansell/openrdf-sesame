@@ -167,6 +167,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	}
 
 	public RdbmsResource getRdbmsResource(Number num, String stringValue) {
+		assert stringValue != null : "Null stringValue for ID: " + num;
 		Number id = ids.idOf(num);
 		if (ids.isURI(id))
 			return new RdbmsURI(id, uris.getIdVersion(), vf.createURI(stringValue));

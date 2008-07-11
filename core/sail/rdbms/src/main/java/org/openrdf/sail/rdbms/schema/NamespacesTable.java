@@ -89,7 +89,7 @@ public class NamespacesTable {
 	{
 		int result = table.executeUpdate(UPDATE, prefix, namespace);
 		if (result != 1 && result != Statement.SUCCESS_NO_INFO)
-			throw new RdbmsRuntimeException("Namespace prefix could not be changed");
+			throw new RdbmsRuntimeException("Namespace prefix could not be changed, result: " + result);
 	}
 
 	public void clearPrefixes()

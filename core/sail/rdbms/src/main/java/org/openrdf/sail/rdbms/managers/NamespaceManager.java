@@ -86,6 +86,8 @@ public class NamespaceManager {
 		for (Object[] row : table.selectAll()) {
 			String prefix = (String)row[0];
 			String namespace = (String)row[1];
+			if (namespace == null)
+				continue;
 			NamespaceImpl ns = new NamespaceImpl(prefix, namespace);
 			map.put(namespace, ns);
 			if (prefix != null) {
