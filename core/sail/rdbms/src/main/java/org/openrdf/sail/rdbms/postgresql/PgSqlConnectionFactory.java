@@ -37,11 +37,6 @@ public class PgSqlConnectionFactory extends RdbmsConnectionFactory {
 	}
 
 	@Override
-	protected String getFromDummyTable() {
-		return "";
-	}
-
-	@Override
 	protected RdbmsQueryOptimizer createOptimizer() {
 		return new PgSqlQueryOptimizer();
 	}

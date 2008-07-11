@@ -33,6 +33,11 @@ public class MySqlConnectionFactory extends RdbmsConnectionFactory {
 	private static final String FEILD_COLLATE = " CHARACTER SET utf8 COLLATE utf8_bin";
 
 	@Override
+	protected String getFromDummyTable() {
+		return "FROM DUAL";
+	}
+
+	@Override
 	protected TableFactory createTableFactory() {
 		return new TableFactory() {
 

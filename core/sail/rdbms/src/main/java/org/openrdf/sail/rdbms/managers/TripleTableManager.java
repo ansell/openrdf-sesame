@@ -40,6 +40,8 @@ public class TripleTableManager {
 
 	private static final String OTHER_TRIPLES_TABLE = "TRIPLES";
 
+	private static final boolean USE_THREAD = true;
+
 	public static int MAX_TABLES = Integer.MAX_VALUE;// 1000;
 
 	public static final boolean INDEX_TRIPLES = true;
@@ -140,19 +142,21 @@ public class TripleTableManager {
 		throws SQLException
 	{
 		tables.putAll(findPredicateTables());
-		initThread = new Thread(new Runnable() {
+		if (USE_THREAD) {
+			initThread = new Thread(new Runnable() {
 
-			public void run() {
-				try {
-					initThread();
+				public void run() {
+					try {
+						initThread();
+					}
+					catch (Exception e) {
+						exc = e;
+						logger.error(e.toString(), e);
+					}
 				}
-				catch (Exception e) {
-					exc = e;
-					logger.error(e.toString(), e);
-				}
-			}
-		}, "table-initialize");
-		initThread.start();
+			}, "table-initialize");
+			initThread.start();
+		}
 	}
 
 	public void close()
@@ -343,7 +347,7 @@ public class TripleTableManager {
 	{
 		StringBuilder sb = new StringBuilder(1024);
 		for (Map.Entry<Number, TripleTable> e : tables.entrySet()) {
-			sb.append("\nAND id != ").append(e.getKey());
+			sb.append("\nAND id <> ").append(e.getKey());
 			if (e.getValue().isEmpty())
 				continue;
 			sb.append(" AND NOT EXISTS (SELECT * FROM ");

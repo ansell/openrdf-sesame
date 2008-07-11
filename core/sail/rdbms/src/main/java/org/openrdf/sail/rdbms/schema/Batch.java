@@ -67,6 +67,12 @@ public class Batch {
 		insertBatch.setObject(parameterIndex, x);
 	}
 
+	public void setString(int parameterIndex, String x)
+		throws SQLException
+	{
+		insertBatch.setString(parameterIndex, x);
+	}
+
 	public void addBatch()
 		throws SQLException
 	{

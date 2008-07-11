@@ -37,6 +37,8 @@ public class HashManager extends ManagerBase {
 
 	public static HashManager instance;
 
+	private static final boolean USE_THREAD = true;
+
 	private Logger logger = LoggerFactory.getLogger(HashManager.class);
 
 	private HashTable table;
@@ -101,19 +103,21 @@ public class HashManager extends ManagerBase {
 
 	public void init() {
 		queue = new ArrayBlockingQueue<RdbmsValue>(table.getBatchSize());
-		lookupThread = new Thread(new Runnable() {
+		if (USE_THREAD) {
+			lookupThread = new Thread(new Runnable() {
 
-			public void run() {
-				try {
-					lookupThread(working, assignIds);
+				public void run() {
+					try {
+						lookupThread(working, assignIds);
+					}
+					catch (Exception e) {
+						exc = e;
+						logger.error(e.toString(), e);
+					}
 				}
-				catch (Exception e) {
-					exc = e;
-					logger.error(e.toString(), e);
-				}
-			}
-		}, "id-lookup");
-		lookupThread.start();
+			}, "id-lookup");
+			lookupThread.start();
+		}
 	}
 
 	@Override

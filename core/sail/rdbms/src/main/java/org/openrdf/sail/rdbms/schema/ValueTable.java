@@ -165,7 +165,21 @@ public class ValueTable {
 		table.close();
 	}
 
-	public synchronized void insert(Number id, Object value)
+	public synchronized void insert(Number id, String value)
+		throws SQLException, InterruptedException
+	{
+		ValueBatch batch = getValueBatch();
+		if (isExpired(batch)) {
+			batch = newValueBatch();
+			initBatch(batch);
+		}
+		batch.setObject(1, id);
+		batch.setString(2, value);
+		batch.addBatch();
+		queue(batch);
+	}
+
+	public synchronized void insert(Number id, Number value)
 		throws SQLException, InterruptedException
 	{
 		ValueBatch batch = getValueBatch();
