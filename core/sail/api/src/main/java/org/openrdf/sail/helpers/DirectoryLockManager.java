@@ -52,6 +52,16 @@ public class DirectoryLockManager {
 	private Lock createLock(final File lockDir, final File lockFile) {
 		return new Lock() {
 			private boolean active = true;
+			private Thread hook = new Thread(new Runnable() {
+				public void run() {
+					active = false;
+					lockFile.delete();
+					lockDir.delete();
+				}
+			});
+			{
+				Runtime.getRuntime().addShutdownHook(hook);
+			}
 
 			public boolean isActive() {
 				return active;
@@ -59,16 +69,9 @@ public class DirectoryLockManager {
 
 			public void release() {
 				active = false;
+				Runtime.getRuntime().removeShutdownHook(hook);
 				lockFile.delete();
 				lockDir.delete();
-			}
-
-			@Override
-			protected void finalize() throws Throwable {
-				if (active) {
-					release();
-				}
-				super.finalize();
 			}
 		};
 	}
