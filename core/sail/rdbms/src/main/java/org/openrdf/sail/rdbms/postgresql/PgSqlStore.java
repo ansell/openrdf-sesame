@@ -143,6 +143,7 @@ public class PgSqlStore extends RdbmsStore {
 		PgSqlConnectionFactory factory = new PgSqlConnectionFactory();
 		factory.setSail(this);
 		factory.setDataSource(ds);
+		setBasicDataSource(ds);
 		setConnectionFactory(factory);
 		super.initialize();
 	}

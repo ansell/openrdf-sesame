@@ -135,6 +135,7 @@ public class MySqlStore extends RdbmsStore {
 		MySqlConnectionFactory factory = new MySqlConnectionFactory();
 		factory.setSail(this);
 		factory.setDataSource(ds);
+		setBasicDataSource(ds);
 		setConnectionFactory(factory);
 		super.initialize();
 	}

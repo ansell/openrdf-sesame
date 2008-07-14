@@ -323,12 +323,8 @@ public class MemoryStore extends SailBase {
 							throw new SailException("Failed to create directory for data file: " + dir);
 						}
 					}
-					// try to lock directory
-					dirLock = locker.tryLock();
-					if (dirLock == null) {
-						logger.error("Failed to lock directory: {}", dataDir);
-						throw new SailException("Failed to lock directory: " + dataDir);
-					}
+					// try to lock directory or fail
+					dirLock = locker.lockOrFail();
 
 					logger.debug("Initializing data file...");
 					FileIO.write(this, syncFile, dataFile);
