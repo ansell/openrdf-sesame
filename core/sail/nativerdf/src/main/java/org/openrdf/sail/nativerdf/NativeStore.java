@@ -184,11 +184,8 @@ public class NativeStore extends SailBase {
 			throw new SailException("Not allowed to read from the specified directory: " + dataDir);
 		}
 
-		// try to lock the directory
-		dirLock = new DirectoryLockManager(dataDir).tryLock();
-		if (dirLock == null) {
-			throw new SailException("Could not lock directory: " + dataDir);
-		}
+		// try to lock the directory or fail
+		dirLock = new DirectoryLockManager(dataDir).lockOrFail();
 
 		logger.debug("Data dir is " + dataDir);
 

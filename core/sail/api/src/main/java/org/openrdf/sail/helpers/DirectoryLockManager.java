@@ -5,7 +5,9 @@
  */
 package org.openrdf.sail.helpers;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -14,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.concurrent.locks.Lock;
+
+import org.openrdf.sail.SailLockedException;
 
 /**
  * Used to create a lock in a directory.
@@ -47,6 +51,55 @@ public class DirectoryLockManager {
 			return null;
 		}
 		return lock;
+	}
+
+	/**
+	 * Creates a lock in a directory if it does not yet exist.
+	 * 
+	 * @return a newly acquired lock.
+	 * @throws SailLockedException
+	 *             if the directory is already locked.
+	 */
+	public Lock lockOrFail() throws SailLockedException {
+		Lock lock = tryLock();
+		if (lock != null)
+			return lock;
+		String requestedBy = getProcessName();
+		String lockedBy = getLockedBy();
+		if (lockedBy != null)
+			throw new SailLockedException(lockedBy, requestedBy);
+		lock = tryLock();
+		if (lock != null)
+			return lock;
+		throw new SailLockedException(requestedBy);
+	}
+
+	/**
+	 * Revokes a lock owned by another process.
+	 * 
+	 * @return <code>true</code> if a lock was successfully revoked.
+	 */
+	public boolean revokeLock() {
+		File lockDir = new File(dir, "lock");
+		File lockFile = new File(lockDir, "process");
+		return lockFile.delete() && lockDir.delete();
+	}
+
+	private String getLockedBy() {
+		try {
+			File lockDir = new File(dir, "lock");
+			File lockFile = new File(lockDir, "process");
+			BufferedReader reader = null;
+			try {
+				reader = new BufferedReader(new FileReader(lockFile));
+				return reader.readLine();
+			} finally {
+				reader.close();
+			}
+		} catch (IOException exc) {
+			logger.warn(exc.toString(), exc);
+			return null;
+		}
 	}
 
 	private Lock createLock(final File lockDir, final File lockFile) {

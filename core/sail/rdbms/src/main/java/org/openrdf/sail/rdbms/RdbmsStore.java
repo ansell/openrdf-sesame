@@ -48,6 +48,8 @@ public class RdbmsStore extends SailBase {
 
 	private boolean sequenced = true;
 
+	private BasicDataSource ds;
+
 	public RdbmsStore() {
 		super();
 	}
@@ -172,20 +174,23 @@ public class RdbmsStore extends SailBase {
 	protected void shutDownInternal()
 		throws SailException
 	{
-		DataSource ds = factory.getDataSource();
 		factory.shutDown();
-		if (ds instanceof BasicDataSource) {
-			try {
-				((BasicDataSource)ds).close();
+		try {
+			if (ds != null) {
+				ds.close();
 			}
-			catch (SQLException e) {
-				throw new RdbmsException(e);
-			}
+		}
+		catch (SQLException e) {
+			throw new RdbmsException(e);
 		}
 	}
 
 	protected void setConnectionFactory(RdbmsConnectionFactory factory) {
 		this.factory = factory;
+	}
+
+	protected void setBasicDataSource(BasicDataSource ds) {
+		this.ds = ds;
 	}
 
 	private RdbmsConnectionFactory createFactory(String jdbcDriver, String url, String user, String password)
@@ -227,6 +232,7 @@ public class RdbmsStore extends SailBase {
 			ds.setUrl(url);
 			ds.setUsername(user);
 			ds.setPassword(password);
+			setBasicDataSource(ds);
 			return ds;
 		}
 		return (DataSource)new InitialContext().lookup(url);
