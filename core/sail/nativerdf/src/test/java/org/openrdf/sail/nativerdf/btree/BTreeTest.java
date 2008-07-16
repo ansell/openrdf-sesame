@@ -12,6 +12,8 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import info.aduna.io.FileUtil;
+
 /**
  * @author Arjohn Kampman
  */
@@ -40,8 +42,6 @@ public class BTreeTest extends TestCase {
 	 * Variables *
 	 *-----------*/
 
-	private File dataFile;
-
 	private BTree btree;
 
 	/*---------*
@@ -53,8 +53,8 @@ public class BTreeTest extends TestCase {
 		throws Exception
 	{
 		super.setUp();
-		dataFile = File.createTempFile("btree", null);
-		btree = new BTree(dataFile, 85, 1);
+		File dir = FileUtil.createTempDir("btree");
+		btree = new BTree(dir, "test", 85, 1);
 	}
 
 	@Override
@@ -62,15 +62,10 @@ public class BTreeTest extends TestCase {
 		throws Exception
 	{
 		try {
-			btree.close();
+			btree.delete();
 		}
 		finally {
-			try {
-				dataFile.delete();
-			}
-			finally {
-				super.tearDown();
-			}
+			super.tearDown();
 		}
 	}
 
@@ -152,31 +147,31 @@ public class BTreeTest extends TestCase {
 		iter1.close();
 	}
 
-/* Test for SES-527
-	public void testRootNodeSplit()
-		throws Exception
-	{
-		// Fill the root node
-		for (int i = 0; i < 15; i++) {
-			btree.insert(TEST_VALUES.get(i));
+	/* Test for SES-527
+		public void testRootNodeSplit()
+			throws Exception
+		{
+			// Fill the root node
+			for (int i = 0; i < 15; i++) {
+				btree.insert(TEST_VALUES.get(i));
+			}
+
+			// Fire up an iterator
+			RecordIterator iter = btree.iterateAll();
+			iter.next();
+
+			// Force the root node to split
+			btree.insert(TEST_VALUES.get(15));
+
+			// Verify that the iterator returns all 15 elements
+			int count = 0;
+			while (iter.next() != null) {
+				count++;
+			}
+
+			iter.close();
+			
+			assertEquals(15, count);
 		}
-
-		// Fire up an iterator
-		RecordIterator iter = btree.iterateAll();
-		iter.next();
-
-		// Force the root node to split
-		btree.insert(TEST_VALUES.get(15));
-
-		// Verify that the iterator returns all 15 elements
-		int count = 0;
-		while (iter.next() != null) {
-			count++;
-		}
-
-		iter.close();
-		
-		assertEquals(15, count);
-	}
-*/
+	*/
 }

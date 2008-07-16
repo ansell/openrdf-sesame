@@ -12,6 +12,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import info.aduna.io.ByteArrayUtil;
+import info.aduna.io.FileUtil;
 
 /**
  * @author Arjohn Kampman
@@ -24,8 +25,6 @@ public class BTreeBenchmark extends TestCase {
 	 * Variables *
 	 *-----------*/
 
-	private File dataFile;
-
 	private BTree btree;
 
 	/*---------*
@@ -37,8 +36,8 @@ public class BTreeBenchmark extends TestCase {
 		throws Exception
 	{
 		super.setUp();
-		dataFile = File.createTempFile("btree", null);
-		btree = new BTree(dataFile, 4096, 8);
+		File dir = FileUtil.createTempDir("btree");
+		btree = new BTree(dir, "test", 4096, 8);
 	}
 
 	@Override
@@ -46,15 +45,10 @@ public class BTreeBenchmark extends TestCase {
 		throws Exception
 	{
 		try {
-			btree.close();
+			btree.delete();
 		}
 		finally {
-			try {
-				dataFile.delete();
-			}
-			finally {
-				super.tearDown();
-			}
+			super.tearDown();
 		}
 	}
 
@@ -105,7 +99,7 @@ public class BTreeBenchmark extends TestCase {
 	{
 		addAscending(0L, 1L, VALUE_COUNT);
 		btree.sync();
-		
+
 		Thread.sleep(500L);
 		long startTime = System.currentTimeMillis();
 

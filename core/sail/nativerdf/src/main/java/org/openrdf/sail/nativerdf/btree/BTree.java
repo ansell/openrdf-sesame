@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -12,7 +12,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -23,9 +22,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import info.aduna.io.ByteArrayUtil;
 
 /**
- * Implementation of an on-disk B-Tree using the <tt>java.nio</tt> classes
- * that are available in JDK 1.4 and newer. Documentation about B-Trees can be
- * found on-line at the following URLs:
+ * Implementation of an on-disk B-Tree using the <tt>java.nio</tt> classes that
+ * are available in JDK 1.4 and newer. Documentation about B-Trees can be found
+ * on-line at the following URLs:
  * <ul>
  * <li>http://cis.stvincent.edu/swd/btree/btree.html</li>,
  * <li>http://bluerwhite.org/btree/</li>, and
@@ -39,20 +38,34 @@ import info.aduna.io.ByteArrayUtil;
  */
 public class BTree {
 
-	/*-----------------*
-	 * Class constants *
-	 *-----------------*/
+	/*-----------*
+	 * Constants *
+	 *-----------*/
 
+	/**
+	 * The file format version number.
+	 */
 	private static final int FILE_FORMAT_VERSION = 1;
 
+	/**
+	 * The length of the header field.
+	 */
 	private static final int HEADER_LENGTH = 16;
 
+	/**
+	 * The size of the node cache. Note that this is not a hard limit. All nodes
+	 * that are actively used are always cached. Also, a minimum of
+	 * {@link NODE_CACHE_SIZE} nodes of unused nodes is kept in the cache.
+	 */
 	private static final int NODE_CACHE_SIZE = 10;
 
+	/**
+	 * The minimum number of most recently released nodes to keep in the cache.
+	 */
 	private static final int MIN_MRU_CACHE_SIZE = 4;
 
 	/*-----------*
-	 * Constants *
+	 * Variables *
 	 *-----------*/
 
 	/**
@@ -89,6 +102,10 @@ public class BTree {
 	 */
 	private final ReentrantReadWriteLock btreeLock = new ReentrantReadWriteLock();
 
+	/* 
+	 * Node caching 
+	 */
+
 	/**
 	 * Map containing cached nodes, indexed by their ID.
 	 */
@@ -103,18 +120,18 @@ public class BTree {
 	 */
 	private final Map<Integer, Node> mruNodes = new LinkedHashMap<Integer, Node>(NODE_CACHE_SIZE);
 
-	/**
-	 * Bit set recording which nodes have been allocated, using node IDs as
-	 * index.
+	/* 
+	 * Info about allocated and unused nodes in the file 
 	 */
-	private final BitSet allocatedNodes = new BitSet();
 
 	/**
-	 * Flag indicating whether {@link #allocatedNodes} has been initialized.
+	 * List of allocated nodes.
 	 */
-	private boolean allocatedNodesInitialized = false;
+	private final AllocatedNodesList allocatedNodesList;
 
-	// Stored or specified properties //
+	/*
+	 * BTree parameters
+	 */
 
 	/**
 	 * The block size to use for calculating BTree node size. For optimal
@@ -128,25 +145,26 @@ public class BTree {
 	 */
 	private final int valueSize;
 
-	// Derived properties //
-
 	/**
-	 * The size of a slot storing a node ID and a value.
+	 * The size of a slot storing a node ID and a value. Value derived from
+	 * valueSize.
 	 */
 	private final int slotSize;
 
 	/**
-	 * The maximum number of outgoing branches for a node.
+	 * The maximum number of outgoing branches for a node. Value derived from
+	 * blockSize and slotSize.
 	 */
 	private final int branchFactor;
 
 	/**
-	 * The minimum number of values for a node (except for the root).
+	 * The minimum number of values for a node (except for the root). Value
+	 * derived from branchFactor.
 	 */
 	private final int minValueCount;
 
 	/**
-	 * The size of a node in bytes.
+	 * The size of a node in bytes. Value derived from branchFactor and slotSize.
 	 */
 	private final int nodeSize;
 
@@ -155,15 +173,10 @@ public class BTree {
 	 *-----------*/
 
 	/**
-	 * The ID of the root node, <tt>0</tt> to indicate that there is no root
-	 * node (i.e. the BTree is empty).
+	 * The ID of the root node, <tt>0</tt> to indicate that there is no root node
+	 * (i.e. the BTree is empty).
 	 */
 	private int rootNodeID;
-
-	/**
-	 * The highest ID number of the nodes in this BTree.
-	 */
-	private int maxNodeID;
 
 	/*--------------*
 	 * Constructors *
@@ -173,8 +186,10 @@ public class BTree {
 	 * Creates a new BTree that uses an instance of
 	 * <tt>DefaultRecordComparator</tt> to compare values.
 	 * 
-	 * @param dataFile
-	 *        The file for the B-Tree.
+	 * @param dataDir
+	 *        The directory for the BTree data.
+	 * @param filenamePrefix
+	 *        The prefix for all files used by this BTree.
 	 * @param blockSize
 	 *        The size (in bytes) of a file block for a single node. Ideally, the
 	 *        size specified is the size of a block in the used file system.
@@ -185,18 +200,20 @@ public class BTree {
 	 *         In case the initialization of the B-Tree file failed.
 	 * @see DefaultRecordComparator
 	 */
-	public BTree(File dataFile, int blockSize, int valueSize)
+	public BTree(File dataDir, String filenamePrefix, int blockSize, int valueSize)
 		throws IOException
 	{
-		this(dataFile, blockSize, valueSize, false);
+		this(dataDir, filenamePrefix, blockSize, valueSize, false);
 	}
 
 	/**
 	 * Creates a new BTree that uses an instance of
 	 * <tt>DefaultRecordComparator</tt> to compare values.
 	 * 
-	 * @param dataFile
-	 *        The file for the B-Tree.
+	 * @param dataDir
+	 *        The directory for the BTree data.
+	 * @param filenamePrefix
+	 *        The prefix for all files used by this BTree.
 	 * @param blockSize
 	 *        The size (in bytes) of a file block for a single node. Ideally, the
 	 *        size specified is the size of a block in the used file system.
@@ -211,18 +228,20 @@ public class BTree {
 	 *         In case the initialization of the B-Tree file failed.
 	 * @see DefaultRecordComparator
 	 */
-	public BTree(File dataFile, int blockSize, int valueSize, boolean forceSync)
+	public BTree(File dataDir, String filenamePrefix, int blockSize, int valueSize, boolean forceSync)
 		throws IOException
 	{
-		this(dataFile, blockSize, valueSize, new DefaultRecordComparator(), forceSync);
+		this(dataDir, filenamePrefix, blockSize, valueSize, new DefaultRecordComparator(), forceSync);
 	}
 
 	/**
 	 * Creates a new BTree that uses the supplied <tt>RecordComparator</tt> to
 	 * compare the values that are or will be stored in the B-Tree.
 	 * 
-	 * @param dataFile
-	 *        The file for the B-Tree.
+	 * @param dataDir
+	 *        The directory for the BTree data.
+	 * @param filenamePrefix
+	 *        The prefix for all files used by this BTree.
 	 * @param blockSize
 	 *        The size (in bytes) of a file block for a single node. Ideally, the
 	 *        size specified is the size of a block in the used file system.
@@ -235,18 +254,20 @@ public class BTree {
 	 * @throws IOException
 	 *         In case the initialization of the B-Tree file failed.
 	 */
-	public BTree(File dataFile, int blockSize, int valueSize, RecordComparator comparator)
+	public BTree(File dataDir, String filenamePrefix, int blockSize, int valueSize, RecordComparator comparator)
 		throws IOException
 	{
-		this(dataFile, blockSize, valueSize, comparator, false);
+		this(dataDir, filenamePrefix, blockSize, valueSize, comparator, false);
 	}
 
 	/**
 	 * Creates a new BTree that uses the supplied <tt>RecordComparator</tt> to
 	 * compare the values that are or will be stored in the B-Tree.
 	 * 
-	 * @param dataFile
-	 *        The file for the B-Tree.
+	 * @param dataDir
+	 *        The directory for the BTree data.
+	 * @param filenamePrefix
+	 *        The prefix for all files used by this BTree.
 	 * @param blockSize
 	 *        The size (in bytes) of a file block for a single node. Ideally, the
 	 *        size specified is the size of a block in the used file system.
@@ -263,11 +284,15 @@ public class BTree {
 	 * @throws IOException
 	 *         In case the initialization of the B-Tree file failed.
 	 */
-	public BTree(File dataFile, int blockSize, int valueSize, RecordComparator comparator, boolean forceSync)
+	public BTree(File dataDir, String filenamePrefix, int blockSize, int valueSize,
+			RecordComparator comparator, boolean forceSync)
 		throws IOException
 	{
-		if (dataFile == null) {
-			throw new IllegalArgumentException("dataFile must not be null");
+		if (dataDir == null) {
+			throw new IllegalArgumentException("dataDir must not be null");
+		}
+		if (filenamePrefix == null) {
+			throw new IllegalArgumentException("filenamePrefix must not be null");
 		}
 		if (blockSize < HEADER_LENGTH) {
 			throw new IllegalArgumentException("block size must be at least " + HEADER_LENGTH + " bytes");
@@ -283,7 +308,7 @@ public class BTree {
 			throw new IllegalArgumentException("comparator muts not be null");
 		}
 
-		this.file = dataFile;
+		this.file = new File(dataDir, filenamePrefix + ".dat");
 		this.comparator = comparator;
 		this.forceSync = forceSync;
 
@@ -298,12 +323,14 @@ public class BTree {
 		raf = new RandomAccessFile(file, "rw");
 		fileChannel = raf.getChannel();
 
+		File allocFile = new File(dataDir, filenamePrefix + ".alloc");
+		allocatedNodesList = new AllocatedNodesList(allocFile, this);
+
 		if (fileChannel.size() == 0L) {
 			// Empty file, initialize it with the specified parameters
 			this.blockSize = blockSize;
 			this.valueSize = valueSize;
 			this.rootNodeID = 0;
-			this.maxNodeID = 0;
 
 			writeFileHeader();
 
@@ -335,7 +362,6 @@ public class BTree {
 		// bf=30 --> mvc=14; bf=29 --> mvc=14
 		minValueCount = (branchFactor - 1) / 2;
 		nodeSize = 8 + (branchFactor - 1) * slotSize;
-		maxNodeID = Math.max(0, offset2nodeID(fileChannel.size() - nodeSize));
 
 		// System.out.println("blockSize=" + this.blockSize);
 		// System.out.println("valueSize=" + this.valueSize);
@@ -357,23 +383,40 @@ public class BTree {
 	}
 
 	/**
+	 * Closes the BTree and then deletes its data files.
+	 * 
+	 * @return <tt>true</tt> if the operation was successful.
+	 */
+	public boolean delete()
+		throws IOException
+	{
+		close();
+
+		boolean success = allocatedNodesList.delete();
+		success &= file.delete();
+		return success;
+	}
+
+	/**
 	 * Closes any opened files and release any resources used by this B-Tree. Any
 	 * pending changes will be synchronized to disk before closing. Once the
-	 * B-Tree has been closes, it can no longer be used.
+	 * B-Tree has been closed, it can no longer be used.
 	 */
 	public void close()
 		throws IOException
 	{
 		btreeLock.writeLock().lock();
 		try {
-			sync();
+			if (fileChannel.isOpen()) {
+				sync();
 
-			synchronized (nodeCache) {
-				nodeCache.clear();
-				mruNodes.clear();
+				synchronized (nodeCache) {
+					nodeCache.clear();
+					mruNodes.clear();
+				}
+
+				raf.close();
 			}
-
-			raf.close();
 		}
 		finally {
 			btreeLock.writeLock().unlock();
@@ -402,6 +445,8 @@ public class BTree {
 			if (forceSync) {
 				fileChannel.force(false);
 			}
+
+			allocatedNodesList.sync();
 		}
 		finally {
 			btreeLock.readLock().unlock();
@@ -422,12 +467,12 @@ public class BTree {
 	{
 		btreeLock.readLock().lock();
 		try {
-			if (rootNodeID == 0) {
+			Node node = readRootNode();
+
+			if (node == null) {
 				// Empty BTree
 				return null;
 			}
-
-			Node node = readNode(rootNodeID);
 
 			while (true) {
 				int valueIdx = node.search(key);
@@ -498,12 +543,7 @@ public class BTree {
 	public long getValueCountEstimate()
 		throws IOException
 	{
-		int allocatedNodesCount;
-
-		synchronized (allocatedNodes) {
-			initAllocatedNodes();
-			allocatedNodesCount = allocatedNodes.cardinality();
-		}
+		int allocatedNodesCount = allocatedNodesList.getNodeCount();
 
 		// Assume fill factor of 70%
 		return (long)(allocatedNodesCount * (branchFactor - 1) * 0.7);
@@ -525,16 +565,13 @@ public class BTree {
 	{
 		btreeLock.writeLock().lock();
 		try {
-			Node rootNode = null;
+			Node rootNode = readRootNode();
 
-			if (rootNodeID == 0) {
+			if (rootNode == null) {
 				// Empty B-Tree, create a root node
 				rootNode = createNewNode();
 				rootNodeID = rootNode.getID();
 				writeFileHeader();
-			}
-			else {
-				rootNode = readNode(rootNodeID);
 			}
 
 			InsertResult insertResult = insertInTree(value, 0, rootNode);
@@ -655,8 +692,8 @@ public class BTree {
 	 * @param key
 	 *        A key that matches the value that should be removed from the
 	 *        B-Tree.
-	 * @return The value that was removed from the B-Tree, or <tt>null</tt> if
-	 *         no matching value was found.
+	 * @return The value that was removed from the B-Tree, or <tt>null</tt> if no
+	 *         matching value was found.
 	 * @throws IOException
 	 *         If an I/O error occurred.
 	 */
@@ -667,9 +704,9 @@ public class BTree {
 		try {
 			byte[] result = null;
 
-			if (rootNodeID != 0) {
-				Node rootNode = readNode(rootNodeID);
+			Node rootNode = readRootNode();
 
+			if (rootNode != null) {
 				result = removeFromTree(key, rootNode);
 
 				if (rootNode.isEmpty()) {
@@ -707,8 +744,8 @@ public class BTree {
 	 *        B-Tree.
 	 * @param node
 	 *        The root of the (sub) tree.
-	 * @return The value that was removed from the B-Tree, or <tt>null</tt> if
-	 *         no matching value was found.
+	 * @return The value that was removed from the B-Tree, or <tt>null</tt> if no
+	 *         matching value was found.
 	 * @throws IOException
 	 *         If an I/O error occurred.
 	 */
@@ -853,10 +890,9 @@ public class BTree {
 			fileChannel.truncate(HEADER_LENGTH);
 
 			rootNodeID = 0;
-			maxNodeID = 0;
-			allocatedNodes.clear();
-
 			writeFileHeader();
+
+			allocatedNodesList.clear();
 		}
 		finally {
 			btreeLock.writeLock().unlock();
@@ -866,17 +902,7 @@ public class BTree {
 	private Node createNewNode()
 		throws IOException
 	{
-		int newNodeID;
-
-		synchronized (allocatedNodes) {
-			initAllocatedNodes();
-			newNodeID = allocatedNodes.nextClearBit(1);
-			allocatedNodes.set(newNodeID);
-		}
-
-		if (newNodeID > maxNodeID) {
-			maxNodeID = newNodeID;
-		}
+		int newNodeID = allocatedNodesList.allocateNode();
 
 		Node node = new Node(newNodeID);
 
@@ -892,6 +918,15 @@ public class BTree {
 		}
 
 		return node;
+	}
+
+	Node readRootNode()
+		throws IOException
+	{
+		if (rootNodeID > 0) {
+			return readNode(rootNodeID);
+		}
+		return null;
 	}
 
 	private Node readNode(int id)
@@ -948,13 +983,12 @@ public class BTree {
 			nodeCache.remove(node.getID());
 
 			// allow the node ID to be reused
-			synchronized (allocatedNodes) {
-				initAllocatedNodes();
-				allocatedNodes.clear(node.id);
+			synchronized (allocatedNodesList) {
+				allocatedNodesList.freeNode(node.getID());
 
-				if (node.id == maxNodeID) {
+				int maxNodeID = allocatedNodesList.getMaxNodeID();
+				if (node.getID() > maxNodeID) {
 					// Shrink file
-					maxNodeID = Math.max(0, allocatedNodes.length() - 1);
 					fileChannel.truncate(nodeID2offset(maxNodeID) + nodeSize);
 				}
 			}
@@ -987,41 +1021,6 @@ public class BTree {
 		}
 	}
 
-	private void initAllocatedNodes()
-		throws IOException
-	{
-		if (!allocatedNodesInitialized) {
-			if (rootNodeID != 0) {
-				initAllocatedNodes(rootNodeID);
-			}
-			allocatedNodesInitialized = true;
-		}
-	}
-
-	private void initAllocatedNodes(int nodeID)
-		throws IOException
-	{
-		allocatedNodes.set(nodeID);
-
-		Node node = readNode(nodeID);
-
-		if (!node.isLeaf()) {
-			for (int i = 0; i < node.getValueCount() + 1; i++) {
-				initAllocatedNodes(node.getChildNodeID(i));
-			}
-		}
-
-		node.release();
-	}
-
-	private long nodeID2offset(int id) {
-		return (long)blockSize * id;
-	}
-
-	private int offset2nodeID(long offset) {
-		return (int)(offset / blockSize);
-	}
-
 	private void writeFileHeader()
 		throws IOException
 	{
@@ -1037,11 +1036,19 @@ public class BTree {
 		fileChannel.write(buf, 0L);
 	}
 
+	private long nodeID2offset(int id) {
+		return (long)blockSize * id;
+	}
+
+	private int offset2nodeID(long offset) {
+		return (int)(offset / blockSize);
+	}
+
 	/*------------------*
 	 * Inner class Node *
 	 *------------------*/
 
-	private class Node {
+	class Node {
 
 		/** This node's ID. */
 		private int id;
@@ -1143,8 +1150,8 @@ public class BTree {
 		/**
 		 * Checks if this node has any values.
 		 * 
-		 * @return <tt>true</tt> if this node has no values, <tt>fals</tt> if
-		 *         it has.
+		 * @return <tt>true</tt> if this node has no values, <tt>fals</tt> if it
+		 *         has.
 		 */
 		public boolean isEmpty() {
 			return valueCount == 0;
@@ -1470,8 +1477,8 @@ public class BTree {
 
 		/**
 		 * Shifts the data between <tt>startOffset</tt> (inclusive) and
-		 * <tt>endOffset</tt> (exclusive) <tt>shift</tt> positions to the
-		 * right. Negative shift values can be used to shift data to the left.
+		 * <tt>endOffset</tt> (exclusive) <tt>shift</tt> positions to the right.
+		 * Negative shift values can be used to shift data to the left.
 		 */
 		private void shiftData(int startOffset, int endOffset, int shift) {
 			System.arraycopy(data, startOffset, data, startOffset + shift, endOffset - startOffset);
@@ -1479,8 +1486,8 @@ public class BTree {
 
 		/**
 		 * Clears the data between <tt>startOffset</tt> (inclusive) and
-		 * <tt>endOffset</tt> (exclusive). All bytes in this range will be set
-		 * to 0.
+		 * <tt>endOffset</tt> (exclusive). All bytes in this range will be set to
+		 * 0.
 		 */
 		private void clearData(int startOffset, int endOffset) {
 			Arrays.fill(data, startOffset, endOffset, (byte)0);
@@ -1559,9 +1566,8 @@ public class BTree {
 		 * @param targetNode
 		 *        The node in which the values have been merged.
 		 * @param mergeIdx
-		 *        The index of <tt>sourceNode</tt>'s values in
-		 *        <tt>targetNode</tt>.
-		 * 
+		 *        The index of <tt>sourceNode</tt>'s values in <tt>targetNode</tt>
+		 *        .
 		 * @return Indicates whether the node listener should be deregistered with
 		 *         the <em>source node</em> as a result of this event.
 		 */
@@ -1718,12 +1724,13 @@ public class BTree {
 		private void findMinimum()
 			throws IOException
 		{
-			if (rootNodeID == 0) {
+			currentNode = readRootNode();
+
+			if (currentNode == null) {
 				// Empty BTree
 				return;
 			}
 
-			currentNode = readNode(rootNodeID);
 			currentNode.register(this);
 			currentIdx = 0;
 
@@ -1980,7 +1987,7 @@ public class BTree {
 		throws Exception
 	{
 		System.out.println("Running BTree test...");
-		if (args.length > 1) {
+		if (args.length > 2) {
 			runPerformanceTest(args);
 		}
 		else {
@@ -1992,10 +1999,11 @@ public class BTree {
 	public static void runPerformanceTest(String[] args)
 		throws Exception
 	{
-		File dataFile = new File(args[0]);
-		int valueCount = Integer.parseInt(args[1]);
+		File dataDir = new File(args[0]);
+		String filenamePrefix = args[1];
+		int valueCount = Integer.parseInt(args[2]);
 		RecordComparator comparator = new DefaultRecordComparator();
-		BTree btree = new BTree(dataFile, 501, 13, comparator);
+		BTree btree = new BTree(dataDir, filenamePrefix, 501, 13, comparator);
 
 		java.util.Random random = new java.util.Random(0L);
 		byte[] value = new byte[13];
@@ -2042,8 +2050,9 @@ public class BTree {
 	public static void runDebugTest(String[] args)
 		throws Exception
 	{
-		File dataFile = new File(args[0]);
-		BTree btree = new BTree(dataFile, 28, 1);
+		File dataDir = new File(args[0]);
+		String filenamePrefix = args[1];
+		BTree btree = new BTree(dataDir, filenamePrefix, 28, 1);
 
 		btree.print(System.out);
 
@@ -2090,8 +2099,10 @@ public class BTree {
 		out.println("branch factor   = " + branchFactor);
 		out.println("min value count = " + minValueCount);
 		out.println("node size       = " + nodeSize);
-		out.println("max node ID     = " + maxNodeID);
 		out.println();
+
+		int nodeCount = 0;
+		int valueCount = 0;
 
 		ByteBuffer buf = ByteBuffer.allocate(nodeSize);
 		for (long offset = blockSize; offset < fileChannel.size(); offset += blockSize) {
@@ -2100,6 +2111,8 @@ public class BTree {
 
 			int nodeID = offset2nodeID(offset);
 			int count = buf.getInt();
+			nodeCount++;
+			valueCount += count;
 			out.print("node " + nodeID + ": ");
 			out.print("count=" + count + " ");
 
@@ -2120,6 +2133,8 @@ public class BTree {
 
 			buf.clear();
 		}
+		out.println("#nodes          = " + nodeCount);
+		out.println("#values         = " + valueCount);
 		out.println("---end of BTree file---");
 	}
 }
