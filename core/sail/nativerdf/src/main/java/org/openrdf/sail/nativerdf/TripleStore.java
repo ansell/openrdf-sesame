@@ -337,13 +337,15 @@ class TripleStore {
 
 		// Delete files for removed indexes
 		for (String fieldSeq : removedIndexSpecs) {
-			boolean deleted = getIndexFile(fieldSeq).delete();
+			TripleIndex removedIndex = new TripleIndex(fieldSeq);
+
+			boolean deleted = removedIndex.getBTree().delete();
 
 			if (deleted) {
-				logger.debug("Deleted file for removed " + fieldSeq + " index");
+				logger.debug("Deleted file(s) for removed {} index", fieldSeq);
 			}
 			else {
-				logger.warn("Unable to delete file for removed " + fieldSeq + " index");
+				logger.warn("Unable to delete file(s) for removed {} index", fieldSeq);
 			}
 		}
 	}
@@ -960,10 +962,6 @@ class TripleStore {
 		return maxValue;
 	}
 
-	private File getIndexFile(String fieldSeq) {
-		return new File(dir, "triples-" + fieldSeq + ".dat");
-	}
-
 	private void loadProperties(File propFile)
 		throws IOException
 	{
@@ -1003,8 +1001,11 @@ class TripleStore {
 			throws IOException
 		{
 			tripleComparator = new TripleComparator(fieldSeq);
-			File btreeFile = getIndexFile(fieldSeq);
-			btree = new BTree(btreeFile, 2048, RECORD_LENGTH, tripleComparator, forceSync);
+			btree = new BTree(dir, getFilenamePrefix(fieldSeq), 2048, RECORD_LENGTH, tripleComparator, forceSync);
+		}
+
+		private String getFilenamePrefix(String fieldSeq) {
+			return "triples-" + fieldSeq;
 		}
 
 		public char[] getFieldSeq() {

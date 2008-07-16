@@ -26,6 +26,8 @@ class SequentialRecordCache extends RecordCache {
 	 * Constants *
 	 *-----------*/
 
+	protected final File cacheFile;
+
 	protected final RandomAccessFile raf;
 
 	protected final FileChannel fileChannel;
@@ -45,9 +47,10 @@ class SequentialRecordCache extends RecordCache {
 	public SequentialRecordCache(File cacheDir, int recordSize, long maxRecords)
 		throws IOException
 	{
-		super(cacheDir, maxRecords);
-
+		super(maxRecords);
 		this.recordSize = recordSize;
+
+		this.cacheFile = File.createTempFile("txncache", ".dat", cacheDir);
 		raf = new RandomAccessFile(cacheFile, "rw");
 		fileChannel = raf.getChannel();
 	}
@@ -56,7 +59,6 @@ class SequentialRecordCache extends RecordCache {
 	 * Methods *
 	 *---------*/
 
-	@Override
 	public void discard()
 		throws IOException
 	{
@@ -69,7 +71,7 @@ class SequentialRecordCache extends RecordCache {
 			}
 		}
 		finally {
-			super.discard();
+			cacheFile.delete();
 		}
 	}
 

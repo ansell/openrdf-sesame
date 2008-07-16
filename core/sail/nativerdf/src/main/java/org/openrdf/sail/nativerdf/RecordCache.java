@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.nativerdf;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
@@ -22,8 +21,6 @@ abstract class RecordCache {
 	 * Constants *
 	 *-----------*/
 
-	protected final File cacheFile;
-
 	protected final long maxRecords;
 
 	/*-----------*
@@ -36,16 +33,15 @@ abstract class RecordCache {
 	 * Constructors *
 	 *--------------*/
 
-	public RecordCache(File cacheDir)
+	public RecordCache()
 		throws IOException
 	{
-		this(cacheDir, Long.MAX_VALUE);
+		this(Long.MAX_VALUE);
 	}
 
-	public RecordCache(File cacheDir, long maxRecords)
+	public RecordCache(long maxRecords)
 		throws IOException
 	{
-		this.cacheFile = File.createTempFile("records", ".tmp", cacheDir);
 		this.maxRecords = maxRecords;
 		this.recordCount = 0;
 	}
@@ -54,11 +50,8 @@ abstract class RecordCache {
 	 * Methods *
 	 *---------*/
 
-	public void discard()
-		throws IOException
-	{
-		cacheFile.delete();
-	}
+	public abstract void discard()
+		throws IOException;
 
 	public final boolean isValid() {
 		return recordCount < maxRecords;
