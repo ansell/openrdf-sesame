@@ -11,7 +11,7 @@
 
 	<groupId>org.openrdf.sesame</groupId>
 	<artifactId>sesame</artifactId>
-	<version>2.1.3-SNAPSHOT</version>
+	<version>2.1.3</version>
 	<packaging>pom</packaging>
 
 	<name>OpenRDF Sesame</name>
@@ -33,7 +33,7 @@
 	</modules>
 
 	<properties>
-		<appbase.version>3.2-SNAPSHOT</appbase.version>
+		<appbase.version>3.2</appbase.version>
 		<slf4j.version>1.5.0</slf4j.version>
 	</properties>
 
@@ -43,199 +43,199 @@
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-model</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-api</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-ntriples</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-n3</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-rdfxml</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-trix</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-turtle</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-trig</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-query</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryalgebra-model</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryalgebra-evaluation</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryparser-api</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryparser-serql</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryparser-sparql</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-api</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-binary</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-sparqljson</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-sparqlxml</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-text</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-api</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-manager</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-http</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-sail</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-event</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-dataset</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-protocol</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-client</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-api</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-inferencer</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-memory</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-nativerdf</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-rdbms</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-runtime</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-server</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 				<type>war</type>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-server-spring</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 				<scope>runtime</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-webclient</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 				<type>war</type>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-webclient-spring</artifactId>
-				<version>2.1.3-SNAPSHOT</version>
+				<version>2.1.3</version>
 				<scope>runtime</scope>
 			</dependency>
 
@@ -273,52 +273,52 @@
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-collections</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-iteration</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-concurrent</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-io</artifactId>
-				<version>2.2-SNAPSHOT</version>
+				<version>2.2</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-lang</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-net</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-net-http-server-embedded</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-text</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-webapp-core</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-xml</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 
 			<!-- Apache Commons -->
@@ -535,9 +535,9 @@
 -->
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.1</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1.3</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1.3</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.1.3</url>
 	</scm>
 
 	<repositories>
