@@ -108,7 +108,7 @@ public class Console {
 	 * Static constants *
 	 *------------------*/
 
-	private static final AppVersion VERSION = new AppVersion(2, 1, 2);
+	private static final AppVersion VERSION = new AppVersion(2, 1, 3);
 
 	private static final String APP_NAME = "OpenRDF Sesame console";
 
