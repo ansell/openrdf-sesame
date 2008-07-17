@@ -33,7 +33,7 @@
 	</modules>
 
 	<properties>
-		<appbase.version>3.2-SNAPSHOT</appbase.version>
+		<appbase.version>3.2</appbase.version>
 		<slf4j.version>1.5.0</slf4j.version>
 	</properties>
 
@@ -273,52 +273,52 @@
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-collections</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-iteration</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-concurrent</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-io</artifactId>
-				<version>2.2-SNAPSHOT</version>
+				<version>2.2</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-lang</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-net</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-net-http-server-embedded</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-text</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-webapp-core</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-xml</artifactId>
-				<version>2.1-SNAPSHOT</version>
+				<version>2.1</version>
 			</dependency>
 
 			<!-- Apache Commons -->
