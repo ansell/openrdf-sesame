@@ -109,7 +109,16 @@ public abstract class SPARQLQueryTest extends TestCase {
 		dataRep = createRepository();
 
 		if (dataset != null) {
-			uploadDataset(dataset);
+			try {
+				uploadDataset(dataset);
+			} catch (Exception exc) {
+				try {
+					dataRep.shutDown();
+				} catch (Exception e2) {
+					logger.error(e2.toString(), e2);
+				}
+				throw exc;
+			}
 		}
 	}
 
