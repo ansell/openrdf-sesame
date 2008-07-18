@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -30,7 +30,7 @@ import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.manager.LocalRepositoryManager;
+import org.openrdf.repository.manager.RepositoryManager;
 
 /**
  * Handles requests for the list of repositories available on this server.
@@ -51,7 +51,7 @@ public class RepositoryListController extends AbstractController {
 		REPOSITORY_LIST_QUERY = query.toString();
 	}
 
-	private LocalRepositoryManager repositoryManager;
+	private RepositoryManager repositoryManager;
 
 	public RepositoryListController()
 		throws ApplicationContextException
@@ -59,7 +59,7 @@ public class RepositoryListController extends AbstractController {
 		setSupportedMethods(new String[] { METHOD_GET });
 	}
 
-	public void setRepositoryManager(LocalRepositoryManager repMan) {
+	public void setRepositoryManager(RepositoryManager repMan) {
 		repositoryManager = repMan;
 	}
 
