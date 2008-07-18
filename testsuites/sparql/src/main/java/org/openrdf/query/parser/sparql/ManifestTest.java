@@ -104,16 +104,18 @@ public class ManifestTest {
 					ParsedURI baseURI = new ParsedURI(uriSpec) {
 						private boolean jarFile = uriSpec.startsWith("jar:file:");
 						private int idx = uriSpec.indexOf('!') + 1;
-						private ParsedURI file = new ParsedURI("file:"
+						private ParsedURI file = new ParsedURI("jar-file:"
 								+ uriSpec.substring(idx));
 
 						@Override
 						public ParsedURI resolve(ParsedURI uri) {
 							if (jarFile) {
-								String path = file.resolve(uri).toString()
-										.substring(5);
-								String c = uriSpec.substring(0, idx) + path;
-								return new ParsedURI(c);
+								String resolved = file.resolve(uri).toString();
+								if (resolved.startsWith("jar-file:")) {
+									String path = resolved.substring("jar-file:".length());
+									String c = uriSpec.substring(0, idx) + path;
+									return new ParsedURI(c);
+								}
 							}
 							return super.resolve(uri);
 						}
