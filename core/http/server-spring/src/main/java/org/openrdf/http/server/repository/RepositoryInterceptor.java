@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -22,7 +22,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.repository.manager.LocalRepositoryManager;
+import org.openrdf.repository.manager.RepositoryManager;
 
 /**
  * Interceptor for repository requests. Handles the opening and closing of
@@ -50,7 +50,7 @@ public class RepositoryInterceptor extends ServerInterceptor {
 	 * Variables *
 	 *-----------*/
 	
-	private LocalRepositoryManager repositoryManager;
+	private RepositoryManager repositoryManager;
 
 	private String repositoryID;
 
@@ -60,7 +60,7 @@ public class RepositoryInterceptor extends ServerInterceptor {
 	 * Methods *
 	 *---------*/
 
-	public void setRepositoryManager(LocalRepositoryManager repMan) {
+	public void setRepositoryManager(RepositoryManager repMan) {
 		repositoryManager = repMan;
 	}
 	

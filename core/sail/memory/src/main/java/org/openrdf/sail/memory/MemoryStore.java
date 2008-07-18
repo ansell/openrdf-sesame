@@ -751,13 +751,11 @@ public class MemoryStore extends SailBase {
 	{
 		logger.debug("rolling back transaction");
 
-		int txnSnapshot = currentSnapshot + 1;
-
 		for (MemStatement st : txnStatements.keySet()) {
 			TxnStatus txnStatus = st.getTxnStatus();
 			if (txnStatus == TxnStatus.NEW || txnStatus == TxnStatus.ZOMBIE) {
-				// Statement has been added during this transaction
-				st.setTillSnapshot(txnSnapshot);
+				// Statement has been added during this transaction and deprecates immediately
+				st.setTillSnapshot(currentSnapshot);
 			}
 			else if (txnStatus != TxnStatus.NEUTRAL) {
 				// Return statement to neutral status
