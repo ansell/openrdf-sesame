@@ -5,12 +5,18 @@
  */
 package org.openrdf.repository.base;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
+import java.util.Enumeration;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +61,17 @@ import org.openrdf.rio.UnsupportedRDFormatException;
  * @author Arjohn Kampman
  */
 public abstract class RepositoryConnectionBase implements RepositoryConnection {
+
+	/**
+	 * GZIP header magic number bytes, like found in a gzipped files, which are
+	 * encoded in Intel format (i&#x2e;e&#x2e; little indian).
+	 */
+	private final static byte GZIP_MAGIC[] = { (byte) 0x1f, (byte) 0x8b };
+
+	/**
+	 * local file header signature     4 bytes  (0x04034b50)
+	 */
+	private final static byte ZIP_HEADER[] = { (byte) 0x50, (byte) 0x4B, (byte) 0x03, (byte) 0x04 };
 
 	/*
 	 * Note: the following debugEnabled method are private so that they can be
@@ -222,18 +239,50 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		if (baseURI == null) {
-			// default baseURI to file
-			baseURI = file.toURI().toString();
-		}
 
+		boolean isZipFile;
 		InputStream in = new FileInputStream(file);
-
 		try {
-			add(in, baseURI, dataFormat, contexts);
+			in = new BufferedInputStream(in);
+			byte[] hd = new byte[ZIP_HEADER.length];
+			in.mark(hd.length);
+			in.read(hd);
+			in.reset();
+			isZipFile = hd[0] == ZIP_HEADER[0] && hd[1] == ZIP_HEADER[1]
+					&& hd[2] == ZIP_HEADER[2] && hd[3] == ZIP_HEADER[3];
+			if (!isZipFile) {
+				if (baseURI == null) {
+					// default baseURI to file
+					baseURI = file.toURI().toString();
+				}
+				add(in, baseURI, dataFormat, contexts);
+			}
 		}
 		finally {
 			in.close();
+		}
+		if (isZipFile) {
+			String uri = file.toURI().toString();
+			ZipFile zip = new ZipFile(file);
+			try {
+				Enumeration<? extends ZipEntry> entries = zip.entries();
+				if (!entries.hasMoreElements())
+					throw new ZipException("Zip file is empty");
+				while (entries.hasMoreElements()) {
+					ZipEntry entry = entries.nextElement();
+					if (baseURI == null) {
+						baseURI = "jar:" + uri + "!" + entry.getName();
+					}
+					in = zip.getInputStream(entry);
+					try {
+						add(in, baseURI, dataFormat, contexts);
+					} finally {
+						in.close();
+					}
+				}
+			} finally {
+				zip.close();
+			}
 		}
 	}
 
@@ -257,6 +306,16 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
+		if (!in.markSupported()) {
+			in = new BufferedInputStream(in);
+		}
+		byte[] header = new byte[GZIP_MAGIC.length];
+		in.mark(header.length);
+		in.read(header);
+		in.reset();
+		if (header[0] == GZIP_MAGIC[0] && header[1] == GZIP_MAGIC[1]) {
+			in = new GZIPInputStream(in);
+		}
 		addInputStreamOrReader(in, baseURI, dataFormat, contexts);
 	}
 
