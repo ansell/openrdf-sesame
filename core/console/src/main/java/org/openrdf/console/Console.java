@@ -1024,6 +1024,8 @@ public class Console {
 		}
 
 		String dataPath = tokens[1];
+		URL dataURL = null;
+		File dataFile = null;
 		String baseURI = null;
 		String context = null;
 
@@ -1045,17 +1047,15 @@ public class Console {
 		}
 
 		try {
-			new URL(dataPath);
+			dataURL = new URL(dataPath);
 			// dataPath is a URI
 		}
 		catch (MalformedURLException e) {
-			// dataPath is a file, convert to URL
-			dataPath = "file:" + dataPath;
+			// dataPath is a file
+			dataFile = new File(dataPath);
 		}
 
 		try {
-			URL dataURL = new URL(dataPath);
-
 			Resource contextURI = null;
 			if (context != null) {
 				if (context.startsWith("_:")) {
@@ -1073,11 +1073,17 @@ public class Console {
 
 			RepositoryConnection con = repository.getConnection();
 			try {
-				if (context == null) {
+				if (context == null && dataURL != null) {
 					con.add(dataURL, baseURI, format);
 				}
-				else {
+				else if (context == null && dataFile != null) {
+					con.add(dataFile, baseURI, format);
+				}
+				else if (dataURL != null) {
 					con.add(dataURL, baseURI, format, contextURI);
+				}
+				else {
+					con.add(dataFile, baseURI, format, contextURI);
 				}
 			}
 			finally {
