@@ -1056,14 +1056,18 @@ public class Console {
 		}
 
 		try {
-			Resource contextURI = null;
+			Resource[] contexts = new Resource[0];
+
 			if (context != null) {
+				Resource contextURI;
 				if (context.startsWith("_:")) {
 					contextURI = repository.getValueFactory().createBNode(context.substring(2));
 				}
 				else {
 					contextURI = repository.getValueFactory().createURI(context);
 				}
+
+				contexts = new Resource[] { contextURI };
 			}
 
 			RDFFormat format = Rio.getParserFormatForFileName(dataPath, RDFFormat.RDFXML);
@@ -1073,17 +1077,11 @@ public class Console {
 
 			RepositoryConnection con = repository.getConnection();
 			try {
-				if (context == null && dataURL != null) {
-					con.add(dataURL, baseURI, format);
-				}
-				else if (context == null && dataFile != null) {
-					con.add(dataFile, baseURI, format);
-				}
-				else if (dataURL != null) {
-					con.add(dataURL, baseURI, format, contextURI);
+				if (dataURL != null) {
+					con.add(dataURL, baseURI, format, contexts);
 				}
 				else {
-					con.add(dataFile, baseURI, format, contextURI);
+					con.add(dataFile, baseURI, format, contexts);
 				}
 			}
 			finally {
@@ -1091,7 +1089,7 @@ public class Console {
 			}
 
 			long endTime = System.nanoTime();
-			writeln("Data has been added to the repository (" + (endTime - startTime)  / 1000000 + " ms)");
+			writeln("Data has been added to the repository (" + (endTime - startTime) / 1000000 + " ms)");
 		}
 		catch (MalformedURLException e) {
 			writeError("Malformed URL: " + dataPath);
@@ -1426,7 +1424,7 @@ public class Console {
 				}
 
 				long endTime = System.nanoTime();
-				writeln(resultCount + " result(s) (" + (endTime - startTime) / 1000000  + " ms)");
+				writeln(resultCount + " result(s) (" + (endTime - startTime) / 1000000 + " ms)");
 			}
 			finally {
 				tupleQueryResult.close();
@@ -1472,7 +1470,7 @@ public class Console {
 				}
 
 				long endTime = System.nanoTime();
-				writeln(resultCount + " results (" + (endTime - startTime)  / 1000000 + " ms)");
+				writeln(resultCount + " results (" + (endTime - startTime) / 1000000 + " ms)");
 			}
 			finally {
 				queryResult.close();
@@ -1503,7 +1501,7 @@ public class Console {
 			writeln("Answer: " + booleanQueryResult);
 
 			long endTime = System.nanoTime();
-			writeln("Query evaluated in " + (endTime - startTime) / 1000000  + " ms");
+			writeln("Query evaluated in " + (endTime - startTime) / 1000000 + " ms");
 		}
 		finally {
 			con.close();
