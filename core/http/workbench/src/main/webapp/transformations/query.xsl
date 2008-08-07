@@ -125,6 +125,8 @@
 			}
 			/* MSIE does not like xslt w/ this querystring, so we use url parameters. */
 			function doSubmit() {
+				if (navigator.appVersion.indexOf("msie") = -1)
+					return true;
 				var url = [];
 				url[url.length] = 'query';
 				url[url.length] = ';';
@@ -134,10 +136,11 @@
 				addParam(url, 'infer');
 				url[url.length - 1] = '';
 				document.location.href = url.join('');
+				return false;
 			}
 			]]>
 		</script>
-		<form action="query" onsubmit="doSubmit(); return false">
+		<form action="query" onsubmit="return doSubmit()">
 			<table class="dataentry">
 				<tbody>
 					<tr>
