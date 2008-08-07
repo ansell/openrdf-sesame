@@ -1,0 +1,130 @@
+package org.openrdf.workbench.proxy;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.repository.manager.LocalRepositoryManager;
+import org.openrdf.repository.manager.RemoteRepositoryManager;
+import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.workbench.RepositoryServlet;
+import org.openrdf.workbench.base.BaseServlet;
+import org.openrdf.workbench.exceptions.BadRequestException;
+import org.openrdf.workbench.exceptions.MissingInitParameterException;
+import org.openrdf.workbench.util.BasicServletConfig;
+import org.openrdf.workbench.util.DynamicHttpRequest;
+
+public class WorkbenchServlet extends BaseServlet {
+	private static final String DEFAULT_PATH_PARAM = "default-path";
+	public static String SERVER_PARAM = "server";
+	private RepositoryManager manager;
+	private ConcurrentMap<String, Servlet> repositories = new ConcurrentHashMap<String, Servlet>();
+
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		this.config = config;
+		if (config.getInitParameter(DEFAULT_PATH_PARAM) == null)
+			throw new MissingInitParameterException(DEFAULT_PATH_PARAM);
+		String param = config.getInitParameter(SERVER_PARAM);
+		if (param == null || param.trim().length() == 0)
+			throw new MissingInitParameterException(SERVER_PARAM);
+		try {
+			manager = createRepositoryManager(param);
+		} catch (IOException e) {
+			throw new ServletException(e);
+		} catch (RepositoryException e) {
+			throw new ServletException(e);
+		}
+	}
+
+	@Override
+	public void destroy() {
+		for (Servlet servlet : repositories.values()) {
+			servlet.destroy();
+		}
+		manager.shutDown();
+	}
+
+	@Override
+	public void service(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		String pathInfo = req.getPathInfo();
+		if (pathInfo == null) {
+			String defaultPath = config.getInitParameter(DEFAULT_PATH_PARAM);
+			resp.sendRedirect(req.getRequestURI() + defaultPath);
+		} else if ("/".equals(pathInfo)) {
+			String defaultPath = config.getInitParameter(DEFAULT_PATH_PARAM);
+			resp.sendRedirect(req.getRequestURI() + defaultPath.substring(1));
+		} else if (pathInfo.startsWith("/") && pathInfo.indexOf('/', 1) > 0) {
+			String id = pathInfo.substring(1, pathInfo.indexOf('/', 1));
+			try {
+				service(id, req, resp);
+			} catch (RepositoryConfigException e) {
+				throw new ServletException(e);
+			} catch (RepositoryException e) {
+				throw new ServletException(e);
+			}
+		} else {
+			throw new BadRequestException(
+					"Request path must contain a repository ID");
+		}
+	}
+
+	private RepositoryManager createRepositoryManager(String param)
+			throws IOException, RepositoryException {
+		RepositoryManager manager;
+		if (param.startsWith("file:")) {
+			manager = new LocalRepositoryManager(asLocalFile(new URL(param)));
+		} else {
+			manager = new RemoteRepositoryManager(param);
+		}
+		manager.initialize();
+		return manager;
+	}
+
+	private File asLocalFile(URL rdf) throws UnsupportedEncodingException {
+		return new File(URLDecoder.decode(rdf.getFile(), "UTF-8"));
+	}
+
+	private void service(String id, HttpServletRequest req,
+			HttpServletResponse resp) throws RepositoryConfigException,
+			RepositoryException, ServletException, IOException {
+		DynamicHttpRequest http = new DynamicHttpRequest(req);
+		String path = req.getPathInfo();
+		int idx = path.indexOf(id) + id.length();
+		http.setServletPath(http.getServletPath() + path.substring(0, idx));
+		String pathInfo = path.substring(idx);
+		if (pathInfo.length() == 0) {
+			pathInfo = null;
+		}
+		http.setPathInfo(pathInfo);
+		if (repositories.containsKey(id)) {
+			repositories.get(id).service(http, resp);
+		} else {
+			Repository repository = manager.getRepository(id);
+			if (repository == null)
+				throw new BadRequestException("No such repository: " + id);
+			RepositoryServlet servlet = new ProxyRepositoryServlet();
+			servlet.setRepositoryManager(manager);
+			servlet.setRepositoryInfo(manager.getRepositoryInfo(id));
+			servlet.setRepository(repository);
+			servlet.init(new BasicServletConfig(id, config));
+			repositories.putIfAbsent(id, servlet);
+			repositories.get(id).service(http, resp);
+		}
+	}
+
+}
