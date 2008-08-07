@@ -18,6 +18,20 @@
 
 	<xsl:include href="table.xsl" />
 
+	<xsl:template match="sparql:variable[@name='readable']">
+		<th>
+			<img src="../../images/view.png" alt="{$readable.label}"
+				title="{$readable.label}" />
+		</th>
+	</xsl:template>
+
+	<xsl:template match="sparql:variable[@name='writeable']">
+		<th>
+			<img src="../../images/edit.png"
+				alt="{$writeable.label}" title="{$writeable.label}" />
+		</th>
+	</xsl:template>
+
 	<xsl:template match="sparql:binding[@name='id']">
 		<a href="../{sparql:literal}/">
 			<xsl:value-of select="sparql:literal" />
