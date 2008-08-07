@@ -71,15 +71,17 @@
 				var queryLn = document.getElementById('queryLn').value;
 				var namespaces = document.getElementById(queryLn + '-namespaces');
 				var last = document.getElementById(currentQueryLn + '-namespaces');
-				if (namespaces) if (!query.value) {
-					query.value = namespaces.innerText || namespaces.textContent;
-					currentQueryLn = queryLn;
-				}
-				if (last) {
-					var text = last.innerText || last.textContent;
-					if (query.value == text) {
+				if (namespaces) {
+					if (!query.value) {
 						query.value = namespaces.innerText || namespaces.textContent;
 						currentQueryLn = queryLn;
+					}
+					if (last) {
+						var text = last.innerText || last.textContent;
+						if (query.value == text) {
+							query.value = namespaces.innerText || namespaces.textContent;
+							currentQueryLn = queryLn;
+						}
 					}
 				}
 			}
@@ -123,20 +125,21 @@
 				sb[sb.length] = encodeURIComponent(document.getElementById(id).value);
 				sb[sb.length] = '&';
 			}
-			/* MSIE does not like xslt w/ this querystring, so we use url parameters. */
+			/* MSIE6 does not like xslt w/ this querystring, so we use url parameters. */
 			function doSubmit() {
-				if (navigator.appVersion.indexOf("msie") = -1)
-					return true;
-				var url = [];
-				url[url.length] = 'query';
-				url[url.length] = ';';
-				addParam(url, 'queryLn');
-				addParam(url, 'query');
-				addParam(url, 'limit');
-				addParam(url, 'infer');
-				url[url.length - 1] = '';
-				document.location.href = url.join('');
-				return false;
+				if (document.all) {
+					var url = [];
+					url[url.length] = 'query';
+					url[url.length] = ';';
+					addParam(url, 'queryLn');
+					addParam(url, 'query');
+					addParam(url, 'limit');
+					addParam(url, 'infer');
+					url[url.length - 1] = '';
+					document.location.href = url.join('');
+					return false;
+				}
+				return true;
 			}
 			]]>
 		</script>

@@ -97,7 +97,7 @@
 				var count = textContent(document.getElementById('count'));
 				if (document.getElementById('limit').value == '0') {
 					document.getElementById('result-limited').style.display = 'none';
-				} else if (parseInt(document.getElementById('limit').value) > parseInt(count)) {
+				} else if (parseInt(document.getElementById('limit').value) - parseInt(count)) {
 					document.getElementById('result-limited').style.display = 'none';
 				}
 			}
