@@ -89,6 +89,8 @@
 	<variable name="true.label">Yes</variable>
 	<variable name="false.label">No</variable>
 	<variable name="none.label">None</variable>
+	<variable name="readable.label">Readable</variable>
+	<variable name="writeable.label">Writeable</variable>
 
 	<!-- Fields -->
 	<variable name="base-uri.label">Base URI</variable>

@@ -26,20 +26,6 @@
 		</thead>
 	</xsl:template>
 
-	<xsl:template match="sparql:variable[@name='readable']">
-		<th>
-			<img src="/openrdf-workbench/images/view.png" alt="Readable"
-				title="Readable" />
-		</th>
-	</xsl:template>
-
-	<xsl:template match="sparql:variable[@name='writeable']">
-		<th>
-			<img src="/openrdf-workbench/images/edit.png"
-				alt="writeable" title="writeable" />
-		</th>
-	</xsl:template>
-
 	<xsl:template match="sparql:variable">
 		<th>
 			<xsl:value-of select="@name" />
