@@ -255,6 +255,9 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 					// default baseURI to file
 					baseURI = file.toURI().toString();
 				}
+				if (dataFormat == null) {
+					dataFormat = RDFFormat.forFileName(file.getName());
+				}
 				add(in, baseURI, dataFormat, contexts);
 			}
 		}
@@ -268,14 +271,29 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 				Enumeration<? extends ZipEntry> entries = zip.entries();
 				if (!entries.hasMoreElements())
 					throw new ZipException("Zip file is empty");
+				String base = baseURI;
+				RDFFormat format = dataFormat;
 				while (entries.hasMoreElements()) {
 					ZipEntry entry = entries.nextElement();
+					if (entry.isDirectory())
+						continue;
 					if (baseURI == null) {
-						baseURI = "jar:" + uri + "!" + entry.getName();
+						base = "jar:" + uri + "!" + entry.getName();
+					}
+					if (dataFormat == null) {
+						format = RDFFormat.forFileName(entry.getName());
 					}
 					in = zip.getInputStream(entry);
 					try {
-						add(in, baseURI, dataFormat, contexts);
+						add(in, base, format, contexts);
+					} catch (RDFParseException exc) {
+						int ln = exc.getLineNumber();
+						int cn = exc.getColumnNumber();
+						String msg = exc.getMessage() + " in " + entry.getName();
+						RDFParseException pe;
+						pe = new RDFParseException(msg, ln, cn);
+						pe.initCause(exc);
+						throw pe;
 					} finally {
 						in.close();
 					}
@@ -291,6 +309,9 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	{
 		if (baseURI == null) {
 			baseURI = url.toExternalForm();
+		}
+		if (dataFormat == null) {
+			dataFormat = RDFFormat.forFileName(url.getPath());
 		}
 
 		InputStream in = url.openStream();
