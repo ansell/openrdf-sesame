@@ -94,6 +94,13 @@ public class WorkbenchGateway extends BaseServlet {
 		}
 	}
 
+	private void resetCache() {
+		for (WorkbenchServlet servlet : servlets.values()) {
+			// inform browser that server changed and cache is invalid
+			servlet.resetCache();
+		}
+	}
+
 	private File asLocalFile(URL rdf) throws UnsupportedEncodingException {
 		return new File(URLDecoder.decode(rdf.getFile(), "UTF-8"));
 	}
@@ -134,6 +141,7 @@ public class WorkbenchGateway extends BaseServlet {
 			resp.addCookie(cookie);
 			String uri = req.getRequestURI();
 			uri = uri.substring(0, uri.length() - req.getPathInfo().length());
+			resetCache();
 			resp.sendRedirect(uri);
 		} else {
 			resp.setContentType("application/xml");

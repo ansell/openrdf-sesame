@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class InformationServlet extends TransformationServlet {
-	private static final String POM_PROPERTIES = "/META-INF/maven/org.openrdf.sesame/sesame-http-webclient/pom.properties";
+	private static final String POM_PROPERTIES = "/META-INF/maven/org.openrdf.sesame/sesame-http-workbench/pom.properties";
 
 	private Logger logger = LoggerFactory.getLogger(InformationServlet.class);
 
@@ -37,7 +37,7 @@ public class InformationServlet extends TransformationServlet {
 	}
 
 	private String getVersion() {
-		InputStream in = InfoServlet.class.getResourceAsStream(POM_PROPERTIES);
+		InputStream in = config.getServletContext().getResourceAsStream(POM_PROPERTIES);
 		if (in == null)
 			return null;
 		Properties pom = new Properties();
