@@ -56,13 +56,17 @@ public class ProxyRepositoryServlet extends BaseRepositoryServlet {
 		}
 	}
 
+	public void resetCache() {
+		lastModified = System.currentTimeMillis();
+	}
+
 	@Override
 	public void service(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		if (isCachable(req)) {
 			String server = req.getParameter(SERVER_COOKIE);
 			long ifModifiedSince = req.getDateHeader(HEADER_IFMODSINCE);
-			if (server != null || ifModifiedSince < (lastModified / 1000 * 1000)) {
+			if (server != null || ifModifiedSince < lastModified) {
 				resp.setDateHeader(HEADER_LASTMOD, lastModified);
 			} else {
 				resp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -87,6 +91,11 @@ public class ProxyRepositoryServlet extends BaseRepositoryServlet {
 		}
 		if ("POST".equals(req.getMethod())) {
 			lastModified = System.currentTimeMillis();
+		} else if (lastModified % 1000 != 0) {
+			long modified = System.currentTimeMillis() / 1000 * 1000;
+			if (lastModified < modified) {
+				lastModified = modified;
+			}
 		}
 	}
 

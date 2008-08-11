@@ -61,27 +61,38 @@
 
 	<xsl:template name="explore">
 		<xsl:param name="resource" />
-		<xsl:variable name="uri">
-			<xsl:call-template name="url-encode">
-				<xsl:with-param name="str" select="$resource" />
-			</xsl:call-template>
-		</xsl:variable>
-		<a href="explore?resource={$uri}">
+		<a>
+			<xsl:attribute name="href">
+				<xsl:text>explore?resource=</xsl:text>
+				<xsl:call-template name="url-encode">
+					<xsl:with-param name="str" select="$resource" />
+				</xsl:call-template>
+			</xsl:attribute>
 			<xsl:value-of select="$resource" />
 		</a>
 	</xsl:template>
 
 	<xsl:template name="explore-literal">
-		<xsl:param name="label" />
-		<xsl:param name="datatype" />
-		<xsl:variable name="uri">
-			<xsl:call-template name="url-encode">
-				<xsl:with-param name="str"
-					select="concat('&quot;', $label, '&quot;^^&lt;', $datatype, '&gt;')" />
-			</xsl:call-template>
-		</xsl:variable>
-		<a href="explore?resource={$uri}">
-			<xsl:value-of select="$label" />
+		<xsl:param name="literal" />
+		<a>
+			<xsl:attribute name="href">
+				<xsl:text>explore?resource=</xsl:text>
+				<xsl:choose>
+					<xsl:when test="$literal/@q:qname">
+						<xsl:call-template name="url-encode">
+							<xsl:with-param name="str"
+								select="concat('&quot;', $literal/text(), '&quot;^^', $literal/@q:qname)" />
+						</xsl:call-template>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:call-template name="url-encode">
+							<xsl:with-param name="str"
+								select="concat('&quot;', $literal/text(), '&quot;^^&lt;', $literal/@datatype, '&gt;')" />
+						</xsl:call-template>
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:attribute>
+			<xsl:value-of select="$literal/text()" />
 		</a>
 	</xsl:template>
 
@@ -101,57 +112,49 @@
 
 	<xsl:template match="sparql:literal[@datatype = '&xsd;boolean']">
 		<xsl:call-template name="explore-literal">
-			<xsl:with-param name="label" select="text()" />
-			<xsl:with-param name="datatype" select="@datatype" />
+			<xsl:with-param name="literal" select="." />
 		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template match="sparql:literal[@datatype = '&xsd;integer']">
 		<xsl:call-template name="explore-literal">
-			<xsl:with-param name="label" select="text()" />
-			<xsl:with-param name="datatype" select="@datatype" />
+			<xsl:with-param name="literal" select="." />
 		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template match="sparql:literal[@datatype = '&xsd;decimal']">
 		<xsl:call-template name="explore-literal">
-			<xsl:with-param name="label" select="text()" />
-			<xsl:with-param name="datatype" select="@datatype" />
+			<xsl:with-param name="literal" select="." />
 		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template match="sparql:literal[@datatype = '&xsd;double']">
 		<xsl:call-template name="explore-literal">
-			<xsl:with-param name="label" select="text()" />
-			<xsl:with-param name="datatype" select="@datatype" />
+			<xsl:with-param name="literal" select="." />
 		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template match="sparql:literal[@datatype = '&xsd;date']">
 		<xsl:call-template name="explore-literal">
-			<xsl:with-param name="label" select="text()" />
-			<xsl:with-param name="datatype" select="@datatype" />
+			<xsl:with-param name="literal" select="." />
 		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template match="sparql:literal[@datatype = '&xsd;dateTime']">
 		<xsl:call-template name="explore-literal">
-			<xsl:with-param name="label" select="text()" />
-			<xsl:with-param name="datatype" select="@datatype" />
+			<xsl:with-param name="literal" select="." />
 		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template match="sparql:literal[@datatype = '&xsd;time']">
 		<xsl:call-template name="explore-literal">
-			<xsl:with-param name="label" select="text()" />
-			<xsl:with-param name="datatype" select="@datatype" />
+			<xsl:with-param name="literal" select="." />
 		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template match="sparql:literal[@datatype = '&xsd;duration']">
 		<xsl:call-template name="explore-literal">
-			<xsl:with-param name="label" select="text()" />
-			<xsl:with-param name="datatype" select="@datatype" />
+			<xsl:with-param name="literal" select="." />
 		</xsl:call-template>
 	</xsl:template>
 

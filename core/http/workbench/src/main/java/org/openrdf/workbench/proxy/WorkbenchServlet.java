@@ -20,7 +20,6 @@ import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.workbench.RepositoryServlet;
 import org.openrdf.workbench.base.BaseServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
@@ -31,7 +30,7 @@ public class WorkbenchServlet extends BaseServlet {
 	private static final String DEFAULT_PATH_PARAM = "default-path";
 	public static String SERVER_PARAM = "server";
 	private RepositoryManager manager;
-	private ConcurrentMap<String, Servlet> repositories = new ConcurrentHashMap<String, Servlet>();
+	private ConcurrentMap<String, ProxyRepositoryServlet> repositories = new ConcurrentHashMap<String, ProxyRepositoryServlet>();
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
@@ -58,6 +57,13 @@ public class WorkbenchServlet extends BaseServlet {
 		manager.shutDown();
 	}
 
+	public void resetCache() {
+		for (ProxyRepositoryServlet proxy : repositories.values()) {
+			// inform browser that server changed and cache is invalid
+			proxy.resetCache();
+		}
+	}
+
 	@Override
 	public void service(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -68,8 +74,12 @@ public class WorkbenchServlet extends BaseServlet {
 		} else if ("/".equals(pathInfo)) {
 			String defaultPath = config.getInitParameter(DEFAULT_PATH_PARAM);
 			resp.sendRedirect(req.getRequestURI() + defaultPath.substring(1));
-		} else if (pathInfo.startsWith("/") && pathInfo.indexOf('/', 1) > 0) {
-			String id = pathInfo.substring(1, pathInfo.indexOf('/', 1));
+		} else if (pathInfo.startsWith("/")) {
+			int idx = pathInfo.indexOf('/', 1);
+			if (idx < 0) {
+				idx = pathInfo.length();
+			}
+			String id = pathInfo.substring(1, idx);
 			try {
 				service(id, req, resp);
 			} catch (RepositoryConfigException e) {
@@ -117,7 +127,7 @@ public class WorkbenchServlet extends BaseServlet {
 			Repository repository = manager.getRepository(id);
 			if (repository == null)
 				throw new BadRequestException("No such repository: " + id);
-			RepositoryServlet servlet = new ProxyRepositoryServlet();
+			ProxyRepositoryServlet servlet = new ProxyRepositoryServlet();
 			servlet.setRepositoryManager(manager);
 			servlet.setRepositoryInfo(manager.getRepositoryInfo(id));
 			servlet.setRepository(repository);
