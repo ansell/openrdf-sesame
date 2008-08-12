@@ -11,6 +11,7 @@ import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY_CO
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -102,6 +103,15 @@ public class LocalRepositoryManager extends RepositoryManager {
 	 */
 	public File getBaseDir() {
 		return baseDir;
+	}
+
+	/**
+	 * Gets the base dir against which to resolve relative paths.
+	 * 
+	 * @throws MalformedURLException If the path cannot be parsed as a URL
+	 */
+	public URL getLocation() throws MalformedURLException {
+		return baseDir.toURI().toURL();
 	}
 
 	/**

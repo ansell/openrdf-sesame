@@ -82,12 +82,11 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 *--------------*/
 
 	/**
-	 * Creates a new RepositoryManager that operates on the specfified base
+	 * Creates a new RepositoryManager that operates on the specified base
 	 * directory.
 	 * 
-	 * @param baseDir
-	 *        The base directory where data for repositories can be stored, among
-	 *        other things.
+	 * @param serverURL
+	 *        The URL of the server.
 	 */
 	public RemoteRepositoryManager(String serverURL) {
 		super();
@@ -117,6 +116,16 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		HTTPRepository systemRepository = new HTTPRepository(serverURL, SystemRepository.ID);
 		systemRepository.initialize();
 		return systemRepository;
+	}
+
+	/**
+	 * Gets the URL of the remote server, e.g.
+	 * "http://localhost:8080/openrdf-sesame/".
+	 * 
+	 * @throws MalformedURLException If serverURL cannot be parsed
+	 */
+	public URL getLocation() throws MalformedURLException {
+		return new URL(serverURL);
 	}
 
 	/**
