@@ -6,6 +6,8 @@
 package org.openrdf.repository.manager;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -483,4 +485,11 @@ public abstract class RepositoryManager {
 	 */
 	protected abstract void cleanUpRepository(String repositoryID)
 		throws IOException;
+
+	/**
+	 * Gets the URL of the server or directory.
+	 * 
+	 * @throws MalformedURLException If the location cannot be represented as a URL.
+	 */
+	public abstract URL getLocation() throws MalformedURLException;
 }

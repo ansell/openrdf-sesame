@@ -6,6 +6,8 @@
 package org.openrdf.repository.manager.util;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -43,6 +45,11 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 		throws RepositoryException
 	{
 		delegate.initialize();
+	}
+
+	@Override
+	public URL getLocation() throws MalformedURLException {
+		return delegate.getLocation();
 	}
 
 	@Override

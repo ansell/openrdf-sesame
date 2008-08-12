@@ -3,6 +3,7 @@ package org.openrdf.workbench.commands;
 import static org.openrdf.query.parser.QueryParserRegistry.getInstance;
 
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.servlet.ServletConfig;
@@ -10,8 +11,6 @@ import javax.servlet.ServletException;
 
 import org.openrdf.query.parser.QueryParserFactory;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.manager.LocalRepositoryManager;
-import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.rio.RDFParserFactory;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.RDFWriterFactory;
@@ -35,7 +34,7 @@ public class InfoServlet extends TransformationServlet {
 		String id = info.getId();
 		String desc = info.getDescription();
 		URL loc = info.getLocation();
-		String server = getServer();
+		URL server = getServer();
 		builder.result(id, desc, loc, server);
 		for (RDFParserFactory parser : RDFParserRegistry.getInstance().getAll()) {
 			String mimeType = parser.getRDFFormat().getDefaultMIMEType();
@@ -54,13 +53,12 @@ public class InfoServlet extends TransformationServlet {
 		builder.end();
 	}
 
-	private String getServer() {
-		if (manager instanceof LocalRepositoryManager) {
-			return ((LocalRepositoryManager) manager).getBaseDir().toString();
-		} else if (manager instanceof RemoteRepositoryManager) {
-			return ((RemoteRepositoryManager) manager).getServerURL();
+	private URL getServer() {
+		try {
+			return manager.getLocation();
+		} catch (MalformedURLException exc) {
+			return null;
 		}
-		return null;
 	}
 
 }
