@@ -171,8 +171,8 @@
 							<xsl:value-of select="$query-string.label" />
 						</th>
 						<td>
-							<textarea id="query" name="query" rows="6"
-								cols="70">
+							<textarea id="query" name="query" rows="16"
+								cols="80">
 							</textarea>
 						</td>
 						<td></td>
