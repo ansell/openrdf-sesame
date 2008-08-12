@@ -73,22 +73,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	 */
 	private final static byte ZIP_HEADER[] = { (byte) 0x50, (byte) 0x4B, (byte) 0x03, (byte) 0x04 };
 
-	/*
-	 * Note: the following debugEnabled method are private so that they can be
-	 * removed when open connections no longer block other connections and they
-	 * can be closed silently (just like in JDBC).
-	 */
-	private static boolean debugEnabled() {
-		try {
-			return System.getProperty("org.openrdf.repository.debug") != null;
-		}
-		catch (SecurityException e) {
-			// Thrown when not allowed to read system properties, for example
-			// when running in applets
-			return false;
-		}
-	}
-
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private final Repository repository;
@@ -97,20 +81,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	private boolean autoCommit;
 
-	/*
-	 * Stores a stack trace that indicates where this connection as created if
-	 * debugging is enabled.
-	 */
-	private Throwable creatorTrace;
-
 	protected RepositoryConnectionBase(Repository repository) {
 		this.repository = repository;
 		this.isOpen = true;
 		this.autoCommit = true;
-
-		if (debugEnabled()) {
-			creatorTrace = new Throwable();
-		}
 	}
 
 	public Repository getRepository() {
@@ -127,25 +101,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws RepositoryException
 	{
 		isOpen = false;
-	}
-
-	@Override
-	protected void finalize()
-		throws Throwable
-	{
-		try {
-			if (isOpen()) {
-				if (creatorTrace != null) {
-					logger.warn("Closing connection due to garbage collection, connection was create in:",
-							creatorTrace);
-				}
-
-				close();
-			}
-		}
-		finally {
-			super.finalize();
-		}
 	}
 
 	public Query prepareQuery(QueryLanguage ql, String query)

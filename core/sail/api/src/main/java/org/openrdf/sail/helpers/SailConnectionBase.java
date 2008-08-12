@@ -41,6 +41,22 @@ import org.openrdf.sail.SailException;
  */
 public abstract class SailConnectionBase implements NotifyingSailConnection {
 
+	/*
+	 * Note: the following debugEnabled method are private so that they can be
+	 * removed when open connections no longer block other connections and they
+	 * can be closed silently (just like in JDBC).
+	 */
+	private static boolean debugEnabled() {
+		try {
+			return System.getProperty("org.openrdf.repository.debug") != null;
+		}
+		catch (SecurityException e) {
+			// Thrown when not allowed to read system properties, for example
+			// when running in applets
+			return false;
+		}
+	}
+
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/*-----------*
@@ -78,6 +94,12 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 
 	private List<SailConnectionListener> listeners;
 
+	/*
+	 * Stores a stack trace that indicates where this connection as created if
+	 * debugging is enabled.
+	 */
+	private Throwable creatorTrace;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -87,6 +109,10 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 		isOpen = true;
 		txnActive = false;
 		listeners = new ArrayList<SailConnectionListener>(0);
+
+		if (debugEnabled()) {
+			creatorTrace = new Throwable();
+		}
 	}
 
 	/*---------*
@@ -167,6 +193,24 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 			// non-exclusive read lock will get one and then fail with an
 			// IllegalStateException, because the connection is no longer open.
 			conLock.release();
+		}
+	}
+
+	@Override
+	protected void finalize()
+		throws Throwable
+	{
+		try {
+			if (isOpen()) {
+				if (creatorTrace != null) {
+					logger.warn("Closing connection due to garbage collection, connection was create in:",
+							creatorTrace);
+				}
+				close();
+			}
+		}
+		finally {
+			super.finalize();
 		}
 	}
 
