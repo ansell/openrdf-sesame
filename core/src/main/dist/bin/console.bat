@@ -1,5 +1,9 @@
 @echo off
 
+rem Set the lib dir relative to the batch file's directory
+set LIB_DIR=%~dp0\..\lib
+rem echo LIB_DIR = %LIB_DIR%
+
 rem Slurp the command line arguments. This loop allows for an unlimited number
 rem of arguments (up to the command line limit, anyway).
 set CMD_LINE_ARGS=%1
@@ -25,9 +29,6 @@ goto javaHomeEnd
 set JAVA=%JAVA_HOME%\bin\java
 
 :javaHomeEnd
-
-set LIB_DIR=%CD%\..\lib
-rem echo LIB_DIR = %LIB_DIR%
 
 :checkJdk14
 "%JAVA%" -version 2>&1 | findstr "1.4" >NUL
