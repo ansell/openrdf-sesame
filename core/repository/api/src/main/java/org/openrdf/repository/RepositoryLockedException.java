@@ -3,34 +3,23 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail;
+package org.openrdf.repository;
 
 /**
- * Indicates that a SAIL cannot be initialised because the configured persisted
+ * Indicates that a Repository cannot be initialised because the configured persisted
  * location is locked.
  * 
  * @author James Leigh
  */
-public class SailLockedException extends SailException {
-	private static final long serialVersionUID = -2465202131214972460L;
+public class RepositoryLockedException extends RepositoryException {
+	private static final long serialVersionUID = -1544864578935422866L;
 	private String lockedBy;
 	private String requestedBy;
-	private LockManager manager;
 
-	public SailLockedException(String requestedBy) {
-		super("SAIL is already locked");
-		this.requestedBy = requestedBy;
-	}
-
-	public SailLockedException(String lockedBy, String requestedBy) {
-		super("SAIL is already locked by: " + lockedBy);
+	public RepositoryLockedException(String lockedBy, String requestedBy, String msg, Throwable t) {
+		super(msg, t);
 		this.lockedBy = lockedBy;
 		this.requestedBy = requestedBy;
-	}
-
-	public SailLockedException(String lockedBy, String requestedBy, LockManager manager) {
-		this(lockedBy, requestedBy);
-		this.manager = manager;
 	}
 
 	/**
@@ -55,10 +44,4 @@ public class SailLockedException extends SailException {
 		return requestedBy;
 	}
 
-	/**
-	 * @return Returns the lock manager that failed to obtain a lock.
-	 */
-	public LockManager getLockManager() {
-		return manager;
-	}
 }

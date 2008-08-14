@@ -22,12 +22,14 @@ import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.SailReadOnlyException;
 
 /**
  * An implementation of the {@link RepositoryConnection} interface that wraps a
@@ -225,6 +227,9 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		try {
 			sailConnection.addStatement(subject, predicate, object, contexts);
 		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
+		}
 		catch (SailException e) {
 			throw new RepositoryException(e);
 		}
@@ -236,6 +241,9 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	{
 		try {
 			sailConnection.removeStatements(subject, predicate, object, contexts);
+		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
 		}
 		catch (SailException e) {
 			throw new RepositoryException(e);
@@ -252,6 +260,9 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 			sailConnection.clear(contexts);
 			autoCommit();
 		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
+		}
 		catch (SailException e) {
 			throw new RepositoryException(e);
 		}
@@ -263,6 +274,9 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		try {
 			sailConnection.setNamespace(prefix, name);
 			autoCommit();
+		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
 		}
 		catch (SailException e) {
 			throw new RepositoryException(e);
@@ -276,6 +290,9 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 			sailConnection.removeNamespace(prefix);
 			autoCommit();
 		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
+		}
 		catch (SailException e) {
 			throw new RepositoryException(e);
 		}
@@ -287,6 +304,9 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		try {
 			sailConnection.clearNamespaces();
 			autoCommit();
+		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
 		}
 		catch (SailException e) {
 			throw new RepositoryException(e);

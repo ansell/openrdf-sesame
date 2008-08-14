@@ -18,13 +18,14 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.concurrent.locks.Lock;
 
+import org.openrdf.sail.LockManager;
 import org.openrdf.sail.SailLockedException;
 
 /**
  * 
  * @author James Leigh
  */
-public class DatabaseLockManager {
+public class DatabaseLockManager implements LockManager {
 	private static final String CREATE_LOCKED = "CREATE TABLE locked ( process VARCHAR(128) )";
 	private static final String INSERT = "INSERT INTO locked VALUES ('";
 	private static final String SELECT = "SELECT process FROM locked";
@@ -48,6 +49,30 @@ public class DatabaseLockManager {
 
 	public boolean isDebugEnabled() {
 		return logger.isDebugEnabled();
+	}
+
+	public boolean isLocked() {
+		try {
+			ResultSet rs = null;
+			Statement st = null;
+			Connection con = getConnection();
+			try {
+				st = con.createStatement();
+				rs = st.executeQuery(SELECT);
+				return rs.next();
+			} finally {
+				if (rs != null) {
+					rs.close();
+				}
+				if (st != null) {
+					st.close();
+				}
+				con.close();
+			}
+		} catch (SQLException exc) {
+			logger.warn(exc.toString(), exc);
+			return false;
+		}
 	}
 
 	public Lock tryLock() {
@@ -83,7 +108,7 @@ public class DatabaseLockManager {
 		String requestedBy = getProcessName();
 		String lockedBy = getLockedBy();
 		if (lockedBy != null)
-			throw new SailLockedException(lockedBy, requestedBy);
+			throw new SailLockedException(lockedBy, requestedBy, this);
 		lock = tryLock();
 		if (lock != null)
 			return lock;
