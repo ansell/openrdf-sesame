@@ -10,8 +10,10 @@ import java.io.File;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryLockedException;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.SailLockedException;
 
 /**
  * An implementation of the {@link Repository} interface that operates on a
@@ -80,6 +82,12 @@ public class SailRepository implements Repository {
 	{
 		try {
 			sail.initialize();
+		}
+		catch (SailLockedException e) {
+			String l = e.getLockedBy();
+			String r = e.getRequestedBy();
+			String m = e.getMessage();
+			throw new RepositoryLockedException(l, r, m, e);
 		}
 		catch (SailException e) {
 			throw new RepositoryException(e.getMessage(), e);

@@ -44,6 +44,7 @@ import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.SailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.memory.model.MemResource;
@@ -297,7 +298,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 		throws SailException
 	{
 		if (!store.isWritable()) {
-			throw new SailException("Unable to start transaction: data file is read-only");
+			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
 
 		txnStLock = store.getStatementsReadLock();

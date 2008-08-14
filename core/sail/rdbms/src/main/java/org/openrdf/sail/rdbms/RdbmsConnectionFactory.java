@@ -116,7 +116,7 @@ public class RdbmsConnectionFactory {
 	}
 
 	public void setDataSource(DataSource ds) {
-		if (Tracer.isDebugEnabled()) {
+		if (Tracer.isTraceEnabled()) {
 			this.ds = Tracer.traceDataSource(ds);
 		} else {
 			this.ds = ds;

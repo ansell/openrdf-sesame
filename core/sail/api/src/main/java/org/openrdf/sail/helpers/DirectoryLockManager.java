@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.concurrent.locks.Lock;
 
+import org.openrdf.sail.LockManager;
 import org.openrdf.sail.SailLockedException;
 
 /**
@@ -24,12 +25,21 @@ import org.openrdf.sail.SailLockedException;
  * 
  * @author James Leigh
  */
-public class DirectoryLockManager {
+public class DirectoryLockManager implements LockManager {
 	private Logger logger = LoggerFactory.getLogger(DirectoryLockManager.class);
 	private File dir;
 
 	public DirectoryLockManager(File dir) {
 		this.dir = dir;
+	}
+
+	/**
+	 * Determines if the directory is locked.
+	 * 
+	 * @return <code>true</code> if the directory is already locked.
+	 */
+	public boolean isLocked() {
+		return new File(dir, "lock").exists();
 	}
 
 	/**
@@ -67,7 +77,7 @@ public class DirectoryLockManager {
 		String requestedBy = getProcessName();
 		String lockedBy = getLockedBy();
 		if (lockedBy != null)
-			throw new SailLockedException(lockedBy, requestedBy);
+			throw new SailLockedException(lockedBy, requestedBy, this);
 		lock = tryLock();
 		if (lock != null)
 			return lock;

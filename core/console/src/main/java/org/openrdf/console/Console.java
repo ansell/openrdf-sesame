@@ -75,6 +75,8 @@ import org.openrdf.query.parser.sparql.SPARQLUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryLockedException;
+import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
@@ -92,6 +94,9 @@ import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.rio.ntriples.NTriplesUtil;
+import org.openrdf.sail.LockManager;
+import org.openrdf.sail.SailLockedException;
+import org.openrdf.sail.helpers.DirectoryLockManager;
 
 /**
  * The Sesame Console is a command-line application for interacting with Sesame.
@@ -696,8 +701,19 @@ public class Console {
 				}
 			}
 
-			RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
-			writeln("Repository created");
+			try {
+				RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
+				writeln("Repository created");
+			}
+			catch (RepositoryReadOnlyException e) {
+				if (tryToRemoveLock(e, systemRepo)) {
+					RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
+					writeln("Repository created");
+				} else {
+					writeError("Failed to create repository");
+					logger.error("Failed to create repository", e);
+				}
+			}
 		}
 		catch (Exception e) {
 			writeError(e.getMessage());
@@ -776,6 +792,20 @@ public class Console {
 				con.close();
 			}
 		}
+		catch (RepositoryReadOnlyException e) {
+			try {
+				if (tryToRemoveLock(e, systemRepo)) {
+					dropRepository(tokens);
+				} else {
+					writeError("Failed to drop repository");
+					logger.error("Failed to drop repository", e);
+				}
+			}
+			catch (RepositoryException e2) {
+				writeError("Failed to restart system: " + e2.getMessage());
+				logger.error("Failed to restart system", e2);
+			}
+		}
 		catch (RepositoryException e) {
 			writeError("Failed to drop repository: " + e.getMessage());
 			logger.error("Failed to drop repository", e);
@@ -810,6 +840,18 @@ public class Console {
 			}
 			else {
 				writeError("Unknown repository: '" + id + "'");
+			}
+		}
+		catch (RepositoryLockedException e) {
+			try {
+				if (tryToRemoveLock(e)) {
+					openRepository(id);
+				} else {
+					writeError("Failed to open repository");
+					logger.error("Failed to open repository", e);
+				}
+			} catch (IOException e1) {
+				writeError("Unable to remove lock: " + e1.getMessage());
 			}
 		}
 		catch (RepositoryConfigException e) {
@@ -1091,6 +1133,21 @@ public class Console {
 			long endTime = System.nanoTime();
 			writeln("Data has been added to the repository (" + (endTime - startTime) / 1000000 + " ms)");
 		}
+		catch (RepositoryReadOnlyException e) {
+			try {
+				if (tryToRemoveLock(e, repository)) {
+					load(tokens);
+				} else {
+					writeError("Failed to load data");
+					logger.error("Failed to load data", e);
+				}
+			} catch (RepositoryException e1) {
+				writeError("Unable to restart repository: " + e1.getMessage());
+				logger.error("Unable to restart repository", e1);
+			} catch (IOException e1) {
+				writeError("Unable to remove lock: " + e1.getMessage());
+			}
+		}
 		catch (MalformedURLException e) {
 			writeError("Malformed URL: " + dataPath);
 		}
@@ -1244,6 +1301,21 @@ public class Console {
 			}
 			finally {
 				con.close();
+			}
+		}
+		catch (RepositoryReadOnlyException e) {
+			try {
+				if (tryToRemoveLock(e, repository)) {
+					clear(tokens);
+				} else {
+					writeError("Failed to clear repository");
+					logger.error("Failed to clear repository", e);
+				}
+			} catch (RepositoryException e1) {
+				writeError("Unable to restart repository: " + e1.getMessage());
+				logger.error("Unable to restart repository", e1);
+			} catch (IOException e1) {
+				writeError("Unable to remove lock: " + e1.getMessage());
 			}
 		}
 		catch (RepositoryException e) {
@@ -1667,6 +1739,36 @@ public class Console {
 		else {
 			queryPrefix = Boolean.parseBoolean(value);
 		}
+	}
+
+	private boolean tryToRemoveLock(RepositoryReadOnlyException e,
+			Repository repo) throws IOException, RepositoryException {
+		File dataDir = repo.getDataDir();
+		LockManager locker = new DirectoryLockManager(dataDir);
+		if (!locker.isLocked())
+			return false;
+		if (!askProceed(e.getMessage(), true))
+			return false;
+		repo.shutDown();
+		boolean revoked = locker.revokeLock();
+		repo.initialize();
+		return revoked;
+	}
+
+	private boolean tryToRemoveLock(RepositoryLockedException e)
+			throws IOException {
+		Throwable cause = e.getCause();
+		if (!(cause instanceof SailLockedException))
+			return false;
+		SailLockedException s = (SailLockedException) cause;
+		LockManager locker = s.getLockManager();
+		if (locker == null)
+			return false;
+		if (!locker.isLocked())
+			return false;
+		if (!askProceed(e.getMessage(), true))
+			return false;
+		return locker.revokeLock();
 	}
 
 	private boolean askProceed(String msg, boolean defaultValue)
