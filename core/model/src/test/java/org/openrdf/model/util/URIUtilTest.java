@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -31,6 +31,7 @@ public class URIUtilTest extends TestCase {
 		assertFalse(URIUtil.isCorrectURISplit("http://www.example.org/page/", "1/2"));
 		assertFalse(URIUtil.isCorrectURISplit("http://www.example.org/page/", "1#2"));
 		assertFalse(URIUtil.isCorrectURISplit("http://www.example.org/page", "2"));
+		assertFalse(URIUtil.isCorrectURISplit("http://www.example.org/page/1:", "2"));
 		assertFalse(URIUtil.isCorrectURISplit("isbn:", "1#2"));
 		assertFalse(URIUtil.isCorrectURISplit("isbn:", "1/2"));
 		assertFalse(URIUtil.isCorrectURISplit("isbn:", "1:2"));
