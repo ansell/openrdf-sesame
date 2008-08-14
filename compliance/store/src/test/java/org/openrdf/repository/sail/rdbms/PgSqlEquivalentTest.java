@@ -23,10 +23,6 @@ public class PgSqlEquivalentTest extends EquivalentTest {
 		super();
 	}
 
-	public PgSqlEquivalentTest(String name) {
-		super(name);
-	}
-
 	@Override
 	protected Repository newRepository() {
 		return new SailRepository(new PgSqlStore("sesame_test"));

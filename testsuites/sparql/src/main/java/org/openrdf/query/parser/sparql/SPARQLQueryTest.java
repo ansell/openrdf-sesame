@@ -45,10 +45,12 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.dawg.DAWGTestResultSetUtil;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.impl.MutableTupleQueryResult;
+import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParserRegistry;
 import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
+import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -81,7 +83,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	 * Variables *
 	 *-----------*/
 
-	private Repository dataRep;
+	protected Repository dataRep;
 
 	/*--------------*
 	 * Constructors *
@@ -386,9 +388,14 @@ public abstract class SPARQLQueryTest extends TestCase {
 		if (tqrFormat != null) {
 			InputStream in = new URL(resultFileURL).openStream();
 			try {
-				TupleQueryResult tqr = QueryResultIO.parse(in, tqrFormat);
-				// return RepositoryUtil.asGraph(tqr);
-				return tqr;
+				TupleQueryResultParser parser = QueryResultIO.createParser(tqrFormat);
+				parser.setValueFactory(dataRep.getValueFactory());
+				
+				TupleQueryResultBuilder qrBuilder = new TupleQueryResultBuilder();
+				parser.setTupleQueryResultHandler(qrBuilder);
+				
+				parser.parse(in);
+				return qrBuilder.getQueryResult();
 			}
 			finally {
 				in.close();
@@ -430,6 +437,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			RDFParser parser = Rio.createParser(rdfFormat);
 			parser.setDatatypeHandling(DatatypeHandling.IGNORE);
 			parser.setPreserveBNodeIDs(true);
+			parser.setValueFactory(dataRep.getValueFactory());
 
 			Set<Statement> result = new LinkedHashSet<Statement>();
 			parser.setRDFHandler(new StatementCollector(result));

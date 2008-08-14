@@ -24,8 +24,15 @@ public class Tracer implements InvocationHandler {
 
 	private static int count;
 
-	public static boolean isDebugEnabled() {
-		return logger.isDebugEnabled();
+	public static boolean isTraceEnabled() {
+		try {
+			return System.getProperty("org.openrdf.repository.trace") != null;
+		}
+		catch (SecurityException e) {
+			// Thrown when not allowed to read system properties, for example
+			// when running in applets
+			return false;
+		}
 	}
 
 	public static DataSource traceDataSource(DataSource ds) {
@@ -129,7 +136,10 @@ public class Tracer implements InvocationHandler {
 		} else if (arg instanceof String) {
 			String str = (String) arg;
 			sb.append("\"");
-			sb.append(str.replaceAll("\\\\", "\\\\\\\\").replaceAll("\n", "\\\\n").replaceAll("\"", "\\\""));
+			str = str.replace("\\", "\\\\");
+			str = str.replace("\n", "\\n");
+			str = str.replace("\"", "\\\"");
+			sb.append(str);
 			sb.append("\"");
 		} else if (arg instanceof Long) {
 			sb.append(arg).append('l');
