@@ -200,8 +200,9 @@ public class LiteralImpl implements Literal {
 		}
 
 		if (datatype != null) {
-			sb.append("^^");
+			sb.append("^^<");
 			sb.append(datatype.toString());
+			sb.append(">");
 		}
 
 		return sb.toString();
