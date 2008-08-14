@@ -23,10 +23,6 @@ public class MySqlEquivalentTest extends EquivalentTest {
 		super();
 	}
 
-	public MySqlEquivalentTest(String name) {
-		super(name);
-	}
-
 	@Override
 	protected Repository newRepository() {
 		return new SailRepository(new MySqlStore("sesame_test"));

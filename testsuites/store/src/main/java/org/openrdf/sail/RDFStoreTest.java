@@ -30,6 +30,7 @@ import org.openrdf.model.impl.NumericLiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -225,6 +226,29 @@ public abstract class RDFStoreTest extends TestCase {
 		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
 		Literal obj = new NumericLiteralImpl(3);
 
+		testValueRoundTrip(subj, pred, obj);
+	}
+
+	public void testDecimalRoundTrip()
+		throws Exception
+	{
+		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
+		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
+		Literal obj = new NumericLiteralImpl(3, XMLSchema.DECIMAL);
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
+	public void testTimeZoneRoundTrip()
+		throws Exception
+	{
+		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
+		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
+		Literal obj = new LiteralImpl("2006-08-23+00:00", XMLSchema.DATE);
+		testValueRoundTrip(subj, pred, obj);
+
+		con.removeStatements(null, null, null);
+		obj = new LiteralImpl("2006-08-23", XMLSchema.DATE);
 		testValueRoundTrip(subj, pred, obj);
 	}
 

@@ -189,10 +189,6 @@ public abstract class EquivalentTest extends TestCase {
 		super();
 	}
 
-	public EquivalentTest(String name) {
-		setName(name);
-	}
-
 	@Override
 	public void setName(String name) {
 		super.setName(name);
@@ -232,7 +228,7 @@ public abstract class EquivalentTest extends TestCase {
 		return repository;
 	}
 
-	protected abstract Repository newRepository();
+	protected abstract Repository newRepository() throws Exception;
 
 	private Value getTerm(String label) {
 		if (label.contains("xyz")) {

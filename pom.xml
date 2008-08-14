@@ -417,6 +417,20 @@
 				<version>1.1</version>
 			</dependency>
 
+		<!-- JDBC Drivers -->
+
+		<dependency>
+			<groupId>postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>8.3-603.jdbc3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.6</version>
+		</dependency>
+
 			<!-- various -->
 			<dependency>
 				<groupId>cglib</groupId>
