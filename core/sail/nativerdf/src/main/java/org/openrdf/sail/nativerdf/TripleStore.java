@@ -481,40 +481,22 @@ class TripleStore {
 	private RecordIterator getTriples(int subj, int pred, int obj, int context, int flags, int flagsMask)
 		throws IOException
 	{
-		return getTriples(subj, pred, obj, context, flags, flagsMask, indexes);
+		TripleIndex index = getBestIndex(subj, pred, obj, context);
+		boolean doRangeSearch = index.getPatternScore(subj, pred, obj, context) > 0;
+		return getTriplesUsingIndex(subj, pred, obj, context, flags, flagsMask, index, doRangeSearch);
 	}
 
 	private RecordIterator getAllTriplesSortedByContext(int flags, int flagsMask)
 		throws IOException
 	{
-		TripleIndex contextIndex = null;
 		for (TripleIndex index : indexes) {
 			if (index.getFieldSeq()[0] == 'c') {
-				contextIndex = index;
-				break;
-			}
-		}
-		if (contextIndex == null)
-			return null;
-		return getTriplesUsingIndex(-1, -1, -1, -1, flags, flagsMask, contextIndex, false);
-	}
-
-	private RecordIterator getTriples(int subj, int pred, int obj, int context, int flags, int flagsMask,
-			TripleIndex... indexes)
-		throws IOException
-	{
-		// Get best matching index
-		int bestScore = -1;
-		TripleIndex bestIndex = null;
-		for (int i = 0; i < indexes.length; i++) {
-			int score = indexes[i].getPatternScore(subj, pred, obj, context);
-			if (score > bestScore) {
-				bestScore = score;
-				bestIndex = indexes[i];
+				// found a context-first index
+				return getTriplesUsingIndex(-1, -1, -1, -1, flags, flagsMask, index, false);
 			}
 		}
 
-		return getTriplesUsingIndex(subj, pred, obj, context, flags, flagsMask, bestIndex, bestScore > 0);
+		return null;
 	}
 
 	private RecordIterator getTriplesUsingIndex(int subj, int pred, int obj, int context, int flags,
@@ -534,6 +516,77 @@ class TripleStore {
 			// Use sequential scan
 			return index.getBTree().iterateValues(searchKey, searchMask);
 		}
+	}
+
+	protected double cardinality(int subj, int pred, int obj, int context)
+		throws IOException
+	{
+		TripleIndex index = getBestIndex(subj, pred, obj, context);
+		BTree btree = index.btree;
+
+		double rangeSize;
+
+		if (index.getPatternScore(subj, pred, obj, context) == 0) {
+			rangeSize = btree.getValueCountEstimate();
+		}
+		else {
+			byte[] minValue = getMinValue(subj, pred, obj, context);
+			byte[] maxValue = getMaxValue(subj, pred, obj, context);
+			rangeSize = btree.getValueCountEstimate(minValue, maxValue);
+		}
+
+		// compensate for any constant variables that haven't been considered by
+		// the btree
+		int unboundVarCount = 0;
+		char[] fieldSeq = index.getFieldSeq();
+		int indexScore = index.getPatternScore(subj, pred, obj, context);
+
+		for (int i = indexScore; i < fieldSeq.length; i++) {
+			switch (fieldSeq[i]) {
+				case 's':
+					if (subj == -1) {
+						unboundVarCount++;
+					}
+					break;
+				case 'p':
+					if (pred == -1) {
+						unboundVarCount++;
+					}
+					break;
+				case 'o':
+					if (obj == -1) {
+						unboundVarCount++;
+					}
+					break;
+				case 'c':
+					if (context == -1) {
+						unboundVarCount++;
+					}
+					break;
+				default:
+					throw new RuntimeException("invalid character '" + fieldSeq[i] + "' in field sequence: "
+							+ new String(fieldSeq));
+			}
+		}
+
+		int varCount = 4 - indexScore;
+		double unboundVarFactor = (double)unboundVarCount / varCount;
+		return Math.pow(rangeSize, unboundVarFactor);
+	}
+
+	protected TripleIndex getBestIndex(int subj, int pred, int obj, int context) {
+		int bestScore = -1;
+		TripleIndex bestIndex = null;
+
+		for (TripleIndex index : indexes) {
+			int score = index.getPatternScore(subj, pred, obj, context);
+			if (score > bestScore) {
+				bestScore = score;
+				bestIndex = index;
+			}
+		}
+
+		return bestIndex;
 	}
 
 	public void clear()

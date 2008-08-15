@@ -178,6 +178,12 @@ public class BTree {
 	 */
 	private int rootNodeID;
 
+	/**
+	 * The depth of this BTree (the cache variable), < 0 indicating it is
+	 * unknown.
+	 */
+	private int height = -1;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -331,6 +337,7 @@ public class BTree {
 			this.blockSize = blockSize;
 			this.valueSize = valueSize;
 			this.rootNodeID = 0;
+			this.height = 0;
 
 			writeFileHeader();
 
@@ -550,6 +557,136 @@ public class BTree {
 	}
 
 	/**
+	 * Finds the minimum key that is equal or larger than the given key. For this
+	 * minimum key, it returns the path through the B-Tree. The result is a list
+	 * of vector of integer, e.g. [[1, 3], [2, 3], [2, 3]]. Each vector provides
+	 * information about each node on the path to the minimum key. The first
+	 * integer of the vector represents the index of the child pointer array
+	 * taken to reach the next node. The second integer of the vector represents
+	 * the size of that array. In case of the last vector, the values represent
+	 * the index of the key array and the size of this array, respectively.
+	 * 
+	 * @param key
+	 *        The key to search the minimum key for.
+	 * @return The list of vectors representing the path to the minimum key.
+	 */
+	public long getValueCountEstimate(byte[] minValue, byte[] maxValue)
+		throws IOException
+	{
+		assert minValue != null : "minValue must not be null";
+		assert maxValue != null : "maxValue must not be null";
+
+		int minIndex;
+		int maxIndex;
+		int nodeDepth = 1;
+
+		btreeLock.readLock().lock();
+		try {
+			Node currentNode = readRootNode();
+
+			if (currentNode == null) {
+				// Empty BTree
+				return 0L;
+			}
+
+			// find node where the range starts to span multiple child nodes
+			while (true) {
+				minIndex = currentNode.search(minValue);
+				maxIndex = currentNode.search(maxValue);
+
+				if (minIndex != maxIndex || minIndex >= 0 || currentNode.isLeaf()) {
+					break;
+				}
+
+				// Enter recursion with indicated child node
+				Node childNode = currentNode.getChildNode(-minIndex - 1);
+				currentNode.release();
+				currentNode = childNode;
+				nodeDepth++;
+			}
+
+			currentNode.release();
+		}
+		finally {
+			btreeLock.readLock().unlock();
+		}
+
+		double valueCount;
+
+		if (minIndex == maxIndex) {
+			valueCount = minIndex >= 0 ? 1 : 0;
+		}
+		else {
+			double span = 0.0;
+
+			if (minIndex < 0) {
+				minIndex = -minIndex - 1;
+
+				// assume half of the left child node's values are included
+				span += 0.5;
+			}
+			if (maxIndex < 0) {
+				// subtract 2 and point to max value
+				maxIndex = -maxIndex - 2;
+
+				// assume half of the right child node's values are included
+				span += 0.5;
+			}
+
+			span += (maxIndex - minIndex);
+
+			valueCount = 0.0;
+
+			// Assume fill factor of 70%
+			double fanOut = 0.7 * this.branchFactor;
+			for (int i = height() - nodeDepth; i > 0; i--) {
+				// valueCount += (long)Math.pow(fanOut, i);
+				// equivalent but faster:
+				valueCount += 1.0;
+				valueCount *= fanOut;
+			}
+
+			valueCount *= span;
+
+			// exact numbers for values in current node
+			valueCount += maxIndex - minIndex + 1;
+		}
+
+		return (long)valueCount;
+	}
+
+	private int height()
+		throws IOException
+	{
+		// if the depth is cached, return that value
+		if (height >= 0) {
+			return height;
+		}
+
+		int nodeDepth = 0;
+
+		Node currentNode = readRootNode();
+
+		if (currentNode != null) {
+			nodeDepth = 1;
+
+			while (!currentNode.isLeaf()) {
+				Node childNode = currentNode.getChildNode(0);
+				currentNode.release();
+				currentNode = childNode;
+
+				nodeDepth++;
+			}
+
+			currentNode.release();
+		}
+
+		height = nodeDepth;
+
+		return height;
+	}
+
+	/**
 	 * Inserts the supplied value into the B-Tree. In case an equal value is
 	 * already present in the B-Tree this value is overwritten with the new value
 	 * and the old value is returned by this method.
@@ -586,6 +723,11 @@ public class BTree {
 				rootNodeID = newRootNode.getID();
 				writeFileHeader();
 				newRootNode.release();
+
+				// update the cached depth of this BTree
+				if (height >= 0) {
+					height++;
+				}
 			}
 
 			rootNode.release();
@@ -723,6 +865,10 @@ public class BTree {
 
 					// Write new root node ID to file header
 					writeFileHeader();
+
+					if (height >= 0) {
+						height--;
+					}
 				}
 
 				rootNode.release();

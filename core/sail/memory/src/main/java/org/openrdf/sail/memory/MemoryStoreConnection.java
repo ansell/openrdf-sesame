@@ -10,7 +10,6 @@ package org.openrdf.sail.memory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.iteration.CloseableIteration;
@@ -462,8 +461,8 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	 * @param explicit
 	 *        Flag indicating whether explicit or inferred statements should be
 	 *        removed; <tt>true</tt> removes explicit statements that match the
-	 *        pattern, <tt>false</tt> removes inferred statements that match
-	 *        the pattern.
+	 *        pattern, <tt>false</tt> removes inferred statements that match the
+	 *        pattern.
 	 * @throws SailException
 	 */
 	protected boolean removeStatementsInternal(Resource subj, URI pred, Value obj, boolean explicit,
@@ -578,18 +577,14 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	protected class MemEvaluationStatistics extends EvaluationStatistics {
 
 		@Override
-		protected CardinalityCalculator getCardinalityCalculator(Set<String> boundVars) {
-			return new MemCardinalityCalculator(boundVars);
+		protected CardinalityCalculator createCardinalityCalculator() {
+			return new MemCardinalityCalculator();
 		}
 
 		protected class MemCardinalityCalculator extends CardinalityCalculator {
 
-			public MemCardinalityCalculator(Set<String> boundVars) {
-				super(boundVars);
-			}
-
 			@Override
-			public void meet(StatementPattern sp) {
+			public double getCardinality(StatementPattern sp) {
 				Resource subj = (Resource)getConstantValue(sp.getSubjectVar());
 				URI pred = (URI)getConstantValue(sp.getPredicateVar());
 				Value obj = getConstantValue(sp.getObjectVar());
@@ -607,8 +602,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 						&& memObj == null || context != null && memContext == null)
 				{
 					// non-existent subject, predicate, object or context
-					cardinality = 0;
-					return;
+					return 0.0;
 				}
 
 				// Search for the smallest list that can be used by the iterator
@@ -626,29 +620,27 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 					listSizes.add(memContext.getContextStatementCount());
 				}
 
+				double cardinality;
+
 				if (listSizes.isEmpty()) {
+					// all wildcards
 					cardinality = store.size();
-
-					int sqrtFactor = 2 * countBoundVars(sp);
-
-					if (sqrtFactor > 1) {
-						cardinality = Math.pow(cardinality, 1.0 / sqrtFactor);
-					}
 				}
 				else {
 					cardinality = Collections.min(listSizes);
 
-					int constantVarCount = countConstantVars(sp);
-					int boundVarCount = countBoundVars(sp);
-
-					// Subtract 1 from constantVarCount as this was used for the list
+					// List<Var> vars = getVariables(sp);
+					// int constantVarCount = countConstantVars(vars);
+					//
+					// // Subtract 1 from var count as this was used for the list
 					// size
-					int sqrtFactor = 2 * boundVarCount + Math.max(0, constantVarCount - 1);
-
-					if (sqrtFactor > 1) {
-						cardinality = Math.pow(cardinality, 1.0 / sqrtFactor);
-					}
+					// double unboundVarFactor = (double)(vars.size() -
+					// constantVarCount) / (vars.size() - 1);
+					//
+					// cardinality = Math.pow(cardinality, unboundVarFactor);
 				}
+
+				return cardinality;
 			}
 
 			protected Value getConstantValue(Var var) {
