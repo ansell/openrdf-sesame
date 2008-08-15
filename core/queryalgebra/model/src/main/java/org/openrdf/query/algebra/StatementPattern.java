@@ -5,7 +5,10 @@
  */
 package org.openrdf.query.algebra;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -177,6 +180,27 @@ public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 		return bindingNames;
 	}
 
+	public List<Var> getVarList() {
+		return getVars(new ArrayList<Var>(4));
+	}
+
+	public <L extends Collection<Var>> L getVars(L varCollection) {
+		if (subjectVar != null) {
+			varCollection.add(subjectVar);
+		}
+		if (predicateVar != null) {
+			varCollection.add(predicateVar);
+		}
+		if (objectVar != null) {
+			varCollection.add(objectVar);
+		}
+		if (contextVar != null) {
+			varCollection.add(contextVar);
+		}
+		
+		return varCollection;
+	}
+	
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{

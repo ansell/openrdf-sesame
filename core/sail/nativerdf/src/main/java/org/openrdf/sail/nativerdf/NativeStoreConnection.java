@@ -31,7 +31,6 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
@@ -117,7 +116,8 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 		try {
 			replaceValues(tupleExpr);
 
-			TripleSource tripleSource = new NativeTripleSource(nativeStore, includeInferred, transactionActive());
+			NativeTripleSource tripleSource = new NativeTripleSource(nativeStore, includeInferred,
+					transactionActive());
 			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset);
 
 			QueryOptimizerList optimizerList = new QueryOptimizerList();
@@ -128,11 +128,10 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			optimizerList.add(new DisjunctiveConstraintOptimizer());
 			optimizerList.add(new SameTermFilterOptimizer());
 			optimizerList.add(new QueryModelPruner());
-			optimizerList.add(new QueryJoinOptimizer());
+			optimizerList.add(new QueryJoinOptimizer(new NativeEvaluationStatistics(nativeStore)));
 			optimizerList.add(new FilterOptimizer());
 
 			optimizerList.optimize(tupleExpr, dataset, bindings);
-
 			logger.trace("Optimized query model:\n{}", tupleExpr.toString());
 
 			CloseableIteration<BindingSet, QueryEvaluationException> iter;

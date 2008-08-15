@@ -1,13 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2006-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2006-2008.
  * Copyright James Leigh (c) 2006.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.EmptySet;
@@ -29,18 +28,19 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
  */
 public class EvaluationStatistics {
 
-	public double getCardinality(TupleExpr expr) {
-		return getCardinality(expr, new HashSet<String>());
-	}
+	protected CardinalityCalculator cc;
 
-	public double getCardinality(TupleExpr expr, Set<String> boundVars) {
-		CardinalityCalculator cc = getCardinalityCalculator(boundVars);
+	public synchronized double getCardinality(TupleExpr expr) {
+		if (cc == null) {
+			cc = createCardinalityCalculator();
+		}
+
 		expr.visit(cc);
 		return cc.getCardinality();
 	}
 
-	protected CardinalityCalculator getCardinalityCalculator(Set<String> boundVars) {
-		return new CardinalityCalculator(boundVars);
+	protected CardinalityCalculator createCardinalityCalculator() {
+		return new CardinalityCalculator();
 	}
 
 	/*-----------------------------------*
@@ -49,59 +49,39 @@ public class EvaluationStatistics {
 
 	protected static class CardinalityCalculator extends QueryModelVisitorBase<RuntimeException> {
 
-		protected Set<String> boundVars;
-
 		protected double cardinality;
-
-		public CardinalityCalculator(Set<String> boundVars) {
-			this.boundVars = boundVars;
-		}
 
 		public double getCardinality() {
 			return cardinality;
 		}
 
 		@Override
-		public void meet(EmptySet node)
-		{
+		public void meet(EmptySet node) {
 			cardinality = 0;
 		}
 
 		@Override
-		public void meet(SingletonSet node)
-		{
+		public void meet(SingletonSet node) {
 			cardinality = 1;
 		}
 
 		@Override
-		public void meet(StatementPattern sp)
-		{
-			cardinality = 1000.0;
-
-			int constantVarCount = countConstantVars(sp);
-			int boundVarCount = countBoundVars(sp);
-
-			int sqrtFactor = 2 * boundVarCount + constantVarCount;
-
-			if (sqrtFactor >= 2) {
-				cardinality = Math.pow(cardinality, 1.0 / sqrtFactor);
-			}
-			
-//			int unboundVars = 4 - countBoundVars(sp) - countConstantVars(sp);
-//			cardinality = 1 << unboundVars; // 2 ^ unboundVars
+		public void meet(StatementPattern sp) {
+			cardinality = getCardinality(sp);
 		}
 
-		protected int countConstantVars(StatementPattern sp) {
+		protected double getCardinality(StatementPattern sp) {
+			List<Var> vars = sp.getVarList();
+			int constantVarCount = countConstantVars(vars);
+			double unboundVarFactor = (double)(vars.size() - constantVarCount) / vars.size();
+			return Math.pow(1000.0, unboundVarFactor);
+		}
+
+		protected int countConstantVars(Iterable<Var> vars) {
 			int constantVarCount = 0;
 
-			Var[] spVars = new Var[] {
-					sp.getSubjectVar(),
-					sp.getPredicateVar(),
-					sp.getObjectVar(),
-					sp.getContextVar() };
-
-			for (Var var : spVars) {
-				if (var != null && var.hasValue()) {
+			for (Var var : vars) {
+				if (var.hasValue()) {
 					constantVarCount++;
 				}
 			}
@@ -109,27 +89,8 @@ public class EvaluationStatistics {
 			return constantVarCount;
 		}
 
-		protected int countBoundVars(StatementPattern sp) {
-			int boundVarCount = 0;
-
-			Var[] spVars = new Var[] {
-					sp.getSubjectVar(),
-					sp.getPredicateVar(),
-					sp.getObjectVar(),
-					sp.getContextVar() };
-
-			for (Var var : spVars) {
-				if (var != null && this.boundVars.contains(var.getName())) {
-					boundVarCount++;
-				}
-			}
-
-			return boundVarCount;
-		}
-
 		@Override
-		public void meet(Join node)
-		{
+		public void meet(Join node) {
 			node.getLeftArg().visit(this);
 			double leftArgCost = this.cardinality;
 
@@ -138,8 +99,7 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		public void meet(LeftJoin node)
-		{
+		public void meet(LeftJoin node) {
 			node.getLeftArg().visit(this);
 			double leftArgCost = this.cardinality;
 
@@ -148,8 +108,7 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		protected void meetBinaryTupleOperator(BinaryTupleOperator node)
-		{
+		protected void meetBinaryTupleOperator(BinaryTupleOperator node) {
 			node.getLeftArg().visit(this);
 			double leftArgCost = this.cardinality;
 
@@ -158,14 +117,12 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		protected void meetUnaryTupleOperator(UnaryTupleOperator node)
-		{
+		protected void meetUnaryTupleOperator(UnaryTupleOperator node) {
 			node.getArg().visit(this);
 		}
 
 		@Override
-		protected void meetNode(QueryModelNode node)
-		{
+		protected void meetNode(QueryModelNode node) {
 			throw new IllegalArgumentException("Unhandled node type: " + node.getClass());
 		}
 	}

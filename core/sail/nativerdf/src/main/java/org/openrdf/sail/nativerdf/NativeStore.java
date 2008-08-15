@@ -349,21 +349,22 @@ public class NativeStore extends SailBase {
 		btreeIter = tripleStore.getAllTriplesSortedByContext(readTransaction);
 		if (btreeIter == null) {
 			// Iterator over all statements
-			stIter = createStatementIterator(null, null, null, true,
-					readTransaction);
-		} else {
+			stIter = createStatementIterator(null, null, null, true, readTransaction);
+		}
+		else {
 			stIter = new NativeStatementIterator(btreeIter, valueStore);
 		}
 		// Filter statements without context resource
 		stIter = new FilterIteration<Statement, IOException>(stIter) {
+
 			@Override
 			protected boolean accept(Statement st) {
 				return st.getContext() != null;
 			}
 		};
 		// Return the contexts of the statements
-		ctxIter = new ConvertingIteration<Statement, Resource, IOException>(
-				stIter) {
+		ctxIter = new ConvertingIteration<Statement, Resource, IOException>(stIter) {
+
 			@Override
 			protected Resource convert(Statement st) {
 				return st.getContext();
@@ -372,13 +373,17 @@ public class NativeStore extends SailBase {
 		if (btreeIter == null) {
 			// Filtering any duplicates
 			ctxIter = new DistinctIteration<Resource, IOException>(ctxIter);
-		} else {
+		}
+		else {
 			// Filtering sorted duplicates
 			ctxIter = new FilterIteration<Resource, IOException>(ctxIter) {
+
 				private Resource last = null;
 
 				@Override
-				protected boolean accept(Resource ctx) throws IOException {
+				protected boolean accept(Resource ctx)
+					throws IOException
+				{
 					boolean equal = ctx.equals(last);
 					last = ctx;
 					return !equal;
@@ -398,11 +403,9 @@ public class NativeStore extends SailBase {
 	 *        The predicate of the pattern, or <tt>null</tt> to indicate a
 	 *        wildcard.
 	 * @param obj
-	 *        The object of the pattern, or <tt>null</tt> to indicate a
-	 *        wildcard.
+	 *        The object of the pattern, or <tt>null</tt> to indicate a wildcard.
 	 * @param context
-	 *        The context of the pattern, or <tt>null</tt> to indicate a
-	 *        wildcard
+	 *        The context of the pattern, or <tt>null</tt> to indicate a wildcard
 	 * @return A StatementIterator that can be used to iterate over the
 	 *         statements that match the specified pattern.
 	 */
@@ -471,6 +474,49 @@ public class NativeStore extends SailBase {
 			perContextIterList.add(new NativeStatementIterator(btreeIter, valueStore));
 		}
 
-		return new UnionIteration<Statement, IOException>(perContextIterList);
+		if (perContextIterList.size() == 1) {
+			return perContextIterList.get(0);
+		}
+		else {
+			return new UnionIteration<Statement, IOException>(perContextIterList);
+		}
+	}
+
+	protected double cardinality(Resource subj, URI pred, Value obj, Resource context)
+		throws IOException
+	{
+		int subjID = NativeValue.UNKNOWN_ID;
+		if (subj != null) {
+			subjID = valueStore.getID(subj);
+			if (subjID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		int predID = NativeValue.UNKNOWN_ID;
+		if (pred != null) {
+			predID = valueStore.getID(pred);
+			if (predID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		int objID = NativeValue.UNKNOWN_ID;
+		if (obj != null) {
+			objID = valueStore.getID(obj);
+			if (objID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		int contextID = NativeValue.UNKNOWN_ID;
+		if (context != null) {
+			contextID = valueStore.getID(context);
+			if (contextID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		return tripleStore.cardinality(subjID, predID, objID, contextID);
 	}
 }
