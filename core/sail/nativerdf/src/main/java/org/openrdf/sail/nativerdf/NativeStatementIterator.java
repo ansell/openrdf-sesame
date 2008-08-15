@@ -6,10 +6,9 @@
 package org.openrdf.sail.nativerdf;
 
 import java.io.IOException;
-import java.util.NoSuchElementException;
 
 import info.aduna.io.ByteArrayUtil;
-import info.aduna.iteration.CloseableIterationBase;
+import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -21,7 +20,7 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
  * A statement iterator that wraps a RecordIterator containing statement records
  * and translates these records to {@link Statement} objects.
  */
-class NativeStatementIterator extends CloseableIterationBase<Statement, IOException> {
+class NativeStatementIterator extends LookAheadIteration<Statement, IOException> {
 
 	/*-----------*
 	 * Variables *
@@ -30,8 +29,6 @@ class NativeStatementIterator extends CloseableIterationBase<Statement, IOExcept
 	private RecordIterator btreeIter;
 
 	private ValueStore valueStore;
-
-	private byte[] nextValue;
 
 	/*--------------*
 	 * Constructors *
@@ -45,23 +42,19 @@ class NativeStatementIterator extends CloseableIterationBase<Statement, IOExcept
 	{
 		this.btreeIter = btreeIter;
 		this.valueStore = valueStore;
-
-		this.nextValue = btreeIter.next();
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public boolean hasNext() {
-		return nextValue != null;
-	}
-
-	public Statement next()
+	public Statement getNextElement()
 		throws IOException
 	{
+		byte[] nextValue = btreeIter.next();
+
 		if (nextValue == null) {
-			throw new NoSuchElementException();
+			return null;
 		}
 
 		int subjID = ByteArrayUtil.getInt(nextValue, TripleStore.SUBJ_IDX);
@@ -79,20 +72,14 @@ class NativeStatementIterator extends CloseableIterationBase<Statement, IOExcept
 			context = (Resource)valueStore.getValue(contextID);
 		}
 
-		nextValue = btreeIter.next();
-
 		return valueStore.createStatement(subj, pred, obj, context);
-	}
-
-	public void remove() {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	protected void handleClose()
 		throws IOException
 	{
-		nextValue = null;
 		btreeIter.close();
+		super.handleClose();
 	}
 }
