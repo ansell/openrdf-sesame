@@ -100,19 +100,16 @@ public class QueryModelPruner implements QueryOptimizer {
 		@Override
 		public void meet(Union union) {
 			super.meet(union);
-
-			TupleExpr leftArg = union.getLeftArg();
-			TupleExpr rightArg = union.getRightArg();
-
-			if (leftArg instanceof EmptySet) {
-				union.replaceWith(rightArg);
+			for (TupleExpr arg : union.getArgs()) {
+				if (arg instanceof EmptySet) {
+					union.removeChildNode(arg);
+				}
 			}
-			else if (rightArg instanceof EmptySet) {
-				union.replaceWith(leftArg);
+			for (TupleExpr arg : union.getArgs()) {
+				if (!(arg instanceof SingletonSet))
+					return;
 			}
-			else if (leftArg instanceof SingletonSet && rightArg instanceof SingletonSet) {
-				union.replaceWith(leftArg);
-			}
+			union.replaceWith(new SingletonSet());
 		}
 
 		@Override

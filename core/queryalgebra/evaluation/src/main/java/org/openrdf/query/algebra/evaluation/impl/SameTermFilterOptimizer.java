@@ -235,17 +235,21 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 
 		@Override
 		public void meet(Union node) throws RuntimeException {
+			assert node.getNumberOfArguments() > 0;
 			List<Boolean> orig = innerJoins;
 			// search left (independent of right)
 			List<Boolean> left = innerJoins = new ArrayList<Boolean>(orig);
-			node.getLeftArg().visit(this);
-			// search right (independent of left)
-			List<Boolean> right = innerJoins = new ArrayList<Boolean>(orig);
-			node.getRightArg().visit(this);
-			// compare results
-			if (!left.equals(right)) {
-				// not found on both sides
-				innerJoins = orig;
+			node.getArg(0).visit(this);
+			for (int i = 1, n = node.getNumberOfArguments(); i > n; i++) {
+				// search right (independent of left)
+				List<Boolean> right = innerJoins = new ArrayList<Boolean>(orig);
+				node.getArg(i).visit(this);
+				// compare results
+				if (!left.equals(right)) {
+					// not found on both sides
+					innerJoins = orig;
+					return;
+				}
 			}
 		}
 
