@@ -63,6 +63,6 @@ public class ValueFactoryImpl extends ValueFactoryBase {
 	}
 
 	public Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {
-		return new ContextStatementImpl(subject, predicate, object, context);
+		return new StatementImpl(subject, predicate, object, context);
 	}
 }
