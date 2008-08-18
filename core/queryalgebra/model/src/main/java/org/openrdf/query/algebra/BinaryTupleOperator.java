@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -9,21 +9,7 @@ package org.openrdf.query.algebra;
  * An abstract superclass for binary tuple operators which, by definition, has
  * two arguments.
  */
-public abstract class BinaryTupleOperator extends QueryModelNodeBase implements TupleExpr {
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	/**
-	 * The operator's left argument.
-	 */
-	protected TupleExpr leftArg;
-
-	/**
-	 * The operator's right argument.
-	 */
-	protected TupleExpr rightArg;
+public abstract class BinaryTupleOperator extends NaryTupleOperator implements TupleExpr {
 
 	/*--------------*
 	 * Constructors *
@@ -41,8 +27,7 @@ public abstract class BinaryTupleOperator extends QueryModelNodeBase implements 
 	 *        The operator's right argument, must not be <tt>null</tt>.
 	 */
 	public BinaryTupleOperator(TupleExpr leftArg, TupleExpr rightArg) {
-		setLeftArg(leftArg);
-		setRightArg(rightArg);
+		super(leftArg, rightArg);
 	}
 
 	/*---------*
@@ -55,7 +40,7 @@ public abstract class BinaryTupleOperator extends QueryModelNodeBase implements 
 	 * @return The operator's left argument.
 	 */
 	public TupleExpr getLeftArg() {
-		return leftArg;
+		return getArg(0);
 	}
 
 	/**
@@ -66,9 +51,7 @@ public abstract class BinaryTupleOperator extends QueryModelNodeBase implements 
 	 *        <tt>null</tt>.
 	 */
 	public void setLeftArg(TupleExpr leftArg) {
-		assert leftArg != null : "leftArg must not be null";
-		leftArg.setParentNode(this);
-		this.leftArg = leftArg;
+		setArg(0, leftArg);
 	}
 
 	/**
@@ -77,7 +60,7 @@ public abstract class BinaryTupleOperator extends QueryModelNodeBase implements 
 	 * @return The operator's right argument.
 	 */
 	public TupleExpr getRightArg() {
-		return rightArg;
+		return getArg(1);
 	}
 
 	/**
@@ -88,38 +71,6 @@ public abstract class BinaryTupleOperator extends QueryModelNodeBase implements 
 	 *        <tt>null</tt>.
 	 */
 	public void setRightArg(TupleExpr rightArg) {
-		assert rightArg != null : "rightArg must not be null";
-		rightArg.setParentNode(this);
-		this.rightArg = rightArg;
-	}
-
-	@Override
-	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-		throws X
-	{
-		leftArg.visit(visitor);
-		rightArg.visit(visitor);
-	}
-
-	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
-		if (leftArg == current) {
-			setLeftArg((TupleExpr)replacement);
-		}
-		else if (rightArg == current) {
-			setRightArg((TupleExpr)replacement);
-		}
-		else {
-			super.replaceChildNode(current, replacement);
-		}
-	}
-
-	@Override
-	public BinaryTupleOperator clone() {
-		BinaryTupleOperator clone = (BinaryTupleOperator)super.clone();
-		clone.setLeftArg(getLeftArg().clone());
-		clone.setRightArg(getRightArg().clone());
-		return clone;
+		setArg(1, rightArg);
 	}
 }

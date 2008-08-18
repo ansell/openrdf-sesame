@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -9,21 +9,7 @@ package org.openrdf.query.algebra;
  * An abstract superclass for binary value operators which, by definition, has
  * two arguments.
  */
-public abstract class BinaryValueOperator extends QueryModelNodeBase implements ValueExpr {
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	/**
-	 * The operator's left argument.
-	 */
-	protected ValueExpr leftArg;
-
-	/**
-	 * The operator's right argument.
-	 */
-	protected ValueExpr rightArg;
+public abstract class BinaryValueOperator extends NaryValueOperator implements ValueExpr {
 
 	/*--------------*
 	 * Constructors *
@@ -41,8 +27,7 @@ public abstract class BinaryValueOperator extends QueryModelNodeBase implements 
 	 *        The operator's right argument, must not be <tt>null</tt>.
 	 */
 	public BinaryValueOperator(ValueExpr leftArg, ValueExpr rightArg) {
-		setLeftArg(leftArg);
-		setRightArg(rightArg);
+		super(leftArg, rightArg);
 	}
 
 	/*---------*
@@ -55,7 +40,7 @@ public abstract class BinaryValueOperator extends QueryModelNodeBase implements 
 	 * @return The operator's left argument.
 	 */
 	public ValueExpr getLeftArg() {
-		return leftArg;
+		return getArg(0);
 	}
 
 	/**
@@ -66,9 +51,7 @@ public abstract class BinaryValueOperator extends QueryModelNodeBase implements 
 	 *        <tt>null</tt>.
 	 */
 	public void setLeftArg(ValueExpr leftArg) {
-		assert leftArg != null : "leftArg must not be null";
-		leftArg.setParentNode(this);
-		this.leftArg = leftArg;
+		setArg(0, leftArg);
 	}
 
 	/**
@@ -77,7 +60,7 @@ public abstract class BinaryValueOperator extends QueryModelNodeBase implements 
 	 * @return The operator's right argument.
 	 */
 	public ValueExpr getRightArg() {
-		return rightArg;
+		return getArg(1);
 	}
 
 	/**
@@ -88,38 +71,6 @@ public abstract class BinaryValueOperator extends QueryModelNodeBase implements 
 	 *        <tt>null</tt>.
 	 */
 	public void setRightArg(ValueExpr rightArg) {
-		assert rightArg != null : "rightArg must not be null";
-		rightArg.setParentNode(this);
-		this.rightArg = rightArg;
-	}
-
-	@Override
-	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-		throws X
-	{
-		leftArg.visit(visitor);
-		rightArg.visit(visitor);
-	}
-
-	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
-		if (leftArg == current) {
-			setLeftArg((ValueExpr)replacement);
-		}
-		else if (rightArg == current) {
-			setRightArg((ValueExpr)replacement);
-		}
-		else {
-			super.replaceChildNode(current, replacement);
-		}
-	}
-
-	@Override
-	public BinaryValueOperator clone() {
-		BinaryValueOperator clone = (BinaryValueOperator)super.clone();
-		clone.setLeftArg(getLeftArg().clone());
-		clone.setRightArg(getRightArg().clone());
-		return clone;
+		setArg(1, rightArg);
 	}
 }
