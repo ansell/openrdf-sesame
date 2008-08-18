@@ -128,8 +128,9 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 		protected <L extends List<TupleExpr>> L getJoinArgs(TupleExpr tupleExpr, L joinArgs) {
 			if (tupleExpr instanceof Join) {
 				Join join = (Join)tupleExpr;
-				getJoinArgs(join.getLeftArg(), joinArgs);
-				getJoinArgs(join.getRightArg(), joinArgs);
+				for (TupleExpr arg : join.getArgs()) {
+					getJoinArgs(arg, joinArgs);
+				}
 			}
 			else {
 				joinArgs.add(tupleExpr);

@@ -10,7 +10,7 @@ import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 
 public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluationException> {
@@ -21,7 +21,7 @@ public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluation
 
 	private final EvaluationStrategy strategy;
 
-	private final Join join;
+	private final TupleExpr rightArg;
 
 	/*-----------*
 	 * Variables *
@@ -35,13 +35,14 @@ public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluation
 	 * Constructors *
 	 *--------------*/
 
-	public JoinIterator(EvaluationStrategy strategy, Join join, BindingSet bindings)
+	public JoinIterator(EvaluationStrategy strategy,
+			CloseableIteration<BindingSet, QueryEvaluationException> leftIter, TupleExpr rightArg,
+			BindingSet bindings)
 		throws QueryEvaluationException
 	{
 		this.strategy = strategy;
-		this.join = join;
-
-		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
+		this.leftIter = leftIter;
+		this.rightArg = rightArg;
 	}
 
 	/*---------*
@@ -54,7 +55,7 @@ public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluation
 	{
 		while (rightIter != null || leftIter.hasNext()) {
 			if (rightIter == null) {
-				rightIter = strategy.evaluate(join.getRightArg(), leftIter.next());
+				rightIter = strategy.evaluate(rightArg, leftIter.next());
 			}
 
 			if (rightIter.hasNext()) {

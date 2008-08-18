@@ -81,17 +81,14 @@ public class FilterOptimizer implements QueryOptimizer {
 		@Override
 		public void meet(Join join)
 		{
-			if (join.getLeftArg().getBindingNames().containsAll(filterVars)) {
-				// All required vars are bound by the left expr
-				join.getLeftArg().visit(this);
+			for (TupleExpr arg : join.getArgs()) {
+				if (arg.getBindingNames().containsAll(filterVars)) {
+					// All required vars are bound by the expr
+					arg.visit(this);
+					return;
+				}
 			}
-			else if (join.getRightArg().getBindingNames().containsAll(filterVars)) {
-				// All required vars are bound by the right expr
-				join.getRightArg().visit(this);
-			}
-			else {
-				relocate(filter, join);
-			}
+			relocate(filter, join);
 		}
 
 		@Override

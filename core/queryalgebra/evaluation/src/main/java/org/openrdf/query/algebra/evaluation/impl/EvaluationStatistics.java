@@ -90,11 +90,12 @@ public class EvaluationStatistics {
 
 		@Override
 		public void meet(Join node) {
-			node.getLeftArg().visit(this);
-			double leftArgCost = this.cardinality;
-
-			node.getRightArg().visit(this);
-			cardinality *= leftArgCost;
+			double cost = 1;
+			for (TupleExpr arg : node.getArgs()) {
+				arg.visit(this);
+				cost *= this.cardinality;
+			}
+			cardinality = cost;
 		}
 
 		@Override

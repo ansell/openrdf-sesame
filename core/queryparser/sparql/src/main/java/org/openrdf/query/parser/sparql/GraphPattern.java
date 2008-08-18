@@ -143,11 +143,7 @@ class GraphPattern {
 			result = new SingletonSet();
 		}
 		else {
-			result = requiredTEs.get(0);
-
-			for (int i = 1; i < requiredTEs.size(); i++) {
-				result = new Join(result, requiredTEs.get(i));
-			}
+			result = new Join(requiredTEs);
 		}
 
 		for (TupleExpr optTE : optionalTEs) {
