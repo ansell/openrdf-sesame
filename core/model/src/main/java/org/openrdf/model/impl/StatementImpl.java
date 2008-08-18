@@ -15,7 +15,7 @@ import org.openrdf.model.Value;
  * don't have an associated context. For statements that do have an associated
  * context, {@link ContextStatementImpl} can be used.
  */
-public class StatementImpl implements Statement {
+public class StatementImpl extends StatementBase {
 
 	/*-----------*
 	 * Constants *
@@ -37,6 +37,11 @@ public class StatementImpl implements Statement {
 	 * The statement's object.
 	 */
 	private final Value object;
+
+	/**
+	 * The statement's context, if applicable.
+	 */
+	private final Resource context;
 
 	/*--------------*
 	 * Constructors *
@@ -60,6 +65,32 @@ public class StatementImpl implements Statement {
 		this.subject = subject;
 		this.predicate = predicate;
 		this.object = object;
+		this.context = null;
+	}
+
+	/**
+	 * Creates a new Statement with the supplied subject, predicate and object
+	 * for the specified associated context.
+	 * 
+	 * @param subject
+	 *        The statement's subject, must not be <tt>null</tt>.
+	 * @param predicate
+	 *        The statement's predicate, must not be <tt>null</tt>.
+	 * @param object
+	 *        The statement's object, must not be <tt>null</tt>.
+	 * @param context
+	 *        The statement's context, <tt>null</tt> to indicate no context is
+	 *        associated.
+	 */
+	public StatementImpl(Resource subject, URI predicate, Value object, Resource context) {
+		assert (subject != null);
+		assert (predicate != null);
+		assert (object != null);
+
+		this.subject = subject;
+		this.predicate = predicate;
+		this.object = object;
+		this.context = context;
 	}
 
 	/*---------*
@@ -83,54 +114,6 @@ public class StatementImpl implements Statement {
 
 	// Implements Statement.getContext()
 	public Resource getContext() {
-		return null;
-	}
-
-	// Overrides Object.equals(Object), implements Statement.equals(Object)
-	@Override
-	public boolean equals(Object other) {
-		if (this == other) {
-			return true;
-		}
-
-		if (other instanceof Statement) {
-			Statement otherSt = (Statement)other;
-
-			// The object is potentially the cheapest to check, as types
-			// of these references might be different.
-
-			// In general the number of different predicates in sets of
-			// statements is the smallest, so predicate equality is checked
-			// last.
-			return object.equals(otherSt.getObject()) && subject.equals(otherSt.getSubject())
-					&& predicate.equals(otherSt.getPredicate());
-		}
-
-		return false;
-	}
-
-	// Overrides Object.hashCode(), implements Statement.hashCode()
-	@Override
-	public int hashCode() {
-		return 961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode();
-	}
-
-	/**
-	 * Gives a String-representation of this Statement that can be used for
-	 * debugging.
-	 */
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder(256);
-
-		sb.append("(");
-		sb.append(getSubject());
-		sb.append(", ");
-		sb.append(getPredicate());
-		sb.append(", ");
-		sb.append(getObject());
-		sb.append(")");
-
-		return sb.toString();
+		return context;
 	}
 }
