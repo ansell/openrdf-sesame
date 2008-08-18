@@ -48,6 +48,7 @@ import org.openrdf.sail.rdbms.algebra.URIColumn;
 import org.openrdf.sail.rdbms.algebra.UnionItem;
 import org.openrdf.sail.rdbms.algebra.base.BinarySqlOperator;
 import org.openrdf.sail.rdbms.algebra.base.FromItem;
+import org.openrdf.sail.rdbms.algebra.base.NarySqlOperator;
 import org.openrdf.sail.rdbms.algebra.base.SqlConstant;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
@@ -247,9 +248,12 @@ public class QueryBuilder {
 	private void append(SqlAnd expr, SqlExprBuilder filter)
 		throws UnsupportedRdbmsOperatorException
 	{
-		dispatch(expr.getLeftArg(), filter);
-		filter.and();
-		dispatch(expr.getRightArg(), filter);
+		for (int i=0,n=expr.getNumberOfArguments();i<n;i++) {
+			if (i > 0) {
+				filter.and();
+			}
+			dispatch(expr.getArg(i), filter);
+		}
 	}
 
 	private void append(SqlCase expr, SqlExprBuilder filter)
@@ -413,8 +417,22 @@ public class QueryBuilder {
 		else if (expr instanceof UnarySqlOperator) {
 			dispatchUnarySqlOperator((UnarySqlOperator)expr, filter);
 		}
-		else if (expr instanceof BinarySqlOperator) {
+		else if (expr instanceof NarySqlOperator) {
+			dispatchNarySqlOperator((NarySqlOperator)expr, filter);
+		}
+		else {
+			dispatchOther(expr, filter);
+		}
+	}
+
+	private void dispatchNarySqlOperator(NarySqlOperator expr, SqlExprBuilder filter)
+		throws UnsupportedRdbmsOperatorException
+	{
+		if (expr instanceof BinarySqlOperator) {
 			dispatchBinarySqlOperator((BinarySqlOperator)expr, filter);
+		}
+		else if (expr instanceof SqlAnd) {
+			append((SqlAnd)expr, filter);
 		}
 		else {
 			dispatchOther(expr, filter);
@@ -424,10 +442,7 @@ public class QueryBuilder {
 	private void dispatchBinarySqlOperator(BinarySqlOperator expr, SqlExprBuilder filter)
 		throws UnsupportedRdbmsOperatorException
 	{
-		if (expr instanceof SqlAnd) {
-			append((SqlAnd)expr, filter);
-		}
-		else if (expr instanceof SqlEq) {
+		if (expr instanceof SqlEq) {
 			append((SqlEq)expr, filter);
 		}
 		else if (expr instanceof SqlOr) {

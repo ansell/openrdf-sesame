@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -526,10 +526,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			leftJoin = new LeftJoin(leftArg, rightArg);
 		}
 		else {
-			ValueExpr constraint = constraints.get(0);
-			for (int i = 1; i < constraints.size(); i++) {
-				constraint = new And(constraint, constraints.get(i));
-			}
+			ValueExpr constraint = new And(constraints);
 
 			leftJoin = new LeftJoin(leftArg, rightArg, constraint);
 		}

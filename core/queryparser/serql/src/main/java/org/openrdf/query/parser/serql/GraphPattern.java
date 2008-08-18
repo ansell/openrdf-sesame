@@ -113,10 +113,7 @@ class GraphPattern {
 			optTE = new OptionalTupleExpr(tupleExpr);
 		}
 		else {
-			ValueExpr constraint = constraints.get(0);
-			for (int i = 1; i < constraints.size(); i++) {
-				constraint = new And(constraint, constraints.get(i));
-			}
+			ValueExpr constraint = new And(constraints);
 
 			optTE = new OptionalTupleExpr(tupleExpr, constraint);
 		}

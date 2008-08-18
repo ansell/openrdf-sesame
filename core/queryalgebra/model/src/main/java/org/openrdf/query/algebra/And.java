@@ -5,10 +5,12 @@
  */
 package org.openrdf.query.algebra;
 
+import java.util.List;
+
 /**
  * A boolean AND operator operating on two boolean expressions.
  */
-public class And extends BinaryValueOperator {
+public class And extends NaryValueOperator {
 
 	/*--------------*
 	 * Constructors *
@@ -19,6 +21,10 @@ public class And extends BinaryValueOperator {
 
 	public And(ValueExpr leftArg, ValueExpr rightArg) {
 		super(leftArg, rightArg);
+	}
+
+	public And(List<ValueExpr> args) {
+		super(args);
 	}
 
 	/*---------*

@@ -5,7 +5,7 @@
  */
 package org.openrdf.sail.rdbms.algebra;
 
-import org.openrdf.sail.rdbms.algebra.base.BinarySqlOperator;
+import org.openrdf.sail.rdbms.algebra.base.NarySqlOperator;
 import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 
@@ -15,10 +15,10 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * @author James Leigh
  * 
  */
-public class SqlAnd extends BinarySqlOperator {
+public class SqlAnd extends NarySqlOperator {
 
-	public SqlAnd(SqlExpr leftArg, SqlExpr rightArg) {
-		super(leftArg, rightArg);
+	public SqlAnd(SqlExpr...args) {
+		super(args);
 	}
 
 	@Override

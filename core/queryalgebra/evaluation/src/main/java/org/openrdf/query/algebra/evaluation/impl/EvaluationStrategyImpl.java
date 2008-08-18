@@ -1139,30 +1139,24 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public Value evaluate(And node, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
-		try {
-			Value leftValue = evaluate(node.getLeftArg(), bindings);
-			if (QueryEvaluationUtil.getEffectiveBooleanValue(leftValue) == false) {
-				// Left argument evaluates to false, we don't need to look any
-				// further
-				return BooleanLiteralImpl.FALSE;
+		ValueExprEvaluationException failure = null;
+		for (ValueExpr arg : node.getArgs()) {
+			try {
+				Value value = evaluate(arg, bindings);
+				if (QueryEvaluationUtil.getEffectiveBooleanValue(value) == false) {
+					// Argument evaluates to false, we don't need to look any further
+					return BooleanLiteralImpl.FALSE;
+				}
+			}
+			catch (ValueExprEvaluationException e) {
+				// Failed to evaluate the left argument. Result is 'false' when
+				// other arguments evaluates to 'false', failure otherwise.
+				failure = e;
 			}
 		}
-		catch (ValueExprEvaluationException e) {
-			// Failed to evaluate the left argument. Result is 'false' when
-			// the right argument evaluates to 'false', failure otherwise.
-			Value rightValue = evaluate(node.getRightArg(), bindings);
-			if (QueryEvaluationUtil.getEffectiveBooleanValue(rightValue) == false) {
-				return BooleanLiteralImpl.FALSE;
-			}
-			else {
-				throw new ValueExprEvaluationException();
-			}
-		}
-
-		// Left argument evaluated to 'true', result is determined
-		// by the evaluation of the right argument.
-		Value rightValue = evaluate(node.getRightArg(), bindings);
-		return BooleanLiteralImpl.valueOf(QueryEvaluationUtil.getEffectiveBooleanValue(rightValue));
+		if (failure == null)
+			return BooleanLiteralImpl.TRUE;
+		throw failure;
 	}
 
 	public Value evaluate(Or node, BindingSet bindings)

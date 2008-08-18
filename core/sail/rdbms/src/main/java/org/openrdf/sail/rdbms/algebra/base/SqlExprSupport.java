@@ -43,8 +43,8 @@ public class SqlExprSupport {
 		return new SqlAbs(arg);
 	}
 
-	public static SqlExpr and(SqlExpr left, SqlExpr right) {
-		return new SqlAnd(left, right);
+	public static SqlExpr and(SqlExpr... args) {
+		return new SqlAnd(args);
 	}
 
 	public static SqlExpr cmp(SqlExpr left, CompareOp op, SqlExpr right) {
