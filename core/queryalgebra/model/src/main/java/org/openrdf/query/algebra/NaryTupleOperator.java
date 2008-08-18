@@ -22,14 +22,13 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	/**
 	 * The operator's arguments.
 	 */
-	protected List<TupleExpr> args;
+	protected List<TupleExpr> args = new ArrayList<TupleExpr>();
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	public NaryTupleOperator() {
-		args = new ArrayList<TupleExpr>();
 	}
 
 	/**
@@ -68,7 +67,8 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 			assert arg != null : "arg must not be null";
 			arg.setParentNode(this);
 		}
-		this.args = Arrays.asList(args);
+		this.args.clear();
+		this.args.addAll(Arrays.asList(args));
 	}
 
 	/**
@@ -125,10 +125,20 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 		super.replaceChildNode(current, replacement);
 	}
 
+	public void removeChildNode(QueryModelNode current) {
+		for (int i = 0, n = getNumberOfArguments(); i < n; i++) {
+			if (getArg(i) == current) {
+				args.remove(i);
+				return;
+			}
+		}
+		super.replaceChildNode(current, null);
+	}
+
 	@Override
 	public NaryTupleOperator clone() {
 		NaryTupleOperator clone = (NaryTupleOperator)super.clone();
-		clone.setArgs(getArgs());
+		clone.args = new ArrayList<TupleExpr>(args.size());
 		for (int i = 0, n = getNumberOfArguments(); i < n; i++) {
 			clone.setArg(i, getArg(i).clone());
 		}

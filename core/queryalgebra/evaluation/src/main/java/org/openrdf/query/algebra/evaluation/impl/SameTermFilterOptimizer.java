@@ -13,7 +13,6 @@ import java.util.Set;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
@@ -22,6 +21,7 @@ import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.NaryTupleOperator;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.QueryModelNode;
@@ -250,13 +250,7 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		protected void meetBinaryTupleOperator(BinaryTupleOperator node)
-				throws RuntimeException {
-			// don't search any more
-		}
-
-		@Override
-		protected void meetUnaryTupleOperator(UnaryTupleOperator node)
+		protected void meetNaryTupleOperator(NaryTupleOperator node)
 				throws RuntimeException {
 			// don't search any more
 		}

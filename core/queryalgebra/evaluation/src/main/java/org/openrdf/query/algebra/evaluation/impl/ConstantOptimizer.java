@@ -17,12 +17,11 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.And;
-import org.openrdf.query.algebra.BinaryValueOperator;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.FunctionCall;
+import org.openrdf.query.algebra.NaryValueOperator;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -137,40 +136,23 @@ public class ConstantOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		protected void meetBinaryValueOperator(BinaryValueOperator binaryValueOp)
+		protected void meetNaryValueOperator(NaryValueOperator naryValueOp)
 		{
-			super.meetBinaryValueOperator(binaryValueOp);
+			super.meetNaryValueOperator(naryValueOp);
 
-			if (isConstant(binaryValueOp.getLeftArg()) && isConstant(binaryValueOp.getRightArg())) {
-				try {
-					Value value = strategy.evaluate(binaryValueOp, EmptyBindingSet.getInstance());
-					binaryValueOp.replaceWith(new ValueConstant(value));
-				}
-				catch (ValueExprEvaluationException e) {
-					logger.warn("Failed to evaluate BinaryValueOperator with two constant arguments", e);
-				}
-				catch (QueryEvaluationException e) {
-					logger.error("Query evaluation exception caught", e);
-				}
+			for (ValueExpr arg : naryValueOp.getArgs()) {
+				if (!isConstant(arg))
+					return;
 			}
-		}
-
-		@Override
-		protected void meetUnaryValueOperator(UnaryValueOperator unaryValueOp)
-		{
-			super.meetUnaryValueOperator(unaryValueOp);
-
-			if (isConstant(unaryValueOp.getArg())) {
-				try {
-					Value value = strategy.evaluate(unaryValueOp, EmptyBindingSet.getInstance());
-					unaryValueOp.replaceWith(new ValueConstant(value));
-				}
-				catch (ValueExprEvaluationException e) {
-					logger.warn("Failed to evaluate UnaryValueOperator with a constant argument", e);
-				}
-				catch (QueryEvaluationException e) {
-					logger.error("Query evaluation exception caught", e);
-				}
+			try {
+				Value value = strategy.evaluate(naryValueOp, EmptyBindingSet.getInstance());
+				naryValueOp.replaceWith(new ValueConstant(value));
+			}
+			catch (ValueExprEvaluationException e) {
+				logger.warn("Failed to evaluate NaryValueOperator with a constant argument", e);
+			}
+			catch (QueryEvaluationException e) {
+				logger.error("Query evaluation exception caught", e);
 			}
 		}
 
