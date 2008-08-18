@@ -9,16 +9,7 @@ package org.openrdf.query.algebra;
  * An abstract superclass for unary value operators which, by definition, has
  * one argument.
  */
-public abstract class UnaryValueOperator extends QueryModelNodeBase implements ValueExpr {
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	/**
-	 * The operator's argument.
-	 */
-	protected ValueExpr arg;
+public abstract class UnaryValueOperator extends NaryValueOperator implements ValueExpr {
 
 	/*--------------*
 	 * Constructors *
@@ -34,7 +25,7 @@ public abstract class UnaryValueOperator extends QueryModelNodeBase implements V
 	 *        The operator's argument, must not be <tt>null</tt>.
 	 */
 	public UnaryValueOperator(ValueExpr arg) {
-		setArg(arg);
+		super(arg);
 	}
 
 	/*---------*
@@ -47,7 +38,7 @@ public abstract class UnaryValueOperator extends QueryModelNodeBase implements V
 	 * @return The operator's argument.
 	 */
 	public ValueExpr getArg() {
-		return arg;
+		return getArg(0);
 	}
 
 	/**
@@ -57,33 +48,6 @@ public abstract class UnaryValueOperator extends QueryModelNodeBase implements V
 	 *        The (new) argument for this operator, must not be <tt>null</tt>.
 	 */
 	public void setArg(ValueExpr arg) {
-		assert arg != null : "arg must not be null";
-		arg.setParentNode(this);
-		this.arg = arg;
-	}
-
-	@Override
-	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-		throws X
-	{
-		arg.visit(visitor);
-	}
-
-	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
-		if (arg == current) {
-			setArg((ValueExpr)replacement);
-		}
-		else {
-			super.replaceChildNode(current, replacement);
-		}
-	}
-
-	@Override
-	public UnaryValueOperator clone() {
-		UnaryValueOperator clone = (UnaryValueOperator)super.clone();
-		clone.setArg(getArg().clone());
-		return clone;
+		setArg(0, arg);
 	}
 }

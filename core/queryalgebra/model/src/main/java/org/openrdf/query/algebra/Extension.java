@@ -76,7 +76,7 @@ public class Extension extends UnaryTupleOperator {
 	@Override
 	public Set<String> getBindingNames()
 	{
-		Set<String> bindingNames = new LinkedHashSet<String>(arg.getBindingNames());
+		Set<String> bindingNames = new LinkedHashSet<String>(getArg().getBindingNames());
 
 		for (ExtensionElem pe : elements) {
 			bindingNames.add(pe.getName());

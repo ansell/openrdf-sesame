@@ -44,6 +44,8 @@ import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Namespace;
+import org.openrdf.query.algebra.NaryTupleOperator;
+import org.openrdf.query.algebra.NaryValueOperator;
 import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
@@ -404,6 +406,9 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		else if (node instanceof BinaryTupleOperator) {
 			meetBinaryTupleOperator((BinaryTupleOperator)node);
 		}
+		else if (node instanceof NaryTupleOperator) {
+			meetNaryTupleOperator((NaryTupleOperator)node);
+		}
 		else if (node instanceof CompareSubQueryValueOperator) {
 			meetCompareSubQueryValueOperator((CompareSubQueryValueOperator)node);
 		}
@@ -416,6 +421,9 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		else if (node instanceof BinaryValueOperator) {
 			meetBinaryValueOperator((BinaryValueOperator)node);
 		}
+		else if (node instanceof NaryValueOperator) {
+			meetNaryValueOperator((NaryValueOperator)node);
+		}
 		else {
 			meetNode(node);
 		}
@@ -424,7 +432,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	/**
 	 * Method called by all <tt>meet</tt> methods with a
 	 * {@link UnaryTupleOperator} node as argument. Forwards the call to
-	 * {@link #meetTupleExpr} by default.
+	 * {@link #meetNaryTupleOperator} by default.
 	 * 
 	 * @param node
 	 *        The node that is being visited.
@@ -432,18 +440,32 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	protected void meetUnaryTupleOperator(UnaryTupleOperator node)
 		throws X
 	{
-		meetNode(node);
+		meetNaryTupleOperator(node);
 	}
 
 	/**
 	 * Method called by all <tt>meet</tt> methods with a
 	 * {@link BinaryTupleOperator} node as argument. Forwards the call to
-	 * {@link #meetTupleExpr} by default.
+	 * {@link #meetNaryTupleOperator} by default.
 	 * 
 	 * @param node
 	 *        The node that is being visited.
 	 */
 	protected void meetBinaryTupleOperator(BinaryTupleOperator node)
+		throws X
+	{
+		meetNaryTupleOperator(node);
+	}
+
+	/**
+	 * Method called by all <tt>meet</tt> methods with a
+	 * {@link meetNaryTupleOperator} node as argument. Forwards the call to
+	 * {@link #meetNode} by default.
+	 * 
+	 * @param node
+	 *        The node that is being visited.
+	 */
+	protected void meetNaryTupleOperator(NaryTupleOperator node)
 		throws X
 	{
 		meetNode(node);
@@ -488,19 +510,34 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	protected void meetUnaryValueOperator(UnaryValueOperator node)
 		throws X
 	{
-		meetNode(node);
+		meetNaryValueOperator(node);
 	}
 
 	/**
 	 * Method called by all <tt>meet</tt> methods with a
 	 * {@link BinaryValueOperator} node as argument. Forwards the call to
-	 * {@link #meetValueExpr} by default.
+	 * {@link #meetNaryValueOperator} by default.
 	 * 
 	 * @param node
 	 *        The node that is being visited.
 	 * @throws
 	 */
 	protected void meetBinaryValueOperator(BinaryValueOperator node)
+		throws X
+	{
+		meetNaryValueOperator(node);
+	}
+
+	/**
+	 * Method called by all <tt>meet</tt> methods with a
+	 * {@link NaryValueOperator} node as argument. Forwards the call to
+	 * {@link #meetNode} by default.
+	 * 
+	 * @param node
+	 *        The node that is being visited.
+	 * @throws
+	 */
+	protected void meetNaryValueOperator(NaryValueOperator node)
 		throws X
 	{
 		meetNode(node);
