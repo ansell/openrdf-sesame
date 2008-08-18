@@ -77,8 +77,11 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 			}
 			if (node instanceof And) {
 				And and = (And) node;
-				boolean left = containsSameTerm(and.getLeftArg());
-				return left || containsSameTerm(and.getRightArg());
+				boolean contains = false;
+				for (ValueExpr arg : and.getArgs()) {
+					contains |= containsSameTerm(arg);
+				}
+				return contains;
 			}
 			return false;
 		}

@@ -11,6 +11,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.not;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.or;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.str;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -70,28 +71,26 @@ public class SqlConstantOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 		throws RuntimeException
 	{
 		super.meet(node);
-		SqlExpr left = node.getLeftArg();
-		SqlExpr right = node.getRightArg();
-		if (left instanceof FalseValue || right instanceof FalseValue) {
-			replace(node, new FalseValue());
+		for (SqlExpr arg : node.getArgs()) {
+			if (arg instanceof FalseValue) {
+				replace(node, new FalseValue());
+				return;
+			} else if (arg instanceof SqlNull) {
+				replace(node, new SqlNull());
+				return;
+			} else if (arg instanceof TrueValue) {
+				node.removeChildNode(arg);
+			} else if (arg instanceof SqlNot) {
+				SqlNot not = (SqlNot)arg;
+				List<SqlExpr> args = Arrays.asList(node.getArgs());
+				if (args.contains(not.getArg())) {
+					replace(node, new FalseValue());
+					return;
+				}
+			}
 		}
-		else if (left instanceof TrueValue && right instanceof TrueValue) {
+		if (node.getNumberOfArguments() == 0) {
 			replace(node, new TrueValue());
-		}
-		else if (left instanceof TrueValue) {
-			replace(node, right.clone());
-		}
-		else if (right instanceof TrueValue) {
-			replace(node, left.clone());
-		}
-		else if (right instanceof SqlNull || left instanceof SqlNull) {
-			replace(node, new SqlNull());
-		}
-		else if (right instanceof SqlNot && ((SqlNot)right).getArg().equals(left)) {
-			replace(node, new FalseValue());
-		}
-		else if (left instanceof SqlNot && ((SqlNot)left).getArg().equals(right)) {
-			replace(node, new FalseValue());
 		}
 	}
 
@@ -303,13 +302,22 @@ public class SqlConstantOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 		else if (right instanceof SqlNull && left instanceof SqlAnd) {
 			// value IS NOT NULL AND value = ? OR NULL
 			// -> value = ?
-			SqlAnd l = (SqlAnd)left;
-			SqlExpr lleft = l.getLeftArg();
-			SqlExpr lright = l.getRightArg();
-			SqlExpr isNotNull = arg(arg(lleft, SqlNot.class), SqlIsNull.class);
-			SqlExpr isNotEq = other(lright, isNotNull, SqlEq.class);
-			if (isNotEq instanceof SqlConstant) {
-				replace(node, lright);
+			SqlAnd and = (SqlAnd)left;
+			// search for the value IS NOT NULL expression
+			for (SqlExpr isNotNull : and.getArgs()) {
+				SqlExpr variable = arg(arg(isNotNull, SqlNot.class), SqlIsNull.class);
+				if (variable == null)
+					continue;
+				// search for the value = ? expression
+				for (SqlExpr eq : and.getArgs()) {
+					SqlExpr constant = other(eq, variable, SqlEq.class);
+					if (constant == null)
+						continue;
+					if (constant instanceof SqlConstant) {
+						replace(node, new SqlEq(variable.clone(), constant.clone()));
+						return;
+					}
+				}
 			}
 		}
 	}

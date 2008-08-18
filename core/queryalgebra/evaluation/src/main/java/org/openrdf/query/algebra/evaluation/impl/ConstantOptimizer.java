@@ -104,31 +104,24 @@ public class ConstantOptimizer implements QueryOptimizer {
 			and.visitChildren(this);
 
 			try {
-				if (isConstant(and.getLeftArg()) && isConstant(and.getRightArg())) {
-					boolean value = strategy.isTrue(and, EmptyBindingSet.getInstance());
-					and.replaceWith(new ValueConstant(BooleanLiteralImpl.valueOf(value)));
+				for (ValueExpr arg : and.getArgs()) {
+					if (isConstant(arg)) {
+						boolean isTrue = strategy.isTrue(arg, EmptyBindingSet.getInstance());
+						if (isTrue) {
+							and.removeChildNode(arg);
+						}
+						else {
+							and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
+							return;
+						}
+					}
 				}
-				else if (isConstant(and.getLeftArg())) {
-					boolean leftIsTrue = strategy.isTrue(and.getLeftArg(), EmptyBindingSet.getInstance());
-					if (leftIsTrue) {
-						and.replaceWith(and.getRightArg());
-					}
-					else {
-						and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
-					}
-				}
-				else if (isConstant(and.getRightArg())) {
-					boolean rightIsTrue = strategy.isTrue(and.getRightArg(), EmptyBindingSet.getInstance());
-					if (rightIsTrue) {
-						and.replaceWith(and.getLeftArg());
-					}
-					else {
-						and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
-					}
+				if (and.getNumberOfArguments() == 0) {
+					and.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
 				}
 			}
 			catch (ValueExprEvaluationException e) {
-				logger.warn("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+				logger.warn("Failed to evaluate And with some constant arguments", e);
 			}
 			catch (QueryEvaluationException e) {
 				logger.error("Query evaluation exception caught", e);

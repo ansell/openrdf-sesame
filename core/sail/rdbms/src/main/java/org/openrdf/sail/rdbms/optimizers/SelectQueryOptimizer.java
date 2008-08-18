@@ -550,8 +550,9 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 	private List<ValueExpr> flatten(ValueExpr condition, List<ValueExpr> conditions) {
 		if (condition instanceof And) {
 			And and = (And)condition;
-			flatten(and.getLeftArg(), conditions);
-			flatten(and.getRightArg(), conditions);
+			for (ValueExpr arg : and.getArgs()) {
+				flatten(arg, conditions);
+			}
 		}
 		else {
 			conditions.add(condition);

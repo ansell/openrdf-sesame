@@ -88,7 +88,11 @@ public class BooleanExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOp
 	public void meet(And node)
 		throws UnsupportedRdbmsOperatorException
 	{
-		result = and(bool(node.getLeftArg()), bool(node.getRightArg()));
+		SqlExpr[] expr = new SqlExpr[node.getNumberOfArguments()];
+		for (int i=0,n=node.getNumberOfArguments();i<n;i++) {
+			expr[i] = bool(node.getArg(i));
+		}
+		result = and(expr);
 	}
 
 	@Override

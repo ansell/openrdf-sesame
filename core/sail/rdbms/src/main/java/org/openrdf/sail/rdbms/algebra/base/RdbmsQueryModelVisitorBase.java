@@ -164,7 +164,7 @@ public class RdbmsQueryModelVisitorBase<X extends Exception> extends QueryModelV
 	public void meet(SqlAnd node)
 		throws X
 	{
-		meetBinarySqlOperator(node);
+		meetNarySqlOperator(node);
 	}
 
 	public void meet(SqlCase node)
@@ -276,6 +276,12 @@ public class RdbmsQueryModelVisitorBase<X extends Exception> extends QueryModelV
 	}
 
 	protected void meetBinarySqlOperator(BinarySqlOperator node)
+		throws X
+	{
+		meetNarySqlOperator(node);
+	}
+
+	protected void meetNarySqlOperator(NarySqlOperator node)
 		throws X
 	{
 		meetNode(node);
