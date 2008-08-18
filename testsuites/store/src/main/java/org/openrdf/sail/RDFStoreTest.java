@@ -723,8 +723,8 @@ public abstract class RDFStoreTest extends TestCase {
 		throws Exception
 	{
 		Statement st = vf.createStatement(picasso, RDF.TYPE, painter);
-		assertEquals(st, vf.createStatement(picasso, RDF.TYPE, painter, context1));
-		assertEquals(st, vf.createStatement(picasso, RDF.TYPE, painter, context2));
+		assertFalse(st.equals(vf.createStatement(picasso, RDF.TYPE, painter, context1)));
+		assertFalse(st.equals(vf.createStatement(picasso, RDF.TYPE, painter, context2)));
 	}
 
 	public void testStatementSerialization()
