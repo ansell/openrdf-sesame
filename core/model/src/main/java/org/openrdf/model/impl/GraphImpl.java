@@ -26,6 +26,7 @@ import org.openrdf.model.ValueFactory;
 /**
  * @author Arjohn Kampman
  */
+@Deprecated
 public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 
 	/**

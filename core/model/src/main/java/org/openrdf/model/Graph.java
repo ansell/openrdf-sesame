@@ -18,6 +18,7 @@ import org.openrdf.model.util.GraphUtil;
  * @see GraphUtil
  * @author Arjohn Kampman
  */
+@Deprecated
 public interface Graph extends Collection<Statement>, Serializable {
 
 	/**
