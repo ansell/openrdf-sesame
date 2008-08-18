@@ -454,6 +454,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof Join) {
 			return evaluate((Join)expr, bindings);
 		}
+		else if (expr instanceof Union) {
+			return evaluate((Union)expr, bindings);
+		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
 		}
@@ -468,9 +471,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		if (expr instanceof LeftJoin) {
 			return evaluate((LeftJoin)expr, bindings);
-		}
-		else if (expr instanceof Union) {
-			return evaluate((Union)expr, bindings);
 		}
 		else if (expr instanceof Intersection) {
 			return evaluate((Intersection)expr, bindings);
@@ -533,29 +533,22 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			final BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		Iteration<BindingSet, QueryEvaluationException> leftArg, rightArg;
+		int size = union.getNumberOfArguments();
+		Iteration<BindingSet, QueryEvaluationException>[] iters = new Iteration[size];
+		for (int i=0;i<size;i++) {
+			final TupleExpr arg = union.getArg(i);
+			iters[i] = new DelayedIteration<BindingSet, QueryEvaluationException>() {
 
-		leftArg = new DelayedIteration<BindingSet, QueryEvaluationException>() {
+				@Override
+				protected Iteration<BindingSet, QueryEvaluationException> createIteration()
+					throws QueryEvaluationException
+				{
+					return evaluate(arg, bindings);
+				}
+			};
+		}
 
-			@Override
-			protected Iteration<BindingSet, QueryEvaluationException> createIteration()
-				throws QueryEvaluationException
-			{
-				return evaluate(union.getLeftArg(), bindings);
-			}
-		};
-
-		rightArg = new DelayedIteration<BindingSet, QueryEvaluationException>() {
-
-			@Override
-			protected Iteration<BindingSet, QueryEvaluationException> createIteration()
-				throws QueryEvaluationException
-			{
-				return evaluate(union.getRightArg(), bindings);
-			}
-		};
-
-		return new UnionIteration<BindingSet, QueryEvaluationException>(leftArg, rightArg);
+		return new UnionIteration<BindingSet, QueryEvaluationException>(iters);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(final Intersection intersection,

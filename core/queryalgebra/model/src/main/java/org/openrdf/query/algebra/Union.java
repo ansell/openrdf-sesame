@@ -12,7 +12,7 @@ import java.util.Set;
  * The UNION set operator, which return the union of the result sets of two
  * tuple expressions.
  */
-public class Union extends BinaryTupleOperator {
+public class Union extends NaryTupleOperator {
 
 	/*--------------*
 	 * Constructors *
@@ -39,8 +39,9 @@ public class Union extends BinaryTupleOperator {
 
 	public Set<String> getBindingNames() {
 		Set<String> bindingNames = new LinkedHashSet<String>(16);
-		bindingNames.addAll(getLeftArg().getBindingNames());
-		bindingNames.addAll(getRightArg().getBindingNames());
+		for (TupleExpr arg : getArgs()) {
+			bindingNames.addAll(arg.getBindingNames());
+		}
 		return bindingNames;
 	}
 

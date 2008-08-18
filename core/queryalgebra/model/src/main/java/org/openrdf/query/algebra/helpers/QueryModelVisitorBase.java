@@ -382,7 +382,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	public void meet(Union node)
 		throws X
 	{
-		meetBinaryTupleOperator(node);
+		meetNaryTupleOperator(node);
 	}
 
 	public void meet(ValueConstant node)

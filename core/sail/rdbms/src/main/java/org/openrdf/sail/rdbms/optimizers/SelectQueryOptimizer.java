@@ -140,21 +140,22 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 		throws RuntimeException
 	{
 		super.meet(node);
-		TupleExpr l = node.getLeftArg();
-		TupleExpr r = node.getRightArg();
-		if (!(l instanceof SelectQuery && r instanceof SelectQuery))
-			return;
-		SelectQuery left = (SelectQuery)l;
-		SelectQuery right = (SelectQuery)r;
-		if (left.isComplex() || right.isComplex())
-			return;
+		for (TupleExpr arg : node.getArgs()) {
+			if (!(arg instanceof SelectQuery))
+				return;
+			SelectQuery sq = (SelectQuery) arg;
+			if (sq.isComplex())
+				return;
+		}
+		assert node.getNumberOfArguments() > 0;
 		UnionItem union = new UnionItem("u" + aliasCount++);
-		union.addUnion(left.getFrom().clone());
-		union.addUnion(right.getFrom().clone());
 		SelectQuery query = new SelectQuery();
 		query.setFrom(union);
-		mergeSelectClause(query, left);
-		mergeSelectClause(query, right);
+		for (TupleExpr arg : node.getArgs()) {
+			SelectQuery sub = (SelectQuery) arg.clone();
+			union.addUnion(sub.getFrom().clone());
+			mergeSelectClause(query, sub);
+		}
 		addProjectionsFromUnion(query, union);
 		node.replaceWith(query);
 	}
