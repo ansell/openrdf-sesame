@@ -226,7 +226,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	public void meet(Join node)
 		throws X
 	{
-		meetBinaryTupleOperator(node);
+		meetNaryTupleOperator(node);
 	}
 
 	public void meet(Label node)

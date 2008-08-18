@@ -7,6 +7,7 @@ package org.openrdf.query.algebra;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -39,6 +40,16 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	 */
 	public NaryTupleOperator(TupleExpr... args) {
 		setArgs(args);
+	}
+
+	/**
+	 * Creates a new nary tuple operator.
+	 * 
+	 * @param args
+	 *        The operator's arguments, must not be <tt>null</tt>.
+	 */
+	public NaryTupleOperator(Collection<TupleExpr> args) {
+		setArgs(args.toArray(new TupleExpr[args.size()]));
 	}
 
 	/*---------*
