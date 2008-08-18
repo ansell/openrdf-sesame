@@ -22,14 +22,13 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 	/**
 	 * The operator's arguments.
 	 */
-	protected List<ValueExpr> args;
+	protected List<ValueExpr> args = new ArrayList<ValueExpr>();
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	public NaryValueOperator() {
-		args = new ArrayList<ValueExpr>();
 	}
 
 	/**
@@ -68,7 +67,8 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 			assert arg != null : "arg must not be null";
 			arg.setParentNode(this);
 		}
-		this.args = Arrays.asList(args);
+		this.args.clear();
+		this.args.addAll(Arrays.asList(args));
 	}
 
 	/**
@@ -125,10 +125,20 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 		super.replaceChildNode(current, replacement);
 	}
 
+	public void removeChildNode(QueryModelNode current) {
+		for (int i = 0, n = getNumberOfArguments(); i < n; i++) {
+			if (getArg(i) == current) {
+				args.remove(i);
+				return;
+			}
+		}
+		super.replaceChildNode(current, null);
+	}
+
 	@Override
 	public NaryValueOperator clone() {
 		NaryValueOperator clone = (NaryValueOperator)super.clone();
-		clone.setArgs(getArgs());
+		clone.args = new ArrayList<ValueExpr>(args.size());
 		for (int i = 0, n = getNumberOfArguments(); i < n; i++) {
 			clone.setArg(i, getArg(i).clone());
 		}

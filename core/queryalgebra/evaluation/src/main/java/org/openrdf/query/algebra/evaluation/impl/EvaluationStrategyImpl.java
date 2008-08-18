@@ -74,6 +74,7 @@ import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Namespace;
+import org.openrdf.query.algebra.NaryTupleOperator;
 import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
@@ -154,11 +155,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (expr instanceof StatementPattern) {
 			return evaluate((StatementPattern)expr, bindings);
 		}
-		else if (expr instanceof UnaryTupleOperator) {
-			return evaluate((UnaryTupleOperator)expr, bindings);
-		}
-		else if (expr instanceof BinaryTupleOperator) {
-			return evaluate((BinaryTupleOperator)expr, bindings);
+		else if (expr instanceof NaryTupleOperator) {
+			return evaluate((NaryTupleOperator)expr, bindings);
 		}
 		else if (expr instanceof SingletonSet) {
 			return evaluate((SingletonSet)expr, bindings);
@@ -443,6 +441,24 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return new OrderIterator(evaluate(node.getArg(), bindings), cmp);
 	}
 
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(NaryTupleOperator expr,
+			BindingSet bindings)
+		throws QueryEvaluationException
+	{
+		if (expr instanceof BinaryTupleOperator) {
+			return evaluate((BinaryTupleOperator)expr, bindings);
+		}
+		else if (expr instanceof UnaryTupleOperator) {
+			return evaluate((UnaryTupleOperator)expr, bindings);
+		}
+		else if (expr == null) {
+			throw new IllegalArgumentException("expr must not be null");
+		}
+		else {
+			throw new QueryEvaluationException("Unsupported n-ary tuple operator type: " + expr.getClass());
+		}
+	}
+
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BinaryTupleOperator expr,
 			BindingSet bindings)
 		throws QueryEvaluationException
@@ -481,7 +497,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws QueryEvaluationException
 	{
 		// Check whether optional join is "well designed" as defined in section
-		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge Pérez et al.
+		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge Pï¿½rez et al.
 		Set<String> boundVars = bindings.getBindingNames();
 		Set<String> leftVars = leftJoin.getLeftArg().getBindingNames();
 		Set<String> optionalVars = leftJoin.getRightArg().getBindingNames();

@@ -5,13 +5,11 @@
  */
 package org.openrdf.query.algebra.helpers;
 
-import org.openrdf.query.algebra.BinaryTupleOperator;
-import org.openrdf.query.algebra.BinaryValueOperator;
-import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.NaryTupleOperator;
+import org.openrdf.query.algebra.NaryValueOperator;
+import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UnaryTupleOperator;
-import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.ValueExpr;
 
 @Deprecated
@@ -56,70 +54,108 @@ public class QueryModelNodeReplacer extends QueryModelVisitorBase<RuntimeExcepti
 	}
 
 	@Override
-	protected void meetBinaryTupleOperator(BinaryTupleOperator node)
+	protected void meetNaryTupleOperator(NaryTupleOperator node)
 	{
-		if (node.getLeftArg() == former) {
-			if (replacement == null) {
-				replaceNode(node, node.getRightArg());
-			}
-			else {
-				node.setLeftArg((TupleExpr)replacement);
-			}
-		}
-		else {
-			assert former == node.getRightArg();
-			if (replacement == null) {
-				replaceNode(node, node.getLeftArg());
-			}
-			else {
-				node.setRightArg((TupleExpr)replacement);
+		if (node.getNumberOfArguments() == 1) {
+			meetUnaryTupleOperator(node);
+		} else if (node.getNumberOfArguments() == 2) {
+			meetBinaryTupleOperator(node);
+		} else {
+			for (TupleExpr arg : node.getArgs()) {
+				if (arg == former) {
+					if (replacement == null) {
+						node.removeChildNode(former);
+					}
+					else {
+						node.replaceChildNode(former, replacement);
+					}
+				}
 			}
 		}
 	}
 
 	@Override
-	protected void meetBinaryValueOperator(BinaryValueOperator node)
+	protected void meetNaryValueOperator(NaryValueOperator node)
 	{
-		if (former == node.getLeftArg()) {
-			if (replacement == null) {
-				replaceNode(node, node.getRightArg());
-			}
-			else {
-				node.setLeftArg((ValueExpr)replacement);
-			}
-		}
-		else {
-			assert former == node.getRightArg();
-			if (replacement == null) {
-				replaceNode(node, node.getLeftArg());
-			}
-			else {
-				node.setRightArg((ValueExpr)replacement);
+		if (node.getNumberOfArguments() == 1) {
+			meetUnaryValueOperator(node);
+		} else if (node.getNumberOfArguments() == 2) {
+			meetBinaryValueOperator(node);
+		} else {
+			for (ValueExpr arg : node.getArgs()) {
+				if (arg == former) {
+					if (replacement == null) {
+						node.removeChildNode(former);
+					}
+					else {
+						node.replaceChildNode(former, replacement);
+					}
+				}
 			}
 		}
 	}
 
-	@Override
-	protected void meetUnaryTupleOperator(UnaryTupleOperator node)
+	private void meetBinaryTupleOperator(NaryTupleOperator node)
 	{
-		assert former == node.getArg();
+		if (node.getArg(0) == former) {
+			if (replacement == null) {
+				replaceNode(node, node.getArg(1));
+			}
+			else {
+				node.setArg(0, ((TupleExpr)replacement));
+			}
+		}
+		else {
+			assert former == node.getArg(1);
+			if (replacement == null) {
+				replaceNode(node, node.getArg(0));
+			}
+			else {
+				node.setArg(1, ((TupleExpr)replacement));
+			}
+		}
+	}
+
+	private void meetBinaryValueOperator(NaryValueOperator node)
+	{
+		if (former == node.getArg(0)) {
+			if (replacement == null) {
+				replaceNode(node, node.getArg(1));
+			}
+			else {
+				node.setArg(0, ((ValueExpr)replacement));
+			}
+		}
+		else {
+			assert former == node.getArg(1);
+			if (replacement == null) {
+				replaceNode(node, node.getArg(0));
+			}
+			else {
+				node.setArg(1, ((ValueExpr)replacement));
+			}
+		}
+	}
+
+	private void meetUnaryTupleOperator(NaryTupleOperator node)
+	{
+		assert former == node.getArg(0);
 		if (replacement == null) {
 			removeNode(node);
 		}
 		else {
-			node.setArg((TupleExpr)replacement);
+			node.setArg(0, ((TupleExpr)replacement));
 		}
 	}
 
-	@Override
-	protected void meetUnaryValueOperator(UnaryValueOperator node)
+	private void meetUnaryValueOperator(NaryValueOperator node)
 	{
-		assert former == node.getArg();
+		assert former == node.getArg(0);
 		if (replacement == null) {
 			removeNode(node);
 		}
 		else {
-			node.setArg((ValueExpr)replacement);
+			node.setArg(0, ((ValueExpr)replacement));
 		}
 	}
 

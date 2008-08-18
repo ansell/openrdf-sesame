@@ -8,15 +8,14 @@ package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.List;
 
-import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.NaryTupleOperator;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
@@ -108,17 +107,13 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		protected void meetBinaryTupleOperator(BinaryTupleOperator node) {
-			node.getLeftArg().visit(this);
-			double leftArgCost = this.cardinality;
-
-			node.getRightArg().visit(this);
-			cardinality += leftArgCost;
-		}
-
-		@Override
-		protected void meetUnaryTupleOperator(UnaryTupleOperator node) {
-			node.getArg().visit(this);
+		protected void meetNaryTupleOperator(NaryTupleOperator node) {
+			double cost = 0;
+			for (TupleExpr arg : node.getArgs()) {
+				arg.visit(this);
+				cost += cardinality;
+			}
+			cardinality = cost;
 		}
 
 		@Override
