@@ -48,18 +48,16 @@ public class QueryModelPruner implements QueryOptimizer {
 		@Override
 		public void meet(Join join) {
 			super.meet(join);
-
-			TupleExpr leftArg = join.getLeftArg();
-			TupleExpr rightArg = join.getRightArg();
-
-			if (leftArg instanceof EmptySet || rightArg instanceof EmptySet) {
-				join.replaceWith(new EmptySet());
+			for (TupleExpr arg : join.getArgs()) {
+				if (arg instanceof SingletonSet) {
+					join.removeChildNode(arg);
+				} else if (arg instanceof EmptySet) {
+					join.replaceWith(new EmptySet());
+					return;
+				}
 			}
-			else if (leftArg instanceof SingletonSet) {
-				join.replaceWith(rightArg);
-			}
-			else if (rightArg instanceof SingletonSet) {
-				join.replaceWith(leftArg);
+			if (join.getNumberOfArguments() == 1) {
+				join.replaceWith(join.getArg(0));
 			}
 		}
 

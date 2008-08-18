@@ -451,6 +451,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof UnaryTupleOperator) {
 			return evaluate((UnaryTupleOperator)expr, bindings);
 		}
+		else if (expr instanceof Join) {
+			return evaluate((Join)expr, bindings);
+		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
 		}
@@ -463,10 +466,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		if (expr instanceof Join) {
-			return evaluate((Join)expr, bindings);
-		}
-		else if (expr instanceof LeftJoin) {
+		if (expr instanceof LeftJoin) {
 			return evaluate((LeftJoin)expr, bindings);
 		}
 		else if (expr instanceof Union) {
@@ -489,7 +489,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Join join, BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		return new JoinIterator(this, join, bindings);
+		assert join.getNumberOfArguments() > 0;
+		CloseableIteration<BindingSet, QueryEvaluationException> left;
+		left = evaluate(join.getArg(0), bindings);
+		for (int i = 1, n = join.getNumberOfArguments(); i < n; i++) {
+			left = new JoinIterator(this, left, join.getArg(i), bindings);
+		}
+		return left;
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(LeftJoin leftJoin,
