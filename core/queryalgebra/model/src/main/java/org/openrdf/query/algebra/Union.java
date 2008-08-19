@@ -6,6 +6,7 @@
 package org.openrdf.query.algebra;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -31,6 +32,16 @@ public class Union extends NaryTupleOperator {
 	 */
 	public Union(TupleExpr leftArg, TupleExpr rightArg) {
 		super(leftArg, rightArg);
+	}
+
+	/**
+	 * Creates a new union operator that operates on the specified arguments.
+	 * 
+	 * @param args
+	 *        The arguments of the union operator.
+	 */
+	public Union(List<? extends TupleExpr> args) {
+		super(args);
 	}
 
 	/*---------*

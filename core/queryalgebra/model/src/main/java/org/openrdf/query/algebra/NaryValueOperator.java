@@ -48,8 +48,8 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 	 * @param args
 	 *        The operator's arguments, must not be <tt>null</tt>.
 	 */
-	public NaryValueOperator(Collection<ValueExpr> args) {
-		setArgs(args.toArray(new ValueExpr[args.size()]));
+	public NaryValueOperator(Collection<? extends ValueExpr> args) {
+		this(args.toArray(new ValueExpr[args.size()]));
 	}
 
 	/*---------*
@@ -114,6 +114,33 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 			args.add(null);
 		}
 		this.args.set(idx, arg);
+	}
+
+	/**
+	 * Gets the only argument of this nary tuple operator.
+	 * 
+	 * @return The operator's argument.
+	 */
+	public ValueExpr getArg() {
+		assert args.size() == 1;
+		return args.get(0);
+	}
+
+	/**
+	 * Sets the only argument of this nary tuple operator.
+	 * 
+	 * @param arg
+	 *        The (new) argument for this operator, must not
+	 *        be <tt>null</tt>.
+	 */
+	public void setArg(ValueExpr arg) {
+		assert arg != null : "arg must not be null";
+		if (args.isEmpty()) {
+			args.add(null);
+		}
+		assert args.size() == 1;
+		arg.setParentNode(this);
+		this.args.set(0, arg);
 	}
 
 	@Override

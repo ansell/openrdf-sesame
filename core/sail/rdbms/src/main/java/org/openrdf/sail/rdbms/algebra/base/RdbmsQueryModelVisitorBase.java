@@ -236,7 +236,7 @@ public class RdbmsQueryModelVisitorBase<X extends Exception> extends QueryModelV
 	public void meet(SqlOr node)
 		throws X
 	{
-		meetBinarySqlOperator(node);
+		meetNarySqlOperator(node);
 	}
 
 	public void meet(SqlRegex node)

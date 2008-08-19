@@ -34,25 +34,6 @@ public abstract class UnaryTupleOperator extends NaryTupleOperator implements Tu
 	 * Methods *
 	 *---------*/
 
-	/**
-	 * Gets the argument of this unary tuple operator.
-	 * 
-	 * @return The operator's argument.
-	 */
-	public TupleExpr getArg() {
-		return getArg(0);
-	}
-
-	/**
-	 * Sets the argument of this unary tuple operator.
-	 * 
-	 * @param arg
-	 *        The (new) argument for this operator, must not be <tt>null</tt>.
-	 */
-	public void setArg(TupleExpr arg) {
-		setArg(0, arg);
-	}
-
 	public Set<String> getBindingNames() {
 		return getArg().getBindingNames();
 	}

@@ -162,8 +162,8 @@ public class SqlExprSupport {
 		return new DoubleValue(value);
 	}
 
-	public static SqlExpr or(SqlExpr left, SqlExpr right) {
-		return new SqlOr(left, right);
+	public static SqlExpr or(SqlExpr... args) {
+		return new SqlOr(args);
 	}
 
 	public static SqlExpr regex(SqlExpr value, SqlExpr pattern) {

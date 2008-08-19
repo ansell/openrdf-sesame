@@ -248,7 +248,7 @@ public class QueryBuilder {
 	private void append(SqlAnd expr, SqlExprBuilder filter)
 		throws UnsupportedRdbmsOperatorException
 	{
-		for (int i=0,n=expr.getNumberOfArguments();i<n;i++) {
+		for (int i = 0, n = expr.getNumberOfArguments(); i < n; i++) {
 			if (i > 0) {
 				filter.and();
 			}
@@ -357,9 +357,12 @@ public class QueryBuilder {
 		throws UnsupportedRdbmsOperatorException
 	{
 		SqlBracketBuilder open = filter.open();
-		dispatch(expr.getLeftArg(), open);
-		open.or();
-		dispatch(expr.getRightArg(), open);
+		for (int i = 0, n = expr.getNumberOfArguments(); i < n; i++) {
+			if (i > 0) {
+				open.or();
+			}
+			dispatch(expr.getArg(i), open);
+		}
 		open.close();
 	}
 
@@ -434,6 +437,9 @@ public class QueryBuilder {
 		else if (expr instanceof SqlAnd) {
 			append((SqlAnd)expr, filter);
 		}
+		else if (expr instanceof SqlOr) {
+			append((SqlOr)expr, filter);
+		}
 		else {
 			dispatchOther(expr, filter);
 		}
@@ -444,9 +450,6 @@ public class QueryBuilder {
 	{
 		if (expr instanceof SqlEq) {
 			append((SqlEq)expr, filter);
-		}
-		else if (expr instanceof SqlOr) {
-			append((SqlOr)expr, filter);
 		}
 		else if (expr instanceof SqlCompare) {
 			append((SqlCompare)expr, filter);

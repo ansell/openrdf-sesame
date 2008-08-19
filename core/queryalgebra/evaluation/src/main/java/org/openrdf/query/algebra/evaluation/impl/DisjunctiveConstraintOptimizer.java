@@ -6,6 +6,9 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.And;
@@ -36,12 +39,30 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 	protected class OrSameTermOptimizer extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
-		public void meet(Or orNode) {
-			boolean top = orNode.getParentNode() instanceof Filter;
-			if (top && containsSameTerm(orNode)) {
-				Filter filter = (Filter)orNode.getParentNode();
-				ValueExpr left = orNode.getLeftArg().clone();
-				ValueExpr right = orNode.getRightArg().clone();
+		public void meet(Or or) {
+			boolean top = or.getParentNode() instanceof Filter;
+			if (or.getNumberOfArguments() == 0) {
+				return;
+			} else if (or.getNumberOfArguments() == 1) {
+				or.replaceWith(or.getArg());
+				or.getParentNode().visit(this);
+			} else if (top && containsSameTerm(or)) {
+				Filter filter = (Filter)or.getParentNode();
+				// Find SameTerm(s)
+				List<ValueExpr> args = new ArrayList<ValueExpr>();
+				for (ValueExpr arg : or.getArgs()) {
+					if (arg instanceof SameTerm) {
+						args.add(arg);
+						or.removeChildNode(arg);
+					}
+				}
+
+				// Add the rest
+				if (or.getNumberOfArguments() == 1) {
+					args.add(or.getArg());
+				} else if (or.getNumberOfArguments() > 1) {
+					args.add(or);
+				}
 
 				// remove filter
 				filter.replaceWith(filter.getArg());
@@ -49,15 +70,16 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 				// Push UNION down below other filters to avoid cloning them
 				TupleExpr node = findNotFilter(filter.getArg());
 
-				Filter leftFilter = new Filter(node.clone(), left);
-				Filter rightFilter = new Filter(node.clone(), right);
-				Union union = new Union(leftFilter, rightFilter);
-				node.replaceWith(union);
+				List<Filter> filters = new ArrayList<Filter>(args.size());
+				for (ValueExpr arg : args) {
+					filters.add(new Filter(node.clone(), arg));
+				}
+				node.replaceWith(new Union(filters));
 
 				filter.getParentNode().visit(this);
 			}
 			else {
-				super.meet(orNode);
+				super.meet(or);
 			}
 		}
 
@@ -72,8 +94,11 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 				return true;
 			if (node instanceof Or) {
 				Or or = (Or) node;
-				boolean left = containsSameTerm(or.getLeftArg());
-				return left || containsSameTerm(or.getRightArg());
+				boolean contains = false;
+				for (ValueExpr arg : or.getArgs()) {
+					contains |= containsSameTerm(arg);
+				}
+				return contains;
 			}
 			if (node instanceof And) {
 				And and = (And) node;

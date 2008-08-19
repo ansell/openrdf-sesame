@@ -251,7 +251,11 @@ public class SqlConstantOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 		}
 		else if (arg instanceof SqlOr) {
 			SqlOr or = (SqlOr)arg;
-			replace(node, and(not(or.getLeftArg().clone()), not(or.getRightArg().clone())));
+			SqlExpr[] nots = new SqlExpr[or.getNumberOfArguments()];
+			for (int i = 0, n = or.getNumberOfArguments(); i < n; i++) {
+				nots[i] = not(or.getArg(i).clone());
+			}
+			replace(node, and(nots));
 		}
 	}
 
@@ -260,62 +264,66 @@ public class SqlConstantOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 		throws RuntimeException
 	{
 		super.meet(node);
-		SqlExpr left = node.getLeftArg();
-		SqlExpr right = node.getRightArg();
-		if (left instanceof TrueValue || right instanceof TrueValue) {
-			replace(node, new TrueValue());
+		boolean top = andAllTheWay(node);
+		SqlExpr sqlNull = null;
+		for (SqlExpr arg : node.getArgs()) {
+			if (arg instanceof TrueValue) {
+				replace(node, new TrueValue());
+				return;
+			} else if (arg instanceof FalseValue) {
+				node.removeChildNode(arg);
+			} else if (top && arg instanceof SqlNull) {
+				node.removeChildNode(arg);
+			} else if (sqlNull != null && arg instanceof SqlNull) {
+				node.removeChildNode(arg);
+			} else if (arg instanceof SqlNull) {
+				sqlNull = (SqlNull) arg;
+			}
 		}
-		else if (left instanceof FalseValue && right instanceof FalseValue) {
+		if (node.getNumberOfArguments() == 0) {
 			replace(node, new FalseValue());
-		}
-		else if (left instanceof FalseValue) {
-			replace(node, right.clone());
-		}
-		else if (right instanceof FalseValue) {
-			replace(node, left.clone());
-		}
-		else if (right instanceof SqlNull && andAllTheWay(node)) {
-			replace(node, left.clone());
-		}
-		else if (left instanceof SqlNull && andAllTheWay(node)) {
-			replace(node, right.clone());
-		}
-		else if (right instanceof SqlNull && left instanceof SqlNull) {
-			replace(node, new SqlNull());
-		}
-		else if (left instanceof SqlNull && right instanceof SqlOr) {
-			SqlOr r = (SqlOr)right;
-			SqlExpr rleft = r.getLeftArg();
-			SqlExpr rright = r.getRightArg();
-			if (rleft instanceof SqlNull || rright instanceof SqlNull) {
-				replace(node, right.clone());
-			}
-		}
-		else if (right instanceof SqlNull && left instanceof SqlOr) {
-			SqlOr l = (SqlOr)left;
-			SqlExpr lleft = l.getLeftArg();
-			SqlExpr lright = l.getRightArg();
-			if (lleft instanceof SqlNull || lright instanceof SqlNull) {
-				replace(node, left.clone());
-			}
-		}
-		else if (right instanceof SqlNull && left instanceof SqlAnd) {
-			// value IS NOT NULL AND value = ? OR NULL
-			// -> value = ?
-			SqlAnd and = (SqlAnd)left;
-			// search for the value IS NOT NULL expression
-			for (SqlExpr isNotNull : and.getArgs()) {
-				SqlExpr variable = arg(arg(isNotNull, SqlNot.class), SqlIsNull.class);
-				if (variable == null)
-					continue;
-				// search for the value = ? expression
-				for (SqlExpr eq : and.getArgs()) {
-					SqlExpr constant = other(eq, variable, SqlEq.class);
-					if (constant == null)
-						continue;
-					if (constant instanceof SqlConstant) {
-						replace(node, new SqlEq(variable.clone(), constant.clone()));
-						return;
+		} else if (node.getNumberOfArguments() == 1) {
+			replace(node, node.getArg(0));
+		} else if (sqlNull != null) {
+			for (SqlExpr arg : node.getArgs()) {
+				if (arg instanceof SqlOr) {
+					SqlOr nestedOr = (SqlOr) arg;
+					for (SqlExpr nestedArg : nestedOr.getArgs()) {
+						if (nestedArg instanceof SqlNull) {
+							nestedOr.removeChildNode(nestedArg);
+						}
+					}
+					if (nestedOr.getNumberOfArguments() == 0) {
+						replace(nestedOr, new SqlNull());
+					} else if (nestedOr.getNumberOfArguments() == 1) {
+						replace(nestedOr, nestedOr.getArg(0));
+					}
+				} else if (arg instanceof SqlAnd) {
+					// value IS NOT NULL AND value = ? OR NULL
+					// -> value = ?
+					SqlAnd and = (SqlAnd)arg;
+					// search for the value IS NOT NULL expression
+					for (SqlExpr isNotNull : and.getArgs()) {
+						SqlExpr variable = arg(arg(isNotNull, SqlNot.class), SqlIsNull.class);
+						if (variable == null)
+							continue;
+						// search for the value = ? expression
+						for (SqlExpr eq : and.getArgs()) {
+							SqlExpr constant = other(eq, variable, SqlEq.class);
+							if (constant == null)
+								continue;
+							if (constant instanceof SqlConstant) {
+								node.removeChildNode(sqlNull);
+								and.removeChildNode(isNotNull);
+								if (node.getNumberOfArguments() == 1) {
+									replace(node, node.getArg(0));
+								}
+								if (and.getNumberOfArguments() == 1) {
+									replace(and, and.getArg(0));
+								}
+								return;
+							}
+						}
 					}
 				}
 			}

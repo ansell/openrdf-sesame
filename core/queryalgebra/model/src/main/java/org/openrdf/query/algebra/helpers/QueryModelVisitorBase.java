@@ -304,7 +304,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	public void meet(Or node)
 		throws X
 	{
-		meetBinaryValueOperator(node);
+		meetNaryValueOperator(node);
 	}
 
 	public void meet(Order node)
