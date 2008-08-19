@@ -27,27 +27,4 @@ public abstract class UnaryValueOperator extends NaryValueOperator implements Va
 	public UnaryValueOperator(ValueExpr arg) {
 		super(arg);
 	}
-
-	/*---------*
-	 * Methods *
-	 *---------*/
-
-	/**
-	 * Gets the argument of this unary value operator.
-	 * 
-	 * @return The operator's argument.
-	 */
-	public ValueExpr getArg() {
-		return getArg(0);
-	}
-
-	/**
-	 * Sets the argument of this unary value operator.
-	 * 
-	 * @param arg
-	 *        The (new) argument for this operator, must not be <tt>null</tt>.
-	 */
-	public void setArg(ValueExpr arg) {
-		setArg(0, arg);
-	}
 }

@@ -67,27 +67,20 @@ public class ConstantOptimizer implements QueryOptimizer {
 			or.visitChildren(this);
 
 			try {
-				if (isConstant(or.getLeftArg()) && isConstant(or.getRightArg())) {
-					boolean value = strategy.isTrue(or, EmptyBindingSet.getInstance());
-					or.replaceWith(new ValueConstant(BooleanLiteralImpl.valueOf(value)));
-				}
-				else if (isConstant(or.getLeftArg())) {
-					boolean leftIsTrue = strategy.isTrue(or.getLeftArg(), EmptyBindingSet.getInstance());
-					if (leftIsTrue) {
-						or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
-					}
-					else {
-						or.replaceWith(or.getRightArg());
+				for (ValueExpr arg : or.getArgs()) {
+					if (isConstant(arg)) {
+						if (strategy.isTrue(arg, EmptyBindingSet.getInstance())) {
+							or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+							return;
+						} else {
+							or.removeChildNode(arg);
+						}
 					}
 				}
-				else if (isConstant(or.getRightArg())) {
-					boolean rightIsTrue = strategy.isTrue(or.getRightArg(), EmptyBindingSet.getInstance());
-					if (rightIsTrue) {
-						or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
-					}
-					else {
-						or.replaceWith(or.getLeftArg());
-					}
+				if (or.getNumberOfArguments() == 0) {
+					or.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
+				} else if (or.getNumberOfArguments() == 1) {
+					or.replaceWith(or.getArg(0));
 				}
 			}
 			catch (ValueExprEvaluationException e) {
@@ -118,6 +111,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 				}
 				if (and.getNumberOfArguments() == 0) {
 					and.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+				} else if (and.getNumberOfArguments() == 1) {
+					and.replaceWith(and.getArg(0));
 				}
 			}
 			catch (ValueExprEvaluationException e) {
