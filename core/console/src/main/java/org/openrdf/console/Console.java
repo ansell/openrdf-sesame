@@ -709,7 +709,8 @@ public class Console {
 				if (tryToRemoveLock(e, systemRepo)) {
 					RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
 					writeln("Repository created");
-				} else {
+				}
+				else {
 					writeError("Failed to create repository");
 					logger.error("Failed to create repository", e);
 				}
@@ -796,7 +797,8 @@ public class Console {
 			try {
 				if (tryToRemoveLock(e, systemRepo)) {
 					dropRepository(tokens);
-				} else {
+				}
+				else {
 					writeError("Failed to drop repository");
 					logger.error("Failed to drop repository", e);
 				}
@@ -846,11 +848,13 @@ public class Console {
 			try {
 				if (tryToRemoveLock(e)) {
 					openRepository(id);
-				} else {
+				}
+				else {
 					writeError("Failed to open repository");
 					logger.error("Failed to open repository", e);
 				}
-			} catch (IOException e1) {
+			}
+			catch (IOException e1) {
 				writeError("Unable to remove lock: " + e1.getMessage());
 			}
 		}
@@ -1137,14 +1141,17 @@ public class Console {
 			try {
 				if (tryToRemoveLock(e, repository)) {
 					load(tokens);
-				} else {
+				}
+				else {
 					writeError("Failed to load data");
 					logger.error("Failed to load data", e);
 				}
-			} catch (RepositoryException e1) {
+			}
+			catch (RepositoryException e1) {
 				writeError("Unable to restart repository: " + e1.getMessage());
 				logger.error("Unable to restart repository", e1);
-			} catch (IOException e1) {
+			}
+			catch (IOException e1) {
 				writeError("Unable to remove lock: " + e1.getMessage());
 			}
 		}
@@ -1307,14 +1314,17 @@ public class Console {
 			try {
 				if (tryToRemoveLock(e, repository)) {
 					clear(tokens);
-				} else {
+				}
+				else {
 					writeError("Failed to clear repository");
 					logger.error("Failed to clear repository", e);
 				}
-			} catch (RepositoryException e1) {
+			}
+			catch (RepositoryException e1) {
 				writeError("Unable to restart repository: " + e1.getMessage());
 				logger.error("Unable to restart repository", e1);
-			} catch (IOException e1) {
+			}
+			catch (IOException e1) {
 				writeError("Unable to remove lock: " + e1.getMessage());
 			}
 		}
@@ -1741,34 +1751,45 @@ public class Console {
 		}
 	}
 
-	private boolean tryToRemoveLock(RepositoryReadOnlyException e,
-			Repository repo) throws IOException, RepositoryException {
-		File dataDir = repo.getDataDir();
-		LockManager locker = new DirectoryLockManager(dataDir);
-		if (!locker.isLocked())
-			return false;
-		if (!askProceed(e.getMessage(), true))
-			return false;
-		repo.shutDown();
-		boolean revoked = locker.revokeLock();
-		repo.initialize();
-		return revoked;
+	private boolean tryToRemoveLock(RepositoryReadOnlyException e, Repository repo)
+		throws IOException, RepositoryException
+	{
+		boolean lockRemoved = false;
+
+		LockManager lockManager = new DirectoryLockManager(repo.getDataDir());
+
+		if (lockManager.isLocked()) {
+			if (askProceed("WARNING: The lock from another process on this repository needs to be removed", true))
+			{
+				repo.shutDown();
+				lockRemoved = lockManager.revokeLock();
+				repo.initialize();
+			}
+		}
+
+		return lockRemoved;
 	}
 
 	private boolean tryToRemoveLock(RepositoryLockedException e)
-			throws IOException {
-		Throwable cause = e.getCause();
-		if (!(cause instanceof SailLockedException))
-			return false;
-		SailLockedException s = (SailLockedException) cause;
-		LockManager locker = s.getLockManager();
-		if (locker == null)
-			return false;
-		if (!locker.isLocked())
-			return false;
-		if (!askProceed(e.getMessage(), true))
-			return false;
-		return locker.revokeLock();
+		throws IOException
+	{
+		boolean lockRemoved = false;
+
+		if (e.getCause() instanceof SailLockedException) {
+			SailLockedException sle = (SailLockedException)e.getCause();
+
+			LockManager lockManager = sle.getLockManager();
+
+			if (lockManager != null && lockManager.isLocked()) {
+				if (askProceed("WARNING: The lock from process '" + sle.getLockedBy()
+						+ "' on this repository needs to be removed", true))
+				{
+					lockRemoved = lockManager.revokeLock();
+				}
+			}
+		}
+
+		return lockRemoved;
 	}
 
 	private boolean askProceed(String msg, boolean defaultValue)

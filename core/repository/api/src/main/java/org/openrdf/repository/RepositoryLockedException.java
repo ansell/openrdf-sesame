@@ -6,14 +6,17 @@
 package org.openrdf.repository;
 
 /**
- * Indicates that a Repository cannot be initialised because the configured persisted
- * location is locked.
+ * Indicates that a Repository cannot be initialised because the configured
+ * persisted location is locked.
  * 
  * @author James Leigh
  */
 public class RepositoryLockedException extends RepositoryException {
+
 	private static final long serialVersionUID = -1544864578935422866L;
+
 	private String lockedBy;
+
 	private String requestedBy;
 
 	public RepositoryLockedException(String lockedBy, String requestedBy, String msg, Throwable t) {
