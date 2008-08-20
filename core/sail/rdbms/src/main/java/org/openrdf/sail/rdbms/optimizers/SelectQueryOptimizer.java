@@ -378,19 +378,19 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
 			SelectQuery query = (SelectQuery)node.getArg();
-			Map<String, String> bindingNames = new HashMap<String, String>();
+			Map<String, String> bindingVars = new HashMap<String, String>();
 			List<SelectProjection> selection = new ArrayList<SelectProjection>();
 			ProjectionElemList list = node.getProjectionElemList();
 			for (ProjectionElem e : list.getElements()) {
 				String source = e.getSourceName();
 				String target = e.getTargetName();
-				bindingNames.put(source, target);
+				bindingVars.put(target, source);
 				SelectProjection s = query.getSelectProjection(source);
 				if (s != null) {
 					selection.add(s);
 				}
 			}
-			query.setBindingNames(bindingNames);
+			query.setBindingVars(bindingVars);
 			query.setSqlSelectVar(selection);
 			node.replaceWith(query);
 		}
