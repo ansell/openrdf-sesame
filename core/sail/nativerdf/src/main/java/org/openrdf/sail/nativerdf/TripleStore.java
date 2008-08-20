@@ -535,43 +535,7 @@ class TripleStore {
 			rangeSize = btree.getValueCountEstimate(minValue, maxValue);
 		}
 
-		// compensate for any constant variables that haven't been considered by
-		// the btree
-		int unboundVarCount = 0;
-		char[] fieldSeq = index.getFieldSeq();
-		int indexScore = index.getPatternScore(subj, pred, obj, context);
-
-		for (int i = indexScore; i < fieldSeq.length; i++) {
-			switch (fieldSeq[i]) {
-				case 's':
-					if (subj == -1) {
-						unboundVarCount++;
-					}
-					break;
-				case 'p':
-					if (pred == -1) {
-						unboundVarCount++;
-					}
-					break;
-				case 'o':
-					if (obj == -1) {
-						unboundVarCount++;
-					}
-					break;
-				case 'c':
-					if (context == -1) {
-						unboundVarCount++;
-					}
-					break;
-				default:
-					throw new RuntimeException("invalid character '" + fieldSeq[i] + "' in field sequence: "
-							+ new String(fieldSeq));
-			}
-		}
-
-		int varCount = 4 - indexScore;
-		double unboundVarFactor = (double)unboundVarCount / varCount;
-		return Math.pow(rangeSize, unboundVarFactor);
+		return rangeSize;
 	}
 
 	protected TripleIndex getBestIndex(int subj, int pred, int obj, int context) {
