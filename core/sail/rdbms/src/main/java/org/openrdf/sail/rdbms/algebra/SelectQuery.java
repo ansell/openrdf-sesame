@@ -7,6 +7,7 @@ package org.openrdf.sail.rdbms.algebra;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +45,7 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 
 	private Map<String, SelectProjection> projections = new HashMap();
 
-	private Map<String, String> bindingNames;
+	private Map<String, String> bindingVars;
 
 	private boolean distinct;
 
@@ -108,25 +109,31 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 		this.limit = limit;
 	}
 
-	public String getBindingName(ColumnVar var) {
-		if (bindingNames == null)
-			return var.getName();
-		return bindingNames.get(var.getName());
+	public Collection<String> getBindingNames(ColumnVar var) {
+		if (bindingVars == null)
+			return Collections.singleton(var.getName());
+		List<String> list = new ArrayList<String>(bindingVars.size());
+		for (String name : bindingVars.keySet()) {
+			if (var.getName().equals(bindingVars.get(name))) {
+				list.add(name);
+			}
+		}
+		return list;
 	}
 
 	public Set<String> getBindingNames() {
-		if (bindingNames == null) {
+		if (bindingVars == null) {
 			Set<String> names = new HashSet<String>();
 			for (ColumnVar var : getVars()) {
 				names.add(var.getName());
 			}
 			return names;
 		}
-		return new HashSet<String>(bindingNames.values());
+		return new HashSet<String>(bindingVars.keySet());
 	}
 
-	public void setBindingNames(Map<String, String> bindingNames) {
-		this.bindingNames = bindingNames;
+	public void setBindingVars(Map<String, String> bindingVars) {
+		this.bindingVars = bindingVars;
 	}
 
 	public Collection<SelectProjection> getSqlSelectVar() {
@@ -225,10 +232,15 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 		List<ColumnVar> vars = new ArrayList<ColumnVar>();
 		for (SelectProjection proj : projections.values()) {
 			ColumnVar var = proj.getVar();
-			if (bindingNames != null) {
-				var = var.as(bindingNames.get(var.getName()));
+			if (bindingVars == null) {
+				vars.add(var);
+			} else {
+				for (String name : bindingVars.keySet()) {
+					if (var.getName().equals(bindingVars.get(name))) {
+						vars.add(var.as(name));
+					}
+				}
 			}
-			vars.add(var);
 		}
 		return vars;
 	}

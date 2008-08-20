@@ -114,28 +114,33 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 		}
 		query.from(qb.getFrom());
 		for (ColumnVar var : qb.getVars()) {
-			String name = qb.getBindingName(var);
-			if (var.getValue() == null && bindings.hasBinding(name)) {
-				query.filter(var, bindings.getValue(name));
-			}
-			else if (var.getValue() != null && !bindings.hasBinding(name) && qb.getBindingNames().contains(name))
-			{
-				bindings.addBinding(name, var.getValue());
+			for (String name : qb.getBindingNames(var)) {
+				if (var.getValue() == null && bindings.hasBinding(name)) {
+					query.filter(var, bindings.getValue(name));
+				}
+				else if (var.getValue() != null && !bindings.hasBinding(name)
+						&& qb.getBindingNames().contains(name))
+				{
+					bindings.addBinding(name, var.getValue());
+				}
 			}
 		}
 		int index = 0;
 		for (SelectProjection proj : qb.getSqlSelectVar()) {
 			ColumnVar var = proj.getVar();
-			String name = qb.getBindingName(var);
-			if (!var.isHiddenOrConstant() && !bindings.hasBinding(name)) {
-				var.setIndex(index);
-				query.select(proj.getId());
-				query.select(proj.getStringValue());
-				index += 2;
-				if (var.getTypes().isLiterals()) {
-					query.select(proj.getLanguage());
-					query.select(proj.getDatatype());
-					index += 2;
+			if (!var.isHiddenOrConstant()) {
+				for (String name : qb.getBindingNames(var)) {
+					if (!bindings.hasBinding(name)) {
+						var.setIndex(index);
+						query.select(proj.getId());
+						query.select(proj.getStringValue());
+						index += 2;
+						if (var.getTypes().isLiterals()) {
+							query.select(proj.getLanguage());
+							query.select(proj.getDatatype());
+							index += 2;
+						}
+					}
 				}
 			}
 		}
