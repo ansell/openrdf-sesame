@@ -112,10 +112,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 				}
 
 				// Build new join hierarchy
-				TupleExpr replacement = orderedJoinArgs.get(0);
-				for (int i = 1; i < orderedJoinArgs.size(); i++) {
-					replacement = new Join(replacement, orderedJoinArgs.get(i));
-				}
+				TupleExpr replacement = new Join(orderedJoinArgs);
 
 				// Replace old join hierarchy
 				node.replaceWith(replacement);
