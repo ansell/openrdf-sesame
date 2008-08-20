@@ -37,6 +37,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.repository.GraphResult;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
@@ -183,7 +184,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		try {
 			StatementCollector collector = new StatementCollector();
 			exportStatements(subj, pred, obj, includeInferred, collector, contexts);
-			return createRepositoryResult(collector.getStatements());
+			return createGraphResult(collector.getStatements());
 		}
 		catch (RDFHandlerException e) {
 			// found a bug in StatementCollector?
@@ -366,5 +367,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected <E> RepositoryResult<E> createRepositoryResult(Iterable<? extends E> elements) {
 		return new RepositoryResult<E>(new CloseableIteratorIteration<E, RepositoryException>(
 				elements.iterator()));
+	}
+
+	/**
+	 * Creates a GraphResult for the supplied element set.
+	 */
+	protected <E> GraphResult createGraphResult(Iterable<? extends Statement> elements) {
+		return new GraphResult(new CloseableIteratorIteration<Statement, RepositoryException>(elements.iterator()));
 	}
 }

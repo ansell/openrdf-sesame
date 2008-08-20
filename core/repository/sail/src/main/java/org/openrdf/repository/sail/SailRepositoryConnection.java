@@ -20,6 +20,7 @@ import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.repository.GraphResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryReadOnlyException;
@@ -167,7 +168,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		try {
-			return createRepositoryResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
+			return createGraphResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
 					contexts));
 		}
 		catch (SailException e) {
@@ -343,5 +344,15 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 			CloseableIteration<? extends E, SailException> sailIter)
 	{
 		return new RepositoryResult<E>(new SailCloseableIteration<E>(sailIter));
+	}
+
+	/**
+	 * Wraps a CloseableIteration coming from a Sail in a GraphResult
+	 * object, applying the required conversions
+	 */
+	protected <E> GraphResult createGraphResult(
+			CloseableIteration<? extends Statement, SailException> sailIter)
+	{
+		return new GraphResult(new SailCloseableIteration<Statement>(sailIter));
 	}
 }
