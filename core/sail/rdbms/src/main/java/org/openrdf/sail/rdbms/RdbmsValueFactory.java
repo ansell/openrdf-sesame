@@ -8,6 +8,7 @@ package org.openrdf.sail.rdbms;
 import java.sql.SQLException;
 
 import info.aduna.concurrent.locks.Lock;
+import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -32,7 +33,6 @@ import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
-import org.openrdf.sail.rdbms.util.WritePrefReadWriteLockManager;
 
 /**
  * Provides basic value creation both for traditional values as well as values
