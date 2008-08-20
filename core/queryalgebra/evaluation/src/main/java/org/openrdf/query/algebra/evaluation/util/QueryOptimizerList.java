@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 
@@ -43,7 +44,9 @@ public class QueryOptimizerList implements QueryOptimizer {
 		optimizers.add(optimizer);
 	}
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings)
+		throws QueryEvaluationException
+	{
 		for (QueryOptimizer optimizer : optimizers) {
 			optimizer.optimize(tupleExpr, dataset, bindings);
 		}

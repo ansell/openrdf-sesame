@@ -71,7 +71,6 @@ public class SelectQueryOptimizerFactory {
 		optimizer.setSqlExprFactory(sql);
 		optimizer.setValueFactory(vf);
 		optimizer.setTransTableManager(tables);
-		optimizer.setIdSequence(ids);
 		return optimizer;
 	}
 

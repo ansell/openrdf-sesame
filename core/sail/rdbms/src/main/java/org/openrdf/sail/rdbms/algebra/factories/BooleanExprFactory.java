@@ -28,6 +28,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.str;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.sub;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -55,6 +56,7 @@ import org.openrdf.sail.rdbms.algebra.SqlCase;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
 import org.openrdf.sail.rdbms.algebra.TrueValue;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
+import org.openrdf.sail.rdbms.exceptions.RdbmsQueryEvaluationException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 
 /**
@@ -64,7 +66,7 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * @author James Leigh
  * 
  */
-public class BooleanExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> {
 
 	private static final double HR14 = 14 * 60 * 60 * 1000;
 
@@ -73,20 +75,35 @@ public class BooleanExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOp
 	private SqlExprFactory sql;
 
 	public SqlExpr createBooleanExpr(ValueExpr expr)
-		throws UnsupportedRdbmsOperatorException
+		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
 	{
-		result = null;
-		if (expr == null)
-			return new SqlNull();
-		expr.visit(this);
-		if (result == null)
-			return new SqlNull();
-		return result;
+		try {
+			result = null;
+			if (expr == null)
+				return new SqlNull();
+			expr.visit(this);
+			if (result == null)
+				return new SqlNull();
+			return result;
+		}
+		catch (RuntimeException e) {
+			throw e;
+		}
+		catch (UnsupportedRdbmsOperatorException e) {
+			throw e;
+		}
+		catch (RdbmsQueryEvaluationException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			// this should not happen
+			throw new AssertionError(e);
+		}
 	}
 
 	@Override
 	public void meet(And node)
-		throws UnsupportedRdbmsOperatorException
+		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
 	{
 		SqlExpr[] expr = new SqlExpr[node.getNumberOfArguments()];
 		for (int i=0,n=node.getNumberOfArguments();i<n;i++) {
@@ -185,14 +202,14 @@ public class BooleanExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOp
 
 	@Override
 	public void meet(Not node)
-		throws UnsupportedRdbmsOperatorException
+		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
 	{
 		result = not(bool(node.getArg()));
 	}
 
 	@Override
 	public void meet(Or node)
-		throws UnsupportedRdbmsOperatorException
+		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
 	{
 		SqlExpr[] bools = new SqlExpr[node.getNumberOfArguments()];
 		for (int i=0;i<bools.length;i++) {
@@ -210,7 +227,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOp
 
 	@Override
 	public void meet(SameTerm node)
-		throws UnsupportedRdbmsOperatorException
+		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
 	{
 		ValueExpr left = node.getLeftArg();
 		ValueExpr right = node.getRightArg();
@@ -266,7 +283,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOp
 	}
 
 	protected SqlExpr bool(ValueExpr arg)
-		throws UnsupportedRdbmsOperatorException
+		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
 	{
 		return sql.createBooleanExpr(arg);
 	}
@@ -284,7 +301,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOp
 	}
 
 	protected SqlExpr hash(ValueExpr arg)
-		throws UnsupportedRdbmsOperatorException
+		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
 	{
 		return sql.createHashExpr(arg);
 	}
