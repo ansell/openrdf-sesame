@@ -11,11 +11,13 @@ import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -35,6 +37,7 @@ import info.aduna.io.ByteArrayUtil;
  * TODO: clean up code
  * 
  * @author Arjohn Kampman
+ * @author Enrico Minack
  */
 public class BTree {
 
@@ -552,8 +555,8 @@ public class BTree {
 	{
 		int allocatedNodesCount = allocatedNodesList.getNodeCount();
 
-		// Assume fill factor of 70%
-		return (long)(allocatedNodesCount * (branchFactor - 1) * 0.7);
+		// Assume fill factor of 50%
+		return (long)(allocatedNodesCount * (branchFactor - 1) * 0.5);
 	}
 
 	/**
@@ -576,83 +579,160 @@ public class BTree {
 		assert minValue != null : "minValue must not be null";
 		assert maxValue != null : "maxValue must not be null";
 
-		int minIndex;
-		int maxIndex;
-		int nodeDepth = 1;
+		List<PathSegment> minValuePath, maxValuePath;
 
 		btreeLock.readLock().lock();
 		try {
-			Node currentNode = readRootNode();
-
-			if (currentNode == null) {
-				// Empty BTree
-				return 0L;
-			}
-
-			// find node where the range starts to span multiple child nodes
-			while (true) {
-				minIndex = currentNode.search(minValue);
-				maxIndex = currentNode.search(maxValue);
-
-				if (minIndex != maxIndex || minIndex >= 0 || currentNode.isLeaf()) {
-					break;
-				}
-
-				// Enter recursion with indicated child node
-				Node childNode = currentNode.getChildNode(-minIndex - 1);
-				currentNode.release();
-				currentNode = childNode;
-				nodeDepth++;
-			}
-
-			currentNode.release();
+			minValuePath = getPath(minValue);
+			maxValuePath = getPath(maxValue);
 		}
 		finally {
 			btreeLock.readLock().unlock();
 		}
 
-		double valueCount;
+		return getValueCountEstimate(minValuePath, maxValuePath);
+	}
 
-		if (minIndex == maxIndex) {
-			valueCount = minIndex >= 0 ? 1 : 0;
-		}
-		else {
-			double span = 0.0;
+	private List<PathSegment> getPath(byte[] key)
+		throws IOException
+	{
+		assert key != null : "key must not be null";
 
-			if (minIndex < 0) {
-				minIndex = -minIndex - 1;
+		List<PathSegment> path = new ArrayList<PathSegment>(height());
 
-				// assume half of the left child node's values are included
-				span += 0.5;
-			}
-			if (maxIndex < 0) {
-				// subtract 2 and point to max value
-				maxIndex = -maxIndex - 2;
+		Node currentNode = readRootNode();
 
-				// assume half of the right child node's values are included
-				span += 0.5;
-			}
+		if (currentNode != null) {
+			while (true) {
+				int keyIndex = currentNode.search(key);
 
-			span += (maxIndex - minIndex);
+				path.add(new PathSegment(keyIndex, currentNode.getValueCount()));
 
-			valueCount = 0.0;
+				if (keyIndex >= 0 || currentNode.isLeaf()) {
+					break;
+				}
 
-			// Assume fill factor of 70%
-			double fanOut = 0.7 * this.branchFactor;
-			for (int i = height() - nodeDepth; i > 0; i--) {
-				// valueCount += (long)Math.pow(fanOut, i);
-				// equivalent but faster:
-				valueCount += 1.0;
-				valueCount *= fanOut;
+				Node childNode = currentNode.getChildNode(-keyIndex - 1);
+				currentNode.release();
+				currentNode = childNode;
 			}
 
-			valueCount *= span;
-
-			// exact numbers for values in current node
-			valueCount += maxIndex - minIndex + 1;
+			currentNode.release();
 		}
 
-		return (long)valueCount;
+		return path;
+	}
+
+	private static class PathSegment {
+
+		public final int valueIndex;
+
+		public final int valueCount;
+
+		public PathSegment(int valueIndex, int valueCount) {
+			this.valueIndex = valueIndex;
+			this.valueCount = valueCount;
+		}
+
+		public int getMinValueIndex() {
+			if (valueIndex < 0) {
+				return -valueIndex - 1;
+			}
+			return valueIndex;
+		}
+
+		public int getMaxValueIndex() {
+			if (valueIndex < 0) {
+				return -valueIndex - 2;
+			}
+			return valueIndex;
+		}
+		
+		@Override
+		public String toString() {
+			return valueIndex + ":" + valueCount;
+		}
+	}
+
+	private long getValueCountEstimate(List<PathSegment> minValuePath, List<PathSegment> maxValuePath)
+		throws IOException
+	{
+		int commonListSize = Math.min(minValuePath.size(), maxValuePath.size());
+
+		if (commonListSize == 0) {
+			return 0;
+		}
+
+		PathSegment minNode = null, maxNode = null;
+
+		// Find node depth where the paths start to diverge
+		int splitIdx = 0;
+		for (; splitIdx < commonListSize; splitIdx++) {
+			minNode = minValuePath.get(splitIdx);
+			maxNode = maxValuePath.get(splitIdx);
+
+			if (minNode.valueIndex != maxNode.valueIndex) {
+				break;
+			}
+		}
+
+		if (splitIdx >= commonListSize) {
+			// range does not span multiple values/child nodes
+			return minNode.valueIndex >= 0 ? 1 : 0;
+		}
+
+		int minValueIndex = minNode.getMinValueIndex();
+		int maxValueIndex = maxNode.getMaxValueIndex();
+
+		// Estimate number of values in child nodes that fall entirely in the
+		// range
+		long valueCount = (maxValueIndex - minValueIndex) * getTreeSizeEstimate(splitIdx + 2);
+
+		// Add number of values that are in the split node
+		valueCount += (maxValueIndex - minValueIndex + 1);
+
+		// Add values from left-most child node
+		for (int i = splitIdx + 1; i < minValuePath.size(); i++) {
+			PathSegment ps = minValuePath.get(i);
+			minValueIndex = ps.getMinValueIndex();
+
+			valueCount += (ps.valueCount - minValueIndex);
+			valueCount += (ps.valueCount - minValueIndex) * getTreeSizeEstimate(i + 2);
+		}
+
+		// Add values from right-most child node
+		for (int i = splitIdx + 1; i < maxValuePath.size(); i++) {
+			PathSegment ps = maxValuePath.get(i);
+			maxValueIndex = ps.getMaxValueIndex();
+
+			valueCount += maxValueIndex + 1;
+			valueCount += (maxValueIndex + 1) * getTreeSizeEstimate(i + 2);
+		}
+
+		return valueCount;
+	}
+
+	/**
+	 * Estimates the number of values contained by a averagely filled node node
+	 * at the specified <tt>nodeDepth</tt> (the root is at depth 1).
+	 */
+	private long getTreeSizeEstimate(int nodeDepth)
+		throws IOException
+	{
+		// Assume fill factor of 50%
+		int fanOut = this.branchFactor / 2;
+
+		long valueCount = 0;
+
+		for (int i = height() - nodeDepth; i >= 0; i--) {
+			// valueCount += (long)Math.pow(fanOut, i);
+
+			// equivalent but faster:
+			valueCount += 1;
+			valueCount *= fanOut;
+		}
+
+		return valueCount;
 	}
 
 	private int height()

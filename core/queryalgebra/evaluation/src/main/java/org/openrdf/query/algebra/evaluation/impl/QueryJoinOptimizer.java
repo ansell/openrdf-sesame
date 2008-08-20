@@ -192,12 +192,17 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 			// Compensate for variables that are bound earlier in the evaluation
 			List<Var> unboundVars = getUnboundVars(vars);
 			List<Var> constantVars = getConstantVars(vars);
-			double exp = (double)unboundVars.size() / (vars.size() - constantVars.size());
-			cardinality = Math.pow(cardinality, exp);
+			int nonConstantVarCount = vars.size() - constantVars.size();
+			if (nonConstantVarCount > 0) {
+				double exp = (double)unboundVars.size() / nonConstantVarCount;
+				cardinality = Math.pow(cardinality, exp);
+			}
 
 			if (unboundVars.isEmpty()) {
 				// Prefer patterns with more bound vars
-				cardinality /= (vars.size() - constantVars.size());
+				if (nonConstantVarCount > 0) {
+					cardinality /= nonConstantVarCount;
+				}
 			}
 			else {
 				// Prefer patterns that bind variables from other tuple expressions
