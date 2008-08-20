@@ -12,9 +12,13 @@ package org.openrdf.sail;
  * @author James Leigh
  */
 public class SailLockedException extends SailException {
+
 	private static final long serialVersionUID = -2465202131214972460L;
+
 	private String lockedBy;
+
 	private String requestedBy;
+
 	private LockManager manager;
 
 	public SailLockedException(String requestedBy) {
