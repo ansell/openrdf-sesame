@@ -8,6 +8,7 @@ package org.openrdf.sail.rdbms.postgresql;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.sail.rdbms.exceptions.RdbmsQueryEvaluationException;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 
 /**
@@ -19,7 +20,9 @@ import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 public class PgSqlQueryOptimizer extends RdbmsQueryOptimizer {
 
 	@Override
-	protected void rdbmsOptimizations(TupleExpr expr, Dataset dataset, BindingSet bindings) {
+	protected void rdbmsOptimizations(TupleExpr expr, Dataset dataset, BindingSet bindings)
+		throws RdbmsQueryEvaluationException
+	{
 		super.rdbmsOptimizations(expr, dataset, bindings);
 		new PgSqlRegexFlagsInliner().optimize(expr, dataset, bindings);
 	}

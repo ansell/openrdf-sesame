@@ -18,6 +18,7 @@ import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
+import org.openrdf.sail.rdbms.exceptions.RdbmsQueryEvaluationException;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.HashTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
@@ -68,6 +69,7 @@ public class RdbmsQueryOptimizer {
 	}
 
 	public TupleExpr optimize(TupleExpr expr, Dataset dataset, BindingSet bindings, EvaluationStrategy strategy)
+		throws RdbmsQueryEvaluationException
 	{
 		// Clone the tuple expression to allow for more aggressive optimisations
 		TupleExpr tupleExpr = expr.clone();
@@ -97,7 +99,9 @@ public class RdbmsQueryOptimizer {
 		new QueryJoinOptimizer().optimize(expr, dataset, bindings);
 	}
 
-	protected void rdbmsOptimizations(TupleExpr expr, Dataset dataset, BindingSet bindings) {
+	protected void rdbmsOptimizations(TupleExpr expr, Dataset dataset, BindingSet bindings)
+		throws RdbmsQueryEvaluationException
+	{
 		new ValueIdLookupOptimizer(vf).optimize(expr, dataset, bindings);
 		factory.createRdbmsFilterOptimizer().optimize(expr, dataset, bindings);
 		new VarColumnLookupOptimizer().optimize(expr, dataset, bindings);
