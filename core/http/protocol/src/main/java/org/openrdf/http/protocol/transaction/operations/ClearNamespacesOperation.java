@@ -12,6 +12,7 @@ import org.openrdf.repository.RepositoryException;
  * Operation that removes all namespace declarations.
  * 
  * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 public class ClearNamespacesOperation implements TransactionOperation {
 
