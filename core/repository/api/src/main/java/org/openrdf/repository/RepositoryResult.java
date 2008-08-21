@@ -55,6 +55,7 @@ public class RepositoryResult<T> extends IterationWrapper<T, RepositoryException
 	 * @throws RepositoryException
 	 *         if a problem occurred during initialization of the filter.
 	 */
+	@Deprecated
 	public void enableDuplicateFilter()
 		throws RepositoryException
 	{
