@@ -14,6 +14,7 @@ import org.openrdf.repository.RepositoryException;
  * Operation that removes the namespace for a specific prefix.
  * 
  * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 public class RemoveNamespaceOperation implements TransactionOperation {
 

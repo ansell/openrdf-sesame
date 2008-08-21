@@ -15,6 +15,7 @@ import org.openrdf.repository.RepositoryException;
  * Operation to add a statement.
  * 
  * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 public class AddStatementOperation extends StatementOperation {
 

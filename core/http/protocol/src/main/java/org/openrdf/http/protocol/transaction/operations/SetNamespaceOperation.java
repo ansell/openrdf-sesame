@@ -14,6 +14,7 @@ import org.openrdf.repository.RepositoryException;
  * Operation that sets the namespace for a specific prefix.
  * 
  * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 public class SetNamespaceOperation implements TransactionOperation {
 
