@@ -38,6 +38,7 @@ import org.openrdf.model.Value;
  *      org.openrdf.model.Resource[])
  * @author James Leigh
  */
+@Deprecated
 public class GraphResult extends RepositoryResult<Statement> {
 
 	public GraphResult(CloseableIteration<? extends Statement, RepositoryException> iter) {
