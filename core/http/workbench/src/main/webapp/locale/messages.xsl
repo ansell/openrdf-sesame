@@ -12,7 +12,7 @@
 		List of Repositories
 	</variable>
 	<variable name="summary.title">Summary</variable>
-	<variable name="explore.title">Explore Value</variable>
+	<variable name="explore.title">Explore</variable>
 	<variable name="namespaces.title">
 		Namespaces In Repository
 	</variable>
@@ -52,13 +52,13 @@
 	<variable name="detail-information.label">
 		Detail Information
 	</variable>
-	<variable name="explore.label">Explore Repository</variable>
+	<variable name="explore.label">Explore</variable>
 	<variable name="namespaces.label">Namespaces</variable>
 	<variable name="contexts.label">Contexts</variable>
 	<variable name="types.label">Types</variable>
 	<variable name="query.label">Query</variable>
 	<variable name="export.label">Export</variable>
-	<variable name="modify.label">Modify Repository</variable>
+	<variable name="modify.label">Modify</variable>
 	<variable name="add.label">Add</variable>
 	<variable name="remove.label">Remove</variable>
 	<variable name="delete.label">Delete</variable>

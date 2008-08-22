@@ -28,6 +28,7 @@ import org.openrdf.workbench.util.DynamicHttpRequest;
 
 public class WorkbenchServlet extends BaseServlet {
 	private static final String DEFAULT_PATH_PARAM = "default-path";
+	private static final String NO_REPOSITORY_PARAM = "no-repository-id";
 	public static String SERVER_PARAM = "server";
 	private RepositoryManager manager;
 	private ConcurrentMap<String, ProxyRepositoryServlet> repositories = new ConcurrentHashMap<String, ProxyRepositoryServlet>();
@@ -125,12 +126,17 @@ public class WorkbenchServlet extends BaseServlet {
 			repositories.get(id).service(http, resp);
 		} else {
 			Repository repository = manager.getRepository(id);
-			if (repository == null)
-				throw new BadRequestException("No such repository: " + id);
+			if (repository == null) {
+				String noId = config.getInitParameter(NO_REPOSITORY_PARAM);
+				if (noId == null || !noId.equals(id))
+					throw new BadRequestException("No such repository: " + id);
+			}
 			ProxyRepositoryServlet servlet = new ProxyRepositoryServlet();
 			servlet.setRepositoryManager(manager);
-			servlet.setRepositoryInfo(manager.getRepositoryInfo(id));
-			servlet.setRepository(repository);
+			if (repository != null) {
+				servlet.setRepositoryInfo(manager.getRepositoryInfo(id));
+				servlet.setRepository(repository);
+			}
 			servlet.init(new BasicServletConfig(id, config));
 			repositories.putIfAbsent(id, servlet);
 			repositories.get(id).service(http, resp);

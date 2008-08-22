@@ -21,21 +21,24 @@ import org.openrdf.workbench.util.TupleResultBuilder;
 public class InfoServlet extends TransformationServlet {
 
 	@Override
-	public void init(ServletConfig config) throws ServletException {
+	public void init(ServletConfig config)
+		throws ServletException
+	{
 		super.init(config);
 	}
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException {
+		throws RepositoryException
+	{
 		TupleResultBuilder builder = new TupleResultBuilder(out);
-		builder.start("id", "description", "location", "server",
-				"upload-format", "query-format", "download-format");
+		builder.start("id", "description", "location", "server", "readable", "writeable", "upload-format",
+				"query-format", "download-format");
 		String id = info.getId();
 		String desc = info.getDescription();
 		URL loc = info.getLocation();
 		URL server = getServer();
-		builder.result(id, desc, loc, server);
+		builder.result(id, desc, loc, server, info.isReadable(), info.isWritable());
 		for (RDFParserFactory parser : RDFParserRegistry.getInstance().getAll()) {
 			String mimeType = parser.getRDFFormat().getDefaultMIMEType();
 			String name = parser.getRDFFormat().getName();
@@ -56,7 +59,8 @@ public class InfoServlet extends TransformationServlet {
 	private URL getServer() {
 		try {
 			return manager.getLocation();
-		} catch (MalformedURLException exc) {
+		}
+		catch (MalformedURLException exc) {
 			return null;
 		}
 	}
