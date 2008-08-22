@@ -39,8 +39,40 @@
 	</xsl:template>
 
 	<xsl:template match="sparql:sparql">
+		<iframe id="cookie-iframe" name="cookie-iframe"
+			style="visibility:hidden;position:absolute;" width="0" height="0"
+			src="../../scripts/cookies.html">
+		</iframe>
 		<script type="text/javascript">
 			<![CDATA[
+			function saveCookie(name,value,days) {
+				if (days) {
+					var date = new Date();
+					date.setTime(date.getTime()+(days*24*60*60*1000));
+					var expires = "; expires="+date.toGMTString();
+				}
+				else var expires = "";
+				getCookieDocument().cookie = name+"="+value+expires+"; path=/";
+			}
+			
+			function readCookie(name) {
+				if (!getCookieDocument().cookie)
+					return null;
+				var nameEQ = name + "=";
+				var ca = getCookieDocument().cookie.split(';');
+				for(var i=0;ca.length - i;i++) {
+					var c = ca[i];
+					while (c.charAt(0)==' ') c = c.substring(1,c.length);
+					if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+				}
+				return null;
+			}
+			
+			function getCookieDocument() {
+				if (window.frames['cookie-iframe'])
+					return window.frames['cookie-iframe'].document;
+				return document;
+			}
 			function textContent(element) {
 				var text = element.innerText || element.textContent;
 				return text.replace(/^\s*/, "").replace(/\s*$/, "");
@@ -73,17 +105,48 @@
 					if (pair[0] == 'resource') {
 						document.getElementById('resource').value = value;
 					}
+					if (pair[0] == 'limit') {
+						var options = document.getElementById('limit').options;
+						for (var j=0;options.length-j;j++) {
+							if (options[j].value == value) {
+								options[j].selected = true;
+							}
+						}
+					}
 				}
 			}
 			window.onload = function() {
+				var value = readCookie('limit');
+				if (value) {
+					var options = document.getElementById('limit').options;
+					for (var i=0;options.length-i;i++) {
+						if (options[i].value == value) {
+							options[i].selected = true;
+						}
+					}
+				}
 				populateParameters();
 				var title = document.getElementById('content').getElementsByTagName('h1')[0];
-				var value = document.getElementById('resource').value;
-				title.appendChild(document.createTextNode(' (' + value + ')'));
+				value = document.getElementById('resource').value;
+				if (value) {
+					title.appendChild(document.createTextNode(' (' + value + ')'));
+				}
 				removeDuplicates(value);
+				var count = textContent(document.getElementById('count'));
+				if (document.getElementById('limit').value == '0') {
+					document.getElementById('result-limited').style.display = 'none';
+				} else if (parseInt(document.getElementById('limit').value) - parseInt(count)) {
+					document.getElementById('result-limited').style.display = 'none';
+				}
 			}
 			]]>
 		</script>
+		<pre id="count" style="display:none">
+			<xsl:value-of select="count(//sparql:result)" />
+		</pre>
+		<p id="result-limited">
+			<xsl:value-of select="$result-limited.desc" />
+		</p>
 		<xsl:if
 			test="1 = count(//sparql:result/sparql:binding[@name='predicate']/sparql:uri[text() = '&rdfs;label'])">
 			<xsl:for-each
@@ -167,7 +230,7 @@
 			</tr>
 		</table>
 		<xsl:if
-			test="sparql:head/sparql:variable/@name != 'error-message'">
+			test="sparql:head/sparql:variable/@name != 'error-message' and sparql:results">
 			<table class="data">
 				<xsl:apply-templates select="*" />
 			</table>
@@ -183,12 +246,47 @@
 							<input id="resource" name="resource"
 								size="48" type="text" />
 						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td></td>
 						<td>
 							<span class="error">
 								<xsl:value-of
 									select="//sparql:binding[@name='error-message']" />
 							</span>
 						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<th>
+							<xsl:value-of select="$result-limit.label" />
+						</th>
+						<td>
+							<select id="limit" name="limit"
+								onchange="saveCookie('limit', this.value, 30)">
+								<option value="0">
+									<xsl:value-of select="$none.label" />
+								</option>
+								<option value="10">
+									<xsl:value-of
+										select="$limit10.label" />
+								</option>
+								<option value="50">
+									<xsl:value-of
+										select="$limit50.label" />
+								</option>
+								<option value="100" selected="true">
+									<xsl:value-of
+										select="$limit100.label" />
+								</option>
+								<option value="200">
+									<xsl:value-of
+										select="$limit200.label" />
+								</option>
+							</select>
+						</td>
+						<td></td>
 					</tr>
 
 					<tr>

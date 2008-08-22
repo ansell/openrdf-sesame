@@ -42,8 +42,10 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	public WorkbenchRequest(Repository repository, HttpServletRequest request)
 			throws RepositoryException, IOException, FileUploadException {
 		super(request);
-		this.repository = repository;
-		this.vf = repository.getValueFactory();
+		if (repository != null) {
+			this.repository = repository;
+			this.vf = repository.getValueFactory();
+		}
 		String url = request.getRequestURL().toString();
 		if (ServletFileUpload.isMultipartContent(this)) {
 			parameters = getMultipartParameterMap();

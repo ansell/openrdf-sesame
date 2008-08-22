@@ -2,6 +2,9 @@ package org.openrdf.workbench.commands;
 
 import java.io.PrintWriter;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.model.Resource;
@@ -19,10 +22,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ExploreServlet extends TupleServlet {
+	private static final String DEFAULT_LIMIT = "default-limit";
 	private Logger logger = LoggerFactory.getLogger(ExploreServlet.class);
 
 	public ExploreServlet() {
 		super("explore.xsl", "subject", "predicate", "object", "context");
+	}
+
+	@Override
+	public void init(ServletConfig config)
+		throws ServletException
+	{
+		super.init(config);
 	}
 
 	@Override
@@ -46,29 +57,57 @@ public class ExploreServlet extends TupleServlet {
 	protected void service(WorkbenchRequest req, TupleResultBuilder builder,
 			RepositoryConnection con) throws Exception {
 		Value value = req.getValue("resource");
+		int limit = getLimit(req);
 		if (value instanceof Resource) {
-			export(con, builder, (Resource) value, null, null);
+			limit -= export(con, builder, limit, (Resource) value, null, null);
 		}
 		if (value instanceof URI) {
-			export(con, builder, null, (URI) value, null);
+			limit -= export(con, builder, limit, null, (URI) value, null);
 		}
-		export(con, builder, null, null, value);
+		if (value != null) {
+			limit -= export(con, builder, limit, null, null, value);
+		}
 		if (value instanceof Resource) {
-			export(con, builder, null, null, null, (Resource) value);
+			limit -= export(con, builder, limit, null, null, null, (Resource) value);
 		}
 	}
 
-	private void export(RepositoryConnection con, TupleResultBuilder builder,
+	private int getLimit(WorkbenchRequest req)
+		throws BadRequestException
+	{
+		if (req.isParameterPresent("limit"))
+			return req.getInt("limit");
+		if (req.getCookies() != null) {
+			for (Cookie cookie : req.getCookies()) {
+				if ("limit".equals(cookie.getName())) {
+					try {
+						return Integer.parseInt(cookie.getValue());
+					} catch (NumberFormatException exc) {
+						// ignore
+					}
+				}
+			}
+		}
+		String limit = config.getInitParameter(DEFAULT_LIMIT);
+		if (limit != null) {
+			return Integer.parseInt(limit);
+		}
+		return Integer.MAX_VALUE;
+	}
+
+	private int export(RepositoryConnection con, TupleResultBuilder builder, int limit,
 			Resource subj, URI pred, Value obj, Resource... ctx)
 			throws RepositoryException {
 		RepositoryResult<Statement> result = con.getStatements(subj, pred, obj,
 				true, ctx);
 		try {
-			while (result.hasNext()) {
+			int count;
+			for (count = 0; result.hasNext() && count < limit; count++) {
 				Statement st = result.next();
 				builder.result(st.getSubject(), st.getPredicate(), st
 						.getObject(), st.getContext());
 			}
+			return count;
 		} finally {
 			result.close();
 		}

@@ -47,7 +47,7 @@
 				<div id="navigation">
 					<ul class="maingroup">
 						<li>
-							<a href="../SYSTEM/server">
+							<a href="../NONE/server">
 								<xsl:value-of select="$server.label" />
 							</a>
 						</li>
@@ -71,64 +71,75 @@
 								</li>
 							</ul>
 						</li>
-						<li>
-							<xsl:value-of select="$explore.label" />
-							<ul class="group">
-								<li>
-									<a href="namespaces">
-										<xsl:value-of
-											select="$namespaces.label" />
-									</a>
-								</li>
-								<li>
-									<a href="contexts">
-										<xsl:value-of
-											select="$contexts.label" />
-									</a>
-								</li>
-								<li>
-									<a href="types">
-										<xsl:value-of
-											select="$types.label" />
-									</a>
-								</li>
-								<li>
-									<a href="query">
-										<xsl:value-of
-											select="$query.label" />
-									</a>
-								</li>
-								<li>
-									<a href="export">
-										<xsl:value-of
-											select="$export.label" />
-									</a>
-								</li>
-							</ul>
-						</li>
-						<li>
-							<xsl:value-of select="$modify.label" />
-							<ul class="group">
-								<li>
-									<a href="add">
-										<xsl:value-of
-											select="$add.label" />
-									</a>
-								</li>
-								<li>
-									<a href="remove">
-										<xsl:value-of
-											select="$remove.label" />
-									</a>
-								</li>
-								<li>
-									<a href="clear">
-										<xsl:value-of
-											select="$clear.label" />
-									</a>
-								</li>
-							</ul>
-						</li>
+						<xsl:if
+							test="$info//sparql:binding[@name='readable']/sparql:literal/text() != 'false'">
+							<li>
+								<xsl:value-of select="$explore.label" />
+								<ul class="group">
+									<li>
+										<a href="namespaces">
+											<xsl:value-of
+												select="$namespaces.label" />
+										</a>
+									</li>
+									<li>
+										<a href="contexts">
+											<xsl:value-of
+												select="$contexts.label" />
+										</a>
+									</li>
+									<li>
+										<a href="types">
+											<xsl:value-of
+												select="$types.label" />
+										</a>
+									</li>
+									<li>
+										<a href="explore">
+											<xsl:value-of
+												select="$explore.label" />
+										</a>
+									</li>
+									<li>
+										<a href="query">
+											<xsl:value-of
+												select="$query.label" />
+										</a>
+									</li>
+									<li>
+										<a href="export">
+											<xsl:value-of
+												select="$export.label" />
+										</a>
+									</li>
+								</ul>
+							</li>
+						</xsl:if>
+						<xsl:if test="$info//sparql:binding[@name='writeable']/sparql:literal/text() != 'false'">
+							<li>
+								<xsl:value-of select="$modify.label" />
+								<ul class="group">
+									<li>
+										<a href="add">
+											<xsl:value-of
+												select="$add.label" />
+										</a>
+									</li>
+									<li>
+										<a href="remove">
+											<xsl:value-of
+												select="$remove.label" />
+										</a>
+									</li>
+									<li>
+										<a href="clear">
+											<xsl:value-of
+												select="$clear.label" />
+										</a>
+									</li>
+								</ul>
+							</li>
+						</xsl:if>
 						<li>
 							<xsl:value-of select="$system.label" />
 							<ul class="group">
@@ -169,7 +180,7 @@
 								</xsl:choose>
 							</td>
 							<td class="change">
-								<a href="../SYSTEM/server">
+								<a href="../NONE/server">
 									<xsl:value-of
 										select="$change.label" />
 								</a>
@@ -183,13 +194,7 @@
 							<td>
 								<xsl:choose>
 									<xsl:when
-										test="$info//sparql:binding[@name='id']/sparql:literal/text() = 'SYSTEM'">
-										<span class="disabled">
-											<xsl:value-of
-												select="$none.label" />
-										</span>
-									</xsl:when>
-									<xsl:when test="$info">
+										test="$info//sparql:binding[@name='id']">
 										<xsl:value-of
 											select="$info//sparql:binding[@name='description']/sparql:literal" />
 										(
@@ -206,7 +211,7 @@
 								</xsl:choose>
 							</td>
 							<td class="change">
-								<a href="../SYSTEM/repositories">
+								<a href="../NONE/repositories">
 									<xsl:value-of
 										select="$change.label" />
 								</a>

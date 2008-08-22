@@ -9,6 +9,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.manager.RepositoryInfo;
@@ -33,17 +34,20 @@ public abstract class BaseRepositoryServlet extends BaseServlet implements Repos
 	}
 
 	public void setRepository(Repository repository) {
-		this.repository = repository;
-		this.vf = repository.getValueFactory();
+		if (repository == null) {
+			this.vf = new ValueFactoryImpl();
+		} else {
+			this.repository = repository;
+			this.vf = repository.getValueFactory();
+		}
 	}
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		if (repository == null) {
-			if (config.getInitParameter(REPOSITORY_PARAM) == null)
-				throw new MissingInitParameterException(REPOSITORY_PARAM);
-			repository = (Repository) lookup(config, REPOSITORY_PARAM);
+			if (config.getInitParameter(REPOSITORY_PARAM) != null)
+				repository = (Repository) lookup(config, REPOSITORY_PARAM);
 		}
 		if (manager == null) {
 			if (config.getInitParameter(MANAGER_PARAM) == null)
@@ -55,8 +59,13 @@ public abstract class BaseRepositoryServlet extends BaseServlet implements Repos
 			info.setId(config.getInitParameter("id"));
 			info.setDescription(config.getInitParameter("description"));
 			try {
-				info.setWritable(repository.isWritable());
-				info.setReadable(true);
+				if (repository == null) {
+					info.setReadable(false);
+					info.setWritable(false);
+				} else {
+					info.setReadable(true);
+					info.setWritable(repository.isWritable());
+				}
 				String location = config.getInitParameter("location");
 				if (location != null && location.trim().length() > 0) {
 					info.setLocation(new URL(location));

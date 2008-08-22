@@ -36,19 +36,27 @@
 		</init-param>
 		<init-param>
 			<param-name>change-server-path</param-name>
-			<param-value>/SYSTEM/server</param-value>
+			<param-value>/NONE/server</param-value>
 		</init-param>
 		<init-param>
 			<param-name>server-cookie-max-age</param-name>
 			<param-value>2592000</param-value>
 		</init-param>
 		<init-param>
+			<param-name>no-repository-id</param-name>
+			<param-value>NONE</param-value>
+		</init-param>
+		<init-param>
 			<param-name>default-path</param-name>
-			<param-value>/SYSTEM/repositories</param-value>
+			<param-value>/NONE/repositories</param-value>
 		</init-param>
 		<init-param>
 			<param-name>default-command</param-name>
 			<param-value>/summary</param-value>
+		</init-param>
+		<init-param>
+			<param-name>default-limit</param-name>
+			<param-value>100</param-value>
 		</init-param>
 		<init-param>
 			<param-name>/summary</param-name>
