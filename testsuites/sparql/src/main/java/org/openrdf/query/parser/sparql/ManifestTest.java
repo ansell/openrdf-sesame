@@ -5,16 +5,22 @@
  */
 package org.openrdf.query.parser.sparql;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import junit.framework.TestSuite;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.net.ParsedURI;
+import info.aduna.io.FileUtil;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
@@ -45,9 +51,38 @@ public class ManifestTest {
 		if (REMOTE) {
 			MANIFEST_FILE = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/manifest-evaluation.ttl";
 		} else {
-			MANIFEST_FILE = ManifestTest.class.getResource(
-					"/testcases-dawg/data-r2/manifest-evaluation.ttl")
-					.toString();
+			URL url = ManifestTest.class.getResource(
+					"/testcases-dawg/data-r2/manifest-evaluation.ttl");
+			if ("jar".equals(url.getProtocol())) {
+				try {
+					File destDir = FileUtil.createTempDir("sparql");
+					JarURLConnection con = (JarURLConnection)url.openConnection();
+					JarFile jar = con.getJarFile();
+					Enumeration<JarEntry> entries = jar.entries();
+					while (entries.hasMoreElements()) {
+						JarEntry file = entries.nextElement();
+						File f = new File(destDir + File.separator + file.getName());
+						if (file.isDirectory()) {
+							f.mkdir();
+							continue;
+						}
+						InputStream is = jar.getInputStream(file);
+						FileOutputStream fos = new FileOutputStream(f);
+						while (is.available() > 0) {
+							fos.write(is.read());
+						}
+						fos.close();
+						is.close();
+					}
+					File localFile = new File(destDir, con.getEntryName());
+					MANIFEST_FILE = localFile.toURI().toURL().toString();
+				}
+				catch (IOException e) {
+					throw new AssertionError(e);
+				}
+			} else {
+				MANIFEST_FILE = url.toString();
+			}
 		}
 	}
 
@@ -98,32 +133,7 @@ public class ManifestTest {
 		try {
 			OpenRDFUtil.verifyContextNotNull(contexts);
 			final ValueFactory vf = con.getRepository().getValueFactory();
-			RDFParser rdfParser = new TurtleParser() {
-				@Override
-				protected void setBaseURI(final String uriSpec) {
-					ParsedURI baseURI = new ParsedURI(uriSpec) {
-						private boolean jarFile = uriSpec.startsWith("jar:file:");
-						private int idx = uriSpec.indexOf('!') + 1;
-						private ParsedURI file = new ParsedURI("jar-file:"
-								+ uriSpec.substring(idx));
-
-						@Override
-						public ParsedURI resolve(ParsedURI uri) {
-							if (jarFile) {
-								String resolved = file.resolve(uri).toString();
-								if (resolved.startsWith("jar-file:")) {
-									String path = resolved.substring("jar-file:".length());
-									String c = uriSpec.substring(0, idx) + path;
-									return new ParsedURI(c);
-								}
-							}
-							return super.resolve(uri);
-						}
-					};
-					baseURI.normalize();
-					setBaseURI(baseURI);
-				}
-			};
+			RDFParser rdfParser = new TurtleParser();
 			rdfParser.setValueFactory(vf);
 
 			rdfParser.setVerifyData(false);
