@@ -10,9 +10,11 @@ import static org.openrdf.rio.RDFWriterRegistry.getInstance;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Statement;
@@ -37,8 +39,6 @@ import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class QueryServlet extends TransformationServlet {
 
@@ -53,9 +53,8 @@ public class QueryServlet extends TransformationServlet {
 	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception, IOException
 	{
-		Map<String, String> parameters = req.getSingleParameterMap();
-		if (parameters.containsKey("Accept")) {
-			String accept = parameters.get("Accept");
+		if (req.isParameterPresent("Accept")) {
+			String accept = req.getParameter("Accept");
 			RDFFormat format = RDFFormat.forMIMEType(accept);
 			if (format != null) {
 				resp.setContentType(accept);
@@ -70,7 +69,7 @@ public class QueryServlet extends TransformationServlet {
 		PrintWriter out = resp.getWriter();
 		try {
 			PrintWriter writer = new PrintWriter(new BufferedWriter(out));
-			service(parameters, writer, xslPath);
+			service(req, writer, xslPath);
 			writer.flush();
 		}
 		catch (BadRequestException exc) {
@@ -86,7 +85,7 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
-	private void service(Map<String, String> parameters, PrintWriter out, String xslPath)
+	private void service(WorkbenchRequest req, PrintWriter out, String xslPath)
 		throws Exception
 	{
 		RepositoryConnection con = repository.getConnection();
@@ -95,9 +94,9 @@ public class QueryServlet extends TransformationServlet {
 			for (Namespace ns : con.getNamespaces().asList()) {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
-			if (parameters.containsKey("query")) {
+			if (req.isParameterPresent("query")) {
 				try {
-					service(builder, out, xslPath, con, parameters);
+					service(builder, out, xslPath, con, req);
 				}
 				catch (MalformedQueryException exc) {
 					throw new BadRequestException(exc.getMessage(), exc);
@@ -123,24 +122,23 @@ public class QueryServlet extends TransformationServlet {
 	}
 
 	private void service(TupleResultBuilder builder, PrintWriter out, String xslPath,
-			RepositoryConnection con, Map<String, String> parameters)
+			RepositoryConnection con, WorkbenchRequest req)
 		throws Exception
 	{
-		String ql = parameters.get("queryLn");
-		String q = parameters.get("query");
+		String ql = req.getParameter("queryLn");
+		String q = req.getParameter("query");
 		Query query = prepareQuery(con, QueryLanguage.valueOf(ql), q);
-		if (parameters.containsKey("infer")) {
-			boolean infer = Boolean.parseBoolean(parameters.get("infer"));
+		if (req.isParameterPresent("infer")) {
+			boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
 			query.setIncludeInferred(infer);
 		}
 		int limit = 0;
-		if (parameters.containsKey("limit")) {
-			limit = Integer.parseInt(parameters.get("limit"));
+		if (req.isParameterPresent("limit")) {
+			limit = Integer.parseInt(req.getParameter("limit"));
 		}
 		RDFFormat format = null;
-		String accept = parameters.get("Accept");
-		if (accept != null) {
-			format = RDFFormat.forMIMEType(accept);
+		if (req.isParameterPresent("Accept")) {
+			format = RDFFormat.forMIMEType(req.getParameter("Accept"));
 		}
 		if (query instanceof TupleQuery) {
 			builder.transform(xslPath, "tuple.xsl");

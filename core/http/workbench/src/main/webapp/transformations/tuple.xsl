@@ -30,23 +30,8 @@
 					document.location.href = url + ';' + name + '=' + encodeURIComponent(value);
 				}
 			}
-			function textContent(element) {
-				var text = element.innerText || element.textContent;
-				return text.replace(/^\s*/, "").replace(/\s*$/, "");
-			}
-			window.onload = function() {
-				var count = textContent(document.getElementById('count'));
-				if (document.getElementById('limit').value == '0') {
-					document.getElementById('result-limited').style.display = 'none';
-				} else if (parseInt(document.getElementById('limit').value) - parseInt(count)) {
-					document.getElementById('result-limited').style.display = 'none';
-				}
-			}
 			]]>
 		</script>
-		<pre id="count" style="display:none">
-			<xsl:value-of select="count(//sparql:result)" />
-		</pre>
 		<form>
 			<table class="dataentry">
 				<tbody>
@@ -60,7 +45,11 @@
 							</xsl:call-template>
 						</td>
 						<td id="result-limited">
-							<xsl:value-of select="$result-limited.desc" />
+							<xsl:if
+								test="$info//sparql:binding[@name='default-limit']/sparql:literal = count(//sparql:result)">
+								<xsl:value-of
+									select="$result-limited.desc" />
+							</xsl:if>
 						</td>
 					</tr>
 				</tbody>
