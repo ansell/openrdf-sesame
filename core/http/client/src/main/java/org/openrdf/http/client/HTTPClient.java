@@ -291,18 +291,22 @@ public class HTTPClient {
 		checkServerURL();
 
 		if (username != null && password != null) {
+			logger.debug("Setting username '{}' and password for server at {}.", username, serverURL);
 			try {
 				URL server = new URL(serverURL);
 				authScope = new AuthScope(server.getHost(), AuthScope.ANY_PORT);
 				httpClient.getState().setCredentials(authScope,
 						new UsernamePasswordCredentials(username, password));
+				httpClient.getParams().setAuthenticationPreemptive(true);
 			}
 			catch (MalformedURLException e) {
 				logger.warn("Unable to set username and password for malformed URL {}", serverURL);
 			}
 		}
 		else {
+			authScope = null;
 			httpClient.getState().clearCredentials();
+			httpClient.getParams().setAuthenticationPreemptive(false);
 		}
 	}
 
