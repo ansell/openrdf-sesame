@@ -303,7 +303,7 @@ public class MemoryStore extends SailBase {
 				}
 				else {
 					try {
-						FileIO.read(this, dataFile);
+						new FileIO(this).read(dataFile);
 						logger.debug("Data file read successfully");
 					}
 					catch (IOException e) {
@@ -327,7 +327,7 @@ public class MemoryStore extends SailBase {
 					dirLock = locker.lockOrFail();
 
 					logger.debug("Initializing data file...");
-					FileIO.write(this, syncFile, dataFile);
+					new FileIO(this).write(syncFile, dataFile);
 					logger.debug("Data file initialized");
 				}
 				catch (IOException e) {
@@ -452,8 +452,8 @@ public class MemoryStore extends SailBase {
 	/**
 	 * Creates a StatementIterator that contains the statements matching the
 	 * specified pattern of subject, predicate, object, context. Inferred
-	 * statements are excluded when <tt>explicitOnly</tt> is set to
-	 * <tt>true</tt>. Statements from the null context are excluded when
+	 * statements are excluded when <tt>explicitOnly</tt> is set to <tt>true</tt>
+	 * . Statements from the null context are excluded when
 	 * <tt>namedContextsOnly</tt> is set to <tt>true</tt>. The returned
 	 * StatementIterator will assume the specified read mode.
 	 */
@@ -754,7 +754,8 @@ public class MemoryStore extends SailBase {
 		for (MemStatement st : txnStatements.keySet()) {
 			TxnStatus txnStatus = st.getTxnStatus();
 			if (txnStatus == TxnStatus.NEW || txnStatus == TxnStatus.ZOMBIE) {
-				// Statement has been added during this transaction and deprecates immediately
+				// Statement has been added during this transaction and deprecates
+				// immediately
 				st.setTillSnapshot(currentSnapshot);
 			}
 			else if (txnStatus != TxnStatus.NEUTRAL) {
@@ -847,7 +848,7 @@ public class MemoryStore extends SailBase {
 			if (persist && contentsChanged) {
 				logger.debug("syncing data to file...");
 				try {
-					FileIO.write(this, syncFile, dataFile);
+					new FileIO(this).write(syncFile, dataFile);
 					contentsChanged = false;
 					logger.debug("Data synced to file");
 				}

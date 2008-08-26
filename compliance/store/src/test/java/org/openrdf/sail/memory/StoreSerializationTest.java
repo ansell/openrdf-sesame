@@ -12,6 +12,8 @@ import junit.framework.TestCase;
 import info.aduna.io.FileUtil;
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.model.Literal;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
@@ -23,6 +25,7 @@ import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailException;
 
 public class StoreSerializationTest extends TestCase {
 
@@ -103,6 +106,44 @@ public class StoreSerializationTest extends TestCase {
 		iter.close();
 		con.addStatement(bar, RDF.TYPE, foo);
 		con.commit();
+		con.close();
+	}
+
+	public void testLongLiterals()
+		throws Exception
+	{
+		MemoryStore store = new MemoryStore(dataDir);
+		store.initialize();
+
+		ValueFactory factory = store.getValueFactory();
+		URI foo = factory.createURI("http://www.foo.example/foo");
+
+		StringBuilder sb = new StringBuilder(66000);
+		for (int i = 0; i < 66000; i++) {
+			sb.append('a');
+		}
+
+		Literal longLiteral = factory.createLiteral(sb.toString());
+
+		SailConnection con = store.getConnection();
+		con.addStatement(foo, RDF.TYPE, longLiteral);
+		con.commit();
+
+		con.close();
+
+		store.shutDown();
+
+		store = new MemoryStore(dataDir);
+		store.initialize();
+
+		con = store.getConnection();
+
+		CloseableIteration<? extends Statement, SailException> iter = con.getStatements(foo, RDF.TYPE, null,
+				false);
+		assertTrue(iter.hasNext());
+		iter.next();
+		iter.close();
+
 		con.close();
 	}
 }
