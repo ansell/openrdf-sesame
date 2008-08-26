@@ -125,7 +125,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	}
 
 	public boolean isParameterPresent(String name) {
-		if (parameters != null && parameters.containsKey(name))
+		if (parameters != null && parameters.get(name) != null)
 			return parameters.get(name).length() > 0;
 		String[] values = super.getParameterValues(name);
 		if (values != null && values.length > 0)
