@@ -71,6 +71,9 @@
 						<td colspan="2">
 							<input type="submit"
 								value="{$update.label}" />
+							<input type="submit"
+								onclick="document.getElementById('namespace').value = '';return true"
+								value="{$delete.label}" />
 						</td>
 					</tr>
 				</tbody>

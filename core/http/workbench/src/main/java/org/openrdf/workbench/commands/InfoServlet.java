@@ -1,3 +1,8 @@
+/*
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ *
+ * Licensed under the Aduna BSD-style license.
+ */
 package org.openrdf.workbench.commands;
 
 import static org.openrdf.query.parser.QueryParserRegistry.getInstance;
@@ -6,39 +11,43 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.query.parser.QueryParserFactory;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFParserFactory;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
+import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class InfoServlet extends TransformationServlet {
 
 	@Override
-	public void init(ServletConfig config)
-		throws ServletException
-	{
-		super.init(config);
+	public String[] getCookieNames() {
+		return new String[] { "limit", "queryLn", "infer", "Accept", "Content-Type" };
 	}
 
-	@Override
-	public void service(PrintWriter out, String xslPath)
-		throws RepositoryException
+	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
+		throws Exception
 	{
+		resp.setContentType("application/xml");
+		PrintWriter out = resp.getWriter();
 		TupleResultBuilder builder = new TupleResultBuilder(out);
-		builder.start("id", "description", "location", "server", "readable", "writeable", "upload-format",
+		builder.start("id", "description", "location", "server", "readable", "writeable", "default-limit",
+				"default-queryLn", "default-infer", "default-Accept", "default-Content-Type", "upload-format",
 				"query-format", "download-format");
 		String id = info.getId();
 		String desc = info.getDescription();
 		URL loc = info.getLocation();
 		URL server = getServer();
 		builder.result(id, desc, loc, server, info.isReadable(), info.isWritable());
+		builder.binding("default-limit", req.getParameter("limit"));
+		builder.binding("default-queryLn", req.getParameter("queryLn"));
+		builder.binding("default-infer", req.getParameter("infer"));
+		builder.binding("default-Accept", req.getParameter("Accept"));
+		builder.binding("default-Content-Type", req.getParameter("Content-Type"));
 		for (RDFParserFactory parser : RDFParserRegistry.getInstance().getAll()) {
 			String mimeType = parser.getRDFFormat().getDefaultMIMEType();
 			String name = parser.getRDFFormat().getName();

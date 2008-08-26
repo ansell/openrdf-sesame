@@ -14,49 +14,14 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<xsl:variable name="info"
-			select="document(sparql:head/sparql:link[@href='info']/@href)" />
 		<xsl:if
 			test="$info//sparql:binding[@name='id']/sparql:literal/text() = 'SYSTEM'">
 			<p class="WARN">
 				<xsl:value-of select="$SYSTEM-warning.desc" />
 			</p>
 		</xsl:if>
-		<iframe id="cookie-iframe" name="cookie-iframe"
-			style="visibility:hidden;position:absolute;" width="0" height="0"
-			src="../../scripts/cookies.html">
-		</iframe>
 		<script type="text/javascript">
 			<![CDATA[
-			function saveCookie(name,value,days) {
-				if (days) {
-					var date = new Date();
-					date.setTime(date.getTime()+(days*24*60*60*1000));
-					var expires = "; expires="+date.toGMTString();
-				}
-				else var expires = "";
-				getCookieDocument().cookie = name+"="+value+expires+"; path=/";
-			}
-			
-			function readCookie(name) {
-				if (!getCookieDocument().cookie)
-					return null;
-				var nameEQ = name + "=";
-				var ca = getCookieDocument().cookie.split(';');
-				for(var i=0;ca.length - i;i++) {
-					var c = ca[i];
-					while (c.charAt(0)==' ') c = c.substring(1,c.length);
-					if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-				}
-				return null;
-			}
-			
-			function getCookieDocument() {
-				if (window.frames['cookie-iframe'])
-					return window.frames['cookie-iframe'].document;
-				return document;
-			}
-
 			function enabledInput(selected) {
 				document.getElementById('source-' + selected).checked = true;
 				document.getElementById('file').disabled = selected != 'file';
@@ -77,18 +42,6 @@
 					context.value = decodeURIComponent('%3C') + document.getElementById('url').value + decodeURIComponent('%3E');
 				}
 			}
-
-			window.onload = function() {
-				var value = readCookie('Content-Type');
-				if (value) {
-					var options = document.getElementById('Content-Type').options;
-					for (var i=0;options.length-i;i++) {
-						if (options[i].value == value) {
-							options[i].selected = true;
-						}
-					}
-				}
-			}
 			]]>
 		</script>
 		<xsl:if test="//sparql:binding[@name='error-message']">
@@ -107,7 +60,8 @@
 						</th>
 						<td>
 							<input id="baseURI" name="baseURI"
-								type="text" value="{//sparql:binding[@name='baseURI']/sparql:literal}" />
+								type="text"
+								value="{//sparql:binding[@name='baseURI']/sparql:literal}" />
 						</td>
 						<td></td>
 
@@ -118,7 +72,8 @@
 						</th>
 						<td>
 							<input id="context" name="context"
-								type="text" value="{//sparql:binding[@name='context']/sparql:literal}" />
+								type="text"
+								value="{//sparql:binding[@name='context']/sparql:literal}" />
 						</td>
 						<td></td>
 
@@ -135,6 +90,11 @@
 									select="document(//sparql:link/@href)//sparql:binding[@name='upload-format']">
 									<option
 										value="{substring-before(sparql:literal, ' ')}">
+										<xsl:if
+											test="$info//sparql:binding[@name='default-Content-Type']/sparql:literal = substring-before(sparql:literal, ' ')">
+											<xsl:attribute
+												name="selected">true</xsl:attribute>
+										</xsl:if>
 										<xsl:value-of
 											select="substring-after(sparql:literal, ' ')" />
 									</option>

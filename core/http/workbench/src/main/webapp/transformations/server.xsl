@@ -14,49 +14,6 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<iframe id="cookie-iframe" name="cookie-iframe"
-			style="visibility:hidden;position:absolute;" width="0" height="0"
-			src="../../scripts/cookies.html">
-		</iframe>
-		<script type="text/javascript">
-			<![CDATA[
-			function saveCookie(name,value,days) {
-				if (days) {
-					var date = new Date();
-					date.setTime(date.getTime()+(days*24*60*60*1000));
-					var expires = "; expires="+date.toGMTString();
-				}
-				else var expires = "";
-				getCookieDocument().cookie = name+"="+value+expires+"; path=/";
-			}
-			
-			function readCookie(name) {
-				if (!getCookieDocument().cookie)
-					return null;
-				var nameEQ = name + "=";
-				var ca = getCookieDocument().cookie.split(';');
-				for(var i=0;ca.length - i;i++) {
-					var c = ca[i];
-					while (c.charAt(0)==' ') c = c.substring(1,c.length);
-					if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-				}
-				return null;
-			}
-			
-			function getCookieDocument() {
-				if (window.frames['cookie-iframe'])
-					return window.frames['cookie-iframe'].document;
-				return document;
-			}
-
-			window.onload = function() {
-				var value = readCookie('workbench-server');
-				if (value) {
-					document.getElementById('workbench-server').value = value;
-				}
-			}
-			]]>
-		</script>
 		<form action="server" method="post">
 			<table class="dataentry">
 				<tbody>
@@ -66,7 +23,8 @@
 						</th>
 						<td>
 							<input id="workbench-server"
-								name="workbench-server" type="text" />
+								name="workbench-server" type="text"
+								value="{$info//$info//sparql:binding[@name='server']}" />
 						</td>
 						<td>
 							<span class="error">
@@ -76,13 +34,11 @@
 						</td>
 					</tr>
 					<tr>
-						<td>
-						</td>
+						<td></td>
 						<td>
 							<xsl:value-of select="$change-server.desc" />
 						</td>
-						<td>
-						</td>
+						<td></td>
 					</tr>
 
 					<tr>

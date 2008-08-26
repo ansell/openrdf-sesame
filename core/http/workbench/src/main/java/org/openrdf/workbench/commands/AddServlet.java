@@ -1,3 +1,8 @@
+/*
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ *
+ * Licensed under the Aduna BSD-style license.
+ */
 package org.openrdf.workbench.commands;
 
 import java.io.IOException;
@@ -22,6 +27,11 @@ import org.slf4j.LoggerFactory;
 
 public class AddServlet extends TransformationServlet {
 	private Logger logger = LoggerFactory.getLogger(AddServlet.class);
+
+	@Override
+	public String[] getCookieNames() {
+		return new String[] { "Content-Type" };
+	}
 
 	@Override
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp,
