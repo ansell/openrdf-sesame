@@ -9,6 +9,7 @@ import java.io.File;
 
 import info.aduna.io.FileUtil;
 
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.RDFNotifyingStoreTest;
 import org.openrdf.sail.SailException;
@@ -60,4 +61,21 @@ public class NativeStoreTest extends RDFNotifyingStoreTest {
 		sail.initialize();
 		return sail;
 	}
+
+	// Test for SES-542
+	public void testGetNamespacePersistence()
+		throws Exception
+	{
+		con.setNamespace("rdf", RDF.NAMESPACE);
+		con.commit();
+		assertEquals(RDF.NAMESPACE, con.getNamespace("rdf"));
+
+		con.close();
+		sail.shutDown();
+		sail.initialize();
+		con = sail.getConnection();
+
+		assertEquals(RDF.NAMESPACE, con.getNamespace("rdf"));
+	}
+
 }
