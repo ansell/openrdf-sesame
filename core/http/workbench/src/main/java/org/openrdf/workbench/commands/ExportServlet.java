@@ -7,8 +7,6 @@ package org.openrdf.workbench.commands;
 
 import static org.openrdf.rio.RDFWriterRegistry.getInstance;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.model.Statement;
@@ -30,16 +28,15 @@ public class ExportServlet extends TupleServlet {
 
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { "limit" };
+		return new String[] { "limit", "Accept" };
 	}
 
 	@Override
 	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception
 	{
-		Map<String, String> parameters = req.getSingleParameterMap();
-		if (parameters.containsKey("Accept")) {
-			String accept = parameters.get("Accept");
+		if (req.isParameterPresent("Accept")) {
+			String accept = req.getParameter("Accept");
 			RDFFormat format = RDFFormat.forMIMEType(accept);
 			if (format != null) {
 				resp.setContentType(accept);

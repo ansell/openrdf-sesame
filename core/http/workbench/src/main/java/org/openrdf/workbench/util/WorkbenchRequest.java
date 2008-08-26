@@ -124,6 +124,16 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 		return super.getParameterValues(name);
 	}
 
+	public boolean isParameterPresent(String name) {
+		if (parameters != null && parameters.containsKey(name))
+			return parameters.get(name).length() > 0;
+		String[] values = super.getParameterValues(name);
+		if (values != null && values.length > 0)
+			// use the last one as it maybe appended in js
+			return values[values.length - 1].length() > 0;
+		return false;
+	}
+
 	public Resource getResource(String name)
 		throws BadRequestException, RepositoryException
 	{
@@ -177,11 +187,6 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 		throws BadRequestException, RepositoryException
 	{
 		return decodeValue(getParameter(name));
-	}
-
-	public boolean isParameterPresent(String name) {
-		String value = getParameter(name);
-		return value != null && value.length() > 0;
 	}
 
 	private Value decodeValue(String string)

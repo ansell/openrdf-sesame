@@ -29,6 +29,11 @@ public class AddServlet extends TransformationServlet {
 	private Logger logger = LoggerFactory.getLogger(AddServlet.class);
 
 	@Override
+	public String[] getCookieNames() {
+		return new String[] { "Content-Type" };
+	}
+
+	@Override
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp,
 			String xslPath) throws Exception, IOException {
 		try {

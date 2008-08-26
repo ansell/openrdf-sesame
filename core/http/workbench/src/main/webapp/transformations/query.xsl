@@ -14,41 +14,8 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<iframe id="cookie-iframe" name="cookie-iframe"
-			style="visibility:hidden;position:absolute;" width="0" height="0"
-			src="../../scripts/cookies.html">
-		</iframe>
 		<script type="text/javascript">
 			<![CDATA[
-			function saveCookie(name,value,days) {
-				if (days) {
-					var date = new Date();
-					date.setTime(date.getTime()+(days*24*60*60*1000));
-					var expires = "; expires="+date.toGMTString();
-				}
-				else var expires = "";
-				getCookieDocument().cookie = name+"="+value+expires+"; path=/";
-			}
-			
-			function readCookie(name) {
-				if (!getCookieDocument().cookie)
-					return null;
-				var nameEQ = name + "=";
-				var ca = getCookieDocument().cookie.split(';');
-				for(var i=0;ca.length - i;i++) {
-					var c = ca[i];
-					while (c.charAt(0)==' ') c = c.substring(1,c.length);
-					if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-				}
-				return null;
-			}
-			
-			function getCookieDocument() {
-				if (window.frames['cookie-iframe'])
-					return window.frames['cookie-iframe'].document;
-				return document;
-			}
-
 			function populateParameters() {
 				var href = document.location.href;
 				var elements = href.substring(href.indexOf('?') + 1).substring(href.indexOf(';') + 1).split(decodeURIComponent('%26'));
@@ -87,49 +54,42 @@
 			}
 			window.onload = function() {
 				populateParameters();
-				var value = readCookie('queryLn');
-				if (value) {
-					var options = document.getElementById('queryLn').options;
-					for (var i=0;options.length-i;i++) {
-						if (options[i].value == value) {
-							options[i].selected = true;
-						}
-					}
-				}
-				value = readCookie('infer');
-				if (value) {
-					var box = document.getElementById('infer');
-					if ("true" == value) {
-						box.checked = true;
-					} else if ("false" == value) {
-						box.checked = false;
-					}
-				}
 				loadNamespaces();
 			}
 			function addParam(sb, name, id) {
 				if (!id) {
 					id = name;
 				}
+				var tag = document.getElementById(id);
 				sb[sb.length] = name;
 				sb[sb.length] = '=';
-				sb[sb.length] = encodeURIComponent(document.getElementById(id).value);
+				if (tag.type == "checkbox") {
+					if (tag.checked) {
+						sb[sb.length] = 'true';
+					} else {
+						sb[sb.length] = 'false';
+					}
+				} else {
+					sb[sb.length] = encodeURIComponent(tag.value);
+				}
 				sb[sb.length] = '&';
 			}
 			/* MSIE6 does not like xslt w/ this querystring, so we use url parameters. */
 			function doSubmit() {
+				var url = [];
+				url[url.length] = 'query';
 				if (document.all) {
-					var url = [];
-					url[url.length] = 'query';
 					url[url.length] = ';';
-					addParam(url, 'queryLn');
-					addParam(url, 'query');
-					addParam(url, 'limit');
-					addParam(url, 'infer');
-					url[url.length - 1] = '';
-					document.location.href = url.join('');
-					return false;
+				} else {
+					url[url.length] = '?';
 				}
+				addParam(url, 'queryLn');
+				addParam(url, 'query');
+				addParam(url, 'limit');
+				addParam(url, 'infer');
+				url[url.length - 1] = '';
+				document.location.href = url.join('');
+				return false;
 				return true;
 			}
 			]]>
@@ -144,11 +104,16 @@
 						</th>
 						<td>
 							<select id="queryLn" name="queryLn"
-								onchange="loadNamespaces();saveCookie('queryLn', this.value, 30)">
+								onchange="loadNamespaces()">
 								<xsl:for-each
-									select="document(//sparql:link/@href)//sparql:binding[@name='query-format']">
+									select="$info//sparql:binding[@name='query-format']">
 									<option
 										value="{substring-before(sparql:literal, ' ')}">
+										<xsl:if
+											test="$info//sparql:binding[@name='default-queryLn']/sparql:literal = substring-before(sparql:literal, ' ')">
+											<xsl:attribute
+												name="selected">true</xsl:attribute>
+										</xsl:if>
 										<xsl:value-of
 											select="substring-after(sparql:literal, ' ')" />
 									</option>
@@ -183,7 +148,7 @@
 							<xsl:value-of select="$result-limit.label" />
 						</th>
 						<td>
-							<xsl:call-template name="limit-select"/>
+							<xsl:call-template name="limit-select" />
 						</td>
 						<td></td>
 					</tr>
@@ -191,8 +156,12 @@
 						<td></td>
 						<td>
 							<input id="infer" name="infer"
-								type="checkbox" value="true" checked="true"
-								onchange="saveCookie('infer', this.checked, 30)" />
+								type="checkbox" value="true">
+								<xsl:if
+									test="$info//sparql:binding[@name='default-infer']/sparql:literal = 'true'">
+									<xsl:attribute name="checked">true</xsl:attribute>
+								</xsl:if>
+							</input>
 							<xsl:value-of
 								select="$include-inferred.label" />
 						</td>

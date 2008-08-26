@@ -91,21 +91,14 @@
 					title.appendChild(document.createTextNode(' (' + value + ')'));
 				}
 				removeDuplicates(value);
-				var count = textContent(document.getElementById('count'));
-				if (document.getElementById('limit').value == '0') {
-					document.getElementById('result-limited').style.display = 'none';
-				} else if (parseInt(document.getElementById('limit').value) - parseInt(count)) {
-					document.getElementById('result-limited').style.display = 'none';
-				}
 			}
 			]]>
 		</script>
-		<pre id="count" style="display:none">
-			<xsl:value-of select="count(//sparql:result)" />
-		</pre>
+		<xsl:if test="$info//sparql:binding[@name='default-limit']/sparql:literal = count(//sparql:result)">
 		<p id="result-limited">
 			<xsl:value-of select="$result-limited.desc" />
 		</p>
+		</xsl:if>
 		<xsl:if
 			test="1 = count(//sparql:result/sparql:binding[@name='predicate']/sparql:uri[text() = '&rdfs;label'])">
 			<xsl:for-each

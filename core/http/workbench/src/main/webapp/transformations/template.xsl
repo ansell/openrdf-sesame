@@ -275,7 +275,7 @@
 				</xsl:attribute>
 			</xsl:if>
 			<xsl:variable name="limit"
-				select="$info//sparql:binding[@name='limit']/sparql:literal/text()" />
+				select="$info//sparql:binding[@name='default-limit']/sparql:literal/text()" />
 			<option value="0">
 				<xsl:if test="$limit = '0'">
 					<xsl:attribute name="selected">true</xsl:attribute>

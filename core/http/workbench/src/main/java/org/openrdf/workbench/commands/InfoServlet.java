@@ -26,7 +26,7 @@ public class InfoServlet extends TransformationServlet {
 
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { "limit" };
+		return new String[] { "limit", "queryLn", "infer", "Accept", "Content-Type" };
 	}
 
 	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
@@ -35,14 +35,19 @@ public class InfoServlet extends TransformationServlet {
 		resp.setContentType("application/xml");
 		PrintWriter out = resp.getWriter();
 		TupleResultBuilder builder = new TupleResultBuilder(out);
-		builder.start("id", "description", "location", "server", "readable", "writeable", "limit",
-				"upload-format", "query-format", "download-format");
+		builder.start("id", "description", "location", "server", "readable", "writeable", "default-limit",
+				"default-queryLn", "default-infer", "default-Accept", "default-Content-Type", "upload-format",
+				"query-format", "download-format");
 		String id = info.getId();
 		String desc = info.getDescription();
 		URL loc = info.getLocation();
 		URL server = getServer();
 		builder.result(id, desc, loc, server, info.isReadable(), info.isWritable());
-		builder.binding("limit", req.getParameter("limit"));
+		builder.binding("default-limit", req.getParameter("limit"));
+		builder.binding("default-queryLn", req.getParameter("queryLn"));
+		builder.binding("default-infer", req.getParameter("infer"));
+		builder.binding("default-Accept", req.getParameter("Accept"));
+		builder.binding("default-Content-Type", req.getParameter("Content-Type"));
 		for (RDFParserFactory parser : RDFParserRegistry.getInstance().getAll()) {
 			String mimeType = parser.getRDFFormat().getDefaultMIMEType();
 			String name = parser.getRDFFormat().getName();
