@@ -1,3 +1,8 @@
+/*
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ *
+ * Licensed under the Aduna BSD-style license.
+ */
 package org.openrdf.workbench.commands;
 
 import static org.openrdf.rio.RDFWriterRegistry.getInstance;
@@ -5,9 +10,11 @@ import static org.openrdf.rio.RDFWriterRegistry.getInstance;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Statement;
@@ -32,34 +39,40 @@ import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class QueryServlet extends TransformationServlet {
+
 	private Logger logger = LoggerFactory.getLogger(QueryServlet.class);
 
 	@Override
-	protected void service(WorkbenchRequest req, HttpServletResponse resp,
-			String xslPath) throws Exception, IOException {
-		Map<String, String> parameters = req.getSingleParameterMap();
-		if (parameters.containsKey("Accept")) {
-			String accept = parameters.get("Accept");
+	public String[] getCookieNames() {
+		return new String[] { "limit", "queryLn", "infer" };
+	}
+
+	@Override
+	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
+		throws Exception, IOException
+	{
+		if (req.isParameterPresent("Accept")) {
+			String accept = req.getParameter("Accept");
 			RDFFormat format = RDFFormat.forMIMEType(accept);
 			if (format != null) {
 				resp.setContentType(accept);
 				String ext = format.getDefaultFileExtension();
 				String attachment = "attachment; filename=query." + ext;
-				resp.setHeader("Content-disposition",attachment);
+				resp.setHeader("Content-disposition", attachment);
 			}
-		} else {
+		}
+		else {
 			resp.setContentType("application/xml");
 		}
 		PrintWriter out = resp.getWriter();
 		try {
 			PrintWriter writer = new PrintWriter(new BufferedWriter(out));
-			service(parameters, writer, xslPath);
+			service(req, writer, xslPath);
 			writer.flush();
-		} catch (BadRequestException exc) {
+		}
+		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
 			resp.setContentType("application/xml");
 			TupleResultBuilder builder = new TupleResultBuilder(out);
@@ -72,104 +85,116 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
-	private void service(Map<String, String> parameters, PrintWriter out,
-			String xslPath) throws Exception {
+	private void service(WorkbenchRequest req, PrintWriter out, String xslPath)
+		throws Exception
+	{
 		RepositoryConnection con = repository.getConnection();
 		try {
 			TupleResultBuilder builder = new TupleResultBuilder(out);
 			for (Namespace ns : con.getNamespaces().asList()) {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
-			if (parameters.containsKey("query")) {
+			if (req.isParameterPresent("query")) {
 				try {
-					service(builder, out, xslPath, con, parameters);
-				} catch (MalformedQueryException exc) {
+					service(builder, out, xslPath, con, req);
+				}
+				catch (MalformedQueryException exc) {
 					throw new BadRequestException(exc.getMessage(), exc);
-				} catch (HTTPQueryEvaluationException exc) {
+				}
+				catch (HTTPQueryEvaluationException exc) {
 					if (exc.getCause() instanceof MalformedQueryException) {
-						throw new BadRequestException(exc.getCause()
-								.getMessage());
+						throw new BadRequestException(exc.getCause().getMessage());
 					}
 					throw exc;
 				}
-			} else {
+			}
+			else {
 				builder.transform(xslPath, "query.xsl");
 				builder.start();
 				builder.link("info");
 				builder.link("namespaces");
 				builder.end();
 			}
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 	}
 
-	private void service(TupleResultBuilder builder, PrintWriter out,
-			String xslPath, RepositoryConnection con,
-			Map<String, String> parameters) throws Exception {
-		String ql = parameters.get("queryLn");
-		String q = parameters.get("query");
+	private void service(TupleResultBuilder builder, PrintWriter out, String xslPath,
+			RepositoryConnection con, WorkbenchRequest req)
+		throws Exception
+	{
+		String ql = req.getParameter("queryLn");
+		String q = req.getParameter("query");
 		Query query = prepareQuery(con, QueryLanguage.valueOf(ql), q);
-		if (parameters.containsKey("infer")) {
-			boolean infer = Boolean.parseBoolean(parameters.get("infer"));
+		if (req.isParameterPresent("infer")) {
+			boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
 			query.setIncludeInferred(infer);
 		}
 		int limit = 0;
-		if (parameters.containsKey("limit")) {
-			limit = Integer.parseInt(parameters.get("limit"));
+		if (req.isParameterPresent("limit")) {
+			limit = Integer.parseInt(req.getParameter("limit"));
 		}
 		RDFFormat format = null;
-		String accept = parameters.get("Accept");
-		if (accept != null) {
-			format = RDFFormat.forMIMEType(accept);
+		if (req.isParameterPresent("Accept")) {
+			format = RDFFormat.forMIMEType(req.getParameter("Accept"));
 		}
 		if (query instanceof TupleQuery) {
 			builder.transform(xslPath, "tuple.xsl");
 			builder.start();
-			evaluateTupleQuery(builder, (TupleQuery) query, limit);
+			evaluateTupleQuery(builder, (TupleQuery)query, limit);
 			builder.end();
-		} else if (query instanceof GraphQuery && format == null) {
+		}
+		else if (query instanceof GraphQuery && format == null) {
 			builder.transform(xslPath, "graph.xsl");
 			builder.start();
-			evaluateGraphQuery(builder, (GraphQuery) query, limit);
+			evaluateGraphQuery(builder, (GraphQuery)query, limit);
 			builder.end();
-		} else if (query instanceof GraphQuery) {
+		}
+		else if (query instanceof GraphQuery) {
 			RDFWriterFactory factory = getInstance().get(format);
 			RDFWriter writer = factory.getWriter(out);
-			evaluateGraphQuery(writer, (GraphQuery) query);
-		} else if (query instanceof BooleanQuery) {
+			evaluateGraphQuery(writer, (GraphQuery)query);
+		}
+		else if (query instanceof BooleanQuery) {
 			builder.transform(xslPath, "boolean.xsl");
 			builder.start();
-			evaluateBooleanQuery(builder, (BooleanQuery) query);
+			evaluateBooleanQuery(builder, (BooleanQuery)query);
 			builder.end();
-		} else {
-			throw new BadRequestException("Unknown query type: "
-					+ query.getClass().getSimpleName());
+		}
+		else {
+			throw new BadRequestException("Unknown query type: " + query.getClass().getSimpleName());
 		}
 	}
 
-	private Query prepareQuery(RepositoryConnection con, QueryLanguage ql,
-			String q) throws RepositoryException, MalformedQueryException {
+	private Query prepareQuery(RepositoryConnection con, QueryLanguage ql, String q)
+		throws RepositoryException, MalformedQueryException
+	{
 		try {
 			return con.prepareQuery(ql, q);
-		} catch (UnsupportedOperationException exc) {
+		}
+		catch (UnsupportedOperationException exc) {
 			// TODO must be an http repository
 			try {
 				con.prepareTupleQuery(ql, q).evaluate().close();
 				return con.prepareTupleQuery(ql, q);
-			} catch (Exception malformed) {
+			}
+			catch (Exception malformed) {
 				// guess its not a tuple query
 			}
 			try {
 				con.prepareGraphQuery(ql, q).evaluate().close();
 				return con.prepareGraphQuery(ql, q);
-			} catch (Exception malformed) {
+			}
+			catch (Exception malformed) {
 				// guess its not a graph query
 			}
 			try {
 				con.prepareBooleanQuery(ql, q).evaluate();
 				return con.prepareBooleanQuery(ql, q);
-			} catch (Exception malformed) {
+			}
+			catch (Exception malformed) {
 				// guess its not a boolean query
 			}
 			// let's assume it is an malformed tuple query
@@ -177,8 +202,9 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
-	private void evaluateTupleQuery(TupleResultBuilder builder,
-			TupleQuery query, int limit) throws QueryEvaluationException {
+	private void evaluateTupleQuery(TupleResultBuilder builder, TupleQuery query, int limit)
+		throws QueryEvaluationException
+	{
 		TupleQueryResult result = query.evaluate();
 		try {
 			String[] names = result.getBindingNames().toArray(new String[0]);
@@ -193,34 +219,38 @@ public class QueryServlet extends TransformationServlet {
 				}
 				builder.result(values);
 			}
-		} finally {
+		}
+		finally {
 			result.close();
 		}
 	}
 
-	private void evaluateGraphQuery(TupleResultBuilder builder,
-			GraphQuery query, int limit) throws QueryEvaluationException {
+	private void evaluateGraphQuery(TupleResultBuilder builder, GraphQuery query, int limit)
+		throws QueryEvaluationException
+	{
 		GraphQueryResult result = query.evaluate();
 		try {
 			builder.variables("subject", "predicate", "object");
 			builder.link("info");
 			for (int l = 0; result.hasNext() && (l < limit || limit < 1); l++) {
 				Statement st = result.next();
-				builder.result(st.getSubject(), st.getPredicate(), st
-						.getObject(), st.getContext());
+				builder.result(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 			}
-		} finally {
+		}
+		finally {
 			result.close();
 		}
 	}
 
 	private void evaluateGraphQuery(RDFWriter writer, GraphQuery query)
-			throws QueryEvaluationException, RDFHandlerException {
+		throws QueryEvaluationException, RDFHandlerException
+	{
 		query.evaluate(writer);
 	}
 
-	private void evaluateBooleanQuery(TupleResultBuilder builder,
-			BooleanQuery query) throws QueryEvaluationException {
+	private void evaluateBooleanQuery(TupleResultBuilder builder, BooleanQuery query)
+		throws QueryEvaluationException
+	{
 		boolean result = query.evaluate();
 		builder.link("info");
 		builder.bool(result);
