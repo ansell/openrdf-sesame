@@ -8,9 +8,10 @@
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#"
 	xmlns="http://www.w3.org/1999/xhtml">
 
+	<xsl:variable name="info"
+		select="document(sparql:sparql/sparql:head/sparql:link[@href='info']/@href)" />
+
 	<xsl:template match="/">
-		<xsl:variable name="info"
-			select="document(sparql:sparql/sparql:head/sparql:link[@href='info']/@href)" />
 		<html xml:lang="en" lang="en">
 			<head>
 				<title>
@@ -46,111 +47,7 @@
 				</div>
 				<div id="navigation">
 					<ul class="maingroup">
-						<li>
-							<a href="../NONE/server">
-								<xsl:value-of select="$server.label" />
-							</a>
-						</li>
-						<li>
-							<a href="repositories">
-								<xsl:value-of
-									select="$repository-list.label" />
-							</a>
-							<ul class="group">
-								<li>
-									<a href="create">
-										<xsl:value-of
-											select="$repository-create.label" />
-									</a>
-								</li>
-								<li>
-									<a href="delete">
-										<xsl:value-of
-											select="$repository-delete.label" />
-									</a>
-								</li>
-							</ul>
-						</li>
-						<xsl:if
-							test="$info//sparql:binding[@name='readable']/sparql:literal/text() != 'false'">
-							<li>
-								<xsl:value-of select="$explore.label" />
-								<ul class="group">
-									<li>
-										<a href="namespaces">
-											<xsl:value-of
-												select="$namespaces.label" />
-										</a>
-									</li>
-									<li>
-										<a href="contexts">
-											<xsl:value-of
-												select="$contexts.label" />
-										</a>
-									</li>
-									<li>
-										<a href="types">
-											<xsl:value-of
-												select="$types.label" />
-										</a>
-									</li>
-									<li>
-										<a href="explore">
-											<xsl:value-of
-												select="$explore.label" />
-										</a>
-									</li>
-									<li>
-										<a href="query">
-											<xsl:value-of
-												select="$query.label" />
-										</a>
-									</li>
-									<li>
-										<a href="export">
-											<xsl:value-of
-												select="$export.label" />
-										</a>
-									</li>
-								</ul>
-							</li>
-						</xsl:if>
-						<xsl:if test="$info//sparql:binding[@name='writeable']/sparql:literal/text() != 'false'">
-							<li>
-								<xsl:value-of select="$modify.label" />
-								<ul class="group">
-									<li>
-										<a href="add">
-											<xsl:value-of
-												select="$add.label" />
-										</a>
-									</li>
-									<li>
-										<a href="remove">
-											<xsl:value-of
-												select="$remove.label" />
-										</a>
-									</li>
-									<li>
-										<a href="clear">
-											<xsl:value-of
-												select="$clear.label" />
-										</a>
-									</li>
-								</ul>
-							</li>
-						</xsl:if>
-						<li>
-							<xsl:value-of select="$system.label" />
-							<ul class="group">
-								<li>
-									<a href="information">
-										<xsl:value-of
-											select="$information.label" />
-									</a>
-								</li>
-							</ul>
-						</li>
+						<xsl:call-template name="navigation" />
 					</ul>
 				</div>
 				<div id="contentheader">
@@ -241,4 +138,132 @@
 			</body>
 		</html>
 	</xsl:template>
+
+	<xsl:template name="navigation">
+		<li>
+			<a href="../NONE/server">
+				<xsl:value-of select="$server.label" />
+			</a>
+		</li>
+		<li>
+			<a href="repositories">
+				<xsl:value-of select="$repository-list.label" />
+			</a>
+			<ul class="group">
+				<li>
+					<a href="create">
+						<xsl:value-of select="$repository-create.label" />
+					</a>
+				</li>
+				<li>
+					<a href="delete">
+						<xsl:value-of select="$repository-delete.label" />
+					</a>
+				</li>
+			</ul>
+		</li>
+		<li>
+			<xsl:value-of select="$explore.label" />
+			<ul class="group">
+				<xsl:call-template name="navigation-explore" />
+			</ul>
+		</li>
+		<li>
+			<xsl:value-of select="$modify.label" />
+			<ul class="group">
+				<xsl:call-template name="navigation-modify" />
+			</ul>
+		</li>
+		<li>
+			<xsl:value-of select="$system.label" />
+			<ul class="group">
+				<li>
+					<a href="information">
+						<xsl:value-of select="$information.label" />
+					</a>
+				</li>
+			</ul>
+		</li>
+	</xsl:template>
+
+	<xsl:template name="navigation-explore">
+		<xsl:variable name="disabled"
+			select="$info//sparql:binding[@name='readable']/sparql:literal/text() = 'false'" />
+		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$summary.label" />
+			<xsl:with-param name="href" select="'summary'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$namespaces.label" />
+			<xsl:with-param name="href" select="'namespaces'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$contexts.label" />
+			<xsl:with-param name="href" select="'contexts'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$types.label" />
+			<xsl:with-param name="href" select="'types'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$explore.label" />
+			<xsl:with-param name="href" select="'explore'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$query.label" />
+			<xsl:with-param name="href" select="'query'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$export.label" />
+			<xsl:with-param name="href" select="'export'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+	</xsl:template>
+
+	<xsl:template name="navigation-modify">
+		<xsl:variable name="disabled"
+			select="$info//sparql:binding[@name='writeable']/sparql:literal/text() = 'false'" />
+		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$add.label" />
+			<xsl:with-param name="href" select="'add'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$remove.label" />
+			<xsl:with-param name="href" select="'remove'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$clear.label" />
+			<xsl:with-param name="href" select="'clear'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+	</xsl:template>
+
+	<xsl:template name="navigation-entry">
+		<xsl:param name="label" />
+		<xsl:param name="href" />
+		<xsl:param name="disabled" />
+		<li>
+			<xsl:choose>
+				<xsl:when test="$disabled">
+					<span class="disabled">
+						<xsl:value-of select="$label" />
+					</span>
+				</xsl:when>
+				<xsl:otherwise>
+					<a href="{$href}">
+						<xsl:value-of select="$label" />
+					</a>
+				</xsl:otherwise>
+			</xsl:choose>
+		</li>
+	</xsl:template>
+
 </xsl:stylesheet>

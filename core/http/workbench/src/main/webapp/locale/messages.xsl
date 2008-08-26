@@ -52,6 +52,7 @@
 	<variable name="detail-information.label">
 		Detail Information
 	</variable>
+	<variable name="summary.label">Summary</variable>
 	<variable name="explore.label">Explore</variable>
 	<variable name="namespaces.label">Namespaces</variable>
 	<variable name="contexts.label">Contexts</variable>
