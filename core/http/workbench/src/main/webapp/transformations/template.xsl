@@ -266,4 +266,41 @@
 		</li>
 	</xsl:template>
 
+	<xsl:template name="limit-select">
+		<select id="limit" name="limit">
+			<xsl:variable name="limit"
+				select="$info//sparql:binding[@name='limit']/sparql:literal/text()" />
+			<option value="0">
+				<xsl:if test="$limit = '0'">
+					<xsl:attribute name="selected">true</xsl:attribute>
+				</xsl:if>
+				<xsl:value-of select="$none.label" />
+			</option>
+			<option value="10">
+				<xsl:if test="$limit = '10'">
+					<xsl:attribute name="selected">true</xsl:attribute>
+				</xsl:if>
+				<xsl:value-of select="$limit10.label" />
+			</option>
+			<option value="50">
+				<xsl:if test="$limit = '50'">
+					<xsl:attribute name="selected">true</xsl:attribute>
+				</xsl:if>
+				<xsl:value-of select="$limit50.label" />
+			</option>
+			<option value="100">
+				<xsl:if test="$limit = '100'">
+					<xsl:attribute name="selected">true</xsl:attribute>
+				</xsl:if>
+				<xsl:value-of select="$limit100.label" />
+			</option>
+			<option value="200">
+				<xsl:if test="$limit = '200'">
+					<xsl:attribute name="selected">true</xsl:attribute>
+				</xsl:if>
+				<xsl:value-of select="$limit200.label" />
+			</option>
+		</select>
+	</xsl:template>
+
 </xsl:stylesheet>
