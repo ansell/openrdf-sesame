@@ -105,15 +105,6 @@
 						box.checked = false;
 					}
 				}
-				value = readCookie('limit');
-				if (value) {
-					var options = document.getElementById('limit').options;
-					for (var i=0;options.length-i;i++) {
-						if (options[i].value == value) {
-							options[i].selected = true;
-						}
-					}
-				}
 				loadNamespaces();
 			}
 			function addParam(sb, name, id) {
@@ -192,28 +183,7 @@
 							<xsl:value-of select="$result-limit.label" />
 						</th>
 						<td>
-							<select id="limit" name="limit"
-								onchange="saveCookie('limit', this.value, 30)">
-								<option value="0">
-									<xsl:value-of select="$none.label" />
-								</option>
-								<option value="10">
-									<xsl:value-of
-										select="$limit10.label" />
-								</option>
-								<option value="50">
-									<xsl:value-of
-										select="$limit50.label" />
-								</option>
-								<option value="100" selected="true">
-									<xsl:value-of
-										select="$limit100.label" />
-								</option>
-								<option value="200">
-									<xsl:value-of
-										select="$limit200.label" />
-								</option>
-							</select>
+							<xsl:call-template name="limit-select"/>
 						</td>
 						<td></td>
 					</tr>

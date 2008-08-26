@@ -60,28 +60,11 @@
 					document.location.href = url + '?' + name + '=' + encodeURIComponent(value);
 				}
 			}
-			function populateParameters() {
-				var href = document.location.href;
-				var elements = href.substring(href.indexOf('?') + 1).split(decodeURIComponent('%26'));
-				for (var i=0;elements.length-i;i++) {
-					var pair = elements[i].split('=');
-					var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
-					if (pair[0] == 'limit') {
-						var options = document.getElementById('limit').options;
-						for (var j=0;options.length-j;j++) {
-							if (options[j].value == value) {
-								options[j].selected = true;
-							}
-						}
-					}
-				}
-			}
 			function textContent(element) {
 				var text = element.innerText || element.textContent;
 				return text.replace(/^\s*/, "").replace(/\s*$/, "");
 			}
 			window.onload = function() {
-				populateParameters();
 				var value = readCookie('Accept');
 				if (value) {
 					var options = document.getElementById('Accept').options;
@@ -132,7 +115,7 @@
 				</tbody>
 			</table>
 		</form>
-		<form>
+		<form action="export">
 			<table class="dataentry">
 				<tbody>
 					<tr>
@@ -140,28 +123,9 @@
 							<xsl:value-of select="$result-limit.label" />
 						</th>
 						<td>
-							<select id="limit" name="limit"
-								onchange="addParam('limit');">
-								<option value="0">
-									<xsl:value-of select="$none.label" />
-								</option>
-								<option value="10">
-									<xsl:value-of
-										select="$limit10.label" />
-								</option>
-								<option value="50">
-									<xsl:value-of
-										select="$limit50.label" />
-								</option>
-								<option value="100" selected="true">
-									<xsl:value-of
-										select="$limit100.label" />
-								</option>
-								<option value="200">
-									<xsl:value-of
-										select="$limit200.label" />
-								</option>
-							</select>
+							<xsl:call-template name="limit-select">
+								<xsl:with-param name="onchange">this.form.submit();</xsl:with-param>
+							</xsl:call-template>
 						</td>
 						<td id="result-limited">
 							<xsl:value-of select="$result-limited.desc" />

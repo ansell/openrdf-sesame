@@ -24,6 +24,11 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class InfoServlet extends TransformationServlet {
 
+	@Override
+	public String[] getCookieNames() {
+		return new String[] { "limit" };
+	}
+
 	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception
 	{
