@@ -115,6 +115,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		throws RepositoryException
 	{
 		HTTPRepository systemRepository = new HTTPRepository(serverURL, SystemRepository.ID);
+		systemRepository.setUsernameAndPassword(username, password);
 		systemRepository.initialize();
 		return systemRepository;
 	}
@@ -125,13 +126,6 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 */
 	public String getServerURL() {
 		return serverURL;
-	}
-
-	@Override
-	public HTTPRepository getSystemRepository() {
-		HTTPRepository result = (HTTPRepository)super.getSystemRepository();
-		result.setUsernameAndPassword(username, password);
-		return result;
 	}
 
 	/**
@@ -149,10 +143,11 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	protected Repository createRepository(String id)
 		throws RepositoryConfigException, RepositoryException
 	{
-		Repository result = null;
+		HTTPRepository result = null;
 
 		if (RepositoryConfigUtil.hasRepositoryConfig(getSystemRepository(), id)) {
 			result = new HTTPRepository(serverURL, id);
+			result.setUsernameAndPassword(username, password);
 			result.initialize();
 		}
 
