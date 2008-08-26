@@ -1,3 +1,8 @@
+/*
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ *
+ * Licensed under the Aduna BSD-style license.
+ */
 package org.openrdf.workbench.base;
 
 import static java.lang.Integer.parseInt;

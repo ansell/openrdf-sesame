@@ -1,6 +1,9 @@
+/*
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ *
+ * Licensed under the Aduna BSD-style license.
+ */
 package org.openrdf.workbench.commands;
-
-import info.aduna.io.IOUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +13,8 @@ import java.io.UnsupportedEncodingException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+
+import info.aduna.io.IOUtil;
 
 import org.openrdf.console.Console;
 import org.openrdf.model.Graph;
