@@ -20,7 +20,6 @@ import org.openrdf.workbench.util.DynamicHttpRequest;
 public class ProxyRepositoryServlet extends BaseRepositoryServlet {
 	private static final String HEADER_IFMODSINCE = "If-Modified-Since";
 	private static final String HEADER_LASTMOD = "Last-Modified";
-	private static final String SERVER_COOKIE = "workbench-server";
 	private static final String DEFAULT_PATH_PARAM = "default-command";
 	private Map<String, RepositoryServlet> servlets = new HashMap<String, RepositoryServlet>();
 	private long lastModified;
@@ -64,9 +63,8 @@ public class ProxyRepositoryServlet extends BaseRepositoryServlet {
 	public void service(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		if (isCachable(req)) {
-			String server = req.getParameter(SERVER_COOKIE);
 			long ifModifiedSince = req.getDateHeader(HEADER_IFMODSINCE);
-			if (server != null || ifModifiedSince < lastModified) {
+			if (ifModifiedSince < lastModified) {
 				resp.setDateHeader(HEADER_LASTMOD, lastModified);
 			} else {
 				resp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);

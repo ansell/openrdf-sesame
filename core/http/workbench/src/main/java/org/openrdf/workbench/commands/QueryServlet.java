@@ -49,7 +49,7 @@ public class QueryServlet extends TransformationServlet {
 				resp.setContentType(accept);
 				String ext = format.getDefaultFileExtension();
 				String attachment = "attachment; filename=query." + ext;
-				resp.setHeader("Content-disposition",attachment);
+				resp.setHeader("Content-disposition", attachment);
 			}
 		} else {
 			resp.setContentType("application/xml");

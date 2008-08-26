@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WorkbenchGateway extends BaseServlet {
-	private static final String COOKIE_AGE_PARAM = "server-cookie-max-age";
+	private static final String COOKIE_AGE_PARAM = "cookie-max-age";
 	private static final String DEFAULT_SERVER_PARAM = "default-server";
 	private static final String ACCEPTED_SERVER_PARAM = "accepted-server-prefixes";
 	private static final String CHANGE_SERVER_PARAM = "change-server-path";
@@ -218,6 +218,7 @@ public class WorkbenchGateway extends BaseServlet {
 			return null;
 		for (Cookie cookie : cookies) {
 			if (SERVER_COOKIE.equals(cookie.getName())) {
+				resp.addHeader("Vary", "Cookie");
 				initCookie(cookie, req);
 				resp.addCookie(cookie);
 				return cookie.getValue();

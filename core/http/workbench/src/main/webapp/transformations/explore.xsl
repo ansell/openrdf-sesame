@@ -39,40 +39,8 @@
 	</xsl:template>
 
 	<xsl:template match="sparql:sparql">
-		<iframe id="cookie-iframe" name="cookie-iframe"
-			style="visibility:hidden;position:absolute;" width="0" height="0"
-			src="../../scripts/cookies.html">
-		</iframe>
 		<script type="text/javascript">
 			<![CDATA[
-			function saveCookie(name,value,days) {
-				if (days) {
-					var date = new Date();
-					date.setTime(date.getTime()+(days*24*60*60*1000));
-					var expires = "; expires="+date.toGMTString();
-				}
-				else var expires = "";
-				getCookieDocument().cookie = name+"="+value+expires+"; path=/";
-			}
-			
-			function readCookie(name) {
-				if (!getCookieDocument().cookie)
-					return null;
-				var nameEQ = name + "=";
-				var ca = getCookieDocument().cookie.split(';');
-				for(var i=0;ca.length - i;i++) {
-					var c = ca[i];
-					while (c.charAt(0)==' ') c = c.substring(1,c.length);
-					if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-				}
-				return null;
-			}
-			
-			function getCookieDocument() {
-				if (window.frames['cookie-iframe'])
-					return window.frames['cookie-iframe'].document;
-				return document;
-			}
 			function textContent(element) {
 				var text = element.innerText || element.textContent;
 				return text.replace(/^\s*/, "").replace(/\s*$/, "");
@@ -116,18 +84,9 @@
 				}
 			}
 			window.onload = function() {
-				var value = readCookie('limit');
-				if (value) {
-					var options = document.getElementById('limit').options;
-					for (var i=0;options.length-i;i++) {
-						if (options[i].value == value) {
-							options[i].selected = true;
-						}
-					}
-				}
 				populateParameters();
 				var title = document.getElementById('content').getElementsByTagName('h1')[0];
-				value = document.getElementById('resource').value;
+				var value = document.getElementById('resource').value;
 				if (value) {
 					title.appendChild(document.createTextNode(' (' + value + ')'));
 				}
@@ -263,28 +222,7 @@
 							<xsl:value-of select="$result-limit.label" />
 						</th>
 						<td>
-							<select id="limit" name="limit"
-								onchange="saveCookie('limit', this.value, 30)">
-								<option value="0">
-									<xsl:value-of select="$none.label" />
-								</option>
-								<option value="10">
-									<xsl:value-of
-										select="$limit10.label" />
-								</option>
-								<option value="50">
-									<xsl:value-of
-										select="$limit50.label" />
-								</option>
-								<option value="100" selected="true">
-									<xsl:value-of
-										select="$limit100.label" />
-								</option>
-								<option value="200">
-									<xsl:value-of
-										select="$limit200.label" />
-								</option>
-							</select>
+							<xsl:call-template name="limit-select"/>
 						</td>
 						<td></td>
 					</tr>

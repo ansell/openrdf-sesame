@@ -6,39 +6,33 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.query.parser.QueryParserFactory;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFParserFactory;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
+import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class InfoServlet extends TransformationServlet {
 
-	@Override
-	public void init(ServletConfig config)
-		throws ServletException
+	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
+		throws Exception
 	{
-		super.init(config);
-	}
-
-	@Override
-	public void service(PrintWriter out, String xslPath)
-		throws RepositoryException
-	{
+		resp.setContentType("application/xml");
+		PrintWriter out = resp.getWriter();
 		TupleResultBuilder builder = new TupleResultBuilder(out);
-		builder.start("id", "description", "location", "server", "readable", "writeable", "upload-format",
-				"query-format", "download-format");
+		builder.start("id", "description", "location", "server", "readable", "writeable", "limit",
+				"upload-format", "query-format", "download-format");
 		String id = info.getId();
 		String desc = info.getDescription();
 		URL loc = info.getLocation();
 		URL server = getServer();
 		builder.result(id, desc, loc, server, info.isReadable(), info.isWritable());
+		builder.binding("limit", req.getParameter("limit"));
 		for (RDFParserFactory parser : RDFParserRegistry.getInstance().getAll()) {
 			String mimeType = parser.getRDFFormat().getDefaultMIMEType();
 			String name = parser.getRDFFormat().getName();

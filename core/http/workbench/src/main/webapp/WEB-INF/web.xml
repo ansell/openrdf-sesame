@@ -12,9 +12,21 @@
 		</init-param>
 	</filter>
 
+	<filter>
+		<filter-name>cache</filter-name>
+		<filter-class>
+			org.openrdf.workbench.proxy.CookieCacheControlFilter
+		</filter-class>
+	</filter>
+
 	<filter-mapping>
 		<filter-name>redirect</filter-name>
 		<url-pattern>/</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>cache</filter-name>
+		<url-pattern>/repositories/*</url-pattern>
 	</filter-mapping>
 
 	<servlet>
@@ -39,7 +51,7 @@
 			<param-value>/NONE/server</param-value>
 		</init-param>
 		<init-param>
-			<param-name>server-cookie-max-age</param-name>
+			<param-name>cookie-max-age</param-name>
 			<param-value>2592000</param-value>
 		</init-param>
 		<init-param>
