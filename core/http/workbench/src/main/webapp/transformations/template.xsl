@@ -267,7 +267,13 @@
 	</xsl:template>
 
 	<xsl:template name="limit-select">
+		<xsl:param name="onchange" />
 		<select id="limit" name="limit">
+			<xsl:if test="$onchange">
+				<xsl:attribute name="onchange">
+					<xsl:value-of select="$onchange" />
+				</xsl:attribute>
+			</xsl:if>
 			<xsl:variable name="limit"
 				select="$info//sparql:binding[@name='limit']/sparql:literal/text()" />
 			<option value="0">
