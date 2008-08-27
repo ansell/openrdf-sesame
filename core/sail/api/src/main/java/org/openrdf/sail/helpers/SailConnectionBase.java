@@ -77,7 +77,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	 * active operations finish and then block any further operations on the
 	 * connection.
 	 */
-	private final ReadWriteLockManager connectionLockManager = new WritePrefReadWriteLockManager();
+	private final ReadWriteLockManager connectionLockManager = new WritePrefReadWriteLockManager(debugEnabled());
 
 	/**
 	 * A multi-read-single-write lock manager used to handle multi-threaded
@@ -87,7 +87,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	 * an exclusive (write) lock, which will guarantee that there will be no
 	 * updates during these operations.
 	 */
-	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager();
+	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager(debugEnabled());
 
 	// FIXME: use weak references here?
 	private List<SailBaseIteration> activeIterations = Collections.synchronizedList(new LinkedList<SailBaseIteration>());
