@@ -49,7 +49,7 @@ public abstract class SailBase implements NotifyingSail {
 	// they can be closed silently (just like in JDBC).
 	static final String DEBUG_PROP = "org.openrdf.repository.debug";
 
-	static boolean debugEnabled() {
+	protected static boolean debugEnabled() {
 		try {
 			String value = System.getProperty(DEBUG_PROP);
 			return value != null && !value.equals("false");
