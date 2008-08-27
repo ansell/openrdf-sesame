@@ -10,13 +10,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
-import org.openrdf.sail.rdbms.exceptions.RdbmsQueryEvaluationException;
+import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.iteration.base.RdbmIterationBase;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
@@ -29,7 +29,7 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * @author James Leigh
  * 
  */
-public class RdbmsBindingIteration extends RdbmIterationBase<BindingSet, QueryEvaluationException> {
+public class RdbmsBindingIteration extends RdbmIterationBase<BindingSet, StoreException> {
 
 	private BindingSet bindings;
 
@@ -82,8 +82,8 @@ public class RdbmsBindingIteration extends RdbmIterationBase<BindingSet, QueryEv
 	}
 
 	@Override
-	protected QueryEvaluationException convertSQLException(SQLException e) {
-		return new RdbmsQueryEvaluationException(e);
+	protected RdbmsException convertSQLException(SQLException e) {
+		return new RdbmsException(e);
 	}
 
 	private RdbmsResource createResource(ResultSet rs, int index)

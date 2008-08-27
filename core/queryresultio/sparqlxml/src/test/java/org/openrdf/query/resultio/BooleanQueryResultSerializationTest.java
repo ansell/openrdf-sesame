@@ -11,13 +11,13 @@ import java.io.IOException;
 
 import junit.framework.TestCase;
 
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 
 public class BooleanQueryResultSerializationTest extends TestCase {
 
 	public void testSPARQLResultFormat()
 		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException,
-		QueryEvaluationException
+		EvaluationException
 	{
 		testQueryResultFormat(BooleanQueryResultFormat.SPARQL, true);
 		testQueryResultFormat(BooleanQueryResultFormat.SPARQL, false);
@@ -25,7 +25,7 @@ public class BooleanQueryResultSerializationTest extends TestCase {
 
 	private void testQueryResultFormat(BooleanQueryResultFormat format, boolean input)
 		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException,
-		QueryEvaluationException
+		EvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		QueryResultIO.write(input, format, out);

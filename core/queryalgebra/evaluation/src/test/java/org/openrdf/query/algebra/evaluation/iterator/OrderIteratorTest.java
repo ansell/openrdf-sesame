@@ -5,8 +5,6 @@
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
-import info.aduna.iteration.CloseableIteratorIteration;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,10 +15,12 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import info.aduna.iteration.CloseableIteratorIteration;
+
+import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 
 
 /**
@@ -30,7 +30,7 @@ import org.openrdf.query.QueryEvaluationException;
  */
 public class OrderIteratorTest extends TestCase {
 	class IterationStub extends
-			CloseableIteratorIteration<BindingSet, QueryEvaluationException> {
+			CloseableIteratorIteration<BindingSet, StoreException> {
 		int hasNextCount = 0;
 
 		int nextCount = 0;

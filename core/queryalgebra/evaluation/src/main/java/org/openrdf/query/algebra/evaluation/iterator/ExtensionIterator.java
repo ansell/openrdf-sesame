@@ -8,23 +8,24 @@ package org.openrdf.query.algebra.evaluation.iterator;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 
-public class ExtensionIterator extends ConvertingIteration<BindingSet, BindingSet, QueryEvaluationException> {
+public class ExtensionIterator extends ConvertingIteration<BindingSet, BindingSet, StoreException> {
 
 	private final Extension extension;
 
 	private final EvaluationStrategy strategy;
 
 	public ExtensionIterator(Extension extension,
-			CloseableIteration<BindingSet, QueryEvaluationException> iter, EvaluationStrategy strategy)
-		throws QueryEvaluationException
+			CloseableIteration<BindingSet, StoreException> iter, EvaluationStrategy strategy)
+		throws EvaluationException
 	{
 		super(iter);
 		this.extension = extension;
@@ -33,7 +34,7 @@ public class ExtensionIterator extends ConvertingIteration<BindingSet, BindingSe
 
 	@Override
 	public BindingSet convert(BindingSet sourceBindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		QueryBindingSet targetBindings = new QueryBindingSet(sourceBindings);
 

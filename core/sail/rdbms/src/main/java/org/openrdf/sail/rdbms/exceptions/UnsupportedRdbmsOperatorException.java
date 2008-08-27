@@ -5,7 +5,7 @@
  */
 package org.openrdf.sail.rdbms.exceptions;
 
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 
 /**
  * Indicates that an operation is not supported on the database side and must be
@@ -14,7 +14,7 @@ import org.openrdf.query.QueryEvaluationException;
  * @author James Leigh
  * 
  */
-public class UnsupportedRdbmsOperatorException extends QueryEvaluationException {
+public class UnsupportedRdbmsOperatorException extends EvaluationException {
 
 	private static final long serialVersionUID = 2135660777365106900L;
 

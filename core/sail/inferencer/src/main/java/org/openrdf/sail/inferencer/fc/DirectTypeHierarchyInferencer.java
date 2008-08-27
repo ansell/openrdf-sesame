@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -23,7 +24,6 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.parser.ParsedGraphQuery;
@@ -31,7 +31,6 @@ import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailConnectionListener;
-import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
@@ -268,15 +267,12 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 					throw new StoreException(t);
 				}
 			}
-			catch (QueryEvaluationException e) {
-				throw new StoreException(e);
-			}
 		}
 
 		private void evaluateIntoStatements(ParsedGraphQuery query, Collection<Statement> statements)
-			throws StoreException, RDFHandlerException, QueryEvaluationException
+			throws StoreException, RDFHandlerException, StoreException
 		{
-			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter = getWrappedConnection().evaluate(
+			CloseableIteration<? extends BindingSet, StoreException> bindingsIter = getWrappedConnection().evaluate(
 					query.getTupleExpr(), null, EmptyBindingSet.getInstance(), true);
 
 			try {

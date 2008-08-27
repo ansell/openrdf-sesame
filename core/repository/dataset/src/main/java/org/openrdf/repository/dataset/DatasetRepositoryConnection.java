@@ -8,16 +8,15 @@ package org.openrdf.repository.dataset;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.URI;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.StoreException;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.sail.SailBooleanQuery;
 import org.openrdf.repository.sail.SailGraphQuery;
@@ -66,7 +65,7 @@ public class DatasetRepositoryConnection extends RepositoryConnectionWrapper {
 	}
 
 	void loadDataset(Dataset datasets)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		try {
 			if (datasets == null) {
@@ -81,9 +80,6 @@ public class DatasetRepositoryConnection extends RepositoryConnectionWrapper {
 		}
 		catch (MalformedURLException e) {
 			throw new AssertionError(e);
-		}
-		catch (StoreException e) {
-			throw new QueryEvaluationException(e);
 		}
 	}
 

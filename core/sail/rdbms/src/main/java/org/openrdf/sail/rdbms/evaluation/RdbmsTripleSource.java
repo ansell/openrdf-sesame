@@ -7,12 +7,11 @@ package org.openrdf.sail.rdbms.evaluation;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.StoreException;
 import org.openrdf.sail.rdbms.RdbmsTripleRepository;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
@@ -39,19 +38,14 @@ public class RdbmsTripleSource implements TripleSource {
 	}
 
 	public CloseableIteration getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws QueryEvaluationException
-	{
-		try {
-			RdbmsValueFactory vf = triples.getValueFactory();
-			RdbmsResource s = vf.asRdbmsResource(subj);
-			RdbmsURI p = vf.asRdbmsURI(pred);
-			RdbmsValue o = vf.asRdbmsValue(obj);
-			RdbmsResource[] c = vf.asRdbmsResource(contexts);
-			return triples.find(s, p, o, c);
-		}
-		catch (StoreException e) {
-			throw new QueryEvaluationException(e);
-		}
+		throws StoreException
+		{
+		RdbmsValueFactory vf = triples.getValueFactory();
+		RdbmsResource s = vf.asRdbmsResource(subj);
+		RdbmsURI p = vf.asRdbmsURI(pred);
+		RdbmsValue o = vf.asRdbmsValue(obj);
+		RdbmsResource[] c = vf.asRdbmsResource(contexts);
+		return triples.find(s, p, o, c);
 	}
 
 }

@@ -10,14 +10,14 @@ import java.util.Set;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.LookAheadIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 
-public class LeftJoinIterator extends LookAheadIteration<BindingSet, QueryEvaluationException> {
+public class LeftJoinIterator extends LookAheadIteration<BindingSet, StoreException> {
 
 	/*-----------*
 	 * Constants *
@@ -38,16 +38,16 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, QueryEvalua
 	 * Variables *
 	 *-----------*/
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> leftIter;
+	private CloseableIteration<BindingSet, StoreException> leftIter;
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> rightIter;
+	private CloseableIteration<BindingSet, StoreException> rightIter;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	public LeftJoinIterator(EvaluationStrategy strategy, LeftJoin join, BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		this.strategy = strategy;
 		this.join = join;
@@ -62,7 +62,7 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, QueryEvalua
 
 	@Override
 	protected BindingSet getNextElement()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		while (rightIter != null || leftIter.hasNext()) {
 			BindingSet leftBindings = null;
@@ -110,7 +110,7 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, QueryEvalua
 
 	@Override
 	protected void handleClose()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		if (rightIter != null) {
 			rightIter.close();

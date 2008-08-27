@@ -15,9 +15,9 @@ import javax.sql.DataSource;
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;

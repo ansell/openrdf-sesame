@@ -9,8 +9,8 @@ import java.util.ArrayList;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
@@ -20,7 +20,6 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.StoreException;
 
 /**
  * @author Arjohn Kampman
@@ -37,24 +36,19 @@ public class SailTupleQuery extends SailQuery implements TupleQuery {
 	}
 
 	public TupleQueryResult evaluate()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		TupleExpr tupleExpr = getParsedQuery().getTupleExpr();
 
-		try {
-			SailConnection sailCon = getConnection().getSailConnection();
-			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter = sailCon.evaluate(
-					tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
+		SailConnection sailCon = getConnection().getSailConnection();
+		CloseableIteration<? extends BindingSet, StoreException> bindingsIter = sailCon.evaluate(
+				tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
 
-			return new TupleQueryResultImpl(new ArrayList<String>(tupleExpr.getBindingNames()), bindingsIter);
-		}
-		catch (StoreException e) {
-			throw new QueryEvaluationException(e.getMessage(), e);
-		}
+		return new TupleQueryResultImpl(new ArrayList<String>(tupleExpr.getBindingNames()), bindingsIter);
 	}
 
 	public void evaluate(TupleQueryResultHandler handler)
-		throws QueryEvaluationException, TupleQueryResultHandlerException
+		throws StoreException, TupleQueryResultHandlerException
 	{
 		TupleQueryResult queryResult = evaluate();
 		QueryResultUtil.report(queryResult, handler);

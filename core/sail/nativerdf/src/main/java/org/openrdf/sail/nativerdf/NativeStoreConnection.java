@@ -19,6 +19,7 @@ import info.aduna.iteration.IteratorIteration;
 import info.aduna.iteration.LockingIteration;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -27,7 +28,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
@@ -44,7 +45,6 @@ import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.SailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -96,7 +96,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	}
 
 	@Override
-	protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
+	protected CloseableIteration<? extends BindingSet, StoreException> evaluateInternal(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -134,13 +134,13 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			optimizerList.optimize(tupleExpr, dataset, bindings);
 			logger.trace("Optimized query model:\n{}", tupleExpr.toString());
 
-			CloseableIteration<BindingSet, QueryEvaluationException> iter;
+			CloseableIteration<BindingSet, StoreException> iter;
 			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
-			return new LockingIteration<BindingSet, QueryEvaluationException>(readLock, iter);
+			return new LockingIteration<BindingSet, StoreException>(readLock, iter);
 		}
-		catch (QueryEvaluationException e) {
+		catch (EvaluationException e) {
 			readLock.release();
-			throw new StoreException(e);
+			throw e;
 		}
 		catch (RuntimeException e) {
 			readLock.release();

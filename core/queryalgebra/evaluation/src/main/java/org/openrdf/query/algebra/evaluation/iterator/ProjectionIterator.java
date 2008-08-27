@@ -8,15 +8,16 @@ package org.openrdf.query.algebra.evaluation.iterator;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 
-public class ProjectionIterator extends ConvertingIteration<BindingSet, BindingSet, QueryEvaluationException>
+public class ProjectionIterator extends ConvertingIteration<BindingSet, BindingSet, StoreException>
 {
 
 	/*-----------*
@@ -32,8 +33,8 @@ public class ProjectionIterator extends ConvertingIteration<BindingSet, BindingS
 	 *--------------*/
 
 	public ProjectionIterator(Projection projection,
-			CloseableIteration<BindingSet, QueryEvaluationException> iter, BindingSet parentBindings)
-		throws QueryEvaluationException
+			CloseableIteration<BindingSet, StoreException> iter, BindingSet parentBindings)
+		throws EvaluationException
 	{
 		super(iter);
 		this.projection = projection;
@@ -46,7 +47,7 @@ public class ProjectionIterator extends ConvertingIteration<BindingSet, BindingS
 
 	@Override
 	protected BindingSet convert(BindingSet sourceBindings)
-		throws QueryEvaluationException
+		throws EvaluationException
 	{
 
 		return project(projection.getProjectionElemList(), sourceBindings, parentBindings);

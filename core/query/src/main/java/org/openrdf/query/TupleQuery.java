@@ -5,11 +5,13 @@
  */
 package org.openrdf.query;
 
+import org.openrdf.StoreException;
+
 public interface TupleQuery extends Query {
 
 	public TupleQueryResult evaluate()
-		throws QueryEvaluationException;
+		throws StoreException;
 
 	public void evaluate(TupleQueryResultHandler handler)
-		throws QueryEvaluationException, TupleQueryResultHandlerException;
+		throws StoreException, TupleQueryResultHandlerException;
 }

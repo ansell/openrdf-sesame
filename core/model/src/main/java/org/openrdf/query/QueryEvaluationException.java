@@ -5,14 +5,15 @@
  */
 package org.openrdf.query;
 
-import org.openrdf.OpenRDFException;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * An exception indicating that the evaluation of a query failed.
  * 
  * @author Arjohn Kampman
  */
-public class QueryEvaluationException extends OpenRDFException {
+@Deprecated
+public class QueryEvaluationException extends RepositoryException {
 
 	private static final long serialVersionUID = 602749602257031631L;
 

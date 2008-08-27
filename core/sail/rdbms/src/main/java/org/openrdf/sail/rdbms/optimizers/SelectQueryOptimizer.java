@@ -69,7 +69,7 @@ import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.algebra.factories.SqlExprFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.sail.rdbms.exceptions.RdbmsQueryEvaluationException;
+import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 import org.openrdf.sail.rdbms.managers.TransTableManager;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
@@ -80,7 +80,7 @@ import org.openrdf.sail.rdbms.model.RdbmsResource;
  * @author James Leigh
  * 
  */
-public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryEvaluationException> implements
+public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsException> implements
 		QueryOptimizer
 {
 
@@ -111,7 +111,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 	}
 
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		this.dataset = dataset;
 		this.bindings = bindings;
@@ -120,7 +120,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 
 	@Override
 	public void meet(Distinct node)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
@@ -132,7 +132,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 
 	@Override
 	public void meet(Union node)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		super.meet(node);
 		for (TupleExpr arg : node.getArgs()) {
@@ -176,7 +176,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 
 	@Override
 	public void meet(Join node)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		super.meet(node);
 		for (TupleExpr arg : node.getArgs()) {
@@ -203,7 +203,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 
 	@Override
 	public void meet(LeftJoin node)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		super.meet(node);
 		TupleExpr l = node.getLeftArg();
@@ -238,7 +238,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 
 	@Override
 	public void meet(StatementPattern sp)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		super.meet(sp);
 		Var subjVar = sp.getSubjectVar();
@@ -271,7 +271,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 			present = tables.isPredColumnPresent(predId);
 		}
 		catch (SQLException e) {
-			throw new RdbmsQueryEvaluationException(e);
+			throw new RdbmsException(e);
 		}
 		JoinItem from = new JoinItem(alias, tableName, predId);
 
@@ -299,7 +299,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 					from.addFilter(new SqlEq(new RefIdColumn(var), vc));
 				}
 				catch (RdbmsException e) {
-					throw new RdbmsQueryEvaluationException(e);
+					throw new RdbmsException(e);
 				}
 			}
 			else {
@@ -326,7 +326,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 					longValue = new NumberValue(vf.getInternalId(id));
 				}
 				catch (RdbmsException e) {
-					throw new RdbmsQueryEvaluationException(e);
+					throw new RdbmsException(e);
 				}
 				SqlEq eq = new SqlEq(var.clone(), longValue);
 				if (in == null) {
@@ -343,7 +343,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 
 	@Override
 	public void meet(Filter node)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
@@ -373,7 +373,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 
 	@Override
 	public void meet(Projection node)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
@@ -398,7 +398,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 
 	@Override
 	public void meet(Slice node)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
@@ -415,7 +415,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 
 	@Override
 	public void meet(Order node)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		super.meet(node);
 		if (!(node.getArg() instanceof SelectQuery))
@@ -460,13 +460,13 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsQueryE
 	}
 
 	private Number getInternalId(Value predValue)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		try {
 			return vf.getInternalId(predValue);
 		}
 		catch (RdbmsException e) {
-			throw new RdbmsQueryEvaluationException(e);
+			throw new RdbmsException(e);
 		}
 	}
 

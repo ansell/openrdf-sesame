@@ -13,9 +13,9 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.IterationWrapper;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Statement;
 import org.openrdf.query.GraphQueryResult;
-import org.openrdf.query.QueryEvaluationException;
 
 /**
  * An utility implementation of the {@link GraphQueryResult} interface.
@@ -23,7 +23,7 @@ import org.openrdf.query.QueryEvaluationException;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class GraphQueryResultImpl extends IterationWrapper<Statement, QueryEvaluationException> implements
+public class GraphQueryResultImpl extends IterationWrapper<Statement, StoreException> implements
 		GraphQueryResult
 {
 
@@ -42,11 +42,11 @@ public class GraphQueryResultImpl extends IterationWrapper<Statement, QueryEvalu
 	}
 
 	public GraphQueryResultImpl(Map<String, String> namespaces, Iterator<? extends Statement> statementIter) {
-		this(namespaces, new CloseableIteratorIteration<Statement, QueryEvaluationException>(statementIter));
+		this(namespaces, new CloseableIteratorIteration<Statement, StoreException>(statementIter));
 	}
 
 	public GraphQueryResultImpl(Map<String, String> namespaces,
-			CloseableIteration<? extends Statement, ? extends QueryEvaluationException> statementIter)
+			CloseableIteration<? extends Statement, ? extends StoreException> statementIter)
 	{
 		super(statementIter);
 		this.namespaces = Collections.unmodifiableMap(namespaces);

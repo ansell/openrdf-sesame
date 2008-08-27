@@ -13,12 +13,12 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -29,14 +29,14 @@ public class TupleQueryResultSerializationTest extends TestCase {
 
 	public void testSPARQLResultFormat()
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
-		UnsupportedQueryResultFormatException, QueryEvaluationException
+		UnsupportedQueryResultFormatException, StoreException
 	{
 		testQueryResultFormat(TupleQueryResultFormat.SPARQL);
 	}
 
 	private void testQueryResultFormat(TupleQueryResultFormat format)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
-		UnsupportedQueryResultFormatException, QueryEvaluationException
+		UnsupportedQueryResultFormatException, StoreException
 	{
 		TupleQueryResult input = createQueryResult();
 		TupleQueryResult expected = createQueryResult();

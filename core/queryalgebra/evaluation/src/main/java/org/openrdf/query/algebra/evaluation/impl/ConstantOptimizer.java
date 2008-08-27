@@ -11,11 +11,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.FunctionCall;
@@ -27,7 +28,6 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
 
@@ -53,78 +53,68 @@ public class ConstantOptimizer implements QueryOptimizer {
 	 * 
 	 * @param tupleExpr
 	 * @return optimized TupleExpr
-	 * @throws QueryEvaluationException
+	 * @throws StoreException 
+	 * @throws EvaluationException
 	 */
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings)
+		throws StoreException
+	{
 		tupleExpr.visit(new ConstantVisitor());
 	}
 
-	protected class ConstantVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected class ConstantVisitor extends QueryModelVisitorBase<StoreException> {
 
 		@Override
 		public void meet(Or or)
+			throws StoreException
 		{
 			or.visitChildren(this);
 
-			try {
-				for (ValueExpr arg : or.getArgs()) {
-					if (isConstant(arg)) {
-						if (strategy.isTrue(arg, EmptyBindingSet.getInstance())) {
-							or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
-							return;
-						} else {
-							or.removeChildNode(arg);
-						}
+			for (ValueExpr arg : or.getArgs()) {
+				if (isConstant(arg)) {
+					if (strategy.isTrue(arg, EmptyBindingSet.getInstance())) {
+						or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+						return;
+					} else {
+						or.removeChildNode(arg);
 					}
 				}
-				if (or.getNumberOfArguments() == 0) {
-					or.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
-				} else if (or.getNumberOfArguments() == 1) {
-					or.replaceWith(or.getArg(0));
-				}
 			}
-			catch (ValueExprEvaluationException e) {
-				logger.warn("Failed to evaluate BinaryValueOperator with two constant arguments", e);
-			}
-			catch (QueryEvaluationException e) {
-				logger.error("Query evaluation exception caught", e);
+			if (or.getNumberOfArguments() == 0) {
+				or.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
+			} else if (or.getNumberOfArguments() == 1) {
+				or.replaceWith(or.getArg(0));
 			}
 		}
 
 		@Override
 		public void meet(And and)
+			throws StoreException
 		{
 			and.visitChildren(this);
 
-			try {
-				for (ValueExpr arg : and.getArgs()) {
-					if (isConstant(arg)) {
-						boolean isTrue = strategy.isTrue(arg, EmptyBindingSet.getInstance());
-						if (isTrue) {
-							and.removeChildNode(arg);
-						}
-						else {
-							and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
-							return;
-						}
+			for (ValueExpr arg : and.getArgs()) {
+				if (isConstant(arg)) {
+					boolean isTrue = strategy.isTrue(arg, EmptyBindingSet.getInstance());
+					if (isTrue) {
+						and.removeChildNode(arg);
+					}
+					else {
+						and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
+						return;
 					}
 				}
-				if (and.getNumberOfArguments() == 0) {
-					and.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
-				} else if (and.getNumberOfArguments() == 1) {
-					and.replaceWith(and.getArg(0));
-				}
 			}
-			catch (ValueExprEvaluationException e) {
-				logger.warn("Failed to evaluate And with some constant arguments", e);
-			}
-			catch (QueryEvaluationException e) {
-				logger.error("Query evaluation exception caught", e);
+			if (and.getNumberOfArguments() == 0) {
+				and.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+			} else if (and.getNumberOfArguments() == 1) {
+				and.replaceWith(and.getArg(0));
 			}
 		}
 
 		@Override
 		protected void meetNaryValueOperator(NaryValueOperator naryValueOp)
+			throws StoreException
 		{
 			super.meetNaryValueOperator(naryValueOp);
 
@@ -132,20 +122,13 @@ public class ConstantOptimizer implements QueryOptimizer {
 				if (!isConstant(arg))
 					return;
 			}
-			try {
-				Value value = strategy.evaluate(naryValueOp, EmptyBindingSet.getInstance());
-				naryValueOp.replaceWith(new ValueConstant(value));
-			}
-			catch (ValueExprEvaluationException e) {
-				logger.warn("Failed to evaluate NaryValueOperator with a constant argument", e);
-			}
-			catch (QueryEvaluationException e) {
-				logger.error("Query evaluation exception caught", e);
-			}
+			Value value = strategy.evaluate(naryValueOp, EmptyBindingSet.getInstance());
+			naryValueOp.replaceWith(new ValueConstant(value));
 		}
 
 		@Override
 		public void meet(FunctionCall functionCall)
+			throws StoreException
 		{
 			super.meet(functionCall);
 
@@ -158,20 +141,13 @@ public class ConstantOptimizer implements QueryOptimizer {
 
 			// All arguments are constant
 
-			try {
-				Value value = strategy.evaluate(functionCall, EmptyBindingSet.getInstance());
-				functionCall.replaceWith(new ValueConstant(value));
-			}
-			catch (ValueExprEvaluationException e) {
-				logger.warn("Failed to evaluate BinaryValueOperator with two constant arguments", e);
-			}
-			catch (QueryEvaluationException e) {
-				logger.error("Query evaluation exception caught", e);
-			}
+			Value value = strategy.evaluate(functionCall, EmptyBindingSet.getInstance());
+			functionCall.replaceWith(new ValueConstant(value));
 		}
 
 		@Override
 		public void meet(Bound bound)
+			throws StoreException
 		{
 			super.meet(bound);
 

@@ -17,8 +17,8 @@ import java.util.Set;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 
 /**
@@ -87,7 +87,7 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 	}
 
 	public MutableTupleQueryResult(TupleQueryResult tqr)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		this(tqr.getBindingNames(), tqr);
 	}

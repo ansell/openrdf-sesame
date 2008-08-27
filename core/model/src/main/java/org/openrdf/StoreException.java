@@ -5,14 +5,14 @@
  */
 package org.openrdf;
 
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.query.QueryEvaluationException;
 
 /**
  * An exception thrown classes from the Repository or SAIL API to indicate an
  * error. Most of the time, this exception will wrap another exception that
  * indicates the actual source of the error.
  */
-public class StoreException extends RepositoryException {
+public class StoreException extends QueryEvaluationException {
 
 	private static final long serialVersionUID = -3216054915937011603L;
 

@@ -8,18 +8,17 @@ package org.openrdf.repository.http;
 import java.io.File;
 import java.io.IOException;
 
+import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.LiteralUtil;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.rio.RDFFormat;
 
 /**
@@ -134,16 +133,8 @@ public class HTTPRepository implements Repository {
 					}
 				}
 			}
-			catch (QueryEvaluationException e) {
-				throw new StoreException(e);
-			}
 			finally {
-				try {
-					repositoryList.close();
-				}
-				catch (QueryEvaluationException e) {
-					throw new StoreException(e);
-				}
+				repositoryList.close();
 			}
 		}
 		catch (IOException e) {

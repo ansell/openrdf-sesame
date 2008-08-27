@@ -14,6 +14,7 @@ import java.util.Set;
 
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
@@ -39,7 +40,7 @@ public class QueryResultUtil {
 	 *         If such an exception is thrown by the used query result writer.
 	 */
 	public static void report(TupleQueryResult tqr, TupleQueryResultHandler handler)
-		throws TupleQueryResultHandlerException, QueryEvaluationException
+		throws TupleQueryResultHandlerException, StoreException
 	{
 		handler.startQueryResult(tqr.getBindingNames());
 		try {
@@ -63,10 +64,10 @@ public class QueryResultUtil {
 	 *        The handler to report the query result to.
 	 * @throws RDFHandlerException
 	 *         If such an exception is thrown by the used RDF writer.
-	 * @throws QueryEvaluationException
+	 * @throws StoreException
 	 */
 	public static void report(GraphQueryResult gqr, RDFHandler rdfHandler)
-		throws RDFHandlerException, QueryEvaluationException
+		throws RDFHandlerException, StoreException
 	{
 		try {
 			rdfHandler.startRDF();
@@ -97,10 +98,10 @@ public class QueryResultUtil {
 	 * using the attached properties. Note that the method consumes both query
 	 * results fully.
 	 * 
-	 * @throws QueryEvaluationException
+	 * @throws StoreException
 	 */
 	public static boolean equals(TupleQueryResult tqr1, TupleQueryResult tqr2)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		List<BindingSet> list1 = Iterations.asList(tqr1);
 		List<BindingSet> list2 = Iterations.asList(tqr2);
@@ -114,7 +115,7 @@ public class QueryResultUtil {
 	}
 
 	public static boolean equals(GraphQueryResult result1, GraphQueryResult result2)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		Set<? extends Statement> graph1 = Iterations.asSet(result1);
 		Set<? extends Statement> graph2 = Iterations.asSet(result1);

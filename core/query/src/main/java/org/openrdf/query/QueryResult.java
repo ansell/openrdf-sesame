@@ -7,12 +7,14 @@ package org.openrdf.query;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
+
 /**
  * Super type of all query result types (TupleQueryResult, GraphQueryResult,
  * etc.).
  * 
  * @author Arjohn Kampman
  */
-public interface QueryResult<T> extends CloseableIteration<T, QueryEvaluationException> {
+public interface QueryResult<T> extends CloseableIteration<T, StoreException> {
 
 }

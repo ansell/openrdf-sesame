@@ -5,17 +5,18 @@
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIterationBase;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIterationBase;
+
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 
 /**
  * 
@@ -23,13 +24,13 @@ import org.openrdf.query.QueryEvaluationException;
  *
  */
 public class OrderIterator extends
-		CloseableIterationBase<BindingSet, QueryEvaluationException> {
+		CloseableIterationBase<BindingSet, StoreException> {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> iter;
+	private CloseableIteration<BindingSet, StoreException> iter;
 
 	private Comparator<BindingSet> comparator;
 
@@ -40,7 +41,7 @@ public class OrderIterator extends
 	 *--------------*/
 
 	public OrderIterator(
-			CloseableIteration<BindingSet, QueryEvaluationException> iter,
+			CloseableIteration<BindingSet, StoreException> iter,
 			Comparator<BindingSet> comparator) {
 		this.iter = iter;
 		this.comparator = comparator;
@@ -51,7 +52,7 @@ public class OrderIterator extends
 	 *---------*/
 
 	private Iterator<BindingSet> getOrderedIterator()
-			throws QueryEvaluationException {
+			throws StoreException {
 		if (ordered == null) {
 			List<BindingSet> list = new ArrayList<BindingSet>(1024);
 			while (iter.hasNext()) {
@@ -63,15 +64,15 @@ public class OrderIterator extends
 		return ordered;
 	}
 
-	public boolean hasNext() throws QueryEvaluationException {
+	public boolean hasNext() throws StoreException {
 		return getOrderedIterator().hasNext();
 	}
 
-	public BindingSet next() throws QueryEvaluationException {
+	public BindingSet next() throws StoreException {
 		return getOrderedIterator().next();
 	}
 
-	public void remove() throws QueryEvaluationException {
+	public void remove() throws EvaluationException {
 		throw new UnsupportedOperationException();
 	}
 

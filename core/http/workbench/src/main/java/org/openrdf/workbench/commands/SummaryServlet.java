@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.URL;
 
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.StoreException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
@@ -21,7 +21,7 @@ public class SummaryServlet extends TransformationServlet {
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws StoreException, QueryEvaluationException,
+			throws StoreException, EvaluationException,
 			MalformedQueryException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "summary.xsl");

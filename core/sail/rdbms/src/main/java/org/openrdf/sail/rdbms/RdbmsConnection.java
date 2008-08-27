@@ -12,6 +12,7 @@ import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -19,12 +20,10 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.SailConnectionBase;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
@@ -200,21 +199,16 @@ public class RdbmsConnection extends SailConnectionBase {
 	}
 
 	@Override
-	protected CloseableIteration<BindingSet, QueryEvaluationException> evaluateInternal(TupleExpr expr,
+	protected CloseableIteration<BindingSet, StoreException> evaluateInternal(TupleExpr expr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		triples.flush();
-		try {
-			TupleExpr tupleExpr;
-			EvaluationStrategy strategy;
-			strategy = factory.createRdbmsEvaluation(dataset);
-			tupleExpr = optimizer.optimize(expr, dataset, bindings, strategy);
-			return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
-		}
-		catch (QueryEvaluationException e) {
-			throw new StoreException(e);
-		}
+		TupleExpr tupleExpr;
+		EvaluationStrategy strategy;
+		strategy = factory.createRdbmsEvaluation(dataset);
+		tupleExpr = optimizer.optimize(expr, dataset, bindings, strategy);
+		return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
 	}
 
 	@Override

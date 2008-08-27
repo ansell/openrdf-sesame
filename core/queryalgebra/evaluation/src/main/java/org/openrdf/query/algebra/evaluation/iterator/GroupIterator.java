@@ -18,12 +18,12 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.lang.ObjectUtil;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Group;
@@ -38,7 +38,7 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
  * @author David Huynh
  * @author Arjohn Kampman
  */
-public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryEvaluationException> {
+public class GroupIterator extends CloseableIteratorIteration<BindingSet, StoreException> {
 
 	/*-----------*
 	 * Constants *
@@ -61,7 +61,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	 *--------------*/
 
 	public GroupIterator(EvaluationStrategy strategy, Group group, BindingSet parentBindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		this.strategy = strategy;
 		this.group = group;
@@ -75,7 +75,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	 *---------*/
 
 	private Iterator<BindingSet> createIterator()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		Collection<BindingSet> bindingSets;
 		Collection<Entry> entries;
@@ -115,9 +115,9 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	}
 
 	private Collection<Entry> buildOrderedEntries()
-		throws QueryEvaluationException
+		throws StoreException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> iter = strategy.evaluate(group.getArg(),
+		CloseableIteration<BindingSet, StoreException> iter = strategy.evaluate(group.getArg(),
 				parentBindings);
 
 		try {
@@ -146,9 +146,9 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	}
 
 	private Collection<Entry> buildUnorderedEntries()
-		throws QueryEvaluationException
+		throws StoreException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> iter = strategy.evaluate(group.getArg(),
+		CloseableIteration<BindingSet, StoreException> iter = strategy.evaluate(group.getArg(),
 				parentBindings);
 
 		try {
@@ -176,7 +176,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	}
 
 	private Value processAggregate(Set<BindingSet> bindingSets, AggregateOperator operator)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		if (operator instanceof Count) {
 			Count countOp = (Count)operator;
@@ -238,7 +238,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	}
 
 	private Set<Value> makeValueSet(ValueExpr arg, Set<BindingSet> bindingSets)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		Set<Value> valueSet = new HashSet<Value>();
 

@@ -5,14 +5,15 @@
  */
 package org.openrdf.query;
 
+import org.openrdf.StoreException;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 
 public interface GraphQuery extends Query {
 
 	public GraphQueryResult evaluate()
-		throws QueryEvaluationException;
+		throws StoreException;
 
 	public void evaluate(RDFHandler handler)
-		throws QueryEvaluationException, RDFHandlerException;
+		throws StoreException, RDFHandlerException;
 }
