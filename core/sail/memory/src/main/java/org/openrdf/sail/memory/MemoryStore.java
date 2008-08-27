@@ -334,10 +334,6 @@ public class MemoryStore extends SailBase {
 					logger.debug("Failed to initialize data file", e);
 					throw new StoreException("Failed to initialize data file " + dataFile, e);
 				}
-				catch (StoreException e) {
-					logger.debug("Failed to initialize data file", e);
-					throw new StoreException("Failed to initialize data file " + dataFile, e);
-				}
 			}
 		}
 
