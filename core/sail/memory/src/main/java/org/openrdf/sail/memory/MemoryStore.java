@@ -168,8 +168,6 @@ public class MemoryStore extends SailBase {
 	 */
 	private final Object snapshotCleanupThreadSemaphore = new Object();
 
-	private boolean trackLocks = false;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -269,8 +267,8 @@ public class MemoryStore extends SailBase {
 
 		logger.debug("Initializing MemoryStore...");
 
-		statementListLockManager = new ReadPrefReadWriteLockManager(trackLocks);
-		txnLockManager = new ExclusiveLockManager(trackLocks);
+		statementListLockManager = new ReadPrefReadWriteLockManager(debugEnabled());
+		txnLockManager = new ExclusiveLockManager(debugEnabled());
 		namespaceStore = new MemNamespaceStore();
 
 		valueFactory = new MemValueFactory();
