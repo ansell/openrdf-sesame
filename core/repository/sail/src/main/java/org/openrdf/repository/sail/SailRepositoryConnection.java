@@ -8,6 +8,7 @@ package org.openrdf.repository.sail;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -22,15 +23,11 @@ import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.GraphResult;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
-import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.StoreException;
-import org.openrdf.sail.SailReadOnlyException;
 
 /**
  * An implementation of the {@link RepositoryConnection} interface that wraps a
@@ -78,36 +75,21 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	public void commit()
 		throws StoreException
 	{
-		try {
-			sailConnection.commit();
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		sailConnection.commit();
 	}
 
 	public void rollback()
 		throws StoreException
 	{
-		try {
-			sailConnection.rollback();
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		sailConnection.rollback();
 	}
 
 	@Override
 	public void close()
 		throws StoreException
 	{
-		try {
-			sailConnection.close();
-			super.close();
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		sailConnection.close();
+		super.close();
 	}
 
 	public SailQuery prepareQuery(QueryLanguage ql, String queryString, String baseURI)
@@ -153,12 +135,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	public RepositoryResult<Resource> getContextIDs()
 		throws StoreException
 	{
-		try {
-			return createRepositoryResult(sailConnection.getContextIDs());
-		}
-		catch (StoreException e) {
-			throw new StoreException("Unable to get context IDs from Sail", e);
-		}
+		return createRepositoryResult(sailConnection.getContextIDs());
 	}
 
 	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
@@ -167,13 +144,8 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
-		try {
-			return createGraphResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
-					contexts));
-		}
-		catch (StoreException e) {
-			throw new StoreException("Unable to get statements from Sail", e);
-		}
+		return createGraphResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
+				contexts));
 	}
 
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -213,42 +185,21 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	public long size(Resource... contexts)
 		throws StoreException
 	{
-		try {
-			return sailConnection.size(contexts);
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		return sailConnection.size(contexts);
 	}
 
 	@Override
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		try {
-			sailConnection.addStatement(subject, predicate, object, contexts);
-		}
-		catch (SailReadOnlyException e) {
-			throw new RepositoryReadOnlyException(e.getMessage(), e);
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		sailConnection.addStatement(subject, predicate, object, contexts);
 	}
 
 	@Override
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		try {
-			sailConnection.removeStatements(subject, predicate, object, contexts);
-		}
-		catch (SailReadOnlyException e) {
-			throw new RepositoryReadOnlyException(e.getMessage(), e);
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		sailConnection.removeStatements(subject, predicate, object, contexts);
 	}
 
 	@Override
@@ -257,83 +208,41 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
-		try {
-			sailConnection.clear(contexts);
-			autoCommit();
-		}
-		catch (SailReadOnlyException e) {
-			throw new RepositoryReadOnlyException(e.getMessage(), e);
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		sailConnection.clear(contexts);
+		autoCommit();
 	}
 
 	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
-		try {
-			sailConnection.setNamespace(prefix, name);
-			autoCommit();
-		}
-		catch (SailReadOnlyException e) {
-			throw new RepositoryReadOnlyException(e.getMessage(), e);
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		sailConnection.setNamespace(prefix, name);
+		autoCommit();
 	}
 
 	public void removeNamespace(String prefix)
 		throws StoreException
 	{
-		try {
-			sailConnection.removeNamespace(prefix);
-			autoCommit();
-		}
-		catch (SailReadOnlyException e) {
-			throw new RepositoryReadOnlyException(e.getMessage(), e);
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		sailConnection.removeNamespace(prefix);
+		autoCommit();
 	}
 
 	public void clearNamespaces()
 		throws StoreException
 	{
-		try {
-			sailConnection.clearNamespaces();
-			autoCommit();
-		}
-		catch (SailReadOnlyException e) {
-			throw new RepositoryReadOnlyException(e.getMessage(), e);
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		sailConnection.clearNamespaces();
+		autoCommit();
 	}
 
 	public RepositoryResult<Namespace> getNamespaces()
 		throws StoreException
 	{
-		try {
-			return createRepositoryResult(sailConnection.getNamespaces());
-		}
-		catch (StoreException e) {
-			throw new StoreException("Unable to get namespaces from Sail", e);
-		}
+		return createRepositoryResult(sailConnection.getNamespaces());
 	}
 
 	public String getNamespace(String prefix)
 		throws StoreException
 	{
-		try {
-			return sailConnection.getNamespace(prefix);
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		return sailConnection.getNamespace(prefix);
 	}
 
 	/**
@@ -343,7 +252,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	protected <E> RepositoryResult<E> createRepositoryResult(
 			CloseableIteration<? extends E, StoreException> sailIter)
 	{
-		return new RepositoryResult<E>(new SailCloseableIteration<E>(sailIter));
+		return new RepositoryResult<E>(sailIter);
 	}
 
 	/**
@@ -353,6 +262,6 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	protected <E> GraphResult createGraphResult(
 			CloseableIteration<? extends Statement, StoreException> sailIter)
 	{
-		return new GraphResult(new SailCloseableIteration<Statement>(sailIter));
+		return new GraphResult(sailIter);
 	}
 }

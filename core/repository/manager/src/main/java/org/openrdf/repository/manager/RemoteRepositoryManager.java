@@ -235,7 +235,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		}
 		catch (UnauthorizedException ue) {
 			logger.warn("Not authorized to retrieve list of repositories", ue);
-			throw new StoreException(ue);
+			throw ue;
 		}
 		catch (StoreException re) {
 			logger.warn("Unable to retrieve list of repositories", re);

@@ -45,6 +45,7 @@ import info.aduna.io.IOUtil;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.text.StringUtil;
 
+import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.Graph;
@@ -74,9 +75,6 @@ import org.openrdf.query.parser.serql.SeRQLUtil;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
-import org.openrdf.repository.RepositoryLockedException;
-import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
@@ -96,6 +94,7 @@ import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.rio.ntriples.NTriplesUtil;
 import org.openrdf.sail.LockManager;
 import org.openrdf.sail.SailLockedException;
+import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 
 /**
@@ -705,7 +704,7 @@ public class Console {
 				RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
 				writeln("Repository created");
 			}
-			catch (RepositoryReadOnlyException e) {
+			catch (SailReadOnlyException e) {
 				if (tryToRemoveLock(e, systemRepo)) {
 					RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
 					writeln("Repository created");
@@ -793,7 +792,7 @@ public class Console {
 				con.close();
 			}
 		}
-		catch (RepositoryReadOnlyException e) {
+		catch (SailReadOnlyException e) {
 			try {
 				if (tryToRemoveLock(e, systemRepo)) {
 					dropRepository(tokens);
@@ -844,7 +843,7 @@ public class Console {
 				writeError("Unknown repository: '" + id + "'");
 			}
 		}
-		catch (RepositoryLockedException e) {
+		catch (SailLockedException e) {
 			try {
 				if (tryToRemoveLock(e)) {
 					openRepository(id);
@@ -1137,7 +1136,7 @@ public class Console {
 			long endTime = System.nanoTime();
 			writeln("Data has been added to the repository (" + (endTime - startTime) / 1000000 + " ms)");
 		}
-		catch (RepositoryReadOnlyException e) {
+		catch (SailReadOnlyException e) {
 			try {
 				if (tryToRemoveLock(e, repository)) {
 					load(tokens);
@@ -1310,7 +1309,7 @@ public class Console {
 				con.close();
 			}
 		}
-		catch (RepositoryReadOnlyException e) {
+		catch (SailReadOnlyException e) {
 			try {
 				if (tryToRemoveLock(e, repository)) {
 					clear(tokens);
@@ -1751,7 +1750,7 @@ public class Console {
 		}
 	}
 
-	private boolean tryToRemoveLock(RepositoryReadOnlyException e, Repository repo)
+	private boolean tryToRemoveLock(SailReadOnlyException e, Repository repo)
 		throws IOException, StoreException
 	{
 		boolean lockRemoved = false;
@@ -1770,22 +1769,18 @@ public class Console {
 		return lockRemoved;
 	}
 
-	private boolean tryToRemoveLock(RepositoryLockedException e)
+	private boolean tryToRemoveLock(SailLockedException e)
 		throws IOException
 	{
 		boolean lockRemoved = false;
 
-		if (e.getCause() instanceof SailLockedException) {
-			SailLockedException sle = (SailLockedException)e.getCause();
+		LockManager lockManager = e.getLockManager();
 
-			LockManager lockManager = sle.getLockManager();
-
-			if (lockManager != null && lockManager.isLocked()) {
-				if (askProceed("WARNING: The lock from process '" + sle.getLockedBy()
-						+ "' on this repository needs to be removed", true))
-				{
-					lockRemoved = lockManager.revokeLock();
-				}
+		if (lockManager != null && lockManager.isLocked()) {
+			if (askProceed("WARNING: The lock from process '" + e.getLockedBy()
+					+ "' on this repository needs to be removed", true))
+			{
+				lockRemoved = lockManager.revokeLock();
 			}
 		}
 

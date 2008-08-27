@@ -7,13 +7,10 @@ package org.openrdf.repository.sail;
 
 import java.io.File;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
-import org.openrdf.StoreException;
-import org.openrdf.repository.RepositoryLockedException;
 import org.openrdf.sail.Sail;
-import org.openrdf.StoreException;
-import org.openrdf.sail.SailLockedException;
 
 /**
  * An implementation of the {@link Repository} interface that operates on a
@@ -80,29 +77,13 @@ public class SailRepository implements Repository {
 	public void initialize()
 		throws StoreException
 	{
-		try {
-			sail.initialize();
-		}
-		catch (SailLockedException e) {
-			String l = e.getLockedBy();
-			String r = e.getRequestedBy();
-			String m = e.getMessage();
-			throw new RepositoryLockedException(l, r, m, e);
-		}
-		catch (StoreException e) {
-			throw new StoreException(e.getMessage(), e);
-		}
+		sail.initialize();
 	}
 
 	public void shutDown()
 		throws StoreException
 	{
-		try {
-			sail.shutDown();
-		}
-		catch (StoreException e) {
-			throw new StoreException("Unable to shutdown Sail", e);
-		}
+		sail.shutDown();
 	}
 
 	/**
@@ -118,12 +99,7 @@ public class SailRepository implements Repository {
 	public boolean isWritable()
 		throws StoreException
 	{
-		try {
-			return sail.isWritable();
-		}
-		catch (StoreException e) {
-			throw new StoreException("Unable to determine writable status of Sail", e);
-		}
+		return sail.isWritable();
 	}
 
 	public ValueFactory getValueFactory() {
@@ -133,11 +109,6 @@ public class SailRepository implements Repository {
 	public SailRepositoryConnection getConnection()
 		throws StoreException
 	{
-		try {
-			return new SailRepositoryConnection(this, sail.getConnection());
-		}
-		catch (StoreException e) {
-			throw new StoreException(e);
-		}
+		return new SailRepositoryConnection(this, sail.getConnection());
 	}
 }
