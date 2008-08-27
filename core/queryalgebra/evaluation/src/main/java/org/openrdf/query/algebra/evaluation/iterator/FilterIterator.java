@@ -10,14 +10,15 @@ import java.util.Set;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.FilterIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 
-public class FilterIterator extends FilterIteration<BindingSet, QueryEvaluationException> {
+public class FilterIterator extends FilterIteration<BindingSet, StoreException> {
 
 	/*-----------*
 	 * Constants *
@@ -38,9 +39,9 @@ public class FilterIterator extends FilterIteration<BindingSet, QueryEvaluationE
 	 * Constructors *
 	 *--------------*/
 
-	public FilterIterator(Filter filter, CloseableIteration<BindingSet, QueryEvaluationException> iter,
+	public FilterIterator(Filter filter, CloseableIteration<BindingSet, StoreException> iter,
 			EvaluationStrategy strategy)
-		throws QueryEvaluationException
+		throws EvaluationException
 	{
 		super(iter);
 		this.filter = filter;
@@ -54,7 +55,7 @@ public class FilterIterator extends FilterIteration<BindingSet, QueryEvaluationE
 
 	@Override
 	protected boolean accept(BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		try {
 			// Limit the bindings to the ones that are in scope for this filter

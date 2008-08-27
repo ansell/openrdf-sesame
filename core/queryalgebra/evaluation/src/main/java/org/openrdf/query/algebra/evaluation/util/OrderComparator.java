@@ -7,14 +7,15 @@ package org.openrdf.query.algebra.evaluation.util;
 
 import java.util.Comparator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -53,11 +54,11 @@ public class OrderComparator implements Comparator<BindingSet> {
 					return 1;
 			}
 			return 0;
-		} catch (QueryEvaluationException e) {
-			logger.debug(e.getMessage(), e);
+		} catch (StoreException e) {
+			logger.error(e.getMessage(), e);
 			return 0;
 		} catch (IllegalArgumentException e) {
-			logger.debug(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 			return 0;
 		}
 	}

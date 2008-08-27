@@ -12,11 +12,11 @@ import junit.framework.TestCase;
 import info.aduna.io.FileUtil;
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.EmptyBindingSet;
@@ -70,7 +70,7 @@ public class StoreSerializationTest extends TestCase {
 				"SELECT X, P, Y FROM {X} P {Y}", null);
 		TupleExpr tupleExpr = query.getTupleExpr();
 
-		CloseableIteration<? extends BindingSet, QueryEvaluationException> iter = con.evaluate(tupleExpr, null,
+		CloseableIteration<? extends BindingSet, StoreException> iter = con.evaluate(tupleExpr, null,
 				EmptyBindingSet.getInstance(), false);
 
 		BindingSet bindingSet = iter.next();

@@ -6,9 +6,9 @@
  */
 package org.openrdf.query.algebra.evaluation;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 
 /**
@@ -21,6 +21,6 @@ import org.openrdf.query.algebra.TupleExpr;
 public interface QueryOptimizer {
 
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings)
-		throws QueryEvaluationException;
+		throws StoreException;
 
 }

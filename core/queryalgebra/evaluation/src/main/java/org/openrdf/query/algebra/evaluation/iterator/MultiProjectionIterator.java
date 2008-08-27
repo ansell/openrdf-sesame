@@ -11,12 +11,12 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIterationBase;
 import info.aduna.iteration.Iteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.ProjectionElemList;
 
-public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, QueryEvaluationException> {
+public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, StoreException> {
 
 	/*-----------*
 	 * Constants *
@@ -24,7 +24,7 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 
 	private final List<ProjectionElemList> projections;
 
-	private final Iteration<BindingSet, QueryEvaluationException> iter;
+	private final Iteration<BindingSet, StoreException> iter;
 
 	private final BindingSet parentBindings;
 
@@ -41,7 +41,7 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 	 *--------------*/
 
 	public MultiProjectionIterator(MultiProjection multiProjection,
-			CloseableIteration<BindingSet, QueryEvaluationException> iter, BindingSet bindings)
+			CloseableIteration<BindingSet, StoreException> iter, BindingSet bindings)
 	{
 		this.projections = multiProjection.getProjections();
 		this.iter = iter;
@@ -53,13 +53,13 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 	 *---------*/
 
 	public boolean hasNext()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		return currentBindings != null && nextProjectionIdx < projections.size() || iter.hasNext();
 	}
 
 	public BindingSet next()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		if (currentBindings == null || nextProjectionIdx >= projections.size()) {
 			currentBindings = iter.next();
@@ -76,7 +76,7 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 
 	@Override
 	protected void handleClose()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		nextProjectionIdx = projections.size();
 		currentBindings = null;

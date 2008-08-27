@@ -61,7 +61,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
@@ -785,9 +785,6 @@ public class Console {
 				writeError("Internal error: malformed preconfigured query");
 				logger.error("Malformed preconfigured query", e);
 			}
-			catch (QueryEvaluationException e) {
-				throw new StoreException(e);
-			}
 			finally {
 				con.close();
 			}
@@ -954,9 +951,6 @@ public class Console {
 			catch (MalformedQueryException e) {
 				writeError("Internal error: malformed preconfigured query");
 				logger.error("Failed to show repository", e);
-			}
-			catch (QueryEvaluationException e) {
-				throw new StoreException(e);
 			}
 			finally {
 				con.close();
@@ -1356,7 +1350,7 @@ public class Console {
 		catch (MalformedQueryException e) {
 			writeError("Malformed query: " + e.getMessage());
 		}
-		catch (QueryEvaluationException e) {
+		catch (EvaluationException e) {
 			writeError("Query evaluation error: " + e.getMessage());
 			logger.error("Query evaluation error", e);
 		}
@@ -1429,7 +1423,7 @@ public class Console {
 	}
 
 	private void evaluateTupleQuery(QueryLanguage ql, String queryString)
-		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
+		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException,
 		StoreException
 	{
 		if (repository == null) {
@@ -1517,7 +1511,7 @@ public class Console {
 	}
 
 	private void evaluateGraphQuery(QueryLanguage ql, String queryString)
-		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
+		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException,
 		StoreException
 	{
 		if (repository == null) {
@@ -1563,7 +1557,7 @@ public class Console {
 	}
 
 	private void evaluateBooleanQuery(QueryLanguage ql, String queryString)
-		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
+		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException,
 		StoreException
 	{
 		if (repository == null) {

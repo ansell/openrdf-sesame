@@ -7,15 +7,14 @@ package org.openrdf.repository.http;
 
 import java.io.IOException;
 
+import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.StoreException;
 
 /**
  * TupleQuery specific to the HTTP protocol.
@@ -56,16 +55,13 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 	}
 
 	public void evaluate(TupleQueryResultHandler handler)
-		throws QueryEvaluationException, TupleQueryResultHandlerException
+		throws StoreException, TupleQueryResultHandlerException
 	{
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 		try {
 			client.sendTupleQuery(queryLanguage, queryString, dataset, includeInferred, handler, getBindingsArray());
 		}
 		catch (IOException e) {
-			throw new HTTPQueryEvaluationException(e.getMessage(), e);
-		}
-		catch (StoreException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
 		catch (MalformedQueryException e) {

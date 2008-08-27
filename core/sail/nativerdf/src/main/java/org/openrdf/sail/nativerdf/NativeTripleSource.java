@@ -10,12 +10,13 @@ import java.io.IOException;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 
 public class NativeTripleSource implements TripleSource {
@@ -44,20 +45,20 @@ public class NativeTripleSource implements TripleSource {
 	 * Methods *
 	 *---------*/
 
-	public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(Resource subj,
+	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj,
 			URI pred, Value obj, Resource... contexts)
-		throws QueryEvaluationException
+		throws EvaluationException
 	{
 		try {
-			return new ExceptionConvertingIteration<Statement, QueryEvaluationException>(
+			return new ExceptionConvertingIteration<Statement, StoreException>(
 					nativeStore.createStatementIterator(subj, pred, obj, includeInferred, readTransaction,
 							contexts))
 			{
 
 				@Override
-				protected QueryEvaluationException convert(Exception e) {
+				protected EvaluationException convert(Exception e) {
 					if (e instanceof IOException) {
-						return new QueryEvaluationException(e);
+						return new EvaluationException(e);
 					}
 					else if (e instanceof RuntimeException) {
 						throw (RuntimeException)e;
@@ -72,7 +73,7 @@ public class NativeTripleSource implements TripleSource {
 			};
 		}
 		catch (IOException e) {
-			throw new QueryEvaluationException("Unable to get statements", e);
+			throw new EvaluationException("Unable to get statements", e);
 		}
 	}
 

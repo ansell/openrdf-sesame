@@ -8,12 +8,13 @@ package org.openrdf.query.algebra.evaluation.iterator;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.LookAheadIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 
-public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluationException> {
+public class JoinIterator extends LookAheadIteration<BindingSet, StoreException> {
 
 	/*-----------*
 	 * Constants *
@@ -27,18 +28,18 @@ public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluation
 	 * Variables *
 	 *-----------*/
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> leftIter;
+	private CloseableIteration<BindingSet, StoreException> leftIter;
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> rightIter;
+	private CloseableIteration<BindingSet, StoreException> rightIter;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	public JoinIterator(EvaluationStrategy strategy,
-			CloseableIteration<BindingSet, QueryEvaluationException> leftIter, TupleExpr rightArg,
+			CloseableIteration<BindingSet, StoreException> leftIter, TupleExpr rightArg,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws EvaluationException
 	{
 		this.strategy = strategy;
 		this.leftIter = leftIter;
@@ -51,7 +52,7 @@ public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluation
 
 	@Override
 	protected BindingSet getNextElement()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		while (rightIter != null || leftIter.hasNext()) {
 			if (rightIter == null) {
@@ -72,7 +73,7 @@ public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluation
 
 	@Override
 	protected void handleClose()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		if (rightIter != null) {
 			rightIter.close();

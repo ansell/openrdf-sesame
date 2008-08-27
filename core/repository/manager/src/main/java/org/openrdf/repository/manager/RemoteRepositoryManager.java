@@ -18,7 +18,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.LiteralUtil;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.StoreException;
@@ -228,10 +228,6 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		catch (IOException ioe) {
 			logger.warn("Unable to retrieve list of repositories", ioe);
 			throw new StoreException(ioe);
-		}
-		catch (QueryEvaluationException qee) {
-			logger.warn("Unable to retrieve list of repositories", qee);
-			throw new StoreException(qee);
 		}
 		catch (UnauthorizedException ue) {
 			logger.warn("Not authorized to retrieve list of repositories", ue);

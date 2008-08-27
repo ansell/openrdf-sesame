@@ -34,7 +34,6 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.EmptyBindingSet;
@@ -334,7 +333,7 @@ public abstract class RDFStoreTest extends TestCase {
 		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
 				"SELECT S, P, O FROM {S} P {O} WHERE P = <" + pred.stringValue() + ">", null);
 
-		CloseableIteration<? extends BindingSet, QueryEvaluationException> iter;
+		CloseableIteration<? extends BindingSet, StoreException> iter;
 		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
 
 		try {
@@ -465,7 +464,7 @@ public abstract class RDFStoreTest extends TestCase {
 		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
 				"SELECT C FROM {} rdf:type {C}", null);
 
-		CloseableIteration<? extends BindingSet, QueryEvaluationException> iter;
+		CloseableIteration<? extends BindingSet, StoreException> iter;
 		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
 
 		while (iter.hasNext()) {
@@ -616,7 +615,7 @@ public abstract class RDFStoreTest extends TestCase {
 
 		MapBindingSet bindings = new MapBindingSet(1);
 
-		CloseableIteration<? extends BindingSet, QueryEvaluationException> iter;
+		CloseableIteration<? extends BindingSet, StoreException> iter;
 		iter = con.evaluate(tupleExpr, null, bindings, false);
 
 		int resultCount = verifyQueryResult(iter, 1);
@@ -941,9 +940,9 @@ public abstract class RDFStoreTest extends TestCase {
 	}
 
 	private int verifyQueryResult(
-			CloseableIteration<? extends BindingSet, QueryEvaluationException> resultIter,
+			CloseableIteration<? extends BindingSet, StoreException> resultIter,
 			int expectedBindingCount)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		int resultCount = 0;
 

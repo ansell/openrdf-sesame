@@ -15,7 +15,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 
 /**
@@ -69,7 +68,7 @@ public interface SailConnection {
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
 	 */
-	public CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(TupleExpr tupleExpr,
+	public CloseableIteration<? extends BindingSet, StoreException> evaluate(TupleExpr tupleExpr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException;
 

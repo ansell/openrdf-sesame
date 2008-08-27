@@ -7,14 +7,13 @@ package org.openrdf.repository.sail;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.StoreException;
 
 /**
  * @author Arjohn Kampman
@@ -32,7 +31,7 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 	}
 
 	public boolean evaluate()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		ParsedBooleanQuery parsedBooleanQuery = getParsedQuery();
 		TupleExpr tupleExpr = parsedBooleanQuery.getTupleExpr();
@@ -42,21 +41,16 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 			dataset = parsedBooleanQuery.getDataset();
 		}
 
+		SailConnection sailCon = getConnection().getSailConnection();
+
+		CloseableIteration<? extends BindingSet, StoreException> bindingsIter = sailCon.evaluate(
+				tupleExpr, dataset, getBindings(), getIncludeInferred());
+
 		try {
-			SailConnection sailCon = getConnection().getSailConnection();
-
-			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter = sailCon.evaluate(
-					tupleExpr, dataset, getBindings(), getIncludeInferred());
-
-			try {
-				return bindingsIter.hasNext();
-			}
-			finally {
-				bindingsIter.close();
-			}
+			return bindingsIter.hasNext();
 		}
-		catch (StoreException e) {
-			throw new QueryEvaluationException(e.getMessage(), e);
+		finally {
+			bindingsIter.close();
 		}
 	}
 }

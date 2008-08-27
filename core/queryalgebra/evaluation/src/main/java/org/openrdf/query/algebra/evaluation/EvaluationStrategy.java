@@ -7,9 +7,9 @@ package org.openrdf.query.algebra.evaluation;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 
@@ -33,9 +33,9 @@ public interface EvaluationStrategy {
 	 * @return A closeable iterator over the variable binding sets that match the
 	 *         tuple expression.
 	 */
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(TupleExpr expr,
+	public CloseableIteration<BindingSet, StoreException> evaluate(TupleExpr expr,
 			BindingSet bindings)
-		throws QueryEvaluationException;
+		throws StoreException;
 
 	/**
 	 * Gets the value of this expression.
@@ -47,7 +47,7 @@ public interface EvaluationStrategy {
 	 *         the expression could not be evaluated.
 	 */
 	public Value evaluate(ValueExpr expr, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException;
+		throws ValueExprEvaluationException, StoreException;
 
 	/**
 	 * Evaluates the boolean expression on the supplied TripleSource object.
@@ -63,5 +63,5 @@ public interface EvaluationStrategy {
 	 *         <tt>false</tt>, but unknown.
 	 */
 	public boolean isTrue(ValueExpr expr, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException;
+		throws ValueExprEvaluationException, StoreException;
 }

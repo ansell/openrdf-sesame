@@ -19,14 +19,14 @@ import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.sail.rdbms.exceptions.RdbmsQueryEvaluationException;
+import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 
 /**
  * 
  * @author James Leigh
  */
-public class HashExprFactory extends QueryModelVisitorBase<RdbmsQueryEvaluationException> {
+public class HashExprFactory extends QueryModelVisitorBase<RdbmsException> {
 
 	protected SqlExpr result;
 
@@ -40,7 +40,7 @@ public class HashExprFactory extends QueryModelVisitorBase<RdbmsQueryEvaluationE
 	}
 
 	public SqlExpr createHashExpr(ValueExpr expr)
-		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
+		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		result = null;
 		if (expr == null)
@@ -55,14 +55,14 @@ public class HashExprFactory extends QueryModelVisitorBase<RdbmsQueryEvaluationE
 
 	@Override
 	public void meet(ValueConstant vc)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		result = valueOf(vc.getValue());
 	}
 
 	@Override
 	public void meet(Var var)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		if (var.getValue() == null) {
 			result = new RefIdColumn(var);
@@ -81,13 +81,13 @@ public class HashExprFactory extends QueryModelVisitorBase<RdbmsQueryEvaluationE
 	}
 
 	public SqlExpr valueOf(Value value)
-		throws RdbmsQueryEvaluationException
+		throws RdbmsException
 	{
 		try {
 			return new NumberValue(vf.getInternalId(value));
 		}
 		catch (RdbmsException e) {
-			throw new RdbmsQueryEvaluationException(e);
+			throw new RdbmsException(e);
 		}
 	}
 

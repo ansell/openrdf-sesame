@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Statement;
 import org.openrdf.query.BindingSet;
@@ -24,12 +25,10 @@ import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.http.HTTPQueryEvaluationException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -203,7 +202,7 @@ public class QueryServlet extends TransformationServlet {
 	}
 
 	private void evaluateTupleQuery(TupleResultBuilder builder, TupleQuery query, int limit)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		TupleQueryResult result = query.evaluate();
 		try {
@@ -226,7 +225,7 @@ public class QueryServlet extends TransformationServlet {
 	}
 
 	private void evaluateGraphQuery(TupleResultBuilder builder, GraphQuery query, int limit)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		GraphQueryResult result = query.evaluate();
 		try {
@@ -243,13 +242,13 @@ public class QueryServlet extends TransformationServlet {
 	}
 
 	private void evaluateGraphQuery(RDFWriter writer, GraphQuery query)
-		throws QueryEvaluationException, RDFHandlerException
+		throws StoreException, RDFHandlerException
 	{
 		query.evaluate(writer);
 	}
 
 	private void evaluateBooleanQuery(TupleResultBuilder builder, BooleanQuery query)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		boolean result = query.evaluate();
 		builder.link("info");

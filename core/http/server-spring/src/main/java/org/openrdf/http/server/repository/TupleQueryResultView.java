@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.StoreException;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -67,7 +67,7 @@ public class TupleQueryResultView extends QueryResultView {
 			TupleQueryResult tupleQueryResult = (TupleQueryResult)model.get(QUERY_RESULT_KEY);
 			QueryResultUtil.report(tupleQueryResult, qrWriter);
 		}
-		catch (QueryEvaluationException e) {
+		catch (StoreException e) {
 			logger.error("Query evaluation error", e);
 			response.sendError(SC_INTERNAL_SERVER_ERROR, "Query evaluation error: " + e.getMessage());
 		}

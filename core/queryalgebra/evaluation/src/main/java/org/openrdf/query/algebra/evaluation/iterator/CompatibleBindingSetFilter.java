@@ -8,18 +8,19 @@ package org.openrdf.query.algebra.evaluation.iterator;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.FilterIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.QueryResultUtil;
 
 /**
  * @author Arjohn Kampman
  */
-public class CompatibleBindingSetFilter extends FilterIteration<BindingSet, QueryEvaluationException> {
+public class CompatibleBindingSetFilter extends FilterIteration<BindingSet, StoreException> {
 
 	private BindingSet inputBindings;
 
-	public CompatibleBindingSetFilter(CloseableIteration<BindingSet, QueryEvaluationException> iter,
+	public CompatibleBindingSetFilter(CloseableIteration<BindingSet, StoreException> iter,
 			BindingSet inputBindings)
 	{
 		super(iter);
@@ -28,7 +29,7 @@ public class CompatibleBindingSetFilter extends FilterIteration<BindingSet, Quer
 
 	@Override
 	protected boolean accept(BindingSet outputBindings)
-		throws QueryEvaluationException
+		throws EvaluationException
 	{
 		return QueryResultUtil.bindingSetsCompatible(inputBindings, outputBindings);
 	}

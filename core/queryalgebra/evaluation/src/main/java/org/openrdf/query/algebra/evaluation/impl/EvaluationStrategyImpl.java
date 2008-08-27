@@ -27,6 +27,7 @@ import info.aduna.iteration.OffsetIteration;
 import info.aduna.iteration.SingletonIteration;
 import info.aduna.iteration.UnionIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -41,7 +42,7 @@ import org.openrdf.model.impl.NumericLiteralImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BinaryTupleOperator;
@@ -148,9 +149,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * Methods *
 	 *---------*/
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(TupleExpr expr,
+	public CloseableIteration<BindingSet, StoreException> evaluate(TupleExpr expr,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		if (expr instanceof StatementPattern) {
 			return evaluate((StatementPattern)expr, bindings);
@@ -168,13 +169,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new IllegalArgumentException("expr must not be null");
 		}
 		else {
-			throw new QueryEvaluationException("Unsupported tuple expr type: " + expr.getClass());
+			throw new EvaluationException("Unsupported tuple expr type: " + expr.getClass());
 		}
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,
+	public CloseableIteration<BindingSet, StoreException> evaluate(StatementPattern sp,
 			final BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		final Var subjVar = sp.getSubjectVar();
 		final Var predVar = sp.getPredicateVar();
@@ -186,7 +187,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value objValue = getVarValue(objVar, bindings);
 		Value contextValue = getVarValue(conVar, bindings);
 
-		CloseableIteration<? extends Statement, QueryEvaluationException> stIter = null;
+		CloseableIteration<? extends Statement, StoreException> stIter = null;
 
 		try {
 			Resource[] contexts;
@@ -202,7 +203,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 				if (graphs.isEmpty()) {
 					// Search zero contexts
-					return new EmptyIteration<BindingSet, QueryEvaluationException>();
+					return new EmptyIteration<BindingSet, StoreException>();
 				}
 				else if (contextValue != null) {
 					if (graphs.contains(contextValue)) {
@@ -211,7 +212,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					else {
 						// Statement pattern specifies a context that is not part of
 						// the dataset
-						return new EmptyIteration<BindingSet, QueryEvaluationException>();
+						return new EmptyIteration<BindingSet, StoreException>();
 					}
 				}
 				else {
@@ -231,7 +232,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				// Named contexts are matched by retrieving all statements from
 				// the store and filtering out the statements that do not have a
 				// context.
-				stIter = new FilterIteration<Statement, QueryEvaluationException>(stIter) {
+				stIter = new FilterIteration<Statement, StoreException>(stIter) {
 
 					@Override
 					protected boolean accept(Statement st) {
@@ -243,12 +244,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		catch (ClassCastException e) {
 			// Invalid value type for subject, predicate and/or context
-			return new EmptyIteration<BindingSet, QueryEvaluationException>();
+			return new EmptyIteration<BindingSet, StoreException>();
 		}
 
 		// The same variable might have been used multiple times in this
 		// StatementPattern, verify value equality in those cases.
-		stIter = new FilterIteration<Statement, QueryEvaluationException>(stIter) {
+		stIter = new FilterIteration<Statement, StoreException>(stIter) {
 
 			@Override
 			protected boolean accept(Statement st) {
@@ -289,7 +290,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		};
 
 		// Return an iterator that converts the statements to var bindings
-		return new ConvertingIteration<Statement, BindingSet, QueryEvaluationException>(stIter) {
+		return new ConvertingIteration<Statement, BindingSet, StoreException>(stIter) {
 
 			@Override
 			protected BindingSet convert(Statement st) {
@@ -325,9 +326,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(UnaryTupleOperator expr,
+	public CloseableIteration<BindingSet, StoreException> evaluate(UnaryTupleOperator expr,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		if (expr instanceof Projection) {
 			return evaluate((Projection)expr, bindings);
@@ -360,90 +361,90 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new IllegalArgumentException("expr must not be null");
 		}
 		else {
-			throw new QueryEvaluationException("Unknown unary tuple operator type: " + expr.getClass());
+			throw new EvaluationException("Unknown unary tuple operator type: " + expr.getClass());
 		}
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Projection projection,
+	public CloseableIteration<BindingSet, StoreException> evaluate(Projection projection,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> result;
+		CloseableIteration<BindingSet, StoreException> result;
 		result = this.evaluate(projection.getArg(), bindings);
 		result = new ProjectionIterator(projection, result, bindings);
 		return result;
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(MultiProjection multiProjection,
+	public CloseableIteration<BindingSet, StoreException> evaluate(MultiProjection multiProjection,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> result;
+		CloseableIteration<BindingSet, StoreException> result;
 		result = this.evaluate(multiProjection.getArg(), bindings);
 		result = new MultiProjectionIterator(multiProjection, result, bindings);
 		return result;
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Filter filter, BindingSet bindings)
-		throws QueryEvaluationException
+	public CloseableIteration<BindingSet, StoreException> evaluate(Filter filter, BindingSet bindings)
+		throws StoreException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> result;
+		CloseableIteration<BindingSet, StoreException> result;
 		result = this.evaluate(filter.getArg(), bindings);
 		result = new FilterIterator(filter, result, this);
 		return result;
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Slice slice, BindingSet bindings)
-		throws QueryEvaluationException
+	public CloseableIteration<BindingSet, StoreException> evaluate(Slice slice, BindingSet bindings)
+		throws StoreException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> result = evaluate(slice.getArg(), bindings);
+		CloseableIteration<BindingSet, StoreException> result = evaluate(slice.getArg(), bindings);
 
 		if (slice.hasOffset()) {
-			result = new OffsetIteration<BindingSet, QueryEvaluationException>(result, slice.getOffset());
+			result = new OffsetIteration<BindingSet, StoreException>(result, slice.getOffset());
 		}
 
 		if (slice.hasLimit()) {
-			result = new LimitIteration<BindingSet, QueryEvaluationException>(result, slice.getLimit());
+			result = new LimitIteration<BindingSet, StoreException>(result, slice.getLimit());
 		}
 
 		return result;
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Extension extension,
+	public CloseableIteration<BindingSet, StoreException> evaluate(Extension extension,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> result;
+		CloseableIteration<BindingSet, StoreException> result;
 		result = this.evaluate(extension.getArg(), bindings);
 		result = new ExtensionIterator(extension, result, this);
 		return result;
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Distinct distinct,
+	public CloseableIteration<BindingSet, StoreException> evaluate(Distinct distinct,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
-		return new DistinctIteration<BindingSet, QueryEvaluationException>(
+		return new DistinctIteration<BindingSet, StoreException>(
 				evaluate(distinct.getArg(), bindings));
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Group node, BindingSet bindings)
-		throws QueryEvaluationException
+	public CloseableIteration<BindingSet, StoreException> evaluate(Group node, BindingSet bindings)
+		throws StoreException
 	{
 		return new GroupIterator(this, node, bindings);
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Order node, BindingSet bindings)
-		throws QueryEvaluationException
+	public CloseableIteration<BindingSet, StoreException> evaluate(Order node, BindingSet bindings)
+		throws StoreException
 	{
 		ValueComparator vcmp = new ValueComparator();
 		OrderComparator cmp = new OrderComparator(this, node, vcmp);
 		return new OrderIterator(evaluate(node.getArg(), bindings), cmp);
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(NaryTupleOperator expr,
+	public CloseableIteration<BindingSet, StoreException> evaluate(NaryTupleOperator expr,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		if (expr instanceof BinaryTupleOperator) {
 			return evaluate((BinaryTupleOperator)expr, bindings);
@@ -461,13 +462,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new IllegalArgumentException("expr must not be null");
 		}
 		else {
-			throw new QueryEvaluationException("Unsupported n-ary tuple operator type: " + expr.getClass());
+			throw new EvaluationException("Unsupported n-ary tuple operator type: " + expr.getClass());
 		}
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BinaryTupleOperator expr,
+	public CloseableIteration<BindingSet, StoreException> evaluate(BinaryTupleOperator expr,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		if (expr instanceof LeftJoin) {
 			return evaluate((LeftJoin)expr, bindings);
@@ -482,15 +483,15 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new IllegalArgumentException("expr must not be null");
 		}
 		else {
-			throw new QueryEvaluationException("Unsupported binary tuple operator type: " + expr.getClass());
+			throw new EvaluationException("Unsupported binary tuple operator type: " + expr.getClass());
 		}
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Join join, BindingSet bindings)
-		throws QueryEvaluationException
+	public CloseableIteration<BindingSet, StoreException> evaluate(Join join, BindingSet bindings)
+		throws StoreException
 	{
 		assert join.getNumberOfArguments() > 0;
-		CloseableIteration<BindingSet, QueryEvaluationException> left;
+		CloseableIteration<BindingSet, StoreException> left;
 		left = evaluate(join.getArg(0), bindings);
 		for (int i = 1, n = join.getNumberOfArguments(); i < n; i++) {
 			left = new JoinIterator(this, left, join.getArg(i), bindings);
@@ -498,9 +499,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return left;
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(LeftJoin leftJoin,
+	public CloseableIteration<BindingSet, StoreException> evaluate(LeftJoin leftJoin,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		// Check whether optional join is "well designed" as defined in section
 		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge P�rez et al.
@@ -519,7 +520,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else {
 			QueryBindingSet filteredBindings = new QueryBindingSet(bindings);
 			filteredBindings.removeAll(problemVars);
-			CloseableIteration<BindingSet, QueryEvaluationException> iter;
+			CloseableIteration<BindingSet, StoreException> iter;
 
 			iter = new LeftJoinIterator(this, leftJoin, filteredBindings);
 			iter = new CompatibleBindingSetFilter(iter, bindings);
@@ -529,102 +530,102 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	@SuppressWarnings("unchecked")
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(final Union union,
+	public CloseableIteration<BindingSet, StoreException> evaluate(final Union union,
 			final BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		int size = union.getNumberOfArguments();
-		Iteration<BindingSet, QueryEvaluationException>[] iters = new Iteration[size];
+		Iteration<BindingSet, StoreException>[] iters = new Iteration[size];
 		for (int i=0;i<size;i++) {
 			final TupleExpr arg = union.getArg(i);
-			iters[i] = new DelayedIteration<BindingSet, QueryEvaluationException>() {
+			iters[i] = new DelayedIteration<BindingSet, StoreException>() {
 
 				@Override
-				protected Iteration<BindingSet, QueryEvaluationException> createIteration()
-					throws QueryEvaluationException
+				protected Iteration<BindingSet, StoreException> createIteration()
+					throws StoreException
 				{
 					return evaluate(arg, bindings);
 				}
 			};
 		}
 
-		return new UnionIteration<BindingSet, QueryEvaluationException>(iters);
+		return new UnionIteration<BindingSet, StoreException>(iters);
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(final Intersection intersection,
+	public CloseableIteration<BindingSet, StoreException> evaluate(final Intersection intersection,
 			final BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
-		Iteration<BindingSet, QueryEvaluationException> leftArg, rightArg;
+		Iteration<BindingSet, StoreException> leftArg, rightArg;
 
-		leftArg = new DelayedIteration<BindingSet, QueryEvaluationException>() {
+		leftArg = new DelayedIteration<BindingSet, StoreException>() {
 
 			@Override
-			protected Iteration<BindingSet, QueryEvaluationException> createIteration()
-				throws QueryEvaluationException
+			protected Iteration<BindingSet, StoreException> createIteration()
+				throws StoreException
 			{
 				return evaluate(intersection.getLeftArg(), bindings);
 			}
 		};
 
-		rightArg = new DelayedIteration<BindingSet, QueryEvaluationException>() {
+		rightArg = new DelayedIteration<BindingSet, StoreException>() {
 
 			@Override
-			protected Iteration<BindingSet, QueryEvaluationException> createIteration()
-				throws QueryEvaluationException
+			protected Iteration<BindingSet, StoreException> createIteration()
+				throws StoreException
 			{
 				return evaluate(intersection.getRightArg(), bindings);
 			}
 		};
 
-		return new IntersectIteration<BindingSet, QueryEvaluationException>(leftArg, rightArg);
+		return new IntersectIteration<BindingSet, StoreException>(leftArg, rightArg);
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(final Difference difference,
+	public CloseableIteration<BindingSet, StoreException> evaluate(final Difference difference,
 			final BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
-		Iteration<BindingSet, QueryEvaluationException> leftArg, rightArg;
+		Iteration<BindingSet, StoreException> leftArg, rightArg;
 
-		leftArg = new DelayedIteration<BindingSet, QueryEvaluationException>() {
+		leftArg = new DelayedIteration<BindingSet, StoreException>() {
 
 			@Override
-			protected Iteration<BindingSet, QueryEvaluationException> createIteration()
-				throws QueryEvaluationException
+			protected Iteration<BindingSet, StoreException> createIteration()
+				throws StoreException
 			{
 				return evaluate(difference.getLeftArg(), bindings);
 			}
 		};
 
-		rightArg = new DelayedIteration<BindingSet, QueryEvaluationException>() {
+		rightArg = new DelayedIteration<BindingSet, StoreException>() {
 
 			@Override
-			protected Iteration<BindingSet, QueryEvaluationException> createIteration()
-				throws QueryEvaluationException
+			protected Iteration<BindingSet, StoreException> createIteration()
+				throws StoreException
 			{
 				return evaluate(difference.getRightArg(), bindings);
 			}
 		};
 
-		return new MinusIteration<BindingSet, QueryEvaluationException>(leftArg, rightArg);
+		return new MinusIteration<BindingSet, StoreException>(leftArg, rightArg);
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(SingletonSet singletonSet,
+	public CloseableIteration<BindingSet, StoreException> evaluate(SingletonSet singletonSet,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
-		return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
+		return new SingletonIteration<BindingSet, StoreException>(bindings);
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(EmptySet emptySet,
+	public CloseableIteration<BindingSet, StoreException> evaluate(EmptySet emptySet,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
-		return new EmptyIteration<BindingSet, QueryEvaluationException>();
+		return new EmptyIteration<BindingSet, StoreException>();
 	}
 
 	public Value evaluate(ValueExpr expr, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		if (expr instanceof Var) {
 			return evaluate((Var)expr, bindings);
@@ -714,12 +715,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new IllegalArgumentException("expr must not be null");
 		}
 		else {
-			throw new QueryEvaluationException("Unsupported value expr type: " + expr.getClass());
+			throw new EvaluationException("Unsupported value expr type: " + expr.getClass());
 		}
 	}
 
 	public Value evaluate(Var var, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value value = var.getValue();
 
@@ -735,19 +736,19 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(ValueConstant valueConstant, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		return valueConstant.getValue();
 	}
 
 	public Value evaluate(BNodeGenerator node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		return tripleSource.getValueFactory().createBNode();
 	}
 
 	public Value evaluate(Bound node, BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		try {
 			Value argValue = evaluate(node.getArg(), bindings);
@@ -759,7 +760,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(Str node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 
@@ -782,7 +783,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(Label node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		// FIXME: deprecate Label in favour of Str(?)
 		Value argValue = evaluate(node.getArg(), bindings);
@@ -803,7 +804,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(Lang node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 
@@ -822,7 +823,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(Datatype node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value v = evaluate(node.getArg(), bindings);
 
@@ -843,7 +844,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(Namespace node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 
@@ -857,7 +858,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(LocalName node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 
@@ -877,7 +878,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 *         otherwise.
 	 */
 	public Value evaluate(IsResource node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 		return BooleanLiteralImpl.valueOf(argValue instanceof Resource);
@@ -890,7 +891,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 *         otherwise.
 	 */
 	public Value evaluate(IsURI node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 		return BooleanLiteralImpl.valueOf(argValue instanceof URI);
@@ -903,7 +904,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 *         otherwise.
 	 */
 	public Value evaluate(IsBNode node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 		return BooleanLiteralImpl.valueOf(argValue instanceof BNode);
@@ -916,7 +917,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 *         otherwise.
 	 */
 	public Value evaluate(IsLiteral node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 		return BooleanLiteralImpl.valueOf(argValue instanceof Literal);
@@ -930,7 +931,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 *         <tt>regex</tt> operator, <tt>false</tt> otherwise.
 	 */
 	public Value evaluate(Regex node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value arg = evaluate(node.getArg(), bindings);
 		Value parg = evaluate(node.getPatternArg(), bindings);
@@ -984,7 +985,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(LangMatches node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value langTagValue = evaluate(node.getLeftArg(), bindings);
 		Value langRangeValue = evaluate(node.getRightArg(), bindings);
@@ -1025,7 +1026,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 *         <tt>like</tt> operator, <tt>false</tt> otherwise.
 	 */
 	public Value evaluate(Like node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value val = evaluate(node.getArg(), bindings);
 		String strVal = null;
@@ -1117,12 +1118,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * Evaluates a function.
 	 */
 	public Value evaluate(FunctionCall node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Function function = FunctionRegistry.getInstance().get(node.getURI());
 
 		if (function == null) {
-			throw new QueryEvaluationException("Unknown function '" + node.getURI() + "'");
+			throw new EvaluationException("Unknown function '" + node.getURI() + "'");
 		}
 
 		List<ValueExpr> args = node.getArgs();
@@ -1137,7 +1138,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(And node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		ValueExprEvaluationException failure = null;
 		for (ValueExpr arg : node.getArgs()) {
@@ -1160,7 +1161,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(Or node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		ValueExprEvaluationException failure = null;
 		for (ValueExpr arg : node.getArgs()) {
@@ -1183,7 +1184,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(Not node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 		boolean argBoolean = QueryEvaluationUtil.getEffectiveBooleanValue(argValue);
@@ -1191,7 +1192,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(SameTerm node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value leftVal = evaluate(node.getLeftArg(), bindings);
 		Value rightVal = evaluate(node.getRightArg(), bindings);
@@ -1200,7 +1201,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(Compare node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value leftVal = evaluate(node.getLeftArg(), bindings);
 		Value rightVal = evaluate(node.getRightArg(), bindings);
@@ -1209,7 +1210,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(MathExpr node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		// Do the math
 		Value leftVal = evaluate(node.getLeftArg(), bindings);
@@ -1223,7 +1224,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(In node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value leftValue = evaluate(node.getArg(), bindings);
 
@@ -1233,7 +1234,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		// Use first binding name from tuple expr to compare values
 		String bindingName = node.getSubQuery().getBindingNames().iterator().next();
 
-		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(node.getSubQuery(), bindings);
+		CloseableIteration<BindingSet, StoreException> iter = evaluate(node.getSubQuery(), bindings);
 		try {
 			while (result == false && iter.hasNext()) {
 				BindingSet bindingSet = iter.next();
@@ -1252,7 +1253,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(CompareAny node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value leftValue = evaluate(node.getArg(), bindings);
 
@@ -1262,7 +1263,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		// Use first binding name from tuple expr to compare values
 		String bindingName = node.getSubQuery().getBindingNames().iterator().next();
 
-		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(node.getSubQuery(), bindings);
+		CloseableIteration<BindingSet, StoreException> iter = evaluate(node.getSubQuery(), bindings);
 		try {
 			while (result == false && iter.hasNext()) {
 				BindingSet bindingSet = iter.next();
@@ -1285,7 +1286,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(CompareAll node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
 		Value leftValue = evaluate(node.getArg(), bindings);
 
@@ -1295,7 +1296,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		// Use first binding name from tuple expr to compare values
 		String bindingName = node.getSubQuery().getBindingNames().iterator().next();
 
-		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(node.getSubQuery(), bindings);
+		CloseableIteration<BindingSet, StoreException> iter = evaluate(node.getSubQuery(), bindings);
 		try {
 			while (result == true && iter.hasNext()) {
 				BindingSet bindingSet = iter.next();
@@ -1319,9 +1320,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public Value evaluate(Exists node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
+		throws ValueExprEvaluationException, StoreException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(node.getSubQuery(), bindings);
+		CloseableIteration<BindingSet, StoreException> iter = evaluate(node.getSubQuery(), bindings);
 		try {
 			return BooleanLiteralImpl.valueOf(iter.hasNext());
 		}
@@ -1331,7 +1332,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public boolean isTrue(ValueExpr expr, BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		try {
 			Value value = evaluate(expr, bindings);

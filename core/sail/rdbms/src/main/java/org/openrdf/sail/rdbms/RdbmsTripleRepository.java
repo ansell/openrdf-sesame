@@ -17,10 +17,10 @@ import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
 import org.openrdf.sail.rdbms.evaluation.SqlBracketBuilder;

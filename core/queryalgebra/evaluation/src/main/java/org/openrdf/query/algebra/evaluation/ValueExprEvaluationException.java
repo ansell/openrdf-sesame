@@ -5,7 +5,7 @@
  */
 package org.openrdf.query.algebra.evaluation;
 
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.ValueExpr;
 
 /**
@@ -15,7 +15,7 @@ import org.openrdf.query.algebra.ValueExpr;
  * 
  * @author Arjohn Kampman
  */
-public class ValueExprEvaluationException extends QueryEvaluationException {
+public class ValueExprEvaluationException extends EvaluationException {
 
 	private static final long serialVersionUID = -3633440570594631529L;
 

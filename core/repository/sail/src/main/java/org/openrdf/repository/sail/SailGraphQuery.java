@@ -9,6 +9,7 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.FilterIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -17,7 +18,6 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.GraphQueryResultImpl;
@@ -25,7 +25,6 @@ import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.StoreException;
 
 /**
  * @author Arjohn Kampman
@@ -42,60 +41,55 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 	}
 
 	public GraphQueryResult evaluate()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		TupleExpr tupleExpr = getParsedQuery().getTupleExpr();
 
-		try {
-			SailConnection sailCon = getConnection().getSailConnection();
-			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter = sailCon.evaluate(
-					tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
+		SailConnection sailCon = getConnection().getSailConnection();
+		CloseableIteration<? extends BindingSet, StoreException> bindingsIter = sailCon.evaluate(
+				tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
 
-			// Filters out all partial and invalid matches
-			bindingsIter = new FilterIteration<BindingSet, QueryEvaluationException>(bindingsIter) {
+		// Filters out all partial and invalid matches
+		bindingsIter = new FilterIteration<BindingSet, StoreException>(bindingsIter) {
 
-				@Override
-				protected boolean accept(BindingSet bindingSet) {
-					Value context = bindingSet.getValue("context");
+			@Override
+			protected boolean accept(BindingSet bindingSet) {
+				Value context = bindingSet.getValue("context");
 
-					return bindingSet.getValue("subject") instanceof Resource
-							&& bindingSet.getValue("predicate") instanceof URI
-							&& bindingSet.getValue("object") instanceof Value
-							&& (context == null || context instanceof Resource);
+				return bindingSet.getValue("subject") instanceof Resource
+				&& bindingSet.getValue("predicate") instanceof URI
+				&& bindingSet.getValue("object") instanceof Value
+				&& (context == null || context instanceof Resource);
+			}
+		};
+
+		final ValueFactory vf = getConnection().getRepository().getValueFactory();
+
+		// Convert the BindingSet objects to actual RDF statements
+		CloseableIteration<Statement, StoreException> stIter;
+		stIter = new ConvertingIteration<BindingSet, Statement, StoreException>(bindingsIter) {
+
+			@Override
+			protected Statement convert(BindingSet bindingSet) {
+				Resource subject = (Resource)bindingSet.getValue("subject");
+				URI predicate = (URI)bindingSet.getValue("predicate");
+				Value object = bindingSet.getValue("object");
+				Resource context = (Resource)bindingSet.getValue("context");
+
+				if (context == null) {
+					return vf.createStatement(subject, predicate, object);
 				}
-			};
-
-			final ValueFactory vf = getConnection().getRepository().getValueFactory();
-
-			// Convert the BindingSet objects to actual RDF statements
-			CloseableIteration<Statement, QueryEvaluationException> stIter;
-			stIter = new ConvertingIteration<BindingSet, Statement, QueryEvaluationException>(bindingsIter) {
-
-				@Override
-				protected Statement convert(BindingSet bindingSet) {
-					Resource subject = (Resource)bindingSet.getValue("subject");
-					URI predicate = (URI)bindingSet.getValue("predicate");
-					Value object = bindingSet.getValue("object");
-					Resource context = (Resource)bindingSet.getValue("context");
-
-					if (context == null) {
-						return vf.createStatement(subject, predicate, object);
-					}
-					else {
-						return vf.createStatement(subject, predicate, object, context);
-					}
+				else {
+					return vf.createStatement(subject, predicate, object, context);
 				}
-			};
+			}
+		};
 
-			return new GraphQueryResultImpl(getParsedQuery().getQueryNamespaces(), stIter);
-		}
-		catch (StoreException e) {
-			throw new QueryEvaluationException(e.getMessage(), e);
-		}
+		return new GraphQueryResultImpl(getParsedQuery().getQueryNamespaces(), stIter);
 	}
 
 	public void evaluate(RDFHandler handler)
-		throws QueryEvaluationException, RDFHandlerException
+		throws StoreException, RDFHandlerException
 	{
 		GraphQueryResult queryResult = evaluate();
 		QueryResultUtil.report(queryResult, handler);

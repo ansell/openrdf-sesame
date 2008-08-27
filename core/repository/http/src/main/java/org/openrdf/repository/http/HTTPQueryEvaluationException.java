@@ -8,7 +8,7 @@ package org.openrdf.repository.http;
 import java.io.IOException;
 
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.StoreException;
 
 
@@ -16,7 +16,7 @@ import org.openrdf.StoreException;
  *
  * @author Herko ter Horst
  */
-public class HTTPQueryEvaluationException extends QueryEvaluationException {
+public class HTTPQueryEvaluationException extends EvaluationException {
 
 	private static final long serialVersionUID = -8315025167877093272L;
 

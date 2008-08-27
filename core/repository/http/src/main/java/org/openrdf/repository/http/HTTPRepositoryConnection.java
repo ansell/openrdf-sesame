@@ -14,6 +14,7 @@ import java.util.List;
 
 import info.aduna.iteration.CloseableIteratorIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
@@ -33,12 +34,10 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.Query;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.GraphResult;
-import org.openrdf.StoreException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.rio.RDFFormat;
@@ -168,9 +167,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			}
 
 			return createRepositoryResult(contextList);
-		}
-		catch (QueryEvaluationException e) {
-			throw new StoreException(e);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -341,9 +337,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			}
 
 			return createRepositoryResult(namespaceList);
-		}
-		catch (QueryEvaluationException e) {
-			throw new StoreException(e);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);

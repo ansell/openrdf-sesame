@@ -5,10 +5,10 @@
  */
 package org.openrdf.query.dawg;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.GraphImpl;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
@@ -41,7 +41,7 @@ public class DAWGTestResultSetUtil {
 	}
 
 	public static Graph toGraph(TupleQueryResult tqr)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		Graph graph = new GraphImpl();
 		DAWGTestResultSetWriter writer = new DAWGTestResultSetWriter(new StatementCollector(graph));

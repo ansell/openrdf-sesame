@@ -10,6 +10,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -60,7 +61,7 @@ public class QueryResultUtilTest extends TestCase {
 	}
 
 	public void testEmptyQueryResult()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		tqr1.append(EmptyBindingSet.getInstance());
 		tqr2.append(EmptyBindingSet.getInstance());
@@ -68,7 +69,7 @@ public class QueryResultUtilTest extends TestCase {
 	}
 
 	public void testEmptyBindingSet()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		tqr1.append(EmptyBindingSet.getInstance());
 		tqr2.append(EmptyBindingSet.getInstance());
@@ -76,7 +77,7 @@ public class QueryResultUtilTest extends TestCase {
 	}
 
 	public void testNonBNodeBindingSet1()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		tqr1.append(new ListBindingSet(bindingNames, foo, lit1));
 		tqr1.append(new ListBindingSet(bindingNames, bar, lit2));
@@ -88,7 +89,7 @@ public class QueryResultUtilTest extends TestCase {
 	}
 
 	public void testNonBNodeBindingSet2()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		tqr1.append(new ListBindingSet(bindingNames, foo, lit1));
 		tqr2.append(new ListBindingSet(bindingNames, foo, lit2));
@@ -97,7 +98,7 @@ public class QueryResultUtilTest extends TestCase {
 	}
 
 	public void testBNodeBindingSet1()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		tqr1.append(new ListBindingSet(bindingNames, foo, bnode1));
 		tqr1.append(new ListBindingSet(bindingNames, bar, bnode2));
@@ -109,7 +110,7 @@ public class QueryResultUtilTest extends TestCase {
 	}
 
 	public void testBNodeBindingSet2()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		tqr1.append(new ListBindingSet(bindingNames, foo, bnode1));
 		tqr2.append(new ListBindingSet(bindingNames, foo, lit1));
@@ -118,7 +119,7 @@ public class QueryResultUtilTest extends TestCase {
 	}
 
 	public void testBNodeBindingSet3()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		tqr1.append(new ListBindingSet(bindingNames, foo, bnode1));
 		tqr1.append(new ListBindingSet(bindingNames, foo, bnode2));
@@ -130,7 +131,7 @@ public class QueryResultUtilTest extends TestCase {
 	}
 
 	public void testBNodeBindingSet4()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		tqr1.append(new ListBindingSet(bindingNames, bnode1, bnode2));
 		tqr1.append(new ListBindingSet(bindingNames, foo, bnode2));
@@ -142,7 +143,7 @@ public class QueryResultUtilTest extends TestCase {
 	}
 
 	public void testBNodeBindingSet5()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		tqr1.append(new ListBindingSet(bindingNames, bnode1, bnode2));
 		tqr1.append(new ListBindingSet(bindingNames, foo, bnode2));

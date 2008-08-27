@@ -5,16 +5,17 @@
  */
 package org.openrdf.query.algebra.evaluation.util;
 
-import info.aduna.iteration.CloseableIteration;
-
 import java.util.Arrays;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
 
+import info.aduna.iteration.CloseableIteration;
+
+import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.TupleExpr;
@@ -29,19 +30,19 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
  */
 public class OrderComparatorTest extends TestCase {
 	class EvaluationStrategyStub implements EvaluationStrategy {
-		public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
+		public CloseableIteration<BindingSet, StoreException> evaluate(
 				TupleExpr expr, BindingSet bindings)
-				throws QueryEvaluationException {
+				throws EvaluationException {
 			throw new UnsupportedOperationException();
 		}
 
 		public Value evaluate(ValueExpr expr, BindingSet bindings)
-				throws ValueExprEvaluationException, QueryEvaluationException {
+				throws ValueExprEvaluationException, EvaluationException {
 			return null;
 		}
 
 		public boolean isTrue(ValueExpr expr, BindingSet bindings)
-				throws ValueExprEvaluationException, QueryEvaluationException {
+				throws ValueExprEvaluationException, EvaluationException {
 			throw new UnsupportedOperationException();
 		}
 	}

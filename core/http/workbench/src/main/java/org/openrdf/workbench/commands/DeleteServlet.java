@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.openrdf.model.Resource;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
@@ -64,7 +64,7 @@ public class DeleteServlet extends TransformationServlet {
 
 	private Resource findContext(String id, RepositoryConnection con)
 			throws StoreException, MalformedQueryException,
-			QueryEvaluationException, BadRequestException {
+			EvaluationException, BadRequestException {
 		TupleQuery query = con.prepareTupleQuery(SERQL, CONTEXT_QUERY);
 		query.setBinding("ID", vf.createLiteral(id));
 		TupleQueryResult result = query.evaluate();

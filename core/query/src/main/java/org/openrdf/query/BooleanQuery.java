@@ -5,11 +5,13 @@
  */
 package org.openrdf.query;
 
+import org.openrdf.StoreException;
+
 /**
  * @author Arjohn Kampman
  */
 public interface BooleanQuery extends Query {
 
 	public boolean evaluate()
-		throws QueryEvaluationException;
+		throws StoreException;
 }

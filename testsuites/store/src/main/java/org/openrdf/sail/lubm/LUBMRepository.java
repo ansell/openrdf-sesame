@@ -14,7 +14,6 @@ import edu.lehigh.swat.bench.ubt.api.QueryResult;
 
 import org.openrdf.StoreException;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
@@ -140,9 +139,6 @@ public abstract class LUBMRepository implements edu.lehigh.swat.bench.ubt.api.Re
 		catch (UnsupportedQueryLanguageException e) {
 			e.printStackTrace();
 		}
-		catch (QueryEvaluationException e) {
-			e.printStackTrace();
-		}
 
 		return null;
 	}
@@ -185,7 +181,7 @@ public abstract class LUBMRepository implements edu.lehigh.swat.bench.ubt.api.Re
 					return false;
 				}
 			}
-			catch (QueryEvaluationException e) {
+			catch (StoreException e) {
 				e.printStackTrace();
 				return false;
 			}

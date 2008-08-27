@@ -7,12 +7,12 @@ package org.openrdf.query.algebra.evaluation;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.QueryEvaluationException;
 
 /**
  * A triple source that can be queried for (the existence of) certain triples in
@@ -39,12 +39,12 @@ public interface TripleSource {
 	 *        is a vararg and as such is optional. If no contexts are supplied
 	 *        the method operates on the entire repository.
 	 * @return An iterator over the relevant statements.
-	 * @throws QueryEvaluationException
+	 * @throws StoreException
 	 *         If the triple source failed to get the statements.
 	 */
-	public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(Resource subj,
+	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj,
 			URI pred, Value obj, Resource... contexts)
-		throws QueryEvaluationException;
+		throws StoreException;
 
 	/**
 	 * Gets a ValueFactory object that can be used to create URI-, blank node-

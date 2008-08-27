@@ -8,9 +8,9 @@ package org.openrdf.query.algebra.evaluation.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 
@@ -45,7 +45,7 @@ public class QueryOptimizerList implements QueryOptimizer {
 	}
 
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		for (QueryOptimizer optimizer : optimizers) {
 			optimizer.optimize(tupleExpr, dataset, bindings);

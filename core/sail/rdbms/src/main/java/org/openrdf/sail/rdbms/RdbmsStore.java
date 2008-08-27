@@ -17,8 +17,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.StoreException;
+import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 

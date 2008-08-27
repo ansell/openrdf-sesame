@@ -16,6 +16,7 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.LockingIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -23,7 +24,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
@@ -42,7 +42,6 @@ import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.StoreException;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.SailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -96,7 +95,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	 *---------*/
 
 	@Override
-	protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
+	protected CloseableIteration<? extends BindingSet, StoreException> evaluateInternal(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -140,13 +139,13 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 			logger.trace("Optimized query model:\n{}", tupleExpr.toString());
 
-			CloseableIteration<BindingSet, QueryEvaluationException> iter;
+			CloseableIteration<BindingSet, StoreException> iter;
 			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
-			return new LockingIteration<BindingSet, QueryEvaluationException>(stLock, iter);
+			return new LockingIteration<BindingSet, StoreException>(stLock, iter);
 		}
-		catch (QueryEvaluationException e) {
+		catch (StoreException e) {
 			stLock.release();
-			throw new StoreException(e);
+			throw e;
 		}
 		catch (RuntimeException e) {
 			stLock.release();
@@ -550,10 +549,10 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 			this.readMode = readMode;
 		}
 
-		public CloseableIteration<MemStatement, QueryEvaluationException> getStatements(Resource subj,
+		public CloseableIteration<MemStatement, StoreException> getStatements(Resource subj,
 				URI pred, Value obj, Resource... contexts)
 		{
-			return store.createStatementIterator(QueryEvaluationException.class, subj, pred, obj,
+			return store.createStatementIterator(StoreException.class, subj, pred, obj,
 					!includeInferred, snapshot, readMode, contexts);
 		}
 

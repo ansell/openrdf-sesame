@@ -14,8 +14,8 @@ import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 
 /**
@@ -29,7 +29,7 @@ public class TupleQueryResultImpl implements TupleQueryResult {
 
 	private List<String> bindingNames;
 
-	private Iteration<? extends BindingSet, QueryEvaluationException> bindingSetIter;
+	private Iteration<? extends BindingSet, StoreException> bindingSetIter;
 
 	/*--------------*
 	 * Constructors *
@@ -49,7 +49,7 @@ public class TupleQueryResultImpl implements TupleQueryResult {
 	}
 
 	public TupleQueryResultImpl(List<String> bindingNames, Iterator<? extends BindingSet> bindingSetIter) {
-		this(bindingNames, new CloseableIteratorIteration<BindingSet, QueryEvaluationException>(bindingSetIter));
+		this(bindingNames, new CloseableIteratorIteration<BindingSet, StoreException>(bindingSetIter));
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class TupleQueryResultImpl implements TupleQueryResult {
 	 *        The binding names, in order of projection.
 	 */
 	public TupleQueryResultImpl(List<String> bindingNames,
-			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingSetIter)
+			CloseableIteration<? extends BindingSet, StoreException> bindingSetIter)
 	{
 		// Don't allow modifications to the binding names when it is accessed
 		// through getBindingNames:
@@ -79,25 +79,25 @@ public class TupleQueryResultImpl implements TupleQueryResult {
 	}
 
 	public void close()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		Iterations.closeCloseable(bindingSetIter);
 	}
 
 	public boolean hasNext()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		return bindingSetIter.hasNext();
 	}
 
 	public BindingSet next()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		return bindingSetIter.next();
 	}
 
 	public void remove()
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		bindingSetIter.remove();
 	}

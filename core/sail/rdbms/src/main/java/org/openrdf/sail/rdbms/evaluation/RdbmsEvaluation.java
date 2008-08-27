@@ -17,9 +17,9 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
@@ -30,7 +30,6 @@ import org.openrdf.sail.rdbms.algebra.SelectProjection;
 import org.openrdf.sail.rdbms.algebra.SelectQuery;
 import org.openrdf.sail.rdbms.algebra.SelectQuery.OrderElem;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.sail.rdbms.exceptions.RdbmsQueryEvaluationException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 import org.openrdf.sail.rdbms.iteration.RdbmsBindingIteration;
 import org.openrdf.sail.rdbms.schema.IdSequence;
@@ -65,43 +64,38 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 	}
 
 	@Override
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(TupleExpr expr,
+	public CloseableIteration<BindingSet, StoreException> evaluate(TupleExpr expr,
 			BindingSet bindings)
-		throws QueryEvaluationException
+		throws StoreException
 	{
 		if (expr instanceof SelectQuery)
 			return evaluate((SelectQuery)expr, bindings);
 		return super.evaluate(expr, bindings);
 	}
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> evaluate(SelectQuery qb, BindingSet b)
-		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
+	private CloseableIteration<BindingSet, StoreException> evaluate(SelectQuery qb, BindingSet b)
+		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		List<Object> parameters = new ArrayList<Object>();
+		QueryBindingSet bindings = new QueryBindingSet(b);
+		String query = toQueryString(qb, bindings, parameters);
 		try {
-			QueryBindingSet bindings = new QueryBindingSet(b);
-			String query = toQueryString(qb, bindings, parameters);
-			try {
-				Connection conn = triples.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(query);
-				int p = 0;
-				for (Object o : parameters) {
-					stmt.setObject(++p, o);
-				}
-				Collection<ColumnVar> proj = qb.getProjections();
-				RdbmsBindingIteration result = new RdbmsBindingIteration(stmt);
-				result.setProjections(proj);
-				result.setBindings(bindings);
-				result.setValueFactory(vf);
-				result.setIdSequence(ids);
-				return result;
+			Connection conn = triples.getConnection();
+			PreparedStatement stmt = conn.prepareStatement(query);
+			int p = 0;
+			for (Object o : parameters) {
+				stmt.setObject(++p, o);
 			}
-			catch (SQLException e) {
-				throw new RdbmsQueryEvaluationException(e.toString() + "\n" + query, e);
-			}
+			Collection<ColumnVar> proj = qb.getProjections();
+			RdbmsBindingIteration result = new RdbmsBindingIteration(stmt);
+			result.setProjections(proj);
+			result.setBindings(bindings);
+			result.setValueFactory(vf);
+			result.setIdSequence(ids);
+			return result;
 		}
-		catch (RdbmsException e) {
-			throw new RdbmsQueryEvaluationException(e);
+		catch (SQLException e) {
+			throw new RdbmsException(e.toString() + "\n" + query, e);
 		}
 	}
 

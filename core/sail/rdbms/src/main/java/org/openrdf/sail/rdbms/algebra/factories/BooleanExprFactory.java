@@ -56,7 +56,7 @@ import org.openrdf.sail.rdbms.algebra.SqlCase;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
 import org.openrdf.sail.rdbms.algebra.TrueValue;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
-import org.openrdf.sail.rdbms.exceptions.RdbmsQueryEvaluationException;
+import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 
 /**
@@ -75,7 +75,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 	private SqlExprFactory sql;
 
 	public SqlExpr createBooleanExpr(ValueExpr expr)
-		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
+		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		try {
 			result = null;
@@ -92,7 +92,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 		catch (UnsupportedRdbmsOperatorException e) {
 			throw e;
 		}
-		catch (RdbmsQueryEvaluationException e) {
+		catch (RdbmsException e) {
 			throw e;
 		}
 		catch (OpenRDFException e) {
@@ -103,7 +103,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 
 	@Override
 	public void meet(And node)
-		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
+		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		SqlExpr[] expr = new SqlExpr[node.getNumberOfArguments()];
 		for (int i=0,n=node.getNumberOfArguments();i<n;i++) {
@@ -202,14 +202,14 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 
 	@Override
 	public void meet(Not node)
-		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
+		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		result = not(bool(node.getArg()));
 	}
 
 	@Override
 	public void meet(Or node)
-		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
+		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		SqlExpr[] bools = new SqlExpr[node.getNumberOfArguments()];
 		for (int i=0;i<bools.length;i++) {
@@ -227,7 +227,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 
 	@Override
 	public void meet(SameTerm node)
-		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
+		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		ValueExpr left = node.getLeftArg();
 		ValueExpr right = node.getRightArg();
@@ -283,7 +283,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 	}
 
 	protected SqlExpr bool(ValueExpr arg)
-		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
+		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		return sql.createBooleanExpr(arg);
 	}
@@ -301,7 +301,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 	}
 
 	protected SqlExpr hash(ValueExpr arg)
-		throws UnsupportedRdbmsOperatorException, RdbmsQueryEvaluationException
+		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		return sql.createHashExpr(arg);
 	}

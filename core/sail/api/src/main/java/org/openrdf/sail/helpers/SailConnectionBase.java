@@ -27,7 +27,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnectionListener;
@@ -214,7 +213,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 		}
 	}
 
-	public final CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(
+	public final CloseableIteration<? extends BindingSet, StoreException> evaluate(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -572,7 +571,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	protected abstract void closeInternal()
 		throws StoreException;
 
-	protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
+	protected abstract CloseableIteration<? extends BindingSet, StoreException> evaluateInternal(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException;
 
