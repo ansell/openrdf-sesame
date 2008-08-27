@@ -76,8 +76,6 @@ public class NativeStore extends SailBase {
 	 */
 	private ExclusiveLockManager txnLockManager;
 
-	private boolean trackLocks = false;
-
 	/**
 	 * Flag indicating whether the Sail has been initialized.
 	 */
@@ -162,8 +160,8 @@ public class NativeStore extends SailBase {
 
 		logger.debug("Initializing NativeStore...");
 
-		storeLockManager = new WritePrefReadWriteLockManager(trackLocks);
-		txnLockManager = new ExclusiveLockManager(trackLocks);
+		storeLockManager = new WritePrefReadWriteLockManager(debugEnabled());
+		txnLockManager = new ExclusiveLockManager(debugEnabled());
 
 		// Check initialization parameters
 		File dataDir = getDataDir();
