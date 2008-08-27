@@ -26,7 +26,9 @@ import org.openrdf.sail.SailLockedException;
  * @author James Leigh
  */
 public class DirectoryLockManager implements LockManager {
+
 	private Logger logger = LoggerFactory.getLogger(DirectoryLockManager.class);
+
 	private File dir;
 
 	public DirectoryLockManager(File dir) {
@@ -49,17 +51,21 @@ public class DirectoryLockManager implements LockManager {
 	 */
 	public Lock tryLock() {
 		File lockDir = new File(dir, "lock");
-		if (lockDir.exists() || !lockDir.mkdir())
+		if (lockDir.exists() || !lockDir.mkdir()) {
 			return null;
+		}
+
 		File lockFile = new File(lockDir, "process");
 		Lock lock = createLock(lockDir, lockFile);
 		try {
 			sign(lockFile);
-		} catch (IOException exc) {
+		}
+		catch (IOException exc) {
 			lock.release();
 			logger.error(exc.toString(), exc);
 			return null;
 		}
+
 		return lock;
 	}
 
@@ -68,19 +74,27 @@ public class DirectoryLockManager implements LockManager {
 	 * 
 	 * @return a newly acquired lock.
 	 * @throws SailLockedException
-	 *             if the directory is already locked.
+	 *         if the directory is already locked.
 	 */
-	public Lock lockOrFail() throws SailLockedException {
+	public Lock lockOrFail()
+		throws SailLockedException
+	{
 		Lock lock = tryLock();
-		if (lock != null)
+		if (lock != null) {
 			return lock;
+		}
+
 		String requestedBy = getProcessName();
 		String lockedBy = getLockedBy();
-		if (lockedBy != null)
+		if (lockedBy != null) {
 			throw new SailLockedException(lockedBy, requestedBy, this);
+		}
+
 		lock = tryLock();
-		if (lock != null)
+		if (lock != null) {
 			return lock;
+		}
+
 		throw new SailLockedException(requestedBy);
 	}
 
@@ -103,10 +117,12 @@ public class DirectoryLockManager implements LockManager {
 			try {
 				reader = new BufferedReader(new FileReader(lockFile));
 				return reader.readLine();
-			} finally {
+			}
+			finally {
 				reader.close();
 			}
-		} catch (IOException exc) {
+		}
+		catch (IOException exc) {
 			logger.warn(exc.toString(), exc);
 			return null;
 		}
@@ -114,8 +130,11 @@ public class DirectoryLockManager implements LockManager {
 
 	private Lock createLock(final File lockDir, final File lockFile) {
 		return new Lock() {
+
 			private boolean active = true;
+
 			private Thread hook = new Thread(new Runnable() {
+
 				public void run() {
 					active = false;
 					lockFile.delete();
@@ -139,7 +158,9 @@ public class DirectoryLockManager implements LockManager {
 		};
 	}
 
-	private void sign(File lockFile) throws IOException {
+	private void sign(File lockFile)
+		throws IOException
+	{
 		FileWriter out = new FileWriter(lockFile);
 		out.write(getProcessName());
 		out.flush();
