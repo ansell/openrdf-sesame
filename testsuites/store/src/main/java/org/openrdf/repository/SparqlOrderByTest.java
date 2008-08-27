@@ -5,6 +5,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -83,7 +84,7 @@ public abstract class SparqlOrderByTest extends TestCase {
 	}
 
 	private void createEmployee(String id, String name, int empId)
-			throws RepositoryException {
+			throws StoreException {
 		ValueFactory vf = repository.getValueFactory();
 		String foafName = "http://xmlns.com/foaf/0.1/name";
 		String exEmpId = "http://example.org/ns#empId";
@@ -96,7 +97,7 @@ public abstract class SparqlOrderByTest extends TestCase {
 	}
 
 	private void assertResult(String queryStr, List<String> names)
-			throws RepositoryException, MalformedQueryException,
+			throws StoreException, MalformedQueryException,
 			QueryEvaluationException {
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL,
 				queryStr);

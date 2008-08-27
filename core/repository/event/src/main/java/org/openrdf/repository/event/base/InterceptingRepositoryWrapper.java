@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.event.InterceptingRepository;
 import org.openrdf.repository.event.InterceptingRepositoryConnection;
@@ -92,7 +92,7 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 
 	@Override
 	public InterceptingRepositoryConnection getConnection()
-		throws RepositoryException
+		throws StoreException
 	{
 		InterceptingRepositoryConnection conn = new InterceptingRepositoryConnectionWrapper(this,
 				super.getConnection());
@@ -122,7 +122,7 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 
 	@Override
 	public void initialize()
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		if (activated) {
@@ -156,7 +156,7 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 
 	@Override
 	public void shutDown()
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		if (activated) {

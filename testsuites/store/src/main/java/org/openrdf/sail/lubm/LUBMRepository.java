@@ -12,6 +12,7 @@ import java.net.URL;
 import edu.lehigh.swat.bench.ubt.api.Query;
 import edu.lehigh.swat.bench.ubt.api.QueryResult;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -19,7 +20,6 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
@@ -41,7 +41,7 @@ public abstract class LUBMRepository implements edu.lehigh.swat.bench.ubt.api.Re
 			repository = new SailRepository(createSail(database));
 			repository.initialize();
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -61,7 +61,7 @@ public abstract class LUBMRepository implements edu.lehigh.swat.bench.ubt.api.Re
 		try {
 			repository.shutDown();
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -108,7 +108,7 @@ public abstract class LUBMRepository implements edu.lehigh.swat.bench.ubt.api.Re
 		catch (RDFParseException e) {
 			e.printStackTrace();
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			e.printStackTrace();
 		}
 		catch (java.io.IOException e) {
@@ -134,7 +134,7 @@ public abstract class LUBMRepository implements edu.lehigh.swat.bench.ubt.api.Re
 		catch (MalformedQueryException e) {
 			e.printStackTrace();
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			e.printStackTrace();
 		}
 		catch (UnsupportedQueryLanguageException e) {
@@ -154,7 +154,7 @@ public abstract class LUBMRepository implements edu.lehigh.swat.bench.ubt.api.Re
 			con.clear();
 			con.close();
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new RuntimeException(e);
 		}
 	}

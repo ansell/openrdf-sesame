@@ -36,6 +36,7 @@ import junit.framework.TestCase;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
@@ -831,7 +832,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.setAutoCommit(true);
 
 		// get statements with either no context or context2
-		CloseableIteration<? extends Statement, RepositoryException> iter = testCon.getStatements(null, null,
+		CloseableIteration<? extends Statement, StoreException> iter = testCon.getStatements(null, null,
 				null, false, null, context2);
 
 		try {
@@ -1008,7 +1009,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
 		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
 
-		CloseableIteration<? extends Statement, RepositoryException> iter = testCon.getStatements(null, null,
+		CloseableIteration<? extends Statement, StoreException> iter = testCon.getStatements(null, null,
 				null, false);
 
 		try {
@@ -1038,7 +1039,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		testCon.add(new StringReader(rdfFragment.toString()), "", RDFFormat.RDFXML);
 
-		CloseableIteration<? extends Namespace, RepositoryException> nsIter = testCon.getNamespaces();
+		CloseableIteration<? extends Namespace, StoreException> nsIter = testCon.getNamespaces();
 		try {
 			Map<String, String> map = new HashMap<String, String>();
 			int nsCount = 0;
@@ -1075,7 +1076,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	}
 
 	public void testRecoverFromParseError()
-		throws RepositoryException, IOException
+		throws StoreException, IOException
 	{
 		String invalidData = "bad";
 		String validData = "@prefix foo: <http://example.org/foo#>.\nfoo:a foo:b foo:c.";
@@ -1475,9 +1476,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	}
 
 	private int getTotalStatementCount(RepositoryConnection connection)
-		throws RepositoryException
+		throws StoreException
 	{
-		CloseableIteration<? extends Statement, RepositoryException> iter = connection.getStatements(null,
+		CloseableIteration<? extends Statement, StoreException> iter = connection.getStatements(null,
 				null, null, true);
 
 		try {

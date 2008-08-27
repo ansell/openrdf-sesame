@@ -29,7 +29,7 @@ import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.manager.RepositoryManager;
 
 /**
@@ -119,7 +119,7 @@ public class RepositoryListController extends AbstractController {
 				con.close();
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException(e.getMessage(), e);
 		}
 	}

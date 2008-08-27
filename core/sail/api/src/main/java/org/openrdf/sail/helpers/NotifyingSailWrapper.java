@@ -5,11 +5,11 @@
  */
 package org.openrdf.sail.helpers;
 
+import org.openrdf.StoreException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailChangedListener;
-import org.openrdf.sail.SailException;
 
 /**
  * An implementation of the StackableSail interface that wraps another Sail
@@ -53,7 +53,7 @@ public class NotifyingSailWrapper extends SailWrapper implements NotifyingSail {
 
 	@Override
 	public NotifyingSailConnection getConnection()
-		throws SailException
+		throws StoreException
 	{
 		return (NotifyingSailConnection)super.getConnection();
 	}

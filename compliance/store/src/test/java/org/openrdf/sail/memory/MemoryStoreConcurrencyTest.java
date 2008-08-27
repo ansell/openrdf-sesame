@@ -5,9 +5,9 @@
  */
 package org.openrdf.sail.memory;
 
+import org.openrdf.StoreException;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConcurrencyTest;
-import org.openrdf.sail.SailException;
 
 /**
  * An extension of {@link SailConcurrencyTest} for testing the class
@@ -29,7 +29,7 @@ public class MemoryStoreConcurrencyTest extends SailConcurrencyTest {
 
 	@Override
 	protected Sail createSail()
-		throws SailException
+		throws StoreException
 	{
 		return new MemoryStore();
 	}

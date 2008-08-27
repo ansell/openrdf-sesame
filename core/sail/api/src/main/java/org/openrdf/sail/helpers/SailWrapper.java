@@ -7,10 +7,10 @@ package org.openrdf.sail.helpers;
 
 import java.io.File;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
 import org.openrdf.sail.StackableSail;
 
 /**
@@ -75,28 +75,28 @@ public class SailWrapper implements StackableSail {
 	}
 
 	public void initialize()
-		throws SailException
+		throws StoreException
 	{
 		verifyBaseSailSet();
 		baseSail.initialize();
 	}
 
 	public void shutDown()
-		throws SailException
+		throws StoreException
 	{
 		verifyBaseSailSet();
 		baseSail.shutDown();
 	}
 
 	public boolean isWritable()
-		throws SailException
+		throws StoreException
 	{
 		verifyBaseSailSet();
 		return baseSail.isWritable();
 	}
 
 	public SailConnection getConnection()
-		throws SailException
+		throws StoreException
 	{
 		verifyBaseSailSet();
 		return baseSail.getConnection();

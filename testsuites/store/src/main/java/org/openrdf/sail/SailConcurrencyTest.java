@@ -11,6 +11,7 @@ import junit.framework.TestCase;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.URIImpl;
 
@@ -61,7 +62,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 	}
 
 	protected abstract Sail createSail()
-		throws SailException;
+		throws StoreException;
 
 	@Override
 	protected void tearDown()
@@ -118,7 +119,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 					SailConnection connection = store.getConnection();
 					try {
 						while (continueRunning) {
-							CloseableIteration<? extends Resource, SailException> contextIter = connection.getContextIDs();
+							CloseableIteration<? extends Resource, StoreException> contextIter = connection.getContextIDs();
 							try {
 								int contextCount = 0;
 								while (contextIter.hasNext()) {
@@ -186,7 +187,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 	}
 
 	protected void insertTestStatement(SailConnection connection, int i)
-		throws SailException
+		throws StoreException
 	{
 		// System.out.print("+");
 		connection.addStatement(new URIImpl("http://test#s" + i), new URIImpl("http://test#p" + i),
@@ -194,7 +195,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 	}
 
 	protected void removeTestStatement(SailConnection connection, int i)
-		throws SailException
+		throws StoreException
 	{
 		// System.out.print("-");
 		connection.removeStatements(new URIImpl("http://test#s" + i), new URIImpl("http://test#p" + i),

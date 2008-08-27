@@ -13,9 +13,9 @@ import junit.framework.TestCase;
 
 import info.aduna.io.FileUtil;
 
+import org.openrdf.StoreException;
 import org.openrdf.sail.InferencingTest;
 import org.openrdf.sail.NotifyingSail;
-import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 
 public class NativeStoreInferencingTest extends TestCase {
@@ -23,7 +23,7 @@ public class NativeStoreInferencingTest extends TestCase {
 	private static File dataDir;
 
 	public static Test suite()
-		throws SailException, IOException
+		throws StoreException, IOException
 	{
 		dataDir = FileUtil.createTempDir("nativestore");
 		NotifyingSail sailStack = new NativeStore(dataDir, "spoc,posc");

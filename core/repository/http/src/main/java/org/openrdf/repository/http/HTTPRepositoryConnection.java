@@ -38,7 +38,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.GraphResult;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.rio.RDFFormat;
@@ -49,7 +49,7 @@ import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * RepositoryConnection that communicates with a server using the HTTP protocol.
- * Methods in this class may throw the specific RepositoryException subclasses
+ * Methods in this class may throw the specific StoreException subclasses
  * UnautorizedException and NotAllowedException, the semantics of which are
  * defined by the HTTP protocol.
  * 
@@ -147,7 +147,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	public RepositoryResult<Resource> getContextIDs()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			List<Resource> contextList = new ArrayList<Resource>();
@@ -170,16 +170,16 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			return createRepositoryResult(contextList);
 		}
 		catch (QueryEvaluationException e) {
-			throw new RepositoryException(e);
+			throw new StoreException(e);
 		}
 		catch (IOException e) {
-			throw new RepositoryException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			StatementCollector collector = new StatementCollector();
@@ -194,29 +194,29 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
-		throws RDFHandlerException, RepositoryException
+		throws RDFHandlerException, StoreException
 	{
 		try {
 			getRepository().getHTTPClient().getStatements(subj, pred, obj, includeInferred, handler, contexts);
 		}
 		catch (IOException e) {
-			throw new RepositoryException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	public long size(Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			return getRepository().getHTTPClient().size(contexts);
 		}
 		catch (IOException e) {
-			throw new RepositoryException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	public void commit()
-		throws RepositoryException
+		throws StoreException
 	{
 		synchronized (txn) {
 			if (txn.size() > 0) {
@@ -225,7 +225,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 					txn.clear();
 				}
 				catch (IOException e) {
-					throw new RepositoryException(e);
+					throw new StoreException(e);
 				}
 			}
 		}
@@ -237,7 +237,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	@Override
 	public void close()
-		throws RepositoryException
+		throws StoreException
 	{
 		if (txn.size() > 0) {
 			logger.warn("Rolling back transaction due to connection close", new Throwable());
@@ -250,7 +250,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	@Override
 	protected void addInputStreamOrReader(Object inputStreamOrReader, String baseURI, RDFFormat dataFormat,
 			Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
+		throws IOException, RDFParseException, StoreException
 	{
 		if (isAutoCommit()) {
 			// Send bytes directly to the server
@@ -275,49 +275,49 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	@Override
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		txn.add(new AddStatementOperation(subject, predicate, object, contexts));
 	}
 
 	@Override
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		txn.add(new RemoveStatementsOperation(subject, predicate, object, contexts));
 	}
 
 	@Override
 	public void clear(Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		txn.add(new ClearOperation(contexts));
 		autoCommit();
 	}
 
 	public void removeNamespace(String prefix)
-		throws RepositoryException
+		throws StoreException
 	{
 		txn.add(new RemoveNamespaceOperation(prefix));
 		autoCommit();
 	}
 
 	public void clearNamespaces()
-		throws RepositoryException
+		throws StoreException
 	{
 		txn.add(new ClearNamespacesOperation());
 		autoCommit();
 	}
 
 	public void setNamespace(String prefix, String name)
-		throws RepositoryException
+		throws StoreException
 	{
 		txn.add(new SetNamespaceOperation(prefix, name));
 		autoCommit();
 	}
 
 	public RepositoryResult<Namespace> getNamespaces()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			List<Namespace> namespaceList = new ArrayList<Namespace>();
@@ -343,21 +343,21 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			return createRepositoryResult(namespaceList);
 		}
 		catch (QueryEvaluationException e) {
-			throw new RepositoryException(e);
+			throw new StoreException(e);
 		}
 		catch (IOException e) {
-			throw new RepositoryException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	public String getNamespace(String prefix)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			return getRepository().getHTTPClient().getNamespace(prefix);
 		}
 		catch (IOException e) {
-			throw new RepositoryException(e);
+			throw new StoreException(e);
 		}
 	}
 
@@ -365,7 +365,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Creates a RepositoryResult for the supplied element set.
 	 */
 	protected <E> RepositoryResult<E> createRepositoryResult(Iterable<? extends E> elements) {
-		return new RepositoryResult<E>(new CloseableIteratorIteration<E, RepositoryException>(
+		return new RepositoryResult<E>(new CloseableIteratorIteration<E, StoreException>(
 				elements.iterator()));
 	}
 
@@ -373,6 +373,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Creates a GraphResult for the supplied element set.
 	 */
 	protected <E> GraphResult createGraphResult(Iterable<? extends Statement> elements) {
-		return new GraphResult(new CloseableIteratorIteration<Statement, RepositoryException>(elements.iterator()));
+		return new GraphResult(new CloseableIteratorIteration<Statement, StoreException>(elements.iterator()));
 	}
 }

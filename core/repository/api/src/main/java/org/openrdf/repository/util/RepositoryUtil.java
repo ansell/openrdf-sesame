@@ -16,6 +16,7 @@ import java.util.Set;
 
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -24,7 +25,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 
 /**
  * Utility methods for comparing sets of statements (graphs) with each other.
@@ -45,7 +45,7 @@ public class RepositoryUtil {
 	 * of both repositories into main memory. Use with caution.
 	 */
 	public static boolean equals(Repository rep1, Repository rep2)
-		throws RepositoryException
+		throws StoreException
 	{
 		// Fetch statements from rep1 and rep2
 		Set<Statement> model1, model2;
@@ -75,7 +75,7 @@ public class RepositoryUtil {
 	 * default context of both repositories into main memory. Use with caution.
 	 */
 	public static boolean isSubset(Repository rep1, Repository rep2)
-		throws RepositoryException
+		throws StoreException
 	{
 		Set<Statement> model1, model2;
 
@@ -114,7 +114,7 @@ public class RepositoryUtil {
 	 *         and rep2.
 	 */
 	public static Collection<? extends Statement> difference(Repository rep1, Repository rep2)
-		throws RepositoryException
+		throws StoreException
 	{
 		Collection<Statement> model1 = new HashSet<Statement>();
 		Collection<Statement> model2 = new HashSet<Statement>();

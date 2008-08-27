@@ -17,7 +17,7 @@ import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.sail.SailBooleanQuery;
 import org.openrdf.repository.sail.SailGraphQuery;
@@ -39,28 +39,28 @@ public class DatasetRepositoryConnection extends RepositoryConnectionWrapper {
 
 	@Override
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query, String baseURI)
-		throws MalformedQueryException, RepositoryException
+		throws MalformedQueryException, StoreException
 	{
 		return wrap(delegate.prepareBooleanQuery(ql, query, baseURI));
 	}
 
 	@Override
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String baseURI)
-		throws MalformedQueryException, RepositoryException
+		throws MalformedQueryException, StoreException
 	{
 		return wrap(delegate.prepareGraphQuery(ql, query, baseURI));
 	}
 
 	@Override
 	public Query prepareQuery(QueryLanguage ql, String query, String baseURI)
-		throws MalformedQueryException, RepositoryException
+		throws MalformedQueryException, StoreException
 	{
 		return wrap(delegate.prepareQuery(ql, query, baseURI));
 	}
 
 	@Override
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String query, String baseURI)
-		throws MalformedQueryException, RepositoryException
+		throws MalformedQueryException, StoreException
 	{
 		return wrap(delegate.prepareTupleQuery(ql, query, baseURI));
 	}
@@ -82,7 +82,7 @@ public class DatasetRepositoryConnection extends RepositoryConnectionWrapper {
 		catch (MalformedURLException e) {
 			throw new AssertionError(e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new QueryEvaluationException(e);
 		}
 	}

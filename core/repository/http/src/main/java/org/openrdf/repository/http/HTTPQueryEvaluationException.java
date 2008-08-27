@@ -9,7 +9,7 @@ import java.io.IOException;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 
 
 /**
@@ -45,8 +45,8 @@ public class HTTPQueryEvaluationException extends QueryEvaluationException {
 		return getCause() instanceof IOException;
 	}
 	
-	public boolean isCausedByRepositoryException() {
-		return getCause() instanceof RepositoryException;
+	public boolean isCausedByStoreException() {
+		return getCause() instanceof StoreException;
 	}
 	
 	public boolean isCausedByMalformedQueryException() {
@@ -57,8 +57,8 @@ public class HTTPQueryEvaluationException extends QueryEvaluationException {
 		return (IOException)getCause();
 	}
 
-	public RepositoryException getCauseAsRepositoryException() {
-		return (RepositoryException)getCause();
+	public StoreException getCauseAsStoreException() {
+		return (StoreException)getCause();
 	}
 
 	public MalformedQueryException getCauseAsMalformedQueryException() {

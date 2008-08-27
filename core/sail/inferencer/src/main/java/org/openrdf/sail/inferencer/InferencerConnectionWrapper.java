@@ -15,7 +15,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.NotifyingSailConnectionWrapper;
 
 /**
@@ -55,25 +55,25 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	}
 
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		return getWrappedConnection().addInferredStatement(subj, pred, obj, contexts);
 	}
 
 	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		return getWrappedConnection().removeInferredStatement(subj, pred, obj, contexts);
 	}
 
 	public void clearInferred(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		getWrappedConnection().clearInferred(contexts);
 	}
 
 	public void flushUpdates()
-		throws SailException
+		throws StoreException
 	{
 		getWrappedConnection().flushUpdates();
 	}
@@ -84,7 +84,7 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 */
 	@Override
 	public void commit()
-		throws SailException
+		throws StoreException
 	{
 		flushUpdates();
 		super.commit();
@@ -97,7 +97,7 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	@Override
 	public CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(TupleExpr tupleExpr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
-		throws SailException
+		throws StoreException
 	{
 		flushUpdates();
 		return super.evaluate(tupleExpr, dataset, bindings, includeInferred);
@@ -108,8 +108,8 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * connection.
 	 */
 	@Override
-	public CloseableIteration<? extends Resource, SailException> getContextIDs()
-		throws SailException
+	public CloseableIteration<? extends Resource, StoreException> getContextIDs()
+		throws StoreException
 	{
 		flushUpdates();
 		return super.getContextIDs();
@@ -120,9 +120,9 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * connection.
 	 */
 	@Override
-	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj, URI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		flushUpdates();
 		return super.getStatements(subj, pred, obj, includeInferred, contexts);
@@ -134,7 +134,7 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 */
 	@Override
 	public long size(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		flushUpdates();
 		return super.size(contexts);

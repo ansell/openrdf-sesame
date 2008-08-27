@@ -7,6 +7,7 @@ package org.openrdf.sail.helpers;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -17,7 +18,6 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
 
 /**
  * An implementation of the Transaction interface that wraps another Transaction
@@ -63,105 +63,105 @@ public class SailConnectionWrapper implements SailConnection {
 	}
 
 	public boolean isOpen()
-		throws SailException
+		throws StoreException
 	{
 		return wrappedCon.isOpen();
 	}
 
 	public void close()
-		throws SailException
+		throws StoreException
 	{
 		wrappedCon.close();
 	}
 
 	public CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(TupleExpr tupleExpr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
-		throws SailException
+		throws StoreException
 	{
 		return wrappedCon.evaluate(tupleExpr, dataset, bindings, includeInferred);
 	}
 
-	public CloseableIteration<? extends Resource, SailException> getContextIDs()
-		throws SailException
+	public CloseableIteration<? extends Resource, StoreException> getContextIDs()
+		throws StoreException
 	{
 		return wrappedCon.getContextIDs();
 	}
 
-	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj, URI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		return wrappedCon.getStatements(subj, pred, obj, includeInferred, contexts);
 	}
 
 	public long size(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		return wrappedCon.size(contexts);
 	}
 
 	public long size(Resource context)
-		throws SailException
+		throws StoreException
 	{
 		return wrappedCon.size(context);
 	}
 
 	public void commit()
-		throws SailException
+		throws StoreException
 	{
 		wrappedCon.commit();
 	}
 
 	public void rollback()
-		throws SailException
+		throws StoreException
 	{
 		wrappedCon.rollback();
 	}
 
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		wrappedCon.addStatement(subj, pred, obj, contexts);
 	}
 
 	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		wrappedCon.removeStatements(subj, pred, obj, contexts);
 	}
 
 	public void clear(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		wrappedCon.clear(contexts);
 	}
 
-	public CloseableIteration<? extends Namespace, SailException> getNamespaces()
-		throws SailException
+	public CloseableIteration<? extends Namespace, StoreException> getNamespaces()
+		throws StoreException
 	{
 		return wrappedCon.getNamespaces();
 	}
 
 	public String getNamespace(String prefix)
-		throws SailException
+		throws StoreException
 	{
 		return wrappedCon.getNamespace(prefix);
 	}
 
 	public void setNamespace(String prefix, String name)
-		throws SailException
+		throws StoreException
 	{
 		wrappedCon.setNamespace(prefix, name);
 	}
 
 	public void removeNamespace(String prefix)
-		throws SailException
+		throws StoreException
 	{
 		wrappedCon.removeNamespace(prefix);
 	}
 
 	public void clearNamespaces()
-		throws SailException
+		throws StoreException
 	{
 		wrappedCon.clearNamespaces();
 	}

@@ -17,7 +17,7 @@ import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
@@ -150,7 +150,7 @@ public class RdbmsConnectionFactory {
 	}
 
 	public void setTriplesIndexed(boolean triplesIndexed)
-		throws SailException
+		throws StoreException
 	{
 		this.triplesIndexed = triplesIndexed;
 		if (tripleTableManager != null) {
@@ -173,7 +173,7 @@ public class RdbmsConnectionFactory {
 	}
 
 	public void init()
-		throws SailException
+		throws StoreException
 	{
 		databaseLock = createDatabaseLock();
 		try {
@@ -264,7 +264,7 @@ public class RdbmsConnectionFactory {
 	}
 
 	public boolean isWritable()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			return !nsAndTableIndexes.isReadOnly();
@@ -275,7 +275,7 @@ public class RdbmsConnectionFactory {
 	}
 
 	public NotifyingSailConnection createConnection()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			Connection db = getConnection();
@@ -338,7 +338,7 @@ public class RdbmsConnectionFactory {
 	}
 
 	public void shutDown()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			if (tripleTableManager != null) {
@@ -382,7 +382,7 @@ public class RdbmsConnectionFactory {
 		}
 	}
 
-	protected Lock createDatabaseLock() throws SailException {
+	protected Lock createDatabaseLock() throws StoreException {
 		DatabaseLockManager manager;
 		manager = new DatabaseLockManager(ds, user, password);
 		if (manager.isDebugEnabled())

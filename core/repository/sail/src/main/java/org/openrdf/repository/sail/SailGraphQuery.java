@@ -25,7 +25,7 @@ import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 
 /**
  * @author Arjohn Kampman
@@ -89,7 +89,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 
 			return new GraphQueryResultImpl(getParsedQuery().getQueryNamespaces(), stIter);
 		}
-		catch (SailException e) {
+		catch (StoreException e) {
 			throw new QueryEvaluationException(e.getMessage(), e);
 		}
 	}

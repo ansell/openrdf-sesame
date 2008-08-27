@@ -16,7 +16,7 @@ import javax.servlet.ServletException;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.workbench.RepositoryServlet;
@@ -77,7 +77,7 @@ public abstract class BaseRepositoryServlet extends BaseServlet implements Repos
 				}
 			} catch (MalformedURLException e) {
 				throw new ServletException(e);
-			} catch (RepositoryException e) {
+			} catch (StoreException e) {
 				throw new ServletException(e);
 			}
 		}

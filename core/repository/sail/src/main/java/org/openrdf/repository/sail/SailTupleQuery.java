@@ -20,7 +20,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 
 /**
  * @author Arjohn Kampman
@@ -48,7 +48,7 @@ public class SailTupleQuery extends SailQuery implements TupleQuery {
 
 			return new TupleQueryResultImpl(new ArrayList<String>(tupleExpr.getBindingNames()), bindingsIter);
 		}
-		catch (SailException e) {
+		catch (StoreException e) {
 			throw new QueryEvaluationException(e.getMessage(), e);
 		}
 	}

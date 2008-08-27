@@ -19,7 +19,7 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
@@ -63,7 +63,7 @@ public class DeleteServlet extends TransformationServlet {
 	}
 
 	private Resource findContext(String id, RepositoryConnection con)
-			throws RepositoryException, MalformedQueryException,
+			throws StoreException, MalformedQueryException,
 			QueryEvaluationException, BadRequestException {
 		TupleQuery query = con.prepareTupleQuery(SERQL, CONTEXT_QUERY);
 		query.setBinding("ID", vf.createLiteral(id));
@@ -85,7 +85,7 @@ public class DeleteServlet extends TransformationServlet {
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException {
+			throws StoreException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "delete.xsl");
 		builder.start("readable", "writeable", "id", "description", "location");

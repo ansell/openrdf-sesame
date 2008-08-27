@@ -29,7 +29,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.config.DelegatingRepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryConfig;
@@ -88,7 +88,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 	@Override
 	protected SystemRepository createSystemRepository()
-		throws RepositoryException
+		throws StoreException
 	{
 		File systemDir = getRepositoryDir(SystemRepository.ID);
 		SystemRepository systemRepos = new SystemRepository(systemDir);
@@ -135,7 +135,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 	@Override
 	protected Repository createRepository(String id)
-		throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, StoreException
 	{
 		Repository systemRepository = getSystemRepository();
 
@@ -205,7 +205,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			RepositoryConfig config = null;
@@ -223,7 +223,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 				repInfo.setLocation(getRepositoryDir(id).toURI().toURL());
 			}
 			catch (MalformedURLException mue) {
-				throw new RepositoryException("Location of repository does not resolve to a valid URL", mue);
+				throw new StoreException("Location of repository does not resolve to a valid URL", mue);
 			}
 
 			repInfo.setReadable(true);
@@ -233,13 +233,13 @@ public class LocalRepositoryManager extends RepositoryManager {
 		}
 		catch (RepositoryConfigException rce) {
 			// FIXME: don't fetch info through config parsing
-			throw new RepositoryException("Unable to retrieve existing configurations", rce);
+			throw new StoreException("Unable to retrieve existing configurations", rce);
 		}
 	}
 
 	@Override
 	public List<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws RepositoryException
+		throws StoreException
 	{
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
@@ -370,7 +370,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 										logger.debug("Context {} doesn't contain repository config information.", context);
 									}
 								}
-								catch (RepositoryException re) {
+								catch (StoreException re) {
 									logger.error("Failed to process repository configuration changes", re);
 								}
 							}
@@ -379,7 +379,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 							cleanupCon.close();
 						}
 					}
-					catch (RepositoryException re) {
+					catch (StoreException re) {
 						logger.error("Failed to process repository configuration changes", re);
 					}
 				}
@@ -387,14 +387,14 @@ public class LocalRepositoryManager extends RepositoryManager {
 		}
 
 		private boolean isRepositoryConfigContext(RepositoryConnection con, Resource context)
-			throws RepositoryException
+			throws StoreException
 		{
 			logger.debug("Is {} a repository config context?", context);
 			return con.hasStatement(context, RDF.TYPE, REPOSITORY_CONTEXT, true, (Resource)null);
 		}
 
 		private String getRepositoryID(RepositoryConnection con, Resource context)
-			throws RepositoryException
+			throws StoreException
 		{
 			String result = null;
 

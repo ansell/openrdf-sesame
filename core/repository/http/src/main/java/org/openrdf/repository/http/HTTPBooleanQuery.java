@@ -11,11 +11,11 @@ import org.openrdf.http.client.HTTPClient;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 
 /**
  * TupleQuery specific to the HTTP protocol. Methods in this class may throw the
- * specific RepositoryException subclasses UnautorizedException and
+ * specific StoreException subclasses UnautorizedException and
  * NotAllowedException, the semantics of which are defined by the HTTP protocol.
  * 
  * @see org.openrdf.http.protocol.UnauthorizedException
@@ -40,7 +40,7 @@ public class HTTPBooleanQuery extends HTTPQuery implements BooleanQuery {
 		catch (IOException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
 		catch (MalformedQueryException e) {

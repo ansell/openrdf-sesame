@@ -7,11 +7,11 @@ package org.openrdf.repository.base;
 
 import java.io.File;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 
 /**
  * A {@link DelegatingRepository} implementation that, by default, forwards all
@@ -55,25 +55,25 @@ public class RepositoryWrapper implements DelegatingRepository {
 	}
 
 	public void initialize()
-		throws RepositoryException
+		throws StoreException
 	{
 		getDelegate().initialize();
 	}
 
 	public void shutDown()
-		throws RepositoryException
+		throws StoreException
 	{
 		getDelegate().shutDown();
 	}
 
 	public boolean isWritable()
-		throws RepositoryException
+		throws StoreException
 	{
 		return getDelegate().isWritable();
 	}
 
 	public RepositoryConnection getConnection()
-		throws RepositoryException
+		throws StoreException
 	{
 		return getDelegate().getConnection();
 	}

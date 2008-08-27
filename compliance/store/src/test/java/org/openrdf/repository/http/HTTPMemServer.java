@@ -9,14 +9,13 @@ import java.io.File;
 
 import info.aduna.net.http.server.embedded.EmbeddedServer;
 
+import org.openrdf.StoreException;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigUtil;
-import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.repository.manager.SystemRepository;
 import org.openrdf.repository.sail.config.SailRepositoryConfig;
 import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig;
@@ -79,10 +78,10 @@ public class HTTPMemServer extends EmbeddedServer {
 	}
 
 	/**
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 */
 	private void createTestRepositories()
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		Repository systemRep = new HTTPRepository(Protocol.getRepositoryLocation(SERVER_URL,
 				SystemRepository.ID));

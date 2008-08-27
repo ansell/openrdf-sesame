@@ -44,7 +44,7 @@ import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.SailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -98,7 +98,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	@Override
 	protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
-		throws SailException
+		throws StoreException
 	{
 		logger.trace("Incoming query model:\n{}", tupleExpr.toString());
 
@@ -140,7 +140,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 		}
 		catch (QueryEvaluationException e) {
 			readLock.release();
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 		catch (RuntimeException e) {
 			readLock.release();
@@ -149,11 +149,11 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	}
 
 	protected void replaceValues(TupleExpr tupleExpr)
-		throws SailException
+		throws StoreException
 	{
 		// Replace all Value objects stored in variables with NativeValue objects,
 		// which cache internal IDs
-		tupleExpr.visit(new QueryModelVisitorBase<SailException>() {
+		tupleExpr.visit(new QueryModelVisitorBase<StoreException>() {
 
 			@Override
 			public void meet(Var var) {
@@ -165,8 +165,8 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	}
 
 	@Override
-	protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
-		throws SailException
+	protected CloseableIteration<? extends Resource, StoreException> getContextIDsInternal()
+		throws StoreException
 	{
 		// Which resources are used as context identifiers is not stored
 		// separately. Iterate over all statements and extract their context.
@@ -177,12 +177,12 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			// releasing the read lock when the iterator is closed
 			contextIter = new LockingIteration<Resource, IOException>(readLock, contextIter);
 
-			return new ExceptionConvertingIteration<Resource, SailException>(contextIter) {
+			return new ExceptionConvertingIteration<Resource, StoreException>(contextIter) {
 
 				@Override
-				protected SailException convert(Exception e) {
+				protected StoreException convert(Exception e) {
 					if (e instanceof IOException) {
-						return new SailException(e);
+						return new StoreException(e);
 					}
 					else if (e instanceof RuntimeException) {
 						throw (RuntimeException)e;
@@ -198,7 +198,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 		}
 		catch (IOException e) {
 			readLock.release();
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 		catch (RuntimeException e) {
 			readLock.release();
@@ -207,9 +207,9 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	}
 
 	@Override
-	protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj,
+	protected CloseableIteration<? extends Statement, StoreException> getStatementsInternal(Resource subj,
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock readLock = nativeStore.getReadLock();
 		try {
@@ -218,12 +218,12 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 					contexts);
 			iter = new LockingIteration<Statement, IOException>(readLock, iter);
 
-			return new ExceptionConvertingIteration<Statement, SailException>(iter) {
+			return new ExceptionConvertingIteration<Statement, StoreException>(iter) {
 
 				@Override
-				protected SailException convert(Exception e) {
+				protected StoreException convert(Exception e) {
 					if (e instanceof IOException) {
-						return new SailException(e);
+						return new StoreException(e);
 					}
 					else if (e instanceof RuntimeException) {
 						throw (RuntimeException)e;
@@ -239,7 +239,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 		}
 		catch (IOException e) {
 			readLock.release();
-			throw new SailException("Unable to get statements", e);
+			throw new StoreException("Unable to get statements", e);
 		}
 		catch (RuntimeException e) {
 			readLock.release();
@@ -249,7 +249,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected long sizeInternal(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -283,7 +283,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			return size;
 		}
 		catch (IOException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 		finally {
 			readLock.release();
@@ -291,14 +291,14 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	}
 
 	@Override
-	protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal()
-		throws SailException
+	protected CloseableIteration<? extends Namespace, StoreException> getNamespacesInternal()
+		throws StoreException
 	{
 		Lock readLock = nativeStore.getReadLock();
 		try {
-			return new LockingIteration<NamespaceImpl, SailException>(
+			return new LockingIteration<NamespaceImpl, StoreException>(
 					readLock,
-					new IteratorIteration<NamespaceImpl, SailException>(nativeStore.getNamespaceStore().iterator()));
+					new IteratorIteration<NamespaceImpl, StoreException>(nativeStore.getNamespaceStore().iterator()));
 		}
 		catch (RuntimeException e) {
 			readLock.release();
@@ -308,7 +308,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected String getNamespaceInternal(String prefix)
-		throws SailException
+		throws StoreException
 	{
 		Lock readLock = nativeStore.getReadLock();
 		try {
@@ -321,7 +321,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void startTransactionInternal()
-		throws SailException
+		throws StoreException
 	{
 		txnLock = nativeStore.getTransactionLock();
 
@@ -329,13 +329,13 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			nativeStore.getTripleStore().startTransaction();
 		}
 		catch (IOException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	@Override
 	protected void commitInternal()
-		throws SailException
+		throws StoreException
 	{
 		Lock storeReadLock = nativeStore.getReadLock();
 
@@ -347,7 +347,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			txnLock.release();
 		}
 		catch (IOException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 		finally {
 			storeReadLock.release();
@@ -361,7 +361,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void rollbackInternal()
-		throws SailException
+		throws StoreException
 	{
 		Lock storeReadLock = nativeStore.getReadLock();
 
@@ -370,7 +370,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			nativeStore.getTripleStore().rollback();
 		}
 		catch (IOException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 		finally {
 			txnLock.release();
@@ -380,13 +380,13 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		addStatement(subj, pred, obj, true, contexts);
 	}
 
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -407,7 +407,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	}
 
 	private boolean addStatement(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -453,7 +453,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			}
 		}
 		catch (IOException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 
 		return result;
@@ -461,13 +461,13 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		removeStatements(subj, pred, obj, true, contexts);
 	}
 
 	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -489,7 +489,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	}
 
 	private int removeStatements(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -569,19 +569,19 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 			return removeCount;
 		}
 		catch (IOException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	@Override
 	protected void clearInternal(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		removeStatements(null, null, null, true, contexts);
 	}
 
 	public void clearInferred(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -607,21 +607,21 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void setNamespaceInternal(String prefix, String name)
-		throws SailException
+		throws StoreException
 	{
 		nativeStore.getNamespaceStore().setNamespace(prefix, name);
 	}
 
 	@Override
 	protected void removeNamespaceInternal(String prefix)
-		throws SailException
+		throws StoreException
 	{
 		nativeStore.getNamespaceStore().removeNamespace(prefix);
 	}
 
 	@Override
 	protected void clearNamespacesInternal()
-		throws SailException
+		throws StoreException
 	{
 		nativeStore.getNamespaceStore().clear();
 	}

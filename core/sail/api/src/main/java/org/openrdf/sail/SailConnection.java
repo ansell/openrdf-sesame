@@ -7,6 +7,7 @@ package org.openrdf.sail;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -36,14 +37,14 @@ public interface SailConnection {
 	 * @see SailConnection#close
 	 */
 	public boolean isOpen()
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Closes the connection. Any updates that haven't been committed yet will be
 	 * rolled back. The connection can no longer be used once it is closed.
 	 */
 	public void close()
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Evaluates the supplied TupleExpr on the data contained in this Sail
@@ -64,13 +65,13 @@ public interface SailConnection {
 	 *        query result. If false, no inferred statements are returned; if
 	 *        true, inferred statements are returned if available
 	 * @return The TupleQueryResult.
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
 	 */
 	public CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(TupleExpr tupleExpr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Returns the set of all unique context identifiers that are used to store
@@ -79,8 +80,8 @@ public interface SailConnection {
 	 * @return An iterator over the context identifiers, should not contain any
 	 *         duplicates.
 	 */
-	public CloseableIteration<? extends Resource, SailException> getContextIDs()
-		throws SailException;
+	public CloseableIteration<? extends Resource, StoreException> getContextIDs()
+		throws StoreException;
 
 	/**
 	 * Gets all statements from the specified contexts that have a specific
@@ -104,13 +105,13 @@ public interface SailConnection {
 	 *        vararg and as such is optional. If no contexts are supplied the
 	 *        method operates on the entire repository.
 	 * @return The statements matching the specified pattern.
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
 	 */
-	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj, URI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Returns the number of (explicit) statements.
@@ -118,27 +119,27 @@ public interface SailConnection {
 	 * @return The number of explicit statements in this Sail.
 	 */
 	public long size(Resource... contexts)
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Commits any updates that have been performed since the last time
 	 * {@link #commit()} or {@link #rollback()} was called.
 	 * 
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the SailConnection could not be committed.
 	 */
 	public void commit()
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Rolls back the SailConnection, discarding any uncommitted changes that
 	 * have been made in this SailConnection.
 	 * 
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the SailConnection could not be rolled back.
 	 */
 	public void rollback()
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Adds a statement to each context in the specified contexts.
@@ -153,11 +154,11 @@ public interface SailConnection {
 	 *        The context(s) to add the statement to. Note that this parameter is
 	 *        a vararg and as such is optional. If no contexts are supplied the
 	 *        method operates on the entire repository.
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the statement could not be added.
 	 */
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Removes all statements matching the specified subject, predicate and
@@ -177,11 +178,11 @@ public interface SailConnection {
 	 *        The context(s) from which to remove the statement. Note that this
 	 *        parameter is a vararg and as such is optional. If no contexts are
 	 *        supplied the method operates on the entire repository.
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the statement could not be removed.
 	 */
 	public void removeStatements(Resource subj, URI pred, Value obj, Resource... context)
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Removes all statements from the specified/all contexts. If no contexts are
@@ -191,23 +192,23 @@ public interface SailConnection {
 	 *        The context(s) from which to remove the statements. Note that this
 	 *        parameter is a vararg and as such is optional. If no contexts are
 	 *        supplied the method operates on the entire repository.
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the statements could not be removed.
 	 */
 	public void clear(Resource... contexts)
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Gets the namespaces relevant to the data contained in this Sail object.
 	 * 
 	 * @returns An iterator over the relevant namespaces, should not contain any
 	 *          duplicates.
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
 	 */
-	public CloseableIteration<? extends Namespace, SailException> getNamespaces()
-		throws SailException;
+	public CloseableIteration<? extends Namespace, StoreException> getNamespaces()
+		throws StoreException;
 
 	/**
 	 * Gets the namespace that is mapped to the specified prefix.
@@ -217,7 +218,7 @@ public interface SailConnection {
 	 * @return The namespace name that the specified prefix maps to.
 	 */
 	public String getNamespace(String prefix)
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Sets the prefix of a namespace.
@@ -228,7 +229,7 @@ public interface SailConnection {
 	 *        The namespace name that the prefix maps to.
 	 */
 	public void setNamespace(String prefix, String name)
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Removes a namespace declaration by removing the association between a
@@ -237,19 +238,19 @@ public interface SailConnection {
 	 * @param prefix
 	 *        The namespace prefix of which the assocation with a namespace name
 	 *        is to be removed.
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the namespace prefix could not be removed.
 	 */
 	public void removeNamespace(String prefix)
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Removes all namespace declarations from the repository.
 	 * 
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the namespaces could not be removed.
 	 */
 	public void clearNamespaces()
-		throws SailException;
+		throws StoreException;
 
 }

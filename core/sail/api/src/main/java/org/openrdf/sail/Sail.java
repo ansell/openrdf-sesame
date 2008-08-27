@@ -7,6 +7,7 @@ package org.openrdf.sail;
 
 import java.io.File;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.ValueFactory;
 
 /**
@@ -30,11 +31,11 @@ public interface Sail {
 	 * specific Sail implementation for information about the relevant
 	 * parameters.
 	 * 
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the Sail could not be initialized.
 	 */
 	public void initialize()
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Shuts down the Sail, giving it the opportunity to synchronize any stale
@@ -42,19 +43,19 @@ public interface Sail {
 	 * before an application exits to avoid potential loss of data. Once shut
 	 * down, a Sail can no longer be used until it is re-initialized.
 	 * 
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
 	 */
 	public void shutDown()
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Checks whether this Sail object is writable, i.e. if the data contained in
 	 * this Sail object can be changed.
 	 */
 	public boolean isWritable()
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Opens a connection on the Sail which can be used to query and update data.
@@ -62,12 +63,12 @@ public interface Sail {
 	 * this method might block when there is another open connection on this
 	 * Sail.
 	 * 
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If no transaction could be started, for example because the Sail
 	 *         is not writable.
 	 */
 	public SailConnection getConnection()
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Gets a ValueFactory object that can be used to create URI-, blank node-,

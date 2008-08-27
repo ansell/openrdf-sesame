@@ -30,7 +30,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.RDFHandlerException;
@@ -123,7 +123,7 @@ public class ManifestTest {
 
 	static void addTurtle(RepositoryConnection con, URL url,
 			String baseURI, Resource... contexts) throws IOException,
-			RepositoryException, RDFParseException {
+			StoreException, RDFParseException {
 		if (baseURI == null) {
 			baseURI = url.toExternalForm();
 		}
@@ -153,8 +153,8 @@ public class ManifestTest {
 				if (autoCommit) {
 					con.rollback();
 				}
-				// RDFInserter only throws wrapped RepositoryExceptions
-				throw (RepositoryException) e.getCause();
+				// RDFInserter only throws wrapped StoreExceptions
+				throw (StoreException) e.getCause();
 			} catch (RuntimeException e) {
 				if (autoCommit) {
 					con.rollback();

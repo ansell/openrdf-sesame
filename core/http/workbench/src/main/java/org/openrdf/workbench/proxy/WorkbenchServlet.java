@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
@@ -50,7 +50,7 @@ public class WorkbenchServlet extends BaseServlet {
 			manager = createRepositoryManager(param);
 		} catch (IOException e) {
 			throw new ServletException(e);
-		} catch (RepositoryException e) {
+		} catch (StoreException e) {
 			throw new ServletException(e);
 		}
 	}
@@ -90,7 +90,7 @@ public class WorkbenchServlet extends BaseServlet {
 				service(id, req, resp);
 			} catch (RepositoryConfigException e) {
 				throw new ServletException(e);
-			} catch (RepositoryException e) {
+			} catch (StoreException e) {
 				throw new ServletException(e);
 			}
 		} else {
@@ -100,7 +100,7 @@ public class WorkbenchServlet extends BaseServlet {
 	}
 
 	private RepositoryManager createRepositoryManager(String param)
-			throws IOException, RepositoryException {
+			throws IOException, StoreException {
 		RepositoryManager manager;
 		if (param.startsWith("file:")) {
 			manager = new LocalRepositoryManager(asLocalFile(new URL(param)));
@@ -117,7 +117,7 @@ public class WorkbenchServlet extends BaseServlet {
 
 	private void service(String id, HttpServletRequest req,
 			HttpServletResponse resp) throws RepositoryConfigException,
-			RepositoryException, ServletException, IOException {
+			StoreException, ServletException, IOException {
 		DynamicHttpRequest http = new DynamicHttpRequest(req);
 		String path = req.getPathInfo();
 		int idx = path.indexOf(id) + id.length();

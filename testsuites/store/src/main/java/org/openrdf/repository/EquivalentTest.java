@@ -8,6 +8,7 @@ package org.openrdf.repository;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -20,9 +21,6 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 
 public abstract class EquivalentTest extends TestCase {
 	private static ValueFactory vf = ValueFactoryImpl.getInstance();
@@ -279,7 +277,7 @@ public abstract class EquivalentTest extends TestCase {
 		throw new AssertionError();
 	}
 
-	private boolean evaluate(String op) throws RepositoryException,
+	private boolean evaluate(String op) throws StoreException,
 			MalformedQueryException, QueryEvaluationException {
 		String qry = PREFIX + "SELECT ?term1 ?term2 "
 				+ "WHERE {ex:t1 rdf:value ?term1 . ex:t2 rdf:value ?term2 "
@@ -287,7 +285,7 @@ public abstract class EquivalentTest extends TestCase {
 		return evaluateSparql(qry);
 	}
 
-	private boolean evaluateSparql(String qry) throws RepositoryException,
+	private boolean evaluateSparql(String qry) throws StoreException,
 			MalformedQueryException, QueryEvaluationException {
 		TupleQuery query = con.prepareTupleQuery(QueryLanguage.SPARQL, qry);
 		TupleQueryResult evaluate = query.evaluate();

@@ -31,7 +31,7 @@ import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailConnectionListener;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
@@ -140,19 +140,19 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 
 	@Override
 	public InferencerConnection getConnection()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			InferencerConnection con = (InferencerConnection)super.getConnection();
 			return new DirectTypeHierarchyInferencerConnection(con);
 		}
 		catch (ClassCastException e) {
-			throw new SailException(e.getMessage(), e);
+			throw new StoreException(e.getMessage(), e);
 		}
 	}
 
 	public void initialize()
-		throws SailException
+		throws StoreException
 	{
 		super.initialize();
 
@@ -204,7 +204,7 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 
 		@Override
 		public void rollback()
-			throws SailException
+			throws StoreException
 		{
 			updateNeeded = false;
 			super.rollback();
@@ -212,7 +212,7 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 
 		@Override
 		public void flushUpdates()
-			throws SailException
+			throws StoreException
 		{
 			super.flushUpdates();
 
@@ -261,20 +261,20 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 			}
 			catch (RDFHandlerException e) {
 				Throwable t = e.getCause();
-				if (t instanceof SailException) {
-					throw (SailException)t;
+				if (t instanceof StoreException) {
+					throw (StoreException)t;
 				}
 				else {
-					throw new SailException(t);
+					throw new StoreException(t);
 				}
 			}
 			catch (QueryEvaluationException e) {
-				throw new SailException(e);
+				throw new StoreException(e);
 			}
 		}
 
 		private void evaluateIntoStatements(ParsedGraphQuery query, Collection<Statement> statements)
-			throws SailException, RDFHandlerException, QueryEvaluationException
+			throws StoreException, RDFHandlerException, QueryEvaluationException
 		{
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter = getWrappedConnection().evaluate(
 					query.getTupleExpr(), null, EmptyBindingSet.getInstance(), true);

@@ -29,7 +29,7 @@ import org.openrdf.http.server.ClientHTTPException;
 import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 
 /**
  * Handles requests for manipulating a specific namespace definition in a
@@ -91,7 +91,7 @@ public class NamespaceController extends AbstractController {
 
 			return new ModelAndView(SimpleResponseView.getInstance(), model);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 		}
 	}
@@ -111,7 +111,7 @@ public class NamespaceController extends AbstractController {
 		try {
 			repositoryCon.setNamespace(prefix, namespace);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 		}
 
@@ -124,7 +124,7 @@ public class NamespaceController extends AbstractController {
 		try {
 			repositoryCon.removeNamespace(prefix);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 		}
 

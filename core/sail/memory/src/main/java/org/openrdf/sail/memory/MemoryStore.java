@@ -25,7 +25,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.SailBase;
@@ -257,11 +257,11 @@ public class MemoryStore extends SailBase {
 	 * Initializes this repository. If a persistence file is defined for the
 	 * store, the contents will be restored.
 	 * 
-	 * @throws SailException
+	 * @throws StoreException
 	 *         when initialization of the store failed.
 	 */
 	public void initialize()
-		throws SailException
+		throws StoreException
 	{
 		if (isInitialized()) {
 			throw new IllegalStateException("sail has already been intialized");
@@ -289,7 +289,7 @@ public class MemoryStore extends SailBase {
 				// Initialize persistent store from file
 				if (!dataFile.canRead()) {
 					logger.error("Data file is not readable: {}", dataFile);
-					throw new SailException("Can't read data file: " + dataFile);
+					throw new StoreException("Can't read data file: " + dataFile);
 				}
 				// try to create a lock for later writing
 				dirLock = locker.tryLock();
@@ -308,7 +308,7 @@ public class MemoryStore extends SailBase {
 					}
 					catch (IOException e) {
 						logger.error("Failed to read data file", e);
-						throw new SailException(e);
+						throw new StoreException(e);
 					}
 				}
 			}
@@ -320,7 +320,7 @@ public class MemoryStore extends SailBase {
 						logger.debug("Creating directory for data file...");
 						if (!dir.mkdirs()) {
 							logger.debug("Failed to create directory for data file: {}", dir);
-							throw new SailException("Failed to create directory for data file: " + dir);
+							throw new StoreException("Failed to create directory for data file: " + dir);
 						}
 					}
 					// try to lock directory or fail
@@ -332,11 +332,11 @@ public class MemoryStore extends SailBase {
 				}
 				catch (IOException e) {
 					logger.debug("Failed to initialize data file", e);
-					throw new SailException("Failed to initialize data file " + dataFile, e);
+					throw new StoreException("Failed to initialize data file " + dataFile, e);
 				}
-				catch (SailException e) {
+				catch (StoreException e) {
 					logger.debug("Failed to initialize data file", e);
-					throw new SailException("Failed to initialize data file " + dataFile, e);
+					throw new StoreException("Failed to initialize data file " + dataFile, e);
 				}
 			}
 		}
@@ -359,7 +359,7 @@ public class MemoryStore extends SailBase {
 
 	@Override
 	protected void shutDownInternal()
-		throws SailException
+		throws StoreException
 	{
 		if (isInitialized()) {
 			Lock stLock = getStatementsReadLock();
@@ -394,7 +394,7 @@ public class MemoryStore extends SailBase {
 
 	@Override
 	protected NotifyingSailConnection getConnectionInternal()
-		throws SailException
+		throws StoreException
 	{
 		if (!isInitialized()) {
 			throw new IllegalStateException("sail not initialized.");
@@ -424,24 +424,24 @@ public class MemoryStore extends SailBase {
 	}
 
 	protected Lock getStatementsReadLock()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			return statementListLockManager.getReadLock();
 		}
 		catch (InterruptedException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	protected Lock getTransactionLock()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			return txnLockManager.getExclusiveLock();
 		}
 		catch (InterruptedException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 
@@ -542,7 +542,7 @@ public class MemoryStore extends SailBase {
 	}
 
 	protected Statement addStatement(Resource subj, URI pred, Value obj, Resource context, boolean explicit)
-		throws SailException
+		throws StoreException
 	{
 		boolean newValueCreated = false;
 
@@ -571,8 +571,8 @@ public class MemoryStore extends SailBase {
 		if (!newValueCreated) {
 			// All values were already present in the graph. Possibly, the
 			// statement is already present. Check this.
-			CloseableIteration<MemStatement, SailException> stIter = createStatementIterator(
-					SailException.class, memSubj, memPred, memObj, false, currentSnapshot + 1, ReadMode.RAW,
+			CloseableIteration<MemStatement, StoreException> stIter = createStatementIterator(
+					StoreException.class, memSubj, memPred, memObj, false, currentSnapshot + 1, ReadMode.RAW,
 					memContext);
 
 			try {
@@ -644,7 +644,7 @@ public class MemoryStore extends SailBase {
 	}
 
 	protected boolean removeStatement(MemStatement st, boolean explicit)
-		throws SailException
+		throws StoreException
 	{
 		boolean statementsRemoved = false;
 		TxnStatus txnStatus = st.getTxnStatus();
@@ -677,7 +677,7 @@ public class MemoryStore extends SailBase {
 	}
 
 	protected void startTransaction()
-		throws SailException
+		throws StoreException
 	{
 		cancelSyncTask();
 
@@ -685,7 +685,7 @@ public class MemoryStore extends SailBase {
 	}
 
 	protected void commit()
-		throws SailException
+		throws StoreException
 	{
 		boolean statementsAdded = false;
 		boolean statementsRemoved = false;
@@ -747,7 +747,7 @@ public class MemoryStore extends SailBase {
 	}
 
 	protected void rollback()
-		throws SailException
+		throws StoreException
 	{
 		logger.debug("rolling back transaction");
 
@@ -769,7 +769,7 @@ public class MemoryStore extends SailBase {
 	}
 
 	protected void scheduleSyncTask()
-		throws SailException
+		throws StoreException
 	{
 		if (!persist) {
 			return;
@@ -806,7 +806,7 @@ public class MemoryStore extends SailBase {
 								stLock.release();
 							}
 						}
-						catch (SailException e) {
+						catch (StoreException e) {
 							logger.warn("Unable to sync on timer", e);
 						}
 					}
@@ -841,7 +841,7 @@ public class MemoryStore extends SailBase {
 	 * data in the file are out of sync.
 	 */
 	public void sync()
-		throws SailException
+		throws StoreException
 	{
 		synchronized (syncSemaphore) {
 			if (persist && contentsChanged) {
@@ -853,7 +853,7 @@ public class MemoryStore extends SailBase {
 				}
 				catch (IOException e) {
 					logger.error("Failed to sync to file", e);
-					throw new SailException(e);
+					throw new StoreException(e);
 				}
 			}
 		}

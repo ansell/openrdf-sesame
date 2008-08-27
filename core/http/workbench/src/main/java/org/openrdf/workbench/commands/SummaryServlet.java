@@ -11,7 +11,7 @@ import java.net.URL;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.workbench.base.TransformationServlet;
@@ -21,7 +21,7 @@ public class SummaryServlet extends TransformationServlet {
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException, QueryEvaluationException,
+			throws StoreException, QueryEvaluationException,
 			MalformedQueryException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "summary.xsl");
@@ -53,17 +53,17 @@ public class SummaryServlet extends TransformationServlet {
 		return null;
 	}
 
-	private long getSize(RepositoryConnection con) throws RepositoryException {
+	private long getSize(RepositoryConnection con) throws StoreException {
 		return con.size();
 	}
 
 	private long getNamespaces(RepositoryConnection con)
-			throws RepositoryException {
+			throws StoreException {
 		return con.getNamespaces().asList().size();
 	}
 
 	private long getContexts(RepositoryConnection con)
-			throws RepositoryException {
+			throws StoreException {
 		return con.getContextIDs().asList().size();
 	}
 

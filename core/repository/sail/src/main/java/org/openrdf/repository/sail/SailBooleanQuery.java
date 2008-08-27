@@ -14,7 +14,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 
 /**
  * @author Arjohn Kampman
@@ -55,7 +55,7 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 				bindingsIter.close();
 			}
 		}
-		catch (SailException e) {
+		catch (StoreException e) {
 			throw new QueryEvaluationException(e.getMessage(), e);
 		}
 	}

@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.openrdf.model.URI;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
@@ -51,13 +51,13 @@ public class DatasetRepository extends RepositoryWrapper {
 
 	@Override
 	public RepositoryConnection getConnection()
-		throws RepositoryException
+		throws StoreException
 	{
 		return new DatasetRepositoryConnection(this, getDelegate().getConnection());
 	}
 
 	public void loadDataset(URL url, URI context)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			Long since = lastModified.get(url);
@@ -70,15 +70,15 @@ public class DatasetRepository extends RepositoryWrapper {
 			}
 		}
 		catch (RDFParseException e) {
-			throw new RepositoryException(e);
+			throw new StoreException(e);
 		}
 		catch (IOException e) {
-			throw new RepositoryException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	private synchronized void load(URL url, URLConnection urlCon, URI context)
-		throws RepositoryException, RDFParseException, IOException
+		throws StoreException, RDFParseException, IOException
 	{
 		long modified = urlCon.getLastModified();
 		if (lastModified.containsKey(url) && lastModified.get(url) >= modified) {

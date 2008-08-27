@@ -13,6 +13,8 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.DistinctIteration;
 import info.aduna.iteration.IterationWrapper;
 
+import org.openrdf.StoreException;
+
 /**
  * A RepositoryResult is a result collection of objects (for example
  * {@link org.openrdf.model.Statement}, {@link org.openrdf.model.Namespace},
@@ -38,9 +40,9 @@ import info.aduna.iteration.IterationWrapper;
  * @author jeen
  * @author Arjohn Kampman
  */
-public class RepositoryResult<T> extends IterationWrapper<T, RepositoryException> {
+public class RepositoryResult<T> extends IterationWrapper<T, StoreException> {
 
-	public RepositoryResult(CloseableIteration<? extends T, RepositoryException> iter) {
+	public RepositoryResult(CloseableIteration<? extends T, StoreException> iter) {
 		super(iter);
 	}
 
@@ -52,14 +54,14 @@ public class RepositoryResult<T> extends IterationWrapper<T, RepositoryException
 	 * <P>
 	 * Caution: use of this filtering mechanism is potentially memory-intensive.
 	 * 
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         if a problem occurred during initialization of the filter.
 	 */
 	@Deprecated
 	public void enableDuplicateFilter()
-		throws RepositoryException
+		throws StoreException
 	{
-		wrappedIter = new DistinctIteration<T, RepositoryException>(wrappedIter);
+		wrappedIter = new DistinctIteration<T, StoreException>(wrappedIter);
 	}
 
 	/**
@@ -71,12 +73,12 @@ public class RepositoryResult<T> extends IterationWrapper<T, RepositoryException
 	 * in memory and as such is potentially very memory-intensive.
 	 * 
 	 * @return a List containing all objects of this RepositoryResult.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         if a problem occurred during retrieval of the results.
 	 * @see #addTo(Collection)
 	 */
 	public List<T> asList()
-		throws RepositoryException
+		throws StoreException
 	{
 		return addTo(new ArrayList<T>());
 	}
@@ -87,11 +89,11 @@ public class RepositoryResult<T> extends IterationWrapper<T, RepositoryException
 	 * operation.
 	 * 
 	 * @return A reference to the collection that was supplied.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         if a problem occurred during retrieval of the results.
 	 */
 	public <C extends Collection<T>> C addTo(C collection)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			while (hasNext()) {

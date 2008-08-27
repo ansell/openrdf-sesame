@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 
 /**
  * SailExcetion from an RDBMS store.
@@ -19,7 +19,7 @@ import org.openrdf.sail.SailException;
  * @author James Leigh
  * 
  */
-public class RdbmsException extends SailException {
+public class RdbmsException extends StoreException {
 	private static Logger logger = LoggerFactory.getLogger(RdbmsException.class);
 
 	private static final long serialVersionUID = -4004800841908629772L;

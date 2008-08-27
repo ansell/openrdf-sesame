@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import info.aduna.iteration.Iteration;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -36,7 +37,6 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.RDFFormat;
@@ -92,44 +92,44 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public boolean isOpen()
-		throws RepositoryException
+		throws StoreException
 	{
 		return isOpen;
 	}
 
 	public void close()
-		throws RepositoryException
+		throws StoreException
 	{
 		isOpen = false;
 	}
 
 	public Query prepareQuery(QueryLanguage ql, String query)
-		throws MalformedQueryException, RepositoryException
+		throws MalformedQueryException, StoreException
 	{
 		return prepareQuery(ql, query, null);
 	}
 
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String query)
-		throws MalformedQueryException, RepositoryException
+		throws MalformedQueryException, StoreException
 	{
 		return prepareTupleQuery(ql, query, null);
 	}
 
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query)
-		throws MalformedQueryException, RepositoryException
+		throws MalformedQueryException, StoreException
 	{
 		return prepareGraphQuery(ql, query, null);
 	}
 
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query)
-		throws MalformedQueryException, RepositoryException
+		throws MalformedQueryException, StoreException
 	{
 		return prepareBooleanQuery(ql, query, null);
 	}
 
 	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		RepositoryResult<Statement> stIter = getStatements(subj, pred, obj, includeInferred, contexts);
 		try {
@@ -141,25 +141,25 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public boolean hasStatement(Statement st, boolean includeInferred, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		return hasStatement(st.getSubject(), st.getPredicate(), st.getObject(), includeInferred, contexts);
 	}
 
 	public boolean isEmpty()
-		throws RepositoryException
+		throws StoreException
 	{
 		return size() == 0;
 	}
 
 	public void export(RDFHandler handler, Resource... contexts)
-		throws RepositoryException, RDFHandlerException
+		throws StoreException, RDFHandlerException
 	{
 		exportStatements(null, null, null, false, handler, contexts);
 	}
 
 	public void setAutoCommit(boolean autoCommit)
-		throws RepositoryException
+		throws StoreException
 	{
 		if (autoCommit == this.autoCommit) {
 			return;
@@ -175,7 +175,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public boolean isAutoCommit()
-		throws RepositoryException
+		throws StoreException
 	{
 		return autoCommit;
 	}
@@ -184,7 +184,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	 * Calls {@link #commit} when in auto-commit mode.
 	 */
 	protected void autoCommit()
-		throws RepositoryException
+		throws StoreException
 	{
 		if (isAutoCommit()) {
 			commit();
@@ -192,7 +192,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
+		throws IOException, RDFParseException, StoreException
 	{
 
 		boolean isZipFile;
@@ -260,7 +260,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
+		throws IOException, RDFParseException, StoreException
 	{
 		if (baseURI == null) {
 			baseURI = url.toExternalForm();
@@ -280,7 +280,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
+		throws IOException, RDFParseException, StoreException
 	{
 		if (!in.markSupported()) {
 			in = new BufferedInputStream(in);
@@ -296,7 +296,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
+		throws IOException, RDFParseException, StoreException
 	{
 		addInputStreamOrReader(reader, baseURI, dataFormat, contexts);
 	}
@@ -319,11 +319,11 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	 * @throws IOException
 	 * @throws UnsupportedRDFormatException
 	 * @throws RDFParseException
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 */
 	protected void addInputStreamOrReader(Object inputStreamOrReader, String baseURI, RDFFormat dataFormat,
 			Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
+		throws IOException, RDFParseException, StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -357,8 +357,8 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 			if (autoCommit) {
 				rollback();
 			}
-			// RDFInserter only throws wrapped RepositoryExceptions
-			throw (RepositoryException)e.getCause();
+			// RDFInserter only throws wrapped StoreExceptions
+			throw (StoreException)e.getCause();
 		}
 		catch (RuntimeException e) {
 			if (autoCommit) {
@@ -372,7 +372,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void add(Iterable<? extends Statement> statements, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -384,7 +384,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 				addWithoutCommit(st, contexts);
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			if (autoCommit) {
 				rollback();
 			}
@@ -403,7 +403,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
 			Resource... contexts)
-		throws RepositoryException, E
+		throws StoreException, E
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -415,7 +415,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 				addWithoutCommit(statementIter.next(), contexts);
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			if (autoCommit) {
 				rollback();
 			}
@@ -433,7 +433,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void add(Statement st, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		addWithoutCommit(st, contexts);
@@ -441,7 +441,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		addWithoutCommit(subject, predicate, object, contexts);
@@ -449,7 +449,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void remove(Iterable<? extends Statement> statements, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -461,7 +461,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 				remove(st, contexts);
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			if (autoCommit) {
 				rollback();
 			}
@@ -480,7 +480,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
 			Resource... contexts)
-		throws RepositoryException, E
+		throws StoreException, E
 	{
 		boolean autoCommit = isAutoCommit();
 		setAutoCommit(false);
@@ -490,7 +490,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 				remove(statementIter.next(), contexts);
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			if (autoCommit) {
 				rollback();
 			}
@@ -508,7 +508,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void remove(Statement st, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		removeWithoutCommit(st, contexts);
@@ -516,7 +516,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		removeWithoutCommit(subject, predicate, object, contexts);
@@ -524,13 +524,13 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void clear(Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		remove(null, null, null, contexts);
 	}
 
 	protected void addWithoutCommit(Statement st, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		if (contexts.length == 0 && st.getContext() != null) {
 			contexts = new Resource[] { st.getContext() };
@@ -541,10 +541,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	protected abstract void addWithoutCommit(Resource subject, URI predicate, Value object,
 			Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	protected void removeWithoutCommit(Statement st, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		if (contexts.length == 0 && st.getContext() != null) {
 			contexts = new Resource[] { st.getContext() };
@@ -555,5 +555,5 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	protected abstract void removeWithoutCommit(Resource subject, URI predicate, Value object,
 			Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 }

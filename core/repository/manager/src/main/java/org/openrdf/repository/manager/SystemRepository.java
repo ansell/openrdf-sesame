@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
@@ -53,7 +53,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 	 *--------------*/
 
 	public SystemRepository(File systemDir)
-		throws RepositoryException
+		throws StoreException
 	{
 		super();
 		super.setDelegate(new SailRepository(new MemoryStore(systemDir)));
@@ -65,7 +65,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 
 	@Override
 	public void initialize()
-		throws RepositoryException
+		throws StoreException
 	{
 		super.initialize();
 
@@ -85,7 +85,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 			}
 		}
 		catch (RepositoryConfigException e) {
-			throw new RepositoryException(e.getMessage(), e);
+			throw new StoreException(e.getMessage(), e);
 		}
 		finally {
 			con.close();

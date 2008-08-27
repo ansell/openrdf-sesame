@@ -11,6 +11,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.openrdf.StoreException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.rio.RDFFormat;
@@ -88,7 +89,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 	}
 
 	private void addData()
-		throws IOException, UnsupportedRDFormatException, RDFParseException, RepositoryException
+		throws IOException, UnsupportedRDFormatException, RDFParseException, StoreException
 	{
 		InputStream defaultGraph = TupleQueryResultTest.class.getResourceAsStream("/testcases/default-graph-1.ttl");
 		try {

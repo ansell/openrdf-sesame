@@ -29,7 +29,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.http.HTTPQueryEvaluationException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -169,7 +169,7 @@ public class QueryServlet extends TransformationServlet {
 	}
 
 	private Query prepareQuery(RepositoryConnection con, QueryLanguage ql, String q)
-		throws RepositoryException, MalformedQueryException
+		throws StoreException, MalformedQueryException
 	{
 		try {
 			return con.prepareQuery(ql, q);

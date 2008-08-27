@@ -24,7 +24,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.SailConnectionBase;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
@@ -87,7 +87,7 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	@Override
 	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		try {
 			if (contexts.length == 0) {
@@ -109,14 +109,14 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	@Override
 	protected void clearInternal(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		removeStatementsInternal(null, null, null, contexts);
 	}
 
 	@Override
 	protected void closeInternal()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			triples.close();
@@ -131,7 +131,7 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	@Override
 	protected void commitInternal()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			triples.commit();
@@ -151,7 +151,7 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	@Override
 	protected RdbmsResourceIteration getContextIDsInternal()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			return triples.findContexts();
@@ -162,9 +162,9 @@ public class RdbmsConnection extends SailConnectionBase {
 	}
 
 	@Override
-	protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj,
+	protected CloseableIteration<? extends Statement, StoreException> getStatementsInternal(Resource subj,
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		RdbmsResource s = vf.asRdbmsResource(subj);
 		RdbmsURI p = vf.asRdbmsURI(pred);
@@ -175,7 +175,7 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	@Override
 	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		RdbmsResource s = vf.asRdbmsResource(subj);
 		RdbmsURI p = vf.asRdbmsURI(pred);
@@ -186,7 +186,7 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	@Override
 	protected void rollbackInternal()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			triples.rollback();
@@ -202,7 +202,7 @@ public class RdbmsConnection extends SailConnectionBase {
 	@Override
 	protected CloseableIteration<BindingSet, QueryEvaluationException> evaluateInternal(TupleExpr expr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
-		throws SailException
+		throws StoreException
 	{
 		triples.flush();
 		try {
@@ -213,20 +213,20 @@ public class RdbmsConnection extends SailConnectionBase {
 			return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
 		}
 		catch (QueryEvaluationException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	@Override
 	protected void clearNamespacesInternal()
-		throws SailException
+		throws StoreException
 	{
 		namespaces.clearPrefixes();
 	}
 
 	@Override
 	protected String getNamespaceInternal(String prefix)
-		throws SailException
+		throws StoreException
 	{
 		Namespace ns = namespaces.findByPrefix(prefix);
 		if (ns == null)
@@ -235,8 +235,8 @@ public class RdbmsConnection extends SailConnectionBase {
 	}
 
 	@Override
-	protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal()
-		throws SailException
+	protected CloseableIteration<? extends Namespace, StoreException> getNamespacesInternal()
+		throws StoreException
 	{
 		Collection<? extends Namespace> ns = namespaces.getNamespacesWithPrefix();
 		return new NamespaceIteration(ns.iterator());
@@ -244,21 +244,21 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	@Override
 	protected void removeNamespaceInternal(String prefix)
-		throws SailException
+		throws StoreException
 	{
 		namespaces.removePrefix(prefix);
 	}
 
 	@Override
 	protected void setNamespaceInternal(String prefix, String name)
-		throws SailException
+		throws StoreException
 	{
 		namespaces.setPrefix(prefix, name);
 	}
 
 	@Override
 	protected long sizeInternal(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		try {
 			return triples.size(vf.asRdbmsResource(contexts));
@@ -270,7 +270,7 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	@Override
 	protected void startTransactionInternal()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			lock();

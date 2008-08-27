@@ -26,7 +26,7 @@ import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemURI;
@@ -70,7 +70,7 @@ class FileIO {
 	public static final int EOF_MARKER = 127;
 
 	public static void write(MemoryStore store, File syncFile, File dataFile)
-		throws IOException, SailException
+		throws IOException, StoreException
 	{
 		write(store, syncFile);
 		// prefer atom renameTo operations
@@ -90,7 +90,7 @@ class FileIO {
 	}
 
 	public static void write(MemoryStore store, File dataFile)
-		throws IOException, SailException
+		throws IOException, StoreException
 	{
 		OutputStream out = new FileOutputStream(dataFile);
 		try {
@@ -188,10 +188,10 @@ class FileIO {
 	}
 
 	private static void writeStatements(MemoryStore store, DataOutputStream dataOut)
-		throws IOException, SailException
+		throws IOException, StoreException
 	{
-		CloseableIteration<MemStatement, SailException> stIter = store.createStatementIterator(
-				SailException.class, null, null, null, false, store.getCurrentSnapshot(), ReadMode.COMMITTED);
+		CloseableIteration<MemStatement, StoreException> stIter = store.createStatementIterator(
+				StoreException.class, null, null, null, false, store.getCurrentSnapshot(), ReadMode.COMMITTED);
 
 		try {
 			while (stIter.hasNext()) {

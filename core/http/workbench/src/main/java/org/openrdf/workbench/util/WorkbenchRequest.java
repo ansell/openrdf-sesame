@@ -36,7 +36,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.workbench.exceptions.BadRequestException;
 
 public class WorkbenchRequest extends HttpServletRequestWrapper {
@@ -56,7 +56,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	private InputStream content;
 
 	public WorkbenchRequest(Repository repository, HttpServletRequest request, Map<String, String> defaults)
-		throws RepositoryException, IOException, FileUploadException
+		throws StoreException, IOException, FileUploadException
 	{
 		super(request);
 		this.defaults = defaults;
@@ -77,7 +77,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	}
 
 	public InputStream getContentParameter()
-		throws RepositoryException, BadRequestException, IOException, FileUploadException
+		throws StoreException, BadRequestException, IOException, FileUploadException
 	{
 		return content;
 	}
@@ -135,7 +135,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	}
 
 	public Resource getResource(String name)
-		throws BadRequestException, RepositoryException
+		throws BadRequestException, StoreException
 	{
 		Value value = decodeValue(getParameter(name));
 		if (value == null || value instanceof Resource)
@@ -163,7 +163,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	}
 
 	public URI getURI(String name)
-		throws BadRequestException, RepositoryException
+		throws BadRequestException, StoreException
 	{
 		Value value = decodeValue(getParameter(name));
 		if (value == null || value instanceof URI)
@@ -172,7 +172,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	}
 
 	public URL getUrl(String name)
-		throws RepositoryException, BadRequestException, IOException, FileUploadException
+		throws StoreException, BadRequestException, IOException, FileUploadException
 	{
 		String url = getParameter(name);
 		try {
@@ -184,13 +184,13 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	}
 
 	public Value getValue(String name)
-		throws BadRequestException, RepositoryException
+		throws BadRequestException, StoreException
 	{
 		return decodeValue(getParameter(name));
 	}
 
 	private Value decodeValue(String string)
-		throws RepositoryException, BadRequestException
+		throws StoreException, BadRequestException
 	{
 		try {
 			if (string == null)
@@ -251,7 +251,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	}
 
 	private String getNamespace(String prefix)
-		throws RepositoryException
+		throws StoreException
 	{
 		RepositoryConnection con = repository.getConnection();
 		try {
@@ -274,7 +274,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 
 	@SuppressWarnings("unchecked")
 	private Map<String, String> getMultipartParameterMap()
-		throws RepositoryException, IOException, FileUploadException
+		throws StoreException, IOException, FileUploadException
 	{
 		Map<String, String> parameters = new HashMap<String, String>();
 		ServletFileUpload upload = new ServletFileUpload();

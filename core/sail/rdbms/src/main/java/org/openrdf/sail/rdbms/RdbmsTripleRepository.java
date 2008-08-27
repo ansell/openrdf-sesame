@@ -20,7 +20,7 @@ import info.aduna.concurrent.locks.Lock;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
 import org.openrdf.sail.rdbms.evaluation.SqlBracketBuilder;
@@ -194,7 +194,7 @@ public class RdbmsTripleRepository {
 	}
 
 	public void rollback()
-		throws SQLException, SailException
+		throws SQLException, StoreException
 	{
 		synchronized (queue) {
 			queue.clear();
@@ -216,7 +216,7 @@ public class RdbmsTripleRepository {
 	}
 
 	public void add(RdbmsStatement st)
-		throws SailException, SQLException, InterruptedException
+		throws StoreException, SQLException, InterruptedException
 	{
 		acquireLock();
 		synchronized (queue) {
@@ -326,7 +326,7 @@ public class RdbmsTripleRepository {
 	}
 
 	public long size(RdbmsResource... ctxs)
-		throws SQLException, SailException
+		throws SQLException, StoreException
 	{
 		flush();
 		String qry = buildCountQuery(ctxs);

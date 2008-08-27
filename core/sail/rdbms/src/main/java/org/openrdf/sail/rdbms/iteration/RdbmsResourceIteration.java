@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.iteration.base.RdbmIterationBase;
@@ -21,7 +21,7 @@ import org.openrdf.sail.rdbms.model.RdbmsResource;
  * @author James Leigh
  * 
  */
-public class RdbmsResourceIteration extends RdbmIterationBase<RdbmsResource, SailException> {
+public class RdbmsResourceIteration extends RdbmIterationBase<RdbmsResource, StoreException> {
 
 	private RdbmsValueFactory vf;
 

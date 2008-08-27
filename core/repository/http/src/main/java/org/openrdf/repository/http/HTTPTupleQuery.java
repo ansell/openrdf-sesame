@@ -15,12 +15,12 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 
 /**
  * TupleQuery specific to the HTTP protocol.
  * 
- * Methods in this class may throw the specific RepositoryException subclasses
+ * Methods in this class may throw the specific StoreException subclasses
  * UnautorizedException and NotAllowedException, the semantics of which are
  * defined by the HTTP protocol.
  * 
@@ -47,7 +47,7 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 		catch (IOException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
 		catch (MalformedQueryException e) {
@@ -65,7 +65,7 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 		catch (IOException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
 		catch (MalformedQueryException e) {

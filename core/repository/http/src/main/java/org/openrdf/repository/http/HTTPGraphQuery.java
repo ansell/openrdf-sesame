@@ -12,14 +12,14 @@ import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 
 /**
  * GraphQuery implementation specific to the HTTP protocol.
  * 
- * Methods in this class may throw the specific RepositoryException subclasses
+ * Methods in this class may throw the specific StoreException subclasses
  * UnautorizedException and NotAllowedException, the semantics of which are
  * defined by the HTTP protocol.
  * 
@@ -46,7 +46,7 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 		catch (IOException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
 		catch (MalformedQueryException e) {
@@ -64,7 +64,7 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 		catch (IOException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
 		catch (MalformedQueryException e) {

@@ -12,7 +12,7 @@ import info.aduna.iteration.Iteration;
 import info.aduna.iteration.IteratorIteration;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 
 /**
  * {@link Namespace} typed {@link Iteration}.
@@ -20,8 +20,8 @@ import org.openrdf.sail.SailException;
  * @author James Leigh
  * 
  */
-public class NamespaceIteration extends IteratorIteration<Namespace, SailException> implements
-		CloseableIteration<Namespace, SailException>
+public class NamespaceIteration extends IteratorIteration<Namespace, StoreException> implements
+		CloseableIteration<Namespace, StoreException>
 {
 
 	public NamespaceIteration(Iterator<? extends Namespace> iter) {
@@ -29,7 +29,7 @@ public class NamespaceIteration extends IteratorIteration<Namespace, SailExcepti
 	}
 
 	public void close()
-		throws SailException
+		throws StoreException
 	{
 		// do nothing
 	}
