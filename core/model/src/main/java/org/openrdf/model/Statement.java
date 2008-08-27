@@ -50,6 +50,17 @@ public interface Statement extends Serializable {
 	 * @param other
 	 *        The object to compare this statement to.
 	 * @return <tt>true</tt> if the other object is an instance of
+	 *         {@link Statement} and if their subjects, predicates and objects
+	 *         are equal.
+	 */
+	public boolean equalsIgnoreContext(Object other);
+
+	/**
+	 * Compares a statement object to another object.
+	 * 
+	 * @param other
+	 *        The object to compare this statement to.
+	 * @return <tt>true</tt> if the other object is an instance of
 	 *         {@link Statement} and if their subjects, predicates, objects,
 	 *         and contexts are equal.
 	 */

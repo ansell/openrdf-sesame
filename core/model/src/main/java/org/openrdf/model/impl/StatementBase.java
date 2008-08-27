@@ -17,11 +17,43 @@ public abstract class StatementBase implements Statement {
 	 * @param other
 	 *        The object to compare this statement to.
 	 * @return <tt>true</tt> if the other object is an instance of
+	 *         {@link Statement} and if their subjects, predicates and objects
+	 *         are equal.
+	 */
+	public final boolean equalsIgnoreContext(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof Statement))
+			return false;
+		final Statement other = (Statement)obj;
+		// The object is potentially the cheapest to check, as types
+		// of these references might be different.
+
+		// In general the number of different predicates in sets of
+		// statements is the smallest, so predicate equality is checked
+		// last.
+		if (!this.getObject().equals(other.getObject()))
+			return false;
+		if (!getSubject().equals(other.getSubject()))
+			return false;
+		if (!getPredicate().equals(other.getPredicate()))
+			return false;
+		return true;
+	}
+
+	/**
+	 * Compares a statement object to another object.
+	 * 
+	 * @param other
+	 *        The object to compare this statement to.
+	 * @return <tt>true</tt> if the other object is an instance of
 	 *         {@link Statement} and if their subjects, predicates, objects,
 	 *         and contexts are equal.
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public final boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
@@ -57,7 +89,7 @@ public abstract class StatementBase implements Statement {
 	 * @return A hash code for the statement.
 	 */
 	@Override
-	public int hashCode() {
+	public final int hashCode() {
 		final int prime = 31;
 		Resource ctx = getContext();
 		int result = (ctx == null) ? 0 : ctx.hashCode();
