@@ -19,6 +19,7 @@ import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -30,7 +31,6 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnectionListener;
-import org.openrdf.sail.SailException;
 
 /**
  * Abstract Class offering base functionality for SailConnection
@@ -120,13 +120,13 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	 *---------*/
 
 	public final boolean isOpen()
-		throws SailException
+		throws StoreException
 	{
 		return isOpen;
 	}
 
 	protected void verifyIsOpen()
-		throws SailException
+		throws StoreException
 	{
 		if (!isOpen) {
 			throw new IllegalStateException("Connection has been closed");
@@ -134,7 +134,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	public final void close()
-		throws SailException
+		throws StoreException
 	{
 		// obtain an exclusive lock so that any further operations on this
 		// connection (including those from any concurrent threads) are blocked.
@@ -158,11 +158,11 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 						try {
 							ci.forceClose();
 						}
-						catch (SailException e) {
+						catch (StoreException e) {
 							throw e;
 						}
 						catch (Exception e) {
-							throw new SailException(e);
+							throw new StoreException(e);
 						}
 					}
 
@@ -216,7 +216,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 
 	public final CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -228,8 +228,8 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 		}
 	}
 
-	public final CloseableIteration<? extends Resource, SailException> getContextIDs()
-		throws SailException
+	public final CloseableIteration<? extends Resource, StoreException> getContextIDs()
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -241,9 +241,9 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 		}
 	}
 
-	public final CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+	public final CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj, URI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -256,7 +256,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	public final long size(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -273,7 +273,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	protected void autoStartTransaction()
-		throws SailException
+		throws StoreException
 	{
 		if (!txnActive) {
 			startTransactionInternal();
@@ -282,7 +282,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	public final void commit()
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -305,7 +305,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	public final void rollback()
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -332,7 +332,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	public final void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -353,7 +353,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -374,7 +374,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	public final void clear(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -394,8 +394,8 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 		}
 	}
 
-	public final CloseableIteration<? extends Namespace, SailException> getNamespaces()
-		throws SailException
+	public final CloseableIteration<? extends Namespace, StoreException> getNamespaces()
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -408,7 +408,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	public final String getNamespace(String prefix)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -421,7 +421,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	public final void setNamespace(String prefix, String name)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -442,7 +442,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	public final void removeNamespace(String prefix)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -463,7 +463,7 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	public final void clearNamespaces()
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -518,35 +518,35 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	protected Lock getSharedConnectionLock()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			return connectionLockManager.getReadLock();
 		}
 		catch (InterruptedException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	protected Lock getExclusiveConnectionLock()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			return connectionLockManager.getWriteLock();
 		}
 		catch (InterruptedException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	protected Lock getTransactionLock()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			return txnLockManager.getExclusiveLock();
 		}
 		catch (InterruptedException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 
@@ -570,52 +570,52 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	}
 
 	protected abstract void closeInternal()
-		throws SailException;
+		throws StoreException;
 
 	protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
-		throws SailException;
+		throws StoreException;
 
-	protected abstract CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
-		throws SailException;
+	protected abstract CloseableIteration<? extends Resource, StoreException> getContextIDsInternal()
+		throws StoreException;
 
-	protected abstract CloseableIteration<? extends Statement, SailException> getStatementsInternal(
+	protected abstract CloseableIteration<? extends Statement, StoreException> getStatementsInternal(
 			Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws SailException;
+		throws StoreException;
 
 	protected abstract long sizeInternal(Resource... contexts)
-		throws SailException;
+		throws StoreException;
 
 	protected abstract void startTransactionInternal()
-		throws SailException;
+		throws StoreException;
 
 	protected abstract void commitInternal()
-		throws SailException;
+		throws StoreException;
 
 	protected abstract void rollbackInternal()
-		throws SailException;
+		throws StoreException;
 
 	protected abstract void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException;
+		throws StoreException;
 
 	protected abstract void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException;
+		throws StoreException;
 
 	protected abstract void clearInternal(Resource... contexts)
-		throws SailException;
+		throws StoreException;
 
-	protected abstract CloseableIteration<? extends Namespace, SailException> getNamespacesInternal()
-		throws SailException;
+	protected abstract CloseableIteration<? extends Namespace, StoreException> getNamespacesInternal()
+		throws StoreException;
 
 	protected abstract String getNamespaceInternal(String prefix)
-		throws SailException;
+		throws StoreException;
 
 	protected abstract void setNamespaceInternal(String prefix, String name)
-		throws SailException;
+		throws StoreException;
 
 	protected abstract void removeNamespaceInternal(String prefix)
-		throws SailException;
+		throws StoreException;
 
 	protected abstract void clearNamespacesInternal()
-		throws SailException;
+		throws StoreException;
 }

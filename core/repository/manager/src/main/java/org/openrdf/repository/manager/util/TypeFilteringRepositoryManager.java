@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryInfo;
@@ -42,7 +42,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public void initialize()
-		throws RepositoryException
+		throws StoreException
 	{
 		delegate.initialize();
 	}
@@ -54,7 +54,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	protected Repository createSystemRepository()
-		throws RepositoryException
+		throws StoreException
 	{
 		throw new UnsupportedOperationException(
 				"The system repository cannot be created through this wrapper. This method should not have been called, the delegate should take care of it.");
@@ -67,14 +67,14 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public String getNewRepositoryID(String baseName)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		return delegate.getNewRepositoryID(baseName);
 	}
 
 	@Override
 	public Set<String> getRepositoryIDs()
-		throws RepositoryException
+		throws StoreException
 	{
 		Set<String> result = new LinkedHashSet<String>();
 
@@ -85,7 +85,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 				}
 			}
 			catch (RepositoryConfigException e) {
-				throw new RepositoryException(e);
+				throw new StoreException(e);
 			}
 		}
 
@@ -94,7 +94,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public boolean hasRepositoryConfig(String repositoryID)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		boolean result = false;
 
@@ -107,7 +107,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryConfig getRepositoryConfig(String repositoryID)
-		throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, StoreException
 	{
 		RepositoryConfig result = delegate.getRepositoryConfig(repositoryID);
 
@@ -126,7 +126,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public void addRepositoryConfig(RepositoryConfig config)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		if (isCorrectType(config)) {
 			delegate.addRepositoryConfig(config);
@@ -139,7 +139,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public boolean removeRepositoryConfig(String repositoryID)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		boolean result = false;
 
@@ -152,7 +152,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public Repository getRepository(String id)
-		throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, StoreException
 	{
 		Repository result = null;
 
@@ -176,7 +176,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 			catch (RepositoryConfigException e) {
 				logger.error("Failed to verify repository type", e);
 			}
-			catch (RepositoryException e) {
+			catch (StoreException e) {
 				logger.error("Failed to verify repository type", e);
 			}
 		}
@@ -199,7 +199,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 			catch (RepositoryConfigException e) {
 				logger.error("Failed to verify repository type", e);
 			}
-			catch (RepositoryException e) {
+			catch (StoreException e) {
 				logger.error("Failed to verify repository type", e);
 			}
 		}
@@ -209,7 +209,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	protected Repository createRepository(String id)
-		throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, StoreException
 	{
 		throw new UnsupportedOperationException(
 				"Repositories cannot be created through this wrapper. This method should not have been called, the delegate should take care of it.");
@@ -217,7 +217,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public Collection<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws RepositoryException
+		throws StoreException
 	{
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
@@ -228,7 +228,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 				}
 			}
 			catch (RepositoryConfigException e) {
-				throw new RepositoryException(e.getMessage(), e);
+				throw new StoreException(e.getMessage(), e);
 			}
 		}
 
@@ -237,7 +237,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			if (isCorrectType(id)) {
@@ -247,7 +247,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 			return null;
 		}
 		catch (RepositoryConfigException e) {
-			throw new RepositoryException(e.getMessage(), e);
+			throw new StoreException(e.getMessage(), e);
 		}
 	}
 
@@ -270,7 +270,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	protected boolean isCorrectType(String repositoryID)
-		throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, StoreException
 	{
 		// first, check for SystemRepository, because we can't get a repository
 		// config object for it

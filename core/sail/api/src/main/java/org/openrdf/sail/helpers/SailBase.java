@@ -15,12 +15,12 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.StoreException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailChangedEvent;
 import org.openrdf.sail.SailChangedListener;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
 
 /**
  * SailBase is an abstract Sail implementation that takes care of common sail
@@ -106,7 +106,7 @@ public abstract class SailBase implements NotifyingSail {
 	}
 
 	public NotifyingSailConnection getConnection()
-		throws SailException
+		throws StoreException
 	{
 		if (shutDownInProgress) {
 			throw new IllegalStateException("shut down in progress");
@@ -124,13 +124,13 @@ public abstract class SailBase implements NotifyingSail {
 	 * returns a store-specific SailConnection object.
 	 * 
 	 * @return a SailConnection
-	 * @throws SailException
+	 * @throws StoreException
 	 */
 	protected abstract NotifyingSailConnection getConnectionInternal()
-		throws SailException;
+		throws StoreException;
 
 	public void shutDown()
-		throws SailException
+		throws StoreException
 	{
 		// indicate no more new connections should be given out.
 		shutDownInProgress = true;
@@ -170,7 +170,7 @@ public abstract class SailBase implements NotifyingSail {
 				try {
 					con.close();
 				}
-				catch (SailException e) {
+				catch (StoreException e) {
 					logger.error("Failed to close connection", e);
 				}
 			}
@@ -187,10 +187,10 @@ public abstract class SailBase implements NotifyingSail {
 	/**
 	 * Do store-specific operations to ensure proper shutdown of the store.
 	 * 
-	 * @throws SailException
+	 * @throws StoreException
 	 */
 	protected abstract void shutDownInternal()
-		throws SailException;
+		throws StoreException;
 
 	/**
 	 * Signals to the store that the supplied connection has been closed.

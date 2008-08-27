@@ -22,7 +22,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFWriterFactory;
@@ -144,7 +144,7 @@ public class EarlReport {
 					con.add(resultNode, EARL.OUTCOME, EARL.PASS);
 				}
 			}
-			catch (RepositoryException e) {
+			catch (StoreException e) {
 				throw new RuntimeException(e);
 			}
 		}

@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigUtil;
@@ -73,11 +73,11 @@ public abstract class RepositoryManager {
 	/**
 	 * Initializes the repository manager.
 	 * 
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the manager failed to initialize the SYSTEM repository.
 	 */
 	public void initialize()
-		throws RepositoryException
+		throws StoreException
 	{
 		Repository systemRepository = createSystemRepository();
 
@@ -87,7 +87,7 @@ public abstract class RepositoryManager {
 	}
 
 	protected abstract Repository createSystemRepository()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Gets the SYSTEM repository.
@@ -109,11 +109,11 @@ public abstract class RepositoryManager {
 	 *        The String on which the returned ID should be based, must not be
 	 *        <tt>null</tt>.
 	 * @return A new repository ID derived from the specified base name.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 * @throws RepositoryConfigException
 	 */
 	public String getNewRepositoryID(String baseName)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		if (baseName != null) {
 			// Filter exotic characters from the base name
@@ -159,19 +159,19 @@ public abstract class RepositoryManager {
 	}
 
 	public Set<String> getRepositoryIDs()
-		throws RepositoryException
+		throws StoreException
 	{
 		return RepositoryConfigUtil.getRepositoryIDs(getSystemRepository());
 	}
 
 	public boolean hasRepositoryConfig(String repositoryID)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		return RepositoryConfigUtil.hasRepositoryConfig(getSystemRepository(), repositoryID);
 	}
 
 	public RepositoryConfig getRepositoryConfig(String repositoryID)
-		throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, StoreException
 	{
 		return RepositoryConfigUtil.getRepositoryConfig(getSystemRepository(), repositoryID);
 	}
@@ -186,7 +186,7 @@ public abstract class RepositoryManager {
 	 * @param config
 	 *        The repository configuration that should be added to or updated in
 	 *        the system repository.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the manager failed to update it's system repository.
 	 * @throws RepositoryConfigException
 	 *         If the manager doesn't know how to update a configuration due to
@@ -195,7 +195,7 @@ public abstract class RepositoryManager {
 	 *         configurations with the concerning ID.
 	 */
 	public void addRepositoryConfig(RepositoryConfig config)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		RepositoryConfigUtil.updateRepositoryConfigs(getSystemRepository(), config);
 	}
@@ -208,7 +208,7 @@ public abstract class RepositoryManager {
 	 * 
 	 * @param repositoryID
 	 *        The ID of the repository whose configuration needs to be removed.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the manager failed to update it's system repository.
 	 * @throws RepositoryConfigException
 	 *         If the manager doesn't know how to remove a configuration due to
@@ -217,7 +217,7 @@ public abstract class RepositoryManager {
 	 *         configurations with the concerning ID.
 	 */
 	public boolean removeRepositoryConfig(String repositoryID)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		logger.info("Removing repository configuration for {}.", repositoryID);
 		boolean isRemoved = false;
@@ -235,7 +235,7 @@ public abstract class RepositoryManager {
 						cleanUpRepository(repositoryID);
 					}
 					catch (IOException e) {
-						throw new RepositoryException("Unable to clean up resources for removed repository"
+						throw new StoreException("Unable to clean up resources for removed repository"
 								+ repositoryID, e);
 					}
 				}
@@ -257,7 +257,7 @@ public abstract class RepositoryManager {
 	 *         configuration data.
 	 */
 	public Repository getRepository(String id)
-		throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, StoreException
 	{
 		synchronized (initializedRepositories) {
 			Repository result = initializedRepositories.get(id);
@@ -321,7 +321,7 @@ public abstract class RepositoryManager {
 	 * @see #getInitializedRepositories()
 	 */
 	public Collection<Repository> getAllRepositories()
-		throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, StoreException
 	{
 		Set<String> idSet = getRepositoryIDs();
 
@@ -346,7 +346,7 @@ public abstract class RepositoryManager {
 	 *         configuration data.
 	 */
 	protected abstract Repository createRepository(String id)
-		throws RepositoryConfigException, RepositoryException;
+		throws RepositoryConfigException, StoreException;
 
 	/**
 	 * Gets the repository that is known by the specified ID from this manager.
@@ -355,20 +355,20 @@ public abstract class RepositoryManager {
 	 *        A repository ID.
 	 * @return A Repository object, or <tt>null</tt> if no repository was known
 	 *         for the specified ID.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         When not able to retrieve existing configurations
 	 */
 	public abstract RepositoryInfo getRepositoryInfo(String id)
-		throws RepositoryException;
+		throws StoreException;
 
 	public Collection<RepositoryInfo> getAllRepositoryInfos()
-		throws RepositoryException
+		throws StoreException
 	{
 		return getAllRepositoryInfos(false);
 	}
 
 	public Collection<RepositoryInfo> getAllUserRepositoryInfos()
-		throws RepositoryException
+		throws StoreException
 	{
 		return getAllRepositoryInfos(true);
 	}
@@ -376,11 +376,11 @@ public abstract class RepositoryManager {
 	/**
 	 * 
 	 * @param skipSystemRepo
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         When not able to retrieve existing configurations
 	 */
 	public abstract Collection<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Shuts down all initialized user repositories.
@@ -415,7 +415,7 @@ public abstract class RepositoryManager {
 				cleanupCon.close();
 			}
 		}
-		catch (RepositoryException re) {
+		catch (StoreException re) {
 			logger.error("Failed to refresh repositories", re);
 		}
 	}
@@ -431,7 +431,7 @@ public abstract class RepositoryManager {
 				try {
 					repository.shutDown();
 				}
-				catch (RepositoryException e) {
+				catch (StoreException e) {
 					logger.error("Repository shut down failed", e);
 				}
 			}
@@ -445,7 +445,7 @@ public abstract class RepositoryManager {
 		try {
 			repository.shutDown();
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			logger.error("Failed to shut down repository", e);
 		}
 
@@ -463,7 +463,7 @@ public abstract class RepositoryManager {
 				logger.debug("Repository {} should not be cleaned up.", repositoryID);
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			logger.error("Failed to process repository configuration changes", e);
 		}
 		catch (RepositoryConfigException e) {

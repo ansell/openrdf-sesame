@@ -18,7 +18,7 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 
 import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 
@@ -117,7 +117,7 @@ public class RdbmsStore extends SailBase {
 	}
 
 	public void setIndexed(boolean indexed)
-		throws SailException
+		throws StoreException
 	{
 		triplesIndexed = indexed;
 		if (factory != null) {
@@ -134,13 +134,13 @@ public class RdbmsStore extends SailBase {
 	}
 
 	public void initialize()
-		throws SailException
+		throws StoreException
 	{
 		if (factory == null) {
 			try {
 				factory = createFactory(jdbcDriver, url, user, password);
 			}
-			catch (SailException e) {
+			catch (StoreException e) {
 				throw e;
 			}
 			catch (Exception e) {
@@ -154,7 +154,7 @@ public class RdbmsStore extends SailBase {
 	}
 
 	public boolean isWritable()
-		throws SailException
+		throws StoreException
 	{
 		return factory.isWritable();
 	}
@@ -165,14 +165,14 @@ public class RdbmsStore extends SailBase {
 
 	@Override
 	protected NotifyingSailConnection getConnectionInternal()
-		throws SailException
+		throws StoreException
 	{
 		return factory.createConnection();
 	}
 
 	@Override
 	protected void shutDownInternal()
-		throws SailException
+		throws StoreException
 	{
 		factory.shutDown();
 		try {

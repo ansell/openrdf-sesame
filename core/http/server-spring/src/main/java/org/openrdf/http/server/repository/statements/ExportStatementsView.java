@@ -22,7 +22,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -103,7 +103,7 @@ public class ExportStatementsView implements View {
 		catch (RDFHandlerException e) {
 			throw new ServerHTTPException("Serialization error: " + e.getMessage(), e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 		}
 	}

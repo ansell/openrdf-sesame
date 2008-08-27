@@ -7,7 +7,7 @@ package org.openrdf.http.protocol.transaction.operations;
 
 import org.openrdf.model.Resource;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 
 /**
  * Operation that clears the whole repository.
@@ -21,7 +21,7 @@ public class ClearOperation extends ContextOperation {
 	}
 
 	public void execute(RepositoryConnection con)
-		throws RepositoryException
+		throws StoreException
 	{
 		con.clear(getContexts());
 	}

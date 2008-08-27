@@ -9,10 +9,10 @@ import java.io.File;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.RepositoryLockedException;
 import org.openrdf.sail.Sail;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.SailLockedException;
 
 /**
@@ -78,7 +78,7 @@ public class SailRepository implements Repository {
 	}
 
 	public void initialize()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			sail.initialize();
@@ -89,19 +89,19 @@ public class SailRepository implements Repository {
 			String m = e.getMessage();
 			throw new RepositoryLockedException(l, r, m, e);
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e.getMessage(), e);
+		catch (StoreException e) {
+			throw new StoreException(e.getMessage(), e);
 		}
 	}
 
 	public void shutDown()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			sail.shutDown();
 		}
-		catch (SailException e) {
-			throw new RepositoryException("Unable to shutdown Sail", e);
+		catch (StoreException e) {
+			throw new StoreException("Unable to shutdown Sail", e);
 		}
 	}
 
@@ -116,13 +116,13 @@ public class SailRepository implements Repository {
 	}
 
 	public boolean isWritable()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			return sail.isWritable();
 		}
-		catch (SailException e) {
-			throw new RepositoryException("Unable to determine writable status of Sail", e);
+		catch (StoreException e) {
+			throw new StoreException("Unable to determine writable status of Sail", e);
 		}
 	}
 
@@ -131,13 +131,13 @@ public class SailRepository implements Repository {
 	}
 
 	public SailRepositoryConnection getConnection()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			return new SailRepositoryConnection(this, sail.getConnection());
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 }

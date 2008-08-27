@@ -42,7 +42,7 @@ import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.SailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -98,7 +98,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	@Override
 	protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
-		throws SailException
+		throws StoreException
 	{
 		logger.trace("Incoming query model:\n{}", tupleExpr.toString());
 
@@ -146,7 +146,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 		}
 		catch (QueryEvaluationException e) {
 			stLock.release();
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 		catch (RuntimeException e) {
 			stLock.release();
@@ -156,14 +156,14 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void closeInternal()
-		throws SailException
+		throws StoreException
 	{
 		// do nothing
 	}
 
 	@Override
-	protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
-		throws SailException
+	protected CloseableIteration<? extends Resource, StoreException> getContextIDsInternal()
+		throws StoreException
 	{
 		// Note: we can't do this in a streaming fashion due to concurrency
 		// issues; iterating over the set of URIs or bnodes while another thread
@@ -200,11 +200,11 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 			stLock.release();
 		}
 
-		return new CloseableIteratorIteration<MemResource, SailException>(contextIDs.iterator());
+		return new CloseableIteratorIteration<MemResource, StoreException>(contextIDs.iterator());
 	}
 
 	private boolean isContextResource(MemResource memResource, int snapshot, ReadMode readMode)
-		throws SailException
+		throws StoreException
 	{
 		MemStatementList contextStatements = memResource.getContextStatementList();
 
@@ -214,7 +214,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 		}
 
 		// Filter more thoroughly by considering snapshot and read-mode parameters
-		MemStatementIterator<SailException> iter = new MemStatementIterator<SailException>(contextStatements,
+		MemStatementIterator<StoreException> iter = new MemStatementIterator<StoreException>(contextStatements,
 				null, null, null, false, snapshot, readMode);
 		try {
 			return iter.hasNext();
@@ -225,9 +225,9 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	}
 
 	@Override
-	protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj,
+	protected CloseableIteration<? extends Statement, StoreException> getStatementsInternal(Resource subj,
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock stLock = store.getStatementsReadLock();
 
@@ -240,8 +240,8 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 				readMode = ReadMode.TRANSACTION;
 			}
 
-			return new LockingIteration<MemStatement, SailException>(stLock, store.createStatementIterator(
-					SailException.class, subj, pred, obj, !includeInferred, snapshot, readMode, contexts));
+			return new LockingIteration<MemStatement, StoreException>(stLock, store.createStatementIterator(
+					StoreException.class, subj, pred, obj, !includeInferred, snapshot, readMode, contexts));
 		}
 		catch (RuntimeException e) {
 			stLock.release();
@@ -251,12 +251,12 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected long sizeInternal(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
-			CloseableIteration<? extends Statement, SailException> iter = getStatementsInternal(null, null,
+			CloseableIteration<? extends Statement, StoreException> iter = getStatementsInternal(null, null,
 					null, false, contexts);
 
 			try {
@@ -279,22 +279,22 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	}
 
 	@Override
-	protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal()
-		throws SailException
+	protected CloseableIteration<? extends Namespace, StoreException> getNamespacesInternal()
+		throws StoreException
 	{
-		return new CloseableIteratorIteration<Namespace, SailException>(store.getNamespaceStore().iterator());
+		return new CloseableIteratorIteration<Namespace, StoreException>(store.getNamespaceStore().iterator());
 	}
 
 	@Override
 	protected String getNamespaceInternal(String prefix)
-		throws SailException
+		throws StoreException
 	{
 		return store.getNamespaceStore().getNamespace(prefix);
 	}
 
 	@Override
 	protected void startTransactionInternal()
-		throws SailException
+		throws StoreException
 	{
 		if (!store.isWritable()) {
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
@@ -309,7 +309,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void commitInternal()
-		throws SailException
+		throws StoreException
 	{
 		store.commit();
 		txnLock.release();
@@ -318,7 +318,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void rollbackInternal()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			store.rollback();
@@ -331,13 +331,13 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		addStatementInternal(subj, pred, obj, true, contexts);
 	}
 
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -360,11 +360,11 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	/**
 	 * Adds the specified statement to this MemoryStore.
 	 * 
-	 * @throws SailException
+	 * @throws StoreException
 	 */
 	protected boolean addStatementInternal(Resource subj, URI pred, Value obj, boolean explicit,
 			Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Statement st = null;
 
@@ -390,13 +390,13 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		removeStatementsInternal(subj, pred, obj, true, contexts);
 	}
 
 	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -418,13 +418,13 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void clearInternal(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		removeStatementsInternal(null, null, null, true, contexts);
 	}
 
 	public void clearInferred(Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
@@ -463,22 +463,22 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	 *        removed; <tt>true</tt> removes explicit statements that match the
 	 *        pattern, <tt>false</tt> removes inferred statements that match the
 	 *        pattern.
-	 * @throws SailException
+	 * @throws StoreException
 	 */
 	protected boolean removeStatementsInternal(Resource subj, URI pred, Value obj, boolean explicit,
 			Resource... contexts)
-		throws SailException
+		throws StoreException
 	{
-		CloseableIteration<MemStatement, SailException> stIter = store.createStatementIterator(
-				SailException.class, subj, pred, obj, explicit, store.getCurrentSnapshot() + 1,
+		CloseableIteration<MemStatement, StoreException> stIter = store.createStatementIterator(
+				StoreException.class, subj, pred, obj, explicit, store.getCurrentSnapshot() + 1,
 				ReadMode.TRANSACTION, contexts);
 
 		return removeIteratorStatements(stIter, explicit);
 	}
 
-	protected boolean removeIteratorStatements(CloseableIteration<MemStatement, SailException> stIter,
+	protected boolean removeIteratorStatements(CloseableIteration<MemStatement, StoreException> stIter,
 			boolean explicit)
-		throws SailException
+		throws StoreException
 	{
 		boolean statementsRemoved = false;
 
@@ -502,20 +502,20 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void setNamespaceInternal(String prefix, String name)
-		throws SailException
+		throws StoreException
 	{
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		try {
 			store.getNamespaceStore().setNamespace(prefix, name);
 		}
 		catch (IllegalArgumentException e) {
-			throw new SailException(e.getMessage());
+			throw new StoreException(e.getMessage());
 		}
 	}
 
 	@Override
 	protected void removeNamespaceInternal(String prefix)
-		throws SailException
+		throws StoreException
 	{
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().removeNamespace(prefix);
@@ -523,7 +523,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 
 	@Override
 	protected void clearNamespacesInternal()
-		throws SailException
+		throws StoreException
 	{
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().clear();

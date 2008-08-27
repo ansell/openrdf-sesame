@@ -32,7 +32,7 @@ import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 
 /**
  * Handles requests for the list of contexts in a repository.
@@ -56,7 +56,7 @@ public class ContextsController extends AbstractController {
 		List<String> columnNames = Arrays.asList("contextID");
 		List<BindingSet> contexts = new ArrayList<BindingSet>();
 		try {
-			CloseableIteration<? extends Resource, RepositoryException> contextIter = repositoryCon.getContextIDs();
+			CloseableIteration<? extends Resource, StoreException> contextIter = repositoryCon.getContextIDs();
 
 			try {
 				while (contextIter.hasNext()) {
@@ -68,7 +68,7 @@ public class ContextsController extends AbstractController {
 				contextIter.close();
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 		}
 

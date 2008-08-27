@@ -14,6 +14,7 @@ import java.net.URL;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -90,17 +91,17 @@ public interface RepositoryConnection {
 	 * @see #close()
 	 */
 	public boolean isOpen()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Closes the connection, freeing resources. If the connection is not in
 	 * autoCommit mode, all non-committed operations will be lost.
 	 * 
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the connection could not be closed.
 	 */
 	public void close()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Prepares a query for evaluation on this repository (optional operation).
@@ -122,7 +123,7 @@ public interface RepositoryConnection {
 	 *         repository.
 	 */
 	public Query prepareQuery(QueryLanguage ql, String query)
-		throws RepositoryException, MalformedQueryException;
+		throws StoreException, MalformedQueryException;
 
 	/**
 	 * Prepares a query for evaluation on this repository (optional operation).
@@ -145,7 +146,7 @@ public interface RepositoryConnection {
 	 *         repository.
 	 */
 	public Query prepareQuery(QueryLanguage ql, String query, String baseURI)
-		throws RepositoryException, MalformedQueryException;
+		throws StoreException, MalformedQueryException;
 
 	/**
 	 * Prepares a query that produces sets of value tuples. In case the query
@@ -165,7 +166,7 @@ public interface RepositoryConnection {
 	 *         If the supplied query language is not supported.
 	 */
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String query)
-		throws RepositoryException, MalformedQueryException;
+		throws StoreException, MalformedQueryException;
 
 	/**
 	 * Prepares a query that produces sets of value tuples.
@@ -186,7 +187,7 @@ public interface RepositoryConnection {
 	 *         If the supplied query language is not supported.
 	 */
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String query, String baseURI)
-		throws RepositoryException, MalformedQueryException;
+		throws StoreException, MalformedQueryException;
 
 	/**
 	 * Prepares queries that produce RDF graphs. In case the query contains
@@ -206,7 +207,7 @@ public interface RepositoryConnection {
 	 *         If the supplied query language is not supported.
 	 */
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query)
-		throws RepositoryException, MalformedQueryException;
+		throws StoreException, MalformedQueryException;
 
 	/**
 	 * Prepares queries that produce RDF graphs.
@@ -227,7 +228,7 @@ public interface RepositoryConnection {
 	 *         If the supplied query language is not supported.
 	 */
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String baseURI)
-		throws RepositoryException, MalformedQueryException;
+		throws StoreException, MalformedQueryException;
 
 	/**
 	 * Prepares <tt>true</tt>/<tt>false</tt> queries. In case the query
@@ -247,7 +248,7 @@ public interface RepositoryConnection {
 	 *         If the supplied query language is not supported.
 	 */
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query)
-		throws RepositoryException, MalformedQueryException;
+		throws StoreException, MalformedQueryException;
 
 	/**
 	 * Prepares <tt>true</tt>/<tt>false</tt> queries.
@@ -268,7 +269,7 @@ public interface RepositoryConnection {
 	 *         If the supplied query language is not supported.
 	 */
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query, String baseURI)
-		throws RepositoryException, MalformedQueryException;
+		throws StoreException, MalformedQueryException;
 
 	/**
 	 * Gets all resources that are used as content identifiers. Care should be
@@ -279,7 +280,7 @@ public interface RepositoryConnection {
 	 *         context identifiers.
 	 */
 	public RepositoryResult<Resource> getContextIDs()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Gets all statements with a specific subject, predicate and/or object from
@@ -303,12 +304,12 @@ public interface RepositoryConnection {
 	 * @return The statements matching the specified pattern. The result object
 	 *         is a {@link RepositoryResult} object, a lazy Iterator-like object
 	 *         containing {@link Statement}s and optionally throwing a
-	 *         {@link RepositoryException} when an error when a problem occurs
+	 *         {@link StoreException} when an error when a problem occurs
 	 *         during retrieval.
 	 */
 	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Checks whether the repository contains statements with a specific subject,
@@ -333,7 +334,7 @@ public interface RepositoryConnection {
 	 */
 	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Checks whether the repository contains the specified statement, optionally
@@ -353,7 +354,7 @@ public interface RepositoryConnection {
 	 *         otherwise.
 	 */
 	public boolean hasStatement(Statement st, boolean includeInferred, Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Exports all statements with a specific subject, predicate and/or object
@@ -379,7 +380,7 @@ public interface RepositoryConnection {
 	 */
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
-		throws RepositoryException, RDFHandlerException;
+		throws StoreException, RDFHandlerException;
 
 	/**
 	 * Exports all explicit statements in the specified contexts to the supplied
@@ -395,7 +396,7 @@ public interface RepositoryConnection {
 	 *         If the handler encounters an unrecoverable error.
 	 */
 	public void export(RDFHandler handler, Resource... contexts)
-		throws RepositoryException, RDFHandlerException;
+		throws StoreException, RDFHandlerException;
 
 	/**
 	 * Returns the number of (explicit) statements that are in the specified
@@ -409,7 +410,7 @@ public interface RepositoryConnection {
 	 *         this repository.
 	 */
 	public long size(Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Returns <tt>true</tt> if this repository does not contain any (explicit)
@@ -417,11 +418,11 @@ public interface RepositoryConnection {
 	 * 
 	 * @return <tt>true</tt> if this repository is empty, <tt>false</tt>
 	 *         otherwise.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the repository could not be checked to be empty.
 	 */
 	public boolean isEmpty()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Enables or disables auto-commit mode for the connection. If a connection
@@ -433,13 +434,13 @@ public interface RepositoryConnection {
 	 * <b>NOTE:</b> If this connection is switched to auto-commit mode during a
 	 * transaction, the transaction is committed.
 	 * 
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         In case the mode switch failed, for example because a currently
 	 *         active transaction failed to commit.
 	 * @see #commit
 	 */
 	public void setAutoCommit(boolean autoCommit)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Checks whether the connection is in auto-commit mode.
@@ -447,27 +448,27 @@ public interface RepositoryConnection {
 	 * @see #setAutoCommit
 	 */
 	public boolean isAutoCommit()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Commits all updates that have been performed as part of this connection
 	 * sofar.
 	 * 
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the connection could not be committed.
 	 */
 	public void commit()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Rolls back all updates that have been performed as part of this connection
 	 * sofar.
 	 * 
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the connection could not be rolled back.
 	 */
 	public void rollback()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Adds RDF data from an InputStream to the repository, optionally to one or
@@ -492,12 +493,12 @@ public interface RepositoryConnection {
 	 *         If no parser is available for the specified RDF format.
 	 * @throws RDFParseException
 	 *         If an error was found while parsing the RDF data.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the data could not be added to the repository, for example
 	 *         because the repository is not writable.
 	 */
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException;
+		throws IOException, RDFParseException, StoreException;
 
 	/**
 	 * Adds RDF data from a Reader to the repository, optionally to one or more
@@ -523,12 +524,12 @@ public interface RepositoryConnection {
 	 *         If no parser is available for the specified RDF format.
 	 * @throws RDFParseException
 	 *         If an error was found while parsing the RDF data.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the data could not be added to the repository, for example
 	 *         because the repository is not writable.
 	 */
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException;
+		throws IOException, RDFParseException, StoreException;
 
 	/**
 	 * Adds the RDF data that can be found at the specified URL to the
@@ -553,12 +554,12 @@ public interface RepositoryConnection {
 	 *         If no parser is available for the specified RDF format.
 	 * @throws RDFParseException
 	 *         If an error was found while parsing the RDF data.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the data could not be added to the repository, for example
 	 *         because the repository is not writable.
 	 */
 	public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException;
+		throws IOException, RDFParseException, StoreException;
 
 	/**
 	 * Adds RDF data from the specified file to a specific contexts in the
@@ -586,12 +587,12 @@ public interface RepositoryConnection {
 	 *         If no parser is available for the specified RDF format.
 	 * @throws RDFParseException
 	 *         If an error was found while parsing the RDF data.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the data could not be added to the repository, for example
 	 *         because the repository is not writable.
 	 */
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException;
+		throws IOException, RDFParseException, StoreException;
 
 	/**
 	 * Adds a statement with the specified subject, predicate and object to this
@@ -610,12 +611,12 @@ public interface RepositoryConnection {
 	 *        if the data contains no context, it is added without context. If
 	 *        one or more contexts are specified the data is added to these
 	 *        contexts, ignoring any context information in the data itself.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the data could not be added to the repository, for example
 	 *         because the repository is not writable.
 	 */
 	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Adds the supplied statement to this repository, optionally to one or more
@@ -631,12 +632,12 @@ public interface RepositoryConnection {
 	 *        If one or more contexts are specified the statement is added to
 	 *        these contexts, ignoring any context information in the statement
 	 *        itself.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the statement could not be added to the repository, for example
 	 *         because the repository is not writable.
 	 */
 	public void add(Statement st, Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Adds the supplied statements to this repository, optionally to one or more
@@ -652,12 +653,12 @@ public interface RepositoryConnection {
 	 *        context. If one or more contexts are specified each statement is
 	 *        added to these contexts, ignoring any context information in the
 	 *        statement itself. ignored.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the statements could not be added to the repository, for
 	 *         example because the repository is not writable.
 	 */
 	public void add(Iterable<? extends Statement> statements, Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Adds the supplied statements to this repository, optionally to one or more
@@ -675,13 +676,13 @@ public interface RepositoryConnection {
 	 *        context. If one or more contexts are specified each statement is
 	 *        added to these contexts, ignoring any context information in the
 	 *        statement itself. ignored.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the statements could not be added to the repository, for
 	 *         example because the repository is not writable.
 	 */
 	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
 			Resource... contexts)
-		throws RepositoryException, E;
+		throws StoreException, E;
 
 	/**
 	 * Removes the statement(s) with the specified subject, predicate and object
@@ -697,12 +698,12 @@ public interface RepositoryConnection {
 	 *        The context(s) to remove the data from. Note that this parameter is
 	 *        a vararg and as such is optional. If no contexts are supplied the
 	 *        method operates on the entire repository.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the statement(s) could not be removed from the repository, for
 	 *         example because the repository is not writable.
 	 */
 	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Removes the supplied statement from the specified contexts in the
@@ -716,12 +717,12 @@ public interface RepositoryConnection {
 	 *        method operates on the contexts associated with the statement
 	 *        itself, and if no context is associated with the statement, on the
 	 *        entire repository.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the statement could not be removed from the repository, for
 	 *         example because the repository is not writable.
 	 */
 	public void remove(Statement st, Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Removes the supplied statements from the specified contexts in this
@@ -735,12 +736,12 @@ public interface RepositoryConnection {
 	 *        method operates on the contexts associated with the statement
 	 *        itself, and if no context is associated with the statement, on the
 	 *        entire repository.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the statements could not be added to the repository, for
 	 *         example because the repository is not writable.
 	 */
 	public void remove(Iterable<? extends Statement> statements, Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Removes the supplied statements from a specific context in this
@@ -757,13 +758,13 @@ public interface RepositoryConnection {
 	 *        method operates on the contexts associated with the statement
 	 *        itself, and if no context is associated with the statement, on the
 	 *        entire repository.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the statements could not be removed from the repository, for
 	 *         example because the repository is not writable.
 	 */
 	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
 			Resource... contexts)
-		throws RepositoryException, E;
+		throws StoreException, E;
 
 	/**
 	 * Removes all statements from a specific contexts in the repository.
@@ -772,12 +773,12 @@ public interface RepositoryConnection {
 	 *        The context(s) to remove the data from. Note that this parameter is
 	 *        a vararg and as such is optional. If no contexts are supplied the
 	 *        method operates on the entire repository.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the statements could not be removed from the repository, for
 	 *         example because the repository is not writable.
 	 */
 	public void clear(Resource... contexts)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Gets all declared namespaces as a RepositoryResult of {@link Namespace}
@@ -785,11 +786,11 @@ public interface RepositoryConnection {
 	 * 
 	 * @return A RepositoryResult containing Namespace objects. Care should be
 	 *         taken to close the RepositoryResult after use.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the namespaces could not be read from the repository.
 	 */
 	public RepositoryResult<Namespace> getNamespaces()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Gets the namespace that is associated with the specified prefix, if any.
@@ -798,11 +799,11 @@ public interface RepositoryConnection {
 	 *        A namespace prefix.
 	 * @return The namespace name that is associated with the specified prefix,
 	 *         or <tt>null</tt> if there is no such namespace.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the namespace could not be read from the repository.
 	 */
 	public String getNamespace(String prefix)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Sets the prefix for a namespace.
@@ -811,12 +812,12 @@ public interface RepositoryConnection {
 	 *        The new prefix.
 	 * @param name
 	 *        The namespace name that the prefix maps to.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the namespace could not be set in the repository, for example
 	 *         because the repository is not writable.
 	 */
 	public void setNamespace(String prefix, String name)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Removes a namespace declaration by removing the association between a
@@ -825,19 +826,19 @@ public interface RepositoryConnection {
 	 * @param prefix
 	 *        The namespace prefix of which the assocation with a namespace name
 	 *        is to be removed.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the namespace prefix could not be removed.
 	 */
 	public void removeNamespace(String prefix)
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Removes all namespace declarations from the repository.
 	 * 
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the namespace declarations could not be removed.
 	 */
 	public void clearNamespaces()
-		throws RepositoryException;
+		throws StoreException;
 
 }

@@ -53,7 +53,7 @@ import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.rio.RDFWriterRegistry;
 
 /**
@@ -236,7 +236,7 @@ public class RepositoryController extends AbstractController {
 			ErrorInfo errInfo = new ErrorInfo(ErrorType.MALFORMED_QUERY, e.getMessage());
 			throw new ClientHTTPException(SC_BAD_REQUEST, errInfo.toString());
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			logger.error("Repository error", e);
 			response.sendError(SC_INTERNAL_SERVER_ERROR);
 		}

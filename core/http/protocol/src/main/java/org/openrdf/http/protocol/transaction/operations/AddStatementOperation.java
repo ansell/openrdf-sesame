@@ -9,7 +9,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 
 /**
  * Operation to add a statement.
@@ -34,7 +34,7 @@ public class AddStatementOperation extends StatementOperation {
 	}
 
 	public void execute(RepositoryConnection con)
-		throws RepositoryException
+		throws StoreException
 	{
 		con.add(getSubject(), getPredicate(), getObject(), getContexts());
 	}

@@ -17,7 +17,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.event.NotifyingRepositoryConnection;
@@ -106,7 +106,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 	@Override
 	public void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean reportEvent = activated;
 
@@ -126,7 +126,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 	@Override
 	public void clear(Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		if (activated && reportDeltas()) {
 			removeWithoutCommit(null, null, null, contexts);
@@ -142,7 +142,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 	@Override
 	public void close()
-		throws RepositoryException
+		throws StoreException
 	{
 		super.close();
 
@@ -155,7 +155,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 	@Override
 	public void commit()
-		throws RepositoryException
+		throws StoreException
 	{
 		getDelegate().commit();
 
@@ -168,7 +168,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 	@Override
 	public void removeWithoutCommit(Resource subj, URI pred, Value obj, Resource... ctx)
-		throws RepositoryException
+		throws StoreException
 	{
 		if (activated && reportDeltas()) {
 			RepositoryResult<Statement> stmts;
@@ -203,7 +203,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 	@Override
 	public void removeNamespace(String prefix)
-		throws RepositoryException
+		throws StoreException
 	{
 		getDelegate().removeNamespace(prefix);
 
@@ -216,7 +216,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 	@Override
 	public void clearNamespaces()
-		throws RepositoryException
+		throws StoreException
 	{
 		if (activated && reportDeltas()) {
 			RepositoryResult<Namespace> namespaces;
@@ -246,7 +246,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 	@Override
 	public void rollback()
-		throws RepositoryException
+		throws StoreException
 	{
 		getDelegate().rollback();
 
@@ -259,7 +259,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 	@Override
 	public void setAutoCommit(boolean autoCommit)
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean wasAutoCommit = isAutoCommit();
 		getDelegate().setAutoCommit(autoCommit);
@@ -278,7 +278,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 	@Override
 	public void setNamespace(String prefix, String name)
-		throws RepositoryException
+		throws StoreException
 	{
 		getDelegate().setNamespace(prefix, name);
 

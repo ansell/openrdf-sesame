@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.event.NotifyingRepository;
 import org.openrdf.repository.event.NotifyingRepositoryConnection;
@@ -105,7 +105,7 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 
 	@Override
 	public NotifyingRepositoryConnection getConnection()
-		throws RepositoryException
+		throws StoreException
 	{
 		NotifyingRepositoryConnection con = new NotifyingRepositoryConnectionWrapper(this,
 				super.getConnection(), getDefaultReportDeltas());
@@ -125,7 +125,7 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 
 	@Override
 	public void initialize()
-		throws RepositoryException
+		throws StoreException
 	{
 		super.initialize();
 
@@ -150,7 +150,7 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 
 	@Override
 	public void shutDown()
-		throws RepositoryException
+		throws StoreException
 	{
 		super.shutDown();
 

@@ -8,23 +8,22 @@ package org.openrdf.repository.sail;
 import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.Iteration;
 
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 
 /**
  * @author Herko ter Horst
  */
-class SailCloseableIteration<E> extends ExceptionConvertingIteration<E, RepositoryException> {
+class SailCloseableIteration<E> extends ExceptionConvertingIteration<E, StoreException> {
 
-	public SailCloseableIteration(Iteration<? extends E, ? extends SailException> iter) {
+	public SailCloseableIteration(Iteration<? extends E, ? extends StoreException> iter) {
 		super(iter);
 	}
 
 	@Override
-	protected RepositoryException convert(Exception e)
+	protected StoreException convert(Exception e)
 	{
-		if (e instanceof SailException) {
-			return new RepositoryException(e);
+		if (e instanceof StoreException) {
+			return new StoreException(e);
 		}
 		else if (e instanceof RuntimeException) {
 			throw (RuntimeException)e;

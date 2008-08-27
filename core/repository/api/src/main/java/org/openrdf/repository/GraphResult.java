@@ -13,6 +13,7 @@ import java.util.Set;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.FilterIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -41,7 +42,7 @@ import org.openrdf.model.Value;
 @Deprecated
 public class GraphResult extends RepositoryResult<Statement> {
 
-	public GraphResult(CloseableIteration<? extends Statement, RepositoryException> iter) {
+	public GraphResult(CloseableIteration<? extends Statement, StoreException> iter) {
 		super(iter);
 	}
 
@@ -53,19 +54,19 @@ public class GraphResult extends RepositoryResult<Statement> {
 	 * <P>
 	 * Caution: use of this filtering mechanism is potentially memory-intensive.
 	 * 
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         if a problem occurred during initialization of the filter.
 	 */
 	public void enableDuplicateFilter()
-		throws RepositoryException
+		throws StoreException
 	{
-		wrappedIter = new FilterIteration<Statement, RepositoryException>(wrappedIter) {
+		wrappedIter = new FilterIteration<Statement, StoreException>(wrappedIter) {
 
 			private Set<List<Value>> excludedSet = new HashSet<List<Value>>();
 
 			@Override
 			protected boolean accept(Statement st)
-				throws RepositoryException
+				throws StoreException
 			{
 				Resource s = st.getSubject();
 				URI p = st.getPredicate();

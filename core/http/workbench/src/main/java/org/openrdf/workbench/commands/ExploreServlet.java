@@ -17,7 +17,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.workbench.base.TupleServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
@@ -74,7 +74,7 @@ public class ExploreServlet extends TupleServlet {
 
 	private int export(RepositoryConnection con, TupleResultBuilder builder, int limit,
 			Resource subj, URI pred, Value obj, Resource... ctx)
-			throws RepositoryException {
+			throws StoreException {
 		RepositoryResult<Statement> result = con.getStatements(subj, pred, obj,
 				true, ctx);
 		try {

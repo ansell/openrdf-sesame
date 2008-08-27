@@ -5,13 +5,15 @@
  */
 package org.openrdf.sail;
 
+import org.openrdf.StoreException;
+
 /**
  * Indicates that a SAIL cannot be initialised because the configured persisted
  * location is locked.
  * 
  * @author James Leigh
  */
-public class SailLockedException extends SailException {
+public class SailLockedException extends StoreException {
 
 	private static final long serialVersionUID = -2465202131214972460L;
 

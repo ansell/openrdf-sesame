@@ -11,6 +11,7 @@ import org.openrdf.OpenRDFException;
  * An exception thrown by some methods in Sail to indicate that a requested
  * operation could not be executed.
  */
+@Deprecated
 public class SailException extends OpenRDFException {
 
 	private static final long serialVersionUID = 2432600780159917763L;

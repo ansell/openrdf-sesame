@@ -14,7 +14,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -67,7 +67,7 @@ public class RemoveServlet extends TransformationServlet {
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException {
+			throws StoreException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "remove.xsl");
 		builder.start();

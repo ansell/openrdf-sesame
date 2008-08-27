@@ -25,7 +25,7 @@ import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
@@ -81,7 +81,7 @@ public class CreateServlet extends TransformationServlet {
 
 	private RepositoryConfig updateRepositoryConfig(String configString)
 			throws IOException, RDFParseException, RDFHandlerException,
-			GraphUtilException, RepositoryConfigException, RepositoryException {
+			GraphUtilException, RepositoryConfigException, StoreException {
 		Repository systemRepo = manager.getSystemRepository();
 
 		ValueFactory vf = systemRepo.getValueFactory();

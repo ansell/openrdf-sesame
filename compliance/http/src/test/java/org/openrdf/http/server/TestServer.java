@@ -12,7 +12,7 @@ import info.aduna.net.http.server.embedded.EmbeddedServer;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigUtil;
@@ -79,10 +79,10 @@ public class TestServer extends EmbeddedServer {
 	}
 
 	/**
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 */
 	private void createTestRepositories()
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		Repository systemRep = new HTTPRepository(Protocol.getRepositoryLocation(SERVER_URL,
 				SystemRepository.ID));

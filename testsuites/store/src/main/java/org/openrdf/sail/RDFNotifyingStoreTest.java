@@ -5,6 +5,7 @@
  */
 package org.openrdf.sail;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 
@@ -41,11 +42,11 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 	 * repository should already have been initialized.
 	 * 
 	 * @return an initialized Sail.
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the initialization of the repository failed.
 	 */
 	protected abstract NotifyingSail createSail()
-		throws SailException;
+		throws StoreException;
 
 	@Override
 	protected void setUp()

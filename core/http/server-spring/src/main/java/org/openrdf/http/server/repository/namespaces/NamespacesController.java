@@ -38,7 +38,7 @@ import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 
 /**
  * Handles requests for the list of namespace definitions for a repository.
@@ -81,7 +81,7 @@ public class NamespacesController extends AbstractController {
 
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 		try {
-			CloseableIteration<? extends Namespace, RepositoryException> iter = repositoryCon.getNamespaces();
+			CloseableIteration<? extends Namespace, StoreException> iter = repositoryCon.getNamespaces();
 
 			try {
 				while (iter.hasNext()) {
@@ -98,7 +98,7 @@ public class NamespacesController extends AbstractController {
 				iter.close();
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 		}
 
@@ -120,7 +120,7 @@ public class NamespacesController extends AbstractController {
 		try {
 			repositoryCon.clearNamespaces();
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 		}
 

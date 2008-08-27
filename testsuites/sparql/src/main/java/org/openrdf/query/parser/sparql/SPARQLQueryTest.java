@@ -53,7 +53,7 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.RDFFormat;
@@ -551,7 +551,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 	protected static String getManifestName(Repository manifestRep, RepositoryConnection con,
 			String manifestFileURL)
-		throws QueryEvaluationException, RepositoryException, MalformedQueryException
+		throws QueryEvaluationException, StoreException, MalformedQueryException
 	{
 		// Try to extract suite name from manifest file
 		TupleQuery manifestNameQuery = con.prepareTupleQuery(QueryLanguage.SERQL,

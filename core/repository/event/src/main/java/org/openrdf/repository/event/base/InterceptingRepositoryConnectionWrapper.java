@@ -13,7 +13,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.event.InterceptingRepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionInterceptor;
@@ -82,7 +82,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 
 	@Override
 	public void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		if (activated) {
@@ -100,7 +100,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 
 	@Override
 	public void clear(Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		if (activated) {
@@ -118,7 +118,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 
 	@Override
 	public void close()
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		if (activated) {
@@ -136,7 +136,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 
 	@Override
 	public void commit()
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		if (activated) {
@@ -154,7 +154,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 
 	@Override
 	public void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		if (activated) {
@@ -173,7 +173,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 
 	@Override
 	public void removeNamespace(String prefix)
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		if (activated) {
@@ -191,7 +191,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 
 	@Override
 	public void clearNamespaces()
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		if (activated) {
@@ -209,7 +209,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 
 	@Override
 	public void rollback()
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		if (activated) {
@@ -227,7 +227,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 
 	@Override
 	public void setAutoCommit(boolean autoCommit)
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		boolean wasAutoCommit = isAutoCommit();
@@ -247,7 +247,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 
 	@Override
 	public void setNamespace(String prefix, String name)
-		throws RepositoryException
+		throws StoreException
 	{
 		boolean denied = false;
 		if (activated) {

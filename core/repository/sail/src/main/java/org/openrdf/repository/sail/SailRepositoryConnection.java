@@ -22,14 +22,14 @@ import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.GraphResult;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.SailReadOnlyException;
 
 /**
@@ -76,37 +76,37 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	public void commit()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			sailConnection.commit();
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 
 	public void rollback()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			sailConnection.rollback();
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 
 	@Override
 	public void close()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			sailConnection.close();
 			super.close();
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 
@@ -151,19 +151,19 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	public RepositoryResult<Resource> getContextIDs()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			return createRepositoryResult(sailConnection.getContextIDs());
 		}
-		catch (SailException e) {
-			throw new RepositoryException("Unable to get context IDs from Sail", e);
+		catch (StoreException e) {
+			throw new StoreException("Unable to get context IDs from Sail", e);
 		}
 	}
 
 	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -171,19 +171,19 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 			return createGraphResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
 					contexts));
 		}
-		catch (SailException e) {
-			throw new RepositoryException("Unable to get statements from Sail", e);
+		catch (StoreException e) {
+			throw new StoreException("Unable to get statements from Sail", e);
 		}
 	}
 
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
-		throws RepositoryException, RDFHandlerException
+		throws StoreException, RDFHandlerException
 	{
 		handler.startRDF();
 
 		// Export namespace information
-		CloseableIteration<? extends Namespace, RepositoryException> nsIter = getNamespaces();
+		CloseableIteration<? extends Namespace, StoreException> nsIter = getNamespaces();
 		try {
 			while (nsIter.hasNext()) {
 				Namespace ns = nsIter.next();
@@ -195,7 +195,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 
 		// Export statements
-		CloseableIteration<? extends Statement, RepositoryException> stIter = getStatements(subj, pred, obj,
+		CloseableIteration<? extends Statement, StoreException> stIter = getStatements(subj, pred, obj,
 				includeInferred, contexts);
 
 		try {
@@ -211,19 +211,19 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	public long size(Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			return sailConnection.size(contexts);
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 
 	@Override
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			sailConnection.addStatement(subject, predicate, object, contexts);
@@ -231,14 +231,14 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		catch (SailReadOnlyException e) {
 			throw new RepositoryReadOnlyException(e.getMessage(), e);
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 
 	@Override
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			sailConnection.removeStatements(subject, predicate, object, contexts);
@@ -246,14 +246,14 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		catch (SailReadOnlyException e) {
 			throw new RepositoryReadOnlyException(e.getMessage(), e);
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 
 	@Override
 	public void clear(Resource... contexts)
-		throws RepositoryException
+		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -264,13 +264,13 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		catch (SailReadOnlyException e) {
 			throw new RepositoryReadOnlyException(e.getMessage(), e);
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 
 	public void setNamespace(String prefix, String name)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			sailConnection.setNamespace(prefix, name);
@@ -279,13 +279,13 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		catch (SailReadOnlyException e) {
 			throw new RepositoryReadOnlyException(e.getMessage(), e);
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 
 	public void removeNamespace(String prefix)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			sailConnection.removeNamespace(prefix);
@@ -294,13 +294,13 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		catch (SailReadOnlyException e) {
 			throw new RepositoryReadOnlyException(e.getMessage(), e);
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 
 	public void clearNamespaces()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			sailConnection.clearNamespaces();
@@ -309,30 +309,30 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		catch (SailReadOnlyException e) {
 			throw new RepositoryReadOnlyException(e.getMessage(), e);
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 
 	public RepositoryResult<Namespace> getNamespaces()
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			return createRepositoryResult(sailConnection.getNamespaces());
 		}
-		catch (SailException e) {
-			throw new RepositoryException("Unable to get namespaces from Sail", e);
+		catch (StoreException e) {
+			throw new StoreException("Unable to get namespaces from Sail", e);
 		}
 	}
 
 	public String getNamespace(String prefix)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			return sailConnection.getNamespace(prefix);
 		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
+		catch (StoreException e) {
+			throw new StoreException(e);
 		}
 	}
 
@@ -341,7 +341,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	 * object, applying the required conversions
 	 */
 	protected <E> RepositoryResult<E> createRepositoryResult(
-			CloseableIteration<? extends E, SailException> sailIter)
+			CloseableIteration<? extends E, StoreException> sailIter)
 	{
 		return new RepositoryResult<E>(new SailCloseableIteration<E>(sailIter));
 	}
@@ -351,7 +351,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	 * object, applying the required conversions
 	 */
 	protected <E> GraphResult createGraphResult(
-			CloseableIteration<? extends Statement, SailException> sailIter)
+			CloseableIteration<? extends Statement, StoreException> sailIter)
 	{
 		return new GraphResult(new SailCloseableIteration<Statement>(sailIter));
 	}

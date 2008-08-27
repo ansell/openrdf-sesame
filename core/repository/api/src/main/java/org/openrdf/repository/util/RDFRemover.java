@@ -5,10 +5,10 @@
  */
 package org.openrdf.repository.util;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 
@@ -112,7 +112,7 @@ public class RDFRemover extends RDFHandlerBase {
 				con.remove(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new RDFHandlerException(e);
 		}
 	}

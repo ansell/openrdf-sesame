@@ -14,7 +14,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.rdbms.RdbmsStore;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 
@@ -96,7 +96,7 @@ public class MySqlStore extends RdbmsStore {
 
 	@Override
 	public void initialize()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			Class.forName("com.mysql.jdbc.Driver");

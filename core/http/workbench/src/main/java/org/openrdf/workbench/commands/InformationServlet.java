@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Properties;
 
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ public class InformationServlet extends TransformationServlet {
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException {
+			throws StoreException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "information.xsl");
 		builder.start("version", "os", "jvm", "user", "memory-used",

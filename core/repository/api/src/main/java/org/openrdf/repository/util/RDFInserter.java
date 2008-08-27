@@ -9,13 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 
@@ -146,7 +146,7 @@ public class RDFInserter extends RDFHandlerBase {
 					con.setNamespace(prefix, name);
 				}
 			}
-			catch (RepositoryException e) {
+			catch (StoreException e) {
 				throw new RDFHandlerException(e);
 			}
 		}
@@ -196,7 +196,7 @@ public class RDFInserter extends RDFHandlerBase {
 				con.add(subj, pred, obj, ctxt);
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new RDFHandlerException(e);
 		}
 	}
@@ -206,7 +206,7 @@ public class RDFInserter extends RDFHandlerBase {
 	 * Consecutive calls with equal BNode objects returns the same object
 	 * everytime.
 	 * 
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 */
 	private BNode mapBNode(BNode bNode) {
 		BNode result = bNodesMap.get(bNode.getID());

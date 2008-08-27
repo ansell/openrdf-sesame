@@ -11,7 +11,7 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -54,7 +54,7 @@ public class ClearServlet extends TransformationServlet {
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException {
+			throws StoreException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "clear.xsl");
 		builder.start();

@@ -29,7 +29,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
@@ -149,12 +149,12 @@ public class NativeStore extends SailBase {
 	/**
 	 * Initializes this NativeStore.
 	 * 
-	 * @exception SailException
+	 * @exception StoreException
 	 *            If this RdfRepository could not be initialized using the
 	 *            parameters that have been set.
 	 */
 	public void initialize()
-		throws SailException
+		throws StoreException
 	{
 		if (isInitialized()) {
 			throw new IllegalStateException("sail has already been intialized");
@@ -169,19 +169,19 @@ public class NativeStore extends SailBase {
 		File dataDir = getDataDir();
 
 		if (dataDir == null) {
-			throw new SailException("Data dir has not been set");
+			throw new StoreException("Data dir has not been set");
 		}
 		else if (!dataDir.exists()) {
 			boolean success = dataDir.mkdirs();
 			if (!success) {
-				throw new SailException("Unable to create data directory: " + dataDir);
+				throw new StoreException("Unable to create data directory: " + dataDir);
 			}
 		}
 		else if (!dataDir.isDirectory()) {
-			throw new SailException("The specified path does not denote a directory: " + dataDir);
+			throw new StoreException("The specified path does not denote a directory: " + dataDir);
 		}
 		else if (!dataDir.canRead()) {
-			throw new SailException("Not allowed to read from the specified directory: " + dataDir);
+			throw new StoreException("Not allowed to read from the specified directory: " + dataDir);
 		}
 
 		// try to lock the directory or fail
@@ -195,7 +195,7 @@ public class NativeStore extends SailBase {
 			tripleStore = new TripleStore(dataDir, tripleIndexes, forceSync);
 		}
 		catch (IOException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 
 		initialized = true;
@@ -214,7 +214,7 @@ public class NativeStore extends SailBase {
 
 	@Override
 	protected void shutDownInternal()
-		throws SailException
+		throws StoreException
 	{
 		if (isInitialized()) {
 			logger.debug("Shutting down NativeStore...");
@@ -232,7 +232,7 @@ public class NativeStore extends SailBase {
 					logger.debug("NativeStore shut down");
 				}
 				catch (IOException e) {
-					throw new SailException(e);
+					throw new StoreException(e);
 				}
 				finally {
 					writeLock.release();
@@ -251,7 +251,7 @@ public class NativeStore extends SailBase {
 
 	@Override
 	protected NotifyingSailConnection getConnectionInternal()
-		throws SailException
+		throws StoreException
 	{
 		if (!isInitialized()) {
 			throw new IllegalStateException("sail not initialized.");
@@ -261,7 +261,7 @@ public class NativeStore extends SailBase {
 			return new NativeStoreConnection(this);
 		}
 		catch (IOException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 
@@ -282,35 +282,35 @@ public class NativeStore extends SailBase {
 	}
 
 	protected Lock getReadLock()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			return storeLockManager.getReadLock();
 		}
 		catch (InterruptedException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	protected Lock getWriteLock()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			return storeLockManager.getWriteLock();
 		}
 		catch (InterruptedException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 
 	protected Lock getTransactionLock()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			return txnLockManager.getExclusiveLock();
 		}
 		catch (InterruptedException e) {
-			throw new SailException(e);
+			throw new StoreException(e);
 		}
 	}
 

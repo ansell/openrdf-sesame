@@ -12,7 +12,7 @@ import java.net.URL;
 
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RepositoryUtil;
 import org.openrdf.rio.RDFFormat;
@@ -31,7 +31,7 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 	}
 
 	public void testWrite()
-		throws RepositoryException, RDFParseException, IOException, RDFHandlerException
+		throws StoreException, RDFParseException, IOException, RDFHandlerException
 	{
 		Repository rep1 = new SailRepository(new MemoryStore());
 		rep1.initialize();

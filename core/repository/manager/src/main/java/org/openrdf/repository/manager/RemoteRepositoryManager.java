@@ -21,7 +21,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.http.HTTPRepository;
@@ -44,7 +44,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * server URL.
 	 */
 	public static RemoteRepositoryManager getInstance(String serverURL)
-		throws RepositoryException
+		throws StoreException
 	{
 		RemoteRepositoryManager manager = new RemoteRepositoryManager(serverURL);
 		manager.initialize();
@@ -56,7 +56,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * server URL and credentials.
 	 */
 	public static RemoteRepositoryManager getInstance(String serverURL, String username, String password)
-		throws RepositoryException
+		throws StoreException
 	{
 		RemoteRepositoryManager manager = new RemoteRepositoryManager(serverURL);
 		manager.setUsernameAndPassword(username, password);
@@ -111,7 +111,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 	@Override
 	protected Repository createSystemRepository()
-		throws RepositoryException
+		throws StoreException
 	{
 		HTTPRepository systemRepository = new HTTPRepository(serverURL, SystemRepository.ID);
 		systemRepository.initialize();
@@ -156,7 +156,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 */
 	@Override
 	protected Repository createRepository(String id)
-		throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, StoreException
 	{
 		Repository result = null;
 
@@ -170,7 +170,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
-		throws RepositoryException
+		throws StoreException
 	{
 		for (RepositoryInfo repInfo : getAllRepositoryInfos()) {
 			if (repInfo.getId().equals(id)) {
@@ -183,7 +183,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 	@Override
 	public Collection<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws RepositoryException
+		throws StoreException
 	{
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
@@ -227,17 +227,17 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		}
 		catch (IOException ioe) {
 			logger.warn("Unable to retrieve list of repositories", ioe);
-			throw new RepositoryException(ioe);
+			throw new StoreException(ioe);
 		}
 		catch (QueryEvaluationException qee) {
 			logger.warn("Unable to retrieve list of repositories", qee);
-			throw new RepositoryException(qee);
+			throw new StoreException(qee);
 		}
 		catch (UnauthorizedException ue) {
 			logger.warn("Not authorized to retrieve list of repositories", ue);
-			throw new RepositoryException(ue);
+			throw new StoreException(ue);
 		}
-		catch (RepositoryException re) {
+		catch (StoreException re) {
 			logger.warn("Unable to retrieve list of repositories", re);
 			throw re;
 		}

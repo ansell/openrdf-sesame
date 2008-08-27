@@ -7,7 +7,7 @@ package org.openrdf.sail.rdbms.iteration;
 
 import java.sql.SQLException;
 
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 
 /**
  * Empty iteration that extends {@link RdbmsResourceIteration}.
@@ -25,13 +25,13 @@ public class EmptyRdbmsResourceIteration extends RdbmsResourceIteration {
 
 	@Override
 	public void close()
-		throws SailException
+		throws StoreException
 	{
 	}
 
 	@Override
 	public boolean hasNext()
-		throws SailException
+		throws StoreException
 	{
 		return false;
 	}

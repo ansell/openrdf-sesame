@@ -7,6 +7,7 @@ package org.openrdf.repository;
 
 import java.io.File;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.ValueFactory;
 
 /**
@@ -44,11 +45,11 @@ public interface Repository {
 	 * Initializes this repository. A repository needs to be initialized before
 	 * it can be used.
 	 * 
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If the initialization failed.
 	 */
 	public void initialize()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Shuts the repository down, releasing any resources that it keeps hold of.
@@ -56,7 +57,7 @@ public interface Repository {
 	 * re-initialized.
 	 */
 	public void shutDown()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Checks whether this repository is writable, i.e. if the data contained in
@@ -65,7 +66,7 @@ public interface Repository {
 	 * on.
 	 */
 	public boolean isWritable()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Opens a connection to this repository that can be used for querying and
@@ -84,11 +85,11 @@ public interface Repository {
 	 * </pre>
 	 * 
 	 * @return A connection that allows operations on this repository.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If something went wrong during the creation of the Connection.
 	 */
 	public RepositoryConnection getConnection()
-		throws RepositoryException;
+		throws StoreException;
 
 	/**
 	 * Gets a ValueFactory for this Repository.

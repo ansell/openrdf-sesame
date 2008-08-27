@@ -7,7 +7,7 @@ package org.openrdf.workbench.commands;
 
 import java.io.PrintWriter;
 
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -16,7 +16,7 @@ public class RepositoriesServlet extends TransformationServlet {
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException {
+			throws StoreException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "repositories.xsl");
 		builder.start("readable", "writeable", "id", "description", "location");

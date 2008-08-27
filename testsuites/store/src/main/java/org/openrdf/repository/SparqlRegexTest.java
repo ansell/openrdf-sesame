@@ -2,6 +2,7 @@ package org.openrdf.repository;
 
 import junit.framework.TestCase;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -119,7 +120,7 @@ public abstract class SparqlRegexTest extends TestCase {
 	}
 
 	private void createUser(String id, String name, String email)
-			throws RepositoryException {
+			throws StoreException {
 		RepositoryConnection conn = repository.getConnection();
 		URI subj = vf.createURI("http://example.org/ns#", id);
 		URI foafName = vf.createURI("http://xmlns.com/foaf/0.1/", "name");

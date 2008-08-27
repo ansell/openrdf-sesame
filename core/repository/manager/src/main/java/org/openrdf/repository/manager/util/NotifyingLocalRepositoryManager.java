@@ -8,7 +8,7 @@ package org.openrdf.repository.manager.util;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 
 /**
@@ -42,7 +42,7 @@ public class NotifyingLocalRepositoryManager extends LocalRepositoryManager {
 	}
 	
 	@Override
-	public void initialize() throws RepositoryException {
+	public void initialize() throws StoreException {
 		super.initialize();
 		fireInitialized();
 	}

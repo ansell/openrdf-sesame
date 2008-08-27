@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
@@ -38,7 +38,7 @@ public class NamespacesServlet extends TransformationServlet {
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException {
+			throws StoreException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "namespaces.xsl");
 		RepositoryConnection con = repository.getConnection();

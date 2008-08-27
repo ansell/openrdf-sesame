@@ -17,6 +17,7 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
@@ -118,11 +119,11 @@ public abstract class RDFStoreTest extends TestCase {
 	 * repository should already have been initialized.
 	 * 
 	 * @return an initialized Sail.
-	 * @throws SailException
+	 * @throws StoreException
 	 *         If the initialization of the repository failed.
 	 */
 	protected abstract Sail createSail()
-		throws SailException;
+		throws StoreException;
 
 	@Override
 	protected void setUp()
@@ -314,7 +315,7 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(subj, pred, obj);
 		con.commit();
 
-		CloseableIteration<? extends Statement, SailException> stIter = con.getStatements(null, null, null,
+		CloseableIteration<? extends Statement, StoreException> stIter = con.getStatements(null, null, null,
 				false);
 
 		try {
@@ -540,7 +541,7 @@ public abstract class RDFStoreTest extends TestCase {
 		catch (IllegalStateException e) {
 			// do nothing, this is expected
 		}
-		catch (SailException e) {
+		catch (StoreException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -652,7 +653,7 @@ public abstract class RDFStoreTest extends TestCase {
 
 					// wait a bit to allow other thread to add stuff as well.
 					Thread.sleep(500L);
-					CloseableIteration<? extends Statement, SailException> result = sharedCon.getStatements(null,
+					CloseableIteration<? extends Statement, StoreException> result = sharedCon.getStatements(null,
 							null, null, true);
 
 					assertTrue(result.hasNext());
@@ -667,7 +668,7 @@ public abstract class RDFStoreTest extends TestCase {
 					assertTrue("we should have retrieved statements from both threads", numberOfStatements == 2);
 
 				}
-				catch (SailException e) {
+				catch (StoreException e) {
 					e.printStackTrace();
 					fail(e.getMessage());
 				}
@@ -689,7 +690,7 @@ public abstract class RDFStoreTest extends TestCase {
 				catch (InterruptedException e) {
 					fail(e.getMessage());
 				}
-				catch (SailException e) {
+				catch (StoreException e) {
 					e.printStackTrace();
 					fail(e.getMessage());
 				}
@@ -710,7 +711,7 @@ public abstract class RDFStoreTest extends TestCase {
 			Thread.sleep(1000L);
 			con.close();
 		}
-		catch (SailException e) {
+		catch (StoreException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
@@ -751,7 +752,7 @@ public abstract class RDFStoreTest extends TestCase {
 		con.setNamespace("rdf", RDF.NAMESPACE);
 		con.commit();
 
-		CloseableIteration<? extends Namespace, SailException> namespaces = con.getNamespaces();
+		CloseableIteration<? extends Namespace, StoreException> namespaces = con.getNamespaces();
 		try {
 			assertTrue(namespaces.hasNext());
 			Namespace rdf = namespaces.next();
@@ -855,7 +856,7 @@ public abstract class RDFStoreTest extends TestCase {
 						con.clear();
 						con.commit();
 					}
-					catch (SailException e) {
+					catch (StoreException e) {
 						throw new RuntimeException(e);
 					}
 				}
@@ -901,13 +902,13 @@ public abstract class RDFStoreTest extends TestCase {
 	}
 
 	protected int countContext1Elements()
-		throws Exception, SailException
+		throws Exception, StoreException
 	{
 		return countElements(con.getStatements(null, null, null, false, context1));
 	}
 
 	protected int countAllElements()
-		throws Exception, SailException
+		throws Exception, StoreException
 	{
 		return countElements(con.getStatements(null, null, null, false));
 	}

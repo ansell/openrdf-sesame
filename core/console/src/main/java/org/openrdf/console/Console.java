@@ -74,7 +74,7 @@ import org.openrdf.query.parser.serql.SeRQLUtil;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.RepositoryLockedException;
 import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.config.RepositoryConfig;
@@ -531,7 +531,7 @@ public class Console {
 			writeError("Failed to access the server: " + e.getMessage());
 			logger.warn("Failed to access the server", e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			writeError("Failed to access the server: " + e.getMessage());
 			logger.warn("Failed to access the server", e);
 		}
@@ -555,7 +555,7 @@ public class Console {
 			writeln("Connected to " + managerID);
 			return true;
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to install new manager", e);
 			return false;
@@ -787,7 +787,7 @@ public class Console {
 				logger.error("Malformed preconfigured query", e);
 			}
 			catch (QueryEvaluationException e) {
-				throw new RepositoryException(e);
+				throw new StoreException(e);
 			}
 			finally {
 				con.close();
@@ -803,12 +803,12 @@ public class Console {
 					logger.error("Failed to drop repository", e);
 				}
 			}
-			catch (RepositoryException e2) {
+			catch (StoreException e2) {
 				writeError("Failed to restart system: " + e2.getMessage());
 				logger.error("Failed to restart system", e2);
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			writeError("Failed to drop repository: " + e.getMessage());
 			logger.error("Failed to drop repository", e);
 		}
@@ -862,7 +862,7 @@ public class Console {
 			writeError(e.getMessage());
 			logger.error("Failed to open repository", e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to open repository", e);
 		}
@@ -957,13 +957,13 @@ public class Console {
 				logger.error("Failed to show repository", e);
 			}
 			catch (QueryEvaluationException e) {
-				throw new RepositoryException(e);
+				throw new StoreException(e);
 			}
 			finally {
 				con.close();
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			writeError("Failed to get repository list: " + e.getMessage());
 			logger.error("Failed to get repository list", e);
 		}
@@ -980,7 +980,7 @@ public class Console {
 			con = repository.getConnection();
 
 			try {
-				CloseableIteration<? extends Namespace, RepositoryException> namespaces = con.getNamespaces();
+				CloseableIteration<? extends Namespace, StoreException> namespaces = con.getNamespaces();
 
 				try {
 					if (namespaces.hasNext()) {
@@ -1003,7 +1003,7 @@ public class Console {
 				con.close();
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to show namespaces", e);
 		}
@@ -1020,7 +1020,7 @@ public class Console {
 			con = repository.getConnection();
 
 			try {
-				CloseableIteration<? extends Resource, RepositoryException> contexts = con.getContextIDs();
+				CloseableIteration<? extends Resource, StoreException> contexts = con.getContextIDs();
 
 				try {
 					if (contexts.hasNext()) {
@@ -1043,7 +1043,7 @@ public class Console {
 				con.close();
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to show contexts", e);
 		}
@@ -1147,7 +1147,7 @@ public class Console {
 					logger.error("Failed to load data", e);
 				}
 			}
-			catch (RepositoryException e1) {
+			catch (StoreException e1) {
 				writeError("Unable to restart repository: " + e1.getMessage());
 				logger.error("Unable to restart repository", e1);
 			}
@@ -1171,7 +1171,7 @@ public class Console {
 		catch (RDFParseException e) {
 			writeError("Malformed document: " + e.getMessage());
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			writeError("Unable to add data to repository: " + e.getMessage());
 			logger.error("Failed to add data to repository", e);
 		}
@@ -1320,7 +1320,7 @@ public class Console {
 					logger.error("Failed to clear repository", e);
 				}
 			}
-			catch (RepositoryException e1) {
+			catch (StoreException e1) {
 				writeError("Unable to restart repository: " + e1.getMessage());
 				logger.error("Unable to restart repository", e1);
 			}
@@ -1328,7 +1328,7 @@ public class Console {
 				writeError("Unable to remove lock: " + e1.getMessage());
 			}
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			writeError("Failed to clear repository: " + e.getMessage());
 			logger.error("Failed to clear repository", e);
 		}
@@ -1361,7 +1361,7 @@ public class Console {
 			writeError("Query evaluation error: " + e.getMessage());
 			logger.error("Query evaluation error", e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			writeError("Failed to evaluate query: " + e.getMessage());
 			logger.error("Failed to evaluate query", e);
 		}
@@ -1419,7 +1419,7 @@ public class Console {
 						con.close();
 					}
 				}
-				catch (RepositoryException e) {
+				catch (StoreException e) {
 					writeError("Error connecting to repository: " + e.getMessage());
 					logger.error("Error connecting to repository", e);
 				}
@@ -1431,7 +1431,7 @@ public class Console {
 
 	private void evaluateTupleQuery(QueryLanguage ql, String queryString)
 		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
-		RepositoryException
+		StoreException
 	{
 		if (repository == null) {
 			writeError("please open a repository first");
@@ -1519,7 +1519,7 @@ public class Console {
 
 	private void evaluateGraphQuery(QueryLanguage ql, String queryString)
 		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
-		RepositoryException
+		StoreException
 	{
 		if (repository == null) {
 			writeError("please open a repository first");
@@ -1565,7 +1565,7 @@ public class Console {
 
 	private void evaluateBooleanQuery(QueryLanguage ql, String queryString)
 		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
-		RepositoryException
+		StoreException
 	{
 		if (repository == null) {
 			writeError("please open a repository first");
@@ -1752,7 +1752,7 @@ public class Console {
 	}
 
 	private boolean tryToRemoveLock(RepositoryReadOnlyException e, Repository repo)
-		throws IOException, RepositoryException
+		throws IOException, StoreException
 	{
 		boolean lockRemoved = false;
 

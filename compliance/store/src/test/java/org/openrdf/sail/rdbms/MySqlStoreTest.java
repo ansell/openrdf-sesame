@@ -5,10 +5,10 @@
  */
 package org.openrdf.sail.rdbms;
 
+import org.openrdf.StoreException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.RDFNotifyingStoreTest;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
 import org.openrdf.sail.rdbms.mysql.MySqlStore;
 
 /**
@@ -30,7 +30,7 @@ public class MySqlStoreTest extends RDFNotifyingStoreTest {
 
 	@Override
 	protected NotifyingSail createSail()
-		throws SailException
+		throws StoreException
 	{
 		NotifyingSail sail = new MySqlStore("sesame_test");
 		sail.initialize();

@@ -48,7 +48,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFWriterFactory;
@@ -185,7 +185,7 @@ public class StatementsController extends AbstractController {
 		catch (IOException e) {
 			throw new ServerHTTPException("Failed to read data: " + e.getMessage(), e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
 		}
 	}
@@ -241,7 +241,7 @@ public class StatementsController extends AbstractController {
 		catch (IOException e) {
 			throw new ServerHTTPException("Failed to read data: " + e.getMessage(), e);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
 		}
 	}
@@ -267,7 +267,7 @@ public class StatementsController extends AbstractController {
 
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
 		}
 	}

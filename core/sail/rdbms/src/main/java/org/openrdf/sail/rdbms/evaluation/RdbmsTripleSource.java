@@ -12,7 +12,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.rdbms.RdbmsTripleRepository;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
@@ -49,7 +49,7 @@ public class RdbmsTripleSource implements TripleSource {
 			RdbmsResource[] c = vf.asRdbmsResource(contexts);
 			return triples.find(s, p, o, c);
 		}
-		catch (SailException e) {
+		catch (StoreException e) {
 			throw new QueryEvaluationException(e);
 		}
 	}

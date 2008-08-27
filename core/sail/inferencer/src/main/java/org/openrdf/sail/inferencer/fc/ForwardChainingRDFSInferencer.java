@@ -7,7 +7,7 @@ package org.openrdf.sail.inferencer.fc;
 
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.Sail;
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 
@@ -38,14 +38,14 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 
 	@Override
 	public ForwardChainingRDFSInferencerConnection getConnection()
-		throws SailException
+		throws StoreException
 	{
 		try {
 			InferencerConnection con = (InferencerConnection)super.getConnection();
 			return new ForwardChainingRDFSInferencerConnection(con);
 		}
 		catch (ClassCastException e) {
-			throw new SailException(e.getMessage(), e);
+			throw new StoreException(e.getMessage(), e);
 		}
 	}
 
@@ -54,7 +54,7 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 	 */
 	@Override
 	public void initialize()
-		throws SailException
+		throws StoreException
 	{
 		super.initialize();
 

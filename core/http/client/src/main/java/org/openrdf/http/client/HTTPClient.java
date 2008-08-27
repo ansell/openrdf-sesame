@@ -79,7 +79,7 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.query.resultio.TupleQueryResultParserRegistry;
 import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -311,7 +311,7 @@ public class HTTPClient {
 	 *------------------*/
 
 	public String getServerProtocol()
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, StoreException, UnauthorizedException
 	{
 		checkServerURL();
 
@@ -329,7 +329,7 @@ public class HTTPClient {
 			}
 			else {
 				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Failed to get server protocol: " + errInfo);
+				throw new StoreException("Failed to get server protocol: " + errInfo);
 			}
 		}
 		finally {
@@ -342,7 +342,7 @@ public class HTTPClient {
 	 *-----------------*/
 
 	public TupleQueryResult getRepositoryList()
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, StoreException, UnauthorizedException
 	{
 		try {
 			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
@@ -356,7 +356,7 @@ public class HTTPClient {
 	}
 
 	public void getRepositoryList(TupleQueryResultHandler handler)
-		throws IOException, TupleQueryResultHandlerException, RepositoryException, UnauthorizedException
+		throws IOException, TupleQueryResultHandlerException, StoreException, UnauthorizedException
 	{
 		checkServerURL();
 
@@ -369,7 +369,7 @@ public class HTTPClient {
 		catch (MalformedQueryException e) {
 			// This shouldn't happen as no queries are involved
 			logger.warn("Server reported unexpected malfored query error", e);
-			throw new RepositoryException(e.getMessage(), e);
+			throw new StoreException(e.getMessage(), e);
 		}
 		finally {
 			releaseConnection(method);
@@ -382,7 +382,7 @@ public class HTTPClient {
 
 	public TupleQueryResult sendTupleQuery(QueryLanguage ql, String query, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+		throws IOException, StoreException, MalformedQueryException, UnauthorizedException
 	{
 		try {
 			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
@@ -397,7 +397,7 @@ public class HTTPClient {
 
 	public void sendTupleQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
 			TupleQueryResultHandler handler, Binding... bindings)
-		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
+		throws IOException, TupleQueryResultHandlerException, StoreException, MalformedQueryException,
 		UnauthorizedException
 	{
 		HttpMethod method = getQueryMethod(ql, query, dataset, includeInferred, bindings);
@@ -412,7 +412,7 @@ public class HTTPClient {
 
 	public GraphQueryResult sendGraphQuery(QueryLanguage ql, String query, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+		throws IOException, StoreException, MalformedQueryException, UnauthorizedException
 	{
 		try {
 			StatementCollector collector = new StatementCollector();
@@ -427,7 +427,7 @@ public class HTTPClient {
 
 	public void sendGraphQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
 			RDFHandler handler, Binding... bindings)
-		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
+		throws IOException, RDFHandlerException, StoreException, MalformedQueryException,
 		UnauthorizedException
 	{
 		HttpMethod method = getQueryMethod(ql, query, dataset, includeInferred, bindings);
@@ -442,7 +442,7 @@ public class HTTPClient {
 
 	public boolean sendBooleanQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
 			Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+		throws IOException, StoreException, MalformedQueryException, UnauthorizedException
 	{
 		HttpMethod method = getQueryMethod(ql, query, dataset, includeInferred, bindings);
 
@@ -504,7 +504,7 @@ public class HTTPClient {
 
 	public void getStatements(Resource subj, URI pred, Value obj, boolean includeInferred, RDFHandler handler,
 			Resource... contexts)
-		throws IOException, RDFHandlerException, RepositoryException, UnauthorizedException
+		throws IOException, RDFHandlerException, StoreException, UnauthorizedException
 	{
 		checkRepositoryURL();
 
@@ -533,7 +533,7 @@ public class HTTPClient {
 		}
 		catch (MalformedQueryException e) {
 			logger.warn("Server reported unexpected malfored query error", e);
-			throw new RepositoryException(e.getMessage(), e);
+			throw new StoreException(e.getMessage(), e);
 		}
 		finally {
 			releaseConnection(method);
@@ -541,7 +541,7 @@ public class HTTPClient {
 	}
 
 	public void sendTransaction(final Iterable<? extends TransactionOperation> txn)
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, StoreException, UnauthorizedException
 	{
 		checkRepositoryURL();
 
@@ -579,7 +579,7 @@ public class HTTPClient {
 			}
 			else if (!HttpClientUtil.is2xx(httpCode)) {
 				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Transaction failed: " + errInfo + " (" + httpCode + ")");
+				throw new StoreException("Transaction failed: " + errInfo + " (" + httpCode + ")");
 			}
 		}
 		finally {
@@ -589,7 +589,7 @@ public class HTTPClient {
 
 	public void upload(final Reader contents, String baseURI, final RDFFormat dataFormat, boolean overwrite,
 			Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
+		throws IOException, RDFParseException, StoreException, UnauthorizedException
 	{
 		final Charset charset = dataFormat.hasCharset() ? dataFormat.getCharset() : Charset.forName("UTF-8");
 
@@ -621,7 +621,7 @@ public class HTTPClient {
 
 	public void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite,
 			Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
+		throws IOException, RDFParseException, StoreException, UnauthorizedException
 	{
 		// Set Content-Length to -1 as we don't know it and we also don't want to
 		// cache
@@ -630,7 +630,7 @@ public class HTTPClient {
 	}
 
 	protected void upload(RequestEntity reqEntity, String baseURI, boolean overwrite, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
+		throws IOException, RDFParseException, StoreException, UnauthorizedException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -683,7 +683,7 @@ public class HTTPClient {
 					throw new UnsupportedRDFormatException(errInfo.getErrorMessage());
 				}
 				else {
-					throw new RepositoryException("Failed to upload data: " + errInfo);
+					throw new StoreException("Failed to upload data: " + errInfo);
 				}
 			}
 		}
@@ -697,7 +697,7 @@ public class HTTPClient {
 	 *-------------*/
 
 	public TupleQueryResult getContextIDs()
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, StoreException, UnauthorizedException
 	{
 		try {
 			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
@@ -711,7 +711,7 @@ public class HTTPClient {
 	}
 
 	public void getContextIDs(TupleQueryResultHandler handler)
-		throws IOException, TupleQueryResultHandlerException, RepositoryException, UnauthorizedException
+		throws IOException, TupleQueryResultHandlerException, StoreException, UnauthorizedException
 	{
 		checkRepositoryURL();
 
@@ -723,7 +723,7 @@ public class HTTPClient {
 		}
 		catch (MalformedQueryException e) {
 			logger.warn("Server reported unexpected malfored query error", e);
-			throw new RepositoryException(e.getMessage(), e);
+			throw new StoreException(e.getMessage(), e);
 		}
 		finally {
 			releaseConnection(method);
@@ -735,7 +735,7 @@ public class HTTPClient {
 	 *---------------------------*/
 
 	public TupleQueryResult getNamespaces()
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, StoreException, UnauthorizedException
 	{
 		try {
 			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
@@ -749,7 +749,7 @@ public class HTTPClient {
 	}
 
 	public void getNamespaces(TupleQueryResultHandler handler)
-		throws IOException, TupleQueryResultHandlerException, RepositoryException, UnauthorizedException
+		throws IOException, TupleQueryResultHandlerException, StoreException, UnauthorizedException
 	{
 		checkRepositoryURL();
 
@@ -761,7 +761,7 @@ public class HTTPClient {
 		}
 		catch (MalformedQueryException e) {
 			logger.warn("Server reported unexpected malfored query error", e);
-			throw new RepositoryException(e.getMessage(), e);
+			throw new StoreException(e.getMessage(), e);
 		}
 		finally {
 			releaseConnection(method);
@@ -769,7 +769,7 @@ public class HTTPClient {
 	}
 
 	public String getNamespace(String prefix)
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, StoreException, UnauthorizedException
 	{
 		checkRepositoryURL();
 
@@ -790,7 +790,7 @@ public class HTTPClient {
 			}
 			else {
 				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Failed to get namespace: " + errInfo + " (" + httpCode + ")");
+				throw new StoreException("Failed to get namespace: " + errInfo + " (" + httpCode + ")");
 			}
 		}
 		finally {
@@ -799,7 +799,7 @@ public class HTTPClient {
 	}
 
 	public void setNamespacePrefix(String prefix, String name)
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, StoreException, UnauthorizedException
 	{
 		checkRepositoryURL();
 
@@ -815,7 +815,7 @@ public class HTTPClient {
 			}
 			else if (!HttpClientUtil.is2xx(httpCode)) {
 				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Failed to set namespace: " + errInfo + " (" + httpCode + ")");
+				throw new StoreException("Failed to set namespace: " + errInfo + " (" + httpCode + ")");
 			}
 		}
 		finally {
@@ -824,7 +824,7 @@ public class HTTPClient {
 	}
 
 	public void removeNamespacePrefix(String prefix)
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, StoreException, UnauthorizedException
 	{
 		checkRepositoryURL();
 
@@ -839,7 +839,7 @@ public class HTTPClient {
 			}
 			else if (!HttpClientUtil.is2xx(httpCode)) {
 				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Failed to remove namespace: " + errInfo + " (" + httpCode + ")");
+				throw new StoreException("Failed to remove namespace: " + errInfo + " (" + httpCode + ")");
 			}
 		}
 		finally {
@@ -848,7 +848,7 @@ public class HTTPClient {
 	}
 
 	public void clearNamespaces()
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, StoreException, UnauthorizedException
 	{
 		checkRepositoryURL();
 
@@ -863,7 +863,7 @@ public class HTTPClient {
 			}
 			else if (!HttpClientUtil.is2xx(httpCode)) {
 				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Failed to clear namespaces: " + errInfo + " (" + httpCode + ")");
+				throw new StoreException("Failed to clear namespaces: " + errInfo + " (" + httpCode + ")");
 			}
 		}
 		finally {
@@ -876,7 +876,7 @@ public class HTTPClient {
 	 *-------------------------*/
 
 	public long size(Resource... contexts)
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, StoreException, UnauthorizedException
 	{
 		checkRepositoryURL();
 
@@ -900,7 +900,7 @@ public class HTTPClient {
 					return Long.parseLong(response);
 				}
 				catch (NumberFormatException e) {
-					throw new RepositoryException("Server responded with invalid size value: " + response);
+					throw new StoreException("Server responded with invalid size value: " + response);
 				}
 			}
 			else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
@@ -908,7 +908,7 @@ public class HTTPClient {
 			}
 			else {
 				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException(errInfo.toString());
+				throw new StoreException(errInfo.toString());
 			}
 		}
 		finally {
@@ -921,13 +921,13 @@ public class HTTPClient {
 	 *------------------*/
 
 	protected void getTupleQueryResult(HttpMethod method, TupleQueryResultHandler handler)
-		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
+		throws IOException, TupleQueryResultHandlerException, StoreException, MalformedQueryException,
 		UnauthorizedException
 	{
 		// Specify which formats we support using Accept headers
 		Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
 		if (tqrFormats.isEmpty()) {
-			throw new RepositoryException("No tuple query result parsers have been registered");
+			throw new StoreException("No tuple query result parsers have been registered");
 		}
 
 		for (TupleQueryResultFormat format : tqrFormats) {
@@ -961,10 +961,10 @@ public class HTTPClient {
 				parser.parse(method.getResponseBodyAsStream());
 			}
 			catch (UnsupportedQueryResultFormatException e) {
-				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
+				throw new StoreException("Server responded with an unsupported file format: " + mimeType);
 			}
 			catch (QueryResultParseException e) {
-				throw new RepositoryException("Malformed query result from server", e);
+				throw new StoreException("Malformed query result from server", e);
 			}
 		}
 		else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
@@ -981,19 +981,19 @@ public class HTTPClient {
 				throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
 			}
 			else {
-				throw new RepositoryException(errInfo.toString());
+				throw new StoreException(errInfo.toString());
 			}
 		}
 	}
 
 	protected void getRDF(HttpMethod method, RDFHandler handler, boolean requireContext)
-		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
+		throws IOException, RDFHandlerException, StoreException, MalformedQueryException,
 		UnauthorizedException
 	{
 		// Specify which formats we support using Accept headers
 		Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
 		if (rdfFormats.isEmpty()) {
-			throw new RepositoryException("No tuple RDF parsers have been registered");
+			throw new StoreException("No tuple RDF parsers have been registered");
 		}
 
 		for (RDFFormat format : rdfFormats) {
@@ -1039,10 +1039,10 @@ public class HTTPClient {
 				parser.parse(method.getResponseBodyAsStream(), method.getURI().getURI());
 			}
 			catch (UnsupportedRDFormatException e) {
-				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
+				throw new StoreException("Server responded with an unsupported file format: " + mimeType);
 			}
 			catch (RDFParseException e) {
-				throw new RepositoryException("Malformed query result from server", e);
+				throw new StoreException("Malformed query result from server", e);
 			}
 		}
 		else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
@@ -1059,18 +1059,18 @@ public class HTTPClient {
 				throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
 			}
 			else {
-				throw new RepositoryException(errInfo.toString());
+				throw new StoreException(errInfo.toString());
 			}
 		}
 	}
 
 	protected boolean getBoolean(HttpMethod method)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+		throws IOException, StoreException, MalformedQueryException, UnauthorizedException
 	{
 		// Specify which formats we support using Accept headers
 		Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
 		if (booleanFormats.isEmpty()) {
-			throw new RepositoryException("No boolean query result parsers have been registered");
+			throw new StoreException("No boolean query result parsers have been registered");
 		}
 
 		for (BooleanQueryResultFormat format : booleanFormats) {
@@ -1103,10 +1103,10 @@ public class HTTPClient {
 				return parser.parse(method.getResponseBodyAsStream());
 			}
 			catch (UnsupportedQueryResultFormatException e) {
-				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
+				throw new StoreException("Server responded with an unsupported file format: " + mimeType);
 			}
 			catch (QueryResultParseException e) {
-				throw new RepositoryException("Malformed query result from server", e);
+				throw new StoreException("Malformed query result from server", e);
 			}
 		}
 		else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
@@ -1123,7 +1123,7 @@ public class HTTPClient {
 				throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
 			}
 			else {
-				throw new RepositoryException(method.getStatusText());
+				throw new StoreException(method.getStatusText());
 			}
 		}
 	}
@@ -1163,7 +1163,7 @@ public class HTTPClient {
 	}
 
 	protected ErrorInfo getErrorInfo(HttpMethod method)
-		throws RepositoryException
+		throws StoreException
 	{
 		try {
 			ErrorInfo errInfo = ErrorInfo.parse(method.getResponseBodyAsString());
@@ -1172,7 +1172,7 @@ public class HTTPClient {
 		}
 		catch (IOException e) {
 			logger.warn("Unable to retrieve error info from server");
-			throw new RepositoryException("Unable to retrieve error info from server", e);
+			throw new StoreException("Unable to retrieve error info from server", e);
 		}
 	}
 

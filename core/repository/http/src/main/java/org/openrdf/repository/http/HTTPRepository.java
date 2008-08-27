@@ -19,14 +19,14 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.rio.RDFFormat;
 
 /**
  * A repository that serves as a proxy for a remote repository on a Sesame
  * server.
  * 
- * Methods in this class may throw the specific RepositoryException subclasses
+ * Methods in this class may throw the specific StoreException subclasses
  * UnautorizedException and NotAllowedException, the semantics of which are
  * defined by the HTTP protocol.
  * 
@@ -90,13 +90,13 @@ public class HTTPRepository implements Repository {
 	}
 
 	public void initialize()
-		throws RepositoryException
+		throws StoreException
 	{
 		initialized = true;
 	}
 
 	public void shutDown()
-		throws RepositoryException
+		throws StoreException
 	{
 		initialized = false;
 	}
@@ -106,13 +106,13 @@ public class HTTPRepository implements Repository {
 	}
 
 	public RepositoryConnection getConnection()
-		throws RepositoryException
+		throws StoreException
 	{
 		return new HTTPRepositoryConnection(this);
 	}
 
 	public boolean isWritable()
-		throws RepositoryException
+		throws StoreException
 	{
 		if (!initialized) {
 			throw new IllegalStateException("HTTPRepository not initialized.");
@@ -135,19 +135,19 @@ public class HTTPRepository implements Repository {
 				}
 			}
 			catch (QueryEvaluationException e) {
-				throw new RepositoryException(e);
+				throw new StoreException(e);
 			}
 			finally {
 				try {
 					repositoryList.close();
 				}
 				catch (QueryEvaluationException e) {
-					throw new RepositoryException(e);
+					throw new StoreException(e);
 				}
 			}
 		}
 		catch (IOException e) {
-			throw new RepositoryException(e);
+			throw new StoreException(e);
 		}
 
 		return isWritable;

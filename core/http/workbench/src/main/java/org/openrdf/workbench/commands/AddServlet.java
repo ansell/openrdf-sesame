@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.model.Resource;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.workbench.base.TransformationServlet;
@@ -119,7 +119,7 @@ public class AddServlet extends TransformationServlet {
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException {
+			throws StoreException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "add.xsl");
 		builder.start();

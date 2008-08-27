@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.ByteArrayUtil;
 
-import org.openrdf.sail.SailException;
+import org.openrdf.StoreException;
 import org.openrdf.sail.nativerdf.btree.BTree;
 import org.openrdf.sail.nativerdf.btree.RecordComparator;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
@@ -162,13 +162,13 @@ class TripleStore {
 	 *--------------*/
 
 	public TripleStore(File dir, String indexSpecStr)
-		throws IOException, SailException
+		throws IOException, StoreException
 	{
 		this(dir, indexSpecStr, false);
 	}
 
 	public TripleStore(File dir, String indexSpecStr, boolean forceSync)
-		throws IOException, SailException
+		throws IOException, StoreException
 	{
 		this.dir = dir;
 		this.forceSync = forceSync;
@@ -189,10 +189,10 @@ class TripleStore {
 				try {
 					int version = Integer.parseInt(versionStr);
 					if (version < 10) {
-						throw new SailException("Directory contains incompatible triple data");
+						throw new StoreException("Directory contains incompatible triple data");
 					}
 					else if (version > SCHEME_VERSION) {
-						throw new SailException("Directory contains data that uses a newer data format");
+						throw new StoreException("Directory contains data that uses a newer data format");
 					}
 				}
 				catch (NumberFormatException e) {
@@ -254,7 +254,7 @@ class TripleStore {
 	 * @return A Set containing the parsed index specifications.
 	 */
 	private Set<String> parseIndexSpecList(String indexSpecStr)
-		throws SailException
+		throws StoreException
 	{
 		Set<String> indexes = new HashSet<String>();
 
@@ -267,7 +267,7 @@ class TripleStore {
 				if (index.length() != 4 || index.indexOf('s') == -1 || index.indexOf('p') == -1
 						|| index.indexOf('o') == -1 || index.indexOf('c') == -1)
 				{
-					throw new SailException("invalid value '" + index + "' in index specification: "
+					throw new StoreException("invalid value '" + index + "' in index specification: "
 							+ indexSpecStr);
 				}
 
@@ -279,7 +279,7 @@ class TripleStore {
 	}
 
 	private void reindex(Set<String> newIndexSpecs)
-		throws IOException, SailException
+		throws IOException, StoreException
 	{
 		// Check if the index specification has changed and update indexes if
 		// necessary
@@ -291,7 +291,7 @@ class TripleStore {
 		Set<String> currentIndexSpecs = parseIndexSpecList(currentIndexSpecStr);
 
 		if (currentIndexSpecs.isEmpty()) {
-			throw new SailException("Invalid index specification found in index properties");
+			throw new StoreException("Invalid index specification found in index properties");
 		}
 
 		// Determine the set of newly added indexes

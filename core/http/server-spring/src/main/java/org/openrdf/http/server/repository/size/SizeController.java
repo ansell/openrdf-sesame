@@ -25,7 +25,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 
 /**
  * Handles requests for the size of (set of contexts in) a repository.
@@ -57,7 +57,7 @@ public class SizeController extends AbstractController {
 		try {
 			size = repositoryCon.size(contexts);
 		}
-		catch (RepositoryException e) {
+		catch (StoreException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 		}
 

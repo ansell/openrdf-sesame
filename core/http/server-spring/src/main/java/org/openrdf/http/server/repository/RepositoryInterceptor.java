@@ -20,7 +20,7 @@ import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerInterceptor;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryManager;
 
@@ -118,7 +118,7 @@ public class RepositoryInterceptor extends ServerInterceptor {
 			catch (RepositoryConfigException e) {
 				throw new ServerHTTPException(e.getMessage(), e);
 			}
-			catch (RepositoryException e) {
+			catch (StoreException e) {
 				throw new ServerHTTPException(e.getMessage(), e);
 			}
 		}
@@ -132,7 +132,7 @@ public class RepositoryInterceptor extends ServerInterceptor {
 			try {
 				repositoryCon.close();
 			}
-			catch (RepositoryException e) {
+			catch (StoreException e) {
 				throw new ServerHTTPException(e.getMessage(), e);
 			}
 		}

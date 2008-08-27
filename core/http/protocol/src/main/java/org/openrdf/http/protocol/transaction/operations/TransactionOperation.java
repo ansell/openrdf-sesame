@@ -6,7 +6,7 @@
 package org.openrdf.http.protocol.transaction.operations;
 
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.StoreException;
 
 /**
  * An update operation that is part of a transaction.
@@ -20,10 +20,10 @@ public interface TransactionOperation {
 	 * 
 	 * @param con
 	 *        The connection the operation should be performed on.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         If such an exception is thrown by the connection while executing
 	 *         the operation.
 	 */
 	public abstract void execute(RepositoryConnection con)
-		throws RepositoryException;
+		throws StoreException;
 }

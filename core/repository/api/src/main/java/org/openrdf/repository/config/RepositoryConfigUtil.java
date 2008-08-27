@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -21,13 +22,12 @@ import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
 public class RepositoryConfigUtil {
 
 	public static Set<String> getRepositoryIDs(Repository repository)
-		throws RepositoryException
+		throws StoreException
 	{
 		RepositoryConnection con = repository.getConnection();
 		try {
@@ -65,13 +65,13 @@ public class RepositoryConfigUtil {
 	 *        the repositoryID to look for
 	 * @return true if configurion information for the specified repository ID
 	 *         was found, false otherwise
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         if an error occurred while trying to retrieve information from the
 	 *         (system) repository
 	 * @throws RepositoryConfigException
 	 */
 	public static boolean hasRepositoryConfig(Repository repository, String repositoryID)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		RepositoryConnection con = repository.getConnection();
 		try {
@@ -83,7 +83,7 @@ public class RepositoryConfigUtil {
 	}
 
 	public static RepositoryConfig getRepositoryConfig(Repository repository, String repositoryID)
-		throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, StoreException
 	{
 		RepositoryConnection con = repository.getConnection();
 		try {
@@ -97,7 +97,7 @@ public class RepositoryConfigUtil {
 			Resource context = idStatement.getContext();
 
 			if (context == null) {
-				throw new RepositoryException("No configuration context for repository " + repositoryID);
+				throw new StoreException("No configuration context for repository " + repositoryID);
 			}
 
 			Graph contextGraph = new GraphImpl();
@@ -122,13 +122,13 @@ public class RepositoryConfigUtil {
 	 *        Repository. The RepositoryConfig's ID may already occur in the
 	 *        Repository, in which case all previous configuration data for that
 	 *        Repository will be cleared before the RepositoryConfig is added.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         When access to the Repository's RepositoryConnection causes a
-	 *         RepositoryException.
+	 *         StoreException.
 	 * @throws RepositoryConfigException
 	 */
 	public static void updateRepositoryConfigs(Repository repository, RepositoryConfig... configs)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		RepositoryConnection con = repository.getConnection();
 
@@ -155,11 +155,11 @@ public class RepositoryConfigUtil {
 	 *        Repository, in which case all previous configuration data for that
 	 *        Repository will be cleared before the RepositoryConfig is added.
 	 * 
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 * @throws RepositoryConfigException
 	 */
 	public static void updateRepositoryConfigs(RepositoryConnection con, RepositoryConfig... configs)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		ValueFactory vf = con.getRepository().getValueFactory();
 
@@ -196,13 +196,13 @@ public class RepositoryConfigUtil {
 	 * @param repositoryIDs
 	 *        The IDs of the Repositories whose configurations need to be
 	 *        removed.
-	 * @throws RepositoryException
+	 * @throws StoreException
 	 *         Whenever access to the Repository's RepositoryConnection causes a
-	 *         RepositoryException.
+	 *         StoreException.
 	 * @throws RepositoryConfigException
 	 */
 	public static boolean removeRepositoryConfigs(Repository repository, String... repositoryIDs)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		boolean changed = false;
 
@@ -229,7 +229,7 @@ public class RepositoryConfigUtil {
 	}
 
 	public static Resource getContext(RepositoryConnection con, String repositoryID)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		Resource context = null;
 
@@ -242,7 +242,7 @@ public class RepositoryConfigUtil {
 	}
 
 	private static Statement getIDStatement(RepositoryConnection con, String repositoryID)
-		throws RepositoryException, RepositoryConfigException
+		throws StoreException, RepositoryConfigException
 	{
 		Literal idLiteral = con.getRepository().getValueFactory().createLiteral(repositoryID);
 		List<Statement> idStatementList = con.getStatements(null, REPOSITORYID, idLiteral, true).asList();
