@@ -147,6 +147,12 @@ public class BTreeTest extends TestCase {
 		iter1.close();
 	}
 
+	public void testNewAndClear()
+		throws Exception
+	{
+		btree.clear();
+	}
+
 	/* Test for SES-527
 		public void testRootNodeSplit()
 			throws Exception
