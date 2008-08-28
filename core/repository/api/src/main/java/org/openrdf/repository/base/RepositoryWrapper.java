@@ -8,6 +8,8 @@ package org.openrdf.repository.base;
 import java.io.File;
 
 import org.openrdf.StoreException;
+import org.openrdf.model.LiteralFactory;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
@@ -76,6 +78,14 @@ public class RepositoryWrapper implements DelegatingRepository {
 		throws StoreException
 	{
 		return getDelegate().getConnection();
+	}
+
+	public LiteralFactory getLiteralFactory() {
+		return getDelegate().getLiteralFactory();
+	}
+
+	public URIFactory getURIFactory() {
+		return getDelegate().getURIFactory();
 	}
 
 	public ValueFactory getValueFactory() {

@@ -8,6 +8,8 @@ package org.openrdf.repository;
 import java.io.File;
 
 import org.openrdf.StoreException;
+import org.openrdf.model.LiteralFactory;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.ValueFactory;
 
 /**
@@ -92,9 +94,24 @@ public interface Repository {
 		throws StoreException;
 
 	/**
+	 * Gets a URIFactory for this Repository.
+	 * 
+	 * @return A repository-specific URIFactory.
+	 */
+	public URIFactory getURIFactory();
+
+	/**
+	 * Gets a LiteralFactory for this Repository.
+	 * 
+	 * @return A repository-specific LiteralFactory.
+	 */
+	public LiteralFactory getLiteralFactory();
+
+	/**
 	 * Gets a ValueFactory for this Repository.
 	 * 
 	 * @return A repository-specific ValueFactory.
 	 */
+	@Deprecated
 	public ValueFactory getValueFactory();
 }

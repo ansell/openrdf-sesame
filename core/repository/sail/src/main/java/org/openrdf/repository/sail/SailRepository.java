@@ -8,6 +8,8 @@ package org.openrdf.repository.sail;
 import java.io.File;
 
 import org.openrdf.StoreException;
+import org.openrdf.model.LiteralFactory;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.sail.Sail;
@@ -100,6 +102,14 @@ public class SailRepository implements Repository {
 		throws StoreException
 	{
 		return sail.isWritable();
+	}
+
+	public LiteralFactory getLiteralFactory() {
+		return sail.getValueFactory();
+	}
+
+	public URIFactory getURIFactory() {
+		return sail.getValueFactory();
 	}
 
 	public ValueFactory getValueFactory() {

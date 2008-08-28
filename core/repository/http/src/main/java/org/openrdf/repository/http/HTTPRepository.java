@@ -10,6 +10,8 @@ import java.io.IOException;
 
 import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
+import org.openrdf.model.LiteralFactory;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -98,6 +100,14 @@ public class HTTPRepository implements Repository {
 		throws StoreException
 	{
 		initialized = false;
+	}
+
+	public LiteralFactory getLiteralFactory() {
+		return httpClient.getValueFactory();
+	}
+
+	public URIFactory getURIFactory() {
+		return httpClient.getValueFactory();
 	}
 
 	public ValueFactory getValueFactory() {
