@@ -62,7 +62,6 @@ import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.parser.ParsedBooleanQuery;
@@ -83,6 +82,7 @@ import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
+import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.RDFFormat;
@@ -119,37 +119,9 @@ public class Console {
 
 	private static final String TEMPLATES_DIR = "templates";
 
-	/**
-	 * Query that produces the list of the IDs and (optionally) titles of
-	 * configured repositories.
-	 */
-	public static final String REPOSITORY_LIST_QUERY;
-
-	/**
-	 * Query that yields the context of a specific repository configuration.
-	 */
-	public static final String REPOSITORY_CONTEXT_QUERY;
-
 	public static final Map<String, Level> LOG_LEVELS;
 
 	static {
-		StringBuilder query = new StringBuilder(256);
-		query.append("SELECT ID, Title ");
-		query.append("FROM {} rdf:type {sys:Repository};");
-		query.append("        sys:repositoryID {ID};");
-		query.append("        [rdfs:label {Title} where isLiteral(Title)] ");
-		query.append("WHERE isLiteral(ID) ");
-		query.append("USING NAMESPACE sys = <http://www.openrdf.org/config/repository#>");
-		REPOSITORY_LIST_QUERY = query.toString();
-
-		query.setLength(0);
-		query.append("SELECT C ");
-		query.append("FROM CONTEXT C ");
-		query.append("   {} rdf:type {sys:Repository};");
-		query.append("      sys:repositoryID {ID} ");
-		query.append("USING NAMESPACE sys = <http://www.openrdf.org/config/repository#>");
-		REPOSITORY_CONTEXT_QUERY = query.toString();
-
 		Map<String, Level> logLevels = new LinkedHashMap<String, Level>();
 		logLevels.put("none", Level.OFF);
 		logLevels.put("error", Level.SEVERE);
@@ -737,65 +709,32 @@ public class Console {
 
 		String id = tokens[1];
 
-		Repository systemRepo = manager.getSystemRepository();
-
 		try {
-			ValueFactory vf = systemRepo.getValueFactory();
-
-			RepositoryConnection con = systemRepo.getConnection();
-
-			try {
-				Resource context;
-				TupleQuery query = con.prepareTupleQuery(QueryLanguage.SERQL, REPOSITORY_CONTEXT_QUERY);
-				query.setBinding("ID", vf.createLiteral(id));
-				TupleQueryResult queryResult = query.evaluate();
-
-				try {
-					if (!queryResult.hasNext()) {
-						writeError("Unable to find context information for repository '" + id + "'");
-						logger.warn("Multiple contexts found for repository '{}'", id);
-						return;
-					}
-
-					BindingSet bindings = queryResult.next();
-					context = (Resource)bindings.getValue("C");
-
-					if (queryResult.hasNext()) {
-						writeError("Multiple contexts found for repository '" + id + "'");
-						logger.error("Multiple contexts found for repository '{}'", id);
-						return;
-					}
+			boolean proceed = askProceed("WARNING: you are about to drop repository '" + id + "'.", true);
+			if (proceed) {
+				if (id.equals(repositoryID)) {
+					closeRepository(false);
 				}
-				finally {
-					queryResult.close();
-				}
+				boolean isRemoved = manager.removeRepositoryConfig(id);
 
-				boolean proceed = askProceed("WARNING: you are about to drop repository '" + id + "'.", true);
-				if (proceed) {
-					if (id.equals(repositoryID)) {
-						closeRepository(false);
-					}
-					con.clear(context);
+				if (isRemoved) {
 					writeln("Dropped repository '" + id + "'");
 				}
 				else {
-					writeln("Drop aborted");
+					writeln("Unknown repository '" + id + "'");
 				}
 			}
-			catch (MalformedQueryException e) {
-				writeError("Internal error: malformed preconfigured query");
-				logger.error("Malformed preconfigured query", e);
+			else {
+				writeln("Drop aborted");
 			}
-			catch (QueryEvaluationException e) {
-				throw new RepositoryException(e);
-			}
-			finally {
-				con.close();
-			}
+		}
+		catch (RepositoryConfigException e) {
+			writeError("Unable to drop repository '" + id + "': " + e.getMessage());
+			logger.warn("Unable to drop repository '" + id + "'", e);
 		}
 		catch (RepositoryReadOnlyException e) {
 			try {
-				if (tryToRemoveLock(e, systemRepo)) {
+				if (tryToRemoveLock(e, manager.getSystemRepository())) {
 					dropRepository(tokens);
 				}
 				else {
@@ -809,8 +748,8 @@ public class Console {
 			}
 		}
 		catch (RepositoryException e) {
-			writeError("Failed to drop repository: " + e.getMessage());
-			logger.error("Failed to drop repository", e);
+			writeError("Failed to update configuration in system repository: " + e.getMessage());
+			logger.warn("Failed to update configuration in system repository", e);
 		}
 	}
 
@@ -924,43 +863,21 @@ public class Console {
 
 	private void showRepositories() {
 		try {
-			Repository systemRepo = manager.getSystemRepository();
-			RepositoryConnection con = systemRepo.getConnection();
-			try {
-				TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, REPOSITORY_LIST_QUERY).evaluate();
-				try {
-					if (!queryResult.hasNext()) {
-						writeln("--no repositories found--");
-					}
-					else {
-						writeln("+----------");
-						while (queryResult.hasNext()) {
-							BindingSet bindings = queryResult.next();
-							String id = bindings.getValue("ID").stringValue();
-							String title = bindings.getValue("Title").stringValue();
+			Collection<RepositoryInfo> repInfos = manager.getAllRepositoryInfos();
 
-							write("|" + id);
-							if (title != null) {
-								write(" (\"" + title + "\")");
-							}
-							writeln();
-						}
-						writeln("+----------");
+			if (repInfos.isEmpty()) {
+				writeln("--no repositories found--");
+			}
+			else {
+				writeln("+----------");
+				for (RepositoryInfo repInfo : repInfos) {
+					write("|" + repInfo.getId());
+					if (repInfo.getDescription() != null) {
+						write(" (\"" + repInfo.getDescription() + "\")");
 					}
+					writeln();
 				}
-				finally {
-					queryResult.close();
-				}
-			}
-			catch (MalformedQueryException e) {
-				writeError("Internal error: malformed preconfigured query");
-				logger.error("Failed to show repository", e);
-			}
-			catch (QueryEvaluationException e) {
-				throw new RepositoryException(e);
-			}
-			finally {
-				con.close();
+				writeln("+----------");
 			}
 		}
 		catch (RepositoryException e) {
