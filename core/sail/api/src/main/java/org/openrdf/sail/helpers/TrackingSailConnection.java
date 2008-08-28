@@ -1,0 +1,346 @@
+/*
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ *
+ * Licensed under the Aduna BSD-style license.
+ */
+package org.openrdf.sail.helpers;
+
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import info.aduna.iteration.CloseableIteration;
+
+import org.openrdf.StoreException;
+import org.openrdf.model.Namespace;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
+
+/**
+ * Abstract Class offering base functionality for SailConnection
+ * implementations.
+ * 
+ * @author Arjohn Kampman
+ * @author jeen
+ */
+public class TrackingSailConnection extends InferencerConnectionWrapper {
+
+	private final Logger logger = LoggerFactory.getLogger(TrackingSailConnection.class);
+
+	/*-----------*
+	 * Variables *
+	 *-----------*/
+
+	private boolean isOpen;
+
+	private boolean txnActive;
+
+	// FIXME: use weak references here?
+	private List<TrackingSailIteration<?>> activeIterations = Collections.synchronizedList(new LinkedList<TrackingSailIteration<?>>());
+
+	/*
+	 * Stores a stack trace that indicates where this connection as created if
+	 * debugging is enabled.
+	 */
+	private Throwable creatorTrace;
+
+	private SailConnectionTracker tracker;
+
+	/*--------------*
+	 * Constructors *
+	 *--------------*/
+
+	public TrackingSailConnection(SailConnection con, SailConnectionTracker tracker) {
+		super(con);
+		isOpen = true;
+		txnActive = false;
+		this.tracker = tracker;
+		if (isDebugEnabled()) {
+			creatorTrace = new Throwable();
+		}
+	}
+
+	/*---------*
+	 * Methods *
+	 *---------*/
+
+	/*
+	 * Note: the following debugEnabled method are private so that they can be
+	 * removed when open connections no longer block other connections and they
+	 * can be closed silently (just like in JDBC).
+	 */
+	boolean isDebugEnabled() {
+		return tracker.isDebugEnabled();
+	}
+
+	public final boolean isOpen()
+		throws StoreException
+	{
+		return isOpen;
+	}
+
+	private void verifyIsOpen()
+		throws StoreException
+	{
+		if (!isOpen) {
+			throw new IllegalStateException("Connection has been closed");
+		}
+	}
+
+	public final void close()
+		throws StoreException
+	{
+		if (isOpen) {
+			try {
+				while (true) {
+					TrackingSailIteration<?> ci = null;
+
+					synchronized (activeIterations) {
+						if (activeIterations.isEmpty()) {
+							break;
+						}
+						else {
+							ci = activeIterations.remove(0);
+						}
+					}
+
+					try {
+						ci.forceClose();
+					}
+					catch (StoreException e) {
+						throw e;
+					}
+					catch (Exception e) {
+						throw new StoreException(e);
+					}
+				}
+
+				assert activeIterations.isEmpty();
+
+				if (txnActive) {
+					logger.warn("Rolling back transaction due to connection close", new Throwable());
+					try {
+						// Use internal method to avoid deadlock: the public
+						// rollback method will try to obtain a connection lock
+						super.rollback();
+					}
+					finally {
+						txnActive = false;
+					}
+				}
+
+				super.close();
+			}
+			finally {
+				isOpen = false;
+				tracker.closed(this);
+			}
+		}
+	}
+
+	@Override
+	protected void finalize()
+		throws Throwable
+	{
+		try {
+			if (isOpen()) {
+				if (creatorTrace != null) {
+					logger.warn("Closing connection due to garbage collection, connection was create in:",
+							creatorTrace);
+				}
+				close();
+			}
+		}
+		finally {
+			super.finalize();
+		}
+	}
+
+	public final CloseableIteration<? extends BindingSet, StoreException> evaluate(
+			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws StoreException
+	{
+		verifyIsOpen();
+		return registerIteration(super.evaluate(tupleExpr, dataset, bindings, includeInferred));
+	}
+
+	public final CloseableIteration<? extends Resource, StoreException> getContextIDs()
+		throws StoreException
+	{
+		verifyIsOpen();
+		return registerIteration(super.getContextIDs());
+	}
+
+	public final CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj, URI pred,
+			Value obj, boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		verifyIsOpen();
+		return registerIteration(super.getStatements(subj, pred, obj, includeInferred, contexts));
+	}
+
+	public final long size(Resource... contexts)
+		throws StoreException
+	{
+		verifyIsOpen();
+		return super.size(contexts);
+	}
+
+	private void autoStartTransaction()
+		throws StoreException
+	{
+		begin();
+	}
+
+	@Override
+	public void begin()
+		throws StoreException
+	{
+		if (!txnActive) {
+			super.begin();
+			txnActive = true;
+		}
+	}
+
+	public final void commit()
+		throws StoreException
+	{
+		verifyIsOpen();
+		if (txnActive) {
+			super.commit();
+			txnActive = false;
+		}
+	}
+
+	public final void rollback()
+		throws StoreException
+	{
+		verifyIsOpen();
+		if (txnActive) {
+			try {
+				super.rollback();
+			}
+			finally {
+				txnActive = false;
+			}
+		}
+	}
+
+	public final void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		verifyIsOpen();
+		autoStartTransaction();
+		super.addStatement(subj, pred, obj, contexts);
+	}
+
+	@Override
+	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		verifyIsOpen();
+		autoStartTransaction();
+		return super.addInferredStatement(subj, pred, obj, contexts);
+	}
+
+	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		verifyIsOpen();
+		autoStartTransaction();
+		super.removeStatements(subj, pred, obj, contexts);
+	}
+
+	@Override
+	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		verifyIsOpen();
+		autoStartTransaction();
+		return super.removeInferredStatement(subj, pred, obj, contexts);
+	}
+
+	public final void clear(Resource... contexts)
+		throws StoreException
+	{
+		verifyIsOpen();
+		autoStartTransaction();
+		super.clear(contexts);
+	}
+
+	@Override
+	public void clearInferred(Resource... contexts)
+		throws StoreException
+	{
+		verifyIsOpen();
+		autoStartTransaction();
+		super.clearInferred(contexts);
+	}
+
+	public final CloseableIteration<? extends Namespace, StoreException> getNamespaces()
+		throws StoreException
+	{
+		verifyIsOpen();
+		return registerIteration(super.getNamespaces());
+	}
+
+	public final String getNamespace(String prefix)
+		throws StoreException
+	{
+		verifyIsOpen();
+		return super.getNamespace(prefix);
+	}
+
+	public final void setNamespace(String prefix, String name)
+		throws StoreException
+	{
+		verifyIsOpen();
+		autoStartTransaction();
+		super.setNamespace(prefix, name);
+	}
+
+	public final void removeNamespace(String prefix)
+		throws StoreException
+	{
+		verifyIsOpen();
+		autoStartTransaction();
+		super.removeNamespace(prefix);
+	}
+
+	public final void clearNamespaces()
+		throws StoreException
+	{
+		verifyIsOpen();
+		autoStartTransaction();
+		super.clearNamespaces();
+	}
+
+	/**
+	 * Registers an iteration as active by wrapping it in a
+	 * {@link TrackingSailIteration} object and adding it to the list of active
+	 * iterations.
+	 */
+	private <T> CloseableIteration<T, StoreException> registerIteration(CloseableIteration<T, StoreException> iter)
+	{
+		TrackingSailIteration<T> result = new TrackingSailIteration<T>(iter, this);
+		activeIterations.add(result);
+		return result;
+	}
+
+	/**
+	 * Called by {@link TrackingSailIteration} to indicate that it has been closed.
+	 */
+	void iterationClosed(TrackingSailIteration<?> iter) {
+		activeIterations.remove(iter);
+	}
+}

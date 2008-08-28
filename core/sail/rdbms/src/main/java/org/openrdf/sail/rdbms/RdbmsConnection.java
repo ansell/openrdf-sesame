@@ -25,7 +25,7 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
-import org.openrdf.sail.helpers.SailConnectionBase;
+import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.iteration.NamespaceIteration;
@@ -43,7 +43,7 @@ import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
  * @author James Leigh
  * 
  */
-public class RdbmsConnection extends SailConnectionBase {
+public class RdbmsConnection extends NotifyingSailConnectionBase {
 
 	private RdbmsStore sail;
 
@@ -62,7 +62,6 @@ public class RdbmsConnection extends SailConnectionBase {
 	private Lock lock;
 
 	public RdbmsConnection(RdbmsStore sail, RdbmsTripleRepository triples) {
-		super(sail);
 		this.sail = sail;
 		this.vf = sail.getValueFactory();
 		this.triples = triples;
@@ -263,10 +262,11 @@ public class RdbmsConnection extends SailConnectionBase {
 	}
 
 	@Override
-	protected void startTransactionInternal()
+	public void begin()
 		throws StoreException
 	{
 		try {
+			super.begin();
 			lock();
 			triples.begin();
 		}

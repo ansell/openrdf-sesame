@@ -19,7 +19,8 @@ import org.apache.commons.dbcp.BasicDataSource;
 
 import org.openrdf.StoreException;
 import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.sail.helpers.SailBase;
+import org.openrdf.sail.helpers.NotifyingSailBase;
+import org.openrdf.sail.helpers.SynchronizedSailConnection;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 
 /**
@@ -30,7 +31,7 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
  * @author James Leigh
  * 
  */
-public class RdbmsStore extends SailBase {
+public class RdbmsStore extends NotifyingSailBase {
 
 	private RdbmsConnectionFactory factory;
 
@@ -167,7 +168,8 @@ public class RdbmsStore extends SailBase {
 	protected NotifyingSailConnection getConnectionInternal()
 		throws StoreException
 	{
-		return factory.createConnection();
+		NotifyingSailConnection con = factory.createConnection();
+		return new SynchronizedSailConnection(con);
 	}
 
 	@Override
