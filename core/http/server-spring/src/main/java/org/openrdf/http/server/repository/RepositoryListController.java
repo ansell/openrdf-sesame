@@ -17,9 +17,10 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
+import org.openrdf.StoreException;
 import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerHTTPException;
-import org.openrdf.model.ValueFactory;
+import org.openrdf.model.URIFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
@@ -29,7 +30,6 @@ import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.manager.RepositoryManager;
 
 /**
@@ -68,7 +68,7 @@ public class RepositoryListController extends AbstractController {
 		throws Exception
 	{
 		Repository systemRepository = repositoryManager.getSystemRepository();
-		ValueFactory vf = systemRepository.getValueFactory();
+		URIFactory vf = systemRepository.getURIFactory();
 
 		try {
 			RepositoryConnection con = systemRepository.getConnection();

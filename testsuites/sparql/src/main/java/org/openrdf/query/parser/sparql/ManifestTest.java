@@ -132,7 +132,7 @@ public class ManifestTest {
 
 		try {
 			OpenRDFUtil.verifyContextNotNull(contexts);
-			final ValueFactory vf = con.getRepository().getValueFactory();
+			final ValueFactory vf = con.getValueFactory();
 			RDFParser rdfParser = new TurtleParser();
 			rdfParser.setValueFactory(vf);
 

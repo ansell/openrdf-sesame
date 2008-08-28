@@ -63,7 +63,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 			}
 		};
 
-		final ValueFactory vf = getConnection().getRepository().getValueFactory();
+		final ValueFactory vf = getConnection().getValueFactory();
 
 		// Convert the BindingSet objects to actual RDF statements
 		CloseableIteration<Statement, StoreException> stIter;

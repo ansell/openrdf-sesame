@@ -49,19 +49,21 @@ import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.Graph;
+import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.EvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
@@ -739,7 +741,7 @@ public class Console {
 		Repository systemRepo = manager.getSystemRepository();
 
 		try {
-			ValueFactory vf = systemRepo.getValueFactory();
+			LiteralFactory vf = systemRepo.getLiteralFactory();
 
 			RepositoryConnection con = systemRepo.getConnection();
 
@@ -1095,19 +1097,6 @@ public class Console {
 		}
 
 		try {
-			Resource[] contexts = new Resource[0];
-
-			if (context != null) {
-				Resource contextURI;
-				if (context.startsWith("_:")) {
-					contextURI = repository.getValueFactory().createBNode(context.substring(2));
-				}
-				else {
-					contextURI = repository.getValueFactory().createURI(context);
-				}
-
-				contexts = new Resource[] { contextURI };
-			}
 
 			RDFFormat format = Rio.getParserFormatForFileName(dataPath, RDFFormat.RDFXML);
 
@@ -1116,6 +1105,19 @@ public class Console {
 
 			RepositoryConnection con = repository.getConnection();
 			try {
+				Resource[] contexts = new Resource[0];
+
+				if (context != null) {
+					Resource contextURI;
+					if (context.startsWith("_:")) {
+						contextURI = con.getValueFactory().createBNode(context.substring(2));
+					}
+					else {
+						contextURI = con.getValueFactory().createURI(context);
+					}
+
+					contexts = new Resource[] { contextURI };
+				}
 				if (dataURL != null) {
 					con.add(dataURL, baseURI, format, contexts);
 				}
@@ -1262,7 +1264,7 @@ public class Console {
 			return;
 		}
 
-		ValueFactory valueFactory = repository.getValueFactory();
+		URIFactory valueFactory = repository.getURIFactory();
 
 		Resource[] contexts = new Resource[tokens.length - 1];
 
@@ -1271,9 +1273,6 @@ public class Console {
 
 			if (contextID.equalsIgnoreCase("null")) {
 				contexts[i - 1] = null;
-			}
-			else if (contextID.startsWith("_:")) {
-				contexts[i - 1] = valueFactory.createBNode(contextID.substring(2));
 			}
 			else {
 				try {

@@ -90,12 +90,12 @@ public abstract class SparqlRegexTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		repository = createRepository();
-		vf = repository.getValueFactory();
+		conn = repository.getConnection();
+		vf = conn.getValueFactory();
 		hunt = vf.createLiteral("James Leigh Hunt");
 		createUser("james", "James Leigh", "james@leigh");
 		createUser("megan", "Megan Leigh", "megan@leigh");
 		createUser("hunt", "James Leigh Hunt", "james@work.example");
-		conn = repository.getConnection();
 	}
 
 	protected Repository createRepository() throws Exception {

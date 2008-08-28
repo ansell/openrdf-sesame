@@ -124,7 +124,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		testCon2 = testRepository.getConnection();
 
-		vf = testRepository.getValueFactory();
+		vf = testCon.getValueFactory();
 
 		// Initialize values
 		bob = vf.createBNode();

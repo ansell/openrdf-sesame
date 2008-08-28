@@ -212,7 +212,7 @@ public class RDFInserter extends RDFHandlerBase {
 		BNode result = bNodesMap.get(bNode.getID());
 
 		if (result == null) {
-			result = con.getRepository().getValueFactory().createBNode();
+			result = con.getValueFactory().createBNode();
 			bNodesMap.put(bNode.getID(), result);
 		}
 
