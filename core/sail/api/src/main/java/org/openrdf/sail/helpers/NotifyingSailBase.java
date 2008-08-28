@@ -15,13 +15,12 @@ import org.openrdf.sail.SailChangedEvent;
 import org.openrdf.sail.SailChangedListener;
 
 /**
- * SailBase is an abstract Sail implementation that takes care of common sail
- * tasks, including proper closing of active connections and a grace period for
- * active connections during shutdown of the store.
+ * This class extends {@link SailBase} with {@link NotifyingSail} support.
  * 
  * @author Herko ter Horst
  * @author jeen
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public abstract class NotifyingSailBase extends SailBase implements NotifyingSail {
 

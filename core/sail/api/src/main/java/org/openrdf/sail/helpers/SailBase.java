@@ -22,6 +22,7 @@ import org.openrdf.sail.SailConnection;
  * @author Herko ter Horst
  * @author jeen
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public abstract class SailBase implements Sail {
 

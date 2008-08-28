@@ -29,6 +29,7 @@ import org.openrdf.sail.inferencer.InferencerConnection;
  * 
  * @author Arjohn Kampman
  * @author jeen
+ * @author James Leigh
  */
 public abstract class SailConnectionBase implements SailConnection {
 

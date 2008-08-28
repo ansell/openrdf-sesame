@@ -29,6 +29,7 @@ import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
  * 
  * @author Arjohn Kampman
  * @author jeen
+ * @author James Leigh
  */
 public class SynchronizedSailConnection extends InferencerConnectionWrapper {
 
