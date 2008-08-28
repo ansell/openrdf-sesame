@@ -289,6 +289,12 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 		}
 	}
 
+	public void begin()
+		throws StoreException
+	{
+		autoStartTransaction();
+	}
+
 	public final void commit()
 		throws StoreException
 	{

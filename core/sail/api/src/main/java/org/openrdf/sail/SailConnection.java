@@ -135,6 +135,16 @@ public interface SailConnection {
 		throws StoreException;
 
 	/**
+	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
+	 * be called to close the transaction.
+	 * 
+	 * @throws StoreException
+	 *         If the SailConnection could not start a transaction.
+	 */
+	public void begin()
+		throws StoreException;
+
+	/**
 	 * Commits any updates that have been performed since the last time
 	 * {@link #commit()} or {@link #rollback()} was called.
 	 * 
