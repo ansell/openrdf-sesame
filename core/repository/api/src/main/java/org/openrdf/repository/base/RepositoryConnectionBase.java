@@ -29,6 +29,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
@@ -89,6 +90,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	public Repository getRepository() {
 		return repository;
+	}
+
+	public ValueFactory getValueFactory() {
+		return getRepository().getValueFactory();
 	}
 
 	public boolean isOpen()
