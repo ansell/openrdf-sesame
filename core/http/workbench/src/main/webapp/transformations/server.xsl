@@ -24,7 +24,7 @@
 						<td>
 							<input id="workbench-server"
 								name="workbench-server" type="text"
-								value="{$info//$info//sparql:binding[@name='server']}" />
+								value="{normalize-space($info//sparql:binding[@name='server'])}" />
 						</td>
 						<td>
 							<span class="error">
