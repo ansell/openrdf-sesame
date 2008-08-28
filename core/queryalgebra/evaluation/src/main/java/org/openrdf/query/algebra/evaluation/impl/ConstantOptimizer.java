@@ -16,7 +16,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.FunctionCall;
@@ -28,6 +27,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
+import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
 
@@ -53,8 +53,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 	 * 
 	 * @param tupleExpr
 	 * @return optimized TupleExpr
-	 * @throws StoreException 
-	 * @throws EvaluationException
+	 * @throws StoreException
 	 */
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings)
 		throws StoreException
@@ -70,20 +69,25 @@ public class ConstantOptimizer implements QueryOptimizer {
 		{
 			or.visitChildren(this);
 
-			for (ValueExpr arg : or.getArgs()) {
-				if (isConstant(arg)) {
-					if (strategy.isTrue(arg, EmptyBindingSet.getInstance())) {
-						or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
-						return;
-					} else {
-						or.removeChildNode(arg);
+			try {
+				for (ValueExpr arg : or.getArgs()) {
+					if (isConstant(arg)) {
+						if (strategy.isTrue(arg, EmptyBindingSet.getInstance())) {
+							or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+							return;
+						} else {
+							or.removeChildNode(arg);
+						}
 					}
 				}
+				if (or.getNumberOfArguments() == 0) {
+					or.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
+				} else if (or.getNumberOfArguments() == 1) {
+					or.replaceWith(or.getArg(0));
+				}
 			}
-			if (or.getNumberOfArguments() == 0) {
-				or.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
-			} else if (or.getNumberOfArguments() == 1) {
-				or.replaceWith(or.getArg(0));
+			catch (ValueExprEvaluationException e) {
+				logger.warn("Failed to evaluate BinaryValueOperator with two constant arguments", e);
 			}
 		}
 
@@ -93,22 +97,27 @@ public class ConstantOptimizer implements QueryOptimizer {
 		{
 			and.visitChildren(this);
 
-			for (ValueExpr arg : and.getArgs()) {
-				if (isConstant(arg)) {
-					boolean isTrue = strategy.isTrue(arg, EmptyBindingSet.getInstance());
-					if (isTrue) {
-						and.removeChildNode(arg);
-					}
-					else {
-						and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
-						return;
+			try {
+				for (ValueExpr arg : and.getArgs()) {
+					if (isConstant(arg)) {
+						boolean isTrue = strategy.isTrue(arg, EmptyBindingSet.getInstance());
+						if (isTrue) {
+							and.removeChildNode(arg);
+						}
+						else {
+							and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
+							return;
+						}
 					}
 				}
+				if (and.getNumberOfArguments() == 0) {
+					and.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+				} else if (and.getNumberOfArguments() == 1) {
+					and.replaceWith(and.getArg(0));
+				}
 			}
-			if (and.getNumberOfArguments() == 0) {
-				and.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
-			} else if (and.getNumberOfArguments() == 1) {
-				and.replaceWith(and.getArg(0));
+			catch (ValueExprEvaluationException e) {
+				logger.warn("Failed to evaluate And with some constant arguments", e);
 			}
 		}
 
@@ -122,8 +131,13 @@ public class ConstantOptimizer implements QueryOptimizer {
 				if (!isConstant(arg))
 					return;
 			}
-			Value value = strategy.evaluate(naryValueOp, EmptyBindingSet.getInstance());
-			naryValueOp.replaceWith(new ValueConstant(value));
+			try {
+				Value value = strategy.evaluate(naryValueOp, EmptyBindingSet.getInstance());
+				naryValueOp.replaceWith(new ValueConstant(value));
+			}
+			catch (ValueExprEvaluationException e) {
+				logger.warn("Failed to evaluate NaryValueOperator with a constant argument", e);
+			}
 		}
 
 		@Override
@@ -141,8 +155,13 @@ public class ConstantOptimizer implements QueryOptimizer {
 
 			// All arguments are constant
 
-			Value value = strategy.evaluate(functionCall, EmptyBindingSet.getInstance());
-			functionCall.replaceWith(new ValueConstant(value));
+			try {
+				Value value = strategy.evaluate(functionCall, EmptyBindingSet.getInstance());
+				functionCall.replaceWith(new ValueConstant(value));
+			}
+			catch (ValueExprEvaluationException e) {
+				logger.warn("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+			}
 		}
 
 		@Override
