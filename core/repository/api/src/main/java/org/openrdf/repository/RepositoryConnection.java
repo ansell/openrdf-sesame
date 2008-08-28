@@ -19,6 +19,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
@@ -82,6 +83,13 @@ public interface RepositoryConnection {
 	 * Returns the Repository object to which this connection belongs.
 	 */
 	public Repository getRepository();
+
+	/**
+	 * Gets a ValueFactory for this RepositoryConnection.
+	 * 
+	 * @return A repository-specific ValueFactory.
+	 */
+	public ValueFactory getValueFactory();
 
 	/**
 	 * Checks whether this connection is open. A connection is open from the
