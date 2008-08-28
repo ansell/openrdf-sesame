@@ -14,10 +14,12 @@ import info.aduna.iteration.IterationWrapper;
 import org.openrdf.StoreException;
 
 /**
- * An iteration extension that keeps a reference to the SailConnectionBase from
- * which it originates and signals when it is closed.
+ * An iteration extension that keeps a reference to the
+ * {@link TrackingSailConnection} from which it originates and signals when it
+ * is closed.
  * 
  * @author jeen
+ * @author James Leigh
  */
 class TrackingSailIteration<T> extends IterationWrapper<T, StoreException> {
 	

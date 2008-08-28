@@ -16,13 +16,13 @@ import org.openrdf.StoreException;
 import org.openrdf.sail.SailConnection;
 
 /**
- * SailBase is an abstract Sail implementation that takes care of common sail
- * tasks, including proper closing of active connections and a grace period for
- * active connections during shutdown of the store.
+ * Takes care of closing of active connections and a grace period for active
+ * connections during shutdown of the store.
  * 
  * @author Herko ter Horst
  * @author jeen
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public class SailConnectionTracker {
 

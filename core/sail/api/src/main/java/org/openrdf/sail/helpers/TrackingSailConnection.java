@@ -27,11 +27,11 @@ import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
 
 /**
- * Abstract Class offering base functionality for SailConnection
- * implementations.
+ * Tracks SailConnection iterations and verifies that the connection is open.
  * 
  * @author Arjohn Kampman
  * @author jeen
+ * @author James Leigh
  */
 public class TrackingSailConnection extends InferencerConnectionWrapper {
 

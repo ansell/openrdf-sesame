@@ -16,6 +16,7 @@ import org.openrdf.sail.SailChangedListener;
  * object and forwards any relevant calls to the wrapped Sail.
  * 
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public class NotifyingSailWrapper extends SailWrapper implements NotifyingSail {
 

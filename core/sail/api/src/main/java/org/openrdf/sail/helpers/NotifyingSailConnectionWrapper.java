@@ -14,6 +14,7 @@ import org.openrdf.sail.SailConnectionListener;
  * object and forwards any method calls to the wrapped transaction.
  * 
  * @author jeen
+ * @author James Leigh
  */
 public class NotifyingSailConnectionWrapper extends SailConnectionWrapper implements NotifyingSailConnection {
 
