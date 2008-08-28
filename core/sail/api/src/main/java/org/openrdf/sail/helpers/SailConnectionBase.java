@@ -30,6 +30,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnectionListener;
+import org.openrdf.sail.inferencer.InferencerConnection;
 
 /**
  * Abstract Class offering base functionality for SailConnection
@@ -117,6 +118,14 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public boolean isInferencingSupported() {
+		return this instanceof InferencerConnection;
+	}
+
+	public boolean isNotifyingSupported() {
+		return this instanceof NotifyingSailConnection;
+	}
 
 	public final boolean isOpen()
 		throws StoreException

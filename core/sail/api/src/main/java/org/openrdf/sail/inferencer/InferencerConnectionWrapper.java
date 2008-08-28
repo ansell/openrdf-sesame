@@ -15,6 +15,7 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.NotifyingSailConnectionWrapper;
 
 /**
@@ -32,11 +33,20 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 *--------------*/
 
 	/**
+	 * Creates a new wrapper object that wraps the supplied connection.
+	 */
+	public InferencerConnectionWrapper(SailConnection con) {
+		super(con);
+	}
+
+	/**
 	 * Creates a new InferencerConnectionWrapper object that wraps the supplied
-	 * transaction.
+	 * connection and ensures the connection supports inferencinc.
 	 */
 	public InferencerConnectionWrapper(InferencerConnection con) {
 		super(con);
+		if (!con.isInferencingSupported())
+			throw new IllegalArgumentException("Sail does not support inferencing");
 	}
 
 	/*---------*
