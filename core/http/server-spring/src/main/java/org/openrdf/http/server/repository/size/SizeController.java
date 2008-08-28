@@ -17,15 +17,14 @@ import org.springframework.web.servlet.mvc.AbstractController;
 
 import info.aduna.webapp.views.SimpleResponseView;
 
+import org.openrdf.StoreException;
 import org.openrdf.http.protocol.Protocol;
-import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.ProtocolUtil;
+import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 
 /**
  * Handles requests for the size of (set of contexts in) a repository.
@@ -46,10 +45,9 @@ public class SizeController extends AbstractController {
 	{
 		ProtocolUtil.logRequestParameters(request);
 
-		Repository repository = RepositoryInterceptor.getRepository(request);
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 
-		ValueFactory vf = repository.getValueFactory();
+		ValueFactory vf = repositoryCon.getValueFactory();
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, Protocol.CONTEXT_PARAM_NAME, vf);
 
 		long size = -1;

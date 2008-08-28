@@ -7,10 +7,11 @@ import junit.framework.TestCase;
 
 import org.openrdf.StoreException;
 import org.openrdf.model.Literal;
+import org.openrdf.model.LiteralFactory;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.EvaluationException;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
@@ -85,14 +86,15 @@ public abstract class SparqlOrderByTest extends TestCase {
 
 	private void createEmployee(String id, String name, int empId)
 			throws StoreException {
-		ValueFactory vf = repository.getValueFactory();
+		URIFactory uf = repository.getURIFactory();
+		LiteralFactory lf = repository.getLiteralFactory();
 		String foafName = "http://xmlns.com/foaf/0.1/name";
 		String exEmpId = "http://example.org/ns#empId";
 		RepositoryConnection conn = repository.getConnection();
-		conn.add(vf.createURI("http://example.org/ns#" + id), vf
-				.createURI(foafName), vf.createLiteral(name));
-		conn.add(vf.createURI("http://example.org/ns#" + id), vf
-				.createURI(exEmpId), vf.createLiteral(empId));
+		conn.add(uf.createURI("http://example.org/ns#" + id), uf
+				.createURI(foafName), lf.createLiteral(name));
+		conn.add(uf.createURI("http://example.org/ns#" + id), uf
+				.createURI(exEmpId), lf.createLiteral(empId));
 		conn.close();
 	}
 

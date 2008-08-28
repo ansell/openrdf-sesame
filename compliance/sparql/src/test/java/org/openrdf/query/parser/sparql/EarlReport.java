@@ -49,8 +49,8 @@ public class EarlReport {
 	{
 		earlRepository = new SailRepository(new MemoryStore());
 		earlRepository.initialize();
-		vf = earlRepository.getValueFactory();
 		con = earlRepository.getConnection();
+		vf = con.getValueFactory();
 		con.setAutoCommit(false);
 
 		con.setNamespace("rdf", RDF.NAMESPACE);

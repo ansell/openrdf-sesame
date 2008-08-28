@@ -161,7 +161,7 @@ public class RepositoryConfigUtil {
 	public static void updateRepositoryConfigs(RepositoryConnection con, RepositoryConfig... configs)
 		throws StoreException, RepositoryConfigException
 	{
-		ValueFactory vf = con.getRepository().getValueFactory();
+		ValueFactory vf = con.getValueFactory();
 
 		boolean wasAutoCommit = con.isAutoCommit();
 		con.setAutoCommit(false);
@@ -244,7 +244,7 @@ public class RepositoryConfigUtil {
 	private static Statement getIDStatement(RepositoryConnection con, String repositoryID)
 		throws StoreException, RepositoryConfigException
 	{
-		Literal idLiteral = con.getRepository().getValueFactory().createLiteral(repositoryID);
+		Literal idLiteral = con.getValueFactory().createLiteral(repositoryID);
 		List<Statement> idStatementList = con.getStatements(null, REPOSITORYID, idLiteral, true).asList();
 
 		if (idStatementList.size() == 1) {

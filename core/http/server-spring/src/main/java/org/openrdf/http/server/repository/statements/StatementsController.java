@@ -126,7 +126,7 @@ public class StatementsController extends AbstractController {
 	{
 		ProtocolUtil.logRequestParameters(request);
 
-		ValueFactory vf = repository.getValueFactory();
+		ValueFactory vf = repositoryCon.getValueFactory();
 
 		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
 		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
@@ -206,7 +206,7 @@ public class StatementsController extends AbstractController {
 			throw new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported MIME type: " + mimeType);
 		}
 
-		ValueFactory vf = repository.getValueFactory();
+		ValueFactory vf = repositoryCon.getValueFactory();
 
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
 		URI baseURI = ProtocolUtil.parseURIParam(request, BASEURI_PARAM_NAME, vf);
@@ -255,7 +255,7 @@ public class StatementsController extends AbstractController {
 	{
 		ProtocolUtil.logRequestParameters(request);
 
-		ValueFactory vf = repository.getValueFactory();
+		ValueFactory vf = repositoryCon.getValueFactory();
 
 		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
 		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);

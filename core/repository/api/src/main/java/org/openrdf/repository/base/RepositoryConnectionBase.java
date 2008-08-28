@@ -332,7 +332,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
-		RDFParser rdfParser = Rio.createParser(dataFormat, getRepository().getValueFactory());
+		RDFParser rdfParser = Rio.createParser(dataFormat, getValueFactory());
 
 		rdfParser.setVerifyData(true);
 		rdfParser.setStopAtFirstError(true);

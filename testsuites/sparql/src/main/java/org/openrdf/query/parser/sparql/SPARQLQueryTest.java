@@ -343,7 +343,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		con.setAutoCommit(false);
 		try {
 			RDFFormat rdfFormat = Rio.getParserFormatForFileName(graphURI.toString(), RDFFormat.TURTLE);
-			RDFParser rdfParser = Rio.createParser(rdfFormat, dataRep.getValueFactory());
+			RDFParser rdfParser = Rio.createParser(rdfFormat, con.getValueFactory());
 			rdfParser.setVerifyData(false);
 			rdfParser.setDatatypeHandling(DatatypeHandling.IGNORE);
 			// rdfParser.setPreserveBNodeIDs(true);
@@ -389,7 +389,6 @@ public abstract class SPARQLQueryTest extends TestCase {
 			InputStream in = new URL(resultFileURL).openStream();
 			try {
 				TupleQueryResultParser parser = QueryResultIO.createParser(tqrFormat);
-				parser.setValueFactory(dataRep.getValueFactory());
 				
 				TupleQueryResultBuilder qrBuilder = new TupleQueryResultBuilder();
 				parser.setTupleQueryResultHandler(qrBuilder);
@@ -437,7 +436,6 @@ public abstract class SPARQLQueryTest extends TestCase {
 			RDFParser parser = Rio.createParser(rdfFormat);
 			parser.setDatatypeHandling(DatatypeHandling.IGNORE);
 			parser.setPreserveBNodeIDs(true);
-			parser.setValueFactory(dataRep.getValueFactory());
 
 			Set<Statement> result = new LinkedHashSet<Statement>();
 			parser.setRDFHandler(new StatementCollector(result));
@@ -556,7 +554,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		// Try to extract suite name from manifest file
 		TupleQuery manifestNameQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
 				"SELECT ManifestName FROM {ManifestURL} rdfs:label {ManifestName}");
-		manifestNameQuery.setBinding("ManifestURL", manifestRep.getValueFactory().createURI(manifestFileURL));
+		manifestNameQuery.setBinding("ManifestURL", con.getValueFactory().createURI(manifestFileURL));
 		TupleQueryResult manifestNames = manifestNameQuery.evaluate();
 		try {
 			if (manifestNames.hasNext()) {

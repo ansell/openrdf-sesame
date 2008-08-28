@@ -180,7 +180,7 @@ public class RepositoryController extends AbstractController {
 			if (defaultGraphURIs != null) {
 				for (String defaultGraphURI : defaultGraphURIs) {
 					try {
-						URI uri = repository.getValueFactory().createURI(defaultGraphURI);
+						URI uri = repositoryCon.getValueFactory().createURI(defaultGraphURI);
 						dataset.addDefaultGraph(uri);
 					}
 					catch (IllegalArgumentException e) {
@@ -193,7 +193,7 @@ public class RepositoryController extends AbstractController {
 			if (namedGraphURIs != null) {
 				for (String namedGraphURI : namedGraphURIs) {
 					try {
-						URI uri = repository.getValueFactory().createURI(namedGraphURI);
+						URI uri = repositoryCon.getValueFactory().createURI(namedGraphURI);
 						dataset.addNamedGraph(uri);
 					}
 					catch (IllegalArgumentException e) {
@@ -223,7 +223,7 @@ public class RepositoryController extends AbstractController {
 				{
 					String bindingName = parameterName.substring(BINDING_PREFIX.length());
 					Value bindingValue = ProtocolUtil.parseValueParam(request, parameterName,
-							repository.getValueFactory());
+							repositoryCon.getValueFactory());
 					result.setBinding(bindingName, bindingValue);
 				}
 			}
