@@ -93,8 +93,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 * Methods *
 	 *---------*/
 
-	@Override
-	protected CloseableIteration<? extends BindingSet, StoreException> evaluateInternal(
+	public CloseableIteration<? extends BindingSet, StoreException> evaluate(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -152,15 +151,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected void closeInternal()
-		throws StoreException
-	{
-		// do nothing
-	}
-
-	@Override
-	protected CloseableIteration<? extends Resource, StoreException> getContextIDsInternal()
+	public CloseableIteration<? extends Resource, StoreException> getContextIDs()
 		throws StoreException
 	{
 		// Note: we can't do this in a streaming fashion due to concurrency
@@ -222,8 +213,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected CloseableIteration<? extends Statement, StoreException> getStatementsInternal(Resource subj,
+	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj,
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
@@ -247,14 +237,13 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected long sizeInternal(Resource... contexts)
+	public long size(Resource... contexts)
 		throws StoreException
 	{
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
-			CloseableIteration<? extends Statement, StoreException> iter = getStatementsInternal(null, null,
+			CloseableIteration<? extends Statement, StoreException> iter = getStatements(null, null,
 					null, false, contexts);
 
 			try {
@@ -276,15 +265,13 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected CloseableIteration<? extends Namespace, StoreException> getNamespacesInternal()
+	public CloseableIteration<? extends Namespace, StoreException> getNamespaces()
 		throws StoreException
 	{
 		return new CloseableIteratorIteration<Namespace, StoreException>(store.getNamespaceStore().iterator());
 	}
 
-	@Override
-	protected String getNamespaceInternal(String prefix)
+	public String getNamespace(String prefix)
 		throws StoreException
 	{
 		return store.getNamespaceStore().getNamespace(prefix);
@@ -298,29 +285,31 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
 
-		super.begin();
 		txnStLock = store.getStatementsReadLock();
 
 		// Prevent concurrent transactions by acquiring an exclusive txn lock
 		txnLock = store.getTransactionLock();
 		store.startTransaction();
+		super.begin();
 	}
 
 	@Override
-	protected void commitInternal()
+	public void commit()
 		throws StoreException
 	{
 		store.commit();
 		txnLock.release();
 		txnStLock.release();
+		super.commit();
 	}
 
 	@Override
-	protected void rollbackInternal()
+	public void rollback()
 		throws StoreException
 	{
 		try {
 			store.rollback();
+			super.rollback();
 		}
 		finally {
 			txnLock.release();
@@ -328,8 +317,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		addStatementInternal(subj, pred, obj, true, contexts);
@@ -346,7 +334,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 * 
 	 * @throws StoreException
 	 */
-	protected boolean addStatementInternal(Resource subj, URI pred, Value obj, boolean explicit,
+	private boolean addStatementInternal(Resource subj, URI pred, Value obj, boolean explicit,
 			Resource... contexts)
 		throws StoreException
 	{
@@ -372,8 +360,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		return st != null;
 	}
 
-	@Override
-	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		removeStatementsInternal(subj, pred, obj, true, contexts);
@@ -385,8 +372,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		return removeStatementsInternal(subj, pred, obj, false, contexts);
 	}
 
-	@Override
-	protected void clearInternal(Resource... contexts)
+	public void clear(Resource... contexts)
 		throws StoreException
 	{
 		removeStatementsInternal(null, null, null, true, contexts);
@@ -419,7 +405,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 *        pattern.
 	 * @throws StoreException
 	 */
-	protected boolean removeStatementsInternal(Resource subj, URI pred, Value obj, boolean explicit,
+	private boolean removeStatementsInternal(Resource subj, URI pred, Value obj, boolean explicit,
 			Resource... contexts)
 		throws StoreException
 	{
@@ -454,8 +440,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 	}
 
-	@Override
-	protected void setNamespaceInternal(String prefix, String name)
+	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
@@ -467,16 +452,14 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected void removeNamespaceInternal(String prefix)
+	public void removeNamespace(String prefix)
 		throws StoreException
 	{
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().removeNamespace(prefix);
 	}
 
-	@Override
-	protected void clearNamespacesInternal()
+	public void clearNamespaces()
 		throws StoreException
 	{
 		// FIXME: changes to namespace prefixes not isolated in transactions yet

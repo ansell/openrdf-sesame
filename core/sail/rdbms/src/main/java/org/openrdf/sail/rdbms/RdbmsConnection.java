@@ -83,8 +83,7 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		this.lockManager = lock;
 	}
 
-	@Override
-	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		try {
@@ -106,14 +105,7 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 	}
 
 	@Override
-	protected void clearInternal(Resource... contexts)
-		throws StoreException
-	{
-		removeStatementsInternal(null, null, null, contexts);
-	}
-
-	@Override
-	protected void closeInternal()
+	public void close()
 		throws StoreException
 	{
 		try {
@@ -127,8 +119,7 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		}
 	}
 
-	@Override
-	protected void commitInternal()
+	public void commit()
 		throws StoreException
 	{
 		try {
@@ -145,10 +136,10 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		sail.notifySailChanged(triples.getSailChangedEvent());
 		// create a fresh event object.
 		triples.setSailChangedEvent(new DefaultSailChangedEvent(sail));
+		super.commit();
 	}
 
-	@Override
-	protected RdbmsResourceIteration getContextIDsInternal()
+	public RdbmsResourceIteration getContextIDs()
 		throws StoreException
 	{
 		try {
@@ -159,8 +150,7 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		}
 	}
 
-	@Override
-	protected CloseableIteration<? extends Statement, StoreException> getStatementsInternal(Resource subj,
+	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj,
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
@@ -171,8 +161,7 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		return triples.find(s, p, o, c);
 	}
 
-	@Override
-	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		RdbmsResource s = vf.asRdbmsResource(subj);
@@ -182,12 +171,12 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		triples.remove(s, p, o, c);
 	}
 
-	@Override
-	protected void rollbackInternal()
+	public void rollback()
 		throws StoreException
 	{
 		try {
 			triples.rollback();
+			super.rollback();
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
@@ -197,8 +186,7 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		}
 	}
 
-	@Override
-	protected CloseableIteration<BindingSet, StoreException> evaluateInternal(TupleExpr expr,
+	public CloseableIteration<BindingSet, StoreException> evaluate(TupleExpr expr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -210,15 +198,13 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
 	}
 
-	@Override
-	protected void clearNamespacesInternal()
+	public void clearNamespaces()
 		throws StoreException
 	{
 		namespaces.clearPrefixes();
 	}
 
-	@Override
-	protected String getNamespaceInternal(String prefix)
+	public String getNamespace(String prefix)
 		throws StoreException
 	{
 		Namespace ns = namespaces.findByPrefix(prefix);
@@ -227,30 +213,26 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		return ns.getName();
 	}
 
-	@Override
-	protected CloseableIteration<? extends Namespace, StoreException> getNamespacesInternal()
+	public CloseableIteration<? extends Namespace, StoreException> getNamespaces()
 		throws StoreException
 	{
 		Collection<? extends Namespace> ns = namespaces.getNamespacesWithPrefix();
 		return new NamespaceIteration(ns.iterator());
 	}
 
-	@Override
-	protected void removeNamespaceInternal(String prefix)
+	public void removeNamespace(String prefix)
 		throws StoreException
 	{
 		namespaces.removePrefix(prefix);
 	}
 
-	@Override
-	protected void setNamespaceInternal(String prefix, String name)
+	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
 		namespaces.setPrefix(prefix, name);
 	}
 
-	@Override
-	protected long sizeInternal(Resource... contexts)
+	public long size(Resource... contexts)
 		throws StoreException
 	{
 		try {
@@ -266,9 +248,9 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		throws StoreException
 	{
 		try {
-			super.begin();
 			lock();
 			triples.begin();
+			super.begin();
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);

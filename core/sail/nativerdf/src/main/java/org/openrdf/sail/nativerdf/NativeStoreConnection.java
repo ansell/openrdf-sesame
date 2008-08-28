@@ -89,13 +89,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	 * Methods *
 	 *---------*/
 
-	@Override
-	protected void closeInternal() {
-		// FIXME we should check for open iteration objects.
-	}
-
-	@Override
-	protected CloseableIteration<? extends BindingSet, StoreException> evaluateInternal(
+	public CloseableIteration<? extends BindingSet, StoreException> evaluate(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -163,8 +157,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		});
 	}
 
-	@Override
-	protected CloseableIteration<? extends Resource, StoreException> getContextIDsInternal()
+	public CloseableIteration<? extends Resource, StoreException> getContextIDs()
 		throws StoreException
 	{
 		// Which resources are used as context identifiers is not stored
@@ -205,8 +198,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected CloseableIteration<? extends Statement, StoreException> getStatementsInternal(Resource subj,
+	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj,
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
@@ -246,8 +238,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected long sizeInternal(Resource... contexts)
+	public long size(Resource... contexts)
 		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
@@ -289,8 +280,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected CloseableIteration<? extends Namespace, StoreException> getNamespacesInternal()
+	public CloseableIteration<? extends Namespace, StoreException> getNamespaces()
 		throws StoreException
 	{
 		Lock readLock = nativeStore.getReadLock();
@@ -305,8 +295,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected String getNamespaceInternal(String prefix)
+	public String getNamespace(String prefix)
 		throws StoreException
 	{
 		Lock readLock = nativeStore.getReadLock();
@@ -322,11 +311,11 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	public void begin()
 		throws StoreException
 	{
-		super.begin();
 		txnLock = nativeStore.getTransactionLock();
 
 		try {
 			nativeStore.getTripleStore().startTransaction();
+			super.begin();
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -334,7 +323,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	protected void commitInternal()
+	public void commit()
 		throws StoreException
 	{
 		Lock storeReadLock = nativeStore.getReadLock();
@@ -357,10 +346,11 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 		// create a fresh event object.
 		sailChangedEvent = new DefaultSailChangedEvent(nativeStore);
+		super.commit();
 	}
 
 	@Override
-	protected void rollbackInternal()
+	public void rollback()
 		throws StoreException
 	{
 		Lock storeReadLock = nativeStore.getReadLock();
@@ -368,6 +358,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		try {
 			nativeStore.getValueStore().sync();
 			nativeStore.getTripleStore().rollback();
+			super.rollback();
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -378,8 +369,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		addStatement(subj, pred, obj, true, contexts);
@@ -444,8 +434,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		return result;
 	}
 
-	@Override
-	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		removeStatements(subj, pred, obj, true, contexts);
@@ -543,8 +532,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	@Override
-	protected void clearInternal(Resource... contexts)
+	public void clear(Resource... contexts)
 		throws StoreException
 	{
 		removeStatements(null, null, null, true, contexts);
@@ -560,22 +548,19 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		// no-op; changes are reported as soon as they come in
 	}
 
-	@Override
-	protected void setNamespaceInternal(String prefix, String name)
+	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
 		nativeStore.getNamespaceStore().setNamespace(prefix, name);
 	}
 
-	@Override
-	protected void removeNamespaceInternal(String prefix)
+	public void removeNamespace(String prefix)
 		throws StoreException
 	{
 		nativeStore.getNamespaceStore().removeNamespace(prefix);
 	}
 
-	@Override
-	protected void clearNamespacesInternal()
+	public void clearNamespaces()
 		throws StoreException
 	{
 		nativeStore.getNamespaceStore().clear();
