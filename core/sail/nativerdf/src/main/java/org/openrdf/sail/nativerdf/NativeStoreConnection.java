@@ -46,7 +46,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
-import org.openrdf.sail.helpers.SailConnectionBase;
+import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
@@ -54,7 +54,7 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
 /**
  * @author Arjohn Kampman
  */
-public class NativeStoreConnection extends SailConnectionBase implements InferencerConnection {
+public class NativeStoreConnection extends NotifyingSailConnectionBase implements InferencerConnection {
 
 	/*-----------*
 	 * Constants *
@@ -81,7 +81,6 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	protected NativeStoreConnection(NativeStore nativeStore)
 		throws IOException
 	{
-		super(nativeStore);
 		this.nativeStore = nativeStore;
 		sailChangedEvent = new DefaultSailChangedEvent(nativeStore);
 	}
@@ -320,9 +319,10 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	}
 
 	@Override
-	protected void startTransactionInternal()
+	public void begin()
 		throws StoreException
 	{
+		super.begin();
 		txnLock = nativeStore.getTransactionLock();
 
 		try {
@@ -388,22 +388,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		Lock conLock = getSharedConnectionLock();
-		try {
-			verifyIsOpen();
-
-			Lock txnLock = getTransactionLock();
-			try {
-				autoStartTransaction();
-				return addStatement(subj, pred, obj, false, contexts);
-			}
-			finally {
-				txnLock.release();
-			}
-		}
-		finally {
-			conLock.release();
-		}
+		return addStatement(subj, pred, obj, false, contexts);
 	}
 
 	private boolean addStatement(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
@@ -469,23 +454,8 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		Lock conLock = getSharedConnectionLock();
-		try {
-			verifyIsOpen();
-
-			Lock txnLock = getTransactionLock();
-			try {
-				autoStartTransaction();
-				int removeCount = removeStatements(subj, pred, obj, false, contexts);
-				return removeCount > 0;
-			}
-			finally {
-				txnLock.release();
-			}
-		}
-		finally {
-			conLock.release();
-		}
+		int removeCount = removeStatements(subj, pred, obj, false, contexts);
+		return removeCount > 0;
 	}
 
 	private int removeStatements(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
@@ -583,22 +553,7 @@ public class NativeStoreConnection extends SailConnectionBase implements Inferen
 	public void clearInferred(Resource... contexts)
 		throws StoreException
 	{
-		Lock conLock = getSharedConnectionLock();
-		try {
-			verifyIsOpen();
-
-			Lock txnLock = getTransactionLock();
-			try {
-				autoStartTransaction();
-				removeStatements(null, null, null, false, contexts);
-			}
-			finally {
-				txnLock.release();
-			}
-		}
-		finally {
-			conLock.release();
-		}
+		removeStatements(null, null, null, false, contexts);
 	}
 
 	public void flushUpdates() {

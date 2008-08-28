@@ -23,15 +23,16 @@ import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.FilterIteration;
 import info.aduna.iteration.UnionIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DirectoryLockManager;
-import org.openrdf.sail.helpers.SailBase;
+import org.openrdf.sail.helpers.NotifyingSailBase;
+import org.openrdf.sail.helpers.SynchronizedSailConnection;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
 
@@ -42,7 +43,7 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class NativeStore extends SailBase {
+public class NativeStore extends NotifyingSailBase {
 
 	/*-----------*
 	 * Variables *
@@ -258,7 +259,8 @@ public class NativeStore extends SailBase {
 		}
 
 		try {
-			return new NativeStoreConnection(this);
+			NotifyingSailConnection con = new NativeStoreConnection(this);
+			return new SynchronizedSailConnection(con);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);

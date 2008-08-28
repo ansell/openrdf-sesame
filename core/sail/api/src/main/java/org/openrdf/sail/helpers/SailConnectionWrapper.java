@@ -107,12 +107,6 @@ public class SailConnectionWrapper implements SailConnection {
 		return wrappedCon.size(contexts);
 	}
 
-	public long size(Resource context)
-		throws StoreException
-	{
-		return wrappedCon.size(context);
-	}
-
 	public void begin()
 		throws StoreException
 	{

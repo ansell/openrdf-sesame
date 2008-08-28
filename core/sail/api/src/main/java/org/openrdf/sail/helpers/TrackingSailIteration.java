@@ -11,17 +11,19 @@ import org.slf4j.LoggerFactory;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.IterationWrapper;
 
+import org.openrdf.StoreException;
+
 /**
  * An iteration extension that keeps a reference to the SailConnectionBase from
  * which it originates and signals when it is closed.
  * 
  * @author jeen
  */
-class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
+class TrackingSailIteration<T> extends IterationWrapper<T, StoreException> {
 	
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private SailConnectionBase connection;
+	private TrackingSailConnection connection;
 
 	private Throwable creatorTrace;
 
@@ -35,19 +37,19 @@ class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 	 * @param connection
 	 *        the connection from which this iteration originates.
 	 */
-	public SailBaseIteration(CloseableIteration<? extends T, ? extends E> iter, SailConnectionBase connection)
+	public TrackingSailIteration(CloseableIteration<? extends T, StoreException> iter, TrackingSailConnection connection)
 	{
 		super(iter);
 		this.connection = connection;
 
-		if (SailBase.debugEnabled()) {
+		if (connection.isDebugEnabled()) {
 			creatorTrace = new Throwable();
 		}
 	}
 
 	@Override
 	public boolean hasNext()
-		throws E
+		throws StoreException
 	{
 		if (super.hasNext()) {
 			return true;
@@ -61,7 +63,7 @@ class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 
 	@Override
 	protected void handleClose()
-		throws E
+		throws StoreException
 	{
 		super.handleClose();
 			connection.iterationClosed(this);
@@ -79,7 +81,7 @@ class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 	}
 
 	protected void forceClose()
-		throws E
+		throws StoreException
 	{
 		if (creatorTrace != null) {
 			logger.warn("Forced closing of unclosed iteration that was created in:", creatorTrace);

@@ -43,7 +43,7 @@ import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailReadOnlyException;
-import org.openrdf.sail.helpers.SailConnectionBase;
+import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
@@ -60,7 +60,7 @@ import org.openrdf.sail.memory.model.ReadMode;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class MemoryStoreConnection extends SailConnectionBase implements InferencerConnection {
+public class MemoryStoreConnection extends NotifyingSailConnectionBase implements InferencerConnection {
 
 	/*-----------*
 	 * Variables *
@@ -86,7 +86,6 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	 *--------------*/
 
 	protected MemoryStoreConnection(MemoryStore store) {
-		super(store);
 		this.store = store;
 	}
 
@@ -292,13 +291,14 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	}
 
 	@Override
-	protected void startTransactionInternal()
+	public void begin()
 		throws StoreException
 	{
 		if (!store.isWritable()) {
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
 
+		super.begin();
 		txnStLock = store.getStatementsReadLock();
 
 		// Prevent concurrent transactions by acquiring an exclusive txn lock
@@ -338,22 +338,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		Lock conLock = getSharedConnectionLock();
-		try {
-			verifyIsOpen();
-
-			Lock txnLock = getTransactionLock();
-			try {
-				autoStartTransaction();
-				return addStatementInternal(subj, pred, obj, false, contexts);
-			}
-			finally {
-				txnLock.release();
-			}
-		}
-		finally {
-			conLock.release();
-		}
+		return addStatementInternal(subj, pred, obj, false, contexts);
 	}
 
 	/**
@@ -397,22 +382,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		Lock conLock = getSharedConnectionLock();
-		try {
-			verifyIsOpen();
-
-			Lock txnLock = getTransactionLock();
-			try {
-				autoStartTransaction();
-				return removeStatementsInternal(subj, pred, obj, false, contexts);
-			}
-			finally {
-				txnLock.release();
-			}
-		}
-		finally {
-			conLock.release();
-		}
+		return removeStatementsInternal(subj, pred, obj, false, contexts);
 	}
 
 	@Override
@@ -425,22 +395,7 @@ public class MemoryStoreConnection extends SailConnectionBase implements Inferen
 	public void clearInferred(Resource... contexts)
 		throws StoreException
 	{
-		Lock conLock = getSharedConnectionLock();
-		try {
-			verifyIsOpen();
-
-			Lock txnLock = getTransactionLock();
-			try {
-				autoStartTransaction();
-				removeStatementsInternal(null, null, null, false, contexts);
-			}
-			finally {
-				txnLock.release();
-			}
-		}
-		finally {
-			conLock.release();
-		}
+		removeStatementsInternal(null, null, null, false, contexts);
 	}
 
 	public void flushUpdates() {
