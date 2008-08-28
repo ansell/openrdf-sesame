@@ -32,7 +32,7 @@ public class DatabaseLockManager implements LockManager {
 
 	private static final String SELECT = "SELECT process FROM locked";
 
-	private static final String DROP = "DROP TABLE LOCKED";
+	private static final String DROP = "DROP TABLE locked";
 
 	private Logger logger = LoggerFactory.getLogger(DatabaseLockManager.class);
 
