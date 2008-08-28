@@ -29,7 +29,7 @@ public class DatabaseLockManager implements LockManager {
 	private static final String CREATE_LOCKED = "CREATE TABLE locked ( process VARCHAR(128) )";
 	private static final String INSERT = "INSERT INTO locked VALUES ('";
 	private static final String SELECT = "SELECT process FROM locked";
-	private static final String DROP = "DROP TABLE LOCKED";
+	private static final String DROP = "DROP TABLE locked";
 	private Logger logger = LoggerFactory.getLogger(DatabaseLockManager.class);
 	private DataSource ds;
 
