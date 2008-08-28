@@ -113,6 +113,12 @@ public class SailConnectionWrapper implements SailConnection {
 		return wrappedCon.size(context);
 	}
 
+	public void begin()
+		throws StoreException
+	{
+		wrappedCon.begin();
+	}
+
 	public void commit()
 		throws StoreException
 	{
