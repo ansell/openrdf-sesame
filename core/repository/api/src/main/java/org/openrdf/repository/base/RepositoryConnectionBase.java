@@ -8,19 +8,20 @@ package org.openrdf.repository.base;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.io.GZipUtil;
+import info.aduna.io.ZipUtil;
 import info.aduna.iteration.Iteration;
 
 import org.openrdf.OpenRDFUtil;
@@ -62,17 +63,6 @@ import org.openrdf.rio.UnsupportedRDFormatException;
  * @author Arjohn Kampman
  */
 public abstract class RepositoryConnectionBase implements RepositoryConnection {
-
-	/**
-	 * GZIP header magic number bytes, like found in a gzipped files, which are
-	 * encoded in Intel format (i&#x2e;e&#x2e; little indian).
-	 */
-	private final static byte GZIP_MAGIC[] = { (byte) 0x1f, (byte) 0x8b };
-
-	/**
-	 * local file header signature     4 bytes  (0x04034b50)
-	 */
-	private final static byte ZIP_HEADER[] = { (byte) 0x50, (byte) 0x4B, (byte) 0x03, (byte) 0x04 };
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -199,68 +189,20 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
+		if (baseURI == null) {
+			// default baseURI to file
+			baseURI = file.toURI().toString();
+		}
+		if (dataFormat == null) {
+			dataFormat = Rio.getParserFormatForFileName(file.getName());
+		}
 
-		boolean isZipFile;
 		InputStream in = new FileInputStream(file);
 		try {
-			in = new BufferedInputStream(in);
-			byte[] hd = new byte[ZIP_HEADER.length];
-			in.mark(hd.length);
-			in.read(hd);
-			in.reset();
-			isZipFile = hd[0] == ZIP_HEADER[0] && hd[1] == ZIP_HEADER[1]
-					&& hd[2] == ZIP_HEADER[2] && hd[3] == ZIP_HEADER[3];
-			if (!isZipFile) {
-				if (baseURI == null) {
-					// default baseURI to file
-					baseURI = file.toURI().toString();
-				}
-				if (dataFormat == null) {
-					dataFormat = RDFFormat.forFileName(file.getName());
-				}
-				add(in, baseURI, dataFormat, contexts);
-			}
+			add(in, baseURI, dataFormat, contexts);
 		}
 		finally {
 			in.close();
-		}
-		if (isZipFile) {
-			String uri = file.toURI().toString();
-			ZipFile zip = new ZipFile(file);
-			try {
-				Enumeration<? extends ZipEntry> entries = zip.entries();
-				if (!entries.hasMoreElements())
-					throw new ZipException("Zip file is empty");
-				String base = baseURI;
-				RDFFormat format = dataFormat;
-				while (entries.hasMoreElements()) {
-					ZipEntry entry = entries.nextElement();
-					if (entry.isDirectory())
-						continue;
-					if (baseURI == null) {
-						base = "jar:" + uri + "!" + entry.getName();
-					}
-					if (dataFormat == null) {
-						format = RDFFormat.forFileName(entry.getName());
-					}
-					in = zip.getInputStream(entry);
-					try {
-						add(in, base, format, contexts);
-					} catch (RDFParseException exc) {
-						int ln = exc.getLineNumber();
-						int cn = exc.getColumnNumber();
-						String msg = exc.getMessage() + " in " + entry.getName();
-						RDFParseException pe;
-						pe = new RDFParseException(msg, ln, cn);
-						pe.initCause(exc);
-						throw pe;
-					} finally {
-						in.close();
-					}
-				}
-			} finally {
-				zip.close();
-			}
 		}
 	}
 
@@ -271,11 +213,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 			baseURI = url.toExternalForm();
 		}
 		if (dataFormat == null) {
-			dataFormat = RDFFormat.forFileName(url.getPath());
+			dataFormat = Rio.getParserFormatForFileName(url.getPath());
 		}
 
 		InputStream in = url.openStream();
-
 		try {
 			add(in, baseURI, dataFormat, contexts);
 		}
@@ -288,16 +229,80 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws IOException, RDFParseException, RepositoryException
 	{
 		if (!in.markSupported()) {
-			in = new BufferedInputStream(in);
+			in = new BufferedInputStream(in, 1024);
 		}
-		byte[] header = new byte[GZIP_MAGIC.length];
-		in.mark(header.length);
-		in.read(header);
-		in.reset();
-		if (header[0] == GZIP_MAGIC[0] && header[1] == GZIP_MAGIC[1]) {
-			in = new GZIPInputStream(in);
+
+		if (ZipUtil.isZipStream(in)) {
+			addZip(in, baseURI, dataFormat, contexts);
 		}
-		addInputStreamOrReader(in, baseURI, dataFormat, contexts);
+		else if (GZipUtil.isGZipStream(in)) {
+			add(new GZIPInputStream(in), baseURI, dataFormat, contexts);
+		}
+		else {
+			addInputStreamOrReader(in, baseURI, dataFormat, contexts);
+		}
+	}
+
+	private void addZip(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
+		throws IOException, RDFParseException, RepositoryException
+	{
+		boolean autoCommit = isAutoCommit();
+		setAutoCommit(false);
+
+		try {
+			ZipInputStream zipIn = new ZipInputStream(in);
+
+			try {
+				for (ZipEntry entry = zipIn.getNextEntry(); entry != null; entry = zipIn.getNextEntry()) {
+					if (entry.isDirectory()) {
+						continue;
+					}
+
+					RDFFormat format = Rio.getParserFormatForFileName(entry.getName(), dataFormat);
+
+					try {
+						// Prevent parser (Xerces) from closing the input stream
+						FilterInputStream wrapper = new FilterInputStream(zipIn) {
+
+							public void close() {
+							}
+						};
+						add(wrapper, baseURI, format, contexts);
+					}
+					catch (RDFParseException e) {
+						if (autoCommit) {
+							rollback();
+						}
+
+						String msg = e.getMessage() + " in " + entry.getName();
+						RDFParseException pe = new RDFParseException(msg, e.getLineNumber(), e.getColumnNumber());
+						pe.initCause(e);
+						throw pe;
+					}
+					finally {
+						zipIn.closeEntry();
+					}
+				}
+			}
+			finally {
+				zipIn.close();
+			}
+		}
+		catch (IOException e) {
+			if (autoCommit) {
+				rollback();
+			}
+			throw e;
+		}
+		catch (RepositoryException e) {
+			if (autoCommit) {
+				rollback();
+			}
+			throw e;
+		}
+		finally {
+			setAutoCommit(autoCommit);
+		}
 	}
 
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
@@ -319,8 +324,8 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	 *        The file format of the data.
 	 * @param context
 	 *        The context to which the data should be added in case
-	 *        <tt>enforceContext</tt> is <tt>true</tt>. The value
-	 *        <tt>null</tt> indicates the null context.
+	 *        <tt>enforceContext</tt> is <tt>true</tt>. The value <tt>null</tt>
+	 *        indicates the null context.
 	 * @throws IOException
 	 * @throws UnsupportedRDFormatException
 	 * @throws RDFParseException
