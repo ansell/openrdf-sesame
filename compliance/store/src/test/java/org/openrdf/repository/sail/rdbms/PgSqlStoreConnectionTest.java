@@ -19,7 +19,12 @@ public class PgSqlStoreConnectionTest extends RepositoryConnectionTest {
 	}
 
 	@Override
-	protected Repository createRepository() throws IOException {
-		return new SailRepository(new PgSqlStore("sesame_test"));
+	protected Repository createRepository()
+		throws IOException
+	{
+		PgSqlStore sail = new PgSqlStore("sesame_test");
+		sail.setUser("sesame");
+		sail.setPassword("opensesame");
+		return new SailRepository(sail);
 	}
 }

@@ -32,7 +32,9 @@ public class MySqlStoreTest extends RDFNotifyingStoreTest {
 	protected NotifyingSail createSail()
 		throws SailException
 	{
-		NotifyingSail sail = new MySqlStore("sesame_test");
+		MySqlStore sail = new MySqlStore("sesame_test");
+		sail.setUser("sesame");
+		sail.setPassword("opensesame");
 		sail.initialize();
 		SailConnection conn = sail.getConnection();
 		try {

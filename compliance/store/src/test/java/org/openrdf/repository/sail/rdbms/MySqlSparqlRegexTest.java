@@ -8,6 +8,9 @@ import org.openrdf.sail.rdbms.mysql.MySqlStore;
 public class MySqlSparqlRegexTest extends SparqlRegexTest {
 
 	protected Repository newRepository() {
-		return new SailRepository(new MySqlStore("sesame_test"));
+		MySqlStore sail = new MySqlStore("sesame_test");
+		sail.setUser("sesame");
+		sail.setPassword("opensesame");
+		return new SailRepository(sail);
 	}
 }

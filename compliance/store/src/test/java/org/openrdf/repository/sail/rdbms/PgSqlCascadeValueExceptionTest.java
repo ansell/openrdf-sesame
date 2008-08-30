@@ -8,7 +8,10 @@ import org.openrdf.sail.rdbms.postgresql.PgSqlStore;
 public class PgSqlCascadeValueExceptionTest extends CascadeValueExceptionTest {
 
 	protected Repository newRepository() {
-		return new SailRepository(new PgSqlStore("sesame_test"));
+		PgSqlStore sail = new PgSqlStore("sesame_test");
+		sail.setUser("sesame");
+		sail.setPassword("opensesame");
+		return new SailRepository(sail);
 	}
 
 }
