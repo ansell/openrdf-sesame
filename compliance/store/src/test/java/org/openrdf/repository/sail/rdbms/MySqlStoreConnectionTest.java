@@ -20,6 +20,9 @@ public class MySqlStoreConnectionTest extends RepositoryConnectionTest {
 
 	@Override
 	protected Repository createRepository() throws IOException {
-		return new SailRepository(new MySqlStore("sesame_test"));
+		MySqlStore sail = new MySqlStore("sesame_test");
+		sail.setUser("sesame");
+		sail.setPassword("opensesame");
+		return new SailRepository(sail);
 	}
 }
