@@ -8,7 +8,6 @@ package org.openrdf.repository;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,6 +32,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import junit.framework.TestCase;
 
+import info.aduna.io.IOUtil;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
@@ -317,10 +317,12 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		// add file default-graph.ttl to repository, no context
 		InputStream defaultGraph = RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX
 				+ "default-graph.ttl.gz");
-
-		testCon.add(defaultGraph, "", RDFFormat.TURTLE);
-
-		defaultGraph.close();
+		try {
+			testCon.add(defaultGraph, "", RDFFormat.TURTLE);
+		}
+		finally {
+			defaultGraph.close();
+		}
 
 		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
 				nameBob, false));
@@ -332,24 +334,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testAddZipFile()
 		throws Exception
 	{
+		InputStream in = RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX + "graphs.zip");
 
-		File graphZipFile = File.createTempFile("graphs-", ".zip");
-		InputStream in = RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX
-				+ "graphs.zip");
-		FileOutputStream out = new FileOutputStream(graphZipFile);
-
-		try {
-			int len;
-			byte[] buf = new byte[1024];
-			while ((len = in.read(buf)) >= 0) {
-				out.write(buf, 0, len);
-			}
-		} finally {
-			out.close();
-			in.close();
-		}
-
-		testCon.add(graphZipFile, "", RDFFormat.TURTLE);
+		testCon.add(in, "", RDFFormat.TURTLE);
 
 		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
 				nameBob, false));
@@ -359,7 +346,6 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue("alice should be known in the store", testCon.hasStatement(null, name, nameAlice, false));
 
 		assertTrue("bob should be known in the store", testCon.hasStatement(null, name, nameBob, false));
-
 	}
 
 	public void testAutoCommit()
