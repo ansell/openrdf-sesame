@@ -422,7 +422,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		ValueExpr constraint = sameTerms.get(0);
-		for (int i = 0; i < sameTerms.size(); i++) {
+		for (int i = 1; i < sameTerms.size(); i++) {
 			constraint = new Or(constraint, sameTerms.get(i));
 		}
 
