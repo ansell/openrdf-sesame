@@ -64,16 +64,24 @@ public interface Model extends Set<Statement>, Serializable {
 	/**
 	 * Adds one or more statements to the model. This method creates a statement
 	 * for each specified context and adds those to the model. If no contexts are
-	 * specified, a single statement with no associated context is added.
+	 * specified, a single statement with no associated context is added. If this
+	 * Model is a filtered Model then null (if context empty) values are
+	 * permitted and will used the corresponding filtered values.
 	 * 
 	 * @param subj
-	 *        The statement's subject, must not be <tt>null</tt>.
+	 *        The statement's subject.
 	 * @param pred
-	 *        The statement's predicate, must not be <tt>null</tt>.
+	 *        The statement's predicate.
 	 * @param obj
-	 *        The statement's object, must not be <tt>null</tt>.
+	 *        The statement's object.
 	 * @param contexts
 	 *        The contexts to add statements to.
+	 * @throws IllegalArgumentException
+	 *         If This Model cannot store the given statement, because it is
+	 *         filtered out of this view.
+	 * @throws UnsupportedOperationException
+	 *         If this Model cannot accept any statements, because it is filter
+	 *         to the empty set.
 	 */
 	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts);
 
@@ -89,7 +97,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
 	 *         info.
 	 */
-	public boolean clear(Resource context);
+	public boolean clear(Resource... context);
 
 	/**
 	 * Removes statements with the specified subject, predicate, object and
@@ -138,8 +146,8 @@ public interface Model extends Set<Statement>, Serializable {
 	// Views
 
 	/**
-	 * Returns a {@link Set} view of the statements with the specified subject,
-	 * predicate, object and (optionally) context. The <tt>subject</tt>,
+	 * Returns a view of the statements with the specified subject, predicate,
+	 * object and (optionally) context. The <tt>subject</tt>,
 	 * <tt>predicate</tt> and <tt>object</tt> parameters can be <tt>null</tt>
 	 * to indicate wildcards. The <tt>contexts</tt> parameter is a wildcard and
 	 * accepts zero or more values. If no contexts are specified, statements will
@@ -148,15 +156,16 @@ public interface Model extends Set<Statement>, Serializable {
 	 * statements without an associated context, specify the value <tt>null</tt>
 	 * and explicitly cast it to type <tt>Resource</tt>.
 	 * <p>
-	 * The set is backed by the model, so changes to the model are reflected in
-	 * the set, and vice-versa. If the model is modified while an iteration over
-	 * the set is in progress (except through the iterator's own <tt>remove</tt>
-	 * operation), the results of the iteration are undefined. The set supports
-	 * element removal, which removes the corresponding statement from the model,
-	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>,
-	 * <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt>
-	 * operations. The statements passed to the <tt>add</tt> and
-	 * <tt>addAll</tt> operations must match the parameter pattern. Gets the
+	 * The returned model is backed by this Model, so changes to this Model are
+	 * reflected in the returned model, and vice-versa. If this Model is modified
+	 * while an iteration over the returned model is in progress (except through
+	 * the iterator's own <tt>remove</tt> operation), the results of the
+	 * iteration are undefined. The model supports element removal, which removes
+	 * the corresponding statement from this Model, via the
+	 * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>,
+	 * <tt>retainAll</tt>, and <tt>clear</tt> operations. The statements
+	 * passed to the <tt>add</tt> and <tt>addAll</tt> operations must match
+	 * the parameter pattern.
 	 * <p>
 	 * Examples: <tt>model.filter(s1, null, null)</tt> matches all statements
 	 * that have subject <tt>s1</tt>,<br>
@@ -188,7 +197,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
 	 *         info.
 	 */
-	public Set<Statement> filter(Resource subj, URI pred, Value obj, Resource... contexts);
+	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts);
 
 	/**
 	 * Returns a {@link Set} view of the subjects contained in this model. The
@@ -223,10 +232,10 @@ public interface Model extends Set<Statement>, Serializable {
 	public Set<URI> predicates(Resource subj, Value obj, Resource... contexts);
 
 	/**
-	 * Returns a {@link Set} view of the objects contained in this model. The
-	 * set is backed by the model, so changes to the model are reflected in the
-	 * set, and vice-versa. If the model is modified while an iteration over the
-	 * set is in progress (except through the iterator's own <tt>remove</tt>
+	 * Returns a {@link Set} view of the objects contained in this model. The set
+	 * is backed by the model, so changes to the model are reflected in the set,
+	 * and vice-versa. If the model is modified while an iteration over the set
+	 * is in progress (except through the iterator's own <tt>remove</tt>
 	 * operation), the results of the iteration are undefined. The set supports
 	 * element removal, which removes the corresponding statement from the model,
 	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>,
@@ -248,7 +257,8 @@ public interface Model extends Set<Statement>, Serializable {
 	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>,
 	 * <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt>
 	 * operations. It does not support the <tt>add</tt> or <tt>addAll</tt>
-	 * operations if the parameters <tt>subj</tt>, <tt>pred</tt> or <tt>obj</tt> are null.
+	 * operations if the parameters <tt>subj</tt>, <tt>pred</tt> or
+	 * <tt>obj</tt> are null.
 	 * 
 	 * @return a set view of the contexts contained in this model
 	 */

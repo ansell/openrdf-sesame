@@ -5,12 +5,16 @@
  */
 package org.openrdf.model.impl;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,7 +38,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 
 	private static final long serialVersionUID = -9161104123818983614L;
 
-	private static final Resource[] NULL_CTX = new Resource[] { null };
+	static final Resource[] NULL_CTX = new Resource[] { null };
 
 	transient Map<Value, ModelNode> values;
 
@@ -125,30 +129,12 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		return true;
 	}
 
-	public boolean clear(Resource context) {
-		return remove(null, null, null, context);
+	public boolean clear(Resource... contexts) {
+		return remove(null, null, null, contexts);
 	}
 
-	public Set<Statement> filter(final Resource subj, final URI pred, final Value obj,
-			final Resource... contexts)
-	{
-		return new FilteredSet() {
-
-			@Override
-			public void clear() {
-				ModelImpl.this.remove(subj, pred, obj, contexts);
-			}
-
-			@Override
-			protected ModelIterator statementIterator() {
-				return match(subj, pred, obj, contexts);
-			}
-
-			@Override
-			protected boolean accept(Statement st) {
-				return matches(st, subj, pred, obj, contexts);
-			}
-		};
+	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts) {
+		return new FilteredModel(subj, pred, obj, contexts);
 	}
 
 	public Set<Resource> contexts(final Resource subj, final URI pred, final Value obj) {
@@ -386,14 +372,26 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			return false;
 		}
 
+		return matches(st.getContext(), contexts);
+	}
+
+	boolean matches(Resource[] stContext, Resource... contexts) {
+		if (stContext != null && stContext.length > 0) {
+			for (Resource c : stContext) {
+				if (!matches(c, contexts))
+					return false;
+			}
+		}
+		return true;
+	}
+
+	boolean matches(Resource stContext, Resource... contexts) {
 		if (contexts == null || contexts.length == 0) {
 			// Any context matches
 			return true;
 		}
 		else {
 			// Accept if one of the contexts from the pattern matches
-			Resource stContext = st.getContext();
-
 			for (Resource context : contexts) {
 				if (context == null && stContext == null) {
 					return true;
@@ -407,7 +405,88 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		}
 	}
 
-	abstract class FilteredSet extends AbstractSet<Statement> {
+	static class EmptyModel extends AbstractSet<Statement> implements Model {
+
+		private static final long serialVersionUID = 3123007631452759092L;
+
+		private static Model emptyModel = new EmptyModel();
+
+		static Model emptyModel() {
+			return emptyModel;
+		}
+
+		static <T> Set<T> emptySet() {
+			return Collections.emptySet();
+		}
+
+		private Set<Statement> emptySet = Collections.emptySet();
+
+		@Override
+		public Iterator<Statement> iterator() {
+			return emptySet.iterator();
+		}
+
+		@Override
+		public int size() {
+			return 0;
+		}
+
+		@Override
+		public boolean add(Statement e) {
+			throw new UnsupportedOperationException("All statements are filtered out of view");
+		}
+
+		public boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
+			throw new UnsupportedOperationException("All statements are filtered out of view");
+		}
+
+		public boolean clear(Resource... context) {
+			return false;
+		}
+
+		public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts) {
+			return false;
+		}
+
+		public Set<Resource> contexts(Resource subj, URI pred, Value obj) {
+			return emptySet();
+		}
+
+		public Model filter(Resource subj, URI pred, Value obj, Resource... contexts) {
+			return emptyModel;
+		}
+
+		public Set<Value> objects(Resource subj, URI pred, Resource... contexts) {
+			return emptySet();
+		}
+
+		public Set<URI> predicates(Resource subj, Value obj, Resource... contexts) {
+			return emptySet();
+		}
+
+		public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
+			return false;
+		}
+
+		public Set<Resource> subjects(URI pred, Value obj, Resource... contexts) {
+			return emptySet();
+		}
+
+	}
+
+	class FilteredModel extends AbstractSet<Statement> implements Model {
+		private static final long serialVersionUID = -2353344619836326934L;
+		private Resource subj;
+		private URI pred;
+		private Value obj;
+		private Resource[] contexts;
+
+		public FilteredModel(Resource subj, URI pred, Value obj, Resource... contexts) {
+			this.subj = subj;
+			this.pred = pred;
+			this.obj = obj;
+			this.contexts = contexts;
+		}
 
 		@Override
 		public Iterator<Statement> iterator() {
@@ -465,12 +544,192 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		public boolean add(Statement st) {
 			if (accept(st))
 				return ModelImpl.this.add(st);
-			throw new IllegalArgumentException("Statement does not match filter: " + st);
+			throw new IllegalArgumentException("Statement is filtered out of view: " + st);
 		}
 
-		protected abstract boolean accept(Statement st);
+		public boolean add(Resource s, URI p, Value o, Resource... c) {
+			if (!accept(s, p, o, c))
+				throw new IllegalArgumentException("Statement is filtered out of view");
+			if (s == null) {
+				s = subj;
+			}
+			if (p == null) {
+				p = pred;
+			}
+			if (o == null) {
+				o = obj;
+			}
+			if (c == null || c.length == 0) {
+				c = contexts;
+			}
+			return ModelImpl.this.add(s, p, o, c);
+		}
 
-		protected abstract ModelIterator statementIterator();
+		@Override
+		public void clear() {
+			ModelImpl.this.remove(subj, pred, obj, contexts);
+		}
+
+		public boolean clear(Resource... c) {
+			if (c == null || c.length == 0) {
+				return remove(subj, pred, obj, contexts);
+			}
+			else if (matches(c, contexts)) {
+				return ModelImpl.this.remove(subj, pred, obj, c);
+			} else {
+				return false;
+			}
+		}
+
+		public boolean remove(Resource s, URI p, Value o, Resource... c) {
+			if (!accept(s, p, o, c))
+				return false;
+			if (s == null) {
+				s = subj;
+			}
+			if (p == null) {
+				p = pred;
+			}
+			if (o == null) {
+				o = obj;
+			}
+			if (c == null || c.length == 0) {
+				c = contexts;
+			}
+			return ModelImpl.this.remove(s, p, o, c);
+		}
+
+		public boolean contains(Resource s, URI p, Value o, Resource... c) {
+			if (!accept(s, p, o, c))
+				return false;
+			if (s == null) {
+				s = subj;
+			}
+			if (p == null) {
+				p = pred;
+			}
+			if (o == null) {
+				o = obj;
+			}
+			if (c == null || c.length == 0) {
+				c = contexts;
+			}
+			return ModelImpl.this.contains(s, p, o, c);
+		}
+
+		public Model filter(Resource s, URI p, Value o, Resource... c) {
+			if (!accept(s, p, o, c))
+				return EmptyModel.emptyModel();
+			if (s == null) {
+				s = subj;
+			}
+			if (p == null) {
+				p = pred;
+			}
+			if (o == null) {
+				o = obj;
+			}
+			if (c == null || c.length == 0) {
+				c = contexts;
+			}
+			return ModelImpl.this.filter(s, p, o, c);
+		}
+
+		public Set<Resource> contexts(Resource s, URI p, Value o) {
+			if (!accept(s, p, o))
+				return EmptyModel.emptySet();
+			if (s == null) {
+				s = subj;
+			}
+			if (p == null) {
+				p = pred;
+			}
+			if (o == null) {
+				o = obj;
+			}
+			if (contexts != null || contexts.length > 0) {
+				return unmodifiableSet(new HashSet<Resource>(asList(contexts)));
+			}
+			return ModelImpl.this.contexts(s, p, o);
+		}
+
+		public Set<Value> objects(Resource s, URI p, Resource... c) {
+			if (!accept(s, p, null, c))
+				return EmptyModel.emptySet();
+			if (s == null) {
+				s = subj;
+			}
+			if (p == null) {
+				p = pred;
+			}
+			if (obj != null) {
+				return Collections.singleton(obj);
+			}
+			if (c == null || c.length == 0) {
+				c = contexts;
+			}
+			return ModelImpl.this.objects(s, p, c);
+		}
+
+		public Set<URI> predicates(Resource s, Value o, Resource... c) {
+			if (!accept(s, null, o, c))
+				return EmptyModel.emptySet();
+			if (s == null) {
+				s = subj;
+			}
+			if (pred != null) {
+				return Collections.singleton(pred);
+			}
+			if (o == null) {
+				o = obj;
+			}
+			if (c == null || c.length == 0) {
+				c = contexts;
+			}
+			return ModelImpl.this.predicates(s, o, c);
+		}
+
+		public Set<Resource> subjects(URI p, Value o, Resource... c) {
+			if (!accept(null, p, o, c))
+				return EmptyModel.emptySet();
+			if (subj != null) {
+				return Collections.singleton(subj);
+			}
+			if (p == null) {
+				p = pred;
+			}
+			if (o == null) {
+				o = obj;
+			}
+			if (c == null || c.length == 0) {
+				c = contexts;
+			}
+			return ModelImpl.this.subjects(p, o, c);
+		}
+
+		private ModelIterator statementIterator() {
+			return match(subj, pred, obj, contexts);
+		}
+
+		private boolean accept(Statement st) {
+			return matches(st, subj, pred, obj, contexts);
+		}
+	
+		private boolean accept(Resource s, URI p, Value o, Resource... c) {
+			if (subj != null && !subj.equals(s)) {
+				return false;
+			}
+			if (pred != null && !pred.equals(p)) {
+				return false;
+			}
+			if (obj != null && !obj.equals(o)) {
+				return false;
+			}
+			if (!matches(c, contexts)) {
+				return false;
+			}
+			return true;
+		}
 	}
 
 	abstract class ValueSet<V extends Value> extends AbstractSet<V> {
