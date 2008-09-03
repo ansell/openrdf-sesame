@@ -22,35 +22,43 @@ import org.openrdf.sail.nativerdf.NativeStore;
 
 public class NativeSPARQLQueryTest extends SPARQLQueryTest {
 
-	public static Test suite() throws Exception {
+	public static Test suite()
+		throws Exception
+	{
 		return ManifestTest.suite(new Factory() {
-			public NativeSPARQLQueryTest createSPARQLQueryTest(String testURI,
-					String name, String queryFileURL, String resultFileURL,
-					Dataset dataSet) {
-				return new NativeSPARQLQueryTest(testURI, name, queryFileURL,
-						resultFileURL, dataSet);
+
+			public NativeSPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+					String resultFileURL, Dataset dataSet)
+			{
+				return new NativeSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet);
 			}
 		});
 	}
 
-	protected NativeSPARQLQueryTest(String testURI, String name,
-			String queryFileURL, String resultFileURL, Dataset dataSet) {
+	private File dataDir;
+
+	protected NativeSPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
+			Dataset dataSet)
+	{
 		super(testURI, name, queryFileURL, resultFileURL, dataSet);
 	}
 
-	private File dataDir;
-
 	@Override
-	protected Repository newRepository() throws IOException {
+	protected Repository newRepository()
+		throws IOException
+	{
 		dataDir = FileUtil.createTempDir("nativestore");
 		return new DatasetRepository(new SailRepository(new NativeStore(dataDir, "spoc")));
 	}
 
 	@Override
-	protected void tearDown() throws Exception {
+	protected void tearDown()
+		throws Exception
+	{
 		try {
 			super.tearDown();
-		} finally {
+		}
+		finally {
 			FileUtil.deleteDir(dataDir);
 		}
 	}

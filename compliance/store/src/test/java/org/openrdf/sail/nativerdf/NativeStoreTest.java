@@ -49,8 +49,12 @@ public class NativeStoreTest extends RDFNotifyingStoreTest {
 	protected void tearDown()
 		throws Exception
 	{
-		super.tearDown();
-		FileUtil.deleteDir(dataDir);
+		try {
+			super.tearDown();
+		}
+		finally {
+			FileUtil.deleteDir(dataDir);
+		}
 	}
 
 	@Override

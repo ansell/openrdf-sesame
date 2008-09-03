@@ -7,26 +7,42 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import info.aduna.io.FileUtil;
 
+import org.openrdf.sail.SailLockedException;
+
 public class NativeStoreDirLockTest extends TestCase {
 
-	public void testLocking() throws Exception {
+	public void testLocking()
+		throws Exception
+	{
 		File dataDir = FileUtil.createTempDir("nativestore");
-		NativeStore sail = new NativeStore(dataDir, "spoc,posc");
-		sail.initialize();
 		try {
-			NativeStore sail2 = new NativeStore(dataDir, "spoc,posc");
-			sail2.initialize();
-			fail("initialised a second native store with same dataDir");
-		} catch (AssertionFailedError fail) {
-			throw fail;
-		} catch (Throwable t) {
-			// cannot initialise two native stores with the same dataDir
+			NativeStore sail = new NativeStore(dataDir, "spoc,posc");
+			sail.initialize();
+
+			try {
+				NativeStore sail2 = new NativeStore(dataDir, "spoc,posc");
+				sail2.initialize();
+				try {
+					fail("initialized a second native store with same dataDir");
+				}
+				finally {
+					sail2.shutDown();
+				}
+			}
+			catch (SailLockedException e) {
+				// Expected: should not be able to open two native stores with the
+				// same dataDir
+			}
+			finally {
+				sail.shutDown();
+			}
 		}
-		sail.shutDown();
+		finally {
+			FileUtil.deleteDir(dataDir);
+		}
 	}
 }
