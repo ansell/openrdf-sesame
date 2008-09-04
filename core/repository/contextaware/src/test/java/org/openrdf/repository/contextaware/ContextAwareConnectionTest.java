@@ -83,7 +83,7 @@ public class ContextAwareConnectionTest extends TestCase {
 
 	String queryString = "SELECT ?o WHERE { ?s ?p ?o}";
 
-	public void testGraphQueryWithinContext() throws Exception {
+	public void testGraphQuery() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub() {
 			@Override
 			public GraphQuery prepareGraphQuery(QueryLanguage ql, String query,
@@ -105,10 +105,10 @@ public class ContextAwareConnectionTest extends TestCase {
 		ContextAwareConnection con = new ContextAwareConnection(repo, stub);
 		con.setReadContexts(context);
 		con.setQueryLanguage(SERQL);
-		con.prepareGraphQueryWithinContext(SPARQL, queryString, null);
+		con.prepareGraphQuery(SPARQL, queryString, null);
 	}
 
-	public void testQueryWithinContext() throws Exception {
+	public void testQuery() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub() {
 			@Override
 			public Query prepareQuery(QueryLanguage ql, String query,
@@ -130,10 +130,10 @@ public class ContextAwareConnectionTest extends TestCase {
 		ContextAwareConnection con = new ContextAwareConnection(repo, stub);
 		con.setReadContexts(context);
 		con.setQueryLanguage(SERQL);
-		con.prepareQueryWithinContext(SPARQL, queryString, null);
+		con.prepareQuery(SPARQL, queryString, null);
 	}
 
-	public void testTupleQueryWithinContext() throws Exception {
+	public void testTupleQuery() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub() {
 			@Override
 			public TupleQuery prepareTupleQuery(QueryLanguage ql, String query,
@@ -155,6 +155,6 @@ public class ContextAwareConnectionTest extends TestCase {
 		ContextAwareConnection con = new ContextAwareConnection(repo, stub);
 		con.setReadContexts(context);
 		con.setQueryLanguage(SERQL);
-		con.prepareTupleQueryWithinContext(SPARQL, queryString, null);
+		con.prepareTupleQuery(SPARQL, queryString, null);
 	}
 }
