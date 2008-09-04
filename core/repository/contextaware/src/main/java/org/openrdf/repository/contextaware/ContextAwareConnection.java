@@ -36,7 +36,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.UnsupportedRDFormatException;
 
 /**
  * Allows contexts to be specified at the connection level or the method level.
@@ -181,233 +180,118 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	/**
 	 * Before Statements are removed, they are first copied to these contexts.
 	 */
-
 	public void setArchiveContexts(URI... archiveContexts) {
 		this.archiveContexts = archiveContexts;
 	}
 
-
-	/**
-	 * Adds RDF data from the specified file to a specific contexts in the
-	 * repository.
-	 * 
-	 * @param file
-	 *        A file containing RDF data.
-	 * @param baseURI
-	 *        The base URI to resolve any relative URIs that are in the data
-	 *        against. This defaults to the value of
-	 *        {@link java.io.File#toURI() file.toURI()} if the value is set to
-	 *        <tt>null</tt>.
-	 * @param dataFormat
-	 *        The serialization format of the data.
-	 * @throws IOException
-	 *         If an I/O error occurred while reading from the file.
-	 * @throws UnsupportedRDFormatException
-	 *         If no parser is available for the specified RDF format.
-	 * @throws RDFParseException
-	 *         If an error was found while parsing the RDF data.
-	 * @throws StoreException
-	 *         If the data could not be added to the repository, for example
-	 *         because the repository is not writable.
-	 * @see #getAddContexts()
-	 */
-	public void add(File file, String baseURI, RDFFormat dataFormat)
+	@Override
+	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
-		super.add(file, baseURI, dataFormat, addContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.add(file, baseURI, dataFormat, addContexts);
+		} else {
+			super.add(file, baseURI, dataFormat, contexts);
+		}
 	}
 
-	/**
-	 * Adds RDF data from an InputStream to the repository, optionally to one or
-	 * more named contexts.
-	 * 
-	 * @param in
-	 *        An InputStream from which RDF data can be read.
-	 * @param baseURI
-	 *        The base URI to resolve any relative URIs that are in the data
-	 *        against.
-	 * @param dataFormat
-	 *        The serialization format of the data.
-	 * @throws IOException
-	 *         If an I/O error occurred while reading from the input stream.
-	 * @throws UnsupportedRDFormatException
-	 *         If no parser is available for the specified RDF format.
-	 * @throws RDFParseException
-	 *         If an error was found while parsing the RDF data.
-	 * @throws StoreException
-	 *         If the data could not be added to the repository, for example
-	 *         because the repository is not writable.
-	 * @see #getAddContexts()
-	 */
-	public void add(InputStream in, String baseURI, RDFFormat dataFormat)
+	@Override
+	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
-		super.add(in, baseURI, dataFormat, addContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.add(in, baseURI, dataFormat, addContexts);
+		} else {
+			super.add(in, baseURI, dataFormat, contexts);
+		}
 	}
 
-	/**
-	 * Adds the supplied statements to this repository, optionally to one or more
-	 * named contexts.
-	 * 
-	 * @param statements
-	 *        The statements that should be added.
-	 * @throws StoreException
-	 *         If the statements could not be added to the repository, for
-	 *         example because the repository is not writable.
-	 * @see #getAddContexts()
-	 */
-	public void add(Iterable<? extends Statement> statements)
+	@Override
+	public void add(Iterable<? extends Statement> statements, Resource... contexts)
 		throws StoreException
 	{
-		super.add(statements, addContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.add(statements, addContexts);
+		} else {
+			super.add(statements, contexts);
+		}
 	}
 
-	/**
-	 * Adds the supplied statements to this repository, optionally to one or more
-	 * named contexts.
-	 * 
-	 * @param statementIter
-	 *        The statements to add. In case the iterator is a
-	 *        {@link CloseableIteration}, it will be closed before this method
-	 *        returns.
-	 * @throws StoreException
-	 *         If the statements could not be added to the repository, for
-	 *         example because the repository is not writable.
-	 * @see #getAddContexts()
-	 */
-	public void add(Iteration<? extends Statement, StoreException> statementIter)
-		throws StoreException
+	@Override
+	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter, Resource... contexts)
+		throws StoreException, E
 	{
-		super.add(statementIter, addContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.add(statementIter, addContexts);
+		} else {
+			super.add(statementIter, contexts);
+		}
 	}
 
-	/**
-	 * Adds RDF data from a Reader to the repository, optionally to one or more
-	 * named contexts. <b>Note: using a Reader to upload byte-based data means
-	 * that you have to be careful not to destroy the data's character encoding
-	 * by enforcing a default character encoding upon the bytes. If possible,
-	 * adding such data using an InputStream is to be preferred.</b>
-	 * 
-	 * @param reader
-	 *        A Reader from which RDF data can be read.
-	 * @param baseURI
-	 *        The base URI to resolve any relative URIs that are in the data
-	 *        against.
-	 * @param dataFormat
-	 *        The serialization format of the data.
-	 * @throws IOException
-	 *         If an I/O error occurred while reading from the reader.
-	 * @throws UnsupportedRDFormatException
-	 *         If no parser is available for the specified RDF format.
-	 * @throws RDFParseException
-	 *         If an error was found while parsing the RDF data.
-	 * @throws StoreException
-	 *         If the data could not be added to the repository, for example
-	 *         because the repository is not writable.
-	 * @see #getAddContexts()
-	 */
-	public void add(Reader reader, String baseURI, RDFFormat dataFormat)
+	@Override
+	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
-		super.add(reader, baseURI, dataFormat, addContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.add(reader, baseURI, dataFormat, addContexts);
+		} else {
+			super.add(reader, baseURI, dataFormat, contexts);
+		}
 	}
 
-	/**
-	 * Adds a statement with the specified subject, predicate and object to this
-	 * repository, optionally to one or more named contexts.
-	 * 
-	 * @param subject
-	 *        The statement's subject.
-	 * @param predicate
-	 *        The statement's predicate.
-	 * @param object
-	 *        The statement's object.
-	 * @throws StoreException
-	 *         If the data could not be added to the repository, for example
-	 *         because the repository is not writable.
-	 * @see #getAddContexts()
-	 */
-	public void add(Resource subject, URI predicate, Value object)
+	@Override
+	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		super.add(subject, predicate, object, addContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.add(subject, predicate, object, addContexts);
+		} else {
+			super.add(subject, predicate, object, contexts);
+		}
 	}
 
-	/**
-	 * Adds the supplied statement to this repository, optionally to one or more
-	 * named contexts.
-	 * 
-	 * @param st
-	 *        The statement to add.
-	 * @throws StoreException
-	 *         If the statement could not be added to the repository, for example
-	 *         because the repository is not writable.
-	 * @see #getAddContexts()
-	 */
-	public void add(Statement st)
+	@Override
+	public void add(Statement st, Resource... contexts)
 		throws StoreException
 	{
-		super.add(st, addContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.add(st, addContexts);
+		} else {
+			super.add(st, contexts);
+		}
 	}
 
-	/**
-	 * Adds the RDF data that can be found at the specified URL to the
-	 * repository, optionally to one or more named contexts.
-	 * 
-	 * @param url
-	 *        The URL of the RDF data.
-	 * @param baseURI
-	 *        The base URI to resolve any relative URIs that are in the data
-	 *        against. This defaults to the value of {@link
-	 *        java.net.URL#toExternalForm() url.toExternalForm()} if the value is
-	 *        set to <tt>null</tt>.
-	 * @param dataFormat
-	 *        The serialization format of the data.
-	 * @throws IOException
-	 *         If an I/O error occurred while reading from the URL.
-	 * @throws UnsupportedRDFormatException
-	 *         If no parser is available for the specified RDF format.
-	 * @throws RDFParseException
-	 *         If an error was found while parsing the RDF data.
-	 * @throws StoreException
-	 *         If the data could not be added to the repository, for example
-	 *         because the repository is not writable.
-	 * @see #getAddContexts()
-	 */
-	public void add(URL url, String baseURI, RDFFormat dataFormat)
+	@Override
+	public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
-		super.add(url, baseURI, dataFormat, addContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.add(url, baseURI, dataFormat, addContexts);
+		} else {
+			super.add(url, baseURI, dataFormat, contexts);
+		}
 	}
 
-	/**
-	 * Removes all statements from a specific contexts in the repository.
-	 * 
-	 * @throws StoreException
-	 *         If the statements could not be removed from the repository, for
-	 *         example because the repository is not writable.
-	 * @see #getRemoveContexts()
-	 */
-	public void clear()
+	@Override
+	public void clear(Resource... contexts)
 		throws StoreException
 	{
-		super.clear(removeContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.clear(removeContexts);
+		} else {
+			super.clear(contexts);
+		}
 	}
 
-	/**
-	 * Exports all explicit statements in the specified contexts to the supplied
-	 * RDFHandler.
-	 * 
-	 * @param handler
-	 *        The handler that will handle the RDF data.
-	 * @throws RDFHandlerException
-	 *         If the handler encounters an unrecoverable error.
-	 * @see #getReadContexts()
-	 */
-	public void export(RDFHandler handler)
+	@Override
+	public void export(RDFHandler handler, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
-		super.export(handler, readContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.export(handler, readContexts);
+		} else {
+			super.export(handler, contexts);
+		}
 	}
 
 	/**
@@ -427,10 +311,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public void exportStatements(Resource subj, URI pred, Value obj, RDFHandler hander)
+	public void exportStatements(Resource subj, URI pred, Value obj, RDFHandler hander, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
-		super.exportStatements(subj, pred, obj, includeInferred, hander, readContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.exportStatements(subj, pred, obj, includeInferred, hander, readContexts);
+		} else {
+			super.exportStatements(subj, pred, obj, includeInferred, hander, contexts);
+		}
 	}
 
 	/**
@@ -453,10 +341,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj)
+	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		return super.getStatements(subj, pred, obj, includeInferred, readContexts);
+		if (contexts == null || contexts.length < 1) {
+			return super.getStatements(subj, pred, obj, includeInferred, readContexts);
+		} else {
+			return super.getStatements(subj, pred, obj, includeInferred, contexts);
+		}
 	}
 
 	/**
@@ -475,10 +367,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public boolean hasStatement(Resource subj, URI pred, Value obj)
+	public boolean hasStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		return super.hasStatement(subj, pred, obj, includeInferred, readContexts);
+		if (contexts == null || contexts.length < 1) {
+			return super.hasStatement(subj, pred, obj, includeInferred, readContexts);
+		} else {
+			return super.hasStatement(subj, pred, obj, includeInferred, contexts);
+		}
 	}
 
 	/**
@@ -493,123 +389,99 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public boolean hasStatement(Statement st)
+	public boolean hasStatement(Statement st, Resource... contexts)
 		throws StoreException
 	{
-		return super.hasStatement(st, includeInferred, readContexts);
+		if (contexts == null || contexts.length < 1) {
+			return super.hasStatement(st, includeInferred, readContexts);
+		} else {
+			return super.hasStatement(st, includeInferred, contexts);
+		}
 	}
 
 	public GraphQuery prepareGraphQuery(String query)
 		throws MalformedQueryException, StoreException
 	{
-		GraphQuery preparedQuery = super.prepareGraphQuery(ql, query);
-		initQuery(preparedQuery);
-		return preparedQuery;
+		return initQuery(super.prepareGraphQuery(ql, query));
 	}
 
 	public Query prepareQuery(String query)
 		throws MalformedQueryException, StoreException
 	{
-		Query preparedQuery = super.prepareQuery(ql, query);
-		initQuery(preparedQuery);
-		return preparedQuery;
+		return initQuery(super.prepareQuery(ql, query));
 	}
 
 	public TupleQuery prepareTupleQuery(String query)
 		throws MalformedQueryException, StoreException
 	{
-		TupleQuery preparedQuery = super.prepareTupleQuery(ql, query);
-		initQuery(preparedQuery);
-		return preparedQuery;
+		return initQuery(super.prepareTupleQuery(ql, query));
 	}
 
 	@Override
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query)
 		throws MalformedQueryException, StoreException
 	{
-		GraphQuery preparedQuery = super.prepareGraphQuery(ql, query);
-		initQuery(preparedQuery);
-		return preparedQuery;
+		return initQuery(super.prepareGraphQuery(ql, query));
 	}
 
 	@Override
 	public Query prepareQuery(QueryLanguage ql, String query)
 		throws MalformedQueryException, StoreException
 	{
-		Query preparedQuery = super.prepareQuery(ql, query);
-		initQuery(preparedQuery);
-		return preparedQuery;
+		return initQuery(super.prepareQuery(ql, query));
 	}
 
 	@Override
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String query)
 		throws MalformedQueryException, StoreException
 	{
-		TupleQuery preparedQuery = super.prepareTupleQuery(ql, query);
-		initQuery(preparedQuery);
-		return preparedQuery;
+		return initQuery(super.prepareTupleQuery(ql, query));
 	}
 
 	@Override
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query)
 		throws MalformedQueryException, StoreException
 	{
-		BooleanQuery preparedQuery = super.prepareBooleanQuery(ql, query);
-		initQuery(preparedQuery);
-		return preparedQuery;
+		return initQuery(super.prepareBooleanQuery(ql, query));
 	}
 
 	@Override
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, StoreException
 	{
-		GraphQuery preparedQuery = super.prepareGraphQuery(ql, query, baseURI);
-		initQuery(preparedQuery);
-		return preparedQuery;
+		return initQuery(super.prepareGraphQuery(ql, query, baseURI));
 	}
 
 	@Override
 	public Query prepareQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, StoreException
 	{
-		Query preparedQuery = super.prepareQuery(ql, query, baseURI);
-		initQuery(preparedQuery);
-		return preparedQuery;
+		return initQuery(super.prepareQuery(ql, query, baseURI));
 	}
 
 	@Override
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, StoreException
 	{
-		TupleQuery preparedQuery = super.prepareTupleQuery(ql, query, baseURI);
-		initQuery(preparedQuery);
-		return preparedQuery;
+		return initQuery(super.prepareTupleQuery(ql, query, baseURI));
 	}
 
 	@Override
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, StoreException
 	{
-		BooleanQuery preparedQuery = super.prepareBooleanQuery(ql, query, baseURI);
-		initQuery(preparedQuery);
-		return preparedQuery;
+		return initQuery(super.prepareBooleanQuery(ql, query, baseURI));
 	}
-	
-	/**
-	 * Removes the supplied statements from the specified contexts in this
-	 * repository.
-	 * 
-	 * @param statements
-	 *        The statements that should be added.
-	 * @throws StoreException
-	 *         If the statements could not be added to the repository, for
-	 *         example because the repository is not writable.
-	 * @see #getRemoveContexts()
-	 */
-	public void remove(Iterable<? extends Statement> statements)
+
+	@Override
+	public void remove(Iterable<? extends Statement> statements, Resource... contexts)
 		throws StoreException
 	{
-		super.remove(statements, removeContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.remove(statements, removeContexts);
+		} else {
+			super.remove(statements, contexts);
+		}
 	}
 
 	/**
@@ -626,10 +498,15 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 *         example because the repository is not writable.
 	 * @see #getRemoveContexts()
 	 */
-	public void remove(Iteration<? extends Statement, StoreException> statementIter)
-		throws StoreException
+	@Override
+	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter, Resource... contexts)
+		throws StoreException, E
 	{
-		super.remove(statementIter, removeContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.remove(statementIter, removeContexts);
+		} else {
+			super.remove(statementIter, contexts);
+		}
 	}
 
 	/**
@@ -647,10 +524,15 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 *         example because the repository is not writable.
 	 * @see #getRemoveContexts()
 	 */
-	public void remove(Resource subject, URI predicate, Value object)
+	@Override
+	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		super.remove(subject, predicate, object, removeContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.remove(subject, predicate, object, removeContexts);
+		} else {
+			super.remove(subject, predicate, object, contexts);
+		}
 	}
 
 	/**
@@ -664,10 +546,15 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 *         example because the repository is not writable.
 	 * @see #getRemoveContexts()
 	 */
-	public void remove(Statement st)
+	@Override
+	public void remove(Statement st, Resource... contexts)
 		throws StoreException
 	{
-		super.remove(st, removeContexts);
+		if (contexts == null || contexts.length < 1) {
+			super.remove(st, removeContexts);
+		} else {
+			super.remove(st, contexts);
+		}
 	}
 
 	/**
@@ -678,10 +565,15 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 *         this repository.
 	 * @see #getReadContexts()
 	 */
-	public long size()
+	@Override
+	public long size(Resource... contexts)
 		throws StoreException
 	{
-		return super.size(readContexts);
+		if (contexts == null || contexts.length < 1) {
+			return super.size(readContexts);
+		} else {
+			return super.size(contexts);
+		}
 	}
 
 	@Override
@@ -698,7 +590,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		getDelegate().remove(subject, predicate, object, contexts);
 	}
 
-	private void initQuery(Query query) {
+	private <Q extends Query> Q initQuery(Q query) {
 		if (readContexts.length > 0) {
 			DatasetImpl ds = new DatasetImpl();
 			for (URI graph : readContexts) {
@@ -716,6 +608,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		catch (Exception e) {
 			// TODO remove this reflection
 		}
+		return query;
 	}
 
 }
