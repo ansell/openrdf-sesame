@@ -5,10 +5,10 @@
  */
 package org.openrdf.repository.contextaware;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.URI;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryWrapper;
 
 /**
@@ -134,7 +134,7 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	@Override
 	public ContextAwareConnection getConnection()
-		throws StoreException
+		throws RepositoryException
 	{
 		ContextAwareConnection con;
 		con = new ContextAwareConnection(this, super.getConnection());
