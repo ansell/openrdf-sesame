@@ -8,7 +8,7 @@ package org.openrdf.repository.contextaware.config;
 import static org.openrdf.model.util.GraphUtil.getObjects;
 import static org.openrdf.model.util.GraphUtil.getOptionalObjectLiteral;
 import static org.openrdf.model.util.GraphUtil.getUniqueObjectResource;
-import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ADD_CONTEXT;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.*;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ARCHIVE_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.DELEGATE;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.INCLUDE_INFERRED;
@@ -41,6 +41,8 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 
 	private Boolean includeInferred = true;
 
+	private long maxQueryTime;
+
 	private QueryLanguage ql = QueryLanguage.SPARQL;
 
 	private URI[] readContexts = ALL_CONTEXTS;
@@ -55,6 +57,14 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 
 	public ContextAwareConfig() {
 		super(ContextAwareFactory.REPOSITORY_TYPE);
+	}
+
+	public long getMaxQueryTime() {
+		return maxQueryTime;
+	}
+
+	public void setMaxQueryTime(long maxQueryTime) {
+		this.maxQueryTime = maxQueryTime;
 	}
 
 	/**
@@ -170,6 +180,9 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 			Literal bool = vf.createLiteral(includeInferred);
 			graph.add(repImplNode, INCLUDE_INFERRED, bool);
 		}
+		if (maxQueryTime > 0) {
+			graph.add(repImplNode, MAX_QUERY_TIME, vf.createLiteral(maxQueryTime));
+		}
 		if (ql != null) {
 			graph.add(repImplNode, QL, vf.createLiteral(ql.getName()));
 		}
@@ -204,6 +217,10 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 			lit = getOptionalObjectLiteral(graph, node, INCLUDE_INFERRED);
 			if (lit != null) {
 				setIncludeInferred(lit.booleanValue());
+			}
+			lit = getOptionalObjectLiteral(graph, node, MAX_QUERY_TIME);
+			if (lit != null) {
+				setMaxQueryTime(lit.longValue());
 			}
 			lit = getOptionalObjectLiteral(graph, node, QL);
 			if (lit != null) {

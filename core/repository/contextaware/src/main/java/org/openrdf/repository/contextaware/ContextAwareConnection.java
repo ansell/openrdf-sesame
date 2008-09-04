@@ -5,14 +5,15 @@
  */
 package org.openrdf.repository.contextaware;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.Iteration;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.lang.reflect.Method;
 import java.net.URL;
+
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.Iteration;
 
 import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
@@ -47,6 +48,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	private static final URI[] ALL_CONTEXTS = new URI[0];
 
 	private boolean includeInferred = true;
+
+	private long maxQueryTime;
 
 	private QueryLanguage ql = QueryLanguage.SPARQL;
 
@@ -88,6 +91,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 */
 	public void setIncludeInferred(boolean includeInferred) {
 		this.includeInferred = includeInferred;
+	}
+
+	public long getMaxQueryTime() {
+		return maxQueryTime;
+	}
+
+	public void setMaxQueryTime(long maxQueryTime) {
+		this.maxQueryTime = maxQueryTime;
 	}
 
 	public QueryLanguage getQueryLanguage() {
@@ -488,119 +499,11 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		return super.hasStatement(st, includeInferred, readContexts);
 	}
 
-	public GraphQuery prepareGraphQueryWithinContext(String query)
-		throws MalformedQueryException, StoreException
-	{
-		GraphQuery preparedQuery;
-		if (readContexts.length == 0) {
-			preparedQuery = super.prepareGraphQuery(ql, query);
-		} else {
-			preparedQuery = super.prepareGraphQuery(ql, query);
-			DatasetImpl ds = new DatasetImpl();
-			for (URI graph : readContexts) {
-				ds.addDefaultGraph(graph);
-			}
-			preparedQuery.setDataset(ds);
-		}
-		preparedQuery.setIncludeInferred(includeInferred);
-		return preparedQuery;
-	}
-
-	public Query prepareQueryWithinContext(String query)
-		throws MalformedQueryException, StoreException
-	{
-		Query preparedQuery;
-		if (readContexts.length == 0) {
-			preparedQuery = super.prepareQuery(ql, query);
-		} else {
-			preparedQuery = super.prepareQuery(ql, query);
-			DatasetImpl ds = new DatasetImpl();
-			for (URI graph : readContexts) {
-				ds.addDefaultGraph(graph);
-			}
-			preparedQuery.setDataset(ds);
-		}
-		preparedQuery.setIncludeInferred(includeInferred);
-		return preparedQuery;
-	}
-
-	public TupleQuery prepareTupleQueryWithinContext(String query)
-		throws MalformedQueryException, StoreException
-	{
-		TupleQuery preparedQuery;
-		if (readContexts.length == 0) {
-			preparedQuery = super.prepareTupleQuery(ql, query);
-		} else {
-			preparedQuery = super.prepareTupleQuery(ql, query);
-			DatasetImpl ds = new DatasetImpl();
-			for (URI graph : readContexts) {
-				ds.addDefaultGraph(graph);
-			}
-			preparedQuery.setDataset(ds);
-		}
-		preparedQuery.setIncludeInferred(includeInferred);
-		return preparedQuery;
-	}
-
-	public GraphQuery prepareGraphQueryWithinContext(QueryLanguage ql, String query, String baseURI)
-		throws MalformedQueryException, StoreException
-	{
-		GraphQuery preparedQuery;
-		if (readContexts.length == 0) {
-			preparedQuery = super.prepareGraphQuery(ql, query, baseURI);
-		} else {
-			preparedQuery = super.prepareGraphQuery(ql, query);
-			DatasetImpl ds = new DatasetImpl();
-			for (URI graph : readContexts) {
-				ds.addDefaultGraph(graph);
-			}
-			preparedQuery.setDataset(ds);
-		}
-		preparedQuery.setIncludeInferred(includeInferred);
-		return preparedQuery;
-	}
-
-	public Query prepareQueryWithinContext(QueryLanguage ql, String query, String baseURI)
-		throws MalformedQueryException, StoreException
-	{
-		Query preparedQuery;
-		if (readContexts.length == 0) {
-			preparedQuery = super.prepareQuery(ql, query, baseURI);
-		} else {
-			preparedQuery = super.prepareQuery(ql, query);
-			DatasetImpl ds = new DatasetImpl();
-			for (URI graph : readContexts) {
-				ds.addDefaultGraph(graph);
-			}
-			preparedQuery.setDataset(ds);
-		}
-		preparedQuery.setIncludeInferred(includeInferred);
-		return preparedQuery;
-	}
-
-	public TupleQuery prepareTupleQueryWithinContext(QueryLanguage ql, String query, String baseURI)
-		throws MalformedQueryException, StoreException
-	{
-		TupleQuery preparedQuery;
-		if (readContexts.length == 0) {
-			preparedQuery = super.prepareTupleQuery(ql, query, baseURI);
-		} else {
-			preparedQuery = super.prepareTupleQuery(ql, query);
-			DatasetImpl ds = new DatasetImpl();
-			for (URI graph : readContexts) {
-				ds.addDefaultGraph(graph);
-			}
-			preparedQuery.setDataset(ds);
-		}
-		preparedQuery.setIncludeInferred(includeInferred);
-		return preparedQuery;
-	}
-
 	public GraphQuery prepareGraphQuery(String query)
 		throws MalformedQueryException, StoreException
 	{
 		GraphQuery preparedQuery = super.prepareGraphQuery(ql, query);
-		preparedQuery.setIncludeInferred(includeInferred);
+		initQuery(preparedQuery);
 		return preparedQuery;
 	}
 
@@ -608,7 +511,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws MalformedQueryException, StoreException
 	{
 		Query preparedQuery = super.prepareQuery(ql, query);
-		preparedQuery.setIncludeInferred(includeInferred);
+		initQuery(preparedQuery);
 		return preparedQuery;
 	}
 
@@ -616,7 +519,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws MalformedQueryException, StoreException
 	{
 		TupleQuery preparedQuery = super.prepareTupleQuery(ql, query);
-		preparedQuery.setIncludeInferred(includeInferred);
+		initQuery(preparedQuery);
 		return preparedQuery;
 	}
 
@@ -625,7 +528,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws MalformedQueryException, StoreException
 	{
 		GraphQuery preparedQuery = super.prepareGraphQuery(ql, query);
-		preparedQuery.setIncludeInferred(includeInferred);
+		initQuery(preparedQuery);
 		return preparedQuery;
 	}
 
@@ -634,7 +537,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws MalformedQueryException, StoreException
 	{
 		Query preparedQuery = super.prepareQuery(ql, query);
-		preparedQuery.setIncludeInferred(includeInferred);
+		initQuery(preparedQuery);
 		return preparedQuery;
 	}
 
@@ -643,7 +546,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws MalformedQueryException, StoreException
 	{
 		TupleQuery preparedQuery = super.prepareTupleQuery(ql, query);
-		preparedQuery.setIncludeInferred(includeInferred);
+		initQuery(preparedQuery);
 		return preparedQuery;
 	}
 
@@ -652,7 +555,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws MalformedQueryException, StoreException
 	{
 		BooleanQuery preparedQuery = super.prepareBooleanQuery(ql, query);
-		preparedQuery.setIncludeInferred(includeInferred);
+		initQuery(preparedQuery);
 		return preparedQuery;
 	}
 
@@ -661,7 +564,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws MalformedQueryException, StoreException
 	{
 		GraphQuery preparedQuery = super.prepareGraphQuery(ql, query, baseURI);
-		preparedQuery.setIncludeInferred(includeInferred);
+		initQuery(preparedQuery);
 		return preparedQuery;
 	}
 
@@ -670,7 +573,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws MalformedQueryException, StoreException
 	{
 		Query preparedQuery = super.prepareQuery(ql, query, baseURI);
-		preparedQuery.setIncludeInferred(includeInferred);
+		initQuery(preparedQuery);
 		return preparedQuery;
 	}
 
@@ -679,7 +582,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws MalformedQueryException, StoreException
 	{
 		TupleQuery preparedQuery = super.prepareTupleQuery(ql, query, baseURI);
-		preparedQuery.setIncludeInferred(includeInferred);
+		initQuery(preparedQuery);
 		return preparedQuery;
 	}
 
@@ -688,7 +591,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws MalformedQueryException, StoreException
 	{
 		BooleanQuery preparedQuery = super.prepareBooleanQuery(ql, query, baseURI);
-		preparedQuery.setIncludeInferred(includeInferred);
+		initQuery(preparedQuery);
 		return preparedQuery;
 	}
 	
@@ -793,6 +696,26 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			throw new AssertionError(e);
 		}
 		getDelegate().remove(subject, predicate, object, contexts);
+	}
+
+	private void initQuery(Query query) {
+		if (readContexts.length > 0) {
+			DatasetImpl ds = new DatasetImpl();
+			for (URI graph : readContexts) {
+				ds.addDefaultGraph(graph);
+			}
+			query.setDataset(ds);
+		}
+		query.setIncludeInferred(includeInferred);
+		// TODO preparedQuery.setMaxQueryTime(maxQueryTime);
+		try {
+			Class<? extends Query> c = query.getClass();
+			Method setMaxQueryTime = c.getMethod("setMaxQueryTime", Long.TYPE);
+			setMaxQueryTime.invoke(query, maxQueryTime);
+		}
+		catch (Exception e) {
+			// TODO remove this reflection
+		}
 	}
 
 }
