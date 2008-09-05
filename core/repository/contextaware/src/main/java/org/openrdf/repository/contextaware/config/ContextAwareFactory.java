@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -13,8 +13,8 @@ import org.openrdf.repository.config.RepositoryRegistry;
 import org.openrdf.repository.contextaware.ContextAwareRepository;
 
 /**
- * A {@link RepositoryFactory} that creates {@link ContextAwareRepository}s based on
- * RDF configuration data.
+ * A {@link RepositoryFactory} that creates {@link ContextAwareRepository}s
+ * based on RDF configuration data.
  * 
  * @author James Leigh
  */
