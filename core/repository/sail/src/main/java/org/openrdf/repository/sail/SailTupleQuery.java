@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -42,9 +42,12 @@ public class SailTupleQuery extends SailQuery implements TupleQuery {
 		TupleExpr tupleExpr = getParsedQuery().getTupleExpr();
 
 		try {
+			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter;
+
 			SailConnection sailCon = getConnection().getSailConnection();
-			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter = sailCon.evaluate(
-					tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
+			bindingsIter = sailCon.evaluate(tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
+
+			bindingsIter = enforceMaxQueryTime(bindingsIter);
 
 			return new TupleQueryResultImpl(new ArrayList<String>(tupleExpr.getBindingNames()), bindingsIter);
 		}

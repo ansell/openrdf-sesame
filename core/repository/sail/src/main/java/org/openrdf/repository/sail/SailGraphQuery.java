@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -47,9 +47,10 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		TupleExpr tupleExpr = getParsedQuery().getTupleExpr();
 
 		try {
+			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter;
+			
 			SailConnection sailCon = getConnection().getSailConnection();
-			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter = sailCon.evaluate(
-					tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
+			bindingsIter = sailCon.evaluate(tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
 
 			// Filters out all partial and invalid matches
 			bindingsIter = new FilterIteration<BindingSet, QueryEvaluationException>(bindingsIter) {
@@ -64,10 +65,11 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 							&& (context == null || context instanceof Resource);
 				}
 			};
-
-			final ValueFactory vf = getConnection().getRepository().getValueFactory();
+			
+			bindingsIter = enforceMaxQueryTime(bindingsIter);
 
 			// Convert the BindingSet objects to actual RDF statements
+			final ValueFactory vf = getConnection().getRepository().getValueFactory();
 			CloseableIteration<Statement, QueryEvaluationException> stIter;
 			stIter = new ConvertingIteration<BindingSet, Statement, QueryEvaluationException>(bindingsIter) {
 
