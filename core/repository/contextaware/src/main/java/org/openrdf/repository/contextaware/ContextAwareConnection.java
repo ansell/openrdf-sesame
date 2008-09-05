@@ -48,7 +48,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 	private boolean includeInferred = true;
 
-	private long maxQueryTime;
+	private int maxQueryTime;
 
 	private QueryLanguage ql = QueryLanguage.SPARQL;
 
@@ -91,11 +91,11 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		this.includeInferred = includeInferred;
 	}
 
-	public long getMaxQueryTime() {
+	public int getMaxQueryTime() {
 		return maxQueryTime;
 	}
 
-	public void setMaxQueryTime(long maxQueryTime) {
+	public void setMaxQueryTime(int maxQueryTime) {
 		this.maxQueryTime = maxQueryTime;
 	}
 
@@ -624,7 +624,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		// TODO preparedQuery.setMaxQueryTime(maxQueryTime);
 		try {
 			Class<? extends Query> c = query.getClass();
-			Method setMaxQueryTime = c.getMethod("setMaxQueryTime", Long.TYPE);
+			Method setMaxQueryTime = c.getMethod("setMaxQueryTime", Integer.TYPE);
 			setMaxQueryTime.invoke(query, maxQueryTime);
 		}
 		catch (Exception e) {

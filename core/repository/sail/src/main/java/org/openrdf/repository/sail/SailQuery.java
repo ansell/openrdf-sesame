@@ -25,7 +25,7 @@ public abstract class SailQuery extends AbstractQuery {
 
 	private final SailRepositoryConnection con;
 
-	private long maxQueryTime = 0L;
+	private int maxQueryTime = 0;
 
 	protected SailQuery(ParsedQuery parsedQuery, SailRepositoryConnection con) {
 		this.parsedQuery = parsedQuery;
@@ -46,20 +46,20 @@ public abstract class SailQuery extends AbstractQuery {
 	 * fetch query results will result in {@link QueryInterruptedException}s.
 	 * 
 	 * @param maxQueryTime
-	 *        The maximum query time, in milliseconds. A negative or zero value
+	 *        The maximum query time, measured in seconds. A negative or zero value
 	 *        indicates an unlimited query time (which is the default).
 	 */
-	public void setMaxQueryTime(long maxQueryTime) {
+	public void setMaxQueryTime(int maxQueryTime) {
 		this.maxQueryTime = maxQueryTime;
 	}
 
 	/**
 	 * Returns the maximum query evaluation time.
 	 * 
-	 * @return The maximum query evaluation time, in milliseconds.
+	 * @return The maximum query evaluation time, measured in seconds.
 	 * @see #maxQueryTime
 	 */
-	public long getMaxQueryTime() {
+	public int getMaxQueryTime() {
 		return maxQueryTime;
 	}
 
@@ -67,8 +67,7 @@ public abstract class SailQuery extends AbstractQuery {
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter)
 	{
 		if (maxQueryTime > 0) {
-			System.out.println("Limiting query time to " + maxQueryTime + " ms");
-			bindingsIter = new QueryInterruptIteration(bindingsIter, maxQueryTime);
+			bindingsIter = new QueryInterruptIteration(bindingsIter, 1000L * maxQueryTime);
 		}
 
 		return bindingsIter;

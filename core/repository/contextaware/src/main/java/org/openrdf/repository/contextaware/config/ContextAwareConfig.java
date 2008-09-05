@@ -42,7 +42,7 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 
 	private Boolean includeInferred = true;
 
-	private long maxQueryTime = 0L;
+	private int maxQueryTime = 0;
 
 	private QueryLanguage ql = QueryLanguage.SPARQL;
 
@@ -60,11 +60,11 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 		super(ContextAwareFactory.REPOSITORY_TYPE);
 	}
 
-	public long getMaxQueryTime() {
+	public int getMaxQueryTime() {
 		return maxQueryTime;
 	}
 
-	public void setMaxQueryTime(long maxQueryTime) {
+	public void setMaxQueryTime(int maxQueryTime) {
 		this.maxQueryTime = maxQueryTime;
 	}
 
@@ -221,7 +221,7 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 			}
 			lit = getOptionalObjectLiteral(graph, node, MAX_QUERY_TIME);
 			if (lit != null) {
-				setMaxQueryTime(lit.longValue());
+				setMaxQueryTime(lit.intValue());
 			}
 			lit = getOptionalObjectLiteral(graph, node, QL);
 			if (lit != null) {
