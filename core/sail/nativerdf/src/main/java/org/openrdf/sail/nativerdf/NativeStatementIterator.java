@@ -26,9 +26,9 @@ class NativeStatementIterator extends LookAheadIteration<Statement, IOException>
 	 * Variables *
 	 *-----------*/
 
-	private RecordIterator btreeIter;
+	private final RecordIterator btreeIter;
 
-	private ValueStore valueStore;
+	private final ValueStore valueStore;
 
 	/*--------------*
 	 * Constructors *
@@ -79,7 +79,7 @@ class NativeStatementIterator extends LookAheadIteration<Statement, IOException>
 	protected void handleClose()
 		throws IOException
 	{
-		btreeIter.close();
 		super.handleClose();
+		btreeIter.close();
 	}
 }
