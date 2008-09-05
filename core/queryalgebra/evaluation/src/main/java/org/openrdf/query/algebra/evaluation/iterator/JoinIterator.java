@@ -6,6 +6,7 @@
 package org.openrdf.query.algebra.evaluation.iterator;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.query.BindingSet;
@@ -42,6 +43,9 @@ public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluation
 		this.join = join;
 
 		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
+
+		// Initialize with empty iteration so that var is not null
+		rightIter = new EmptyIteration<BindingSet, QueryEvaluationException>();
 	}
 
 	/*---------*
@@ -52,17 +56,16 @@ public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluation
 	protected BindingSet getNextElement()
 		throws QueryEvaluationException
 	{
-		while (rightIter != null || leftIter.hasNext()) {
-			if (rightIter == null) {
-				rightIter = strategy.evaluate(join.getRightArg(), leftIter.next());
-			}
-
+		while (rightIter.hasNext() || leftIter.hasNext()) {
 			if (rightIter.hasNext()) {
 				return rightIter.next();
 			}
-			else {
-				rightIter.close();
-				rightIter = null;
+
+			// Right iteration exhausted
+			rightIter.close();
+
+			if (leftIter.hasNext()) {
+				rightIter = strategy.evaluate(join.getRightArg(), leftIter.next());
 			}
 		}
 
@@ -73,13 +76,9 @@ public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluation
 	protected void handleClose()
 		throws QueryEvaluationException
 	{
-		if (rightIter != null) {
-			rightIter.close();
-			rightIter = null;
-		}
+		super.handleClose();
 
 		leftIter.close();
-
-		super.handleClose();
+		rightIter.close();
 	}
 }

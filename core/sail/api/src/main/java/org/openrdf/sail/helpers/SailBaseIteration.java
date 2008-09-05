@@ -18,10 +18,10 @@ import info.aduna.iteration.IterationWrapper;
  * @author jeen
  */
 class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
-	
+
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private SailConnectionBase connection;
+	private final SailConnectionBase connection;
 
 	private Throwable creatorTrace;
 
@@ -64,8 +64,8 @@ class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 		throws E
 	{
 		super.handleClose();
-			connection.iterationClosed(this);
-		}
+		connection.iterationClosed(this);
+	}
 
 	@Override
 	protected void finalize()
