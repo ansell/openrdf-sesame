@@ -151,10 +151,10 @@
          mf:result  mfx:ParseError
       ]
       [  rdf:type   mf:TestSyntax ;
-         mf:name    "syntax-020: projection; uppercase label function duplicates lowercase label function";
+         mf:name    "syntax-020: projection; uppercase and lowercase label functions";
          rdfs:label "syntax-020" ;
          mf:action  <syntax-020.serql> ;
-         mf:result  mfx:ParseError
+         mf:result  mfx:Correct
       ]
       [  rdf:type   mf:TestSyntax ;
          mf:name    "syntax-022: projection of unselected variable";
