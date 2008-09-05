@@ -7,6 +7,7 @@ package org.openrdf.http.server.repository;
 
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -66,6 +68,10 @@ public class TupleQueryResultView extends QueryResultView {
 			TupleQueryResultWriter qrWriter = qrWriterFactory.getWriter(out);
 			TupleQueryResult tupleQueryResult = (TupleQueryResult)model.get(QUERY_RESULT_KEY);
 			QueryResultUtil.report(tupleQueryResult, qrWriter);
+		}
+		catch (QueryInterruptedException e) {
+			logger.error("Query interrupted", e);
+			response.sendError(SC_SERVICE_UNAVAILABLE, "Query evaluation took too long");
 		}
 		catch (QueryEvaluationException e) {
 			logger.error("Query evaluation error", e);

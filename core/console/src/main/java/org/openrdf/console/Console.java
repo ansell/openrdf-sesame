@@ -61,6 +61,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
@@ -1273,6 +1274,10 @@ public class Console {
 		}
 		catch (MalformedQueryException e) {
 			writeError("Malformed query: " + e.getMessage());
+		}
+		catch (QueryInterruptedException e) {
+			writeError("Query interrupted: " + e.getMessage());
+			logger.error("Query interrupted", e);
 		}
 		catch (QueryEvaluationException e) {
 			writeError("Query evaluation error: " + e.getMessage());
