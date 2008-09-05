@@ -7,6 +7,7 @@ package org.openrdf.http.server.repository;
 
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -66,6 +68,10 @@ public class GraphQueryResultView extends QueryResultView {
 			RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
 			GraphQueryResult graphQueryResult = (GraphQueryResult)model.get(QUERY_RESULT_KEY);
 			QueryResultUtil.report(graphQueryResult, rdfWriter);
+		}
+		catch (QueryInterruptedException e) {
+			logger.error("Query interrupted", e);
+			response.sendError(SC_SERVICE_UNAVAILABLE, "Query evaluation took too long");
 		}
 		catch (QueryEvaluationException e) {
 			logger.error("Query evaluation error", e);
