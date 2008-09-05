@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.reflect.Method;
 import java.net.URL;
 
 import info.aduna.iteration.CloseableIteration;
@@ -622,17 +621,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 		query.setIncludeInferred(includeInferred);
 
-		if (maxQueryTime > 0) {
-			// TODO preparedQuery.setMaxQueryTime(maxQueryTime);
-			try {
-				Class<? extends Query> c = query.getClass();
-				Method setMaxQueryTime = c.getMethod("setMaxQueryTime", Integer.TYPE);
-				setMaxQueryTime.invoke(query, maxQueryTime);
-			}
-			catch (Exception e) {
-				// TODO remove this reflection
-			}
-		}
+		query.setMaxQueryTime(maxQueryTime);
 
 		return query;
 	}

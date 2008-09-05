@@ -78,4 +78,23 @@ public interface Query {
 	 *         <tt>false</tt> otherwise.
 	 */
 	public boolean getIncludeInferred();
+	
+	/**
+	 * Specifies the maximum time that a query is allowed to run. The query will
+	 * be interrupted when it exceeds the time limit. Any consecutive requests to
+	 * fetch query results will result in {@link QueryInterruptedException}s.
+	 * 
+	 * @param maxQueryTime
+	 *        The maximum query time, measured in seconds. A negative or zero
+	 *        value indicates an unlimited query time (which is the default).
+	 */
+	public void setMaxQueryTime(int maxQueryTime);
+
+	/**
+	 * Returns the maximum query evaluation time.
+	 * 
+	 * @return The maximum query evaluation time, measured in seconds.
+	 * @see #maxQueryTime
+	 */
+	public int getMaxQueryTime();
 }
