@@ -231,9 +231,9 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 			return repInfo;
 		}
-		catch (RepositoryConfigException rce) {
+		catch (RepositoryConfigException e) {
 			// FIXME: don't fetch info through config parsing
-			throw new RepositoryException("Unable to retrieve existing configurations", rce);
+			throw new RepositoryException("Unable to read repository configuration", e);
 		}
 	}
 
