@@ -37,7 +37,7 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	public ContextAwareRepository() {
 		super();
 	}
-	
+
 	public ContextAwareRepository(Repository delegate) {
 		super(delegate);
 	}
@@ -150,8 +150,14 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	public ContextAwareConnection getConnection()
 		throws RepositoryException
 	{
-		ContextAwareConnection con;
-		con = new ContextAwareConnection(this, super.getConnection());
+		ContextAwareConnection con = new ContextAwareConnection(this, super.getConnection());
+		con.setIncludeInferred(isIncludeInferred());
+		con.setMaxQueryTime(getMaxQueryTime());
+		con.setQueryLanguage(getQueryLanguage());
+		con.setReadContexts(getReadContexts());
+		con.setAddContexts(getAddContexts());
+		con.setRemoveContexts(getRemoveContexts());
+		con.setArchiveContexts(getArchiveContexts());
 		return con;
 	}
 
