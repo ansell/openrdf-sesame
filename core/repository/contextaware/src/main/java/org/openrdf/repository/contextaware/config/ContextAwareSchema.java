@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,7 +14,10 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public class ContextAwareSchema {
 
-	/** The ContextAwareRepository schema namespace (<tt>http://www.openrdf.org/config/repository/contextaware#</tt>). */
+	/**
+	 * The ContextAwareRepository schema namespace (
+	 * <tt>http://www.openrdf.org/config/repository/contextaware#</tt>).
+	 */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/repository/contextaware#";
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#includeInferred</tt> */

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,10 +8,11 @@ package org.openrdf.repository.contextaware.config;
 import static org.openrdf.model.util.GraphUtil.getObjects;
 import static org.openrdf.model.util.GraphUtil.getOptionalObjectLiteral;
 import static org.openrdf.model.util.GraphUtil.getUniqueObjectResource;
-import static org.openrdf.repository.contextaware.config.ContextAwareSchema.*;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ADD_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ARCHIVE_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.DELEGATE;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.INCLUDE_INFERRED;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.MAX_QUERY_TIME;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.QL;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.READ_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.REMOVE_CONTEXT;
@@ -41,7 +42,7 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 
 	private Boolean includeInferred = true;
 
-	private long maxQueryTime;
+	private long maxQueryTime = 0L;
 
 	private QueryLanguage ql = QueryLanguage.SPARQL;
 
