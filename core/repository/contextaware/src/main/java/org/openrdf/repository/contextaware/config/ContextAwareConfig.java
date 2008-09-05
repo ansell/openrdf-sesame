@@ -5,15 +5,11 @@
  */
 package org.openrdf.repository.contextaware.config;
 
-import static org.openrdf.model.util.GraphUtil.getObjects;
-import static org.openrdf.model.util.GraphUtil.getOptionalObjectLiteral;
-import static org.openrdf.model.util.GraphUtil.getUniqueObjectResource;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ADD_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ARCHIVE_CONTEXT;
-import static org.openrdf.repository.contextaware.config.ContextAwareSchema.DELEGATE;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.INCLUDE_INFERRED;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.MAX_QUERY_TIME;
-import static org.openrdf.repository.contextaware.config.ContextAwareSchema.QL;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.QUERY_LANGUAGE;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.READ_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.REMOVE_CONTEXT;
 
@@ -25,18 +21,17 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.repository.config.DelegatingRepositoryImplConfigBase;
 import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.repository.config.RepositoryImplConfig;
-import org.openrdf.repository.config.RepositoryImplConfigBase;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
 
 /**
  * @author James Leigh
  */
-public class ContextAwareConfig extends RepositoryImplConfigBase {
+public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 
 	private static final URI[] ALL_CONTEXTS = new URI[0];
 
@@ -44,7 +39,7 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 
 	private int maxQueryTime = 0;
 
-	private QueryLanguage ql = QueryLanguage.SPARQL;
+	private QueryLanguage queryLanguage = QueryLanguage.SPARQL;
 
 	private URI[] readContexts = ALL_CONTEXTS;
 
@@ -53,8 +48,6 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 	private URI[] removeContexts = ALL_CONTEXTS;
 
 	private URI[] archiveContexts = ALL_CONTEXTS;
-
-	private RepositoryImplConfig delegate;
 
 	public ContextAwareConfig() {
 		super(ContextAwareFactory.REPOSITORY_TYPE);
@@ -69,7 +62,6 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 	}
 
 	/**
-	 * @return
 	 * @see ContextAwareConnection#getAddContexts()
 	 */
 	public URI[] getAddContexts() {
@@ -77,7 +69,6 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 	}
 
 	/**
-	 * @return
 	 * @see ContextAwareConnection#getArchiveContexts()
 	 */
 	public URI[] getArchiveContexts() {
@@ -85,15 +76,13 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 	}
 
 	/**
-	 * @return
 	 * @see ContextAwareConnection#getQueryLanguage()
 	 */
 	public QueryLanguage getQueryLanguage() {
-		return ql;
+		return queryLanguage;
 	}
 
 	/**
-	 * @return
 	 * @see ContextAwareConnection#getReadContexts()
 	 */
 	public URI[] getReadContexts() {
@@ -101,7 +90,6 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 	}
 
 	/**
-	 * @return
 	 * @see ContextAwareConnection#getRemoveContexts()
 	 */
 	public URI[] getRemoveContexts() {
@@ -109,7 +97,6 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 	}
 
 	/**
-	 * @param includeInferred
 	 * @see ContextAwareConnection#isIncludeInferred()
 	 */
 	public boolean isIncludeInferred() {
@@ -117,7 +104,6 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 	}
 
 	/**
-	 * @param addContexts
 	 * @see ContextAwareConnection#setAddContexts(URI[])
 	 */
 	public void setAddContexts(URI... addContexts) {
@@ -125,7 +111,6 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 	}
 
 	/**
-	 * @param archiveContexts
 	 * @see ContextAwareConnection#setArchiveContexts(URI[])
 	 */
 	public void setArchiveContexts(URI... archiveContexts) {
@@ -133,7 +118,6 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 	}
 
 	/**
-	 * @param includeInferred
 	 * @see ContextAwareConnection#setIncludeInferred(boolean)
 	 */
 	public void setIncludeInferred(boolean includeInferred) {
@@ -141,15 +125,13 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 	}
 
 	/**
-	 * @param ql
 	 * @see ContextAwareConnection#setQueryLanguage(QueryLanguage)
 	 */
 	public void setQueryLanguage(QueryLanguage ql) {
-		this.ql = ql;
+		this.queryLanguage = ql;
 	}
 
 	/**
-	 * @param readContexts
 	 * @see ContextAwareConnection#setReadContexts(URI[])
 	 */
 	public void setReadContexts(URI... readContexts) {
@@ -157,25 +139,17 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 	}
 
 	/**
-	 * @param removeContexts
 	 * @see ContextAwareConnection#setRemoveContexts(URI[])
 	 */
 	public void setRemoveContexts(URI... removeContexts) {
 		this.removeContexts = removeContexts;
 	}
 
-	public RepositoryImplConfig getDelegate() {
-		return delegate;
-	}
-
-	public void setDelegate(RepositoryImplConfig delegate) {
-		this.delegate = delegate;
-	}
-
 	@Override
 	public Resource export(Graph graph) {
-		ValueFactory vf = new ValueFactoryImpl();
 		Resource repImplNode = super.export(graph);
+
+		ValueFactory vf = graph.getValueFactory();
 
 		if (includeInferred != null) {
 			Literal bool = vf.createLiteral(includeInferred);
@@ -184,8 +158,8 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 		if (maxQueryTime > 0) {
 			graph.add(repImplNode, MAX_QUERY_TIME, vf.createLiteral(maxQueryTime));
 		}
-		if (ql != null) {
-			graph.add(repImplNode, QL, vf.createLiteral(ql.getName()));
+		if (queryLanguage != null) {
+			graph.add(repImplNode, QUERY_LANGUAGE, vf.createLiteral(queryLanguage.getName()));
 		}
 		for (URI uri : readContexts) {
 			graph.add(repImplNode, READ_CONTEXT, uri);
@@ -199,49 +173,41 @@ public class ContextAwareConfig extends RepositoryImplConfigBase {
 		for (URI resource : archiveContexts) {
 			graph.add(repImplNode, ARCHIVE_CONTEXT, resource);
 		}
-		if (delegate != null) {
-			Resource del = delegate.export(graph);
-			graph.add(repImplNode, DELEGATE, del);
-		}
 
 		return repImplNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource node)
+	public void parse(Graph graph, Resource implNode)
 		throws RepositoryConfigException
 	{
-		Literal lit;
-		Set<Value> objects;
+		super.parse(graph, implNode);
 
 		try {
-			lit = getOptionalObjectLiteral(graph, node, INCLUDE_INFERRED);
+			Literal lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, INCLUDE_INFERRED);
 			if (lit != null) {
 				setIncludeInferred(lit.booleanValue());
 			}
-			lit = getOptionalObjectLiteral(graph, node, MAX_QUERY_TIME);
+			lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, MAX_QUERY_TIME);
 			if (lit != null) {
 				setMaxQueryTime(lit.intValue());
 			}
-			lit = getOptionalObjectLiteral(graph, node, QL);
+			lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, QUERY_LANGUAGE);
 			if (lit != null) {
 				setQueryLanguage(QueryLanguage.valueOf(lit.getLabel()));
 			}
 
-			objects = getObjects(graph, node, READ_CONTEXT);
+			Set<Value> objects = GraphUtil.getObjects(graph, implNode, READ_CONTEXT);
 			setReadContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = getObjects(graph, node, ADD_CONTEXT);
+			objects = GraphUtil.getObjects(graph, implNode, ADD_CONTEXT);
 			setAddContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = getObjects(graph, node, REMOVE_CONTEXT);
+			objects = GraphUtil.getObjects(graph, implNode, REMOVE_CONTEXT);
 			setRemoveContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = getObjects(graph, node, ARCHIVE_CONTEXT);
+			objects = GraphUtil.getObjects(graph, implNode, ARCHIVE_CONTEXT);
 			setArchiveContexts(objects.toArray(new URI[objects.size()]));
-
-			Resource del = getUniqueObjectResource(graph, node, DELEGATE);
-			setDelegate(create(graph, del));
 		}
 		catch (GraphUtilException e) {
 			throw new RepositoryConfigException(e);

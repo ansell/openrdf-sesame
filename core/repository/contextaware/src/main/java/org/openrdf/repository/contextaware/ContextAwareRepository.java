@@ -34,6 +34,10 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	private URI[] archiveContexts = ALL_CONTEXTS;
 
+	public ContextAwareRepository() {
+		super();
+	}
+	
 	public ContextAwareRepository(Repository delegate) {
 		super(delegate);
 	}

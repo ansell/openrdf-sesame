@@ -9,7 +9,6 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
-import org.openrdf.repository.config.RepositoryRegistry;
 import org.openrdf.repository.contextaware.ContextAwareRepository;
 
 /**
@@ -52,11 +51,7 @@ public class ContextAwareFactory implements RepositoryFactory {
 		if (configuration instanceof ContextAwareConfig) {
 			ContextAwareConfig config = (ContextAwareConfig)configuration;
 
-			RepositoryRegistry registry = RepositoryRegistry.getInstance();
-			RepositoryImplConfig delegate = config.getDelegate();
-			RepositoryFactory factory = registry.get(delegate.getType());
-			Repository repository = factory.getRepository(delegate);
-			ContextAwareRepository repo = new ContextAwareRepository(repository);
+			ContextAwareRepository repo = new ContextAwareRepository();
 
 			repo.setIncludeInferred(config.isIncludeInferred());
 			repo.setMaxQueryTime(config.getMaxQueryTime());
@@ -65,6 +60,8 @@ public class ContextAwareFactory implements RepositoryFactory {
 			repo.setAddContexts(config.getAddContexts());
 			repo.setRemoveContexts(config.getRemoveContexts());
 			repo.setArchiveContexts(config.getArchiveContexts());
+			
+			return repo;
 		}
 
 		throw new RepositoryConfigException("Invalid configuration class: " + configuration.getClass());
