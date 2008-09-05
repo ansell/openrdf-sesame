@@ -621,15 +621,19 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		}
 
 		query.setIncludeInferred(includeInferred);
-		// TODO preparedQuery.setMaxQueryTime(maxQueryTime);
-		try {
-			Class<? extends Query> c = query.getClass();
-			Method setMaxQueryTime = c.getMethod("setMaxQueryTime", Integer.TYPE);
-			setMaxQueryTime.invoke(query, maxQueryTime);
+
+		if (maxQueryTime > 0) {
+			// TODO preparedQuery.setMaxQueryTime(maxQueryTime);
+			try {
+				Class<? extends Query> c = query.getClass();
+				Method setMaxQueryTime = c.getMethod("setMaxQueryTime", Integer.TYPE);
+				setMaxQueryTime.invoke(query, maxQueryTime);
+			}
+			catch (Exception e) {
+				// TODO remove this reflection
+			}
 		}
-		catch (Exception e) {
-			// TODO remove this reflection
-		}
+
 		return query;
 	}
 
