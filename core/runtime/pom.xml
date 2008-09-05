@@ -93,6 +93,11 @@
 			<artifactId>sesame-repository-dataset</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-repository-contextaware</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
