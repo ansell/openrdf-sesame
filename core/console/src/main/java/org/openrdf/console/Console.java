@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.apache.commons.cli.CommandLine;
@@ -864,17 +865,24 @@ public class Console {
 
 	private void showRepositories() {
 		try {
-			Collection<RepositoryInfo> repInfos = manager.getAllRepositoryInfos();
+			Set<String> repIDs = manager.getRepositoryIDs();
 
-			if (repInfos.isEmpty()) {
+			if (repIDs.isEmpty()) {
 				writeln("--no repositories found--");
 			}
 			else {
 				writeln("+----------");
-				for (RepositoryInfo repInfo : repInfos) {
-					write("|" + repInfo.getId());
-					if (repInfo.getDescription() != null) {
-						write(" (\"" + repInfo.getDescription() + "\")");
+				for (String repID: repIDs) {
+					write("|" + repID);
+					
+					try {
+						RepositoryInfo repInfo = manager.getRepositoryInfo(repID);
+						if (repInfo.getDescription() != null) {
+							write(" (\"" + repInfo.getDescription() + "\")");
+						}
+					}
+					catch (RepositoryException e) {
+						write(" [ERROR: " + e.getMessage() + "]");
 					}
 					writeln();
 				}
