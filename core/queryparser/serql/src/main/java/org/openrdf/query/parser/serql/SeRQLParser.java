@@ -33,7 +33,7 @@ public class SeRQLParser implements QueryParser {
 		try {
 			ASTQueryContainer qc = SyntaxTreeBuilder.parseQuery(queryStr);
 
-			// Replace deprecates NULL nodes with semantically equivalent
+			// Replace deprecated NULL nodes with semantically equivalent
 			// alternatives
 			NullProcessor.process(qc);
 
