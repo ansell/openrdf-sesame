@@ -22,7 +22,7 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	private boolean includeInferred = true;
 
-	private long maxQueryTime;
+	private int maxQueryTime;
 
 	private QueryLanguage ql = QueryLanguage.SPARQL;
 
@@ -38,11 +38,11 @@ public class ContextAwareRepository extends RepositoryWrapper {
 		super(delegate);
 	}
 
-	public long getMaxQueryTime() {
+	public int getMaxQueryTime() {
 		return maxQueryTime;
 	}
 
-	public void setMaxQueryTime(long maxQueryTime) {
+	public void setMaxQueryTime(int maxQueryTime) {
 		this.maxQueryTime = maxQueryTime;
 	}
 
