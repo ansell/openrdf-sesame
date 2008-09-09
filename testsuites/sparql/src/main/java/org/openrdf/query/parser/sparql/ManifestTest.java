@@ -75,6 +75,7 @@ public class ManifestTest {
 						is.close();
 					}
 					File localFile = new File(destDir, con.getEntryName());
+					destDir.deleteOnExit();
 					MANIFEST_FILE = localFile.toURI().toURL().toString();
 				}
 				catch (IOException e) {
