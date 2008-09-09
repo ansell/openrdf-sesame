@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -12,8 +12,8 @@ import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Var;
 
 /**
- * A QueryModelVisitor that collects the names of (unbound) variables that are
- * used in a query model.
+ * A QueryModelVisitor that collects the names of (non-constant) variables that
+ * are used in a query model.
  */
 public class VarNameCollector extends QueryModelVisitorBase<RuntimeException> {
 
@@ -30,8 +30,7 @@ public class VarNameCollector extends QueryModelVisitorBase<RuntimeException> {
 	}
 
 	@Override
-	public void meet(Var var)
-	{
+	public void meet(Var var) {
 		if (!var.hasValue()) {
 			varNames.add(var.getName());
 		}
