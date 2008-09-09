@@ -148,6 +148,13 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	{
 		ContextAwareConnection con;
 		con = new ContextAwareConnection(this, super.getConnection());
+		con.setIncludeInferred(isIncludeInferred());
+		con.setMaxQueryTime(getMaxQueryTime());
+		con.setQueryLanguage(getQueryLanguage());
+		con.setReadContexts(getReadContexts());
+		con.setAddContexts(getAddContexts());
+		con.setRemoveContexts(getRemoveContexts());
+		con.setArchiveContexts(getArchiveContexts());
 		return con;
 	}
 
