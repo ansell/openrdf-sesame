@@ -39,7 +39,7 @@ public class SeRQLParser implements QueryParser {
 
 			StringEscapesProcessor.process(qc);
 			Map<String, String> namespaces = NamespaceDeclProcessor.process(qc);
-			WildcardProjectionProcessor.process(qc);
+			ProjectionProcessor.process(qc);
 			qc.jjtAccept(new ProjectionAliasProcessor(), null);
 			qc.jjtAccept(new AnonymousVarGenerator(), null);
 
