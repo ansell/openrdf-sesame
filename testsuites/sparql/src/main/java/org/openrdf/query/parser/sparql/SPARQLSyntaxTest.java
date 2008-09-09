@@ -5,11 +5,18 @@
  */
 package org.openrdf.query.parser.sparql;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -18,6 +25,7 @@ import junit.framework.TestSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.io.FileUtil;
 import info.aduna.io.IOUtil;
 
 import org.openrdf.query.BindingSet;
@@ -49,7 +57,38 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 			HOST = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/";
 		}
 		else {
-			HOST = SPARQLSyntaxTest.class.getResource("/testcases-dawg/data-r2/").toString();
+			URL url = SPARQLSyntaxTest.class.getResource("/testcases-dawg/data-r2/");
+			if ("jar".equals(url.getProtocol())) {
+				try {
+					File destDir = FileUtil.createTempDir("sparql");
+					JarURLConnection con = (JarURLConnection)url.openConnection();
+					JarFile jar = con.getJarFile();
+					Enumeration<JarEntry> entries = jar.entries();
+					while (entries.hasMoreElements()) {
+						JarEntry file = entries.nextElement();
+						File f = new File(destDir + File.separator + file.getName());
+						if (file.isDirectory()) {
+							f.mkdir();
+							continue;
+						}
+						InputStream is = jar.getInputStream(file);
+						FileOutputStream fos = new FileOutputStream(f);
+						while (is.available() > 0) {
+							fos.write(is.read());
+						}
+						fos.close();
+						is.close();
+					}
+					File localFile = new File(destDir, con.getEntryName());
+					destDir.deleteOnExit();
+					HOST = localFile.toURI().toURL().toString();
+				}
+				catch (IOException e) {
+					throw new AssertionError(e);
+				}
+			} else {
+				HOST = url.toString();
+			}
 		}
 
 		MANIFEST_FILE = HOST + "manifest-syntax.ttl";
