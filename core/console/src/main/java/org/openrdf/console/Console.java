@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -299,7 +301,7 @@ public class Console {
 		throws IOException
 	{
 		boolean exit = false;
-		String[] tokens = command.split("[ \t\r\n]");
+		String[] tokens = parse(command);
 		String operation = tokens[0].toLowerCase(Locale.ENGLISH);
 
 		if ("quit".equals(operation) || "exit".equals(operation)) {
@@ -368,6 +370,20 @@ public class Console {
 		}
 
 		return exit;
+	}
+
+	private String[] parse(String command) {
+		Pattern pattern = Pattern.compile("\"([^\"]*)\"|(\\S+)");
+		Matcher matcher = pattern.matcher(command);
+		List<String> tokens = new ArrayList<String>();
+		while (matcher.find()) {
+			if (matcher.group(1) != null) {
+				tokens.add(matcher.group(1));
+			} else {
+				tokens.add(matcher.group());
+			}
+		}
+		return tokens.toArray(new String[tokens.size()]);
 	}
 
 	private void printHelp(String[] tokens) {
