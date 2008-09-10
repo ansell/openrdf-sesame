@@ -47,6 +47,8 @@ public abstract class QueryResultView implements View {
 	 */
 	public static final String FILENAME_HINT_KEY = "filenameHint";
 
+	public static final String LIMIT = "limit";
+
 	protected void setContentType(HttpServletResponse response, FileFormat fileFormat)
 		throws IOException
 	{

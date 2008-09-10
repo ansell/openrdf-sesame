@@ -16,9 +16,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.View;
 
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
@@ -48,6 +52,8 @@ public class ExportStatementsView implements View {
 
 	public static final String FACTORY_KEY = "factory";
 
+	public static final String LIMIT = "limit";
+
 	private static final ExportStatementsView INSTANCE = new ExportStatementsView();
 
 	public static ExportStatementsView getInstance() {
@@ -72,6 +78,7 @@ public class ExportStatementsView implements View {
 		Value obj = (Value)model.get(OBJECT_KEY);
 		Resource[] contexts = (Resource[])model.get(CONTEXTS_KEY);
 		boolean useInferencing = (Boolean)model.get(USE_INFERENCING_KEY);
+		Integer limit = (Integer)model.get(LIMIT);
 
 		RDFWriterFactory rdfWriterFactory = (RDFWriterFactory)model.get(FACTORY_KEY);
 
@@ -96,7 +103,7 @@ public class ExportStatementsView implements View {
 			}
 			response.setHeader("Content-Disposition", "attachment; filename=" + filename);
 
-			repositoryCon.exportStatements(subj, pred, obj, useInferencing, rdfWriter, contexts);
+			exportStatements(repositoryCon, subj, pred, obj, useInferencing, rdfWriter, contexts, limit);
 
 			out.close();
 		}
@@ -106,5 +113,49 @@ public class ExportStatementsView implements View {
 		catch (StoreException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * @param repositoryCon
+	 * @param subj
+	 * @param pred
+	 * @param obj
+	 * @param useInferencing
+	 * @param rdfWriter
+	 * @param contexts
+	 */
+	private void exportStatements(RepositoryConnection con, Resource subj, URI pred, Value obj,
+			boolean includeInferred, RDFWriter handler, Resource[] contexts, Integer limit)
+	throws StoreException, RDFHandlerException
+	{
+
+		handler.startRDF();
+
+		// Export namespace information
+		CloseableIteration<? extends Namespace, StoreException> nsIter = con.getNamespaces();
+		try {
+			while (nsIter.hasNext()) {
+				Namespace ns = nsIter.next();
+				handler.handleNamespace(ns.getPrefix(), ns.getName());
+			}
+		}
+		finally {
+			nsIter.close();
+		}
+
+		// Export statements
+		CloseableIteration<? extends Statement, StoreException> stIter = con.getStatements(subj, pred, obj,
+				includeInferred, contexts);
+
+		try {
+			for (int i = 0; stIter.hasNext() && (limit == null || i < limit.intValue()); i++) {
+				handler.handleStatement(stIter.next());
+			}
+		}
+		finally {
+			stIter.close();
+		}
+
+		handler.endRDF();
 	}
 }

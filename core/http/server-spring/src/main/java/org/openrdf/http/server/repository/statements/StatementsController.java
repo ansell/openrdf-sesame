@@ -10,6 +10,7 @@ import static javax.servlet.http.HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE;
 import static org.openrdf.http.protocol.Protocol.BASEURI_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.LIMIT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
@@ -33,6 +34,7 @@ import org.xml.sax.SAXParseException;
 import info.aduna.webapp.util.HttpServerUtil;
 import info.aduna.webapp.views.EmptySuccessView;
 
+import org.openrdf.StoreException;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.error.ErrorInfo;
 import org.openrdf.http.protocol.error.ErrorType;
@@ -48,7 +50,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFWriterFactory;
@@ -133,6 +134,7 @@ public class StatementsController extends AbstractController {
 		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
 		boolean useInferencing = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
+		Integer limit = ProtocolUtil.parseIntegerParam(request, LIMIT_PARAM_NAME, null);
 
 		RDFWriterFactory rdfWriterFactory = ProtocolUtil.getAcceptableService(request, response,
 				RDFWriterRegistry.getInstance());
@@ -144,6 +146,7 @@ public class StatementsController extends AbstractController {
 		model.put(ExportStatementsView.CONTEXTS_KEY, contexts);
 		model.put(ExportStatementsView.USE_INFERENCING_KEY, Boolean.valueOf(useInferencing));
 		model.put(ExportStatementsView.FACTORY_KEY, rdfWriterFactory);
+		model.put(ExportStatementsView.LIMIT, limit);
 
 		return new ModelAndView(ExportStatementsView.getInstance(), model);
 	}

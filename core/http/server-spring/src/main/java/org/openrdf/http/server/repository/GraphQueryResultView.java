@@ -19,8 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.StoreException;
+import org.openrdf.model.Statement;
 import org.openrdf.query.GraphQueryResult;
-import org.openrdf.query.QueryResultUtil;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -65,7 +65,8 @@ public class GraphQueryResultView extends QueryResultView {
 		try {
 			RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
 			GraphQueryResult graphQueryResult = (GraphQueryResult)model.get(QUERY_RESULT_KEY);
-			QueryResultUtil.report(graphQueryResult, rdfWriter);
+			Integer limit = (Integer)model.get(LIMIT);
+			report(rdfWriter, graphQueryResult, limit);
 		}
 		catch (StoreException e) {
 			logger.error("Query evaluation error", e);
@@ -79,5 +80,29 @@ public class GraphQueryResultView extends QueryResultView {
 			out.close();
 		}
 		logEndOfRequest(request);
+	}
+
+	private void report(RDFWriter rdfWriter, GraphQueryResult graphQueryResult, Integer limit)
+		throws RDFHandlerException, StoreException
+	{
+		try {
+			rdfWriter.startRDF();
+		
+			for (Map.Entry<String, String> entry : graphQueryResult.getNamespaces().entrySet()) {
+				String prefix = entry.getKey();
+				String namespace = entry.getValue();
+				rdfWriter.handleNamespace(prefix, namespace);
+			}
+		
+			for (int i = 0; graphQueryResult.hasNext() && (limit == null || i < limit.intValue()); i++) {
+				Statement st = graphQueryResult.next();
+				rdfWriter.handleStatement(st);
+			}
+		
+			rdfWriter.endRDF();
+		}
+		finally {
+			graphQueryResult.close();
+		}
 	}
 }

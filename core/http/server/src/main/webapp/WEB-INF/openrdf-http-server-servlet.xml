@@ -110,7 +110,19 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<ref bean="adunaWebappNavigationInserter" />
 			</list>
 		</property>
-	</bean>	
+	</bean>
+
+	<bean id="openrdfWorkbenchUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="order" value="4" />
+		<property name="alwaysUseFullPath" value="true"/>		
+		<property name="mappings">
+			<props>
+				<prop key="/workbench">openrdfWorkbenchController</prop>
+				<prop key="/workbench/*">openrdfWorkbenchController</prop>
+				<prop key="/workbench/*/*">openrdfWorkbenchController</prop>
+			</props>
+		</property>
+	</bean>
 	
 	<!-- EXCEPTION RESOLVERS -->
 	<bean id="openrdfHandlerExceptionResolver" class="org.openrdf.http.server.ProtocolExceptionResolver" />
@@ -126,5 +138,10 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="openrdfRepositoryNamespacesController" class="org.openrdf.http.server.repository.namespaces.NamespacesController" />
 	<bean id="openrdfRepositoryNamespaceController" class="org.openrdf.http.server.repository.namespaces.NamespaceController" />
 	<bean id="openrdfRepositorySizeController" class="org.openrdf.http.server.repository.size.SizeController" />
-	<bean id="openrdfRepositoryStatementsController" class="org.openrdf.http.server.repository.statements.StatementsController" />	
+	<bean id="openrdfRepositoryStatementsController" class="org.openrdf.http.server.repository.statements.StatementsController" />
+	<bean id="openrdfWorkbenchController" class="org.openrdf.http.server.workbench.WorkbenchController">
+		<property name="transformationPath" value="/transformations" />
+		<property name="repositoriesPath" value="/repositories" />
+	</bean>	
+	
 </beans>

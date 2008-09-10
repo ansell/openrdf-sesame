@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='id' />
+		<variable name='name' />
+	</head>
+	<results ordered='false' distinct='false'>
+		<result>
+			<binding name='id'>
+				<literal>SeRQL</literal>
+			</binding>
+			<binding name='name'>
+				<literal>SeRQL</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='id'>
+				<literal>SPARQL</literal>
+			</binding>
+			<binding name='name'>
+				<literal>SPARQL</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>
