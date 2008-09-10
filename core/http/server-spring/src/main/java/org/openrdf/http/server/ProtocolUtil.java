@@ -102,6 +102,16 @@ public class ProtocolUtil {
 		}
 	}
 
+	public static Integer parseIntegerParam(HttpServletRequest request, String paramName, Integer defaultValue) {
+		String paramValue = request.getParameter(paramName);
+		if (paramValue == null) {
+			return defaultValue;
+		}
+		else {
+			return Integer.valueOf(paramValue);
+		}
+	}
+
 	/**
 	 * Logs all request parameters of the supplied request.
 	 */

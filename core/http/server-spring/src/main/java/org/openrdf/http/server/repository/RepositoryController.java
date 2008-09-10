@@ -11,6 +11,7 @@ import static javax.servlet.http.HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE;
 import static org.openrdf.http.protocol.Protocol.BINDING_PREFIX;
 import static org.openrdf.http.protocol.Protocol.DEFAULT_GRAPH_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.LIMIT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.NAMED_GRAPH_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.QUERY_LANGUAGE_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.QUERY_PARAM_NAME;
@@ -39,6 +40,7 @@ import org.openrdf.http.protocol.error.ErrorInfo;
 import org.openrdf.http.protocol.error.ErrorType;
 import org.openrdf.http.server.ClientHTTPException;
 import org.openrdf.http.server.ProtocolUtil;
+import org.openrdf.http.server.repository.statements.ExportStatementsView;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BooleanQuery;
@@ -133,11 +135,13 @@ public class RepositoryController extends AbstractController {
 			}
 
 			Object factory = ProtocolUtil.getAcceptableService(request, response, registry);
+			Integer limit = ProtocolUtil.parseIntegerParam(request, LIMIT_PARAM_NAME, null);
 
 			Map<String, Object> model = new HashMap<String, Object>();
 			model.put(QueryResultView.FILENAME_HINT_KEY, "query-result");
 			model.put(QueryResultView.QUERY_RESULT_KEY, queryResult);
 			model.put(QueryResultView.FACTORY_KEY, factory);
+			model.put(QueryResultView.LIMIT, limit);
 
 			return new ModelAndView(view, model);
 		}

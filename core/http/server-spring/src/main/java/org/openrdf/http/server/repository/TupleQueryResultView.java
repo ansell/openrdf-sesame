@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.StoreException;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
@@ -65,7 +65,8 @@ public class TupleQueryResultView extends QueryResultView {
 		try {
 			TupleQueryResultWriter qrWriter = qrWriterFactory.getWriter(out);
 			TupleQueryResult tupleQueryResult = (TupleQueryResult)model.get(QUERY_RESULT_KEY);
-			QueryResultUtil.report(tupleQueryResult, qrWriter);
+			Integer limit = (Integer)model.get(LIMIT);
+			report(qrWriter, tupleQueryResult, limit);
 		}
 		catch (StoreException e) {
 			logger.error("Query evaluation error", e);
@@ -79,5 +80,21 @@ public class TupleQueryResultView extends QueryResultView {
 			out.close();
 		}
 		logEndOfRequest(request);
+	}
+
+	private void report(TupleQueryResultWriter qrWriter, TupleQueryResult tupleQueryResult, Integer limit)
+		throws TupleQueryResultHandlerException, StoreException
+	{
+		qrWriter.startQueryResult(tupleQueryResult.getBindingNames());
+		try {
+			for (int i=0; tupleQueryResult.hasNext() && (limit == null || i < limit.intValue()); i++) {
+				BindingSet bindingSet = tupleQueryResult.next();
+				qrWriter.handleSolution(bindingSet);
+			}
+		}
+		finally {
+			tupleQueryResult.close();
+		}
+		qrWriter.endQueryResult();
 	}
 }
