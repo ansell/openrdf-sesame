@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-http</artifactId>
-		<version>2.2-SNAPSHOT</version>
+		<version>2.2</version>
 	</parent>
 
 	<artifactId>sesame-http-server</artifactId>
-	<version>2.2-SNAPSHOT</version>
+	<version>2.2</version>
 	<packaging>war</packaging>
 
 	<name>OpenRDF Sesame: HTTP server</name>
@@ -46,9 +46,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/http/server</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/http/server</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/core/http/server</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2/core/http/server</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2/core/http/server</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2/core/http/server</url>
 	</scm>
 
 	<build>
