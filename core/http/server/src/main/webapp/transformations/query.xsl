@@ -12,7 +12,11 @@
 
 	<xsl:variable name="workbench" select="//s:binding[@name = 'workbench']"/>
 
+	<xsl:variable name="repository" select="//s:binding[@name = 'repository']"/>
+
 	<xsl:variable name="query-languages" select="document(concat($workbench, '/../defaults/query-languages.xml'))"/>
+
+	<xsl:variable name="namespaces" select="document(concat($repository, '/namespaces'))"/>
 
 	<xsl:variable name="queryLn" select="//s:binding[@name = 'queryLn']/s:literal/text()" />
 	<xsl:variable name="query" select="//s:binding[@name = 'query']/s:literal/text()" />
@@ -281,7 +285,7 @@
 		</form>
 		<pre id="SPARQL-namespaces" style="display:none">
 			<xsl:for-each
-				select="document(//s:link[@href='namespaces']/@href)//s:results/s:result">
+				select="$namespaces//s:results/s:result">
 				<xsl:value-of
 					select="concat('PREFIX ', s:binding[@name='prefix']/s:literal, ':&lt;', s:binding[@name='namespace']/s:literal, '&gt;')" />
 				<xsl:text>
@@ -292,7 +296,7 @@
 			<xsl:text>
 USING NAMESPACE</xsl:text>
 			<xsl:for-each
-				select="document(//s:link[@href='namespaces']/@href)//s:results/s:result">
+				select="$namespaces//s:results/s:result">
 				<xsl:text>
 </xsl:text>
 				<xsl:choose>
