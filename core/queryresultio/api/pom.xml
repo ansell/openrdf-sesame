@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-queryresultio</artifactId>
-		<version>2.2</version>
+		<version>2.2.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-queryresultio-api</artifactId>
-	<version>2.2</version>
+	<version>2.2.1-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: Query result IO - API</name>
 	<description>Query result IO API</description>
@@ -35,9 +35,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2/core/queryresultio/api</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2/core/queryresultio/api</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2/core/queryresultio/api</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/queryresultio/api</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/queryresultio/api</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/core/queryresultio/api</url>
 	</scm>
 
 </project>
