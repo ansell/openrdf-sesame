@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame</artifactId>
-		<version>2.2-SNAPSHOT</version>
+		<version>2.2</version>
 	</parent>
 
 	<artifactId>sesame-compliance</artifactId>
-	<version>2.2-SNAPSHOT</version>
+	<version>2.2</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -35,25 +35,25 @@
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-testsuite</artifactId>
-				<version>2.2-SNAPSHOT</version>
+				<version>2.2</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-store-testsuite</artifactId>
-				<version>2.2-SNAPSHOT</version>
+				<version>2.2</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-serql-testsuite</artifactId>
-				<version>2.2-SNAPSHOT</version>
+				<version>2.2</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sparql-testsuite</artifactId>
-				<version>2.2-SNAPSHOT</version>
+				<version>2.2</version>
 			</dependency>
 
 			<dependency>
@@ -65,9 +65,9 @@
 	</dependencyManagement>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/compliance</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/compliance</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/compliance</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2/compliance</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2/compliance</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2/compliance</url>
 	</scm>
 
 </project>
