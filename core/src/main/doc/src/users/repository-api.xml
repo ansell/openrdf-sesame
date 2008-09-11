@@ -29,12 +29,6 @@
 		<para>
 			The first step in any action that involves Sesame repositories
 			is to create a <classname>Repository</classname> for it.
-			Repository objects operate on (stacks of) Sail object(s) for
-			storage and retrieval of RDF data. An important thing to
-			remember is that the behaviour of a repository is determined by
-			the Sail(s) that it operates on; for example, the repository
-			will only support RDF Schema or OWL semantics if the Sail stack
-			includes an inferencer for this.
 		</para>
 		<para>
 			The central interface of the repository API is the
@@ -44,9 +38,15 @@
 		<itemizedlist>
 			<listitem>
 				<classname>org.openrdf.repository.sail.SailRepository</classname>
-				is <classname>Repository</classname> that operates directly on
+				is a <classname>Repository</classname> that operates directly on
 				top of a <classname>Sail</classname>. This is the class most
 				commonly used when accessing a local Sesame repository.
+				<classname>SailRepository</classname>'s operate on (stacks of)
+				Sail object(s) for storage and retrieval of RDF data. An important
+				thing to remember is that the behaviour of a repository is
+				determined by the Sail(s) that it operates on; for example, the
+				repository will only support RDF Schema or OWL semantics if the
+				Sail stack includes an inferencer for this.
 			</listitem>
 			<listitem>
 				<classname>org.openrdf.repository.http.HTTPRepository</classname>
