@@ -7,10 +7,9 @@ package org.openrdf.repository.config;
 
 import static org.openrdf.repository.config.RepositoryConfigSchema.DELEGATE;
 
-import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.Value;
 
 /**
  * @author Herko ter Horst
@@ -63,31 +62,31 @@ public class DelegatingRepositoryImplConfigBase extends RepositoryImplConfigBase
 	}
 
 	@Override
-	public Resource export(Graph graph)
+	public Resource export(Model model)
 	{
-		Resource implNode = super.export(graph);
+		Resource implNode = super.export(model);
 
 		if (delegate != null) {
-			Resource delegateNode = delegate.export(graph);
-			graph.add(implNode, DELEGATE, delegateNode);
+			Resource delegateNode = delegate.export(model);
+			model.add(implNode, DELEGATE, delegateNode);
 		}
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model model, Resource implNode)
 		throws RepositoryConfigException
 	{
-		super.parse(graph, implNode);
+		super.parse(model, implNode);
 
 		try {
-			Resource delegateNode = GraphUtil.getOptionalObjectResource(graph, implNode, DELEGATE);
-			if (delegateNode != null) {
-				setDelegate(create(graph, delegateNode));
+			for (Value obj : model.objects(implNode, DELEGATE)) {
+				Resource delegateNode = (Resource)obj;
+				setDelegate(create(model, delegateNode));
 			}
 		}
-		catch (GraphUtilException e) {
+		catch (Exception e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}

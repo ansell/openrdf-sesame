@@ -6,9 +6,9 @@
 package org.openrdf.query.dawg;
 
 import org.openrdf.StoreException;
-import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
@@ -40,11 +40,11 @@ public class DAWGTestResultSetUtil {
 		}
 	}
 
-	public static Graph toGraph(TupleQueryResult tqr)
+	public static Model toGraph(TupleQueryResult tqr)
 		throws StoreException
 	{
-		Graph graph = new GraphImpl();
-		DAWGTestResultSetWriter writer = new DAWGTestResultSetWriter(new StatementCollector(graph));
+		Model model = new ModelImpl();
+		DAWGTestResultSetWriter writer = new DAWGTestResultSetWriter(new StatementCollector(model));
 
 		try {
 			writer.startQueryResult(tqr.getBindingNames());
@@ -59,7 +59,7 @@ public class DAWGTestResultSetUtil {
 			throw new RuntimeException(e);
 		}
 
-		return graph;
+		return model;
 	}
 
 	public static boolean toBooleanQueryResult(Iterable<? extends Statement> dawgGraph)

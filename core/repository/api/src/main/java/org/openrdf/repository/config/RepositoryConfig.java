@@ -10,12 +10,12 @@ import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYIMPL;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 
@@ -112,45 +112,45 @@ public class RepositoryConfig {
 		implConfig.validate();
 	}
 
-	public void export(Graph graph) {
-		ValueFactory vf = graph.getValueFactory();
+	public void export(Model model) {
+		ValueFactory vf = new ValueFactoryImpl();
 
 		BNode repositoryNode = vf.createBNode();
 
-		graph.add(repositoryNode, RDF.TYPE, REPOSITORY);
+		model.add(repositoryNode, RDF.TYPE, REPOSITORY);
 
 		if (id != null) {
-			graph.add(repositoryNode, REPOSITORYID, vf.createLiteral(id));
+			model.add(repositoryNode, REPOSITORYID, vf.createLiteral(id));
 		}
 		if (title != null) {
-			graph.add(repositoryNode, RDFS.LABEL, vf.createLiteral(title));
+			model.add(repositoryNode, RDFS.LABEL, vf.createLiteral(title));
 		}
 		if (implConfig != null) {
-			Resource implNode = implConfig.export(graph);
-			graph.add(repositoryNode, REPOSITORYIMPL, implNode);
+			Resource implNode = implConfig.export(model);
+			model.add(repositoryNode, REPOSITORYIMPL, implNode);
 		}
 	}
 
-	public void parse(Graph graph, Resource repositoryNode)
+	public void parse(Model model, Resource repositoryNode)
 		throws RepositoryConfigException
 	{
 		try {
-			Literal idLit = GraphUtil.getOptionalObjectLiteral(graph, repositoryNode, REPOSITORYID);
-			if (idLit != null) {
+			for (Value obj : model.objects(repositoryNode, REPOSITORYID)) {
+				Literal idLit = (Literal)obj;
 				setID(idLit.getLabel());
 			}
 
-			Literal titleLit = GraphUtil.getOptionalObjectLiteral(graph, repositoryNode, RDFS.LABEL);
-			if (titleLit != null) {
+			for (Value obj : model.objects(repositoryNode, RDFS.LABEL)) {
+				Literal titleLit = (Literal)obj;
 				setTitle(titleLit.getLabel());
 			}
 
-			Resource implNode = GraphUtil.getOptionalObjectResource(graph, repositoryNode, REPOSITORYIMPL);
-			if (implNode != null) {
-				setRepositoryImplConfig(RepositoryImplConfigBase.create(graph, implNode));
+			for (Value obj : model.objects(repositoryNode, REPOSITORYIMPL)) {
+				Resource implNode = (Resource)obj;
+				setRepositoryImplConfig(RepositoryImplConfigBase.create(model, implNode));
 			}
 		}
-		catch (GraphUtilException e) {
+		catch (Exception e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}
@@ -158,18 +158,18 @@ public class RepositoryConfig {
 	/**
 	 * Creates a new <tt>RepositoryConfig</tt> object and initializes it by
 	 * supplying the <tt>graph</tt> and <tt>repositoryNode</tt> to its
-	 * {@link #parse(Graph, Resource) parse} method.
+	 * {@link #parse(Model, Resource) parse} method.
 	 * 
-	 * @param graph
+	 * @param model
 	 * @param repositoryNode
 	 * @return
 	 * @throws RepositoryConfigException
 	 */
-	public static RepositoryConfig create(Graph graph, Resource repositoryNode)
+	public static RepositoryConfig create(Model model, Resource repositoryNode)
 		throws RepositoryConfigException
 	{
 		RepositoryConfig config = new RepositoryConfig();
-		config.parse(graph, repositoryNode);
+		config.parse(model, repositoryNode);
 		return config;
 	}
 }

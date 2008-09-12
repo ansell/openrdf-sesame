@@ -5,7 +5,7 @@
  */
 package org.openrdf.sail.config;
 
-import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 
 /**
@@ -26,8 +26,8 @@ public interface SailImplConfig {
 	public void validate()
 		throws SailConfigException;
 
-	public Resource export(Graph graph);
+	public Resource export(Model model);
 
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model model, Resource implNode)
 		throws SailConfigException;
 }

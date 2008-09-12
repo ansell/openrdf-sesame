@@ -8,11 +8,10 @@ package org.openrdf.repository.sail.config;
 import static org.openrdf.repository.sail.config.SailRepositorySchema.SAILIMPL;
 import static org.openrdf.sail.config.SailConfigSchema.SAILTYPE;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.Value;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
 import org.openrdf.sail.config.SailConfigException;
@@ -62,29 +61,28 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 	}
 
 	@Override
-	public Resource export(Graph graph)
+	public Resource export(Model model)
 	{
-		Resource repImplNode = super.export(graph);
+		Resource repImplNode = super.export(model);
 
 		if (sailImplConfig != null) {
-			Resource sailImplNode = sailImplConfig.export(graph);
-			graph.add(repImplNode, SAILIMPL, sailImplNode);
+			Resource sailImplNode = sailImplConfig.export(model);
+			model.add(repImplNode, SAILIMPL, sailImplNode);
 		}
 
 		return repImplNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource repImplNode)
+	public void parse(Model model, Resource repImplNode)
 		throws RepositoryConfigException
 	{
 		try {
-			Resource sailImplNode = GraphUtil.getOptionalObjectResource(graph, repImplNode, SAILIMPL);
+			for (Value obj : model.objects(repImplNode, SAILIMPL)) {
+				Resource sailImplNode = (Resource)obj;
 
-			if (sailImplNode != null) {
-				Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, sailImplNode, SAILTYPE);
-
-				if (typeLit != null) {
+				for (Value typeVal : model.objects(sailImplNode, SAILTYPE)) {
+					Literal typeLit = (Literal)typeVal;
 					SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
 
 					if (factory == null) {
@@ -92,14 +90,11 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 					}
 
 					sailImplConfig = factory.getConfig();
-					sailImplConfig.parse(graph, sailImplNode);
+					sailImplConfig.parse(model, sailImplNode);
 				}
 			}
 		}
-		catch (GraphUtilException e) {
-			throw new RepositoryConfigException(e.getMessage(), e);
-		}
-		catch (SailConfigException e) {
+		catch (Exception e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}

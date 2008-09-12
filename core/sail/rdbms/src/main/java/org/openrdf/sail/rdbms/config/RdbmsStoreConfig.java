@@ -5,18 +5,18 @@
  */
 package org.openrdf.sail.rdbms.config;
 
-import static org.openrdf.model.util.GraphUtil.getOptionalObjectLiteral;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.JDBC_DRIVER;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.MAX_TRIPLE_TABLES;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.PASSWORD;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.URL;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.USER;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfigBase;
 
@@ -106,57 +106,57 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 	}
 
 	@Override
-	public Resource export(Graph graph) {
-		Resource implNode = super.export(graph);
+	public Resource export(Model model) {
+		Resource implNode = super.export(model);
 
-		ValueFactory vf = graph.getValueFactory();
+		ValueFactory vf = new ValueFactoryImpl();
 
 		if (jdbcDriver != null) {
-			graph.add(implNode, JDBC_DRIVER, vf.createLiteral(jdbcDriver));
+			model.add(implNode, JDBC_DRIVER, vf.createLiteral(jdbcDriver));
 		}
 		if (url != null) {
-			graph.add(implNode, URL, vf.createLiteral(url));
+			model.add(implNode, URL, vf.createLiteral(url));
 		}
 		if (user != null) {
-			graph.add(implNode, USER, vf.createLiteral(user));
+			model.add(implNode, USER, vf.createLiteral(user));
 		}
 		if (password != null) {
-			graph.add(implNode, PASSWORD, vf.createLiteral(password));
+			model.add(implNode, PASSWORD, vf.createLiteral(password));
 		}
-		graph.add(implNode, MAX_TRIPLE_TABLES, vf.createLiteral(maxTripleTables));
+		model.add(implNode, MAX_TRIPLE_TABLES, vf.createLiteral(maxTripleTables));
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model model, Resource implNode)
 		throws SailConfigException
 	{
-		super.parse(graph, implNode);
+		super.parse(model, implNode);
 
 		try {
-			Literal jdbcDriverLit = getOptionalObjectLiteral(graph, implNode, JDBC_DRIVER);
-			if (jdbcDriverLit != null) {
+			for (Value obj : model.objects(implNode, JDBC_DRIVER)) {
+				Literal jdbcDriverLit = (Literal)obj;
 				setJdbcDriver(jdbcDriverLit.getLabel());
 			}
 
-			Literal urlLit = getOptionalObjectLiteral(graph, implNode, URL);
-			if (urlLit != null) {
+			for (Value obj : model.objects(implNode, URL)) {
+				Literal urlLit = (Literal)obj;
 				setUrl(urlLit.getLabel());
 			}
 
-			Literal userLit = getOptionalObjectLiteral(graph, implNode, USER);
-			if (userLit != null) {
+			for (Value obj : model.objects(implNode, USER)) {
+				Literal userLit = (Literal)obj;
 				setUser(userLit.getLabel());
 			}
 
-			Literal passwordLit = getOptionalObjectLiteral(graph, implNode, PASSWORD);
-			if (passwordLit != null) {
+			for (Value obj : model.objects(implNode, PASSWORD)) {
+				Literal passwordLit = (Literal)obj;
 				setPassword(passwordLit.getLabel());
 			}
 
-			Literal maxTripleTablesLit = getOptionalObjectLiteral(graph, implNode, MAX_TRIPLE_TABLES);
-			if (maxTripleTablesLit != null) {
+			for (Value obj : model.objects(implNode, MAX_TRIPLE_TABLES)) {
+				Literal maxTripleTablesLit = (Literal)obj;
 				try {
 					setMaxTripleTables(maxTripleTablesLit.intValue());
 				}
@@ -165,7 +165,10 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 				}
 			}
 		}
-		catch (GraphUtilException e) {
+		catch (SailConfigException e) {
+			throw e;
+		}
+		catch (Exception e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}
