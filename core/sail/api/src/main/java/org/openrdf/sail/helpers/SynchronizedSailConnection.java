@@ -266,7 +266,7 @@ public class SynchronizedSailConnection extends InferencerConnectionWrapper {
 		try {
 			Lock txnLock = getTransactionLock();
 			try {
-				clearInferred(contexts);
+				super.clearInferred(contexts);
 			}
 			finally {
 				txnLock.release();
