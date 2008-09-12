@@ -9,12 +9,12 @@ import static org.openrdf.repository.http.config.HTTPRepositorySchema.PASSWORD;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYURL;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.USERNAME;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.Value;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
 
@@ -73,11 +73,11 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 	}
 
 	@Override
-	public Resource export(Graph graph) {
-		Resource implNode = super.export(graph);
+	public Resource export(Model model) {
+		Resource implNode = super.export(model);
 
 		if (url != null) {
-			graph.add(implNode, REPOSITORYURL, graph.getValueFactory().createURI(url));
+			model.add(implNode, REPOSITORYURL, new ValueFactoryImpl().createURI(url));
 		}
 //		if (username != null) {
 //			graph.add(implNode, USERNAME, graph.getValueFactory().createLiteral(username));
@@ -90,26 +90,26 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model model, Resource implNode)
 		throws RepositoryConfigException
 	{
-		super.parse(graph, implNode);
+		super.parse(model, implNode);
 
 		try {
-			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, REPOSITORYURL);
-			if (uri != null) {
+			for (Value obj : model.objects(implNode, REPOSITORYURL)) {
+				URI uri = (URI)obj;
 				setURL(uri.toString());
 			}
-			Literal username = GraphUtil.getOptionalObjectLiteral(graph, implNode, USERNAME);
-			if (username != null) {
+			for (Value obj : model.objects(implNode, USERNAME)) {
+				Literal username = (Literal)obj;
 				setUsername(username.getLabel());
 			}
-			Literal password = GraphUtil.getOptionalObjectLiteral(graph, implNode, PASSWORD);
-			if (password != null) {
+			for (Value obj : model.objects(implNode, PASSWORD)) {
+				Literal password = (Literal)obj;
 				setPassword(password.getLabel());
 			}
 		}
-		catch (GraphUtilException e) {
+		catch (Exception e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}

@@ -8,13 +8,11 @@ package org.openrdf.query.dawg;
 import static org.openrdf.query.dawg.DAWGTestResultSetSchema.BOOLEAN;
 import static org.openrdf.query.dawg.DAWGTestResultSetSchema.RESULTSET;
 
-import org.openrdf.model.Graph;
-import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.GraphImpl;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.Value;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
@@ -28,7 +26,7 @@ public class DAWGTestBooleanParser extends RDFHandlerBase {
 	 * Variables *
 	 *-----------*/
 
-	private Graph graph = new GraphImpl();
+	private Model model = new ModelImpl();
 
 	private boolean value;
 
@@ -51,14 +49,14 @@ public class DAWGTestBooleanParser extends RDFHandlerBase {
 	public void startRDF()
 		throws RDFHandlerException
 	{
-		graph.clear();
+		model.clear();
 	}
 
 	@Override
 	public void handleStatement(Statement st)
 		throws RDFHandlerException
 	{
-		graph.add(st);
+		model.add(st);
 	}
 
 	@Override
@@ -66,8 +64,8 @@ public class DAWGTestBooleanParser extends RDFHandlerBase {
 		throws RDFHandlerException
 	{
 		try {
-			Resource resultSetNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE, RESULTSET);
-			Literal booleanLit = GraphUtil.getUniqueObjectLiteral(graph, resultSetNode, BOOLEAN);
+			Resource resultSetNode = model.subjects(RDF.TYPE, RESULTSET).iterator().next();
+			Value booleanLit = model.objects(resultSetNode, BOOLEAN).iterator().next();
 
 			if (booleanLit.equals(DAWGTestResultSetSchema.TRUE)) {
 				value = true;
@@ -79,7 +77,7 @@ public class DAWGTestBooleanParser extends RDFHandlerBase {
 				new RDFHandlerException("Invalid boolean value: " + booleanLit);
 			}
 		}
-		catch (GraphUtilException e) {
+		catch (Exception e) {
 			throw new RDFHandlerException(e.getMessage(), e);
 		}
 	}

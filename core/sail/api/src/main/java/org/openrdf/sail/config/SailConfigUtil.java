@@ -5,26 +5,25 @@
  */
 package org.openrdf.sail.config;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.Value;
 
 public class SailConfigUtil {
 
-	public static SailImplConfig parseRepositoryImpl(Graph graph, Resource implNode)
+	public static SailImplConfig parseRepositoryImpl(Model model, Resource implNode)
 		throws SailConfigException
 	{
 		try {
-			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, SailConfigSchema.SAILTYPE);
+			for (Value obj : model.objects(implNode, SailConfigSchema.SAILTYPE)) {
+				Literal typeLit = (Literal)obj;
 
-			if (typeLit != null) {
 				SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
 
 				if (factory != null) {
 					SailImplConfig implConfig = factory.getConfig();
-					implConfig.parse(graph, implNode);
+					implConfig.parse(model, implNode);
 					return implConfig;
 				}
 				else {
@@ -34,7 +33,10 @@ public class SailConfigUtil {
 
 			return null;
 		}
-		catch (GraphUtilException e) {
+		catch (SailConfigException e) {
+			throw e;
+		}
+		catch (Exception e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

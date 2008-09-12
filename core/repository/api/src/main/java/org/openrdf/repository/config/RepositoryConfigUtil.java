@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.openrdf.StoreException;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -100,7 +100,7 @@ public class RepositoryConfigUtil {
 				throw new StoreException("No configuration context for repository " + repositoryID);
 			}
 
-			Graph contextGraph = new GraphImpl();
+			Model contextGraph = new ModelImpl();
 			con.getStatements(null, null, null, true, context).addTo(contextGraph);
 
 			return RepositoryConfig.create(contextGraph, repositoryNode);
@@ -178,9 +178,9 @@ public class RepositoryConfigUtil {
 
 			con.add(context, RDF.TYPE, REPOSITORY_CONTEXT);
 
-			Graph graph = new GraphImpl(vf);
-			config.export(graph);
-			con.add(graph, context);
+			Model model = new ModelImpl();
+			config.export(model);
+			con.add(model, context);
 		}
 
 		con.setAutoCommit(wasAutoCommit);

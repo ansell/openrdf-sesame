@@ -8,11 +8,11 @@ package org.openrdf.sail.nativerdf.config;
 import static org.openrdf.sail.nativerdf.config.NativeStoreSchema.FORCE_SYNC;
 import static org.openrdf.sail.nativerdf.config.NativeStoreSchema.TRIPLE_INDEXES;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.Value;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfigBase;
 
@@ -68,34 +68,35 @@ public class NativeStoreConfig extends SailImplConfigBase {
 	}
 
 	@Override
-	public Resource export(Graph graph)
+	public Resource export(Model model)
 	{
-		Resource implNode = super.export(graph);
+		Resource implNode = super.export(model);
 
+		ValueFactoryImpl vf = new ValueFactoryImpl();
 		if (tripleIndexes != null) {
-			graph.add(implNode, TRIPLE_INDEXES, graph.getValueFactory().createLiteral(tripleIndexes));
+			model.add(implNode, TRIPLE_INDEXES, vf.createLiteral(tripleIndexes));
 		}
 		if (forceSync) {
-			graph.add(implNode, FORCE_SYNC, graph.getValueFactory().createLiteral(forceSync));
+			model.add(implNode, FORCE_SYNC, vf.createLiteral(forceSync));
 		}
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model model, Resource implNode)
 		throws SailConfigException
 	{
-		super.parse(graph, implNode);
+		super.parse(model, implNode);
 
 		try {
-			Literal tripleIndexLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, TRIPLE_INDEXES);
-			if (tripleIndexLit != null) {
+			for (Value obj : model.objects(implNode, TRIPLE_INDEXES)) {
+				Literal tripleIndexLit = (Literal)obj;
 				setTripleIndexes((tripleIndexLit).getLabel());
 			}
 
-			Literal forceSyncLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, FORCE_SYNC);
-			if (forceSyncLit != null) {
+			for (Value obj : model.objects(implNode, FORCE_SYNC)) {
+				Literal forceSyncLit = (Literal)obj;
 				try {
 					setForceSync(forceSyncLit.booleanValue());
 				}
@@ -105,7 +106,10 @@ public class NativeStoreConfig extends SailImplConfigBase {
 				}
 			}
 		}
-		catch (GraphUtilException e) {
+		catch (SailConfigException e) {
+			throw e;
+		}
+		catch (Exception e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

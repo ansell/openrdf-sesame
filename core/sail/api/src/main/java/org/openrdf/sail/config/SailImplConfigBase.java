@@ -8,11 +8,11 @@ package org.openrdf.sail.config;
 import static org.openrdf.sail.config.SailConfigSchema.SAILTYPE;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.Value;
+import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
  * @author Herko ter Horst
@@ -51,26 +51,27 @@ public class SailImplConfigBase implements SailImplConfig {
 		}
 	}
 
-	public Resource export(Graph graph) {
-		BNode implNode = graph.getValueFactory().createBNode();
+	public Resource export(Model model) {
+		ValueFactoryImpl vf = new ValueFactoryImpl();
+		BNode implNode = vf.createBNode();
 
 		if (type != null) {
-			graph.add(implNode, SAILTYPE, graph.getValueFactory().createLiteral(type));
+			model.add(implNode, SAILTYPE, vf.createLiteral(type));
 		}
 
 		return implNode;
 	}
 
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model model, Resource implNode)
 		throws SailConfigException
 	{
 		try {
-			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, SAILTYPE);
-			if (typeLit != null) {
+			for (Value obj : model.objects(implNode, SAILTYPE)) {
+				Literal typeLit = (Literal)obj;
 				setType(typeLit.getLabel());
 			}
 		}
-		catch (GraphUtilException e) {
+		catch (Exception e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

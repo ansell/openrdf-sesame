@@ -16,14 +16,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.GraphImpl;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.Binding;
 import org.openrdf.query.TupleQueryResultHandler;
@@ -51,7 +49,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	 * Variables *
 	 *-----------*/
 
-	private Graph graph = new GraphImpl();
+	private Model model = new ModelImpl();
 
 	/*--------------*
 	 * Constructors *
@@ -69,14 +67,14 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	public void startRDF()
 		throws RDFHandlerException
 	{
-		graph.clear();
+		model.clear();
 	}
 
 	@Override
 	public void handleStatement(Statement st)
 		throws RDFHandlerException
 	{
-		graph.add(st);
+		model.add(st);
 	}
 
 	@Override
@@ -84,12 +82,12 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 		throws RDFHandlerException
 	{
 		try {
-			Resource resultSetNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE, RESULTSET);
+			Resource resultSetNode = model.subjects(RDF.TYPE, RESULTSET).iterator().next();
 
 			List<String> bindingNames = getBindingNames(resultSetNode);
 			tqrHandler.startQueryResult(bindingNames);
 
-			Iterator<Value> solIter = GraphUtil.getObjectIterator(graph, resultSetNode, SOLUTION);
+			Iterator<Value> solIter = model.objects(resultSetNode, SOLUTION).iterator();
 			while (solIter.hasNext()) {
 				Value solutionNode = solIter.next();
 
@@ -103,10 +101,13 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 
 			tqrHandler.endQueryResult();
 		}
-		catch (GraphUtilException e) {
-			throw new RDFHandlerException(e.getMessage(), e);
+		catch (RDFHandlerException e) {
+			throw e;
 		}
 		catch (TupleQueryResultHandlerException e) {
+			throw new RDFHandlerException(e.getMessage(), e);
+		}
+		catch (Exception e) {
 			throw new RDFHandlerException(e.getMessage(), e);
 		}
 	}
@@ -116,7 +117,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	{
 		List<String> bindingNames = new ArrayList<String>(16);
 
-		Iterator<Value> varIter = GraphUtil.getObjectIterator(graph, resultSetNode, RESULTVARIABLE);
+		Iterator<Value> varIter = model.objects(resultSetNode, RESULTVARIABLE).iterator();
 
 		while (varIter.hasNext()) {
 			Value varName = varIter.next();
@@ -133,11 +134,11 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	}
 
 	private void reportSolution(Resource solutionNode, List<String> bindingNames)
-		throws RDFHandlerException, GraphUtilException
+		throws RDFHandlerException
 	{
 		MapBindingSet bindingSet = new MapBindingSet(bindingNames.size());
 
-		Iterator<Value> bindingIter = GraphUtil.getObjectIterator(graph, solutionNode, BINDING);
+		Iterator<Value> bindingIter = model.objects(solutionNode, BINDING).iterator();
 		while (bindingIter.hasNext()) {
 			Value bindingNode = bindingIter.next();
 
@@ -158,11 +159,9 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 		}
 	}
 
-	private Binding getBinding(Resource bindingNode)
-		throws GraphUtilException
-	{
-		Literal name = GraphUtil.getUniqueObjectLiteral(graph, bindingNode, VARIABLE);
-		Value value = GraphUtil.getUniqueObject(graph, bindingNode, VALUE);
+	private Binding getBinding(Resource bindingNode) {
+		Literal name = (Literal)model.objects(bindingNode, VARIABLE).iterator().next();
+		Value value = model.objects(bindingNode, VALUE).iterator().next();
 		return new BindingImpl(name.getLabel(), value);
 	}
 }

@@ -38,14 +38,14 @@ import info.aduna.iteration.Iterations;
 
 import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
@@ -1231,10 +1231,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 		testCon.add(alice, name, nameAlice);
 
-		Graph graph;
+		Model model;
 		RepositoryResult<Statement> statements = testCon.getStatements(null, null, null, true);
 		try {
-			graph = new GraphImpl(vf, statements.asList());
+			model = new ModelImpl(statements.asList());
 		}
 		finally {
 			statements.close();
@@ -1242,18 +1242,18 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream out = new ObjectOutputStream(baos);
-		out.writeObject(graph);
+		out.writeObject(model);
 		out.close();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		ObjectInputStream in = new ObjectInputStream(bais);
-		Graph deserializedGraph = (Graph)in.readObject();
+		Model deserializedGraph = (Model)in.readObject();
 		in.close();
 
 		assertFalse(deserializedGraph.isEmpty());
 
 		for (Statement st : deserializedGraph) {
-			assertTrue(graph.contains(st));
+			assertTrue(model.contains(st));
 			assertTrue(testCon.hasStatement(st, true));
 		}
 	}

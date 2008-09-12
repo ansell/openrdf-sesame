@@ -5,6 +5,8 @@
  */
 package org.openrdf.workbench.commands;
 
+import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,16 +18,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import info.aduna.io.IOUtil;
 
+import org.openrdf.StoreException;
 import org.openrdf.console.Console;
-import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.GraphImpl;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
-import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
@@ -86,16 +87,15 @@ public class CreateServlet extends TransformationServlet {
 
 		ValueFactory vf = systemRepo.getValueFactory();
 
-		Graph graph = new GraphImpl(vf);
+		Model model = new ModelImpl();
 
 		RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, vf);
-		rdfParser.setRDFHandler(new StatementCollector(graph));
+		rdfParser.setRDFHandler(new StatementCollector(model));
 		rdfParser.parse(new StringReader(configString),
 				RepositoryConfigSchema.NAMESPACE);
 
-		Resource repositoryNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE,
-				RepositoryConfigSchema.REPOSITORY);
-		RepositoryConfig repConfig = RepositoryConfig.create(graph,
+		Resource repositoryNode = model.subjects(RDF.TYPE, REPOSITORY).iterator().next();
+		RepositoryConfig repConfig = RepositoryConfig.create(model,
 				repositoryNode);
 		repConfig.validate();
 
