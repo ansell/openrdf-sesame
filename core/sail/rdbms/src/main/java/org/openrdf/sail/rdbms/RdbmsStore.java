@@ -5,6 +5,7 @@
  */
 package org.openrdf.sail.rdbms;
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -19,6 +20,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 
 import org.openrdf.StoreException;
 import org.openrdf.sail.NotifyingSailConnection;
+import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.NotifyingSailBase;
 import org.openrdf.sail.helpers.SynchronizedSailConnection;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
@@ -105,6 +107,10 @@ public class RdbmsStore extends NotifyingSailBase {
 		this.password = password;
 	}
 
+	public SailMetaData getSailMetaData() {
+		return new RdbmsStoreMetaData(this);
+	}
+
 	public int getMaxNumberOfTripleTables() {
 		return maxTripleTables;
 	}
@@ -158,6 +164,12 @@ public class RdbmsStore extends NotifyingSailBase {
 		throws StoreException
 	{
 		return factory.isWritable();
+	}
+
+	public URL getLocation()
+		throws StoreException
+	{
+		return factory.getLocation();
 	}
 
 	public RdbmsValueFactory getValueFactory() {

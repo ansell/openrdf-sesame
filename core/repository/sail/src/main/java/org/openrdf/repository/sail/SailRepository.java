@@ -12,6 +12,7 @@ import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.sail.Sail;
 
 /**
@@ -67,6 +68,10 @@ public class SailRepository implements Repository {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public RepositoryMetaData getRepositoryMetaData() {
+		return new SailRepositoryMetaData(sail.getSailMetaData());
+	}
 
 	public File getDataDir() {
 		return sail.getDataDir();

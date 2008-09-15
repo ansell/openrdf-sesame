@@ -21,6 +21,7 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.rio.RDFFormat;
 
 /**
@@ -94,6 +95,10 @@ public class HTTPRepository implements Repository {
 		throws StoreException
 	{
 		initialized = true;
+	}
+
+	public RepositoryMetaData getRepositoryMetaData() {
+		return new HTTPRepositoryMetaData(this);
 	}
 
 	public void shutDown()

@@ -7,6 +7,7 @@ package org.openrdf.console;
 
 import static org.openrdf.query.QueryLanguage.SERQL;
 import static org.openrdf.query.QueryLanguage.SPARQL;
+import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,8 +51,8 @@ import info.aduna.text.StringUtil;
 import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
-import org.openrdf.model.Graph;
 import org.openrdf.model.LiteralFactory;
+import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -59,8 +60,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.GraphImpl;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
@@ -697,15 +697,14 @@ public class Console {
 
 			ValueFactory vf = systemRepo.getValueFactory();
 
-			Graph graph = new GraphImpl(vf);
+			Model model = new ModelImpl();
 
 			RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, vf);
-			rdfParser.setRDFHandler(new StatementCollector(graph));
+			rdfParser.setRDFHandler(new StatementCollector(model));
 			rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
 
-			Resource repositoryNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE,
-					RepositoryConfigSchema.REPOSITORY);
-			RepositoryConfig repConfig = RepositoryConfig.create(graph, repositoryNode);
+			Resource repositoryNode = model.subjects(RDF.TYPE, REPOSITORY).iterator().next();
+			RepositoryConfig repConfig = RepositoryConfig.create(model, repositoryNode);
 			repConfig.validate();
 
 			if (RepositoryConfigUtil.hasRepositoryConfig(systemRepo, repConfig.getID())) {

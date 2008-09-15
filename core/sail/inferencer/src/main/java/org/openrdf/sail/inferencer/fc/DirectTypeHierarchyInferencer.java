@@ -31,9 +31,12 @@ import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailConnectionListener;
+import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.NotifyingSailWrapper;
+import org.openrdf.sail.helpers.SailMetaDataWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
+import org.openrdf.sail.inferencer.fc.config.DirectTypeHierarchyInferencerFactory;
 
 /**
  * A forward-chaining inferencer that infers the direct-type hierarchy relations
@@ -163,6 +166,38 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 		finally {
 			con.close();
 		}
+	}
+
+	@Override
+	public SailMetaData getSailMetaData() {
+		return new SailMetaDataWrapper(super.getSailMetaData()) {
+
+			@Override
+			public String[] getReasoners() {
+				String[] reasoners = super.getReasoners();
+				String[] result = new String[reasoners.length + 1];
+				result[reasoners.length] = DirectTypeHierarchyInferencerFactory.SAIL_TYPE;
+				return result;
+			}
+
+			@Override
+			public boolean isInferencing() {
+				return true;
+			}
+
+			@Override
+			public String[] getInferenceRules() {
+				String[] rules = super.getInferenceRules();
+				String[] result = new String[rules.length + 6];
+				result[rules.length + 0] = "DIRECT_SUBCLASSOF_MATCHER";
+				result[rules.length + 1] = "DIRECT_SUBCLASSOF_QUERY";
+				result[rules.length + 2] = "DIRECT_SUBPROPERTYOF_MATCHER";
+				result[rules.length + 3] = "DIRECT_SUBPROPERTYOF_QUERY";
+				result[rules.length + 4] = "DIRECT_TYPE_MATCHER";
+				result[rules.length + 5] = "DIRECT_TYPE_QUERY";
+				return result;
+			}
+		};
 	}
 
 	/*-----------------------------------------------------*

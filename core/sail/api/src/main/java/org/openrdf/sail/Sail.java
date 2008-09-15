@@ -21,6 +21,8 @@ import org.openrdf.model.ValueFactory;
  */
 public interface Sail {
 
+	public SailMetaData getSailMetaData();
+
 	public void setDataDir(File dataDir);
 
 	public File getDataDir();

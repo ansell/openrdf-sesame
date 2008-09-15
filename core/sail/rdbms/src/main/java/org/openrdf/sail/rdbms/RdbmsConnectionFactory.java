@@ -7,6 +7,8 @@ package org.openrdf.sail.rdbms;
 
 import static java.sql.Connection.TRANSACTION_READ_COMMITTED;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -271,6 +273,23 @@ public class RdbmsConnectionFactory {
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
+		}
+	}
+
+	public URL getLocation()
+		throws StoreException
+	{
+		try {
+			String url = nsAndTableIndexes.getMetaData().getURL();
+			if (url == null)
+				return null;
+			return new URL(url);
+		}
+		catch (SQLException e) {
+			throw new RdbmsException(e);
+		}
+		catch (MalformedURLException e) {
+			return null;
 		}
 	}
 
