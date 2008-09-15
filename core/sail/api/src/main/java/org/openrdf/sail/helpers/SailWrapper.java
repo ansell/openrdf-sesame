@@ -11,6 +11,7 @@ import org.openrdf.StoreException;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.StackableSail;
 
 /**
@@ -51,6 +52,10 @@ public class SailWrapper implements StackableSail {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public SailMetaData getSailMetaData() {
+		return baseSail.getSailMetaData();
+	}
 
 	public void setBaseSail(Sail baseSail) {
 		this.baseSail = baseSail;

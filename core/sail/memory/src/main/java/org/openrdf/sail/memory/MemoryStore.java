@@ -25,6 +25,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.NotifyingSailConnection;
+import org.openrdf.sail.SailMetaData;
 import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.DirectoryLockManager;
@@ -197,6 +198,10 @@ public class MemoryStore extends NotifyingSailBase {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public SailMetaData getSailMetaData() {
+		return new MemoryStoreMetaData(this);
+	}
 
 	@Override
 	public void setDataDir(File dataDir) {

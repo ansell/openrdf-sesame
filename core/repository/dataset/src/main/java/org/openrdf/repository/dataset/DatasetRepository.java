@@ -15,7 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.openrdf.model.URI;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.StoreException;
+import org.openrdf.repository.base.RepositoryMetaDataWrapper;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
@@ -47,6 +49,17 @@ public class DatasetRepository extends RepositoryWrapper {
 	@Override
 	public SailRepository getDelegate() {
 		return (SailRepository)super.getDelegate();
+	}
+
+	@Override
+	public RepositoryMetaData getRepositoryMetaData() {
+		return new RepositoryMetaDataWrapper(super.getRepositoryMetaData()) {
+
+			@Override
+			public boolean isRemoteDatasetSupported() {
+				return true;
+			}
+		};
 	}
 
 	@Override

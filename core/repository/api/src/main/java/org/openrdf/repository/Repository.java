@@ -28,6 +28,8 @@ import org.openrdf.model.ValueFactory;
  */
 public interface Repository {
 
+	public RepositoryMetaData getRepositoryMetaData();
+
 	/**
 	 * Set the directory where data and logging for this repository is stored.
 	 * 

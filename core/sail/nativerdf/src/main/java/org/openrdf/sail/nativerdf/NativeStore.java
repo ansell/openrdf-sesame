@@ -30,6 +30,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.NotifyingSailConnection;
+import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.NotifyingSailBase;
 import org.openrdf.sail.helpers.SynchronizedSailConnection;
@@ -113,6 +114,10 @@ public class NativeStore extends NotifyingSailBase {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public SailMetaData getSailMetaData() {
+		return new NativeStoreMetaData(this);
+	}
 
 	/**
 	 * Sets the triple indexes for the native store, must be called before

@@ -5,11 +5,17 @@
  */
 package org.openrdf.sail.inferencer.fc;
 
+import static java.lang.System.arraycopy;
+import static org.openrdf.sail.inferencer.fc.RDFSRules.RULENAMES;
+
+import org.openrdf.StoreException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.Sail;
-import org.openrdf.StoreException;
+import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.NotifyingSailWrapper;
+import org.openrdf.sail.helpers.SailMetaDataWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
+import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerFactory;
 
 /**
  * Forward-chaining RDF Schema inferencer, using the rules from the <a
@@ -66,5 +72,42 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 		finally {
 			con.close();
 		}
+	}
+
+	@Override
+	public SailMetaData getSailMetaData() {
+		return new SailMetaDataWrapper(super.getSailMetaData()) {
+
+			@Override
+			public String[] getReasoners() {
+				String[] reasoners = super.getReasoners();
+				String[] result = new String[reasoners.length + 1];
+				result[reasoners.length] = ForwardChainingRDFSInferencerFactory.SAIL_TYPE;
+				return result;
+			}
+
+			@Override
+			public boolean isInferencing() {
+				return true;
+			}
+
+			@Override
+			public String[] getInferenceRules() {
+				String[] rules = super.getInferenceRules();
+				String[] result = new String[rules.length + RDFSRules.RULENAMES.length];
+				arraycopy(RULENAMES, 0, result, rules.length, RULENAMES.length);
+				return result;
+			}
+
+			@Override
+			public boolean isHierarchicalInferencing() {
+				return true;
+			}
+
+			@Override
+			public boolean isRDFSInferencing() {
+				return true;
+			}
+		};
 	}
 }

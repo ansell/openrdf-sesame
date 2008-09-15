@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.StoreException;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailMetaData;
 
 /**
  * SailBase is an abstract Sail implementation that takes care of common sail
@@ -51,6 +52,10 @@ public abstract class SailBase implements Sail {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public SailMetaData getSailMetaData() {
+		return new SailMetaDataImpl();
+	}
 
 	public void setDataDir(File dataDir) {
 		this.dataDir = dataDir;

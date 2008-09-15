@@ -14,6 +14,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryMetaData;
 
 /**
  * A {@link DelegatingRepository} implementation that, by default, forwards all
@@ -46,6 +47,10 @@ public class RepositoryWrapper implements DelegatingRepository {
 
 	public Repository getDelegate() {
 		return delegate;
+	}
+
+	public RepositoryMetaData getRepositoryMetaData() {
+		return getDelegate().getRepositoryMetaData();
 	}
 
 	public void setDataDir(File dataDir) {
