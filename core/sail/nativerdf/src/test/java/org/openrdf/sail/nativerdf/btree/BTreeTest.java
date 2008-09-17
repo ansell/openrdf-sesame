@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -42,6 +42,8 @@ public class BTreeTest extends TestCase {
 	 * Variables *
 	 *-----------*/
 
+	private File dir;
+
 	private BTree btree;
 
 	/*---------*
@@ -53,7 +55,7 @@ public class BTreeTest extends TestCase {
 		throws Exception
 	{
 		super.setUp();
-		File dir = FileUtil.createTempDir("btree");
+		dir = FileUtil.createTempDir("btree");
 		btree = new BTree(dir, "test", 85, 1);
 	}
 
@@ -63,6 +65,7 @@ public class BTreeTest extends TestCase {
 	{
 		try {
 			btree.delete();
+			FileUtil.deleteDir(dir);
 		}
 		finally {
 			super.tearDown();
@@ -145,6 +148,12 @@ public class BTreeTest extends TestCase {
 
 		iter2.close();
 		iter1.close();
+	}
+
+	public void testNewAndClear()
+		throws Exception
+	{
+		btree.clear();
 	}
 
 	/* Test for SES-527

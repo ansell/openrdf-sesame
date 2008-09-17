@@ -26,6 +26,9 @@ import org.openrdf.model.Value;
 
 /**
  * Serializes of an RDF transaction.
+ * 
+ * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 public class TransactionWriter {
 

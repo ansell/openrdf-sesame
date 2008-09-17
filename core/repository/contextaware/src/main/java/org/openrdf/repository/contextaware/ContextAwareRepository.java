@@ -22,7 +22,7 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	private boolean includeInferred = true;
 
-	private long maxQueryTime;
+	private int maxQueryTime;
 
 	private QueryLanguage ql = QueryLanguage.SPARQL;
 
@@ -34,15 +34,19 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	private URI[] archiveContexts = ALL_CONTEXTS;
 
+	public ContextAwareRepository() {
+		super();
+	}
+
 	public ContextAwareRepository(Repository delegate) {
 		super(delegate);
 	}
 
-	public long getMaxQueryTime() {
+	public int getMaxQueryTime() {
 		return maxQueryTime;
 	}
 
-	public void setMaxQueryTime(long maxQueryTime) {
+	public void setMaxQueryTime(int maxQueryTime) {
 		this.maxQueryTime = maxQueryTime;
 	}
 
@@ -146,8 +150,7 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	public ContextAwareConnection getConnection()
 		throws StoreException
 	{
-		ContextAwareConnection con;
-		con = new ContextAwareConnection(this, super.getConnection());
+		ContextAwareConnection con = new ContextAwareConnection(this, super.getConnection());
 		con.setIncludeInferred(isIncludeInferred());
 		con.setMaxQueryTime(getMaxQueryTime());
 		con.setQueryLanguage(getQueryLanguage());
@@ -157,5 +160,4 @@ public class ContextAwareRepository extends RepositoryWrapper {
 		con.setArchiveContexts(getArchiveContexts());
 		return con;
 	}
-
 }

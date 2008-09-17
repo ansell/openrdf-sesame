@@ -25,6 +25,8 @@ public abstract class AbstractQuery implements Query {
 
 	protected boolean includeInferred = true;
 
+	protected int maxQueryTime = 0;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -65,5 +67,13 @@ public abstract class AbstractQuery implements Query {
 
 	public boolean getIncludeInferred() {
 		return includeInferred;
+	}
+
+	public void setMaxQueryTime(int maxQueryTime) {
+		this.maxQueryTime = maxQueryTime;
+	}
+
+	public int getMaxQueryTime() {
+		return maxQueryTime;
 	}
 }

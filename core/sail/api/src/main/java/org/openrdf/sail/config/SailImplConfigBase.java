@@ -11,8 +11,9 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.ModelUtilException;
 
 /**
  * @author Herko ter Horst
@@ -52,7 +53,8 @@ public class SailImplConfigBase implements SailImplConfig {
 	}
 
 	public Resource export(Model model) {
-		ValueFactoryImpl vf = new ValueFactoryImpl();
+		ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
+
 		BNode implNode = vf.createBNode();
 
 		if (type != null) {
@@ -66,12 +68,12 @@ public class SailImplConfigBase implements SailImplConfig {
 		throws SailConfigException
 	{
 		try {
-			for (Value obj : model.objects(implNode, SAILTYPE)) {
-				Literal typeLit = (Literal)obj;
+			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, SAILTYPE);
+			if (typeLit != null) {
 				setType(typeLit.getLabel());
 			}
 		}
-		catch (Exception e) {
+		catch (ModelUtilException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

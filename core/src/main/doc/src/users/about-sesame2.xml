@@ -25,10 +25,10 @@
 			known as Aidministrator) as a research prototype for the hugely
 			successful EU research project
 			<ulink url="http://www.ontoknowledge.org/">On-To-Knowledge</ulink>.
-			When this worked ended in 2001, Aduna continued the development in
-			cooperation with NLnet Foundation, developers from Ontotext, and a
-			number of volunteer developers who contribute ideas, bug reports and
-			fixes.
+			When this work ended in 2001, Aduna continued the development in
+			cooperation with <ulink url="http://www.nlnet.nl/">NLnet Foundation</ulink>,
+			developers from <ulink url="">Ontotext</ulink>, and a number of volunteer developers who
+			contribute ideas, bug reports and fixes.
 		</para>
 		<para>
 			Sesame is currently developed as a community project, with Aduna as
@@ -89,28 +89,6 @@
 
 		<para>
 			A lot of these new features will be covered in the next chapters.
-		</para>
-	</section>
-
-	<section>
-		<title>Quo vadis?</title>
-		<para>
-			Sesame 2 has now reached the 2.0-final status, which means that APIs are
-			stable and that all <emphasis>known</emphasis> bugs have been fixed. The
-			developement of Sesame will, of course, continue with new releases on a
-			regular basis.
-		</para>
-		<para>
-			The prime focus for the upcoming releases is the performance and scalability
-			of the various RDF stores. An RDBMS-based Sail implementation is currently
-			under development and the first results look very promising. The performance
-			of the native- and memory stores will also be improved. As there hasn't been
-			put a lot of effort into this so far, we expect to achieve good results here.
-		</para>
-		<para>
-			Subjects that we will look into after that are support for aggregate functions
-			(COUNT, MIN, MAX) in SeRQL and improvements of the web- and desktop user
-			interfaces.
 		</para>
 	</section>
 </chapter>

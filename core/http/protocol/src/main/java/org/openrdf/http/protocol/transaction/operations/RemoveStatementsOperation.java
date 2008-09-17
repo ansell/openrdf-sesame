@@ -16,6 +16,7 @@ import org.openrdf.StoreException;
  * predicate and object.
  * 
  * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 public class RemoveStatementsOperation extends StatementOperation {
 

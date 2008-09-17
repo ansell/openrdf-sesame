@@ -22,15 +22,20 @@ import org.openrdf.sail.LockManager;
 import org.openrdf.sail.SailLockedException;
 
 /**
- * 
  * @author James Leigh
  */
 public class DatabaseLockManager implements LockManager {
+
 	private static final String CREATE_LOCKED = "CREATE TABLE locked ( process VARCHAR(128) )";
+
 	private static final String INSERT = "INSERT INTO locked VALUES ('";
+
 	private static final String SELECT = "SELECT process FROM locked";
+
 	private static final String DROP = "DROP TABLE locked";
+
 	private Logger logger = LoggerFactory.getLogger(DatabaseLockManager.class);
+
 	private DataSource ds;
 
 	private String user;
@@ -53,23 +58,27 @@ public class DatabaseLockManager implements LockManager {
 
 	public boolean isLocked() {
 		try {
-			ResultSet rs = null;
-			Statement st = null;
 			Connection con = getConnection();
 			try {
-				st = con.createStatement();
-				rs = st.executeQuery(SELECT);
+				Statement st = con.createStatement();
+				try {
+					ResultSet rs = st.executeQuery(SELECT);
+					try {
 				return rs.next();
-			} finally {
-				if (rs != null) {
+					}
+					finally {
 					rs.close();
 				}
-				if (st != null) {
+				}
+				finally {
 					st.close();
 				}
+			}
+			finally {
 				con.close();
 			}
-		} catch (SQLException exc) {
+		}
+		catch (SQLException exc) {
 			logger.warn(exc.toString(), exc);
 			return false;
 		}
@@ -78,21 +87,24 @@ public class DatabaseLockManager implements LockManager {
 	public Lock tryLock() {
 		Lock lock = null;
 		try {
-			Statement st = null;
 			Connection con = getConnection();
 			try {
-				st = con.createStatement();
+				Statement st = con.createStatement();
+				try {
 				st.execute(CREATE_LOCKED);
 				lock = createLock();
 				st.execute(INSERT + getProcessName() + "')");
 				return lock;
-			} finally {
-				if (st != null) {
+				}
+				finally {
 					st.close();
 				}
+			}
+			finally {
 				con.close();
 			}
-		} catch (SQLException exc) {
+		}
+		catch (SQLException exc) {
 			logger.warn(exc.toString(), exc);
 			if (lock != null) {
 				lock.release();
@@ -101,17 +113,25 @@ public class DatabaseLockManager implements LockManager {
 		}
 	}
 
-	public Lock lockOrFail() throws SailLockedException {
+	public Lock lockOrFail()
+		throws SailLockedException
+	{
 		Lock lock = tryLock();
-		if (lock != null)
+		if (lock != null) {
 			return lock;
+		}
+
 		String requestedBy = getProcessName();
 		String lockedBy = getLockedBy();
-		if (lockedBy != null)
+		if (lockedBy != null) {
 			throw new SailLockedException(lockedBy, requestedBy, this);
+		}
+
 		lock = tryLock();
-		if (lock != null)
+		if (lock != null) {
 			return lock;
+		}
+
 		throw new SailLockedException(requestedBy);
 	}
 
@@ -122,19 +142,22 @@ public class DatabaseLockManager implements LockManager {
 	 */
 	public boolean revokeLock() {
 		try {
-			Statement st = null;
 			Connection con = getConnection();
 			try {
-				st = con.createStatement();
+				Statement st = con.createStatement();
+				try {
 				st.execute(DROP);
 				return true;
-			} finally {
-				if (st != null) {
+				}
+				finally {
 					st.close();
 				}
+			}
+			finally {
 				con.close();
 			}
-		} catch (SQLException exc) {
+		}
+		catch (SQLException exc) {
 			logger.warn(exc.toString(), exc);
 			return false;
 		}
@@ -142,33 +165,42 @@ public class DatabaseLockManager implements LockManager {
 
 	private String getLockedBy() {
 		try {
-			ResultSet rs = null;
-			Statement st = null;
 			Connection con = getConnection();
 			try {
-				st = con.createStatement();
-				rs = st.executeQuery(SELECT);
-				if (!rs.next())
+				Statement st = con.createStatement();
+				try {
+					ResultSet rs = st.executeQuery(SELECT);
+					try {
+						if (!rs.next()) {
 					return null;
+						}
 				return rs.getString(1);
-			} finally {
-				if (rs != null) {
+					}
+					finally {
 					rs.close();
 				}
-				if (st != null) {
+				}
+				finally {
 					st.close();
 				}
+			}
+			finally {
 				con.close();
 			}
-		} catch (SQLException exc) {
+		}
+		catch (SQLException exc) {
 			logger.warn(exc.toString(), exc);
 			return null;
 		}
 	}
 
-	private Connection getConnection() throws SQLException {
-		if (user == null)
+	private Connection getConnection()
+		throws SQLException
+	{
+		if (user == null) {
 			return ds.getConnection();
+		}
+
 		return ds.getConnection(user, password);
 	}
 
@@ -178,6 +210,7 @@ public class DatabaseLockManager implements LockManager {
 
 	private Lock createLock() {
 		return new Lock() {
+
 			private boolean active = true;
 
 			public boolean isActive() {
@@ -192,19 +225,24 @@ public class DatabaseLockManager implements LockManager {
 						Statement st = con.createStatement();
 						try {
 							st.execute(DROP);
-						} finally {
+						}
+						finally {
 							st.close();
 						}
-					} finally {
+					}
+					finally {
 						con.close();
 					}
-				} catch (SQLException exc) {
+				}
+				catch (SQLException exc) {
 					logger.error(exc.toString(), exc);
 				}
 			}
 
 			@Override
-			protected void finalize() throws Throwable {
+			protected void finalize()
+				throws Throwable
+			{
 				if (active) {
 					release();
 				}

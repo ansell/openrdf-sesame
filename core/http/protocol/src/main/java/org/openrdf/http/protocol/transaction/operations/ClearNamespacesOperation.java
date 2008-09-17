@@ -12,6 +12,7 @@ import org.openrdf.StoreException;
  * Operation that removes all namespace declarations.
  * 
  * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 public class ClearNamespacesOperation implements TransactionOperation {
 

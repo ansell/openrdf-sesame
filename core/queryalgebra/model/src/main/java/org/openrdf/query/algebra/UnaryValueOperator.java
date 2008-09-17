@@ -9,7 +9,7 @@ package org.openrdf.query.algebra;
  * An abstract superclass for unary value operators which, by definition, has
  * one argument.
  */
-public abstract class UnaryValueOperator extends NaryValueOperator implements ValueExpr {
+public abstract class UnaryValueOperator extends NaryValueOperator {
 
 	/*--------------*
 	 * Constructors *
@@ -26,5 +26,10 @@ public abstract class UnaryValueOperator extends NaryValueOperator implements Va
 	 */
 	public UnaryValueOperator(ValueExpr arg) {
 		super(arg);
+	}
+	
+		@Override
+	public UnaryValueOperator clone() {
+		return (UnaryValueOperator)super.clone();
 	}
 }

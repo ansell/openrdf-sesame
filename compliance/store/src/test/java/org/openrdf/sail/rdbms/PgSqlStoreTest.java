@@ -32,7 +32,9 @@ public class PgSqlStoreTest extends RDFNotifyingStoreTest {
 	protected NotifyingSail createSail()
 		throws StoreException
 	{
-		NotifyingSail sail = new PgSqlStore("sesame_test");
+		PgSqlStore sail = new PgSqlStore("sesame_test");
+		sail.setUser("sesame");
+		sail.setPassword("opensesame");
 		sail.initialize();
 		SailConnection conn = sail.getConnection();
 		try {

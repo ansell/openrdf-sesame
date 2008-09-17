@@ -6,12 +6,11 @@
 package org.openrdf.query.algebra;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 /**
- * An abstract superclass for binary tuple operators which have one or more
+ * An abstract superclass for n-ary tuple operators which have one or more
  * arguments.
  */
 public abstract class NaryTupleOperator extends QueryModelNodeBase implements TupleExpr {
@@ -33,7 +32,7 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	}
 
 	/**
-	 * Creates a new nary tuple operator.
+	 * Creates a new n-ary tuple operator.
 	 * 
 	 * @param args
 	 *        The operator's arguments, must not be <tt>null</tt>.
@@ -43,7 +42,7 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	}
 
 	/**
-	 * Creates a new nary tuple operator.
+	 * Creates a new n-ary tuple operator.
 	 * 
 	 * @param args
 	 *        The operator's arguments, must not be <tt>null</tt>.
@@ -57,7 +56,7 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	 *---------*/
 
 	/**
-	 * Gets the arguments of this nary tuple operator.
+	 * Gets the arguments of this n-ary tuple operator.
 	 * 
 	 * @return The operator's arguments.
 	 */
@@ -66,24 +65,43 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	}
 
 	/**
-	 * Sets the arguments of this nary tuple operator.
+	 * Sets the arguments of this n-ary tuple operator.
 	 * 
 	 * @param args
 	 *        The (new) arguments for this operator, must not be <tt>null</tt>.
 	 */
 	public void setArgs(TupleExpr... args) {
-		assert args != null;
-		assert args.length > 0;
-		for (TupleExpr arg : args) {
-			assert arg != null : "arg must not be null";
-			arg.setParentNode(this);
-		}
 		this.args.clear();
-		this.args.addAll(Arrays.asList(args));
+		addArgs(args);
 	}
 
 	/**
-	 * Gets the number of arguments of this nary tuple operator.
+	 * Adds arguments to this n-ary tuple operator.
+	 * 
+	 * @param args
+	 *        The (new) arguments for this operator, must not be <tt>null</tt>.
+	 */
+	public void addArgs(TupleExpr... args) {
+		assert args != null;
+		for (TupleExpr arg : args) {
+			addArg(arg);
+		}
+	}
+
+	/**
+	 * Adds an argument to this n-ary tuple operator.
+	 * 
+	 * @param args
+	 *        The (new) arguments for this operator, must not be <tt>null</tt>.
+	 */
+	public void addArg(TupleExpr arg) {
+		assert arg != null : "arg must not be null";
+		arg.setParentNode(this);
+		this.args.add(arg);
+	}
+
+	/**
+	 * Gets the number of arguments of this n-ary tuple operator.
 	 * 
 	 * @return The number of arguments.
 	 */
@@ -92,7 +110,7 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	}
 
 	/**
-	 * Gets the <tt>idx</tt>-th argument of this nary tuple operator.
+	 * Gets the <tt>idx</tt>-th argument of this n-ary tuple operator.
 	 * 
 	 * @return The operator's arguments.
 	 */
@@ -101,11 +119,11 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	}
 
 	/**
-	 * Sets the <tt>idx</tt>-th argument of this nary tuple operator.
+	 * Sets the <tt>idx</tt>-th argument of this n-ary tuple operator.
 	 * 
 	 * @param arg
-	 *        The (new) <tt>idx</tt>-th argument for this operator, must not
-	 *        be <tt>null</tt>.
+	 *        The (new) <tt>idx</tt>-th argument for this operator, must not be
+	 *        <tt>null</tt>.
 	 */
 	public void setArg(int idx, TupleExpr arg) {
 		assert arg != null : "arg must not be null";
@@ -117,7 +135,7 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	}
 
 	/**
-	 * Gets the only argument of this nary tuple operator.
+	 * Gets the only argument of this n-ary tuple operator.
 	 * 
 	 * @return The operator's argument.
 	 */
@@ -127,11 +145,10 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	}
 
 	/**
-	 * Sets the only argument of this nary tuple operator.
+	 * Sets the only argument of this n-ary tuple operator.
 	 * 
 	 * @param arg
-	 *        The (new) argument for this operator, must not
-	 *        be <tt>null</tt>.
+	 *        The (new) argument for this operator, must not be <tt>null</tt>.
 	 */
 	public void setArg(TupleExpr arg) {
 		assert arg != null : "arg must not be null";
@@ -154,32 +171,30 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		for (int i = 0, n = getNumberOfArguments(); i < n; i++) {
-			if (getArg(i) == current) {
-				setArg(i, (TupleExpr)replacement);
-				return;
-			}
+		int index = args.indexOf(current);
+		if (index >= 0) {
+			args.set(index, (TupleExpr)replacement);
+			replacement.setParentNode(this);
 		}
-		super.replaceChildNode(current, replacement);
+		else {
+			super.replaceChildNode(current, replacement);
+		}
 	}
 
-	public void removeChildNode(QueryModelNode current) {
-		for (int i = 0, n = getNumberOfArguments(); i < n; i++) {
-			if (getArg(i) == current) {
-				args.remove(i);
-				return;
-			}
-		}
-		super.replaceChildNode(current, null);
+	public boolean removeArg(TupleExpr arg) {
+		assert arg != null;
+		return args.remove(arg);
 	}
 
 	@Override
 	public NaryTupleOperator clone() {
 		NaryTupleOperator clone = (NaryTupleOperator)super.clone();
+
 		clone.args = new ArrayList<TupleExpr>(args.size());
-		for (int i = 0, n = getNumberOfArguments(); i < n; i++) {
-			clone.setArg(i, getArg(i).clone());
+		for (TupleExpr arg : args) {
+			clone.addArg(arg.clone());
 		}
+
 		return clone;
 	}
 }

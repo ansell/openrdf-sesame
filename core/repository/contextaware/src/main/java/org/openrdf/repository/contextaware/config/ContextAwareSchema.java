@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,7 +14,10 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public class ContextAwareSchema {
 
-	/** The ContextAwareRepository schema namespace (<tt>http://www.openrdf.org/config/repository/contextaware#</tt>). */
+	/**
+	 * The ContextAwareRepository schema namespace (
+	 * <tt>http://www.openrdf.org/config/repository/contextaware#</tt>).
+	 */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/repository/contextaware#";
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#includeInferred</tt> */
@@ -23,8 +26,8 @@ public class ContextAwareSchema {
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#maxQueryTime</tt> */
 	public final static URI MAX_QUERY_TIME;
 
-	/** <tt>http://www.openrdf.org/config/repository/contextaware#ql</tt> */
-	public final static URI QL;
+	/** <tt>http://www.openrdf.org/config/repository/contextaware#queryLanguage</tt> */
+	public final static URI QUERY_LANGUAGE;
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#readContext</tt> */
 	public final static URI READ_CONTEXT;
@@ -38,18 +41,14 @@ public class ContextAwareSchema {
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#archiveContext</tt> */
 	public final static URI ARCHIVE_CONTEXT;
 
-	/** <tt>http://www.openrdf.org/config/repository/contextaware#delegate</tt> */
-	public final static URI DELEGATE;
-
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		INCLUDE_INFERRED = factory.createURI(NAMESPACE, "includeInferred");
-		QL = factory.createURI(NAMESPACE, "ql");
+		QUERY_LANGUAGE = factory.createURI(NAMESPACE, "ql");
 		READ_CONTEXT = factory.createURI(NAMESPACE, "readContext");
 		ADD_CONTEXT = factory.createURI(NAMESPACE, "addContext");
 		REMOVE_CONTEXT = factory.createURI(NAMESPACE, "removeContext");
 		ARCHIVE_CONTEXT = factory.createURI(NAMESPACE, "archiveContext");
-		DELEGATE = factory.createURI(NAMESPACE, "delegate");
 		MAX_QUERY_TIME = factory.createURI(NAMESPACE, "maxQueryTime");
 	}
 }

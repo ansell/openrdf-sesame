@@ -19,8 +19,8 @@ public class And extends NaryValueOperator {
 	public And() {
 	}
 
-	public And(ValueExpr leftArg, ValueExpr rightArg) {
-		super(leftArg, rightArg);
+	public And(ValueExpr... args) {
+		super(args);
 	}
 
 	public And(List<ValueExpr> args) {

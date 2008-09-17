@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,7 +52,6 @@ import info.aduna.text.StringUtil;
 import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
-import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -59,15 +59,14 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.parser.ParsedBooleanQuery;
@@ -85,6 +84,7 @@ import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
+import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.RDFFormat;
@@ -116,43 +116,15 @@ public class Console {
 	 * Static constants *
 	 *------------------*/
 
-	private static final AppVersion VERSION = new AppVersion(2, 2, "SNAPSHOT");
+	private static final AppVersion VERSION = new AppVersion(2, 5, "SNAPSHOT");
 
 	private static final String APP_NAME = "OpenRDF Sesame console";
 
 	private static final String TEMPLATES_DIR = "templates";
 
-	/**
-	 * Query that produces the list of the IDs and (optionally) titles of
-	 * configured repositories.
-	 */
-	public static final String REPOSITORY_LIST_QUERY;
-
-	/**
-	 * Query that yields the context of a specific repository configuration.
-	 */
-	public static final String REPOSITORY_CONTEXT_QUERY;
-
 	public static final Map<String, Level> LOG_LEVELS;
 
 	static {
-		StringBuilder query = new StringBuilder(256);
-		query.append("SELECT ID, Title ");
-		query.append("FROM {} rdf:type {sys:Repository};");
-		query.append("        sys:repositoryID {ID};");
-		query.append("        [rdfs:label {Title} where isLiteral(Title)] ");
-		query.append("WHERE isLiteral(ID) ");
-		query.append("USING NAMESPACE sys = <http://www.openrdf.org/config/repository#>");
-		REPOSITORY_LIST_QUERY = query.toString();
-
-		query.setLength(0);
-		query.append("SELECT C ");
-		query.append("FROM CONTEXT C ");
-		query.append("   {} rdf:type {sys:Repository};");
-		query.append("      sys:repositoryID {ID} ");
-		query.append("USING NAMESPACE sys = <http://www.openrdf.org/config/repository#>");
-		REPOSITORY_CONTEXT_QUERY = query.toString();
-
 		Map<String, Level> logLevels = new LinkedHashMap<String, Level>();
 		logLevels.put("none", Level.OFF);
 		logLevels.put("error", Level.SEVERE);
@@ -406,7 +378,8 @@ public class Console {
 		while (matcher.find()) {
 			if (matcher.group(1) != null) {
 				tokens.add(matcher.group(1));
-			} else {
+			}
+			else {
 				tokens.add(matcher.group());
 			}
 		}
@@ -695,11 +668,9 @@ public class Console {
 			String configString = configTemplate.render(valueMap);
 			// writeln(configString);
 
-			ValueFactory vf = systemRepo.getValueFactory();
-
 			Model model = new ModelImpl();
 
-			RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, vf);
+			RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);
 			rdfParser.setRDFHandler(new StatementCollector(model));
 			rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
 
@@ -753,62 +724,32 @@ public class Console {
 
 		String id = tokens[1];
 
-		Repository systemRepo = manager.getSystemRepository();
-
 		try {
-			LiteralFactory vf = systemRepo.getLiteralFactory();
-
-			RepositoryConnection con = systemRepo.getConnection();
-
-			try {
-				Resource context;
-				TupleQuery query = con.prepareTupleQuery(QueryLanguage.SERQL, REPOSITORY_CONTEXT_QUERY);
-				query.setBinding("ID", vf.createLiteral(id));
-				TupleQueryResult queryResult = query.evaluate();
-
-				try {
-					if (!queryResult.hasNext()) {
-						writeError("Unable to find context information for repository '" + id + "'");
-						logger.warn("Multiple contexts found for repository '{}'", id);
-						return;
-					}
-
-					BindingSet bindings = queryResult.next();
-					context = (Resource)bindings.getValue("C");
-
-					if (queryResult.hasNext()) {
-						writeError("Multiple contexts found for repository '" + id + "'");
-						logger.error("Multiple contexts found for repository '{}'", id);
-						return;
-					}
+			boolean proceed = askProceed("WARNING: you are about to drop repository '" + id + "'.", true);
+			if (proceed) {
+				if (id.equals(repositoryID)) {
+					closeRepository(false);
 				}
-				finally {
-					queryResult.close();
-				}
+				boolean isRemoved = manager.removeRepositoryConfig(id);
 
-				boolean proceed = askProceed("WARNING: you are about to drop repository '" + id + "'.", true);
-				if (proceed) {
-					if (id.equals(repositoryID)) {
-						closeRepository(false);
-					}
-					con.clear(context);
+				if (isRemoved) {
 					writeln("Dropped repository '" + id + "'");
 				}
 				else {
-					writeln("Drop aborted");
+					writeln("Unknown repository '" + id + "'");
 				}
 			}
-			catch (MalformedQueryException e) {
-				writeError("Internal error: malformed preconfigured query");
-				logger.error("Malformed preconfigured query", e);
+			else {
+				writeln("Drop aborted");
 			}
-			finally {
-				con.close();
-			}
+		}
+		catch (RepositoryConfigException e) {
+			writeError("Unable to drop repository '" + id + "': " + e.getMessage());
+			logger.warn("Unable to drop repository '" + id + "'", e);
 		}
 		catch (SailReadOnlyException e) {
 			try {
-				if (tryToRemoveLock(e, systemRepo)) {
+				if (tryToRemoveLock(e, manager.getSystemRepository())) {
 					dropRepository(tokens);
 				}
 				else {
@@ -937,40 +878,28 @@ public class Console {
 
 	private void showRepositories() {
 		try {
-			Repository systemRepo = manager.getSystemRepository();
-			RepositoryConnection con = systemRepo.getConnection();
-			try {
-				TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, REPOSITORY_LIST_QUERY).evaluate();
-				try {
-					if (!queryResult.hasNext()) {
-						writeln("--no repositories found--");
-					}
-					else {
-						writeln("+----------");
-						while (queryResult.hasNext()) {
-							BindingSet bindings = queryResult.next();
-							String id = bindings.getValue("ID").stringValue();
-							String title = bindings.getValue("Title").stringValue();
+			Set<String> repIDs = manager.getRepositoryIDs();
 
-							write("|" + id);
-							if (title != null) {
-								write(" (\"" + title + "\")");
-							}
-							writeln();
+			if (repIDs.isEmpty()) {
+				writeln("--no repositories found--");
+			}
+			else {
+				writeln("+----------");
+				for (String repID : repIDs) {
+					write("|" + repID);
+
+					try {
+						RepositoryInfo repInfo = manager.getRepositoryInfo(repID);
+						if (repInfo.getDescription() != null) {
+							write(" (\"" + repInfo.getDescription() + "\")");
 						}
-						writeln("+----------");
 					}
+					catch (StoreException e) {
+						write(" [ERROR: " + e.getMessage() + "]");
+					}
+					writeln();
 				}
-				finally {
-					queryResult.close();
-				}
-			}
-			catch (MalformedQueryException e) {
-				writeError("Internal error: malformed preconfigured query");
-				logger.error("Failed to show repository", e);
-			}
-			finally {
-				con.close();
+				writeln("+----------");
 			}
 		}
 		catch (StoreException e) {
@@ -1364,6 +1293,10 @@ public class Console {
 		catch (MalformedQueryException e) {
 			writeError("Malformed query: " + e.getMessage());
 		}
+		catch (QueryInterruptedException e) {
+			writeError("Query interrupted: " + e.getMessage());
+			logger.error("Query interrupted", e);
+		}
 		catch (EvaluationException e) {
 			writeError("Query evaluation error: " + e.getMessage());
 			logger.error("Query evaluation error", e);
@@ -1437,8 +1370,7 @@ public class Console {
 	}
 
 	private void evaluateTupleQuery(QueryLanguage ql, String queryString)
-		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException,
-		StoreException
+		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException, StoreException
 	{
 		if (repository == null) {
 			writeError("please open a repository first");
@@ -1525,8 +1457,7 @@ public class Console {
 	}
 
 	private void evaluateGraphQuery(QueryLanguage ql, String queryString)
-		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException,
-		StoreException
+		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException, StoreException
 	{
 		if (repository == null) {
 			writeError("please open a repository first");
@@ -1571,8 +1502,7 @@ public class Console {
 	}
 
 	private void evaluateBooleanQuery(QueryLanguage ql, String queryString)
-		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException,
-		StoreException
+		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException, StoreException
 	{
 		if (repository == null) {
 			writeError("please open a repository first");

@@ -14,7 +14,7 @@ import info.aduna.io.IOUtil;
 
 /**
  * List of allocated BTree nodes, persisted to a file on disk.
- *
+ * 
  * @author Arjohn Kampman
  */
 public class AllocatedNodesList {
@@ -134,7 +134,14 @@ public class AllocatedNodesList {
 	public synchronized void clear()
 		throws IOException
 	{
-		allocatedNodes.clear();
+		if (allocatedNodes != null) {
+			allocatedNodes.clear();
+		}
+		else {
+			// bit set has not yet been initialized
+			allocatedNodes = new BitSet();
+		}
+
 		scheduleSync();
 	}
 

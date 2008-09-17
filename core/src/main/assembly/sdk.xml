@@ -46,7 +46,7 @@
 			<outputDirectory>war</outputDirectory>
 		</file>
 		<file>
-			<source>http/webclient/target/openrdf-workbench.war</source>
+			<source>http/workbench/target/openrdf-workbench.war</source>
 			<outputDirectory>war</outputDirectory>
 		</file>
 

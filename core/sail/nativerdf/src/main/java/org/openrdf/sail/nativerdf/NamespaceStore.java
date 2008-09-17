@@ -210,7 +210,7 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 						String prefix = in.readUTF();
 
 						NamespaceImpl ns = new NamespaceImpl(prefix, name);
-						namespacesMap.put(name, ns);
+						namespacesMap.put(prefix, ns);
 					}
 					catch (EOFException e) {
 						break;

@@ -33,13 +33,13 @@ public class SeRQLParser implements QueryParser {
 		try {
 			ASTQueryContainer qc = SyntaxTreeBuilder.parseQuery(queryStr);
 
-			// Replace deprecates NULL nodes with semantically equivalent
+			// Replace deprecated NULL nodes with semantically equivalent
 			// alternatives
 			NullProcessor.process(qc);
 
 			StringEscapesProcessor.process(qc);
 			Map<String, String> namespaces = NamespaceDeclProcessor.process(qc);
-			WildcardProjectionProcessor.process(qc);
+			ProjectionProcessor.process(qc);
 			qc.jjtAccept(new ProjectionAliasProcessor(), null);
 			qc.jjtAccept(new AnonymousVarGenerator(), null);
 

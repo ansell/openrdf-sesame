@@ -9,7 +9,8 @@ import static org.openrdf.sail.config.SailConfigSchema.DELEGATE;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.ModelUtilException;
 
 /**
  * @author Herko ter Horst
@@ -60,8 +61,7 @@ public class DelegatingSailImplConfigBase extends SailImplConfigBase implements 
 	}
 
 	@Override
-	public Resource export(Model model)
-	{
+	public Resource export(Model model) {
 		Resource implNode = super.export(model);
 
 		if (delegate != null) {
@@ -79,12 +79,12 @@ public class DelegatingSailImplConfigBase extends SailImplConfigBase implements 
 		super.parse(model, implNode);
 
 		try {
-			for (Value obj : model.objects(implNode, DELEGATE)) {
-				Resource delegateNode = (Resource)obj;
+			Resource delegateNode = ModelUtil.getOptionalObjectResource(model, implNode, DELEGATE);
+			if (delegateNode != null) {
 				setDelegate(SailConfigUtil.parseRepositoryImpl(model, delegateNode));
 			}
 		}
-		catch (Exception e) {
+		catch (ModelUtilException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

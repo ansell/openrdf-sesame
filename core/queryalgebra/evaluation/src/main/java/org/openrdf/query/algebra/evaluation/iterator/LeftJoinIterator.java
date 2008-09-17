@@ -8,6 +8,7 @@ package org.openrdf.query.algebra.evaluation.iterator;
 import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.StoreException;
@@ -54,6 +55,9 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, StoreExcept
 		this.scopeBindingNames = join.getBindingNames();
 
 		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
+
+		// Initialize with empty iteration so that var is not null
+		rightIter = new EmptyIteration<BindingSet, StoreException>();
 	}
 
 	/*---------*
@@ -64,12 +68,14 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, StoreExcept
 	protected BindingSet getNextElement()
 		throws StoreException
 	{
-		while (rightIter != null || leftIter.hasNext()) {
+		while (rightIter.hasNext() || leftIter.hasNext()) {
 			BindingSet leftBindings = null;
 
-			if (rightIter == null) {
+			if (!rightIter.hasNext()) {
 				// Use left arg's bindings in case join fails
 				leftBindings = leftIter.next();
+
+				rightIter.close();
 				rightIter = strategy.evaluate(join.getRightArg(), leftBindings);
 			}
 
@@ -96,9 +102,6 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, StoreExcept
 				}
 			}
 
-			rightIter.close();
-			rightIter = null;
-
 			if (leftBindings != null) {
 				// Join failed, return left arg's bindings
 				return leftBindings;
@@ -112,13 +115,9 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, StoreExcept
 	protected void handleClose()
 		throws StoreException
 	{
-		if (rightIter != null) {
-			rightIter.close();
-			rightIter = null;
-		}
+		super.handleClose();
 
 		leftIter.close();
-
-		super.handleClose();
+		rightIter.close();
 	}
 }

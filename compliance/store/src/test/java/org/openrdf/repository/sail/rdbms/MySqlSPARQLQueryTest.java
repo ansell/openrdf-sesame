@@ -34,6 +34,9 @@ public class MySqlSPARQLQueryTest extends SPARQLQueryTest {
 	}
 
 	protected Repository newRepository() {
-		return new DatasetRepository(new SailRepository(new MySqlStore("sesame_test")));
+		MySqlStore sail = new MySqlStore("sesame_test");
+		sail.setUser("sesame");
+		sail.setPassword("opensesame");
+		return new DatasetRepository(new SailRepository(sail));
 	}
 }

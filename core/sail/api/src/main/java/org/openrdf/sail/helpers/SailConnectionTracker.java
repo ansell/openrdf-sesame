@@ -37,11 +37,6 @@ public class SailConnectionTracker {
 	 */
 	private final static long DEFAULT_CONNECTION_TIMEOUT = 20000L;
 
-	// Note: the following variable and method are package protected so that they
-	// can be removed when open connections no longer block other connections and
-	// they can be closed silently (just like in JDBC).
-	private static final String DEBUG_PROP = "org.openrdf.repository.debug";
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -63,18 +58,6 @@ public class SailConnectionTracker {
 	 * Methods *
 	 *---------*/
 
-	public boolean isDebugEnabled() {
-		try {
-			String value = System.getProperty(DEBUG_PROP);
-			return value != null && !value.equals("false");
-		}
-		catch (SecurityException e) {
-			// Thrown when not allowed to read system properties, for example when
-			// running in applets
-			return false;
-		}
-	}
-
 	public long getTimeOut() {
 		return connectionTimeOut;
 	}
@@ -89,7 +72,7 @@ public class SailConnectionTracker {
 	public SailConnection track(SailConnection connection)
 		throws StoreException
 	{
-		Throwable stackTrace = isDebugEnabled() ? new Throwable() : null;
+		Throwable stackTrace = SailUtil.isDebugEnabled() ? new Throwable() : null;
 		connection = new TrackingSailConnection(connection, this);
 		activeConnections.put(connection, stackTrace);
 		return connection;
@@ -128,7 +111,7 @@ public class SailConnectionTracker {
 				if (stackTrace == null) {
 					logger.warn(
 							"Closing active connection due to shut down; consider setting the {} system property",
-							DEBUG_PROP);
+							SailUtil.DEBUG_PROP);
 				}
 				else {
 					logger.warn("Closing active connection due to shut down, connection was acquired in",

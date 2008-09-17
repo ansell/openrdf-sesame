@@ -11,8 +11,9 @@ import static org.openrdf.sail.nativerdf.config.NativeStoreSchema.TRIPLE_INDEXES
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.ModelUtilException;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfigBase;
 
@@ -68,11 +69,11 @@ public class NativeStoreConfig extends SailImplConfigBase {
 	}
 
 	@Override
-	public Resource export(Model model)
-	{
+	public Resource export(Model model) {
 		Resource implNode = super.export(model);
 
-		ValueFactoryImpl vf = new ValueFactoryImpl();
+		ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
+
 		if (tripleIndexes != null) {
 			model.add(implNode, TRIPLE_INDEXES, vf.createLiteral(tripleIndexes));
 		}
@@ -90,13 +91,13 @@ public class NativeStoreConfig extends SailImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			for (Value obj : model.objects(implNode, TRIPLE_INDEXES)) {
-				Literal tripleIndexLit = (Literal)obj;
+			Literal tripleIndexLit = ModelUtil.getOptionalObjectLiteral(model, implNode, TRIPLE_INDEXES);
+			if (tripleIndexLit != null) {
 				setTripleIndexes((tripleIndexLit).getLabel());
 			}
 
-			for (Value obj : model.objects(implNode, FORCE_SYNC)) {
-				Literal forceSyncLit = (Literal)obj;
+			Literal forceSyncLit = ModelUtil.getOptionalObjectLiteral(model, implNode, FORCE_SYNC);
+			if (forceSyncLit != null) {
 				try {
 					setForceSync(forceSyncLit.booleanValue());
 				}
@@ -106,10 +107,7 @@ public class NativeStoreConfig extends SailImplConfigBase {
 				}
 			}
 		}
-		catch (SailConfigException e) {
-			throw e;
-		}
-		catch (Exception e) {
+		catch (ModelUtilException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

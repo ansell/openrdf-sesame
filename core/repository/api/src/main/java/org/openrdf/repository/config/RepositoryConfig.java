@@ -13,9 +13,10 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.ModelUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 
@@ -113,7 +114,7 @@ public class RepositoryConfig {
 	}
 
 	public void export(Model model) {
-		ValueFactory vf = new ValueFactoryImpl();
+		ValueFactory vf = ValueFactoryImpl.getInstance();
 
 		BNode repositoryNode = vf.createBNode();
 
@@ -135,29 +136,29 @@ public class RepositoryConfig {
 		throws RepositoryConfigException
 	{
 		try {
-			for (Value obj : model.objects(repositoryNode, REPOSITORYID)) {
-				Literal idLit = (Literal)obj;
+			Literal idLit = ModelUtil.getOptionalObjectLiteral(model, repositoryNode, REPOSITORYID);
+			if (idLit != null) {
 				setID(idLit.getLabel());
 			}
 
-			for (Value obj : model.objects(repositoryNode, RDFS.LABEL)) {
-				Literal titleLit = (Literal)obj;
+			Literal titleLit = ModelUtil.getOptionalObjectLiteral(model, repositoryNode, RDFS.LABEL);
+			if (titleLit != null) {
 				setTitle(titleLit.getLabel());
 			}
 
-			for (Value obj : model.objects(repositoryNode, REPOSITORYIMPL)) {
-				Resource implNode = (Resource)obj;
+			Resource implNode = ModelUtil.getOptionalObjectResource(model, repositoryNode, REPOSITORYIMPL);
+			if (implNode != null) {
 				setRepositoryImplConfig(RepositoryImplConfigBase.create(model, implNode));
 			}
 		}
-		catch (Exception e) {
+		catch (ModelUtilException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}
 
 	/**
 	 * Creates a new <tt>RepositoryConfig</tt> object and initializes it by
-	 * supplying the <tt>graph</tt> and <tt>repositoryNode</tt> to its
+	 * supplying the <tt>model</tt> and <tt>repositoryNode</tt> to its
 	 * {@link #parse(Model, Resource) parse} method.
 	 * 
 	 * @param model

@@ -13,23 +13,26 @@ import org.openrdf.query.parser.QueryParserUtil;
 
 public class CoreSPARQLSyntaxTest extends SPARQLSyntaxTest {
 
-	public static Test suite() throws Exception {
+	public static Test suite()
+		throws Exception
+	{
 		return SPARQLSyntaxTest.suite(new Factory() {
-			public SPARQLSyntaxTest createSPARQLSyntaxTest(String testURI,
-					String testName, String testAction, boolean positiveTest) {
-				return new CoreSPARQLSyntaxTest(testURI, testName, testAction,
-						positiveTest);
+
+			public SPARQLSyntaxTest createSPARQLSyntaxTest(String testURI, String testName, String testAction,
+					boolean positiveTest)
+			{
+				return new CoreSPARQLSyntaxTest(testURI, testName, testAction, positiveTest);
 			}
 		});
 	}
 
-	public CoreSPARQLSyntaxTest(String testURI, String name,
-			String queryFileURL, boolean positiveTest) {
+	public CoreSPARQLSyntaxTest(String testURI, String name, String queryFileURL, boolean positiveTest) {
 		super(testURI, name, queryFileURL, positiveTest);
 	}
 
 	protected void parseQuery(String query, String queryFileURL)
-			throws MalformedQueryException {
+		throws MalformedQueryException
+	{
 		QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, queryFileURL);
 	}
 }

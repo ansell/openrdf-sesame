@@ -13,8 +13,9 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.ModelUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
 
@@ -77,14 +78,16 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		Resource implNode = super.export(model);
 
 		if (url != null) {
-			model.add(implNode, REPOSITORYURL, new ValueFactoryImpl().createURI(url));
+			model.add(implNode, REPOSITORYURL, ValueFactoryImpl.getInstance().createURI(url));
 		}
-//		if (username != null) {
-//			graph.add(implNode, USERNAME, graph.getValueFactory().createLiteral(username));
-//		}
-//		if (password != null) {
-//			graph.add(implNode, PASSWORD, graph.getValueFactory().createLiteral(password));
-//		}
+		// if (username != null) {
+		// graph.add(implNode, USERNAME,
+		// graph.getValueFactory().createLiteral(username));
+		// }
+		// if (password != null) {
+		// graph.add(implNode, PASSWORD,
+		// graph.getValueFactory().createLiteral(password));
+		// }
 
 		return implNode;
 	}
@@ -96,20 +99,20 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			for (Value obj : model.objects(implNode, REPOSITORYURL)) {
-				URI uri = (URI)obj;
+			URI uri = ModelUtil.getOptionalObjectURI(model, implNode, REPOSITORYURL);
+			if (uri != null) {
 				setURL(uri.toString());
 			}
-			for (Value obj : model.objects(implNode, USERNAME)) {
-				Literal username = (Literal)obj;
+			Literal username = ModelUtil.getOptionalObjectLiteral(model, implNode, USERNAME);
+			if (username != null) {
 				setUsername(username.getLabel());
 			}
-			for (Value obj : model.objects(implNode, PASSWORD)) {
-				Literal password = (Literal)obj;
+			Literal password = ModelUtil.getOptionalObjectLiteral(model, implNode, PASSWORD);
+			if (password != null) {
 				setPassword(password.getLabel());
 			}
 		}
-		catch (Exception e) {
+		catch (ModelUtilException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}

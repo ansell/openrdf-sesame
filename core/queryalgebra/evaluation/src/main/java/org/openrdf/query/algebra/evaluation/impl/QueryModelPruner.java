@@ -50,8 +50,9 @@ public class QueryModelPruner implements QueryOptimizer {
 			super.meet(join);
 			for (TupleExpr arg : join.getArgs()) {
 				if (arg instanceof SingletonSet) {
-					join.removeChildNode(arg);
-				} else if (arg instanceof EmptySet) {
+					join.removeArg(arg);
+				}
+				else if (arg instanceof EmptySet) {
 					join.replaceWith(new EmptySet());
 					return;
 				}
@@ -100,9 +101,10 @@ public class QueryModelPruner implements QueryOptimizer {
 		@Override
 		public void meet(Union union) {
 			super.meet(union);
+
 			for (TupleExpr arg : union.getArgs()) {
 				if (arg instanceof EmptySet) {
-					union.removeChildNode(arg);
+					union.removeArg(arg);
 				}
 			}
 			for (TupleExpr arg : union.getArgs()) {

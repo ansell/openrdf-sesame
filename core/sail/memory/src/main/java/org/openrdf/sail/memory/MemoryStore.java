@@ -30,6 +30,7 @@ import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.NotifyingSailBase;
+import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.sail.helpers.SynchronizedSailConnection;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
@@ -170,8 +171,6 @@ public class MemoryStore extends NotifyingSailBase {
 	 */
 	private final Object snapshotCleanupThreadSemaphore = new Object();
 
-	private boolean trackLocks = false;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -275,8 +274,8 @@ public class MemoryStore extends NotifyingSailBase {
 
 		logger.debug("Initializing MemoryStore...");
 
-		statementListLockManager = new ReadPrefReadWriteLockManager(trackLocks);
-		txnLockManager = new ExclusiveLockManager(trackLocks);
+		statementListLockManager = new ReadPrefReadWriteLockManager(SailUtil.isDebugEnabled());
+		txnLockManager = new ExclusiveLockManager(SailUtil.isDebugEnabled());
 		namespaceStore = new MemNamespaceStore();
 
 		valueFactory = new MemValueFactory();
@@ -309,7 +308,7 @@ public class MemoryStore extends NotifyingSailBase {
 				}
 				else {
 					try {
-						FileIO.read(this, dataFile);
+						new FileIO(this).read(dataFile);
 						logger.debug("Data file read successfully");
 					}
 					catch (IOException e) {
@@ -333,10 +332,14 @@ public class MemoryStore extends NotifyingSailBase {
 					dirLock = locker.lockOrFail();
 
 					logger.debug("Initializing data file...");
-					FileIO.write(this, syncFile, dataFile);
+					new FileIO(this).write(syncFile, dataFile);
 					logger.debug("Data file initialized");
 				}
 				catch (IOException e) {
+					logger.debug("Failed to initialize data file", e);
+					throw new StoreException("Failed to initialize data file " + dataFile, e);
+				}
+				catch (StoreException e) {
 					logger.debug("Failed to initialize data file", e);
 					throw new StoreException("Failed to initialize data file " + dataFile, e);
 				}
@@ -455,8 +458,8 @@ public class MemoryStore extends NotifyingSailBase {
 	/**
 	 * Creates a StatementIterator that contains the statements matching the
 	 * specified pattern of subject, predicate, object, context. Inferred
-	 * statements are excluded when <tt>explicitOnly</tt> is set to
-	 * <tt>true</tt>. Statements from the null context are excluded when
+	 * statements are excluded when <tt>explicitOnly</tt> is set to <tt>true</tt>
+	 * . Statements from the null context are excluded when
 	 * <tt>namedContextsOnly</tt> is set to <tt>true</tt>. The returned
 	 * StatementIterator will assume the specified read mode.
 	 */
@@ -757,7 +760,8 @@ public class MemoryStore extends NotifyingSailBase {
 		for (MemStatement st : txnStatements.keySet()) {
 			TxnStatus txnStatus = st.getTxnStatus();
 			if (txnStatus == TxnStatus.NEW || txnStatus == TxnStatus.ZOMBIE) {
-				// Statement has been added during this transaction and deprecates immediately
+				// Statement has been added during this transaction and deprecates
+				// immediately
 				st.setTillSnapshot(currentSnapshot);
 			}
 			else if (txnStatus != TxnStatus.NEUTRAL) {
@@ -850,7 +854,7 @@ public class MemoryStore extends NotifyingSailBase {
 			if (persist && contentsChanged) {
 				logger.debug("syncing data to file...");
 				try {
-					FileIO.write(this, syncFile, dataFile);
+					new FileIO(this).write(syncFile, dataFile);
 					contentsChanged = false;
 					logger.debug("Data synced to file");
 				}

@@ -15,6 +15,7 @@ import static org.openrdf.query.dawg.DAWGTestResultSetSchema.VARIABLE;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
@@ -81,16 +82,19 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	public void endRDF()
 		throws RDFHandlerException
 	{
-		try {
-			Resource resultSetNode = model.subjects(RDF.TYPE, RESULTSET).iterator().next();
+		Set<Resource> resultSetNodes = model.subjects(RDF.TYPE, RESULTSET);
+		if (resultSetNodes.size() != 1) {
+			throw new RDFHandlerException("Expected 1 subject of type ResultSet, found: "
+					+ resultSetNodes.size());
+		}
 
+		Resource resultSetNode = resultSetNodes.iterator().next();
+		
+		try {
 			List<String> bindingNames = getBindingNames(resultSetNode);
 			tqrHandler.startQueryResult(bindingNames);
 
-			Iterator<Value> solIter = model.objects(resultSetNode, SOLUTION).iterator();
-			while (solIter.hasNext()) {
-				Value solutionNode = solIter.next();
-
+			for (Value solutionNode : model.objects(resultSetNode, SOLUTION)) {
 				if (solutionNode instanceof Resource) {
 					reportSolution((Resource)solutionNode, bindingNames);
 				}
@@ -101,13 +105,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 
 			tqrHandler.endQueryResult();
 		}
-		catch (RDFHandlerException e) {
-			throw e;
-		}
 		catch (TupleQueryResultHandlerException e) {
-			throw new RDFHandlerException(e.getMessage(), e);
-		}
-		catch (Exception e) {
 			throw new RDFHandlerException(e.getMessage(), e);
 		}
 	}

@@ -17,23 +17,29 @@ import org.openrdf.sail.rdbms.postgresql.PgSqlStore;
 
 public class PgSqlSPARQLQueryTest extends SPARQLQueryTest {
 
-	public static Test suite() throws Exception {
+	public static Test suite()
+		throws Exception
+	{
 		return ManifestTest.suite(new Factory() {
-			public PgSqlSPARQLQueryTest createSPARQLQueryTest(String testURI,
-					String name, String queryFileURL, String resultFileURL,
-					Dataset dataSet) {
-				return new PgSqlSPARQLQueryTest(testURI, name, queryFileURL,
-						resultFileURL, dataSet);
+
+			public PgSqlSPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+					String resultFileURL, Dataset dataSet)
+			{
+				return new PgSqlSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet);
 			}
 		});
 	}
 
-	protected PgSqlSPARQLQueryTest(String testURI, String name,
-			String queryFileURL, String resultFileURL, Dataset dataSet) {
+	protected PgSqlSPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
+			Dataset dataSet)
+	{
 		super(testURI, name, queryFileURL, resultFileURL, dataSet);
 	}
 
 	protected Repository newRepository() {
-		return new DatasetRepository(new SailRepository(new PgSqlStore("sesame_test")));
+		PgSqlStore sail = new PgSqlStore("sesame_test");
+		sail.setUser("sesame");
+		sail.setPassword("opensesame");
+		return new DatasetRepository(new SailRepository(sail));
 	}
 }

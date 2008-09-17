@@ -15,6 +15,7 @@ import org.openrdf.model.Value;
  * A context operation with (optional) subject, predicate, object.
  * 
  * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 public abstract class StatementOperation extends ContextOperation {
 

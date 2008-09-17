@@ -33,6 +33,7 @@ import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.NotifyingSailBase;
+import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.sail.helpers.SynchronizedSailConnection;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
@@ -77,8 +78,6 @@ public class NativeStore extends NotifyingSailBase {
 	 * Lock manager used to prevent concurrent transactions.
 	 */
 	private ExclusiveLockManager txnLockManager;
-
-	private boolean trackLocks = false;
 
 	/**
 	 * Flag indicating whether the Sail has been initialized.
@@ -168,8 +167,8 @@ public class NativeStore extends NotifyingSailBase {
 
 		logger.debug("Initializing NativeStore...");
 
-		storeLockManager = new WritePrefReadWriteLockManager(trackLocks);
-		txnLockManager = new ExclusiveLockManager(trackLocks);
+		storeLockManager = new WritePrefReadWriteLockManager(SailUtil.isDebugEnabled());
+		txnLockManager = new ExclusiveLockManager(SailUtil.isDebugEnabled());
 
 		// Check initialization parameters
 		File dataDir = getDataDir();

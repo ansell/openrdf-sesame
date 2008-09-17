@@ -1,11 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.StoreException;
@@ -36,14 +37,16 @@ public class JoinIterator extends LookAheadIteration<BindingSet, StoreException>
 	 * Constructors *
 	 *--------------*/
 
-	public JoinIterator(EvaluationStrategy strategy,
-			CloseableIteration<BindingSet, StoreException> leftIter, TupleExpr rightArg,
-			BindingSet bindings)
+	public JoinIterator(EvaluationStrategy strategy, CloseableIteration<BindingSet, StoreException> leftIter,
+			TupleExpr rightArg, BindingSet bindings)
 		throws EvaluationException
 	{
 		this.strategy = strategy;
 		this.leftIter = leftIter;
 		this.rightArg = rightArg;
+
+		// Initialize with empty iteration so that var is not null
+		rightIter = new EmptyIteration<BindingSet, StoreException>();
 	}
 
 	/*---------*
@@ -54,17 +57,16 @@ public class JoinIterator extends LookAheadIteration<BindingSet, StoreException>
 	protected BindingSet getNextElement()
 		throws StoreException
 	{
-		while (rightIter != null || leftIter.hasNext()) {
-			if (rightIter == null) {
-				rightIter = strategy.evaluate(rightArg, leftIter.next());
-			}
-
+		while (rightIter.hasNext() || leftIter.hasNext()) {
 			if (rightIter.hasNext()) {
 				return rightIter.next();
 			}
-			else {
-				rightIter.close();
-				rightIter = null;
+
+			// Right iteration exhausted
+			rightIter.close();
+
+			if (leftIter.hasNext()) {
+				rightIter = strategy.evaluate(rightArg, leftIter.next());
 			}
 		}
 
@@ -75,13 +77,9 @@ public class JoinIterator extends LookAheadIteration<BindingSet, StoreException>
 	protected void handleClose()
 		throws StoreException
 	{
-		if (rightIter != null) {
-			rightIter.close();
-			rightIter = null;
-		}
+		super.handleClose();
 
 		leftIter.close();
-
-		super.handleClose();
+		rightIter.close();
 	}
 }

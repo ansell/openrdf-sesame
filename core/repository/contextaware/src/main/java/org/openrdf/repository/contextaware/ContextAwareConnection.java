@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.reflect.Method;
 import java.net.URL;
 
 import info.aduna.iteration.CloseableIteration;
@@ -48,7 +47,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 	private boolean includeInferred = true;
 
-	private long maxQueryTime;
+	private int maxQueryTime;
 
 	private QueryLanguage ql = QueryLanguage.SPARQL;
 
@@ -83,7 +82,6 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		return includeInferred;
 	}
 
-
 	/**
 	 * if false, no inferred statements are considered; if true, inferred
 	 * statements are considered if available
@@ -92,11 +90,11 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		this.includeInferred = includeInferred;
 	}
 
-	public long getMaxQueryTime() {
+	public int getMaxQueryTime() {
 		return maxQueryTime;
 	}
 
-	public void setMaxQueryTime(long maxQueryTime) {
+	public void setMaxQueryTime(int maxQueryTime) {
 		this.maxQueryTime = maxQueryTime;
 	}
 
@@ -190,7 +188,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.add(file, baseURI, dataFormat, addContexts);
-		} else {
+		}
+		else {
 			super.add(file, baseURI, dataFormat, contexts);
 		}
 	}
@@ -201,7 +200,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.add(in, baseURI, dataFormat, addContexts);
-		} else {
+		}
+		else {
 			super.add(in, baseURI, dataFormat, contexts);
 		}
 	}
@@ -212,18 +212,21 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.add(statements, addContexts);
-		} else {
+		}
+		else {
 			super.add(statements, contexts);
 		}
 	}
 
 	@Override
-	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter, Resource... contexts)
+	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
+			Resource... contexts)
 		throws StoreException, E
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.add(statementIter, addContexts);
-		} else {
+		}
+		else {
 			super.add(statementIter, contexts);
 		}
 	}
@@ -234,7 +237,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.add(reader, baseURI, dataFormat, addContexts);
-		} else {
+		}
+		else {
 			super.add(reader, baseURI, dataFormat, contexts);
 		}
 	}
@@ -245,7 +249,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.add(subject, predicate, object, addContexts);
-		} else {
+		}
+		else {
 			super.add(subject, predicate, object, contexts);
 		}
 	}
@@ -256,7 +261,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.add(st, addContexts);
-		} else {
+		}
+		else {
 			super.add(st, contexts);
 		}
 	}
@@ -267,7 +273,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.add(url, baseURI, dataFormat, addContexts);
-		} else {
+		}
+		else {
 			super.add(url, baseURI, dataFormat, contexts);
 		}
 	}
@@ -278,7 +285,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.clear(removeContexts);
-		} else {
+		}
+		else {
 			super.clear(contexts);
 		}
 	}
@@ -289,7 +297,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.export(handler, readContexts);
-		} else {
+		}
+		else {
 			super.export(handler, contexts);
 		}
 	}
@@ -316,7 +325,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.exportStatements(subj, pred, obj, includeInferred, hander, readContexts);
-		} else {
+		}
+		else {
 			super.exportStatements(subj, pred, obj, includeInferred, hander, contexts);
 		}
 	}
@@ -327,8 +337,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * of named contexts.
 	 * 
 	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a
-	 *        wildcard.
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
 	 * @param pred
 	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
 	 * @param obj
@@ -346,7 +355,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			return super.getStatements(subj, pred, obj, includeInferred, readContexts);
-		} else {
+		}
+		else {
 			return super.getStatements(subj, pred, obj, includeInferred, contexts);
 		}
 	}
@@ -356,8 +366,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * predicate and/or object, optionally in the specified contexts.
 	 * 
 	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a
-	 *        wildcard.
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
 	 * @param pred
 	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
 	 * @param obj
@@ -372,7 +381,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			return super.hasStatement(subj, pred, obj, includeInferred, readContexts);
-		} else {
+		}
+		else {
 			return super.hasStatement(subj, pred, obj, includeInferred, contexts);
 		}
 	}
@@ -394,7 +404,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			return super.hasStatement(st, includeInferred, readContexts);
-		} else {
+		}
+		else {
 			return super.hasStatement(st, includeInferred, contexts);
 		}
 	}
@@ -479,7 +490,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.remove(statements, removeContexts);
-		} else {
+		}
+		else {
 			super.remove(statements, contexts);
 		}
 	}
@@ -499,12 +511,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getRemoveContexts()
 	 */
 	@Override
-	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter, Resource... contexts)
+	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
+			Resource... contexts)
 		throws StoreException, E
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.remove(statementIter, removeContexts);
-		} else {
+		}
+		else {
 			super.remove(statementIter, contexts);
 		}
 	}
@@ -530,7 +544,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.remove(subject, predicate, object, removeContexts);
-		} else {
+		}
+		else {
 			super.remove(subject, predicate, object, contexts);
 		}
 	}
@@ -552,7 +567,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			super.remove(st, removeContexts);
-		} else {
+		}
+		else {
 			super.remove(st, contexts);
 		}
 	}
@@ -571,20 +587,24 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		if (contexts == null || contexts.length < 1) {
 			return super.size(readContexts);
-		} else {
+		}
+		else {
 			return super.size(contexts);
 		}
 	}
 
 	@Override
-	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts) throws StoreException {
+	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws StoreException
+	{
 		RDFHandler handler = new RDFInserter(getDelegate());
 		try {
-			getDelegate().exportStatements(subject, predicate, object, true,
-					handler, archiveContexts);
-		} catch (RDFHandlerException e) {
-			if (e.getCause() instanceof StoreException)
-				throw (StoreException) e.getCause();
+			getDelegate().exportStatements(subject, predicate, object, true, handler, archiveContexts);
+		}
+		catch (RDFHandlerException e) {
+			if (e.getCause() instanceof StoreException) {
+				throw (StoreException)e.getCause();
+			}
 			throw new AssertionError(e);
 		}
 		getDelegate().remove(subject, predicate, object, contexts);
@@ -598,16 +618,11 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			}
 			query.setDataset(ds);
 		}
+
 		query.setIncludeInferred(includeInferred);
-		// TODO preparedQuery.setMaxQueryTime(maxQueryTime);
-		try {
-			Class<? extends Query> c = query.getClass();
-			Method setMaxQueryTime = c.getMethod("setMaxQueryTime", Long.TYPE);
-			setMaxQueryTime.invoke(query, maxQueryTime);
-		}
-		catch (Exception e) {
-			// TODO remove this reflection
-		}
+
+		query.setMaxQueryTime(maxQueryTime);
+
 		return query;
 	}
 

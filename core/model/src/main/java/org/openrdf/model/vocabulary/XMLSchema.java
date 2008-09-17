@@ -162,8 +162,8 @@ public class XMLSchema {
 	public final static URI UNSIGNED_BYTE;
 
 	static {
-		ValueFactory factory = new ValueFactoryImpl();
-		
+		ValueFactory factory = ValueFactoryImpl.getInstance();
+
 		DURATION = factory.createURI(XMLSchema.NAMESPACE, "duration");
 
 		DATETIME = factory.createURI(XMLSchema.NAMESPACE, "dateTime");

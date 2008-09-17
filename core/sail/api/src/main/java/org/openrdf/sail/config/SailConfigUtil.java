@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,7 +8,8 @@ package org.openrdf.sail.config;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.ModelUtilException;
 
 public class SailConfigUtil {
 
@@ -16,9 +17,9 @@ public class SailConfigUtil {
 		throws SailConfigException
 	{
 		try {
-			for (Value obj : model.objects(implNode, SailConfigSchema.SAILTYPE)) {
-				Literal typeLit = (Literal)obj;
+			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, SailConfigSchema.SAILTYPE);
 
+			if (typeLit != null) {
 				SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
 
 				if (factory != null) {
@@ -33,10 +34,7 @@ public class SailConfigUtil {
 
 			return null;
 		}
-		catch (SailConfigException e) {
-			throw e;
-		}
-		catch (Exception e) {
+		catch (ModelUtilException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

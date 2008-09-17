@@ -7,12 +7,18 @@ package org.openrdf.sail.memory;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -40,11 +46,18 @@ import org.openrdf.sail.memory.model.ReadMode;
  */
 class FileIO {
 
+	/*-----------*
+	 * Constants *
+	 *-----------*/
+
 	/** Magic number for Binary Memory Store Files */
 	private static final byte[] MAGIC_NUMBER = new byte[] { 'B', 'M', 'S', 'F' };
 
 	/** The version number of the current format. */
-	private static final int BMSF_VERSION = 1;
+	// Version 1: initial version
+	// Version 2: don't use read/writeUTF() to remove 64k limit on strings,
+	// removed dummy "up-to-date status" boolean for namespace records
+	private static final int BMSF_VERSION = 2;
 
 	/* RECORD TYPES */
 	public static final int NAMESPACE_MARKER = 1;
@@ -69,12 +82,38 @@ class FileIO {
 
 	public static final int EOF_MARKER = 127;
 
-	public static void write(MemoryStore store, File syncFile, File dataFile)
+	/*-----------*
+	 * Variables *
+	 *-----------*/
+
+	private final MemoryStore store;
+
+	private final CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
+
+	private final CharsetDecoder charsetDecoder = Charset.forName("UTF-8").newDecoder();
+
+	private int formatVersion;
+
+	/*--------------*
+	 * Constructors *
+	 *--------------*/
+
+	public FileIO(MemoryStore store) {
+		this.store = store;
+	}
+
+	/*---------*
+	 * Methods *
+	 *---------*/
+
+	public synchronized void write(File syncFile, File dataFile)
 		throws IOException, StoreException
 	{
-		write(store, syncFile);
-		// prefer atom renameTo operations
+		write(syncFile);
+
+		// prefer atomic renameTo operations
 		boolean renamed = syncFile.renameTo(dataFile);
+
 		if (!renamed) {
 			// tolerate renameTo that does not work if destination exists
 			if (syncFile.exists() && dataFile.exists()) {
@@ -82,6 +121,7 @@ class FileIO {
 				renamed = syncFile.renameTo(dataFile);
 			}
 		}
+
 		if (!renamed) {
 			String path = syncFile.getAbsolutePath();
 			String name = dataFile.getName();
@@ -89,7 +129,7 @@ class FileIO {
 		}
 	}
 
-	public static void write(MemoryStore store, File dataFile)
+	private synchronized void write(File dataFile)
 		throws IOException, StoreException
 	{
 		OutputStream out = new FileOutputStream(dataFile);
@@ -102,9 +142,9 @@ class FileIO {
 			DataOutputStream dataOut = new DataOutputStream(new GZIPOutputStream(out));
 			out = dataOut;
 
-			writeNamespaces(store, dataOut);
+			writeNamespaces(dataOut);
 
-			writeStatements(store, dataOut);
+			writeStatements(dataOut);
 
 			dataOut.writeByte(EOF_MARKER);
 		}
@@ -113,7 +153,7 @@ class FileIO {
 		}
 	}
 
-	public static void read(MemoryStore store, File dataFile)
+	public void read(File dataFile)
 		throws IOException
 	{
 		InputStream in = new FileInputStream(dataFile);
@@ -123,9 +163,9 @@ class FileIO {
 				throw new IOException("File is not a binary MemoryStore file");
 			}
 
-			int version = in.read();
-			if (version != BMSF_VERSION) {
-				throw new IOException("Incompatible format version: " + version);
+			formatVersion = in.read();
+			if (formatVersion > BMSF_VERSION || formatVersion < 1) {
+				throw new IOException("Incompatible format version: " + formatVersion);
 			}
 
 			// The rest of the data is GZIP-compressed
@@ -136,19 +176,19 @@ class FileIO {
 			while ((recordTypeMarker = dataIn.readByte()) != EOF_MARKER) {
 				switch (recordTypeMarker) {
 					case NAMESPACE_MARKER:
-						readNamespace(store, dataIn);
+						readNamespace(dataIn);
 						break;
 					case EXPL_TRIPLE_MARKER:
-						readStatement(store, false, true, dataIn);
+						readStatement(false, true, dataIn);
 						break;
 					case EXPL_QUAD_MARKER:
-						readStatement(store, true, true, dataIn);
+						readStatement(true, true, dataIn);
 						break;
 					case INF_TRIPLE_MARKER:
-						readStatement(store, false, false, dataIn);
+						readStatement(false, false, dataIn);
 						break;
 					case INF_QUAD_MARKER:
-						readStatement(store, true, false, dataIn);
+						readStatement(true, false, dataIn);
 						break;
 					default:
 						throw new IOException("Invalid record type marker: " + recordTypeMarker);
@@ -160,34 +200,31 @@ class FileIO {
 		}
 	}
 
-	private static void writeNamespaces(MemoryStore store, DataOutputStream dataOut)
+	private void writeNamespaces(DataOutputStream dataOut)
 		throws IOException
 	{
 		for (Namespace ns : store.getNamespaceStore()) {
 			dataOut.writeByte(NAMESPACE_MARKER);
-			dataOut.writeUTF(ns.getPrefix());
-			dataOut.writeUTF(ns.getName());
-
-			// FIXME dummy boolean to be compatible with older version:
-			// the up-to-date status is no longer relevant
-			dataOut.writeBoolean(true);
+			writeString(ns.getPrefix(), dataOut);
+			writeString(ns.getName(), dataOut);
 		}
 	}
 
-	private static void readNamespace(MemoryStore store, DataInputStream dataIn)
+	private void readNamespace(DataInputStream dataIn)
 		throws IOException
 	{
-		String prefix = dataIn.readUTF();
-		String name = dataIn.readUTF();
+		String prefix = readString(dataIn);
+		String name = readString(dataIn);
 
-		// FIXME dummy boolean to be compatible with older version:
-		// the up-to-date status is no longer relevant
-		dataIn.readBoolean();
+		if (formatVersion <= 1) {
+			// the up-to-date status is no longer relevant
+			dataIn.readBoolean();
+		}
 
 		store.getNamespaceStore().setNamespace(prefix, name);
 	}
 
-	private static void writeStatements(MemoryStore store, DataOutputStream dataOut)
+	private void writeStatements(DataOutputStream dataOut)
 		throws IOException, StoreException
 	{
 		CloseableIteration<MemStatement, StoreException> stIter = store.createStatementIterator(
@@ -228,33 +265,33 @@ class FileIO {
 		}
 	}
 
-	private static void readStatement(MemoryStore store, boolean hasContext, boolean isExplicit,
-			DataInputStream dataIn)
+	private void readStatement(boolean hasContext, boolean isExplicit, DataInputStream dataIn)
 		throws IOException, ClassCastException
 	{
-		MemResource memSubj = (MemResource)readValue(store, dataIn);
-		MemURI memPred = (MemURI)readValue(store, dataIn);
-		MemValue memObj = (MemValue)readValue(store, dataIn);
+		MemResource memSubj = (MemResource)readValue(dataIn);
+		MemURI memPred = (MemURI)readValue(dataIn);
+		MemValue memObj = (MemValue)readValue(dataIn);
 		MemResource memContext = null;
 		if (hasContext) {
-			memContext = (MemResource)readValue(store, dataIn);
+			memContext = (MemResource)readValue(dataIn);
 		}
 
-		MemStatement st = new MemStatement(memSubj, memPred, memObj, memContext, isExplicit, store.getCurrentSnapshot());
+		MemStatement st = new MemStatement(memSubj, memPred, memObj, memContext, isExplicit,
+				store.getCurrentSnapshot());
 		store.getStatements().add(st);
 		st.addToComponentLists();
 	}
 
-	private static void writeValue(Value value, DataOutputStream dataOut)
+	private void writeValue(Value value, DataOutputStream dataOut)
 		throws IOException
 	{
 		if (value instanceof URI) {
 			dataOut.writeByte(URI_MARKER);
-			dataOut.writeUTF(((URI)value).toString());
+			writeString(((URI)value).toString(), dataOut);
 		}
 		else if (value instanceof BNode) {
 			dataOut.writeByte(BNODE_MARKER);
-			dataOut.writeUTF(((BNode)value).getID());
+			writeString(((BNode)value).getID(), dataOut);
 		}
 		else if (value instanceof Literal) {
 			Literal lit = (Literal)value;
@@ -265,17 +302,17 @@ class FileIO {
 
 			if (datatype != null) {
 				dataOut.writeByte(DATATYPE_LITERAL_MARKER);
-				dataOut.writeUTF(label);
+				writeString(label, dataOut);
 				writeValue(datatype, dataOut);
 			}
 			else if (language != null) {
 				dataOut.writeByte(LANG_LITERAL_MARKER);
-				dataOut.writeUTF(label);
-				dataOut.writeUTF(language);
+				writeString(label, dataOut);
+				writeString(language, dataOut);
 			}
 			else {
 				dataOut.writeByte(PLAIN_LITERAL_MARKER);
-				dataOut.writeUTF(label);
+				writeString(label, dataOut);
 			}
 		}
 		else {
@@ -283,35 +320,86 @@ class FileIO {
 		}
 	}
 
-	private static Value readValue(MemoryStore store, DataInputStream dataIn)
+	private Value readValue(DataInputStream dataIn)
 		throws IOException, ClassCastException
 	{
 		int valueTypeMarker = dataIn.readByte();
 
 		if (valueTypeMarker == URI_MARKER) {
-			String uriString = dataIn.readUTF();
+			String uriString = readString(dataIn);
 			return store.getValueFactory().createURI(uriString);
 		}
 		else if (valueTypeMarker == BNODE_MARKER) {
-			String bnodeID = dataIn.readUTF();
+			String bnodeID = readString(dataIn);
 			return store.getValueFactory().createBNode(bnodeID);
 		}
 		else if (valueTypeMarker == PLAIN_LITERAL_MARKER) {
-			String label = dataIn.readUTF();
+			String label = readString(dataIn);
 			return store.getValueFactory().createLiteral(label);
 		}
 		else if (valueTypeMarker == LANG_LITERAL_MARKER) {
-			String label = dataIn.readUTF();
-			String language = dataIn.readUTF();
+			String label = readString(dataIn);
+			String language = readString(dataIn);
 			return store.getValueFactory().createLiteral(label, language);
 		}
 		else if (valueTypeMarker == DATATYPE_LITERAL_MARKER) {
-			String label = dataIn.readUTF();
-			URI datatype = (URI)readValue(store, dataIn);
+			String label = readString(dataIn);
+			URI datatype = (URI)readValue(dataIn);
 			return store.getValueFactory().createLiteral(label, datatype);
 		}
 		else {
 			throw new IOException("Invalid value type marker: " + valueTypeMarker);
 		}
+	}
+
+	private void writeString(String s, DataOutputStream dataOut)
+		throws IOException
+	{
+		ByteBuffer byteBuf = charsetEncoder.encode(CharBuffer.wrap(s));
+		dataOut.writeInt(byteBuf.remaining());
+		dataOut.write(byteBuf.array(), 0, byteBuf.remaining());
+	}
+
+	private String readString(DataInputStream dataIn)
+		throws IOException
+	{
+		if (formatVersion == 1) {
+			return readStringV1(dataIn);
+		}
+		else {
+			return readStringV2(dataIn);
+		}
+	}
+
+	/**
+	 * Reads a string from the version 1 format, i.e. in Java's
+	 * {@link DataInput#modified-utf-8 Modified UTF-8}.
+	 */
+	private String readStringV1(DataInputStream dataIn)
+		throws IOException
+	{
+		return dataIn.readUTF();
+	}
+
+	/**
+	 * Reads a string from the version 2 format. Strings are encoded as UTF-8 and
+	 * are preceeded by a 32-bit integer (high byte first) specifying the length
+	 * of the encoded string.
+	 */
+	private String readStringV2(DataInputStream dataIn)
+		throws IOException
+	{
+		int stringLength = dataIn.readInt();
+		byte[] encodedString = IOUtil.readBytes(dataIn, stringLength);
+
+		if (encodedString.length != stringLength) {
+			throw new EOFException("Attempted to read " + stringLength + " bytes but no more than "
+					+ encodedString.length + " were available");
+		}
+
+		ByteBuffer byteBuf = ByteBuffer.wrap(encodedString);
+		CharBuffer charBuf = charsetDecoder.decode(byteBuf);
+
+		return charBuf.toString();
 	}
 }

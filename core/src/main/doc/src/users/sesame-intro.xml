@@ -37,7 +37,7 @@
 	<para>
 		Rio, which stands for "RDF I/O", consists of a set of parsers and
 		writers for various RDF file formats. The parsers can be used to
-		translate RDF files to lists of statements, and the writers for the
+		translate RDF files to sets of statements, and the writers for the
 		reverse operation. Rio can also be used independent of the rest of
 		Sesame.
 	</para>

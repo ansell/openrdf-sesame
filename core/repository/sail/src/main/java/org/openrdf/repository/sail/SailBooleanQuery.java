@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -25,8 +25,7 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 	}
 
 	@Override
-	public ParsedBooleanQuery getParsedQuery()
-	{
+	public ParsedBooleanQuery getParsedQuery() {
 		return (ParsedBooleanQuery)super.getParsedQuery();
 	}
 
@@ -43,8 +42,10 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 
 		SailConnection sailCon = getConnection().getSailConnection();
 
-		CloseableIteration<? extends BindingSet, StoreException> bindingsIter = sailCon.evaluate(
-				tupleExpr, dataset, getBindings(), getIncludeInferred());
+		CloseableIteration<? extends BindingSet, StoreException> bindingsIter;
+		bindingsIter = sailCon.evaluate(tupleExpr, dataset, getBindings(), getIncludeInferred());
+
+		bindingsIter = enforceMaxQueryTime(bindingsIter);
 
 		try {
 			return bindingsIter.hasNext();

@@ -10,6 +10,7 @@ import java.util.List;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIterationBase;
 import info.aduna.iteration.Iteration;
+import info.aduna.iteration.Iterations;
 
 import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
@@ -46,6 +47,10 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 		this.projections = multiProjection.getProjections();
 		this.iter = iter;
 		this.parentBindings = bindings;
+
+		// initialize out-of-range to enforce a fetch of the first result upon
+		// first use
+		nextProjectionIdx = projections.size();
 	}
 
 	/*---------*
@@ -55,13 +60,13 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 	public boolean hasNext()
 		throws StoreException
 	{
-		return currentBindings != null && nextProjectionIdx < projections.size() || iter.hasNext();
+		return nextProjectionIdx < projections.size() || iter.hasNext();
 	}
 
 	public BindingSet next()
 		throws StoreException
 	{
-		if (currentBindings == null || nextProjectionIdx >= projections.size()) {
+		if (nextProjectionIdx >= projections.size()) {
 			currentBindings = iter.next();
 			nextProjectionIdx = 0;
 		}
@@ -78,8 +83,8 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 	protected void handleClose()
 		throws StoreException
 	{
-		nextProjectionIdx = projections.size();
-		currentBindings = null;
 		super.handleClose();
+		Iterations.closeCloseable(iter);
+		nextProjectionIdx = projections.size();
 	}
 }
