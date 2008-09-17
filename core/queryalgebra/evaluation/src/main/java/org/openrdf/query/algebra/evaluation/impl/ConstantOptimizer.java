@@ -75,14 +75,16 @@ public class ConstantOptimizer implements QueryOptimizer {
 						if (strategy.isTrue(arg, EmptyBindingSet.getInstance())) {
 							or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
 							return;
-						} else {
-							or.removeChildNode(arg);
+						}
+						else {
+							or.removeArg(arg);
 						}
 					}
 				}
 				if (or.getNumberOfArguments() == 0) {
 					or.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
-				} else if (or.getNumberOfArguments() == 1) {
+				}
+				else if (or.getNumberOfArguments() == 1) {
 					or.replaceWith(or.getArg(0));
 				}
 			}
@@ -100,9 +102,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 			try {
 				for (ValueExpr arg : and.getArgs()) {
 					if (isConstant(arg)) {
-						boolean isTrue = strategy.isTrue(arg, EmptyBindingSet.getInstance());
-						if (isTrue) {
-							and.removeChildNode(arg);
+						if (strategy.isTrue(arg, EmptyBindingSet.getInstance())) {
+							and.removeArg(arg);
 						}
 						else {
 							and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
@@ -112,7 +113,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 				}
 				if (and.getNumberOfArguments() == 0) {
 					and.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
-				} else if (and.getNumberOfArguments() == 1) {
+				}
+				else if (and.getNumberOfArguments() == 1) {
 					and.replaceWith(and.getArg(0));
 				}
 			}

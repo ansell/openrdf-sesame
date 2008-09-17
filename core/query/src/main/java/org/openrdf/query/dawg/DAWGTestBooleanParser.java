@@ -8,6 +8,8 @@ package org.openrdf.query.dawg;
 import static org.openrdf.query.dawg.DAWGTestResultSetSchema.BOOLEAN;
 import static org.openrdf.query.dawg.DAWGTestResultSetSchema.RESULTSET;
 
+import java.util.Set;
+
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -63,22 +65,29 @@ public class DAWGTestBooleanParser extends RDFHandlerBase {
 	public void endRDF()
 		throws RDFHandlerException
 	{
-		try {
-			Resource resultSetNode = model.subjects(RDF.TYPE, RESULTSET).iterator().next();
-			Value booleanLit = model.objects(resultSetNode, BOOLEAN).iterator().next();
-
-			if (booleanLit.equals(DAWGTestResultSetSchema.TRUE)) {
-				value = true;
-			}
-			else if (booleanLit.equals(DAWGTestResultSetSchema.FALSE)) {
-				value = false;
-			}
-			else {
-				new RDFHandlerException("Invalid boolean value: " + booleanLit);
-			}
+		Set<Resource> resultSetNodes = model.subjects(RDF.TYPE, RESULTSET);
+		if (resultSetNodes.size() != 1) {
+			throw new RDFHandlerException("Expected 1 subject of type ResultSet, found: "
+					+ resultSetNodes.size());
 		}
-		catch (Exception e) {
-			throw new RDFHandlerException(e.getMessage(), e);
+
+		Resource resultSetNode = resultSetNodes.iterator().next();
+
+		Set<Value> resultValues = model.objects(resultSetNode, BOOLEAN);
+		if (resultValues.size() != 1) {
+			throw new RDFHandlerException("Expected 1 boolean result value, found: " + resultValues.size());
+		}
+
+		Value booleanLit = resultValues.iterator().next();
+
+		if (booleanLit.equals(DAWGTestResultSetSchema.TRUE)) {
+			value = true;
+		}
+		else if (booleanLit.equals(DAWGTestResultSetSchema.FALSE)) {
+			value = false;
+		}
+		else {
+			new RDFHandlerException("Invalid boolean value: " + booleanLit);
 		}
 	}
 }

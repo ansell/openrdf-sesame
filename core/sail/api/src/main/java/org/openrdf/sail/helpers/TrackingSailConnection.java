@@ -65,7 +65,7 @@ public class TrackingSailConnection extends InferencerConnectionWrapper {
 		isOpen = true;
 		txnActive = false;
 		this.tracker = tracker;
-		if (isDebugEnabled()) {
+		if (SailUtil.isDebugEnabled()) {
 			creatorTrace = new Throwable();
 		}
 	}
@@ -73,15 +73,6 @@ public class TrackingSailConnection extends InferencerConnectionWrapper {
 	/*---------*
 	 * Methods *
 	 *---------*/
-
-	/*
-	 * Note: the following debugEnabled method are private so that they can be
-	 * removed when open connections no longer block other connections and they
-	 * can be closed silently (just like in JDBC).
-	 */
-	boolean isDebugEnabled() {
-		return tracker.isDebugEnabled();
-	}
 
 	public final boolean isOpen()
 		throws StoreException
@@ -119,9 +110,6 @@ public class TrackingSailConnection extends InferencerConnectionWrapper {
 					}
 					catch (StoreException e) {
 						throw e;
-					}
-					catch (Exception e) {
-						throw new StoreException(e);
 					}
 				}
 

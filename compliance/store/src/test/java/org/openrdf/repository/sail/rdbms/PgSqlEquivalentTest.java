@@ -12,10 +12,11 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.rdbms.postgresql.PgSqlStore;
 
-
 public class PgSqlEquivalentTest extends EquivalentTest {
 
-	public static TestSuite suite() throws Exception {
+	public static TestSuite suite()
+		throws Exception
+	{
 		return EquivalentTest.suite(PgSqlEquivalentTest.class);
 	}
 
@@ -25,7 +26,10 @@ public class PgSqlEquivalentTest extends EquivalentTest {
 
 	@Override
 	protected Repository newRepository() {
-		return new SailRepository(new PgSqlStore("sesame_test"));
+		PgSqlStore sail = new PgSqlStore("sesame_test");
+		sail.setUser("sesame");
+		sail.setPassword("opensesame");
+		return new SailRepository(sail);
 	}
 
 }

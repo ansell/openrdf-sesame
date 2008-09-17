@@ -13,6 +13,7 @@ import org.openrdf.StoreException;
  * Operation that clears the whole repository.
  * 
  * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 public class ClearOperation extends ContextOperation {
 

@@ -11,8 +11,9 @@ import static org.openrdf.sail.memory.config.MemoryStoreSchema.SYNC_DELAY;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.ModelUtilException;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfigBase;
 
@@ -56,11 +57,11 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 	}
 
 	@Override
-	public Resource export(Model model)
-	{
+	public Resource export(Model model) {
 		Resource implNode = super.export(model);
 
-		ValueFactoryImpl vf = new ValueFactoryImpl();
+		ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
+
 		if (persist) {
 			model.add(implNode, PERSIST, vf.createLiteral(persist));
 		}
@@ -79,10 +80,10 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			for (Value obj : model.objects(implNode, PERSIST)) {
-				Literal persistValue = (Literal)obj;
+			Literal persistValue = ModelUtil.getOptionalObjectLiteral(model, implNode, PERSIST);
+			if (persistValue != null) {
 				try {
-					setPersist(persistValue.booleanValue());
+					setPersist((persistValue).booleanValue());
 				}
 				catch (IllegalArgumentException e) {
 					throw new SailConfigException("Boolean value required for " + PERSIST + " property, found "
@@ -90,8 +91,8 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 				}
 			}
 
-			for (Value obj : model.objects(implNode, SYNC_DELAY)) {
-				Literal syncDelayValue = (Literal)obj;
+			Literal syncDelayValue = ModelUtil.getOptionalObjectLiteral(model, implNode, SYNC_DELAY);
+			if (syncDelayValue != null) {
 				try {
 					setSyncDelay((syncDelayValue).longValue());
 				}
@@ -101,10 +102,7 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 				}
 			}
 		}
-		catch (SailConfigException e) {
-			throw e;
-		}
-		catch (Exception e) {
+		catch (ModelUtilException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

@@ -6,7 +6,6 @@
 package org.openrdf.query.parser.serql;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.openrdf.model.Literal;
@@ -632,32 +631,28 @@ class QueryModelBuilder extends ASTVisitorBase {
 	public ValueExpr visit(ASTOr node, Object data)
 		throws VisitorException
 	{
-		Iterator<ASTBooleanExpr> iter = node.getOperandList().iterator();
+		Or or = new Or();
 
-		ValueExpr result = (ValueExpr)iter.next().jjtAccept(this, null);
-
-		while (iter.hasNext()) {
-			ValueExpr operand = (ValueExpr)iter.next().jjtAccept(this, null);
-			result = new Or(result, operand);
+		for (ASTBooleanExpr expr : node.getOperandList()) {
+			ValueExpr arg = (ValueExpr)expr.jjtAccept(this, null);
+			or.addArg(arg);
 		}
 
-		return result;
+		return or;
 	}
 
 	@Override
 	public ValueExpr visit(ASTAnd node, Object data)
 		throws VisitorException
 	{
-		Iterator<ASTBooleanExpr> iter = node.getOperandList().iterator();
+		And and = new And();
 
-		ValueExpr result = (ValueExpr)iter.next().jjtAccept(this, null);
-
-		while (iter.hasNext()) {
-			ValueExpr operand = (ValueExpr)iter.next().jjtAccept(this, null);
-			result = new And(result, operand);
+		for (ASTBooleanExpr expr : node.getOperandList()) {
+			ValueExpr arg = (ValueExpr)expr.jjtAccept(this, null);
+			and.addArg(arg);
 		}
 
-		return result;
+		return and;
 	}
 
 	@Override

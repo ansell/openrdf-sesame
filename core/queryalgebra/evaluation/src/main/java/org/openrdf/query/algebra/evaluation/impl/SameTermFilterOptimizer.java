@@ -18,18 +18,13 @@ import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
-import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.NaryTupleOperator;
-import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
-import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
@@ -38,11 +33,11 @@ import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
 /**
- * A query optimizer that embeds {@link Filter}s with {@link SameTerm}
- * operators in statement patterns as much as possible. Operators like
- * sameTerm(X, Y) are processed by renaming X to Y (or vice versa). Operators
- * like sameTerm(X, <someURI>) are processed by assigning the URI to all
- * occurring variables with name X.
+ * A query optimizer that embeds {@link Filter}s with {@link SameTerm} operators
+ * in statement patterns as much as possible. Operators like sameTerm(X, Y) are
+ * processed by renaming X to Y (or vice versa). Operators like sameTerm(X,
+ * <someURI>) are processed by assigning the URI to all occurring variables with
+ * name X.
  * 
  * @author Arjohn Kampman
  * @author James Leigh
@@ -95,45 +90,15 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 			}
 		}
 
-		/**
-		 * Stops at Projection (if it exists) since the newName may not be
-		 * available above it. This method also stops at Group because group
-		 * requires a specific set of variables names.
-		 * 
-		 * @param queryModelNode
-		 * @return Project, Group, or QueryRoot
-		 */
-		private UnaryTupleOperator findTop(QueryModelNode queryModelNode) {
-			if (queryModelNode.getParentNode() == null)
-				return (QueryRoot) queryModelNode;
-			if (queryModelNode instanceof Projection)
-				return (Projection) queryModelNode;
-			if (queryModelNode instanceof Group)
-				return (Group) queryModelNode;
-			return findTop(queryModelNode.getParentNode());
-		}
-
 		private void renameVar(Var oldVar, Var newVar, Filter filter) {
-			TupleExpr arg = filter.getArg();
-			filter.replaceWith(arg);
-			UnaryTupleOperator top = findTop(arg);
-			top.visit(new VarRenamer(oldVar.getName(), newVar.getName()));
-			// Inject the new variable at the top if there is no Projection
-			if (!(top instanceof Projection)) {
-				addVariableAlias(top.getArg(), oldVar, newVar);
-			}
-		}
+			filter.getArg().visit(new VarRenamer(oldVar.getName(), newVar.getName()));
 
-		/**
-		 * 
-		 * Replace SameTerm-filter with an Extension, the old variable name
-		 * might still be relevant to nodes higher in the tree.
-		 */
-		private void addVariableAlias(TupleExpr arg, Var oldVar, Var newVar) {
-			Extension extension = new Extension();
-			arg.replaceWith(extension);
-			extension.setArg(arg);
+			// TODO: skip this step if old variable name is not used
+			// Replace SameTerm-filter with an Extension, the old variable name
+			// might still be relevant to nodes higher in the tree
+			Extension extension = new Extension(filter.getArg());
 			extension.addElement(new ExtensionElem(new Var(newVar.getName()), oldVar.getName()));
+			filter.replaceWith(extension);
 		}
 
 		private void bindVar(Var var, ValueConstant valueConstant, Filter filter) {
@@ -170,7 +135,9 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(ProjectionElem node) throws RuntimeException {
+		public void meet(ProjectionElem node)
+			throws RuntimeException
+		{
 			if (node.getSourceName().equals(oldName)) {
 				node.setSourceName(newName);
 			}
@@ -222,21 +189,28 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(Join node) throws RuntimeException {
+		public void meet(Join node)
+			throws RuntimeException
+		{
 			// search for statement patterns
 			node.visitChildren(this);
 		}
 
 		@Override
-		public void meet(LeftJoin node) throws RuntimeException {
+		public void meet(LeftJoin node)
+			throws RuntimeException
+		{
 			// search the left side, but not the optional right side
 			node.getLeftArg().visit(this);
 		}
 
 		@Override
-		public void meet(Union node) throws RuntimeException {
+		public void meet(Union node)
+			throws RuntimeException
+		{
 			assert node.getNumberOfArguments() > 0;
 			List<Boolean> orig = innerJoins;
+
 			// search left (independent of right)
 			List<Boolean> left = innerJoins = new ArrayList<Boolean>(orig);
 			node.getArg(0).visit(this);
@@ -255,7 +229,8 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 
 		@Override
 		protected void meetNaryTupleOperator(NaryTupleOperator node)
-				throws RuntimeException {
+			throws RuntimeException
+		{
 			// don't search any more
 		}
 

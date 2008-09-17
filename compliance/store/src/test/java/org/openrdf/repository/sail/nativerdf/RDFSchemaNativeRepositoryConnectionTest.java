@@ -1,11 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.repository.sail.nativerdf;
 
 import java.io.File;
+import java.io.IOException;
 
 import info.aduna.io.FileUtil;
 
@@ -25,9 +26,21 @@ public class RDFSchemaNativeRepositoryConnectionTest extends RDFSchemaRepository
 
 	@Override
 	protected Repository createRepository()
-		throws Exception
+		throws IOException
 	{
 		dataDir = FileUtil.createTempDir("nativestore");
 		return new SailRepository(new ForwardChainingRDFSInferencer(new NativeStore(dataDir, "spoc")));
+	}
+
+	@Override
+	protected void tearDown()
+		throws Exception
+	{
+		try {
+			super.tearDown();
+		}
+		finally {
+			FileUtil.deleteDir(dataDir);
+		}
 	}
 }

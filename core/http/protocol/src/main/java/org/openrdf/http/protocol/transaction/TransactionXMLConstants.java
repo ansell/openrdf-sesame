@@ -10,6 +10,7 @@ package org.openrdf.http.protocol.transaction;
  * transactions.
  * 
  * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 interface TransactionXMLConstants {
 

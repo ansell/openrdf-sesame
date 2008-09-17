@@ -73,4 +73,9 @@ public abstract class BinaryTupleOperator extends NaryTupleOperator implements T
 	public void setRightArg(TupleExpr rightArg) {
 		setArg(1, rightArg);
 	}
+
+	@Override
+	public BinaryTupleOperator clone() {
+		return (BinaryTupleOperator)super.clone();
+	}
 }

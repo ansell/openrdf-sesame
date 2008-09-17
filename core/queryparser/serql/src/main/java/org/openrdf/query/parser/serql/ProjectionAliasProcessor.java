@@ -18,11 +18,10 @@ import org.openrdf.query.parser.serql.ast.Node;
 import org.openrdf.query.parser.serql.ast.SyntaxTreeBuilderTreeConstants;
 import org.openrdf.query.parser.serql.ast.VisitorException;
 
-
 /**
  * Processes projection aliases, verifying that the specified aliases are unique
- * and generating aliases for the elements for which no alias has been
- * specified but that do require one.
+ * and generating aliases for the elements for which no alias has been specified
+ * but that do require one.
  * 
  * @author Arjohn Kampman
  */
@@ -37,19 +36,18 @@ class ProjectionAliasProcessor extends ASTVisitorBase {
 		List<Node> unaliasedNodes = new ArrayList<Node>();
 
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-			Node projElem = node.jjtGetChild(i);
-
-			assert projElem instanceof ASTProjectionElem : "child node is not a projection element";
-
-			Object result = projElem.jjtAccept(this, aliases);
-
-			if (result instanceof String) {
-				String alias = (String)result;
-
+			ASTProjectionElem projElem = (ASTProjectionElem)node.jjtGetChild(i);
+			
+			String alias = projElem.getAlias();
+			if (alias == null && projElem.getValueExpr() instanceof ASTVar) {
+				alias = ((ASTVar)projElem.getValueExpr()).getName();
+			}
+			
+			if (alias != null) {
 				boolean isUnique = aliases.add(alias);
-
+				
 				if (!isUnique) {
-					throw new VisitorException("Duplicate projection element aliases: '" + alias + "'");
+					throw new VisitorException("Duplicate projection element names: '" + alias + "'");
 				}
 			}
 			else {
@@ -60,18 +58,6 @@ class ProjectionAliasProcessor extends ASTVisitorBase {
 		// Iterate over the unaliased nodes and generate aliases for them
 		int aliasNo = 1;
 		for (Node projElem : unaliasedNodes) {
-			Node exprNode = projElem.jjtGetChild(0);
-
-			if (exprNode instanceof ASTVar) {
-				String varName = ((ASTVar)exprNode).getName();
-				
-				if (!aliases.contains(varName)) {
-					// No need to generate an alias for this element
-					aliases.add(varName);
-					continue;
-				}
-			}
-
 			// Generate unique alias for projection element
 			String alias;
 			while (aliases.contains(alias = "_" + aliasNo++)) {
@@ -87,24 +73,5 @@ class ProjectionAliasProcessor extends ASTVisitorBase {
 		}
 
 		return data;
-	}
-
-	@Override
-	public Object visit(ASTProjectionElem node, Object data)
-		throws VisitorException
-	{
-		// Only visit alias node
-		if (node.jjtGetNumChildren() >= 2) {
-			return node.jjtGetChild(1).jjtAccept(this, data);
-		}
-
-		return data;
-	}
-
-	@Override
-	public String visit(ASTString node, Object data)
-		throws VisitorException
-	{
-		return node.getValue();
 	}
 }

@@ -13,6 +13,9 @@ import org.openrdf.sail.rdbms.postgresql.PgSqlStore;
 public class PgSqlTupleQueryResultTest extends TupleQueryResultTest {
 
 	protected Repository newRepository() {
-		return new SailRepository(new PgSqlStore("sesame_test"));
+		PgSqlStore sail = new PgSqlStore("sesame_test");
+		sail.setUser("sesame");
+		sail.setPassword("opensesame");
+		return new SailRepository(sail);
 	}
 }

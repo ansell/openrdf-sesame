@@ -23,30 +23,30 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.AbstractQuery;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.rio.RDFHandler;
-import org.openrdf.rio.RDFHandlerException;
 
 public class ContextAwareConnectionTest extends TestCase {
-	static class GraphQueryStub extends AbstractQuery implements
-			GraphQuery {
-		public GraphQueryResult evaluate() throws StoreException {
+
+	static class GraphQueryStub extends AbstractQuery implements GraphQuery {
+
+		public GraphQueryResult evaluate() {
 			return null;
 		}
 
-		public void evaluate(RDFHandler arg0) throws StoreException,
-				RDFHandlerException {
+		public void evaluate(RDFHandler handler) {
 		}
 	}
 
 	static class InvocationHandlerStub implements InvocationHandler {
+
 		public Object invoke(Object proxy, Method method, Object[] args)
-				throws Throwable {
+			throws Throwable
+		{
 			return null;
 		}
 	}
@@ -55,30 +55,31 @@ public class ContextAwareConnectionTest extends TestCase {
 	}
 
 	static class RepositoryStub extends RepositoryWrapper {
+
 		@Override
-		public RepositoryConnection getConnection() throws StoreException {
+		public RepositoryConnection getConnection()
+			throws StoreException
+		{
 			ClassLoader cl = Thread.currentThread().getContextClassLoader();
 			Class<?>[] classes = new Class[] { RepositoryConnection.class };
 			InvocationHandlerStub handler = new InvocationHandlerStub();
 			Object proxy = Proxy.newProxyInstance(cl, classes, handler);
-			return (RepositoryConnection) proxy;
+			return (RepositoryConnection)proxy;
 		}
 	}
 
-	static class TupleQueryStub extends AbstractQuery implements
-			TupleQuery {
-		public TupleQueryResult evaluate() throws StoreException {
+	static class TupleQueryStub extends AbstractQuery implements TupleQuery {
+
+		public TupleQueryResult evaluate() {
 			return null;
 		}
 
-		public void evaluate(TupleQueryResultHandler arg0)
-				throws StoreException,
-				TupleQueryResultHandlerException {
+		public void evaluate(TupleQueryResultHandler arg0) {
 		}
 	}
 
-	private static class RepositoryConnectionStub extends
-			RepositoryConnectionWrapper {
+	private static class RepositoryConnectionStub extends RepositoryConnectionWrapper {
+
 		public RepositoryConnectionStub() {
 			super(new RepositoryStub());
 		}
@@ -88,15 +89,19 @@ public class ContextAwareConnectionTest extends TestCase {
 
 	String queryString = "SELECT ?o WHERE { ?s ?p ?o}";
 
-	public void testGraphQuery() throws Exception {
+	public void testGraphQuery()
+		throws Exception
+	{
 		RepositoryConnection stub = new RepositoryConnectionStub() {
+
 			@Override
-			public GraphQuery prepareGraphQuery(QueryLanguage ql, String query,
-					String baseURI) throws MalformedQueryException,
-					StoreException {
+			public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String baseURI)
+				throws MalformedQueryException, StoreException
+			{
 				assertEquals(SPARQL, ql);
 				assertEquals(queryString, query);
 				return new GraphQueryStub() {
+
 					@Override
 					public void setDataset(Dataset dataset) {
 						Set<URI> contexts = Collections.singleton(context);
@@ -113,15 +118,19 @@ public class ContextAwareConnectionTest extends TestCase {
 		con.prepareGraphQuery(SPARQL, queryString, null);
 	}
 
-	public void testQuery() throws Exception {
+	public void testQuery()
+		throws Exception
+	{
 		RepositoryConnection stub = new RepositoryConnectionStub() {
+
 			@Override
-			public Query prepareQuery(QueryLanguage ql, String query,
-					String baseURI) throws MalformedQueryException,
-					StoreException {
+			public Query prepareQuery(QueryLanguage ql, String query, String baseURI)
+				throws MalformedQueryException, StoreException
+			{
 				assertEquals(SPARQL, ql);
 				assertEquals(queryString, query);
 				return new QueryStub() {
+
 					@Override
 					public void setDataset(Dataset dataset) {
 						Set<URI> contexts = Collections.singleton(context);
@@ -138,15 +147,19 @@ public class ContextAwareConnectionTest extends TestCase {
 		con.prepareQuery(SPARQL, queryString, null);
 	}
 
-	public void testTupleQuery() throws Exception {
+	public void testTupleQuery()
+		throws Exception
+	{
 		RepositoryConnection stub = new RepositoryConnectionStub() {
+
 			@Override
-			public TupleQuery prepareTupleQuery(QueryLanguage ql, String query,
-					String baseURI) throws MalformedQueryException,
-					StoreException {
+			public TupleQuery prepareTupleQuery(QueryLanguage ql, String query, String baseURI)
+				throws MalformedQueryException, StoreException
+			{
 				assertEquals(SPARQL, ql);
 				assertEquals(queryString, query);
 				return new TupleQueryStub() {
+
 					@Override
 					public void setDataset(Dataset dataset) {
 						Set<URI> contexts = Collections.singleton(context);

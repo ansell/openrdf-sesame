@@ -25,6 +25,8 @@ public class BTreeBenchmark extends TestCase {
 	 * Variables *
 	 *-----------*/
 
+	private File dir;
+
 	private BTree btree;
 
 	/*---------*
@@ -36,7 +38,7 @@ public class BTreeBenchmark extends TestCase {
 		throws Exception
 	{
 		super.setUp();
-		File dir = FileUtil.createTempDir("btree");
+		dir = FileUtil.createTempDir("btree");
 		btree = new BTree(dir, "test", 4096, 8);
 	}
 
@@ -46,6 +48,7 @@ public class BTreeBenchmark extends TestCase {
 	{
 		try {
 			btree.delete();
+			FileUtil.deleteDir(dir);
 		}
 		finally {
 			super.tearDown();

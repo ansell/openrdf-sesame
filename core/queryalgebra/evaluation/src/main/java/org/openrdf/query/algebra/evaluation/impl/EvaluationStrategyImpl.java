@@ -491,12 +491,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws StoreException
 	{
 		assert join.getNumberOfArguments() > 0;
-		CloseableIteration<BindingSet, StoreException> left;
-		left = evaluate(join.getArg(0), bindings);
+		CloseableIteration<BindingSet, StoreException> result;
+		result = evaluate(join.getArg(0), bindings);
 		for (int i = 1, n = join.getNumberOfArguments(); i < n; i++) {
-			left = new JoinIterator(this, left, join.getArg(i), bindings);
+			result = new JoinIterator(this, result, join.getArg(i), bindings);
 		}
-		return left;
+		return result;
 	}
 
 	public CloseableIteration<BindingSet, StoreException> evaluate(LeftJoin leftJoin,
@@ -504,7 +504,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws StoreException
 	{
 		// Check whether optional join is "well designed" as defined in section
-		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge Pï¿½rez et al.
+		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge Pérez et al.
 		Set<String> boundVars = bindings.getBindingNames();
 		Set<String> leftVars = leftJoin.getLeftArg().getBindingNames();
 		Set<String> optionalVars = leftJoin.getRightArg().getBindingNames();

@@ -20,18 +20,22 @@ public class NativeTupleQueryResultTest extends TupleQueryResultTest {
 	private File dataDir;
 
 	@Override
-	protected Repository newRepository() throws IOException {
+	protected Repository newRepository()
+		throws IOException
+	{
 		dataDir = FileUtil.createTempDir("nativestore");
 		return new SailRepository(new NativeStore(dataDir, "spoc"));
 	}
 
 	@Override
-	protected void tearDown() throws Exception {
+	protected void tearDown()
+		throws Exception
+	{
 		try {
 			super.tearDown();
-		} finally {
+		}
+		finally {
 			FileUtil.deleteDir(dataDir);
 		}
 	}
-
 }

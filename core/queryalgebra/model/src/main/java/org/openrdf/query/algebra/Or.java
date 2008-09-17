@@ -19,8 +19,8 @@ public class Or extends NaryValueOperator {
 	public Or() {
 	}
 
-	public Or(ValueExpr leftArg, ValueExpr rightArg) {
-		super(leftArg, rightArg);
+	public Or(ValueExpr... args) {
+		super(args);
 	}
 
 	public Or(List<? extends ValueExpr> args) {

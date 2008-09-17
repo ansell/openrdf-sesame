@@ -12,6 +12,7 @@ import org.openrdf.StoreException;
  * An update operation that is part of a transaction.
  * 
  * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 public interface TransactionOperation {
 

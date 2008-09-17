@@ -11,7 +11,7 @@ import java.util.Set;
  * An abstract superclass for unary tuple operators which, by definition, has
  * one argument.
  */
-public abstract class UnaryTupleOperator extends NaryTupleOperator implements TupleExpr {
+public abstract class UnaryTupleOperator extends NaryTupleOperator {
 
 	/*--------------*
 	 * Constructors *
@@ -36,5 +36,10 @@ public abstract class UnaryTupleOperator extends NaryTupleOperator implements Tu
 
 	public Set<String> getBindingNames() {
 		return getArg().getBindingNames();
+	}
+	
+	@Override
+	public UnaryTupleOperator clone() {
+		return (UnaryTupleOperator)super.clone();
 	}
 }

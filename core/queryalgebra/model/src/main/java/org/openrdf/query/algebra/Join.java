@@ -24,15 +24,15 @@ public class Join extends NaryTupleOperator {
 	/**
 	 * Creates a new natural join operator.
 	 */
-	public Join(List<TupleExpr> args) {
+	public Join(TupleExpr... args) {
 		super(args);
 	}
 
 	/**
 	 * Creates a new natural join operator.
 	 */
-	public Join(TupleExpr leftArg, TupleExpr rightArg) {
-		super(leftArg, rightArg);
+	public Join(List<TupleExpr> args) {
+		super(args);
 	}
 
 	/*---------*
@@ -41,9 +41,11 @@ public class Join extends NaryTupleOperator {
 
 	public Set<String> getBindingNames() {
 		Set<String> bindingNames = new LinkedHashSet<String>(16);
+
 		for (TupleExpr arg : getArgs()) {
 			bindingNames.addAll(arg.getBindingNames());
 		}
+
 		return bindingNames;
 	}
 

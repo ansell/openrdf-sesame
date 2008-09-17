@@ -14,9 +14,10 @@ import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.USER;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.ModelUtilException;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfigBase;
 
@@ -109,7 +110,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 	public Resource export(Model model) {
 		Resource implNode = super.export(model);
 
-		ValueFactory vf = new ValueFactoryImpl();
+		ValueFactory vf = ValueFactoryImpl.getInstance();
 
 		if (jdbcDriver != null) {
 			model.add(implNode, JDBC_DRIVER, vf.createLiteral(jdbcDriver));
@@ -135,28 +136,28 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			for (Value obj : model.objects(implNode, JDBC_DRIVER)) {
-				Literal jdbcDriverLit = (Literal)obj;
+			Literal jdbcDriverLit = ModelUtil.getOptionalObjectLiteral(model, implNode, JDBC_DRIVER);
+			if (jdbcDriverLit != null) {
 				setJdbcDriver(jdbcDriverLit.getLabel());
 			}
 
-			for (Value obj : model.objects(implNode, URL)) {
-				Literal urlLit = (Literal)obj;
+			Literal urlLit = ModelUtil.getOptionalObjectLiteral(model, implNode, URL);
+			if (urlLit != null) {
 				setUrl(urlLit.getLabel());
 			}
 
-			for (Value obj : model.objects(implNode, USER)) {
-				Literal userLit = (Literal)obj;
+			Literal userLit = ModelUtil.getOptionalObjectLiteral(model, implNode, USER);
+			if (userLit != null) {
 				setUser(userLit.getLabel());
 			}
 
-			for (Value obj : model.objects(implNode, PASSWORD)) {
-				Literal passwordLit = (Literal)obj;
+			Literal passwordLit = ModelUtil.getOptionalObjectLiteral(model, implNode, PASSWORD);
+			if (passwordLit != null) {
 				setPassword(passwordLit.getLabel());
 			}
 
-			for (Value obj : model.objects(implNode, MAX_TRIPLE_TABLES)) {
-				Literal maxTripleTablesLit = (Literal)obj;
+			Literal maxTripleTablesLit = ModelUtil.getOptionalObjectLiteral(model, implNode, MAX_TRIPLE_TABLES);
+			if (maxTripleTablesLit != null) {
 				try {
 					setMaxTripleTables(maxTripleTablesLit.intValue());
 				}
@@ -165,10 +166,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 				}
 			}
 		}
-		catch (SailConfigException e) {
-			throw e;
-		}
-		catch (Exception e) {
+		catch (ModelUtilException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

@@ -10,7 +10,7 @@ import java.io.Serializable;
 /**
  * An RDF statement, with optional associated context. A statement can have an
  * associated context in specific cases, for example when fetched from a
- * repository. The context field *does* influence statement equality; a
+ * repository. The context field <em>does</em> influence statement equality; a
  * statement is equal to another statement if the subjects, predicates,
  * objects, and contexts are equal.
  */

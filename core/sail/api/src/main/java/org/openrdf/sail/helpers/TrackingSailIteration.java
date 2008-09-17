@@ -44,7 +44,7 @@ class TrackingSailIteration<T> extends IterationWrapper<T, StoreException> {
 		super(iter);
 		this.connection = connection;
 
-		if (connection.isDebugEnabled()) {
+		if (SailUtil.isDebugEnabled()) {
 			creatorTrace = new Throwable();
 		}
 	}

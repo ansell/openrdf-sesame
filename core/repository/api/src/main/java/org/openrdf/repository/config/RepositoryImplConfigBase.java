@@ -11,8 +11,9 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.ModelUtilException;
 
 /**
  * @author Herko ter Horst
@@ -52,7 +53,8 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 	}
 
 	public Resource export(Model model) {
-		ValueFactoryImpl vf = new ValueFactoryImpl();
+		ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
+
 		BNode implNode = vf.createBNode();
 
 		if (type != null) {
@@ -66,12 +68,12 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 		throws RepositoryConfigException
 	{
 		try {
-			for (Value obj : model.objects(implNode, REPOSITORYTYPE)) {
-				Literal typeLit = (Literal)obj;
+			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, REPOSITORYTYPE);
+			if (typeLit != null) {
 				setType(typeLit.getLabel());
 			}
 		}
-		catch (Exception e) {
+		catch (ModelUtilException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}
@@ -80,9 +82,9 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 		throws RepositoryConfigException
 	{
 		try {
-			if (model.contains(implNode, REPOSITORYTYPE, null)) {
-				Literal typeLit = (Literal)model.objects(implNode, REPOSITORYTYPE).iterator().next();
+			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, REPOSITORYTYPE);
 
+			if (typeLit != null) {
 				RepositoryFactory factory = RepositoryRegistry.getInstance().get(typeLit.getLabel());
 
 				if (factory == null) {
@@ -96,7 +98,7 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 
 			return null;
 		}
-		catch (Exception e) {
+		catch (ModelUtilException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}

@@ -79,7 +79,7 @@ public class DatasetRepositoryConnection extends RepositoryConnectionWrapper {
 			}
 		}
 		catch (MalformedURLException e) {
-			throw new AssertionError(e);
+			throw new StoreException(e);
 		}
 	}
 

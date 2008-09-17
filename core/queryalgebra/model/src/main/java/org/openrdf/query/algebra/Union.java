@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -30,8 +30,8 @@ public class Union extends NaryTupleOperator {
 	 * @param rightArg
 	 *        The right argument of the union operator.
 	 */
-	public Union(TupleExpr leftArg, TupleExpr rightArg) {
-		super(leftArg, rightArg);
+	public Union(TupleExpr... args) {
+		super(args);
 	}
 
 	/**
@@ -50,9 +50,11 @@ public class Union extends NaryTupleOperator {
 
 	public Set<String> getBindingNames() {
 		Set<String> bindingNames = new LinkedHashSet<String>(16);
+
 		for (TupleExpr arg : getArgs()) {
 			bindingNames.addAll(arg.getBindingNames());
 		}
+
 		return bindingNames;
 	}
 

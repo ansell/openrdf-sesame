@@ -11,7 +11,8 @@ import static org.openrdf.sail.config.SailConfigSchema.SAILTYPE;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.ModelUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
 import org.openrdf.sail.config.SailConfigException;
@@ -61,8 +62,7 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 	}
 
 	@Override
-	public Resource export(Model model)
-	{
+	public Resource export(Model model) {
 		Resource repImplNode = super.export(model);
 
 		if (sailImplConfig != null) {
@@ -78,11 +78,12 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 		throws RepositoryConfigException
 	{
 		try {
-			for (Value obj : model.objects(repImplNode, SAILIMPL)) {
-				Resource sailImplNode = (Resource)obj;
+			Resource sailImplNode = ModelUtil.getOptionalObjectResource(model, repImplNode, SAILIMPL);
 
-				for (Value typeVal : model.objects(sailImplNode, SAILTYPE)) {
-					Literal typeLit = (Literal)typeVal;
+			if (sailImplNode != null) {
+				Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, sailImplNode, SAILTYPE);
+
+				if (typeLit != null) {
 					SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
 
 					if (factory == null) {
@@ -94,7 +95,10 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 				}
 			}
 		}
-		catch (Exception e) {
+		catch (ModelUtilException e) {
+			throw new RepositoryConfigException(e.getMessage(), e);
+		}
+		catch (SailConfigException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}

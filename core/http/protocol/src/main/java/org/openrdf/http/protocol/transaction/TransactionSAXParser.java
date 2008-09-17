@@ -31,6 +31,9 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 /**
  * Parses an RDF transaction document into a collection of
  * {@link TransactionOperation} objects.
+ * 
+ * @author Arjohn Kampman
+ * @author Leo Sauermann
  */
 class TransactionSAXParser extends SimpleSAXAdapter {
 

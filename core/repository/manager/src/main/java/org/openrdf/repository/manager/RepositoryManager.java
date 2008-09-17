@@ -235,7 +235,7 @@ public abstract class RepositoryManager {
 						cleanUpRepository(repositoryID);
 					}
 					catch (IOException e) {
-						throw new StoreException("Unable to clean up resources for removed repository"
+						throw new StoreException("Unable to clean up resources for removed repository "
 								+ repositoryID, e);
 					}
 				}

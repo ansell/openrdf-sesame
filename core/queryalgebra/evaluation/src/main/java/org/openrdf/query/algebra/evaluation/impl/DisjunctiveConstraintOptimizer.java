@@ -43,24 +43,27 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 			boolean top = or.getParentNode() instanceof Filter;
 			if (or.getNumberOfArguments() == 0) {
 				return;
-			} else if (or.getNumberOfArguments() == 1) {
+			}
+			else if (or.getNumberOfArguments() == 1) {
 				or.replaceWith(or.getArg());
 				or.getParentNode().visit(this);
-			} else if (top && containsSameTerm(or)) {
+			}
+			else if (top && containsSameTerm(or)) {
 				Filter filter = (Filter)or.getParentNode();
 				// Find SameTerm(s)
 				List<ValueExpr> args = new ArrayList<ValueExpr>();
 				for (ValueExpr arg : or.getArgs()) {
 					if (arg instanceof SameTerm) {
 						args.add(arg);
-						or.removeChildNode(arg);
+						or.removeArg(arg);
 					}
 				}
 
 				// Add the rest
 				if (or.getNumberOfArguments() == 1) {
 					args.add(or.getArg());
-				} else if (or.getNumberOfArguments() > 1) {
+				}
+				else if (or.getNumberOfArguments() > 1) {
 					args.add(or);
 				}
 
@@ -85,7 +88,7 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 
 		private TupleExpr findNotFilter(TupleExpr node) {
 			if (node instanceof Filter)
-				return findNotFilter(((Filter) node).getArg());
+				return findNotFilter(((Filter)node).getArg());
 			return node;
 		}
 
@@ -93,7 +96,7 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 			if (node instanceof SameTerm)
 				return true;
 			if (node instanceof Or) {
-				Or or = (Or) node;
+				Or or = (Or)node;
 				boolean contains = false;
 				for (ValueExpr arg : or.getArgs()) {
 					contains |= containsSameTerm(arg);
@@ -101,7 +104,7 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 				return contains;
 			}
 			if (node instanceof And) {
-				And and = (And) node;
+				And and = (And)node;
 				boolean contains = false;
 				for (ValueExpr arg : and.getArgs()) {
 					contains |= containsSameTerm(arg);

@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.io.FileUtil;
+import info.aduna.io.ZipUtil;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
@@ -50,30 +51,20 @@ public class ManifestTest {
 	static {
 		if (REMOTE) {
 			MANIFEST_FILE = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/manifest-evaluation.ttl";
-		} else {
-			URL url = ManifestTest.class.getResource(
-					"/testcases-dawg/data-r2/manifest-evaluation.ttl");
+		}
+		else {
+			URL url = ManifestTest.class.getResource("/testcases-dawg/data-r2/manifest-evaluation.ttl");
+
 			if ("jar".equals(url.getProtocol())) {
+				// Extract manifest files to a temporary directory
 				try {
 					File destDir = FileUtil.createTempDir("sparql");
+
 					JarURLConnection con = (JarURLConnection)url.openConnection();
 					JarFile jar = con.getJarFile();
-					Enumeration<JarEntry> entries = jar.entries();
-					while (entries.hasMoreElements()) {
-						JarEntry file = entries.nextElement();
-						File f = new File(destDir + File.separator + file.getName());
-						if (file.isDirectory()) {
-							f.mkdir();
-							continue;
-						}
-						InputStream is = jar.getInputStream(file);
-						FileOutputStream fos = new FileOutputStream(f);
-						while (is.available() > 0) {
-							fos.write(is.read());
-						}
-						fos.close();
-						is.close();
-					}
+
+					ZipUtil.extract(jar, destDir);
+
 					File localFile = new File(destDir, con.getEntryName());
 					destDir.deleteOnExit();
 					MANIFEST_FILE = localFile.toURI().toURL().toString();
@@ -81,14 +72,16 @@ public class ManifestTest {
 				catch (IOException e) {
 					throw new AssertionError(e);
 				}
-			} else {
+			}
+			else {
 				MANIFEST_FILE = url.toString();
 			}
 		}
 	}
 
 	public static TestSuite suite(SPARQLQueryTest.Factory factory)
-			throws Exception {
+		throws Exception
+	{
 		TestSuite suite = new TestSuite(factory.getClass().getName());
 
 		Repository manifestRep = new SailRepository(new MemoryStore());
@@ -97,19 +90,15 @@ public class ManifestTest {
 
 		addTurtle(con, new URL(MANIFEST_FILE), MANIFEST_FILE);
 
-		String query = "SELECT DISTINCT manifestFile "
-				+ "FROM {x} rdf:first {manifestFile} "
-				+ "USING NAMESPACE "
-				+ "  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
+		String query = "SELECT DISTINCT manifestFile FROM {x} rdf:first {manifestFile} "
+				+ "USING NAMESPACE mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
 				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
 
-		TupleQueryResult manifestResults = con.prepareTupleQuery(
-				QueryLanguage.SERQL, query, MANIFEST_FILE).evaluate();
+		TupleQueryResult manifestResults = con.prepareTupleQuery(QueryLanguage.SERQL, query, MANIFEST_FILE).evaluate();
 
 		while (manifestResults.hasNext()) {
 			BindingSet bindingSet = manifestResults.next();
-			String manifestFile = bindingSet.getValue("manifestFile")
-					.toString();
+			String manifestFile = bindingSet.getValue("manifestFile").toString();
 			suite.addTest(SPARQLQueryTest.suite(manifestFile, factory));
 		}
 
@@ -117,8 +106,7 @@ public class ManifestTest {
 		con.close();
 		manifestRep.shutDown();
 
-		logger.info("Created aggregated test suite with "
-				+ suite.countTestCases() + " test cases.");
+		logger.info("Created aggregated test suite with " + suite.countTestCases() + " test cases.");
 		return suite;
 	}
 
@@ -150,21 +138,25 @@ public class ManifestTest {
 
 			try {
 				rdfParser.parse(in, baseURI);
-			} catch (RDFHandlerException e) {
+			}
+			catch (RDFHandlerException e) {
 				if (autoCommit) {
 					con.rollback();
 				}
 				// RDFInserter only throws wrapped StoreExceptions
 				throw (StoreException) e.getCause();
-			} catch (RuntimeException e) {
+			}
+			catch (RuntimeException e) {
 				if (autoCommit) {
 					con.rollback();
 				}
 				throw e;
-			} finally {
+			}
+			finally {
 				con.setAutoCommit(autoCommit);
 			}
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 	}
