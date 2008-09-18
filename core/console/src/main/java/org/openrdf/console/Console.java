@@ -81,7 +81,6 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
-import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryInfo;
@@ -545,7 +544,7 @@ public class Console {
 			writeln("Connected to " + managerID);
 			return true;
 		}
-		catch (StoreException e) {
+		catch (RepositoryConfigException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to install new manager", e);
 			return false;
@@ -591,8 +590,6 @@ public class Console {
 	private void createRepository(String templateName)
 		throws IOException
 	{
-		Repository systemRepo = manager.getSystemRepository();
-
 		try {
 			// FIXME: remove assumption of .ttl extension
 			String templateFileName = templateName + ".ttl";
@@ -678,7 +675,7 @@ public class Console {
 			RepositoryConfig repConfig = RepositoryConfig.create(model, repositoryNode);
 			repConfig.validate();
 
-			if (RepositoryConfigUtil.hasRepositoryConfig(systemRepo, repConfig.getID())) {
+			if (manager.hasRepositoryConfig(repConfig.getID())) {
 				boolean proceed = askProceed(
 						"WARNING: you are about to overwrite the configuration of an existing repository!", false);
 
@@ -688,20 +685,8 @@ public class Console {
 				}
 			}
 
-			try {
-				RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
-				writeln("Repository created");
-			}
-			catch (SailReadOnlyException e) {
-				if (tryToRemoveLock(e, systemRepo)) {
-					RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
-					writeln("Repository created");
-				}
-				else {
-					writeError("Failed to create repository");
-					logger.error("Failed to create repository", e);
-				}
-			}
+			manager.addRepositoryConfig(repConfig);
+			writeln("Repository created");
 		}
 		catch (Exception e) {
 			writeError(e.getMessage());
@@ -747,24 +732,9 @@ public class Console {
 			writeError("Unable to drop repository '" + id + "': " + e.getMessage());
 			logger.warn("Unable to drop repository '" + id + "'", e);
 		}
-		catch (SailReadOnlyException e) {
-			try {
-				if (tryToRemoveLock(e, manager.getSystemRepository())) {
-					dropRepository(tokens);
-				}
-				else {
-					writeError("Failed to drop repository");
-					logger.error("Failed to drop repository", e);
-				}
-			}
-			catch (StoreException e2) {
-				writeError("Failed to restart system: " + e2.getMessage());
-				logger.error("Failed to restart system", e2);
-			}
-		}
 		catch (StoreException e) {
-			writeError("Failed to drop repository: " + e.getMessage());
-			logger.error("Failed to drop repository", e);
+			writeError("Unable to drop repository '" + id + "': " + e.getMessage());
+			logger.warn("Unable to drop repository '" + id + "'", e);
 		}
 	}
 
@@ -894,7 +864,7 @@ public class Console {
 							write(" (\"" + repInfo.getDescription() + "\")");
 						}
 					}
-					catch (StoreException e) {
+					catch (RepositoryConfigException e) {
 						write(" [ERROR: " + e.getMessage() + "]");
 					}
 					writeln();
@@ -902,7 +872,7 @@ public class Console {
 				writeln("+----------");
 			}
 		}
-		catch (StoreException e) {
+		catch (RepositoryConfigException e) {
 			writeError("Failed to get repository list: " + e.getMessage());
 			logger.error("Failed to get repository list", e);
 		}

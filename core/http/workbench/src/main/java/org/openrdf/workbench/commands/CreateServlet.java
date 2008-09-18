@@ -22,15 +22,12 @@ import org.openrdf.StoreException;
 import org.openrdf.console.Console;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
-import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -83,9 +80,6 @@ public class CreateServlet extends TransformationServlet {
 	private RepositoryConfig updateRepositoryConfig(String configString)
 			throws IOException, RDFParseException, RDFHandlerException,
 			GraphUtilException, RepositoryConfigException, StoreException {
-		Repository systemRepo = manager.getSystemRepository();
-
-		ValueFactory vf = systemRepo.getValueFactory();
 
 		Model model = new ModelImpl();
 
@@ -99,7 +93,7 @@ public class CreateServlet extends TransformationServlet {
 				repositoryNode);
 		repConfig.validate();
 
-		RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
+		manager.addRepositoryConfig(repConfig);
 		return repConfig;
 	}
 

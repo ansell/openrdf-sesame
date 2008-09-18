@@ -21,6 +21,7 @@ import java.util.Set;
 
 import info.aduna.io.FileUtil;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -29,13 +30,11 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.config.DelegatingRepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
-import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryRegistry;
@@ -137,26 +136,18 @@ public class LocalRepositoryManager extends RepositoryManager {
 	protected Repository createRepository(String id)
 		throws RepositoryConfigException, StoreException
 	{
-		Repository systemRepository = getSystemRepository();
+		Repository repository = null;
 
-		RepositoryConnection con = systemRepository.getConnection();
-		try {
-			Repository repository = null;
+		RepositoryConfig repConfig = getRepositoryConfig(id);
+		if (repConfig != null) {
+			repConfig.validate();
 
-			RepositoryConfig repConfig = RepositoryConfigUtil.getRepositoryConfig(systemRepository, id);
-			if (repConfig != null) {
-				repConfig.validate();
-
-				repository = createRepositoryStack(repConfig.getRepositoryImplConfig());
-				repository.setDataDir(getRepositoryDir(id));
-				repository.initialize();
-			}
-
-			return repository;
+			repository = createRepositoryStack(repConfig.getRepositoryImplConfig());
+			repository.setDataDir(getRepositoryDir(id));
+			repository.initialize();
 		}
-		finally {
-			con.close();
-		}
+
+		return repository;
 	}
 
 	/**
@@ -205,41 +196,35 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
-		throws StoreException
+		throws RepositoryConfigException
 	{
+		RepositoryConfig config = null;
+		if (id.equals(SystemRepository.ID)) {
+			config = new RepositoryConfig(id, new SystemRepositoryConfig());
+		}
+		else {
+			config = getRepositoryConfig(id);
+		}
+
+		RepositoryInfo repInfo = new RepositoryInfo();
+		repInfo.setId(id);
+		repInfo.setDescription(config.getTitle());
 		try {
-			RepositoryConfig config = null;
-			if (id.equals(SystemRepository.ID)) {
-				config = new RepositoryConfig(id, new SystemRepositoryConfig());
-			}
-			else {
-				config = getRepositoryConfig(id);
-			}
-
-			RepositoryInfo repInfo = new RepositoryInfo();
-			repInfo.setId(id);
-			repInfo.setDescription(config.getTitle());
-			try {
-				repInfo.setLocation(getRepositoryDir(id).toURI().toURL());
-			}
-			catch (MalformedURLException mue) {
-				throw new StoreException("Location of repository does not resolve to a valid URL", mue);
-			}
-
-			repInfo.setReadable(true);
-			repInfo.setWritable(true);
-
-			return repInfo;
+			repInfo.setLocation(getRepositoryDir(id).toURI().toURL());
 		}
-		catch (RepositoryConfigException rce) {
-			// FIXME: don't fetch info through config parsing
-			throw new StoreException("Unable to retrieve existing configurations", rce);
+		catch (MalformedURLException mue) {
+			throw new RepositoryConfigException("Location of repository does not resolve to a valid URL", mue);
 		}
+
+		repInfo.setReadable(true);
+		repInfo.setWritable(true);
+
+		return repInfo;
 	}
 
 	@Override
 	public List<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws StoreException
+		throws RepositoryConfigException
 	{
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
@@ -345,42 +330,30 @@ public class LocalRepositoryManager extends RepositoryManager {
 				}
 				if (modifiedContexts != null) {
 					logger.debug("React to commit on SystemRepository for contexts {}", modifiedContexts);
-					try {
-						RepositoryConnection cleanupCon = getSystemRepository().getConnection();
-						
+					// refresh all modified contexts
+					for (Resource context : modifiedContexts) {
+						logger.debug("Processing modified context {}.", context);
 						try {
-							// refresh all modified contexts
-							for (Resource context : modifiedContexts) {
-							logger.debug("Processing modified context {}.", context);
-								try {
-									if (isRepositoryConfigContext(cleanupCon, context)) {
-										String repositoryID = getRepositoryID(cleanupCon, context);
-										logger.debug("Reacting to modified repository config for {}", repositoryID);
-										Repository repository = removeInitializedRepository(repositoryID);
-										if (repository != null) {
-											logger.debug("Modified repository {} has been initialized, refreshing...", repositoryID);
-											// refresh single repository
-											refreshRepository(cleanupCon, repositoryID, repository);
-										}
-										else {
-											logger.debug("Modified repository {} has not been initialized, skipping...", repositoryID);
-										}
-									}
-									else {
-										logger.debug("Context {} doesn't contain repository config information.", context);
-									}
+							if (isRepositoryConfigContext(con, context)) {
+								String repositoryID = getRepositoryID(con, context);
+								logger.debug("Reacting to modified repository config for {}", repositoryID);
+								Repository repository = removeInitializedRepository(repositoryID);
+								if (repository != null) {
+									logger.debug("Modified repository {} has been initialized, refreshing...", repositoryID);
+									// refresh single repository
+									refreshRepository(repositoryID, repository);
 								}
-								catch (StoreException re) {
-									logger.error("Failed to process repository configuration changes", re);
+								else {
+									logger.debug("Modified repository {} has not been initialized, skipping...", repositoryID);
 								}
 							}
+							else {
+								logger.debug("Context {} doesn't contain repository config information.", context);
+							}
 						}
-						finally {
-							cleanupCon.close();
+						catch (StoreException re) {
+							logger.error("Failed to process repository configuration changes", re);
 						}
-					}
-					catch (StoreException re) {
-						logger.error("Failed to process repository configuration changes", re);
 					}
 				}
 			}

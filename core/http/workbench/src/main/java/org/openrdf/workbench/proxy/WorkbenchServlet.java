@@ -50,7 +50,7 @@ public class WorkbenchServlet extends BaseServlet {
 			manager = createRepositoryManager(param);
 		} catch (IOException e) {
 			throw new ServletException(e);
-		} catch (StoreException e) {
+		} catch (RepositoryConfigException e) {
 			throw new ServletException(e);
 		}
 	}
@@ -100,7 +100,7 @@ public class WorkbenchServlet extends BaseServlet {
 	}
 
 	private RepositoryManager createRepositoryManager(String param)
-			throws IOException, StoreException {
+			throws IOException, RepositoryConfigException {
 		RepositoryManager manager;
 		if (param.startsWith("file:")) {
 			manager = new LocalRepositoryManager(asLocalFile(new URL(param)));

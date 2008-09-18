@@ -5,24 +5,14 @@
  */
 package org.openrdf.workbench.commands;
 
-import static org.openrdf.query.QueryLanguage.SERQL;
-
 import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.openrdf.model.Resource;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.EvaluationException;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.StoreException;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.workbench.base.TransformationServlet;
-import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
@@ -50,42 +40,13 @@ public class DeleteServlet extends TransformationServlet {
 		resp.sendRedirect("../");
 	}
 
-	private void dropRepository(String id) throws Exception {
-		Repository systemRepo = manager.getSystemRepository();
-		RepositoryConnection con = systemRepo.getConnection();
-		try {
-			Resource context = findContext(id, con);
-			manager.getRepository(id).shutDown();
-			con.clear(context);
-		} finally {
-			con.close();
-		}
-	}
-
-	private Resource findContext(String id, RepositoryConnection con)
-			throws StoreException, MalformedQueryException,
-			EvaluationException, BadRequestException {
-		TupleQuery query = con.prepareTupleQuery(SERQL, CONTEXT_QUERY);
-		query.setBinding("ID", vf.createLiteral(id));
-		TupleQueryResult result = query.evaluate();
-		try {
-			if (!result.hasNext())
-				throw new BadRequestException("Cannot find repository of id: "
-						+ id);
-			BindingSet bindings = result.next();
-			Resource context = (Resource) bindings.getValue("C");
-			if (result.hasNext())
-				throw new BadRequestException(
-						"Multiple contexts found for repository '" + id + "'");
-			return context;
-		} finally {
-			result.close();
-		}
+	private void dropRepository(String id) throws RepositoryConfigException, StoreException {
+		manager.removeRepositoryConfig(id);
 	}
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws StoreException {
+			throws RepositoryConfigException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "delete.xsl");
 		builder.start("readable", "writeable", "id", "description", "location");
