@@ -11,8 +11,6 @@ import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -23,6 +21,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.EmptyBindingSet;
@@ -307,14 +306,14 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 		private void evaluateIntoStatements(ParsedGraphQuery query, Collection<Statement> statements)
 			throws StoreException, RDFHandlerException, StoreException
 		{
-			CloseableIteration<? extends BindingSet, StoreException> bindingsIter = getWrappedConnection().evaluate(
+			Cursor<? extends BindingSet> bindingsIter = getWrappedConnection().evaluate(
 					query.getTupleExpr(), null, EmptyBindingSet.getInstance(), true);
 
 			try {
 				ValueFactory vf = getValueFactory();
 
-				while (bindingsIter.hasNext()) {
-					BindingSet bindings = bindingsIter.next();
+				BindingSet bindings;
+				while ((bindings = bindingsIter.next()) != null) {
 
 					Value subj = bindings.getValue("subject");
 					Value pred = bindings.getValue("predicate");

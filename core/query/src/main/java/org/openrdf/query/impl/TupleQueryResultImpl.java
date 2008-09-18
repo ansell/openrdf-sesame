@@ -9,27 +9,21 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIteratorIteration;
-import info.aduna.iteration.Iteration;
-import info.aduna.iteration.Iterations;
-
-import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.base.CursorIteration;
 
 /**
  * A generic implementation of the {@link TupleQueryResult} interface.
  */
-public class TupleQueryResultImpl implements TupleQueryResult {
+public class TupleQueryResultImpl extends CursorIteration<BindingSet> implements TupleQueryResult {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
 	private List<String> bindingNames;
-
-	private Iteration<? extends BindingSet, StoreException> bindingSetIter;
 
 	/*--------------*
 	 * Constructors *
@@ -49,7 +43,7 @@ public class TupleQueryResultImpl implements TupleQueryResult {
 	}
 
 	public TupleQueryResultImpl(List<String> bindingNames, Iterator<? extends BindingSet> bindingSetIter) {
-		this(bindingNames, new CloseableIteratorIteration<BindingSet, StoreException>(bindingSetIter));
+		this(bindingNames, new IteratorCursor<BindingSet>(bindingSetIter));
 	}
 
 	/**
@@ -62,12 +56,12 @@ public class TupleQueryResultImpl implements TupleQueryResult {
 	 *        The binding names, in order of projection.
 	 */
 	public TupleQueryResultImpl(List<String> bindingNames,
-			CloseableIteration<? extends BindingSet, StoreException> bindingSetIter)
+			Cursor<? extends BindingSet> bindingSetIter)
 	{
+		super(bindingSetIter);
 		// Don't allow modifications to the binding names when it is accessed
 		// through getBindingNames:
 		this.bindingNames = Collections.unmodifiableList(bindingNames);
-		this.bindingSetIter = bindingSetIter;
 	}
 
 	/*---------*
@@ -76,29 +70,5 @@ public class TupleQueryResultImpl implements TupleQueryResult {
 
 	public List<String> getBindingNames() {
 		return bindingNames;
-	}
-
-	public void close()
-		throws StoreException
-	{
-		Iterations.closeCloseable(bindingSetIter);
-	}
-
-	public boolean hasNext()
-		throws StoreException
-	{
-		return bindingSetIter.hasNext();
-	}
-
-	public BindingSet next()
-		throws StoreException
-	{
-		return bindingSetIter.next();
-	}
-
-	public void remove()
-		throws StoreException
-	{
-		bindingSetIter.remove();
 	}
 }

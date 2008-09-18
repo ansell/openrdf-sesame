@@ -5,12 +5,12 @@
  */
 package org.openrdf.sail.rdbms.evaluation;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.sail.rdbms.RdbmsTripleRepository;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
@@ -37,7 +37,7 @@ public class RdbmsTripleSource implements TripleSource {
 		return triples.getValueFactory();
 	}
 
-	public CloseableIteration getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 		{
 		RdbmsValueFactory vf = triples.getValueFactory();

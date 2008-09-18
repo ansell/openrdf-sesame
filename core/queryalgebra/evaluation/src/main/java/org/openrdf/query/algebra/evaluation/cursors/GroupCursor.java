@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.iterator;
+package org.openrdf.query.algebra.evaluation.cursors;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.lang.ObjectUtil;
 
 import org.openrdf.StoreException;
@@ -24,6 +22,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Group;
@@ -33,60 +32,43 @@ import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.impl.IteratorCursor;
 
 /**
  * @author David Huynh
  * @author Arjohn Kampman
  */
-public class GroupIterator extends CloseableIteratorIteration<BindingSet, StoreException> {
-
-	/*-----------*
-	 * Constants *
-	 *-----------*/
-
-	private final EvaluationStrategy strategy;
-
-	private final BindingSet parentBindings;
-
-	private final Group group;
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	private boolean ordered = false;
+public class GroupCursor extends IteratorCursor<BindingSet> {
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public GroupIterator(EvaluationStrategy strategy, Group group, BindingSet parentBindings)
+	public GroupCursor(EvaluationStrategy strategy, Group group, BindingSet parentBindings)
 		throws StoreException
 	{
-		this.strategy = strategy;
-		this.group = group;
-		this.parentBindings = parentBindings;
+		super(createIterator(strategy, group, parentBindings));
 
-		super.setIterator(createIterator());
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	private Iterator<BindingSet> createIterator()
+	private static Iterator<BindingSet> createIterator(EvaluationStrategy strategy, Group group, BindingSet parentBindings)
 		throws StoreException
 	{
 		Collection<BindingSet> bindingSets;
 		Collection<Entry> entries;
+		boolean ordered = false;
 
 		if (ordered) {
 			bindingSets = new ArrayList<BindingSet>();
-			entries = buildOrderedEntries();
+			entries = buildOrderedEntries(strategy, group, parentBindings);
 		}
 		else {
 			bindingSets = new HashSet<BindingSet>();
-			entries = buildUnorderedEntries();
+			entries = buildUnorderedEntries(strategy, group, parentBindings);
 		}
 
 		for (Entry entry : entries) {
@@ -101,7 +83,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, StoreE
 			}
 
 			for (GroupElem ge : group.getGroupElements()) {
-				Value value = processAggregate(entry.getSolutions(), ge.getOperator());
+				Value value = processAggregate(strategy, entry.getSolutions(), ge.getOperator());
 				if (value != null) {
 					// Potentially overwrites bindings from super
 					sol.setBinding(ge.getName(), value);
@@ -114,19 +96,19 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, StoreE
 		return bindingSets.iterator();
 	}
 
-	private Collection<Entry> buildOrderedEntries()
+	private static Collection<Entry> buildOrderedEntries(EvaluationStrategy strategy, Group group, BindingSet parentBindings)
 		throws StoreException
 	{
-		CloseableIteration<BindingSet, StoreException> iter = strategy.evaluate(group.getArg(),
+		Cursor<BindingSet> iter = strategy.evaluate(group.getArg(),
 				parentBindings);
 
 		try {
 			List<Entry> orderedEntries = new ArrayList<Entry>();
 			Map<Key, Entry> entries = new HashMap<Key, Entry>();
 
-			while (iter.hasNext()) {
-				BindingSet bindingSet = iter.next();
-				Key key = new Key(bindingSet);
+			BindingSet bindingSet;
+			while ((bindingSet = iter.next()) != null) {
+				Key key = new Key(group, bindingSet);
 				Entry entry = entries.get(key);
 
 				if (entry == null) {
@@ -145,18 +127,18 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, StoreE
 		}
 	}
 
-	private Collection<Entry> buildUnorderedEntries()
+	private static Collection<Entry> buildUnorderedEntries(EvaluationStrategy strategy, Group group, BindingSet parentBindings)
 		throws StoreException
 	{
-		CloseableIteration<BindingSet, StoreException> iter = strategy.evaluate(group.getArg(),
+		Cursor<BindingSet> iter = strategy.evaluate(group.getArg(),
 				parentBindings);
 
 		try {
 			Map<Key, Entry> entries = new HashMap<Key, Entry>();
 
-			while (iter.hasNext()) {
-				BindingSet sol = iter.next();
-				Key key = new Key(sol);
+			BindingSet sol;
+			while ((sol = iter.next()) != null) {
+				Key key = new Key(group, sol);
 				Entry entry = entries.get(key);
 
 				if (entry == null) {
@@ -175,7 +157,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, StoreE
 
 	}
 
-	private Value processAggregate(Set<BindingSet> bindingSets, AggregateOperator operator)
+	private static Value processAggregate(EvaluationStrategy strategy, Set<BindingSet> bindingSets, AggregateOperator operator)
 		throws StoreException
 	{
 		if (operator instanceof Count) {
@@ -184,7 +166,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, StoreE
 			ValueExpr arg = countOp.getArg();
 
 			if (arg != null) {
-				Set<Value> values = makeValueSet(arg, bindingSets);
+				Set<Value> values = makeValueSet(strategy, arg, bindingSets);
 				return new LiteralImpl(Integer.toString(values.size()), XMLSchema.INTEGER);
 			}
 			else {
@@ -194,7 +176,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, StoreE
 		else if (operator instanceof Min) {
 			Min minOp = (Min)operator;
 
-			Set<Value> values = makeValueSet(minOp.getArg(), bindingSets);
+			Set<Value> values = makeValueSet(strategy, minOp.getArg(), bindingSets);
 
 			// FIXME: handle case where 'values' is empty
 			double min = Double.POSITIVE_INFINITY;
@@ -215,7 +197,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, StoreE
 		else if (operator instanceof Max) {
 			Max maxOp = (Max)operator;
 
-			Set<Value> values = makeValueSet(maxOp.getArg(), bindingSets);
+			Set<Value> values = makeValueSet(strategy, maxOp.getArg(), bindingSets);
 
 			// FIXME: handle case where 'values' is empty
 			double max = Double.NEGATIVE_INFINITY;
@@ -237,7 +219,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, StoreE
 		return null;
 	}
 
-	private Set<Value> makeValueSet(ValueExpr arg, Set<BindingSet> bindingSets)
+	private static Set<Value> makeValueSet(EvaluationStrategy strategy, ValueExpr arg, Set<BindingSet> bindingSets)
 		throws StoreException
 	{
 		Set<Value> valueSet = new HashSet<Value>();
@@ -257,13 +239,16 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, StoreE
 	 * 
 	 * @author David Huynh
 	 */
-	protected class Key {
+	protected static class Key {
+
+		private Group group;
 
 		private BindingSet bindingSet;
 
 		private int hash;
 
-		public Key(BindingSet bindingSet) {
+		public Key(Group group, BindingSet bindingSet) {
+			this.group = group;
 			this.bindingSet = bindingSet;
 
 			for (String name : group.getGroupBindingNames()) {

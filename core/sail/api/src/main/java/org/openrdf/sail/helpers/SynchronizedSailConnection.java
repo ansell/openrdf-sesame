@@ -9,7 +9,6 @@ import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
-import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
@@ -18,6 +17,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.SailConnection;
@@ -82,7 +82,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
-	public CloseableIteration<? extends BindingSet, StoreException> evaluate(TupleExpr tupleExpr,
+	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -95,7 +95,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
-	public CloseableIteration<? extends Resource, StoreException> getContextIDs()
+	public Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
@@ -107,7 +107,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
-	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj, URI pred,
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
@@ -222,7 +222,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
-	public CloseableIteration<? extends Namespace, StoreException> getNamespaces()
+	public Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();

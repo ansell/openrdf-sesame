@@ -19,7 +19,7 @@ import org.openrdf.model.ValueFactory;
 
 /**
  * 
- * @author james
+ * @author James Leigh
  */
 public class ModelTest extends TestCase {
 	private static final String NS = "http://example.org/";

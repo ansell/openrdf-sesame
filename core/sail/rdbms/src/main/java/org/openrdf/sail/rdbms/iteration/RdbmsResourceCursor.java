@@ -9,10 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
-import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.sail.rdbms.iteration.base.RdbmIterationBase;
+import org.openrdf.sail.rdbms.iteration.base.RdbmCursorBase;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 
 /**
@@ -21,11 +19,11 @@ import org.openrdf.sail.rdbms.model.RdbmsResource;
  * @author James Leigh
  * 
  */
-public class RdbmsResourceIteration extends RdbmIterationBase<RdbmsResource, StoreException> {
+public class RdbmsResourceCursor extends RdbmCursorBase<RdbmsResource> {
 
 	private RdbmsValueFactory vf;
 
-	public RdbmsResourceIteration(RdbmsValueFactory vf, PreparedStatement stmt)
+	public RdbmsResourceCursor(RdbmsValueFactory vf, PreparedStatement stmt)
 		throws SQLException
 	{
 		super(stmt);
@@ -38,11 +36,6 @@ public class RdbmsResourceIteration extends RdbmIterationBase<RdbmsResource, Sto
 	{
 		Number id = rs.getLong(0 + 1);
 		return vf.getRdbmsResource(id, rs.getString(0 + 2));
-	}
-
-	@Override
-	protected RdbmsException convertSQLException(SQLException e) {
-		return new RdbmsException(e);
 	}
 
 }

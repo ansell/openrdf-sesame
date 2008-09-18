@@ -9,11 +9,10 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.query.Cursor;
 
 /**
  * Tests concurrent read and write access to a Sail implementation.
@@ -119,11 +118,11 @@ public abstract class SailConcurrencyTest extends TestCase {
 					SailConnection connection = store.getConnection();
 					try {
 						while (continueRunning) {
-							CloseableIteration<? extends Resource, StoreException> contextIter = connection.getContextIDs();
+							Cursor<? extends Resource> contextIter = connection.getContextIDs();
 							try {
 								int contextCount = 0;
-								while (contextIter.hasNext()) {
-									Resource context = contextIter.next();
+								Resource context;
+								while ((context = contextIter.next()) != null) {
 									assertNotNull(context);
 									contextCount++;
 								}

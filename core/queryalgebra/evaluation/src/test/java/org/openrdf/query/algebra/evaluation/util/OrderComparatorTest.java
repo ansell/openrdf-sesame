@@ -10,11 +10,9 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
-import info.aduna.iteration.CloseableIteration;
-
-import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
@@ -25,12 +23,12 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
 /**
  * 
- * @author james
+ * @author James Leigh
  * 
  */
 public class OrderComparatorTest extends TestCase {
 	class EvaluationStrategyStub implements EvaluationStrategy {
-		public CloseableIteration<BindingSet, StoreException> evaluate(
+		public Cursor<BindingSet> evaluate(
 				TupleExpr expr, BindingSet bindings)
 				throws EvaluationException {
 			throw new UnsupportedOperationException();

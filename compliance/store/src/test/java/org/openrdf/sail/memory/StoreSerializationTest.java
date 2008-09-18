@@ -10,15 +10,14 @@ import java.io.File;
 import junit.framework.TestCase;
 
 import info.aduna.io.FileUtil;
-import info.aduna.iteration.CloseableIteration;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.EmptyBindingSet;
@@ -72,7 +71,7 @@ public class StoreSerializationTest extends TestCase {
 				"SELECT X, P, Y FROM {X} P {Y}", null);
 		TupleExpr tupleExpr = query.getTupleExpr();
 
-		CloseableIteration<? extends BindingSet, StoreException> iter = con.evaluate(tupleExpr, null,
+		Cursor<? extends BindingSet> iter = con.evaluate(tupleExpr, null,
 				EmptyBindingSet.getInstance(), false);
 
 		BindingSet bindingSet = iter.next();
@@ -137,10 +136,9 @@ public class StoreSerializationTest extends TestCase {
 
 		con = store.getConnection();
 
-		CloseableIteration<? extends Statement, StoreException> iter = con.getStatements(foo, RDF.TYPE, null,
+		Cursor<? extends Statement> iter = con.getStatements(foo, RDF.TYPE, null,
 				false);
-		assertTrue(iter.hasNext());
-		iter.next();
+		assertTrue(iter.next() != null);
 		iter.close();
 
 		con.close();

@@ -8,7 +8,7 @@ package org.openrdf.sail.memory.model;
 /**
  * A type-safe enumeration for read modes for MemStatementIterator.
  *
- * @see MemStatementIterator
+ * @see MemStatementCursor
  */
 public enum ReadMode  {
 	

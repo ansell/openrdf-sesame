@@ -10,14 +10,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.FilterIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.Cursor;
+import org.openrdf.query.base.FilteringCursor;
 
 /**
  * A GraphResult is a result collection of {@link org.openrdf.model.Statement}
@@ -26,9 +25,9 @@ import org.openrdf.model.Value;
  * methods to fetch all results and add them to a collection.
  * <p>
  * By default, a RepositoryResult is not necessarily a (mathematical) set: it
- * may contain duplicate objects. Duplicate filtering can be {{@link #enableDuplicateFilter() switched on},
- * but this should not be used lightly as the filtering mechanism is potentially
- * memory-intensive.
+ * may contain duplicate objects. Duplicate filtering can be {
+ * {@link #enableDuplicateFilter() switched on}, but this should not be used
+ * lightly as the filtering mechanism is potentially memory-intensive.
  * <p>
  * A GraphResult needs to be {@link #close() closed} after use to free up any
  * resources (open connections, read locks, etc.) it has on the underlying
@@ -42,8 +41,8 @@ import org.openrdf.model.Value;
 @Deprecated
 public class GraphResult extends RepositoryResult<Statement> {
 
-	public GraphResult(CloseableIteration<? extends Statement, StoreException> iter) {
-		super(iter);
+	public GraphResult(Cursor<? extends Statement> cursor) {
+		super(cursor);
 	}
 
 	/**
@@ -57,10 +56,11 @@ public class GraphResult extends RepositoryResult<Statement> {
 	 * @throws StoreException
 	 *         if a problem occurred during initialization of the filter.
 	 */
+	@Override
 	public void enableDuplicateFilter()
 		throws StoreException
 	{
-		wrappedIter = new FilterIteration<Statement, StoreException>(wrappedIter) {
+		delegate = new FilteringCursor<Statement>(delegate) {
 
 			private Set<List<Value>> excludedSet = new HashSet<List<Value>>();
 
@@ -71,11 +71,7 @@ public class GraphResult extends RepositoryResult<Statement> {
 				Resource s = st.getSubject();
 				URI p = st.getPredicate();
 				Value o = st.getObject();
-				List<Value> values = Arrays.asList(new Value[] { s, p, o });
-				if (excludedSet.contains(values))
-					return false;
-				excludedSet.add(values);
-				return true;
+				return excludedSet.add(Arrays.asList(new Value[] { s, p, o }));
 			}
 		};
 	}

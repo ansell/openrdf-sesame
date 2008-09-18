@@ -5,11 +5,10 @@
  */
 package org.openrdf.query.algebra.evaluation;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 
@@ -33,7 +32,7 @@ public interface EvaluationStrategy {
 	 * @return A closeable iterator over the variable binding sets that match the
 	 *         tuple expression.
 	 */
-	public CloseableIteration<BindingSet, StoreException> evaluate(TupleExpr expr,
+	public Cursor<BindingSet> evaluate(TupleExpr expr,
 			BindingSet bindings)
 		throws StoreException;
 

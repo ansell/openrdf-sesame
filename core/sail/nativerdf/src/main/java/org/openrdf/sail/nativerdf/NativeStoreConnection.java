@@ -12,11 +12,6 @@ import java.util.Collections;
 import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.ExceptionConvertingIteration;
-import info.aduna.iteration.Iterations;
-import info.aduna.iteration.IteratorIteration;
-import info.aduna.iteration.LockingIteration;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.StoreException;
@@ -27,11 +22,13 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.evaluation.cursors.LockingCursor;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
@@ -45,6 +42,7 @@ import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
+import org.openrdf.query.impl.IteratorCursor;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -89,7 +87,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	 * Methods *
 	 *---------*/
 
-	public CloseableIteration<? extends BindingSet, StoreException> evaluate(
+	public Cursor<? extends BindingSet> evaluate(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -127,9 +125,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			optimizerList.optimize(tupleExpr, dataset, bindings);
 			logger.trace("Optimized query model:\n{}", tupleExpr.toString());
 
-			CloseableIteration<BindingSet, StoreException> iter;
+			Cursor<BindingSet> iter;
 			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
-			return new LockingIteration<BindingSet, StoreException>(readLock, iter);
+			iter = new LockingCursor<BindingSet>(readLock, iter);
+			return iter;
 		}
 		catch (EvaluationException e) {
 			readLock.release();
@@ -157,36 +156,19 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		});
 	}
 
-	public CloseableIteration<? extends Resource, StoreException> getContextIDs()
+	public Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
 		// Which resources are used as context identifiers is not stored
 		// separately. Iterate over all statements and extract their context.
 		Lock readLock = nativeStore.getReadLock();
 		try {
-			CloseableIteration<? extends Resource, IOException> contextIter;
+			Cursor<? extends Resource> contextIter;
 			contextIter = nativeStore.getContextIDs(transactionActive());
 			// releasing the read lock when the iterator is closed
-			contextIter = new LockingIteration<Resource, IOException>(readLock, contextIter);
+			contextIter = new LockingCursor<Resource>(readLock, contextIter);
 
-			return new ExceptionConvertingIteration<Resource, StoreException>(contextIter) {
-
-				@Override
-				protected StoreException convert(Exception e) {
-					if (e instanceof IOException) {
-						return new StoreException(e);
-					}
-					else if (e instanceof RuntimeException) {
-						throw (RuntimeException)e;
-					}
-					else if (e == null) {
-						throw new IllegalArgumentException("e must not be null");
-					}
-					else {
-						throw new IllegalArgumentException("Unexpected exception type: " + e.getClass());
-					}
-				}
-			};
+			return contextIter;
 		}
 		catch (IOException e) {
 			readLock.release();
@@ -198,35 +180,18 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj,
+	public Cursor<? extends Statement> getStatements(Resource subj,
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		Lock readLock = nativeStore.getReadLock();
 		try {
-			CloseableIteration<? extends Statement, IOException> iter;
+			Cursor<? extends Statement> iter;
 			iter = nativeStore.createStatementIterator(subj, pred, obj, includeInferred, transactionActive(),
 					contexts);
-			iter = new LockingIteration<Statement, IOException>(readLock, iter);
+			iter = new LockingCursor<Statement>(readLock, iter);
 
-			return new ExceptionConvertingIteration<Statement, StoreException>(iter) {
-
-				@Override
-				protected StoreException convert(Exception e) {
-					if (e instanceof IOException) {
-						return new StoreException(e);
-					}
-					else if (e instanceof RuntimeException) {
-						throw (RuntimeException)e;
-					}
-					else if (e == null) {
-						throw new IllegalArgumentException("e must not be null");
-					}
-					else {
-						throw new IllegalArgumentException("Unexpected exception type: " + e.getClass());
-					}
-				}
-			};
+			return iter;
 		}
 		catch (IOException e) {
 			readLock.release();
@@ -280,14 +245,14 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public CloseableIteration<? extends Namespace, StoreException> getNamespaces()
+	public Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
 		Lock readLock = nativeStore.getReadLock();
 		try {
-			return new LockingIteration<NamespaceImpl, StoreException>(
+			return new LockingCursor<NamespaceImpl>(
 					readLock,
-					new IteratorIteration<NamespaceImpl, StoreException>(nativeStore.getNamespaceStore().iterator()));
+					new IteratorCursor<NamespaceImpl>(nativeStore.getNamespaceStore().iterator()));
 		}
 		catch (RuntimeException e) {
 			readLock.release();
@@ -509,9 +474,13 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 					RecordIterator btreeIter = tripleStore.getTriples(subjID, predID, objID, contextID, explicit,
 							true);
 
-					NativeStatementIterator iter = new NativeStatementIterator(btreeIter, valueStore);
+					NativeStatementCursor iter = new NativeStatementCursor(btreeIter, valueStore);
 
-					removedStatements = Iterations.asList(iter);
+					removedStatements = new ArrayList<Statement>();
+					Statement st;
+					while ((st = iter.next()) != null) {
+						removedStatements.add(st);
+					}
 				}
 
 				removeCount += tripleStore.removeTriples(subjID, predID, objID, contextID, explicit);

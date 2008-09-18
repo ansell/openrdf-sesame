@@ -19,6 +19,7 @@ import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
@@ -31,7 +32,7 @@ import org.openrdf.sail.rdbms.algebra.SelectQuery;
 import org.openrdf.sail.rdbms.algebra.SelectQuery.OrderElem;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
-import org.openrdf.sail.rdbms.iteration.RdbmsBindingIteration;
+import org.openrdf.sail.rdbms.iteration.RdbmsBindingCursor;
 import org.openrdf.sail.rdbms.schema.IdSequence;
 
 /**
@@ -64,7 +65,7 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 	}
 
 	@Override
-	public CloseableIteration<BindingSet, StoreException> evaluate(TupleExpr expr,
+	public Cursor<BindingSet> evaluate(TupleExpr expr,
 			BindingSet bindings)
 		throws StoreException
 	{
@@ -73,7 +74,7 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 		return super.evaluate(expr, bindings);
 	}
 
-	private CloseableIteration<BindingSet, StoreException> evaluate(SelectQuery qb, BindingSet b)
+	private Cursor<BindingSet> evaluate(SelectQuery qb, BindingSet b)
 		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		List<Object> parameters = new ArrayList<Object>();
@@ -87,7 +88,7 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 				stmt.setObject(++p, o);
 			}
 			Collection<ColumnVar> proj = qb.getProjections();
-			RdbmsBindingIteration result = new RdbmsBindingIteration(stmt);
+			RdbmsBindingCursor result = new RdbmsBindingCursor(stmt);
 			result.setProjections(proj);
 			result.setBindings(bindings);
 			result.setValueFactory(vf);

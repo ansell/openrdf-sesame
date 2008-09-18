@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.iterator;
+package org.openrdf.query.algebra.evaluation.cursors;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,26 +11,22 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIterationBase;
-
 import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.EvaluationException;
+import org.openrdf.query.Cursor;
 
 /**
  * 
- * @author james
+ * @author James Leigh
  *
  */
-public class OrderIterator extends
-		CloseableIterationBase<BindingSet, StoreException> {
+public class OrderCursor implements Cursor<BindingSet> {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	private CloseableIteration<BindingSet, StoreException> iter;
+	private Cursor<BindingSet> cursor;
 
 	private Comparator<BindingSet> comparator;
 
@@ -40,10 +36,10 @@ public class OrderIterator extends
 	 * Constructors *
 	 *--------------*/
 
-	public OrderIterator(
-			CloseableIteration<BindingSet, StoreException> iter,
+	public OrderCursor(
+			Cursor<BindingSet> cursor,
 			Comparator<BindingSet> comparator) {
-		this.iter = iter;
+		this.cursor = cursor;
 		this.comparator = comparator;
 	}
 
@@ -55,8 +51,9 @@ public class OrderIterator extends
 			throws StoreException {
 		if (ordered == null) {
 			List<BindingSet> list = new ArrayList<BindingSet>(1024);
-			while (iter.hasNext()) {
-				list.add(iter.next());
+			BindingSet next;
+			while ((next = cursor.next()) != null) {
+				list.add(next);
 			}
 			Collections.sort(list, comparator);
 			ordered = list.iterator();
@@ -64,16 +61,22 @@ public class OrderIterator extends
 		return ordered;
 	}
 
-	public boolean hasNext() throws StoreException {
-		return getOrderedIterator().hasNext();
-	}
-
 	public BindingSet next() throws StoreException {
-		return getOrderedIterator().next();
+		Iterator<BindingSet> iter = getOrderedIterator();
+		if (iter.hasNext())
+			return iter.next();
+		return null;
 	}
 
-	public void remove() throws EvaluationException {
-		throw new UnsupportedOperationException();
+	public void close()
+		throws StoreException
+	{
+		cursor.close();
+	}
+
+	@Override
+	public String toString() {
+		return "Order " + cursor.toString();
 	}
 
 }

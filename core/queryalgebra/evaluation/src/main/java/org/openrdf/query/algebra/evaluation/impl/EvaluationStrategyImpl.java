@@ -13,20 +13,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.ConvertingIteration;
-import info.aduna.iteration.DelayedIteration;
-import info.aduna.iteration.DistinctIteration;
-import info.aduna.iteration.EmptyIteration;
-import info.aduna.iteration.FilterIteration;
-import info.aduna.iteration.IntersectIteration;
-import info.aduna.iteration.Iteration;
-import info.aduna.iteration.LimitIteration;
-import info.aduna.iteration.MinusIteration;
-import info.aduna.iteration.OffsetIteration;
-import info.aduna.iteration.SingletonIteration;
-import info.aduna.iteration.UnionIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -41,6 +27,7 @@ import org.openrdf.model.impl.IntegerLiteralImpl;
 import org.openrdf.model.impl.NumericLiteralImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.And;
@@ -99,20 +86,31 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.query.algebra.evaluation.cursors.CompatibleBindingSetFilter;
+import org.openrdf.query.algebra.evaluation.cursors.DelayedCursor;
+import org.openrdf.query.algebra.evaluation.cursors.DistinctCursor;
+import org.openrdf.query.algebra.evaluation.cursors.EmptyCursor;
+import org.openrdf.query.algebra.evaluation.cursors.ExtensionCursor;
+import org.openrdf.query.algebra.evaluation.cursors.FilterCursor;
+import org.openrdf.query.algebra.evaluation.cursors.GroupCursor;
+import org.openrdf.query.algebra.evaluation.cursors.IntersectCursor;
+import org.openrdf.query.algebra.evaluation.cursors.JoinCursor;
+import org.openrdf.query.algebra.evaluation.cursors.LeftJoinCursor;
+import org.openrdf.query.algebra.evaluation.cursors.LimitCursor;
+import org.openrdf.query.algebra.evaluation.cursors.MinusCursor;
+import org.openrdf.query.algebra.evaluation.cursors.MultiProjectionCursor;
+import org.openrdf.query.algebra.evaluation.cursors.OffsetCursor;
+import org.openrdf.query.algebra.evaluation.cursors.OrderCursor;
+import org.openrdf.query.algebra.evaluation.cursors.ProjectionCursor;
+import org.openrdf.query.algebra.evaluation.cursors.SingletonCursor;
+import org.openrdf.query.algebra.evaluation.cursors.UnionCursor;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
-import org.openrdf.query.algebra.evaluation.iterator.CompatibleBindingSetFilter;
-import org.openrdf.query.algebra.evaluation.iterator.ExtensionIterator;
-import org.openrdf.query.algebra.evaluation.iterator.FilterIterator;
-import org.openrdf.query.algebra.evaluation.iterator.GroupIterator;
-import org.openrdf.query.algebra.evaluation.iterator.JoinIterator;
-import org.openrdf.query.algebra.evaluation.iterator.LeftJoinIterator;
-import org.openrdf.query.algebra.evaluation.iterator.MultiProjectionIterator;
-import org.openrdf.query.algebra.evaluation.iterator.OrderIterator;
-import org.openrdf.query.algebra.evaluation.iterator.ProjectionIterator;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
+import org.openrdf.query.base.ConvertingCursor;
+import org.openrdf.query.base.FilteringCursor;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -149,7 +147,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * Methods *
 	 *---------*/
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(TupleExpr expr,
+	public Cursor<BindingSet> evaluate(TupleExpr expr,
 			BindingSet bindings)
 		throws StoreException
 	{
@@ -173,7 +171,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(StatementPattern sp,
+	public Cursor<BindingSet> evaluate(StatementPattern sp,
 			final BindingSet bindings)
 		throws StoreException
 	{
@@ -187,7 +185,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value objValue = getVarValue(objVar, bindings);
 		Value contextValue = getVarValue(conVar, bindings);
 
-		CloseableIteration<? extends Statement, StoreException> stIter = null;
+		Cursor<? extends Statement> stIter = null;
 
 		try {
 			Resource[] contexts;
@@ -203,7 +201,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 				if (graphs.isEmpty()) {
 					// Search zero contexts
-					return new EmptyIteration<BindingSet, StoreException>();
+					return new EmptyCursor<BindingSet>();
 				}
 				else if (contextValue != null) {
 					if (graphs.contains(contextValue)) {
@@ -212,7 +210,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					else {
 						// Statement pattern specifies a context that is not part of
 						// the dataset
-						return new EmptyIteration<BindingSet, StoreException>();
+						return new EmptyCursor<BindingSet>();
 					}
 				}
 				else {
@@ -232,11 +230,16 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				// Named contexts are matched by retrieving all statements from
 				// the store and filtering out the statements that do not have a
 				// context.
-				stIter = new FilterIteration<Statement, StoreException>(stIter) {
+				stIter = new FilteringCursor<Statement>(stIter) {
 
 					@Override
 					protected boolean accept(Statement st) {
 						return st.getContext() != null;
+					}
+
+					@Override
+					public String getName() {
+						return "FilterNullContext";
 					}
 
 				}; // end anonymous class
@@ -244,12 +247,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		catch (ClassCastException e) {
 			// Invalid value type for subject, predicate and/or context
-			return new EmptyIteration<BindingSet, StoreException>();
+			return new EmptyCursor<BindingSet>();
 		}
 
 		// The same variable might have been used multiple times in this
 		// StatementPattern, verify value equality in those cases.
-		stIter = new FilterIteration<Statement, StoreException>(stIter) {
+		stIter = new FilteringCursor<Statement>(stIter) {
 
 			@Override
 			protected boolean accept(Statement st) {
@@ -287,10 +290,15 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 				return true;
 			}
+
+			@Override
+			public String getName() {
+				return "VerifyPatternMatch";
+			}
 		};
 
 		// Return an iterator that converts the statements to var bindings
-		return new ConvertingIteration<Statement, BindingSet, StoreException>(stIter) {
+		return new ConvertingCursor<Statement, BindingSet>(stIter) {
 
 			@Override
 			protected BindingSet convert(Statement st) {
@@ -311,6 +319,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 				return result;
 			}
+
+			@Override
+			public String getName() {
+				return "BuildBindingSet";
+			}
 		};
 	}
 
@@ -326,7 +339,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(UnaryTupleOperator expr,
+	public Cursor<BindingSet> evaluate(UnaryTupleOperator expr,
 			BindingSet bindings)
 		throws StoreException
 	{
@@ -365,84 +378,84 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(Projection projection,
+	public Cursor<BindingSet> evaluate(Projection projection,
 			BindingSet bindings)
 		throws StoreException
 	{
-		CloseableIteration<BindingSet, StoreException> result;
+		Cursor<BindingSet> result;
 		result = this.evaluate(projection.getArg(), bindings);
-		result = new ProjectionIterator(projection, result, bindings);
+		result = new ProjectionCursor(projection, result, bindings);
 		return result;
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(MultiProjection multiProjection,
+	public Cursor<BindingSet> evaluate(MultiProjection multiProjection,
 			BindingSet bindings)
 		throws StoreException
 	{
-		CloseableIteration<BindingSet, StoreException> result;
+		Cursor<BindingSet> result;
 		result = this.evaluate(multiProjection.getArg(), bindings);
-		result = new MultiProjectionIterator(multiProjection, result, bindings);
+		result = new MultiProjectionCursor(multiProjection, result, bindings);
 		return result;
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(Filter filter, BindingSet bindings)
+	public Cursor<BindingSet> evaluate(Filter filter, BindingSet bindings)
 		throws StoreException
 	{
-		CloseableIteration<BindingSet, StoreException> result;
+		Cursor<BindingSet> result;
 		result = this.evaluate(filter.getArg(), bindings);
-		result = new FilterIterator(filter, result, this);
+		result = new FilterCursor(filter, result, this);
 		return result;
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(Slice slice, BindingSet bindings)
+	public Cursor<BindingSet> evaluate(Slice slice, BindingSet bindings)
 		throws StoreException
 	{
-		CloseableIteration<BindingSet, StoreException> result = evaluate(slice.getArg(), bindings);
+		Cursor<BindingSet> result = evaluate(slice.getArg(), bindings);
 
 		if (slice.hasOffset()) {
-			result = new OffsetIteration<BindingSet, StoreException>(result, slice.getOffset());
+			result = new OffsetCursor<BindingSet>(result, slice.getOffset());
 		}
 
 		if (slice.hasLimit()) {
-			result = new LimitIteration<BindingSet, StoreException>(result, slice.getLimit());
+			result = new LimitCursor<BindingSet>(result, slice.getLimit());
 		}
 
 		return result;
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(Extension extension,
+	public Cursor<BindingSet> evaluate(Extension extension,
 			BindingSet bindings)
 		throws StoreException
 	{
-		CloseableIteration<BindingSet, StoreException> result;
+		Cursor<BindingSet> result;
 		result = this.evaluate(extension.getArg(), bindings);
-		result = new ExtensionIterator(extension, result, this);
+		result = new ExtensionCursor(extension, result, this);
 		return result;
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(Distinct distinct,
+	public Cursor<BindingSet> evaluate(Distinct distinct,
 			BindingSet bindings)
 		throws StoreException
 	{
-		return new DistinctIteration<BindingSet, StoreException>(
+		return new DistinctCursor<BindingSet>(
 				evaluate(distinct.getArg(), bindings));
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(Group node, BindingSet bindings)
+	public Cursor<BindingSet> evaluate(Group node, BindingSet bindings)
 		throws StoreException
 	{
-		return new GroupIterator(this, node, bindings);
+		return new GroupCursor(this, node, bindings);
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(Order node, BindingSet bindings)
+	public Cursor<BindingSet> evaluate(Order node, BindingSet bindings)
 		throws StoreException
 	{
 		ValueComparator vcmp = new ValueComparator();
 		OrderComparator cmp = new OrderComparator(this, node, vcmp);
-		return new OrderIterator(evaluate(node.getArg(), bindings), cmp);
+		return new OrderCursor(evaluate(node.getArg(), bindings), cmp);
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(NaryTupleOperator expr,
+	public Cursor<BindingSet> evaluate(NaryTupleOperator expr,
 			BindingSet bindings)
 		throws StoreException
 	{
@@ -466,7 +479,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(BinaryTupleOperator expr,
+	public Cursor<BindingSet> evaluate(BinaryTupleOperator expr,
 			BindingSet bindings)
 		throws StoreException
 	{
@@ -487,24 +500,24 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(Join join, BindingSet bindings)
+	public Cursor<BindingSet> evaluate(Join join, BindingSet bindings)
 		throws StoreException
 	{
 		assert join.getNumberOfArguments() > 0;
-		CloseableIteration<BindingSet, StoreException> result;
+		Cursor<BindingSet> result;
 		result = evaluate(join.getArg(0), bindings);
 		for (int i = 1, n = join.getNumberOfArguments(); i < n; i++) {
-			result = new JoinIterator(this, result, join.getArg(i), bindings);
+			result = new JoinCursor(this, result, join.getArg(i), bindings);
 		}
 		return result;
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(LeftJoin leftJoin,
+	public Cursor<BindingSet> evaluate(LeftJoin leftJoin,
 			BindingSet bindings)
 		throws StoreException
 	{
 		// Check whether optional join is "well designed" as defined in section
-		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge Pérez et al.
+		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge Pï¿½rez et al.
 		Set<String> boundVars = bindings.getBindingNames();
 		Set<String> leftVars = leftJoin.getLeftArg().getBindingNames();
 		Set<String> optionalVars = leftJoin.getRightArg().getBindingNames();
@@ -515,14 +528,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (problemVars.isEmpty()) {
 			// left join is "well designed"
-			return new LeftJoinIterator(this, leftJoin, bindings);
+			return new LeftJoinCursor(this, leftJoin, bindings);
 		}
 		else {
 			QueryBindingSet filteredBindings = new QueryBindingSet(bindings);
 			filteredBindings.removeAll(problemVars);
-			CloseableIteration<BindingSet, StoreException> iter;
+			Cursor<BindingSet> iter;
 
-			iter = new LeftJoinIterator(this, leftJoin, filteredBindings);
+			iter = new LeftJoinCursor(this, leftJoin, filteredBindings);
 			iter = new CompatibleBindingSetFilter(iter, bindings);
 
 			return iter;
@@ -530,98 +543,58 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	@SuppressWarnings("unchecked")
-	public CloseableIteration<BindingSet, StoreException> evaluate(final Union union,
+	public Cursor<BindingSet> evaluate(final Union union,
 			final BindingSet bindings)
 		throws StoreException
 	{
 		int size = union.getNumberOfArguments();
-		Iteration<BindingSet, StoreException>[] iters = new Iteration[size];
+		Cursor<BindingSet>[] iters = new Cursor[size];
 		for (int i=0;i<size;i++) {
 			final TupleExpr arg = union.getArg(i);
-			iters[i] = new DelayedIteration<BindingSet, StoreException>() {
-
-				@Override
-				protected Iteration<BindingSet, StoreException> createIteration()
-					throws StoreException
-				{
-					return evaluate(arg, bindings);
-				}
-			};
+			iters[i] = new DelayedCursor(this, arg, bindings);
 		}
 
-		return new UnionIteration<BindingSet, StoreException>(iters);
+		return new UnionCursor<BindingSet>(iters);
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(final Intersection intersection,
+	public Cursor<BindingSet> evaluate(final Intersection intersection,
 			final BindingSet bindings)
 		throws StoreException
 	{
-		Iteration<BindingSet, StoreException> leftArg, rightArg;
+		Cursor<BindingSet> leftArg, rightArg;
 
-		leftArg = new DelayedIteration<BindingSet, StoreException>() {
+		leftArg = new DelayedCursor(this, intersection.getLeftArg(), bindings);
 
-			@Override
-			protected Iteration<BindingSet, StoreException> createIteration()
-				throws StoreException
-			{
-				return evaluate(intersection.getLeftArg(), bindings);
-			}
-		};
+		rightArg = new DelayedCursor(this, intersection.getRightArg(), bindings);
 
-		rightArg = new DelayedIteration<BindingSet, StoreException>() {
-
-			@Override
-			protected Iteration<BindingSet, StoreException> createIteration()
-				throws StoreException
-			{
-				return evaluate(intersection.getRightArg(), bindings);
-			}
-		};
-
-		return new IntersectIteration<BindingSet, StoreException>(leftArg, rightArg);
+		return new IntersectCursor<BindingSet>(leftArg, rightArg);
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(final Difference difference,
+	public Cursor<BindingSet> evaluate(final Difference difference,
 			final BindingSet bindings)
 		throws StoreException
 	{
-		Iteration<BindingSet, StoreException> leftArg, rightArg;
+		Cursor<BindingSet> leftArg, rightArg;
 
-		leftArg = new DelayedIteration<BindingSet, StoreException>() {
+		leftArg = new DelayedCursor(this, difference.getLeftArg(), bindings);
 
-			@Override
-			protected Iteration<BindingSet, StoreException> createIteration()
-				throws StoreException
-			{
-				return evaluate(difference.getLeftArg(), bindings);
-			}
-		};
+		rightArg = new DelayedCursor(this, difference.getRightArg(), bindings);
 
-		rightArg = new DelayedIteration<BindingSet, StoreException>() {
-
-			@Override
-			protected Iteration<BindingSet, StoreException> createIteration()
-				throws StoreException
-			{
-				return evaluate(difference.getRightArg(), bindings);
-			}
-		};
-
-		return new MinusIteration<BindingSet, StoreException>(leftArg, rightArg);
+		return new MinusCursor<BindingSet>(leftArg, rightArg);
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(SingletonSet singletonSet,
+	public Cursor<BindingSet> evaluate(SingletonSet singletonSet,
 			BindingSet bindings)
 		throws StoreException
 	{
-		return new SingletonIteration<BindingSet, StoreException>(bindings);
+		return new SingletonCursor<BindingSet>(bindings);
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(EmptySet emptySet,
+	public Cursor<BindingSet> evaluate(EmptySet emptySet,
 			BindingSet bindings)
 		throws StoreException
 	{
-		return new EmptyIteration<BindingSet, StoreException>();
+		return new EmptyCursor<BindingSet>();
 	}
 
 	public Value evaluate(ValueExpr expr, BindingSet bindings)
@@ -1234,10 +1207,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		// Use first binding name from tuple expr to compare values
 		String bindingName = node.getSubQuery().getBindingNames().iterator().next();
 
-		CloseableIteration<BindingSet, StoreException> iter = evaluate(node.getSubQuery(), bindings);
+		Cursor<BindingSet> iter = evaluate(node.getSubQuery(), bindings);
 		try {
-			while (result == false && iter.hasNext()) {
-				BindingSet bindingSet = iter.next();
+			BindingSet bindingSet;
+			while (result == false && (bindingSet = iter.next()) != null) {
 
 				Value rightValue = bindingSet.getValue(bindingName);
 
@@ -1263,10 +1236,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		// Use first binding name from tuple expr to compare values
 		String bindingName = node.getSubQuery().getBindingNames().iterator().next();
 
-		CloseableIteration<BindingSet, StoreException> iter = evaluate(node.getSubQuery(), bindings);
+		Cursor<BindingSet> iter = evaluate(node.getSubQuery(), bindings);
 		try {
-			while (result == false && iter.hasNext()) {
-				BindingSet bindingSet = iter.next();
+			BindingSet bindingSet;
+			while (result == false && (bindingSet = iter.next()) != null) {
 
 				Value rightValue = bindingSet.getValue(bindingName);
 
@@ -1296,10 +1269,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		// Use first binding name from tuple expr to compare values
 		String bindingName = node.getSubQuery().getBindingNames().iterator().next();
 
-		CloseableIteration<BindingSet, StoreException> iter = evaluate(node.getSubQuery(), bindings);
+		Cursor<BindingSet> iter = evaluate(node.getSubQuery(), bindings);
 		try {
-			while (result == true && iter.hasNext()) {
-				BindingSet bindingSet = iter.next();
+			BindingSet bindingSet;
+			while (result == true && (bindingSet = iter.next()) != null) {
 
 				Value rightValue = bindingSet.getValue(bindingName);
 
@@ -1322,9 +1295,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public Value evaluate(Exists node, BindingSet bindings)
 		throws ValueExprEvaluationException, StoreException
 	{
-		CloseableIteration<BindingSet, StoreException> iter = evaluate(node.getSubQuery(), bindings);
+		Cursor<BindingSet> iter = evaluate(node.getSubQuery(), bindings);
 		try {
-			return BooleanLiteralImpl.valueOf(iter.hasNext());
+			return BooleanLiteralImpl.valueOf(iter.next() != null);
 		}
 		finally {
 			iter.close();

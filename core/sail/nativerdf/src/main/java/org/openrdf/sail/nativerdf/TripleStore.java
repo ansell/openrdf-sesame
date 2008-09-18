@@ -476,6 +476,11 @@ class TripleStore {
 		{
 			wrappedIter.close();
 		}
+
+		@Override
+		public String toString() {
+			return "StatementFilter " + wrappedIter.toString();
+		}
 	} // end inner class ExplicitStatementFilter
 
 	private RecordIterator getTriples(int subj, int pred, int obj, int context, int flags, int flagsMask)

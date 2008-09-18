@@ -9,13 +9,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIteratorIteration;
-import info.aduna.iteration.IterationWrapper;
-
-import org.openrdf.StoreException;
 import org.openrdf.model.Statement;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.base.CursorIteration;
 
 /**
  * An utility implementation of the {@link GraphQueryResult} interface.
@@ -23,7 +20,7 @@ import org.openrdf.query.GraphQueryResult;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class GraphQueryResultImpl extends IterationWrapper<Statement, StoreException> implements
+public class GraphQueryResultImpl extends CursorIteration<Statement> implements
 		GraphQueryResult
 {
 
@@ -42,11 +39,11 @@ public class GraphQueryResultImpl extends IterationWrapper<Statement, StoreExcep
 	}
 
 	public GraphQueryResultImpl(Map<String, String> namespaces, Iterator<? extends Statement> statementIter) {
-		this(namespaces, new CloseableIteratorIteration<Statement, StoreException>(statementIter));
+		this(namespaces, new IteratorCursor<Statement>(statementIter));
 	}
 
 	public GraphQueryResultImpl(Map<String, String> namespaces,
-			CloseableIteration<? extends Statement, ? extends StoreException> statementIter)
+			Cursor<? extends Statement> statementIter)
 	{
 		super(statementIter);
 		this.namespaces = Collections.unmodifiableMap(namespaces);

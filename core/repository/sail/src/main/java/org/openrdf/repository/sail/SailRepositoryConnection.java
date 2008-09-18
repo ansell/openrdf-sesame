@@ -14,6 +14,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.ParsedBooleanQuery;
@@ -250,7 +251,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	 * object, applying the required conversions
 	 */
 	protected <E> RepositoryResult<E> createRepositoryResult(
-			CloseableIteration<? extends E, StoreException> sailIter)
+			Cursor<? extends E> sailIter)
 	{
 		return new RepositoryResult<E>(sailIter);
 	}
@@ -260,7 +261,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	 * object, applying the required conversions
 	 */
 	protected <E> GraphResult createGraphResult(
-			CloseableIteration<? extends Statement, StoreException> sailIter)
+			Cursor<? extends Statement> sailIter)
 	{
 		return new GraphResult(sailIter);
 	}

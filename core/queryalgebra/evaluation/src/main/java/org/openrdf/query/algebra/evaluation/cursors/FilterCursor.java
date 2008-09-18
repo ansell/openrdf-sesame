@@ -3,22 +3,21 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.iterator;
+package org.openrdf.query.algebra.evaluation.cursors;
 
 import java.util.Set;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.FilterIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.query.base.FilteringCursor;
 
-public class FilterIterator extends FilterIteration<BindingSet, StoreException> {
+public class FilterCursor extends FilteringCursor<BindingSet> {
 
 	/*-----------*
 	 * Constants *
@@ -39,7 +38,7 @@ public class FilterIterator extends FilterIteration<BindingSet, StoreException> 
 	 * Constructors *
 	 *--------------*/
 
-	public FilterIterator(Filter filter, CloseableIteration<BindingSet, StoreException> iter,
+	public FilterCursor(Filter filter, Cursor<BindingSet> iter,
 			EvaluationStrategy strategy)
 		throws EvaluationException
 	{
@@ -68,5 +67,10 @@ public class FilterIterator extends FilterIteration<BindingSet, StoreException> 
 			// failed to evaluate condition
 			return false;
 		}
+	}
+
+	@Override
+	public String getName() {
+		return filter.getCondition().toString();
 	}
 }

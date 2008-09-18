@@ -3,24 +3,22 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.iterator;
+package org.openrdf.query.algebra.evaluation.cursors;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.FilterIteration;
-
-import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.base.FilteringCursor;
 
 /**
  * @author Arjohn Kampman
  */
-public class CompatibleBindingSetFilter extends FilterIteration<BindingSet, StoreException> {
+public class CompatibleBindingSetFilter extends FilteringCursor<BindingSet> {
 
 	private BindingSet inputBindings;
 
-	public CompatibleBindingSetFilter(CloseableIteration<BindingSet, StoreException> iter,
+	public CompatibleBindingSetFilter(Cursor<BindingSet> iter,
 			BindingSet inputBindings)
 	{
 		super(iter);

@@ -8,19 +8,20 @@ package org.openrdf.sail.nativerdf;
 import java.io.IOException;
 
 import info.aduna.io.ByteArrayUtil;
-import info.aduna.iteration.LookAheadIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.Cursor;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 
 /**
  * A statement iterator that wraps a RecordIterator containing statement records
  * and translates these records to {@link Statement} objects.
  */
-class NativeStatementIterator extends LookAheadIteration<Statement, IOException> {
+class NativeStatementCursor implements Cursor<Statement> {
 
 	/*-----------*
 	 * Variables *
@@ -37,7 +38,7 @@ class NativeStatementIterator extends LookAheadIteration<Statement, IOException>
 	/**
 	 * Creates a new NativeStatementIterator.
 	 */
-	public NativeStatementIterator(RecordIterator btreeIter, ValueStore valueStore)
+	public NativeStatementCursor(RecordIterator btreeIter, ValueStore valueStore)
 		throws IOException
 	{
 		this.btreeIter = btreeIter;
@@ -48,9 +49,10 @@ class NativeStatementIterator extends LookAheadIteration<Statement, IOException>
 	 * Methods *
 	 *---------*/
 
-	public Statement getNextElement()
-		throws IOException
+	public Statement next()
+		throws StoreException
 	{
+		try {
 		byte[] nextValue = btreeIter.next();
 
 		if (nextValue == null) {
@@ -73,13 +75,24 @@ class NativeStatementIterator extends LookAheadIteration<Statement, IOException>
 		}
 
 		return valueStore.createStatement(subj, pred, obj, context);
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+	}
+
+	public void close() throws StoreException
+	{
+		try {
+			btreeIter.close();
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
 	}
 
 	@Override
-	protected void handleClose()
-		throws IOException
-	{
-		super.handleClose();
-		btreeIter.close();
+	public String toString() {
+		return btreeIter.toString();
 	}
 }
