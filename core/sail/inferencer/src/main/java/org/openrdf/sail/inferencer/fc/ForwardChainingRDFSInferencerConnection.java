@@ -26,7 +26,7 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.inferencer.InferencerConnection;
-import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
+import org.openrdf.sail.inferencer.helpers.InferencerConnectionWrapper;
 
 /**
  * Forward-chaining RDF Schema inferencer, using the rules from the <a

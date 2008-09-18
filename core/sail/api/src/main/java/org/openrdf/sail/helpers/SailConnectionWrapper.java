@@ -61,14 +61,6 @@ public class SailConnectionWrapper implements SailConnection {
 		return wrappedCon;
 	}
 
-	public boolean isNotifyingSupported() {
-		return wrappedCon.isNotifyingSupported();
-	}
-
-	public boolean isInferencingSupported() {
-		return wrappedCon.isInferencingSupported();
-	}
-
 	public boolean isOpen()
 		throws StoreException
 	{

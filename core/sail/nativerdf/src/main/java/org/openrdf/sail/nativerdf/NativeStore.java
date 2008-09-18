@@ -29,12 +29,12 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.DirectoryLockManager;
-import org.openrdf.sail.helpers.NotifyingSailBase;
 import org.openrdf.sail.helpers.SailUtil;
-import org.openrdf.sail.helpers.SynchronizedSailConnection;
+import org.openrdf.sail.inferencer.InferencerConnection;
+import org.openrdf.sail.inferencer.helpers.InferencerSailBase;
+import org.openrdf.sail.inferencer.helpers.SynchronizedInferencerConnection;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
 
@@ -45,7 +45,7 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class NativeStore extends NotifyingSailBase {
+public class NativeStore extends InferencerSailBase {
 
 	/*-----------*
 	 * Variables *
@@ -255,7 +255,7 @@ public class NativeStore extends NotifyingSailBase {
 	}
 
 	@Override
-	protected NotifyingSailConnection getConnectionInternal()
+	protected InferencerConnection getConnectionInternal()
 		throws StoreException
 	{
 		if (!isInitialized()) {
@@ -263,8 +263,8 @@ public class NativeStore extends NotifyingSailBase {
 		}
 
 		try {
-			NotifyingSailConnection con = new NativeStoreConnection(this);
-			return new SynchronizedSailConnection(con);
+			InferencerConnection con = new NativeStoreConnection(this);
+			return new SynchronizedInferencerConnection(con);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);

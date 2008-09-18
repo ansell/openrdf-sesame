@@ -24,7 +24,6 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
 
 /**
  * Tracks SailConnection iterations and verifies that the connection is open.
@@ -33,9 +32,9 @@ import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
  * @author jeen
  * @author James Leigh
  */
-public class TrackingSailConnection extends InferencerConnectionWrapper {
+public class TrackingSailConnection extends SailConnectionWrapper {
 
-	private final Logger logger = LoggerFactory.getLogger(TrackingSailConnection.class);
+	protected final Logger logger = LoggerFactory.getLogger(TrackingSailConnection.class);
 
 	/*-----------*
 	 * Variables *
@@ -80,7 +79,7 @@ public class TrackingSailConnection extends InferencerConnectionWrapper {
 		return isOpen;
 	}
 
-	private void verifyIsOpen()
+	protected void verifyIsOpen()
 		throws StoreException
 	{
 		if (!isOpen) {
@@ -154,8 +153,8 @@ public class TrackingSailConnection extends InferencerConnectionWrapper {
 		}
 	}
 
-	public final CloseableIteration<? extends BindingSet, StoreException> evaluate(
-			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+	public final CloseableIteration<? extends BindingSet, StoreException> evaluate(TupleExpr tupleExpr,
+			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		verifyIsOpen();
@@ -169,8 +168,8 @@ public class TrackingSailConnection extends InferencerConnectionWrapper {
 		return registerIteration(super.getContextIDs());
 	}
 
-	public final CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj, URI pred,
-			Value obj, boolean includeInferred, Resource... contexts)
+	public final CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj,
+			URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		verifyIsOpen();
@@ -184,7 +183,7 @@ public class TrackingSailConnection extends InferencerConnectionWrapper {
 		return super.size(contexts);
 	}
 
-	private void autoStartTransaction()
+	protected void autoStartTransaction()
 		throws StoreException
 	{
 		begin();
@@ -232,15 +231,6 @@ public class TrackingSailConnection extends InferencerConnectionWrapper {
 		super.addStatement(subj, pred, obj, contexts);
 	}
 
-	@Override
-	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
-	{
-		verifyIsOpen();
-		autoStartTransaction();
-		return super.addInferredStatement(subj, pred, obj, contexts);
-	}
-
 	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
@@ -249,30 +239,12 @@ public class TrackingSailConnection extends InferencerConnectionWrapper {
 		super.removeStatements(subj, pred, obj, contexts);
 	}
 
-	@Override
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
-	{
-		verifyIsOpen();
-		autoStartTransaction();
-		return super.removeInferredStatement(subj, pred, obj, contexts);
-	}
-
 	public final void clear(Resource... contexts)
 		throws StoreException
 	{
 		verifyIsOpen();
 		autoStartTransaction();
 		super.clear(contexts);
-	}
-
-	@Override
-	public void clearInferred(Resource... contexts)
-		throws StoreException
-	{
-		verifyIsOpen();
-		autoStartTransaction();
-		super.clearInferred(contexts);
 	}
 
 	public final CloseableIteration<? extends Namespace, StoreException> getNamespaces()
@@ -318,7 +290,8 @@ public class TrackingSailConnection extends InferencerConnectionWrapper {
 	 * {@link TrackingSailIteration} object and adding it to the list of active
 	 * iterations.
 	 */
-	private <T> CloseableIteration<T, StoreException> registerIteration(CloseableIteration<T, StoreException> iter)
+	protected <T> CloseableIteration<T, StoreException> registerIteration(
+			CloseableIteration<T, StoreException> iter)
 	{
 		TrackingSailIteration<T> result = new TrackingSailIteration<T>(iter, this);
 		activeIterations.add(result);
@@ -326,7 +299,8 @@ public class TrackingSailConnection extends InferencerConnectionWrapper {
 	}
 
 	/**
-	 * Called by {@link TrackingSailIteration} to indicate that it has been closed.
+	 * Called by {@link TrackingSailIteration} to indicate that it has been
+	 * closed.
 	 */
 	void iterationClosed(TrackingSailIteration<?> iter) {
 		activeIterations.remove(iter);

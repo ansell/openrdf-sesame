@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail.inferencer;
+package org.openrdf.sail.inferencer.helpers;
 
 import info.aduna.iteration.CloseableIteration;
 
@@ -17,6 +17,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.NotifyingSailConnectionWrapper;
+import org.openrdf.sail.inferencer.InferencerConnection;
 
 /**
  * An extension of ConnectionWrapper that implements the
@@ -45,8 +46,6 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 */
 	public InferencerConnectionWrapper(InferencerConnection con) {
 		super(con);
-		if (!con.isInferencingSupported())
-			throw new IllegalArgumentException("Sail does not support inferencing");
 	}
 
 	/*---------*

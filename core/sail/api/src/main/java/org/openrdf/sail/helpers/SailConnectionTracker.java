@@ -72,10 +72,20 @@ public class SailConnectionTracker {
 	public SailConnection track(SailConnection connection)
 		throws StoreException
 	{
+		connection = wrapConnection(connection);
+
 		Throwable stackTrace = SailUtil.isDebugEnabled() ? new Throwable() : null;
-		connection = new TrackingSailConnection(connection, this);
 		activeConnections.put(connection, stackTrace);
+
 		return connection;
+	}
+
+	/**
+	 * Wraps a connection with a connection that deregisters itself upon being
+	 * closed.
+	 */
+	protected SailConnection wrapConnection(SailConnection connection) {
+		return new TrackingSailConnection(connection, this);
 	}
 
 	/**

@@ -47,11 +47,23 @@ public abstract class SailBase implements Sail {
 	 */
 	private boolean shutDownInProgress = false;
 
-	private SailConnectionTracker tracker = new SailConnectionTracker(); 
+	private final SailConnectionTracker tracker;
+
+	/*--------------*
+	 * Constructors *
+	 *--------------*/
+
+	public SailBase() {
+		tracker = createSailConnectionTracker();
+	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	protected SailConnectionTracker createSailConnectionTracker() {
+		return new SailConnectionTracker();
+	}
 
 	public SailMetaData getSailMetaData() {
 		return new SailMetaDataImpl();
@@ -92,7 +104,7 @@ public abstract class SailBase implements Sail {
 
 		try {
 			tracker.closeAll();
-			
+
 			shutDownInternal();
 		}
 		finally {
