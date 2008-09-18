@@ -30,20 +30,6 @@ import org.openrdf.query.algebra.TupleExpr;
 public interface SailConnection {
 
 	/**
-	 * Indicates if this {@link Sail} supports {@link SailConnectionListener}s.
-	 * 
-	 * @return <code>true</code> if This Sail supports listeners.
-	 */
-	public boolean isNotifyingSupported();
-
-	/**
-	 * Indicates if this {@link Sail} supports inferred statements.
-	 * 
-	 * @return <code>true</code> if This Sail supports inferred statements.
-	 */
-	public boolean isInferencingSupported();
-
-	/**
 	 * Checks whether this SailConnection is open. A SailConnection is open from
 	 * the moment it is created until it is closed.
 	 * 

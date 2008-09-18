@@ -20,18 +20,18 @@ import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailMetaData;
-import org.openrdf.StoreException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.DirectoryLockManager;
-import org.openrdf.sail.helpers.NotifyingSailBase;
 import org.openrdf.sail.helpers.SailUtil;
-import org.openrdf.sail.helpers.SynchronizedSailConnection;
+import org.openrdf.sail.inferencer.InferencerConnection;
+import org.openrdf.sail.inferencer.helpers.InferencerSailBase;
+import org.openrdf.sail.inferencer.helpers.SynchronizedInferencerConnection;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemStatementIterator;
@@ -54,7 +54,7 @@ import org.openrdf.sail.memory.model.TxnStatus;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class MemoryStore extends NotifyingSailBase {
+public class MemoryStore extends InferencerSailBase {
 
 	/*-----------*
 	 * Constants *
@@ -398,15 +398,15 @@ public class MemoryStore extends NotifyingSailBase {
 	}
 
 	@Override
-	protected NotifyingSailConnection getConnectionInternal()
+	protected InferencerConnection getConnectionInternal()
 		throws StoreException
 	{
 		if (!isInitialized()) {
 			throw new IllegalStateException("sail not initialized.");
 		}
 
-		NotifyingSailConnection con = new MemoryStoreConnection(this);
-		return new SynchronizedSailConnection(con);
+		InferencerConnection con = new MemoryStoreConnection(this);
+		return new SynchronizedInferencerConnection(con);
 	}
 
 	public MemValueFactory getValueFactory() {

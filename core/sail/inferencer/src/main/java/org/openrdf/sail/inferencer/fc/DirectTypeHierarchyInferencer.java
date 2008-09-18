@@ -35,8 +35,8 @@ import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.helpers.SailMetaDataWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
-import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
 import org.openrdf.sail.inferencer.fc.config.DirectTypeHierarchyInferencerFactory;
+import org.openrdf.sail.inferencer.helpers.InferencerConnectionWrapper;
 
 /**
  * A forward-chaining inferencer that infers the direct-type hierarchy relations

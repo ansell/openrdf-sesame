@@ -10,9 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
-import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.inferencer.InferencerConnection;
 
 /**
  * Abstract Class offering base functionality for SailConnection
@@ -35,14 +33,6 @@ public abstract class SailConnectionBase implements SailConnection {
 	/*---------*
 	 * Methods *
 	 *---------*/
-
-	public boolean isInferencingSupported() {
-		return this instanceof InferencerConnection;
-	}
-
-	public boolean isNotifyingSupported() {
-		return this instanceof NotifyingSailConnection;
-	}
 
 	public boolean isOpen()
 		throws StoreException

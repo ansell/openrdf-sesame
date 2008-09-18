@@ -21,7 +21,6 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
 
 /**
  * Wrapper Class offering synchronising functionality for SailConnection
@@ -31,7 +30,7 @@ import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
  * @author jeen
  * @author James Leigh
  */
-public class SynchronizedSailConnection extends InferencerConnectionWrapper {
+public class SynchronizedSailConnection extends SailConnectionWrapper {
 
 	/**
 	 * A read-write lock manager used to handle multi-threaded access on the
@@ -83,8 +82,8 @@ public class SynchronizedSailConnection extends InferencerConnectionWrapper {
 		}
 	}
 
-	public CloseableIteration<? extends BindingSet, StoreException> evaluate(
-			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+	public CloseableIteration<? extends BindingSet, StoreException> evaluate(TupleExpr tupleExpr,
+			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
@@ -187,24 +186,6 @@ public class SynchronizedSailConnection extends InferencerConnectionWrapper {
 		}
 	}
 
-	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
-	{
-		Lock conLock = getSharedConnectionLock();
-		try {
-			Lock txnLock = getTransactionLock();
-			try {
-				return super.addInferredStatement(subj, pred, obj, contexts);
-			}
-			finally {
-				txnLock.release();
-			}
-		}
-		finally {
-			conLock.release();
-		}
-	}
-
 	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
@@ -223,24 +204,6 @@ public class SynchronizedSailConnection extends InferencerConnectionWrapper {
 		}
 	}
 
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
-	{
-		Lock conLock = getSharedConnectionLock();
-		try {
-			Lock txnLock = getTransactionLock();
-			try {
-				return super.removeInferredStatement(subj, pred, obj, contexts);
-			}
-			finally {
-				txnLock.release();
-			}
-		}
-		finally {
-			conLock.release();
-		}
-	}
-
 	public void clear(Resource... contexts)
 		throws StoreException
 	{
@@ -249,24 +212,6 @@ public class SynchronizedSailConnection extends InferencerConnectionWrapper {
 			Lock txnLock = getTransactionLock();
 			try {
 				super.clear(contexts);
-			}
-			finally {
-				txnLock.release();
-			}
-		}
-		finally {
-			conLock.release();
-		}
-	}
-
-	public void clearInferred(Resource... contexts)
-		throws StoreException
-	{
-		Lock conLock = getSharedConnectionLock();
-		try {
-			Lock txnLock = getTransactionLock();
-			try {
-				super.clearInferred(contexts);
 			}
 			finally {
 				txnLock.release();
