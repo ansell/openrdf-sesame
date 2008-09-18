@@ -29,16 +29,6 @@ public class NotifyingSailConnectionWrapper extends SailConnectionWrapper implem
 		super(wrappedCon);
 	}
 
-	/**
-	 * Creates a new wrapper object that wraps the supplied connection and
-	 * ensures the connection supports notifying.
-	 */
-	public NotifyingSailConnectionWrapper(NotifyingSailConnection wrappedCon) {
-		super(wrappedCon);
-		if (!wrappedCon.isNotifyingSupported())
-			throw new IllegalArgumentException("Sail does not support notifying");
-	}
-
 	/*---------*
 	 * Methods *
 	 *---------*/
@@ -53,6 +43,6 @@ public class NotifyingSailConnectionWrapper extends SailConnectionWrapper implem
 	}
 
 	public void removeConnectionListener(SailConnectionListener listener) {
-		getWrappedConnection().addConnectionListener(listener);
+		getWrappedConnection().removeConnectionListener(listener);
 	}
 }
