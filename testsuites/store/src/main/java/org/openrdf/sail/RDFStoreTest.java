@@ -13,10 +13,6 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.Iteration;
-import info.aduna.iteration.Iterations;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -34,6 +30,7 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.EmptyBindingSet;
@@ -314,17 +311,16 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(subj, pred, obj);
 		con.commit();
 
-		CloseableIteration<? extends Statement, StoreException> stIter = con.getStatements(null, null, null,
+		Cursor<? extends Statement> stIter = con.getStatements(null, null, null,
 				false);
 
 		try {
-			assertTrue(stIter.hasNext());
 
 			Statement st = stIter.next();
 			assertEquals(subj, st.getSubject());
 			assertEquals(pred, st.getPredicate());
 			assertEquals(obj, st.getObject());
-			assertTrue(!stIter.hasNext());
+			assertNull(stIter.next());
 		}
 		finally {
 			stIter.close();
@@ -333,17 +329,15 @@ public abstract class RDFStoreTest extends TestCase {
 		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
 				"SELECT S, P, O FROM {S} P {O} WHERE P = <" + pred.stringValue() + ">", null);
 
-		CloseableIteration<? extends BindingSet, StoreException> iter;
+		Cursor<? extends BindingSet> iter;
 		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
 
 		try {
-			assertTrue(iter.hasNext());
-
 			BindingSet bindings = iter.next();
 			assertEquals(subj, bindings.getValue("S"));
 			assertEquals(pred, bindings.getValue("P"));
 			assertEquals(obj, bindings.getValue("O"));
-			assertTrue(!iter.hasNext());
+			assertNull(iter.next());
 		}
 		finally {
 			iter.close();
@@ -464,11 +458,11 @@ public abstract class RDFStoreTest extends TestCase {
 		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
 				"SELECT C FROM {} rdf:type {C}", null);
 
-		CloseableIteration<? extends BindingSet, StoreException> iter;
+		Cursor<? extends BindingSet> iter;
 		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
 
-		while (iter.hasNext()) {
-			BindingSet bindings = iter.next();
+		BindingSet bindings;
+		while ((bindings = iter.next()) != null) {
 			Value c = bindings.getValue("C");
 			if (c instanceof Resource) {
 				con.addStatement((Resource)c, RDF.TYPE, RDFS.CLASS);
@@ -484,8 +478,7 @@ public abstract class RDFStoreTest extends TestCase {
 		tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, "SELECT P FROM {} P {}", null);
 		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
 
-		while (iter.hasNext()) {
-			BindingSet bindings = iter.next();
+		while ((bindings = iter.next()) != null) {
 			Value p = bindings.getValue("P");
 			if (p instanceof URI) {
 				con.addStatement((URI)p, RDF.TYPE, RDF.PROPERTY);
@@ -615,7 +608,7 @@ public abstract class RDFStoreTest extends TestCase {
 
 		MapBindingSet bindings = new MapBindingSet(1);
 
-		CloseableIteration<? extends BindingSet, StoreException> iter;
+		Cursor<? extends BindingSet> iter;
 		iter = con.evaluate(tupleExpr, null, bindings, false);
 
 		int resultCount = verifyQueryResult(iter, 1);
@@ -652,14 +645,13 @@ public abstract class RDFStoreTest extends TestCase {
 
 					// wait a bit to allow other thread to add stuff as well.
 					Thread.sleep(500L);
-					CloseableIteration<? extends Statement, StoreException> result = sharedCon.getStatements(null,
+					Cursor<? extends Statement> result = sharedCon.getStatements(null,
 							null, null, true);
 
-					assertTrue(result.hasNext());
 					int numberOfStatements = 0;
-					while (result.hasNext()) {
+					Statement st;
+					while ((st = result.next()) != null) {
 						numberOfStatements++;
-						Statement st = result.next();
 						assertTrue(st.getSubject().equals(painter) || st.getSubject().equals(picasso));
 						assertTrue(st.getPredicate().equals(RDF.TYPE));
 						assertTrue(st.getObject().equals(RDFS.CLASS) || st.getObject().equals(painter));
@@ -751,13 +743,12 @@ public abstract class RDFStoreTest extends TestCase {
 		con.setNamespace("rdf", RDF.NAMESPACE);
 		con.commit();
 
-		CloseableIteration<? extends Namespace, StoreException> namespaces = con.getNamespaces();
+		Cursor<? extends Namespace> namespaces = con.getNamespaces();
 		try {
-			assertTrue(namespaces.hasNext());
 			Namespace rdf = namespaces.next();
 			assertEquals("rdf", rdf.getPrefix());
 			assertEquals(RDF.NAMESPACE, rdf.getName());
-			assertTrue(!namespaces.hasNext());
+			assertNull(namespaces.next());
 		}
 		finally {
 			namespaces.close();
@@ -779,7 +770,7 @@ public abstract class RDFStoreTest extends TestCase {
 		con.setNamespace("rdfs", RDFS.NAMESPACE);
 		con.clearNamespaces();
 		con.commit();
-		assertTrue(!con.getNamespaces().hasNext());
+		assertNull(con.getNamespaces().next());
 	}
 
 	public void testRemoveNamespaces()
@@ -885,19 +876,15 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals(3, con.size());
 	}
 
-	private <T> T first(Iteration<T, ?> iter)
+	private <T> T first(Cursor<T> iter)
 		throws Exception
 	{
 		try {
-			if (iter.hasNext()) {
-				return iter.next();
-			}
+			return iter.next();
 		}
 		finally {
-			Iterations.closeCloseable(iter);
+			iter.close();
 		}
-
-		return null;
 	}
 
 	protected int countContext1Elements()
@@ -912,19 +899,18 @@ public abstract class RDFStoreTest extends TestCase {
 		return countElements(con.getStatements(null, null, null, false));
 	}
 
-	private int countElements(Iteration<?, ?> iter)
+	private int countElements(Cursor<?> iter)
 		throws Exception
 	{
 		int count = 0;
 
 		try {
-			while (iter.hasNext()) {
-				iter.next();
+			while (iter.next() != null) {
 				count++;
 			}
 		}
 		finally {
-			Iterations.closeCloseable(iter);
+			iter.close();
 		}
 
 		return count;
@@ -940,14 +926,14 @@ public abstract class RDFStoreTest extends TestCase {
 	}
 
 	private int verifyQueryResult(
-			CloseableIteration<? extends BindingSet, StoreException> resultIter,
+			Cursor<? extends BindingSet> resultIter,
 			int expectedBindingCount)
 		throws StoreException
 	{
 		int resultCount = 0;
 
-		while (resultIter.hasNext()) {
-			BindingSet resultBindings = resultIter.next();
+		BindingSet resultBindings;
+		while ((resultBindings = resultIter.next()) != null) {
 			resultCount++;
 
 			assertEquals("Wrong number of binding names for binding set", expectedBindingCount,

@@ -12,9 +12,6 @@ import java.util.Collections;
 import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIteratorIteration;
-import info.aduna.iteration.LockingIteration;
 
 import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
@@ -23,12 +20,14 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.cursors.LockingCursor;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
@@ -42,12 +41,13 @@ import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.impl.EmptyBindingSet;
+import org.openrdf.query.impl.IteratorCursor;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
-import org.openrdf.sail.memory.model.MemStatementIterator;
+import org.openrdf.sail.memory.model.MemStatementCursor;
 import org.openrdf.sail.memory.model.MemStatementList;
 import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
@@ -93,7 +93,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 * Methods *
 	 *---------*/
 
-	public CloseableIteration<? extends BindingSet, StoreException> evaluate(
+	public Cursor<? extends BindingSet> evaluate(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -137,9 +137,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			logger.trace("Optimized query model:\n{}", tupleExpr.toString());
 
-			CloseableIteration<BindingSet, StoreException> iter;
+			Cursor<BindingSet> iter;
 			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
-			return new LockingIteration<BindingSet, StoreException>(stLock, iter);
+			iter = new LockingCursor<BindingSet>(stLock, iter);
+			return iter;
 		}
 		catch (StoreException e) {
 			stLock.release();
@@ -151,7 +152,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public CloseableIteration<? extends Resource, StoreException> getContextIDs()
+	public Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
 		// Note: we can't do this in a streaming fashion due to concurrency
@@ -189,7 +190,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			stLock.release();
 		}
 
-		return new CloseableIteratorIteration<MemResource, StoreException>(contextIDs.iterator());
+		return new IteratorCursor<MemResource>(contextIDs.iterator());
 	}
 
 	private boolean isContextResource(MemResource memResource, int snapshot, ReadMode readMode)
@@ -203,17 +204,17 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 
 		// Filter more thoroughly by considering snapshot and read-mode parameters
-		MemStatementIterator<StoreException> iter = new MemStatementIterator<StoreException>(contextStatements,
+		MemStatementCursor iter = new MemStatementCursor(contextStatements,
 				null, null, null, false, snapshot, readMode);
 		try {
-			return iter.hasNext();
+			return iter.next() != null;
 		}
 		finally {
 			iter.close();
 		}
 	}
 
-	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj,
+	public Cursor<? extends Statement> getStatements(Resource subj,
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
@@ -228,8 +229,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 				readMode = ReadMode.TRANSACTION;
 			}
 
-			return new LockingIteration<MemStatement, StoreException>(stLock, store.createStatementIterator(
-					StoreException.class, subj, pred, obj, !includeInferred, snapshot, readMode, contexts));
+			return new LockingCursor<MemStatement>(stLock, store.createStatementIterator(
+					subj, pred, obj, !includeInferred, snapshot, readMode, contexts));
 		}
 		catch (RuntimeException e) {
 			stLock.release();
@@ -243,14 +244,13 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
-			CloseableIteration<? extends Statement, StoreException> iter = getStatements(null, null,
+			Cursor<? extends Statement> iter = getStatements(null, null,
 					null, false, contexts);
 
 			try {
 				long size = 0L;
 
-				while (iter.hasNext()) {
-					iter.next();
+				while (iter.next() != null) {
 					size++;
 				}
 
@@ -265,10 +265,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public CloseableIteration<? extends Namespace, StoreException> getNamespaces()
+	public Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
-		return new CloseableIteratorIteration<Namespace, StoreException>(store.getNamespaceStore().iterator());
+		return new IteratorCursor<Namespace>(store.getNamespaceStore().iterator());
 	}
 
 	public String getNamespace(String prefix)
@@ -409,22 +409,22 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			Resource... contexts)
 		throws StoreException
 	{
-		CloseableIteration<MemStatement, StoreException> stIter = store.createStatementIterator(
-				StoreException.class, subj, pred, obj, explicit, store.getCurrentSnapshot() + 1,
+		Cursor<MemStatement> stIter = store.createStatementIterator(
+				subj, pred, obj, explicit, store.getCurrentSnapshot() + 1,
 				ReadMode.TRANSACTION, contexts);
 
 		return removeIteratorStatements(stIter, explicit);
 	}
 
-	protected boolean removeIteratorStatements(CloseableIteration<MemStatement, StoreException> stIter,
+	protected boolean removeIteratorStatements(Cursor<MemStatement> stIter,
 			boolean explicit)
 		throws StoreException
 	{
 		boolean statementsRemoved = false;
 
 		try {
-			while (stIter.hasNext()) {
-				MemStatement st = stIter.next();
+			MemStatement st;
+			while ((st = stIter.next()) != null) {
 
 				if (store.removeStatement(st, explicit)) {
 					statementsRemoved = true;
@@ -487,10 +487,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			this.readMode = readMode;
 		}
 
-		public CloseableIteration<MemStatement, StoreException> getStatements(Resource subj,
+		public Cursor<MemStatement> getStatements(Resource subj,
 				URI pred, Value obj, Resource... contexts)
 		{
-			return store.createStatementIterator(StoreException.class, subj, pred, obj,
+			return store.createStatementIterator(subj, pred, obj,
 					!includeInferred, snapshot, readMode, contexts);
 		}
 

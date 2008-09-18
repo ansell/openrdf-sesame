@@ -9,10 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
-import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.sail.rdbms.iteration.base.RdbmIterationBase;
+import org.openrdf.sail.rdbms.iteration.base.RdbmCursorBase;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsStatement;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
@@ -26,13 +24,13 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * @author James Leigh
  * 
  */
-public class RdbmsStatementIteration extends RdbmIterationBase<RdbmsStatement, StoreException> {
+public class RdbmsStatementCursor extends RdbmCursorBase<RdbmsStatement> {
 
 	private RdbmsValueFactory vf;
 
 	private IdSequence ids;
 
-	public RdbmsStatementIteration(RdbmsValueFactory vf, PreparedStatement stmt, IdSequence ids)
+	public RdbmsStatementCursor(RdbmsValueFactory vf, PreparedStatement stmt, IdSequence ids)
 		throws SQLException
 	{
 		super(stmt);
@@ -49,11 +47,6 @@ public class RdbmsStatementIteration extends RdbmIterationBase<RdbmsStatement, S
 		RdbmsURI pred = (RdbmsURI)createResource(rs, 5);
 		RdbmsValue obj = createValue(rs, 7);
 		return new RdbmsStatement(subj, pred, obj, ctx);
-	}
-
-	@Override
-	protected RdbmsException convertSQLException(SQLException e) {
-		return new RdbmsException(e);
 	}
 
 	private RdbmsResource createResource(ResultSet rs, int index)

@@ -10,7 +10,7 @@ import info.aduna.concurrent.locks.Lock;
 
 /**
  *
- * @author james
+ * @author James Leigh
  */
 public interface LockManager {
 

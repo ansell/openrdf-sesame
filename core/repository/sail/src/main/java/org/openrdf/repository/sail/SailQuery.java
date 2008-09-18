@@ -5,15 +5,13 @@
  */
 package org.openrdf.repository.sail;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.Iteration;
-import info.aduna.iteration.TimeLimitIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.impl.AbstractQuery;
+import org.openrdf.query.impl.TimeLimitCursor;
 import org.openrdf.query.parser.ParsedQuery;
 
 /**
@@ -38,11 +36,11 @@ public abstract class SailQuery extends AbstractQuery {
 		return con;
 	}
 
-	protected CloseableIteration<? extends BindingSet, StoreException> enforceMaxQueryTime(
-			CloseableIteration<? extends BindingSet, StoreException> bindingsIter)
+	protected Cursor<? extends BindingSet> enforceMaxQueryTime(
+			Cursor<? extends BindingSet> bindingsIter)
 	{
 		if (maxQueryTime > 0) {
-			bindingsIter = new QueryInterruptIteration(bindingsIter, 1000L * maxQueryTime);
+			bindingsIter = new QueryInterruptCursor(bindingsIter, 1000L * maxQueryTime);
 		}
 
 		return bindingsIter;
@@ -70,9 +68,9 @@ public abstract class SailQuery extends AbstractQuery {
 		return parsedQuery.toString();
 	}
 
-	protected class QueryInterruptIteration extends TimeLimitIteration<BindingSet, StoreException> {
+	protected class QueryInterruptCursor extends TimeLimitCursor<BindingSet> {
 
-		public QueryInterruptIteration(Iteration<? extends BindingSet, ? extends StoreException> iter,
+		public QueryInterruptCursor(Cursor<? extends BindingSet> iter,
 				long timeLimit)
 		{
 			super(iter, timeLimit);

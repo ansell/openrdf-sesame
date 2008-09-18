@@ -8,10 +8,9 @@ package org.openrdf.sail.helpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.IterationWrapper;
-
 import org.openrdf.StoreException;
+import org.openrdf.query.Cursor;
+import org.openrdf.query.base.CursorWrapper;
 
 /**
  * An iteration extension that keeps a reference to the
@@ -21,13 +20,15 @@ import org.openrdf.StoreException;
  * @author jeen
  * @author James Leigh
  */
-class TrackingSailIteration<T> extends IterationWrapper<T, StoreException> {
+class TrackingSailCursor<T> extends CursorWrapper<T> {
 	
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private TrackingSailConnection connection;
 
 	private Throwable creatorTrace;
+
+	private boolean closed = true;
 
 	/**
 	 * Creates a new memory-store specific iteration object.
@@ -39,7 +40,7 @@ class TrackingSailIteration<T> extends IterationWrapper<T, StoreException> {
 	 * @param connection
 	 *        the connection from which this iteration originates.
 	 */
-	public TrackingSailIteration(CloseableIteration<? extends T, StoreException> iter, TrackingSailConnection connection)
+	public TrackingSailCursor(Cursor<? extends T> iter, TrackingSailConnection connection)
 	{
 		super(iter);
 		this.connection = connection;
@@ -50,24 +51,23 @@ class TrackingSailIteration<T> extends IterationWrapper<T, StoreException> {
 	}
 
 	@Override
-	public boolean hasNext()
+	public T next()
 		throws StoreException
 	{
-		if (super.hasNext()) {
-			return true;
-		}
-		else {
+		T next = super.next();
+		if (next == null) {
 			// auto-close when exhausted
 			close();
-			return false;
 		}
+		return next;
 	}
 
 	@Override
-	protected void handleClose()
+	public void close()
 		throws StoreException
 	{
-		super.handleClose();
+		closed = true;
+		super.close();
 			connection.iterationClosed(this);
 		}
 
@@ -75,7 +75,7 @@ class TrackingSailIteration<T> extends IterationWrapper<T, StoreException> {
 	protected void finalize()
 		throws Throwable
 	{
-		if (!isClosed()) {
+		if (!closed) {
 			forceClose();
 		}
 

@@ -16,12 +16,6 @@ import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.ConvertingIteration;
-import info.aduna.iteration.DistinctIteration;
-import info.aduna.iteration.EmptyIteration;
-import info.aduna.iteration.FilterIteration;
-import info.aduna.iteration.UnionIteration;
 
 import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
@@ -29,6 +23,12 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.Cursor;
+import org.openrdf.query.algebra.evaluation.cursors.DistinctCursor;
+import org.openrdf.query.algebra.evaluation.cursors.EmptyCursor;
+import org.openrdf.query.algebra.evaluation.cursors.UnionCursor;
+import org.openrdf.query.base.ConvertingCursor;
+import org.openrdf.query.base.FilteringCursor;
 import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.SailUtil;
@@ -346,11 +346,11 @@ public class NativeStore extends InferencerSailBase {
 		return contextIDs;
 	}
 
-	protected CloseableIteration<Resource, IOException> getContextIDs(boolean readTransaction)
+	protected Cursor<Resource> getContextIDs(boolean readTransaction)
 		throws IOException
 	{
-		CloseableIteration<? extends Statement, IOException> stIter;
-		CloseableIteration<Resource, IOException> ctxIter;
+		Cursor<? extends Statement> stIter;
+		Cursor<Resource> ctxIter;
 		RecordIterator btreeIter;
 		btreeIter = tripleStore.getAllTriplesSortedByContext(readTransaction);
 		if (btreeIter == null) {
@@ -358,41 +358,54 @@ public class NativeStore extends InferencerSailBase {
 			stIter = createStatementIterator(null, null, null, true, readTransaction);
 		}
 		else {
-			stIter = new NativeStatementIterator(btreeIter, valueStore);
+			stIter = new NativeStatementCursor(btreeIter, valueStore);
 		}
 		// Filter statements without context resource
-		stIter = new FilterIteration<Statement, IOException>(stIter) {
+		stIter = new FilteringCursor<Statement>(stIter) {
 
 			@Override
 			protected boolean accept(Statement st) {
 				return st.getContext() != null;
 			}
+
+			@Override
+			public String getName() {
+				return "FilterNullContext";
+			}
 		};
 		// Return the contexts of the statements
-		ctxIter = new ConvertingIteration<Statement, Resource, IOException>(stIter) {
+		ctxIter = new ConvertingCursor<Statement, Resource>(stIter) {
 
 			@Override
 			protected Resource convert(Statement st) {
 				return st.getContext();
 			}
+
+			@Override
+			protected String getName() {
+				return "Context";
+			}
 		};
 		if (btreeIter == null) {
 			// Filtering any duplicates
-			ctxIter = new DistinctIteration<Resource, IOException>(ctxIter);
+			ctxIter = new DistinctCursor<Resource>(ctxIter);
 		}
 		else {
 			// Filtering sorted duplicates
-			ctxIter = new FilterIteration<Resource, IOException>(ctxIter) {
+			ctxIter = new FilteringCursor<Resource>(ctxIter) {
 
 				private Resource last = null;
 
 				@Override
-				protected boolean accept(Resource ctx)
-					throws IOException
-				{
+				protected boolean accept(Resource ctx) {
 					boolean equal = ctx.equals(last);
 					last = ctx;
 					return !equal;
+				}
+
+				@Override
+				public String toString() {
+					return "FilterSortedDuplicates " + super.toString();
 				}
 			};
 		}
@@ -415,7 +428,7 @@ public class NativeStore extends InferencerSailBase {
 	 * @return A StatementIterator that can be used to iterate over the
 	 *         statements that match the specified pattern.
 	 */
-	protected CloseableIteration<? extends Statement, IOException> createStatementIterator(Resource subj,
+	protected Cursor<? extends Statement> createStatementIterator(Resource subj,
 			URI pred, Value obj, boolean includeInferred, boolean readTransaction, Resource... contexts)
 		throws IOException
 	{
@@ -423,7 +436,7 @@ public class NativeStore extends InferencerSailBase {
 		if (subj != null) {
 			subjID = valueStore.getID(subj);
 			if (subjID == NativeValue.UNKNOWN_ID) {
-				return new EmptyIteration<Statement, IOException>();
+				return new EmptyCursor<Statement>();
 			}
 		}
 
@@ -431,7 +444,7 @@ public class NativeStore extends InferencerSailBase {
 		if (pred != null) {
 			predID = valueStore.getID(pred);
 			if (predID == NativeValue.UNKNOWN_ID) {
-				return new EmptyIteration<Statement, IOException>();
+				return new EmptyCursor<Statement>();
 			}
 		}
 
@@ -439,7 +452,7 @@ public class NativeStore extends InferencerSailBase {
 		if (obj != null) {
 			objID = valueStore.getID(obj);
 			if (objID == NativeValue.UNKNOWN_ID) {
-				return new EmptyIteration<Statement, IOException>();
+				return new EmptyCursor<Statement>();
 			}
 		}
 
@@ -462,7 +475,7 @@ public class NativeStore extends InferencerSailBase {
 			}
 		}
 
-		ArrayList<NativeStatementIterator> perContextIterList = new ArrayList<NativeStatementIterator>(
+		ArrayList<NativeStatementCursor> perContextIterList = new ArrayList<NativeStatementCursor>(
 				contextIDList.size());
 
 		for (int contextID : contextIDList) {
@@ -477,14 +490,17 @@ public class NativeStore extends InferencerSailBase {
 				btreeIter = tripleStore.getTriples(subjID, predID, objID, contextID, true, readTransaction);
 			}
 
-			perContextIterList.add(new NativeStatementIterator(btreeIter, valueStore));
+			perContextIterList.add(new NativeStatementCursor(btreeIter, valueStore));
 		}
 
 		if (perContextIterList.size() == 1) {
 			return perContextIterList.get(0);
 		}
+		else if (perContextIterList.isEmpty()) {
+			return EmptyCursor.emptyCursor();
+		}
 		else {
-			return new UnionIteration<Statement, IOException>(perContextIterList);
+			return new UnionCursor<Statement>(perContextIterList);
 		}
 	}
 

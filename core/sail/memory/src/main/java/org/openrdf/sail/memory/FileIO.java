@@ -24,15 +24,15 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import info.aduna.io.IOUtil;
-import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.StoreException;
+import org.openrdf.query.Cursor;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemURI;
@@ -227,12 +227,12 @@ class FileIO {
 	private void writeStatements(DataOutputStream dataOut)
 		throws IOException, StoreException
 	{
-		CloseableIteration<MemStatement, StoreException> stIter = store.createStatementIterator(
-				StoreException.class, null, null, null, false, store.getCurrentSnapshot(), ReadMode.COMMITTED);
+		Cursor<MemStatement> stIter = store.createStatementIterator(
+				null, null, null, false, store.getCurrentSnapshot(), ReadMode.COMMITTED);
 
 		try {
-			while (stIter.hasNext()) {
-				MemStatement st = stIter.next();
+			MemStatement st;
+			while ((st = stIter.next()) != null) {
 				Resource context = st.getContext();
 
 				if (st.isExplicit()) {

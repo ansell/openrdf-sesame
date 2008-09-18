@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import info.aduna.iteration.CloseableIteratorIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
@@ -37,6 +35,7 @@ import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.impl.IteratorCursor;
 import org.openrdf.repository.GraphResult;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
@@ -358,7 +357,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Creates a RepositoryResult for the supplied element set.
 	 */
 	protected <E> RepositoryResult<E> createRepositoryResult(Iterable<? extends E> elements) {
-		return new RepositoryResult<E>(new CloseableIteratorIteration<E, StoreException>(
+		return new RepositoryResult<E>(new IteratorCursor<E>(
 				elements.iterator()));
 	}
 
@@ -366,6 +365,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Creates a GraphResult for the supplied element set.
 	 */
 	protected <E> GraphResult createGraphResult(Iterable<? extends Statement> elements) {
-		return new GraphResult(new CloseableIteratorIteration<Statement, StoreException>(elements.iterator()));
+		return new GraphResult(new IteratorCursor<Statement>(elements.iterator()));
 	}
 }

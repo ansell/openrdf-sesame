@@ -17,14 +17,14 @@ import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadPrefReadWriteLockManager;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
 
 import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.Cursor;
+import org.openrdf.query.algebra.evaluation.cursors.EmptyCursor;
 import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.DirectoryLockManager;
@@ -34,7 +34,7 @@ import org.openrdf.sail.inferencer.helpers.InferencerSailBase;
 import org.openrdf.sail.inferencer.helpers.SynchronizedInferencerConnection;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
-import org.openrdf.sail.memory.model.MemStatementIterator;
+import org.openrdf.sail.memory.model.MemStatementCursor;
 import org.openrdf.sail.memory.model.MemStatementList;
 import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
@@ -463,27 +463,27 @@ public class MemoryStore extends InferencerSailBase {
 	 * <tt>namedContextsOnly</tt> is set to <tt>true</tt>. The returned
 	 * StatementIterator will assume the specified read mode.
 	 */
-	protected <X extends Exception> CloseableIteration<MemStatement, X> createStatementIterator(
-			Class<X> excClass, Resource subj, URI pred, Value obj, boolean explicitOnly, int snapshot,
+	protected Cursor<MemStatement> createStatementIterator(
+			Resource subj, URI pred, Value obj, boolean explicitOnly, int snapshot,
 			ReadMode readMode, Resource... contexts)
 	{
 		// Perform look-ups for value-equivalents of the specified values
 		MemResource memSubj = valueFactory.getMemResource(subj);
 		if (subj != null && memSubj == null) {
 			// non-existent subject
-			return new EmptyIteration<MemStatement, X>();
+			return new EmptyCursor<MemStatement>();
 		}
 
 		MemURI memPred = valueFactory.getMemURI(pred);
 		if (pred != null && memPred == null) {
 			// non-existent predicate
-			return new EmptyIteration<MemStatement, X>();
+			return new EmptyCursor<MemStatement>();
 		}
 
 		MemValue memObj = valueFactory.getMemValue(obj);
 		if (obj != null && memObj == null) {
 			// non-existent object
-			return new EmptyIteration<MemStatement, X>();
+			return new EmptyCursor<MemStatement>();
 		}
 
 		MemResource[] memContexts;
@@ -497,7 +497,7 @@ public class MemoryStore extends InferencerSailBase {
 			MemResource memContext = valueFactory.getMemResource(contexts[0]);
 			if (memContext == null) {
 				// non-existent context
-				return new EmptyIteration<MemStatement, X>();
+				return new EmptyCursor<MemStatement>();
 			}
 
 			memContexts = new MemResource[] { memContext };
@@ -515,7 +515,7 @@ public class MemoryStore extends InferencerSailBase {
 
 			if (contextSet.isEmpty()) {
 				// no known contexts specified
-				return new EmptyIteration<MemStatement, X>();
+				return new EmptyCursor<MemStatement>();
 			}
 
 			memContexts = contextSet.toArray(new MemResource[contextSet.size()]);
@@ -543,7 +543,7 @@ public class MemoryStore extends InferencerSailBase {
 			}
 		}
 
-		return new MemStatementIterator<X>(smallestList, memSubj, memPred, memObj, explicitOnly, snapshot,
+		return new MemStatementCursor(smallestList, memSubj, memPred, memObj, explicitOnly, snapshot,
 				readMode, memContexts);
 	}
 
@@ -577,15 +577,15 @@ public class MemoryStore extends InferencerSailBase {
 		if (!newValueCreated) {
 			// All values were already present in the graph. Possibly, the
 			// statement is already present. Check this.
-			CloseableIteration<MemStatement, StoreException> stIter = createStatementIterator(
-					StoreException.class, memSubj, memPred, memObj, false, currentSnapshot + 1, ReadMode.RAW,
+			Cursor<MemStatement> stIter = createStatementIterator(
+					memSubj, memPred, memObj, false, currentSnapshot + 1, ReadMode.RAW,
 					memContext);
 
 			try {
-				if (stIter.hasNext()) {
+				MemStatement st = stIter.next();
+				if (st != null) {
 					// statement is already present, update its transaction
 					// status if appropriate
-					MemStatement st = stIter.next();
 
 					txnStatements.put(st, st);
 

@@ -19,7 +19,7 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 
 /**
  * 
- * @author james
+ * @author James Leigh
  * 
  */
 public class OrderComparator implements Comparator<BindingSet> {

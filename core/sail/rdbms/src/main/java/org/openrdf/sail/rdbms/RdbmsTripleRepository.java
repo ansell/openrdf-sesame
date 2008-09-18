@@ -27,10 +27,10 @@ import org.openrdf.sail.rdbms.evaluation.SqlBracketBuilder;
 import org.openrdf.sail.rdbms.evaluation.SqlJoinBuilder;
 import org.openrdf.sail.rdbms.evaluation.SqlQueryBuilder;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.sail.rdbms.iteration.EmptyRdbmsResourceIteration;
-import org.openrdf.sail.rdbms.iteration.EmptyRdbmsStatementIteration;
-import org.openrdf.sail.rdbms.iteration.RdbmsResourceIteration;
-import org.openrdf.sail.rdbms.iteration.RdbmsStatementIteration;
+import org.openrdf.sail.rdbms.iteration.EmptyRdbmsResourceCursor;
+import org.openrdf.sail.rdbms.iteration.EmptyRdbmsStatementCursor;
+import org.openrdf.sail.rdbms.iteration.RdbmsResourceCursor;
+import org.openrdf.sail.rdbms.iteration.RdbmsStatementCursor;
 import org.openrdf.sail.rdbms.managers.TransTableManager;
 import org.openrdf.sail.rdbms.managers.TripleManager;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
@@ -227,7 +227,7 @@ public class RdbmsTripleRepository {
 		}
 	}
 
-	public RdbmsStatementIteration find(Resource subj, URI pred, Value obj, Resource... ctxs)
+	public RdbmsStatementCursor find(Resource subj, URI pred, Value obj, Resource... ctxs)
 		throws RdbmsException
 	{
 		try {
@@ -238,14 +238,14 @@ public class RdbmsTripleRepository {
 			flush();
 			SqlQueryBuilder query = buildSelectQuery(s, p, o, c);
 			if (query == null)
-				return new EmptyRdbmsStatementIteration();
+				return new EmptyRdbmsStatementCursor();
 			List<?> parameters = query.findParameters(new ArrayList<Object>());
 			PreparedStatement stmt = conn.prepareStatement(query.toString());
 			try {
 				for (int i = 0, n = parameters.size(); i < n; i++) {
 					stmt.setObject(i + 1, parameters.get(i));
 				}
-				return new RdbmsStatementIteration(vf, stmt, ids);
+				return new RdbmsStatementCursor(vf, stmt, ids);
 			}
 			catch (SQLException e) {
 				stmt.close();
@@ -258,16 +258,16 @@ public class RdbmsTripleRepository {
 
 	}
 
-	public RdbmsResourceIteration findContexts()
+	public RdbmsResourceCursor findContexts()
 		throws SQLException, RdbmsException
 	{
 		flush();
 		String qry = buildContextQuery();
 		if (qry == null)
-			return new EmptyRdbmsResourceIteration();
+			return new EmptyRdbmsResourceCursor();
 		PreparedStatement stmt = conn.prepareStatement(qry);
 		try {
-			return new RdbmsResourceIteration(vf, stmt);
+			return new RdbmsResourceCursor(vf, stmt);
 		}
 		catch (SQLException e) {
 			stmt.close();

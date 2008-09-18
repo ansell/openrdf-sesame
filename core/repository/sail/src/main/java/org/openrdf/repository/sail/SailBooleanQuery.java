@@ -5,11 +5,10 @@
  */
 package org.openrdf.repository.sail;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedBooleanQuery;
@@ -42,13 +41,13 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 
 		SailConnection sailCon = getConnection().getSailConnection();
 
-		CloseableIteration<? extends BindingSet, StoreException> bindingsIter;
+		Cursor<? extends BindingSet> bindingsIter;
 		bindingsIter = sailCon.evaluate(tupleExpr, dataset, getBindings(), getIncludeInferred());
 
 		bindingsIter = enforceMaxQueryTime(bindingsIter);
 
 		try {
-			return bindingsIter.hasNext();
+			return bindingsIter.next() != null;
 		}
 		finally {
 			bindingsIter.close();

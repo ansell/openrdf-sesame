@@ -12,8 +12,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -21,6 +19,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.SailConnection;
@@ -45,7 +44,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 	private boolean txnActive;
 
 	// FIXME: use weak references here?
-	private List<TrackingSailIteration<?>> activeIterations = Collections.synchronizedList(new LinkedList<TrackingSailIteration<?>>());
+	private List<TrackingSailCursor<?>> activeIterations = Collections.synchronizedList(new LinkedList<TrackingSailCursor<?>>());
 
 	/*
 	 * Stores a stack trace that indicates where this connection as created if
@@ -93,7 +92,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		if (isOpen) {
 			try {
 				while (true) {
-					TrackingSailIteration<?> ci = null;
+					TrackingSailCursor<?> ci = null;
 
 					synchronized (activeIterations) {
 						if (activeIterations.isEmpty()) {
@@ -153,27 +152,27 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		}
 	}
 
-	public final CloseableIteration<? extends BindingSet, StoreException> evaluate(TupleExpr tupleExpr,
+	public final Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		verifyIsOpen();
-		return registerIteration(super.evaluate(tupleExpr, dataset, bindings, includeInferred));
+		return registerCursor(super.evaluate(tupleExpr, dataset, bindings, includeInferred));
 	}
 
-	public final CloseableIteration<? extends Resource, StoreException> getContextIDs()
+	public final Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
 		verifyIsOpen();
-		return registerIteration(super.getContextIDs());
+		return registerCursor(super.getContextIDs());
 	}
 
-	public final CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj,
+	public final Cursor<? extends Statement> getStatements(Resource subj,
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		verifyIsOpen();
-		return registerIteration(super.getStatements(subj, pred, obj, includeInferred, contexts));
+		return registerCursor(super.getStatements(subj, pred, obj, includeInferred, contexts));
 	}
 
 	public final long size(Resource... contexts)
@@ -247,11 +246,11 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		super.clear(contexts);
 	}
 
-	public final CloseableIteration<? extends Namespace, StoreException> getNamespaces()
+	public final Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
 		verifyIsOpen();
-		return registerIteration(super.getNamespaces());
+		return registerCursor(super.getNamespaces());
 	}
 
 	public final String getNamespace(String prefix)
@@ -290,10 +289,8 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 	 * {@link TrackingSailIteration} object and adding it to the list of active
 	 * iterations.
 	 */
-	protected <T> CloseableIteration<T, StoreException> registerIteration(
-			CloseableIteration<T, StoreException> iter)
-	{
-		TrackingSailIteration<T> result = new TrackingSailIteration<T>(iter, this);
+	protected <T> Cursor<T> registerCursor(Cursor<T> iter) {
+		TrackingSailCursor<T> result = new TrackingSailCursor<T>(iter, this);
 		activeIterations.add(result);
 		return result;
 	}
@@ -302,7 +299,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 	 * Called by {@link TrackingSailIteration} to indicate that it has been
 	 * closed.
 	 */
-	void iterationClosed(TrackingSailIteration<?> iter) {
+	void iterationClosed(TrackingSailCursor<?> iter) {
 		activeIterations.remove(iter);
 	}
 }

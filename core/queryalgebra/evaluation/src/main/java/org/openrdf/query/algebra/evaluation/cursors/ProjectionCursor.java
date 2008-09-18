@@ -3,21 +3,19 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.iterator;
+package org.openrdf.query.algebra.evaluation.cursors;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.ConvertingIteration;
-
-import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.base.ConvertingCursor;
 
-public class ProjectionIterator extends ConvertingIteration<BindingSet, BindingSet, StoreException>
+public class ProjectionCursor extends ConvertingCursor<BindingSet, BindingSet>
 {
 
 	/*-----------*
@@ -32,8 +30,8 @@ public class ProjectionIterator extends ConvertingIteration<BindingSet, BindingS
 	 * Constructors *
 	 *--------------*/
 
-	public ProjectionIterator(Projection projection,
-			CloseableIteration<BindingSet, StoreException> iter, BindingSet parentBindings)
+	public ProjectionCursor(Projection projection,
+			Cursor<BindingSet> iter, BindingSet parentBindings)
 		throws EvaluationException
 	{
 		super(iter);

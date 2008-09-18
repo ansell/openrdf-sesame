@@ -5,14 +5,13 @@
  */
 package org.openrdf.query.algebra.evaluation;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.Cursor;
 
 /**
  * A triple source that can be queried for (the existence of) certain triples in
@@ -42,8 +41,7 @@ public interface TripleSource {
 	 * @throws StoreException
 	 *         If the triple source failed to get the statements.
 	 */
-	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj,
-			URI pred, Value obj, Resource... contexts)
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException;
 
 	/**

@@ -7,13 +7,15 @@ package org.openrdf.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.DistinctIteration;
-import info.aduna.iteration.IterationWrapper;
+import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.StoreException;
+import org.openrdf.query.Cursor;
+import org.openrdf.query.base.FilteringCursor;
 
 /**
  * A RepositoryResult is a result collection of objects (for example
@@ -39,11 +41,32 @@ import org.openrdf.StoreException;
  * @see RepositoryConnection#getContextIDs()
  * @author jeen
  * @author Arjohn Kampman
+ * @author James Leigh
  */
-public class RepositoryResult<T> extends IterationWrapper<T, StoreException> {
+public class RepositoryResult<T> extends LookAheadIteration<T, StoreException> {
+	Cursor<? extends T> delegate;
 
-	public RepositoryResult(CloseableIteration<? extends T, StoreException> iter) {
-		super(iter);
+	public RepositoryResult(Cursor<? extends T> delegate) {
+		this.delegate = delegate;
+	}
+
+	public String toString() {
+		return delegate.toString();
+	}
+
+	@Override
+	protected T getNextElement()
+		throws StoreException
+	{
+		return delegate.next();
+	}
+
+	@Override
+	protected void handleClose()
+		throws StoreException
+	{
+		super.handleClose();
+		delegate.close();
 	}
 
 	/**
@@ -61,7 +84,14 @@ public class RepositoryResult<T> extends IterationWrapper<T, StoreException> {
 	public void enableDuplicateFilter()
 		throws StoreException
 	{
-		wrappedIter = new DistinctIteration<T, StoreException>(wrappedIter);
+		delegate = new FilteringCursor<T>(delegate) {
+			private Set<T> exclude = new HashSet<T>();
+
+			@Override
+			protected boolean accept(T next) {
+				return exclude.add(next);
+			}
+		};
 	}
 
 	/**

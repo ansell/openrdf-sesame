@@ -5,14 +5,13 @@
  */
 package org.openrdf.sail.inferencer.helpers;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.SailConnection;
@@ -103,7 +102,7 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * connection.
 	 */
 	@Override
-	public CloseableIteration<? extends BindingSet, StoreException> evaluate(TupleExpr tupleExpr,
+	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -116,7 +115,7 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * connection.
 	 */
 	@Override
-	public CloseableIteration<? extends Resource, StoreException> getContextIDs()
+	public Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
 		flushUpdates();
@@ -128,7 +127,7 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * connection.
 	 */
 	@Override
-	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj, URI pred,
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{

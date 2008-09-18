@@ -7,10 +7,9 @@ package org.openrdf.repository.sail;
 
 import java.util.ArrayList;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
@@ -40,7 +39,7 @@ public class SailTupleQuery extends SailQuery implements TupleQuery {
 	{
 		TupleExpr tupleExpr = getParsedQuery().getTupleExpr();
 
-		CloseableIteration<? extends BindingSet, StoreException> bindingsIter;
+		Cursor<? extends BindingSet> bindingsIter;
 		SailConnection sailCon = getConnection().getSailConnection();
 		bindingsIter = sailCon.evaluate(tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
 

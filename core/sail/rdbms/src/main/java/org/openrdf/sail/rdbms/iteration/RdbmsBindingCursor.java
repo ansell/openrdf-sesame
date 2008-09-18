@@ -10,14 +10,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
-import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.sail.rdbms.iteration.base.RdbmIterationBase;
+import org.openrdf.sail.rdbms.iteration.base.RdbmCursorBase;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.IdSequence;
@@ -29,7 +27,7 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * @author James Leigh
  * 
  */
-public class RdbmsBindingIteration extends RdbmIterationBase<BindingSet, StoreException> {
+public class RdbmsBindingCursor extends RdbmCursorBase<BindingSet> {
 
 	private BindingSet bindings;
 
@@ -39,7 +37,7 @@ public class RdbmsBindingIteration extends RdbmIterationBase<BindingSet, StoreEx
 
 	private IdSequence ids;
 
-	public RdbmsBindingIteration(PreparedStatement stmt)
+	public RdbmsBindingCursor(PreparedStatement stmt)
 		throws SQLException
 	{
 		super(stmt);
@@ -79,11 +77,6 @@ public class RdbmsBindingIteration extends RdbmIterationBase<BindingSet, StoreEx
 			}
 		}
 		return result;
-	}
-
-	@Override
-	protected RdbmsException convertSQLException(SQLException e) {
-		return new RdbmsException(e);
 	}
 
 	private RdbmsResource createResource(ResultSet rs, int index)

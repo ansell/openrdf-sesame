@@ -23,7 +23,7 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
  * href="http://www.w3.org/TR/rdf-sparql-query/#modOrderBy">SPARQL Query
  * Language for RDF</a>.
  * 
- * @author james
+ * @author James Leigh
  * @author Arjohn Kampman
  */
 public class ValueComparator implements Comparator<Value> {

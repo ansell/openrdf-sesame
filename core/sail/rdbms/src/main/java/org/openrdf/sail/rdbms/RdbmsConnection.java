@@ -10,7 +10,6 @@ import java.util.Collection;
 
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
-import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
@@ -19,6 +18,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
@@ -29,7 +29,7 @@ import org.openrdf.sail.helpers.SailConnectionBase;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.iteration.NamespaceIteration;
-import org.openrdf.sail.rdbms.iteration.RdbmsResourceIteration;
+import org.openrdf.sail.rdbms.iteration.RdbmsResourceCursor;
 import org.openrdf.sail.rdbms.managers.NamespaceManager;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
@@ -139,7 +139,7 @@ public class RdbmsConnection extends SailConnectionBase {
 		super.commit();
 	}
 
-	public RdbmsResourceIteration getContextIDs()
+	public RdbmsResourceCursor getContextIDs()
 		throws StoreException
 	{
 		try {
@@ -150,7 +150,7 @@ public class RdbmsConnection extends SailConnectionBase {
 		}
 	}
 
-	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj, URI pred,
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
@@ -186,7 +186,7 @@ public class RdbmsConnection extends SailConnectionBase {
 		}
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(TupleExpr expr, Dataset dataset,
+	public Cursor<BindingSet> evaluate(TupleExpr expr, Dataset dataset,
 			BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -213,7 +213,7 @@ public class RdbmsConnection extends SailConnectionBase {
 		return ns.getName();
 	}
 
-	public CloseableIteration<? extends Namespace, StoreException> getNamespaces()
+	public Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
 		Collection<? extends Namespace> ns = namespaces.getNamespacesWithPrefix();

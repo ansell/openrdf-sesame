@@ -5,10 +5,6 @@
  */
 package org.openrdf.repository.sail;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.ConvertingIteration;
-import info.aduna.iteration.FilterIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -16,10 +12,13 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.base.ConvertingCursor;
+import org.openrdf.query.base.FilteringCursor;
 import org.openrdf.query.impl.GraphQueryResultImpl;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.rio.RDFHandler;
@@ -46,13 +45,13 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		TupleExpr tupleExpr = getParsedQuery().getTupleExpr();
 
 
-		CloseableIteration<? extends BindingSet, StoreException> bindingsIter;
+		Cursor<? extends BindingSet> bindingsIter;
 
 		SailConnection sailCon = getConnection().getSailConnection();
 		bindingsIter = sailCon.evaluate(tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
 
 		// Filters out all partial and invalid matches
-		bindingsIter = new FilterIteration<BindingSet, StoreException>(bindingsIter) {
+		bindingsIter = new FilteringCursor<BindingSet>(bindingsIter) {
 
 			@Override
 			protected boolean accept(BindingSet bindingSet) {
@@ -63,14 +62,19 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 				&& bindingSet.getValue("object") instanceof Value
 				&& (context == null || context instanceof Resource);
 			}
+
+			@Override
+			public String getName() {
+				return "FilterOutPartialMatches";
+			}
 		};
 
 		bindingsIter = enforceMaxQueryTime(bindingsIter);
 
 		// Convert the BindingSet objects to actual RDF statements
 		final ValueFactory vf = getConnection().getValueFactory();
-		CloseableIteration<Statement, StoreException> stIter;
-		stIter = new ConvertingIteration<BindingSet, Statement, StoreException>(bindingsIter) {
+		Cursor<Statement> stIter;
+		stIter = new ConvertingCursor<BindingSet, Statement>(bindingsIter) {
 
 			@Override
 			protected Statement convert(BindingSet bindingSet) {
@@ -85,6 +89,11 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 				else {
 					return vf.createStatement(subject, predicate, object, context);
 				}
+			}
+
+			@Override
+			protected String getName() {
+				return "CreateStatement";
 			}
 		};
 

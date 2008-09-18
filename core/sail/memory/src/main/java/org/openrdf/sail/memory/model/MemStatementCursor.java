@@ -5,8 +5,9 @@
  */
 package org.openrdf.sail.memory.model;
 
-import info.aduna.iteration.LookAheadIteration;
 import info.aduna.lang.ObjectUtil;
+
+import org.openrdf.query.Cursor;
 
 /**
  * A StatementIterator that can iterate over a list of Statement objects. This
@@ -14,7 +15,7 @@ import info.aduna.lang.ObjectUtil;
  * is possible thanks to the extensive sharing of these objects in the
  * MemoryStore.
  */
-public class MemStatementIterator<X extends Exception> extends LookAheadIteration<MemStatement, X> {
+public class MemStatementCursor implements Cursor<MemStatement> {
 
 	/*-----------*
 	 * Variables *
@@ -87,7 +88,7 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 	 * @param context
 	 *        context of pattern.
 	 */
-	public MemStatementIterator(MemStatementList statementList, MemResource subject, MemURI predicate,
+	public MemStatementCursor(MemStatementList statementList, MemResource subject, MemURI predicate,
 			MemValue object, boolean explicitOnly, int snapshot, ReadMode readMode, MemResource... contexts)
 	{
 		this.statementList = statementList;
@@ -115,7 +116,7 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 	 * <tt>_statementList</tt>. Otherwise, <tt>_nextStatement</tt> will set to
 	 * <tt>null</tt>.
 	 */
-	protected MemStatement getNextElement() {
+	public MemStatement next() {
 		statementIdx++;
 
 		for (; statementIdx < statementList.size(); statementIdx++) {
@@ -187,5 +188,14 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 
 		// No more matching statements.
 		return null;
+	}
+
+	public void close() {
+		// no-op
+	}
+
+	@Override
+	public String toString() {
+		return "MemStatement scan over " + statementList.size();
 	}
 }

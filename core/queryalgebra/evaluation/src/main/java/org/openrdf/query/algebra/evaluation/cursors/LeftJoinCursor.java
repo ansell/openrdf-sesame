@@ -3,22 +3,20 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.iterator;
+package org.openrdf.query.algebra.evaluation.cursors;
 
 import java.util.Set;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
-import info.aduna.iteration.LookAheadIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
-public class LeftJoinIterator extends LookAheadIteration<BindingSet, StoreException> {
+public class LeftJoinCursor implements Cursor<BindingSet> {
 
 	/*-----------*
 	 * Constants *
@@ -39,15 +37,15 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, StoreExcept
 	 * Variables *
 	 *-----------*/
 
-	private CloseableIteration<BindingSet, StoreException> leftIter;
+	private Cursor<BindingSet> leftIter;
 
-	private CloseableIteration<BindingSet, StoreException> rightIter;
+	private Cursor<BindingSet> rightIter;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public LeftJoinIterator(EvaluationStrategy strategy, LeftJoin join, BindingSet bindings)
+	public LeftJoinCursor(EvaluationStrategy strategy, LeftJoin join, BindingSet bindings)
 		throws StoreException
 	{
 		this.strategy = strategy;
@@ -55,32 +53,25 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, StoreExcept
 		this.scopeBindingNames = join.getBindingNames();
 
 		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
-
-		// Initialize with empty iteration so that var is not null
-		rightIter = new EmptyIteration<BindingSet, StoreException>();
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	@Override
-	protected BindingSet getNextElement()
+	public BindingSet next()
 		throws StoreException
 	{
-		while (rightIter.hasNext() || leftIter.hasNext()) {
-			BindingSet leftBindings = null;
+		BindingSet leftBindings = null;
+		while (rightIter != null || (leftBindings = leftIter.next()) != null) {
 
-			if (!rightIter.hasNext()) {
+			if (rightIter == null) {
 				// Use left arg's bindings in case join fails
-				leftBindings = leftIter.next();
-
-				rightIter.close();
 				rightIter = strategy.evaluate(join.getRightArg(), leftBindings);
 			}
 
-			while (rightIter.hasNext()) {
-				BindingSet rightBindings = rightIter.next();
+			BindingSet rightBindings;
+			while ((rightBindings = rightIter.next()) != null) {
 
 				try {
 					if (join.getCondition() == null) {
@@ -102,6 +93,9 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, StoreExcept
 				}
 			}
 
+			rightIter.close();
+			rightIter = null;
+
 			if (leftBindings != null) {
 				// Join failed, return left arg's bindings
 				return leftBindings;
@@ -111,13 +105,29 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, StoreExcept
 		return null;
 	}
 
-	@Override
-	protected void handleClose()
+	public void close()
 		throws StoreException
 	{
-		super.handleClose();
+		if (rightIter != null) {
+			rightIter.close();
+			rightIter = null;
+		}
 
 		leftIter.close();
-		rightIter.close();
+	}
+
+	@Override
+	public String toString() {
+		String left = leftIter.toString().replace("\n", "\n\t");
+		String right = join.getRightArg().toString();
+		if (rightIter != null) {
+			right = rightIter.toString();
+		}
+		ValueExpr condition = join.getCondition();
+		String filter = "";
+		if (condition != null) {
+			filter = condition.toString().trim().replace("\n", "\n\t");
+		}
+		return "LeftJoin " + filter + "\n\t" + left + "\n\t" + right.replace("\n", "\n\t");
 	}
 }

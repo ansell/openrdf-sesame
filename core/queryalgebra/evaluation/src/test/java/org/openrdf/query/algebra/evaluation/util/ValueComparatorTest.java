@@ -20,7 +20,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
  * 
- * @author james
+ * @author James Leigh
  * 
  */
 public class ValueComparatorTest extends TestCase {

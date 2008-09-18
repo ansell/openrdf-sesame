@@ -3,28 +3,27 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.iterator;
-
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.ConvertingIteration;
+package org.openrdf.query.algebra.evaluation.cursors;
 
 import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.base.ConvertingCursor;
 
-public class ExtensionIterator extends ConvertingIteration<BindingSet, BindingSet, StoreException> {
+public class ExtensionCursor extends ConvertingCursor<BindingSet, BindingSet> {
 
 	private final Extension extension;
 
 	private final EvaluationStrategy strategy;
 
-	public ExtensionIterator(Extension extension,
-			CloseableIteration<BindingSet, StoreException> iter, EvaluationStrategy strategy)
+	public ExtensionCursor(Extension extension,
+			Cursor<BindingSet> iter, EvaluationStrategy strategy)
 		throws EvaluationException
 	{
 		super(iter);

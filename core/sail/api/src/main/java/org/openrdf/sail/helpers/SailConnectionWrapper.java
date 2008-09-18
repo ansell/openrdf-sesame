@@ -5,8 +5,6 @@
  */
 package org.openrdf.sail.helpers;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -14,6 +12,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.SailConnection;
@@ -73,20 +72,20 @@ public class SailConnectionWrapper implements SailConnection {
 		wrappedCon.close();
 	}
 
-	public CloseableIteration<? extends BindingSet, StoreException> evaluate(TupleExpr tupleExpr,
+	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		return wrappedCon.evaluate(tupleExpr, dataset, bindings, includeInferred);
 	}
 
-	public CloseableIteration<? extends Resource, StoreException> getContextIDs()
+	public Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
 		return wrappedCon.getContextIDs();
 	}
 
-	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj, URI pred,
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
@@ -135,7 +134,7 @@ public class SailConnectionWrapper implements SailConnection {
 		wrappedCon.clear(contexts);
 	}
 
-	public CloseableIteration<? extends Namespace, StoreException> getNamespaces()
+	public Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
 		return wrappedCon.getNamespaces();
