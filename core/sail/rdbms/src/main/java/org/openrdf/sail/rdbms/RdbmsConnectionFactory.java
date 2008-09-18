@@ -19,7 +19,7 @@ import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.StoreException;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.sail.NotifyingSailConnection;
+import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
@@ -53,7 +53,6 @@ import org.openrdf.sail.rdbms.util.Tracer;
  * needed to satisfy any sail connection request.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsConnectionFactory {
 
@@ -120,7 +119,8 @@ public class RdbmsConnectionFactory {
 	public void setDataSource(DataSource ds) {
 		if (Tracer.isTraceEnabled()) {
 			this.ds = Tracer.traceDataSource(ds);
-		} else {
+		}
+		else {
 			this.ds = ds;
 		}
 	}
@@ -293,7 +293,7 @@ public class RdbmsConnectionFactory {
 		}
 	}
 
-	public NotifyingSailConnection createConnection()
+	public SailConnection createConnection()
 		throws StoreException
 	{
 		try {
@@ -394,14 +394,17 @@ public class RdbmsConnectionFactory {
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
-		} finally {
+		}
+		finally {
 			if (databaseLock != null) {
 				databaseLock.release();
 			}
 		}
 	}
 
-	protected Lock createDatabaseLock() throws StoreException {
+	protected Lock createDatabaseLock()
+		throws StoreException
+	{
 		DatabaseLockManager manager;
 		manager = new DatabaseLockManager(ds, user, password);
 		if (manager.isDebugEnabled())

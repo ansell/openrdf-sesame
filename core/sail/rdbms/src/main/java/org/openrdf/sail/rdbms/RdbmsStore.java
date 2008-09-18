@@ -19,9 +19,9 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 
 import org.openrdf.StoreException;
-import org.openrdf.sail.NotifyingSailConnection;
+import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailMetaData;
-import org.openrdf.sail.helpers.NotifyingSailBase;
+import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.helpers.SynchronizedSailConnection;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 
@@ -31,9 +31,8 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
  * that can infer the type of database through the JDBC connection.
  * 
  * @author James Leigh
- * 
  */
-public class RdbmsStore extends NotifyingSailBase {
+public class RdbmsStore extends SailBase {
 
 	private RdbmsConnectionFactory factory;
 
@@ -61,7 +60,7 @@ public class RdbmsStore extends NotifyingSailBase {
 	 * Creates a new RDBMS RDF Store using the provided database connection.
 	 * 
 	 * @param url
-	 *            JDNI url of a DataSource
+	 *        JDNI url of a DataSource
 	 */
 	public RdbmsStore(String url) {
 		this.url = url;
@@ -71,7 +70,7 @@ public class RdbmsStore extends NotifyingSailBase {
 	 * Creates a new RDBMS RDF Store using the provided database connection.
 	 * 
 	 * @param url
-	 *            JDNI url of a DataSource
+	 *        JDNI url of a DataSource
 	 * @param user
 	 * @param password
 	 */
@@ -177,10 +176,10 @@ public class RdbmsStore extends NotifyingSailBase {
 	}
 
 	@Override
-	protected NotifyingSailConnection getConnectionInternal()
+	protected SailConnection getConnectionInternal()
 		throws StoreException
 	{
-		NotifyingSailConnection con = factory.createConnection();
+		SailConnection con = factory.createConnection();
 		return new SynchronizedSailConnection(con);
 	}
 

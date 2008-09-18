@@ -25,7 +25,7 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
-import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
+import org.openrdf.sail.helpers.SailConnectionBase;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.iteration.NamespaceIteration;
@@ -41,9 +41,8 @@ import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
  * strategy into the {@link SailConnection} interface.
  * 
  * @author James Leigh
- * 
  */
-public class RdbmsConnection extends NotifyingSailConnectionBase {
+public class RdbmsConnection extends SailConnectionBase {
 
 	private RdbmsStore sail;
 
@@ -133,7 +132,8 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 			throw new RdbmsException(e);
 		}
 
-		sail.notifySailChanged(triples.getSailChangedEvent());
+		// sail.notifySailChanged(triples.getSailChangedEvent());
+
 		// create a fresh event object.
 		triples.setSailChangedEvent(new DefaultSailChangedEvent(sail));
 		super.commit();
@@ -150,8 +150,8 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		}
 	}
 
-	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj,
-			URI pred, Value obj, boolean includeInferred, Resource... contexts)
+	public CloseableIteration<? extends Statement, StoreException> getStatements(Resource subj, URI pred,
+			Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		RdbmsResource s = vf.asRdbmsResource(subj);
@@ -186,8 +186,8 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		}
 	}
 
-	public CloseableIteration<BindingSet, StoreException> evaluate(TupleExpr expr,
-			Dataset dataset, BindingSet bindings, boolean includeInferred)
+	public CloseableIteration<BindingSet, StoreException> evaluate(TupleExpr expr, Dataset dataset,
+			BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		triples.flush();
@@ -268,7 +268,9 @@ public class RdbmsConnection extends NotifyingSailConnectionBase {
 		super.finalize();
 	}
 
-	private void lock() throws InterruptedException {
+	private void lock()
+		throws InterruptedException
+	{
 		if (lockManager != null) {
 			lock = lockManager.getExclusiveLock();
 		}
