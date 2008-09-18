@@ -42,7 +42,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public void initialize()
-		throws StoreException
+		throws RepositoryConfigException
 	{
 		delegate.initialize();
 	}
@@ -67,25 +67,20 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public String getNewRepositoryID(String baseName)
-		throws StoreException, RepositoryConfigException
+		throws RepositoryConfigException
 	{
 		return delegate.getNewRepositoryID(baseName);
 	}
 
 	@Override
 	public Set<String> getRepositoryIDs()
-		throws StoreException
+		throws RepositoryConfigException
 	{
 		Set<String> result = new LinkedHashSet<String>();
 
 		for (String id : delegate.getRepositoryIDs()) {
-			try {
-				if (isCorrectType(id)) {
-					result.add(id);
-				}
-			}
-			catch (RepositoryConfigException e) {
-				throw new StoreException(e);
+			if (isCorrectType(id)) {
+				result.add(id);
 			}
 		}
 
@@ -94,7 +89,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public boolean hasRepositoryConfig(String repositoryID)
-		throws StoreException, RepositoryConfigException
+		throws RepositoryConfigException
 	{
 		boolean result = false;
 
@@ -107,7 +102,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryConfig getRepositoryConfig(String repositoryID)
-		throws RepositoryConfigException, StoreException
+		throws RepositoryConfigException
 	{
 		RepositoryConfig result = delegate.getRepositoryConfig(repositoryID);
 
@@ -126,7 +121,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public void addRepositoryConfig(RepositoryConfig config)
-		throws StoreException, RepositoryConfigException
+		throws RepositoryConfigException, StoreException
 	{
 		if (isCorrectType(config)) {
 			delegate.addRepositoryConfig(config);
@@ -139,7 +134,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public boolean removeRepositoryConfig(String repositoryID)
-		throws StoreException, RepositoryConfigException
+		throws RepositoryConfigException, StoreException
 	{
 		boolean result = false;
 
@@ -174,9 +169,6 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 				}
 			}
 			catch (RepositoryConfigException e) {
-				logger.error("Failed to verify repository type", e);
-			}
-			catch (StoreException e) {
 				logger.error("Failed to verify repository type", e);
 			}
 		}
@@ -217,18 +209,13 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public Collection<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws StoreException
+		throws RepositoryConfigException
 	{
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
 		for (RepositoryInfo repInfo : delegate.getAllRepositoryInfos(skipSystemRepo)) {
-			try {
-				if (isCorrectType(repInfo.getId())) {
-					result.add(repInfo);
-				}
-			}
-			catch (RepositoryConfigException e) {
-				throw new StoreException(e.getMessage(), e);
+			if (isCorrectType(repInfo.getId())) {
+				result.add(repInfo);
 			}
 		}
 
@@ -237,18 +224,13 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
-		throws StoreException
+		throws RepositoryConfigException
 	{
-		try {
-			if (isCorrectType(id)) {
-				return delegate.getRepositoryInfo(id);
-			}
+		if (isCorrectType(id)) {
+			return delegate.getRepositoryInfo(id);
+		}
 
-			return null;
-		}
-		catch (RepositoryConfigException e) {
-			throw new StoreException(e.getMessage(), e);
-		}
+		return null;
 	}
 
 	@Override
@@ -270,7 +252,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	protected boolean isCorrectType(String repositoryID)
-		throws RepositoryConfigException, StoreException
+		throws RepositoryConfigException
 	{
 		// first, check for SystemRepository, because we can't get a repository
 		// config object for it

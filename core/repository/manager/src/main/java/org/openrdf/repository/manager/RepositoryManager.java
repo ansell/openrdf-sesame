@@ -5,6 +5,9 @@
  */
 package org.openrdf.repository.manager;
 
+import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
+import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY_CONTEXT;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,12 +22,23 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.StoreException;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.repository.config.RepositoryConfigUtil;
+import org.openrdf.sail.LockManager;
+import org.openrdf.sail.SailReadOnlyException;
+import org.openrdf.sail.helpers.DirectoryLockManager;
 
 /**
  * A manager for {@link Repository}s. Every <tt>RepositoryManager</tt> has
@@ -49,6 +63,8 @@ public abstract class RepositoryManager {
 	 *-----------*/
 
 	private final Map<String, Repository> initializedRepositories;
+
+	private final ValueFactory vf = new ValueFactoryImpl();
 
 	/*--------------*
 	 * Constructors *
@@ -77,12 +93,17 @@ public abstract class RepositoryManager {
 	 *         If the manager failed to initialize the SYSTEM repository.
 	 */
 	public void initialize()
-		throws StoreException
+		throws RepositoryConfigException
 	{
-		Repository systemRepository = createSystemRepository();
+		try {
+			Repository systemRepository = createSystemRepository();
 
-		synchronized (initializedRepositories) {
-			initializedRepositories.put(SystemRepository.ID, systemRepository);
+			synchronized (initializedRepositories) {
+				initializedRepositories.put(SystemRepository.ID, systemRepository);
+			}
+		}
+		catch (StoreException e) {
+			throw new RepositoryConfigException(e);
 		}
 	}
 
@@ -92,10 +113,114 @@ public abstract class RepositoryManager {
 	/**
 	 * Gets the SYSTEM repository.
 	 */
+	@Deprecated
 	public Repository getSystemRepository() {
 		synchronized (initializedRepositories) {
 			return initializedRepositories.get(SystemRepository.ID);
 		}
+	}
+
+	/**
+	 * Gets the SYSTEM model.
+	 */
+	private Model getSystemModel()
+		throws RepositoryConfigException
+	{
+		Repository system = getSystemRepository();
+		try {
+			RepositoryConnection con = system.getConnection();
+			try {
+				return con.getStatements(null, null, null, false).addTo(new ModelImpl());
+			}
+			finally {
+				con.close();
+			}
+		}
+		catch (StoreException e) {
+			throw new RepositoryConfigException(e);
+		}
+	}
+
+	/**
+	 * Save the SYSTEM model.
+	 */
+	private void addSystemModel(Model model)
+		throws RepositoryConfigException
+	{
+		Repository systemRepo = getSystemRepository();
+		try {
+			try {
+				RepositoryConnection con = systemRepo.getConnection();
+				try {
+					con.add(model);
+				}
+				finally {
+					con.close();
+				}
+			}
+			catch (SailReadOnlyException e) {
+				if (tryToRemoveLock(e, systemRepo)) {
+					addSystemModel(model);
+				} else {
+					throw e;
+				}
+			}
+		}
+		catch (IOException e) {
+			throw new RepositoryConfigException(e);
+		}
+		catch (StoreException e) {
+			throw new RepositoryConfigException(e);
+		}
+	}
+
+	/**
+	 * Clear the SYSTEM model.
+	 */
+	private void clearSystemModel(Resource context)
+		throws RepositoryConfigException
+	{
+		Repository systemRepo = getSystemRepository();
+		try {
+			try {
+				RepositoryConnection con = systemRepo.getConnection();
+				try {
+					con.clear(context);
+				}
+				finally {
+					con.close();
+				}
+			}
+			catch (SailReadOnlyException e) {
+				if (tryToRemoveLock(e, systemRepo)) {
+					clearSystemModel(context);
+				} else {
+					throw e;
+				}
+			}
+		}
+		catch (IOException e) {
+			throw new RepositoryConfigException(e);
+		}
+		catch (StoreException e) {
+			throw new RepositoryConfigException(e);
+		}
+	}
+
+	private boolean tryToRemoveLock(SailReadOnlyException e, Repository repo)
+		throws IOException, StoreException
+	{
+		boolean lockRemoved = false;
+
+		LockManager lockManager = new DirectoryLockManager(repo.getDataDir());
+
+		if (lockManager.isLocked()) {
+			repo.shutDown();
+			lockRemoved = lockManager.revokeLock();
+			repo.initialize();
+		}
+
+		return lockRemoved;
 	}
 
 	/**
@@ -113,7 +238,7 @@ public abstract class RepositoryManager {
 	 * @throws RepositoryConfigException
 	 */
 	public String getNewRepositoryID(String baseName)
-		throws StoreException, RepositoryConfigException
+		throws RepositoryConfigException
 	{
 		if (baseName != null) {
 			// Filter exotic characters from the base name
@@ -159,21 +284,41 @@ public abstract class RepositoryManager {
 	}
 
 	public Set<String> getRepositoryIDs()
-		throws StoreException
+		throws RepositoryConfigException
 	{
-		return RepositoryConfigUtil.getRepositoryIDs(getSystemRepository());
+		Model model = getSystemModel();
+		Set<String> ids = new HashSet<String>();
+		for (Value obj : model.objects(null, REPOSITORYID)) {
+			ids.add(obj.stringValue());
+		}
+		return ids;
 	}
 
 	public boolean hasRepositoryConfig(String repositoryID)
-		throws StoreException, RepositoryConfigException
+		throws RepositoryConfigException
 	{
-		return RepositoryConfigUtil.hasRepositoryConfig(getSystemRepository(), repositoryID);
+		Model model = getSystemModel();
+		Literal id = vf.createLiteral(repositoryID);
+		return model.contains(null, REPOSITORYID, id);
 	}
 
 	public RepositoryConfig getRepositoryConfig(String repositoryID)
-		throws RepositoryConfigException, StoreException
+		throws RepositoryConfigException
 	{
-		return RepositoryConfigUtil.getRepositoryConfig(getSystemRepository(), repositoryID);
+		Model model = getSystemModel();
+		Literal id = vf.createLiteral(repositoryID);
+		for (Statement idStatement : model.filter(null, REPOSITORYID, id)) {
+			Resource repositoryNode = idStatement.getSubject();
+			Resource context = idStatement.getContext();
+
+			if (context == null) {
+				throw new RepositoryConfigException("No configuration context for repository " + repositoryID);
+			}
+
+			Model contextGraph = model.filter(null, null, null, context);
+			return RepositoryConfig.create(contextGraph, repositoryNode);
+		}
+		return null;
 	}
 
 	/**
@@ -195,9 +340,17 @@ public abstract class RepositoryManager {
 	 *         configurations with the concerning ID.
 	 */
 	public void addRepositoryConfig(RepositoryConfig config)
-		throws StoreException, RepositoryConfigException
+		throws RepositoryConfigException, StoreException
 	{
-		RepositoryConfigUtil.updateRepositoryConfigs(getSystemRepository(), config);
+		String id = config.getID();
+		removeRepositoryConfig(id);
+
+		Model model = new ModelImpl();
+		Resource context = vf.createBNode();
+		model.add(context, RDF.TYPE, REPOSITORY_CONTEXT);
+		config.export(model.filter(null, null, null, context));
+
+		addSystemModel(model);
 	}
 
 	/**
@@ -223,7 +376,14 @@ public abstract class RepositoryManager {
 		boolean isRemoved = false;
 
 		synchronized (initializedRepositories) {
-			isRemoved = RepositoryConfigUtil.removeRepositoryConfigs(getSystemRepository(), repositoryID);
+			Model model = getSystemModel();
+
+			// clear existing context
+			Literal id = vf.createLiteral(repositoryID);
+			for (Resource ctx : model.contexts(null, REPOSITORYID, id)) {
+				clearSystemModel(ctx);
+				isRemoved = true;
+			}
 
 			if (isRemoved) {
 				logger.debug("Shutdown repository {} after removal of configuration.", repositoryID);
@@ -359,16 +519,16 @@ public abstract class RepositoryManager {
 	 *         When not able to retrieve existing configurations
 	 */
 	public abstract RepositoryInfo getRepositoryInfo(String id)
-		throws StoreException;
+		throws RepositoryConfigException;
 
 	public Collection<RepositoryInfo> getAllRepositoryInfos()
-		throws StoreException
+		throws RepositoryConfigException
 	{
 		return getAllRepositoryInfos(false);
 	}
 
 	public Collection<RepositoryInfo> getAllUserRepositoryInfos()
-		throws StoreException
+		throws RepositoryConfigException
 	{
 		return getAllRepositoryInfos(true);
 	}
@@ -380,7 +540,7 @@ public abstract class RepositoryManager {
 	 *         When not able to retrieve existing configurations
 	 */
 	public abstract Collection<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws StoreException;
+		throws RepositoryConfigException;
 
 	/**
 	 * Shuts down all initialized user repositories.
@@ -391,32 +551,21 @@ public abstract class RepositoryManager {
 		logger.debug("Refreshing repository information in manager...");
 
 		// FIXME: uninitialized, removed repositories won't be cleaned up.
-		try {
-			RepositoryConnection cleanupCon = getSystemRepository().getConnection();
-			try {
-				synchronized (initializedRepositories) {
-					Iterator<Map.Entry<String, Repository>> iter = initializedRepositories.entrySet().iterator();
+		synchronized (initializedRepositories) {
+			Iterator<Map.Entry<String, Repository>> iter = initializedRepositories.entrySet().iterator();
 
-					while (iter.hasNext()) {
-						Map.Entry<String, Repository> entry = iter.next();
-						String repositoryID = entry.getKey();
-						Repository repository = entry.getValue();
+			while (iter.hasNext()) {
+				Map.Entry<String, Repository> entry = iter.next();
+				String repositoryID = entry.getKey();
+				Repository repository = entry.getValue();
 
-						if (!SystemRepository.ID.equals(repositoryID)) {
-							// remove from initialized repositories
-							iter.remove();
-							// refresh single repository
-							refreshRepository(cleanupCon, repositoryID, repository);
-						}
-					}
+				if (!SystemRepository.ID.equals(repositoryID)) {
+					// remove from initialized repositories
+					iter.remove();
+					// refresh single repository
+					refreshRepository(repositoryID, repository);
 				}
 			}
-			finally {
-				cleanupCon.close();
-			}
-		}
-		catch (StoreException re) {
-			logger.error("Failed to refresh repositories", re);
 		}
 	}
 
@@ -440,7 +589,7 @@ public abstract class RepositoryManager {
 		}
 	}
 
-	void refreshRepository(RepositoryConnection con, String repositoryID, Repository repository) {
+	void refreshRepository(String repositoryID, Repository repository) {
 		logger.info("Refreshing repository {}...", repositoryID);
 		try {
 			repository.shutDown();
@@ -449,12 +598,12 @@ public abstract class RepositoryManager {
 			logger.error("Failed to shut down repository", e);
 		}
 
-		cleanupIfRemoved(con, repositoryID);
+		cleanupIfRemoved(repositoryID);
 	}
 
-	void cleanupIfRemoved(RepositoryConnection con, String repositoryID) {
+	void cleanupIfRemoved(String repositoryID) {
 		try {
-			if (RepositoryConfigUtil.getContext(con, repositoryID) == null) {
+			if (!hasRepositoryConfig(repositoryID)) {
 				logger.info("Cleaning up repository {}, its configuration has been removed", repositoryID);
 
 				cleanUpRepository(repositoryID);
@@ -462,9 +611,6 @@ public abstract class RepositoryManager {
 			else {
 				logger.debug("Repository {} should not be cleaned up.", repositoryID);
 			}
-		}
-		catch (StoreException e) {
-			logger.error("Failed to process repository configuration changes", e);
 		}
 		catch (RepositoryConfigException e) {
 			logger.warn("Unable to determine if configuration for {} is still present in the system repository",
