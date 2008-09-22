@@ -14,6 +14,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Or;
+import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
@@ -50,10 +51,12 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 			}
 			else if (top && containsSameTerm(or)) {
 				Filter filter = (Filter)or.getParentNode();
+				QueryModelNode parentNode = filter.getParentNode();
+
 				// Find SameTerm(s)
 				List<ValueExpr> args = new ArrayList<ValueExpr>();
 				for (ValueExpr arg : or.getArgs()) {
-					if (arg instanceof SameTerm) {
+					if (containsSameTerm(arg)) {
 						args.add(arg);
 						or.removeArg(arg);
 					}
@@ -79,7 +82,7 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 				}
 				node.replaceWith(new Union(filters));
 
-				filter.getParentNode().visit(this);
+				parentNode.visit(this);
 			}
 			else {
 				super.meet(or);
