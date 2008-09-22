@@ -24,12 +24,12 @@ public abstract class FilteringCursor<E> extends CursorWrapper<E> {
 	public E next()
 		throws StoreException
 	{
-		E next = super.next();
-		if (next == null)
-			return null;
-		if (accept(next))
-			return next;
-		return next();
+		E next;
+		while ((next = super.next()) != null) {
+			if (accept(next))
+				return next;
+		}
+		return null;
 	}
 
 	protected abstract boolean accept(E next)
