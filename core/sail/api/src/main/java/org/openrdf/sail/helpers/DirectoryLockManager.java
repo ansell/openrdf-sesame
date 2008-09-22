@@ -35,6 +35,10 @@ public class DirectoryLockManager implements LockManager {
 		this.dir = dir;
 	}
 
+	public String getLocation() {
+		return dir.toString();
+	}
+
 	/**
 	 * Determines if the directory is locked.
 	 * 
@@ -131,7 +135,7 @@ public class DirectoryLockManager implements LockManager {
 	private Lock createLock(final File lockDir, final File lockFile) {
 		return new Lock() {
 
-			private boolean active = true;
+			boolean active = true;
 
 			private Thread hook = new Thread(new Runnable() {
 
