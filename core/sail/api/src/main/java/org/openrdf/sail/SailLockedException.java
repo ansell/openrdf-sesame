@@ -35,7 +35,9 @@ public class SailLockedException extends StoreException {
 	}
 
 	public SailLockedException(String lockedBy, String requestedBy, LockManager manager) {
-		this(lockedBy, requestedBy);
+		super("SAIL is already locked by: " + lockedBy + " in " + manager.getLocation());
+		this.lockedBy = lockedBy;
+		this.requestedBy = requestedBy;
 		this.manager = manager;
 	}
 

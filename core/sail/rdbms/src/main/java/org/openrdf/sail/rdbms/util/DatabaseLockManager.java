@@ -6,6 +6,7 @@
 package org.openrdf.sail.rdbms.util;
 
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,7 +35,7 @@ public class DatabaseLockManager implements LockManager {
 
 	private static final String DROP = "DROP TABLE locked";
 
-	private Logger logger = LoggerFactory.getLogger(DatabaseLockManager.class);
+	Logger logger = LoggerFactory.getLogger(DatabaseLockManager.class);
 
 	private DataSource ds;
 
@@ -50,6 +51,17 @@ public class DatabaseLockManager implements LockManager {
 		this.ds = ds;
 		this.user = user;
 		this.password = password;
+	}
+
+	public String getLocation() {
+		try {
+			// Both BasicDataSource and MysqlDataSource have getUrl
+			Method getUrl = ds.getClass().getMethod("getUrl");
+			return getUrl.invoke(ds).toString();
+		} catch (Exception e) {
+			// getUrl cannot be accessed
+		}
+		return ds.toString();
 	}
 
 	public boolean isDebugEnabled() {
@@ -163,6 +175,16 @@ public class DatabaseLockManager implements LockManager {
 		}
 	}
 
+	Connection getConnection()
+		throws SQLException
+	{
+		if (user == null) {
+			return ds.getConnection();
+		}
+
+		return ds.getConnection(user, password);
+	}
+
 	private String getLockedBy() {
 		try {
 			Connection con = getConnection();
@@ -192,16 +214,6 @@ public class DatabaseLockManager implements LockManager {
 			logger.warn(exc.toString(), exc);
 			return null;
 		}
-	}
-
-	private Connection getConnection()
-		throws SQLException
-	{
-		if (user == null) {
-			return ds.getConnection();
-		}
-
-		return ds.getConnection(user, password);
 	}
 
 	private String getProcessName() {
