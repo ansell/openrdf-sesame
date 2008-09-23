@@ -804,6 +804,21 @@ public abstract class RDFStoreTest extends TestCase {
 		con.commit();
 	}
 
+	public void testGetMultipleContextIDs()
+		throws Exception
+	{
+		assertEquals(0, countElements(con.getContextIDs()));
+
+		// load data
+		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
+		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
+		con.addStatement(picasso, RDF.TYPE, painter, context1);
+		con.addStatement(guernica, RDF.TYPE, painting, context1);
+		con.addStatement(picasso, paints, guernica, context2);
+		con.addStatement(picasso, paints, guernica, context1);
+		assertEquals(2, countElements(con.getContextIDs()));
+	}
+
 	public void testOldURI()
 		throws Exception
 	{
