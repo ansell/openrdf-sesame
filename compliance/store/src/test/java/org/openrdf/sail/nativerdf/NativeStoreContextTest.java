@@ -60,7 +60,7 @@ public class NativeStoreContextTest extends RDFNotifyingStoreTest {
 	protected NotifyingSail createSail()
 		throws StoreException
 	{
-		NotifyingSail sail = new NativeStore(dataDir, "cspo");
+		NotifyingSail sail = new NativeStore(dataDir, "spoc,posc,cspo");
 		sail.initialize();
 		return sail;
 	}
