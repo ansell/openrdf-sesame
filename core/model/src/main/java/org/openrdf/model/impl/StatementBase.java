@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,8 +8,9 @@ package org.openrdf.model.impl;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 
-
 public abstract class StatementBase implements Statement {
+
+	private static final long serialVersionUID = 8159033701345168571L;
 
 	/**
 	 * Compares a statement object to another object.
@@ -21,26 +22,24 @@ public abstract class StatementBase implements Statement {
 	 *         are equal.
 	 */
 	public final boolean equalsIgnoreContext(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof Statement))
-			return false;
-		final Statement other = (Statement)obj;
-		// The object is potentially the cheapest to check, as types
-		// of these references might be different.
+		if (obj instanceof Statement) {
+			return equalsIgnoreContext((Statement)obj);
+		}
 
-		// In general the number of different predicates in sets of
-		// statements is the smallest, so predicate equality is checked
-		// last.
-		if (!this.getObject().equals(other.getObject()))
-			return false;
-		if (!getSubject().equals(other.getSubject()))
-			return false;
-		if (!getPredicate().equals(other.getPredicate()))
-			return false;
-		return true;
+		return false;
+	}
+
+	/**
+	 * Compares a statement object to another statement object.
+	 * 
+	 * @param other
+	 *        The object to compare this statement to.
+	 * @return <tt>true</tt> if the other object is an instance of
+	 *         {@link Statement} and if their subjects, predicates and objects
+	 *         are equal.
+	 */
+	public final boolean equalsIgnoreContext(Statement other) {
+		return this == other || spoEquals(other);
 	}
 
 	/**
@@ -49,40 +48,52 @@ public abstract class StatementBase implements Statement {
 	 * @param other
 	 *        The object to compare this statement to.
 	 * @return <tt>true</tt> if the other object is an instance of
-	 *         {@link Statement} and if their subjects, predicates, objects,
-	 *         and contexts are equal.
+	 *         {@link Statement} and if their subjects, predicates, objects, and
+	 *         contexts are equal.
 	 */
 	@Override
 	public final boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof Statement))
-			return false;
-		final Statement other = (Statement)obj;
-		// The object is potentially the cheapest to check, as types
-		// of these references might be different.
+		if (obj instanceof Statement) {
+			return equals((Statement)obj);
+		}
 
-		// In general the number of different predicates in sets of
-		// statements is the smallest, so predicate equality is checked
-		// last.
-		if (!this.getObject().equals(other.getObject()))
-			return false;
-		if (!getSubject().equals(other.getSubject()))
-			return false;
-		if (!getPredicate().equals(other.getPredicate()))
-			return false;
-		if (getContext() == null && other.getContext() != null)
-			return false;
-		if (getContext() != null && !getContext().equals(other.getContext()))
-			return false;
-		return true;
+		return false;
+	}
+
+	/**
+	 * Compares a statement object to another statement object.
+	 * 
+	 * @param other
+	 *        The object to compare this statement to.
+	 * @return <tt>true</tt> if the other object is an instance of
+	 *         {@link Statement} and if their subjects, predicates and objects
+	 *         are equal.
+	 */
+	public final boolean equals(Statement other) {
+		return this == other || spoEquals(other) && contextEquals(other);
+	}
+
+	private final boolean spoEquals(Statement other) {
+		// The object is potentially the cheapest to check so we start with
+		// that. The number of different predicates in sets of statements is
+		// commonly the smallest, so predicate equality is checked last.
+		return getObject().equals(other.getObject()) && getSubject().equals(other.getSubject())
+				&& getPredicate().equals(other.getPredicate());
+	}
+
+	private final boolean contextEquals(Statement other) {
+		if (getContext() == null) {
+			return other.getContext() == null;
+		}
+		else {
+			return getContext().equals(other.getContext());
+		}
 	}
 
 	/**
 	 * The hash code of a statement is defined as:
-	 * <tt>961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode() + 29791 * context.hashCode()</tt>.
+	 * 
+	 * <tt>961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode() + 29791 * context.hashCode()</tt>
 	 * This is similar to how {@link String#hashCode String.hashCode()} is
 	 * defined.
 	 * 
