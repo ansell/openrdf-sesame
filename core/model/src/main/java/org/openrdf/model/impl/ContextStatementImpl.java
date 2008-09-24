@@ -11,6 +11,8 @@ import org.openrdf.model.Value;
 
 /**
  * An extension of {@link StatementImpl} that adds a context field.
+ * 
+ * @deprecated Use {@link StatementImpl} instead.
  */
 @Deprecated
 public class ContextStatementImpl extends StatementImpl {

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,9 +11,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
 /**
- * An implementation of the {@link Statement} interface for statements that
- * don't have an associated context. For statements that do have an associated
- * context, {@link ContextStatementImpl} can be used.
+ * An implementation of the {@link Statement} interface.
  */
 public class StatementImpl extends StatementBase {
 
@@ -58,14 +56,7 @@ public class StatementImpl extends StatementBase {
 	 *        The statement's object, must not be <tt>null</tt>.
 	 */
 	public StatementImpl(Resource subject, URI predicate, Value object) {
-		assert (subject != null);
-		assert (predicate != null);
-		assert (object != null);
-
-		this.subject = subject;
-		this.predicate = predicate;
-		this.object = object;
-		this.context = null;
+		this(subject, predicate, object, null);
 	}
 
 	/**
@@ -97,22 +88,18 @@ public class StatementImpl extends StatementBase {
 	 * Methods *
 	 *---------*/
 
-	// Implements Statement.getSubject()
 	public Resource getSubject() {
 		return subject;
 	}
 
-	// Implements Statement.getPredicate()
 	public URI getPredicate() {
 		return predicate;
 	}
 
-	// Implements Statement.getObject()
 	public Value getObject() {
 		return object;
 	}
 
-	// Implements Statement.getContext()
 	public Resource getContext() {
 		return context;
 	}
