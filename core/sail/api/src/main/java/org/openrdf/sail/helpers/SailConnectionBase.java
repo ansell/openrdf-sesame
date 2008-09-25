@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.helpers;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,8 +27,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.sail.SailConnectionListener;
+import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
 /**
@@ -39,7 +37,7 @@ import org.openrdf.sail.SailException;
  * @author Arjohn Kampman
  * @author jeen
  */
-public abstract class SailConnectionBase implements NotifyingSailConnection {
+public abstract class SailConnectionBase implements SailConnection {
 
 	/*
 	 * Note: the following debugEnabled method are private so that they can be
@@ -77,7 +75,8 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 	 * active operations finish and then block any further operations on the
 	 * connection.
 	 */
-	private final ReadWriteLockManager connectionLockManager = new WritePrefReadWriteLockManager(debugEnabled());
+	private final ReadWriteLockManager connectionLockManager = new WritePrefReadWriteLockManager(
+			debugEnabled());
 
 	/**
 	 * A multi-read-single-write lock manager used to handle multi-threaded
@@ -91,8 +90,6 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 
 	// FIXME: use weak references here?
 	private List<SailBaseIteration> activeIterations = Collections.synchronizedList(new LinkedList<SailBaseIteration>());
-
-	private List<SailConnectionListener> listeners;
 
 	/*
 	 * Stores a stack trace that indicates where this connection as created if
@@ -108,7 +105,6 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 		this.sailBase = sailBase;
 		isOpen = true;
 		txnActive = false;
-		listeners = new ArrayList<SailConnectionListener>(0);
 
 		if (debugEnabled()) {
 			creatorTrace = new Throwable();
@@ -480,40 +476,6 @@ public abstract class SailConnectionBase implements NotifyingSailConnection {
 		}
 		finally {
 			conLock.release();
-		}
-	}
-
-	public void addConnectionListener(SailConnectionListener listener) {
-		synchronized (listeners) {
-			listeners.add(listener);
-		}
-	}
-
-	public void removeConnectionListener(SailConnectionListener listener) {
-		synchronized (listeners) {
-			listeners.remove(listener);
-		}
-	}
-
-	protected boolean hasConnectionListeners() {
-		synchronized (listeners) {
-			return !listeners.isEmpty();
-		}
-	}
-
-	protected void notifyStatementAdded(Statement st) {
-		synchronized (listeners) {
-			for (SailConnectionListener listener : listeners) {
-				listener.statementAdded(st);
-			}
-		}
-	}
-
-	protected void notifyStatementRemoved(Statement st) {
-		synchronized (listeners) {
-			for (SailConnectionListener listener : listeners) {
-				listener.statementRemoved(st);
-			}
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -46,7 +46,7 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
-import org.openrdf.sail.helpers.SailConnectionBase;
+import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
@@ -54,7 +54,7 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
 /**
  * @author Arjohn Kampman
  */
-public class NativeStoreConnection extends SailConnectionBase implements InferencerConnection {
+public class NativeStoreConnection extends NotifyingSailConnectionBase implements InferencerConnection {
 
 	/*-----------*
 	 * Constants *

@@ -31,7 +31,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DirectoryLockManager;
-import org.openrdf.sail.helpers.SailBase;
+import org.openrdf.sail.helpers.NotifyingSailBase;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
 
@@ -42,7 +42,7 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class NativeStore extends SailBase {
+public class NativeStore extends NotifyingSailBase {
 
 	/*-----------*
 	 * Variables *
