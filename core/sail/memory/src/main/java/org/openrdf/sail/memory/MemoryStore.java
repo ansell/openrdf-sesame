@@ -28,7 +28,7 @@ import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.DirectoryLockManager;
-import org.openrdf.sail.helpers.SailBase;
+import org.openrdf.sail.helpers.NotifyingSailBase;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemStatementIterator;
@@ -51,7 +51,7 @@ import org.openrdf.sail.memory.model.TxnStatus;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class MemoryStore extends SailBase {
+public class MemoryStore extends NotifyingSailBase {
 
 	/*-----------*
 	 * Constants *

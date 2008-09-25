@@ -5,8 +5,8 @@
  */
 package org.openrdf.sail.rdbms;
 
-import org.openrdf.sail.NotifyingSail;
-import org.openrdf.sail.RDFNotifyingStoreTest;
+import org.openrdf.sail.RDFStoreTest;
+import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.rdbms.mysql.MySqlStore;
@@ -14,7 +14,7 @@ import org.openrdf.sail.rdbms.mysql.MySqlStore;
 /**
  * An extension of RDFStoreTest for testing the class {@link MySqlStore}.
  */
-public class MySqlStoreTest extends RDFNotifyingStoreTest {
+public class MySqlStoreTest extends RDFStoreTest {
 
 	/*--------------*
 	 * Constructors *
@@ -29,7 +29,7 @@ public class MySqlStoreTest extends RDFNotifyingStoreTest {
 	 *---------*/
 
 	@Override
-	protected NotifyingSail createSail()
+	protected Sail createSail()
 		throws SailException
 	{
 		MySqlStore sail = new MySqlStore("sesame_test");
@@ -41,7 +41,8 @@ public class MySqlStoreTest extends RDFNotifyingStoreTest {
 			conn.clear();
 			conn.clearNamespaces();
 			conn.commit();
-		} finally {
+		}
+		finally {
 			conn.close();
 		}
 		return sail;

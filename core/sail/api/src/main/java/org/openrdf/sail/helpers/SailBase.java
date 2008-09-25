@@ -6,19 +6,14 @@
 package org.openrdf.sail.helpers;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.sail.NotifyingSail;
-import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.sail.SailChangedEvent;
-import org.openrdf.sail.SailChangedListener;
+import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
@@ -31,7 +26,7 @@ import org.openrdf.sail.SailException;
  * @author jeen
  * @author Arjohn Kampman
  */
-public abstract class SailBase implements NotifyingSail {
+public abstract class SailBase implements Sail {
 
 	/*-----------*
 	 * Constants *
@@ -88,11 +83,6 @@ public abstract class SailBase implements NotifyingSail {
 	 */
 	private Map<SailConnection, Throwable> activeConnections = new IdentityHashMap<SailConnection, Throwable>();
 
-	/**
-	 * Objects that should be notified of changes to the data in this Sail.
-	 */
-	private Set<SailChangedListener> sailChangedListeners = new HashSet<SailChangedListener>(0);
-
 	/*---------*
 	 * Methods *
 	 *---------*/
@@ -105,14 +95,14 @@ public abstract class SailBase implements NotifyingSail {
 		return dataDir;
 	}
 
-	public NotifyingSailConnection getConnection()
+	public SailConnection getConnection()
 		throws SailException
 	{
 		if (shutDownInProgress) {
 			throw new IllegalStateException("shut down in progress");
 		}
 
-		NotifyingSailConnection connection = getConnectionInternal();
+		SailConnection connection = getConnectionInternal();
 
 		Throwable stackTrace = debugEnabled() ? new Throwable() : null;
 		activeConnections.put(connection, stackTrace);
@@ -126,7 +116,7 @@ public abstract class SailBase implements NotifyingSail {
 	 * @return a SailConnection
 	 * @throws SailException
 	 */
-	protected abstract NotifyingSailConnection getConnectionInternal()
+	protected abstract SailConnection getConnectionInternal()
 		throws SailException;
 
 	public void shutDown()
@@ -210,30 +200,6 @@ public abstract class SailBase implements NotifyingSail {
 			}
 			else {
 				logger.warn("tried to remove unknown connection object from store.");
-			}
-		}
-	}
-
-	public void addSailChangedListener(SailChangedListener listener) {
-		synchronized (sailChangedListeners) {
-			sailChangedListeners.add(listener);
-		}
-	}
-
-	public void removeSailChangedListener(SailChangedListener listener) {
-		synchronized (sailChangedListeners) {
-			sailChangedListeners.remove(listener);
-		}
-	}
-
-	/**
-	 * Notifies all registered SailChangedListener's of changes to the contents
-	 * of this Sail.
-	 */
-	public void notifySailChanged(SailChangedEvent event) {
-		synchronized (sailChangedListeners) {
-			for (SailChangedListener l : sailChangedListeners) {
-				l.sailChanged(event);
 			}
 		}
 	}
