@@ -1,10 +1,11 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.parser.serql;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,6 +25,7 @@ import junit.framework.TestSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.io.FileUtil;
 import info.aduna.io.IOUtil;
 import info.aduna.iteration.Iterations;
 
@@ -74,6 +76,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	 *--------------*/
 
 	public interface Factory {
+
 		Test createTest(String name, String dataFile, List<String> graphNames, String queryFile,
 				String resultFile, String entailment);
 	}
@@ -101,40 +104,61 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	protected void runTest()
 		throws Exception
 	{
+		Collection<Statement> actualStatements, expectedStatements;
+
 		String query = readQuery();
-		Repository dataRep = createRepository(entailment);
 
-		RepositoryConnection dataCon = dataRep.getConnection();
+		File dataDir = FileUtil.createTempDir("serql");
+		Repository dataRep = createRepository(dataDir, entailment);
+		try {
+			RepositoryConnection con = dataRep.getConnection();
+			try {
+				// Add unnamed graph
+				con.add(url(dataFile), base(dataFile), RDFFormat.forFileName(dataFile));
 
-		// Add unnamed graph
-		dataCon.add(url(dataFile), base(dataFile), RDFFormat.forFileName(dataFile));
+				// add named graphs
+				for (String graphName : graphNames) {
+					con.add(url(graphName), base(graphName), RDFFormat.forFileName(graphName), new URIImpl(
+							graphName));
+				}
 
-		// add named graphs
-		for (String graphName : graphNames) {
-			dataCon.add(url(graphName), base(graphName), RDFFormat.forFileName(graphName), new URIImpl(graphName));
+				// Evaluate the query on the query data
+				GraphQueryResult result = con.prepareGraphQuery(getQueryLanguage(), query).evaluate();
+				try {
+					actualStatements = Iterations.addAll(result, new ArrayList<Statement>(1));
+				}
+				finally {
+					result.close();
+				}
+			}
+			finally {
+				con.close();
+			}
+		}
+		finally {
+			dataRep.shutDown();
+			FileUtil.deleteDir(dataDir);
 		}
 
-		// Evaluate the query on the query data
-		GraphQueryResult result = dataCon.prepareGraphQuery(getQueryLanguage(), query).evaluate();
-		Collection<Statement> actualStatements = Iterations.addAll(result, new ArrayList<Statement>(1));
-		result.close();
-
-		dataCon.close();
-		dataRep.shutDown();
-
 		// Create a repository with the expected result data
-		Repository expectedResultRep = new SailRepository(newSail());
-		expectedResultRep.initialize();
+		dataDir = FileUtil.createTempDir("serql");
+		Repository expectedResultRep = createRepository(dataDir);
+		try {
+			RepositoryConnection con = expectedResultRep.getConnection();
+			try {
+				con.add(url(resultFile), base(resultFile), RDFFormat.forFileName(resultFile));
 
-		RepositoryConnection erCon = expectedResultRep.getConnection();
-
-		erCon.add(url(resultFile), base(resultFile), RDFFormat.forFileName(resultFile));
-
-		Collection<Statement> expectedStatements = Iterations.addAll(erCon.getStatements(null, null, null,
-				false), new ArrayList<Statement>(1));
-
-		erCon.close();
-		expectedResultRep.shutDown();
+				expectedStatements = Iterations.addAll(con.getStatements(null, null, null, false),
+						new ArrayList<Statement>(1));
+			}
+			finally {
+				con.close();
+			}
+		}
+		finally {
+			expectedResultRep.shutDown();
+			FileUtil.deleteDir(dataDir);
+		}
 
 		// Compare query result to expected data
 		if (!ModelUtil.equals(actualStatements, expectedStatements)) {
@@ -180,34 +204,37 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 	}
 
-	protected Repository createRepository(String entailment)
-			throws Exception {
-		Repository dataRep;
-		if ("RDF".equals(entailment)) {
-			dataRep = newRepository();
-		} else {
-			dataRep = newRepository(entailment);
-		}
+	protected Repository createRepository(File dataDir, String entailment)
+		throws Exception
+	{
+		Repository dataRep = new SailRepository(createSail(entailment));
+		dataRep.setDataDir(dataDir);
 		dataRep.initialize();
+
 		RepositoryConnection con = dataRep.getConnection();
 		try {
 			con.clear();
 			con.clearNamespaces();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
+
 		return dataRep;
 	}
 
-	protected Repository newRepository() throws Exception {
-		return new SailRepository(newSail());
+	protected Repository createRepository(File dataDir)
+		throws Exception
+	{
+		Repository repository = new SailRepository(newSail());
+		repository.setDataDir(dataDir);
+		repository.initialize();
+		return repository;
 	}
 
-	protected Repository newRepository(String entailment) throws Exception {
-		return new SailRepository(createSail(entailment));
-	}
-
-	protected NotifyingSail createSail(String entailment) throws Exception {
+	protected NotifyingSail createSail(String entailment)
+		throws Exception
+	{
 		NotifyingSail sail = newSail();
 
 		if ("RDF".equals(entailment)) {
@@ -221,13 +248,17 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 			sail = new DirectTypeHierarchyInferencer(sail);
 		}
 		else {
-			sail.shutDown();
 			fail("Invalid value for entailment level:" + entailment);
 		}
 		return sail;
 	}
 
-	protected abstract NotifyingSail newSail() throws Exception;
+	/**
+	 * Creates a new, unitialized Sail to be used for testing SeRQL query
+	 * evaluation.
+	 */
+	protected abstract NotifyingSail newSail()
+		throws Exception;
 
 	private String readQuery()
 		throws IOException
@@ -306,30 +337,35 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	}
 
 	private static URL url(String uri)
-			throws MalformedURLException {
-		if (!uri.startsWith("injar:"))
+		throws MalformedURLException
+	{
+		if (!uri.startsWith("injar:")) {
 			return new URL(uri);
+		}
 		int start = uri.indexOf(':') + 3;
 		int end = uri.indexOf('/', start);
 		String encoded = uri.substring(start, end);
 		try {
 			String jar = URLDecoder.decode(encoded, "UTF-8");
 			return new URL("jar:" + jar + '!' + uri.substring(end));
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}
 
 	private static String base(String uri) {
-		if (!uri.startsWith("jar:"))
+		if (!uri.startsWith("jar:")) {
 			return uri;
+		}
 		int start = uri.indexOf(':') + 1;
 		int end = uri.lastIndexOf('!');
 		String jar = uri.substring(start, end);
 		try {
 			String encoded = URLEncoder.encode(jar, "UTF-8");
 			return "injar://" + encoded + uri.substring(end + 1);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}

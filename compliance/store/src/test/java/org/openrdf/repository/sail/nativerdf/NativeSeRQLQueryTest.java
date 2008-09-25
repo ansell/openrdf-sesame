@@ -5,13 +5,10 @@
  */
 package org.openrdf.repository.sail.nativerdf;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import junit.framework.Test;
-
-import info.aduna.io.FileUtil;
 
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.serql.SeRQLQueryTestCase;
@@ -33,8 +30,6 @@ public class NativeSeRQLQueryTest extends SeRQLQueryTestCase {
 		});
 	}
 
-	private File dataDir;
-
 	public NativeSeRQLQueryTest(String name, String dataFile, List<String> graphNames, String queryFile,
 			String resultFile, String entailment)
 	{
@@ -50,19 +45,8 @@ public class NativeSeRQLQueryTest extends SeRQLQueryTestCase {
 	protected NotifyingSail newSail()
 		throws IOException
 	{
-		dataDir = FileUtil.createTempDir("nativestore");
-		return new NativeStore(dataDir, "spoc");
-	}
-
-	@Override
-	protected void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
+		NativeStore nativeStore = new NativeStore();
+		nativeStore.setTripleIndexes("spoc");
+		return nativeStore;
 	}
 }
