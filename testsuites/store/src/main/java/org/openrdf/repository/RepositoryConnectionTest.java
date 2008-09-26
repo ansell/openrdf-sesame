@@ -7,7 +7,6 @@ package org.openrdf.repository;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,7 +31,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import junit.framework.TestCase;
 
-import info.aduna.io.IOUtil;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
