@@ -76,7 +76,7 @@ public class DAWGTestBooleanParser extends RDFHandlerBase {
 				value = false;
 			}
 			else {
-				new RDFHandlerException("Invalid boolean value: " + booleanLit);
+				throw new RDFHandlerException("Invalid boolean value: " + booleanLit);
 			}
 		}
 		catch (GraphUtilException e) {

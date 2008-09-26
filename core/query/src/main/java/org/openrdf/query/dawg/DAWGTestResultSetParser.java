@@ -97,7 +97,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 					reportSolution((Resource)solutionNode, bindingNames);
 				}
 				else {
-					new RDFHandlerException("Value for " + SOLUTION + " is not a resource: " + solutionNode);
+					throw new RDFHandlerException("Value for " + SOLUTION + " is not a resource: " + solutionNode);
 				}
 			}
 
