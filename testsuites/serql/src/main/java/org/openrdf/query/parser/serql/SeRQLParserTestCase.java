@@ -5,7 +5,6 @@
  */
 package org.openrdf.query.parser.serql;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -64,8 +63,10 @@ public abstract class SeRQLParserTestCase extends TestCase {
 	/* Constructors */
 
 	public interface Factory {
+
 		Test createTest(String name, String queryFile, Value result);
 	}
+
 	/**
 	 * Creates a new SeRQL Parser test.
 	 */
@@ -170,7 +171,8 @@ public abstract class SeRQLParserTestCase extends TestCase {
 	}
 
 	private static URL url(String uri)
-			throws MalformedURLException {
+		throws MalformedURLException
+	{
 		if (!uri.startsWith("injar:"))
 			return new URL(uri);
 		int start = uri.indexOf(':') + 3;
@@ -179,7 +181,8 @@ public abstract class SeRQLParserTestCase extends TestCase {
 		try {
 			String jar = URLDecoder.decode(encoded, "UTF-8");
 			return new URL("jar:" + jar + '!' + uri.substring(end));
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}
@@ -193,7 +196,8 @@ public abstract class SeRQLParserTestCase extends TestCase {
 		try {
 			String encoded = URLEncoder.encode(jar, "UTF-8");
 			return "injar://" + encoded + uri.substring(end + 1);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}
