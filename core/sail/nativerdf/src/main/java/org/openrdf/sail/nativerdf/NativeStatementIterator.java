@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -60,6 +60,8 @@ class NativeStatementIterator extends CloseableIterationBase<Statement, IOExcept
 	public Statement next()
 		throws IOException
 	{
+		byte[] nextValue = this.nextValue;
+		
 		if (nextValue == null) {
 			throw new NoSuchElementException();
 		}
@@ -79,7 +81,7 @@ class NativeStatementIterator extends CloseableIterationBase<Statement, IOExcept
 			context = (Resource)valueStore.getValue(contextID);
 		}
 
-		nextValue = btreeIter.next();
+		this.nextValue = btreeIter.next();
 
 		return valueStore.createStatement(subj, pred, obj, context);
 	}
