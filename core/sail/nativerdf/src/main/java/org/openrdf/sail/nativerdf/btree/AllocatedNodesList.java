@@ -80,7 +80,7 @@ public class AllocatedNodesList {
 	 * 
 	 * @return <tt>true</tt> if the file was deleted.
 	 */
-	public boolean delete()
+	public synchronized boolean delete()
 		throws IOException
 	{
 		allocatedNodes = null;
