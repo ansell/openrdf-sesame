@@ -15,6 +15,11 @@ import info.aduna.concurrent.locks.Lock;
 public interface LockManager {
 
 	/**
+	 * Technical description of where the lock is located, such as a URL.
+	 */
+	String getLocation();
+
+	/**
 	 * Determines if the SAIL is locked.
 	 * 
 	 * @return <code>true</code> if the SAIL is already locked.
