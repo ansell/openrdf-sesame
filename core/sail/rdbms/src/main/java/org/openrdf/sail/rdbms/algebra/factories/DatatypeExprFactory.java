@@ -71,7 +71,7 @@ public class DatatypeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsO
 	public void meet(MathExpr node)
 		throws UnsupportedRdbmsOperatorException
 	{
-		boolean divide = node.getParentNode().equals(MathExpr.MathOp.DIVIDE);
+		boolean divide = node.getOperator().equals(MathExpr.MathOp.DIVIDE);
 		ValueExpr left = node.getLeftArg();
 		ValueExpr right = node.getRightArg();
 		SqlCase sqlCase = new SqlCase();

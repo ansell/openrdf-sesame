@@ -7,7 +7,6 @@ package org.openrdf.repository;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,7 +31,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import junit.framework.TestCase;
 
-import info.aduna.io.IOUtil;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
@@ -1459,6 +1457,22 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		result.close();
 		assertTrue(list.contains(p1));
 		assertTrue(list.contains(p2));
+	}
+
+	public void testSPARQLDivide() throws Exception {
+		URI s = vf.createURI("urn:test:s");
+		URI p1 = vf.createURI("urn:test:p1");
+		URI p3 = vf.createURI("urn:test:p3");
+		Literal one = vf.createLiteral(1);
+		Literal three = vf.createLiteral(3);
+		testCon.add(s, p1, one);
+		testCon.add(s, p3, three);
+		String qry = "PREFIX :<urn:test:>\nPREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>\n"
+				+ "SELECT ?s WHERE { ?s :p1 ?one ; :p3 ?three FILTER (datatype(?one / ?three) = xsd:decimal) }";
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, qry);
+		TupleQueryResult result = query.evaluate();
+		assertTrue (result.hasNext());
+		result.close();
 	}
 
 	private int getTotalStatementCount(RepositoryConnection connection)
