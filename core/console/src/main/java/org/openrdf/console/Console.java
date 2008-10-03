@@ -617,9 +617,14 @@ public class Console {
 				}
 			}
 
-			String template = IOUtil.readString(new InputStreamReader(templateStream, "UTF-8"));
-			templateStream.close();
-
+			String template;
+			try {
+				template = IOUtil.readString(new InputStreamReader(templateStream, "UTF-8"));
+			}
+			finally {
+				templateStream.close();
+			}
+			
 			ConfigTemplate configTemplate = new ConfigTemplate(template);
 
 			Map<String, String> valueMap = new HashMap<String, String>();

@@ -34,7 +34,7 @@ import org.openrdf.workbench.util.DynamicHttpRequest;
 public class WorkbenchServlet extends BaseServlet {
 	private static final String DEFAULT_PATH_PARAM = "default-path";
 	private static final String NO_REPOSITORY_PARAM = "no-repository-id";
-	public static String SERVER_PARAM = "server";
+	public static final String SERVER_PARAM = "server";
 	private RepositoryManager manager;
 	private ConcurrentMap<String, ProxyRepositoryServlet> repositories = new ConcurrentHashMap<String, ProxyRepositoryServlet>();
 

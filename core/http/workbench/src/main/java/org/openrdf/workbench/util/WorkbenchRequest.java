@@ -241,12 +241,12 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 		throws IOException
 	{
 		InputStream in = item.openStream();
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 			return reader.readLine();
 		}
 		finally {
-			in.close();
+			reader.close();
 		}
 	}
 
@@ -272,7 +272,6 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private Map<String, String> getMultipartParameterMap()
 		throws StoreException, IOException, FileUploadException
 	{

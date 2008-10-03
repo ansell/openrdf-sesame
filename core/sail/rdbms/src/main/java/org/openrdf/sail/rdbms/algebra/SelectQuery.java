@@ -43,7 +43,7 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 		}
 	}
 
-	private Map<String, SelectProjection> projections = new HashMap();
+	private Map<String, SelectProjection> projections = new HashMap<String, SelectProjection>();
 
 	private Map<String, String> bindingVars;
 
@@ -186,7 +186,7 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 	{
 		super.visitChildren(visitor);
 		from.visit(visitor);
-		ArrayList<SelectProjection> list = new ArrayList(projections.values());
+		ArrayList<SelectProjection> list = new ArrayList<SelectProjection>(projections.values());
 		for (SelectProjection expr : list) {
 			expr.visit(visitor);
 		}
