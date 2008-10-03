@@ -166,9 +166,13 @@ public class DirectoryLockManager implements LockManager {
 		throws IOException
 	{
 		FileWriter out = new FileWriter(lockFile);
-		out.write(getProcessName());
-		out.flush();
-		out.close();
+		try {
+			out.write(getProcessName());
+			out.flush();
+		}
+		finally {
+			out.close();
+		}
 	}
 
 	private String getProcessName() {

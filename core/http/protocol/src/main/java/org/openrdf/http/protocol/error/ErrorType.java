@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -55,12 +55,18 @@ public class ErrorType {
 		return label;
 	}
 
+	@Override
 	public boolean equals(Object other) {
 		if (other instanceof ErrorType) {
 			return ((ErrorType)other).getLabel().equals(this.getLabel());
 		}
 
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return getLabel().hashCode();
 	}
 
 	@Override

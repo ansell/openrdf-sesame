@@ -25,8 +25,7 @@ public class SummaryServlet extends TransformationServlet {
 			MalformedQueryException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "summary.xsl");
-		builder.start("id", "description", "location", "server", "size",
-				"namespaces", "contexts");
+		builder.start("id", "description", "location", "server");
 		builder.link("info");
 		String id = info.getId();
 		String desc = info.getDescription();
@@ -34,10 +33,7 @@ public class SummaryServlet extends TransformationServlet {
 		String server = getServer();
 		RepositoryConnection con = repository.getConnection();
 		try {
-			long size = getSize(con);
-			long namespaces = getNamespaces(con);
-			long contexts = getContexts(con);
-			builder.result(id, desc, loc, server, size, namespaces, contexts);
+			builder.result(id, desc, loc, server);
 			builder.end();
 		} finally {
 			con.close();
@@ -52,19 +48,4 @@ public class SummaryServlet extends TransformationServlet {
 		}
 		return null;
 	}
-
-	private long getSize(RepositoryConnection con) throws StoreException {
-		return con.size();
-	}
-
-	private long getNamespaces(RepositoryConnection con)
-			throws StoreException {
-		return con.getNamespaces().asList().size();
-	}
-
-	private long getContexts(RepositoryConnection con)
-			throws StoreException {
-		return con.getContextIDs().asList().size();
-	}
-
 }

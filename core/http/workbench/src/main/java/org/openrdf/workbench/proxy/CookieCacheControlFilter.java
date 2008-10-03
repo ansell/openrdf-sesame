@@ -44,7 +44,6 @@ public class CookieCacheControlFilter implements Filter {
 	public void destroy() {
 	}
 
-	@SuppressWarnings("unchecked")
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
 		throws IOException, ServletException
 	{

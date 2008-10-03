@@ -58,42 +58,6 @@
 				</tr>
 			</tbody>
 		</table>
-
-		<h2>
-			<xsl:value-of select="$repository-size.title" />
-		</h2>
-		<table class="simple">
-			<tbody>
-				<tr>
-					<th>
-						<xsl:value-of select="$repository-size.label" />
-					</th>
-					<td>
-						<xsl:value-of
-							select="//sparql:binding[@name='size']" />
-					</td>
-				</tr>
-				<tr>
-					<th>
-						<xsl:value-of
-							select="$number-of-namespaces.label" />
-					</th>
-					<td>
-						<xsl:value-of
-							select="//sparql:binding[@name='namespaces']" />
-					</td>
-				</tr>
-				<tr>
-					<th>
-						<xsl:value-of select="$number-of-contexts.label" />
-					</th>
-					<td>
-						<xsl:value-of
-							select="//sparql:binding[@name='contexts']" />
-					</td>
-				</tr>
-			</tbody>
-		</table>
 	</xsl:template>
 
 	<xsl:template match="sparql:literal">
