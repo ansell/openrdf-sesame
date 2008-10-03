@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -112,12 +112,10 @@ public class MultiProjection extends UnaryTupleOperator {
 	public MultiProjection clone() {
 		MultiProjection clone = (MultiProjection)super.clone();
 
-		List<ProjectionElemList> projectionsClone = new ArrayList<ProjectionElemList>(getProjections().size());
-		for (ProjectionElemList ge : getProjections()) {
-			projectionsClone.add(ge.clone());
+		clone.projections = new ArrayList<ProjectionElemList>(getProjections().size());
+		for (ProjectionElemList pe : getProjections()) {
+			clone.addProjection(pe.clone());
 		}
-
-		clone.setProjections(projectionsClone);
 
 		return clone;
 	}

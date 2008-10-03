@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -109,12 +109,10 @@ public class ProjectionElemList extends QueryModelNodeBase {
 	public ProjectionElemList clone() {
 		ProjectionElemList clone = (ProjectionElemList)super.clone();
 
-		List<ProjectionElem> elementsClone = new ArrayList<ProjectionElem>(getElements().size());
+		clone.elements = new ArrayList<ProjectionElem>(getElements().size());
 		for (ProjectionElem pe : getElements()) {
-			elementsClone.add(pe.clone());
+			clone.addElement(pe.clone());
 		}
-
-		clone.setElements(elementsClone);
 
 		return clone;
 	}
