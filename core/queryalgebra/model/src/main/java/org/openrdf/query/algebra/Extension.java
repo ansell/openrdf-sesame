@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public class Extension extends UnaryTupleOperator {
 
-	/*-----------*
+	/* ----------*
 	 * Variables *
 	 *-----------*/
 
@@ -74,8 +74,7 @@ public class Extension extends UnaryTupleOperator {
 	}
 
 	@Override
-	public Set<String> getBindingNames()
-	{
+	public Set<String> getBindingNames() {
 		Set<String> bindingNames = new LinkedHashSet<String>(arg.getBindingNames());
 
 		for (ExtensionElem pe : elements) {
@@ -103,8 +102,7 @@ public class Extension extends UnaryTupleOperator {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		int index = elements.indexOf(current);
 		if (index >= 0) {
 			elements.set(index, (ExtensionElem)replacement);
@@ -119,12 +117,10 @@ public class Extension extends UnaryTupleOperator {
 	public Extension clone() {
 		Extension clone = (Extension)super.clone();
 
-		List<ExtensionElem> elementsClone = new ArrayList<ExtensionElem>(getElements().size());
+		clone.elements = new ArrayList<ExtensionElem>(getElements().size());
 		for (ExtensionElem elem : getElements()) {
-			elementsClone.add(elem.clone());
+			clone.addElement(elem.clone());
 		}
-
-		clone.setElements(elementsClone);
 
 		return clone;
 	}
