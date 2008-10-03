@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -134,14 +134,12 @@ public class Group extends UnaryTupleOperator {
 	public Group clone() {
 		Group clone = (Group)super.clone();
 
-		clone.setGroupBindingNames(getGroupBindingNames());
+		clone.groupBindings = new LinkedHashSet<String>(getGroupBindingNames());
 
-		List<GroupElem> elementsClone = new ArrayList<GroupElem>(getGroupElements().size());
+		clone.groupElements = new ArrayList<GroupElem>(getGroupElements().size());
 		for (GroupElem ge : getGroupElements()) {
-			elementsClone.add(ge.clone());
+			clone.addGroupElement(ge.clone());
 		}
-
-		clone.setGroupElements(elementsClone);
 
 		return clone;
 	}
