@@ -206,8 +206,8 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 		public void rollback()
 			throws SailException
 		{
-			updateNeeded = false;
 			super.rollback();
+			updateNeeded = false;
 		}
 
 		@Override
