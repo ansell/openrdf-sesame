@@ -26,9 +26,10 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.algebra.evaluation.cursors.DistinctCursor;
 import org.openrdf.query.algebra.evaluation.cursors.EmptyCursor;
+import org.openrdf.query.algebra.evaluation.cursors.NamedContextCursor;
+import org.openrdf.query.algebra.evaluation.cursors.ReducedCursor;
 import org.openrdf.query.algebra.evaluation.cursors.UnionCursor;
 import org.openrdf.query.base.ConvertingCursor;
-import org.openrdf.query.base.FilteringCursor;
 import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.SailUtil;
@@ -361,18 +362,7 @@ public class NativeStore extends InferencerSailBase {
 			stIter = new NativeStatementCursor(btreeIter, valueStore);
 		}
 		// Filter statements without context resource
-		stIter = new FilteringCursor<Statement>(stIter) {
-
-			@Override
-			protected boolean accept(Statement st) {
-				return st.getContext() != null;
-			}
-
-			@Override
-			public String getName() {
-				return "FilterNullContext";
-			}
-		};
+		stIter = new NamedContextCursor(stIter);
 		// Return the contexts of the statements
 		ctxIter = new ConvertingCursor<Statement, Resource>(stIter) {
 
@@ -392,22 +382,7 @@ public class NativeStore extends InferencerSailBase {
 		}
 		else {
 			// Filtering sorted duplicates
-			ctxIter = new FilteringCursor<Resource>(ctxIter) {
-
-				private Resource last = null;
-
-				@Override
-				protected boolean accept(Resource ctx) {
-					boolean equal = ctx.equals(last);
-					last = ctx;
-					return !equal;
-				}
-
-				@Override
-				public String toString() {
-					return "FilterSortedDuplicates " + super.toString();
-				}
-			};
+			ctxIter = new ReducedCursor<Resource>(ctxIter);
 		}
 		return ctxIter;
 	}
