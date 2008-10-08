@@ -143,6 +143,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(ProjectionElem node)
 		throws X;
 
+	public void meet(Reduced node)
+		throws X;
+
 	public void meet(Regex node)
 		throws X;
 
