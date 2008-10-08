@@ -54,6 +54,7 @@ import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.QueryRoot;
+import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.SingletonSet;
@@ -339,6 +340,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetNode(node);
+	}
+
+	public void meet(Reduced node)
+		throws X
+	{
+		meetUnaryTupleOperator(node);
 	}
 
 	public void meet(Regex node)

@@ -45,6 +45,7 @@ import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
+import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.Slice;
@@ -223,6 +224,9 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		result = new Projection(result, projElemList);
 
+		if (node.isReduced()) {
+			result = new Reduced(result);
+		}
 		if (node.isDistinct()) {
 			result = new Distinct(result);
 		}
