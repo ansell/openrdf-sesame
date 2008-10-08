@@ -79,6 +79,7 @@ import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.QueryRoot;
+import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.SingletonSet;
@@ -349,6 +350,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof Distinct) {
 			return evaluate((Distinct)expr, bindings);
 		}
+		else if (expr instanceof Reduced) {
+			return evaluate((Reduced)expr, bindings);
+		}
 		else if (expr instanceof Group) {
 			return evaluate((Group)expr, bindings);
 		}
@@ -427,6 +431,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		return new DistinctIteration<BindingSet, QueryEvaluationException>(
 				evaluate(distinct.getArg(), bindings));
+	}
+
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Reduced reduced,
+			BindingSet bindings)
+		throws QueryEvaluationException
+	{
+		return evaluate(reduced.getArg(), bindings);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Group node, BindingSet bindings)
