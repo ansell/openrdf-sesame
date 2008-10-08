@@ -100,6 +100,7 @@ import org.openrdf.query.algebra.evaluation.cursors.LeftJoinCursor;
 import org.openrdf.query.algebra.evaluation.cursors.LimitCursor;
 import org.openrdf.query.algebra.evaluation.cursors.MinusCursor;
 import org.openrdf.query.algebra.evaluation.cursors.MultiProjectionCursor;
+import org.openrdf.query.algebra.evaluation.cursors.NamedContextCursor;
 import org.openrdf.query.algebra.evaluation.cursors.OffsetCursor;
 import org.openrdf.query.algebra.evaluation.cursors.OrderCursor;
 import org.openrdf.query.algebra.evaluation.cursors.ProjectionCursor;
@@ -228,22 +229,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			stIter = tripleSource.getStatements((Resource)subjValue, (URI)predValue, objValue, contexts);
 
 			if (contexts.length == 0 && sp.getScope() == Scope.NAMED_CONTEXTS) {
-				// Named contexts are matched by retrieving all statements from
-				// the store and filtering out the statements that do not have a
-				// context.
-				stIter = new FilteringCursor<Statement>(stIter) {
-
-					@Override
-					protected boolean accept(Statement st) {
-						return st.getContext() != null;
-					}
-
-					@Override
-					public String getName() {
-						return "FilterNullContext";
-					}
-
-				}; // end anonymous class
+				stIter = new NamedContextCursor(stIter);
 			}
 		}
 		catch (ClassCastException e) {
