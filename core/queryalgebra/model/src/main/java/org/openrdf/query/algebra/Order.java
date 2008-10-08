@@ -108,7 +108,7 @@ public class Order extends UnaryTupleOperator {
 
 		clone.elements = new ArrayList<OrderElem>(getElements().size());
 		for (OrderElem elem : getElements()) {
-			addElement(elem.clone());
+			clone.addElement(elem.clone());
 		}
 
 		return clone;
