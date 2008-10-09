@@ -8,6 +8,7 @@ package org.openrdf.repository.config;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYIMPL;
+import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYTITLE;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -124,6 +125,7 @@ public class RepositoryConfig {
 			model.add(repositoryNode, REPOSITORYID, vf.createLiteral(id));
 		}
 		if (title != null) {
+			model.add(repositoryNode, REPOSITORYTITLE, vf.createLiteral(title));
 			model.add(repositoryNode, RDFS.LABEL, vf.createLiteral(title));
 		}
 		if (implConfig != null) {
@@ -142,6 +144,11 @@ public class RepositoryConfig {
 			}
 
 			Literal titleLit = ModelUtil.getOptionalObjectLiteral(model, repositoryNode, RDFS.LABEL);
+			if (titleLit != null) {
+				setTitle(titleLit.getLabel());
+			}
+
+			titleLit = ModelUtil.getOptionalObjectLiteral(model, repositoryNode, REPOSITORYTITLE);
 			if (titleLit != null) {
 				setTitle(titleLit.getLabel());
 			}

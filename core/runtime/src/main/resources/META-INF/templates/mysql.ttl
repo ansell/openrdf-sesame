@@ -8,16 +8,20 @@
 @prefix ns: <http://www.openrdf.org/config/sail/rdbms#>.
 
 [] a rep:Repository ;
-   rep:repositoryID "{%Repository ID|mysql%}" ;
-   rdfs:label "{%Repository title|MySQL Store%}" ;
+   rep:repositoryID "mysql" ;
+   rep:repositoryTitle "MySQL Store" ;
    rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;
       sr:sailImpl [
          sail:sailType "openrdf:RdbmsStore" ;
-         ns:jdbcDriver "{%JDBC driver|com.mysql.jdbc.Driver%}";
-         ns:url "jdbc:mysql://{%Host|localhost%}:{%Port|3306%}/{%Database|sesame_store%}?useUnicode=yes&characterEncoding=UTF-8&characterSetResults=UTF-8&{%Connection properties|connectTimeout=0%}";
-         ns:user "{%User name%}";
-         ns:password "{%Password%}";
-         ns:maxTripleTables "{%Max number of triple tables|256%}"
+         ns:jdbcDriver "com.mysql.jdbc.Driver";
+         ns:urlTemplate "jdbc:mysql://{0}:{1}/{2}?useUnicode=yes&characterEncoding=UTF-8&characterSetResults=UTF-8&{3}";
+         ns:host "localhost";
+         ns:port 3306;
+         ns:database "sesame_store";
+         ns:urlProperties "connectTimeout=0";
+         ns:user "";
+         ns:password "";
+         ns:maxTripleTables "256"
       ]
    ].

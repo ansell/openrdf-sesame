@@ -11,12 +11,10 @@ import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,13 +43,13 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.app.AppConfiguration;
 import info.aduna.app.AppVersion;
-import info.aduna.io.IOUtil;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -59,7 +57,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
@@ -80,11 +78,13 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.repository.manager.config.ConfigProperty;
+import org.openrdf.repository.manager.config.ConfigTemplate;
+import org.openrdf.repository.manager.config.ConfigTemplateRegistry;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -93,7 +93,6 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
-import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.rio.ntriples.NTriplesUtil;
 import org.openrdf.sail.LockManager;
 import org.openrdf.sail.SailLockedException;
@@ -591,66 +590,41 @@ public class Console {
 		throws IOException
 	{
 		try {
-			// FIXME: remove assumption of .ttl extension
-			String templateFileName = templateName + ".ttl";
-
+			ConfigTemplateRegistry registry = ConfigTemplateRegistry.getInstance();
 			File templatesDir = new File(appConfig.getDataDir(), TEMPLATES_DIR);
-
-			File templateFile = new File(templatesDir, templateFileName);
-			InputStream templateStream;
-
-			if (templateFile.exists()) {
-				if (!templateFile.canRead()) {
-					writeError("Not allowed to read template file: " + templateFile);
-					return;
-				}
-
-				templateStream = new FileInputStream(templateFile);
+			if (templatesDir.isDirectory()) {
+				registry.loadTemplates(templatesDir);
 			}
-			else {
-				// Try classpath for built-ins
-				templateStream = Console.class.getResourceAsStream(templateFileName);
-
-				if (templateStream == null) {
-					writeError("No template called " + templateName + " found in " + templatesDir);
-					return;
-				}
+			ConfigTemplate configTemplate = registry.get(templateName);
+			if (configTemplate == null) {
+				writeError("No template called " + templateName + " found in " + templatesDir);
+				return;
 			}
 
-			String template;
-			try {
-				template = IOUtil.readString(new InputStreamReader(templateStream, "UTF-8"));
-			}
-			finally {
-				templateStream.close();
-			}
-			
-			ConfigTemplate configTemplate = new ConfigTemplate(template);
+			Map<URI, Literal> valueMap = new HashMap<URI, Literal>();
+			List<ConfigProperty> properties = configTemplate.getProperties();
 
-			Map<String, String> valueMap = new HashMap<String, String>();
-			Map<String, List<String>> variableMap = configTemplate.getVariableMap();
-
-			if (!variableMap.isEmpty()) {
+			if (!properties.isEmpty()) {
 				writeln("Please specify values for the following variables:");
 			}
 
-			for (Map.Entry<String, List<String>> entry : variableMap.entrySet()) {
-				String var = entry.getKey();
-				List<String> values = entry.getValue();
+			for (ConfigProperty property : properties) {
+				List<Literal> values = property.getPossibleLiterals();
+				Literal defaultLiteral = property.getDefaultLiteral();
 
-				write(var);
+				write(property.getLabel());
 				if (values.size() > 1) {
 					write(" (");
 					for (int i = 0; i < values.size(); i++) {
 						if (i > 0) {
 							write("|");
 						}
-						write(values.get(i));
+						write(values.get(i).stringValue());
 					}
 					write(")");
 				}
-				if (!values.isEmpty()) {
-					write(" [" + values.get(0) + "]");
+				if (defaultLiteral != null) {
+					write(" [" + defaultLiteral.stringValue() + "]");
 				}
 				write(": ");
 
@@ -664,17 +638,10 @@ public class Console {
 				if (value.length() == 0) {
 					value = null;
 				}
-				valueMap.put(var, value);
+				valueMap.put(property.getPredicate(), value == null ? defaultLiteral : new LiteralImpl(value));
 			}
 
-			String configString = configTemplate.render(valueMap);
-			// writeln(configString);
-
-			Model model = new ModelImpl();
-
-			RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);
-			rdfParser.setRDFHandler(new StatementCollector(model));
-			rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
+			Model model = configTemplate.createConfig(valueMap);
 
 			Resource repositoryNode = model.subjects(RDF.TYPE, REPOSITORY).iterator().next();
 			RepositoryConfig repConfig = RepositoryConfig.create(model, repositoryNode);

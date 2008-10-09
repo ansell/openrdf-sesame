@@ -1,0 +1,17 @@
+#
+# Sesame configuration schema for RDF Repositories
+#
+@prefix xsd: <http://www.w3.org/ 2001/XMLSchema#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix rep: <http://www.openrdf.org/config/repository#>.
+
+rep:repositoryID a rdf:Property ;
+	rdfs:label "ID"@en ;
+	rdfs:comment "Unique identifier"@en ;
+	rdfs:range xsd:string .
+
+rep:repositoryTitle a rdf:property ;
+	rdfs:label "Title"@en ;
+	rdfs:comment "A descriptive Name"@en ;
+	rdfs:range xsd:string .

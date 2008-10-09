@@ -5,10 +5,16 @@
  */
 package org.openrdf.sail.rdbms.config;
 
+import static java.text.MessageFormat.format;
+import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.DATABASE;
+import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.HOST;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.JDBC_DRIVER;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.MAX_TRIPLE_TABLES;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.PASSWORD;
+import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.PORT;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.URL;
+import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.URL_PROPERTIES;
+import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.URL_TEMPLATE;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.USER;
 
 import org.openrdf.model.Literal;
@@ -139,6 +145,15 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 			Literal jdbcDriverLit = ModelUtil.getOptionalObjectLiteral(model, implNode, JDBC_DRIVER);
 			if (jdbcDriverLit != null) {
 				setJdbcDriver(jdbcDriverLit.getLabel());
+			}
+
+			String template = ModelUtil.getOptionalObjectStringValue(model, implNode, URL_TEMPLATE);
+			String host = ModelUtil.getOptionalObjectStringValue(model, implNode, HOST);
+			String port = ModelUtil.getOptionalObjectStringValue(model, implNode, PORT);
+			String database = ModelUtil.getOptionalObjectStringValue(model, implNode, DATABASE);
+			String properties = ModelUtil.getOptionalObjectStringValue(model, implNode, URL_PROPERTIES);
+			if (template != null && database != null) {
+				setUrl(format(template, host, port, database, properties));
 			}
 
 			Literal urlLit = ModelUtil.getOptionalObjectLiteral(model, implNode, URL);

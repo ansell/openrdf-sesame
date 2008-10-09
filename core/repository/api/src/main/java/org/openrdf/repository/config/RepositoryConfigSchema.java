@@ -29,6 +29,9 @@ public class RepositoryConfigSchema {
 	/** <tt>http://www.openrdf.org/config/repository#repositoryID</tt> */
 	public final static URI REPOSITORYID;
 
+	/** <tt>http://www.openrdf.org/config/repository#repositoryTitle</tt> */
+	public final static URI REPOSITORYTITLE;
+
 	/** <tt>http://www.openrdf.org/config/repository#repositoryImpl</tt> */
 	public final static URI REPOSITORYIMPL;
 
@@ -43,6 +46,7 @@ public class RepositoryConfigSchema {
 		REPOSITORY_CONTEXT = factory.createURI(NAMESPACE, "RepositoryContext");
 		REPOSITORY = factory.createURI(NAMESPACE, "Repository");
 		REPOSITORYID = factory.createURI(NAMESPACE, "repositoryID");
+		REPOSITORYTITLE = factory.createURI(NAMESPACE, "repositoryTitle");
 		REPOSITORYIMPL = factory.createURI(NAMESPACE, "repositoryImpl");
 		REPOSITORYTYPE = factory.createURI(NAMESPACE, "repositoryType");
 		DELEGATE = factory.createURI(NAMESPACE, "delegate");

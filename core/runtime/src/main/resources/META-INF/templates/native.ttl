@@ -8,12 +8,12 @@
 @prefix ns: <http://www.openrdf.org/config/sail/native#>.
 
 [] a rep:Repository ;
-   rep:repositoryID "{%Repository ID|native%}" ;
-   rdfs:label "{%Repository title|Native store%}" ;
+   rep:repositoryID "native" ;
+   rep:repositoryTitle "Native store" ;
    rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;
       sr:sailImpl [
          sail:sailType "openrdf:NativeStore" ;
-         ns:tripleIndexes "{%Triple indexes|spoc,posc%}"
+         ns:tripleIndexes "spoc,posc"
       ]
    ].
