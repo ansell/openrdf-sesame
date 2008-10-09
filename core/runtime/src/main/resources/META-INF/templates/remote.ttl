@@ -8,7 +8,8 @@
 [] a rep:Repository ;
    rep:repositoryImpl [
       rep:repositoryType "openrdf:HTTPRepository" ;
-      hr:repositoryURL <{%Sesame server location|http://localhost:8080/openrdf-sesame%}/repositories/{%Remote repository ID|SYSTEM%}>
+      hr:serverURL "http://localhost:8080/openrdf-sesame" ;
+      hr:repositoryID "SYSTEM"
    ];
-   rep:repositoryID "{%Local repository ID|SYSTEM@localhost%}" ;
-   rdfs:label "{%Repository title|SYSTEM repository @localhost%}" .
+   rep:repositoryID "remote" ;
+   rep:repositoryTitle "remote repository @localhost" .

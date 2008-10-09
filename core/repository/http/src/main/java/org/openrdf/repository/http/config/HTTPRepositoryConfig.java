@@ -6,13 +6,16 @@
 package org.openrdf.repository.http.config;
 
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.PASSWORD;
+import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYID;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYURL;
+import static org.openrdf.repository.http.config.HTTPRepositorySchema.SERVERURL;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.USERNAME;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
@@ -99,6 +102,11 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
+			Value server = ModelUtil.getOptionalObject(model, implNode, SERVERURL);
+			Literal id = ModelUtil.getOptionalObjectLiteral(model, implNode, REPOSITORYID);
+			if (server != null && id != null) {
+				setURL(server.stringValue() + id.stringValue());
+			}
 			URI uri = ModelUtil.getOptionalObjectURI(model, implNode, REPOSITORYURL);
 			if (uri != null) {
 				setURL(uri.toString());

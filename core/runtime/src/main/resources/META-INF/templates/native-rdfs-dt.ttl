@@ -9,8 +9,8 @@
 @prefix ns: <http://www.openrdf.org/config/sail/native#>.
 
 [] a rep:Repository ;
-   rep:repositoryID "{%Repository ID|native-rdfs-dt%}" ;
-   rdfs:label "{%Repository title|Native store with RDF Schema and direct type inferencing%}" ;
+   rep:repositoryID "native-rdfs-dt" ;
+   rep:repositoryTitle "Native store with RDF Schema and direct type inferencing" ;
    rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;
       sr:sailImpl [
@@ -19,7 +19,7 @@
             sail:sailType "openrdf:ForwardChainingRDFSInferencer" ;
             sail:delegate [
                sail:sailType "openrdf:NativeStore" ;
-               ns:tripleIndexes "{%Triple indexes|spoc,posc%}"
+               ns:tripleIndexes "spoc,posc"
             ]
          ]
       ]

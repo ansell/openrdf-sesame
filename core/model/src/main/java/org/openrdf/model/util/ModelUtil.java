@@ -582,4 +582,27 @@ public class ModelUtil {
 			throw new ModelUtilException("Expected literal for property " + pred);
 		}
 	}
+
+	/**
+	 * Utility method that returns the value of
+	 * {@link #getOptionalObject(Model, Resource, URI, Resource[])}'s stringValue.
+	 * 
+	 * @return The stirngValue of the matched statement's object, or <tt>null</tt> if no
+	 *         matching statements were found.
+	 * @throws ModelUtilException
+	 *         If such an exception is thrown by
+	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])}.
+	 */
+	public static String getOptionalObjectStringValue(Model model, Resource subj, URI pred)
+		throws ModelUtilException
+	{
+		Value obj = getOptionalObject(model, subj, pred);
+
+		if (obj != null) {
+			return obj.stringValue();
+		}
+		else {
+			return null;
+		}
+	}
 }

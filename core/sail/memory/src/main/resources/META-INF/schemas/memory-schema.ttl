@@ -1,0 +1,17 @@
+#
+# Sesame configuration schema for memory RDF stores
+#
+@prefix xsd: <http://www.w3.org/ 2001/XMLSchema#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix ms: <http://www.openrdf.org/config/sail/memory#>.
+
+ms:persist a rdf:Property ;
+	rdfs:label "Persist"@en ;
+	rdfs:comment "Should the contents of the store be saved?"@en ;
+	rdfs:range xsd:boolean .
+
+ms:syncDelay a rdf:property ;
+	rdfs:label "Synchronized Delay"@en ;
+	rdfs:comment "How often should the contents be saved (in milliseconds)?"@en ;
+	rdfs:range xsd:nonNegativeInteger .

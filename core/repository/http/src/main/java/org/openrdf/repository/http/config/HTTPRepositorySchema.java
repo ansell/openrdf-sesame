@@ -24,6 +24,12 @@ public class HTTPRepositorySchema {
 	/** <tt>http://www.openrdf.org/config/repository/http#repositoryURL</tt> */
 	public final static URI REPOSITORYURL;
 
+	/** <tt>http://www.openrdf.org/config/repository/http#serverURL</tt> */
+	public final static URI SERVERURL;
+
+	/** <tt>http://www.openrdf.org/config/repository/http#repositoryID/tt> */
+	public final static URI REPOSITORYID;
+
 	/** <tt>http://www.openrdf.org/config/repository/http#username</tt> */
 	public final static URI USERNAME;
 
@@ -33,6 +39,8 @@ public class HTTPRepositorySchema {
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		REPOSITORYURL = factory.createURI(NAMESPACE, "repositoryURL");
+		SERVERURL = factory.createURI(NAMESPACE, "serverURL");
+		REPOSITORYID = factory.createURI(NAMESPACE, "repositoryID");
 		USERNAME = factory.createURI(NAMESPACE, "username");
 		PASSWORD = factory.createURI(NAMESPACE, "password");
 	}
