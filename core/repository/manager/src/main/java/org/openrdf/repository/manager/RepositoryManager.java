@@ -6,7 +6,6 @@
 package org.openrdf.repository.manager;
 
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
-import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY_CONTEXT;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -23,22 +22,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.StoreException;
-import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.sail.LockManager;
-import org.openrdf.sail.SailReadOnlyException;
-import org.openrdf.sail.helpers.DirectoryLockManager;
+import org.openrdf.repository.manager.config.RepositoryConfigManager;
+import org.openrdf.repository.manager.templates.ConfigTemplate;
+import org.openrdf.repository.manager.templates.ConfigTemplateManager;
 
 /**
  * A manager for {@link Repository}s. Every <tt>RepositoryManager</tt> has
@@ -62,9 +54,13 @@ public abstract class RepositoryManager {
 	 * Variables *
 	 *-----------*/
 
-	private final Map<String, Repository> initializedRepositories;
+	final Map<String, Repository> initializedRepositories;
 
 	private final ValueFactory vf = new ValueFactoryImpl();
+
+	private RepositoryConfigManager configs;
+
+	private ConfigTemplateManager templates;
 
 	/*--------------*
 	 * Constructors *
@@ -86,142 +82,33 @@ public abstract class RepositoryManager {
 	 * Methods *
 	 *---------*/
 
+	protected void setRepositoryConfigManager(RepositoryConfigManager configs) {
+		this.configs = configs;
+	}
+
+	protected void setConfigTemplateManager(ConfigTemplateManager templates) {
+		this.templates = templates;
+	}
+
 	/**
 	 * Initializes the repository manager.
 	 * 
-	 * @throws StoreException
+	 * @throws RepositoryConfigException
 	 *         If the manager failed to initialize the SYSTEM repository.
 	 */
-	public void initialize()
-		throws RepositoryConfigException
-	{
-		try {
-			Repository systemRepository = createSystemRepository();
-
-			synchronized (initializedRepositories) {
-				initializedRepositories.put(SystemRepository.ID, systemRepository);
-			}
-		}
-		catch (StoreException e) {
-			throw new RepositoryConfigException(e);
-		}
-	}
+	public abstract void initialize()
+		throws RepositoryConfigException;
 
 	protected abstract Repository createSystemRepository()
 		throws StoreException;
 
 	/**
 	 * Gets the SYSTEM repository.
+	 * @throws StoreException 
+	 * @throws RepositoryConfigException 
 	 */
 	@Deprecated
-	public Repository getSystemRepository() {
-		synchronized (initializedRepositories) {
-			return initializedRepositories.get(SystemRepository.ID);
-		}
-	}
-
-	/**
-	 * Gets the SYSTEM model.
-	 */
-	private Model getSystemModel()
-		throws RepositoryConfigException
-	{
-		Repository system = getSystemRepository();
-		try {
-			RepositoryConnection con = system.getConnection();
-			try {
-				return con.getStatements(null, null, null, false).addTo(new ModelImpl());
-			}
-			finally {
-				con.close();
-			}
-		}
-		catch (StoreException e) {
-			throw new RepositoryConfigException(e);
-		}
-	}
-
-	/**
-	 * Save the SYSTEM model.
-	 */
-	private void addSystemModel(Model model)
-		throws RepositoryConfigException
-	{
-		Repository systemRepo = getSystemRepository();
-		try {
-			try {
-				RepositoryConnection con = systemRepo.getConnection();
-				try {
-					con.add(model);
-				}
-				finally {
-					con.close();
-				}
-			}
-			catch (SailReadOnlyException e) {
-				if (tryToRemoveLock(e, systemRepo)) {
-					addSystemModel(model);
-				} else {
-					throw e;
-				}
-			}
-		}
-		catch (IOException e) {
-			throw new RepositoryConfigException(e);
-		}
-		catch (StoreException e) {
-			throw new RepositoryConfigException(e);
-		}
-	}
-
-	/**
-	 * Clear the SYSTEM model.
-	 */
-	private void clearSystemModel(Resource context)
-		throws RepositoryConfigException
-	{
-		Repository systemRepo = getSystemRepository();
-		try {
-			try {
-				RepositoryConnection con = systemRepo.getConnection();
-				try {
-					con.clear(context);
-				}
-				finally {
-					con.close();
-				}
-			}
-			catch (SailReadOnlyException e) {
-				if (tryToRemoveLock(e, systemRepo)) {
-					clearSystemModel(context);
-				} else {
-					throw e;
-				}
-			}
-		}
-		catch (IOException e) {
-			throw new RepositoryConfigException(e);
-		}
-		catch (StoreException e) {
-			throw new RepositoryConfigException(e);
-		}
-	}
-
-	private boolean tryToRemoveLock(SailReadOnlyException e, Repository repo)
-		throws IOException, StoreException
-	{
-		boolean lockRemoved = false;
-
-		LockManager lockManager = new DirectoryLockManager(repo.getDataDir());
-
-		if (lockManager.isLocked()) {
-			repo.shutDown();
-			lockRemoved = lockManager.revokeLock();
-			repo.initialize();
-		}
-
-		return lockRemoved;
-	}
+	public abstract Repository getSystemRepository() throws StoreException, RepositoryConfigException;
 
 	/**
 	 * Generates an ID for a new repository based on the specified base name. The
@@ -283,42 +170,51 @@ public abstract class RepositoryManager {
 		return baseName + index;
 	}
 
+	/**
+	 * @return
+	 * @throws RepositoryConfigException
+	 * @see org.openrdf.repository.manager.templates.ConfigTemplateManager#getIDs()
+	 */
+	public Set<String> getConfigTemplateIDs()
+		throws RepositoryConfigException
+	{
+		return templates.getIDs();
+	}
+
+	/**
+	 * @param id
+	 * @return
+	 * @throws RepositoryConfigException
+	 * @see org.openrdf.repository.manager.templates.ConfigTemplateManager#getTemplate(java.lang.String)
+	 */
+	public ConfigTemplate getConfigTemplate(String id)
+		throws RepositoryConfigException
+	{
+		return templates.getTemplate(id);
+	}
+
 	public Set<String> getRepositoryIDs()
 		throws RepositoryConfigException
 	{
-		Model model = getSystemModel();
-		Set<String> ids = new HashSet<String>();
-		for (Value obj : model.objects(null, REPOSITORYID)) {
-			ids.add(obj.stringValue());
-		}
-		return ids;
+		return configs.getIDs();
 	}
 
 	public boolean hasRepositoryConfig(String repositoryID)
 		throws RepositoryConfigException
 	{
-		Model model = getSystemModel();
-		Literal id = vf.createLiteral(repositoryID);
-		return model.contains(null, REPOSITORYID, id);
+		return configs.getIDs().contains(repositoryID);
 	}
 
-	public RepositoryConfig getRepositoryConfig(String repositoryID)
+	public boolean hasRepositoryConfig(Model config)
 		throws RepositoryConfigException
 	{
-		Model model = getSystemModel();
-		Literal id = vf.createLiteral(repositoryID);
-		for (Statement idStatement : model.filter(null, REPOSITORYID, id)) {
-			Resource repositoryNode = idStatement.getSubject();
-			Resource context = idStatement.getContext();
+		return hasRepositoryConfig(getConfigId(config));
+	}
 
-			if (context == null) {
-				throw new RepositoryConfigException("No configuration context for repository " + repositoryID);
-			}
-
-			Model contextGraph = model.filter(null, null, null, context);
-			return RepositoryConfig.create(contextGraph, repositoryNode);
-		}
-		return null;
+	public Model getRepositoryConfig(String repositoryID)
+		throws RepositoryConfigException
+	{
+		return configs.getConfig(repositoryID);
 	}
 
 	/**
@@ -339,18 +235,27 @@ public abstract class RepositoryManager {
 	 *         example, this happens when there are multiple existing
 	 *         configurations with the concerning ID.
 	 */
-	public void addRepositoryConfig(RepositoryConfig config)
+	public String addRepositoryConfig(Model config)
 		throws RepositoryConfigException, StoreException
 	{
-		String id = config.getID();
-		removeRepositoryConfig(id);
+		String id = getConfigId(config);
+		if (removeRepositoryConfig(id)) {
+			configs.updateConfig(config);
+			resetRepository(id);
+		} else {
+			configs.addConfig(config);
+		}
+		return id;
+	}
 
-		Model model = new ModelImpl();
-		Resource context = vf.createBNode();
-		model.add(context, RDF.TYPE, REPOSITORY_CONTEXT);
-		config.export(model.filter(null, null, null, context));
-
-		addSystemModel(model);
+	String getConfigId(Model config)
+		throws RepositoryConfigException
+	{
+		Set<Value> ids = config.objects(null, REPOSITORYID);
+		if (ids.size() != 1)
+			throw new RepositoryConfigException("Repository ID not found");
+		String id = ids.iterator().next().stringValue();
+		return id;
 	}
 
 	/**
@@ -376,12 +281,9 @@ public abstract class RepositoryManager {
 		boolean isRemoved = false;
 
 		synchronized (initializedRepositories) {
-			Model model = getSystemModel();
 
-			// clear existing context
-			Literal id = vf.createLiteral(repositoryID);
-			for (Resource ctx : model.contexts(null, REPOSITORYID, id)) {
-				clearSystemModel(ctx);
+			if (configs.getIDs().contains(repositoryID)) {
+				configs.removeConfig(repositoryID);
 				isRemoved = true;
 			}
 
@@ -419,6 +321,8 @@ public abstract class RepositoryManager {
 	public Repository getRepository(String id)
 		throws RepositoryConfigException, StoreException
 	{
+		if (SystemRepository.ID.equals(id))
+			return getSystemRepository();
 		synchronized (initializedRepositories) {
 			Repository result = initializedRepositories.get(id);
 
@@ -470,6 +374,18 @@ public abstract class RepositoryManager {
 	Repository removeInitializedRepository(String repositoryID) {
 		synchronized (initializedRepositories) {
 			return initializedRepositories.remove(repositoryID);
+		}
+	}
+
+	void resetRepository(String repositoryID) {
+		Repository repository = removeInitializedRepository(repositoryID);
+		if (repository != null) {
+			logger.debug("Modified repository {} has been initialized, refreshing...", repositoryID);
+			// refresh single repository
+			refreshRepository(repositoryID, repository);
+		}
+		else {
+			logger.debug("Modified repository {} has not been initialized, skipping...", repositoryID);
 		}
 	}
 

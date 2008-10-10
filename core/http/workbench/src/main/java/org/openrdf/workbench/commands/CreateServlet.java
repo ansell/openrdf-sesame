@@ -93,7 +93,7 @@ public class CreateServlet extends TransformationServlet {
 				repositoryNode);
 		repConfig.validate();
 
-		manager.addRepositoryConfig(repConfig);
+		manager.addRepositoryConfig(model);
 		return repConfig;
 	}
 

@@ -3,29 +3,20 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.repository.manager.config;
+package org.openrdf.repository.manager.templates;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
-import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.repository.config.RepositoryConfigSchema;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.RDFParserRegistry;
-import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * @author james
@@ -38,11 +29,11 @@ public class ConfigTemplate {
 
 	private Model schema;
 
-	public ConfigTemplate(URL url, Model schema)
+	public ConfigTemplate(List<Statement> statements, Model schema)
 		throws IOException, RDFParseException
 	{
 		this.schema = schema;
-		this.statements = parse(url);
+		this.statements = statements;
 		for (Statement st : statements) {
 			if (st.getPredicate().equals(RepositoryConfigSchema.REPOSITORYID)) {
 				id = st.getObject().stringValue();
@@ -50,7 +41,7 @@ public class ConfigTemplate {
 		}
 	}
 
-	public String getId() {
+	public String getID() {
 		return id;
 	}
 
@@ -73,41 +64,20 @@ public class ConfigTemplate {
 		return properties;
 	}
 
-	public Model createConfig(Map<URI, Literal> map) {
+	public Model createConfig(List<ConfigProperty> properties) {
+		int idx = 0;
 		Model model = new ModelImpl();
 		for (Statement st : statements) {
 			Resource subj = st.getSubject();
 			URI pred = st.getPredicate();
-			if (map.containsKey(pred)) {
-				model.add(subj, pred, map.get(pred));
+			if (schema.contains(pred, null, null)) {
+				if (!properties.get(idx).getPredicate().equals(pred))
+					throw new IllegalArgumentException("Invalid properties");
+				model.add(subj, pred, properties.get(idx++).getValue());
 			} else {
 				model.add(subj, pred, st.getObject());
 			}
 		}
 		return model;
-	}
-
-	private List<Statement> parse(URL url)
-		throws IOException, RDFParseException
-	{
-		RDFFormat format = RDFFormat.forFileName(url.getFile());
-		if (format == null) {
-			throw new IOException("Unknown file format: " + url.getFile());
-		}
-		List<Statement> statements = new ArrayList<Statement>();
-		RDFParserRegistry parsers = RDFParserRegistry.getInstance();
-		RDFParser parser = parsers.get(format).getParser();
-		parser.setRDFHandler(new StatementCollector(statements));
-		InputStream stream = url.openStream();
-		try {
-			parser.parse(stream, url.toString());
-		}
-		catch (RDFHandlerException e) {
-			throw new AssertionError(e);
-		}
-		finally {
-			stream.close();
-		}
-		return statements;
 	}
 }

@@ -23,6 +23,8 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.http.HTTPRepository;
+import org.openrdf.repository.manager.config.SystemConfigManager;
+import org.openrdf.repository.manager.templates.LocalTemplateManager;
 
 /**
  * A manager for {@link Repository}s that reside on a remote server. This
@@ -94,6 +96,32 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	/**
+	 * Initializes the repository manager.
+	 * 
+	 * @throws StoreException
+	 *         If the manager failed to initialize the SYSTEM repository.
+	 */
+	public void initialize()
+		throws RepositoryConfigException
+	{
+		LocalTemplateManager templates = new LocalTemplateManager();
+		templates.init();
+		setConfigTemplateManager(templates);
+		try {
+			Repository systemRepository = createSystemRepository();
+			setRepositoryConfigManager(new SystemConfigManager(systemRepository));
+
+			synchronized (initializedRepositories) {
+				initializedRepositories.put(SystemRepository.ID, systemRepository);
+			}
+		}
+		catch (StoreException e) {
+			throw new RepositoryConfigException(e);
+		}
+	}
+
 	/**
 	 * Set the username and password for authenication with the remote server.
 	 * 
@@ -115,6 +143,16 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		systemRepository.setUsernameAndPassword(username, password);
 		systemRepository.initialize();
 		return systemRepository;
+	}
+
+	/**
+	 * Gets the SYSTEM repository.
+	 */
+	@Deprecated
+	public Repository getSystemRepository() {
+		synchronized (initializedRepositories) {
+			return initializedRepositories.get(SystemRepository.ID);
+		}
 	}
 
 	/**

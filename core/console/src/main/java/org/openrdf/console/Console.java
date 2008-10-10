@@ -7,7 +7,6 @@ package org.openrdf.console;
 
 import static org.openrdf.query.QueryLanguage.SERQL;
 import static org.openrdf.query.QueryLanguage.SPARQL;
-import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,7 +19,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -58,7 +56,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.GraphQueryResult;
@@ -76,15 +73,13 @@ import org.openrdf.query.parser.serql.SeRQLUtil;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.repository.manager.config.ConfigProperty;
-import org.openrdf.repository.manager.config.ConfigTemplate;
-import org.openrdf.repository.manager.config.ConfigTemplateRegistry;
+import org.openrdf.repository.manager.templates.ConfigProperty;
+import org.openrdf.repository.manager.templates.ConfigTemplate;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -117,8 +112,6 @@ public class Console {
 	private static final AppVersion VERSION = new AppVersion(2, 5, "SNAPSHOT");
 
 	private static final String APP_NAME = "OpenRDF Sesame console";
-
-	private static final String TEMPLATES_DIR = "templates";
 
 	public static final Map<String, Level> LOG_LEVELS;
 
@@ -590,18 +583,12 @@ public class Console {
 		throws IOException
 	{
 		try {
-			ConfigTemplateRegistry registry = ConfigTemplateRegistry.getInstance();
-			File templatesDir = new File(appConfig.getDataDir(), TEMPLATES_DIR);
-			if (templatesDir.isDirectory()) {
-				registry.loadTemplates(templatesDir);
-			}
-			ConfigTemplate configTemplate = registry.get(templateName);
+			ConfigTemplate configTemplate = manager.getConfigTemplate(templateName);
 			if (configTemplate == null) {
-				writeError("No template called " + templateName + " found in " + templatesDir);
+				writeError("No template called " + templateName + " found");
 				return;
 			}
 
-			Map<URI, Literal> valueMap = new HashMap<URI, Literal>();
 			List<ConfigProperty> properties = configTemplate.getProperties();
 
 			if (!properties.isEmpty()) {
@@ -635,19 +622,14 @@ public class Console {
 				}
 
 				value = value.trim();
-				if (value.length() == 0) {
-					value = null;
+				if (value.length() > 0) {
+					property.setValue(new LiteralImpl(value));
 				}
-				valueMap.put(property.getPredicate(), value == null ? defaultLiteral : new LiteralImpl(value));
 			}
 
-			Model model = configTemplate.createConfig(valueMap);
+			Model repConfig = configTemplate.createConfig(properties);
 
-			Resource repositoryNode = model.subjects(RDF.TYPE, REPOSITORY).iterator().next();
-			RepositoryConfig repConfig = RepositoryConfig.create(model, repositoryNode);
-			repConfig.validate();
-
-			if (manager.hasRepositoryConfig(repConfig.getID())) {
+			if (manager.hasRepositoryConfig(repConfig)) {
 				boolean proceed = askProceed(
 						"WARNING: you are about to overwrite the configuration of an existing repository!", false);
 
