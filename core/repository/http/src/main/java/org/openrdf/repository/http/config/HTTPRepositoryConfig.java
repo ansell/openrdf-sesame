@@ -105,7 +105,7 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 			Value server = ModelUtil.getOptionalObject(model, implNode, SERVERURL);
 			Literal id = ModelUtil.getOptionalObjectLiteral(model, implNode, REPOSITORYID);
 			if (server != null && id != null) {
-				setURL(server.stringValue() + id.stringValue());
+				setURL(server.stringValue() + "/repositories/" + id.stringValue());
 			}
 			URI uri = ModelUtil.getOptionalObjectURI(model, implNode, REPOSITORYURL);
 			if (uri != null) {
