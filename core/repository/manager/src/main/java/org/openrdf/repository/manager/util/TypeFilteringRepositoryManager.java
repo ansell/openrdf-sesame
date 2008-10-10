@@ -5,6 +5,8 @@
  */
 package org.openrdf.repository.manager.util;
 
+import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,6 +16,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfig;
@@ -61,7 +66,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	public Repository getSystemRepository() {
+	public Repository getSystemRepository() throws StoreException, RepositoryConfigException {
 		return delegate.getSystemRepository();
 	}
 
@@ -101,16 +106,17 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	public RepositoryConfig getRepositoryConfig(String repositoryID)
+	public Model getRepositoryConfig(String repositoryID)
 		throws RepositoryConfigException
 	{
-		RepositoryConfig result = delegate.getRepositoryConfig(repositoryID);
+		Model result = delegate.getRepositoryConfig(repositoryID);
 
 		if (result != null) {
 			if (!isCorrectType(result)) {
+				RepositoryConfig config = parse(result);
 				logger.debug(
 						"Surpressing retrieval of repository {}: repository type {} did not match expected type {}",
-						new Object[] { result.getID(), result.getRepositoryImplConfig().getType(), type });
+						new Object[] { config.getID(), config.getRepositoryImplConfig().getType(), type });
 
 				result = null;
 			}
@@ -120,11 +126,11 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	public void addRepositoryConfig(RepositoryConfig config)
+	public String addRepositoryConfig(Model config)
 		throws RepositoryConfigException, StoreException
 	{
 		if (isCorrectType(config)) {
-			delegate.addRepositoryConfig(config);
+			return delegate.addRepositoryConfig(config);
 		}
 		else {
 			throw new UnsupportedOperationException("Only repositories of type " + type
@@ -263,13 +269,22 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 		return result;
 	}
 
-	protected boolean isCorrectType(RepositoryConfig repositoryConfig) {
+	protected boolean isCorrectType(Model repositoryConfig) throws RepositoryConfigException {
 		boolean result = false;
 
 		if (repositoryConfig != null) {
-			result = repositoryConfig.getRepositoryImplConfig().getType().equals(type);
+			result = parse(repositoryConfig).getRepositoryImplConfig().getType().equals(type);
 		}
 
 		return result;
+	}
+
+	private RepositoryConfig parse(Model config)
+		throws RepositoryConfigException
+	{
+		Resource repositoryNode = config.subjects(RDF.TYPE, REPOSITORY).iterator().next();
+		RepositoryConfig repConfig = RepositoryConfig.create(config, repositoryNode);
+		repConfig.validate();
+		return repConfig;
 	}
 }

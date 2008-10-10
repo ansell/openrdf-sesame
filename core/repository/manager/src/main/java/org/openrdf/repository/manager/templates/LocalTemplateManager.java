@@ -3,19 +3,22 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.repository.manager.config;
+package org.openrdf.repository.manager.templates;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +31,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -38,59 +42,54 @@ import org.openrdf.rio.helpers.StatementCollector;
 /**
  * @author james
  */
-public class ConfigTemplateRegistry {
+public class LocalTemplateManager implements ConfigTemplateManager {
 
 	private static final String REPOSITORY_TEMPLATES = "META-INF/org.openrdf.repository.templates";
 
 	private static final String STORE_SCHEMAS = "META-INF/org.openrdf.store.schemas";
 
-	private static ConfigTemplateRegistry instance;
-	static {
-		try {
-			instance = new ConfigTemplateRegistry();
-		}
-		catch (Exception e) {
-			Logger logger = LoggerFactory.getLogger(ConfigTemplateRegistry.class);
-			logger.error("Failed to instantiate service", e);
-		}
-	}
+	private File templateDir;
 
-	public static ConfigTemplateRegistry getInstance() {
-		return instance;
-	}
-
-	private Logger logger = LoggerFactory.getLogger(ConfigTemplateRegistry.class);
+	private Logger logger = LoggerFactory.getLogger(LocalTemplateManager.class);
 
 	private Model schema = new ModelImpl();
 
-	private Map<String, ConfigTemplate> services = new HashMap<String, ConfigTemplate>();
+	private Map<String, ConfigTemplate> services = new ConcurrentHashMap<String, ConfigTemplate>();
 
-	public ConfigTemplateRegistry()
-		throws IOException
-	{
-		loadTemplates(Thread.currentThread().getContextClassLoader());
+	private ClassLoader cl;
+
+	public LocalTemplateManager() {
 	}
 
-	public void loadTemplates(ClassLoader cl)
-		throws IOException
-	{
-		loadResources(schema, cl, STORE_SCHEMAS);
-		loadTemplates(cl, REPOSITORY_TEMPLATES);
+	public LocalTemplateManager(File templateDir) {
+		this.templateDir = templateDir;
 	}
 
-	public void loadTemplates(File dir)
-		throws IOException
+	public void setClassLoader(ClassLoader cl) {
+		this.cl = cl;
+	}
+
+	public void init()
+		throws RepositoryConfigException
 	{
-		assert dir.isDirectory();
-		for (File file : dir.listFiles()) {
-			try {
-				add(new ConfigTemplate(file.toURI().toURL(), schema));
-			}
-			catch (RDFParseException e) {
-				logger.warn(e.toString(), e);
-				continue;
+		if (cl == null) {
+			cl = Thread.currentThread().getContextClassLoader();
+		}
+		try {
+			loadTemplates(cl);
+			if (templateDir != null && templateDir.isDirectory()) {
+				loadTemplates(templateDir);
 			}
 		}
+		catch (IOException e) {
+			throw new RepositoryConfigException(e);
+		}
+	}
+
+	public URL getLocation()
+		throws MalformedURLException
+	{
+		return templateDir.toURI().toURL();
 	}
 
 	/**
@@ -102,9 +101,35 @@ public class ConfigTemplateRegistry {
 	 *        The service that should be added to the registry.
 	 * @return The previous service that was registered for the same key, or
 	 *         <tt>null</tt> if there was no such service.
+	 * @throws RepositoryConfigException
 	 */
-	public ConfigTemplate add(ConfigTemplate service) {
-		return services.put(getKey(service), service);
+	public void addTemplate(ConfigTemplate service)
+		throws RepositoryConfigException
+	{
+		String id = service.getID();
+		if (services.containsKey(id))
+			throw new RepositoryConfigException("Template already exists");
+		services.put(id, service);
+	}
+
+	/**
+	 * Adds a service to the registry. Any service that is currently registered
+	 * for the same key (as specified by {@link #getKey(Object)}) will be
+	 * replaced with the new service.
+	 * 
+	 * @param service
+	 *        The service that should be added to the registry.
+	 * @return The previous service that was registered for the same key, or
+	 *         <tt>null</tt> if there was no such service.
+	 * @throws RepositoryConfigException
+	 */
+	public void updateTemplate(ConfigTemplate service)
+		throws RepositoryConfigException
+	{
+		String id = service.getID();
+		if (!services.containsKey(id))
+			throw new RepositoryConfigException("Template does not exists");
+		services.put(id, service);
 	}
 
 	/**
@@ -112,9 +137,13 @@ public class ConfigTemplateRegistry {
 	 * 
 	 * @param service
 	 *        The service be removed from the registry.
+	 * @throws RepositoryConfigException
 	 */
-	public ConfigTemplate remove(String key) {
-		return services.remove(key);
+	public void removeTemplate(String id)
+		throws RepositoryConfigException
+	{
+		if (services.remove(id) == null)
+			throw new RepositoryConfigException("Template does not exists");
 	}
 
 	/**
@@ -125,20 +154,8 @@ public class ConfigTemplateRegistry {
 	 * @return The service for the specified key, or <tt>null</tt> if no such
 	 *         service is avaiable.
 	 */
-	public ConfigTemplate get(String key) {
+	public ConfigTemplate getTemplate(String key) {
 		return services.get(key);
-	}
-
-	/**
-	 * Checks whether a service for the specified key is available.
-	 * 
-	 * @param key
-	 *        The key identifying which service to search for.
-	 * @return <tt>true</tt> if a service for the specific key is available,
-	 *         <tt>false</tt> otherwise.
-	 */
-	public boolean has(String key) {
-		return services.containsKey(key);
 	}
 
 	/**
@@ -146,19 +163,30 @@ public class ConfigTemplateRegistry {
 	 * 
 	 * @return An unmodifiable set containing all registered keys.
 	 */
-	public Set<String> getKeys() {
+	public Set<String> getIDs() {
 		return Collections.unmodifiableSet(services.keySet());
 	}
 
-	/**
-	 * Gets the key for the specified service.
-	 * 
-	 * @param service
-	 *        The service to get the key for.
-	 * @return The key for the specified service.
-	 */
-	private String getKey(ConfigTemplate template) {
-		return template.getId();
+	private void loadTemplates(ClassLoader cl)
+		throws IOException, RepositoryConfigException, AssertionError
+	{
+		loadResources(schema, cl, STORE_SCHEMAS);
+		loadTemplates(cl, REPOSITORY_TEMPLATES);
+	}
+
+	private void loadTemplates(File dir)
+		throws IOException, RepositoryConfigException
+	{
+		assert dir.isDirectory();
+		for (File file : dir.listFiles()) {
+			try {
+				addTemplate(new ConfigTemplate(parse(file.toURI().toURL()), schema));
+			}
+			catch (RDFParseException e) {
+				logger.warn(e.toString(), e);
+				continue;
+			}
+		}
 	}
 
 	private void loadResources(Model model, ClassLoader cl, String resource)
@@ -203,7 +231,7 @@ public class ConfigTemplateRegistry {
 	}
 
 	private void loadTemplates(ClassLoader cl, String resource)
-		throws IOException, AssertionError
+		throws IOException, AssertionError, RepositoryConfigException
 	{
 		Enumeration<URL> templates = cl.getResources(resource);
 		while (templates.hasMoreElements()) {
@@ -218,15 +246,39 @@ public class ConfigTemplateRegistry {
 					continue;
 				}
 				try {
-					add(new ConfigTemplate(url, schema));
+					addTemplate(new ConfigTemplate(parse(url), schema));
 				}
 				catch (RDFParseException e) {
 					logger.warn(e.toString(), e);
 					continue;
 				}
 			}
-			
+
 		}
+	}
+
+	private List<Statement> parse(URL url)
+		throws IOException, RDFParseException
+	{
+		RDFFormat format = RDFFormat.forFileName(url.getFile());
+		if (format == null) {
+			throw new IOException("Unknown file format: " + url.getFile());
+		}
+		List<Statement> statements = new ArrayList<Statement>();
+		RDFParserRegistry parsers = RDFParserRegistry.getInstance();
+		RDFParser parser = parsers.get(format).getParser();
+		parser.setRDFHandler(new StatementCollector(statements));
+		InputStream stream = url.openStream();
+		try {
+			parser.parse(stream, url.toString());
+		}
+		catch (RDFHandlerException e) {
+			throw new AssertionError(e);
+		}
+		finally {
+			stream.close();
+		}
+		return statements;
 	}
 
 	private class Collector extends StatementCollector {

@@ -10,17 +10,15 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.StoreException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.event.base.NotifyingRepositoryWrapper;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.memory.MemoryStore;
 
 /**
  * FIXME: do not extend NotifyingRepositoryWrapper, because SystemRepository
@@ -48,15 +46,49 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 
 	public static final String REPOSITORY_TYPE = "openrdf:SystemRepository";
 
+	/*-----------*
+	 * Variables *
+	 *-----------*/
+
+	private boolean persist;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
+
+	public SystemRepository()
+		throws StoreException
+	{
+		super();
+		this.persist = false;
+		try {
+			Class<?> Sail = Class.forName("org.openrdf.sail.Sail");
+			Class<?> MemoryStore = Class.forName("org.openrdf.sail.memory.MemoryStore");
+			Class<?> SailRepository = Class.forName("org.openrdf.repository.sail.SailRepository");
+			Object sail = MemoryStore.newInstance();
+			Object repository = SailRepository.getConstructor(Sail).newInstance(sail);
+			Repository repo = (Repository) repository;
+			super.setDelegate(repo);
+		} catch (Exception e) {
+			throw new StoreException(e);
+		}
+	}
 
 	public SystemRepository(File systemDir)
 		throws StoreException
 	{
 		super();
-		super.setDelegate(new SailRepository(new MemoryStore(systemDir)));
+		this.persist = true;
+		try {
+			Class<?> MemoryStore = Class.forName("org.openrdf.sail.memory.MemoryStore");
+			Class<?> SailRepository = Class.forName("org.openrdf.repository.sail.SailRepository");
+			Object sail = MemoryStore.getConstructor(File.class).newInstance(systemDir);
+			Object repository = SailRepository.getConstructor(MemoryStore).newInstance(sail);
+			Repository repo = (Repository) repository;
+			super.setDelegate(repo);
+		} catch (Exception e) {
+			throw new StoreException(e);
+		}
 	}
 
 	/*---------*
@@ -78,8 +110,10 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 				con.setNamespace("rdf", RDF.NAMESPACE);
 				con.setNamespace("sys", RepositoryConfigSchema.NAMESPACE);
 
-				RepositoryConfig repConfig = new RepositoryConfig(ID, TITLE, new SystemRepositoryConfig());
-				RepositoryConfigUtil.updateRepositoryConfigs(con, repConfig);
+				if (persist) {
+					RepositoryConfig repConfig = new RepositoryConfig(ID, TITLE, new SystemRepositoryConfig());
+					RepositoryConfigUtil.updateRepositoryConfigs(con, repConfig);
+				}
 
 				con.commit();
 			}

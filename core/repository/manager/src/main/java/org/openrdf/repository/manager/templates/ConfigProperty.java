@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.repository.manager.config;
+package org.openrdf.repository.manager.templates;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,11 +28,14 @@ public class ConfigProperty {
 
 	private Model schema;
 
+	private Value value;
+
 	public ConfigProperty(URI predicate, Value defaultValue, Locale locale, Model schema) {
 		this.defaultValue = defaultValue;
 		this.locale = locale;
 		this.pred = predicate;
 		this.schema = schema;
+		this.value = defaultValue;
 	}
 
 	public URI getPredicate() {
@@ -73,6 +76,14 @@ public class ConfigProperty {
 
 	public List<Literal> getPossibleLiterals() {
 		return Collections.singletonList(getDefaultLiteral());
+	}
+
+	public Value getValue() {
+		return value;
+	}
+
+	public void setValue(Literal value) {
+		this.value = value;
 	}
 
 }
