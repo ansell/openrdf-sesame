@@ -23,7 +23,6 @@ import org.openrdf.StoreException;
 import org.openrdf.model.Statement;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryInterruptedException;
-import org.openrdf.query.QueryResultUtil;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;

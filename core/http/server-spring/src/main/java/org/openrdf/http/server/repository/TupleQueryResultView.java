@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryInterruptedException;
-import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
