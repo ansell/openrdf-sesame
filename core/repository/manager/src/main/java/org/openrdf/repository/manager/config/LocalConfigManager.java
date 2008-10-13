@@ -28,9 +28,9 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.RDFWriterRegistry;
+import org.openrdf.rio.Rio;
+import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.StatementCollector;
 
 public class LocalConfigManager implements RepositoryConfigManager {
@@ -81,14 +81,21 @@ public class LocalConfigManager implements RepositoryConfigManager {
 		throws RepositoryConfigException
 	{
 		File file = getRdfFiles().get(repositoryID);
-		if (file == null)
+		if (file == null) {
 			throw new RepositoryConfigException("No such repository config");
-		Model model = new ModelImpl();
-		RDFFormat format = getRDFFormat(file);
-		RDFParserRegistry parsers = RDFParserRegistry.getInstance();
-		RDFParser parser = parsers.get(format).getParser();
-		parser.setRDFHandler(new StatementCollector(model));
+		}
+
+		RDFFormat format = Rio.getParserFormatForFileName(file.getName());
+		if (format == null) {
+			throw new RepositoryConfigException("Unsupported RDF format");
+		}
+
 		try {
+			RDFParser parser = Rio.createParser(format);
+
+			Model model = new ModelImpl();
+			parser.setRDFHandler(new StatementCollector(model));
+
 			InputStream stream = new FileInputStream(file);
 			try {
 				parser.parse(stream, file.toURI().toString());
@@ -104,6 +111,9 @@ public class LocalConfigManager implements RepositoryConfigManager {
 				stream.close();
 			}
 		}
+		catch (UnsupportedRDFormatException e) {
+			throw new RepositoryConfigException(e);
+		}
 		catch (IOException e) {
 			throw new RepositoryConfigException(e);
 		}
@@ -113,8 +123,9 @@ public class LocalConfigManager implements RepositoryConfigManager {
 		throws RepositoryConfigException
 	{
 		String id = getId(config);
-		if (getRdfFiles().containsKey(id))
+		if (getRdfFiles().containsKey(id)) {
 			throw new RepositoryConfigException("Repository config already exists");
+		}
 		File file = new File(baseDir, id + ".ttl");
 		saveConfig(file, config);
 	}
@@ -123,8 +134,9 @@ public class LocalConfigManager implements RepositoryConfigManager {
 		throws RepositoryConfigException
 	{
 		File file = getRdfFiles().get(config);
-		if (file == null)
+		if (file == null) {
 			throw new RepositoryConfigException("Repository config does not exist");
+		}
 		saveConfig(file, config);
 	}
 
@@ -132,10 +144,12 @@ public class LocalConfigManager implements RepositoryConfigManager {
 		throws RepositoryConfigException
 	{
 		File file = getRdfFiles().get(repositoryID);
-		if (file == null)
+		if (file == null) {
 			throw new RepositoryConfigException("No such repository config");
-		if (!file.delete())
+		}
+		if (!file.delete()) {
 			throw new RepositoryConfigException("Could not remove config");
+		}
 	}
 
 	private Map<String, File> getRdfFiles()
@@ -152,16 +166,6 @@ public class LocalConfigManager implements RepositoryConfigManager {
 		return map;
 	}
 
-	private RDFFormat getRDFFormat(File file)
-		throws RepositoryConfigException
-	{
-		RDFFormat format = RDFFormat.forFileName(file.getName());
-		if (format == null) {
-			throw new RepositoryConfigException("Unknown RDF format");
-		}
-		return format;
-	}
-
 	private String getId(Model config)
 		throws RepositoryConfigException
 	{
@@ -174,17 +178,24 @@ public class LocalConfigManager implements RepositoryConfigManager {
 	private void saveConfig(File file, Model config)
 		throws RepositoryConfigException
 	{
-		RDFFormat format = getRDFFormat(file);
+		RDFFormat format = Rio.getWriterFormatForFileName(file.getName());
+		if (format == null) {
+			throw new RepositoryConfigException("Unsupported RDF format");
+		}
+
 		try {
 			OutputStream out = new FileOutputStream(file);
+
 			try {
-				RDFWriterRegistry writers = RDFWriterRegistry.getInstance();
-				RDFWriter writer = writers.get(format).getWriter(out);
+				RDFWriter writer = Rio.createWriter(format, out);
 				writer.startRDF();
 				for (Statement st : config) {
 					writer.handleStatement(st);
 				}
 				writer.endRDF();
+			}
+			catch (UnsupportedRDFormatException e) {
+				throw new RepositoryConfigException(e);
 			}
 			catch (RDFHandlerException e) {
 				throw new RepositoryConfigException(e);

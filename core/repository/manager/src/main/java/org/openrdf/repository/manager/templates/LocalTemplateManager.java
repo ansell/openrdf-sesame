@@ -36,7 +36,8 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.RDFParserRegistry;
+import org.openrdf.rio.Rio;
+import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -107,8 +108,9 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		throws RepositoryConfigException
 	{
 		String id = service.getID();
-		if (services.containsKey(id))
+		if (services.containsKey(id)) {
 			throw new RepositoryConfigException("Template already exists");
+		}
 		services.put(id, service);
 	}
 
@@ -127,8 +129,9 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		throws RepositoryConfigException
 	{
 		String id = service.getID();
-		if (!services.containsKey(id))
+		if (!services.containsKey(id)) {
 			throw new RepositoryConfigException("Template does not exists");
+		}
 		services.put(id, service);
 	}
 
@@ -142,8 +145,9 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	public void removeTemplate(String id)
 		throws RepositoryConfigException
 	{
-		if (services.remove(id) == null)
+		if (services.remove(id) == null) {
 			throw new RepositoryConfigException("Template does not exists");
+		}
 	}
 
 	/**
@@ -193,38 +197,48 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		throws IOException, AssertionError
 	{
 		Enumeration<URL> schemas = cl.getResources(resource);
+
 		while (schemas.hasMoreElements()) {
 			Properties prop = new Properties();
 			prop.load(schemas.nextElement().openStream());
 			Enumeration<?> names = prop.propertyNames();
+
 			while (names.hasMoreElements()) {
 				String name = names.nextElement().toString();
+
 				URL url = cl.getResource(name);
 				if (url == null) {
 					logger.warn("{} not found", name);
 					continue;
 				}
-				RDFFormat format = RDFFormat.forFileName(url.getFile());
+
+				RDFFormat format = Rio.getParserFormatForFileName(url.getFile());
 				if (format == null) {
-					logger.warn("Unkown RDF format {}", url.getFile());
+					logger.warn("Unsupported RDF format: {}", url.getFile());
 					continue;
 				}
-				RDFParserRegistry parsers = RDFParserRegistry.getInstance();
-				RDFParser parser = parsers.get(format).getParser();
-				parser.setRDFHandler(new Collector(model, url.toString()));
-				InputStream stream = url.openStream();
+
 				try {
-					parser.parse(stream, url.toString());
+					RDFParser parser = Rio.createParser(format);
+					parser.setRDFHandler(new Collector(model, url.toString()));
+
+					InputStream stream = url.openStream();
+					try {
+						parser.parse(stream, url.toString());
+					}
+					catch (RDFParseException e) {
+						logger.warn(e.toString(), e);
+						continue;
+					}
+					catch (RDFHandlerException e) {
+						throw new AssertionError(e);
+					}
+					finally {
+						stream.close();
+					}
 				}
-				catch (RDFParseException e) {
-					logger.warn(e.toString(), e);
-					continue;
-				}
-				catch (RDFHandlerException e) {
-					throw new AssertionError(e);
-				}
-				finally {
-					stream.close();
+				catch (UnsupportedRDFormatException e) {
+					logger.warn("Unable to parse template file", e);
 				}
 			}
 		}
@@ -260,25 +274,35 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	private List<Statement> parse(URL url)
 		throws IOException, RDFParseException
 	{
-		RDFFormat format = RDFFormat.forFileName(url.getFile());
+		RDFFormat format = Rio.getParserFormatForFileName(url.getFile());
 		if (format == null) {
-			throw new IOException("Unknown file format: " + url.getFile());
+			throw new IOException("Unsupported file format: " + url.getFile());
 		}
-		List<Statement> statements = new ArrayList<Statement>();
-		RDFParserRegistry parsers = RDFParserRegistry.getInstance();
-		RDFParser parser = parsers.get(format).getParser();
-		parser.setRDFHandler(new StatementCollector(statements));
-		InputStream stream = url.openStream();
+
 		try {
-			parser.parse(stream, url.toString());
+			RDFParser parser = Rio.createParser(format);
+
+			List<Statement> statements = new ArrayList<Statement>();
+			parser.setRDFHandler(new StatementCollector(statements));
+
+			InputStream stream = url.openStream();
+			try {
+				parser.parse(stream, url.toString());
+			}
+			catch (RDFHandlerException e) {
+				throw new AssertionError(e);
+			}
+			finally {
+				stream.close();
+			}
+
+			return statements;
 		}
-		catch (RDFHandlerException e) {
-			throw new AssertionError(e);
+		catch (UnsupportedRDFormatException e) {
+			IOException ioe = new IOException();
+			ioe.initCause(e);
+			throw ioe;
 		}
-		finally {
-			stream.close();
-		}
-		return statements;
 	}
 
 	private class Collector extends StatementCollector {
