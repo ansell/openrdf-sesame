@@ -6,6 +6,7 @@
 package org.openrdf.http.server.repository;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +21,12 @@ import org.springframework.web.servlet.mvc.AbstractController;
 import org.openrdf.http.server.HTTPException;
 import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerHTTPException;
+import org.openrdf.model.Literal;
+import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
@@ -55,11 +58,7 @@ public class RepositoryListController extends AbstractController {
 		throws HTTPException
 	{
 		try {
-			// FIXME: The query result is cached here as we need to close the
-			// connection before returning. Would be much better to stream the
-			// query result directly to the client.
-
-			List<String> bindingNames = new ArrayList<String>();
+			List<String> bindingNames = Arrays.asList("uri", "id", "title", "readable", "writable");
 			List<BindingSet> bindingSets = new ArrayList<BindingSet>();
 
 			// Determine the repository's URI
@@ -71,23 +70,16 @@ public class RepositoryListController extends AbstractController {
 
 			ValueFactory vf = new ValueFactoryImpl();
 			for (RepositoryInfo info : repositoryManager.getAllRepositoryInfos()) {
-				QueryBindingSet bindings = new QueryBindingSet();
-
 				String id = info.getId();
-				bindings.addBinding("uri", vf.createURI(namespace, id));
-				bindings.addBinding("id", vf.createLiteral(id));
-				bindings.addBinding("title", vf.createLiteral(info.getDescription()));
-				bindings.addBinding("readable", vf.createLiteral(info.isReadable()));
-				bindings.addBinding("writeable", vf.createLiteral(info.isWritable()));
+				URI uri = vf.createURI(namespace, id);
+				Literal idLit = vf.createLiteral(id);
+				Literal title = vf.createLiteral(info.getDescription());
+				Literal readable = vf.createLiteral(info.isReadable());
+				Literal writable = vf.createLiteral(info.isWritable());
 
+				BindingSet bindings = new ListBindingSet(bindingNames, uri, idLit, title, readable, writable);
 				bindingSets.add(bindings);
 			}
-
-			bindingNames.add("uri");
-			bindingNames.add("id");
-			bindingNames.add("title");
-			bindingNames.add("readable");
-			bindingNames.add("writeable");
 
 			TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(request, response,
 					TupleQueryResultWriterRegistry.getInstance());
