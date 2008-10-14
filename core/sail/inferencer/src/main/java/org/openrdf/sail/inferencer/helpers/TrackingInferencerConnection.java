@@ -56,14 +56,6 @@ public class TrackingInferencerConnection extends TrackingSailConnection impleme
 		return getWrappedConnection().removeInferredStatement(subj, pred, obj, contexts);
 	}
 
-	public void clearInferred(Resource... contexts)
-		throws StoreException
-	{
-		verifyIsOpen();
-		autoStartTransaction();
-		getWrappedConnection().clearInferred(contexts);
-	}
-
 	public void flushUpdates()
 		throws StoreException
 	{

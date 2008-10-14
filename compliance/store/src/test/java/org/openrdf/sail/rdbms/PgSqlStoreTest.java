@@ -38,7 +38,7 @@ public class PgSqlStoreTest extends RDFStoreTest {
 		sail.initialize();
 		SailConnection conn = sail.getConnection();
 		try {
-			conn.clear();
+			conn.removeStatements(null, null, null);
 			conn.clearNamespaces();
 			conn.commit();
 		}

@@ -73,12 +73,6 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 		return getWrappedConnection().removeInferredStatement(subj, pred, obj, contexts);
 	}
 
-	public void clearInferred(Resource... contexts)
-		throws StoreException
-	{
-		getWrappedConnection().clearInferred(contexts);
-	}
-
 	public void flushUpdates()
 		throws StoreException
 	{

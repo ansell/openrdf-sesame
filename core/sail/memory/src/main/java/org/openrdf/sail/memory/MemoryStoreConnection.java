@@ -372,18 +372,6 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		return removeStatementsInternal(subj, pred, obj, false, contexts);
 	}
 
-	public void clear(Resource... contexts)
-		throws StoreException
-	{
-		removeStatementsInternal(null, null, null, true, contexts);
-	}
-
-	public void clearInferred(Resource... contexts)
-		throws StoreException
-	{
-		removeStatementsInternal(null, null, null, false, contexts);
-	}
-
 	public void flushUpdates() {
 		// no-op; changes are reported as soon as they come in
 	}

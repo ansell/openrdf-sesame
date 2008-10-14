@@ -88,7 +88,7 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 
 		assertEquals("Named context should be empty", 0, countContext1Elements());
 
-		con.clear();
+		con.removeStatements(null, null, null);
 		con.commit();
 
 		assertEquals("Repository should no longer contain any statements", 0, countAllElements());

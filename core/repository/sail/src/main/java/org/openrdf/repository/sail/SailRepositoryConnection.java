@@ -209,7 +209,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
-		sailConnection.clear(contexts);
+		sailConnection.removeStatements(null, null, null, contexts);
 		autoCommit();
 	}
 

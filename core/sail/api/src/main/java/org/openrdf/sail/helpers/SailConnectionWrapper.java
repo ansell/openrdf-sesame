@@ -128,12 +128,6 @@ public class SailConnectionWrapper implements SailConnection {
 		wrappedCon.removeStatements(subj, pred, obj, contexts);
 	}
 
-	public void clear(Resource... contexts)
-		throws StoreException
-	{
-		wrappedCon.clear(contexts);
-	}
-
 	public Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
