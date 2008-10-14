@@ -30,7 +30,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-query</artifactId>
+			<artifactId>sesame-store</artifactId>
 		</dependency>
 
 		<dependency>
