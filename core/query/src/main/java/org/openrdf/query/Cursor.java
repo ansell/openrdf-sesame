@@ -8,16 +8,10 @@ package org.openrdf.query;
 import org.openrdf.StoreException;
 
 /**
- * An Cursor is an Iterator-like object that is closeable and can throw
- * StoreExceptions while iterating. This is used in cases where the iteration is
- * lazy and evaluates over a (remote) connection, for example accessing a
- * database. In such cases an error can occur at any time and needs to be
- * communicated through a checked exception, something
- * {@link java.util.Iterator} can not do (it can only throw
- * {@link RuntimeException)s.
- * <p>An {@link Cursor} must be closed to free resources that it is holding. Any
- * code using the cursor should be placed in a try-catch-finally block, closing
- * the cursor in the finally, e.g.:
+ * A Cursor is an Iterator-like object that can lazily iterate over a set of
+ * resources. Cursors must be closed to free any resources that it is keeping
+ * hold of. Any code using the cursor should be placed in a try-finally block,
+ * closing the cursor in the finally, e.g.:
  * 
  * <pre>
  * Cursor&lt;Object&gt; cursor = ...
@@ -36,7 +30,7 @@ import org.openrdf.StoreException;
  * </pre>
  * 
  * @param <E>
- *        Object type of objects contained in the cursor.
+ *        The type of object that the cursor iterates over.
  * @author James Leigh
  */
 public interface Cursor<E> {
