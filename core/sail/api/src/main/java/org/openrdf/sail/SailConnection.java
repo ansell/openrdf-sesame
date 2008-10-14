@@ -193,20 +193,6 @@ public interface SailConnection {
 		throws StoreException;
 
 	/**
-	 * Removes all statements from the specified/all contexts. If no contexts are
-	 * specified the method operates on the entire repository.
-	 * 
-	 * @param contexts
-	 *        The context(s) from which to remove the statements. Note that this
-	 *        parameter is a vararg and as such is optional. If no contexts are
-	 *        supplied the method operates on the entire repository.
-	 * @throws StoreException
-	 *         If the statements could not be removed.
-	 */
-	public void clear(Resource... contexts)
-		throws StoreException;
-
-	/**
 	 * Gets the namespaces relevant to the data contained in this Sail object.
 	 * 
 	 * @returns An iterator over the relevant namespaces, should not contain any

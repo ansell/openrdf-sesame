@@ -238,14 +238,6 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		super.removeStatements(subj, pred, obj, contexts);
 	}
 
-	public final void clear(Resource... contexts)
-		throws StoreException
-	{
-		verifyIsOpen();
-		autoStartTransaction();
-		super.clear(contexts);
-	}
-
 	public final Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{

@@ -501,18 +501,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public void clear(Resource... contexts)
-		throws StoreException
-	{
-		removeStatements(null, null, null, true, contexts);
-	}
-
-	public void clearInferred(Resource... contexts)
-		throws StoreException
-	{
-		removeStatements(null, null, null, false, contexts);
-	}
-
 	public void flushUpdates() {
 		// no-op; changes are reported as soon as they come in
 	}

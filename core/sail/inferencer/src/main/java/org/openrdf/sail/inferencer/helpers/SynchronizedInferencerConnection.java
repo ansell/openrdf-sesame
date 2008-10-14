@@ -80,24 +80,6 @@ public class SynchronizedInferencerConnection extends SynchronizedSailConnection
 		}
 	}
 
-	public void clearInferred(Resource... contexts)
-		throws StoreException
-	{
-		Lock conLock = getSharedConnectionLock();
-		try {
-			Lock txnLock = getTransactionLock();
-			try {
-				getWrappedConnection().clearInferred(contexts);
-			}
-			finally {
-				txnLock.release();
-			}
-		}
-		finally {
-			conLock.release();
-		}
-	}
-
 	public void flushUpdates()
 		throws StoreException
 	{

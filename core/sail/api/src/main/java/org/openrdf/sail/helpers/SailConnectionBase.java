@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.StoreException;
-import org.openrdf.model.Resource;
 import org.openrdf.sail.SailConnection;
 
 /**
@@ -66,11 +65,5 @@ public abstract class SailConnectionBase implements SailConnection {
 		throws StoreException
 	{
 		txnActive = false;
-	}
-
-	public void clear(Resource... contexts)
-		throws StoreException
-	{
-		removeStatements(null, null, null, contexts);
 	}
 }

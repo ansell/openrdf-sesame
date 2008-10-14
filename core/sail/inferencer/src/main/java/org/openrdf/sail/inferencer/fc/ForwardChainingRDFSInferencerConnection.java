@@ -117,7 +117,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 		if (statementsRemoved) {
 			logger.debug("statements removed, starting inferencing from scratch");
-			clearInferred();
+			removeInferredStatement(null, null, null);
 			addAxiomStatements();
 
 			newStatements = new ModelImpl();

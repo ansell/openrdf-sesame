@@ -311,8 +311,7 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(subj, pred, obj);
 		con.commit();
 
-		Cursor<? extends Statement> stIter = con.getStatements(null, null, null,
-				false);
+		Cursor<? extends Statement> stIter = con.getStatements(null, null, null, false);
 
 		try {
 
@@ -518,7 +517,7 @@ public abstract class RDFStoreTest extends TestCase {
 
 		assertEquals("Named context should be empty", 0, countContext1Elements());
 
-		con.clear();
+		con.removeStatements(null, null, null);
 		con.commit();
 
 		assertEquals("Repository should no longer contain any statements", 0, countAllElements());
@@ -645,8 +644,7 @@ public abstract class RDFStoreTest extends TestCase {
 
 					// wait a bit to allow other thread to add stuff as well.
 					Thread.sleep(500L);
-					Cursor<? extends Statement> result = sharedCon.getStatements(null,
-							null, null, true);
+					Cursor<? extends Statement> result = sharedCon.getStatements(null, null, null, true);
 
 					int numberOfStatements = 0;
 					Statement st;
@@ -830,7 +828,7 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso, paints, guernica, context1);
 		assertEquals(5, countAllElements());
 		con.commit();
-		con.clear();
+		con.removeStatements(null, null, null);
 		con.commit();
 		con.addStatement(picasso, paints, guernica, context1);
 		con.commit();
@@ -858,7 +856,7 @@ public abstract class RDFStoreTest extends TestCase {
 
 				public void run() {
 					try {
-						con.clear();
+						con.removeStatements(null, null, null);
 						con.commit();
 					}
 					catch (StoreException e) {
@@ -878,7 +876,9 @@ public abstract class RDFStoreTest extends TestCase {
 		}
 	}
 
-	public void testBNodeReuse() throws Exception {
+	public void testBNodeReuse()
+		throws Exception
+	{
 		con.addStatement(RDF.VALUE, RDF.VALUE, RDF.VALUE);
 		assertEquals(1, con.size());
 		BNode b1 = vf.createBNode();
@@ -940,9 +940,7 @@ public abstract class RDFStoreTest extends TestCase {
 		return countElements(con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false));
 	}
 
-	private int verifyQueryResult(
-			Cursor<? extends BindingSet> resultIter,
-			int expectedBindingCount)
+	private int verifyQueryResult(Cursor<? extends BindingSet> resultIter, int expectedBindingCount)
 		throws StoreException
 	{
 		int resultCount = 0;

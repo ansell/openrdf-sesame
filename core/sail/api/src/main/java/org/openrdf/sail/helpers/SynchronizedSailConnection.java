@@ -204,24 +204,6 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
-	public void clear(Resource... contexts)
-		throws StoreException
-	{
-		Lock conLock = getSharedConnectionLock();
-		try {
-			Lock txnLock = getTransactionLock();
-			try {
-				super.clear(contexts);
-			}
-			finally {
-				txnLock.release();
-			}
-		}
-		finally {
-			conLock.release();
-		}
-	}
-
 	public Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
