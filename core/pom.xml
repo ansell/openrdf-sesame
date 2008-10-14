@@ -16,7 +16,7 @@
 		<module>console</module>
 		<module>http</module>
 		<module>model</module>
-		<module>query</module>
+		<module>store</module>
 		<module>queryalgebra</module>
 		<module>queryparser</module>
 		<module>queryresultio</module>

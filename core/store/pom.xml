@@ -8,7 +8,7 @@
 		<version>2.5-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-query</artifactId>
+	<artifactId>sesame-store</artifactId>
 	<version>2.5-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: Query</name>
@@ -37,9 +37,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/query</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/query</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/query</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/store</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/store</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/store</url>
 	</scm>
 
 </project>
