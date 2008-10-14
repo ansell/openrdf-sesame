@@ -8,9 +8,8 @@ package org.openrdf;
 import org.openrdf.query.QueryEvaluationException;
 
 /**
- * An exception thrown classes from the Repository or SAIL API to indicate an
- * error. Most of the time, this exception will wrap another exception that
- * indicates the actual source of the error.
+ * An exception thrown by Sesame stores to indicate an error. Subclasses of this
+ * exception are used to more precisely indicate the cause of the error.
  */
 public class StoreException extends QueryEvaluationException {
 
