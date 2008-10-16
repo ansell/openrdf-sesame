@@ -335,7 +335,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			result = new EmptySet();
 		}
 
-		return result;
+		return new Reduced(result);
 	}
 
 	/**
@@ -438,7 +438,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		projElemList.addElement(new ProjectionElem(objVar.getName(), "object"));
 		result = new Projection(result, projElemList);
 
-		return result;
+		return new Reduced(result);
 	}
 
 	@Override
