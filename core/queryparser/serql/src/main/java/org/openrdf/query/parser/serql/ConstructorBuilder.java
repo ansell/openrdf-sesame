@@ -22,6 +22,7 @@ import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
+import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueConstant;
@@ -130,6 +131,9 @@ class ConstructorBuilder {
 			result = new EmptySet();
 		}
 
+		if (!distinct) {
+			result = new Reduced(result);
+		}
 		return result;
 	}
 
