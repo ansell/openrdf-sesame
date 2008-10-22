@@ -50,7 +50,7 @@ public class TripleTableManager {
 
 	private BNodeManager bnodes;
 
-	private boolean closed;
+	private volatile boolean closed;
 
 	private Connection conn;
 
@@ -60,7 +60,7 @@ public class TripleTableManager {
 
 	private LiteralManager literals;
 
-	private Logger logger = LoggerFactory.getLogger(TripleTableManager.class);
+	Logger logger = LoggerFactory.getLogger(TripleTableManager.class);
 
 	private PredicateManager predicates;
 
@@ -76,11 +76,11 @@ public class TripleTableManager {
 
 	private int maxTables = MAX_TABLES;
 
-	private boolean indexingTriples = INDEX_TRIPLES;
+	private volatile boolean indexingTriples = INDEX_TRIPLES;
 
 	private IdSequence ids;
 
-	Exception exc;
+	volatile Exception exc;
 
 	public TripleTableManager(ValueTableFactory factory) {
 		this.factory = factory;

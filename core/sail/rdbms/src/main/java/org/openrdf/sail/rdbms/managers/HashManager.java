@@ -39,7 +39,7 @@ public class HashManager extends ManagerBase {
 
 	private static final boolean USE_THREAD = true;
 
-	private Logger logger = LoggerFactory.getLogger(HashManager.class);
+	Logger logger = LoggerFactory.getLogger(HashManager.class);
 
 	private HashTable table;
 
@@ -55,15 +55,15 @@ public class HashManager extends ManagerBase {
 
 	private Thread lookupThread;
 
-	private Object assignIds = new Object();
+	Object assignIds = new Object();
 
-	private Object working = new Object();
+	Object working = new Object();
 
 	private BlockingQueue<RdbmsValue> queue;
 
 	private IdSequence idseq;
 
-	Exception exc;
+	volatile Exception exc;
 
 	RdbmsValue closeSignal = new RdbmsValue() {
 
