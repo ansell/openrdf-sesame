@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-sail</artifactId>
-		<version>2.2.1</version>
+		<version>2.2.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-sail-rdbms</artifactId>
-	<version>2.2.1</version>
+	<version>2.2.2-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: RDBMS Sail</name>
 	<description>Sail implementation that stores data in a relational database.</description>
@@ -80,9 +80,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.1/core/sail/rdbms</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.1/core/sail/rdbms</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2.1/core/sail/rdbms</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/sail/rdbms</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/sail/rdbms</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/core/sail/rdbms</url>
 	</scm>
 
 </project>
