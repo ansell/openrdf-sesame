@@ -29,6 +29,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
@@ -392,6 +393,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 				
 				TupleQueryResultBuilder qrBuilder = new TupleQueryResultBuilder();
 				parser.setTupleQueryResultHandler(qrBuilder);
+				parser.setValueFactory(getValueFactory());
 				
 				parser.parse(in);
 				return qrBuilder.getQueryResult();
@@ -439,6 +441,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 			Set<Statement> result = new LinkedHashSet<Statement>();
 			parser.setRDFHandler(new StatementCollector(result));
+			parser.setValueFactory(getValueFactory());
 
 			InputStream in = new URL(resultFileURL).openStream();
 			try {
@@ -453,6 +456,13 @@ public abstract class SPARQLQueryTest extends TestCase {
 		else {
 			throw new RuntimeException("Unable to determine file type of results file");
 		}
+	}
+
+	/**
+	 * @return
+	 */
+	private ValueFactory getValueFactory() {
+		return dataRep.getValueFactory();
 	}
 
 	public interface Factory {
