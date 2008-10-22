@@ -68,8 +68,9 @@ public class NamespaceManager {
 	{
 		if (namespace == null)
 			return null;
-		if (byNamespace.containsKey(namespace))
-			return byNamespace.get(namespace);
+		NamespaceImpl ns = byNamespace.get(namespace);
+		if (ns != null)
+			return ns;
 		try {
 			return create(namespace);
 		}
@@ -102,10 +103,11 @@ public class NamespaceManager {
 	private synchronized NamespaceImpl create(String namespace)
 		throws SQLException
 	{
-		if (byNamespace.containsKey(namespace))
-			return byNamespace.get(namespace);
+		NamespaceImpl ns = byNamespace.get(namespace);
+		if (ns != null)
+			return ns;
 		table.insert(null, namespace);
-		NamespaceImpl ns = new NamespaceImpl(null, namespace);
+		ns = new NamespaceImpl(null, namespace);
 		byNamespace.put(ns.getName(), ns);
 		return ns;
 	}

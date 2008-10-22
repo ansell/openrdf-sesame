@@ -10,10 +10,9 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
-import org.openrdf.sail.rdbms.schema.Batch;
+import org.openrdf.sail.rdbms.managers.helpers.BatchBlockingQueue;
 import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.RdbmsTable;
 import org.openrdf.sail.rdbms.schema.TableFactory;
@@ -48,7 +47,7 @@ public class TransTableManager {
 
 	private Connection conn;
 
-	private BlockingQueue<Batch> batchQueue;
+	private BatchBlockingQueue batchQueue;
 
 	private DefaultSailChangedEvent sailChangedEvent;
 
@@ -70,7 +69,7 @@ public class TransTableManager {
 		this.fromDummy = fromDummy;
 	}
 
-	public void setBatchQueue(BlockingQueue<Batch> queue) {
+	public void setBatchQueue(BatchBlockingQueue queue) {
 		this.batchQueue = queue;
 	}
 

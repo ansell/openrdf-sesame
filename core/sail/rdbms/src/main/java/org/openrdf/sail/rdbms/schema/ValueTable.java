@@ -11,7 +11,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
+
+import org.openrdf.sail.rdbms.managers.helpers.BatchBlockingQueue;
 
 /**
  * Manages the rows in a value table. These tables have two columns: an internal
@@ -48,13 +49,13 @@ public class ValueTable {
 
 	private ValueBatch batch;
 
-	private BlockingQueue<Batch> queue;
+	private BatchBlockingQueue queue;
 
 	private boolean indexingValues;
 
 	private PreparedStatement insertSelect;
 
-	public void setQueue(BlockingQueue<Batch> queue) {
+	public void setQueue(BatchBlockingQueue queue) {
 		this.queue = queue;
 	}
 
