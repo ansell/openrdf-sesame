@@ -21,7 +21,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
     	<property name="major" value="2" />
     	<property name="minor" value="2" />
     	<property name="micro" value="1" />
-    	<property name="modifier" value="SNAPSHOT" />
     </bean>
     
     <bean id="adunaAppConfig" class="info.aduna.app.AppConfiguration" init-method="init" destroy-method="destroy">
