@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-sail-compliance</artifactId>
-		<version>2.1.4</version>
+		<version>2.1.5-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-sail-nativerdf-compliance</artifactId>
-	<version>2.1.4</version>
+	<version>2.1.5-SNAPSHOT</version>
 
 	<name>OpenRDF native store compliance tests</name>
 	<description>Tests for the native RDF Sail.</description>
@@ -79,9 +79,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1.4/testsuites/sail/nativerdf</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.1.4/testsuites/sail/nativerdf</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.1.4/testsuites/sail/nativerdf</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1/testsuites/sail/nativerdf</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.1/testsuites/sail/nativerdf</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.1/testsuites/sail/nativerdf</url>
 	</scm>
 
 </project>
