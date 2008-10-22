@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -122,12 +122,10 @@ public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
 	public FunctionCall clone() {
 		FunctionCall clone = (FunctionCall)super.clone();
 
-		List<ValueExpr> argsClone = new ArrayList<ValueExpr>(getArgs().size());
+		clone.args = new ArrayList<ValueExpr>(getArgs().size());
 		for (ValueExpr arg : getArgs()) {
-			argsClone.add(arg.clone());
+			clone.addArg(arg.clone());
 		}
-
-		clone.setArgs(argsClone);
 
 		return clone;
 	}

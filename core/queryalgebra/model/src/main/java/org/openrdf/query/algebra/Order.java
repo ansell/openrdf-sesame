@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -106,12 +106,10 @@ public class Order extends UnaryTupleOperator {
 	public Order clone() {
 		Order clone = (Order)super.clone();
 
-		List<OrderElem> elementsClone = new ArrayList<OrderElem>(getElements().size());
+		clone.elements = new ArrayList<OrderElem>(getElements().size());
 		for (OrderElem elem : getElements()) {
-			elementsClone.add(elem.clone());
+			clone.addElement(elem.clone());
 		}
-
-		clone.setElements(elementsClone);
 
 		return clone;
 	}
