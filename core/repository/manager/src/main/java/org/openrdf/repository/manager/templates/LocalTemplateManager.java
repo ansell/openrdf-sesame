@@ -299,9 +299,12 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 			return statements;
 		}
 		catch (UnsupportedRDFormatException e) {
-			IOException ioe = new IOException();
+			IOException ioe = new IOException("Unsupported file format: " + url.getFile());
 			ioe.initCause(e);
 			throw ioe;
+		} catch (RDFParseException e) {
+			e.setFilename(url.toString());
+			throw e;
 		}
 	}
 

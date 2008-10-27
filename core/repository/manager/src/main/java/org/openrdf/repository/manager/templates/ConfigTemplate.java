@@ -70,7 +70,7 @@ public class ConfigTemplate {
 		for (Statement st : statements) {
 			Resource subj = st.getSubject();
 			URI pred = st.getPredicate();
-			if (schema.contains(pred, null, null)) {
+			if (schema.contains(pred, null, null) && properties != null) {
 				if (!properties.get(idx).getPredicate().equals(pred))
 					throw new IllegalArgumentException("Invalid properties");
 				model.add(subj, pred, properties.get(idx++).getValue());

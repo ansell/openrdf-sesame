@@ -24,8 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.StoreException;
 import org.openrdf.model.Model;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.config.RepositoryConfigManager;
@@ -55,8 +53,6 @@ public abstract class RepositoryManager {
 	 *-----------*/
 
 	final Map<String, Repository> initializedRepositories;
-
-	private final ValueFactory vf = new ValueFactoryImpl();
 
 	private RepositoryConfigManager configs;
 
@@ -239,12 +235,8 @@ public abstract class RepositoryManager {
 		throws RepositoryConfigException, StoreException
 	{
 		String id = getConfigId(config);
-		if (removeRepositoryConfig(id)) {
-			configs.updateConfig(config);
-			resetRepository(id);
-		} else {
-			configs.addConfig(config);
-		}
+		removeRepositoryConfig(id);
+		configs.addConfig(config);
 		return id;
 	}
 
