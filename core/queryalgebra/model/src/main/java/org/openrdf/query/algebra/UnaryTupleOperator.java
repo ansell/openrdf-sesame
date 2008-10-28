@@ -34,6 +34,31 @@ public abstract class UnaryTupleOperator extends NaryTupleOperator {
 	 * Methods *
 	 *---------*/
 
+	@Override
+	public void setArg(int idx, TupleExpr arg) {
+		assert idx == 0;
+		super.setArg(idx, arg);
+	}
+
+	/**
+	 * Gets the only argument of this n-ary tuple operator.
+	 * 
+	 * @return The operator's argument.
+	 */
+	public TupleExpr getArg() {
+		return getArg(0);
+	}
+
+	/**
+	 * Sets the only argument of this n-ary tuple operator.
+	 * 
+	 * @param arg
+	 *        The (new) argument for this operator, must not be <tt>null</tt>.
+	 */
+	public void setArg(TupleExpr arg) {
+		setArg(0, arg);
+	}
+
 	public Set<String> getBindingNames() {
 		return getArg().getBindingNames();
 	}

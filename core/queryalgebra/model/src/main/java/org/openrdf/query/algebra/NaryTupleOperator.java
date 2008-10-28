@@ -22,7 +22,7 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	/**
 	 * The operator's arguments.
 	 */
-	protected List<TupleExpr> args = new ArrayList<TupleExpr>();
+	private List<TupleExpr> args = new ArrayList<TupleExpr>();
 
 	/*--------------*
 	 * Constructors *
@@ -95,9 +95,7 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	 *        The (new) arguments for this operator, must not be <tt>null</tt>.
 	 */
 	public void addArg(TupleExpr arg) {
-		assert arg != null : "arg must not be null";
-		arg.setParentNode(this);
-		this.args.add(arg);
+		setArg(args.size(), arg);
 	}
 
 	/**
@@ -115,6 +113,8 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	 * @return The operator's arguments.
 	 */
 	public TupleExpr getArg(int idx) {
+		if (idx >= args.size())
+			return null;
 		return args.get(idx);
 	}
 
@@ -134,38 +134,14 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 		this.args.set(idx, arg);
 	}
 
-	/**
-	 * Gets the only argument of this n-ary tuple operator.
-	 * 
-	 * @return The operator's argument.
-	 */
-	public TupleExpr getArg() {
-		assert args.size() == 1;
-		return args.get(0);
-	}
-
-	/**
-	 * Sets the only argument of this n-ary tuple operator.
-	 * 
-	 * @param arg
-	 *        The (new) argument for this operator, must not be <tt>null</tt>.
-	 */
-	public void setArg(TupleExpr arg) {
-		assert arg != null : "arg must not be null";
-		if (args.isEmpty()) {
-			args.add(null);
-		}
-		assert args.size() == 1;
-		arg.setParentNode(this);
-		this.args.set(0, arg);
-	}
-
 	@Override
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
 		throws X
 	{
 		for (TupleExpr arg : args) {
-			arg.visit(visitor);
+			if (arg != null) {
+				arg.visit(visitor);
+			}
 		}
 	}
 
@@ -173,8 +149,7 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		int index = args.indexOf(current);
 		if (index >= 0) {
-			args.set(index, (TupleExpr)replacement);
-			replacement.setParentNode(this);
+			setArg(index, (TupleExpr)replacement);
 		}
 		else {
 			super.replaceChildNode(current, replacement);
@@ -192,7 +167,9 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 
 		clone.args = new ArrayList<TupleExpr>(args.size());
 		for (TupleExpr arg : args) {
-			clone.addArg(arg.clone());
+			if (arg != null) {
+				clone.addArg(arg.clone());
+			}
 		}
 
 		return clone;

@@ -37,7 +37,6 @@ import org.openrdf.query.algebra.Label;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.Like;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.Max;
@@ -260,12 +259,6 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetUnaryValueOperator(node);
 	}
 
-	public void meet(Like node)
-		throws X
-	{
-		meetUnaryValueOperator(node);
-	}
-
 	public void meet(MathExpr node)
 		throws X
 	{
@@ -353,7 +346,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	public void meet(Regex node)
 		throws X
 	{
-		meetBinaryValueOperator(node);
+		meetNaryValueOperator(node);
 	}
 
 	public void meet(Slice node)

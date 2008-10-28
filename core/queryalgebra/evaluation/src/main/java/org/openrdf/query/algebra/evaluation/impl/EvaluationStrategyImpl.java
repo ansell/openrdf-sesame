@@ -57,7 +57,6 @@ import org.openrdf.query.algebra.Label;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.Like;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MultiProjection;
@@ -645,9 +644,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof Regex) {
 			return evaluate((Regex)expr, bindings);
 		}
-		else if (expr instanceof Like) {
-			return evaluate((Like)expr, bindings);
-		}
 		else if (expr instanceof FunctionCall) {
 			return evaluate((FunctionCall)expr, bindings);
 		}
@@ -914,40 +910,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (QueryEvaluationUtil.isSimpleLiteral(arg) && QueryEvaluationUtil.isSimpleLiteral(parg)
 				&& (farg == null || QueryEvaluationUtil.isSimpleLiteral(farg)))
 		{
-			String text = ((Literal)arg).getLabel();
-			String ptn = ((Literal)parg).getLabel();
-			String flags = "";
-			if (farg != null) {
-				flags = ((Literal)farg).getLabel();
-			}
-			// TODO should this Pattern be cached?
-			int f = 0;
-			for (char c : flags.toCharArray()) {
-				switch (c) {
-					case 's':
-						f |= Pattern.DOTALL;
-						break;
-					case 'm':
-						f |= Pattern.MULTILINE;
-						break;
-					case 'i':
-						f |= Pattern.CASE_INSENSITIVE;
-						break;
-					case 'x':
-						f |= Pattern.COMMENTS;
-						break;
-					case 'd':
-						f |= Pattern.UNIX_LINES;
-						break;
-					case 'u':
-						f |= Pattern.UNICODE_CASE;
-						break;
-					default:
-						throw new ValueExprEvaluationException(flags);
-				}
-			}
-			Pattern pattern = Pattern.compile(ptn, f);
-			boolean result = pattern.matcher(text).find();
+			Pattern pattern = node.compile(parg, farg);
+			if (pattern == null)
+				throw new ValueExprEvaluationException();
+			boolean result = pattern.matcher(arg.stringValue()).find();
 			return BooleanLiteralImpl.valueOf(result);
 		}
 
@@ -984,104 +950,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		throw new ValueExprEvaluationException();
 
-	}
-
-	/**
-	 * Determines whether the two operands match according to the
-	 * <code>like</code> operator. The operator is defined as a string
-	 * comparison with the possible use of an asterisk (*) at the end and/or the
-	 * start of the second operand to indicate substring matching.
-	 * 
-	 * @return <tt>true</tt> if the operands match according to the
-	 *         <tt>like</tt> operator, <tt>false</tt> otherwise.
-	 */
-	public Value evaluate(Like node, BindingSet bindings)
-		throws ValueExprEvaluationException, StoreException
-	{
-		Value val = evaluate(node.getArg(), bindings);
-		String strVal = null;
-
-		if (val instanceof URI) {
-			strVal = ((URI)val).toString();
-		}
-		else if (val instanceof Literal) {
-			strVal = ((Literal)val).getLabel();
-		}
-
-		if (strVal == null) {
-			throw new ValueExprEvaluationException();
-		}
-
-		if (!node.isCaseSensitive()) {
-			// Convert strVal to lower case, just like the pattern has been done
-			strVal = strVal.toLowerCase();
-		}
-
-		int valIndex = 0;
-		int prevPatternIndex = -1;
-		int patternIndex = node.getOpPattern().indexOf('*');
-
-		if (patternIndex == -1) {
-			// No wildcards
-			return BooleanLiteralImpl.valueOf(node.getOpPattern().equals(strVal));
-		}
-
-		String snippet;
-
-		if (patternIndex > 0) {
-			// Pattern does not start with a wildcard, first part must match
-			snippet = node.getOpPattern().substring(0, patternIndex);
-			if (!strVal.startsWith(snippet)) {
-				return BooleanLiteralImpl.FALSE;
-			}
-
-			valIndex += snippet.length();
-			prevPatternIndex = patternIndex;
-			patternIndex = node.getOpPattern().indexOf('*', patternIndex + 1);
-		}
-
-		while (patternIndex != -1) {
-			// Get snippet between previous wildcard and this wildcard
-			snippet = node.getOpPattern().substring(prevPatternIndex + 1, patternIndex);
-
-			// Search for the snippet in the value
-			valIndex = strVal.indexOf(snippet, valIndex);
-			if (valIndex == -1) {
-				return BooleanLiteralImpl.FALSE;
-			}
-
-			valIndex += snippet.length();
-			prevPatternIndex = patternIndex;
-			patternIndex = node.getOpPattern().indexOf('*', patternIndex + 1);
-		}
-
-		// Part after last wildcard
-		snippet = node.getOpPattern().substring(prevPatternIndex + 1);
-
-		if (snippet.length() > 0) {
-			// Pattern does not end with a wildcard.
-
-			// Search last occurence of the snippet.
-			valIndex = strVal.indexOf(snippet, valIndex);
-			int i;
-			while ((i = strVal.indexOf(snippet, valIndex + 1)) != -1) {
-				// A later occurence was found.
-				valIndex = i;
-			}
-
-			if (valIndex == -1) {
-				return BooleanLiteralImpl.FALSE;
-			}
-
-			valIndex += snippet.length();
-
-			if (valIndex < strVal.length()) {
-				// Some characters were not matched
-				return BooleanLiteralImpl.FALSE;
-			}
-		}
-
-		return BooleanLiteralImpl.TRUE;
 	}
 
 	/**
