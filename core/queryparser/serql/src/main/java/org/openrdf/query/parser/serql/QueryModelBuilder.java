@@ -34,7 +34,6 @@ import org.openrdf.query.algebra.IsResource;
 import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Label;
 import org.openrdf.query.algebra.Lang;
-import org.openrdf.query.algebra.Like;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.Namespace;
 import org.openrdf.query.algebra.Not;
@@ -42,6 +41,7 @@ import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
+import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
@@ -745,14 +745,14 @@ class QueryModelBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Like visit(ASTLike node, Object data)
+	public Regex visit(ASTLike node, Object data)
 		throws VisitorException
 	{
 		ValueExpr expr = (ValueExpr)node.getValueExpr().jjtAccept(this, null);
 		String pattern = (String)node.getPattern().jjtAccept(this, null);
 		boolean caseSensitive = !node.ignoreCase();
 
-		return new Like(expr, pattern, caseSensitive);
+		return new Regex(expr, pattern, caseSensitive);
 	}
 
 	@Override

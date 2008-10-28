@@ -98,9 +98,6 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(LangMatches node)
 		throws X;
 
-	public void meet(Like node)
-		throws X;
-
 	public void meet(LocalName node)
 		throws X;
 

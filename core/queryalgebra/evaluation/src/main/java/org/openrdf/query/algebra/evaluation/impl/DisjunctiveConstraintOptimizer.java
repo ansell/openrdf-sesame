@@ -46,7 +46,7 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 				return;
 			}
 			else if (or.getNumberOfArguments() == 1) {
-				or.replaceWith(or.getArg());
+				or.replaceWith(or.getArg(0));
 				or.getParentNode().visit(this);
 			}
 			else if (top && containsSameTerm(or)) {
@@ -64,7 +64,7 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 
 				// Add the rest
 				if (or.getNumberOfArguments() == 1) {
-					args.add(or.getArg());
+					args.add(or.getArg(0));
 				}
 				else if (or.getNumberOfArguments() > 1) {
 					args.add(or);

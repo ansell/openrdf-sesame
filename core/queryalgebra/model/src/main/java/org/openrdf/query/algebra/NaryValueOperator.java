@@ -22,7 +22,7 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 	/**
 	 * The operator's arguments.
 	 */
-	protected List<ValueExpr> args = new ArrayList<ValueExpr>();
+	private List<ValueExpr> args = new ArrayList<ValueExpr>();
 
 	/*--------------*
 	 * Constructors *
@@ -95,9 +95,7 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 	 *        The (new) arguments for this operator, must not be <tt>null</tt>.
 	 */
 	public void addArg(ValueExpr arg) {
-		assert arg != null : "arg must not be null";
-		arg.setParentNode(this);
-		this.args.add(arg);
+		setArg(this.args.size(), arg);
 	}
 
 	/**
@@ -115,6 +113,8 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 	 * @return The operator's arguments.
 	 */
 	public ValueExpr getArg(int idx) {
+		if (idx >= args.size())
+			return null;
 		return args.get(idx);
 	}
 
@@ -126,38 +126,14 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 	 *        <tt>null</tt>.
 	 */
 	public void setArg(int idx, ValueExpr arg) {
-		assert arg != null : "arg must not be null";
-		arg.setParentNode(this);
+		if (arg != null) {
+			// arg can be null (ie Regex)
+			arg.setParentNode(this);
+		}
 		while (args.size() <= idx) {
 			args.add(null);
 		}
 		this.args.set(idx, arg);
-	}
-
-	/**
-	 * Gets the only argument of this nary tuple operator.
-	 * 
-	 * @return The operator's argument.
-	 */
-	public ValueExpr getArg() {
-		assert args.size() == 1;
-		return args.get(0);
-	}
-
-	/**
-	 * Sets the only argument of this nary tuple operator.
-	 * 
-	 * @param arg
-	 *        The (new) argument for this operator, must not be <tt>null</tt>.
-	 */
-	public void setArg(ValueExpr arg) {
-		assert arg != null : "arg must not be null";
-		if (args.isEmpty()) {
-			args.add(null);
-		}
-		assert args.size() == 1;
-		arg.setParentNode(this);
-		this.args.set(0, arg);
 	}
 
 	@Override
@@ -165,7 +141,9 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 		throws X
 	{
 		for (ValueExpr arg : args) {
-			arg.visit(visitor);
+			if (arg != null) {
+				arg.visit(visitor);
+			}
 		}
 	}
 
@@ -173,8 +151,7 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		int index = args.indexOf(current);
 		if (index >= 0) {
-			args.set(index, (ValueExpr)replacement);
-			replacement.setParentNode(this);
+			setArg(index, (ValueExpr)replacement);
 		}
 		else {
 			super.replaceChildNode(current, replacement);
@@ -192,7 +169,9 @@ public abstract class NaryValueOperator extends QueryModelNodeBase implements Va
 
 		clone.args = new ArrayList<ValueExpr>(args.size());
 		for (ValueExpr arg : args) {
-			clone.addArg(arg.clone());
+			if (arg != null) {
+				clone.addArg(arg.clone());
+			}
 		}
 
 		return clone;
