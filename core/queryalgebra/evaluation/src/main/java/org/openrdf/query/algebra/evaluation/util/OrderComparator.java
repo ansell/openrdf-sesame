@@ -7,14 +7,17 @@ package org.openrdf.query.algebra.evaluation.util;
 
 import java.util.Comparator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
+import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
 /**
  * 
@@ -40,8 +43,8 @@ public class OrderComparator implements Comparator<BindingSet> {
 	public int compare(BindingSet o1, BindingSet o2) {
 		try {
 			for (OrderElem element : order.getElements()) {
-				Value v1 = strategy.evaluate(element.getExpr(), o1);
-				Value v2 = strategy.evaluate(element.getExpr(), o2);
+				Value v1 = evaluate(element.getExpr(), o1);
+				Value v2 = evaluate(element.getExpr(), o2);
 				int compare = cmp.compare(v1, v2);
 				if (compare == 0)
 					continue;
@@ -59,6 +62,16 @@ public class OrderComparator implements Comparator<BindingSet> {
 		} catch (IllegalArgumentException e) {
 			logger.debug(e.getMessage(), e);
 			return 0;
+		}
+	}
+
+	private Value evaluate(ValueExpr valueExpr, BindingSet o)
+		throws QueryEvaluationException
+	{
+		try {
+			return strategy.evaluate(valueExpr, o);
+		} catch (ValueExprEvaluationException exc) {
+			return null;
 		}
 	}
 
