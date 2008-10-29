@@ -80,10 +80,11 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 		super();
 		this.persist = true;
 		try {
+			Class<?> Sail = Class.forName("org.openrdf.sail.Sail");
 			Class<?> MemoryStore = Class.forName("org.openrdf.sail.memory.MemoryStore");
 			Class<?> SailRepository = Class.forName("org.openrdf.repository.sail.SailRepository");
 			Object sail = MemoryStore.getConstructor(File.class).newInstance(systemDir);
-			Object repository = SailRepository.getConstructor(MemoryStore).newInstance(sail);
+			Object repository = SailRepository.getConstructor(Sail).newInstance(sail);
 			Repository repo = (Repository) repository;
 			super.setDelegate(repo);
 		} catch (Exception e) {
