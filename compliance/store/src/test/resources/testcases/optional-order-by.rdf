@@ -1,0 +1,29 @@
+<rdf:RDF
+   xmlns="http://TestSort#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+   xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+   xmlns:owl="http://www.w3.org/2002/07/owl#"
+xml:base="http://TestSort">
+<owl:Ontology rdf:about="">
+   <owl:versionInfo rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+   >Created with TopBraid Composer</owl:versionInfo>
+</owl:Ontology>
+<owl:Thing rdf:ID="Thing_1"/>
+<owl:Thing rdf:ID="Thing_3"/>
+<owl:Thing rdf:ID="Thing_5"/>
+<owl:Thing rdf:ID="Thing_0">
+   <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+   >Thing_6</rdfs:label>
+</owl:Thing>
+<owl:Thing rdf:ID="Thing_7"/>
+<owl:Thing rdf:ID="Thing_2">
+   <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+   >Thing_2</rdfs:label>
+</owl:Thing>
+<owl:Thing rdf:ID="Thing_4">
+   <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+   >Thing_4</rdfs:label>
+</owl:Thing>
+</rdf:RDF>
+
