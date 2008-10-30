@@ -26,15 +26,7 @@ public abstract class NotifyingSailConnectionBase extends SailConnectionBase imp
 	 * Variables *
 	 *-----------*/
 
-	private List<SailConnectionListener> listeners;
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public NotifyingSailConnectionBase() {
-		listeners = new ArrayList<SailConnectionListener>(0);
-	}
+	private final List<SailConnectionListener> listeners = new ArrayList<SailConnectionListener>(0);
 
 	/*---------*
 	 * Methods *
