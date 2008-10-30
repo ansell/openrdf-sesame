@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.inferencer.helpers;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -17,6 +16,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.NotifyingSailConnectionWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
+import org.openrdf.store.StoreException;
 
 /**
  * An extension of ConnectionWrapper that implements the

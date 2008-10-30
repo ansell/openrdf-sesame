@@ -12,7 +12,6 @@ import java.net.URL;
 import edu.lehigh.swat.bench.ubt.api.Query;
 import edu.lehigh.swat.bench.ubt.api.QueryResult;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
@@ -24,6 +23,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.sail.Sail;
+import org.openrdf.store.StoreException;
 
 public abstract class LUBMRepository implements edu.lehigh.swat.bench.ubt.api.Repository {
 

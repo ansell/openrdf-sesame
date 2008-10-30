@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.rdbms.evaluation;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -17,6 +16,7 @@ import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
+import org.openrdf.store.StoreException;
 
 /**
  * Proxies request to a {@link RdbmsTripleRepository}.

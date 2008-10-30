@@ -20,12 +20,12 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
-import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.repository.manager.SystemRepository;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Herko ter Horst

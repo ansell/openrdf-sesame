@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -112,6 +111,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.base.ConvertingCursor;
 import org.openrdf.query.base.FilteringCursor;
+import org.openrdf.store.StoreException;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource

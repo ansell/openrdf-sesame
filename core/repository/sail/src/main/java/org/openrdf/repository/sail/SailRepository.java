@@ -7,13 +7,13 @@ package org.openrdf.repository.sail;
 
 import java.io.File;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.sail.Sail;
+import org.openrdf.store.StoreException;
 
 /**
  * An implementation of the {@link Repository} interface that operates on a

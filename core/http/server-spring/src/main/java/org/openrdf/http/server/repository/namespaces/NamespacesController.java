@@ -38,7 +38,7 @@ import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 
 /**
  * Handles requests for the list of namespace definitions for a repository.

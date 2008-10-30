@@ -5,7 +5,6 @@
  */
 package org.openrdf.repository.sail;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -24,6 +23,7 @@ import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman

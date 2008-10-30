@@ -21,7 +21,6 @@ import java.util.Set;
 
 import info.aduna.io.FileUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -43,6 +42,7 @@ import org.openrdf.repository.event.base.RepositoryConnectionListenerAdapter;
 import org.openrdf.repository.manager.config.LocalConfigManager;
 import org.openrdf.repository.manager.config.SystemConfigManager;
 import org.openrdf.repository.manager.templates.LocalTemplateManager;
+import org.openrdf.store.StoreException;
 
 /**
  * An implementation of the {@link RepositoryManager} interface that operates

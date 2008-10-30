@@ -8,7 +8,6 @@ package org.openrdf.repository.dataset;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.URI;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Dataset;
@@ -23,6 +22,7 @@ import org.openrdf.repository.sail.SailGraphQuery;
 import org.openrdf.repository.sail.SailQuery;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.repository.sail.SailTupleQuery;
+import org.openrdf.store.StoreException;
 
 public class DatasetRepositoryConnection extends RepositoryConnectionWrapper {
 

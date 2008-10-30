@@ -7,8 +7,8 @@ package org.openrdf.query.base;
 
 import info.aduna.iteration.LookAheadIteration;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.Cursor;
+import org.openrdf.store.StoreException;
 
 /**
  * An Cursor that can convert an {@link Iterator} to a {@link Cursor}.

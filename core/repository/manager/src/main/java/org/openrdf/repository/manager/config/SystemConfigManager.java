@@ -17,7 +17,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -32,6 +31,7 @@ import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.sail.LockManager;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.DirectoryLockManager;
+import org.openrdf.store.StoreException;
 
 public class SystemConfigManager implements RepositoryConfigManager {
 

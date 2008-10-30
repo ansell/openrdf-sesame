@@ -29,7 +29,7 @@ import org.openrdf.http.server.ClientHTTPException;
 import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 
 /**
  * Handles requests for manipulating a specific namespace definition in a

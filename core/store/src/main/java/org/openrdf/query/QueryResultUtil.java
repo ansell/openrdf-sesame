@@ -14,13 +14,13 @@ import java.util.Set;
 
 import info.aduna.iteration.Iterations;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.store.StoreException;
 
 /**
  * Class offering utility methods related to query results.

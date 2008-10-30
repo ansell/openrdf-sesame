@@ -14,7 +14,6 @@ import java.util.List;
 import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -48,6 +47,7 @@ import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman

@@ -11,7 +11,6 @@ import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -36,6 +35,7 @@ import org.openrdf.sail.helpers.SailMetaDataWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.config.DirectTypeHierarchyInferencerFactory;
 import org.openrdf.sail.inferencer.helpers.InferencerConnectionWrapper;
+import org.openrdf.store.StoreException;
 
 /**
  * A forward-chaining inferencer that infers the direct-type hierarchy relations

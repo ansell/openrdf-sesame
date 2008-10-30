@@ -12,7 +12,6 @@ import info.aduna.net.http.server.embedded.EmbeddedServer;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigUtil;
@@ -21,6 +20,7 @@ import org.openrdf.repository.manager.SystemRepository;
 import org.openrdf.repository.sail.config.SailRepositoryConfig;
 import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig;
 import org.openrdf.sail.memory.config.MemoryStoreConfig;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Herko ter Horst

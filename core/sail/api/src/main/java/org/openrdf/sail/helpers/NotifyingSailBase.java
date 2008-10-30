@@ -8,11 +8,11 @@ package org.openrdf.sail.helpers;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailChangedEvent;
 import org.openrdf.sail.SailChangedListener;
+import org.openrdf.store.StoreException;
 
 /**
  * This class extends {@link SailBase} with {@link NotifyingSail} support.

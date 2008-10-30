@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.rdbms.optimizers;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.QueryRoot;
@@ -24,6 +23,7 @@ import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.HashTable;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.URITable;
+import org.openrdf.store.StoreException;
 
 /**
  * Facade to the underlying RDBMS optimizations.

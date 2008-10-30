@@ -5,7 +5,6 @@
  */
 package org.openrdf.repository.sail;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Cursor;
@@ -13,6 +12,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman

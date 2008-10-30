@@ -13,7 +13,6 @@ import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -53,6 +52,7 @@ import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
 import org.openrdf.sail.memory.model.ReadMode;
+import org.openrdf.store.StoreException;
 
 /**
  * Implementation of a Sail Connection for memory stores.

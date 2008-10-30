@@ -7,8 +7,8 @@ package org.openrdf.sail;
 
 import java.io.File;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.store.StoreException;
 
 /**
  * An interface for an RDF Storage. RDF Sails can store RDF

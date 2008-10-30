@@ -13,7 +13,6 @@ import java.net.URL;
 
 import info.aduna.iteration.Iteration;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -33,6 +32,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.store.StoreException;
 
 /**
  * Delegates all calls to the delegate RepositoryConnection. Conditionally

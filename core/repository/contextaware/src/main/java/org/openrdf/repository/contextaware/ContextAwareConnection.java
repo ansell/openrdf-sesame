@@ -14,7 +14,6 @@ import java.net.URL;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iteration;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -35,6 +34,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.store.StoreException;
 
 /**
  * Allows contexts to be specified at the connection level or the method level.

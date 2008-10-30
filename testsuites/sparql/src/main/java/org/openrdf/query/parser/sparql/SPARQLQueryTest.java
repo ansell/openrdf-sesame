@@ -54,7 +54,6 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.RDFFormat;
@@ -63,6 +62,7 @@ import org.openrdf.rio.Rio;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.memory.MemoryStore;
+import org.openrdf.store.StoreException;
 
 public abstract class SPARQLQueryTest extends TestCase {
 

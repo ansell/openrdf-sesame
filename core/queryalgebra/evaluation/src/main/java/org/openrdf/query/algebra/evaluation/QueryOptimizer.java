@@ -6,10 +6,10 @@
  */
 package org.openrdf.query.algebra.evaluation;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.store.StoreException;
 
 /**
  * Interface used by {@link EvalutationStrategyImpl} prior to evalutating the

@@ -8,7 +8,6 @@ package org.openrdf.repository.sail;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -29,6 +28,7 @@ import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.store.StoreException;
 
 /**
  * An implementation of the {@link RepositoryConnection} interface that wraps a

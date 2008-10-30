@@ -9,7 +9,6 @@ import java.io.IOException;
 
 import info.aduna.iteration.ExceptionConvertingIteration;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -18,6 +17,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.store.StoreException;
 
 public class NativeTripleSource implements TripleSource {
 

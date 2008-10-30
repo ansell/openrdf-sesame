@@ -36,7 +36,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 import org.openrdf.workbench.exceptions.BadRequestException;
 
 public class WorkbenchRequest extends HttpServletRequestWrapper {

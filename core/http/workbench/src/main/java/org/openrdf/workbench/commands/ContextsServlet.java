@@ -7,7 +7,7 @@ package org.openrdf.workbench.commands;
 
 import org.openrdf.model.Resource;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 import org.openrdf.workbench.base.TupleServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
 

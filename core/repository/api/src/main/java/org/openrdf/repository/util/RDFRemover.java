@@ -5,12 +5,12 @@
  */
 package org.openrdf.repository.util;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.store.StoreException;
 
 /**
  * An RDFHandler that removes RDF data from a repository.

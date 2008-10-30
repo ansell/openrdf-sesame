@@ -5,11 +5,11 @@
  */
 package org.openrdf.sail.rdbms;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.RDFStoreTest;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.rdbms.mysql.MySqlStore;
+import org.openrdf.store.StoreException;
 
 /**
  * An extension of RDFStoreTest for testing the class {@link MySqlStore}.

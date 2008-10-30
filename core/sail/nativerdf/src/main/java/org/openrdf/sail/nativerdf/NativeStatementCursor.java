@@ -9,13 +9,13 @@ import java.io.IOException;
 
 import info.aduna.io.ByteArrayUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.Cursor;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
+import org.openrdf.store.StoreException;
 
 /**
  * A statement iterator that wraps a RecordIterator containing statement records

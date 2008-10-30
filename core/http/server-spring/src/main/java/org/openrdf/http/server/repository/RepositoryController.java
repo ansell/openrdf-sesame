@@ -35,7 +35,6 @@ import info.aduna.lang.FileFormat;
 import info.aduna.lang.service.FileFormatServiceRegistry;
 import info.aduna.webapp.util.HttpServerUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.error.ErrorInfo;
 import org.openrdf.http.protocol.error.ErrorType;
@@ -56,6 +55,7 @@ import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.rio.RDFWriterRegistry;
+import org.openrdf.store.StoreException;
 
 /**
  * Handles queries on a repository and renders the results in a format suitable

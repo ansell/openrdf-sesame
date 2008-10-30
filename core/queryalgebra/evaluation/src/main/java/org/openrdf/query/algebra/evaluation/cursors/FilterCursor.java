@@ -7,7 +7,6 @@ package org.openrdf.query.algebra.evaluation.cursors;
 
 import java.util.Set;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.EvaluationException;
@@ -16,6 +15,7 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.base.FilteringCursor;
+import org.openrdf.store.StoreException;
 
 public class FilterCursor extends FilteringCursor<BindingSet> {
 

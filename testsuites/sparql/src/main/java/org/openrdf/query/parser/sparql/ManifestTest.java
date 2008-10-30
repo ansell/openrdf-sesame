@@ -28,7 +28,6 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.RDFHandlerException;
@@ -36,6 +35,7 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.turtle.TurtleParser;
 import org.openrdf.sail.memory.MemoryStore;
+import org.openrdf.store.StoreException;
 
 public class ManifestTest {
 

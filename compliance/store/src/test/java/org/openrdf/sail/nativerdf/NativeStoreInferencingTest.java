@@ -13,10 +13,10 @@ import junit.framework.TestCase;
 
 import info.aduna.io.FileUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.InferencingTest;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
+import org.openrdf.store.StoreException;
 
 public class NativeStoreInferencingTest extends TestCase {
 

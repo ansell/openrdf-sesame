@@ -14,7 +14,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;

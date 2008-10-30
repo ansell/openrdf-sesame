@@ -5,13 +5,13 @@
  */
 package org.openrdf.query.algebra.evaluation;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Cursor;
+import org.openrdf.store.StoreException;
 
 /**
  * A triple source that can be queried for (the existence of) certain triples in

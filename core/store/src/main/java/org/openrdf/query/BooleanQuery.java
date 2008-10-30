@@ -5,7 +5,7 @@
  */
 package org.openrdf.query;
 
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman

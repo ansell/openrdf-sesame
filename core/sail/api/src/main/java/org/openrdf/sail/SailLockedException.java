@@ -5,7 +5,7 @@
  */
 package org.openrdf.sail;
 
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 
 /**
  * Indicates that a SAIL cannot be initialised because the configured persisted

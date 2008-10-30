@@ -11,7 +11,6 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.Dataset;
@@ -29,6 +28,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.rio.RDFHandler;
+import org.openrdf.store.StoreException;
 
 public class ContextAwareConnectionTest extends TestCase {
 

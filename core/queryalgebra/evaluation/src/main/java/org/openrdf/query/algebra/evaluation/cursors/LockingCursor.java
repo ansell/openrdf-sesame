@@ -7,9 +7,9 @@ package org.openrdf.query.algebra.evaluation.cursors;
 
 import info.aduna.concurrent.locks.Lock;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.base.CursorWrapper;
+import org.openrdf.store.StoreException;
 
 /**
  * An Iteration that holds on to a lock until the Iteration is closed. Upon

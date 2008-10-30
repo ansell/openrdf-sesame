@@ -8,7 +8,6 @@ package org.openrdf.sail.inferencer.fc;
 import static java.lang.System.arraycopy;
 import static org.openrdf.sail.inferencer.fc.RDFSRules.RULENAMES;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailMetaData;
@@ -16,6 +15,7 @@ import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.helpers.SailMetaDataWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerFactory;
+import org.openrdf.store.StoreException;
 
 /**
  * Forward-chaining RDF Schema inferencer, using the rules from the <a

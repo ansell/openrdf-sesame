@@ -5,12 +5,12 @@
  */
 package org.openrdf.query.algebra.evaluation;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
+import org.openrdf.store.StoreException;
 
 /**
  * Evaluates {@link TupleExpr}s and {@link ValueExpr}s.

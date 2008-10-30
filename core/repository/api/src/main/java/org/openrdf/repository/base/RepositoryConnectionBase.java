@@ -25,7 +25,6 @@ import info.aduna.io.ZipUtil;
 import info.aduna.iteration.Iteration;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -48,6 +47,7 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.store.StoreException;
 
 /**
  * Abstract class implementing most 'convenience' methods in the

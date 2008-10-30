@@ -11,7 +11,6 @@ import java.util.Collection;
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -35,6 +34,7 @@ import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
+import org.openrdf.store.StoreException;
 
 /**
  * Coordinates the triple store, namespace manager, optimizer, and evaluation

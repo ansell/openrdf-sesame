@@ -9,9 +9,9 @@ import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryInfo;
+import org.openrdf.store.StoreException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;

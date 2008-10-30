@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.inferencer.helpers;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -13,6 +12,7 @@ import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.helpers.SailConnectionTracker;
 import org.openrdf.sail.helpers.TrackingSailConnection;
 import org.openrdf.sail.inferencer.InferencerConnection;
+import org.openrdf.store.StoreException;
 
 /**
  * Tracks SailConnection iterations and verifies that the connection is open.

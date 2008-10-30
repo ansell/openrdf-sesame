@@ -8,7 +8,6 @@ package org.openrdf.repository;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -21,6 +20,7 @@ import org.openrdf.query.EvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.store.StoreException;
 
 public abstract class EquivalentTest extends TestCase {
 	private static ValueFactory vf = ValueFactoryImpl.getInstance();

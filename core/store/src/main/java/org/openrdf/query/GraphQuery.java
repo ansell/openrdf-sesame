@@ -5,9 +5,9 @@
  */
 package org.openrdf.query;
 
-import org.openrdf.StoreException;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.store.StoreException;
 
 public interface GraphQuery extends Query {
 

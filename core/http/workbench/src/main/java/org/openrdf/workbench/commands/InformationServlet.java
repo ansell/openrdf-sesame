@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Properties;
 
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.slf4j.Logger;

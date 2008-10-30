@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -18,6 +17,7 @@ import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.store.StoreException;
 
 /**
  * An RDFHandler that adds RDF data to a repository.

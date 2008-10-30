@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf;
+package org.openrdf.store;
 
 import org.openrdf.query.QueryEvaluationException;
 

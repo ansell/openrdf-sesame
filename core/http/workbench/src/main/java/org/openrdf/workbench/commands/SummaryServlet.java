@@ -11,9 +11,9 @@ import java.net.URL;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
+import org.openrdf.store.StoreException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
 

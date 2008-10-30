@@ -5,7 +5,6 @@
  */
 package org.openrdf.query.algebra.evaluation.cursors;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
@@ -15,6 +14,7 @@ import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.base.ConvertingCursor;
+import org.openrdf.store.StoreException;
 
 public class ExtensionCursor extends ConvertingCursor<BindingSet, BindingSet> {
 

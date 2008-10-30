@@ -10,7 +10,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -19,6 +18,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.impl.MutableTupleQueryResult;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman

@@ -13,9 +13,9 @@ import java.util.Set;
 
 import info.aduna.iteration.LookAheadIteration;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.base.FilteringCursor;
+import org.openrdf.store.StoreException;
 
 /**
  * A RepositoryResult is a result collection of objects (for example

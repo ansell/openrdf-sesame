@@ -7,13 +7,13 @@ package org.openrdf.sail.inferencer.helpers;
 
 import info.aduna.concurrent.locks.Lock;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.helpers.SynchronizedSailConnection;
 import org.openrdf.sail.inferencer.InferencerConnection;
+import org.openrdf.store.StoreException;
 
 /**
  * Wrapper Class offering synchronising functionality for SailConnection

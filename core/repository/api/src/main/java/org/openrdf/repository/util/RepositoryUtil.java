@@ -16,7 +16,6 @@ import java.util.Set;
 
 import info.aduna.iteration.Iterations;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -25,6 +24,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.store.StoreException;
 
 /**
  * Utility methods for comparing sets of statements (graphs) with each other.

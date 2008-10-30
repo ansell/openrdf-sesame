@@ -11,12 +11,12 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.store.StoreException;
 
 public abstract class TupleQueryResultTest extends TestCase {
 

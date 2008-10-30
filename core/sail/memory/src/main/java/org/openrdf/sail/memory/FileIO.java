@@ -25,7 +25,6 @@ import java.util.zip.GZIPOutputStream;
 
 import info.aduna.io.IOUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
@@ -38,6 +37,7 @@ import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.ReadMode;
+import org.openrdf.store.StoreException;
 
 /**
  * Functionality to read and write MemoryStore to/from a file.

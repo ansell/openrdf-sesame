@@ -8,7 +8,7 @@ package org.openrdf.http.protocol.transaction.operations;
 import info.aduna.lang.ObjectUtil;
 
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 
 /**
  * Operation that sets the namespace for a specific prefix.

@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import info.aduna.io.IOUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.console.Console;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -34,6 +33,7 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.store.StoreException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.ConfigTemplate;
 import org.openrdf.workbench.util.TupleResultBuilder;

@@ -5,9 +5,9 @@
  */
 package org.openrdf.sail.memory;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.RDFNotifyingStoreTest;
+import org.openrdf.store.StoreException;
 
 
 /**

@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -15,6 +14,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.store.StoreException;
 
 /**
  * A connection to an RDF Sail object. A SailConnection is active from the

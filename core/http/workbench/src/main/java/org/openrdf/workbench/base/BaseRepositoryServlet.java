@@ -16,9 +16,9 @@ import javax.servlet.ServletException;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
-import org.openrdf.StoreException;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.store.StoreException;
 import org.openrdf.workbench.RepositoryServlet;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 

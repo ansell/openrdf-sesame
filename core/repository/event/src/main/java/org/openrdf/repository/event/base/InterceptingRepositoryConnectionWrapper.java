@@ -13,10 +13,10 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.event.InterceptingRepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionInterceptor;
+import org.openrdf.store.StoreException;
 
 /**
  * Wrapper that notifies interceptors of events on RepositoryConnections before

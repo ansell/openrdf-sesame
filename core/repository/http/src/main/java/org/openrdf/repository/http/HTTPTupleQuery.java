@@ -7,7 +7,6 @@ package org.openrdf.repository.http;
 
 import java.io.IOException;
 
-import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
@@ -15,6 +14,7 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.store.StoreException;
 
 /**
  * TupleQuery specific to the HTTP protocol.

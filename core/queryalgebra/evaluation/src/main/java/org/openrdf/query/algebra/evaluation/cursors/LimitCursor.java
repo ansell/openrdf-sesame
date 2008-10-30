@@ -5,9 +5,9 @@
  */
 package org.openrdf.query.algebra.evaluation.cursors;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.base.CursorWrapper;
+import org.openrdf.store.StoreException;
 
 /**
  * An Iteration that limits the amount of elements that it returns from an

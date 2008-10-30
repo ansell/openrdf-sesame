@@ -17,9 +17,9 @@ import java.util.Set;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.store.StoreException;
 
 /**
  * An implementation of the {@link TupleQueryResult} interface that stores the

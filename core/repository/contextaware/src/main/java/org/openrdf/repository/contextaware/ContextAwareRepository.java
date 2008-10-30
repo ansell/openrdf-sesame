@@ -5,11 +5,11 @@
  */
 package org.openrdf.repository.contextaware;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.URI;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.base.RepositoryWrapper;
+import org.openrdf.store.StoreException;
 
 /**
  * Allows contexts to be specified at the repository level.

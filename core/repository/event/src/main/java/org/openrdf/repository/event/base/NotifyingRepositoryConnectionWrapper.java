@@ -17,11 +17,11 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.event.NotifyingRepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionListener;
+import org.openrdf.store.StoreException;
 
 /**
  * This broadcaster is used by the RepositoryBroadcaster to wrap the delegate

@@ -8,11 +8,11 @@ package org.openrdf.query.algebra.evaluation.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
+import org.openrdf.store.StoreException;
 
 /**
  * A query optimizer that contains a list of other query optimizers, which are
