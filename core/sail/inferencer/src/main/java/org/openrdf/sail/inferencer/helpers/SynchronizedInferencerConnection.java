@@ -16,8 +16,8 @@ import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.store.StoreException;
 
 /**
- * Wrapper Class offering synchronising functionality for SailConnection
- * implementations.
+ * Wrapper class offering synchronization functionality for InferencerConnection
+ * implementations. See {@link SynchronizedSailConnection} for more details.
  * 
  * @author Arjohn Kampman
  * @author jeen

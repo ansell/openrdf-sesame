@@ -23,8 +23,13 @@ import org.openrdf.sail.SailConnection;
 import org.openrdf.store.StoreException;
 
 /**
- * Wrapper Class offering synchronising functionality for SailConnection
- * implementations.
+ * Wrapper class offering synchronization functionality for SailConnection
+ * implementations. This wrapper enforces two things:
+ * <ul>
+ * <li>Calls to {@link #close()} are exclusive. No other thread can call this
+ * method, nor any other method at the same time.
+ * <li>Calls to update-related methods (add, remove, commit, etc.) are
+ * exclusive. These methods cannot be called simultaneously by multiple threads.
  * 
  * @author Arjohn Kampman
  * @author jeen
@@ -64,6 +69,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public void close()
 		throws StoreException
 	{
@@ -82,8 +88,9 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
-	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr,
-			Dataset dataset, BindingSet bindings, boolean includeInferred)
+	@Override
+	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred)
 		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
@@ -95,6 +102,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
@@ -107,8 +115,9 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
-	public Cursor<? extends Statement> getStatements(Resource subj, URI pred,
-			Value obj, boolean includeInferred, Resource... contexts)
+	@Override
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
@@ -120,6 +129,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public long size(Resource... contexts)
 		throws StoreException
 	{
@@ -132,6 +142,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public void commit()
 		throws StoreException
 	{
@@ -150,6 +161,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public void rollback()
 		throws StoreException
 	{
@@ -168,6 +180,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
@@ -186,6 +199,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
@@ -204,6 +218,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
@@ -216,6 +231,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public String getNamespace(String prefix)
 		throws StoreException
 	{
@@ -228,6 +244,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
@@ -246,6 +263,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public void removeNamespace(String prefix)
 		throws StoreException
 	{
@@ -264,6 +282,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public void clearNamespaces()
 		throws StoreException
 	{
