@@ -9,10 +9,10 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.Cursor;
+import org.openrdf.store.StoreException;
 
 /**
  * Tests concurrent read and write access to a Sail implementation.

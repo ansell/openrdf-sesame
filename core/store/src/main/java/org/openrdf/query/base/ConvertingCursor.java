@@ -5,8 +5,8 @@
  */
 package org.openrdf.query.base;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.Cursor;
+import org.openrdf.store.StoreException;
 
 /**
  * A Cursor that converts another cursor over objects of type <tt>S</tt> (the

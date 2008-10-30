@@ -5,7 +5,7 @@
  */
 package org.openrdf.sail;
 
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 
 /**
  * Indicates that the current write operation did not succeed because the SAIL

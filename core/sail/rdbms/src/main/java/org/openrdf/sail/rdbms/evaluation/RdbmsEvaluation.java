@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.iteration.CloseableIteration;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
@@ -34,6 +33,7 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 import org.openrdf.sail.rdbms.iteration.RdbmsBindingCursor;
 import org.openrdf.sail.rdbms.schema.IdSequence;
+import org.openrdf.store.StoreException;
 
 /**
  * Extends the default strategy by accepting {@link SelectQuery} and evaluating

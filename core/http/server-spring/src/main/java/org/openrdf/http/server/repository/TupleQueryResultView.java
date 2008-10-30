@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.TupleQueryResult;
@@ -27,6 +26,7 @@ import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
+import org.openrdf.store.StoreException;
 
 /**
  * View used to render tuple query results. Renders results in a format

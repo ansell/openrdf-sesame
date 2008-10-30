@@ -34,7 +34,6 @@ import org.xml.sax.SAXParseException;
 import info.aduna.webapp.util.HttpServerUtil;
 import info.aduna.webapp.views.EmptySuccessView;
 
-import org.openrdf.StoreException;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.error.ErrorInfo;
 import org.openrdf.http.protocol.error.ErrorType;
@@ -56,6 +55,7 @@ import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.store.StoreException;
 
 /**
  * Handles requests for manipulating the statements in a repository.

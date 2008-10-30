@@ -17,7 +17,6 @@ import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -42,6 +41,7 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
 import org.openrdf.sail.rdbms.schema.URITable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
+import org.openrdf.store.StoreException;
 
 /**
  * Facade to {@link TransTableManager}, {@link ResourceTable}, and

@@ -7,12 +7,12 @@ package org.openrdf.sail.helpers;
 
 import java.io.File;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.StackableSail;
+import org.openrdf.store.StoreException;
 
 /**
  * An implementation of the StackableSail interface that wraps another Sail

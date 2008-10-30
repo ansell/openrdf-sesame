@@ -13,7 +13,6 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
@@ -37,6 +36,7 @@ import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.store.StoreException;
 
 /**
  * A JUnit test for testing Sail implementations that store RDF data. This is

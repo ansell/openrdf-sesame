@@ -8,9 +8,9 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.base.FilteringCursor;
+import org.openrdf.store.StoreException;
 
 /**
  * An Iteration that returns the intersection of the results of two Iterations.

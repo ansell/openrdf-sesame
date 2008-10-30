@@ -5,7 +5,6 @@
  */
 package org.openrdf.query.dawg;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.ModelImpl;
@@ -14,6 +13,7 @@ import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman

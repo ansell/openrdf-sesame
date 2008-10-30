@@ -5,7 +5,7 @@
  */
 package org.openrdf.http.protocol;
 
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 
 public class UnauthorizedException extends StoreException {
 

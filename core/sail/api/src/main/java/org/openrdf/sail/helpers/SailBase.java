@@ -10,10 +10,10 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailMetaData;
+import org.openrdf.store.StoreException;
 
 /**
  * SailBase is an abstract Sail implementation that takes care of common sail

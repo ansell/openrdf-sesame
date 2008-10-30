@@ -16,13 +16,13 @@ import org.openrdf.model.URI;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryMetaData;
-import org.openrdf.StoreException;
 import org.openrdf.repository.base.RepositoryMetaDataWrapper;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParserRegistry;
+import org.openrdf.store.StoreException;
 
 public class DatasetRepository extends RepositoryWrapper {
 

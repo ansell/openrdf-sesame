@@ -44,7 +44,6 @@ import info.aduna.app.AppVersion;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.text.StringUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.Literal;
@@ -93,6 +92,7 @@ import org.openrdf.sail.LockManager;
 import org.openrdf.sail.SailLockedException;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.DirectoryLockManager;
+import org.openrdf.store.StoreException;
 
 /**
  * The Sesame Console is a command-line application for interacting with Sesame.

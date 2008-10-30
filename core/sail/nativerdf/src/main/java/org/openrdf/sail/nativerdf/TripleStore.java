@@ -22,10 +22,10 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.ByteArrayUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.nativerdf.btree.BTree;
 import org.openrdf.sail.nativerdf.btree.RecordComparator;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
+import org.openrdf.store.StoreException;
 
 /**
  * File-based indexed storage and retrieval of RDF statements. TripleStore

@@ -11,7 +11,7 @@ import org.openrdf.http.client.HTTPClient;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 
 /**
  * TupleQuery specific to the HTTP protocol. Methods in this class may throw the

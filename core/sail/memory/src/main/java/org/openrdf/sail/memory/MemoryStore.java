@@ -18,7 +18,6 @@ import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadPrefReadWriteLockManager;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -41,6 +40,7 @@ import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
 import org.openrdf.sail.memory.model.ReadMode;
 import org.openrdf.sail.memory.model.TxnStatus;
+import org.openrdf.store.StoreException;
 
 /**
  * An implementation of the Sail interface that stores its data in main memory

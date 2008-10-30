@@ -5,12 +5,12 @@
  */
 package org.openrdf.repository.dataset;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.repository.sail.SailTupleQuery;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman

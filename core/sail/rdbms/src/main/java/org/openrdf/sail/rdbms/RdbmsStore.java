@@ -18,12 +18,12 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.helpers.SynchronizedSailConnection;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
+import org.openrdf.store.StoreException;
 
 /**
  * The RDBMS SAIL for relational database storage in Sesame. This class acts

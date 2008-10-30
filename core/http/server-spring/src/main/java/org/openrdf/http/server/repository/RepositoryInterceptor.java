@@ -20,9 +20,9 @@ import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerInterceptor;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.store.StoreException;
 
 /**
  * Interceptor for repository requests. Handles the opening and closing of

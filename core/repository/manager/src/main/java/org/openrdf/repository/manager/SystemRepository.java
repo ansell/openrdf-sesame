@@ -10,7 +10,6 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -19,6 +18,7 @@ import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.event.base.NotifyingRepositoryWrapper;
+import org.openrdf.store.StoreException;
 
 /**
  * FIXME: do not extend NotifyingRepositoryWrapper, because SystemRepository

@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.text.ASCIIUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -26,6 +25,7 @@ import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.helpers.InferencerConnectionWrapper;
+import org.openrdf.store.StoreException;
 
 /**
  * Forward-chaining RDF Schema inferencer, using the rules from the <a

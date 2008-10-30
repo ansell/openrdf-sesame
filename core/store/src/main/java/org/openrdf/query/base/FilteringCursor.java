@@ -5,8 +5,8 @@
  */
 package org.openrdf.query.base;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.Cursor;
+import org.openrdf.store.StoreException;
 
 /**
  * A Cursor that wraps another Cursor, applying a filter on the objects that are

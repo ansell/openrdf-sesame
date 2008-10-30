@@ -7,7 +7,6 @@ package org.openrdf.repository;
 
 import junit.framework.TestCase;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -15,6 +14,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.store.StoreException;
 
 public abstract class SparqlRegexTest extends TestCase {
 	public String queryInline = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"

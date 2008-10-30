@@ -16,7 +16,6 @@ import java.util.Set;
 
 import info.aduna.lang.ObjectUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
@@ -33,6 +32,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.impl.IteratorCursor;
+import org.openrdf.store.StoreException;
 
 /**
  * @author David Huynh

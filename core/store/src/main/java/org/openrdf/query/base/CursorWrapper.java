@@ -5,8 +5,8 @@
  */
 package org.openrdf.query.base;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.Cursor;
+import org.openrdf.store.StoreException;
 
 /**
  * Abstract superclass for Cursors that wrap other Cursors. This abstract class

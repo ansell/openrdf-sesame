@@ -10,7 +10,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.URIFactory;
@@ -20,6 +19,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.store.StoreException;
 
 public abstract class SparqlOrderByTest extends TestCase {
 

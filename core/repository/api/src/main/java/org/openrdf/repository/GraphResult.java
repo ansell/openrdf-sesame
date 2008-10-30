@@ -10,13 +10,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.base.FilteringCursor;
+import org.openrdf.store.StoreException;
 
 /**
  * A GraphResult is a result collection of {@link org.openrdf.model.Statement}

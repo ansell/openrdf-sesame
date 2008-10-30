@@ -17,7 +17,6 @@ import javax.sql.DataSource;
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
@@ -47,6 +46,7 @@ import org.openrdf.sail.rdbms.schema.URITable;
 import org.openrdf.sail.rdbms.schema.ValueTableFactory;
 import org.openrdf.sail.rdbms.util.DatabaseLockManager;
 import org.openrdf.sail.rdbms.util.Tracer;
+import org.openrdf.store.StoreException;
 
 /**
  * Responsible to initialise and wire all components together that will be

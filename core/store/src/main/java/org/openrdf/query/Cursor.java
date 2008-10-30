@@ -5,7 +5,7 @@
  */
 package org.openrdf.query;
 
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 
 /**
  * A Cursor is an Iterator-like object that can lazily iterate over a set of

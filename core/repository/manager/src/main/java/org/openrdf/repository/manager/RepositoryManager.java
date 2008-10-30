@@ -21,7 +21,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Model;
 import org.openrdf.model.Value;
 import org.openrdf.repository.Repository;
@@ -29,6 +28,7 @@ import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.config.RepositoryConfigManager;
 import org.openrdf.repository.manager.templates.ConfigTemplate;
 import org.openrdf.repository.manager.templates.ConfigTemplateManager;
+import org.openrdf.store.StoreException;
 
 /**
  * A manager for {@link Repository}s. Every <tt>RepositoryManager</tt> has

@@ -20,11 +20,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.StoreException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.store.StoreException;
 import org.openrdf.workbench.base.BaseServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;

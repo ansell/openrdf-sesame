@@ -5,9 +5,9 @@
  */
 package org.openrdf.query.algebra.evaluation.cursors;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.base.FilteringCursor;
+import org.openrdf.store.StoreException;
 
 
 /**

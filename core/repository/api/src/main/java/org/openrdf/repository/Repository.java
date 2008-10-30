@@ -7,10 +7,10 @@ package org.openrdf.repository;
 
 import java.io.File;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.store.StoreException;
 
 /**
  * A Sesame repository that contains RDF data that can be queried and updated.

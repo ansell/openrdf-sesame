@@ -8,8 +8,8 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.Cursor;
+import org.openrdf.store.StoreException;
 
 /**
  * An Iteration that returns the bag union of the results of a number of

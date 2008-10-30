@@ -9,9 +9,9 @@ import java.io.File;
 
 import info.aduna.io.FileUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.RDFNotifyingStoreTest;
+import org.openrdf.store.StoreException;
 
 /**
  * An extension of RDFStoreTest for testing the class {@link NativeStore}.

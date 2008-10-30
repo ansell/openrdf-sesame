@@ -34,7 +34,6 @@ import junit.framework.TestCase;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
@@ -60,6 +59,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.sail.memory.MemoryStore;
+import org.openrdf.store.StoreException;
 
 public abstract class RepositoryConnectionTest extends TestCase {
 

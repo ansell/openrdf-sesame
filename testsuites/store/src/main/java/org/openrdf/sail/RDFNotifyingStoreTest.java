@@ -5,9 +5,9 @@
  */
 package org.openrdf.sail;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.store.StoreException;
 
 /**
  * A JUnit test for testing Sail implementations that store RDF data. This is

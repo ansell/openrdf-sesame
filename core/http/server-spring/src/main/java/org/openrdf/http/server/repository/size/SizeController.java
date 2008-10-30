@@ -17,7 +17,6 @@ import org.springframework.web.servlet.mvc.AbstractController;
 
 import info.aduna.webapp.views.SimpleResponseView;
 
-import org.openrdf.StoreException;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerHTTPException;
@@ -25,6 +24,7 @@ import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.store.StoreException;
 
 /**
  * Handles requests for the size of (set of contexts in) a repository.

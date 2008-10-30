@@ -14,9 +14,9 @@ import java.util.Map.Entry;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.rdbms.RdbmsStore;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
+import org.openrdf.store.StoreException;
 
 /**
  * A convenient way to initialise a MySql RDF store.

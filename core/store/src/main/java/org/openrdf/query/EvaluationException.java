@@ -5,7 +5,7 @@
  */
 package org.openrdf.query;
 
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 
 /**
  * An exception indicating that the evaluation of a query failed.

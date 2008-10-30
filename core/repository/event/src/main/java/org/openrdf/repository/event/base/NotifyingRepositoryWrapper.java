@@ -10,12 +10,12 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.StoreException;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.event.NotifyingRepository;
 import org.openrdf.repository.event.NotifyingRepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionListener;
 import org.openrdf.repository.event.RepositoryListener;
+import org.openrdf.store.StoreException;
 
 /**
  * This notifying decorator allows listeners to register with the repository or

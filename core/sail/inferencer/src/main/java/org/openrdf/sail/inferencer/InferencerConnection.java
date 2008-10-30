@@ -5,13 +5,13 @@
  */
 package org.openrdf.sail.inferencer;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailConnectionListener;
+import org.openrdf.store.StoreException;
 
 /**
  * An extension of the {@link SailConnection} interface offering methods that

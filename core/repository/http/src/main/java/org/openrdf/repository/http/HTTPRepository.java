@@ -8,7 +8,6 @@ package org.openrdf.repository.http;
 import java.io.File;
 import java.io.IOException;
 
-import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.URIFactory;
@@ -23,6 +22,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.store.StoreException;
 
 /**
  * A repository that serves as a proxy for a remote repository on a Sesame

@@ -10,12 +10,12 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.StoreException;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.event.InterceptingRepository;
 import org.openrdf.repository.event.InterceptingRepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionInterceptor;
 import org.openrdf.repository.event.RepositoryInterceptor;
+import org.openrdf.store.StoreException;
 
 /**
  * Wrapper that notifies interceptors of events on Repositories before they

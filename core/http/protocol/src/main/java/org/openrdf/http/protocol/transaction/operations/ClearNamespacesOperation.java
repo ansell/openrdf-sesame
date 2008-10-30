@@ -6,7 +6,7 @@
 package org.openrdf.http.protocol.transaction.operations;
 
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.StoreException;
+import org.openrdf.store.StoreException;
 
 /**
  * Operation that removes all namespace declarations.

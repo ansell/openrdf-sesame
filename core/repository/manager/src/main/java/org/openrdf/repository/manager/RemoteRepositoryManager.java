@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.openrdf.StoreException;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.URI;
@@ -25,6 +24,7 @@ import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.repository.manager.config.SystemConfigManager;
 import org.openrdf.repository.manager.templates.LocalTemplateManager;
+import org.openrdf.store.StoreException;
 
 /**
  * A manager for {@link Repository}s that reside on a remote server. This

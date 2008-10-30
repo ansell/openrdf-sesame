@@ -20,7 +20,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.ParsedBooleanQuery;
@@ -30,6 +29,7 @@ import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParser;
 import org.openrdf.query.parser.QueryParserFactory;
 import org.openrdf.query.parser.QueryParserRegistry;
+import org.openrdf.store.StoreException;
 
 /**
  * @author James Leigh

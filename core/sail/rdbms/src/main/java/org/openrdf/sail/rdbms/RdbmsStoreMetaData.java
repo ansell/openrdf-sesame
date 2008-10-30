@@ -11,10 +11,10 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.sail.helpers.SailMetaDataImpl;
 import org.openrdf.sail.rdbms.config.RdbmsStoreFactory;
+import org.openrdf.store.StoreException;
 
 /**
  * @author James Leigh

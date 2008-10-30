@@ -8,8 +8,8 @@ package org.openrdf.sail.helpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.store.StoreException;
 
 /**
  * Abstract Class offering base functionality for SailConnection

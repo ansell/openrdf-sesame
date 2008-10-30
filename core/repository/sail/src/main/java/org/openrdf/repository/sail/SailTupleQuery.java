@@ -7,7 +7,6 @@ package org.openrdf.repository.sail;
 
 import java.util.ArrayList;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.QueryResultUtil;
@@ -19,6 +18,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman

@@ -13,7 +13,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
@@ -24,6 +23,7 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.store.StoreException;
 
 public class TupleQueryResultSerializationTest extends TestCase {
 

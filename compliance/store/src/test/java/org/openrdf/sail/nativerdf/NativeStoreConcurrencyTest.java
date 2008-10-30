@@ -9,9 +9,9 @@ import java.io.File;
 
 import info.aduna.io.FileUtil;
 
-import org.openrdf.StoreException;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConcurrencyTest;
+import org.openrdf.store.StoreException;
 
 /**
  * An extension of {@link SailConcurrencyTest} for testing the class

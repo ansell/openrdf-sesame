@@ -11,9 +11,9 @@ import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.StoreException;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.base.CursorWrapper;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman

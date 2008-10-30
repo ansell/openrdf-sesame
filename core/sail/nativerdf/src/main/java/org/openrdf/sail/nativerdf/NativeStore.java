@@ -17,7 +17,6 @@ import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 
-import org.openrdf.StoreException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -38,6 +37,7 @@ import org.openrdf.sail.inferencer.helpers.InferencerSailBase;
 import org.openrdf.sail.inferencer.helpers.SynchronizedInferencerConnection;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
+import org.openrdf.store.StoreException;
 
 /**
  * A SAIL implementation using B-Tree indexing on disk for storing and querying
