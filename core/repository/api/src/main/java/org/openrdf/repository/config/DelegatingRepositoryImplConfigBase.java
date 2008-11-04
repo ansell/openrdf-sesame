@@ -11,6 +11,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Herko ter Horst
@@ -53,11 +54,11 @@ public class DelegatingRepositoryImplConfigBase extends RepositoryImplConfigBase
 
 	@Override
 	public void validate()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		super.validate();
 		if (delegate == null) {
-			throw new RepositoryConfigException("No delegate specified for " + getType() + " repository");
+			throw new StoreConfigException("No delegate specified for " + getType() + " repository");
 		}
 		delegate.validate();
 	}
@@ -76,7 +77,7 @@ public class DelegatingRepositoryImplConfigBase extends RepositoryImplConfigBase
 
 	@Override
 	public void parse(Model model, Resource implNode)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		super.parse(model, implNode);
 
@@ -87,7 +88,7 @@ public class DelegatingRepositoryImplConfigBase extends RepositoryImplConfigBase
 			}
 		}
 		catch (ModelUtilException e) {
-			throw new RepositoryConfigException(e.getMessage(), e);
+			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
 }

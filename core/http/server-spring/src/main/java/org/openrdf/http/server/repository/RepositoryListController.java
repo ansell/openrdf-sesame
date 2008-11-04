@@ -30,9 +30,9 @@ import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * Handles requests for the list of repositories available on this server.
@@ -91,7 +91,7 @@ public class RepositoryListController extends AbstractController {
 
 			return new ModelAndView(TupleQueryResultView.getInstance(), model);
 		}
-		catch (RepositoryConfigException e) {
+		catch (StoreConfigException e) {
 			throw new ServerHTTPException(e.getMessage(), e);
 		}
 	}

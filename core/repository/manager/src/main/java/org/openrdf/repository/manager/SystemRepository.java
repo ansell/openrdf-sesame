@@ -14,10 +14,10 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.config.RepositoryConfig;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.event.base.NotifyingRepositoryWrapper;
+import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -119,7 +119,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 				con.commit();
 			}
 		}
-		catch (RepositoryConfigException e) {
+		catch (StoreConfigException e) {
 			throw new StoreException(e.getMessage(), e);
 		}
 		finally {

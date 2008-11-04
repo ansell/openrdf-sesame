@@ -9,7 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 
-import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.store.StoreConfigException;
 
 /**
  *
@@ -34,9 +34,9 @@ public interface ConfigTemplateManager {
 	 *        The service that should be added to the registry.
 	 * @return The previous service that was registered for the same key, or
 	 *         <tt>null</tt> if there was no such service.
-	 * @throws RepositoryConfigException 
+	 * @throws StoreConfigException 
 	 */
-	void addTemplate(ConfigTemplate template) throws RepositoryConfigException;
+	void addTemplate(ConfigTemplate template) throws StoreConfigException;
 
 	/**
 	 * Adds a service to the registry. Any service that is currently registered
@@ -48,7 +48,7 @@ public interface ConfigTemplateManager {
 	 * @return The previous service that was registered for the same key, or
 	 *         <tt>null</tt> if there was no such service.
 	 */
-	void updateTemplate(ConfigTemplate template) throws RepositoryConfigException;
+	void updateTemplate(ConfigTemplate template) throws StoreConfigException;
 
 	/**
 	 * Removes a service from the registry.
@@ -56,7 +56,7 @@ public interface ConfigTemplateManager {
 	 * @param service
 	 *        The service be removed from the registry.
 	 */
-	void removeTemplate(String id) throws RepositoryConfigException;
+	void removeTemplate(String id) throws StoreConfigException;
 
 	/**
 	 * Gets the service for the specified key, if any.
@@ -66,13 +66,13 @@ public interface ConfigTemplateManager {
 	 * @return The service for the specified key, or <tt>null</tt> if no such
 	 *         service is avaiable.
 	 */
-	ConfigTemplate getTemplate(String id) throws RepositoryConfigException;
+	ConfigTemplate getTemplate(String id) throws StoreConfigException;
 
 	/**
 	 * Gets the set of registered keys.
 	 * 
 	 * @return An unmodifiable set containing all registered keys.
 	 */
-	Set<String> getIDs() throws RepositoryConfigException;
+	Set<String> getIDs() throws StoreConfigException;
 
 }

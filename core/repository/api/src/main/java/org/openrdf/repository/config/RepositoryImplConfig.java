@@ -7,6 +7,7 @@ package org.openrdf.repository.config;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Arjohn Kampman
@@ -16,18 +17,18 @@ public interface RepositoryImplConfig {
 	public String getType();
 
 	/**
-	 * Validates this configuration. A {@link RepositoryConfigException} is
+	 * Validates this configuration. A {@link StoreConfigException} is
 	 * thrown when the configuration is invalid. The exception should contain an
 	 * error message that indicates why the configuration is invalid.
 	 * 
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If the configuration is invalid.
 	 */
 	public void validate()
-		throws RepositoryConfigException;
+		throws StoreConfigException;
 
 	public Resource export(Model model);
 
 	public void parse(Model model, Resource implNode)
-		throws RepositoryConfigException;
+		throws StoreConfigException;
 }

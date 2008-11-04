@@ -33,7 +33,6 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.config.DelegatingRepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryConfig;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
@@ -42,6 +41,7 @@ import org.openrdf.repository.event.base.RepositoryConnectionListenerAdapter;
 import org.openrdf.repository.manager.config.LocalConfigManager;
 import org.openrdf.repository.manager.config.SystemConfigManager;
 import org.openrdf.repository.manager.templates.LocalTemplateManager;
+import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -100,7 +100,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	 *         If the manager failed to initialize the SYSTEM repository.
 	 */
 	public void initialize()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		LocalTemplateManager templates = new LocalTemplateManager(new File(baseDir, TEMPLATES));
 		templates.init();
@@ -120,7 +120,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 			}
 		}
 		catch (StoreException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 	}
 
@@ -139,10 +139,10 @@ public class LocalRepositoryManager extends RepositoryManager {
 	/**
 	 * Gets the SYSTEM repository.
 	 * @throws StoreException 
-	 * @throws RepositoryConfigException 
+	 * @throws StoreConfigException 
 	 */
 	@Deprecated
-	public Repository getSystemRepository() throws StoreException, RepositoryConfigException {
+	public Repository getSystemRepository() throws StoreException, StoreConfigException {
 		synchronized (initializedRepositories) {
 			if (initializedRepositories.containsKey(SystemRepository.ID))
 				return initializedRepositories.get(SystemRepository.ID);
@@ -196,7 +196,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 	@Override
 	protected Repository createRepository(String id)
-		throws RepositoryConfigException, StoreException
+		throws StoreConfigException, StoreException
 	{
 		Repository repository = null;
 
@@ -224,16 +224,16 @@ public class LocalRepositoryManager extends RepositoryManager {
 	 *        configuration.
 	 * @return The created repository, or <tt>null</tt> if no such repository
 	 *         exists.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
 	 */
 	private Repository createRepositoryStack(RepositoryImplConfig config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		RepositoryFactory factory = RepositoryRegistry.getInstance().get(config.getType());
 		if (factory == null) {
-			throw new RepositoryConfigException("Unsupported repository type: " + config.getType());
+			throw new StoreConfigException("Unsupported repository type: " + config.getType());
 		}
 
 		Repository repository = factory.getRepository(config);
@@ -247,7 +247,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 				((DelegatingRepository)repository).setDelegate(delegate);
 			}
 			catch (ClassCastException e) {
-				throw new RepositoryConfigException(
+				throw new StoreConfigException(
 						"Delegate specified for repository that is not a DelegatingRepository: "
 								+ delegate.getClass());
 			}
@@ -258,14 +258,14 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 	@Override
 	public String addRepositoryConfig(Model config)
-		throws RepositoryConfigException, StoreException
+		throws StoreConfigException, StoreException
 	{
 		parse(config);
 		return super.addRepositoryConfig(config);
 	}
 
 	private RepositoryConfig parse(Model config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Resource repositoryNode = config.subjects(RDF.TYPE, REPOSITORY).iterator().next();
 		RepositoryConfig repConfig = RepositoryConfig.create(config, repositoryNode);
@@ -275,7 +275,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		RepositoryConfig config = null;
 		if (id.equals(SystemRepository.ID)) {
@@ -292,7 +292,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 			repInfo.setLocation(getRepositoryDir(id).toURI().toURL());
 		}
 		catch (MalformedURLException mue) {
-			throw new RepositoryConfigException("Location of repository does not resolve to a valid URL", mue);
+			throw new StoreConfigException("Location of repository does not resolve to a valid URL", mue);
 		}
 
 		repInfo.setReadable(true);
@@ -303,7 +303,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 	@Override
 	public List<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
@@ -416,7 +416,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 			} catch (StoreException e) {
 				throw new AssertionError(e);
 			}
-			catch (RepositoryConfigException e) {
+			catch (StoreConfigException e) {
 				throw new AssertionError(e);
 			}
 		}

@@ -19,8 +19,8 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Arjohn Kampman
@@ -68,11 +68,11 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 
 	@Override
 	public void validate()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		super.validate();
 		if (url == null) {
-			throw new RepositoryConfigException("No URL specified for HTTP repository");
+			throw new StoreConfigException("No URL specified for HTTP repository");
 		}
 	}
 
@@ -97,7 +97,7 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 
 	@Override
 	public void parse(Model model, Resource implNode)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		super.parse(model, implNode);
 
@@ -121,7 +121,7 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 			}
 		}
 		catch (ModelUtilException e) {
-			throw new RepositoryConfigException(e.getMessage(), e);
+			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
 }

@@ -24,8 +24,8 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
-import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfigBase;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * Holds the JDBC Driver, URL, user and password, as well as the database
@@ -103,12 +103,12 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 
 	@Override
 	public void validate()
-		throws SailConfigException
+		throws StoreConfigException
 	{
 		super.validate();
 
 		if (url == null) {
-			throw new SailConfigException("No URL specified for RdbmsStore");
+			throw new StoreConfigException("No URL specified for RdbmsStore");
 		}
 	}
 
@@ -137,7 +137,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 
 	@Override
 	public void parse(Model model, Resource implNode)
-		throws SailConfigException
+		throws StoreConfigException
 	{
 		super.parse(model, implNode);
 
@@ -177,12 +177,12 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 					setMaxTripleTables(maxTripleTablesLit.intValue());
 				}
 				catch (NumberFormatException e) {
-					throw new SailConfigException("Invalid value for maxTripleTables: " + maxTripleTablesLit);
+					throw new StoreConfigException("Invalid value for maxTripleTables: " + maxTripleTablesLit);
 				}
 			}
 		}
 		catch (ModelUtilException e) {
-			throw new SailConfigException(e.getMessage(), e);
+			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
 }

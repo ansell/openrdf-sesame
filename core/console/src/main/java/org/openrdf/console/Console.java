@@ -72,7 +72,6 @@ import org.openrdf.query.parser.serql.SeRQLUtil;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryInfo;
@@ -92,6 +91,7 @@ import org.openrdf.sail.LockManager;
 import org.openrdf.sail.SailLockedException;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.DirectoryLockManager;
+import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -536,7 +536,7 @@ public class Console {
 			writeln("Connected to " + managerID);
 			return true;
 		}
-		catch (RepositoryConfigException e) {
+		catch (StoreConfigException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to install new manager", e);
 			return false;
@@ -682,7 +682,7 @@ public class Console {
 				writeln("Drop aborted");
 			}
 		}
-		catch (RepositoryConfigException e) {
+		catch (StoreConfigException e) {
 			writeError("Unable to drop repository '" + id + "': " + e.getMessage());
 			logger.warn("Unable to drop repository '" + id + "'", e);
 		}
@@ -736,7 +736,7 @@ public class Console {
 				writeError("Unable to remove lock: " + e1.getMessage());
 			}
 		}
-		catch (RepositoryConfigException e) {
+		catch (StoreConfigException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to open repository", e);
 		}
@@ -818,7 +818,7 @@ public class Console {
 							write(" (\"" + repInfo.getDescription() + "\")");
 						}
 					}
-					catch (RepositoryConfigException e) {
+					catch (StoreConfigException e) {
 						write(" [ERROR: " + e.getMessage() + "]");
 					}
 					writeln();
@@ -826,7 +826,7 @@ public class Console {
 				writeln("+----------");
 			}
 		}
-		catch (RepositoryConfigException e) {
+		catch (StoreConfigException e) {
 			writeError("Failed to get repository list: " + e.getMessage());
 			logger.error("Failed to get repository list", e);
 		}

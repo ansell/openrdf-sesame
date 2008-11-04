@@ -14,6 +14,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Herko ter Horst
@@ -45,10 +46,10 @@ public class SailImplConfigBase implements SailImplConfig {
 	}
 
 	public void validate()
-		throws SailConfigException
+		throws StoreConfigException
 	{
 		if (type == null) {
-			throw new SailConfigException("No type specified for sail implementation");
+			throw new StoreConfigException("No type specified for sail implementation");
 		}
 	}
 
@@ -65,7 +66,7 @@ public class SailImplConfigBase implements SailImplConfig {
 	}
 
 	public void parse(Model model, Resource implNode)
-		throws SailConfigException
+		throws StoreConfigException
 	{
 		try {
 			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, SAILTYPE);
@@ -74,7 +75,7 @@ public class SailImplConfigBase implements SailImplConfig {
 			}
 		}
 		catch (ModelUtilException e) {
-			throw new SailConfigException(e.getMessage(), e);
+			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
 }

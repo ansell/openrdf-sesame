@@ -11,6 +11,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Herko ter Horst
@@ -51,11 +52,11 @@ public class DelegatingSailImplConfigBase extends SailImplConfigBase implements 
 
 	@Override
 	public void validate()
-		throws SailConfigException
+		throws StoreConfigException
 	{
 		super.validate();
 		if (delegate == null) {
-			throw new SailConfigException("No delegate specified for " + getType() + " Sail");
+			throw new StoreConfigException("No delegate specified for " + getType() + " Sail");
 		}
 		delegate.validate();
 	}
@@ -74,7 +75,7 @@ public class DelegatingSailImplConfigBase extends SailImplConfigBase implements 
 
 	@Override
 	public void parse(Model model, Resource implNode)
-		throws SailConfigException
+		throws StoreConfigException
 	{
 		super.parse(model, implNode);
 
@@ -85,7 +86,7 @@ public class DelegatingSailImplConfigBase extends SailImplConfigBase implements 
 			}
 		}
 		catch (ModelUtilException e) {
-			throw new SailConfigException(e.getMessage(), e);
+			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
 }

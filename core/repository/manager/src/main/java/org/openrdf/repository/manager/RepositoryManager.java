@@ -24,10 +24,10 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.model.Model;
 import org.openrdf.model.Value;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.config.RepositoryConfigManager;
 import org.openrdf.repository.manager.templates.ConfigTemplate;
 import org.openrdf.repository.manager.templates.ConfigTemplateManager;
+import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -89,11 +89,11 @@ public abstract class RepositoryManager {
 	/**
 	 * Initializes the repository manager.
 	 * 
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If the manager failed to initialize the SYSTEM repository.
 	 */
 	public abstract void initialize()
-		throws RepositoryConfigException;
+		throws StoreConfigException;
 
 	protected abstract Repository createSystemRepository()
 		throws StoreException;
@@ -101,10 +101,10 @@ public abstract class RepositoryManager {
 	/**
 	 * Gets the SYSTEM repository.
 	 * @throws StoreException 
-	 * @throws RepositoryConfigException 
+	 * @throws StoreConfigException 
 	 */
 	@Deprecated
-	public abstract Repository getSystemRepository() throws StoreException, RepositoryConfigException;
+	public abstract Repository getSystemRepository() throws StoreException, StoreConfigException;
 
 	/**
 	 * Generates an ID for a new repository based on the specified base name. The
@@ -118,10 +118,10 @@ public abstract class RepositoryManager {
 	 *        <tt>null</tt>.
 	 * @return A new repository ID derived from the specified base name.
 	 * @throws StoreException
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 */
 	public String getNewRepositoryID(String baseName)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		if (baseName != null) {
 			// Filter exotic characters from the base name
@@ -168,11 +168,11 @@ public abstract class RepositoryManager {
 
 	/**
 	 * @return
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 * @see org.openrdf.repository.manager.templates.ConfigTemplateManager#getIDs()
 	 */
 	public Set<String> getConfigTemplateIDs()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		return templates.getIDs();
 	}
@@ -180,35 +180,35 @@ public abstract class RepositoryManager {
 	/**
 	 * @param id
 	 * @return
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 * @see org.openrdf.repository.manager.templates.ConfigTemplateManager#getTemplate(java.lang.String)
 	 */
 	public ConfigTemplate getConfigTemplate(String id)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		return templates.getTemplate(id);
 	}
 
 	public Set<String> getRepositoryIDs()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		return configs.getIDs();
 	}
 
 	public boolean hasRepositoryConfig(String repositoryID)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		return configs.getIDs().contains(repositoryID);
 	}
 
 	public boolean hasRepositoryConfig(Model config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		return hasRepositoryConfig(getConfigId(config));
 	}
 
 	public Model getRepositoryConfig(String repositoryID)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		return configs.getConfig(repositoryID);
 	}
@@ -225,14 +225,14 @@ public abstract class RepositoryManager {
 	 *        the system repository.
 	 * @throws StoreException
 	 *         If the manager failed to update it's system repository.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If the manager doesn't know how to update a configuration due to
 	 *         inconsistent configuration data in the system repository. For
 	 *         example, this happens when there are multiple existing
 	 *         configurations with the concerning ID.
 	 */
 	public String addRepositoryConfig(Model config)
-		throws RepositoryConfigException, StoreException
+		throws StoreConfigException, StoreException
 	{
 		String id = getConfigId(config);
 		removeRepositoryConfig(id);
@@ -241,11 +241,11 @@ public abstract class RepositoryManager {
 	}
 
 	String getConfigId(Model config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Set<Value> ids = config.objects(null, REPOSITORYID);
 		if (ids.size() != 1)
-			throw new RepositoryConfigException("Repository ID not found");
+			throw new StoreConfigException("Repository ID not found");
 		String id = ids.iterator().next().stringValue();
 		return id;
 	}
@@ -260,14 +260,14 @@ public abstract class RepositoryManager {
 	 *        The ID of the repository whose configuration needs to be removed.
 	 * @throws StoreException
 	 *         If the manager failed to update it's system repository.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If the manager doesn't know how to remove a configuration due to
 	 *         inconsistent configuration data in the system repository. For
 	 *         example, this happens when there are multiple existing
 	 *         configurations with the concerning ID.
 	 */
 	public boolean removeRepositoryConfig(String repositoryID)
-		throws StoreException, RepositoryConfigException
+		throws StoreException, StoreConfigException
 	{
 		logger.info("Removing repository configuration for {}.", repositoryID);
 		boolean isRemoved = false;
@@ -306,12 +306,12 @@ public abstract class RepositoryManager {
 	 *        A repository ID.
 	 * @return A Repository object, or <tt>null</tt> if no repository was known
 	 *         for the specified ID.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
 	 */
 	public Repository getRepository(String id)
-		throws RepositoryConfigException, StoreException
+		throws StoreConfigException, StoreException
 	{
 		if (SystemRepository.ID.equals(id))
 			return getSystemRepository();
@@ -389,7 +389,7 @@ public abstract class RepositoryManager {
 	 * @see #getInitializedRepositories()
 	 */
 	public Collection<Repository> getAllRepositories()
-		throws RepositoryConfigException, StoreException
+		throws StoreConfigException, StoreException
 	{
 		Set<String> idSet = getRepositoryIDs();
 
@@ -409,12 +409,12 @@ public abstract class RepositoryManager {
 	 *        A repository ID.
 	 * @return The created repository, or <tt>null</tt> if no such repository
 	 *         exists.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
 	 */
 	protected abstract Repository createRepository(String id)
-		throws RepositoryConfigException, StoreException;
+		throws StoreConfigException, StoreException;
 
 	/**
 	 * Gets the repository that is known by the specified ID from this manager.
@@ -427,16 +427,16 @@ public abstract class RepositoryManager {
 	 *         When not able to retrieve existing configurations
 	 */
 	public abstract RepositoryInfo getRepositoryInfo(String id)
-		throws RepositoryConfigException;
+		throws StoreConfigException;
 
 	public Collection<RepositoryInfo> getAllRepositoryInfos()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		return getAllRepositoryInfos(false);
 	}
 
 	public Collection<RepositoryInfo> getAllUserRepositoryInfos()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		return getAllRepositoryInfos(true);
 	}
@@ -448,7 +448,7 @@ public abstract class RepositoryManager {
 	 *         When not able to retrieve existing configurations
 	 */
 	public abstract Collection<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws RepositoryConfigException;
+		throws StoreConfigException;
 
 	/**
 	 * Shuts down all initialized user repositories.
@@ -520,7 +520,7 @@ public abstract class RepositoryManager {
 				logger.debug("Repository {} should not be cleaned up.", repositoryID);
 			}
 		}
-		catch (RepositoryConfigException e) {
+		catch (StoreConfigException e) {
 			logger.warn("Unable to determine if configuration for {} is still present in the system repository",
 					repositoryID);
 		}

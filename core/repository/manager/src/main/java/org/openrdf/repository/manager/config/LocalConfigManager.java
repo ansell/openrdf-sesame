@@ -23,7 +23,6 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.ModelImpl;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -32,6 +31,7 @@ import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.store.StoreConfigException;
 
 public class LocalConfigManager implements RepositoryConfigManager {
 
@@ -72,22 +72,22 @@ public class LocalConfigManager implements RepositoryConfigManager {
 	}
 
 	public Set<String> getIDs()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		return getRdfFiles().keySet();
 	}
 
 	public Model getConfig(String repositoryID)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		File file = getRdfFiles().get(repositoryID);
 		if (file == null) {
-			throw new RepositoryConfigException("No such repository config");
+			throw new StoreConfigException("No such repository config");
 		}
 
 		RDFFormat format = Rio.getParserFormatForFileName(file.getName());
 		if (format == null) {
-			throw new RepositoryConfigException("Unsupported RDF format");
+			throw new StoreConfigException("Unsupported RDF format");
 		}
 
 		try {
@@ -102,7 +102,7 @@ public class LocalConfigManager implements RepositoryConfigManager {
 				return model;
 			}
 			catch (RDFParseException e) {
-				throw new RepositoryConfigException(e);
+				throw new StoreConfigException(e);
 			}
 			catch (RDFHandlerException e) {
 				throw new AssertionError(e);
@@ -112,48 +112,48 @@ public class LocalConfigManager implements RepositoryConfigManager {
 			}
 		}
 		catch (UnsupportedRDFormatException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 		catch (IOException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 	}
 
 	public void addConfig(Model config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		String id = getId(config);
 		if (getRdfFiles().containsKey(id)) {
-			throw new RepositoryConfigException("Repository config already exists");
+			throw new StoreConfigException("Repository config already exists");
 		}
 		File file = new File(baseDir, id + ".ttl");
 		saveConfig(file, config);
 	}
 
 	public void updateConfig(Model config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		File file = getRdfFiles().get(config);
 		if (file == null) {
-			throw new RepositoryConfigException("Repository config does not exist");
+			throw new StoreConfigException("Repository config does not exist");
 		}
 		saveConfig(file, config);
 	}
 
 	public void removeConfig(String repositoryID)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		File file = getRdfFiles().get(repositoryID);
 		if (file == null) {
-			throw new RepositoryConfigException("No such repository config");
+			throw new StoreConfigException("No such repository config");
 		}
 		if (!file.delete()) {
-			throw new RepositoryConfigException("Could not remove config");
+			throw new StoreConfigException("Could not remove config");
 		}
 	}
 
 	private Map<String, File> getRdfFiles()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Map<String, File> map = new HashMap<String, File>();
 		for (File file : baseDir.listFiles()) {
@@ -167,20 +167,20 @@ public class LocalConfigManager implements RepositoryConfigManager {
 	}
 
 	private String getId(Model config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		for (Value value : config.objects(null, REPOSITORYID)) {
 			return value.stringValue();
 		}
-		throw new RepositoryConfigException("No repository id present");
+		throw new StoreConfigException("No repository id present");
 	}
 
 	private void saveConfig(File file, Model config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		RDFFormat format = Rio.getWriterFormatForFileName(file.getName());
 		if (format == null) {
-			throw new RepositoryConfigException("Unsupported RDF format");
+			throw new StoreConfigException("Unsupported RDF format");
 		}
 
 		try {
@@ -195,17 +195,17 @@ public class LocalConfigManager implements RepositoryConfigManager {
 				writer.endRDF();
 			}
 			catch (UnsupportedRDFormatException e) {
-				throw new RepositoryConfigException(e);
+				throw new StoreConfigException(e);
 			}
 			catch (RDFHandlerException e) {
-				throw new RepositoryConfigException(e);
+				throw new StoreConfigException(e);
 			}
 			finally {
 				out.close();
 			}
 		}
 		catch (IOException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 	}
 }
