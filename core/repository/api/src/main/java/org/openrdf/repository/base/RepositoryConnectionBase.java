@@ -525,7 +525,14 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		autoCommit();
 	}
 
-	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+	@Deprecated
+	public final void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws StoreException
+	{
+		removePattern(subject, predicate, object, contexts);
+	}
+
+	public void removePattern(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
@@ -536,7 +543,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void clear(Resource... contexts)
 		throws StoreException
 	{
-		remove(null, null, null, contexts);
+		removePattern(null, null, null, contexts);
 	}
 
 	protected void addWithoutCommit(Statement st, Resource... contexts)

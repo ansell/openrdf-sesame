@@ -34,7 +34,7 @@ public class RemoveStatementsOperation extends StatementOperation {
 	public void execute(RepositoryConnection con)
 		throws StoreException
 	{
-		con.remove(getSubject(), getPredicate(), getObject(), getContexts());
+		con.removePattern(getSubject(), getPredicate(), getObject(), getContexts());
 	}
 
 	@Override

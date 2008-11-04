@@ -320,7 +320,31 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public void exportStatements(Resource subj, URI pred, Value obj, RDFHandler hander, Resource... contexts)
+	@Deprecated
+	public void exportStatements(Resource subj, URI pred, Value obj, RDFHandler handler, Resource... contexts)
+		throws StoreException, RDFHandlerException
+	{
+		exportPattern(subj, pred, obj, handler, contexts);
+	}
+
+	/**
+	 * Exports all statements with a specific subject, predicate and/or object
+	 * from the repository, optionally from the specified contexts.
+	 * 
+	 * @param subj
+	 *        The subject, or null if the subject doesn't matter.
+	 * @param pred
+	 *        The predicate, or null if the predicate doesn't matter.
+	 * @param obj
+	 *        The object, or null if the object doesn't matter.
+	 * @param handler
+	 *        The handler that will handle the RDF data.
+	 * @throws RDFHandlerException
+	 *         If the handler encounters an unrecoverable error.
+	 * @see #getReadContexts()
+	 * @see #isIncludeInferred()
+	 */
+	public void exportPattern(Resource subj, URI pred, Value obj, RDFHandler hander, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
 		if (contexts == null || contexts.length < 1) {
@@ -350,7 +374,33 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
+	@Deprecated
 	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		return match(subj, pred, obj, contexts);
+	}
+
+	/**
+	 * Gets all statements with a specific subject, predicate and/or object from
+	 * the repository. The result is optionally restricted to the specified set
+	 * of named contexts.
+	 * 
+	 * @param subj
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
+	 * @param pred
+	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
+	 * @param obj
+	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
+	 * @return The statements matching the specified pattern. The result object
+	 *         is a {@link RepositoryResult} object, a lazy Iterator-like object
+	 *         containing {@link Statement}s and optionally throwing a
+	 *         {@link StoreException} when an error when a problem occurs
+	 *         during retrieval.
+	 * @see #getReadContexts()
+	 * @see #isIncludeInferred()
+	 */
+	public RepositoryResult<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		if (contexts == null || contexts.length < 1) {
@@ -376,7 +426,29 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
+	@Deprecated
 	public boolean hasStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		return hasMatch(subj, pred, obj, contexts);
+	}
+
+	/**
+	 * Checks whether the repository contains statements with a specific subject,
+	 * predicate and/or object, optionally in the specified contexts.
+	 * 
+	 * @param subj
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
+	 * @param pred
+	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
+	 * @param obj
+	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
+	 * @return true If a matching statement is in the repository in the specified
+	 *         context, false otherwise.
+	 * @see #getReadContexts()
+	 * @see #isIncludeInferred()
+	 */
+	public boolean hasMatch(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		if (contexts == null || contexts.length < 1) {
@@ -539,14 +611,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getRemoveContexts()
 	 */
 	@Override
-	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removePattern(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		if (contexts == null || contexts.length < 1) {
-			super.remove(subject, predicate, object, removeContexts);
+			super.removePattern(subject, predicate, object, removeContexts);
 		}
 		else {
-			super.remove(subject, predicate, object, contexts);
+			super.removePattern(subject, predicate, object, contexts);
 		}
 	}
 
@@ -607,7 +679,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			}
 			throw new AssertionError(e);
 		}
-		getDelegate().remove(subject, predicate, object, contexts);
+		getDelegate().removePattern(subject, predicate, object, contexts);
 	}
 
 	private <Q extends Query> Q initQuery(Q query) {

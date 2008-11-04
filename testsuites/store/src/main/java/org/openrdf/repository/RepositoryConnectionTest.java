@@ -952,12 +952,12 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
 		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
 
-		testCon.remove(bob, name, nameBob);
+		testCon.removePattern(bob, name, nameBob);
 
 		assertFalse(testCon.hasStatement(bob, name, nameBob, false));
 		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
 
-		testCon.remove(alice, null, null);
+		testCon.removePattern(alice, null, null);
 		assertFalse(testCon.hasStatement(alice, name, nameAlice, false));
 		assertTrue(testCon.isEmpty());
 	}
@@ -1347,7 +1347,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		URI root = vf.createURI("urn:root");
 
 		testCon.add(root, RDF.TYPE, RDF.LIST);
-		testCon.remove(root, RDF.TYPE, RDF.LIST);
+		testCon.removePattern(root, RDF.TYPE, RDF.LIST);
 
 		assertTrue(testCon.isEmpty());
 		assertEquals(inferred, getTotalStatementCount(testCon));
@@ -1363,7 +1363,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob, context1);
 		assertEquals(Arrays.asList(context1), testCon.getContextIDs().asList());
 
-		testCon.remove(bob, name, nameBob, context1);
+		testCon.removePattern(bob, name, nameBob, context1);
 		assertEquals(0, testCon.getContextIDs().asList().size());
 		testCon.setAutoCommit(true);
 

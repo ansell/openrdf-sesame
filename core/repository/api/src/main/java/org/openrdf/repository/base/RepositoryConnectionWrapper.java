@@ -363,14 +363,14 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removePattern(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		if (isDelegatingRemove()) {
-			getDelegate().remove(subject, predicate, object, contexts);
+			getDelegate().removePattern(subject, predicate, object, contexts);
 		}
 		else {
-			super.remove(subject, predicate, object, contexts);
+			super.removePattern(subject, predicate, object, contexts);
 		}
 	}
 

@@ -710,7 +710,29 @@ public interface RepositoryConnection {
 	 *         If the statement(s) could not be removed from the repository, for
 	 *         example because the repository is not writable.
 	 */
+	@Deprecated
 	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws StoreException;
+
+	/**
+	 * Removes the statement(s) with the specified subject, predicate and object
+	 * from the repository, optionally restricted to the specified contexts.
+	 * 
+	 * @param subject
+	 *        The statement's subject, or <tt>null</tt> for a wildcard.
+	 * @param predicate
+	 *        The statement's predicate, or <tt>null</tt> for a wildcard.
+	 * @param object
+	 *        The statement's object, or <tt>null</tt> for a wildcard.
+	 * @param contexts
+	 *        The context(s) to remove the data from. Note that this parameter is
+	 *        a vararg and as such is optional. If no contexts are supplied the
+	 *        method operates on the entire repository.
+	 * @throws StoreException
+	 *         If the statement(s) could not be removed from the repository, for
+	 *         example because the repository is not writable.
+	 */
+	public void removePattern(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException;
 
 	/**
