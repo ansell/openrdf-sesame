@@ -130,12 +130,12 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 	}
 
 	@Override
-	public long size(Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
-			return super.size(contexts);
+			return super.size(subj, pred, obj, contexts);
 		}
 		finally {
 			conLock.release();

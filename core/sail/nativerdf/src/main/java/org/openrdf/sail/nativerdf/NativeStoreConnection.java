@@ -203,14 +203,36 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public long size(Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		Lock readLock = nativeStore.getReadLock();
+		ValueStore valueStore = nativeStore.getValueStore();
 
 		try {
+			int subjID = NativeValue.UNKNOWN_ID;
+			if (subj != null) {
+				subjID = valueStore.getID(subj);
+				if (subjID == NativeValue.UNKNOWN_ID) {
+					return 0;
+				}
+			}
+			int predID = NativeValue.UNKNOWN_ID;
+			if (pred != null) {
+				predID = valueStore.getID(pred);
+				if (predID == NativeValue.UNKNOWN_ID) {
+					return 0;
+				}
+			}
+			int objID = NativeValue.UNKNOWN_ID;
+			if (obj != null) {
+				objID = valueStore.getID(obj);
+				if (objID == NativeValue.UNKNOWN_ID) {
+					return 0;
+				}
+			}
 			List<Integer> contextIDs;
 			if (contexts.length == 0) {
 				contextIDs = Arrays.asList(NativeValue.UNKNOWN_ID);
@@ -223,7 +245,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 			for (int contextID : contextIDs) {
 				// Iterate over all explicit statements
-				RecordIterator iter = nativeStore.getTripleStore().getTriples(-1, -1, -1, contextID, true,
+				RecordIterator iter = nativeStore.getTripleStore().getTriples(subjID, predID, objID, contextID, true,
 						transactionActive());
 				try {
 					while (iter.next() != null) {

@@ -325,16 +325,19 @@ public class RdbmsTripleRepository {
 		}
 	}
 
-	public long size(RdbmsResource... ctxs)
+	public long size(RdbmsResource subj, RdbmsURI pred, RdbmsValue obj, RdbmsResource... ctxs)
 		throws SQLException, StoreException
 	{
 		flush();
-		String qry = buildCountQuery(ctxs);
+		SqlQueryBuilder qry = buildCountQuery(subj, pred, obj, ctxs);
 		if (qry == null)
 			return 0;
-		PreparedStatement stmt = conn.prepareStatement(qry);
+		List<?> parameters = qry.findParameters(new ArrayList<Object>());
+		PreparedStatement stmt = conn.prepareStatement(qry.toString());
 		try {
-			setCountQuery(stmt, ctxs);
+			for (int i = 0, n = parameters.size(); i < n; i++) {
+				stmt.setObject(i + 1, parameters.get(i));
+			}
 			ResultSet rs = stmt.executeQuery();
 			try {
 				if (rs.next())
@@ -388,23 +391,35 @@ public class RdbmsTripleRepository {
 		return query.toString();
 	}
 
-	private String buildCountQuery(RdbmsResource... ctxs)
-		throws SQLException
+	private SqlQueryBuilder buildCountQuery(RdbmsResource subj, RdbmsURI pred, RdbmsValue obj, RdbmsResource... ctxs)
+		throws RdbmsException, SQLException
 	{
-		String tableName = statements.getCombinedTableName();
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT COUNT(*) FROM ");
-		sb.append(tableName).append(" t");
+		String tableName = statements.getTableName(vf.getInternalId(pred));
+		SqlQueryBuilder query = factory.createSqlQueryBuilder();
+		query.select().append("COUNT(*)");
+		query.from(tableName, "t");
 		if (ctxs != null && ctxs.length > 0) {
-			sb.append("\nWHERE ");
-			for (int i = 0; i < ctxs.length; i++) {
-				sb.append("t.ctx = ?");
-				if (i < ctxs.length - 1) {
-					sb.append(" OR ");
-				}
+			Number[] ids = new Number[ctxs.length];
+			for (int i = 0; i < ids.length; i++) {
+				ids[i] = vf.getInternalId(ctxs[i]);
+			}
+			query.filter().and().columnIn("t", "ctx", ids);
+		}
+		if (subj != null) {
+			Number id = vf.getInternalId(subj);
+			query.filter().and().columnEquals("t", "subj", id);
+		}
+		if (pred != null) {
+			Number id = vf.getInternalId(pred);
+			if (statements.isPredColumnPresent(id)) {
+				query.filter().and().columnEquals("t", "pred", id);
 			}
 		}
-		return sb.toString();
+		if (obj != null) {
+			Number id = vf.getInternalId(obj);
+			query.filter().and().columnEquals("t", "obj", id);
+		}
+		return query;
 	}
 
 	private String buildDeleteQuery(String tableName, RdbmsResource subj, RdbmsURI pred, RdbmsValue obj,
@@ -521,16 +536,6 @@ public class RdbmsTripleRepository {
 		Number pred = vf.getPredicateId(st.getPredicate());
 		Number obj = vf.getInternalId(st.getObject());
 		manager.insert(ctx, subj, pred, obj);
-	}
-
-	private void setCountQuery(PreparedStatement stmt, RdbmsResource... ctxs)
-		throws SQLException, RdbmsException
-	{
-		if (ctxs != null && ctxs.length > 0) {
-			for (int i = 0; i < ctxs.length; i++) {
-				stmt.setObject(i + 1, vf.getInternalId(ctxs[i]));
-			}
-		}
 	}
 
 	private void setSelectQuery(PreparedStatement stmt, RdbmsResource subj, RdbmsURI pred, RdbmsValue obj,

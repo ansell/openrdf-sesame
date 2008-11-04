@@ -175,11 +175,11 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		return registerCursor(super.getStatements(subj, pred, obj, includeInferred, contexts));
 	}
 
-	public final long size(Resource... contexts)
+	public final long size(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		verifyIsOpen();
-		return super.size(contexts);
+		return super.size(subj, pred, obj, contexts);
 	}
 
 	protected void autoStartTransaction()

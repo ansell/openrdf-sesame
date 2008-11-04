@@ -238,14 +238,14 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public long size(Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
-			Cursor<? extends Statement> iter = getStatements(null, null,
-					null, false, contexts);
+			Cursor<? extends Statement> iter = getStatements(subj, pred,
+					obj, false, contexts);
 
 			try {
 				long size = 0L;
