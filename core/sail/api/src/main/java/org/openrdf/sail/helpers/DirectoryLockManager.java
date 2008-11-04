@@ -131,13 +131,17 @@ public class DirectoryLockManager implements LockManager {
 		try {
 			File lockedFile = new File(lockDir, "locked");
 			RandomAccessFile raf = new RandomAccessFile(lockedFile, "rw");
-			FileLock locked = raf.getChannel().tryLock();
-			if (locked != null) {
-				logger.warn("Removing invalid lock {}", getLockedBy());
-				locked.release();
-				raf.close();
-				revokeLock();
-			} else {
+			try {
+				FileLock locked = raf.getChannel().tryLock();
+				if (locked != null) {
+					logger.warn("Removing invalid lock {}", getLockedBy());
+					locked.release();
+					raf.close();
+					revokeLock();
+				} else {
+					raf.close();
+				}
+			} catch (OverlappingFileLockException exc) {
 				raf.close();
 			}
 		} catch (IOException exc) {
