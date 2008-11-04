@@ -9,7 +9,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 
 import junit.framework.TestCase;
 
@@ -352,7 +354,7 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso2, paints, guernica);
 		con.commit();
 
-		assertEquals("createURI(Sring) and createURI(String, String) should create equal URIs", 1, con.size());
+		assertEquals("createURI(Sring) and createURI(String, String) should create equal URIs", 1, con.size(null, null, null));
 	}
 
 	public void testCreateURI2()
@@ -364,13 +366,13 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso2, paints, guernica);
 		con.commit();
 
-		assertEquals("createURI(Sring) and createURI(String, String) should create equal URIs", 1, con.size());
+		assertEquals("createURI(Sring) and createURI(String, String) should create equal URIs", 1, con.size(null, null, null));
 	}
 
 	public void testSize()
 		throws Exception
 	{
-		assertEquals("Size of empty repository should be 0", 0, con.size());
+		assertEmpty(con);
 
 		// Add some data to the repository
 		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
@@ -380,16 +382,37 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso, paints, guernica, context1);
 		con.commit();
 
-		assertEquals("Size of repository should be 5", 5, con.size());
-		assertEquals("Size of named context should be 3", 3, con.size(context1));
+		assertEquals(5, con.size(null, null, null));
+		assertEquals(3, con.size(null, null, null, context1));
+		assertEquals(4, con.size(null, RDF.TYPE, null));
+		assertEquals(1, con.size(null, paints, null));
+		assertEquals(2, con.size(picasso, null, null));
 
 		URI unknownContext = new URIImpl(EXAMPLE_NS + "unknown");
 
-		assertEquals("Size of unknown context should be 0", 0, con.size(unknownContext));
+		assertEquals(0, con.size(null, null, null, unknownContext));
+		assertEquals(0, con.size(null, picasso, null));
 
 		URIImpl uriImplContext1 = new URIImpl(context1.toString());
 
-		assertEquals("Size of named context (defined as URIImpl) should be 3", 3, con.size(uriImplContext1));
+		assertEquals(3, con.size(null, null, null, uriImplContext1));
+	}
+
+	private void assertEmpty(SailConnection con)
+		throws StoreException
+	{
+		URI unknownContext = new URIImpl(EXAMPLE_NS + "unknown");
+		for (Resource subj : Arrays.asList(null, picasso)) {
+			for (URI pred : Arrays.asList(null, paints, RDF.TYPE)) {
+				for (Value obj : Arrays.asList(null, guernica)) {
+					for (Resource[] ctx : Arrays.asList(new Resource[0], new Resource[] { context1 },
+							new Resource[] { unknownContext }))
+					{
+						assertEquals(0, con.size(subj, pred, obj, ctx));
+					}
+				}
+			}
+		}
 	}
 
 	public void testAddData()
@@ -630,6 +653,7 @@ public abstract class RDFStoreTest extends TestCase {
 	}
 
 	public void testMultiThreadedAccess() {
+		final CountDownLatch latch = new CountDownLatch(1);
 
 		Runnable runnable = new Runnable() {
 
@@ -639,6 +663,8 @@ public abstract class RDFStoreTest extends TestCase {
 				assertTrue(sharedCon != null);
 
 				try {
+					latch.countDown();
+					latch.await();
 					sharedCon.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 					sharedCon.commit();
 
@@ -694,6 +720,8 @@ public abstract class RDFStoreTest extends TestCase {
 		newThread.start();
 
 		try {
+			latch.countDown();
+			latch.await();
 			con.addStatement(picasso, RDF.TYPE, painter);
 			con.commit();
 			// let this thread sleep to enable other thread to finish its business.
@@ -880,15 +908,15 @@ public abstract class RDFStoreTest extends TestCase {
 		throws Exception
 	{
 		con.addStatement(RDF.VALUE, RDF.VALUE, RDF.VALUE);
-		assertEquals(1, con.size());
+		assertEquals(1, con.size(null, null, null));
 		BNode b1 = vf.createBNode();
 		con.addStatement(b1, RDF.VALUE, b1);
 		con.removeStatements(b1, RDF.VALUE, b1);
-		assertEquals(1, con.size());
+		assertEquals(1, con.size(null, null, null));
 		BNode b2 = vf.createBNode();
 		con.addStatement(b2, RDF.VALUE, b2);
 		con.addStatement(b1, RDF.VALUE, b1);
-		assertEquals(3, con.size());
+		assertEquals(3, con.size(null, null, null));
 	}
 
 	private <T> T first(Cursor<T> iter)

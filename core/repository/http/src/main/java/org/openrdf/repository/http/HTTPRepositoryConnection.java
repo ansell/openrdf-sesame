@@ -199,14 +199,25 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
-	public long size(Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		try {
-			return getRepository().getHTTPClient().size(contexts);
+			// TODO support size pattern in protocol
+			if (subj == pred && pred == obj && obj == null) {
+				return getRepository().getHTTPClient().size(contexts);
+			} else {
+				StatementCollector collector = new StatementCollector();
+				exportStatements(subj, pred, obj, false, collector, contexts);
+				return collector.getStatements().size();
+			}
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
+		}
+		catch (RDFHandlerException e) {
+			// found a bug in StatementCollector?
+			throw new RuntimeException(e);
 		}
 	}
 

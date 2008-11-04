@@ -112,11 +112,22 @@ public interface SailConnection {
 		throws StoreException;
 
 	/**
-	 * Returns the number of (explicit) statements.
+	 * Returns the number of (explicit) statements patching the pattern.
 	 * 
+	 * @param subj
+	 *        A Resource specifying the subject, or <tt>null</tt> for a
+	 *        wildcard.
+	 * @param pred
+	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
+	 * @param obj
+	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
+	 * @param contexts
+	 *        The context(s) to get the data from. Note that this parameter is a
+	 *        vararg and as such is optional. If no contexts are supplied the
+	 *        method operates on the entire repository.
 	 * @return The number of explicit statements in this Sail.
 	 */
-	public long size(Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException;
 
 	/**

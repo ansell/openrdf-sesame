@@ -232,11 +232,14 @@ public class RdbmsConnection extends SailConnectionBase {
 		namespaces.setPrefix(prefix, name);
 	}
 
-	public long size(Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		try {
-			return triples.size(vf.asRdbmsResource(contexts));
+			RdbmsResource s = vf.asRdbmsResource(subj);
+			RdbmsURI p = vf.asRdbmsURI(pred);
+			RdbmsValue o = vf.asRdbmsValue(obj);
+			return triples.size(s, p, o, vf.asRdbmsResource(contexts));
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);

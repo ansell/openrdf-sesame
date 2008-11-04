@@ -407,17 +407,31 @@ public interface RepositoryConnection {
 		throws StoreException, RDFHandlerException;
 
 	/**
-	 * Returns the number of (explicit) statements that are in the specified
-	 * contexts in this repository.
+	 * Returns the number of (explicit) statements that are in this repository.
 	 * 
+	 * @return The number of explicit statements in this repository.
+	 */
+	public long size()
+		throws StoreException;
+
+	/**
+	 * Returns the number of (explicit) statements that match in the specified
+	 * pattern in this repository.
+	 * 
+	 * @param subj
+	 *        The subject, or null if the subject doesn't matter.
+	 * @param pred
+	 *        The predicate, or null if the predicate doesn't matter.
+	 * @param obj
+	 *        The object, or null if the object doesn't matter.
 	 * @param contexts
 	 *        The context(s) to get the data from. Note that this parameter is a
 	 *        vararg and as such is optional. If no contexts are supplied the
-	 *        method operates on the entire repository.
-	 * @return The number of explicit statements from the specified contexts in
+	 *        method matches the pattern on the entire repository.
+	 * @return The number of explicit statements from the specified pattern in
 	 *         this repository.
 	 */
-	public long size(Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException;
 
 	/**

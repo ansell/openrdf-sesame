@@ -418,10 +418,10 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().setNamespace(prefix, name);
 	}
 
-	public long size(Resource... contexts)
+	public long size(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		return getDelegate().size(contexts);
+		return getDelegate().size(subject, predicate, object, contexts);
 	}
 
 	@Override
@@ -435,7 +435,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		super.remove(subject, predicate, object, contexts);
+		super.removePattern(subject, predicate, object, contexts);
 	}
 
 	/**

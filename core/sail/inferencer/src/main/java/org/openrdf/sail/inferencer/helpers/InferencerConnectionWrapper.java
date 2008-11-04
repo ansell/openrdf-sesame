@@ -134,10 +134,10 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * connection.
 	 */
 	@Override
-	public long size(Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		flushUpdates();
-		return super.size(contexts);
+		return super.size(subj, pred, obj, contexts);
 	}
 }
