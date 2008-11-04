@@ -6,6 +6,7 @@
 package org.openrdf.sail.config;
 
 import org.openrdf.sail.Sail;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * A SailFactory takes care of creating and initializing a specific type of
@@ -34,10 +35,10 @@ public interface SailFactory {
 	 * @param config TODO
 	 * 
 	 * @return The created (but un-initialized) Sail.
-	 * @throws SailConfigException
+	 * @throws StoreConfigException
 	 *         If no Sail could be created due to invalid or incomplete
 	 *         configuration data.
 	 */
 	public Sail getSail(SailImplConfig config)
-		throws SailConfigException;
+		throws StoreConfigException;
 }

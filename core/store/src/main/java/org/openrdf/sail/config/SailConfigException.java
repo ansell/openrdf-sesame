@@ -12,7 +12,7 @@ import org.openrdf.OpenRDFException;
  * 
  * @author Arjohn Kampman
  */
-public class SailConfigException extends OpenRDFException {
+public abstract class SailConfigException extends OpenRDFException {
 
 	private static final long serialVersionUID = 185213210952981723L;
 

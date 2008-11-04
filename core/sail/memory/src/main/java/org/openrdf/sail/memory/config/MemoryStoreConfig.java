@@ -14,8 +14,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
-import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfigBase;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Arjohn Kampman
@@ -75,7 +75,7 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 
 	@Override
 	public void parse(Model model, Resource implNode)
-		throws SailConfigException
+		throws StoreConfigException
 	{
 		super.parse(model, implNode);
 
@@ -86,7 +86,7 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 					setPersist((persistValue).booleanValue());
 				}
 				catch (IllegalArgumentException e) {
-					throw new SailConfigException("Boolean value required for " + PERSIST + " property, found "
+					throw new StoreConfigException("Boolean value required for " + PERSIST + " property, found "
 							+ persistValue);
 				}
 			}
@@ -97,13 +97,13 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 					setSyncDelay((syncDelayValue).longValue());
 				}
 				catch (NumberFormatException e) {
-					throw new SailConfigException("Long integer value required for " + SYNC_DELAY
+					throw new StoreConfigException("Long integer value required for " + SYNC_DELAY
 							+ " property, found " + syncDelayValue);
 				}
 			}
 		}
 		catch (ModelUtilException e) {
-			throw new SailConfigException(e.getMessage(), e);
+			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
 }

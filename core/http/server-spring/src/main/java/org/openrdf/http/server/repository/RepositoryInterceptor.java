@@ -15,13 +15,13 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.server.ClientHTTPException;
-import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.ProtocolUtil;
+import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.ServerInterceptor;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -115,7 +115,7 @@ public class RepositoryInterceptor extends ServerInterceptor {
 				request.setAttribute(REPOSITORY_KEY, repository);
 				request.setAttribute(REPOSITORY_CONNECTION_KEY, repositoryCon);
 			}
-			catch (RepositoryConfigException e) {
+			catch (StoreConfigException e) {
 				throw new ServerHTTPException(e.getMessage(), e);
 			}
 			catch (StoreException e) {

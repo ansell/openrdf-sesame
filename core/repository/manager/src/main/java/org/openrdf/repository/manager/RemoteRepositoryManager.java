@@ -20,10 +20,10 @@ import org.openrdf.model.util.LiteralUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.repository.manager.config.SystemConfigManager;
 import org.openrdf.repository.manager.templates.LocalTemplateManager;
+import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -44,7 +44,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * server URL.
 	 */
 	public static RemoteRepositoryManager getInstance(String serverURL)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		RemoteRepositoryManager manager = new RemoteRepositoryManager(serverURL);
 		manager.initialize();
@@ -56,7 +56,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * server URL and credentials.
 	 */
 	public static RemoteRepositoryManager getInstance(String serverURL, String username, String password)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		RemoteRepositoryManager manager = new RemoteRepositoryManager(serverURL);
 		manager.setUsernameAndPassword(username, password);
@@ -104,7 +104,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 *         If the manager failed to initialize the SYSTEM repository.
 	 */
 	public void initialize()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		LocalTemplateManager templates = new LocalTemplateManager();
 		templates.init();
@@ -118,7 +118,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 			}
 		}
 		catch (StoreException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 	}
 
@@ -180,13 +180,13 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 *        A repository ID.
 	 * @return The created repository, or <tt>null</tt> if no such repository
 	 *         exists.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
 	 */
 	@Override
 	protected Repository createRepository(String id)
-		throws RepositoryConfigException, StoreException
+		throws StoreConfigException, StoreException
 	{
 		HTTPRepository result = null;
 
@@ -201,7 +201,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		for (RepositoryInfo repInfo : getAllRepositoryInfos()) {
 			if (repInfo.getId().equals(id)) {
@@ -214,7 +214,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 	@Override
 	public Collection<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
@@ -258,15 +258,15 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		}
 		catch (IOException ioe) {
 			logger.warn("Unable to retrieve list of repositories", ioe);
-			throw new RepositoryConfigException(ioe);
+			throw new StoreConfigException(ioe);
 		}
 		catch (UnauthorizedException ue) {
 			logger.warn("Not authorized to retrieve list of repositories", ue);
-			throw new RepositoryConfigException(ue);
+			throw new StoreConfigException(ue);
 		}
 		catch (StoreException re) {
 			logger.warn("Unable to retrieve list of repositories", re);
-			throw new RepositoryConfigException(re);
+			throw new StoreConfigException(re);
 		}
 
 		return result;

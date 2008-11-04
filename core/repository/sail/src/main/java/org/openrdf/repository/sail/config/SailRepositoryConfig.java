@@ -13,12 +13,11 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
-import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.config.SailRegistry;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Arjohn Kampman
@@ -46,19 +45,14 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 
 	@Override
 	public void validate()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		super.validate();
 		if (sailImplConfig == null) {
-			throw new RepositoryConfigException("No Sail implementation specified for Sail repository");
+			throw new StoreConfigException("No Sail implementation specified for Sail repository");
 		}
 
-		try {
-			sailImplConfig.validate();
-		}
-		catch (SailConfigException e) {
-			throw new RepositoryConfigException(e.getMessage(), e);
-		}
+		sailImplConfig.validate();
 	}
 
 	@Override
@@ -75,7 +69,7 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 
 	@Override
 	public void parse(Model model, Resource repImplNode)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		try {
 			Resource sailImplNode = ModelUtil.getOptionalObjectResource(model, repImplNode, SAILIMPL);
@@ -87,7 +81,7 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 					SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
 
 					if (factory == null) {
-						throw new RepositoryConfigException("Unsupported Sail type: " + typeLit.getLabel());
+						throw new StoreConfigException("Unsupported Sail type: " + typeLit.getLabel());
 					}
 
 					sailImplConfig = factory.getConfig();
@@ -96,10 +90,7 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 			}
 		}
 		catch (ModelUtilException e) {
-			throw new RepositoryConfigException(e.getMessage(), e);
-		}
-		catch (SailConfigException e) {
-			throw new RepositoryConfigException(e.getMessage(), e);
+			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
 }

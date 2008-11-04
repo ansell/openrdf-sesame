@@ -5,14 +5,14 @@
  */
 package org.openrdf.repository.config;
 
-import org.openrdf.OpenRDFException;
+import org.openrdf.sail.config.SailConfigException;
 
 /**
  * Exception indicating a repository configuration problem.
  * 
  * @author Arjohn Kampman
  */
-public class RepositoryConfigException extends OpenRDFException {
+public abstract class RepositoryConfigException extends SailConfigException {
 
 	private static final long serialVersionUID = -6643040675968955429L;
 

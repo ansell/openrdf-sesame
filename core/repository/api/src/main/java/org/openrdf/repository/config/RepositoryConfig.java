@@ -20,6 +20,7 @@ import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Arjohn Kampman
@@ -95,21 +96,21 @@ public class RepositoryConfig {
 	}
 
 	/**
-	 * Validates this configuration. A {@link RepositoryConfigException} is
+	 * Validates this configuration. A {@link StoreConfigException} is
 	 * thrown when the configuration is invalid. The exception should contain an
 	 * error message that indicates why the configuration is invalid.
 	 * 
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If the configuration is invalid.
 	 */
 	public void validate()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		if (id == null) {
-			throw new RepositoryConfigException("Repository ID missing");
+			throw new StoreConfigException("Repository ID missing");
 		}
 		if (implConfig == null) {
-			throw new RepositoryConfigException("Repository implementation for repository missing");
+			throw new StoreConfigException("Repository implementation for repository missing");
 		}
 		implConfig.validate();
 	}
@@ -135,7 +136,7 @@ public class RepositoryConfig {
 	}
 
 	public void parse(Model model, Resource repositoryNode)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		try {
 			Literal idLit = ModelUtil.getOptionalObjectLiteral(model, repositoryNode, REPOSITORYID);
@@ -159,7 +160,7 @@ public class RepositoryConfig {
 			}
 		}
 		catch (ModelUtilException e) {
-			throw new RepositoryConfigException(e.getMessage(), e);
+			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
 
@@ -171,10 +172,10 @@ public class RepositoryConfig {
 	 * @param model
 	 * @param repositoryNode
 	 * @return
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 */
 	public static RepositoryConfig create(Model model, Resource repositoryNode)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		RepositoryConfig config = new RepositoryConfig();
 		config.parse(model, repositoryNode);

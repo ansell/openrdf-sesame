@@ -10,11 +10,12 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.store.StoreConfigException;
 
 public class SailConfigUtil {
 
 	public static SailImplConfig parseRepositoryImpl(Model model, Resource implNode)
-		throws SailConfigException
+		throws StoreConfigException
 	{
 		try {
 			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, SailConfigSchema.SAILTYPE);
@@ -28,14 +29,14 @@ public class SailConfigUtil {
 					return implConfig;
 				}
 				else {
-					throw new SailConfigException("Unsupported Sail type: " + typeLit.getLabel());
+					throw new StoreConfigException("Unsupported Sail type: " + typeLit.getLabel());
 				}
 			}
 
 			return null;
 		}
 		catch (ModelUtilException e) {
-			throw new SailConfigException(e.getMessage(), e);
+			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
 }

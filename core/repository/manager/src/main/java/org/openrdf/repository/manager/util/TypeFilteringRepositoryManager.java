@@ -21,10 +21,10 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfig;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.repository.manager.SystemRepository;
+import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -47,7 +47,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public void initialize()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		delegate.initialize();
 	}
@@ -66,20 +66,20 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	public Repository getSystemRepository() throws StoreException, RepositoryConfigException {
+	public Repository getSystemRepository() throws StoreException, StoreConfigException {
 		return delegate.getSystemRepository();
 	}
 
 	@Override
 	public String getNewRepositoryID(String baseName)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		return delegate.getNewRepositoryID(baseName);
 	}
 
 	@Override
 	public Set<String> getRepositoryIDs()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Set<String> result = new LinkedHashSet<String>();
 
@@ -94,7 +94,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public boolean hasRepositoryConfig(String repositoryID)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		boolean result = false;
 
@@ -107,7 +107,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public Model getRepositoryConfig(String repositoryID)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Model result = delegate.getRepositoryConfig(repositoryID);
 
@@ -127,7 +127,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public String addRepositoryConfig(Model config)
-		throws RepositoryConfigException, StoreException
+		throws StoreConfigException, StoreException
 	{
 		if (isCorrectType(config)) {
 			return delegate.addRepositoryConfig(config);
@@ -140,7 +140,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public boolean removeRepositoryConfig(String repositoryID)
-		throws RepositoryConfigException, StoreException
+		throws StoreConfigException, StoreException
 	{
 		boolean result = false;
 
@@ -153,7 +153,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public Repository getRepository(String id)
-		throws RepositoryConfigException, StoreException
+		throws StoreConfigException, StoreException
 	{
 		Repository result = null;
 
@@ -174,7 +174,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 					result.add(id);
 				}
 			}
-			catch (RepositoryConfigException e) {
+			catch (StoreConfigException e) {
 				logger.error("Failed to verify repository type", e);
 			}
 		}
@@ -194,7 +194,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 					result.add(repository);
 				}
 			}
-			catch (RepositoryConfigException e) {
+			catch (StoreConfigException e) {
 				logger.error("Failed to verify repository type", e);
 			}
 			catch (StoreException e) {
@@ -207,7 +207,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	protected Repository createRepository(String id)
-		throws RepositoryConfigException, StoreException
+		throws StoreConfigException, StoreException
 	{
 		throw new UnsupportedOperationException(
 				"Repositories cannot be created through this wrapper. This method should not have been called, the delegate should take care of it.");
@@ -215,7 +215,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public Collection<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
@@ -230,7 +230,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		if (isCorrectType(id)) {
 			return delegate.getRepositoryInfo(id);
@@ -258,7 +258,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	protected boolean isCorrectType(String repositoryID)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		// first, check for SystemRepository, because we can't get a repository
 		// config object for it
@@ -269,7 +269,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 		return result;
 	}
 
-	protected boolean isCorrectType(Model repositoryConfig) throws RepositoryConfigException {
+	protected boolean isCorrectType(Model repositoryConfig) throws StoreConfigException {
 		boolean result = false;
 
 		if (repositoryConfig != null) {
@@ -280,7 +280,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	private RepositoryConfig parse(Model config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Resource repositoryNode = config.subjects(RDF.TYPE, REPOSITORY).iterator().next();
 		RepositoryConfig repConfig = RepositoryConfig.create(config, repositoryNode);

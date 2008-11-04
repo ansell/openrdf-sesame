@@ -6,10 +6,10 @@
 package org.openrdf.repository.dataset.config;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.dataset.DatasetRepository;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * A {@link RepositoryFactory} that creates {@link DatasetRepository}s based on
@@ -38,12 +38,12 @@ public class DatasetRepositoryFactory implements RepositoryFactory {
 	}
 
 	public Repository getRepository(RepositoryImplConfig config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		if (config instanceof DatasetRepositoryConfig) {
 			return new DatasetRepository();
 		}
 
-		throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());
+		throw new StoreConfigException("Invalid configuration class: " + config.getClass());
 	}
 }

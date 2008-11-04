@@ -14,6 +14,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Herko ter Horst
@@ -45,10 +46,10 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 	}
 
 	public void validate()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		if (type == null) {
-			throw new RepositoryConfigException("No type specified for repository implementation");
+			throw new StoreConfigException("No type specified for repository implementation");
 		}
 	}
 
@@ -65,7 +66,7 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 	}
 
 	public void parse(Model model, Resource implNode)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		try {
 			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, REPOSITORYTYPE);
@@ -74,12 +75,12 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 			}
 		}
 		catch (ModelUtilException e) {
-			throw new RepositoryConfigException(e.getMessage(), e);
+			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
 
 	public static RepositoryImplConfig create(Model model, Resource implNode)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		try {
 			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, REPOSITORYTYPE);
@@ -88,7 +89,7 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 				RepositoryFactory factory = RepositoryRegistry.getInstance().get(typeLit.getLabel());
 
 				if (factory == null) {
-					throw new RepositoryConfigException("Unsupported repository type: " + typeLit.getLabel());
+					throw new StoreConfigException("Unsupported repository type: " + typeLit.getLabel());
 				}
 
 				RepositoryImplConfig implConfig = factory.getConfig();
@@ -99,7 +100,7 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 			return null;
 		}
 		catch (ModelUtilException e) {
-			throw new RepositoryConfigException(e.getMessage(), e);
+			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
 }

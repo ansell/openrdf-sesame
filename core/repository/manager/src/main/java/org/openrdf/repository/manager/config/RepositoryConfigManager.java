@@ -10,7 +10,7 @@ import java.net.URL;
 import java.util.Set;
 
 import org.openrdf.model.Model;
-import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.store.StoreConfigException;
 
 /**
  *
@@ -27,10 +27,10 @@ public interface RepositoryConfigManager {
 		throws MalformedURLException;
 
 	Set<String> getIDs()
-		throws RepositoryConfigException;
+		throws StoreConfigException;
 
 	Model getConfig(String repositoryID)
-		throws RepositoryConfigException;
+		throws StoreConfigException;
 
 	/**
 	 * Adds the configuration of a repository to the manager's system
@@ -42,14 +42,14 @@ public interface RepositoryConfigManager {
 	 * @param config
 	 *        The repository configuration that should be added to or updated in
 	 *        the system repository.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If the manager doesn't know how to update a configuration due to
 	 *         inconsistent configuration data in the system repository. For
 	 *         example, this happens when there are multiple existing
 	 *         configurations with the concerning ID.
 	 */
 	void addConfig(Model config)
-		throws RepositoryConfigException;
+		throws StoreConfigException;
 
 	/**
 	 * Updates the configuration of a repository to the manager's system
@@ -61,14 +61,14 @@ public interface RepositoryConfigManager {
 	 * @param config
 	 *        The repository configuration that should be added to or updated in
 	 *        the system repository.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If the manager doesn't know how to update a configuration due to
 	 *         inconsistent configuration data in the system repository. For
 	 *         example, this happens when there are multiple existing
 	 *         configurations with the concerning ID.
 	 */
 	void updateConfig(Model config)
-		throws RepositoryConfigException;
+		throws StoreConfigException;
 
 	/**
 	 * Removes the configuration for the specified repository from the manager's
@@ -78,13 +78,13 @@ public interface RepositoryConfigManager {
 	 * 
 	 * @param repositoryID
 	 *        The ID of the repository whose configuration needs to be removed.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 *         If the manager doesn't know how to remove a configuration due to
 	 *         inconsistent configuration data in the system repository. For
 	 *         example, this happens when there are multiple existing
 	 *         configurations with the concerning ID.
 	 */
 	void removeConfig(String repositoryID)
-		throws RepositoryConfigException;
+		throws StoreConfigException;
 
 }

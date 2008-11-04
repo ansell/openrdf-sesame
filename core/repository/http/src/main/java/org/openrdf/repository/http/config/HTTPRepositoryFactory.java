@@ -6,10 +6,10 @@
 package org.openrdf.repository.http.config;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.http.HTTPRepository;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * A {@link RepositoryFactory} that creates {@link HTTPRepository}s based on
@@ -38,7 +38,7 @@ public class HTTPRepositoryFactory implements RepositoryFactory {
 	}
 
 	public Repository getRepository(RepositoryImplConfig config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		HTTPRepository result = null;
 		
@@ -48,7 +48,7 @@ public class HTTPRepositoryFactory implements RepositoryFactory {
 //			result.setUsernameAndPassword(httpConfig.getUsername(), httpConfig.getPassword());
 		}
 		else {
-			throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());
+			throw new StoreConfigException("Invalid configuration class: " + config.getClass());
 		}
 		return result;
 	}

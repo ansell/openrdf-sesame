@@ -27,10 +27,10 @@ import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.sail.LockManager;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.DirectoryLockManager;
+import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 public class SystemConfigManager implements RepositoryConfigManager {
@@ -87,7 +87,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	}
 
 	public Set<String> getIDs()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Model model = getSystemModel();
 		Set<String> ids = new HashSet<String>();
@@ -98,7 +98,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	}
 
 	public Model getConfig(String repositoryID)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Model model = getSystemModel();
 		Literal id = vf.createLiteral(repositoryID);
@@ -106,7 +106,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 			Resource context = idStatement.getContext();
 
 			if (context == null) {
-				throw new RepositoryConfigException("No configuration context for repository " + repositoryID);
+				throw new StoreConfigException("No configuration context for repository " + repositoryID);
 			}
 
 			return model.filter(null, null, null, context);
@@ -115,7 +115,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	}
 
 	public void addConfig(Model config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Model model = new ModelImpl();
 		Resource context = vf.createBNode();
@@ -128,7 +128,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	}
 
 	public void updateConfig(Model config)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		for (Value value : config.objects(null, REPOSITORYID)) {
 			removeConfig(value.stringValue());
@@ -143,7 +143,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	}
 
 	public void removeConfig(String repositoryID)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		logger.info("Removing repository configuration for {}.", repositoryID);
 		boolean isRemoved = false;
@@ -158,14 +158,14 @@ public class SystemConfigManager implements RepositoryConfigManager {
 			}
 
 		if (!isRemoved)
-			throw new RepositoryConfigException("No such repository config");
+			throw new StoreConfigException("No such repository config");
 	}
 
 	/**
 	 * Gets the SYSTEM model.
 	 */
 	private Model getSystemModel()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Repository system = getSystemRepository();
 		try {
@@ -178,7 +178,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 			}
 		}
 		catch (StoreException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 	}
 
@@ -186,7 +186,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	 * Save the SYSTEM model.
 	 */
 	private void addSystemModel(Model model)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Repository systemRepo = getSystemRepository();
 		try {
@@ -208,10 +208,10 @@ public class SystemConfigManager implements RepositoryConfigManager {
 			}
 		}
 		catch (IOException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 		catch (StoreException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 	}
 
@@ -219,7 +219,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	 * Clear the SYSTEM model.
 	 */
 	private void clearSystemModel(Resource context)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		Repository systemRepo = getSystemRepository();
 		try {
@@ -241,10 +241,10 @@ public class SystemConfigManager implements RepositoryConfigManager {
 			}
 		}
 		catch (IOException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 		catch (StoreException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 	}
 

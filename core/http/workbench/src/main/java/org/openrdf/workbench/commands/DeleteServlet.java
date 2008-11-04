@@ -9,8 +9,8 @@ import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryInfo;
+import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -40,13 +40,13 @@ public class DeleteServlet extends TransformationServlet {
 		resp.sendRedirect("../");
 	}
 
-	private void dropRepository(String id) throws RepositoryConfigException, StoreException {
+	private void dropRepository(String id) throws StoreConfigException, StoreException {
 		manager.removeRepositoryConfig(id);
 	}
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws RepositoryConfigException {
+			throws StoreConfigException {
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "delete.xsl");
 		builder.start("readable", "writeable", "id", "description", "location");

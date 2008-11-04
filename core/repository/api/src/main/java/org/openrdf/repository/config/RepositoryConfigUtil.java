@@ -22,6 +22,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 public class RepositoryConfigUtil {
@@ -68,10 +69,10 @@ public class RepositoryConfigUtil {
 	 * @throws StoreException
 	 *         if an error occurred while trying to retrieve information from the
 	 *         (system) repository
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 */
 	public static boolean hasRepositoryConfig(Repository repository, String repositoryID)
-		throws StoreException, RepositoryConfigException
+		throws StoreException, StoreConfigException
 	{
 		RepositoryConnection con = repository.getConnection();
 		try {
@@ -83,7 +84,7 @@ public class RepositoryConfigUtil {
 	}
 
 	public static RepositoryConfig getRepositoryConfig(Repository repository, String repositoryID)
-		throws RepositoryConfigException, StoreException
+		throws StoreConfigException, StoreException
 	{
 		RepositoryConnection con = repository.getConnection();
 		try {
@@ -125,10 +126,10 @@ public class RepositoryConfigUtil {
 	 * @throws StoreException
 	 *         When access to the Repository's RepositoryConnection causes a
 	 *         StoreException.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 */
 	public static void updateRepositoryConfigs(Repository repository, RepositoryConfig... configs)
-		throws StoreException, RepositoryConfigException
+		throws StoreException, StoreConfigException
 	{
 		RepositoryConnection con = repository.getConnection();
 
@@ -156,10 +157,10 @@ public class RepositoryConfigUtil {
 	 *        Repository will be cleared before the RepositoryConfig is added.
 	 * 
 	 * @throws StoreException
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 */
 	public static void updateRepositoryConfigs(RepositoryConnection con, RepositoryConfig... configs)
-		throws StoreException, RepositoryConfigException
+		throws StoreException, StoreConfigException
 	{
 		ValueFactory vf = con.getValueFactory();
 
@@ -199,10 +200,10 @@ public class RepositoryConfigUtil {
 	 * @throws StoreException
 	 *         Whenever access to the Repository's RepositoryConnection causes a
 	 *         StoreException.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 */
 	public static boolean removeRepositoryConfigs(Repository repository, String... repositoryIDs)
-		throws StoreException, RepositoryConfigException
+		throws StoreException, StoreConfigException
 	{
 		boolean changed = false;
 
@@ -229,7 +230,7 @@ public class RepositoryConfigUtil {
 	}
 
 	public static Resource getContext(RepositoryConnection con, String repositoryID)
-		throws StoreException, RepositoryConfigException
+		throws StoreException, StoreConfigException
 	{
 		Resource context = null;
 
@@ -242,7 +243,7 @@ public class RepositoryConfigUtil {
 	}
 
 	private static Statement getIDStatement(RepositoryConnection con, String repositoryID)
-		throws StoreException, RepositoryConfigException
+		throws StoreException, StoreConfigException
 	{
 		Literal idLiteral = con.getValueFactory().createLiteral(repositoryID);
 		List<Statement> idStatementList = con.getStatements(null, REPOSITORYID, idLiteral, true).asList();
@@ -254,7 +255,7 @@ public class RepositoryConfigUtil {
 			return null;
 		}
 		else {
-			throw new RepositoryConfigException("Multiple ID-statements for repository ID " + repositoryID);
+			throw new StoreConfigException("Multiple ID-statements for repository ID " + repositoryID);
 		}
 	}
 }

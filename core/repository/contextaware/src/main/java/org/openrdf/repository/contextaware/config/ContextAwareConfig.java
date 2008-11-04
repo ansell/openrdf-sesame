@@ -26,8 +26,8 @@ import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.config.DelegatingRepositoryImplConfigBase;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * @author James Leigh
@@ -180,7 +180,7 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 
 	@Override
 	public void parse(Model model, Resource implNode)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		super.parse(model, implNode);
 
@@ -211,10 +211,10 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 			setArchiveContexts(objects.toArray(new URI[objects.size()]));
 		}
 		catch (ModelUtilException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 		catch (ArrayStoreException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 	}
 }

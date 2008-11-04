@@ -31,7 +31,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -39,6 +38,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.store.StoreConfigException;
 
 /**
  * @author james
@@ -71,7 +71,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	}
 
 	public void init()
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		if (cl == null) {
 			cl = Thread.currentThread().getContextClassLoader();
@@ -83,7 +83,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 			}
 		}
 		catch (IOException e) {
-			throw new RepositoryConfigException(e);
+			throw new StoreConfigException(e);
 		}
 	}
 
@@ -102,14 +102,14 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	 *        The service that should be added to the registry.
 	 * @return The previous service that was registered for the same key, or
 	 *         <tt>null</tt> if there was no such service.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 */
 	public void addTemplate(ConfigTemplate service)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		String id = service.getID();
 		if (services.containsKey(id)) {
-			throw new RepositoryConfigException("Template already exists");
+			throw new StoreConfigException("Template already exists");
 		}
 		services.put(id, service);
 	}
@@ -123,14 +123,14 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	 *        The service that should be added to the registry.
 	 * @return The previous service that was registered for the same key, or
 	 *         <tt>null</tt> if there was no such service.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 */
 	public void updateTemplate(ConfigTemplate service)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		String id = service.getID();
 		if (!services.containsKey(id)) {
-			throw new RepositoryConfigException("Template does not exists");
+			throw new StoreConfigException("Template does not exists");
 		}
 		services.put(id, service);
 	}
@@ -140,13 +140,13 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	 * 
 	 * @param service
 	 *        The service be removed from the registry.
-	 * @throws RepositoryConfigException
+	 * @throws StoreConfigException
 	 */
 	public void removeTemplate(String id)
-		throws RepositoryConfigException
+		throws StoreConfigException
 	{
 		if (services.remove(id) == null) {
-			throw new RepositoryConfigException("Template does not exists");
+			throw new StoreConfigException("Template does not exists");
 		}
 	}
 
@@ -172,14 +172,14 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	}
 
 	private void loadTemplates(ClassLoader cl)
-		throws IOException, RepositoryConfigException, AssertionError
+		throws IOException, StoreConfigException, AssertionError
 	{
 		loadResources(schema, cl, STORE_SCHEMAS);
 		loadTemplates(cl, REPOSITORY_TEMPLATES);
 	}
 
 	private void loadTemplates(File dir)
-		throws IOException, RepositoryConfigException
+		throws IOException, StoreConfigException
 	{
 		assert dir.isDirectory();
 		for (File file : dir.listFiles()) {
@@ -245,7 +245,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	}
 
 	private void loadTemplates(ClassLoader cl, String resource)
-		throws IOException, AssertionError, RepositoryConfigException
+		throws IOException, AssertionError, StoreConfigException
 	{
 		Enumeration<URL> templates = cl.getResources(resource);
 		while (templates.hasMoreElements()) {

@@ -25,7 +25,6 @@ import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.config.RepositoryConfig;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -33,6 +32,7 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.ConfigTemplate;
@@ -79,7 +79,7 @@ public class CreateServlet extends TransformationServlet {
 
 	private RepositoryConfig updateRepositoryConfig(String configString)
 			throws IOException, RDFParseException, RDFHandlerException,
-			GraphUtilException, RepositoryConfigException, StoreException {
+			GraphUtilException, StoreConfigException, StoreException {
 
 		Model model = new ModelImpl();
 
