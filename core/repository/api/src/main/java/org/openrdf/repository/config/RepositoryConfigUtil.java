@@ -214,7 +214,7 @@ public class RepositoryConfigUtil {
 				Resource context = getContext(con, id);
 				if (context != null) {
 					con.clear(context);
-					con.remove(context, RDF.TYPE, REPOSITORY_CONTEXT);
+					con.removePattern(context, RDF.TYPE, REPOSITORY_CONTEXT);
 					changed = true;
 				}
 			}

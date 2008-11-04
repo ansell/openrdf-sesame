@@ -99,7 +99,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		testCon.setAutoCommit(false);
 
 		testCon.add(bob, name, nameBob);
-		testCon.remove(bob, name, nameBob);
+		testCon.removePattern(bob, name, nameBob);
 
 		testCon.setAutoCommit(true);
 
