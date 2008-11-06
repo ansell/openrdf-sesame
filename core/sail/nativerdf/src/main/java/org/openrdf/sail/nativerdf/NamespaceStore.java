@@ -111,16 +111,10 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 	}
 
 	public void setNamespace(String prefix, String name) {
-		NamespaceImpl ns = namespacesMap.get(prefix);
+		NamespaceImpl newNS = new NamespaceImpl(prefix, name);
+		NamespaceImpl old = namespacesMap.put(prefix, newNS);
 
-		if (ns != null) {
-			if (!ns.getName().equals(name)) {
-				ns.setName(name);
-				contentsChanged = true;
-			}
-		}
-		else {
-			namespacesMap.put(prefix, new NamespaceImpl(prefix, name));
+		if (!newNS.equals(old)) {
 			contentsChanged = true;
 		}
 	}

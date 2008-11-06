@@ -41,8 +41,10 @@ public class NamespaceImpl implements Namespace {
 	 *        The namespace's name.
 	 */
 	public NamespaceImpl(String prefix, String name) {
-		setPrefix(prefix);
-		setName(name);
+//		assert prefix != null : "prefix must not be null";
+//		assert name != null : "name must not be null";
+		this.prefix = prefix;
+		this.name = name;
 	}
 
 	/*---------*
@@ -64,6 +66,7 @@ public class NamespaceImpl implements Namespace {
 	 * @param prefix
 	 *        The (new) prefix for this namespace.
 	 */
+	@Deprecated
 	public void setPrefix(String prefix) {
 		this.prefix = prefix;
 	}
@@ -77,47 +80,23 @@ public class NamespaceImpl implements Namespace {
 		return name;
 	}
 
-	/**
-	 * Sets the name of the namespace.
-	 * 
-	 * @param name
-	 *        The (new) name for this namespace.
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
-		return result;
+		return name.hashCode() + 31 * prefix.hashCode();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		NamespaceImpl other = (NamespaceImpl)obj;
-		if (name == null) {
-			if (other.name != null)
-				return false;
 		}
-		else if (!name.equals(other.name))
-			return false;
-		if (prefix == null) {
-			if (other.prefix != null)
-				return false;
+
+		if (obj instanceof NamespaceImpl) {
+			NamespaceImpl other = (NamespaceImpl)obj;
+			return name.equals(other.name) && prefix.equals(other.prefix);
 		}
-		else if (!prefix.equals(other.prefix))
-			return false;
-		return true;
+
+		return false;
 	}
 
 	/**
