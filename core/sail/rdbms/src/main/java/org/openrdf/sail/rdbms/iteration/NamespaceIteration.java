@@ -6,11 +6,16 @@
 package org.openrdf.sail.rdbms.iteration;
 
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import info.aduna.iteration.Iteration;
 
 import org.openrdf.model.Namespace;
+import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.query.base.ConvertingCursor;
 import org.openrdf.query.impl.IteratorCursor;
+import org.openrdf.store.StoreException;
 
 /**
  * {@link Namespace} typed {@link Iteration}.
@@ -18,11 +23,18 @@ import org.openrdf.query.impl.IteratorCursor;
  * @author James Leigh
  * 
  */
-public class NamespaceIteration extends IteratorCursor<Namespace>
+public class NamespaceIteration extends ConvertingCursor<Map.Entry<String,String>, Namespace>
 {
 
-	public NamespaceIteration(Iterator<? extends Namespace> iter) {
-		super(iter);
+	public NamespaceIteration(Iterator<Map.Entry<String,String>> iter) {
+		super(new IteratorCursor<Map.Entry<String,String>>(iter));
+	}
+
+	@Override
+	protected Namespace convert(Entry<String, String> next)
+		throws StoreException
+	{
+		return new NamespaceImpl(next.getKey(), next.getValue());
 	}
 
 }

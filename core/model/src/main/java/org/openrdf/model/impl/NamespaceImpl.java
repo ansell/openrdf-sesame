@@ -21,12 +21,12 @@ public class NamespaceImpl implements Namespace {
 	/**
 	 * The namespace's prefix.
 	 */
-	private String prefix;
+	private final String prefix;
 
 	/**
 	 * The namespace's name.
 	 */
-	private String name;
+	private final String name;
 
 	/*--------------*
 	 * Constructors *
@@ -41,8 +41,8 @@ public class NamespaceImpl implements Namespace {
 	 *        The namespace's name.
 	 */
 	public NamespaceImpl(String prefix, String name) {
-//		assert prefix != null : "prefix must not be null";
-//		assert name != null : "name must not be null";
+		assert prefix != null : "prefix must not be null";
+		assert name != null : "name must not be null";
 		this.prefix = prefix;
 		this.name = name;
 	}
@@ -58,17 +58,6 @@ public class NamespaceImpl implements Namespace {
 	 */
 	public String getPrefix() {
 		return prefix;
-	}
-
-	/**
-	 * Sets the prefix of the namespace.
-	 * 
-	 * @param prefix
-	 *        The (new) prefix for this namespace.
-	 */
-	@Deprecated
-	public void setPrefix(String prefix) {
-		this.prefix = prefix;
 	}
 
 	/**

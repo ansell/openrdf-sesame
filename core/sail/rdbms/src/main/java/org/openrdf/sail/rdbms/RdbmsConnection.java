@@ -6,7 +6,6 @@
 package org.openrdf.sail.rdbms;
 
 import java.sql.SQLException;
-import java.util.Collection;
 
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
@@ -27,7 +26,6 @@ import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.SailConnectionBase;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.sail.rdbms.iteration.NamespaceIteration;
 import org.openrdf.sail.rdbms.iteration.RdbmsResourceCursor;
 import org.openrdf.sail.rdbms.managers.NamespaceManager;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
@@ -216,8 +214,7 @@ public class RdbmsConnection extends SailConnectionBase {
 	public Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
-		Collection<? extends Namespace> ns = namespaces.getNamespacesWithPrefix();
-		return new NamespaceIteration(ns.iterator());
+		return namespaces.getNamespacesWithPrefix();
 	}
 
 	public void removeNamespace(String prefix)
