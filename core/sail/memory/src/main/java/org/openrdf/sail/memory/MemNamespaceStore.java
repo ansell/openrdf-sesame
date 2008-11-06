@@ -49,14 +49,7 @@ class MemNamespaceStore implements Iterable<NamespaceImpl> {
 	}
 
 	public void setNamespace(String prefix, String name) {
-		NamespaceImpl ns = namespacesMap.get(prefix);
-
-		if (ns != null) {
-			ns.setName(name);
-		}
-		else {
-			namespacesMap.put(prefix, new NamespaceImpl(prefix, name));
-		}
+		namespacesMap.put(prefix, new NamespaceImpl(prefix, name));
 	}
 
 	public void removeNamespace(String prefix) {
