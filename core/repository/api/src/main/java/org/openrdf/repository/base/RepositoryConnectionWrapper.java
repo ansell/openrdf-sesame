@@ -418,10 +418,10 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().setNamespace(prefix, name);
 	}
 
-	public long size(Resource subject, URI predicate, Value object, Resource... contexts)
+	public long size(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return getDelegate().size(subject, predicate, object, contexts);
+		return getDelegate().size(subject, predicate, object, includeInferred, contexts);
 	}
 
 	@Override

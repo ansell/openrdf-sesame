@@ -87,8 +87,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	 * Methods *
 	 *---------*/
 
-	public Cursor<? extends BindingSet> evaluate(
-			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred)
 		throws StoreException
 	{
 		logger.trace("Incoming query model:\n{}", tupleExpr.toString());
@@ -180,14 +180,14 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public Cursor<? extends Statement> getStatements(Resource subj,
-			URI pred, Value obj, boolean includeInferred, Resource... contexts)
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		Lock readLock = nativeStore.getReadLock();
 		try {
 			Cursor<? extends Statement> iter;
-			iter = nativeStore.createStatementIterator(subj, pred, obj, includeInferred, transactionActive(),
+			iter = nativeStore.createStatementCursor(subj, pred, obj, includeInferred, transactionActive(),
 					contexts);
 			iter = new LockingCursor<Statement>(readLock, iter);
 
@@ -203,15 +203,16 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		Lock readLock = nativeStore.getReadLock();
-		ValueStore valueStore = nativeStore.getValueStore();
 
 		try {
+			ValueStore valueStore = nativeStore.getValueStore();
+
 			int subjID = NativeValue.UNKNOWN_ID;
 			if (subj != null) {
 				subjID = valueStore.getID(subj);
@@ -245,8 +246,9 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 			for (int contextID : contextIDs) {
 				// Iterate over all explicit statements
-				RecordIterator iter = nativeStore.getTripleStore().getTriples(subjID, predID, objID, contextID, true,
-						transactionActive());
+				RecordIterator iter = nativeStore.getTripleStore().getTriples(subjID, predID, objID, contextID,
+						!includeInferred, transactionActive());
+
 				try {
 					while (iter.next() != null) {
 						size++;
@@ -272,9 +274,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	{
 		Lock readLock = nativeStore.getReadLock();
 		try {
-			return new LockingCursor<NamespaceImpl>(
-					readLock,
-					new IteratorCursor<NamespaceImpl>(nativeStore.getNamespaceStore().iterator()));
+			return new LockingCursor<NamespaceImpl>(readLock, new IteratorCursor<NamespaceImpl>(
+					nativeStore.getNamespaceStore().iterator()));
 		}
 		catch (RuntimeException e) {
 			readLock.release();

@@ -232,7 +232,7 @@ public class RdbmsConnection extends SailConnectionBase {
 		namespaces.setPrefix(prefix, name);
 	}
 
-	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		try {

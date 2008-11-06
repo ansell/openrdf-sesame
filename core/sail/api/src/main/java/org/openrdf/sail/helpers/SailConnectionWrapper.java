@@ -92,10 +92,10 @@ public class SailConnectionWrapper implements SailConnection {
 		return wrappedCon.getStatements(subj, pred, obj, includeInferred, contexts);
 	}
 
-	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return wrappedCon.size(subj, pred, obj, contexts);
+		return wrappedCon.size(subj, pred, obj, includeInferred, contexts);
 	}
 
 	public void begin()

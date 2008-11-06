@@ -239,10 +239,10 @@ public interface RepositoryConnection {
 		throws StoreException, MalformedQueryException;
 
 	/**
-	 * Prepares <tt>true</tt>/<tt>false</tt> queries. In case the query
-	 * contains relative URIs that need to be resolved against an external base
-	 * URI, one should use
-	 * {@link #prepareBooleanQuery(QueryLanguage, String, String)} instead.
+	 * Prepares <tt>true</tt>/<tt>false</tt> queries. In case the query contains
+	 * relative URIs that need to be resolved against an external base URI, one
+	 * should use {@link #prepareBooleanQuery(QueryLanguage, String, String)}
+	 * instead.
 	 * 
 	 * @param ql
 	 *        The query language in which the query is formulated.
@@ -296,8 +296,7 @@ public interface RepositoryConnection {
 	 * of named contexts.
 	 * 
 	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a
-	 *        wildcard.
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
 	 * @param pred
 	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
 	 * @param obj
@@ -312,8 +311,8 @@ public interface RepositoryConnection {
 	 * @return The statements matching the specified pattern. The result object
 	 *         is a {@link RepositoryResult} object, a lazy Iterator-like object
 	 *         containing {@link Statement}s and optionally throwing a
-	 *         {@link StoreException} when an error when a problem occurs
-	 *         during retrieval.
+	 *         {@link StoreException} when an error when a problem occurs during
+	 *         retrieval.
 	 */
 	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
@@ -324,8 +323,7 @@ public interface RepositoryConnection {
 	 * predicate and/or object, optionally in the specified contexts.
 	 * 
 	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a
-	 *        wildcard.
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
 	 * @param pred
 	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
 	 * @param obj
@@ -407,16 +405,17 @@ public interface RepositoryConnection {
 		throws StoreException, RDFHandlerException;
 
 	/**
-	 * Returns the number of (explicit) statements that are in this repository.
+	 * Returns the number of (explicit) statements that are in the specified
+	 * contexts in this repository.
 	 * 
 	 * @return The number of explicit statements in this repository.
 	 */
-	public long size()
+	public long size(Resource... contexts)
 		throws StoreException;
 
 	/**
-	 * Returns the number of (explicit) statements that match in the specified
-	 * pattern in this repository.
+	 * Returns the number of statements that match in the specified pattern in
+	 * this repository.
 	 * 
 	 * @param subj
 	 *        The subject, or null if the subject doesn't matter.
@@ -424,6 +423,8 @@ public interface RepositoryConnection {
 	 *        The predicate, or null if the predicate doesn't matter.
 	 * @param obj
 	 *        The object, or null if the object doesn't matter.
+	 * @param includeInferred
+	 *        Indicates whether inferred statements should be counted.
 	 * @param contexts
 	 *        The context(s) to get the data from. Note that this parameter is a
 	 *        vararg and as such is optional. If no contexts are supplied the
@@ -431,7 +432,7 @@ public interface RepositoryConnection {
 	 * @return The number of explicit statements from the specified pattern in
 	 *         this repository.
 	 */
-	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException;
 
 	/**
@@ -561,9 +562,9 @@ public interface RepositoryConnection {
 	 *        The URL of the RDF data.
 	 * @param baseURI
 	 *        The base URI to resolve any relative URIs that are in the data
-	 *        against. This defaults to the value of {@link
-	 *        java.net.URL#toExternalForm() url.toExternalForm()} if the value is
-	 *        set to <tt>null</tt>.
+	 *        against. This defaults to the value of
+	 *        {@link java.net.URL#toExternalForm() url.toExternalForm()} if the
+	 *        value is set to <tt>null</tt>.
 	 * @param dataFormat
 	 *        The serialization format of the data.
 	 * @param contexts
@@ -591,9 +592,8 @@ public interface RepositoryConnection {
 	 *        A file containing RDF data.
 	 * @param baseURI
 	 *        The base URI to resolve any relative URIs that are in the data
-	 *        against. This defaults to the value of
-	 *        {@link java.io.File#toURI() file.toURI()} if the value is set to
-	 *        <tt>null</tt>.
+	 *        against. This defaults to the value of {@link java.io.File#toURI()
+	 *        file.toURI()} if the value is set to <tt>null</tt>.
 	 * @param dataFormat
 	 *        The serialization format of the data.
 	 * @param contexts

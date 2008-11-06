@@ -72,6 +72,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final boolean isOpen()
 		throws StoreException
 	{
@@ -86,6 +87,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public final void close()
 		throws StoreException
 	{
@@ -152,14 +154,16 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		}
 	}
 
-	public final Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr,
-			Dataset dataset, BindingSet bindings, boolean includeInferred)
+	@Override
+	public final Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr, Dataset dataset,
+			BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		verifyIsOpen();
 		return registerCursor(super.evaluate(tupleExpr, dataset, bindings, includeInferred));
 	}
 
+	@Override
 	public final Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
@@ -167,19 +171,21 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		return registerCursor(super.getContextIDs());
 	}
 
-	public final Cursor<? extends Statement> getStatements(Resource subj,
-			URI pred, Value obj, boolean includeInferred, Resource... contexts)
+	@Override
+	public final Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		verifyIsOpen();
 		return registerCursor(super.getStatements(subj, pred, obj, includeInferred, contexts));
 	}
 
-	public final long size(Resource subj, URI pred, Value obj, Resource... contexts)
+	@Override
+	public final long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		verifyIsOpen();
-		return super.size(subj, pred, obj, contexts);
+		return super.size(subj, pred, obj, includeInferred, contexts);
 	}
 
 	protected void autoStartTransaction()
@@ -198,6 +204,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public final void commit()
 		throws StoreException
 	{
@@ -208,6 +215,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public final void rollback()
 		throws StoreException
 	{
@@ -222,6 +230,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		}
 	}
 
+	@Override
 	public final void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
@@ -230,6 +239,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		super.addStatement(subj, pred, obj, contexts);
 	}
 
+	@Override
 	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
@@ -238,6 +248,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		super.removeStatements(subj, pred, obj, contexts);
 	}
 
+	@Override
 	public final Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
@@ -245,6 +256,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		return registerCursor(super.getNamespaces());
 	}
 
+	@Override
 	public final String getNamespace(String prefix)
 		throws StoreException
 	{
@@ -252,6 +264,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		return super.getNamespace(prefix);
 	}
 
+	@Override
 	public final void setNamespace(String prefix, String name)
 		throws StoreException
 	{
@@ -260,6 +273,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		super.setNamespace(prefix, name);
 	}
 
+	@Override
 	public final void removeNamespace(String prefix)
 		throws StoreException
 	{
@@ -268,6 +282,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		super.removeNamespace(prefix);
 	}
 
+	@Override
 	public final void clearNamespaces()
 		throws StoreException
 	{

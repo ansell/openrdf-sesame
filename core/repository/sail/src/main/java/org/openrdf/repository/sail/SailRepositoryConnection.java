@@ -183,10 +183,10 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		handler.endRDF();
 	}
 
-	public long size(Resource subject, URI predicate, Value object, Resource... contexts)
+	public long size(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return sailConnection.size(subject, predicate, object, contexts);
+		return sailConnection.size(subject, predicate, object, includeInferred, contexts);
 	}
 
 	@Override

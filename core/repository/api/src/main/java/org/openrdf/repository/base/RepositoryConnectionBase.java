@@ -546,10 +546,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		removePattern(null, null, null, contexts);
 	}
 
-	public long size()
+	public long size(Resource... contexts)
 		throws StoreException
 	{
-		return size(null, null, null, new Resource[0]);
+		return size(null, null, null, false, contexts);
 	}
 
 	protected void addWithoutCommit(Statement st, Resource... contexts)
