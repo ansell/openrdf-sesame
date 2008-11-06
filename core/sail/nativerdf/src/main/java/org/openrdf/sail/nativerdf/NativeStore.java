@@ -356,7 +356,7 @@ public class NativeStore extends InferencerSailBase {
 		btreeIter = tripleStore.getAllTriplesSortedByContext(readTransaction);
 		if (btreeIter == null) {
 			// Iterator over all statements
-			stIter = createStatementIterator(null, null, null, true, readTransaction);
+			stIter = createStatementCursor(null, null, null, true, readTransaction);
 		}
 		else {
 			stIter = new NativeStatementCursor(btreeIter, valueStore);
@@ -388,7 +388,7 @@ public class NativeStore extends InferencerSailBase {
 	}
 
 	/**
-	 * Creates a statement iterator based on the supplied pattern.
+	 * Creates a statement cursor based on the supplied pattern.
 	 * 
 	 * @param subj
 	 *        The subject of the pattern, or <tt>null</tt> to indicate a
@@ -400,11 +400,11 @@ public class NativeStore extends InferencerSailBase {
 	 *        The object of the pattern, or <tt>null</tt> to indicate a wildcard.
 	 * @param context
 	 *        The context of the pattern, or <tt>null</tt> to indicate a wildcard
-	 * @return A StatementIterator that can be used to iterate over the
-	 *         statements that match the specified pattern.
+	 * @return A Cursor that can be used to iterate over the statements that
+	 *         match the specified pattern.
 	 */
-	protected Cursor<? extends Statement> createStatementIterator(Resource subj,
-			URI pred, Value obj, boolean includeInferred, boolean readTransaction, Resource... contexts)
+	protected Cursor<? extends Statement> createStatementCursor(Resource subj, URI pred, Value obj,
+			boolean includeInferred, boolean readTransaction, Resource... contexts)
 		throws IOException
 	{
 		int subjID = NativeValue.UNKNOWN_ID;

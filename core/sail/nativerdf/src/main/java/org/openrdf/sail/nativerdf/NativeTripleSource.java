@@ -50,7 +50,7 @@ public class NativeTripleSource implements TripleSource {
 		throws EvaluationException
 	{
 		try {
-			return nativeStore.createStatementIterator(subj, pred, obj, includeInferred, readTransaction,
+			return nativeStore.createStatementCursor(subj, pred, obj, includeInferred, readTransaction,
 					contexts);
 		}
 		catch (IOException e) {

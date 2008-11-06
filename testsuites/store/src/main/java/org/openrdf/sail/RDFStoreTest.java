@@ -354,7 +354,8 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso2, paints, guernica);
 		con.commit();
 
-		assertEquals("createURI(Sring) and createURI(String, String) should create equal URIs", 1, con.size(null, null, null));
+		assertEquals("createURI(Sring) and createURI(String, String) should create equal URIs", 1, con.size(
+				null, null, null, false));
 	}
 
 	public void testCreateURI2()
@@ -366,7 +367,8 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso2, paints, guernica);
 		con.commit();
 
-		assertEquals("createURI(Sring) and createURI(String, String) should create equal URIs", 1, con.size(null, null, null));
+		assertEquals("createURI(Sring) and createURI(String, String) should create equal URIs", 1, con.size(
+				null, null, null, false));
 	}
 
 	public void testSize()
@@ -382,20 +384,20 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso, paints, guernica, context1);
 		con.commit();
 
-		assertEquals(5, con.size(null, null, null));
-		assertEquals(3, con.size(null, null, null, context1));
-		assertEquals(4, con.size(null, RDF.TYPE, null));
-		assertEquals(1, con.size(null, paints, null));
-		assertEquals(2, con.size(picasso, null, null));
+		assertEquals(5, con.size(null, null, null, false));
+		assertEquals(3, con.size(null, null, null, false, context1));
+		assertEquals(4, con.size(null, RDF.TYPE, null, false));
+		assertEquals(1, con.size(null, paints, null, false));
+		assertEquals(2, con.size(picasso, null, null, false));
 
 		URI unknownContext = new URIImpl(EXAMPLE_NS + "unknown");
 
-		assertEquals(0, con.size(null, null, null, unknownContext));
-		assertEquals(0, con.size(null, picasso, null));
+		assertEquals(0, con.size(null, null, null, false, unknownContext));
+		assertEquals(0, con.size(null, picasso, null, false));
 
 		URIImpl uriImplContext1 = new URIImpl(context1.toString());
 
-		assertEquals(3, con.size(null, null, null, uriImplContext1));
+		assertEquals(3, con.size(null, null, null, false, uriImplContext1));
 	}
 
 	private void assertEmpty(SailConnection con)
@@ -408,7 +410,7 @@ public abstract class RDFStoreTest extends TestCase {
 					for (Resource[] ctx : Arrays.asList(new Resource[0], new Resource[] { context1 },
 							new Resource[] { unknownContext }))
 					{
-						assertEquals(0, con.size(subj, pred, obj, ctx));
+						assertEquals(0, con.size(subj, pred, obj, false, ctx));
 					}
 				}
 			}
@@ -908,15 +910,15 @@ public abstract class RDFStoreTest extends TestCase {
 		throws Exception
 	{
 		con.addStatement(RDF.VALUE, RDF.VALUE, RDF.VALUE);
-		assertEquals(1, con.size(null, null, null));
+		assertEquals(1, con.size(null, null, null, false));
 		BNode b1 = vf.createBNode();
 		con.addStatement(b1, RDF.VALUE, b1);
 		con.removeStatements(b1, RDF.VALUE, b1);
-		assertEquals(1, con.size(null, null, null));
+		assertEquals(1, con.size(null, null, null, false));
 		BNode b2 = vf.createBNode();
 		con.addStatement(b2, RDF.VALUE, b2);
 		con.addStatement(b1, RDF.VALUE, b1);
-		assertEquals(3, con.size(null, null, null));
+		assertEquals(3, con.size(null, null, null, false));
 	}
 
 	private <T> T first(Cursor<T> iter)

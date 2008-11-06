@@ -93,8 +93,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 * Methods *
 	 *---------*/
 
-	public Cursor<? extends BindingSet> evaluate(
-			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred)
 		throws StoreException
 	{
 		logger.trace("Incoming query model:\n{}", tupleExpr.toString());
@@ -204,8 +204,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 
 		// Filter more thoroughly by considering snapshot and read-mode parameters
-		MemStatementCursor iter = new MemStatementCursor(contextStatements,
-				null, null, null, false, snapshot, readMode);
+		MemStatementCursor iter = new MemStatementCursor(contextStatements, null, null, null, false, snapshot,
+				readMode);
 		try {
 			return iter.next() != null;
 		}
@@ -214,8 +214,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public Cursor<? extends Statement> getStatements(Resource subj,
-			URI pred, Value obj, boolean includeInferred, Resource... contexts)
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		Lock stLock = store.getStatementsReadLock();
@@ -229,8 +229,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 				readMode = ReadMode.TRANSACTION;
 			}
 
-			return new LockingCursor<MemStatement>(stLock, store.createStatementIterator(
-					subj, pred, obj, !includeInferred, snapshot, readMode, contexts));
+			return new LockingCursor<MemStatement>(stLock, store.createStatementIterator(subj, pred, obj,
+					!includeInferred, snapshot, readMode, contexts));
 		}
 		catch (RuntimeException e) {
 			stLock.release();
@@ -238,14 +238,13 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
-			Cursor<? extends Statement> iter = getStatements(subj, pred,
-					obj, false, contexts);
+			Cursor<? extends Statement> iter = getStatements(subj, pred, obj, includeInferred, contexts);
 
 			try {
 				long size = 0L;
@@ -397,15 +396,13 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			Resource... contexts)
 		throws StoreException
 	{
-		Cursor<MemStatement> stIter = store.createStatementIterator(
-				subj, pred, obj, explicit, store.getCurrentSnapshot() + 1,
-				ReadMode.TRANSACTION, contexts);
+		Cursor<MemStatement> stIter = store.createStatementIterator(subj, pred, obj, explicit,
+				store.getCurrentSnapshot() + 1, ReadMode.TRANSACTION, contexts);
 
 		return removeIteratorStatements(stIter, explicit);
 	}
 
-	protected boolean removeIteratorStatements(Cursor<MemStatement> stIter,
-			boolean explicit)
+	protected boolean removeIteratorStatements(Cursor<MemStatement> stIter, boolean explicit)
 		throws StoreException
 	{
 		boolean statementsRemoved = false;
@@ -475,11 +472,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			this.readMode = readMode;
 		}
 
-		public Cursor<MemStatement> getStatements(Resource subj,
-				URI pred, Value obj, Resource... contexts)
-		{
-			return store.createStatementIterator(subj, pred, obj,
-					!includeInferred, snapshot, readMode, contexts);
+		public Cursor<MemStatement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts) {
+			return store.createStatementIterator(subj, pred, obj, !includeInferred, snapshot, readMode, contexts);
 		}
 
 		public MemValueFactory getValueFactory() {

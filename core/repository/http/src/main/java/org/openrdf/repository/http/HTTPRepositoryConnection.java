@@ -199,16 +199,17 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
-	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		try {
 			// TODO support size pattern in protocol
-			if (subj == pred && pred == obj && obj == null) {
+			if (subj == null && pred == null && obj == null && !includeInferred) {
 				return getRepository().getHTTPClient().size(contexts);
-			} else {
+			}
+			else {
 				StatementCollector collector = new StatementCollector();
-				exportStatements(subj, pred, obj, false, collector, contexts);
+				exportStatements(subj, pred, obj, includeInferred, collector, contexts);
 				return collector.getStatements().size();
 			}
 		}
@@ -368,8 +369,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Creates a RepositoryResult for the supplied element set.
 	 */
 	protected <E> RepositoryResult<E> createRepositoryResult(Iterable<? extends E> elements) {
-		return new RepositoryResult<E>(new IteratorCursor<E>(
-				elements.iterator()));
+		return new RepositoryResult<E>(new IteratorCursor<E>(elements.iterator()));
 	}
 
 	/**

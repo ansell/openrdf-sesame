@@ -67,8 +67,8 @@ public interface SailConnection {
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
 	 */
-	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr,
-			Dataset dataset, BindingSet bindings, boolean includeInferred)
+	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred)
 		throws StoreException;
 
 	/**
@@ -84,13 +84,12 @@ public interface SailConnection {
 	/**
 	 * Gets all statements from the specified contexts that have a specific
 	 * subject, predicate and/or object. All three parameters may be null to
-	 * indicate wildcards. The <tt>includeInferred</tt> parameter can be used
-	 * to control which statements are fetched: all statements or only the
+	 * indicate wildcards. The <tt>includeInferred</tt> parameter can be used to
+	 * control which statements are fetched: all statements or only the
 	 * statements that have been added explicitly.
 	 * 
 	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a
-	 *        wildcard.
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
 	 * @param pred
 	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
 	 * @param obj
@@ -107,27 +106,28 @@ public interface SailConnection {
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
 	 */
-	public Cursor<? extends Statement> getStatements(Resource subj, URI pred,
-			Value obj, boolean includeInferred, Resource... contexts)
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
 		throws StoreException;
 
 	/**
-	 * Returns the number of (explicit) statements patching the pattern.
+	 * Returns the number of statements matching the specified pattern.
 	 * 
 	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a
-	 *        wildcard.
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
 	 * @param pred
 	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
 	 * @param obj
 	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
+	 * @param includeInferred
+	 *        Indicates whether inferred statements should be counted.
 	 * @param contexts
 	 *        The context(s) to get the data from. Note that this parameter is a
 	 *        vararg and as such is optional. If no contexts are supplied the
 	 *        method operates on the entire repository.
 	 * @return The number of explicit statements in this Sail.
 	 */
-	public long size(Resource subj, URI pred, Value obj, Resource... contexts)
+	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException;
 
 	/**
