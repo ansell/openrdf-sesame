@@ -107,32 +107,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	public void addTemplate(ConfigTemplate service)
 		throws StoreConfigException
 	{
-		String id = service.getID();
-		if (services.containsKey(id)) {
-			throw new StoreConfigException("Template already exists");
-		}
-		services.put(id, service);
-	}
-
-	/**
-	 * Adds a service to the registry. Any service that is currently registered
-	 * for the same key (as specified by {@link #getKey(Object)}) will be
-	 * replaced with the new service.
-	 * 
-	 * @param service
-	 *        The service that should be added to the registry.
-	 * @return The previous service that was registered for the same key, or
-	 *         <tt>null</tt> if there was no such service.
-	 * @throws StoreConfigException
-	 */
-	public void updateTemplate(ConfigTemplate service)
-		throws StoreConfigException
-	{
-		String id = service.getID();
-		if (!services.containsKey(id)) {
-			throw new StoreConfigException("Template does not exists");
-		}
-		services.put(id, service);
+		services.put(service.getID(), service);
 	}
 
 	/**
