@@ -39,18 +39,6 @@ public interface ConfigTemplateManager {
 	void addTemplate(ConfigTemplate template) throws StoreConfigException;
 
 	/**
-	 * Adds a service to the registry. Any service that is currently registered
-	 * for the same key (as specified by {@link #getKey(Object)}) will be
-	 * replaced with the new service.
-	 * 
-	 * @param service
-	 *        The service that should be added to the registry.
-	 * @return The previous service that was registered for the same key, or
-	 *         <tt>null</tt> if there was no such service.
-	 */
-	void updateTemplate(ConfigTemplate template) throws StoreConfigException;
-
-	/**
 	 * Removes a service from the registry.
 	 * 
 	 * @param service
