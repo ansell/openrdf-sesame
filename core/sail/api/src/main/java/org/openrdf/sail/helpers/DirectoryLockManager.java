@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.management.ManagementFactory;
 import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
