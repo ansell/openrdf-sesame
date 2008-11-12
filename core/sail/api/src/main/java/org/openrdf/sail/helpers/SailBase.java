@@ -105,7 +105,9 @@ public abstract class SailBase implements Sail {
 		SailConnection connection = getConnectionInternal();
 
 		Throwable stackTrace = debugEnabled() ? new Throwable() : null;
-		activeConnections.put(connection, stackTrace);
+		synchronized (activeConnections) {
+			activeConnections.put(connection, stackTrace);
+		}
 
 		return connection;
 	}
