@@ -25,6 +25,7 @@ public class SailUtil {
 	 * @return A Sail that is an instance of sailClass, or null if no such Sail
 	 *         was found.
 	 */
+	@SuppressWarnings("unchecked")
 	public static <C extends Sail> C findSailInStack(Sail topSail, Class<C> sailClass) {
 		if (sailClass == null) {
 			return null;
