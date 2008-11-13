@@ -349,6 +349,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		catch (IOException e) {
 			throw new SailException(e);
 		}
+		catch (RuntimeException e) {
+			logger.error("Encountered an unexpected problem while trying to commit", e);
+			throw e;
+		}
 		finally {
 			storeReadLock.release();
 		}
@@ -371,6 +375,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 		catch (IOException e) {
 			throw new SailException(e);
+		}
+		catch (RuntimeException e) {
+			logger.error("Encountered an unexpected problem while trying to roll back", e);
+			throw e;
 		}
 		finally {
 			txnLock.release();
@@ -454,6 +462,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 		catch (IOException e) {
 			throw new SailException(e);
+		}
+		catch (RuntimeException e) {
+			logger.error("Encountered an unexpected problem while trying to add a statement", e);
+			throw e;
 		}
 
 		return result;
@@ -570,6 +582,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 		catch (IOException e) {
 			throw new SailException(e);
+		}
+		catch (RuntimeException e) {
+			logger.error("Encountered an unexpected problem while trying to remove statements", e);
+			throw e;
 		}
 	}
 
