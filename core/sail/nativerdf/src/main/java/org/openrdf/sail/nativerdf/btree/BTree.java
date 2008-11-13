@@ -647,7 +647,7 @@ public class BTree {
 			}
 			return valueIndex;
 		}
-		
+
 		@Override
 		public String toString() {
 			return valueIndex + ":" + valueCount;
@@ -1388,10 +1388,17 @@ public class BTree {
 		}
 
 		public byte[] getValue(int valueIdx) {
+			assert valueIdx >= 0 : "valueIdx must be positive, is: " + valueIdx;
+			assert valueIdx < valueCount : "valueIdx out of range (" + valueIdx + " >= " + valueCount + ")";
+
 			return ByteArrayUtil.get(data, valueIdx2offset(valueIdx), valueSize);
 		}
 
 		public void setValue(int valueIdx, byte[] value) {
+			assert value != null : "value must not be null";
+			assert valueIdx >= 0 : "valueIdx must be positive, is: " + valueIdx;
+			assert valueIdx < valueCount : "valueIdx out of range (" + valueIdx + " >= " + valueCount + ")";
+
 			ByteArrayUtil.put(value, data, valueIdx2offset(valueIdx));
 			dataChanged = true;
 		}
@@ -1406,6 +1413,9 @@ public class BTree {
 		 * @see #removeValueLeft
 		 */
 		public byte[] removeValueRight(int valueIdx) {
+			assert valueIdx >= 0 : "valueIdx must be positive, is: " + valueIdx;
+			assert valueIdx < valueCount : "valueIdx out of range (" + valueIdx + " >= " + valueCount + ")";
+
 			byte[] value = getValue(valueIdx);
 
 			int endOffset = valueIdx2offset(valueCount);
@@ -1437,6 +1447,9 @@ public class BTree {
 		 * @see #removeValueRight
 		 */
 		public byte[] removeValueLeft(int valueIdx) {
+			assert valueIdx >= 0 : "valueIdx must be positive, is: " + valueIdx;
+			assert valueIdx < valueCount : "valueIdx out of range (" + valueIdx + " >= " + valueCount + ")";
+
 			byte[] value = getValue(valueIdx);
 
 			int endOffset = valueIdx2offset(valueCount);
@@ -1457,10 +1470,17 @@ public class BTree {
 		}
 
 		public int getChildNodeID(int nodeIdx) {
+			assert nodeIdx >= 0 : "nodeIdx must be positive, is: " + nodeIdx;
+			assert nodeIdx <= valueCount : "nodeIdx out of range (" + nodeIdx + " > " + valueCount + ")";
+
 			return ByteArrayUtil.getInt(data, nodeIdx2offset(nodeIdx));
 		}
 
 		public void setChildNodeID(int nodeIdx, int nodeID) {
+			assert nodeIdx >= 0 : "nodeIdx must not be negative, is: " + nodeIdx;
+			assert nodeIdx <= valueCount : "nodeIdx out of range (" + nodeIdx + " > " + valueCount + ")";
+			assert nodeID >= 0 : "nodeID must not be negative, is: " + nodeID;
+
 			ByteArrayUtil.putInt(nodeID, data, nodeIdx2offset(nodeIdx));
 			dataChanged = true;
 		}
@@ -1468,6 +1488,9 @@ public class BTree {
 		public Node getChildNode(int nodeIdx)
 			throws IOException
 		{
+			assert nodeIdx >= 0 : "nodeIdx must be positive, is: " + nodeIdx;
+			assert nodeIdx <= valueCount : "nodeIdx out of range (" + nodeIdx + " > " + valueCount + ")";
+
 			int childNodeID = getChildNodeID(nodeIdx);
 			return readNode(childNodeID);
 		}
@@ -1505,6 +1528,11 @@ public class BTree {
 		}
 
 		public void insertValueNodeIDPair(int valueIdx, byte[] value, int nodeID) {
+			assert valueIdx >= 0 : "valueIdx must be positive, is: " + valueIdx;
+			assert valueIdx <= valueCount : "valueIdx out of range (" + valueIdx + " > " + valueCount + ")";
+			assert value != null : "value must not be null";
+			assert nodeID >= 0 : "nodeID must not be negative, is: " + nodeID;
+
 			int offset = valueIdx2offset(valueIdx);
 
 			if (valueIdx < valueCount) {
@@ -1525,6 +1553,11 @@ public class BTree {
 		}
 
 		public void insertNodeIDValuePair(int nodeIdx, int nodeID, byte[] value) {
+			assert nodeIdx >= 0 : "nodeIdx must not be negative, is: " + nodeIdx;
+			assert nodeIdx <= valueCount : "nodeIdx out of range (" + nodeIdx + " > " + valueCount + ")";
+			assert nodeID >= 0 : "nodeID must not be negative, is: " + nodeID;
+			assert value != null : "value must not be null";
+
 			int offset = nodeIdx2offset(nodeIdx);
 
 			// Shift values right of <offset> to the right
@@ -1684,9 +1717,13 @@ public class BTree {
 			throws IOException
 		{
 			ByteBuffer buf = ByteBuffer.wrap(data);
+
 			// Don't fill the spare slot in data:
 			buf.limit(nodeSize);
-			fileChannel.read(buf, nodeID2offset(id));
+
+			int bytesRead = fileChannel.read(buf, nodeID2offset(id));
+			assert bytesRead == nodeSize : "Read operation didn't read the entire node (" + bytesRead + " of "
+					+ nodeSize + " bytes)";
 
 			valueCount = ByteArrayUtil.getInt(data, 0);
 		}
@@ -1695,9 +1732,14 @@ public class BTree {
 			throws IOException
 		{
 			ByteBuffer buf = ByteBuffer.wrap(data);
+
 			// Don't write the spare slot in data to the file:
 			buf.limit(nodeSize);
-			fileChannel.write(buf, nodeID2offset(id));
+
+			int bytesWritten = fileChannel.write(buf, nodeID2offset(id));
+			assert bytesWritten == nodeSize : "Write operation didn't write the entire node (" + bytesWritten
+					+ " of " + nodeSize + " bytes)";
+
 			dataChanged = false;
 		}
 
