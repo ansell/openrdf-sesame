@@ -107,6 +107,8 @@ public class StoreSerializationTest extends TestCase {
 		con.addStatement(bar, RDF.TYPE, foo);
 		con.commit();
 		con.close();
+		
+		store.shutDown();
 	}
 
 	public void testLongLiterals()
@@ -130,7 +132,6 @@ public class StoreSerializationTest extends TestCase {
 		con.commit();
 
 		con.close();
-
 		store.shutDown();
 
 		store = new MemoryStore(dataDir);
@@ -145,5 +146,6 @@ public class StoreSerializationTest extends TestCase {
 		iter.close();
 
 		con.close();
+		store.shutDown();		
 	}
 }
