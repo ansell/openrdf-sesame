@@ -654,6 +654,29 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 */
 	@Override
+	public long size(Resource... contexts)
+		throws StoreException
+	{
+		if (contexts == null || contexts.length < 1) {
+			return super.size(readContexts);
+		}
+		else {
+			return super.size(contexts);
+		}
+	}
+
+	public long sizeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws StoreException
+	{
+		if (contexts == null || contexts.length < 1) {
+			return super.size(subject, predicate, object, includeInferred, readContexts);
+		}
+		else {
+			return super.size(subject, predicate, object, includeInferred, contexts);
+		}
+	}
+
+	@Override
 	public long size(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
