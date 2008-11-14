@@ -152,7 +152,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 		RepositoryConnection con = repo.getConnection();
 		try {
 			for (String id : getRepositoryIDs()) {
-				BNode ctx = con.getValueFactory().createBNode();
+				BNode ctx = con.getValueFactory().createBNode(id);
 				con.add(ctx, RDF.TYPE, REPOSITORY_CONTEXT);
 				con.add(getRepositoryConfig(id), ctx);
 			}
