@@ -1590,8 +1590,11 @@ public class BTree {
 			// can be done because data got one spare slot when it was allocated.
 			insertValueNodeIDPair(newValueIdx, newValue, newNodeID);
 
-			// Node now contains exactly [_branchFactor] values. The median
-			// value at index [_branchFactor/2] is moved to the parent
+			assert valueCount == branchFactor : "Node contains " + valueCount + " values, expected "
+					+ branchFactor;
+
+			// Node now contains exactly [branchFactor] values. The median
+			// value at index [branchFactor/2] is moved to the parent
 			// node, the values left of the median stay in this node, the
 			// values right of the median are moved to the new node.
 			int medianIdx = branchFactor / 2;
@@ -1622,9 +1625,11 @@ public class BTree {
 		public void mergeWithRightSibling(byte[] medianValue, Node rightSibling)
 			throws IOException
 		{
+			assert valueCount + rightSibling.getValueCount() + 1 < branchFactor : "Nodes contain too many values to be merged; left: "
+					+ valueCount + "; right: " + rightSibling.getValueCount();
+
 			// Append median value from parent node
 			insertValueNodeIDPair(valueCount, medianValue, 0);
-			// setValue(valueCount, medianValue);
 
 			int rightIdx = valueCount;
 
