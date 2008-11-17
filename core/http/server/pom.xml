@@ -74,4 +74,37 @@
 		</plugins>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>spring.ide</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-eclipse-plugin</artifactId>
+						<configuration>
+							<wtpversion>1.5</wtpversion>
+							<wtpContextName>openrdf-sesame</wtpContextName>
+							<additionalBuildcommands>
+								<buildCommand>
+									<name>
+										org.springframework.ide.eclipse.core.springbuilder
+									</name>
+								</buildCommand>
+							</additionalBuildcommands>
+							<additionalProjectnatures>
+								<projectnature>
+									org.springframework.ide.eclipse.core.springnature
+								</projectnature>
+							</additionalProjectnatures>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 </project>
