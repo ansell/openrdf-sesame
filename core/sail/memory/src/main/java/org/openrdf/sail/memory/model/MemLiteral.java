@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -117,6 +117,16 @@ public class MemLiteral extends LiteralImpl implements MemValue {
 
 		if (objectStatements.isEmpty()) {
 			objectStatements = null;
+		}
+	}
+
+	public void cleanSnapshotsFromObjectStatements(int currentSnapshot) {
+		if (objectStatements != null) {
+			objectStatements.cleanSnapshots(currentSnapshot);
+
+			if (objectStatements.isEmpty()) {
+				objectStatements = null;
+			}
 		}
 	}
 }

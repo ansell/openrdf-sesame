@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -55,14 +55,8 @@ public class MemStatementList {
 	}
 
 	public MemStatement get(int index) {
-		if (index < 0 || index >= size) {
-			if (index < 0) {
-				throw new IndexOutOfBoundsException("index < 0");
-			}
-			else {
-				throw new IndexOutOfBoundsException("index >= size");
-			}
-		}
+		assert index >= 0 : "index < 0";
+		assert index < size : "index >= size";
 
 		return statements[index];
 	}
@@ -88,14 +82,8 @@ public class MemStatementList {
 	}
 
 	public void remove(int index) {
-		if (index < 0 || index >= size) {
-			if (index < 0) {
-				throw new IndexOutOfBoundsException("index < 0");
-			}
-			else {
-				throw new IndexOutOfBoundsException("index >= size");
-			}
-		}
+		assert index >= 0 : "index < 0";
+		assert index < size : "index >= size";
 
 		if (index == size - 1) {
 			// Last statement in array
@@ -123,6 +111,32 @@ public class MemStatementList {
 	public void clear() {
 		Arrays.fill(statements, 0, size, null);
 		size = 0;
+	}
+
+	public void cleanSnapshots(int currentSnapshot) {
+		int i = size - 1;
+
+		// remove all deprecated statements from the end of the list
+		for (; i >= 0; i--) {
+			if (statements[i].getTillSnapshot() <= currentSnapshot) {
+				--size;
+				statements[i] = null;
+			}
+			else {
+				i--;
+				break;
+			}
+		}
+
+		// remove all deprecated statements that are not at the end of the list
+		for (; i >= 0; i--) {
+			if (statements[i].getTillSnapshot() <= currentSnapshot) {
+				// replace statement with last statement in the list
+				--size;
+				statements[i] = statements[size];
+				statements[size] = null;
+			}
+		}
 	}
 
 	private void growArray(int newSize) {

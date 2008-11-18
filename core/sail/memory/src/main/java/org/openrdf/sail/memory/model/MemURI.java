@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,14 +14,11 @@ import org.openrdf.model.URI;
  */
 public class MemURI implements URI, MemResource {
 
+	private static final long serialVersionUID = 9118488004995852467L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 9118488004995852467L;
 
 	/**
 	 * The URI's namespace.
@@ -87,7 +84,6 @@ public class MemURI implements URI, MemResource {
 	 * Methods *
 	 *---------*/
 
-	// Overrides Object.toString(), implements URI.toString()
 	@Override
 	public String toString() {
 		return namespace + localName;
@@ -97,17 +93,14 @@ public class MemURI implements URI, MemResource {
 		return toString();
 	}
 
-	// Implements URI.getNamespace()
 	public String getNamespace() {
 		return namespace;
 	}
 
-	// Implements URI.getLocalName()
 	public String getLocalName() {
 		return localName;
 	}
 
-	// Overrides Object.equals(Object), implements URI.equals(Object)
 	@Override
 	public boolean equals(Object other) {
 		if (this == other) {
@@ -128,7 +121,6 @@ public class MemURI implements URI, MemResource {
 		return false;
 	}
 
-	// Overrides Object.hashCode(), implements URI.hashCode()
 	@Override
 	public int hashCode() {
 		if (hashCode == 0) {
@@ -138,12 +130,10 @@ public class MemURI implements URI, MemResource {
 		return hashCode;
 	}
 
-	// Implements MemValue.getCreator()
 	public Object getCreator() {
 		return creator;
 	}
 
-	// Implements MemValue.getSubjectStatementList()
 	public MemStatementList getSubjectStatementList() {
 		if (subjectStatements == null) {
 			return EMPTY_LIST;
@@ -153,7 +143,6 @@ public class MemURI implements URI, MemResource {
 		}
 	}
 
-	// Implements MemValue.getSubjectStatementCount()
 	public int getSubjectStatementCount() {
 		if (subjectStatements == null) {
 			return 0;
@@ -163,7 +152,6 @@ public class MemURI implements URI, MemResource {
 		}
 	}
 
-	// Implements MemValue.addSubjectStatement(MemStatement)
 	public void addSubjectStatement(MemStatement st) {
 		if (subjectStatements == null) {
 			subjectStatements = new MemStatementList(4);
@@ -172,12 +160,21 @@ public class MemURI implements URI, MemResource {
 		subjectStatements.add(st);
 	}
 
-	// Implements MemValue.removeSubjectStatement(MemStatement)
 	public void removeSubjectStatement(MemStatement st) {
 		subjectStatements.remove(st);
 
 		if (subjectStatements.isEmpty()) {
 			subjectStatements = null;
+		}
+	}
+
+	public void cleanSnapshotsFromSubjectStatements(int currentSnapshot) {
+		if (subjectStatements != null) {
+			subjectStatements.cleanSnapshots(currentSnapshot);
+
+			if (subjectStatements.isEmpty()) {
+				subjectStatements = null;
+			}
 		}
 	}
 
@@ -233,7 +230,24 @@ public class MemURI implements URI, MemResource {
 		}
 	}
 
-	// Implements MemValue.getObjectStatementList()
+	/**
+	 * Removes statements from old snapshots (those that have expired at or
+	 * before the specified snapshot version) from this MemValue's list of
+	 * statements for which it is the predicate.
+	 * 
+	 * @param currentSnapshot
+	 *        The current snapshot version.
+	 */
+	public void cleanSnapshotsFromPredicateStatements(int currentSnapshot) {
+		if (predicateStatements != null) {
+			predicateStatements.cleanSnapshots(currentSnapshot);
+
+			if (predicateStatements.isEmpty()) {
+				predicateStatements = null;
+			}
+		}
+	}
+
 	public MemStatementList getObjectStatementList() {
 		if (objectStatements == null) {
 			return EMPTY_LIST;
@@ -243,7 +257,6 @@ public class MemURI implements URI, MemResource {
 		}
 	}
 
-	// Implements MemValue.getObjectStatementCount()
 	public int getObjectStatementCount() {
 		if (objectStatements == null) {
 			return 0;
@@ -253,7 +266,6 @@ public class MemURI implements URI, MemResource {
 		}
 	}
 
-	// Implements MemValue.addObjectStatement(MemStatement)
 	public void addObjectStatement(MemStatement st) {
 		if (objectStatements == null) {
 			objectStatements = new MemStatementList(4);
@@ -261,7 +273,6 @@ public class MemURI implements URI, MemResource {
 		objectStatements.add(st);
 	}
 
-	// Implements MemValue.removeObjectStatement(MemStatement)
 	public void removeObjectStatement(MemStatement st) {
 		objectStatements.remove(st);
 		if (objectStatements.isEmpty()) {
@@ -269,7 +280,16 @@ public class MemURI implements URI, MemResource {
 		}
 	}
 
-	// Implements MemResource.getContextStatementList()
+	public void cleanSnapshotsFromObjectStatements(int currentSnapshot) {
+		if (objectStatements != null) {
+			objectStatements.cleanSnapshots(currentSnapshot);
+
+			if (objectStatements.isEmpty()) {
+				objectStatements = null;
+			}
+		}
+	}
+
 	public MemStatementList getContextStatementList() {
 		if (contextStatements == null) {
 			return EMPTY_LIST;
@@ -279,7 +299,6 @@ public class MemURI implements URI, MemResource {
 		}
 	}
 
-	// Implements MemResource.getContextStatementCount()
 	public int getContextStatementCount() {
 		if (contextStatements == null) {
 			return 0;
@@ -289,7 +308,6 @@ public class MemURI implements URI, MemResource {
 		}
 	}
 
-	// Implements MemResource.addContextStatement(MemStatement)
 	public void addContextStatement(MemStatement st) {
 		if (contextStatements == null) {
 			contextStatements = new MemStatementList(4);
@@ -298,12 +316,21 @@ public class MemURI implements URI, MemResource {
 		contextStatements.add(st);
 	}
 
-	// Implements MemResource.removeContextStatement(MemStatement)
 	public void removeContextStatement(MemStatement st) {
 		contextStatements.remove(st);
 
 		if (contextStatements.isEmpty()) {
 			contextStatements = null;
+		}
+	}
+
+	public void cleanSnapshotsFromContextStatements(int currentSnapshot) {
+		if (contextStatements != null) {
+			contextStatements.cleanSnapshots(currentSnapshot);
+
+			if (contextStatements.isEmpty()) {
+				contextStatements = null;
+			}
 		}
 	}
 }

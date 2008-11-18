@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -37,6 +37,16 @@ public interface MemResource extends MemValue, Resource {
 	public void removeSubjectStatement(MemStatement st);
 
 	/**
+	 * Removes statements from old snapshots (those that have expired at or
+	 * before the specified snapshot version) from this MemValue's list of
+	 * statements for which it is the subject.
+	 * 
+	 * @param currentSnapshot
+	 *        The current snapshot version.
+	 */
+	public void cleanSnapshotsFromSubjectStatements(int currentSnapshot);
+
+	/**
 	 * Gets the list of statements for which this MemResource represents the
 	 * context.
 	 * @return a MemStatementList containing the statements.
@@ -61,4 +71,14 @@ public interface MemResource extends MemValue, Resource {
 	 * it represents the context.
 	 */
 	public void removeContextStatement(MemStatement st);
+	
+	/**
+	 * Removes statements from old snapshots (those that have expired at or
+	 * before the specified snapshot version) from this MemValue's list of
+	 * statements for which it is the context.
+	 * 
+	 * @param currentSnapshot
+	 *        The current snapshot version.
+	 */
+	public void cleanSnapshotsFromContextStatements(int currentSnapshot);
 }
