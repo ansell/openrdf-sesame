@@ -106,10 +106,10 @@ public class RDFRemover extends RDFHandlerBase {
 		try {
 			if (enforceContext) {
 				// Override supplied context info
-				con.removePattern(st.getSubject(), st.getPredicate(), st.getObject(), context);
+				con.removeMatch(st.getSubject(), st.getPredicate(), st.getObject(), context);
 			}
 			else {
-				con.removePattern(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+				con.removeMatch(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 			}
 		}
 		catch (StoreException e) {

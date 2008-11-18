@@ -363,14 +363,14 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public void removePattern(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		if (isDelegatingRemove()) {
-			getDelegate().removePattern(subject, predicate, object, contexts);
+			getDelegate().removeMatch(subject, predicate, object, contexts);
 		}
 		else {
-			super.removePattern(subject, predicate, object, contexts);
+			super.removeMatch(subject, predicate, object, contexts);
 		}
 	}
 
@@ -435,7 +435,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		super.removePattern(subject, predicate, object, contexts);
+		super.removeMatch(subject, predicate, object, contexts);
 	}
 
 	/**

@@ -166,7 +166,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 			}
 		}
 		if (!denied) {
-			getDelegate().removePattern(subject, predicate, object, contexts);
+			getDelegate().removeMatch(subject, predicate, object, contexts);
 
 		}
 	}

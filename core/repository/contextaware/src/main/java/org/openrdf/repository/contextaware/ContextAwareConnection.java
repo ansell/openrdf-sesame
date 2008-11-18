@@ -324,7 +324,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void exportStatements(Resource subj, URI pred, Value obj, RDFHandler handler, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
-		exportPattern(subj, pred, obj, handler, contexts);
+		exportMatch(subj, pred, obj, handler, contexts);
 	}
 
 	/**
@@ -344,7 +344,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public void exportPattern(Resource subj, URI pred, Value obj, RDFHandler hander, Resource... contexts)
+	public void exportMatch(Resource subj, URI pred, Value obj, RDFHandler hander, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
 		if (contexts == null || contexts.length < 1) {
@@ -611,14 +611,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getRemoveContexts()
 	 */
 	@Override
-	public void removePattern(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		if (contexts == null || contexts.length < 1) {
-			super.removePattern(subject, predicate, object, removeContexts);
+			super.removeMatch(subject, predicate, object, removeContexts);
 		}
 		else {
-			super.removePattern(subject, predicate, object, contexts);
+			super.removeMatch(subject, predicate, object, contexts);
 		}
 	}
 
@@ -702,7 +702,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			}
 			throw new AssertionError(e);
 		}
-		getDelegate().removePattern(subject, predicate, object, contexts);
+		getDelegate().removeMatch(subject, predicate, object, contexts);
 	}
 
 	private <Q extends Query> Q initQuery(Q query) {
