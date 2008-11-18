@@ -749,12 +749,15 @@ public class MemoryStore extends NotifyingSailBase {
 	{
 		logger.debug("rolling back transaction");
 
+		boolean statementsDeprecated = false;
+
 		for (MemStatement st : txnStatements.keySet()) {
 			TxnStatus txnStatus = st.getTxnStatus();
 			if (txnStatus == TxnStatus.NEW || txnStatus == TxnStatus.ZOMBIE) {
 				// Statement has been added during this transaction and deprecates
 				// immediately
 				st.setTillSnapshot(currentSnapshot);
+				statementsDeprecated = true;
 			}
 			else if (txnStatus != TxnStatus.NEUTRAL) {
 				// Return statement to neutral status
@@ -764,7 +767,9 @@ public class MemoryStore extends NotifyingSailBase {
 
 		txnStatements = null;
 
-		scheduleSnapshotCleanup();
+		if (statementsDeprecated) {
+			scheduleSnapshotCleanup();
+		}
 	}
 
 	protected void scheduleSyncTask()
@@ -867,6 +872,8 @@ public class MemoryStore extends NotifyingSailBase {
 	protected void cleanSnapshots()
 		throws InterruptedException
 	{
+		//System.out.println("cleanSnapshots() starting...");
+		//long startTime = System.currentTimeMillis();
 		MemStatementList statements = this.statements;
 
 		if (statements == null) {
@@ -881,7 +888,7 @@ public class MemoryStore extends NotifyingSailBase {
 
 				if (st.getTillSnapshot() <= currentSnapshot) {
 					// stale statement
-					st.removeFromComponentLists();
+					st.cleanSnapshotsFromComponentLists(currentSnapshot);
 					statements.remove(i);
 				}
 				else {
@@ -895,6 +902,9 @@ public class MemoryStore extends NotifyingSailBase {
 		finally {
 			stLock.release();
 		}
+
+		//long endTime = System.currentTimeMillis();
+		//System.out.println("cleanSnapshots() took " + (endTime - startTime) + " ms");
 	}
 
 	protected void scheduleSnapshotCleanup() {
