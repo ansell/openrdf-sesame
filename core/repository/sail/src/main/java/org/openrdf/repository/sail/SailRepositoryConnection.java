@@ -7,7 +7,6 @@ package org.openrdf.repository.sail;
 
 import info.aduna.iteration.CloseableIteration;
 
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -143,8 +142,6 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		return createGraphResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
 				contexts));
 	}
@@ -207,8 +204,6 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	public void clear(Resource... contexts)
 		throws StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		sailConnection.removeStatements(null, null, null, contexts);
 		autoCommit();
 	}

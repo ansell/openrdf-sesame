@@ -84,15 +84,13 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 	}
 
 	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		boolean graphChanged = false;
 
-		if (contexts.length == 0) {
+		if (contexts != null && contexts.length == 0) {
 			graphChanged = add(valueFactory.createStatement(subj, pred, obj));
 		}
 		else {
-			for (Resource context : contexts) {
+			for (Resource context : OpenRDFUtil.notNull(contexts)) {
 				graphChanged |= add(valueFactory.createStatement(subj, pred, obj, context));
 			}
 		}
@@ -101,7 +99,6 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 	}
 
 	public Iterator<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts) {
-		OpenRDFUtil.verifyContextNotNull(contexts);
 		return new PatternIterator(iterator(), subj, pred, obj, contexts);
 	}
 	
@@ -139,7 +136,7 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 			this.subj = subj;
 			this.pred = pred;
 			this.obj = obj;
-			this.contexts = contexts;
+			this.contexts = OpenRDFUtil.notNull(contexts);
 		}
 
 		@Override

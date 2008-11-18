@@ -381,7 +381,7 @@ public abstract class Protocol {
 	 *         If the <tt>contexts</tt> is <tt>null</tt>.
 	 */
 	public static String[] encodeContexts(Resource... contexts) {
-		OpenRDFUtil.verifyContextNotNull(contexts);
+		contexts = OpenRDFUtil.notNull(contexts);
 
 		String[] result = new String[contexts.length];
 		for (int index = 0; index < contexts.length; index++) {

@@ -21,6 +21,7 @@ import java.util.Set;
 
 import info.aduna.io.FileUtil;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -345,11 +346,11 @@ public class LocalRepositoryManager extends RepositoryManager {
 		private void registerModifiedContexts(RepositoryConnection conn, Resource... contexts) {
 			Set<Resource> modifiedContexts = getModifiedContexts(conn);
 			// wildcard used for context
-			if (contexts == null) {
+			if (contexts != null && contexts.length == 0) {
 				modifiedAllContextsByConnection.put(conn, true);
 			}
 			else {
-				for (Resource context : contexts) {
+				for (Resource context : OpenRDFUtil.notNull(contexts)) {
 					modifiedContexts.add(context);
 				}
 			}

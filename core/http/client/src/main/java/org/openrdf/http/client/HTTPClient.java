@@ -46,7 +46,6 @@ import org.slf4j.LoggerFactory;
 import info.aduna.io.IOUtil;
 import info.aduna.net.http.HttpClientUtil;
 
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.http.protocol.error.ErrorInfo;
@@ -636,8 +635,6 @@ public class HTTPClient {
 	protected void upload(RequestEntity reqEntity, String baseURI, boolean overwrite, Resource... contexts)
 		throws IOException, RDFParseException, StoreException, UnauthorizedException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		checkRepositoryURL();
 
 		String uploadURL = Protocol.getStatementsLocation(getRepositoryURL());

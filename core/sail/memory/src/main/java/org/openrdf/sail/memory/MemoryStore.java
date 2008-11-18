@@ -18,6 +18,7 @@ import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadPrefReadWriteLockManager;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -489,6 +490,7 @@ public class MemoryStore extends InferencerSailBase {
 		MemResource[] memContexts;
 		MemStatementList smallestList;
 
+		contexts = OpenRDFUtil.notNull(contexts);
 		if (contexts.length == 0) {
 			memContexts = new MemResource[0];
 			smallestList = statements;
