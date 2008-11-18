@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -242,6 +243,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	}
 
 	public RdbmsResource[] asRdbmsResource(Resource... contexts) {
+		contexts = OpenRDFUtil.notNull(contexts);
 		RdbmsResource[] ctxs = new RdbmsResource[contexts.length];
 		for (int i = 0; i < ctxs.length; i++) {
 			ctxs[i] = asRdbmsResource(contexts[i]);

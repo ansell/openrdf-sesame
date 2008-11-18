@@ -24,7 +24,6 @@ import info.aduna.io.GZipUtil;
 import info.aduna.io.ZipUtil;
 import info.aduna.iteration.Iteration;
 
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -335,8 +334,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 			Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		RDFParser rdfParser = Rio.createParser(dataFormat, getValueFactory());
 
 		rdfParser.setVerifyData(true);
@@ -384,8 +381,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void add(Iterable<? extends Statement> statements, Resource... contexts)
 		throws StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		boolean autoCommit = isAutoCommit();
 		setAutoCommit(false);
 
@@ -415,8 +410,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 			Resource... contexts)
 		throws StoreException, E
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		boolean autoCommit = isAutoCommit();
 		setAutoCommit(false);
 
@@ -445,7 +438,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void add(Statement st, Resource... contexts)
 		throws StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
 		addWithoutCommit(st, contexts);
 		autoCommit();
 	}
@@ -453,7 +445,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
 		addWithoutCommit(subject, predicate, object, contexts);
 		autoCommit();
 	}
@@ -461,8 +452,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void remove(Iterable<? extends Statement> statements, Resource... contexts)
 		throws StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		boolean autoCommit = isAutoCommit();
 		setAutoCommit(false);
 
@@ -520,7 +509,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void remove(Statement st, Resource... contexts)
 		throws StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
 		removeWithoutCommit(st, contexts);
 		autoCommit();
 	}
@@ -535,7 +523,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
 		removeWithoutCommit(subject, predicate, object, contexts);
 		autoCommit();
 	}
@@ -555,7 +542,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	protected void addWithoutCommit(Statement st, Resource... contexts)
 		throws StoreException
 	{
-		if (contexts.length == 0 && st.getContext() != null) {
+		if (contexts != null && contexts.length == 0 && st.getContext() != null) {
 			contexts = new Resource[] { st.getContext() };
 		}
 
@@ -569,7 +556,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	protected void removeWithoutCommit(Statement st, Resource... contexts)
 		throws StoreException
 	{
-		if (contexts.length == 0 && st.getContext() != null) {
+		if (contexts != null && contexts.length == 0 && st.getContext() != null) {
 			contexts = new Resource[] { st.getContext() };
 		}
 

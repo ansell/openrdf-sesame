@@ -29,9 +29,7 @@ public abstract class ContextOperation implements TransactionOperation {
 	}
 
 	public void setContexts(Resource... contexts) {
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
-		this.contexts = contexts;
+		this.contexts = OpenRDFUtil.notNull(contexts);
 	}
 
 	@Override

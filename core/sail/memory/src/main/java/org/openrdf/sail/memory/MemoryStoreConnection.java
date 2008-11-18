@@ -13,6 +13,7 @@ import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -339,14 +340,14 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	{
 		Statement st = null;
 
-		if (contexts.length == 0) {
+		if (contexts != null && contexts.length == 0) {
 			st = store.addStatement(subj, pred, obj, null, explicit);
 			if (st != null) {
 				notifyStatementAdded(st);
 			}
 		}
 		else {
-			for (Resource context : contexts) {
+			for (Resource context : OpenRDFUtil.notNull(contexts)) {
 				st = store.addStatement(subj, pred, obj, context, explicit);
 				if (st != null) {
 					notifyStatementAdded(st);

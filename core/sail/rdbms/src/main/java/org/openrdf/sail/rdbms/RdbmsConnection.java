@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -84,11 +85,11 @@ public class RdbmsConnection extends SailConnectionBase {
 		throws StoreException
 	{
 		try {
-			if (contexts.length == 0) {
+			if (contexts != null && contexts.length == 0) {
 				triples.add(vf.createStatement(subj, pred, obj));
 			}
 			else {
-				for (Resource ctx : contexts) {
+				for (Resource ctx : OpenRDFUtil.notNull(contexts)) {
 					triples.add(vf.createStatement(subj, pred, obj, ctx));
 				}
 			}

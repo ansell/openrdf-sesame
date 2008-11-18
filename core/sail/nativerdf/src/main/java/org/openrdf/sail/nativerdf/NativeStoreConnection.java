@@ -206,8 +206,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		Lock readLock = nativeStore.getReadLock();
 
 		try {
@@ -235,11 +233,11 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 				}
 			}
 			List<Integer> contextIDs;
-			if (contexts.length == 0) {
+			if (contexts != null && contexts.length == 0) {
 				contextIDs = Arrays.asList(NativeValue.UNKNOWN_ID);
 			}
 			else {
-				contextIDs = nativeStore.getContextIDs(contexts);
+				contextIDs = nativeStore.getContextIDs(OpenRDFUtil.notNull(contexts));
 			}
 
 			long size = 0L;
@@ -372,8 +370,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	private boolean addStatement(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
 		throws StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		boolean result = false;
 
 		try {
@@ -382,11 +378,11 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			int predID = valueStore.storeValue(pred);
 			int objID = valueStore.storeValue(obj);
 
-			if (contexts.length == 0) {
+			if (contexts != null && contexts.length == 0) {
 				contexts = new Resource[] { null };
 			}
 
-			for (Resource context : contexts) {
+			for (Resource context : OpenRDFUtil.notNull(contexts)) {
 				int contextID = 0;
 				if (context != null) {
 					contextID = valueStore.storeValue(context);
@@ -438,8 +434,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	private int removeStatements(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
 		throws StoreException
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
 		try {
 			TripleStore tripleStore = nativeStore.getTripleStore();
 			ValueStore valueStore = nativeStore.getValueStore();
@@ -466,6 +460,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 				}
 			}
 
+			contexts = OpenRDFUtil.notNull(contexts);
 			List<Integer> contextIDList = new ArrayList<Integer>(contexts.length);
 			if (contexts.length == 0) {
 				contextIDList.add(NativeValue.UNKNOWN_ID);

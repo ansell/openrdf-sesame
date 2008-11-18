@@ -106,8 +106,7 @@ public class RDFInserter extends RDFHandlerBase {
 	 *        context(s) should be enforced.
 	 */
 	public void enforceContext(Resource... contexts) {
-		OpenRDFUtil.verifyContextNotNull(contexts);
-		this.contexts = contexts;
+		this.contexts = OpenRDFUtil.notNull(contexts);
 	}
 
 	/**

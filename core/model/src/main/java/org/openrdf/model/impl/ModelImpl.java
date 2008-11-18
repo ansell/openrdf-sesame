@@ -24,6 +24,7 @@ import java.util.Set;
 
 import info.aduna.collections.iterators.FilterIterator;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -67,8 +68,8 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 	}
 
 	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
-		Resource[] ctxs = contexts;
-		if (ctxs == null || ctxs.length == 0) {
+		Resource[] ctxs = OpenRDFUtil.notNull(contexts);
+		if (ctxs.length == 0) {
 			ctxs = NULL_CTX;
 		}
 		boolean changed = false;
@@ -348,7 +349,8 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			o = asGraphNode(obj).objects;
 		}
 		Set<ModelStatement> set;
-		if (contexts != null && contexts.length == 1) {
+		contexts = OpenRDFUtil.notNull(contexts);
+		if (contexts.length == 1) {
 			Set<ModelStatement> c = asGraphNode(contexts[0]).contexts;
 			set = smallest(statements, s, p, o, c);
 		}
@@ -386,13 +388,13 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 	}
 
 	boolean matches(Resource stContext, Resource... contexts) {
-		if (contexts == null || contexts.length == 0) {
+		if (contexts != null && contexts.length == 0) {
 			// Any context matches
 			return true;
 		}
 		else {
 			// Accept if one of the contexts from the pattern matches
-			for (Resource context : contexts) {
+			for (Resource context : OpenRDFUtil.notNull(contexts)) {
 				if (context == null && stContext == null) {
 					return true;
 				}
@@ -485,7 +487,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			this.subj = subj;
 			this.pred = pred;
 			this.obj = obj;
-			this.contexts = contexts;
+			this.contexts = OpenRDFUtil.notNull(contexts);
 		}
 
 		@Override
@@ -559,7 +561,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (o == null) {
 				o = obj;
 			}
-			if (c == null || c.length == 0) {
+			if (c != null && c.length == 0) {
 				c = contexts;
 			}
 			return ModelImpl.this.add(s, p, o, c);
@@ -571,7 +573,8 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		}
 
 		public boolean clear(Resource... c) {
-			if (c == null || c.length == 0) {
+			c = OpenRDFUtil.notNull(c);
+			if (c.length == 0) {
 				return remove(subj, pred, obj, contexts);
 			}
 			else if (matches(c, contexts)) {
@@ -593,7 +596,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (o == null) {
 				o = obj;
 			}
-			if (c == null || c.length == 0) {
+			if (c != null && c.length == 0) {
 				c = contexts;
 			}
 			return ModelImpl.this.remove(s, p, o, c);
@@ -611,7 +614,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (o == null) {
 				o = obj;
 			}
-			if (c == null || c.length == 0) {
+			if (c != null && c.length == 0) {
 				c = contexts;
 			}
 			return ModelImpl.this.contains(s, p, o, c);
@@ -629,7 +632,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (o == null) {
 				o = obj;
 			}
-			if (c == null || c.length == 0) {
+			if (c != null && c.length == 0) {
 				c = contexts;
 			}
 			return ModelImpl.this.filter(s, p, o, c);
@@ -665,7 +668,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (obj != null) {
 				return Collections.singleton(obj);
 			}
-			if (c == null || c.length == 0) {
+			if (c != null && c.length == 0) {
 				c = contexts;
 			}
 			return ModelImpl.this.objects(s, p, c);
@@ -683,7 +686,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (o == null) {
 				o = obj;
 			}
-			if (c == null || c.length == 0) {
+			if (c != null && c.length == 0) {
 				c = contexts;
 			}
 			return ModelImpl.this.predicates(s, o, c);
@@ -701,7 +704,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (o == null) {
 				o = obj;
 			}
-			if (c == null || c.length == 0) {
+			if (c != null && c.length == 0) {
 				c = contexts;
 			}
 			return ModelImpl.this.subjects(p, o, c);
@@ -725,7 +728,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (obj != null && !obj.equals(o)) {
 				return false;
 			}
-			if (!matches(c, contexts)) {
+			if (!matches(OpenRDFUtil.notNull(c), contexts)) {
 				return false;
 			}
 			return true;
@@ -994,7 +997,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			this.subj = subj;
 			this.pred = pred;
 			this.obj = obj;
-			this.contexts = contexts;
+			this.contexts = OpenRDFUtil.notNull(contexts);
 		}
 
 		@Override

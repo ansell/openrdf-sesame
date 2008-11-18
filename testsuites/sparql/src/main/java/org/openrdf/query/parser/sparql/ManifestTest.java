@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import info.aduna.io.FileUtil;
 import info.aduna.io.ZipUtil;
 
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
@@ -118,7 +117,6 @@ public class ManifestTest {
 		InputStream in = url.openStream();
 
 		try {
-			OpenRDFUtil.verifyContextNotNull(contexts);
 			final ValueFactory vf = con.getValueFactory();
 			RDFParser rdfParser = new TurtleParser();
 			rdfParser.setValueFactory(vf);

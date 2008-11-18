@@ -17,6 +17,7 @@ import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -324,11 +325,11 @@ public class NativeStore extends InferencerSailBase {
 	protected List<Integer> getContextIDs(Resource... contexts)
 		throws IOException
 	{
-		assert contexts.length > 0 : "contexts must not be empty";
+		assert contexts == null || contexts.length > 0 : "contexts must not be empty";
 
 		// Filter duplicates
 		LinkedHashSet<Resource> contextSet = new LinkedHashSet<Resource>();
-		Collections.addAll(contextSet, contexts);
+		Collections.addAll(contextSet, OpenRDFUtil.notNull(contexts));
 
 		// Fetch IDs, filtering unknown resources from the result
 		List<Integer> contextIDs = new ArrayList<Integer>(contextSet.size());
@@ -431,6 +432,7 @@ public class NativeStore extends InferencerSailBase {
 			}
 		}
 
+		contexts = OpenRDFUtil.notNull(contexts);
 		List<Integer> contextIDList = new ArrayList<Integer>(contexts.length);
 		if (contexts.length == 0) {
 			contextIDList.add(NativeValue.UNKNOWN_ID);
