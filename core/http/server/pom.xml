@@ -23,6 +23,10 @@
 
 		<dependency>
 			<groupId>info.aduna.appbase</groupId>
+			<artifactId>aduna-appbase-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>info.aduna.appbase</groupId>
 			<artifactId>aduna-appbase-webapp-system</artifactId>
 			<type>war</type>
 		</dependency>
