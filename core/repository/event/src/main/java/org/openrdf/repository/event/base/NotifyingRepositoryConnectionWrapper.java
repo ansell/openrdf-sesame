@@ -181,7 +181,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 			} finally {
 				stmts.close();
 			}
-			getDelegate().removePattern(subj, pred, obj, ctx);
+			getDelegate().removeMatch(subj, pred, obj, ctx);
 			for (RepositoryConnectionListener listener : listeners) {
 				for (Statement stmt : list) {
 					Resource s = stmt.getSubject();
@@ -192,12 +192,12 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 				}
 			}
 		} else if (activated) {
-			getDelegate().removePattern(subj, pred, obj, ctx);
+			getDelegate().removeMatch(subj, pred, obj, ctx);
 			for (RepositoryConnectionListener listener : listeners) {
 				listener.remove(this, subj, pred, obj, ctx);
 			}
 		} else {
-			getDelegate().removePattern(subj, pred, obj, ctx);
+			getDelegate().removeMatch(subj, pred, obj, ctx);
 		}
 	}
 

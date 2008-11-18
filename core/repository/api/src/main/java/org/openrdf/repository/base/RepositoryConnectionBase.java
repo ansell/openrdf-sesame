@@ -529,10 +529,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public final void remove(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		removePattern(subject, predicate, object, contexts);
+		removeMatch(subject, predicate, object, contexts);
 	}
 
-	public void removePattern(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
@@ -543,7 +543,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void clear(Resource... contexts)
 		throws StoreException
 	{
-		removePattern(null, null, null, contexts);
+		removeMatch(null, null, null, contexts);
 	}
 
 	public long size(Resource... contexts)

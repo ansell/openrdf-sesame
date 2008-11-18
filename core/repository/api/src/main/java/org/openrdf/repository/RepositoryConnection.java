@@ -746,7 +746,7 @@ public interface RepositoryConnection {
 	 *         If the statement(s) could not be removed from the repository, for
 	 *         example because the repository is not writable.
 	 */
-	public void removePattern(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException;
 
 	/**
