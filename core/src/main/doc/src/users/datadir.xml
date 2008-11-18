@@ -6,7 +6,7 @@
 		as a library, or if you consider the defaults to be fine.
 	</para>
 	<para>
-		All OpenRDF applications (Sesame Server, Workbench, and
+		All OpenRDF applications (Sesame Server, and
 		Console) store configuration files and repository data in a
 		single directory (with subdirectories). On Windows machines, this
 		directory is <filename>%APPDATA%\Aduna\</filename> by default,

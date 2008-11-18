@@ -45,10 +45,6 @@
 			<source>http/server/target/openrdf-sesame.war</source>
 			<outputDirectory>war</outputDirectory>
 		</file>
-		<file>
-			<source>http/workbench/target/openrdf-workbench.war</source>
-			<outputDirectory>war</outputDirectory>
-		</file>
 
 		<file>
 			<source>src/main/dist/bin/console.bat</source>

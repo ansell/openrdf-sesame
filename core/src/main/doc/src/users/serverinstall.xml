@@ -28,25 +28,20 @@
 	<section id="section-sesame-server-installation" xreflabel="Sesame server installation">
 		<title>Sesame server installation</title>
 		<para>
-			The Sesame 2.0 server software comes in the form of two Java Web
-			Applications: <emphasis>Sesame (HTTP) server</emphasis> and
-			<emphasis>OpenRDF Workbench</emphasis>.
+			The Sesame 2.0 server software comes in the form of a Java Web
+			Applications: <emphasis>Sesame (HTTP) server</emphasis>.
 		</para>
 		<para>
 			Sesame Server provides HTTP access to Sesame repositories and is
-			meant to be accessed by other applications. Apart from some
-			functionality to view the server's log messages, it doesn't provide
-			any user oriented functionality. Instead, the user oriented
-			functionality is part of OpenRDF Workbench. OpenRDF Workbench
-			provides a web interface for querying, updating and exploring the
-			repositories of a Sesame Server.
+			meant to be accessed by other applications. It doesn't provide
+			any user oriented functionality.
 		</para>
 		<para>
 			If you have not done so already, you will first need to
 			<ulink url="http://www.openrdf.org/download.jsp">download</ulink>
-			the Sesame 2.0 SDK. Both Sesame Server and OpenRDF Workbench can be
+			the Sesame 2.0 SDK. The Sesame Server can be
 			found in the <filename>war</filename> directory of the SDK. The
-			war-files in this directory need to be deployed in a Java Servlet
+			war-file in this directory needs to be deployed in a Java Servlet
 			Container (see <xref linkend="section-server-required-software"/>).
 			The deployment process is container-specific, please consult the
 			documentation for your container on how to deploy a web application.
@@ -57,20 +52,17 @@
 			You can point your browser at this location to verify that the
 			deployment succeeded. Your browser should show the Sesame welcome
 			screen as well as some options to view the server logs, among other
-			things. Similarly, after deployment, the OpenRDF Workbench should be
-			available at path <filename>/openrdf-workbench</filename>.
+			things.
 		</para>
 	</section>
 
 	<section>
 		<title>Logging Configuration</title>
 		<para>
-			Both Sesame Server and OpenRDF Workbench use the
+			The Sesame Server use the
 			<ulink url="http://logback.qos.ch/">Logback</ulink> logging framework.
 			In its default configuration, all Sesame Server log messages are sent
-			to the log file <filename>[ADUNA_DATA]/OpenRDF Sesame/logs/main.log</filename>
-			(and log messages for the Workbench to the same file in
-			<filename>[ADUNA_DATA]/OpenRDF workbench</filename>). See
+			to the log file <filename>[ADUNA_DATA]/OpenRDF Sesame/logs/main.log</filename>. See
 			<xref linkend="chapter-datadir-config"/> for more info about data
 			directories.
 		</para>
