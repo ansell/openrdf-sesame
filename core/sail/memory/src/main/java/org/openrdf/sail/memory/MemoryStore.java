@@ -739,7 +739,7 @@ public class MemoryStore extends NotifyingSailBase {
 			notifySailChanged(event);
 		}
 
-		if (statementsDeprecated) {
+		if (statementsRemoved || statementsDeprecated) {
 			scheduleSnapshotCleanup();
 		}
 	}
