@@ -7,6 +7,7 @@ package org.openrdf.sail.memory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -881,14 +882,39 @@ public class MemoryStore extends NotifyingSailBase {
 			return;
 		}
 
+		// Sets used to keep track of which lists have already been processed
+		HashSet<MemValue> processedSubjects = new HashSet<MemValue>();
+		HashSet<MemValue> processedPredicates = new HashSet<MemValue>();
+		HashSet<MemValue> processedObjects = new HashSet<MemValue>();
+		HashSet<MemValue> processedContexts = new HashSet<MemValue>();
+
 		Lock stLock = statementListLockManager.getWriteLock();
 		try {
 			for (int i = statements.size() - 1; i >= 0; i--) {
 				MemStatement st = statements.get(i);
 
 				if (st.getTillSnapshot() <= currentSnapshot) {
+					MemResource subj = st.getSubject();
+					if (processedSubjects.add(subj)) {
+						subj.cleanSnapshotsFromSubjectStatements(currentSnapshot);
+					}
+
+					MemURI pred = st.getPredicate();
+					if (processedPredicates.add(pred)) {
+						pred.cleanSnapshotsFromPredicateStatements(currentSnapshot);
+					}
+
+					MemValue obj = st.getObject();
+					if (processedObjects.add(obj)) {
+						obj.cleanSnapshotsFromObjectStatements(currentSnapshot);
+					}
+
+					MemResource context = st.getContext();
+					if (context != null && processedContexts.add(context)) {
+						context.cleanSnapshotsFromContextStatements(currentSnapshot);
+					}
+
 					// stale statement
-					st.cleanSnapshotsFromComponentLists(currentSnapshot);
 					statements.remove(i);
 				}
 				else {
