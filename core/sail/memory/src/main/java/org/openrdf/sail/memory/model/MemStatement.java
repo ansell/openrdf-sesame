@@ -172,14 +172,4 @@ public class MemStatement extends ContextStatementImpl {
 			context.removeContextStatement(this);
 		}
 	}
-
-	public void cleanSnapshotsFromComponentLists(int currentSnapshot) {
-		getSubject().cleanSnapshotsFromSubjectStatements(currentSnapshot);
-		getPredicate().cleanSnapshotsFromPredicateStatements(currentSnapshot);
-		getObject().cleanSnapshotsFromObjectStatements(currentSnapshot);
-		MemResource context = getContext();
-		if (context != null) {
-			context.cleanSnapshotsFromContextStatements(currentSnapshot);
-		}
-	}
 }
