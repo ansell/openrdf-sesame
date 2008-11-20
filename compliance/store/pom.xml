@@ -58,8 +58,7 @@
 
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-http-server</artifactId>
-			<type>war</type>
+			<artifactId>sesame-http-server-spring</artifactId>
 		</dependency>
 
 		<dependency>

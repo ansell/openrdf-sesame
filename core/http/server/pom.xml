@@ -25,23 +25,6 @@
 			<groupId>info.aduna.appbase</groupId>
 			<artifactId>aduna-appbase-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>info.aduna.appbase</groupId>
-			<artifactId>aduna-appbase-webapp-system</artifactId>
-			<type>war</type>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-aop</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-xml</artifactId>
-			<scope>test</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>

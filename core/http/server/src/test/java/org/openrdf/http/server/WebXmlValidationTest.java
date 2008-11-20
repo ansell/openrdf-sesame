@@ -23,7 +23,7 @@ public class WebXmlValidationTest extends TestCase {
 		try {
 			File webXml = new File("src/main/webapp/WEB-INF/web.xml");
 
-			DocumentUtil.getDocument(webXml.toURL(), SchemaFactory.newInstance(
+			DocumentUtil.getDocument(webXml.toURI().toURL(), SchemaFactory.newInstance(
 					XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema());
 		}
 		catch (Exception e) {
