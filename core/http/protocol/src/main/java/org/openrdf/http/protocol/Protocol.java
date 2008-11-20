@@ -45,11 +45,6 @@ public abstract class Protocol {
 	public static final String CONTEXT_PARAM_NAME = "context";
 
 	/**
-	 * Parameter name for the 'limit' parameter.
-	 */
-	public static final String LIMIT_PARAM_NAME = "limit";
-
-	/**
 	 * Parameter value for the NULL context.
 	 */
 	public static final String NULL_PARAM_VALUE = "null";

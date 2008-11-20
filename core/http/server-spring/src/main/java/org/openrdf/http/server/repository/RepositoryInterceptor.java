@@ -10,14 +10,11 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import org.openrdf.http.protocol.Protocol;
-import org.openrdf.http.server.ClientHTTPException;
-import org.openrdf.http.server.ProtocolUtil;
-import org.openrdf.http.server.ServerHTTPException;
-import org.openrdf.http.server.ServerInterceptor;
+import org.openrdf.http.server.exceptions.ClientHTTPException;
+import org.openrdf.http.server.exceptions.ServerHTTPException;
+import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.manager.RepositoryManager;
@@ -26,21 +23,24 @@ import org.openrdf.store.StoreException;
 
 /**
  * Interceptor for repository requests. Handles the opening and closing of
- * connections to the repository specified in the request. Should not be a
- * singleton bean! Configure as inner bean in openrdf-servlet.xml
+ * connections to the repository specified in the request.
  * 
  * @author Herko ter Horst
  * @author Arjohn Kampman
+ * @author James Leigh
  */
-public class RepositoryInterceptor extends ServerInterceptor {
+public class RepositoryInterceptor extends HandlerInterceptorAdapter {
 
 	/*-----------*
 	 * Constants *
 	 *-----------*/
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	/**
+	 * 
+	 */
+	private static final String REPOSITORIES = "/repositories/";
 
-	private static final String REPOSITORY_ID_KEY = "repositoryID";
+	private static final String REPOSITORY_MANAGER = "repositoryManager";
 
 	private static final String REPOSITORY_KEY = "repository";
 
@@ -49,12 +49,8 @@ public class RepositoryInterceptor extends ServerInterceptor {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-	
+
 	private RepositoryManager repositoryManager;
-
-	private String repositoryID;
-
-	private RepositoryConnection repositoryCon;
 
 	/*---------*
 	 * Methods *
@@ -63,45 +59,16 @@ public class RepositoryInterceptor extends ServerInterceptor {
 	public void setRepositoryManager(RepositoryManager repMan) {
 		repositoryManager = repMan;
 	}
-	
+
 	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse respons, Object handler)
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 		throws Exception
 	{
-		String pathInfoStr = request.getPathInfo();
-		logger.debug("path info: {}", pathInfoStr);
-
-		repositoryID = null;
-
-		if (pathInfoStr != null && !pathInfoStr.equals("/")) {
-			String[] pathInfo = pathInfoStr.substring(1).split("/");
-			if (pathInfo.length > 0) {
-				repositoryID = pathInfo[0];
-				logger.debug("repositoryID is '{}'", repositoryID);
-			}
-		}
+		request.setAttribute(REPOSITORY_MANAGER, repositoryManager);
+		String repositoryID = getRepositoryID(request);
 
 		ProtocolUtil.logRequestParameters(request);
 
-		return super.preHandle(request, respons, handler);
-	}
-
-	@Override
-	protected String getThreadName()
-	{
-		String threadName = Protocol.REPOSITORIES;
-
-		if (repositoryID != null) {
-			threadName += "/" + repositoryID;
-		}
-
-		return threadName;
-	}
-
-	@Override
-	protected void setRequestAttributes(HttpServletRequest request)
-		throws ClientHTTPException, ServerHTTPException
-	{
 		if (repositoryID != null) {
 			try {
 				Repository repository = repositoryManager.getRepository(repositoryID);
@@ -110,8 +77,7 @@ public class RepositoryInterceptor extends ServerInterceptor {
 					throw new ClientHTTPException(SC_NOT_FOUND, "Unknown repository: " + repositoryID);
 				}
 
-				repositoryCon = repository.getConnection();
-				request.setAttribute(REPOSITORY_ID_KEY, repositoryID);
+				RepositoryConnection repositoryCon = repository.getConnection();
 				request.setAttribute(REPOSITORY_KEY, repository);
 				request.setAttribute(REPOSITORY_CONNECTION_KEY, repositoryCon);
 			}
@@ -122,12 +88,15 @@ public class RepositoryInterceptor extends ServerInterceptor {
 				throw new ServerHTTPException(e.getMessage(), e);
 			}
 		}
+		return super.preHandle(request, response, handler);
 	}
 
 	@Override
-	protected void cleanUpResources()
+	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
+			Exception exception)
 		throws ServerHTTPException
 	{
+		RepositoryConnection repositoryCon = getRepositoryConnection(request);
 		if (repositoryCon != null) {
 			try {
 				repositoryCon.close();
@@ -138,8 +107,20 @@ public class RepositoryInterceptor extends ServerInterceptor {
 		}
 	}
 
+	public static RepositoryManager getRepositoryManager(HttpServletRequest request) {
+		return (RepositoryManager)request.getAttribute(REPOSITORY_MANAGER);
+	}
+
 	public static String getRepositoryID(HttpServletRequest request) {
-		return (String)request.getAttribute(REPOSITORY_ID_KEY);
+		String path = request.getRequestURI();
+		int start = path.indexOf(REPOSITORIES);
+		if (start < 0)
+			return null;
+		String id = path.substring(start + REPOSITORIES.length());
+		if (id.contains("/")) {
+			id = id.substring(0, id.indexOf('/'));
+		}
+		return id;
 	}
 
 	public static Repository getRepository(HttpServletRequest request) {
