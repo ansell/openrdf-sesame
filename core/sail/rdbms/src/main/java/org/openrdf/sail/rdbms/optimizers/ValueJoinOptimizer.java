@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.sail.rdbms.algebra.BNodeColumn;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
@@ -78,9 +77,9 @@ public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExcept
 		this.hashes = hashes;
 	}
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+	public void optimize(QueryModel query, BindingSet bindings) {
 		join = null;
-		tupleExpr.visit(this);
+		query.visit(this);
 	}
 
 	@Override

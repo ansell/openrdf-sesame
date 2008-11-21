@@ -63,11 +63,11 @@ import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.query.parser.ParsedBooleanQuery;
-import org.openrdf.query.parser.ParsedGraphQuery;
-import org.openrdf.query.parser.ParsedQuery;
-import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.parser.BooleanQueryModel;
+import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.query.parser.serql.SeRQLUtil;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
 import org.openrdf.repository.Repository;
@@ -1197,14 +1197,14 @@ public class Console {
 	private void evaluateQuery(QueryLanguage ql, String queryString) {
 		try {
 			queryString = addQueryPrefixes(ql, queryString);
-			ParsedQuery query = QueryParserUtil.parseQuery(ql, queryString, null);
-			if (query instanceof ParsedTupleQuery) {
+			QueryModel query = QueryParserUtil.parseQuery(ql, queryString, null);
+			if (query instanceof TupleQueryModel) {
 				evaluateTupleQuery(ql, queryString);
 			}
-			else if (query instanceof ParsedGraphQuery) {
+			else if (query instanceof GraphQueryModel) {
 				evaluateGraphQuery(ql, queryString);
 			}
-			else if (query instanceof ParsedBooleanQuery) {
+			else if (query instanceof BooleanQueryModel) {
 				evaluateBooleanQuery(ql, queryString);
 			}
 			else {

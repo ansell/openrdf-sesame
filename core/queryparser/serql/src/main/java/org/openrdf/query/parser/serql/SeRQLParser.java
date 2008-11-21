@@ -11,11 +11,11 @@ import java.util.Map;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.parser.ParsedGraphQuery;
-import org.openrdf.query.parser.ParsedQuery;
-import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.query.parser.QueryParser;
+import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.query.parser.serql.ast.ASTGraphQuery;
 import org.openrdf.query.parser.serql.ast.ASTQuery;
 import org.openrdf.query.parser.serql.ast.ASTQueryContainer;
@@ -27,7 +27,7 @@ import org.openrdf.query.parser.serql.ast.VisitorException;
 
 public class SeRQLParser implements QueryParser {
 
-	public ParsedQuery parseQuery(String queryStr, String baseURI)
+	public QueryModel parseQuery(String queryStr, String baseURI)
 		throws MalformedQueryException
 	{
 		try {
@@ -48,12 +48,12 @@ public class SeRQLParser implements QueryParser {
 			TupleExpr tupleExpr = QueryModelBuilder.buildQueryModel(qc, new ValueFactoryImpl());
 
 			ASTQuery queryNode = qc.getQuery();
-			ParsedQuery query;
+			QueryModel query;
 			if (queryNode instanceof ASTTupleQuery) {
-				query = new ParsedTupleQuery(tupleExpr);
+				query = new TupleQueryModel(tupleExpr);
 			}
 			else if (queryNode instanceof ASTGraphQuery) {
-				query = new ParsedGraphQuery(tupleExpr, namespaces);
+				query = new GraphQueryModel(tupleExpr, namespaces);
 			}
 			else {
 				throw new RuntimeException("Unexpected query type: " + queryNode.getClass());

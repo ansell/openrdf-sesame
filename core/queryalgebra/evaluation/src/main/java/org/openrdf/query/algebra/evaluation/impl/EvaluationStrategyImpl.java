@@ -65,7 +65,7 @@ import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Projection;
-import org.openrdf.query.algebra.QueryRoot;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
@@ -356,8 +356,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof Order) {
 			return evaluate((Order)expr, bindings);
 		}
-		else if (expr instanceof QueryRoot) {
-			return evaluate(((QueryRoot)expr).getArg(), bindings);
+		else if (expr instanceof QueryModel) {
+			return evaluate(((QueryModel)expr).getArg(), bindings);
 		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");

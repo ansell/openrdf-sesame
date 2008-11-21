@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
@@ -25,8 +25,8 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
  */
 public class ConjunctiveConstraintSplitter implements QueryOptimizer {
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new ConstraintVisitor(tupleExpr));
+	public void optimize(QueryModel query, BindingSet bindings) {
+		query.visit(new ConstraintVisitor(query));
 	}
 
 	protected class ConstraintVisitor extends QueryModelVisitorBase<RuntimeException> {

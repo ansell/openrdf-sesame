@@ -19,10 +19,9 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.sail.SailConnection;
 
 public class StoreSerializationTest extends TestCase {
@@ -67,11 +66,10 @@ public class StoreSerializationTest extends TestCase {
 		con.addStatement(foo, RDF.TYPE, bar);
 		con.commit();
 
-		ParsedTupleQuery query = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
+		TupleQueryModel query = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
 				"SELECT X, P, Y FROM {X} P {Y}", null);
-		TupleExpr tupleExpr = query.getTupleExpr();
 
-		Cursor<? extends BindingSet> iter = con.evaluate(tupleExpr, null,
+		Cursor<? extends BindingSet> iter = con.evaluate(query,
 				EmptyBindingSet.getInstance(), false);
 
 		BindingSet bindingSet = iter.next();
@@ -93,7 +91,7 @@ public class StoreSerializationTest extends TestCase {
 
 		con = store.getConnection();
 
-		iter = con.evaluate(tupleExpr, null, EmptyBindingSet.getInstance(), false);
+		iter = con.evaluate(query, EmptyBindingSet.getInstance(), false);
 
 		bindingSet = iter.next();
 

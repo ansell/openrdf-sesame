@@ -7,8 +7,7 @@ package org.openrdf.query.algebra.evaluation.impl;
 
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
@@ -20,9 +19,9 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
  */
 public class BindingAssigner implements QueryOptimizer {
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+	public void optimize(QueryModel query, BindingSet bindings) {
 		if (bindings.size() > 0) {
-			tupleExpr.visit(new VarVisitor(bindings));
+			query.visit(new VarVisitor(bindings));
 		}
 	}
 

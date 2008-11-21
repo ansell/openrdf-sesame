@@ -14,9 +14,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
@@ -46,10 +46,10 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 	 * Applies generally applicable optimizations: path expressions are sorted
 	 * from more to less specific.
 	 * 
-	 * @param tupleExpr
+	 * @param query
 	 */
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new JoinVisitor());
+	public void optimize(QueryModel query, BindingSet bindings) {
+		query.visit(new JoinVisitor());
 	}
 
 	protected class JoinVisitor extends QueryModelVisitorBase<RuntimeException> {

@@ -12,7 +12,6 @@ import java.util.Set;
 
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
@@ -22,9 +21,9 @@ import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.NaryTupleOperator;
 import org.openrdf.query.algebra.ProjectionElem;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
@@ -48,8 +47,8 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 	 * Applies generally applicable optimizations to the supplied query: variable
 	 * assignments are inlined.
 	 */
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new SameTermFilterVisitor());
+	public void optimize(QueryModel query, BindingSet bindings) {
+		query.visit(new SameTermFilterVisitor());
 	}
 
 	protected class SameTermFilterVisitor extends QueryModelVisitorBase<RuntimeException> {

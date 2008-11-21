@@ -54,7 +54,7 @@ import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.QueryModelVisitor;
-import org.openrdf.query.algebra.QueryRoot;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
@@ -331,7 +331,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetNode(node);
 	}
 
-	public void meet(QueryRoot node)
+	public void meet(QueryModel node)
 		throws X
 	{
 		meetNode(node);

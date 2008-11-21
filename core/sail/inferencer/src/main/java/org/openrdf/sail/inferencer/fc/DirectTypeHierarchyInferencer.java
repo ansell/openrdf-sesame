@@ -24,7 +24,7 @@ import org.openrdf.query.Cursor;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.query.parser.ParsedGraphQuery;
+import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.NotifyingSail;
@@ -73,17 +73,17 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 	 * Constants * 
 	 *-----------*/
 
-	private static final ParsedGraphQuery DIRECT_SUBCLASSOF_MATCHER;
+	private static final GraphQueryModel DIRECT_SUBCLASSOF_MATCHER;
 
-	private static final ParsedGraphQuery DIRECT_SUBCLASSOF_QUERY;
+	private static final GraphQueryModel DIRECT_SUBCLASSOF_QUERY;
 
-	private static final ParsedGraphQuery DIRECT_SUBPROPERTYOF_MATCHER;
+	private static final GraphQueryModel DIRECT_SUBPROPERTYOF_MATCHER;
 
-	private static final ParsedGraphQuery DIRECT_SUBPROPERTYOF_QUERY;
+	private static final GraphQueryModel DIRECT_SUBPROPERTYOF_QUERY;
 
-	private static final ParsedGraphQuery DIRECT_TYPE_MATCHER;
+	private static final GraphQueryModel DIRECT_TYPE_MATCHER;
 
-	private static final ParsedGraphQuery DIRECT_TYPE_QUERY;
+	private static final GraphQueryModel DIRECT_TYPE_QUERY;
 
 	static {
 		try {
@@ -303,11 +303,11 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 			}
 		}
 
-		private void evaluateIntoStatements(ParsedGraphQuery query, Collection<Statement> statements)
+		private void evaluateIntoStatements(GraphQueryModel query, Collection<Statement> statements)
 			throws StoreException, RDFHandlerException, StoreException
 		{
 			Cursor<? extends BindingSet> bindingsIter = getWrappedConnection().evaluate(
-					query.getTupleExpr(), null, EmptyBindingSet.getInstance(), true);
+					query, EmptyBindingSet.getInstance(), true);
 
 			try {
 				ValueFactory vf = getValueFactory();

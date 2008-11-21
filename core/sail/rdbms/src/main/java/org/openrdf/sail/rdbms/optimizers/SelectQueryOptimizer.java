@@ -39,6 +39,7 @@ import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
@@ -110,12 +111,12 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 		this.tables = statements;
 	}
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings)
+	public void optimize(QueryModel query, BindingSet bindings)
 		throws RdbmsException
 	{
 		this.dataset = dataset;
 		this.bindings = bindings;
-		tupleExpr.visit(this);
+		query.visit(this);
 	}
 
 	@Override

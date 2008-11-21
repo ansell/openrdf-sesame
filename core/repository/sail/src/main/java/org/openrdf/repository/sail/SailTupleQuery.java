@@ -14,9 +14,8 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.TupleQueryResultImpl;
-import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.store.StoreException;
 
@@ -25,27 +24,27 @@ import org.openrdf.store.StoreException;
  */
 public class SailTupleQuery extends SailQuery implements TupleQuery {
 
-	protected SailTupleQuery(ParsedTupleQuery tupleQuery, SailRepositoryConnection sailConnection) {
+	protected SailTupleQuery(TupleQueryModel tupleQuery, SailRepositoryConnection sailConnection) {
 		super(tupleQuery, sailConnection);
 	}
 
 	@Override
-	public ParsedTupleQuery getParsedQuery() {
-		return (ParsedTupleQuery)super.getParsedQuery();
+	public TupleQueryModel getParsedQuery() {
+		return (TupleQueryModel)super.getParsedQuery();
 	}
 
 	public TupleQueryResult evaluate()
 		throws StoreException
 	{
-		TupleExpr tupleExpr = getParsedQuery().getTupleExpr();
+		TupleQueryModel query = getParsedQuery();
 
 		Cursor<? extends BindingSet> bindingsIter;
 		SailConnection sailCon = getConnection().getSailConnection();
-		bindingsIter = sailCon.evaluate(tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
+		bindingsIter = sailCon.evaluate(query, getBindings(), getIncludeInferred());
 
 		bindingsIter = enforceMaxQueryTime(bindingsIter);
 
-		return new TupleQueryResultImpl(new ArrayList<String>(tupleExpr.getBindingNames()), bindingsIter);
+		return new TupleQueryResultImpl(new ArrayList<String>(query.getBindingNames()), bindingsIter);
 	}
 
 	public void evaluate(TupleQueryResultHandler handler)

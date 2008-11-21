@@ -8,9 +8,7 @@ package org.openrdf.repository.sail;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Cursor;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.parser.ParsedBooleanQuery;
+import org.openrdf.query.parser.BooleanQueryModel;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.store.StoreException;
 
@@ -19,30 +17,22 @@ import org.openrdf.store.StoreException;
  */
 public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 
-	protected SailBooleanQuery(ParsedBooleanQuery tupleQuery, SailRepositoryConnection sailConnection) {
+	protected SailBooleanQuery(BooleanQueryModel tupleQuery, SailRepositoryConnection sailConnection) {
 		super(tupleQuery, sailConnection);
 	}
 
 	@Override
-	public ParsedBooleanQuery getParsedQuery() {
-		return (ParsedBooleanQuery)super.getParsedQuery();
+	public BooleanQueryModel getParsedQuery() {
+		return (BooleanQueryModel)super.getParsedQuery();
 	}
 
 	public boolean evaluate()
 		throws StoreException
 	{
-		ParsedBooleanQuery parsedBooleanQuery = getParsedQuery();
-		TupleExpr tupleExpr = parsedBooleanQuery.getTupleExpr();
-		Dataset dataset = getDataset();
-		if (dataset == null) {
-			// No external dataset specified, use query's own dataset (if any)
-			dataset = parsedBooleanQuery.getDataset();
-		}
-
 		SailConnection sailCon = getConnection().getSailConnection();
 
 		Cursor<? extends BindingSet> bindingsIter;
-		bindingsIter = sailCon.evaluate(tupleExpr, dataset, getBindings(), getIncludeInferred());
+		bindingsIter = sailCon.evaluate(getParsedQuery(), getBindings(), getIncludeInferred());
 
 		bindingsIter = enforceMaxQueryTime(bindingsIter);
 

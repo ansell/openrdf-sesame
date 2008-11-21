@@ -8,6 +8,7 @@ package org.openrdf.query.parser;
 import java.util.Collections;
 import java.util.Map;
 
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
 
 /**
@@ -16,7 +17,7 @@ import org.openrdf.query.algebra.TupleExpr;
  * 
  * @author Arjohn Kampman
  */
-public class ParsedGraphQuery extends ParsedQuery {
+public class GraphQueryModel extends QueryModel {
 
 	/*-----------*
 	 * Variables *
@@ -32,7 +33,7 @@ public class ParsedGraphQuery extends ParsedQuery {
 	 * Creates a new graph query. To complete this query, a tuple expression
 	 * needs to be supplied to it using {@link #setTupleExpr(TupleExpr)}.
 	 */
-	public ParsedGraphQuery() {
+	public GraphQueryModel() {
 		super();
 	}
 
@@ -44,7 +45,7 @@ public class ParsedGraphQuery extends ParsedQuery {
 	 *        A mapping of namespace prefixes to namespace names representing the
 	 *        namespaces that are used in the query.
 	 */
-	public ParsedGraphQuery(Map<String, String> namespaces) {
+	public GraphQueryModel(Map<String, String> namespaces) {
 		super();
 		queryNamespaces = namespaces;
 	}
@@ -56,7 +57,7 @@ public class ParsedGraphQuery extends ParsedQuery {
 	 *        A tuple expression representing the query, formulated in Sail Query
 	 *        Model objects.
 	 */
-	public ParsedGraphQuery(TupleExpr tupleExpr) {
+	public GraphQueryModel(TupleExpr tupleExpr) {
 		super(tupleExpr);
 	}
 
@@ -70,7 +71,7 @@ public class ParsedGraphQuery extends ParsedQuery {
 	 *        A mapping of namespace prefixes to namespace names representing the
 	 *        namespaces that are used in the query.
 	 */
-	public ParsedGraphQuery(TupleExpr tupleExpr, Map<String, String> namespaces) {
+	public GraphQueryModel(TupleExpr tupleExpr, Map<String, String> namespaces) {
 		this(tupleExpr);
 		queryNamespaces = namespaces;
 	}

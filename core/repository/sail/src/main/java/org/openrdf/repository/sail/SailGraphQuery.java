@@ -15,11 +15,10 @@ import org.openrdf.query.Cursor;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryResultUtil;
-import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.base.ConvertingCursor;
 import org.openrdf.query.base.FilteringCursor;
 import org.openrdf.query.impl.GraphQueryResultImpl;
-import org.openrdf.query.parser.ParsedGraphQuery;
+import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.SailConnection;
@@ -30,25 +29,25 @@ import org.openrdf.store.StoreException;
  */
 public class SailGraphQuery extends SailQuery implements GraphQuery {
 
-	protected SailGraphQuery(ParsedGraphQuery tupleQuery, SailRepositoryConnection con) {
+	protected SailGraphQuery(GraphQueryModel tupleQuery, SailRepositoryConnection con) {
 		super(tupleQuery, con);
 	}
 
 	@Override
-	public ParsedGraphQuery getParsedQuery() {
-		return (ParsedGraphQuery)super.getParsedQuery();
+	public GraphQueryModel getParsedQuery() {
+		return (GraphQueryModel)super.getParsedQuery();
 	}
 
 	public GraphQueryResult evaluate()
 		throws StoreException
 	{
-		TupleExpr tupleExpr = getParsedQuery().getTupleExpr();
+		GraphQueryModel query = getParsedQuery();
 
 
 		Cursor<? extends BindingSet> bindingsIter;
 
 		SailConnection sailCon = getConnection().getSailConnection();
-		bindingsIter = sailCon.evaluate(tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
+		bindingsIter = sailCon.evaluate(query, getBindings(), getIncludeInferred());
 
 		// Filters out all partial and invalid matches
 		bindingsIter = new FilteringCursor<BindingSet>(bindingsIter) {
@@ -97,7 +96,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 			}
 		};
 
-		return new GraphQueryResultImpl(getParsedQuery().getQueryNamespaces(), stIter);
+		return new GraphQueryResultImpl(query.getQueryNamespaces(), stIter);
 	}
 
 	public void evaluate(RDFHandler handler)
