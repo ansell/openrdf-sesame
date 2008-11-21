@@ -117,21 +117,25 @@ public class ExceptionWritter implements HandlerExceptionResolver, View {
 			finally {
 				stream.close();
 			}
-		} else {
+		}
+		else {
 			ServletOutputStream out = response.getOutputStream();
 			try {
 				out.println(errMsg);
-			} finally {
+			}
+			finally {
 				out.close();
 			}
 		}
 	}
 
 	private HTTPException findHTTPException(Throwable exception) {
-		if (exception == null)
+		if (exception == null) {
 			return null;
-		if (exception instanceof HTTPException)
+		}
+		if (exception instanceof HTTPException) {
 			return (HTTPException)exception;
+		}
 		return findHTTPException(exception.getCause());
 	}
 }

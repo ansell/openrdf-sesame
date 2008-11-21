@@ -76,7 +76,8 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		Object model = getModel(map);
 		if (model == null) {
 			resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-		} else if (model instanceof RepositoryResult) {
+		}
+		else if (model instanceof RepositoryResult) {
 			render((RepositoryResult)model, req, resp);
 		}
 		else if (model instanceof TupleQueryResult) {
@@ -99,8 +100,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 
 	@SuppressWarnings("unchecked")
 	private Object getModel(Map map) {
-		if (map.isEmpty())
+		if (map.isEmpty()) {
 			return null;
+		}
 		return map.values().iterator().next();
 	}
 

@@ -114,8 +114,9 @@ public class RepositoryInterceptor extends HandlerInterceptorAdapter {
 	public static String getRepositoryID(HttpServletRequest request) {
 		String path = request.getRequestURI();
 		int start = path.indexOf(REPOSITORIES);
-		if (start < 0)
+		if (start < 0) {
 			return null;
+		}
 		String id = path.substring(start + REPOSITORIES.length());
 		if (id.contains("/")) {
 			id = id.substring(0, id.indexOf('/'));
