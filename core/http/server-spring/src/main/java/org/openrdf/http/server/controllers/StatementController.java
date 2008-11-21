@@ -27,12 +27,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.xml.sax.SAXException;
 
+import info.aduna.webapp.util.HttpServerUtil;
+
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.transaction.TransactionReader;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.http.server.exceptions.ClientHTTPException;
 import org.openrdf.http.server.exceptions.ServerHTTPException;
-import org.openrdf.http.server.helpers.HttpServerUtil;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
@@ -108,7 +109,7 @@ public class StatementController {
 	public void put(HttpServletRequest request)
 		throws IOException, ClientHTTPException, StoreException, RDFParseException
 	{
-			add(request, true);
+		add(request, true);
 	}
 
 	/**

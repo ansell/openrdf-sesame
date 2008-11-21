@@ -31,13 +31,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import info.aduna.webapp.util.HttpServerUtil;
+
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.error.ErrorInfo;
 import org.openrdf.http.protocol.error.ErrorType;
 import org.openrdf.http.server.BooleanQueryResult;
 import org.openrdf.http.server.exceptions.ClientHTTPException;
 import org.openrdf.http.server.exceptions.HTTPException;
-import org.openrdf.http.server.helpers.HttpServerUtil;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Literal;
