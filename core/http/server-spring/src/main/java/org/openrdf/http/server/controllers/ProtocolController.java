@@ -15,9 +15,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.openrdf.http.protocol.Protocol;
 
 /**
- * Handles requests for protocol information.
- * 
- * Currently returns the protocol version as plain text.
+ * Handles requests for protocol information. Currently returns the protocol
+ * version as plain text.
  * 
  * @author Herko ter Horst
  * @author James Leigh

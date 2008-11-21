@@ -83,8 +83,9 @@ public class SesameServlet implements Servlet {
 		}
 
 		public String getInitParameter(String name) {
-			if (APPLICATION_CONFIG_CLASS.equals(name))
+			if (APPLICATION_CONFIG_CLASS.equals(name)) {
 				return SesameApplication.class.getName();
+			}
 			return config.getInitParameter(name);
 		}
 
