@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.lang.FileFormat;
 import info.aduna.lang.service.FileFormatServiceRegistry;
+import info.aduna.webapp.util.HttpServerUtil;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.error.ErrorInfo;
@@ -102,7 +103,8 @@ public class ProtocolUtil {
 		}
 	}
 
-	public static Integer parseIntegerParam(HttpServletRequest request, String paramName, Integer defaultValue) {
+	public static Integer parseIntegerParam(HttpServletRequest request, String paramName, Integer defaultValue)
+	{
 		String paramValue = request.getParameter(paramName);
 		if (paramValue == null) {
 			return defaultValue;
