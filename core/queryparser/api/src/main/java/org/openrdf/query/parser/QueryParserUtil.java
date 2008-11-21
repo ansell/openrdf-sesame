@@ -8,6 +8,7 @@ package org.openrdf.query.parser;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.UnsupportedQueryLanguageException;
+import org.openrdf.query.algebra.QueryModel;
 
 /**
  * Utility class for creating query parsers and parsing queries in various query
@@ -44,7 +45,7 @@ public class QueryParserUtil {
 	 * @throws UnsupportedQueryLanguageException
 	 *         If the specified query language is not supported.
 	 */
-	public static ParsedQuery parseQuery(QueryLanguage ql, String query, String baseURI)
+	public static QueryModel parseQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, UnsupportedQueryLanguageException
 	{
 		QueryParser parser = createParser(ql);
@@ -66,13 +67,13 @@ public class QueryParserUtil {
 	 * @throws UnsupportedQueryLanguageException
 	 *         If the specified query language is not supported.
 	 */
-	public static ParsedTupleQuery parseTupleQuery(QueryLanguage ql, String query, String baseURI)
+	public static TupleQueryModel parseTupleQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, UnsupportedQueryLanguageException
 	{
-		ParsedQuery q = parseQuery(ql, query, baseURI);
+		QueryModel q = parseQuery(ql, query, baseURI);
 
-		if (q instanceof ParsedTupleQuery) {
-			return (ParsedTupleQuery)q;
+		if (q instanceof TupleQueryModel) {
+			return (TupleQueryModel)q;
 		}
 
 		throw new IllegalArgumentException("query is not a tuple query: " + query);
@@ -93,13 +94,13 @@ public class QueryParserUtil {
 	 * @throws UnsupportedQueryLanguageException
 	 *         If the specified query language is not supported.
 	 */
-	public static ParsedGraphQuery parseGraphQuery(QueryLanguage ql, String query, String baseURI)
+	public static GraphQueryModel parseGraphQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, UnsupportedQueryLanguageException
 	{
-		ParsedQuery q = parseQuery(ql, query, baseURI);
+		QueryModel q = parseQuery(ql, query, baseURI);
 
-		if (q instanceof ParsedGraphQuery) {
-			return (ParsedGraphQuery)q;
+		if (q instanceof GraphQueryModel) {
+			return (GraphQueryModel)q;
 		}
 
 		throw new IllegalArgumentException("query is not a graph query: " + query);
@@ -120,13 +121,13 @@ public class QueryParserUtil {
 	 * @throws UnsupportedQueryLanguageException
 	 *         If the specified query language is not supported.
 	 */
-	public static ParsedBooleanQuery parseBooleanQuery(QueryLanguage ql, String query, String baseURI)
+	public static BooleanQueryModel parseBooleanQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, UnsupportedQueryLanguageException
 	{
-		ParsedQuery q = parseQuery(ql, query, baseURI);
+		QueryModel q = parseQuery(ql, query, baseURI);
 
-		if (q instanceof ParsedBooleanQuery) {
-			return (ParsedBooleanQuery)q;
+		if (q instanceof BooleanQueryModel) {
+			return (BooleanQueryModel)q;
 		}
 
 		throw new IllegalArgumentException("query is not a boolean query: " + query);

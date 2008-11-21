@@ -5,6 +5,7 @@
  */
 package org.openrdf.query.parser;
 
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
 
 /**
@@ -13,7 +14,7 @@ import org.openrdf.query.algebra.TupleExpr;
  * 
  * @author Arjohn Kampman
  */
-public class ParsedBooleanQuery extends ParsedQuery {
+public class BooleanQueryModel extends QueryModel {
 
 	/*--------------*
 	 * Constructors *
@@ -23,7 +24,7 @@ public class ParsedBooleanQuery extends ParsedQuery {
 	 * Creates a new boolean query. To complete this query, a tuple expression
 	 * needs to be supplied to it using {@link #setTupleExpr(TupleExpr)}.
 	 */
-	public ParsedBooleanQuery() {
+	public BooleanQueryModel() {
 		super();
 	}
 
@@ -34,7 +35,7 @@ public class ParsedBooleanQuery extends ParsedQuery {
 	 *        A tuple expression representing the query, formulated in OpenRDF
 	 *        Query Algebra objects.
 	 */
-	public ParsedBooleanQuery(TupleExpr tupleExpr) {
+	public BooleanQueryModel(TupleExpr tupleExpr) {
 		super(tupleExpr);
 	}
 }

@@ -24,6 +24,11 @@ public class DatasetImpl implements Dataset {
 	public DatasetImpl() {
 	}
 
+	public DatasetImpl(Set<URI> defaultGraphs, Set<URI> namedGraphs) {
+		this.defaultGraphs.addAll(defaultGraphs);
+		this.namedGraphs.addAll(namedGraphs);
+	}
+
 	public Set<URI> getDefaultGraphs() {
 		return Collections.unmodifiableSet(defaultGraphs);
 	}

@@ -12,8 +12,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.store.StoreException;
 
 /**
@@ -67,7 +66,7 @@ public interface SailConnection {
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
 	 */
-	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings,
+	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings,
 			boolean includeInferred)
 		throws StoreException;
 

@@ -14,7 +14,7 @@ package org.openrdf.query.algebra;
  */
 public interface QueryModelVisitor<X extends Exception> {
 
-	public void meet(QueryRoot node)
+	public void meet(QueryModel node)
 		throws X;
 
 	public void meet(And node)

@@ -19,8 +19,10 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
+import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
@@ -185,15 +187,16 @@ public class RdbmsConnection extends SailConnectionBase {
 		}
 	}
 
-	public Cursor<BindingSet> evaluate(TupleExpr expr, Dataset dataset,
+	public Cursor<BindingSet> evaluate(QueryModel query,
 			BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		triples.flush();
 		TupleExpr tupleExpr;
 		EvaluationStrategy strategy;
+		Dataset dataset = new DatasetImpl(query.getDefaultGraphs(), query.getNamedGraphs());
 		strategy = factory.createRdbmsEvaluation(dataset);
-		tupleExpr = optimizer.optimize(expr, dataset, bindings, strategy);
+		tupleExpr = optimizer.optimize(query, bindings, strategy);
 		return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
 	}
 

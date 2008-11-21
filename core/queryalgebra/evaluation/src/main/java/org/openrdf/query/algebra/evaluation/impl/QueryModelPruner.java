@@ -6,12 +6,12 @@
 package org.openrdf.query.algebra.evaluation.impl;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
@@ -37,10 +37,10 @@ public class QueryModelPruner implements QueryOptimizer {
 	 * Applies generally applicable optimizations: path expressions are sorted
 	 * from more to less specific.
 	 * 
-	 * @param tupleExpr
+	 * @param query
 	 */
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new TreeSanitizer());
+	public void optimize(QueryModel query, BindingSet bindings) {
+		query.visit(new TreeSanitizer());
 	}
 
 	protected class TreeSanitizer extends QueryModelVisitorBase<RuntimeException> {

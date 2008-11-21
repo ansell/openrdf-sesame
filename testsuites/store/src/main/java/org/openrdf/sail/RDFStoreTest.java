@@ -33,11 +33,10 @@ import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.MapBindingSet;
-import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.store.StoreException;
 
 /**
@@ -327,11 +326,11 @@ public abstract class RDFStoreTest extends TestCase {
 			stIter.close();
 		}
 
-		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
+		TupleQueryModel tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
 				"SELECT S, P, O FROM {S} P {O} WHERE P = <" + pred.stringValue() + ">", null);
 
 		Cursor<? extends BindingSet> iter;
-		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
+		iter = con.evaluate(tupleQuery, EmptyBindingSet.getInstance(), false);
 
 		try {
 			BindingSet bindings = iter.next();
@@ -479,11 +478,11 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso, paints, guernica);
 		con.commit();
 
-		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
+		TupleQueryModel tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
 				"SELECT C FROM {} rdf:type {C}", null);
 
 		Cursor<? extends BindingSet> iter;
-		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
+		iter = con.evaluate(tupleQuery, EmptyBindingSet.getInstance(), false);
 
 		BindingSet bindings;
 		while ((bindings = iter.next()) != null) {
@@ -500,7 +499,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals(3, countElements(con.getStatements(null, RDF.TYPE, RDFS.CLASS, false)));
 
 		tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, "SELECT P FROM {} P {}", null);
-		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
+		iter = con.evaluate(tupleQuery, EmptyBindingSet.getInstance(), false);
 
 		while ((bindings = iter.next()) != null) {
 			Value p = bindings.getValue("P");
@@ -626,30 +625,29 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso, paints, guernica, context1);
 		con.commit();
 
-		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
+		TupleQueryModel tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
 				"select X from {X} rdf:type {Y} rdf:type {rdfs:Class}", null);
-		TupleExpr tupleExpr = tupleQuery.getTupleExpr();
 
 		MapBindingSet bindings = new MapBindingSet(1);
 
 		Cursor<? extends BindingSet> iter;
-		iter = con.evaluate(tupleExpr, null, bindings, false);
+		iter = con.evaluate(tupleQuery, bindings, false);
 
 		int resultCount = verifyQueryResult(iter, 1);
 		assertEquals("Wrong number of query results", 2, resultCount);
 
 		bindings.addBinding("Y", painter);
-		iter = con.evaluate(tupleExpr, null, bindings, false);
+		iter = con.evaluate(tupleQuery, bindings, false);
 		resultCount = verifyQueryResult(iter, 1);
 		assertEquals("Wrong number of query results", 1, resultCount);
 
 		bindings.addBinding("Z", painting);
-		iter = con.evaluate(tupleExpr, null, bindings, false);
+		iter = con.evaluate(tupleQuery, bindings, false);
 		resultCount = verifyQueryResult(iter, 1);
 		assertEquals("Wrong number of query results", 1, resultCount);
 
 		bindings.removeBinding("Y");
-		iter = con.evaluate(tupleExpr, null, bindings, false);
+		iter = con.evaluate(tupleQuery, bindings, false);
 		resultCount = verifyQueryResult(iter, 1);
 		assertEquals("Wrong number of query results", 2, resultCount);
 	}
@@ -879,8 +877,8 @@ public abstract class RDFStoreTest extends TestCase {
 			assertEquals(4, countAllElements());
 			con2.addStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
 			String query = "SELECT S, P, O FROM {S} P {O}";
-			ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, query, null);
-			assertEquals(5, countElements(con2.evaluate(tupleQuery.getTupleExpr(), null,
+			TupleQueryModel tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, query, null);
+			assertEquals(5, countElements(con2.evaluate(tupleQuery,
 					EmptyBindingSet.getInstance(), false)));
 			Runnable clearer = new Runnable() {
 
@@ -964,10 +962,10 @@ public abstract class RDFStoreTest extends TestCase {
 	protected int countQueryResults(String query)
 		throws Exception
 	{
-		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, query
+		TupleQueryModel tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, query
 				+ " using namespace ex = <" + EXAMPLE_NS + ">", null);
 
-		return countElements(con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false));
+		return countElements(con.evaluate(tupleQuery, EmptyBindingSet.getInstance(), false));
 	}
 
 	private int verifyQueryResult(Cursor<? extends BindingSet> resultIter, int expectedBindingCount)

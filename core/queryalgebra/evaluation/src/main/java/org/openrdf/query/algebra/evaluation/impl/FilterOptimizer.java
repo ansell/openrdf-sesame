@@ -9,11 +9,11 @@ package org.openrdf.query.algebra.evaluation.impl;
 import java.util.Set;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
@@ -29,8 +29,8 @@ import org.openrdf.query.algebra.helpers.VarNameCollector;
  */
 public class FilterOptimizer implements QueryOptimizer {
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new FilterFinder(tupleExpr));
+	public void optimize(QueryModel query, BindingSet bindings) {
+		query.visit(new FilterFinder(query));
 	}
 
 	/*--------------------------*

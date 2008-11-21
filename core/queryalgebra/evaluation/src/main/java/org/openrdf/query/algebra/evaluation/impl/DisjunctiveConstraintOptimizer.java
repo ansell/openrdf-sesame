@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Or;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.TupleExpr;
@@ -33,8 +33,8 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
  */
 public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new OrSameTermOptimizer());
+	public void optimize(QueryModel query, BindingSet bindings) {
+		query.visit(new OrSameTermOptimizer());
 	}
 
 	protected class OrSameTermOptimizer extends QueryModelVisitorBase<RuntimeException> {

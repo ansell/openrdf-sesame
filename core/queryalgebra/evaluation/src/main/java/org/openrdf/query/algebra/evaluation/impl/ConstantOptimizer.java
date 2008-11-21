@@ -14,13 +14,12 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.NaryValueOperator;
 import org.openrdf.query.algebra.Or;
-import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -51,14 +50,14 @@ public class ConstantOptimizer implements QueryOptimizer {
 	 * Applies generally applicable optimizations to the supplied query: variable
 	 * assignments are inlined.
 	 * 
-	 * @param tupleExpr
+	 * @param query
 	 * @return optimized TupleExpr
 	 * @throws StoreException
 	 */
-	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings)
+	public void optimize(QueryModel query, BindingSet bindings)
 		throws StoreException
 	{
-		tupleExpr.visit(new ConstantVisitor());
+		query.visit(new ConstantVisitor());
 	}
 
 	protected class ConstantVisitor extends QueryModelVisitorBase<StoreException> {

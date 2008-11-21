@@ -12,12 +12,12 @@ import java.util.Map;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.parser.ParsedBooleanQuery;
-import org.openrdf.query.parser.ParsedGraphQuery;
-import org.openrdf.query.parser.ParsedQuery;
-import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.BooleanQueryModel;
+import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.query.parser.QueryParser;
+import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
@@ -31,7 +31,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 public class SPARQLParser implements QueryParser {
 
-	public ParsedQuery parseQuery(String queryStr, String baseURI)
+	public QueryModel parseQuery(String queryStr, String baseURI)
 		throws MalformedQueryException
 	{
 		try {
@@ -43,20 +43,20 @@ public class SPARQLParser implements QueryParser {
 			BlankNodeVarProcessor.process(qc);
 			TupleExpr tupleExpr = buildQueryModel(qc);
 
-			ParsedQuery query;
+			QueryModel query;
 
 			ASTQuery queryNode = qc.getQuery();
 			if (queryNode instanceof ASTSelectQuery) {
-				query = new ParsedTupleQuery(tupleExpr);
+				query = new TupleQueryModel(tupleExpr);
 			}
 			else if (queryNode instanceof ASTConstructQuery) {
-				query = new ParsedGraphQuery(tupleExpr, prefixes);
+				query = new GraphQueryModel(tupleExpr, prefixes);
 			}
 			else if (queryNode instanceof ASTAskQuery) {
-				query = new ParsedBooleanQuery(tupleExpr);
+				query = new BooleanQueryModel(tupleExpr);
 			}
 			else if (queryNode instanceof ASTDescribeQuery) {
-				query = new ParsedGraphQuery(tupleExpr, prefixes);
+				query = new GraphQueryModel(tupleExpr, prefixes);
 			}
 			else {
 				throw new RuntimeException("Unexpected query type: " + queryNode.getClass());
@@ -65,7 +65,8 @@ public class SPARQLParser implements QueryParser {
 			// Handle dataset declaration
 			Dataset dataset = DatasetDeclProcessor.process(qc);
 			if (dataset != null) {
-				query.setDataset(dataset);
+				query.setDefaultGraphs(dataset.getDefaultGraphs());
+				query.setNamedGraphs(dataset.getNamedGraphs());
 			}
 
 			return query;

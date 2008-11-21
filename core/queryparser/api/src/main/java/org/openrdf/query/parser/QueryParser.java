@@ -6,6 +6,7 @@
 package org.openrdf.query.parser;
 
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.algebra.QueryModel;
 
 /**
  * An RDF query parser translate query strings in some query language to OpenRDF
@@ -13,6 +14,6 @@ import org.openrdf.query.MalformedQueryException;
  */
 public interface QueryParser {
 
-	public ParsedQuery parseQuery(String queryStr, String baseURI)
+	public QueryModel parseQuery(String queryStr, String baseURI)
 		throws MalformedQueryException;
 }

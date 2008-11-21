@@ -6,8 +6,7 @@
 package org.openrdf.sail.rdbms.optimizers;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.algebra.QueryRoot;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
@@ -69,49 +68,43 @@ public class RdbmsQueryOptimizer {
 		this.hashTable = hashTable;
 	}
 
-	public TupleExpr optimize(TupleExpr expr, Dataset dataset, BindingSet bindings, EvaluationStrategy strategy)
+	public TupleExpr optimize(QueryModel query, BindingSet bindings, EvaluationStrategy strategy)
 		throws StoreException
 	{
 		// Clone the tuple expression to allow for more aggressive optimisations
-		TupleExpr tupleExpr = expr.clone();
+		QueryModel tupleExpr = query.clone();
 
-		if (!(tupleExpr instanceof QueryRoot)) {
-			// Add a dummy root node to the tuple expressions to allow the
-			// optimisers to modify the actual root node
-			tupleExpr = new QueryRoot(tupleExpr);
-		}
+		coreOptimizations(strategy, tupleExpr, bindings);
 
-		coreOptimizations(strategy, tupleExpr, dataset, bindings);
+		rdbmsOptimizations(tupleExpr, bindings);
 
-		rdbmsOptimizations(tupleExpr, dataset, bindings);
-
-		new SqlConstantOptimizer().optimize(tupleExpr, dataset, bindings);
+		new SqlConstantOptimizer().optimize(tupleExpr, bindings);
 
 		return tupleExpr;
 	}
 
-	private void coreOptimizations(EvaluationStrategy strategy, TupleExpr expr, Dataset dataset, BindingSet bindings) throws StoreException {
-		new BindingAssigner().optimize(expr, dataset, bindings);
-		new ConstantOptimizer(strategy).optimize(expr, dataset, bindings);
-		new CompareOptimizer().optimize(expr, dataset, bindings);
-		new ConjunctiveConstraintSplitter().optimize(expr, dataset, bindings);
-		new DisjunctiveConstraintOptimizer().optimize(expr, dataset, bindings);
-		new SameTermFilterOptimizer().optimize(expr, dataset, bindings);
-		new QueryJoinOptimizer().optimize(expr, dataset, bindings);
+	private void coreOptimizations(EvaluationStrategy strategy, QueryModel expr, BindingSet bindings) throws StoreException {
+		new BindingAssigner().optimize(expr, bindings);
+		new ConstantOptimizer(strategy).optimize(expr, bindings);
+		new CompareOptimizer().optimize(expr, bindings);
+		new ConjunctiveConstraintSplitter().optimize(expr, bindings);
+		new DisjunctiveConstraintOptimizer().optimize(expr, bindings);
+		new SameTermFilterOptimizer().optimize(expr, bindings);
+		new QueryJoinOptimizer().optimize(expr, bindings);
 	}
 
-	protected void rdbmsOptimizations(TupleExpr expr, Dataset dataset, BindingSet bindings)
+	protected void rdbmsOptimizations(QueryModel expr, BindingSet bindings)
 		throws RdbmsException
 	{
-		new ValueIdLookupOptimizer(vf).optimize(expr, dataset, bindings);
-		factory.createRdbmsFilterOptimizer().optimize(expr, dataset, bindings);
-		new VarColumnLookupOptimizer().optimize(expr, dataset, bindings);
+		new ValueIdLookupOptimizer(vf).optimize(expr, bindings);
+		factory.createRdbmsFilterOptimizer().optimize(expr, bindings);
+		new VarColumnLookupOptimizer().optimize(expr, bindings);
 		ValueJoinOptimizer valueJoins = new ValueJoinOptimizer();
 		valueJoins.setBnodeTable(bnodes);
 		valueJoins.setUriTable(uris);
 		valueJoins.setLiteralTable(literals);
 		valueJoins.setHashTable(hashTable);
-		valueJoins.optimize(expr, dataset, bindings);
+		valueJoins.optimize(expr, bindings);
 	}
 
 }

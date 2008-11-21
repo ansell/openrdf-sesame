@@ -22,9 +22,8 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.algebra.QueryRoot;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.cursors.LockingCursor;
@@ -40,6 +39,7 @@ import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
+import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.IteratorCursor;
 import org.openrdf.sail.SailReadOnlyException;
@@ -94,20 +94,15 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 * Methods *
 	 *---------*/
 
-	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings,
+	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings,
 			boolean includeInferred)
 		throws StoreException
 	{
-		logger.trace("Incoming query model:\n{}", tupleExpr.toString());
+		logger.trace("Incoming query model:\n{}", query.toString());
 
 		// Clone the tuple expression to allow for more aggresive optimizations
-		tupleExpr = tupleExpr.clone();
-
-		if (!(tupleExpr instanceof QueryRoot)) {
-			// Add a dummy root node to the tuple expressions to allow the
-			// optimizers to modify the actual root node
-			tupleExpr = new QueryRoot(tupleExpr);
-		}
+		query = query.clone();
+		Dataset dataset = new DatasetImpl(query.getDefaultGraphs(), query.getNamedGraphs());
 
 		Lock stLock = store.getStatementsReadLock();
 
@@ -134,12 +129,12 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			optimizerList.add(new QueryJoinOptimizer(new MemEvaluationStatistics()));
 			optimizerList.add(new FilterOptimizer());
 
-			optimizerList.optimize(tupleExpr, dataset, bindings);
+			optimizerList.optimize(query, bindings);
 
-			logger.trace("Optimized query model:\n{}", tupleExpr.toString());
+			logger.trace("Optimized query model:\n{}", query.toString());
 
 			Cursor<BindingSet> iter;
-			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
+			iter = strategy.evaluate(query, EmptyBindingSet.getInstance());
 			iter = new LockingCursor<BindingSet>(stLock, iter);
 			return iter;
 		}

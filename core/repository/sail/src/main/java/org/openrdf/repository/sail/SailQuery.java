@@ -9,9 +9,10 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryInterruptedException;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.impl.AbstractQuery;
+import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.impl.TimeLimitCursor;
-import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.store.StoreException;
 
 /**
@@ -19,16 +20,29 @@ import org.openrdf.store.StoreException;
  */
 public abstract class SailQuery extends AbstractQuery {
 
-	private final ParsedQuery parsedQuery;
+	private final QueryModel parsedQuery;
 
 	private final SailRepositoryConnection con;
 
-	protected SailQuery(ParsedQuery parsedQuery, SailRepositoryConnection con) {
+	protected SailQuery(QueryModel parsedQuery, SailRepositoryConnection con) {
 		this.parsedQuery = parsedQuery;
 		this.con = con;
 	}
 
-	public ParsedQuery getParsedQuery() {
+	/**
+	 * Gets the "active" dataset for this query. The active dataset is either the
+	 * dataset that has been specified using {@link #setDataset(Dataset)} or the
+	 * dataset that has been specified in the query, where the former takes
+	 * precedence over the latter.
+	 * 
+	 * @return The active dataset, or <tt>null</tt> if there is no dataset.
+	 */
+	public QueryModel getParsedQuery() {
+		if (dataset != null) {
+			// External dataset specified
+			parsedQuery.setDefaultGraphs(dataset.getDefaultGraphs());
+			parsedQuery.setNamedGraphs(dataset.getNamedGraphs());
+		}
 		return parsedQuery;
 	}
 
@@ -60,7 +74,7 @@ public abstract class SailQuery extends AbstractQuery {
 		}
 
 		// No external dataset specified, use query's own dataset (if any)
-		return parsedQuery.getDataset();
+		return new DatasetImpl(parsedQuery.getDefaultGraphs(), parsedQuery.getNamedGraphs());
 	}
 
 	@Override

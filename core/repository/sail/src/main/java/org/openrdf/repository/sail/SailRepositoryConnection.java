@@ -15,11 +15,11 @@ import org.openrdf.model.Value;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.parser.ParsedBooleanQuery;
-import org.openrdf.query.parser.ParsedGraphQuery;
-import org.openrdf.query.parser.ParsedQuery;
-import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.parser.BooleanQueryModel;
+import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.repository.GraphResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
@@ -95,16 +95,16 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	public SailQuery prepareQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
-		ParsedQuery parsedQuery = QueryParserUtil.parseQuery(ql, queryString, baseURI);
+		QueryModel parsedQuery = QueryParserUtil.parseQuery(ql, queryString, baseURI);
 
-		if (parsedQuery instanceof ParsedTupleQuery) {
-			return new SailTupleQuery((ParsedTupleQuery)parsedQuery, this);
+		if (parsedQuery instanceof TupleQueryModel) {
+			return new SailTupleQuery((TupleQueryModel)parsedQuery, this);
 		}
-		else if (parsedQuery instanceof ParsedGraphQuery) {
-			return new SailGraphQuery((ParsedGraphQuery)parsedQuery, this);
+		else if (parsedQuery instanceof GraphQueryModel) {
+			return new SailGraphQuery((GraphQueryModel)parsedQuery, this);
 		}
-		else if (parsedQuery instanceof ParsedBooleanQuery) {
-			return new SailBooleanQuery((ParsedBooleanQuery)parsedQuery, this);
+		else if (parsedQuery instanceof BooleanQueryModel) {
+			return new SailBooleanQuery((BooleanQueryModel)parsedQuery, this);
 		}
 		else {
 			throw new RuntimeException("Unexpected query type: " + parsedQuery.getClass());
@@ -114,21 +114,21 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	public SailTupleQuery prepareTupleQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
-		ParsedTupleQuery parsedQuery = QueryParserUtil.parseTupleQuery(ql, queryString, baseURI);
+		TupleQueryModel parsedQuery = QueryParserUtil.parseTupleQuery(ql, queryString, baseURI);
 		return new SailTupleQuery(parsedQuery, this);
 	}
 
 	public SailGraphQuery prepareGraphQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
-		ParsedGraphQuery parsedQuery = QueryParserUtil.parseGraphQuery(ql, queryString, baseURI);
+		GraphQueryModel parsedQuery = QueryParserUtil.parseGraphQuery(ql, queryString, baseURI);
 		return new SailGraphQuery(parsedQuery, this);
 	}
 
 	public SailBooleanQuery prepareBooleanQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
-		ParsedBooleanQuery parsedQuery = QueryParserUtil.parseBooleanQuery(ql, queryString, baseURI);
+		BooleanQueryModel parsedQuery = QueryParserUtil.parseBooleanQuery(ql, queryString, baseURI);
 		return new SailBooleanQuery(parsedQuery, this);
 	}
 

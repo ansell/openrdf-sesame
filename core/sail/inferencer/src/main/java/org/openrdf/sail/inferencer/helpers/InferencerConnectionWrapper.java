@@ -11,8 +11,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.NotifyingSailConnectionWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -96,12 +95,11 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * connection.
 	 */
 	@Override
-	public Cursor<? extends BindingSet> evaluate(TupleExpr tupleExpr,
-			Dataset dataset, BindingSet bindings, boolean includeInferred)
+	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		flushUpdates();
-		return super.evaluate(tupleExpr, dataset, bindings, includeInferred);
+		return super.evaluate(query, bindings, includeInferred);
 	}
 
 	/**
