@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -219,11 +219,10 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
 		try {
-			HTTPClient httpClient = new HTTPClient();
-			httpClient.setServerURL(serverURL);
-			httpClient.setUsernameAndPassword(username, password);
+			SesameClient client = new SesameClient(serverURL);
+			client.setUsernameAndPassword(username, password);
 
-			TupleQueryResult responseFromServer = httpClient.getRepositoryList();
+			TupleQueryResult responseFromServer = client.repositories().get();
 			while (responseFromServer.hasNext()) {
 				BindingSet bindingSet = responseFromServer.next();
 				RepositoryInfo repInfo = new RepositoryInfo();
@@ -255,10 +254,6 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 				result.add(repInfo);
 			}
-		}
-		catch (IOException ioe) {
-			logger.warn("Unable to retrieve list of repositories", ioe);
-			throw new StoreConfigException(ioe);
 		}
 		catch (UnauthorizedException ue) {
 			logger.warn("Not authorized to retrieve list of repositories", ue);

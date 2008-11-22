@@ -21,7 +21,7 @@ import org.openrdf.store.StoreConfigException;
 
 public class EmbeddedServer {
 
-	public static int DEFAULT_PORT = 18080;
+	public static int DEFAULT_PORT = 8080;
 
 	private File dataDir;
 

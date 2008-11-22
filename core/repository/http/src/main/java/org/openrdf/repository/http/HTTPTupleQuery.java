@@ -5,9 +5,7 @@
  */
 package org.openrdf.repository.http;
 
-import java.io.IOException;
-
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -38,13 +36,10 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 	public TupleQueryResult evaluate()
 		throws HTTPQueryEvaluationException
 	{
-		HTTPClient client = httpCon.getRepository().getHTTPClient();
+		RepositoryClient client = httpCon.getRepository().getClient();
 
 		try {
 			return client.sendTupleQuery(queryLanguage, queryString, dataset, includeInferred, getBindingsArray());
-		}
-		catch (IOException e) {
-			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
 		catch (StoreException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
@@ -57,12 +52,9 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 	public void evaluate(TupleQueryResultHandler handler)
 		throws StoreException, TupleQueryResultHandlerException
 	{
-		HTTPClient client = httpCon.getRepository().getHTTPClient();
+		RepositoryClient client = httpCon.getRepository().getClient();
 		try {
 			client.sendTupleQuery(queryLanguage, queryString, dataset, includeInferred, handler, getBindingsArray());
-		}
-		catch (IOException e) {
-			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
 		catch (MalformedQueryException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);

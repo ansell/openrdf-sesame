@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.RepositoryClient;
+import org.openrdf.http.client.helpers.StatementClient;
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;
@@ -147,29 +148,24 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public RepositoryResult<Resource> getContextIDs()
 		throws StoreException
 	{
+		List<Resource> contextList = new ArrayList<Resource>();
+
+		TupleQueryResult contextIDs = getClient().contexts().get();
 		try {
-			List<Resource> contextList = new ArrayList<Resource>();
+			while (contextIDs.hasNext()) {
+				BindingSet bindingSet = contextIDs.next();
+				Value context = bindingSet.getValue("contextID");
 
-			TupleQueryResult contextIDs = getRepository().getHTTPClient().getContextIDs();
-			try {
-				while (contextIDs.hasNext()) {
-					BindingSet bindingSet = contextIDs.next();
-					Value context = bindingSet.getValue("contextID");
-
-					if (context instanceof Resource) {
-						contextList.add((Resource)context);
-					}
+				if (context instanceof Resource) {
+					contextList.add((Resource)context);
 				}
 			}
-			finally {
-				contextIDs.close();
-			}
+		}
+		finally {
+			contextIDs.close();
+		}
 
-			return createRepositoryResult(contextList);
-		}
-		catch (IOException e) {
-			throw new StoreException(e);
-		}
+		return createRepositoryResult(contextList);
 	}
 
 	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
@@ -191,12 +187,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			RDFHandler handler, Resource... contexts)
 		throws RDFHandlerException, StoreException
 	{
-		try {
-			getRepository().getHTTPClient().getStatements(subj, pred, obj, includeInferred, handler, contexts);
-		}
-		catch (IOException e) {
-			throw new StoreException(e);
-		}
+		getClient().statements().get(subj, pred, obj, includeInferred, handler, contexts);
 	}
 
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
@@ -205,16 +196,13 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		try {
 			// TODO support size pattern in protocol
 			if (subj == null && pred == null && obj == null && !includeInferred) {
-				return getRepository().getHTTPClient().size(contexts);
+				return getClient().size().get(contexts);
 			}
 			else {
 				StatementCollector collector = new StatementCollector();
 				exportStatements(subj, pred, obj, includeInferred, collector, contexts);
 				return collector.getStatements().size();
 			}
-		}
-		catch (IOException e) {
-			throw new StoreException(e);
 		}
 		catch (RDFHandlerException e) {
 			// found a bug in StatementCollector?
@@ -227,13 +215,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		synchronized (txn) {
 			if (txn.size() > 0) {
-				try {
-					getRepository().getHTTPClient().sendTransaction(txn);
-					txn.clear();
-				}
-				catch (IOException e) {
-					throw new StoreException(e);
-				}
+				getClient().statements().post(txn);
+				txn.clear();
 			}
 		}
 	}
@@ -261,7 +244,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		if (isAutoCommit()) {
 			// Send bytes directly to the server
-			HTTPClient httpClient = getRepository().getHTTPClient();
+			StatementClient httpClient = getClient().statements();
 			if (inputStreamOrReader instanceof InputStream) {
 				httpClient.upload(((InputStream)inputStreamOrReader), baseURI, dataFormat, false, contexts);
 			}
@@ -326,43 +309,33 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public RepositoryResult<Namespace> getNamespaces()
 		throws StoreException
 	{
+		List<Namespace> namespaceList = new ArrayList<Namespace>();
+
+		TupleQueryResult namespaces = getClient().namespaces().get();
 		try {
-			List<Namespace> namespaceList = new ArrayList<Namespace>();
+			while (namespaces.hasNext()) {
+				BindingSet bindingSet = namespaces.next();
+				Value prefix = bindingSet.getValue("prefix");
+				Value namespace = bindingSet.getValue("namespace");
 
-			TupleQueryResult namespaces = getRepository().getHTTPClient().getNamespaces();
-			try {
-				while (namespaces.hasNext()) {
-					BindingSet bindingSet = namespaces.next();
-					Value prefix = bindingSet.getValue("prefix");
-					Value namespace = bindingSet.getValue("namespace");
-
-					if (prefix instanceof Literal && namespace instanceof Literal) {
-						String prefixStr = ((Literal)prefix).getLabel();
-						String namespaceStr = ((Literal)namespace).getLabel();
-						namespaceList.add(new NamespaceImpl(prefixStr, namespaceStr));
-					}
+				if (prefix instanceof Literal && namespace instanceof Literal) {
+					String prefixStr = ((Literal)prefix).getLabel();
+					String namespaceStr = ((Literal)namespace).getLabel();
+					namespaceList.add(new NamespaceImpl(prefixStr, namespaceStr));
 				}
 			}
-			finally {
-				namespaces.close();
-			}
+		}
+		finally {
+			namespaces.close();
+		}
 
-			return createRepositoryResult(namespaceList);
-		}
-		catch (IOException e) {
-			throw new StoreException(e);
-		}
+		return createRepositoryResult(namespaceList);
 	}
 
 	public String getNamespace(String prefix)
 		throws StoreException
 	{
-		try {
-			return getRepository().getHTTPClient().getNamespace(prefix);
-		}
-		catch (IOException e) {
-			throw new StoreException(e);
-		}
+		return getClient().namespaces().get(prefix);
 	}
 
 	/**
@@ -377,5 +350,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 */
 	protected <E> GraphResult createGraphResult(Iterable<? extends Statement> elements) {
 		return new GraphResult(new IteratorCursor<Statement>(elements.iterator()));
+	}
+
+	private RepositoryClient getClient() {
+		return getRepository().getClient();
 	}
 }

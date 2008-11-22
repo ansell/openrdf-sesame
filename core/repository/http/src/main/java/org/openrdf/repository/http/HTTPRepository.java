@@ -6,14 +6,13 @@
 package org.openrdf.repository.http;
 
 import java.io.File;
-import java.io.IOException;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.RepositoryClient;
+import org.openrdf.http.client.SesameClient;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.LiteralUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResult;
@@ -48,7 +47,9 @@ public class HTTPRepository implements Repository {
 	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
-	private HTTPClient httpClient;
+	private SesameClient server;
+
+	private RepositoryClient client;
 
 	private File dataDir;
 
@@ -58,20 +59,13 @@ public class HTTPRepository implements Repository {
 	 * Constructors *
 	 *--------------*/
 
-	private HTTPRepository() {
-		httpClient = new HTTPClient();
-		httpClient.setValueFactory(new ValueFactoryImpl());
-	}
-
 	public HTTPRepository(String serverURL, String repositoryID) {
-		this();
-		httpClient.setServerURL(serverURL);
-		httpClient.setRepositoryID(repositoryID);
+		server = new SesameClient(serverURL);
+		client = server.repositories().slash(repositoryID);
 	}
 
 	public HTTPRepository(String repositoryURL) {
-		this();
-		httpClient.setRepositoryURL(repositoryURL);
+		client = new RepositoryClient(repositoryURL);
 	}
 
 	/*---------*
@@ -79,8 +73,8 @@ public class HTTPRepository implements Repository {
 	 *---------*/
 
 	// httpClient is shared with HTTPConnection
-	HTTPClient getHTTPClient() {
-		return httpClient;
+	RepositoryClient getClient() {
+		return client;
 	}
 
 	public void setDataDir(File dataDir) {
@@ -108,15 +102,15 @@ public class HTTPRepository implements Repository {
 	}
 
 	public LiteralFactory getLiteralFactory() {
-		return httpClient.getValueFactory();
+		return client.getValueFactory();
 	}
 
 	public URIFactory getURIFactory() {
-		return httpClient.getValueFactory();
+		return client.getValueFactory();
 	}
 
 	public ValueFactory getValueFactory() {
-		return httpClient.getValueFactory();
+		return client.getValueFactory();
 	}
 
 	public RepositoryConnection getConnection()
@@ -131,29 +125,28 @@ public class HTTPRepository implements Repository {
 		if (!initialized) {
 			throw new IllegalStateException("HTTPRepository not initialized.");
 		}
+		if (server == null) {
+			// we don't have the server URL
+			return false;
+		}
 
 		boolean isWritable = false;
-		String repositoryURL = httpClient.getRepositoryURL();
+		String repositoryURL = client.getURL();
 
+		TupleQueryResult repositoryList = server.repositories().get();
 		try {
-			TupleQueryResult repositoryList = httpClient.getRepositoryList();
-			try {
-				while (repositoryList.hasNext()) {
-					BindingSet bindingSet = repositoryList.next();
-					Value uri = bindingSet.getValue("uri");
+			while (repositoryList.hasNext()) {
+				BindingSet bindingSet = repositoryList.next();
+				Value uri = bindingSet.getValue("uri");
 
-					if (uri != null && uri.stringValue().equals(repositoryURL)) {
-						isWritable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
-						break;
-					}
+				if (uri != null && uri.stringValue().equals(repositoryURL)) {
+					isWritable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
+					break;
 				}
 			}
-			finally {
-				repositoryList.close();
-			}
 		}
-		catch (IOException e) {
-			throw new StoreException(e);
+		finally {
+			repositoryList.close();
 		}
 
 		return isWritable;
@@ -162,8 +155,8 @@ public class HTTPRepository implements Repository {
 	/**
 	 * Sets the preferred serialization format for tuple query results to the
 	 * supplied {@link TupleQueryResultFormat}, overriding the
-	 * {@link HTTPClient}'s default preference. Setting this parameter is not
-	 * necessary in most cases as the {@link HTTPClient} by default indicates a
+	 * default preference. Setting this parameter is not
+	 * necessary in most cases as the default indicates a
 	 * preference for the most compact and efficient format available.
 	 * 
 	 * @param format
@@ -171,7 +164,7 @@ public class HTTPRepository implements Repository {
 	 *        explicit preference will be stated.
 	 */
 	public void setPreferredTupleQueryResultFormat(TupleQueryResultFormat format) {
-		httpClient.setPreferredTupleQueryResultFormat(format);
+		client.getPool().setPreferredTupleQueryResultFormat(format);
 	}
 
 	/**
@@ -181,14 +174,14 @@ public class HTTPRepository implements Repository {
 	 *         defined.
 	 */
 	public TupleQueryResultFormat getPreferredTupleQueryResultFormat() {
-		return httpClient.getPreferredTupleQueryResultFormat();
+		return client.getPool().getPreferredTupleQueryResultFormat();
 	}
 
 	/**
 	 * Sets the preferred serialization format for RDF to the supplied
-	 * {@link RDFFormat}, overriding the {@link HTTPClient}'s default
+	 * {@link RDFFormat}, overriding the default
 	 * preference. Setting this parameter is not necessary in most cases as the
-	 * {@link HTTPClient} by default indicates a preference for the most compact
+	 * default indicates a preference for the most compact
 	 * and efficient format available.
 	 * <p>
 	 * Use with caution: if set to a format that does not support context
@@ -199,7 +192,7 @@ public class HTTPRepository implements Repository {
 	 *        preference will be stated.
 	 */
 	public void setPreferredRDFFormat(RDFFormat format) {
-		httpClient.setPreferredRDFFormat(format);
+		client.getPool().setPreferredRDFFormat(format);
 	}
 
 	/**
@@ -209,7 +202,7 @@ public class HTTPRepository implements Repository {
 	 *         defined.
 	 */
 	public RDFFormat getPreferredRDFFormat() {
-		return httpClient.getPreferredRDFFormat();
+		return client.getPool().getPreferredRDFFormat();
 	}
 
 	/**
@@ -222,6 +215,6 @@ public class HTTPRepository implements Repository {
 	 *        the password. Setting this to null will disable authentication.
 	 */
 	public void setUsernameAndPassword(String username, String password) {
-		httpClient.setUsernameAndPassword(username, password);
+		client.setUsernameAndPassword(username, password);
 	}
 }
