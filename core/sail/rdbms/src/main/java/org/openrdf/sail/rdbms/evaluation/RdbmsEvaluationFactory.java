@@ -5,7 +5,7 @@
  */
 package org.openrdf.sail.rdbms.evaluation;
 
-import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.sail.rdbms.RdbmsTripleRepository;
 import org.openrdf.sail.rdbms.schema.IdSequence;
 
@@ -35,7 +35,7 @@ public class RdbmsEvaluationFactory {
 		this.ids = ids;
 	}
 
-	public RdbmsEvaluation createRdbmsEvaluation(Dataset dataset) {
-		return new RdbmsEvaluation(factory, triples, dataset, ids);
+	public RdbmsEvaluation createRdbmsEvaluation(QueryModel query) {
+		return new RdbmsEvaluation(factory, triples, query, ids);
 	}
 }

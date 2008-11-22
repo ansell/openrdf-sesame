@@ -111,6 +111,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.base.ConvertingCursor;
 import org.openrdf.query.base.FilteringCursor;
+import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.store.StoreException;
 
 /**
@@ -129,19 +130,21 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 	protected final TripleSource tripleSource;
 
-	protected final Dataset dataset;
+	protected Dataset dataset;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	public EvaluationStrategyImpl(TripleSource tripleSource) {
-		this(tripleSource, null);
+		this.tripleSource = tripleSource;
 	}
 
-	public EvaluationStrategyImpl(TripleSource tripleSource, Dataset dataset) {
-		this.tripleSource = tripleSource;
-		this.dataset = dataset;
+	public EvaluationStrategyImpl(TripleSource tripleSource, QueryModel query) {
+		this(tripleSource);
+		if (!query.getDefaultGraphs().isEmpty() || !query.getNamedGraphs().isEmpty()) {
+			this.dataset = new DatasetImpl(query.getDefaultGraphs(), query.getNamedGraphs());
+		}
 	}
 
 	/*---------*

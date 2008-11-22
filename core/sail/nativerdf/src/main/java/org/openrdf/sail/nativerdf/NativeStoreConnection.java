@@ -22,7 +22,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
@@ -40,7 +39,6 @@ import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
-import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.IteratorCursor;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
@@ -96,7 +94,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 		// Clone the tuple expression to allow for more aggressive optimizations
 		query = query.clone();
-		Dataset dataset = new DatasetImpl(query.getDefaultGraphs(), query.getNamedGraphs());
 
 		Lock readLock = nativeStore.getReadLock();
 
@@ -105,7 +102,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 			NativeTripleSource tripleSource = new NativeTripleSource(nativeStore, includeInferred,
 					transactionActive());
-			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset);
+			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, query);
 
 			QueryOptimizerList optimizerList = new QueryOptimizerList();
 			optimizerList.add(new BindingAssigner());
