@@ -15,11 +15,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
-import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
@@ -54,10 +52,10 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 
 	private IdSequence ids;
 
-	public RdbmsEvaluation(QueryBuilderFactory factory, RdbmsTripleRepository triples, Dataset dataset,
+	public RdbmsEvaluation(QueryBuilderFactory factory, RdbmsTripleRepository triples, QueryModel query,
 			IdSequence ids)
 	{
-		super(new RdbmsTripleSource(triples), dataset);
+		super(new RdbmsTripleSource(triples), query);
 		this.factory = factory;
 		this.triples = triples;
 		this.vf = triples.getValueFactory();

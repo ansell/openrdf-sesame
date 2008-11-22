@@ -194,8 +194,7 @@ public class RdbmsConnection extends SailConnectionBase {
 		triples.flush();
 		TupleExpr tupleExpr;
 		EvaluationStrategy strategy;
-		Dataset dataset = new DatasetImpl(query.getDefaultGraphs(), query.getNamedGraphs());
-		strategy = factory.createRdbmsEvaluation(dataset);
+		strategy = factory.createRdbmsEvaluation(query);
 		tupleExpr = optimizer.optimize(query, bindings, strategy);
 		return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
 	}
