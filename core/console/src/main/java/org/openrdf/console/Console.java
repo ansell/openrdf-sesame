@@ -44,7 +44,7 @@ import info.aduna.app.AppVersion;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.text.StringUtil;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
@@ -498,19 +498,13 @@ public class Console {
 	private boolean connectRemote(String url) {
 		try {
 			// Ping server
-			HTTPClient httpClient = new HTTPClient();
-			httpClient.setServerURL(url);
-			httpClient.getServerProtocol();
+			new SesameClient(url).protocol().get();
 
 			return installNewManager(new RemoteRepositoryManager(url), url);
 		}
 		catch (UnauthorizedException e) {
 			// FIXME: handle authentication
 			writeError("Not authorized to access the server");
-		}
-		catch (IOException e) {
-			writeError("Failed to access the server: " + e.getMessage());
-			logger.warn("Failed to access the server", e);
 		}
 		catch (StoreException e) {
 			writeError("Failed to access the server: " + e.getMessage());

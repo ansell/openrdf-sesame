@@ -5,9 +5,7 @@
  */
 package org.openrdf.repository.http;
 
-import java.io.IOException;
-
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
@@ -38,13 +36,10 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 	public GraphQueryResult evaluate()
 		throws HTTPQueryEvaluationException
 	{
-		HTTPClient client = httpCon.getRepository().getHTTPClient();
+		RepositoryClient client = httpCon.getRepository().getClient();
 
 		try {
 			return client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred, getBindingsArray());
-		}
-		catch (IOException e) {
-			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
 		catch (StoreException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
@@ -57,12 +52,9 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 	public void evaluate(RDFHandler handler)
 		throws HTTPQueryEvaluationException, RDFHandlerException
 	{
-		HTTPClient client = httpCon.getRepository().getHTTPClient();
+		RepositoryClient client = httpCon.getRepository().getClient();
 		try {
 			client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred, handler, getBindingsArray());
-		}
-		catch (IOException e) {
-			throw new HTTPQueryEvaluationException(e.getMessage(), e);
 		}
 		catch (StoreException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
