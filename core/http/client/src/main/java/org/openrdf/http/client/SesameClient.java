@@ -6,8 +6,7 @@
 package org.openrdf.http.client;
 
 import org.openrdf.http.client.connections.HTTPConnectionPool;
-import org.openrdf.http.client.helpers.ProtocolClient;
-import org.openrdf.http.client.helpers.RepositoriesClient;
+import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.ValueFactory;
 
 /**
@@ -51,11 +50,11 @@ public class SesameClient {
 	}
 
 	public ProtocolClient protocol() {
-		return new ProtocolClient(server.slash("protocol"));
+		return new ProtocolClient(server.slash(Protocol.PROTOCOL));
 	}
 
 	public RepositoriesClient repositories() {
-		return new RepositoriesClient(server.slash("repositories"));
+		return new RepositoriesClient(server.slash(Protocol.REPOSITORIES));
 	}
 
 }

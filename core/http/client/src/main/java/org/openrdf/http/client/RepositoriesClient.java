@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.http.client.helpers;
+package org.openrdf.http.client;
 
 import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
@@ -18,17 +18,13 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class ContextClient {
+public class RepositoriesClient {
 
-	private HTTPConnectionPool contexts;
+	private HTTPConnectionPool repositories;
 
-	public ContextClient(HTTPConnectionPool contexts) {
-		this.contexts = contexts;
+	public RepositoriesClient(HTTPConnectionPool repositroies) {
+		this.repositories = repositroies;
 	}
-
-	/*-------------*
-	 * Context IDs *
-	 *-------------*/
 
 	public TupleQueryResult get()
 		throws StoreException
@@ -47,7 +43,7 @@ public class ContextClient {
 	public void get(TupleQueryResultHandler handler)
 		throws TupleQueryResultHandlerException, StoreException
 	{
-		HTTPConnection method = contexts.get();
+		HTTPConnection method = repositories.get();
 
 		try {
 			method.acceptTuple();
@@ -57,6 +53,10 @@ public class ContextClient {
 		finally {
 			method.release();
 		}
+	}
+
+	public RepositoryClient slash(String id) {
+		return new RepositoryClient(repositories.slash(id));
 	}
 
 }

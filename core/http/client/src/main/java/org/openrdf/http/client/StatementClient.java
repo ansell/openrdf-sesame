@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.http.client.helpers;
+package org.openrdf.http.client;
 
 import java.io.IOException;
 import java.io.InputStream;

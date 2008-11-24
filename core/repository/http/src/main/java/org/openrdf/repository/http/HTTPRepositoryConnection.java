@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.openrdf.http.client.RepositoryClient;
-import org.openrdf.http.client.helpers.StatementClient;
+import org.openrdf.http.client.StatementClient;
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;

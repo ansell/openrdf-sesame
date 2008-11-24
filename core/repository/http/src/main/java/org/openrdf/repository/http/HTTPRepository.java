@@ -9,6 +9,7 @@ import java.io.File;
 
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
@@ -65,6 +66,10 @@ public class HTTPRepository implements Repository {
 	}
 
 	public HTTPRepository(String repositoryURL) {
+		String serverURL = Protocol.getServerLocation(repositoryURL);
+		if (serverURL != null) {
+			server = new SesameClient(serverURL);
+		}
 		client = new RepositoryClient(repositoryURL);
 	}
 

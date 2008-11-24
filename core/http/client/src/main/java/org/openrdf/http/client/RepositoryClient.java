@@ -12,10 +12,6 @@ import org.apache.commons.httpclient.NameValuePair;
 
 import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
-import org.openrdf.http.client.helpers.ContextClient;
-import org.openrdf.http.client.helpers.NamespaceClient;
-import org.openrdf.http.client.helpers.SizeClient;
-import org.openrdf.http.client.helpers.StatementClient;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.URI;
@@ -76,19 +72,19 @@ public class RepositoryClient {
 	}
 
 	public ContextClient contexts() {
-		return new ContextClient(repository.slash("contexts"));
+		return new ContextClient(repository.slash(Protocol.CONTEXTS));
 	}
 
 	public NamespaceClient namespaces() {
-		return new NamespaceClient(repository.slash("namespaces"));
+		return new NamespaceClient(repository.slash(Protocol.NAMESPACES));
 	}
 
 	public SizeClient size() {
-		return new SizeClient(repository.slash("size"));
+		return new SizeClient(repository.slash(Protocol.SIZE));
 	}
 
 	public StatementClient statements() {
-		return new StatementClient(repository.slash("statements"));
+		return new StatementClient(repository.slash(Protocol.STATEMENTS));
 	}
 
 	/*------------------*

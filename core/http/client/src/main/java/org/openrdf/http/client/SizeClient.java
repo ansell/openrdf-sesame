@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.http.client.helpers;
+package org.openrdf.http.client;
 
 import java.util.ArrayList;
 import java.util.List;

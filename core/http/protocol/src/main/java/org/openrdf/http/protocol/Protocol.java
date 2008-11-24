@@ -5,6 +5,9 @@
  */
 package org.openrdf.http.protocol;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -188,6 +191,28 @@ public abstract class Protocol {
 	 */
 	public static final String getRepositoryLocation(String serverLocation, String repositoryID) {
 		return getRepositoriesLocation(serverLocation) + "/" + repositoryID;
+	}
+
+	/**
+	 * Get the location of server containing the specified repository resource.
+	 * 
+	 * @param serverLocation
+	 *        the base location of a server implementing this REST protocol.
+	 * @param repositoryID
+	 *        the ID of the repository
+	 * @return the location of a specific repository resource on the specified
+	 *         server
+	 */
+	public static final String getServerLocation(String repositoryLocation) {
+		// Try to parse the server URL from the repository URL
+		Pattern urlPattern = Pattern.compile("(.*)/" + Protocol.REPOSITORIES + "/[^/]*/?");
+		Matcher matcher = urlPattern.matcher(repositoryLocation);
+
+		if (matcher.matches() && matcher.groupCount() == 1) {
+			return matcher.group(1);
+		} else {
+			return null;
+		}
 	}
 
 	/**
