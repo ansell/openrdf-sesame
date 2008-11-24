@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -33,6 +33,8 @@ import org.openrdf.rio.RDFFormat;
  * Store the url, authentication, preference, and a shared {@link HttpClient}
  * for managed {@link HTTPConnection}.
  * 
+ * @author Herko ter Horst
+ * @author Arjohn Kampman
  * @author James Leigh
  */
 public class HTTPConnectionPool implements Cloneable {
