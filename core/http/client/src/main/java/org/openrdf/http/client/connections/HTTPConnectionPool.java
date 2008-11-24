@@ -49,7 +49,7 @@ public class HTTPConnectionPool implements Cloneable {
 
 	private AuthScope authScope;
 
-	private TupleQueryResultFormat preferredTQRFormat = TupleQueryResultFormat.SPARQL;
+	private TupleQueryResultFormat preferredTQRFormat = TupleQueryResultFormat.BINARY;
 
 	private BooleanQueryResultFormat preferredBQRFormat = BooleanQueryResultFormat.TEXT;
 
