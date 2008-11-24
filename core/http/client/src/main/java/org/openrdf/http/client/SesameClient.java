@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,6 +14,8 @@ import org.openrdf.model.ValueFactory;
  * Low-level HTTP client for Sesame's HTTP protocol. Methods correspond directly
  * to the functionality offered by the protocol.
  * 
+ * @author Herko ter Horst
+ * @author Arjohn Kampman
  * @author James Leigh
  */
 public class SesameClient {

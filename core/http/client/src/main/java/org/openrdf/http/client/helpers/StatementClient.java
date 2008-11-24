@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -37,6 +37,8 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.store.StoreException;
 
 /**
+ * @author Herko ter Horst
+ * @author Arjohn Kampman
  * @author James Leigh
  */
 public class StatementClient {
