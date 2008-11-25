@@ -133,7 +133,8 @@ public class LocalConfigManager implements RepositoryConfigManager {
 	public void updateConfig(Model config)
 		throws StoreConfigException
 	{
-		File file = getRdfFiles().get(config);
+		String id = getId(config);
+		File file = getRdfFiles().get(id);
 		if (file == null) {
 			throw new StoreConfigException("Repository config does not exist");
 		}
@@ -189,6 +190,9 @@ public class LocalConfigManager implements RepositoryConfigManager {
 			try {
 				RDFWriter writer = Rio.createWriter(format, out);
 				writer.startRDF();
+				for (Map.Entry<String, String> ns : config.getNamespaces().entrySet()) {
+					writer.handleNamespace(ns.getKey(), ns.getValue());
+				}
 				for (Statement st : config) {
 					writer.handleStatement(st);
 				}

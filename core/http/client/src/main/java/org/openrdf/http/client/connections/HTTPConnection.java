@@ -9,9 +9,13 @@ import static org.openrdf.http.protocol.Protocol.ACCEPT_PARAM_NAME;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.httpclient.Header;
@@ -31,6 +35,9 @@ import info.aduna.net.http.HttpClientUtil;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
+import org.openrdf.model.Model;
+import org.openrdf.model.Statement;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
@@ -48,8 +55,12 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFParserRegistry;
+import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.RDFWriterFactory;
+import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * Serialises Java Objects over an HTTP connection.
@@ -76,7 +87,11 @@ public class HTTPConnection {
 	{
 		if (String.class.isAssignableFrom(type)) {
 			acceptString();
-		} else {
+		}
+		else if (Model.class.isAssignableFrom(type)) {
+			acceptRDF(false);
+		}
+		else {
 			throw new NoCompatibleMediaType("No parsers are available for " + type);
 		}
 	}
@@ -191,8 +206,12 @@ public class HTTPConnection {
 
 	public void send(Object instance) {
 		if (instance instanceof String) {
-			sendString((String) instance);
-		} else {
+			sendString((String)instance);
+		}
+		else if (instance instanceof Model) {
+			sendModel((Model)instance);
+		}
+		else {
 			throw new IllegalArgumentException();
 		}
 	}
@@ -204,6 +223,50 @@ public class HTTPConnection {
 		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
+	}
+
+	public void sendModel(final Model model) {
+		final RDFFormat dataFormat = pool.getPreferredRDFFormat();
+		final Charset charset = dataFormat.hasCharset() ? dataFormat.getCharset() : Charset.forName("UTF-8");
+		final RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(dataFormat);
+		sendEntity(new RequestEntity() {
+
+			public long getContentLength() {
+				return -1; // don't know
+			}
+
+			public String getContentType() {
+				return dataFormat.getDefaultMIMEType() + "; charset=" + charset.name();
+			}
+
+			public boolean isRepeatable() {
+				return false;
+			}
+
+			public void writeRequest(OutputStream out)
+				throws IOException
+			{
+				OutputStreamWriter writer = new OutputStreamWriter(out, charset);
+				RDFWriter rdf = factory.getWriter(writer);
+				try {
+					rdf.startRDF();
+					for (Map.Entry<String, String> ns : model.getNamespaces().entrySet()) {
+						rdf.handleNamespace(ns.getKey(), ns.getValue());
+					}
+					for (Statement st : model) {
+						rdf.handleStatement(st);
+					}
+					rdf.endRDF();
+				}
+				catch (RDFHandlerException e) {
+					if (e.getCause() instanceof IOException) {
+						throw (IOException)e.getCause();
+					}
+					throw new IOException(e);
+				}
+				writer.flush();
+			}
+		});
 	}
 
 	public void sendForm(List<NameValuePair> queryParams) {
@@ -234,7 +297,11 @@ public class HTTPConnection {
 	{
 		if (String.class.isAssignableFrom(type)) {
 			return type.cast(readString());
-		} else {
+		}
+		else if (Model.class.isAssignableFrom(type)) {
+			return type.cast(readModel());
+		}
+		else {
 			throw new NoCompatibleMediaType("Cannot read " + type);
 		}
 	}
@@ -265,14 +332,12 @@ public class HTTPConnection {
 		}
 		catch (UnsupportedQueryResultFormatException e) {
 			logger.warn(e.toString(), e);
-			throw new NoCompatibleMediaType("Server responded with an unsupported file format: "
-					+ mimeType);
+			throw new NoCompatibleMediaType("Server responded with an unsupported file format: " + mimeType);
 		}
 	}
 
 	public void readTuple(TupleQueryResultHandler handler)
-		throws TupleQueryResultHandlerException, IOException, QueryResultParseException,
-		NoCompatibleMediaType
+		throws TupleQueryResultHandlerException, IOException, QueryResultParseException, NoCompatibleMediaType
 	{
 		String mimeType = readContentType();
 		try {
@@ -284,9 +349,21 @@ public class HTTPConnection {
 		}
 		catch (UnsupportedQueryResultFormatException e) {
 			logger.warn(e.toString(), e);
-			throw new NoCompatibleMediaType("Server responded with an unsupported file format: "
-					+ mimeType);
+			throw new NoCompatibleMediaType("Server responded with an unsupported file format: " + mimeType);
 		}
+	}
+
+	public Model readModel()
+		throws IOException, RDFParseException, NoCompatibleMediaType
+	{
+		Model model = new ModelImpl();
+		try {
+			readRDF(new StatementCollector(model));
+		}
+		catch (RDFHandlerException e) {
+			throw new AssertionError(e);
+		}
+		return model;
 	}
 
 	public void readRDF(RDFHandler handler)
@@ -303,8 +380,7 @@ public class HTTPConnection {
 		}
 		catch (UnsupportedRDFormatException e) {
 			logger.warn(e.toString(), e);
-			throw new NoCompatibleMediaType("Server responded with an unsupported file format: "
-					+ mimeType);
+			throw new NoCompatibleMediaType("Server responded with an unsupported file format: " + mimeType);
 		}
 	}
 

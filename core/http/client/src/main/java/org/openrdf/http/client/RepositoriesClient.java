@@ -8,8 +8,6 @@ package org.openrdf.http.client;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.StoreClient;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -27,16 +25,10 @@ public class RepositoriesClient {
 		this.client = new StoreClient(repositories);
 	}
 
-	public TupleQueryResult get()
+	public TupleQueryResult list()
 		throws StoreException
 	{
 		return client.list();
-	}
-
-	public void get(TupleQueryResultHandler handler)
-		throws TupleQueryResultHandlerException, StoreException
-	{
-		client.list(handler);
 	}
 
 	public RepositoryClient slash(String id) {

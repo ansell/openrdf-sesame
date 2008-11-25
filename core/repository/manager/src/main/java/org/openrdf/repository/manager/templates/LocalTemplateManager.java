@@ -10,11 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -147,7 +145,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	}
 
 	private void loadTemplates(ClassLoader cl)
-		throws IOException, StoreConfigException, AssertionError
+		throws IOException, StoreConfigException
 	{
 		loadResources(schema, cl, STORE_SCHEMAS);
 		loadTemplates(cl, REPOSITORY_TEMPLATES);
@@ -169,7 +167,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	}
 
 	private void loadResources(Model model, ClassLoader cl, String resource)
-		throws IOException, AssertionError
+		throws IOException
 	{
 		Enumeration<URL> schemas = cl.getResources(resource);
 
@@ -220,7 +218,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	}
 
 	private void loadTemplates(ClassLoader cl, String resource)
-		throws IOException, AssertionError, StoreConfigException
+		throws IOException, StoreConfigException
 	{
 		Enumeration<URL> templates = cl.getResources(resource);
 		while (templates.hasMoreElements()) {
@@ -246,7 +244,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		}
 	}
 
-	private List<Statement> parse(URL url)
+	private Model parse(URL url)
 		throws IOException, RDFParseException
 	{
 		RDFFormat format = Rio.getParserFormatForFileName(url.getFile());
@@ -257,7 +255,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		try {
 			RDFParser parser = Rio.createParser(format);
 
-			List<Statement> statements = new ArrayList<Statement>();
+			Model statements = new ModelImpl();
 			parser.setRDFHandler(new StatementCollector(statements));
 
 			InputStream stream = url.openStream();

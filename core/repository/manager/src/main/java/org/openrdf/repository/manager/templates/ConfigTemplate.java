@@ -25,15 +25,15 @@ public class ConfigTemplate {
 
 	private String id;
 
-	private List<Statement> statements;
+	private Model statements;
 
 	private Model schema;
 
-	public ConfigTemplate(List<Statement> statements, Model schema)
+	public ConfigTemplate(Model statements, Model schema)
 		throws IOException, RDFParseException
 	{
-		this.schema = schema;
 		this.statements = statements;
+		this.schema = schema;
 		for (Statement st : statements) {
 			if (st.getPredicate().equals(RepositoryConfigSchema.REPOSITORYID)) {
 				id = st.getObject().stringValue();
@@ -67,6 +67,7 @@ public class ConfigTemplate {
 	public Model createConfig(List<ConfigProperty> properties) {
 		int idx = 0;
 		Model model = new ModelImpl();
+		model.getNamespaces().putAll(statements.getNamespaces());
 		for (Statement st : statements) {
 			Resource subj = st.getSubject();
 			URI pred = st.getPredicate();
@@ -79,5 +80,9 @@ public class ConfigTemplate {
 			}
 		}
 		return model;
+	}
+
+	public Model getModel() {
+		return statements;
 	}
 }

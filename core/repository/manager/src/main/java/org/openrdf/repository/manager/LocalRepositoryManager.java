@@ -6,7 +6,6 @@
 package org.openrdf.repository.manager;
 
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
-import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY_CONTEXT;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +21,6 @@ import java.util.Set;
 import info.aduna.io.FileUtil;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.model.BNode;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -108,61 +106,26 @@ public class LocalRepositoryManager extends RepositoryManager {
 		setConfigTemplateManager(templates);
 		try {
 			if (getRepositoryDir(SystemRepository.ID).isDirectory()) {
-				// Sesame 2.2 directory
-				Repository systemRepository = createSystemRepository();
+				// Sesame 2.0 directory
+				File systemDir = getRepositoryDir(SystemRepository.ID);
+				SystemRepository systemRepos = new SystemRepository(systemDir);
+				systemRepos.initialize();
+				
+				systemRepos.addRepositoryConnectionListener(new ConfigChangeListener());
+				Repository systemRepository = systemRepos;
 				setRepositoryConfigManager(new SystemConfigManager(systemRepository));
 
 				synchronized (initializedRepositories) {
 					initializedRepositories.put(SystemRepository.ID, systemRepository);
 				}
 			} else {
-				// Sesame 2.5 directory
+				// Sesame 3.0 directory
 				setRepositoryConfigManager(new LocalConfigManager(new File(baseDir, CONFIGURATIONS)));
 			}
 		}
 		catch (StoreException e) {
 			throw new StoreConfigException(e);
 		}
-	}
-
-	@Override
-	protected Repository createSystemRepository()
-		throws StoreException
-	{
-		File systemDir = getRepositoryDir(SystemRepository.ID);
-		SystemRepository systemRepos = new SystemRepository(systemDir);
-		systemRepos.initialize();
-
-		systemRepos.addRepositoryConnectionListener(new ConfigChangeListener());
-		return systemRepos;
-	}
-
-	/**
-	 * Gets the SYSTEM repository.
-	 * @throws StoreException 
-	 * @throws StoreConfigException 
-	 */
-	@Deprecated
-	public Repository getSystemRepository() throws StoreException, StoreConfigException {
-		synchronized (initializedRepositories) {
-			if (initializedRepositories.containsKey(SystemRepository.ID))
-				return initializedRepositories.get(SystemRepository.ID);
-		}
-		SystemRepository repo = new SystemRepository();
-		repo.initialize();
-		RepositoryConnection con = repo.getConnection();
-		try {
-			for (String id : getRepositoryIDs()) {
-				BNode ctx = con.getValueFactory().createBNode(id);
-				con.add(ctx, RDF.TYPE, REPOSITORY_CONTEXT);
-				con.add(getRepositoryConfig(id), ctx);
-			}
-		} finally {
-			con.close();
-		}
-
-		repo.addRepositoryConnectionListener(new ConfigChangeListener());
-		return repo;
 	}
 
 	/**

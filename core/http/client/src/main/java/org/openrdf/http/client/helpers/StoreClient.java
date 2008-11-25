@@ -40,10 +40,6 @@ public class StoreClient {
 		this.server = server;
 	}
 
-	public HTTPConnectionPool getPool() {
-		return server;
-	}
-
 	public TupleQueryResult list()
 		throws StoreException
 	{

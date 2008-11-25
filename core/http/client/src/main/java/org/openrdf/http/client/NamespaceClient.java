@@ -8,8 +8,6 @@ package org.openrdf.http.client;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.StoreClient;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -28,12 +26,6 @@ public class NamespaceClient {
 		throws StoreException
 	{
 		return client.list();
-	}
-
-	public void list(TupleQueryResultHandler handler)
-		throws TupleQueryResultHandlerException, StoreException
-	{
-		client.list(handler);
 	}
 
 	public String get(String prefix)

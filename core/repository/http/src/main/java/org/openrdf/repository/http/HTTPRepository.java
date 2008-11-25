@@ -138,7 +138,7 @@ public class HTTPRepository implements Repository {
 		boolean isWritable = false;
 		String repositoryURL = client.getURL();
 
-		TupleQueryResult repositoryList = server.repositories().get();
+		TupleQueryResult repositoryList = server.repositories().list();
 		try {
 			while (repositoryList.hasNext()) {
 				BindingSet bindingSet = repositoryList.next();
