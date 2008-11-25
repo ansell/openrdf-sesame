@@ -169,7 +169,7 @@ public class LocalConfigManager implements RepositoryConfigManager {
 	private String getId(Model config)
 		throws StoreConfigException
 	{
-		for (Value value : config.objects(null, REPOSITORYID)) {
+		for (Value value : config.filter(null, REPOSITORYID, null).objects()) {
 			return value.stringValue();
 		}
 		throw new StoreConfigException("No repository id present");

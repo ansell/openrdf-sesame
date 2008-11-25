@@ -43,7 +43,7 @@ public class ConfigProperty {
 	}
 
 	public String getLabel() {
-		for (Value value : schema.objects(pred, RDFS.LABEL)) {
+		for (Value value : schema.filter(pred, RDFS.LABEL, null).objects()) {
 			// TODO check the language
 			return value.stringValue();
 		}
@@ -51,7 +51,7 @@ public class ConfigProperty {
 	}
 
 	public String getComment() {
-		for (Value value : schema.objects(pred, RDFS.COMMENT)) {
+		for (Value value : schema.filter(pred, RDFS.COMMENT, null).objects()) {
 			// TODO check the language
 			return value.stringValue();
 		}
@@ -59,7 +59,7 @@ public class ConfigProperty {
 	}
 
 	public URI getRange() {
-		for (Value value : schema.objects(pred, RDFS.RANGE)) {
+		for (Value value : schema.filter(pred, RDFS.RANGE, null).objects()) {
 			if (value instanceof URI) {
 				return (URI) value;
 			}

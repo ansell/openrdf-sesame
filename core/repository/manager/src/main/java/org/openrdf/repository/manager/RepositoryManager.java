@@ -243,7 +243,7 @@ public abstract class RepositoryManager {
 	String getConfigId(Model config)
 		throws StoreConfigException
 	{
-		Set<Value> ids = config.objects(null, REPOSITORYID);
+		Set<Value> ids = config.filter(null, REPOSITORYID, null).objects();
 		if (ids.size() != 1)
 			throw new StoreConfigException("Repository ID not found");
 		String id = ids.iterator().next().stringValue();

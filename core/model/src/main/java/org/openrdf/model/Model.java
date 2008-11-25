@@ -213,7 +213,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 * 
 	 * @return a set view of the subjects contained in this model
 	 */
-	public Set<Resource> subjects(URI pred, Value obj, Resource... contexts);
+	public Set<Resource> subjects();
 
 	/**
 	 * Returns a {@link Set} view of the predicates contained in this model. The
@@ -229,7 +229,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 * 
 	 * @return a set view of the predicates contained in this model
 	 */
-	public Set<URI> predicates(Resource subj, Value obj, Resource... contexts);
+	public Set<URI> predicates();
 
 	/**
 	 * Returns a {@link Set} view of the objects contained in this model. The set
@@ -245,7 +245,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 * 
 	 * @return a set view of the objects contained in this model
 	 */
-	public Set<Value> objects(Resource subj, URI pred, Resource... contexts);
+	public Set<Value> objects();
 
 	/**
 	 * Returns a {@link Set} view of the contexts contained in this model. The
@@ -262,5 +262,5 @@ public interface Model extends Set<Statement>, Serializable {
 	 * 
 	 * @return a set view of the contexts contained in this model
 	 */
-	public Set<Resource> contexts(Resource subj, URI pred, Value obj);
+	public Set<Resource> contexts();
 }

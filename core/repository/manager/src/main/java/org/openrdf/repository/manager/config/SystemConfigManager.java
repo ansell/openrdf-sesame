@@ -91,7 +91,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	{
 		Model model = getSystemModel();
 		Set<String> ids = new HashSet<String>();
-		for (Value obj : model.objects(null, REPOSITORYID)) {
+		for (Value obj : model.filter(null, REPOSITORYID, null).objects()) {
 			ids.add(obj.stringValue());
 		}
 		return ids;
@@ -130,7 +130,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	public void updateConfig(Model config)
 		throws StoreConfigException
 	{
-		for (Value value : config.objects(null, REPOSITORYID)) {
+		for (Value value : config.filter(null, REPOSITORYID, null).objects()) {
 			removeConfig(value.stringValue());
 		}
 
@@ -152,7 +152,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 
 			// clear existing context
 			Literal id = vf.createLiteral(repositoryID);
-			for (Resource ctx : model.contexts(null, REPOSITORYID, id)) {
+			for (Resource ctx : model.filter(null, REPOSITORYID, id).contexts()) {
 				clearSystemModel(ctx);
 				isRemoved = true;
 			}
