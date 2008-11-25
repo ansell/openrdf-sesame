@@ -138,7 +138,23 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		return new FilteredModel(subj, pred, obj, contexts);
 	}
 
-	public Set<Resource> contexts(final Resource subj, final URI pred, final Value obj) {
+	public Set<Resource> subjects() {
+		return subjects(null, null);
+	}
+
+	public Set<URI> predicates() {
+		return predicates(null, null);
+	}
+
+	public Set<Value> objects() {
+		return objects(null, null);
+	}
+
+	public Set<Resource> contexts() {
+		return contexts(null, null, null);
+	}
+
+	Set<Resource> contexts(final Resource subj, final URI pred, final Value obj) {
 		return new ValueSet<Resource>() {
 
 			@Override
@@ -187,7 +203,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		};
 	}
 
-	public Set<Value> objects(final Resource subj, final URI pred, final Resource... contexts) {
+	Set<Value> objects(final Resource subj, final URI pred, final Resource... contexts) {
 		return new ValueSet<Value>() {
 
 			@Override
@@ -236,7 +252,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		};
 	}
 
-	public Set<URI> predicates(final Resource subj, final Value obj, final Resource... contexts) {
+	Set<URI> predicates(final Resource subj, final Value obj, final Resource... contexts) {
 		return new ValueSet<URI>() {
 
 			@Override
@@ -285,7 +301,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		};
 	}
 
-	public Set<Resource> subjects(final URI pred, final Value obj, final Resource... contexts) {
+	Set<Resource> subjects(final URI pred, final Value obj, final Resource... contexts) {
 		return new ValueSet<Resource>() {
 
 			@Override
@@ -450,7 +466,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			return false;
 		}
 
-		public Set<Resource> contexts(Resource subj, URI pred, Value obj) {
+		public Set<Resource> contexts() {
 			return emptySet();
 		}
 
@@ -458,11 +474,11 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			return emptyModel;
 		}
 
-		public Set<Value> objects(Resource subj, URI pred, Resource... contexts) {
+		public Set<Value> objects() {
 			return emptySet();
 		}
 
-		public Set<URI> predicates(Resource subj, Value obj, Resource... contexts) {
+		public Set<URI> predicates() {
 			return emptySet();
 		}
 
@@ -470,7 +486,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			return false;
 		}
 
-		public Set<Resource> subjects(URI pred, Value obj, Resource... contexts) {
+		public Set<Resource> subjects() {
 			return emptySet();
 		}
 
@@ -638,76 +654,32 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			return ModelImpl.this.filter(s, p, o, c);
 		}
 
-		public Set<Resource> contexts(Resource s, URI p, Value o) {
-			if (!accept(s, p, o))
-				return EmptyModel.emptySet();
-			if (s == null) {
-				s = subj;
-			}
-			if (p == null) {
-				p = pred;
-			}
-			if (o == null) {
-				o = obj;
-			}
+		public Set<Resource> contexts() {
 			if (contexts != null || contexts.length > 0) {
 				return unmodifiableSet(new HashSet<Resource>(asList(contexts)));
 			}
-			return ModelImpl.this.contexts(s, p, o);
+			return ModelImpl.this.contexts(subj, pred, obj);
 		}
 
-		public Set<Value> objects(Resource s, URI p, Resource... c) {
-			if (!accept(s, p, null, c))
-				return EmptyModel.emptySet();
-			if (s == null) {
-				s = subj;
-			}
-			if (p == null) {
-				p = pred;
-			}
+		public Set<Value> objects() {
 			if (obj != null) {
 				return Collections.singleton(obj);
 			}
-			if (c != null && c.length == 0) {
-				c = contexts;
-			}
-			return ModelImpl.this.objects(s, p, c);
+			return ModelImpl.this.objects(subj, pred, contexts);
 		}
 
-		public Set<URI> predicates(Resource s, Value o, Resource... c) {
-			if (!accept(s, null, o, c))
-				return EmptyModel.emptySet();
-			if (s == null) {
-				s = subj;
-			}
+		public Set<URI> predicates() {
 			if (pred != null) {
 				return Collections.singleton(pred);
 			}
-			if (o == null) {
-				o = obj;
-			}
-			if (c != null && c.length == 0) {
-				c = contexts;
-			}
-			return ModelImpl.this.predicates(s, o, c);
+			return ModelImpl.this.predicates(subj, obj, contexts);
 		}
 
-		public Set<Resource> subjects(URI p, Value o, Resource... c) {
-			if (!accept(null, p, o, c))
-				return EmptyModel.emptySet();
+		public Set<Resource> subjects() {
 			if (subj != null) {
 				return Collections.singleton(subj);
 			}
-			if (p == null) {
-				p = pred;
-			}
-			if (o == null) {
-				o = obj;
-			}
-			if (c != null && c.length == 0) {
-				c = contexts;
-			}
-			return ModelImpl.this.subjects(p, o, c);
+			return ModelImpl.this.subjects(pred, obj, contexts);
 		}
 
 		private ModelIterator statementIterator() {

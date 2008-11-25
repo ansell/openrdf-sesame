@@ -269,7 +269,7 @@ public class ModelUtil {
 	public static Resource getUniqueSubject(Model model, URI pred, Value obj, Resource... contexts)
 		throws ModelUtilException
 	{
-		Set<Resource> subjects = model.subjects(pred, obj, contexts);
+		Set<Resource> subjects = model.filter(null, pred, obj, contexts).subjects();
 
 		if (subjects.size() == 1) {
 			return subjects.iterator().next();
@@ -324,7 +324,7 @@ public class ModelUtil {
 	public static Resource getOptionalSubject(Model model, URI pred, Value obj, Resource... contexts)
 		throws ModelUtilException
 	{
-		Set<Resource> subjects = model.subjects(pred, obj, contexts);
+		Set<Resource> subjects = model.filter(null, pred, obj, contexts).subjects();
 
 		if (subjects.isEmpty()) {
 			return null;
@@ -380,7 +380,7 @@ public class ModelUtil {
 	public static Value getUniqueObject(Model model, Resource subj, URI pred, Resource... contexts)
 		throws ModelUtilException
 	{
-		Set<Value> objects = model.objects(subj, pred, contexts);
+		Set<Value> objects = model.filter(subj, pred, null, contexts).objects();
 
 		if (objects.size() == 1) {
 			return objects.iterator().next();
@@ -495,7 +495,7 @@ public class ModelUtil {
 	public static Value getOptionalObject(Model model, Resource subj, URI pred, Resource... contexts)
 		throws ModelUtilException
 	{
-		Set<Value> objects = model.objects(subj, pred, contexts);
+		Set<Value> objects = model.filter(subj, pred, null, contexts).objects();
 
 		if (objects.isEmpty()) {
 			return null;

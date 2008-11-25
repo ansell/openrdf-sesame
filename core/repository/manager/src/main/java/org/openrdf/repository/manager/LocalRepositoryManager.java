@@ -268,7 +268,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	private RepositoryConfig parse(Model config)
 		throws StoreConfigException
 	{
-		Resource repositoryNode = config.subjects(RDF.TYPE, REPOSITORY).iterator().next();
+		Resource repositoryNode = config.filter(null, RDF.TYPE, REPOSITORY).subjects().iterator().next();
 		RepositoryConfig repConfig = RepositoryConfig.create(config, repositoryNode);
 		repConfig.validate();
 		return repConfig;

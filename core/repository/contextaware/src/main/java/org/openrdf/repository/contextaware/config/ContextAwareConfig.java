@@ -198,16 +198,16 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 				setQueryLanguage(QueryLanguage.valueOf(queryLanguage.getLabel()));
 			}
 
-			Set<Value> objects = model.objects(implNode, READ_CONTEXT);
+			Set<Value> objects = model.filter(implNode, READ_CONTEXT, null).objects();
 			setReadContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = model.objects(implNode, ADD_CONTEXT);
+			objects = model.filter(implNode, ADD_CONTEXT, null).objects();
 			setAddContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = model.objects(implNode, REMOVE_CONTEXT);
+			objects = model.filter(implNode, REMOVE_CONTEXT, null).objects();
 			setRemoveContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = model.objects(implNode, ARCHIVE_CONTEXT);
+			objects = model.filter(implNode, ARCHIVE_CONTEXT, null).objects();
 			setArchiveContexts(objects.toArray(new URI[objects.size()]));
 		}
 		catch (ModelUtilException e) {

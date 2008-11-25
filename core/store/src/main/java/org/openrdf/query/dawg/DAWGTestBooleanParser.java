@@ -65,7 +65,7 @@ public class DAWGTestBooleanParser extends RDFHandlerBase {
 	public void endRDF()
 		throws RDFHandlerException
 	{
-		Set<Resource> resultSetNodes = model.subjects(RDF.TYPE, RESULTSET);
+		Set<Resource> resultSetNodes = model.filter(null, RDF.TYPE, RESULTSET).subjects();
 		if (resultSetNodes.size() != 1) {
 			throw new RDFHandlerException("Expected 1 subject of type ResultSet, found: "
 					+ resultSetNodes.size());
@@ -73,7 +73,7 @@ public class DAWGTestBooleanParser extends RDFHandlerBase {
 
 		Resource resultSetNode = resultSetNodes.iterator().next();
 
-		Set<Value> resultValues = model.objects(resultSetNode, BOOLEAN);
+		Set<Value> resultValues = model.filter(resultSetNode, BOOLEAN, null).objects();
 		if (resultValues.size() != 1) {
 			throw new RDFHandlerException("Expected 1 boolean result value, found: " + resultValues.size());
 		}

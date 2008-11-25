@@ -82,7 +82,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	public void endRDF()
 		throws RDFHandlerException
 	{
-		Set<Resource> resultSetNodes = model.subjects(RDF.TYPE, RESULTSET);
+		Set<Resource> resultSetNodes = model.filter(null, RDF.TYPE, RESULTSET).subjects();
 		if (resultSetNodes.size() != 1) {
 			throw new RDFHandlerException("Expected 1 subject of type ResultSet, found: "
 					+ resultSetNodes.size());
@@ -94,7 +94,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 			List<String> bindingNames = getBindingNames(resultSetNode);
 			tqrHandler.startQueryResult(bindingNames);
 
-			for (Value solutionNode : model.objects(resultSetNode, SOLUTION)) {
+			for (Value solutionNode : model.filter(resultSetNode, SOLUTION, null).objects()) {
 				if (solutionNode instanceof Resource) {
 					reportSolution((Resource)solutionNode, bindingNames);
 				}
@@ -115,7 +115,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	{
 		List<String> bindingNames = new ArrayList<String>(16);
 
-		Iterator<Value> varIter = model.objects(resultSetNode, RESULTVARIABLE).iterator();
+		Iterator<Value> varIter = model.filter(resultSetNode, RESULTVARIABLE, null).objects().iterator();
 
 		while (varIter.hasNext()) {
 			Value varName = varIter.next();
@@ -136,7 +136,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	{
 		MapBindingSet bindingSet = new MapBindingSet(bindingNames.size());
 
-		Iterator<Value> bindingIter = model.objects(solutionNode, BINDING).iterator();
+		Iterator<Value> bindingIter = model.filter(solutionNode, BINDING, null).objects().iterator();
 		while (bindingIter.hasNext()) {
 			Value bindingNode = bindingIter.next();
 
@@ -158,8 +158,8 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	}
 
 	private Binding getBinding(Resource bindingNode) {
-		Literal name = (Literal)model.objects(bindingNode, VARIABLE).iterator().next();
-		Value value = model.objects(bindingNode, VALUE).iterator().next();
+		Literal name = (Literal)model.filter(bindingNode, VARIABLE, null).objects().iterator().next();
+		Value value = model.filter(bindingNode, VALUE, null).objects().iterator().next();
 		return new BindingImpl(name.getLabel(), value);
 	}
 }
