@@ -6,16 +6,45 @@
 package org.openrdf.model;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
 import org.openrdf.OpenRDFUtil;
 
 /**
- * An RDF model, represented as a set of {@link Statement}s.
+ * An RDF model, represented as a set of {@link Statement}s with predictable
+ * iteration order.
  * 
  * @author James Leigh
  */
 public interface Model extends Set<Statement>, Serializable {
+
+	/**
+	 * Gets the map that contains the assigned namespaces.
+	 * 
+	 * @return Map of prefix to namespace
+	 */
+	public Map<String, String> getNamespaces();
+
+	/**
+	 * Gets the namespace that is associated with the specified prefix, if any.
+	 * 
+	 * @param prefix
+	 *        A namespace prefix.
+	 * @return The namespace name that is associated with the specified prefix,
+	 *         or <tt>null</tt> if there is no such namespace.
+	 */
+	public String getNamespace(String prefix);
+
+	/**
+	 * Sets the prefix for a namespace.
+	 * 
+	 * @param prefix
+	 *        The new prefix.
+	 * @param name
+	 *        The namespace name that the prefix maps to.
+	 */
+	public void setNamespace(String prefix, String name);
 
 	/**
 	 * Determines if statements with the specified subject, predicate, object and
