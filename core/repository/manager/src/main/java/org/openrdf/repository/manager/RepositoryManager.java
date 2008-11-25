@@ -95,17 +95,6 @@ public abstract class RepositoryManager {
 	public abstract void initialize()
 		throws StoreConfigException;
 
-	protected abstract Repository createSystemRepository()
-		throws StoreException;
-
-	/**
-	 * Gets the SYSTEM repository.
-	 * @throws StoreException 
-	 * @throws StoreConfigException 
-	 */
-	@Deprecated
-	public abstract Repository getSystemRepository() throws StoreException, StoreConfigException;
-
 	/**
 	 * Generates an ID for a new repository based on the specified base name. The
 	 * base name may for example be a repository name entered by the user. The
@@ -313,8 +302,6 @@ public abstract class RepositoryManager {
 	public Repository getRepository(String id)
 		throws StoreConfigException, StoreException
 	{
-		if (SystemRepository.ID.equals(id))
-			return getSystemRepository();
 		synchronized (initializedRepositories) {
 			Repository result = initializedRepositories.get(id);
 

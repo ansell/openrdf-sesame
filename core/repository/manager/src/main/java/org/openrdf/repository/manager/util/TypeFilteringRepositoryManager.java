@@ -58,19 +58,6 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	protected Repository createSystemRepository()
-		throws StoreException
-	{
-		throw new UnsupportedOperationException(
-				"The system repository cannot be created through this wrapper. This method should not have been called, the delegate should take care of it.");
-	}
-
-	@Override
-	public Repository getSystemRepository() throws StoreException, StoreConfigException {
-		return delegate.getSystemRepository();
-	}
-
-	@Override
 	public String getNewRepositoryID(String baseName)
 		throws StoreConfigException
 	{

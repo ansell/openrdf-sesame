@@ -21,7 +21,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.http.HTTPRepository;
-import org.openrdf.repository.manager.config.SystemConfigManager;
+import org.openrdf.repository.manager.config.RemoteConfigManager;
 import org.openrdf.repository.manager.templates.LocalTemplateManager;
 import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
@@ -109,17 +109,9 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		LocalTemplateManager templates = new LocalTemplateManager();
 		templates.init();
 		setConfigTemplateManager(templates);
-		try {
-			Repository systemRepository = createSystemRepository();
-			setRepositoryConfigManager(new SystemConfigManager(systemRepository));
-
-			synchronized (initializedRepositories) {
-				initializedRepositories.put(SystemRepository.ID, systemRepository);
-			}
-		}
-		catch (StoreException e) {
-			throw new StoreConfigException(e);
-		}
+		RemoteConfigManager configurations = new RemoteConfigManager(serverURL);
+		configurations.setUsernameAndPassword(username, password);
+		setRepositoryConfigManager(configurations);
 	}
 
 	/**
@@ -133,26 +125,6 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	public void setUsernameAndPassword(String username, String password) {
 		this.username = username;
 		this.password = password;
-	}
-
-	@Override
-	protected Repository createSystemRepository()
-		throws StoreException
-	{
-		HTTPRepository systemRepository = new HTTPRepository(serverURL, SystemRepository.ID);
-		systemRepository.setUsernameAndPassword(username, password);
-		systemRepository.initialize();
-		return systemRepository;
-	}
-
-	/**
-	 * Gets the SYSTEM repository.
-	 */
-	@Deprecated
-	public Repository getSystemRepository() {
-		synchronized (initializedRepositories) {
-			return initializedRepositories.get(SystemRepository.ID);
-		}
 	}
 
 	/**
@@ -222,7 +194,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 			SesameClient client = new SesameClient(serverURL);
 			client.setUsernameAndPassword(username, password);
 
-			TupleQueryResult responseFromServer = client.repositories().get();
+			TupleQueryResult responseFromServer = client.repositories().list();
 			while (responseFromServer.hasNext()) {
 				BindingSet bindingSet = responseFromServer.next();
 				RepositoryInfo repInfo = new RepositoryInfo();

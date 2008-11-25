@@ -53,6 +53,14 @@ public class SesameClient {
 		return new ProtocolClient(server.slash(Protocol.PROTOCOL));
 	}
 
+	public TemplateClient templates() {
+		return new TemplateClient(server.slash("templates"));
+	}
+
+	public ConfigurationClient configurations() {
+		return new ConfigurationClient(server.slash("configurations"));
+	}
+
 	public RepositoriesClient repositories() {
 		return new RepositoriesClient(server.slash(Protocol.REPOSITORIES));
 	}

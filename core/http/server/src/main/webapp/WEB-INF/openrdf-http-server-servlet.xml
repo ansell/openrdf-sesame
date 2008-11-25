@@ -32,6 +32,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean class="org.openrdf.http.server.controllers.RepositoryController" />
 	<bean class="org.openrdf.http.server.controllers.SizeController" />
 	<bean class="org.openrdf.http.server.controllers.StatementController" />
+	<bean class="org.openrdf.http.server.controllers.ConfigurationController" />
+	<bean class="org.openrdf.http.server.controllers.TemplateController" />
 
 <!-- Exceptions -->
 	<bean class="org.openrdf.http.server.ExceptionWritter" />

@@ -6,6 +6,8 @@
 package org.openrdf.http.client.helpers;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
@@ -16,19 +18,17 @@ import org.openrdf.http.protocol.exceptions.Unauthorized;
 import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResultHandler;
+import org.openrdf.query.TupleQueryResultHandlerBase;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.store.StoreConfigException;
 
-
 /**
- *
  * @author James Leigh
  */
 public class StoreConfigClient {
@@ -39,20 +39,31 @@ public class StoreConfigClient {
 		this.server = server;
 	}
 
-	public HTTPConnectionPool getPool() {
-		return server;
+	public String getURL() {
+		return server.getURL();
 	}
 
-	public TupleQueryResult list()
+	public void setUsernameAndPassword(String username, String password) {
+		server.setUsernameAndPassword(username, password);
+	}
+
+	public List<String> list()
 		throws StoreConfigException
 	{
 		try {
-			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
-			list(builder);
-			return builder.getQueryResult();
+			final List<String> list = new ArrayList<String>();
+			list(new TupleQueryResultHandlerBase() {
+
+				@Override
+				public void handleSolution(BindingSet bindings)
+					throws TupleQueryResultHandlerException
+				{
+					list.add(bindings.getValue("id").stringValue());
+				}
+			});
+			return list;
 		}
 		catch (TupleQueryResultHandlerException e) {
-			// Found a bug in TupleQueryResultBuilder?
 			throw new AssertionError(e);
 		}
 	}
