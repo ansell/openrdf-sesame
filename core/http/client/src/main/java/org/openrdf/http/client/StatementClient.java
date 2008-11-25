@@ -23,17 +23,26 @@ import info.aduna.io.IOUtil;
 import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.Protocol;
+import org.openrdf.http.protocol.UnauthorizedException;
+import org.openrdf.http.protocol.exceptions.HTTPException;
+import org.openrdf.http.protocol.exceptions.MalformedData;
+import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
+import org.openrdf.http.protocol.exceptions.Unauthorized;
+import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
+import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
+import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
 import org.openrdf.http.protocol.transaction.TransactionWriter;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -78,11 +87,17 @@ public class StatementClient {
 
 		try {
 			method.acceptRDF(true);
-			method.executeQuery();
+			execute(method);
 			method.readRDF(handler);
 		}
-		catch (MalformedQueryException e) {
-			throw new StoreException(e.getMessage(), e);
+		catch (NoCompatibleMediaType e) {
+			throw new StoreException(e);
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+		catch (RDFParseException e) {
+			throw new StoreException(e);
 		}
 		finally {
 			method.release();
@@ -118,7 +133,10 @@ public class StatementClient {
 		});
 
 		try {
-			method.execute();
+			execute(method);
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
 		}
 		finally {
 			method.release();
@@ -195,10 +213,62 @@ public class StatementClient {
 
 		// Send request
 		try {
-			method.executeUpload();
+			executeUpload(method);
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
 		}
 		finally {
 			method.release();
+		}
+	}
+
+	private void execute(HTTPConnection method)
+		throws IOException, StoreException
+	{
+		try {
+			method.execute();
+		}
+		catch (UnsupportedQueryLanguage e) {
+			throw new UnsupportedQueryLanguageException(e);
+		}
+		catch (UnsupportedFileFormat e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (UnsupportedMediaType e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (Unauthorized e) {
+			throw new StoreException(e);
+		}
+		catch (HTTPException e) {
+			throw new StoreException(e);
+		}
+	}
+
+	private void executeUpload(HTTPConnection method)
+		throws IOException, StoreException, RDFParseException
+	{
+		try {
+			method.execute();
+		}
+		catch (MalformedData e) {
+			throw new RDFParseException(e);
+		}
+		catch (UnsupportedQueryLanguage e) {
+			throw new UnsupportedQueryLanguageException(e);
+		}
+		catch (UnsupportedFileFormat e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (UnsupportedMediaType e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (Unauthorized e) {
+			throw new UnauthorizedException(e);
+		}
+		catch (HTTPException e) {
+			throw new StoreException(e);
 		}
 	}
 

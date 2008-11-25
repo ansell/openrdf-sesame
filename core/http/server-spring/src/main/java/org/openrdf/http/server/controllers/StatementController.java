@@ -5,7 +5,6 @@
  */
 package org.openrdf.http.server.controllers;
 
-import static javax.servlet.http.HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE;
 import static org.openrdf.http.protocol.Protocol.BASEURI_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
@@ -30,10 +29,11 @@ import org.xml.sax.SAXException;
 import info.aduna.webapp.util.HttpServerUtil;
 
 import org.openrdf.http.protocol.Protocol;
+import org.openrdf.http.protocol.exceptions.ClientHTTPException;
+import org.openrdf.http.protocol.exceptions.ServerHTTPException;
+import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.transaction.TransactionReader;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
-import org.openrdf.http.server.exceptions.ClientHTTPException;
-import org.openrdf.http.server.exceptions.ServerHTTPException;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
@@ -146,7 +146,7 @@ public class StatementController {
 
 		RDFFormat rdfFormat = Rio.getParserFormatForMIMEType(mimeType);
 		if (rdfFormat == null) {
-			throw new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported MIME type: " + mimeType);
+			throw new UnsupportedMediaType("Unsupported MIME type: " + mimeType);
 		}
 
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);

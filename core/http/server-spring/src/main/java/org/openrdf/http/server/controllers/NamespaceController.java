@@ -5,9 +5,6 @@
  */
 package org.openrdf.http.server.controllers;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -23,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import info.aduna.io.IOUtil;
 
-import org.openrdf.http.server.exceptions.ClientHTTPException;
+import org.openrdf.http.protocol.exceptions.BadRequest;
+import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
@@ -88,14 +86,14 @@ public class NamespaceController {
 	@ModelAttribute
 	@RequestMapping(method = RequestMethod.GET, value = "/repositories/*/namespaces/*")
 	public StringReader get(HttpServletRequest request)
-		throws StoreException, ClientHTTPException
+		throws StoreException, NotFound
 	{
 		String prefix = getPrefix(request);
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 		String namespace = repositoryCon.getNamespace(prefix);
 
 		if (namespace == null) {
-			throw new ClientHTTPException(SC_NOT_FOUND, "Undefined prefix: " + prefix);
+			throw new NotFound("Undefined prefix: " + prefix);
 		}
 
 		return new StringReader(namespace);
@@ -104,7 +102,7 @@ public class NamespaceController {
 	@ModelAttribute
 	@RequestMapping(method = RequestMethod.PUT, value = "/repositories/*/namespaces/*")
 	public void put(HttpServletRequest request)
-		throws StoreException, IOException, ClientHTTPException
+		throws StoreException, IOException, BadRequest
 	{
 		String prefix = getPrefix(request);
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
@@ -112,7 +110,7 @@ public class NamespaceController {
 		namespace = namespace.trim();
 
 		if (namespace.length() == 0) {
-			throw new ClientHTTPException(SC_BAD_REQUEST, "No namespace name found in request body");
+			throw new BadRequest("No namespace name found in request body");
 		}
 		// FIXME: perform some sanity checks on the namespace string
 

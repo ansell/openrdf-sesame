@@ -150,7 +150,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		List<Resource> contextList = new ArrayList<Resource>();
 
-		TupleQueryResult contextIDs = getClient().contexts().get();
+		TupleQueryResult contextIDs = getClient().contexts().list();
 		try {
 			while (contextIDs.hasNext()) {
 				BindingSet bindingSet = contextIDs.next();
@@ -311,7 +311,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		List<Namespace> namespaceList = new ArrayList<Namespace>();
 
-		TupleQueryResult namespaces = getClient().namespaces().get();
+		TupleQueryResult namespaces = getClient().namespaces().list();
 		try {
 			while (namespaces.hasNext()) {
 				BindingSet bindingSet = namespaces.next();

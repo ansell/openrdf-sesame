@@ -26,9 +26,10 @@ import org.springframework.web.servlet.ViewResolver;
 
 import info.aduna.lang.FileFormat;
 
-import org.openrdf.http.server.exceptions.ClientHTTPException;
+import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Statement;
 import org.openrdf.query.GraphQueryResult;
@@ -88,6 +89,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		}
 		else if (model instanceof BooleanQueryResult) {
 			render((BooleanQueryResult)model, req, resp);
+		}
+		else if (model instanceof Model) {
+			render((Model) model, req, resp);
 		}
 		else if (model instanceof Reader) {
 			render((Reader)model, req, resp);
@@ -198,6 +202,35 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		ServletOutputStream out = resp.getOutputStream();
 		try {
 			factory.getWriter(out).write(model.getResult());
+		}
+		finally {
+			out.close();
+		}
+	}
+
+	private void render(Model model, HttpServletRequest req, HttpServletResponse resp)
+		throws IOException, ClientHTTPException
+	{
+		RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
+		RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
+		setContentType(resp, factory.getRDFFormat());
+		ServletOutputStream out = resp.getOutputStream();
+		try {
+			RDFWriter rdfHandler = factory.getWriter(out);
+			rdfHandler.startRDF();
+
+			for (Map.Entry<String, String> ns : model.getNamespaces().entrySet()) {
+				rdfHandler.handleNamespace(ns.getKey(), ns.getValue());
+			}
+
+			for (Statement st : model) {
+				rdfHandler.handleStatement(st);
+			}
+
+			rdfHandler.endRDF();
+		}
+		catch (RDFHandlerException e) {
+			throw new IOException("Serialization error: " + e.getMessage());
 		}
 		finally {
 			out.close();

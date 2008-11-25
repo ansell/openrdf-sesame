@@ -29,13 +29,10 @@ import org.slf4j.LoggerFactory;
 import info.aduna.net.http.HttpClientUtil;
 
 import org.openrdf.http.protocol.Protocol;
-import org.openrdf.http.protocol.UnauthorizedException;
-import org.openrdf.http.protocol.error.ErrorInfo;
-import org.openrdf.http.protocol.error.ErrorType;
-import org.openrdf.query.MalformedQueryException;
+import org.openrdf.http.protocol.exceptions.HTTPException;
+import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParser;
 import org.openrdf.query.resultio.BooleanQueryResultParserRegistry;
@@ -53,11 +50,10 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
-import org.openrdf.store.StoreException;
 
 /**
  * Serialises Java Objects over an HTTP connection.
- *
+ * 
  * @author Herko ter Horst
  * @author Arjohn Kampman
  * @author James Leigh
@@ -75,19 +71,27 @@ public class HTTPConnection {
 		this.method = method;
 	}
 
-	public void acceptString()
-		throws StoreException
+	public void accept(Class<?> type)
+		throws NoCompatibleMediaType
 	{
+		if (String.class.isAssignableFrom(type)) {
+			acceptString();
+		} else {
+			throw new NoCompatibleMediaType("No parsers are available for " + type);
+		}
+	}
+
+	public void acceptString() {
 		method.addRequestHeader(ACCEPT_PARAM_NAME, "text/plain");
 	}
 
 	public void acceptBoolean()
-		throws StoreException
+		throws NoCompatibleMediaType
 	{
 		// Specify which formats we support using Accept headers
 		Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
 		if (booleanFormats.isEmpty()) {
-			throw new StoreException("No boolean query result parsers have been registered");
+			throw new NoCompatibleMediaType("No boolean query result parsers have been registered");
 		}
 
 		for (BooleanQueryResultFormat format : booleanFormats) {
@@ -113,12 +117,12 @@ public class HTTPConnection {
 	}
 
 	public void acceptTuple()
-		throws StoreException
+		throws NoCompatibleMediaType
 	{
 		// Specify which formats we support using Accept headers
 		Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
 		if (tqrFormats.isEmpty()) {
-			throw new StoreException("No tuple query result parsers have been registered");
+			throw new NoCompatibleMediaType("No tuple query result parsers have been registered");
 		}
 
 		for (TupleQueryResultFormat format : tqrFormats) {
@@ -144,12 +148,12 @@ public class HTTPConnection {
 	}
 
 	public void acceptRDF(boolean requireContext)
-		throws StoreException
+		throws NoCompatibleMediaType
 	{
 		// Specify which formats we support using Accept headers
 		Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
 		if (rdfFormats.isEmpty()) {
-			throw new StoreException("No tuple RDF parsers have been registered");
+			throw new NoCompatibleMediaType("No tuple RDF parsers have been registered");
 		}
 
 		for (RDFFormat format : rdfFormats) {
@@ -185,6 +189,14 @@ public class HTTPConnection {
 		}
 	}
 
+	public void send(Object instance) {
+		if (instance instanceof String) {
+			sendString((String) instance);
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
+
 	public void sendString(String plain) {
 		try {
 			((PutMethod)method).setRequestEntity(new StringRequestEntity(plain, "text/plain", "UTF-8"));
@@ -208,185 +220,91 @@ public class HTTPConnection {
 	}
 
 	public void execute()
-		throws StoreException
+		throws IOException, HTTPException
 	{
-		try {
-			switch (pool.executeMethod(method)) {
-				case HttpURLConnection.HTTP_OK:
-				case HttpURLConnection.HTTP_NOT_FOUND:
-					return;
-				case HttpURLConnection.HTTP_UNAUTHORIZED:
-					throw new UnauthorizedException();
-				case HttpURLConnection.HTTP_UNSUPPORTED_TYPE:
-					throw new UnsupportedRDFormatException(method.getResponseBodyAsString());
-				default:
-					if (!HttpClientUtil.is2xx(method.getStatusCode())) {
-						ErrorInfo errInfo = ErrorInfo.parse(method.getResponseBodyAsString());
-						if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_FILE_FORMAT) {
-							throw new UnsupportedRDFormatException(errInfo.getErrorMessage());
-						}
-						else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_QUERY_LANGUAGE) {
-							throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
-						}
-						else {
-							throw new StoreException(errInfo.toString());
-						}
-					}
-			}
-		}
-		catch (IOException e) {
-			throw new StoreException(e);
+		int statusCode = pool.executeMethod(method);
+		if (!HttpClientUtil.is2xx(statusCode)) {
+			throw HTTPException.create(statusCode, method.getResponseBodyAsString());
 		}
 	}
 
-	public void executeQuery()
-		throws StoreException, MalformedQueryException
+	public <T> T read(Class<T> type)
+		throws IOException, NumberFormatException, QueryResultParseException, RDFParseException,
+		NoCompatibleMediaType
 	{
-		try {
-			switch (pool.executeMethod(method)) {
-				case HttpURLConnection.HTTP_OK:
-					return;
-				case HttpURLConnection.HTTP_UNAUTHORIZED:
-					throw new UnauthorizedException();
-				case HttpURLConnection.HTTP_UNSUPPORTED_TYPE:
-					throw new UnsupportedRDFormatException(method.getResponseBodyAsString());
-				default:
-					if (!HttpClientUtil.is2xx(method.getStatusCode())) {
-						ErrorInfo errInfo = ErrorInfo.parse(method.getResponseBodyAsString());
-						if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_FILE_FORMAT) {
-							throw new UnsupportedRDFormatException(errInfo.getErrorMessage());
-						}
-						else if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
-							throw new MalformedQueryException(errInfo.getErrorMessage());
-						}
-						else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_QUERY_LANGUAGE) {
-							throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
-						}
-						else {
-							throw new StoreException(errInfo.toString());
-						}
-					}
-			}
-		}
-		catch (IOException e) {
-			throw new StoreException(e);
-		}
-	}
-
-	public void executeUpload()
-		throws StoreException, RDFParseException
-	{
-		try {
-			switch (pool.executeMethod(method)) {
-				case HttpURLConnection.HTTP_OK:
-					return;
-				case HttpURLConnection.HTTP_UNAUTHORIZED:
-					throw new UnauthorizedException();
-				case HttpURLConnection.HTTP_UNSUPPORTED_TYPE:
-					throw new UnsupportedRDFormatException(method.getResponseBodyAsString());
-				default:
-					if (!HttpClientUtil.is2xx(method.getStatusCode())) {
-						ErrorInfo errInfo = ErrorInfo.parse(method.getResponseBodyAsString());
-						if (errInfo.getErrorType() == ErrorType.MALFORMED_DATA) {
-							throw new RDFParseException(errInfo.getErrorMessage());
-						}
-						else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_FILE_FORMAT) {
-							throw new UnsupportedRDFormatException(errInfo.getErrorMessage());
-						}
-						else {
-							throw new StoreException("Failed to upload data: " + errInfo);
-						}
-					}
-			}
-		}
-		catch (IOException e) {
-			throw new StoreException(e);
+		if (String.class.isAssignableFrom(type)) {
+			return type.cast(readString());
+		} else {
+			throw new NoCompatibleMediaType("Cannot read " + type);
 		}
 	}
 
 	public String readString()
-		throws StoreException
+		throws IOException
 	{
-		try {
-			if (method.getStatusCode() == HttpURLConnection.HTTP_NOT_FOUND)
-				return null;
-			return method.getResponseBodyAsString();
-		}
-		catch (IOException e) {
-			throw new StoreException(e);
-		}
+		if (method.getStatusCode() == HttpURLConnection.HTTP_NOT_FOUND)
+			return null;
+		return method.getResponseBodyAsString();
+	}
+
+	public long readLong()
+		throws IOException, NumberFormatException
+	{
+		return Long.parseLong(method.getResponseBodyAsString());
 	}
 
 	public boolean readBoolean()
-		throws StoreException
+		throws IOException, QueryResultParseException, NoCompatibleMediaType
 	{
+		String mimeType = readContentType();
 		try {
-			String mimeType = readContentType();
-			try {
-				Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
-				BooleanQueryResultFormat format = BooleanQueryResultFormat.matchMIMEType(mimeType, booleanFormats);
-				BooleanQueryResultParser parser = QueryResultIO.createParser(format);
-				return parser.parse(method.getResponseBodyAsStream());
-			}
-			catch (UnsupportedQueryResultFormatException e) {
-				throw new StoreException("Server responded with an unsupported file format: " + mimeType);
-			}
-			catch (QueryResultParseException e) {
-				throw new StoreException("Malformed query result from server", e);
-			}
+			Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
+			BooleanQueryResultFormat format = BooleanQueryResultFormat.matchMIMEType(mimeType, booleanFormats);
+			BooleanQueryResultParser parser = QueryResultIO.createParser(format);
+			return parser.parse(method.getResponseBodyAsStream());
 		}
-		catch (IOException e) {
-			throw new StoreException(e);
+		catch (UnsupportedQueryResultFormatException e) {
+			logger.warn(e.toString(), e);
+			throw new NoCompatibleMediaType("Server responded with an unsupported file format: "
+					+ mimeType);
 		}
 	}
 
 	public void readTuple(TupleQueryResultHandler handler)
-		throws TupleQueryResultHandlerException, StoreException
+		throws TupleQueryResultHandlerException, IOException, QueryResultParseException,
+		NoCompatibleMediaType
 	{
+		String mimeType = readContentType();
 		try {
-			String mimeType = readContentType();
-			try {
-				Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
-				TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
-				TupleQueryResultParser parser = QueryResultIO.createParser(format, pool.getValueFactory());
-				parser.setTupleQueryResultHandler(handler);
-				parser.parse(method.getResponseBodyAsStream());
-			}
-			catch (UnsupportedQueryResultFormatException e) {
-				throw new StoreException("Server responded with an unsupported file format: " + mimeType);
-			}
-			catch (QueryResultParseException e) {
-				throw new StoreException("Malformed query result from server", e);
-			}
+			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
+			TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
+			TupleQueryResultParser parser = QueryResultIO.createParser(format, pool.getValueFactory());
+			parser.setTupleQueryResultHandler(handler);
+			parser.parse(method.getResponseBodyAsStream());
 		}
-		catch (IOException e) {
-			throw new StoreException(e);
+		catch (UnsupportedQueryResultFormatException e) {
+			logger.warn(e.toString(), e);
+			throw new NoCompatibleMediaType("Server responded with an unsupported file format: "
+					+ mimeType);
 		}
 	}
 
 	public void readRDF(RDFHandler handler)
-		throws RDFHandlerException, StoreException
+		throws RDFHandlerException, IOException, RDFParseException, NoCompatibleMediaType
 	{
-
+		String mimeType = readContentType();
 		try {
-			String mimeType = readContentType();
-			try {
-				Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
-				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
-				RDFParser parser = Rio.createParser(format, pool.getValueFactory());
-				parser.setPreserveBNodeIDs(true);
-				parser.setRDFHandler(handler);
-				parser.parse(method.getResponseBodyAsStream(), method.getURI().getURI());
-			}
-			catch (UnsupportedRDFormatException e) {
-				throw new StoreException("Server responded with an unsupported file format: " + mimeType);
-			}
-			catch (RDFParseException e) {
-				throw new StoreException("Malformed query result from server", e);
-			}
+			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
+			RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
+			RDFParser parser = Rio.createParser(format, pool.getValueFactory());
+			parser.setPreserveBNodeIDs(true);
+			parser.setRDFHandler(handler);
+			parser.parse(method.getResponseBodyAsStream(), method.getURI().getURI());
 		}
-		catch (IOException e) {
-			throw new StoreException(e);
+		catch (UnsupportedRDFormatException e) {
+			logger.warn(e.toString(), e);
+			throw new NoCompatibleMediaType("Server responded with an unsupported file format: "
+					+ mimeType);
 		}
 	}
 

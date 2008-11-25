@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.http.server.exceptions;
+package org.openrdf.http.protocol.exceptions;
 
 /**
  * HTTP-related exception that includes the relevant HTTP status code.
@@ -13,6 +13,18 @@ package org.openrdf.http.server.exceptions;
 public class HTTPException extends Exception {
 
 	private static final long serialVersionUID = 1356463348553827230L;
+
+	public static HTTPException create(int statusCode, String msg) {
+		if (ClientHTTPException.isWithin(statusCode)) {
+			return ClientHTTPException.create(statusCode, msg);
+		}
+		else if (ServerHTTPException.isWithin(statusCode)) {
+			return ServerHTTPException.create(statusCode, msg);
+		}
+		else {
+			return new HTTPException(statusCode, msg);
+		}
+	}
 
 	private int statusCode;
 

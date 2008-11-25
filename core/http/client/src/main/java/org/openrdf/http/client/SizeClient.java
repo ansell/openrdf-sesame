@@ -5,6 +5,7 @@
  */
 package org.openrdf.http.client;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,14 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.Protocol;
+import org.openrdf.http.protocol.exceptions.HTTPException;
+import org.openrdf.http.protocol.exceptions.Unauthorized;
+import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
+import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
+import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
 import org.openrdf.model.Resource;
+import org.openrdf.query.UnsupportedQueryLanguageException;
+import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -48,17 +56,40 @@ public class SizeClient {
 
 		try {
 			method.acceptString();
-			method.execute();
-			String response = method.readString();
-			try {
-				return Long.parseLong(response);
-			}
-			catch (NumberFormatException e) {
-				throw new StoreException("Server responded with invalid size value: " + response);
-			}
+			execute(method);
+			return method.readLong();
+		}
+		catch (NumberFormatException e) {
+			throw new StoreException("Server responded with invalid size value");
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
 		}
 		finally {
 			method.release();
+		}
+	}
+
+	private void execute(HTTPConnection method)
+		throws IOException, StoreException
+	{
+		try {
+			method.execute();
+		}
+		catch (UnsupportedQueryLanguage e) {
+			throw new UnsupportedQueryLanguageException(e);
+		}
+		catch (UnsupportedFileFormat e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (UnsupportedMediaType e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (Unauthorized e) {
+			throw new StoreException(e);
+		}
+		catch (HTTPException e) {
+			throw new StoreException(e);
 		}
 	}
 

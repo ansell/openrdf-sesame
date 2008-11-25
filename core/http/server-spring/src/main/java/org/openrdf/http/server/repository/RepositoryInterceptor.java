@@ -5,15 +5,13 @@
  */
 package org.openrdf.http.server.repository;
 
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import org.openrdf.http.server.exceptions.ClientHTTPException;
-import org.openrdf.http.server.exceptions.ServerHTTPException;
+import org.openrdf.http.protocol.exceptions.NotFound;
+import org.openrdf.http.protocol.exceptions.ServerHTTPException;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -74,7 +72,7 @@ public class RepositoryInterceptor extends HandlerInterceptorAdapter {
 				Repository repository = repositoryManager.getRepository(repositoryID);
 
 				if (repository == null) {
-					throw new ClientHTTPException(SC_NOT_FOUND, "Unknown repository: " + repositoryID);
+					throw new NotFound("Unknown repository: " + repositoryID);
 				}
 
 				RepositoryConnection repositoryCon = repository.getConnection();
@@ -121,6 +119,8 @@ public class RepositoryInterceptor extends HandlerInterceptorAdapter {
 		if (id.contains("/")) {
 			id = id.substring(0, id.indexOf('/'));
 		}
+		if (id.length() == 0)
+			return null;
 		return id;
 	}
 

@@ -5,8 +5,8 @@
  */
 package org.openrdf.http.client;
 
-import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
+import org.openrdf.http.client.helpers.StoreClient;
 import org.openrdf.store.StoreException;
 
 /**
@@ -15,25 +15,16 @@ import org.openrdf.store.StoreException;
  * @author James Leigh
  */
 public class ProtocolClient {
-
-	private HTTPConnectionPool size;
+	private StoreClient client;
 
 	public ProtocolClient(HTTPConnectionPool size) {
-		this.size = size;
+		this.client = new StoreClient(size);
 	}
 
 	public String get()
 		throws StoreException
 	{
-		HTTPConnection method = size.get();
-		try {
-			method.acceptString();
-			method.execute();
-			return method.readString();
-		}
-		finally {
-			method.release();
-		}
+		return client.get(String.class);
 	}
 
 }

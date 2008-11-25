@@ -24,8 +24,8 @@ import org.xml.sax.SAXParseException;
 
 import org.openrdf.http.protocol.error.ErrorInfo;
 import org.openrdf.http.protocol.error.ErrorType;
-import org.openrdf.http.server.exceptions.ClientHTTPException;
-import org.openrdf.http.server.exceptions.HTTPException;
+import org.openrdf.http.protocol.exceptions.ClientHTTPException;
+import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.rio.RDFParseException;
