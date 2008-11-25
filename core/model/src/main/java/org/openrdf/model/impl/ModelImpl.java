@@ -16,8 +16,9 @@ import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -41,6 +42,8 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 
 	static final Resource[] NULL_CTX = new Resource[] { null };
 
+	Map<String, String> namespaces = new LinkedHashMap<String, String>();
+
 	transient Map<Value, ModelNode> values;
 
 	transient Set<ModelStatement> statements;
@@ -48,14 +51,31 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 	public ModelImpl() {
 		super();
 		values = new HashMap<Value, ModelNode>();
-		statements = new HashSet<ModelStatement>();
+		statements = new LinkedHashSet<ModelStatement>();
 	}
 
 	public ModelImpl(Collection<? extends Statement> c) {
 		super();
 		values = new HashMap<Value, ModelNode>(c.size() * 2);
-		statements = new HashSet<ModelStatement>(c.size());
+		statements = new LinkedHashSet<ModelStatement>(c.size());
 		addAll(c);
+	}
+
+	public ModelImpl(Map<String, String> namespaces, Collection<? extends Statement> c) {
+		this(c);
+		this.namespaces.putAll(namespaces);
+	}
+
+	public String getNamespace(String prefix) {
+		return namespaces.get(prefix);
+	}
+
+	public Map<String, String> getNamespaces() {
+		return namespaces;
+	}
+
+	public void setNamespace(String prefix, String name) {
+		namespaces.put(prefix, name);
 	}
 
 	public int size() {
@@ -423,21 +443,33 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		}
 	}
 
-	static class EmptyModel extends AbstractSet<Statement> implements Model {
+	Model emptyModel = new EmptyModel();
+
+	Model emptyModel() {
+		return emptyModel;
+	}
+
+	class EmptyModel extends AbstractSet<Statement> implements Model {
 
 		private static final long serialVersionUID = 3123007631452759092L;
 
-		private static Model emptyModel = new EmptyModel();
+		private Set<Statement> emptySet = Collections.emptySet();
 
-		static Model emptyModel() {
-			return emptyModel;
+		public String getNamespace(String prefix) {
+			return namespaces.get(prefix);
 		}
 
-		static <T> Set<T> emptySet() {
+		public Map<String, String> getNamespaces() {
+			return namespaces;
+		}
+
+		public void setNamespace(String prefix, String name) {
+			namespaces.put(prefix, name);
+		}
+
+		private <T> Set<T> emptySet() {
 			return Collections.emptySet();
 		}
-
-		private Set<Statement> emptySet = Collections.emptySet();
 
 		@Override
 		public Iterator<Statement> iterator() {
@@ -493,10 +525,15 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 	}
 
 	class FilteredModel extends AbstractSet<Statement> implements Model {
+
 		private static final long serialVersionUID = -2353344619836326934L;
+
 		private Resource subj;
+
 		private URI pred;
+
 		private Value obj;
+
 		private Resource[] contexts;
 
 		public FilteredModel(Resource subj, URI pred, Value obj, Resource... contexts) {
@@ -504,6 +541,18 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			this.pred = pred;
 			this.obj = obj;
 			this.contexts = OpenRDFUtil.notNull(contexts);
+		}
+
+		public String getNamespace(String prefix) {
+			return namespaces.get(prefix);
+		}
+
+		public Map<String, String> getNamespaces() {
+			return namespaces;
+		}
+
+		public void setNamespace(String prefix, String name) {
+			namespaces.put(prefix, name);
 		}
 
 		@Override
@@ -595,7 +644,8 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			}
 			else if (matches(c, contexts)) {
 				return ModelImpl.this.remove(subj, pred, obj, c);
-			} else {
+			}
+			else {
 				return false;
 			}
 		}
@@ -638,7 +688,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 
 		public Model filter(Resource s, URI p, Value o, Resource... c) {
 			if (!accept(s, p, o, c))
-				return EmptyModel.emptyModel();
+				return emptyModel();
 			if (s == null) {
 				s = subj;
 			}
@@ -656,7 +706,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 
 		public Set<Resource> contexts() {
 			if (contexts != null || contexts.length > 0) {
-				return unmodifiableSet(new HashSet<Resource>(asList(contexts)));
+				return unmodifiableSet(new LinkedHashSet<Resource>(asList(contexts)));
 			}
 			return ModelImpl.this.contexts(subj, pred, obj);
 		}
@@ -689,7 +739,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		private boolean accept(Statement st) {
 			return matches(st, subj, pred, obj, contexts);
 		}
-	
+
 		private boolean accept(Resource s, URI p, Value o, Resource... c) {
 			if (subj != null && !subj.equals(s)) {
 				return false;
@@ -711,7 +761,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 
 		@Override
 		public Iterator<V> iterator() {
-			final Set<V> set = new HashSet<V>();
+			final Set<V> set = new LinkedHashSet<V>();
 			final ModelIterator iter = statementIterator();
 			return new Iterator<V>() {
 
@@ -767,7 +817,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 
 		@Override
 		public int size() {
-			Set<V> set = new HashSet<V>();
+			Set<V> set = new LinkedHashSet<V>();
 			Iterator<ModelStatement> iter = statementIterator();
 			while (iter.hasNext()) {
 				set.add(node(iter.next()).getValue());
@@ -796,7 +846,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 				ModelNode<Resource> subj = st.subj;
 				Set<ModelStatement> subjects = subj.subjects;
 				if (subjects == owner) {
-					subj.subjects = new HashSet<ModelStatement>(owner);
+					subj.subjects = new LinkedHashSet<ModelStatement>(owner);
 					subj.subjects.removeAll(remove);
 				}
 				else if (subjects != remove) {
@@ -805,7 +855,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 				ModelNode<URI> pred = st.pred;
 				Set<ModelStatement> predicates = pred.predicates;
 				if (predicates == owner) {
-					pred.predicates = new HashSet<ModelStatement>(owner);
+					pred.predicates = new LinkedHashSet<ModelStatement>(owner);
 					pred.predicates.removeAll(remove);
 				}
 				else if (predicates != remove) {
@@ -814,7 +864,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 				ModelNode<Value> obj = st.obj;
 				Set<ModelStatement> objects = obj.objects;
 				if (objects == owner) {
-					obj.objects = new HashSet<ModelStatement>(owner);
+					obj.objects = new LinkedHashSet<ModelStatement>(owner);
 					obj.objects.removeAll(remove);
 				}
 				else if (objects != remove) {
@@ -823,14 +873,14 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 				ModelNode<Resource> ctx = st.ctx;
 				Set<ModelStatement> contexts = ctx.contexts;
 				if (contexts == owner) {
-					ctx.contexts = new HashSet<ModelStatement>(owner);
+					ctx.contexts = new LinkedHashSet<ModelStatement>(owner);
 					ctx.contexts.removeAll(remove);
 				}
 				else if (contexts != remove) {
 					contexts.remove(st);
 				}
 				if (statements == owner) {
-					statements = new HashSet<ModelStatement>(statements);
+					statements = new LinkedHashSet<ModelStatement>(statements);
 					statements.removeAll(remove);
 				}
 				else if (statements != remove && statements != owner) {
@@ -889,13 +939,13 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 
 		private static final long serialVersionUID = -1205676084606998540L;
 
-		Set<ModelStatement> subjects = new HashSet<ModelStatement>();
+		Set<ModelStatement> subjects = new LinkedHashSet<ModelStatement>();
 
-		Set<ModelStatement> predicates = new HashSet<ModelStatement>();
+		Set<ModelStatement> predicates = new LinkedHashSet<ModelStatement>();
 
-		Set<ModelStatement> objects = new HashSet<ModelStatement>();
+		Set<ModelStatement> objects = new LinkedHashSet<ModelStatement>();
 
-		Set<ModelStatement> contexts = new HashSet<ModelStatement>();
+		Set<ModelStatement> contexts = new LinkedHashSet<ModelStatement>();
 
 		private V value;
 
@@ -1003,7 +1053,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		// Read in size
 		int size = s.readInt();
 		values = new HashMap<Value, ModelNode>(size * 2);
-		statements = new HashSet<ModelStatement>(size);
+		statements = new LinkedHashSet<ModelStatement>(size);
 		// Read in all elements
 		for (int i = 0; i < size; i++) {
 			Statement st = (Statement)s.readObject();

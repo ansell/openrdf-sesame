@@ -10,7 +10,9 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.rio.RDFHandlerException;
 
 /**
@@ -59,6 +61,15 @@ public class StatementCollector extends RDFHandlerBase {
 		this.namespaces = namespaces;
 	}
 
+	/**
+	 * Creates a new StatementCollector that stores reported statements and
+	 * namespaces in the supplied Model.
+	 */
+	public StatementCollector(Model model) {
+		this.statements = model;
+		this.namespaces = model.getNamespaces();
+	}
+
 	/*---------*
 	 * Methods *
 	 *---------*/
@@ -82,6 +93,10 @@ public class StatementCollector extends RDFHandlerBase {
 	 */
 	public Map<String, String> getNamespaces() {
 		return namespaces;
+	}
+
+	public Model getModel() {
+		return new ModelImpl(namespaces, statements);
 	}
 
 	@Override
