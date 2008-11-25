@@ -5,6 +5,7 @@
  */
 package org.openrdf.http.client;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,13 @@ import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.UnauthorizedException;
+import org.openrdf.http.protocol.exceptions.HTTPException;
+import org.openrdf.http.protocol.exceptions.MalformedQuery;
+import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
+import org.openrdf.http.protocol.exceptions.Unauthorized;
+import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
+import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
+import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Binding;
@@ -24,10 +32,14 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.impl.GraphQueryResultImpl;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
+import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.store.StoreException;
 
@@ -108,15 +120,23 @@ public class RepositoryClient {
 
 	public void sendTupleQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
 			TupleQueryResultHandler handler, Binding... bindings)
-		throws TupleQueryResultHandlerException, StoreException, MalformedQueryException,
-		UnauthorizedException
+		throws TupleQueryResultHandlerException, StoreException, MalformedQueryException
 	{
 		HTTPConnection method = getQueryMethod(ql, query, dataset, includeInferred, bindings);
 
 		try {
 			method.acceptTuple();
-			method.execute();
+			execute(method);
 			method.readTuple(handler);
+		}
+		catch (NoCompatibleMediaType e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+		catch (QueryResultParseException e) {
+			throw new StoreException(e);
 		}
 		finally {
 			method.release();
@@ -146,8 +166,17 @@ public class RepositoryClient {
 
 		try {
 			method.acceptRDF(false);
-			method.executeQuery();
+			execute(method);
 			method.readRDF(handler);
+		}
+		catch (NoCompatibleMediaType e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+		catch (RDFParseException e) {
+			throw new StoreException(e);
 		}
 		finally {
 			method.release();
@@ -162,8 +191,17 @@ public class RepositoryClient {
 
 		try {
 			method.acceptBoolean();
-			method.executeQuery();
+			execute(method);
 			return method.readBoolean();
+		}
+		catch (NoCompatibleMediaType e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+		catch (QueryResultParseException e) {
+			throw new StoreException(e);
 		}
 		finally {
 			method.release();
@@ -207,6 +245,32 @@ public class RepositoryClient {
 		}
 
 		return queryParams;
+	}
+
+	private void execute(HTTPConnection method)
+		throws IOException, StoreException, MalformedQueryException
+	{
+		try {
+			method.execute();
+		}
+		catch (MalformedQuery e) {
+			throw new MalformedQueryException(e);
+		}
+		catch (UnsupportedQueryLanguage e) {
+			throw new UnsupportedQueryLanguageException(e);
+		}
+		catch (UnsupportedFileFormat e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (UnsupportedMediaType e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (Unauthorized e) {
+			throw new UnauthorizedException(e);
+		}
+		catch (HTTPException e) {
+			throw new StoreException(e);
+		}
 	}
 
 }

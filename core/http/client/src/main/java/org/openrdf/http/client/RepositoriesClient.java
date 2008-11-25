@@ -5,12 +5,11 @@
  */
 package org.openrdf.http.client;
 
-import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
+import org.openrdf.http.client.helpers.StoreClient;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.store.StoreException;
 
 /**
@@ -21,38 +20,23 @@ import org.openrdf.store.StoreException;
 public class RepositoriesClient {
 
 	private HTTPConnectionPool repositories;
+	private StoreClient client;
 
 	public RepositoriesClient(HTTPConnectionPool repositroies) {
 		this.repositories = repositroies;
+		this.client = new StoreClient(repositories);
 	}
 
 	public TupleQueryResult get()
 		throws StoreException
 	{
-		try {
-			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
-			get(builder);
-			return builder.getQueryResult();
-		}
-		catch (TupleQueryResultHandlerException e) {
-			// Found a bug in TupleQueryResultBuilder?
-			throw new AssertionError(e);
-		}
+		return client.list();
 	}
 
 	public void get(TupleQueryResultHandler handler)
 		throws TupleQueryResultHandlerException, StoreException
 	{
-		HTTPConnection method = repositories.get();
-
-		try {
-			method.acceptTuple();
-			method.execute();
-			method.readTuple(handler);
-		}
-		finally {
-			method.release();
-		}
+		client.list(handler);
 	}
 
 	public RepositoryClient slash(String id) {

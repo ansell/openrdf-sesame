@@ -5,9 +5,6 @@
  */
 package org.openrdf.http.server.helpers;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_ACCEPTABLE;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -23,9 +20,10 @@ import info.aduna.lang.service.FileFormatServiceRegistry;
 import info.aduna.webapp.util.HttpServerUtil;
 
 import org.openrdf.http.protocol.Protocol;
-import org.openrdf.http.protocol.error.ErrorInfo;
-import org.openrdf.http.protocol.error.ErrorType;
-import org.openrdf.http.server.exceptions.ClientHTTPException;
+import org.openrdf.http.protocol.exceptions.BadRequest;
+import org.openrdf.http.protocol.exceptions.ClientHTTPException;
+import org.openrdf.http.protocol.exceptions.NotAcceptable;
+import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -41,53 +39,53 @@ import org.openrdf.model.ValueFactory;
 public class ProtocolUtil {
 
 	public static Value parseValueParam(HttpServletRequest request, String paramName, ValueFactory vf)
-		throws ClientHTTPException
+		throws BadRequest
 	{
 		String paramValue = request.getParameter(paramName);
 		try {
 			return Protocol.decodeValue(paramValue, vf);
 		}
 		catch (IllegalArgumentException e) {
-			throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid value for parameter '" + paramName + "': "
+			throw new BadRequest("Invalid value for parameter '" + paramName + "': "
 					+ paramValue);
 		}
 	}
 
 	public static Resource parseResourceParam(HttpServletRequest request, String paramName, ValueFactory vf)
-		throws ClientHTTPException
+		throws BadRequest
 	{
 		String paramValue = request.getParameter(paramName);
 		try {
 			return Protocol.decodeResource(paramValue, vf);
 		}
 		catch (IllegalArgumentException e) {
-			throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid value for parameter '" + paramName + "': "
+			throw new BadRequest("Invalid value for parameter '" + paramName + "': "
 					+ paramValue);
 		}
 	}
 
 	public static URI parseURIParam(HttpServletRequest request, String paramName, ValueFactory vf)
-		throws ClientHTTPException
+		throws BadRequest
 	{
 		String paramValue = request.getParameter(paramName);
 		try {
 			return Protocol.decodeURI(paramValue, vf);
 		}
 		catch (IllegalArgumentException e) {
-			throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid value for parameter '" + paramName + "': "
+			throw new BadRequest("Invalid value for parameter '" + paramName + "': "
 					+ paramValue);
 		}
 	}
 
 	public static Resource[] parseContextParam(HttpServletRequest request, String paramName, ValueFactory vf)
-		throws ClientHTTPException
+		throws BadRequest
 	{
 		String[] paramValues = request.getParameterValues(paramName);
 		try {
 			return Protocol.decodeContexts(paramValues, vf);
 		}
 		catch (IllegalArgumentException e) {
-			throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid value for parameter '" + paramName + "': "
+			throw new BadRequest("Invalid value for parameter '" + paramName + "': "
 					+ e.getMessage());
 		}
 	}
@@ -162,12 +160,11 @@ public class ProtocolUtil {
 		}
 
 		if (hasAcceptParam) {
-			ErrorInfo errInfo = new ErrorInfo(ErrorType.UNSUPPORTED_FILE_FORMAT, mimeType);
-			throw new ClientHTTPException(SC_BAD_REQUEST, errInfo.toString());
+			throw new UnsupportedFileFormat(mimeType);
 		}
 		else {
 			// No acceptable format was found, send 406 as required by RFC 2616
-			throw new ClientHTTPException(SC_NOT_ACCEPTABLE, "No acceptable file format found.");
+			throw new NotAcceptable("No acceptable file format found.");
 		}
 	}
 
