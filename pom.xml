@@ -232,18 +232,6 @@
 				<version>2.2.2-SNAPSHOT</version>
 				<scope>runtime</scope>
 			</dependency>
-			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-http-webclient</artifactId>
-				<version>2.2-SNAPSHOT</version>
-				<type>war</type>
-			</dependency>
-			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-http-webclient-spring</artifactId>
-				<version>2.2-SNAPSHOT</version>
-				<scope>runtime</scope>
-			</dependency>
 
 			<!-- Aduna Appbase -->
 			<dependency>
