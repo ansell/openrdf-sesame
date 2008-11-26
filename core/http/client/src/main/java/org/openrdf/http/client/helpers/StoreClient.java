@@ -248,9 +248,6 @@ public class StoreClient {
 		catch (UnsupportedFileFormat e) {
 			throw new UnsupportedRDFormatException(e);
 		}
-		catch (UnsupportedMediaType e) {
-			throw new UnsupportedRDFormatException(e);
-		}
 		catch (Unauthorized e) {
 			throw new UnauthorizedException(e);
 		}
