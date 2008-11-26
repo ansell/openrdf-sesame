@@ -74,8 +74,12 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		return namespaces;
 	}
 
-	public void setNamespace(String prefix, String name) {
-		namespaces.put(prefix, name);
+	public String setNamespace(String prefix, String name) {
+		return namespaces.put(prefix, name);
+	}
+
+	public void removeNamespace(String prefix) {
+		namespaces.remove(prefix);
 	}
 
 	public int size() {
@@ -463,8 +467,12 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			return namespaces;
 		}
 
-		public void setNamespace(String prefix, String name) {
-			namespaces.put(prefix, name);
+		public String setNamespace(String prefix, String name) {
+			return namespaces.put(prefix, name);
+		}
+
+		public void removeNamespace(String prefix) {
+			namespaces.remove(prefix);
 		}
 
 		private <T> Set<T> emptySet() {
@@ -551,8 +559,12 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			return namespaces;
 		}
 
-		public void setNamespace(String prefix, String name) {
-			namespaces.put(prefix, name);
+		public String setNamespace(String prefix, String name) {
+			return namespaces.put(prefix, name);
+		}
+
+		public void removeNamespace(String prefix) {
+			namespaces.remove(prefix);
 		}
 
 		@Override
