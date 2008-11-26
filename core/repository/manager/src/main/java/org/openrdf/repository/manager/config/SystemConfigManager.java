@@ -5,8 +5,8 @@
  */
 package org.openrdf.repository.manager.config;
 
-import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY_CONTEXT;
+import static org.openrdf.repository.manager.SystemRepository.REPOSITORYID;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -23,6 +23,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
@@ -114,12 +115,13 @@ public class SystemConfigManager implements RepositoryConfigManager {
 		return null;
 	}
 
-	public void addConfig(Model config)
+	public void addConfig(String id, Model config)
 		throws StoreConfigException
 	{
 		Model model = new ModelImpl();
-		Resource context = vf.createBNode();
+		Resource context = vf.createBNode(id);
 		model.add(context, RDF.TYPE, REPOSITORY_CONTEXT);
+		model.add(context, REPOSITORYID, new LiteralImpl(id), context);
 		for (Statement st : config) {
 			model.add(st.getSubject(), st.getPredicate(), st.getObject(), context);
 		}
@@ -127,7 +129,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 		addSystemModel(model);
 	}
 
-	public void updateConfig(Model config)
+	public void updateConfig(String id, Model config)
 		throws StoreConfigException
 	{
 		for (Value value : config.filter(null, REPOSITORYID, null).objects()) {
@@ -135,8 +137,9 @@ public class SystemConfigManager implements RepositoryConfigManager {
 		}
 
 		Model model = new ModelImpl();
-		Resource context = vf.createBNode();
+		Resource context = vf.createBNode(id);
 		model.add(context, RDF.TYPE, REPOSITORY_CONTEXT);
+		model.add(context, REPOSITORYID, new LiteralImpl(id), context);
 		model.filter(null, null, null, context).addAll(config);
 
 		addSystemModel(model);

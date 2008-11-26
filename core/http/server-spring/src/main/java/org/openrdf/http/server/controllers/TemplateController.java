@@ -78,9 +78,10 @@ public class TemplateController {
 	public void put(HttpServletRequest request)
 		throws Exception
 	{
+		String id = getPathParam(request);
 		Model model = getModel(request);
 		RepositoryManager manager = getRepositoryManager(request);
-		manager.getConfigTemplateManager().addTemplate(model);
+		manager.getConfigTemplateManager().addTemplate(id, model);
 	}
 
 	@ModelAttribute

@@ -48,7 +48,7 @@ public interface RepositoryConfigManager {
 	 *         example, this happens when there are multiple existing
 	 *         configurations with the concerning ID.
 	 */
-	void addConfig(Model config)
+	void addConfig(String id, Model config)
 		throws StoreConfigException;
 
 	/**
@@ -67,7 +67,7 @@ public interface RepositoryConfigManager {
 	 *         example, this happens when there are multiple existing
 	 *         configurations with the concerning ID.
 	 */
-	void updateConfig(Model config)
+	void updateConfig(String id, Model config)
 		throws StoreConfigException;
 
 	/**

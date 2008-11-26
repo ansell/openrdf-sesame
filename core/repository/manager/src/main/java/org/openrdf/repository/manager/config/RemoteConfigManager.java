@@ -5,8 +5,6 @@
  */
 package org.openrdf.repository.manager.config;
 
-import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -15,7 +13,6 @@ import java.util.Set;
 import org.openrdf.http.client.ConfigurationClient;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.model.Model;
-import org.openrdf.model.Value;
 import org.openrdf.store.StoreConfigException;
 
 public class RemoteConfigManager implements RepositoryConfigManager {
@@ -68,17 +65,15 @@ public class RemoteConfigManager implements RepositoryConfigManager {
 		return client.get(repositoryID);
 	}
 
-	public void addConfig(Model config)
+	public void addConfig(String id, Model config)
 		throws StoreConfigException
 	{
-		String id = getId(config);
 		client.put(id, config);
 	}
 
-	public void updateConfig(Model config)
+	public void updateConfig(String id, Model config)
 		throws StoreConfigException
 	{
-		String id = getId(config);
 		client.put(id, config);
 	}
 
@@ -86,14 +81,5 @@ public class RemoteConfigManager implements RepositoryConfigManager {
 		throws StoreConfigException
 	{
 		client.delete(repositoryID);
-	}
-
-	private String getId(Model config)
-		throws StoreConfigException
-	{
-		for (Value value : config.filter(null, REPOSITORYID, null).objects()) {
-			return value.stringValue();
-		}
-		throw new StoreConfigException("No repository id present");
 	}
 }

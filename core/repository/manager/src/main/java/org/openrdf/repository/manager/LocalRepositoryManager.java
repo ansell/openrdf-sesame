@@ -6,6 +6,7 @@
 package org.openrdf.repository.manager;
 
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
+import static org.openrdf.repository.manager.SystemRepository.REPOSITORYID;
 
 import java.io.File;
 import java.io.IOException;
@@ -221,11 +222,11 @@ public class LocalRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	public String addRepositoryConfig(Model config)
+	public String addRepositoryConfig(String id, Model config)
 		throws StoreConfigException, StoreException
 	{
 		parse(config);
-		return super.addRepositoryConfig(config);
+		return super.addRepositoryConfig(id, config);
 	}
 
 	private RepositoryConfig parse(Model config)
@@ -366,10 +367,10 @@ public class LocalRepositoryManager extends RepositoryManager {
 					if (hasRepositoryConfig(id)) {
 						Model currently = getRepositoryConfig(id);
 						if (!currently.equals(model)) {
-							addRepositoryConfig(model);
+							addRepositoryConfig(id, model);
 						}
 					} else {
-						addRepositoryConfig(model);
+						addRepositoryConfig(id, model);
 					}
 				}
 				Set<String> old = new HashSet<String>(getRepositoryIDs());
@@ -383,6 +384,15 @@ public class LocalRepositoryManager extends RepositoryManager {
 			catch (StoreConfigException e) {
 				throw new AssertionError(e);
 			}
+		}
+
+		private String getConfigId(Model config)
+			throws StoreConfigException
+		{
+			Set<Value> ids = config.filter(null, REPOSITORYID, null).objects();
+			if (ids.size() != 1)
+				throw new StoreConfigException("Repository ID not found");
+			return ids.iterator().next().stringValue();
 		}
 	}
 

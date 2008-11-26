@@ -37,10 +37,7 @@ public interface ConfigTemplateManager {
 	 *         <tt>null</tt> if there was no such service.
 	 * @throws StoreConfigException
 	 */
-	void addTemplate(ConfigTemplate template)
-		throws StoreConfigException;
-
-	void addTemplate(Model model)
+	void addTemplate(String id, Model model)
 		throws StoreConfigException;
 
 	/**
@@ -58,7 +55,7 @@ public interface ConfigTemplateManager {
 	 * @param key
 	 *        The key identifying which service to get.
 	 * @return The service for the specified key, or <tt>null</tt> if no such
-	 *         service is avaiable.
+	 *         service is available.
 	 */
 	ConfigTemplate getTemplate(String id)
 		throws StoreConfigException;

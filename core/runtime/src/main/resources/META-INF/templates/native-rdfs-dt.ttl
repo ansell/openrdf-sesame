@@ -9,7 +9,6 @@
 @prefix ns: <http://www.openrdf.org/config/sail/native#>.
 
 [] a rep:Repository ;
-   rep:repositoryID "native-rdfs-dt" ;
    rep:repositoryTitle "Native store with RDF Schema and direct type inferencing" ;
    rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;

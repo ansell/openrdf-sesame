@@ -11,5 +11,4 @@
       hr:serverURL "http://localhost:8080/openrdf-sesame" ;
       hr:repositoryID "SYSTEM"
    ];
-   rep:repositoryID "remote" ;
    rep:repositoryTitle "remote repository @localhost" .

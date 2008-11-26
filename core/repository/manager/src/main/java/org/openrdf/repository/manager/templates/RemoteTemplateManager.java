@@ -50,16 +50,10 @@ public class RemoteTemplateManager implements ConfigTemplateManager {
 	 *         <tt>null</tt> if there was no such service.
 	 * @throws StoreConfigException
 	 */
-	public void addTemplate(ConfigTemplate service)
+	public void addTemplate(String id, Model model)
 		throws StoreConfigException
 	{
-		client.templates().put(service.getID(), service.getModel());
-	}
-
-	public void addTemplate(Model model)
-		throws StoreConfigException
-	{
-		addTemplate(new ConfigTemplate(model, client.schemas().get()));
+		client.templates().put(id, model);
 	}
 
 	/**
