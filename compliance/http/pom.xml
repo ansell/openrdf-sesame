@@ -10,7 +10,6 @@
 
 	<artifactId>sesame-http-compliance</artifactId>
 	<version>2.5-SNAPSHOT</version>
-	<packaging>war</packaging>
 
 	<name>OpenRDF HTTP server compliance tests</name>
 	<description>Tests for the HTTP server.</description>
@@ -73,8 +72,7 @@
 
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-http-server</artifactId>
-			<type>war</type>
+			<artifactId>sesame-http-server-spring</artifactId>
 		</dependency>
 
 		<dependency>
@@ -133,13 +131,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<webappDirectory>${project.build.directory}/openrdf-sesame</webappDirectory>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
