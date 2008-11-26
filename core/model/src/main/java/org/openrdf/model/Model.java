@@ -44,7 +44,17 @@ public interface Model extends Set<Statement>, Serializable {
 	 * @param name
 	 *        The namespace name that the prefix maps to.
 	 */
-	public void setNamespace(String prefix, String name);
+	public String setNamespace(String prefix, String name);
+
+	/**
+	 * Removes a namespace declaration by removing the association between a
+	 * prefix and a namespace name.
+	 * 
+	 * @param prefix
+	 *        The namespace prefix of which the assocation with a namespace name
+	 *        is to be removed.
+	 */
+	public void removeNamespace(String prefix);
 
 	/**
 	 * Determines if statements with the specified subject, predicate, object and
