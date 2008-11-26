@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.RequestToViewNameTranslator;
 import org.springframework.web.servlet.View;
@@ -116,13 +117,16 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
 		RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 		setContentType(resp, factory.getRDFFormat());
+		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+			return;
+
 		ServletOutputStream out = resp.getOutputStream();
 		try {
 			RDFWriter rdfHandler = factory.getWriter(out);
 			try {
 				rdfHandler.startRDF();
 
-				RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(req);
+				RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(req);
 				for (Namespace ns : repositoryCon.getNamespaces().asList()) {
 					String prefix = ns.getPrefix();
 					String namespace = ns.getName();
@@ -157,6 +161,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		TupleQueryResultWriterRegistry registry = TupleQueryResultWriterRegistry.getInstance();
 		TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 		setContentType(resp, factory.getTupleQueryResultFormat());
+		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+			return;
+
 		ServletOutputStream out = resp.getOutputStream();
 		try {
 			QueryResultUtil.report(model, factory.getWriter(out));
@@ -178,6 +185,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
 		RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 		setContentType(resp, factory.getRDFFormat());
+		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+			return;
+
 		ServletOutputStream out = resp.getOutputStream();
 		try {
 			QueryResultUtil.report(model, factory.getWriter(out));
@@ -199,6 +209,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		BooleanQueryResultWriterRegistry registry = BooleanQueryResultWriterRegistry.getInstance();
 		BooleanQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 		setContentType(resp, factory.getBooleanQueryResultFormat());
+		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+			return;
+
 		ServletOutputStream out = resp.getOutputStream();
 		try {
 			factory.getWriter(out).write(model.getResult());
@@ -214,6 +227,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
 		RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 		setContentType(resp, factory.getRDFFormat());
+		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+			return;
+
 		ServletOutputStream out = resp.getOutputStream();
 		try {
 			RDFWriter rdfHandler = factory.getWriter(out);
@@ -240,9 +256,12 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 	private void render(Reader model, HttpServletRequest req, HttpServletResponse resp)
 		throws IOException
 	{
+		resp.setContentType("text/plain");
+		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+			return;
+
 		ServletOutputStream writer = resp.getOutputStream();
 		try {
-			resp.setContentType("text/plain");
 			int read;
 			char[] buf = new char[1024];
 			while ((read = model.read(buf)) >= 0) {

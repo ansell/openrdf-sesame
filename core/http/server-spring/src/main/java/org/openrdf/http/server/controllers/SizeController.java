@@ -5,6 +5,9 @@
  */
 package org.openrdf.http.server.controllers;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
+
 import java.io.StringReader;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,19 +34,21 @@ import org.openrdf.repository.RepositoryConnection;
 public class SizeController {
 
 	@ModelAttribute
-	@RequestMapping(method = RequestMethod.GET, value = "/repositories/*/size")
+	@RequestMapping(method = { GET, HEAD }, value = "/repositories/*/size")
 	public StringReader size(HttpServletRequest request)
 		throws Exception
 	{
 		ProtocolUtil.logRequestParameters(request);
 
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 
 		ValueFactory vf = repositoryCon.getValueFactory();
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, Protocol.CONTEXT_PARAM_NAME, vf);
 
-		long size = repositoryCon.size(null, null, null, false, contexts);
+		if (HEAD.equals(RequestMethod.valueOf(request.getMethod())))
+				return new StringReader("-1");
 
+		long size = repositoryCon.size(null, null, null, false, contexts);
 		return new StringReader(String.valueOf(size));
 	}
 }

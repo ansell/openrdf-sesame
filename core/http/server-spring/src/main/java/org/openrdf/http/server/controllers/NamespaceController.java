@@ -5,6 +5,11 @@
  */
 package org.openrdf.http.server.controllers;
 
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -16,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import info.aduna.io.IOUtil;
 
@@ -46,14 +50,14 @@ import org.openrdf.store.StoreException;
 public class NamespaceController {
 
 	@ModelAttribute
-	@RequestMapping(method = RequestMethod.GET, value = "/repositories/*/namespaces")
+	@RequestMapping(method = { GET, HEAD }, value = "/repositories/*/namespaces")
 	public TupleQueryResult list(HttpServletRequest request)
 		throws StoreException
 	{
 		List<String> columnNames = Arrays.asList("prefix", "namespace");
 		List<BindingSet> namespaces = new ArrayList<BindingSet>();
 
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 		RepositoryResult<Namespace> iter = repositoryCon.getNamespaces();
 
 		try {
@@ -75,7 +79,7 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = RequestMethod.DELETE, value = "/repositories/*/namespaces")
+	@RequestMapping(method = DELETE, value = "/repositories/*/namespaces")
 	public void clear(HttpServletRequest request)
 		throws StoreException
 	{
@@ -84,12 +88,12 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = RequestMethod.GET, value = "/repositories/*/namespaces/*")
+	@RequestMapping(method = { GET, HEAD }, value = "/repositories/*/namespaces/*")
 	public StringReader get(HttpServletRequest request)
 		throws StoreException, NotFound
 	{
 		String prefix = getPrefix(request);
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 		String namespace = repositoryCon.getNamespace(prefix);
 
 		if (namespace == null) {
@@ -100,7 +104,7 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = RequestMethod.PUT, value = "/repositories/*/namespaces/*")
+	@RequestMapping(method = PUT, value = "/repositories/*/namespaces/*")
 	public void put(HttpServletRequest request)
 		throws StoreException, IOException, BadRequest
 	{
@@ -118,7 +122,7 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = RequestMethod.DELETE, value = "/repositories/*/namespaces/*")
+	@RequestMapping(method = DELETE, value = "/repositories/*/namespaces/*")
 	public void delete(HttpServletRequest request)
 		throws StoreException
 	{

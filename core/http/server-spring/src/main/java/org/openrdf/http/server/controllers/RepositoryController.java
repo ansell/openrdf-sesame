@@ -11,6 +11,9 @@ import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.NAMED_GRAPH_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.QUERY_LANGUAGE_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.QUERY_PARAM_NAME;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -77,7 +80,7 @@ public class RepositoryController {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@ModelAttribute
-	@RequestMapping(value = "/repositories", method = RequestMethod.GET)
+	@RequestMapping(value = "/repositories", method = { GET, HEAD })
 	public TupleQueryResult list(HttpServletRequest request)
 		throws HTTPException, StoreConfigException
 	{
@@ -92,7 +95,7 @@ public class RepositoryController {
 		String namespace = requestURL.toString();
 
 		ValueFactory vf = new ValueFactoryImpl();
-		RepositoryManager repositoryManager = RepositoryInterceptor.getRepositoryManager(request);
+		RepositoryManager repositoryManager = RepositoryInterceptor.getReadOnlyManager(request);
 		for (RepositoryInfo info : repositoryManager.getAllRepositoryInfos()) {
 			String id = info.getId();
 			URI uri = vf.createURI(namespace, id);
@@ -109,12 +112,12 @@ public class RepositoryController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(value = "/repositories/*", method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "/repositories/*", method = { GET, POST, HEAD })
 	public QueryResult<?> query(HttpServletRequest request, HttpServletResponse response)
 		throws HTTPException, IOException, StoreException, MalformedQueryException
 	{
 		Repository repository = RepositoryInterceptor.getRepository(request);
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 
 		String queryStr = request.getParameter(QUERY_PARAM_NAME);
 		int qryCode = 0;
@@ -122,11 +125,14 @@ public class RepositoryController {
 			qryCode = String.valueOf(queryStr).hashCode();
 		}
 
-		String reqMethod = request.getMethod();
-		if (RequestMethod.GET.equals(RequestMethod.valueOf(reqMethod))) {
+		RequestMethod reqMethod = RequestMethod.valueOf(request.getMethod());
+		if (GET.equals(reqMethod)) {
 			logger.info("GET query {}", qryCode);
 		}
-		else if (RequestMethod.POST.equals(RequestMethod.valueOf(reqMethod))) {
+		else if (HEAD.equals(reqMethod)) {
+			logger.info("HEAD query {}", qryCode);
+		}
+		else if (POST.equals(reqMethod)) {
 			logger.info("POST query {}", qryCode);
 
 			String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
@@ -156,8 +162,7 @@ public class RepositoryController {
 				return new BooleanQueryResult(bQuery.evaluate());
 			}
 			else {
-				throw new NotImplemented("Unsupported query type: "
-						+ query.getClass().getName());
+				throw new NotImplemented("Unsupported query type: " + query.getClass().getName());
 			}
 		}
 		else {
@@ -203,8 +208,7 @@ public class RepositoryController {
 						dataset.addDefaultGraph(uri);
 					}
 					catch (IllegalArgumentException e) {
-						throw new BadRequest("Illegal URI for default graph: "
-								+ defaultGraphURI);
+						throw new BadRequest("Illegal URI for default graph: " + defaultGraphURI);
 					}
 				}
 			}
@@ -216,8 +220,7 @@ public class RepositoryController {
 						dataset.addNamedGraph(uri);
 					}
 					catch (IllegalArgumentException e) {
-						throw new BadRequest("Illegal URI for named graph: "
-								+ namedGraphURI);
+						throw new BadRequest("Illegal URI for named graph: " + namedGraphURI);
 					}
 				}
 			}
@@ -237,8 +240,7 @@ public class RepositoryController {
 		while (parameterNames.hasMoreElements()) {
 			String parameterName = parameterNames.nextElement();
 
-			if (parameterName.startsWith(BINDING_PREFIX) && parameterName.length() > BINDING_PREFIX.length())
-			{
+			if (parameterName.startsWith(BINDING_PREFIX) && parameterName.length() > BINDING_PREFIX.length()) {
 				String bindingName = parameterName.substring(BINDING_PREFIX.length());
 				Value bindingValue = ProtocolUtil.parseValueParam(request, parameterName,
 						repositoryCon.getValueFactory());
