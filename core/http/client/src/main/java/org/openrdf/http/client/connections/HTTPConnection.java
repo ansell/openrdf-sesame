@@ -262,7 +262,9 @@ public class HTTPConnection {
 					if (e.getCause() instanceof IOException) {
 						throw (IOException)e.getCause();
 					}
-					throw new IOException(e);
+					IOException ioe = new IOException(e.getMessage());
+					ioe.initCause(e);
+					throw ioe;
 				}
 				writer.flush();
 			}
