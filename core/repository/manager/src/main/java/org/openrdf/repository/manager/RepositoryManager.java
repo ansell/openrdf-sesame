@@ -25,7 +25,6 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Value;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.manager.config.RepositoryConfigManager;
-import org.openrdf.repository.manager.templates.ConfigTemplate;
 import org.openrdf.repository.manager.templates.ConfigTemplateManager;
 import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
@@ -155,27 +154,10 @@ public abstract class RepositoryManager {
 		return baseName + index;
 	}
 
-	/**
-	 * @return
-	 * @throws StoreConfigException
-	 * @see org.openrdf.repository.manager.templates.ConfigTemplateManager#getIDs()
-	 */
-	public Set<String> getConfigTemplateIDs()
+	public ConfigTemplateManager getConfigTemplateManager()
 		throws StoreConfigException
 	{
-		return templates.getIDs();
-	}
-
-	/**
-	 * @param id
-	 * @return
-	 * @throws StoreConfigException
-	 * @see org.openrdf.repository.manager.templates.ConfigTemplateManager#getTemplate(java.lang.String)
-	 */
-	public ConfigTemplate getConfigTemplate(String id)
-		throws StoreConfigException
-	{
-		return templates.getTemplate(id);
+		return templates;
 	}
 
 	public Set<String> getRepositoryIDs()

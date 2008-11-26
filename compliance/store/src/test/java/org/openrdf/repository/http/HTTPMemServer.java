@@ -49,9 +49,9 @@ public class HTTPMemServer extends EmbeddedServer {
 		throws StoreException, StoreConfigException
 	{
 		RepositoryManager manager = getRepositoryManager();
-		ConfigTemplate memory = manager.getConfigTemplate("memory");
+		ConfigTemplate memory = manager.getConfigTemplateManager().getTemplate("memory");
 		manager.addRepositoryConfig(memory.createConfig(null));
-		ConfigTemplate memory_rdfs_dt = manager.getConfigTemplate("memory-rdfs-dt");
+		ConfigTemplate memory_rdfs_dt = manager.getConfigTemplateManager().getTemplate("memory-rdfs-dt");
 		manager.addRepositoryConfig(memory_rdfs_dt.createConfig(null));
 	}
 }
