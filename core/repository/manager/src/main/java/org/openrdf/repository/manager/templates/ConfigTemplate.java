@@ -16,7 +16,6 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.repository.config.RepositoryConfigSchema;
-import org.openrdf.rio.RDFParseException;
 
 /**
  * @author james
@@ -29,9 +28,7 @@ public class ConfigTemplate {
 
 	private Model schema;
 
-	public ConfigTemplate(Model statements, Model schema)
-		throws IOException, RDFParseException
-	{
+	public ConfigTemplate(Model statements, Model schema) {
 		this.statements = statements;
 		this.schema = schema;
 		for (Statement st : statements) {
@@ -75,7 +72,8 @@ public class ConfigTemplate {
 				if (!properties.get(idx).getPredicate().equals(pred))
 					throw new IllegalArgumentException("Invalid properties");
 				model.add(subj, pred, properties.get(idx++).getValue());
-			} else {
+			}
+			else {
 				model.add(subj, pred, st.getObject());
 			}
 		}

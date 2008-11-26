@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
@@ -39,7 +38,7 @@ import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.store.StoreConfigException;
 
 /**
- * @author james
+ * @author James Leigh
  */
 public class LocalTemplateManager implements ConfigTemplateManager {
 
@@ -108,6 +107,12 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		services.put(service.getID(), service);
 	}
 
+	public void addTemplate(Model model)
+		throws StoreConfigException
+	{
+		addTemplate(new ConfigTemplate(model, schema));
+	}
+
 	/**
 	 * Removes a service from the registry.
 	 * 
@@ -142,6 +147,12 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	 */
 	public Set<String> getIDs() {
 		return Collections.unmodifiableSet(services.keySet());
+	}
+
+	public Model getSchemas()
+		throws StoreConfigException
+	{
+		return schema;
 	}
 
 	private void loadTemplates(ClassLoader cl)
@@ -285,7 +296,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 
 		private URI graph;
 
-		public Collector(Collection<Statement> statements, String graph) {
+		public Collector(Model statements, String graph) {
 			super(statements);
 			this.graph = new URIImpl(graph);
 		}

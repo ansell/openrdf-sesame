@@ -23,6 +23,7 @@ import org.openrdf.http.server.controllers.ContextController;
 import org.openrdf.http.server.controllers.NamespaceController;
 import org.openrdf.http.server.controllers.ProtocolController;
 import org.openrdf.http.server.controllers.RepositoryController;
+import org.openrdf.http.server.controllers.SchemaController;
 import org.openrdf.http.server.controllers.SizeController;
 import org.openrdf.http.server.controllers.StatementController;
 import org.openrdf.http.server.controllers.TemplateController;
@@ -131,6 +132,7 @@ public class SesameServlet implements Servlet {
 			registerPrototype(StatementController.class);
 			registerPrototype(ConfigurationController.class);
 			registerPrototype(TemplateController.class);
+			registerPrototype(SchemaController.class);
 
 			// Exceptions
 			registerPrototype(ExceptionWritter.class);

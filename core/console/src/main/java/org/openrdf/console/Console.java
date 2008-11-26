@@ -577,7 +577,7 @@ public class Console {
 		throws IOException
 	{
 		try {
-			ConfigTemplate configTemplate = manager.getConfigTemplate(templateName);
+			ConfigTemplate configTemplate = manager.getConfigTemplateManager().getTemplate(templateName);
 			if (configTemplate == null) {
 				writeError("No template called " + templateName + " found");
 				return;

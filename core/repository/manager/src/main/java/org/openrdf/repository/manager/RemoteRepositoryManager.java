@@ -22,7 +22,7 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.repository.manager.config.RemoteConfigManager;
-import org.openrdf.repository.manager.templates.LocalTemplateManager;
+import org.openrdf.repository.manager.templates.RemoteTemplateManager;
 import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
@@ -99,19 +99,12 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 	/**
 	 * Initializes the repository manager.
-	 * 
-	 * @throws StoreException
-	 *         If the manager failed to initialize the SYSTEM repository.
 	 */
-	public void initialize()
-		throws StoreConfigException
-	{
-		LocalTemplateManager templates = new LocalTemplateManager();
-		templates.init();
-		setConfigTemplateManager(templates);
-		RemoteConfigManager configurations = new RemoteConfigManager(serverURL);
-		configurations.setUsernameAndPassword(username, password);
-		setRepositoryConfigManager(configurations);
+	public void initialize() {
+		SesameClient client = new SesameClient(serverURL);
+		client.setUsernameAndPassword(username, password);
+		setConfigTemplateManager(new RemoteTemplateManager(client));
+		setRepositoryConfigManager(new RemoteConfigManager(client));
 	}
 
 	/**
@@ -131,9 +124,12 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * Gets the URL of the remote server, e.g.
 	 * "http://localhost:8080/openrdf-sesame/".
 	 * 
-	 * @throws MalformedURLException If serverURL cannot be parsed
+	 * @throws MalformedURLException
+	 *         If serverURL cannot be parsed
 	 */
-	public URL getLocation() throws MalformedURLException {
+	public URL getLocation()
+		throws MalformedURLException
+	{
 		return new URL(serverURL);
 	}
 

@@ -44,4 +44,16 @@ public class TemplateClient {
 		return client.get(id, Model.class);
 	}
 
+	public void put(String id, Model instance)
+		throws StoreConfigException
+	{
+		client.put(id, instance);
+	}
+
+	public void delete(String id)
+		throws StoreConfigException
+	{
+		client.delete(id);
+	}
+
 }
