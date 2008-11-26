@@ -109,7 +109,7 @@ public class NamespaceManager {
 
 	public NamespaceImpl findByPrefix(String prefix) {
 		String namespace = map.get(prefix);
-		if (map == null)
+		if (namespace == null)
 			return null;
 		return new NamespaceImpl(prefix, namespace);
 	}
