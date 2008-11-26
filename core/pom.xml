@@ -122,6 +122,13 @@
 						<link>http://repository.aduna-software.org/docs/info.aduna/api/</link>
 					</links>
 				</configuration>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>aggregate</report>
+						</reports>
+					</reportSet>
+				</reportSets>
 			</plugin>
 		</plugins>
 	</reporting>
