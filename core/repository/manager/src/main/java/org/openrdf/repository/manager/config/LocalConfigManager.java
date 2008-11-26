@@ -5,8 +5,6 @@
  */
 package org.openrdf.repository.manager.config;
 
-import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -21,7 +19,6 @@ import java.util.Set;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.Value;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -119,10 +116,9 @@ public class LocalConfigManager implements RepositoryConfigManager {
 		}
 	}
 
-	public void addConfig(Model config)
+	public void addConfig(String id, Model config)
 		throws StoreConfigException
 	{
-		String id = getId(config);
 		if (getRdfFiles().containsKey(id)) {
 			throw new StoreConfigException("Repository config already exists");
 		}
@@ -130,10 +126,9 @@ public class LocalConfigManager implements RepositoryConfigManager {
 		saveConfig(file, config);
 	}
 
-	public void updateConfig(Model config)
+	public void updateConfig(String id, Model config)
 		throws StoreConfigException
 	{
-		String id = getId(config);
 		File file = getRdfFiles().get(id);
 		if (file == null) {
 			throw new StoreConfigException("Repository config does not exist");
@@ -165,15 +160,6 @@ public class LocalConfigManager implements RepositoryConfigManager {
 			}
 		}
 		return map;
-	}
-
-	private String getId(Model config)
-		throws StoreConfigException
-	{
-		for (Value value : config.filter(null, REPOSITORYID, null).objects()) {
-			return value.stringValue();
-		}
-		throw new StoreConfigException("No repository id present");
 	}
 
 	private void saveConfig(File file, Model config)

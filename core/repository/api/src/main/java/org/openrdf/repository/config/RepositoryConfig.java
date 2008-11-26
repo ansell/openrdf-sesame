@@ -6,7 +6,6 @@
 package org.openrdf.repository.config;
 
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
-import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYIMPL;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYTITLE;
 
@@ -15,6 +14,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
@@ -26,8 +26,6 @@ import org.openrdf.store.StoreConfigException;
  * @author Arjohn Kampman
  */
 public class RepositoryConfig {
-
-	private String id;
 
 	private String title;
 
@@ -42,41 +40,23 @@ public class RepositoryConfig {
 	/**
 	 * Create a new RepositoryConfigImpl.
 	 */
-	public RepositoryConfig(String id) {
-		this();
-		setID(id);
-	}
-
-	/**
-	 * Create a new RepositoryConfigImpl.
-	 */
-	public RepositoryConfig(String id, RepositoryImplConfig implConfig) {
-		this(id);
+	public RepositoryConfig(RepositoryImplConfig implConfig) {
 		setRepositoryImplConfig(implConfig);
 	}
 
 	/**
 	 * Create a new RepositoryConfigImpl.
 	 */
-	public RepositoryConfig(String id, String title) {
-		this(id);
+	public RepositoryConfig(String title) {
 		setTitle(title);
 	}
 
 	/**
 	 * Create a new RepositoryConfigImpl.
 	 */
-	public RepositoryConfig(String id, String title, RepositoryImplConfig implConfig) {
-		this(id, title);
+	public RepositoryConfig(String title, RepositoryImplConfig implConfig) {
+		this(title);
 		setRepositoryImplConfig(implConfig);
-	}
-
-	public String getID() {
-		return id;
-	}
-
-	public void setID(String id) {
-		this.id = id;
 	}
 
 	public String getTitle() {
@@ -106,13 +86,16 @@ public class RepositoryConfig {
 	public void validate()
 		throws StoreConfigException
 	{
-		if (id == null) {
-			throw new StoreConfigException("Repository ID missing");
-		}
 		if (implConfig == null) {
 			throw new StoreConfigException("Repository implementation for repository missing");
 		}
 		implConfig.validate();
+	}
+
+	public Model export() {
+		Model model = new ModelImpl();
+		export(model);
+		return model;
 	}
 
 	public void export(Model model) {
@@ -122,9 +105,6 @@ public class RepositoryConfig {
 
 		model.add(repositoryNode, RDF.TYPE, REPOSITORY);
 
-		if (id != null) {
-			model.add(repositoryNode, REPOSITORYID, vf.createLiteral(id));
-		}
 		if (title != null) {
 			model.add(repositoryNode, REPOSITORYTITLE, vf.createLiteral(title));
 			model.add(repositoryNode, RDFS.LABEL, vf.createLiteral(title));
@@ -139,11 +119,6 @@ public class RepositoryConfig {
 		throws StoreConfigException
 	{
 		try {
-			Literal idLit = ModelUtil.getOptionalObjectLiteral(model, repositoryNode, REPOSITORYID);
-			if (idLit != null) {
-				setID(idLit.getLabel());
-			}
-
 			Literal titleLit = ModelUtil.getOptionalObjectLiteral(model, repositoryNode, RDFS.LABEL);
 			if (titleLit != null) {
 				setTitle(titleLit.getLabel());

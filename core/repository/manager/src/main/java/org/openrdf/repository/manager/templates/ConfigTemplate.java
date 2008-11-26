@@ -15,14 +15,11 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.ModelImpl;
-import org.openrdf.repository.config.RepositoryConfigSchema;
 
 /**
  * @author james
  */
 public class ConfigTemplate {
-
-	private String id;
 
 	private Model statements;
 
@@ -31,15 +28,6 @@ public class ConfigTemplate {
 	public ConfigTemplate(Model statements, Model schema) {
 		this.statements = statements;
 		this.schema = schema;
-		for (Statement st : statements) {
-			if (st.getPredicate().equals(RepositoryConfigSchema.REPOSITORYID)) {
-				id = st.getObject().stringValue();
-			}
-		}
-	}
-
-	public String getID() {
-		return id;
 	}
 
 	public List<ConfigProperty> getProperties()

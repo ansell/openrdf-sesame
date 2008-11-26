@@ -103,7 +103,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 				RepositoryConfig config = parse(result);
 				logger.debug(
 						"Surpressing retrieval of repository {}: repository type {} did not match expected type {}",
-						new Object[] { config.getID(), config.getRepositoryImplConfig().getType(), type });
+						new Object[] { repositoryID, config.getRepositoryImplConfig().getType(), type });
 
 				result = null;
 			}
@@ -113,11 +113,11 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	public String addRepositoryConfig(Model config)
+	public String addRepositoryConfig(String id, Model config)
 		throws StoreConfigException, StoreException
 	{
 		if (isCorrectType(config)) {
-			return delegate.addRepositoryConfig(config);
+			return delegate.addRepositoryConfig(id, config);
 		}
 		else {
 			throw new UnsupportedOperationException("Only repositories of type " + type

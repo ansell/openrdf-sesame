@@ -78,9 +78,10 @@ public class ConfigurationController {
 	public void put(HttpServletRequest request)
 		throws Exception
 	{
+		String id = getPathParam(request);
 		Model model = getModel(request);
 		RepositoryManager manager = getRepositoryManager(request);
-		manager.addRepositoryConfig(model);
+		manager.addRepositoryConfig(id, model);
 	}
 
 	@ModelAttribute

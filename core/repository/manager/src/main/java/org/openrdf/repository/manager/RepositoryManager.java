@@ -5,8 +5,6 @@
  */
 package org.openrdf.repository.manager;
 
-import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Model;
-import org.openrdf.model.Value;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.manager.config.RepositoryConfigManager;
 import org.openrdf.repository.manager.templates.ConfigTemplateManager;
@@ -172,12 +169,6 @@ public abstract class RepositoryManager {
 		return configs.getIDs().contains(repositoryID);
 	}
 
-	public boolean hasRepositoryConfig(Model config)
-		throws StoreConfigException
-	{
-		return hasRepositoryConfig(getConfigId(config));
-	}
-
 	public Model getRepositoryConfig(String repositoryID)
 		throws StoreConfigException
 	{
@@ -202,22 +193,11 @@ public abstract class RepositoryManager {
 	 *         example, this happens when there are multiple existing
 	 *         configurations with the concerning ID.
 	 */
-	public String addRepositoryConfig(Model config)
+	public String addRepositoryConfig(String id, Model config)
 		throws StoreConfigException, StoreException
 	{
-		String id = getConfigId(config);
 		removeRepositoryConfig(id);
-		configs.addConfig(config);
-		return id;
-	}
-
-	String getConfigId(Model config)
-		throws StoreConfigException
-	{
-		Set<Value> ids = config.filter(null, REPOSITORYID, null).objects();
-		if (ids.size() != 1)
-			throw new StoreConfigException("Repository ID not found");
-		String id = ids.iterator().next().stringValue();
+		configs.addConfig(id, config);
 		return id;
 	}
 

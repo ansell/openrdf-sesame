@@ -8,7 +8,6 @@
 @prefix ms: <http://www.openrdf.org/config/sail/memory#>.
 
 [] a rep:Repository ;
-   rep:repositoryID "memory" ;
    rep:repositoryTitle "Memory store" ;
    rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;

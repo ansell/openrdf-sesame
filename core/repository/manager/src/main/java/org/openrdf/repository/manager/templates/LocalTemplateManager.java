@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
@@ -101,16 +102,10 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	 *         <tt>null</tt> if there was no such service.
 	 * @throws StoreConfigException
 	 */
-	public void addTemplate(ConfigTemplate service)
+	public void addTemplate(String id, Model model)
 		throws StoreConfigException
 	{
-		services.put(service.getID(), service);
-	}
-
-	public void addTemplate(Model model)
-		throws StoreConfigException
-	{
-		addTemplate(new ConfigTemplate(model, schema));
+		services.put(id, new ConfigTemplate(model, schema));
 	}
 
 	/**
@@ -168,7 +163,11 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		assert dir.isDirectory();
 		for (File file : dir.listFiles()) {
 			try {
-				addTemplate(new ConfigTemplate(parse(file.toURI().toURL()), schema));
+				String id = file.getName();
+				if (id.indexOf('.') > 0) {
+					id = id.substring(0, id.indexOf('.'));
+				}
+				addTemplate(id, parse(file.toURI().toURL()));
 			}
 			catch (RDFParseException e) {
 				logger.warn(e.toString(), e);
@@ -244,7 +243,11 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 					continue;
 				}
 				try {
-					addTemplate(new ConfigTemplate(parse(url), schema));
+					String id = new File(URLDecoder.decode(url.getPath(), "UTF-8")).getName();
+					if (id.indexOf('.') > 0) {
+						id = id.substring(0, id.indexOf('.'));
+					}
+					addTemplate(id, parse(url));
 				}
 				catch (RDFParseException e) {
 					logger.warn(e.toString(), e);

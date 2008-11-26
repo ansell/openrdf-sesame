@@ -1,21 +1,16 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.http.server;
 
 import java.io.File;
-
-import info.aduna.net.http.server.embedded.EmbeddedServer;
+import java.io.IOException;
 
 import org.openrdf.http.protocol.Protocol;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.config.RepositoryConfig;
-import org.openrdf.repository.config.RepositoryConfigUtil;
-import org.openrdf.repository.http.HTTPRepository;
-import org.openrdf.repository.manager.SystemRepository;
+import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.repository.sail.config.SailRepositoryConfig;
 import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig;
 import org.openrdf.sail.memory.config.MemoryStoreConfig;
@@ -24,6 +19,7 @@ import org.openrdf.store.StoreException;
 
 /**
  * @author Herko ter Horst
+ * @author James Leigh
  */
 public class TestServer extends EmbeddedServer {
 
@@ -31,9 +27,7 @@ public class TestServer extends EmbeddedServer {
 
 	public static final String TEST_INFERENCE_REPO_ID = "Test-RDFS";
 
-	public static final String OPENRDF_CONTEXT = "/openrdf";
-
-	public static String SERVER_URL = "http://" + DEFAULT_HOST + ":" + DEFAULT_PORT + OPENRDF_CONTEXT;
+	public static String SERVER_URL = "http://localhost:" + DEFAULT_PORT;
 
 	public static String REPOSITORY_URL = Protocol.getRepositoryLocation(TestServer.SERVER_URL, TEST_REPO_ID);
 
@@ -42,9 +36,9 @@ public class TestServer extends EmbeddedServer {
 
 	public static final String OPENRDF_SERVER_WAR = "./target/openrdf-sesame";
 
-	public TestServer() {
+	public TestServer() throws StoreConfigException, IOException {
 		// warPath configured in pom.xml maven-war-plugin configuration
-		super(DEFAULT_HOST, DEFAULT_PORT, OPENRDF_CONTEXT, OPENRDF_SERVER_WAR);
+		super(DEFAULT_PORT);
 	}
 
 	@Override
@@ -61,38 +55,20 @@ public class TestServer extends EmbeddedServer {
 		createTestRepositories();
 	}
 
-	@Override
-	public void stop()
-		throws Exception
-	{
-		Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(SERVER_URL,
-				SystemRepository.ID));
-		RepositoryConnection con = systemRepo.getConnection();
-		try {
-			con.clear();
-		}
-		finally {
-			con.close();
-		}
-
-		super.stop();
-	}
-
 	/**
 	 * @throws StoreException
 	 */
 	private void createTestRepositories()
 		throws StoreException, StoreConfigException
 	{
-		Repository systemRep = new HTTPRepository(Protocol.getRepositoryLocation(SERVER_URL,
-				SystemRepository.ID));
+		RepositoryManager manager = getRepositoryManager();
 
 		// create a (non-inferencing) memory store
 		MemoryStoreConfig memStoreConfig = new MemoryStoreConfig();
 		SailRepositoryConfig sailRepConfig = new SailRepositoryConfig(memStoreConfig);
 		RepositoryConfig repConfig = new RepositoryConfig(TEST_REPO_ID, sailRepConfig);
 
-		RepositoryConfigUtil.updateRepositoryConfigs(systemRep, repConfig);
+		manager.addRepositoryConfig(TEST_REPO_ID, repConfig.export());
 
 		// create an inferencing memory store
 		ForwardChainingRDFSInferencerConfig inferMemStoreConfig = new ForwardChainingRDFSInferencerConfig(
@@ -100,6 +76,6 @@ public class TestServer extends EmbeddedServer {
 		sailRepConfig = new SailRepositoryConfig(inferMemStoreConfig);
 		repConfig = new RepositoryConfig(TEST_INFERENCE_REPO_ID, sailRepConfig);
 
-		RepositoryConfigUtil.updateRepositoryConfigs(systemRep, repConfig);
+		manager.addRepositoryConfig(TEST_INFERENCE_REPO_ID, repConfig.export());
 	}
 }

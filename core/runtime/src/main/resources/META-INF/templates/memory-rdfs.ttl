@@ -9,7 +9,6 @@
 @prefix ms: <http://www.openrdf.org/config/sail/memory#>.
 
 [] a rep:Repository ;
-   rep:repositoryID "memory-rdfs" ;
    rep:repositoryTitle "Memory store with RDF Schema inferencing" ;
    rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;

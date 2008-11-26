@@ -8,7 +8,6 @@
 @prefix ns: <http://www.openrdf.org/config/sail/rdbms#>.
 
 [] a rep:Repository ;
-   rep:repositoryID "mysql" ;
    rep:repositoryTitle "MySQL Store" ;
    rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;

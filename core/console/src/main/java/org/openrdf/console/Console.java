@@ -589,6 +589,18 @@ public class Console {
 				writeln("Please specify values for the following variables:");
 			}
 
+			// prompt for repository ID
+			write("Repository ID [" + templateName + "]: ");
+			String repositoryID = in.readLine();
+			if (repositoryID == null) {
+				// EOF
+				return;
+			}
+			else if (repositoryID.trim().length() < 1) {
+				repositoryID = templateName;
+			}
+
+			// other properties
 			for (ConfigProperty property : properties) {
 				List<Literal> values = property.getPossibleLiterals();
 				Literal defaultLiteral = property.getDefaultLiteral();
@@ -623,7 +635,7 @@ public class Console {
 
 			Model repConfig = configTemplate.createConfig(properties);
 
-			if (manager.hasRepositoryConfig(repConfig)) {
+			if (manager.hasRepositoryConfig(repositoryID)) {
 				boolean proceed = askProceed(
 						"WARNING: you are about to overwrite the configuration of an existing repository!", false);
 
@@ -633,7 +645,7 @@ public class Console {
 				}
 			}
 
-			manager.addRepositoryConfig(repConfig);
+			manager.addRepositoryConfig(repositoryID, repConfig);
 			writeln("Repository created");
 		}
 		catch (Exception e) {
