@@ -5,7 +5,12 @@
  */
 package org.openrdf.http.server.controllers;
 
+import static org.openrdf.http.server.repository.RepositoryInterceptor.getReadOnlyManager;
 import static org.openrdf.http.server.repository.RepositoryInterceptor.getRepositoryManager;
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import info.aduna.webapp.util.HttpServerUtil;
 
@@ -48,14 +52,14 @@ import org.openrdf.store.StoreException;
 public class ConfigurationController {
 
 	@ModelAttribute
-	@RequestMapping(method = RequestMethod.GET, value = "/configurations")
+	@RequestMapping(method = { GET, HEAD }, value = "/configurations")
 	public TupleQueryResult list(HttpServletRequest request)
 		throws StoreConfigException
 	{
 		List<String> columnNames = Arrays.asList("id");
 		List<BindingSet> ids = new ArrayList<BindingSet>();
 
-		RepositoryManager manager = getRepositoryManager(request);
+		RepositoryManager manager = getReadOnlyManager(request);
 		for (String id : manager.getRepositoryIDs()) {
 			ids.add(new ListBindingSet(columnNames, new LiteralImpl(id)));
 		}
@@ -64,17 +68,17 @@ public class ConfigurationController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = RequestMethod.GET, value = "/configurations/*")
+	@RequestMapping(method = { GET, HEAD }, value = "/configurations/*")
 	public Model get(HttpServletRequest request)
 		throws StoreConfigException, ClientHTTPException
 	{
 		String id = getPathParam(request);
-		RepositoryManager manager = getRepositoryManager(request);
+		RepositoryManager manager = getReadOnlyManager(request);
 		return manager.getRepositoryConfig(id);
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = RequestMethod.PUT, value = "/configurations/*")
+	@RequestMapping(method = PUT, value = "/configurations/*")
 	public void put(HttpServletRequest request)
 		throws Exception
 	{
@@ -85,7 +89,7 @@ public class ConfigurationController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = RequestMethod.DELETE, value = "/configurations/*")
+	@RequestMapping(method = DELETE, value = "/configurations/*")
 	public void delete(HttpServletRequest request)
 		throws StoreConfigException, ClientHTTPException, StoreException
 	{
@@ -100,7 +104,9 @@ public class ConfigurationController {
 		return pathInfo[pathInfo.length - 1];
 	}
 
-	private Model getModel(HttpServletRequest request) throws Exception {
+	private Model getModel(HttpServletRequest request)
+		throws Exception
+	{
 		String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
 		RDFFormat rdfFormat = Rio.getParserFormatForMIMEType(mimeType);
 		if (rdfFormat == null) {

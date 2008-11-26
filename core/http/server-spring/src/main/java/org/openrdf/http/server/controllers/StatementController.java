@@ -11,6 +11,11 @@ import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.xml.sax.SAXException;
 
 import info.aduna.webapp.util.HttpServerUtil;
@@ -66,13 +70,13 @@ public class StatementController {
 	 * @return a model and view for exporting the statements.
 	 */
 	@ModelAttribute
-	@RequestMapping(value = "/repositories/*/statements", method = RequestMethod.GET)
+	@RequestMapping(value = "/repositories/*/statements", method = { GET, HEAD })
 	public RepositoryResult<Statement> export(HttpServletRequest request)
 		throws StoreException, ClientHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 		ValueFactory vf = repositoryCon.getValueFactory();
 
 		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
@@ -85,7 +89,7 @@ public class StatementController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(value = "/repositories/*/statements", method = RequestMethod.POST)
+	@RequestMapping(value = "/repositories/*/statements", method = POST)
 	public void post(HttpServletRequest request, HttpServletResponse response)
 		throws Exception
 	{
@@ -105,7 +109,7 @@ public class StatementController {
 	 * Upload data to the repository.
 	 */
 	@ModelAttribute
-	@RequestMapping(value = "/repositories/*/statements", method = RequestMethod.PUT)
+	@RequestMapping(value = "/repositories/*/statements", method = PUT)
 	public void put(HttpServletRequest request)
 		throws IOException, ClientHTTPException, StoreException, RDFParseException
 	{
@@ -176,7 +180,7 @@ public class StatementController {
 	 * Delete data from the repository.
 	 */
 	@ModelAttribute
-	@RequestMapping(value = "/repositories/*/statements", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/repositories/*/statements", method = DELETE)
 	public void remove(HttpServletRequest request)
 		throws ClientHTTPException, StoreException
 	{

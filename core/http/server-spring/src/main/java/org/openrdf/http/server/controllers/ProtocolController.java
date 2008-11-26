@@ -5,12 +5,14 @@
  */
 package org.openrdf.http.server.controllers;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
+
 import java.io.StringReader;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import org.openrdf.http.protocol.Protocol;
 
@@ -25,7 +27,7 @@ import org.openrdf.http.protocol.Protocol;
 public class ProtocolController {
 
 	@ModelAttribute
-	@RequestMapping(method = RequestMethod.GET, value = "/protocol")
+	@RequestMapping(method = { GET, HEAD }, value = "/protocol")
 	public StringReader protocol() {
 		return new StringReader(Protocol.VERSION);
 	}

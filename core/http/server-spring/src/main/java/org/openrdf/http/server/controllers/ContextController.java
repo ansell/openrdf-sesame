@@ -5,6 +5,9 @@
  */
 package org.openrdf.http.server.controllers;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import info.aduna.iteration.CloseableIteration;
 
@@ -37,11 +39,11 @@ import org.openrdf.store.StoreException;
 public class ContextController {
 
 	@ModelAttribute
-	@RequestMapping(value = "/repositories/*/contexts", method = RequestMethod.GET)
+	@RequestMapping(value = "/repositories/*/contexts", method = { GET, HEAD })
 	public TupleQueryResult list(HttpServletRequest request)
 		throws StoreException
 	{
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 
 		List<String> columnNames = Arrays.asList("contextID");
 		List<BindingSet> contexts = new ArrayList<BindingSet>();
