@@ -48,6 +48,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
+import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.algebra.BNodeColumn;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
@@ -69,7 +70,6 @@ import org.openrdf.sail.rdbms.algebra.UnionItem;
 import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.algebra.factories.SqlExprFactory;
-import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 import org.openrdf.sail.rdbms.managers.TransTableManager;
@@ -114,7 +114,9 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 	public void optimize(QueryModel query, BindingSet bindings)
 		throws RdbmsException
 	{
-		this.dataset = dataset;
+		if (!query.getDefaultGraphs().isEmpty() || !query.getNamedGraphs().isEmpty()) {
+			this.dataset = new DatasetImpl(query.getDefaultGraphs(), query.getNamedGraphs());
+		}
 		this.bindings = bindings;
 		query.visit(this);
 	}
