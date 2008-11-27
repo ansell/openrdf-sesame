@@ -92,7 +92,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 			render((BooleanQueryResult)model, req, resp);
 		}
 		else if (model instanceof Model) {
-			render((Model) model, req, resp);
+			render((Model)model, req, resp);
 		}
 		else if (model instanceof Reader) {
 			render((Reader)model, req, resp);
@@ -114,31 +114,39 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 	private void render(RepositoryResult<Statement> gqr, HttpServletRequest req, HttpServletResponse resp)
 		throws ClientHTTPException, IOException
 	{
-		RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
-		RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
-		setContentType(resp, factory.getRDFFormat());
-		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
-			return;
-
-		ServletOutputStream out = resp.getOutputStream();
 		try {
-			RDFWriter rdfHandler = factory.getWriter(out);
 			try {
-				rdfHandler.startRDF();
+				RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
+				RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
+				setContentType(resp, factory.getRDFFormat());
+				if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+					return;
 
-				RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(req);
-				for (Namespace ns : repositoryCon.getNamespaces().asList()) {
-					String prefix = ns.getPrefix();
-					String namespace = ns.getName();
-					rdfHandler.handleNamespace(prefix, namespace);
+				ServletOutputStream out = resp.getOutputStream();
+				try {
+					RDFWriter rdfHandler = factory.getWriter(out);
+					rdfHandler.startRDF();
+
+					RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(req);
+					for (Namespace ns : repositoryCon.getNamespaces().asList()) {
+						String prefix = ns.getPrefix();
+						String namespace = ns.getName();
+						rdfHandler.handleNamespace(prefix, namespace);
+					}
+
+					while (gqr.hasNext()) {
+						Statement st = gqr.next();
+						rdfHandler.handleStatement(st);
+					}
+
+					rdfHandler.endRDF();
 				}
-
-				while (gqr.hasNext()) {
-					Statement st = gqr.next();
-					rdfHandler.handleStatement(st);
+				catch (RDFHandlerException e) {
+					throw new IOException("Serialization error: " + e.getMessage());
 				}
-
-				rdfHandler.endRDF();
+				finally {
+					out.close();
+				}
 			}
 			finally {
 				gqr.close();
@@ -147,59 +155,67 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		catch (StoreException e) {
 			throw new IOException("Query evaluation error: " + e.getMessage());
 		}
-		catch (RDFHandlerException e) {
-			throw new IOException("Serialization error: " + e.getMessage());
-		}
-		finally {
-			out.close();
-		}
 	}
 
 	private void render(TupleQueryResult model, HttpServletRequest req, HttpServletResponse resp)
 		throws ClientHTTPException, IOException
 	{
-		TupleQueryResultWriterRegistry registry = TupleQueryResultWriterRegistry.getInstance();
-		TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
-		setContentType(resp, factory.getTupleQueryResultFormat());
-		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
-			return;
-
-		ServletOutputStream out = resp.getOutputStream();
 		try {
-			QueryResultUtil.report(model, factory.getWriter(out));
+			try {
+				TupleQueryResultWriterRegistry registry = TupleQueryResultWriterRegistry.getInstance();
+				TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
+				setContentType(resp, factory.getTupleQueryResultFormat());
+				if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+					return;
+
+				ServletOutputStream out = resp.getOutputStream();
+				try {
+					QueryResultUtil.report(model, factory.getWriter(out));
+				}
+				catch (TupleQueryResultHandlerException e) {
+					throw new IOException("Serialization error: " + e.getMessage());
+				}
+				finally {
+					out.close();
+				}
+			}
+			finally {
+				model.close();
+			}
 		}
 		catch (StoreException e) {
 			throw new IOException("Query evaluation error: " + e.getMessage());
-		}
-		catch (TupleQueryResultHandlerException e) {
-			throw new IOException("Serialization error: " + e.getMessage());
-		}
-		finally {
-			out.close();
 		}
 	}
 
 	private void render(GraphQueryResult model, HttpServletRequest req, HttpServletResponse resp)
 		throws ClientHTTPException, IOException
 	{
-		RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
-		RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
-		setContentType(resp, factory.getRDFFormat());
-		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
-			return;
-
-		ServletOutputStream out = resp.getOutputStream();
 		try {
-			QueryResultUtil.report(model, factory.getWriter(out));
+			try {
+				RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
+				RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
+				setContentType(resp, factory.getRDFFormat());
+				if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+					return;
+
+				ServletOutputStream out = resp.getOutputStream();
+				try {
+					QueryResultUtil.report(model, factory.getWriter(out));
+				}
+				catch (RDFHandlerException e) {
+					throw new IOException("Serialization error: " + e.getMessage());
+				}
+				finally {
+					out.close();
+				}
+			}
+			finally {
+				model.close();
+			}
 		}
 		catch (StoreException e) {
 			throw new IOException("Query evaluation error: " + e.getMessage());
-		}
-		catch (RDFHandlerException e) {
-			throw new IOException("Serialization error: " + e.getMessage());
-		}
-		finally {
-			out.close();
 		}
 	}
 
@@ -256,20 +272,25 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 	private void render(Reader model, HttpServletRequest req, HttpServletResponse resp)
 		throws IOException
 	{
-		resp.setContentType("text/plain");
-		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
-			return;
-
-		ServletOutputStream writer = resp.getOutputStream();
 		try {
-			int read;
-			char[] buf = new char[1024];
-			while ((read = model.read(buf)) >= 0) {
-				writer.print(new String(buf, 0, read));
+			resp.setContentType("text/plain");
+			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+				return;
+
+			ServletOutputStream writer = resp.getOutputStream();
+			try {
+				int read;
+				char[] buf = new char[1024];
+				while ((read = model.read(buf)) >= 0) {
+					writer.print(new String(buf, 0, read));
+				}
+			}
+			finally {
+				writer.close();
 			}
 		}
 		finally {
-			writer.close();
+			model.close();
 		}
 	}
 

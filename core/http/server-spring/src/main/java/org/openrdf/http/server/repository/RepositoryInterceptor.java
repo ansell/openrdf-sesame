@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
+import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.protocol.exceptions.ServerHTTPException;
 import org.openrdf.http.server.helpers.ProtocolUtil;
@@ -113,10 +114,12 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 
 	private RepositoryManager repositoryManager;
 
+	private int maxCacheAge;
+
 	private volatile long managerLastModified = System.currentTimeMillis();
 
 	/** Sequential counter for more accurate Not-Modified responses. */
-	private AtomicLong managerVersion;
+	private AtomicLong managerVersion = new AtomicLong((long)(Long.MAX_VALUE * Math.random()));
 
 	private Map<String, Long> repositoriesLastModified = new ConcurrentHashMap<String, Long>();
 
@@ -128,11 +131,14 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 
 	public void setRepositoryManager(RepositoryManager repMan) {
 		repositoryManager = repMan;
-		managerVersion = new AtomicLong(repMan.hashCode());
+	}
+
+	public void setMaxCacheAge(int maxCacheAge) {
+		this.maxCacheAge = maxCacheAge;
 	}
 
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-		throws Exception
+		throws HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -175,11 +181,15 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 
 	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
 			ModelAndView modelAndView)
-		throws Exception
 	{
-		response.setDateHeader(LAST_MODIFIED, getLastModified(request));
+		long now = System.currentTimeMillis() / 1000 * 1000;
+		long lastModified = getLastModified(request);
+		response.setDateHeader(DATE, now);
+		response.setDateHeader(LAST_MODIFIED, lastModified);
 		response.setHeader(ETAG, getETag(request));
-		response.setDateHeader(DATE, System.currentTimeMillis());
+		if ("GET".equals(request.getMethod())) {
+			response.setHeader("Cache-Control", getCacheControl(now, lastModified));
+		}
 	}
 
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
@@ -236,6 +246,16 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 				return false;
 		}
 		return true;
+	}
+
+	private String getCacheControl(long now, long lastModified) {
+		long age = (now - lastModified) / 1000;
+		if (maxCacheAge < 1 || age < 1)
+			return "no-cache";
+		// Modifications naturally occur near each other
+		if (age < maxCacheAge)
+			return "max-age=" + age;
+		return "max-age=" + maxCacheAge;
 	}
 
 	private long getLastModified(HttpServletRequest request) {
@@ -296,17 +316,19 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 	private long getRepositoryVersion(String id, HttpServletRequest request) {
 		AtomicLong seq = repositoriesVersion.get(id);
 		if (seq == null) {
-			int code = getRepository(request).hashCode();
+			long code = (long)(Long.MAX_VALUE * Math.random());
 			AtomicLong o = repositoriesVersion.putIfAbsent(id, new AtomicLong(code));
 			if (o == null) {
 				return code;
-			} else {
+			}
+			else {
 				return o.longValue();
 			}
 		}
 		if (request.getAttribute(REPOSITORY_MODIFIED_KEY) == null) {
 			return seq.longValue();
-		} else {
+		}
+		else {
 			return seq.incrementAndGet();
 		}
 	}
