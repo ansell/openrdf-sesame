@@ -30,7 +30,6 @@ import info.aduna.lang.FileFormat;
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
-import org.openrdf.http.server.results.BooleanQueryResult;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Statement;

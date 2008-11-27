@@ -41,12 +41,13 @@ import org.openrdf.http.protocol.transaction.TransactionReader;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
-import org.openrdf.http.server.results.EmptyRepositoryResult;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.Cursor;
+import org.openrdf.query.algebra.evaluation.cursors.EmptyCursor;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.rio.RDFFormat;
@@ -87,8 +88,10 @@ public class StatementController {
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
 		boolean useInferencing = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
 
-		if (HEAD.equals(RequestMethod.valueOf(request.getMethod())))
-			return EmptyRepositoryResult.emptyRepositoryResult();
+		if (HEAD.equals(RequestMethod.valueOf(request.getMethod()))) {
+			Cursor<Statement> nothing = EmptyCursor.emptyCursor();
+			return new RepositoryResult<Statement>(nothing);
+		}
 		return repositoryCon.getStatements(subj, pred, obj, useInferencing, contexts);
 	}
 
