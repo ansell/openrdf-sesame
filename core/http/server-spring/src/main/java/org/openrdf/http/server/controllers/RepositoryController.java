@@ -124,28 +124,26 @@ public class RepositoryController {
 		Repository repository = RepositoryInterceptor.getRepository(request);
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 
-		String queryStr = request.getParameter(QUERY_PARAM_NAME);
-		int qryCode = 0;
-		if (logger.isInfoEnabled() || logger.isDebugEnabled()) {
-			qryCode = String.valueOf(queryStr).hashCode();
-		}
-
+		String contentType = request.getContentType();
 		RequestMethod reqMethod = RequestMethod.valueOf(request.getMethod());
-		if (GET.equals(reqMethod)) {
-			logger.info("GET query {}", qryCode);
-		}
-		else if (HEAD.equals(reqMethod)) {
-			logger.info("HEAD query {}", qryCode);
-		}
-		else if (POST.equals(reqMethod)) {
-			logger.info("POST query {}", qryCode);
-
-			String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
+		if (contentType != null) {
+			String mimeType = HttpServerUtil.getMIMEType(contentType);
 			if (!Protocol.FORM_MIME_TYPE.equals(mimeType)) {
 				throw new UnsupportedMediaType("Unsupported MIME type: " + mimeType);
 			}
+			if (HEAD.equals(reqMethod)) {
+				// Include form data in parameters.
+				// Not done by default in HEAD requests.
+				request = ProtocolUtil.readFormData(request);
+			}
 		}
-		logger.debug("query {} = {}", qryCode, queryStr);
+
+		String queryStr = request.getParameter(QUERY_PARAM_NAME);
+		if (logger.isInfoEnabled() || logger.isDebugEnabled()) {
+			int qryCode = String.valueOf(queryStr).hashCode();
+			logger.info("Query {}", qryCode);
+			logger.debug("Query {} = {}", qryCode, queryStr);
+		}
 
 		if (queryStr != null) {
 			Query query = getQuery(repository, repositoryCon, queryStr, request, response);

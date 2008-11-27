@@ -33,14 +33,11 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.query.impl.GraphQueryResultImpl;
-import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
-import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.store.StoreException;
 
 /**
@@ -103,18 +100,53 @@ public class RepositoryClient {
 	 * Query evaluation *
 	 *------------------*/
 
+	public String getQueryType(QueryLanguage ql, String query)
+		throws StoreException, MalformedQueryException
+	{
+		HTTPConnection method = repository.head();
+
+		try {
+			method.acceptBoolean();
+			method.acceptTupleQueryResult();
+			method.acceptGraphQueryResult();
+			method.sendForm(getQueryParams(ql, query, null, true));
+			execute(method);
+			return method.readQueryType();
+		}
+		catch (NoCompatibleMediaType e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+		finally {
+			method.release();
+		}
+	}
+
 	public TupleQueryResult sendTupleQuery(QueryLanguage ql, String query, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
 		throws StoreException, MalformedQueryException
 	{
+		HTTPConnection method = repository.post();
+
 		try {
-			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
-			sendTupleQuery(ql, query, dataset, includeInferred, builder, bindings);
-			return builder.getQueryResult();
+			method.acceptTupleQueryResult();
+			method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
+			execute(method);
+			return method.readTupleQueryResult();
 		}
-		catch (TupleQueryResultHandlerException e) {
-			// Found a bug in TupleQueryResultBuilder?
-			throw new RuntimeException(e);
+		catch (NoCompatibleMediaType e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+		catch (QueryResultParseException e) {
+			throw new StoreException(e);
+		}
+		finally {
+			method.release();
 		}
 	}
 
@@ -125,10 +157,10 @@ public class RepositoryClient {
 		HTTPConnection method = repository.post();
 
 		try {
-			method.acceptTuple();
+			method.acceptTupleQueryResult();
 			method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
 			execute(method);
-			method.readTuple(handler);
+			method.readTupleQueryResult(handler);
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -148,14 +180,25 @@ public class RepositoryClient {
 			boolean includeInferred, Binding... bindings)
 		throws StoreException, MalformedQueryException
 	{
+		HTTPConnection method = repository.post();
+
 		try {
-			StatementCollector collector = new StatementCollector();
-			sendGraphQuery(ql, query, dataset, includeInferred, collector, bindings);
-			return new GraphQueryResultImpl(collector.getNamespaces(), collector.getStatements());
+			method.acceptGraphQueryResult();
+			method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
+			execute(method);
+			return method.readGraphQueryResult();
 		}
-		catch (RDFHandlerException e) {
-			// Found a bug in TupleQueryResultBuilder?
-			throw new RuntimeException(e);
+		catch (NoCompatibleMediaType e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+		catch (RDFParseException e) {
+			throw new StoreException(e);
+		}
+		finally {
+			method.release();
 		}
 	}
 

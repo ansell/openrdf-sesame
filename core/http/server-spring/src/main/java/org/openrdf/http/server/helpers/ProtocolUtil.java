@@ -5,11 +5,21 @@
  */
 package org.openrdf.http.server.helpers;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -46,8 +56,7 @@ public class ProtocolUtil {
 			return Protocol.decodeValue(paramValue, vf);
 		}
 		catch (IllegalArgumentException e) {
-			throw new BadRequest("Invalid value for parameter '" + paramName + "': "
-					+ paramValue);
+			throw new BadRequest("Invalid value for parameter '" + paramName + "': " + paramValue);
 		}
 	}
 
@@ -59,8 +68,7 @@ public class ProtocolUtil {
 			return Protocol.decodeResource(paramValue, vf);
 		}
 		catch (IllegalArgumentException e) {
-			throw new BadRequest("Invalid value for parameter '" + paramName + "': "
-					+ paramValue);
+			throw new BadRequest("Invalid value for parameter '" + paramName + "': " + paramValue);
 		}
 	}
 
@@ -72,8 +80,7 @@ public class ProtocolUtil {
 			return Protocol.decodeURI(paramValue, vf);
 		}
 		catch (IllegalArgumentException e) {
-			throw new BadRequest("Invalid value for parameter '" + paramName + "': "
-					+ paramValue);
+			throw new BadRequest("Invalid value for parameter '" + paramName + "': " + paramValue);
 		}
 	}
 
@@ -85,8 +92,7 @@ public class ProtocolUtil {
 			return Protocol.decodeContexts(paramValues, vf);
 		}
 		catch (IllegalArgumentException e) {
-			throw new BadRequest("Invalid value for parameter '" + paramName + "': "
-					+ e.getMessage());
+			throw new BadRequest("Invalid value for parameter '" + paramName + "': " + e.getMessage());
 		}
 	}
 
@@ -110,6 +116,72 @@ public class ProtocolUtil {
 		else {
 			return Integer.valueOf(paramValue);
 		}
+	}
+
+	public static Map<String, List<String>> parseFormData(BufferedReader reader, String encoding)
+		throws UnsupportedEncodingException
+	{
+		if (encoding == null) {
+			encoding = "ISO-8859-1";
+		}
+		Map<String, List<String>> parameters = new HashMap<String, List<String>>();
+		Scanner scanner = new Scanner(reader);
+		scanner.useDelimiter("&");
+		while (scanner.hasNext()) {
+			final String[] nameValue = scanner.next().split("=");
+			if (nameValue.length == 0 || nameValue.length > 2)
+				throw new IllegalArgumentException("bad parameter");
+			final String name = URLDecoder.decode(nameValue[0], encoding);
+			String value = null;
+			if (nameValue.length == 2)
+				value = URLDecoder.decode(nameValue[1], encoding);
+			if (!parameters.containsKey(name)) {
+				parameters.put(name, new ArrayList<String>());
+			}
+			parameters.get(name).add(value);
+		}
+		return parameters;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static HttpServletRequest readFormData(HttpServletRequest request)
+		throws IOException
+	{
+		BufferedReader reader = request.getReader();
+		String encoding = request.getCharacterEncoding();
+		final Map<String, List<String>> parameters = parseFormData(reader, encoding);
+		return new HttpServletRequestWrapper(request) {
+
+			@Override
+			public String getParameter(String name) {
+				if (parameters.containsKey(name))
+					return parameters.get(name).get(0);
+				return super.getParameter(name);
+			}
+
+			@Override
+			public Map getParameterMap() {
+				Map<String, String> map = new HashMap<String, String>();
+				map.putAll(super.getParameterMap());
+				for (String name : parameters.keySet()) {
+					map.put(name, parameters.get(name).get(0));
+				}
+				return map;
+			}
+
+			@Override
+			public Enumeration getParameterNames() {
+				return new Vector<String>(getParameterMap().keySet()).elements();
+			}
+
+			@Override
+			public String[] getParameterValues(String name) {
+				if (parameters.containsKey(name)) {
+					return parameters.get(name).toArray(new String[0]);
+				}
+				return super.getParameterValues(name);
+			}
+		};
 	}
 
 	/**

@@ -60,9 +60,9 @@ public class StoreClient {
 		HTTPConnection method = server.get();
 
 		try {
-			method.acceptTuple();
+			method.acceptTupleQueryResult();
 			execute(method);
-			method.readTuple(handler);
+			method.readTupleQueryResult(handler);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);

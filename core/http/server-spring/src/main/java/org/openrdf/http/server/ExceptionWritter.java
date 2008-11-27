@@ -108,23 +108,28 @@ public class ExceptionWritter implements HandlerExceptionResolver, View {
 			logger.error("Error while handling request", e);
 		}
 
-		response.setStatus(statusCode);
-		if (statusCode == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) {
-			PrintStream stream = new PrintStream(response.getOutputStream());
-			try {
-				e.printStackTrace(stream);
-			}
-			finally {
-				stream.close();
-			}
+		if ("HEAD".equals(request.getMethod())) {
+			response.setStatus(statusCode, errMsg);
 		}
 		else {
-			ServletOutputStream out = response.getOutputStream();
-			try {
-				out.println(errMsg);
+			response.setStatus(statusCode);
+			if (statusCode == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) {
+				PrintStream stream = new PrintStream(response.getOutputStream());
+				try {
+					e.printStackTrace(stream);
+				}
+				finally {
+					stream.close();
+				}
 			}
-			finally {
-				out.close();
+			else {
+				ServletOutputStream out = response.getOutputStream();
+				try {
+					out.println(errMsg);
+				}
+				finally {
+					out.close();
+				}
 			}
 		}
 	}

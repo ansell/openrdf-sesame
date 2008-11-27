@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.StatementClient;
+import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;
@@ -31,6 +32,7 @@ import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -126,11 +128,17 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
-	/**
-	 * Unsupported method, throws an {@link UnsupportedOperationException}.
-	 */
-	public Query prepareQuery(QueryLanguage ql, String queryString, String baseURI) {
-		throw new UnsupportedOperationException();
+	public Query prepareQuery(QueryLanguage ql, String queryString, String baseURI)
+		throws StoreException, MalformedQueryException
+	{
+		String type = getRepository().getClient().getQueryType(ql, queryString);
+		if (Protocol.GRAPH.equals(type))
+			return new HTTPGraphQuery(this, ql, queryString, baseURI);
+		if (Protocol.BOOLEAN.equals(type))
+			return new HTTPBooleanQuery(this, ql, queryString, baseURI);
+		if (Protocol.BINDINGS.equals(type))
+			return new HTTPTupleQuery(this, ql, queryString, baseURI);
+		throw new StoreException("Unsupported query type: " + type);
 	}
 
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String queryString, String baseURI) {

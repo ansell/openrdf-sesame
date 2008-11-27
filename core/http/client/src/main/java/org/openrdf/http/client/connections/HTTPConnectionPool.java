@@ -208,6 +208,19 @@ public class HTTPConnectionPool implements Cloneable {
 		}
 	}
 
+	public HTTPConnection head() {
+		// Allow HEAD request to send a message body
+		HttpMethod method = new PostMethod(url) {
+
+			@Override
+			public String getName() {
+				return "HEAD";
+			}
+		};
+		setDoAuthentication(method);
+		return new HTTPConnection(this, method);
+	}
+
 	public HTTPConnection get() {
 		GetMethod method = new GetMethod(url);
 		setDoAuthentication(method);

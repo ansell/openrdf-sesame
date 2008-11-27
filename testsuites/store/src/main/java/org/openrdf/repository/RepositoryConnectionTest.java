@@ -51,6 +51,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
@@ -471,6 +472,50 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		query.setBinding("name", nameBob);
 
 		TupleQueryResult result = query.evaluate();
+
+		try {
+			assertTrue(result != null);
+			assertTrue(result.hasNext());
+
+			while (result.hasNext()) {
+				BindingSet solution = result.next();
+				assertTrue(solution.hasBinding("name"));
+				assertTrue(solution.hasBinding("mbox"));
+
+				Value nameResult = solution.getValue("name");
+				Value mboxResult = solution.getValue("mbox");
+
+				assertEquals("unexpected value for name: " + nameResult, nameBob, nameResult);
+				assertEquals("unexpected value for mbox: " + mboxResult, mboxBob, mboxResult);
+			}
+		}
+		finally {
+			result.close();
+		}
+	}
+
+	public void testPreparedQuery()
+		throws Exception
+	{
+		testCon.add(alice, name, nameAlice, context2);
+		testCon.add(alice, mbox, mboxAlice, context2);
+		testCon.add(context2, publisher, nameAlice);
+
+		testCon.add(bob, name, nameBob, context1);
+		testCon.add(bob, mbox, mboxBob, context1);
+		testCon.add(context1, publisher, nameBob);
+
+		StringBuilder queryBuilder = new StringBuilder();
+		queryBuilder.append(" SELECT name, mbox");
+		queryBuilder.append(" FROM {} foaf:name {name};");
+		queryBuilder.append("         foaf:mbox {mbox}");
+		queryBuilder.append(" USING NAMESPACE foaf = <" + FOAF_NS + ">");
+
+		Query query = testCon.prepareQuery(QueryLanguage.SERQL, queryBuilder.toString());
+		assertTrue(query instanceof TupleQuery);
+		query.setBinding("name", nameBob);
+
+		TupleQueryResult result = ((TupleQuery) query).evaluate();
 
 		try {
 			assertTrue(result != null);
