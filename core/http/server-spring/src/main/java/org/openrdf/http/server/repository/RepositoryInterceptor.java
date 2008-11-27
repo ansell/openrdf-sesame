@@ -5,6 +5,8 @@
  */
 package org.openrdf.http.server.repository;
 
+import static org.openrdf.http.protocol.Protocol.IF_NONE_MATCH;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -46,8 +48,6 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 	private static final String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
 
 	private static final String IF_MATCH = "If-Match";
-
-	private static final String IF_NONE_MATCH = "If-None-Match";
 
 	private static final String VARY = "Vary";
 
@@ -183,12 +183,13 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 			ModelAndView modelAndView)
 	{
 		long now = System.currentTimeMillis() / 1000 * 1000;
+		long lastModified = lastModified(request); // update
+		String eTag = eTag(request); // update
 		response.setDateHeader(DATE, now);
 		String method = request.getMethod();
 		if ("GET".equals(method) || "HEAD".equals(method)) {
-			long lastModified = getLastModified(request);
 			response.setDateHeader(LAST_MODIFIED, lastModified);
-			response.setHeader(ETAG, getETag(request));
+			response.setHeader(ETAG, eTag);
 			response.setHeader("Cache-Control", getCacheControl(now, lastModified));
 		}
 	}
@@ -214,13 +215,13 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 			long since = request.getDateHeader(IF_MODIFIED_SINCE);
 			if (since != -1) {
 				response.addHeader(VARY, IF_MODIFIED_SINCE);
-				if (since >= getLastModified(request))
+				if (since >= lastModified(request))
 					return true;
 			}
 			String etag = request.getHeader(IF_NONE_MATCH);
 			if (etag != null) {
 				response.addHeader(VARY, IF_NONE_MATCH);
-				if (etag.equals(getETag(request)))
+				if (etag.equals(eTag(request)))
 					return true;
 			}
 		}
@@ -231,19 +232,19 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		String etag = request.getHeader(IF_MATCH);
 		if (etag != null) {
 			response.addHeader(VARY, IF_MATCH);
-			if (!etag.equals(getETag(request)))
+			if (!etag.equals(eTag(request)))
 				return false;
 		}
 		etag = request.getHeader(IF_NONE_MATCH);
 		if (etag != null) {
 			response.addHeader(VARY, IF_NONE_MATCH);
-			if (etag.equals(getETag(request)))
+			if (etag.equals(eTag(request)))
 				return false;
 		}
 		long since = request.getDateHeader(IF_UNMODIFIED_SINCE);
 		if (since != -1) {
 			response.addHeader(VARY, IF_UNMODIFIED_SINCE);
-			if (since < getLastModified(request))
+			if (since < lastModified(request))
 				return false;
 		}
 		return true;
@@ -259,14 +260,14 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		return "max-age=" + maxCacheAge;
 	}
 
-	private long getLastModified(HttpServletRequest request) {
-		long modified = getManagerLastModified(request);
+	private long lastModified(HttpServletRequest request) {
+		long modified = managerLastModified(request);
 
 		String id = getRepositoryID(request);
 		if (id == null)
 			return modified;
 
-		long repositoryModified = getRepositoryLastModified(id, request);
+		long repositoryModified = repositoryLastModified(id, request);
 		if (modified < repositoryModified) {
 			return repositoryModified;
 		}
@@ -275,7 +276,7 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		}
 	}
 
-	private long getManagerLastModified(HttpServletRequest request) {
+	private long managerLastModified(HttpServletRequest request) {
 		if (request.getAttribute(MANAGER_MODIFIED_KEY) == null) {
 			return managerLastModified;
 		}
@@ -284,7 +285,7 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		}
 	}
 
-	private long getRepositoryLastModified(String id, HttpServletRequest request) {
+	private long repositoryLastModified(String id, HttpServletRequest request) {
 		if (request.getAttribute(REPOSITORY_MODIFIED_KEY) == null) {
 			if (repositoriesLastModified.containsKey(id)) {
 				return repositoriesLastModified.get(id);
@@ -295,17 +296,17 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		return now;
 	}
 
-	private String getETag(HttpServletRequest request) {
-		long version = getManagerVersion(request);
+	private String eTag(HttpServletRequest request) {
+		long version = managerVersion(request);
 
 		String id = getRepositoryID(request);
 		if (id != null) {
-			version = version + getRepositoryVersion(id, request);
+			version = version + repositoryVersion(id, request);
 		}
 		return "W/\"" + Long.toHexString(version) + "\"";
 	}
 
-	private long getManagerVersion(HttpServletRequest request) {
+	private long managerVersion(HttpServletRequest request) {
 		if (request.getAttribute(MANAGER_MODIFIED_KEY) == null) {
 			return managerVersion.longValue();
 		}
@@ -314,7 +315,7 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		}
 	}
 
-	private long getRepositoryVersion(String id, HttpServletRequest request) {
+	private long repositoryVersion(String id, HttpServletRequest request) {
 		AtomicLong seq = repositoriesVersion.get(id);
 		if (seq == null) {
 			long code = (long)(Long.MAX_VALUE * Math.random());

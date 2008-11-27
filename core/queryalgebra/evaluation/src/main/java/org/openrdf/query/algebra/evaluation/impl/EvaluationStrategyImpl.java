@@ -88,7 +88,6 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.cursors.CompatibleBindingSetFilter;
 import org.openrdf.query.algebra.evaluation.cursors.DelayedCursor;
 import org.openrdf.query.algebra.evaluation.cursors.DistinctCursor;
-import org.openrdf.query.algebra.evaluation.cursors.EmptyCursor;
 import org.openrdf.query.algebra.evaluation.cursors.ExtensionCursor;
 import org.openrdf.query.algebra.evaluation.cursors.FilterCursor;
 import org.openrdf.query.algebra.evaluation.cursors.GroupCursor;
@@ -112,6 +111,7 @@ import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.base.ConvertingCursor;
 import org.openrdf.query.base.FilteringCursor;
 import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.EmptyCursor;
 import org.openrdf.store.StoreException;
 
 /**

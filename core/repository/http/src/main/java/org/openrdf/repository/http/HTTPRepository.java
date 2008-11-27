@@ -6,11 +6,16 @@
 package org.openrdf.repository.http;
 
 import java.io.File;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SizeClient;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.LiteralFactory;
+import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -21,20 +26,19 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryMetaData;
+import org.openrdf.repository.http.helpers.CachedLong;
+import org.openrdf.repository.http.helpers.StatementPattern;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.store.StoreException;
 
 /**
  * A repository that serves as a proxy for a remote repository on a Sesame
- * server.
- * 
- * Methods in this class may throw the specific StoreException subclasses
- * UnautorizedException and NotAllowedException, the semantics of which are
- * defined by the HTTP protocol.
+ * server. Methods in this class may throw the specific StoreException
+ * subclasses UnautorizedException and NotAllowedException, the semantics of
+ * which are defined by the HTTP protocol.
  * 
  * @see org.openrdf.http.protocol.UnauthorizedException
  * @see org.openrdf.http.protocol.NotAllowedException
- * 
  * @author Arjohn Kampman
  * @author jeen
  * @author Herko ter Horst
@@ -56,6 +60,8 @@ public class HTTPRepository implements Repository {
 
 	private boolean initialized = false;
 
+	private Map<StatementPattern, CachedLong> cachedSizes = new ConcurrentHashMap<StatementPattern, CachedLong>();
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -76,11 +82,6 @@ public class HTTPRepository implements Repository {
 	/*---------*
 	 * Methods *
 	 *---------*/
-
-	// httpClient is shared with HTTPConnection
-	RepositoryClient getClient() {
-		return client;
-	}
 
 	public void setDataDir(File dataDir) {
 		this.dataDir = dataDir;
@@ -159,10 +160,10 @@ public class HTTPRepository implements Repository {
 
 	/**
 	 * Sets the preferred serialization format for tuple query results to the
-	 * supplied {@link TupleQueryResultFormat}, overriding the
-	 * default preference. Setting this parameter is not
-	 * necessary in most cases as the default indicates a
-	 * preference for the most compact and efficient format available.
+	 * supplied {@link TupleQueryResultFormat}, overriding the default
+	 * preference. Setting this parameter is not necessary in most cases as the
+	 * default indicates a preference for the most compact and efficient format
+	 * available.
 	 * 
 	 * @param format
 	 *        the preferred {@link TupleQueryResultFormat}. If set to 'null' no
@@ -184,10 +185,9 @@ public class HTTPRepository implements Repository {
 
 	/**
 	 * Sets the preferred serialization format for RDF to the supplied
-	 * {@link RDFFormat}, overriding the default
-	 * preference. Setting this parameter is not necessary in most cases as the
-	 * default indicates a preference for the most compact
-	 * and efficient format available.
+	 * {@link RDFFormat}, overriding the default preference. Setting this
+	 * parameter is not necessary in most cases as the default indicates a
+	 * preference for the most compact and efficient format available.
 	 * <p>
 	 * Use with caution: if set to a format that does not support context
 	 * serialization any context info contained in the query result will be lost.
@@ -221,5 +221,44 @@ public class HTTPRepository implements Repository {
 	 */
 	public void setUsernameAndPassword(String username, String password) {
 		client.setUsernameAndPassword(username, password);
+	}
+
+	// httpClient is shared with HTTPConnection
+	RepositoryClient getClient() {
+		return client;
+	}
+
+	void modified() {
+		for (CachedLong cached : cachedSizes.values()) {
+			cached.stale();
+		}
+	}
+
+	long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
+		CachedLong cached = cachedSizes.get(pattern);
+		if (cached == null || !cached.isFresh()) {
+			SizeClient client = getClient().size();
+			if (cached != null) {
+				// Only calculate size if cached value is old
+				client.ifNoneMatch(cached.getETag());
+			}
+			Long size = client.get(subj, pred, obj, includeInferred, contexts);
+			if (size != null) {
+				cached = new CachedLong(size, client.getETag(), client.getMaxAge());
+				cachedSizes.put(pattern, cached);
+			}
+		}
+		return cached.getValue();
+	}
+
+	boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
+		CachedLong cached = cachedSizes.get(pattern);
+		return cached != null && cached.isFresh() && cached.getValue() == 0;
 	}
 }

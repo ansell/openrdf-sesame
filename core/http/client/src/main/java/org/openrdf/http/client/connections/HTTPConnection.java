@@ -29,8 +29,6 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.net.http.HttpClientUtil;
-
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
@@ -83,6 +81,10 @@ public class HTTPConnection {
 	public HTTPConnection(HTTPConnectionPool pool, HttpMethod method) {
 		this.pool = pool;
 		this.method = method;
+	}
+
+	public void ifNoneMatch(String match) {
+		method.addRequestHeader(Protocol.IF_NONE_MATCH, match);
 	}
 
 	public void accept(Class<?> type)
@@ -231,7 +233,8 @@ public class HTTPConnection {
 
 	public void sendString(String plain) {
 		try {
-			((EntityEnclosingMethod)method).setRequestEntity(new StringRequestEntity(plain, "text/plain", "UTF-8"));
+			((EntityEnclosingMethod)method).setRequestEntity(new StringRequestEntity(plain, "text/plain",
+					"UTF-8"));
 		}
 		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
@@ -301,13 +304,17 @@ public class HTTPConnection {
 		throws IOException, HTTPException
 	{
 		int statusCode = pool.executeMethod(method);
-		if (!HttpClientUtil.is2xx(statusCode)) {
+		if (statusCode >= 400) {
 			String body = method.getStatusLine().getReasonPhrase();
 			if (!"HEAD".equals(method.getName())) {
 				body = method.getResponseBodyAsString();
 			}
 			throw HTTPException.create(statusCode, body);
 		}
+	}
+
+	public boolean isNotModified() {
+		return method.getStatusCode() == 304;
 	}
 
 	public <T> T read(Class<T> type)
@@ -432,7 +439,8 @@ public class HTTPConnection {
 	public void release() {
 		try {
 			if (!"HEAD".equals(method.getName())) {
-				// Read the entire response body to enable the reuse of the connection
+				// Read the entire response body to enable the reuse of the
+				// connection
 				InputStream responseStream = method.getResponseBodyAsStream();
 				if (responseStream != null) {
 					while (responseStream.read() >= 0) {
@@ -448,6 +456,53 @@ public class HTTPConnection {
 		}
 	}
 
+	public String readQueryType() {
+		return readHeader(Protocol.X_QUERY_TYPE);
+	}
+
+	public String readETag() {
+		return readHeader("ETag");
+	}
+
+	public int readMaxAge() {
+		Header[] headers = method.getResponseHeaders("Cache-Control");
+
+		for (Header header : headers) {
+			HeaderElement[] headerElements = header.getElements();
+
+			for (HeaderElement headerEl : headerElements) {
+				String name = headerEl.getName();
+				if ("max-age".equals(name)) {
+					try {
+						return Integer.parseInt(headerEl.getValue());
+					} catch (NumberFormatException e) {
+						logger.warn(e.toString(), e);
+						return 0;
+					}
+				}
+			}
+		}
+
+		return 0;
+	}
+
+	private String readHeader(String headerName) {
+		Header[] headers = method.getResponseHeaders(headerName);
+
+		for (Header header : headers) {
+			HeaderElement[] headerElements = header.getElements();
+
+			for (HeaderElement headerEl : headerElements) {
+				String name = headerEl.getName();
+				if (name != null) {
+					return name;
+				}
+			}
+		}
+
+		return null;
+	}
+
 	/**
 	 * Gets the MIME type specified in the response headers of the supplied
 	 * method, if any. For example, if the response headers contain
@@ -458,43 +513,12 @@ public class HTTPConnection {
 	 *        The method to get the reponse MIME type from.
 	 * @return The response MIME type, or <tt>null</tt> if not available.
 	 */
-	protected String readContentType()
-		throws IOException
-	{
-		Header[] headers = method.getResponseHeaders("Content-Type");
-
-		for (Header header : headers) {
-			HeaderElement[] headerElements = header.getElements();
-
-			for (HeaderElement headerEl : headerElements) {
-				String mimeType = headerEl.getName();
-				if (mimeType != null) {
-					logger.debug("reponse MIME type is {}", mimeType);
-					return mimeType;
-				}
-			}
+	private String readContentType() {
+		String mimeType = readHeader("Content-Type");
+		if (mimeType != null) {
+			logger.debug("reponse MIME type is {}", mimeType);
+			return mimeType;
 		}
-
-		return null;
-	}
-
-	public String readQueryType()
-		throws IOException
-	{
-		Header[] headers = method.getResponseHeaders(Protocol.X_QUERY_TYPE);
-
-		for (Header header : headers) {
-			HeaderElement[] headerElements = header.getElements();
-
-			for (HeaderElement headerEl : headerElements) {
-				String result = headerEl.getName();
-				if (result != null) {
-					logger.debug("reponse Query type is {}", result);
-					return result;
-				}
-			}
-		}
-
 		return null;
 	}
 

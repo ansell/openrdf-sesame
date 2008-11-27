@@ -1544,6 +1544,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		URI unknownContext = new URIImpl(EXAMPLE_NS + "unknown");
 
+		Thread.sleep(2000); // increase modified age
+		assertEquals(0, testCon.size(null, null, null, false));
 		for (Resource subj : Arrays.asList(null, picasso)) {
 			for (URI pred : Arrays.asList(null, paints, RDF.TYPE)) {
 				for (Value obj : Arrays.asList(null, guernica)) {
@@ -1564,10 +1566,13 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(picasso, paints, guernica, context1);
 		testCon.commit();
 
+		Thread.sleep(1000); // increase modified age
+		assertEquals(5, testCon.size(null, null, null, false));
 		assertEquals(5, testCon.size(null, null, null, false));
 		assertEquals(3, testCon.size(null, null, null, false, context1));
 		assertEquals(4, testCon.size(null, RDF.TYPE, null, false));
 		assertEquals(1, testCon.size(null, paints, null, false));
+		assertEquals(2, testCon.size(picasso, null, null, false));
 		assertEquals(2, testCon.size(picasso, null, null, false));
 
 		assertEquals(0, testCon.size(null, null, null, false, unknownContext));

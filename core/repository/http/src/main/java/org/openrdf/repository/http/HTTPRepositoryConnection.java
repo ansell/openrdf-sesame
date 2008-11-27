@@ -37,6 +37,7 @@ import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.impl.EmptyCursor;
 import org.openrdf.query.impl.IteratorCursor;
 import org.openrdf.repository.GraphResult;
 import org.openrdf.repository.RepositoryResult;
@@ -60,6 +61,11 @@ import org.openrdf.store.StoreException;
  * @author Herko ter Horst
  */
 class HTTPRepositoryConnection extends RepositoryConnectionBase {
+
+	@SuppressWarnings("unchecked")
+	private static <T> RepositoryResult<T> emptyRepositoryResult() {
+		return new RepositoryResult(EmptyCursor.emptyCursor());
+	}
 
 	/*
 	 * Note: the following debugEnabled method are private so that they can be
@@ -180,6 +186,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
+		if (getRepository().noMatch(subj, pred, obj, includeInferred, contexts))
+			return emptyRepositoryResult();
+
 		try {
 			StatementCollector collector = new StatementCollector();
 			exportStatements(subj, pred, obj, includeInferred, collector, contexts);
@@ -201,7 +210,18 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return getClient().size().get(subj, pred, obj, includeInferred, contexts);
+		return getRepository().size(subj, pred, obj, includeInferred, contexts);
+	}
+
+	@Override
+	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws StoreException
+	{
+		if (getRepository().noMatch(subj, pred, obj, includeInferred, contexts))
+			return false;
+
+		return super.hasStatement(subj, pred, obj, includeInferred, contexts);
 	}
 
 	public void commit()
@@ -210,6 +230,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		synchronized (txn) {
 			if (txn.size() > 0) {
 				getClient().statements().post(txn);
+				getRepository().modified();
 				txn.clear();
 			}
 		}

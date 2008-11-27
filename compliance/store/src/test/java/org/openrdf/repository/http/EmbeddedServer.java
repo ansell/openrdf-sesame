@@ -29,6 +29,8 @@ public class EmbeddedServer {
 
 	private RepositoryManager manager;
 
+	private SesameServlet servlet;
+
 	public EmbeddedServer()
 		throws IOException, StoreConfigException
 	{
@@ -44,8 +46,13 @@ public class EmbeddedServer {
 		manager = new LocalRepositoryManager(dataDir);
 		manager.initialize();
 		jetty = new Server(port);
+		servlet = new SesameServlet(manager);
 		Context root = new Context(jetty, "/");
-		root.addServlet(new ServletHolder(new SesameServlet(manager)), "/*");
+		root.addServlet(new ServletHolder(servlet), "/*");
+	}
+
+	public void setMaxCacheAge(int maxCacheAge) {
+		servlet.setMaxCacheAge(maxCacheAge);
 	}
 
 	public RepositoryManager getRepositoryManager() {
