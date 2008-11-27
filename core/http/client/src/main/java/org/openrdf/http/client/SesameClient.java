@@ -5,8 +5,13 @@
  */
 package org.openrdf.http.client;
 
+import static org.openrdf.http.protocol.Protocol.CONFIGURATIONS;
+import static org.openrdf.http.protocol.Protocol.PROTOCOL;
+import static org.openrdf.http.protocol.Protocol.REPOSITORIES;
+import static org.openrdf.http.protocol.Protocol.SCHEMAS;
+import static org.openrdf.http.protocol.Protocol.TEMPLATES;
+
 import org.openrdf.http.client.connections.HTTPConnectionPool;
-import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.ValueFactory;
 
 /**
@@ -50,23 +55,23 @@ public class SesameClient {
 	}
 
 	public ProtocolClient protocol() {
-		return new ProtocolClient(server.slash(Protocol.PROTOCOL));
+		return new ProtocolClient(server.slash(PROTOCOL));
 	}
 
 	public SchemaClient schemas() {
-		return new SchemaClient(server.slash("schemas"));
+		return new SchemaClient(server.slash(SCHEMAS));
 	}
 
 	public TemplateClient templates() {
-		return new TemplateClient(server.slash("templates"));
+		return new TemplateClient(server.slash(TEMPLATES));
 	}
 
 	public ConfigurationClient configurations() {
-		return new ConfigurationClient(server.slash("configurations"));
+		return new ConfigurationClient(server.slash(CONFIGURATIONS));
 	}
 
 	public RepositoriesClient repositories() {
-		return new RepositoriesClient(server.slash(Protocol.REPOSITORIES));
+		return new RepositoriesClient(server.slash(REPOSITORIES));
 	}
 
 }
