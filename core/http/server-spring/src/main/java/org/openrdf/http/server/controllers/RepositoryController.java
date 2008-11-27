@@ -18,8 +18,11 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,12 +43,11 @@ import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NotImplemented;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
+import org.openrdf.http.server.BooleanQueryResult;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
-import org.openrdf.http.server.results.BooleanQueryResult;
-import org.openrdf.http.server.results.EmptyGraphQueryResult;
-import org.openrdf.http.server.results.EmptyTupleQueryResult;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -60,6 +62,7 @@ import org.openrdf.query.QueryResult;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.GraphQueryResultImpl;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.repository.Repository;
@@ -150,15 +153,21 @@ public class RepositoryController {
 			if (query instanceof TupleQuery) {
 				TupleQuery tQuery = (TupleQuery)query;
 
-				if (HEAD.equals(reqMethod))
-					return EmptyTupleQueryResult.EMPTY;
+				if (HEAD.equals(reqMethod)) {
+					List<String> names = Collections.emptyList();
+					Set<BindingSet> bindings = Collections.emptySet();
+					return new TupleQueryResultImpl(names, bindings);
+				}
 				return tQuery.evaluate();
 			}
 			else if (query instanceof GraphQuery) {
 				GraphQuery gQuery = (GraphQuery)query;
 
-				if (HEAD.equals(reqMethod))
-					return EmptyGraphQueryResult.EMPTY;
+				if (HEAD.equals(reqMethod)) {
+					Map<String, String> namespaces = Collections.emptyMap();
+					Set<Statement> statements = Collections.emptySet();
+					return new GraphQueryResultImpl(namespaces, statements);
+				}
 				return gQuery.evaluate();
 			}
 			else if (query instanceof BooleanQuery) {

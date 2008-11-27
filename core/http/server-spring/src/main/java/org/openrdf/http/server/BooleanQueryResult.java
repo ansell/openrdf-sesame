@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.http.server.results;
+package org.openrdf.http.server;
 
 import info.aduna.iteration.SingletonIteration;
 
