@@ -20,7 +20,6 @@ import org.openrdf.query.parser.BooleanQueryModel;
 import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.TupleQueryModel;
-import org.openrdf.repository.GraphResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
@@ -142,8 +141,8 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return createGraphResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
-				contexts));
+		return createRepositoryResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
+		contexts));
 	}
 
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -249,15 +248,5 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 			Cursor<? extends E> sailIter)
 	{
 		return new RepositoryResult<E>(sailIter);
-	}
-
-	/**
-	 * Wraps a CloseableIteration coming from a Sail in a GraphResult
-	 * object, applying the required conversions
-	 */
-	protected <E> GraphResult createGraphResult(
-			Cursor<? extends Statement> sailIter)
-	{
-		return new GraphResult(sailIter);
 	}
 }

@@ -968,26 +968,6 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
-	public void testDuplicateFilter()
-		throws Exception
-	{
-		testCon.setAutoCommit(false);
-		testCon.add(bob, name, nameBob);
-		testCon.add(bob, name, nameBob, context1);
-		testCon.add(bob, name, nameBob, context2);
-		testCon.setAutoCommit(true);
-
-		RepositoryResult<Statement> result = testCon.getStatements(bob, name, null, true);
-		result.enableDuplicateFilter();
-
-		int count = 0;
-		while (result.hasNext()) {
-			result.next();
-			count++;
-		}
-		assertEquals(1, count);
-	}
-
 	public void testRemoveStatements()
 		throws Exception
 	{

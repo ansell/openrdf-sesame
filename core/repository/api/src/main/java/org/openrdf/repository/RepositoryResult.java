@@ -7,14 +7,11 @@ package org.openrdf.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.query.Cursor;
-import org.openrdf.query.base.FilteringCursor;
 import org.openrdf.store.StoreException;
 
 /**
@@ -67,31 +64,6 @@ public class RepositoryResult<T> extends LookAheadIteration<T, StoreException> {
 	{
 		super.handleClose();
 		delegate.close();
-	}
-
-	/**
-	 * Switches on duplicate filtering while iterating over objects. The
-	 * RepositoryResult will keep track of the previously returned objects in a
-	 * {@link java.util.Set} and on calling next() or hasNext() will ignore any
-	 * objects that already occur in this Set.
-	 * <P>
-	 * Caution: use of this filtering mechanism is potentially memory-intensive.
-	 * 
-	 * @throws StoreException
-	 *         if a problem occurred during initialization of the filter.
-	 */
-	@Deprecated
-	public void enableDuplicateFilter()
-		throws StoreException
-	{
-		delegate = new FilteringCursor<T>(delegate) {
-			private Set<T> exclude = new HashSet<T>();
-
-			@Override
-			protected boolean accept(T next) {
-				return exclude.add(next);
-			}
-		};
 	}
 
 	/**
