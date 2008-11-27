@@ -5,6 +5,8 @@
  */
 package org.openrdf.http.server;
 
+import info.aduna.iteration.SingletonIteration;
+
 import org.openrdf.query.QueryResult;
 import org.openrdf.store.StoreException;
 
@@ -14,42 +16,11 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-public class BooleanQueryResult implements QueryResult<Boolean> {
-
-	private Boolean result;
+public class BooleanQueryResult extends SingletonIteration<Boolean, StoreException> implements
+		QueryResult<Boolean>
+{
 
 	public BooleanQueryResult(boolean result) {
-		this.result = result;
+		super(result);
 	}
-
-	public boolean getResult() {
-		return result;
-	}
-
-	public void close()
-		throws StoreException
-	{
-		// no-op
-	}
-
-	public boolean hasNext()
-		throws StoreException
-	{
-		return result != null;
-	}
-
-	public Boolean next()
-		throws StoreException
-	{
-		Boolean next = result;
-		result = null;
-		return next;
-	}
-
-	public void remove()
-		throws StoreException
-	{
-		throw new UnsupportedOperationException();
-	}
-
 }
