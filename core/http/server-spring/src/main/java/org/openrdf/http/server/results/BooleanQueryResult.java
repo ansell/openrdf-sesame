@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.http.server;
+package org.openrdf.http.server.results;
 
 import info.aduna.iteration.SingletonIteration;
 
@@ -19,8 +19,9 @@ import org.openrdf.store.StoreException;
 public class BooleanQueryResult extends SingletonIteration<Boolean, StoreException> implements
 		QueryResult<Boolean>
 {
+	public static BooleanQueryResult EMPTY = new BooleanQueryResult(null);
 
-	public BooleanQueryResult(boolean result) {
+	public BooleanQueryResult(Boolean result) {
 		super(result);
 	}
 }
