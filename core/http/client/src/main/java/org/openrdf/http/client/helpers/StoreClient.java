@@ -18,10 +18,7 @@ import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
@@ -43,26 +40,12 @@ public class StoreClient {
 	public TupleQueryResult list()
 		throws StoreException
 	{
-		try {
-			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
-			list(builder);
-			return builder.getQueryResult();
-		}
-		catch (TupleQueryResultHandlerException e) {
-			// Found a bug in TupleQueryResultBuilder?
-			throw new AssertionError(e);
-		}
-	}
-
-	public void list(TupleQueryResultHandler handler)
-		throws TupleQueryResultHandlerException, StoreException
-	{
 		HTTPConnection method = server.get();
 
 		try {
 			method.acceptTupleQueryResult();
 			execute(method);
-			method.readTupleQueryResult(handler);
+			return method.getTupleQueryResult();
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -72,9 +55,6 @@ public class StoreClient {
 		}
 		catch (QueryResultParseException e) {
 			throw new StoreException(e);
-		}
-		finally {
-			method.release();
 		}
 	}
 

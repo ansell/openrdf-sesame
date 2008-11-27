@@ -29,6 +29,8 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.http.client.helpers.BackgroundGraphResult;
+import org.openrdf.http.client.helpers.BackgroundTupleResult;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
@@ -39,8 +41,6 @@ import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.impl.GraphQueryResultImpl;
-import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParser;
 import org.openrdf.query.resultio.BooleanQueryResultParserRegistry;
@@ -77,6 +77,8 @@ public class HTTPConnection {
 	private HTTPConnectionPool pool;
 
 	private HttpMethod method;
+
+	private volatile boolean released;
 
 	public HTTPConnection(HTTPConnectionPool pool, HttpMethod method) {
 		this.pool = pool;
@@ -309,6 +311,7 @@ public class HTTPConnection {
 			if (!"HEAD".equals(method.getName())) {
 				body = method.getResponseBodyAsString();
 			}
+			release();
 			throw HTTPException.create(statusCode, body);
 		}
 	}
@@ -346,32 +349,6 @@ public class HTTPConnection {
 		return Long.parseLong(method.getResponseBodyAsString());
 	}
 
-	public TupleQueryResult readTupleQueryResult()
-		throws IOException, QueryResultParseException, NoCompatibleMediaType
-	{
-		try {
-			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
-			readTupleQueryResult(builder);
-			return builder.getQueryResult();
-		}
-		catch (TupleQueryResultHandlerException e) {
-			throw new AssertionError(e);
-		}
-	}
-
-	public GraphQueryResult readGraphQueryResult()
-		throws IOException, RDFParseException, NoCompatibleMediaType
-	{
-		try {
-			StatementCollector collector = new StatementCollector();
-			readRDF(collector);
-			return new GraphQueryResultImpl(collector.getNamespaces(), collector.getStatements());
-		}
-		catch (RDFHandlerException e) {
-			throw new AssertionError(e);
-		}
-	}
-
 	public boolean readBoolean()
 		throws IOException, QueryResultParseException, NoCompatibleMediaType
 	{
@@ -381,6 +358,25 @@ public class HTTPConnection {
 			BooleanQueryResultFormat format = BooleanQueryResultFormat.matchMIMEType(mimeType, booleanFormats);
 			BooleanQueryResultParser parser = QueryResultIO.createParser(format);
 			return parser.parse(method.getResponseBodyAsStream());
+		}
+		catch (UnsupportedQueryResultFormatException e) {
+			logger.warn(e.toString(), e);
+			throw new NoCompatibleMediaType("Server responded with an unsupported file format: " + mimeType);
+		}
+	}
+
+	public TupleQueryResult getTupleQueryResult()
+		throws IOException, QueryResultParseException, NoCompatibleMediaType
+	{
+		String mimeType = readContentType();
+		try {
+			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
+			TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
+			TupleQueryResultParser parser = QueryResultIO.createParser(format, pool.getValueFactory());
+			InputStream in = method.getResponseBodyAsStream();
+			BackgroundTupleResult result = new BackgroundTupleResult(parser, in, this);
+			pool.executeTask(result);
+			return result;
 		}
 		catch (UnsupportedQueryResultFormatException e) {
 			logger.warn(e.toString(), e);
@@ -418,6 +414,27 @@ public class HTTPConnection {
 		return model;
 	}
 
+	public GraphQueryResult getGraphQueryResult()
+		throws IOException, RDFParseException, NoCompatibleMediaType
+	{
+		String mimeType = readContentType();
+		try {
+			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
+			RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
+			RDFParser parser = Rio.createParser(format, pool.getValueFactory());
+			parser.setPreserveBNodeIDs(true);
+			InputStream in = method.getResponseBodyAsStream();
+			String base = method.getURI().getURI();
+			BackgroundGraphResult result = new BackgroundGraphResult(parser, in, base, this);
+			pool.executeTask(result);
+			return result;
+		}
+		catch (UnsupportedRDFormatException e) {
+			logger.warn(e.toString(), e);
+			throw new NoCompatibleMediaType("Server responded with an unsupported file format: " + mimeType);
+		}
+	}
+
 	public void readRDF(RDFHandler handler)
 		throws RDFHandlerException, IOException, RDFParseException, NoCompatibleMediaType
 	{
@@ -437,6 +454,9 @@ public class HTTPConnection {
 	}
 
 	public void release() {
+		if (released)
+			return;
+		released = true;
 		try {
 			if (!"HEAD".equals(method.getName())) {
 				// Read the entire response body to enable the reuse of the

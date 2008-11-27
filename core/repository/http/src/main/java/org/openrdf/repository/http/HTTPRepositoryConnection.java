@@ -32,6 +32,7 @@ import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
+import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
@@ -41,11 +42,11 @@ import org.openrdf.query.impl.EmptyCursor;
 import org.openrdf.query.impl.IteratorCursor;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
+import org.openrdf.repository.http.helpers.GraphQueryResultCursor;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.store.StoreException;
 
 /**
@@ -181,22 +182,16 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return createRepositoryResult(contextList);
 	}
 
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
+	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj, boolean inf,
+			Resource... ctx)
 		throws StoreException
 	{
-		if (getRepository().noMatch(subj, pred, obj, includeInferred, contexts))
+		if (getRepository().noMatch(subj, pred, obj, inf, ctx))
 			return emptyRepositoryResult();
 
-		try {
-			StatementCollector collector = new StatementCollector();
-			exportStatements(subj, pred, obj, includeInferred, collector, contexts);
-			return createRepositoryResult(collector.getStatements());
-		}
-		catch (RDFHandlerException e) {
-			// found a bug in StatementCollector?
-			throw new RuntimeException(e);
-		}
+		StatementClient statements = getClient().statements();
+		GraphQueryResult result = statements.get(subj, pred, obj, inf, ctx);
+		return createRepositoryResult(result);
 	}
 
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -357,6 +352,13 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 */
 	protected <E> RepositoryResult<E> createRepositoryResult(Iterable<? extends E> elements) {
 		return new RepositoryResult<E>(new IteratorCursor<E>(elements.iterator()));
+	}
+
+	/**
+	 * Creates a RepositoryResult for the supplied element set.
+	 */
+	protected RepositoryResult<Statement> createRepositoryResult(GraphQueryResult result) {
+		return new RepositoryResult<Statement>(new GraphQueryResultCursor(result));
 	}
 
 	private RepositoryClient getClient() {

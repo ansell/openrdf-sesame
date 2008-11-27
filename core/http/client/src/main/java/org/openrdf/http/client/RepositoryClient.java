@@ -134,7 +134,7 @@ public class RepositoryClient {
 			method.acceptTupleQueryResult();
 			method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
 			execute(method);
-			return method.readTupleQueryResult();
+			return method.getTupleQueryResult();
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -144,9 +144,6 @@ public class RepositoryClient {
 		}
 		catch (QueryResultParseException e) {
 			throw new StoreException(e);
-		}
-		finally {
-			method.release();
 		}
 	}
 
@@ -186,7 +183,7 @@ public class RepositoryClient {
 			method.acceptGraphQueryResult();
 			method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
 			execute(method);
-			return method.readGraphQueryResult();
+			return method.getGraphQueryResult();
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -196,9 +193,6 @@ public class RepositoryClient {
 		}
 		catch (RDFParseException e) {
 			throw new StoreException(e);
-		}
-		finally {
-			method.release();
 		}
 	}
 
