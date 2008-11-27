@@ -128,7 +128,7 @@ public class RepositoryClient {
 			boolean includeInferred, Binding... bindings)
 		throws StoreException, MalformedQueryException
 	{
-		HTTPConnection method = repository.post();
+		HTTPConnection method = repository.get();
 
 		try {
 			method.acceptTupleQueryResult();
@@ -154,7 +154,7 @@ public class RepositoryClient {
 			TupleQueryResultHandler handler, Binding... bindings)
 		throws TupleQueryResultHandlerException, StoreException, MalformedQueryException
 	{
-		HTTPConnection method = repository.post();
+		HTTPConnection method = repository.get();
 
 		try {
 			method.acceptTupleQueryResult();
@@ -180,7 +180,7 @@ public class RepositoryClient {
 			boolean includeInferred, Binding... bindings)
 		throws StoreException, MalformedQueryException
 	{
-		HTTPConnection method = repository.post();
+		HTTPConnection method = repository.get();
 
 		try {
 			method.acceptGraphQueryResult();
@@ -206,7 +206,7 @@ public class RepositoryClient {
 			RDFHandler handler, Binding... bindings)
 		throws RDFHandlerException, StoreException, MalformedQueryException
 	{
-		HTTPConnection method = repository.post();
+		HTTPConnection method = repository.get();
 
 		try {
 			method.acceptRDF(false);
@@ -232,7 +232,7 @@ public class RepositoryClient {
 			Binding... bindings)
 		throws StoreException, MalformedQueryException
 	{
-		HTTPConnection method = repository.post();
+		HTTPConnection method = repository.get();
 
 		try {
 			method.acceptBoolean();

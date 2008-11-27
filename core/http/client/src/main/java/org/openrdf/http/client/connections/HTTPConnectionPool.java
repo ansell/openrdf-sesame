@@ -16,7 +16,6 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
@@ -222,7 +221,13 @@ public class HTTPConnectionPool implements Cloneable {
 	}
 
 	public HTTPConnection get() {
-		GetMethod method = new GetMethod(url);
+		HttpMethod method = new PostMethod(url) {
+
+			@Override
+			public String getName() {
+				return "GET";
+			}
+		};
 		setDoAuthentication(method);
 		return new HTTPConnection(this, method);
 	}
