@@ -20,6 +20,8 @@ import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
 import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.store.StoreException;
@@ -41,21 +43,31 @@ public class SizeClient {
 	 * Repository/context size *
 	 *-------------------------*/
 
-	public long get(Resource... contexts)
+	public long get(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
 		throws StoreException
 	{
 		HTTPConnection method = size.get();
 
-		String[] encodedContexts = Protocol.encodeContexts(contexts);
-
-		List<NameValuePair> contextParams = new ArrayList<NameValuePair>(encodedContexts.length);
-		for (int i = 0; i < encodedContexts.length; i++) {
-			contextParams.add(new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContexts[i]));
+		List<NameValuePair> params = new ArrayList<NameValuePair>(5);
+		if (subj != null) {
+			params.add(new NameValuePair(Protocol.SUBJECT_PARAM_NAME, Protocol.encodeValue(subj)));
 		}
-		method.sendQueryString(contextParams);
+		if (pred != null) {
+			params.add(new NameValuePair(Protocol.PREDICATE_PARAM_NAME, Protocol.encodeValue(pred)));
+		}
+		if (obj != null) {
+			params.add(new NameValuePair(Protocol.OBJECT_PARAM_NAME, Protocol.encodeValue(obj)));
+		}
+		for (String encodedContext : Protocol.encodeContexts(contexts)) {
+			params.add(new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContext));
+		}
+		params.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred)));
+
+		method.sendQueryString(params);
 
 		try {
-			method.acceptString();
+			method.acceptLong();
 			execute(method);
 			return method.readLong();
 		}

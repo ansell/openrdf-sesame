@@ -100,6 +100,10 @@ public class HTTPConnection {
 		method.addRequestHeader(ACCEPT_PARAM_NAME, "text/plain");
 	}
 
+	public void acceptLong() {
+		acceptString();
+	}
+
 	public void acceptBoolean()
 		throws NoCompatibleMediaType
 	{

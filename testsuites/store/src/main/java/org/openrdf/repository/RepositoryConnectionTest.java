@@ -38,6 +38,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -45,6 +46,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
@@ -1473,6 +1475,62 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleQueryResult result = query.evaluate();
 		assertTrue (result.hasNext());
 		result.close();
+	}
+
+	public void testSize()
+		throws Exception
+	{
+		String EXAMPLE_NS = "http://example.org/";
+		String PAINTER = "Painter";
+		String PAINTS = "paints";
+		String PAINTING = "Painting";
+		String PICASSO = "picasso";
+		String GUERNICA = "guernica";
+		String CONTEXT_1 = "context1";
+		String CONTEXT_2 = "context2";
+		URI painter = vf.createURI(EXAMPLE_NS, PAINTER);
+		URI paints = vf.createURI(EXAMPLE_NS, PAINTS);
+		URI painting = vf.createURI(EXAMPLE_NS, PAINTING);
+		URI picasso = vf.createURI(EXAMPLE_NS, PICASSO);
+		URI guernica = vf.createURI(EXAMPLE_NS, GUERNICA);
+
+		context1 = vf.createURI(EXAMPLE_NS, CONTEXT_1);
+		context2 = vf.createURI(EXAMPLE_NS, CONTEXT_2);
+
+		URI unknownContext = new URIImpl(EXAMPLE_NS + "unknown");
+
+		for (Resource subj : Arrays.asList(null, picasso)) {
+			for (URI pred : Arrays.asList(null, paints, RDF.TYPE)) {
+				for (Value obj : Arrays.asList(null, guernica)) {
+					for (Resource[] ctx : Arrays.asList(new Resource[0], new Resource[] { context1 },
+							new Resource[] { unknownContext }))
+					{
+						assertEquals(0, testCon.size(subj, pred, obj, false, ctx));
+					}
+				}
+			}
+		}
+
+		// Add some data to the repository
+		testCon.add(painter, RDF.TYPE, RDFS.CLASS);
+		testCon.add(painting, RDF.TYPE, RDFS.CLASS);
+		testCon.add(picasso, RDF.TYPE, painter, context1);
+		testCon.add(guernica, RDF.TYPE, painting, context1);
+		testCon.add(picasso, paints, guernica, context1);
+		testCon.commit();
+
+		assertEquals(5, testCon.size(null, null, null, false));
+		assertEquals(3, testCon.size(null, null, null, false, context1));
+		assertEquals(4, testCon.size(null, RDF.TYPE, null, false));
+		assertEquals(1, testCon.size(null, paints, null, false));
+		assertEquals(2, testCon.size(picasso, null, null, false));
+
+		assertEquals(0, testCon.size(null, null, null, false, unknownContext));
+		assertEquals(0, testCon.size(null, picasso, null, false));
+
+		URIImpl uriImplContext1 = new URIImpl(context1.toString());
+
+		assertEquals(3, testCon.size(null, null, null, false, uriImplContext1));
 	}
 
 	private int getTotalStatementCount(RepositoryConnection connection)
