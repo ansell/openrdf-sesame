@@ -24,7 +24,6 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.slf4j.Logger;
@@ -38,8 +37,12 @@ import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.impl.GraphQueryResultImpl;
+import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParser;
 import org.openrdf.query.resultio.BooleanQueryResultParserRegistry;
@@ -135,7 +138,7 @@ public class HTTPConnection {
 		}
 	}
 
-	public void acceptTuple()
+	public void acceptTupleQueryResult()
 		throws NoCompatibleMediaType
 	{
 		// Specify which formats we support using Accept headers
@@ -164,6 +167,12 @@ public class HTTPConnection {
 				method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
 			}
 		}
+	}
+
+	public void acceptGraphQueryResult()
+		throws NoCompatibleMediaType
+	{
+		acceptRDF(false);
 	}
 
 	public void acceptRDF(boolean requireContext)
@@ -222,7 +231,7 @@ public class HTTPConnection {
 
 	public void sendString(String plain) {
 		try {
-			((PutMethod)method).setRequestEntity(new StringRequestEntity(plain, "text/plain", "UTF-8"));
+			((EntityEnclosingMethod)method).setRequestEntity(new StringRequestEntity(plain, "text/plain", "UTF-8"));
 		}
 		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
@@ -293,7 +302,11 @@ public class HTTPConnection {
 	{
 		int statusCode = pool.executeMethod(method);
 		if (!HttpClientUtil.is2xx(statusCode)) {
-			throw HTTPException.create(statusCode, method.getResponseBodyAsString());
+			String body = method.getStatusLine().getReasonPhrase();
+			if (!"HEAD".equals(method.getName())) {
+				body = method.getResponseBodyAsString();
+			}
+			throw HTTPException.create(statusCode, body);
 		}
 	}
 
@@ -326,6 +339,32 @@ public class HTTPConnection {
 		return Long.parseLong(method.getResponseBodyAsString());
 	}
 
+	public TupleQueryResult readTupleQueryResult()
+		throws IOException, QueryResultParseException, NoCompatibleMediaType
+	{
+		try {
+			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
+			readTupleQueryResult(builder);
+			return builder.getQueryResult();
+		}
+		catch (TupleQueryResultHandlerException e) {
+			throw new AssertionError(e);
+		}
+	}
+
+	public GraphQueryResult readGraphQueryResult()
+		throws IOException, RDFParseException, NoCompatibleMediaType
+	{
+		try {
+			StatementCollector collector = new StatementCollector();
+			readRDF(collector);
+			return new GraphQueryResultImpl(collector.getNamespaces(), collector.getStatements());
+		}
+		catch (RDFHandlerException e) {
+			throw new AssertionError(e);
+		}
+	}
+
 	public boolean readBoolean()
 		throws IOException, QueryResultParseException, NoCompatibleMediaType
 	{
@@ -342,7 +381,7 @@ public class HTTPConnection {
 		}
 	}
 
-	public void readTuple(TupleQueryResultHandler handler)
+	public void readTupleQueryResult(TupleQueryResultHandler handler)
 		throws TupleQueryResultHandlerException, IOException, QueryResultParseException, NoCompatibleMediaType
 	{
 		String mimeType = readContentType();
@@ -392,11 +431,13 @@ public class HTTPConnection {
 
 	public void release() {
 		try {
-			// Read the entire response body to enable the reuse of the connection
-			InputStream responseStream = method.getResponseBodyAsStream();
-			if (responseStream != null) {
-				while (responseStream.read() >= 0) {
-					// do nothing
+			if (!"HEAD".equals(method.getName())) {
+				// Read the entire response body to enable the reuse of the connection
+				InputStream responseStream = method.getResponseBodyAsStream();
+				if (responseStream != null) {
+					while (responseStream.read() >= 0) {
+						// do nothing
+					}
 				}
 			}
 
@@ -430,6 +471,26 @@ public class HTTPConnection {
 				if (mimeType != null) {
 					logger.debug("reponse MIME type is {}", mimeType);
 					return mimeType;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	public String readQueryType()
+		throws IOException
+	{
+		Header[] headers = method.getResponseHeaders(Protocol.X_QUERY_TYPE);
+
+		for (Header header : headers) {
+			HeaderElement[] headerElements = header.getElements();
+
+			for (HeaderElement headerEl : headerElements) {
+				String result = headerEl.getName();
+				if (result != null) {
+					logger.debug("reponse Query type is {}", result);
+					return result;
 				}
 			}
 		}
