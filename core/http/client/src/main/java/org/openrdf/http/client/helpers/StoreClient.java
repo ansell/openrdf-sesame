@@ -67,7 +67,7 @@ public class StoreClient {
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
-		catch (HTTPException e) {
+		catch (NoCompatibleMediaType e) {
 			throw new StoreException(e);
 		}
 		catch (QueryResultParseException e) {
