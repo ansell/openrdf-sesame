@@ -40,9 +40,11 @@ import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NotImplemented;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
-import org.openrdf.http.server.BooleanQueryResult;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.http.server.results.BooleanQueryResult;
+import org.openrdf.http.server.results.EmptyGraphQueryResult;
+import org.openrdf.http.server.results.EmptyTupleQueryResult;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -148,17 +150,23 @@ public class RepositoryController {
 			if (query instanceof TupleQuery) {
 				TupleQuery tQuery = (TupleQuery)query;
 
+				if (HEAD.equals(reqMethod))
+					return EmptyTupleQueryResult.EMPTY;
 				return tQuery.evaluate();
 			}
 			else if (query instanceof GraphQuery) {
 				GraphQuery gQuery = (GraphQuery)query;
 
+				if (HEAD.equals(reqMethod))
+					return EmptyGraphQueryResult.EMPTY;
 				return gQuery.evaluate();
 			}
 			else if (query instanceof BooleanQuery) {
 				BooleanQuery bQuery = (BooleanQuery)query;
 
 				// @ModelAttribute does not support a return type of boolean
+				if (HEAD.equals(reqMethod))
+					return BooleanQueryResult.EMPTY;
 				return new BooleanQueryResult(bQuery.evaluate());
 			}
 			else {

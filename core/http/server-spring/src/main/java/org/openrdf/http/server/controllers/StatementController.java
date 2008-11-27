@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.xml.sax.SAXException;
 
 import info.aduna.webapp.util.HttpServerUtil;
@@ -40,6 +41,7 @@ import org.openrdf.http.protocol.transaction.TransactionReader;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.http.server.results.EmptyRepositoryResult;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -85,6 +87,8 @@ public class StatementController {
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
 		boolean useInferencing = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
 
+		if (HEAD.equals(RequestMethod.valueOf(request.getMethod())))
+			return EmptyRepositoryResult.emptyRepositoryResult();
 		return repositoryCon.getStatements(subj, pred, obj, useInferencing, contexts);
 	}
 

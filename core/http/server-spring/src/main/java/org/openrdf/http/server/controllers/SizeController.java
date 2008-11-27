@@ -56,7 +56,7 @@ public class SizeController {
 		boolean useInferencing = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, false);
 
 		if (HEAD.equals(RequestMethod.valueOf(request.getMethod())))
-				return new StringReader("-1");
+				return new StringReader("");
 
 		long size = repositoryCon.size(subj, pred, obj, useInferencing, contexts);
 		return new StringReader(String.valueOf(size));
