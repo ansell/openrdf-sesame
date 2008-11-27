@@ -37,6 +37,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
@@ -62,31 +63,38 @@ public class StatementClient {
 	 * Get/add/remove statements *
 	 *---------------------------*/
 
+	public GraphQueryResult get(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws StoreException
+	{
+		HTTPConnection method = statements.get();
+
+		try {
+			method.acceptRDF(true);
+			method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
+			execute(method);
+			return method.getGraphQueryResult();
+		}
+		catch (NoCompatibleMediaType e) {
+			throw new StoreException(e);
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+		catch (RDFParseException e) {
+			throw new StoreException(e);
+		}
+	}
+
 	public void get(Resource subj, URI pred, Value obj, boolean includeInferred, RDFHandler handler,
 			Resource... contexts)
 		throws RDFHandlerException, StoreException
 	{
 		HTTPConnection method = statements.get();
 
-		List<NameValuePair> params = new ArrayList<NameValuePair>(5);
-		if (subj != null) {
-			params.add(new NameValuePair(Protocol.SUBJECT_PARAM_NAME, Protocol.encodeValue(subj)));
-		}
-		if (pred != null) {
-			params.add(new NameValuePair(Protocol.PREDICATE_PARAM_NAME, Protocol.encodeValue(pred)));
-		}
-		if (obj != null) {
-			params.add(new NameValuePair(Protocol.OBJECT_PARAM_NAME, Protocol.encodeValue(obj)));
-		}
-		for (String encodedContext : Protocol.encodeContexts(contexts)) {
-			params.add(new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContext));
-		}
-		params.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred)));
-
-		method.sendQueryString(params);
-
 		try {
 			method.acceptRDF(true);
+			method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
 			execute(method);
 			method.readRDF(handler);
 		}
@@ -221,6 +229,26 @@ public class StatementClient {
 		finally {
 			method.release();
 		}
+	}
+
+	private List<NameValuePair> getParams(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+	{
+		List<NameValuePair> params = new ArrayList<NameValuePair>(5);
+		if (subj != null) {
+			params.add(new NameValuePair(Protocol.SUBJECT_PARAM_NAME, Protocol.encodeValue(subj)));
+		}
+		if (pred != null) {
+			params.add(new NameValuePair(Protocol.PREDICATE_PARAM_NAME, Protocol.encodeValue(pred)));
+		}
+		if (obj != null) {
+			params.add(new NameValuePair(Protocol.OBJECT_PARAM_NAME, Protocol.encodeValue(obj)));
+		}
+		for (String encodedContext : Protocol.encodeContexts(contexts)) {
+			params.add(new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContext));
+		}
+		params.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred)));
+		return params;
 	}
 
 	private void execute(HTTPConnection method)
