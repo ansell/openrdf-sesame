@@ -11,6 +11,8 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
 import org.springframework.web.context.support.StaticWebApplicationContext;
@@ -41,12 +43,20 @@ public class SesameServlet implements Servlet {
 
 	private static final String SERVLET_NAME = "Sesame Server";
 
+	private Logger logger = LoggerFactory.getLogger(SesameServlet.class);
+
 	private Servlet delegate = new DispatcherServlet();
 
 	private RepositoryManager manager;
 
+	private int maxCacheAge;
+
 	public SesameServlet(RepositoryManager manager) {
 		this.manager = manager;
+	}
+
+	public void setMaxCacheAge(int maxCacheAge) {
+		this.maxCacheAge = maxCacheAge;
 	}
 
 	public void destroy() {
@@ -65,9 +75,20 @@ public class SesameServlet implements Servlet {
 	public void init(ServletConfig config)
 		throws ServletException
 	{
+		String maxCacheAgeParam = config.getInitParameter("max-cache-age");
+		if (maxCacheAge == 0 && maxCacheAgeParam != null) {
+			try {
+				maxCacheAge = Integer.parseInt(maxCacheAgeParam);
+			} catch (NumberFormatException e) {
+				logger.error("Cannot read max-cache-age parameter: {}", e.toString());
+			}
+		}
 		synchronized (SesameApplication.class) {
 			SesameApplication.staticManager = manager;
+			SesameApplication.maxCacheAge = maxCacheAge;
 			delegate.init(new SesameServletConfig(config));
+			SesameApplication.staticManager = null;
+			SesameApplication.maxCacheAge = 0;
 		}
 	}
 
@@ -118,6 +139,8 @@ public class SesameServlet implements Servlet {
 	public static class SesameApplication extends StaticWebApplicationContext {
 
 		static RepositoryManager staticManager;
+	
+		static int maxCacheAge;
 
 		public SesameApplication() {
 			// RepositoryManager
@@ -143,6 +166,7 @@ public class SesameServlet implements Servlet {
 			// Interceptors
 			RepositoryInterceptor connections = new RepositoryInterceptor();
 			connections.setRepositoryManager(staticManager);
+			connections.setMaxCacheAge(maxCacheAge);
 			registerSingleton(connections);
 
 			// Spring Processors
