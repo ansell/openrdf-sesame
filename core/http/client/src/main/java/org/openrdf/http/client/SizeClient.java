@@ -35,20 +35,63 @@ public class SizeClient {
 
 	private HTTPConnectionPool size;
 
+	private String match;
+
+	private String eTag;
+
+	private int maxAge;
+
 	public SizeClient(HTTPConnectionPool size) {
 		this.size = size;
+	}
+
+	public int getMaxAge() {
+		return maxAge;
+	}
+
+	public String getETag() {
+		return eTag;
+	}
+
+	public void ifNoneMatch(String eTag) {
+		match = eTag;
 	}
 
 	/*-------------------------*
 	 * Repository/context size *
 	 *-------------------------*/
 
-	public long get(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public Long get(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws StoreException
 	{
 		HTTPConnection method = size.get();
 
+		try {
+			if (match != null) {
+				method.ifNoneMatch(match);
+			}
+			method.acceptLong();
+			method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
+			execute(method);
+			if (method.isNotModified())
+				return null;
+			return method.readLong();
+		}
+		catch (NumberFormatException e) {
+			throw new StoreException("Server responded with invalid size value");
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+		finally {
+			method.release();
+		}
+	}
+
+	private List<NameValuePair> getParams(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+	{
 		List<NameValuePair> params = new ArrayList<NameValuePair>(5);
 		if (subj != null) {
 			params.add(new NameValuePair(Protocol.SUBJECT_PARAM_NAME, Protocol.encodeValue(subj)));
@@ -63,23 +106,7 @@ public class SizeClient {
 			params.add(new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContext));
 		}
 		params.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred)));
-
-		method.sendQueryString(params);
-
-		try {
-			method.acceptLong();
-			execute(method);
-			return method.readLong();
-		}
-		catch (NumberFormatException e) {
-			throw new StoreException("Server responded with invalid size value");
-		}
-		catch (IOException e) {
-			throw new StoreException(e);
-		}
-		finally {
-			method.release();
-		}
+		return params;
 	}
 
 	private void execute(HTTPConnection method)
@@ -87,6 +114,9 @@ public class SizeClient {
 	{
 		try {
 			method.execute();
+			reset();
+			eTag = method.readETag();
+			maxAge = method.readMaxAge();
 		}
 		catch (UnsupportedQueryLanguage e) {
 			throw new UnsupportedQueryLanguageException(e);
@@ -103,6 +133,10 @@ public class SizeClient {
 		catch (HTTPException e) {
 			throw new StoreException(e);
 		}
+	}
+
+	private void reset() {
+		match = null;
 	}
 
 }

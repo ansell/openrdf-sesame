@@ -147,6 +147,8 @@ public abstract class Protocol {
 
 	public static final String BOOLEAN = "boolean";
 
+	public static final String IF_NONE_MATCH = "If-None-Match";
+
 	private static String getServerDir(String serverLocation) {
 		if (serverLocation.endsWith("/")) {
 			return serverLocation;

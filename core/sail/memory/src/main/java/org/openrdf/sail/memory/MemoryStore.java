@@ -24,7 +24,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.Cursor;
-import org.openrdf.query.algebra.evaluation.cursors.EmptyCursor;
+import org.openrdf.query.impl.EmptyCursor;
 import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.DirectoryLockManager;

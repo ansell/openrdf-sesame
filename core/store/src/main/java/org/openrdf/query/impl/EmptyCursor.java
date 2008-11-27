@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.cursors;
+package org.openrdf.query.impl;
 
 import org.openrdf.query.Cursor;
 

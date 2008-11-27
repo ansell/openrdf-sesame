@@ -47,7 +47,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Cursor;
-import org.openrdf.query.algebra.evaluation.cursors.EmptyCursor;
+import org.openrdf.query.impl.EmptyCursor;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.rio.RDFFormat;
