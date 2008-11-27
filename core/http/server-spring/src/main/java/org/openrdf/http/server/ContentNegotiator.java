@@ -5,7 +5,11 @@
  */
 package org.openrdf.http.server;
 
+import static org.openrdf.http.protocol.Protocol.BINDINGS;
+import static org.openrdf.http.protocol.Protocol.BOOLEAN;
+import static org.openrdf.http.protocol.Protocol.GRAPH;
 import static org.openrdf.http.protocol.Protocol.QUERY_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.X_QUERY_TYPE;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -165,6 +169,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				TupleQueryResultWriterRegistry registry = TupleQueryResultWriterRegistry.getInstance();
 				TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 				setContentType(resp, factory.getTupleQueryResultFormat());
+				resp.setHeader(X_QUERY_TYPE, BINDINGS);
 				if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 					return;
 
@@ -196,6 +201,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
 				RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 				setContentType(resp, factory.getRDFFormat());
+				resp.setHeader(X_QUERY_TYPE, GRAPH);
 				if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 					return;
 
@@ -225,6 +231,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		BooleanQueryResultWriterRegistry registry = BooleanQueryResultWriterRegistry.getInstance();
 		BooleanQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 		setContentType(resp, factory.getBooleanQueryResultFormat());
+		resp.setHeader(X_QUERY_TYPE, BOOLEAN);
 		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 			return;
 

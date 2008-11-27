@@ -133,6 +133,20 @@ public abstract class Protocol {
 	 */
 	public static final String FORM_MIME_TYPE = "application/x-www-form-urlencoded";
 
+	public static final String CONFIGURATIONS = "configurations";
+
+	public static final String TEMPLATES = "templates";
+
+	public static final String SCHEMAS = "schemas";
+
+	public static final String X_QUERY_TYPE = "X-Query-Type";
+
+	public static final String BINDINGS = "bindings";
+
+	public static final String GRAPH = "graph";
+
+	public static final String BOOLEAN = "boolean";
+
 	private static String getServerDir(String serverLocation) {
 		if (serverLocation.endsWith("/")) {
 			return serverLocation;
