@@ -214,7 +214,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 
 		ServletOutputStream out = resp.getOutputStream();
 		try {
-			factory.getWriter(out).write(model.getResult());
+			factory.getWriter(out).write(model.next());
 		}
 		finally {
 			out.close();
