@@ -183,11 +183,12 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 			ModelAndView modelAndView)
 	{
 		long now = System.currentTimeMillis() / 1000 * 1000;
-		long lastModified = getLastModified(request);
 		response.setDateHeader(DATE, now);
-		response.setDateHeader(LAST_MODIFIED, lastModified);
-		response.setHeader(ETAG, getETag(request));
-		if ("GET".equals(request.getMethod())) {
+		String method = request.getMethod();
+		if ("GET".equals(method) || "HEAD".equals(method)) {
+			long lastModified = getLastModified(request);
+			response.setDateHeader(LAST_MODIFIED, lastModified);
+			response.setHeader(ETAG, getETag(request));
 			response.setHeader("Cache-Control", getCacheControl(now, lastModified));
 		}
 	}
