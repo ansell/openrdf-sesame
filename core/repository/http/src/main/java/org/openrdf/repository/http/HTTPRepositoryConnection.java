@@ -193,21 +193,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		try {
-			// TODO support size pattern in protocol
-			if (subj == null && pred == null && obj == null && !includeInferred) {
-				return getClient().size().get(contexts);
-			}
-			else {
-				StatementCollector collector = new StatementCollector();
-				exportStatements(subj, pred, obj, includeInferred, collector, contexts);
-				return collector.getStatements().size();
-			}
-		}
-		catch (RDFHandlerException e) {
-			// found a bug in StatementCollector?
-			throw new RuntimeException(e);
-		}
+		return getClient().size().get(subj, pred, obj, includeInferred, contexts);
 	}
 
 	public void commit()

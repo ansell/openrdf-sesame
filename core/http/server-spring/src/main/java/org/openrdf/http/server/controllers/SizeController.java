@@ -5,6 +5,10 @@
  */
 package org.openrdf.http.server.controllers;
 
+import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 
@@ -21,6 +25,8 @@ import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryConnection;
 
@@ -43,12 +49,16 @@ public class SizeController {
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 
 		ValueFactory vf = repositoryCon.getValueFactory();
+		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
+		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
+		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, Protocol.CONTEXT_PARAM_NAME, vf);
+		boolean useInferencing = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, false);
 
 		if (HEAD.equals(RequestMethod.valueOf(request.getMethod())))
 				return new StringReader("-1");
 
-		long size = repositoryCon.size(null, null, null, false, contexts);
+		long size = repositoryCon.size(subj, pred, obj, useInferencing, contexts);
 		return new StringReader(String.valueOf(size));
 	}
 }
