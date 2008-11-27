@@ -131,9 +131,8 @@ public class RepositoryController {
 			if (!Protocol.FORM_MIME_TYPE.equals(mimeType)) {
 				throw new UnsupportedMediaType("Unsupported MIME type: " + mimeType);
 			}
-			if (HEAD.equals(reqMethod)) {
-				// Include form data in parameters.
-				// Not done by default in HEAD requests.
+			if (!POST.equals(reqMethod)) {
+				// Include form data in parameters (already included for POST).
 				request = ProtocolUtil.readFormData(request);
 			}
 		}
