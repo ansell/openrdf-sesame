@@ -37,7 +37,7 @@ import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.BadRequest;
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.protocol.exceptions.HTTPException;
-import org.openrdf.http.protocol.exceptions.ServerHTTPException;
+import org.openrdf.http.protocol.exceptions.NotImplemented;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
 import org.openrdf.http.server.BooleanQueryResult;
@@ -162,7 +162,7 @@ public class RepositoryController {
 				return new BooleanQueryResult(bQuery.evaluate());
 			}
 			else {
-				throw new ServerHTTPException("Unknown query type: " + query.getClass().getName());
+				throw new NotImplemented("Unsupported query type: " + query.getClass().getName());
 			}
 		}
 		else {
