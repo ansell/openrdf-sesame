@@ -81,7 +81,7 @@ public class StoreConfigClient {
 		catch (IOException e) {
 			throw new StoreConfigException(e);
 		}
-		catch (HTTPException e) {
+		catch (NoCompatibleMediaType e) {
 			throw new StoreConfigException(e);
 		}
 		catch (QueryResultParseException e) {

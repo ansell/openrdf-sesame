@@ -20,8 +20,8 @@ public class ClientHTTPException extends HTTPException {
 
 	public static ClientHTTPException create(int statusCode, String msg) {
 		switch (statusCode) {
-			case NoCompatibleMediaType.STATUS_CODE:
-				return new NoCompatibleMediaType(msg);
+			case UnsupportedMediaType.STATUS_CODE:
+				return new UnsupportedMediaType(msg);
 			case NotFound.STATUS_CODE:
 				return new NotFound(msg);
 			case Unauthorized.STATUS_CODE:

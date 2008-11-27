@@ -122,10 +122,11 @@ public class RepositoryClient {
 			TupleQueryResultHandler handler, Binding... bindings)
 		throws TupleQueryResultHandlerException, StoreException, MalformedQueryException
 	{
-		HTTPConnection method = getQueryMethod(ql, query, dataset, includeInferred, bindings);
+		HTTPConnection method = repository.post();
 
 		try {
 			method.acceptTuple();
+			method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
 			execute(method);
 			method.readTuple(handler);
 		}
@@ -162,10 +163,11 @@ public class RepositoryClient {
 			RDFHandler handler, Binding... bindings)
 		throws RDFHandlerException, StoreException, MalformedQueryException
 	{
-		HTTPConnection method = getQueryMethod(ql, query, dataset, includeInferred, bindings);
+		HTTPConnection method = repository.post();
 
 		try {
 			method.acceptRDF(false);
+			method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
 			execute(method);
 			method.readRDF(handler);
 		}
@@ -187,10 +189,11 @@ public class RepositoryClient {
 			Binding... bindings)
 		throws StoreException, MalformedQueryException
 	{
-		HTTPConnection method = getQueryMethod(ql, query, dataset, includeInferred, bindings);
+		HTTPConnection method = repository.post();
 
 		try {
 			method.acceptBoolean();
+			method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
 			execute(method);
 			return method.readBoolean();
 		}
@@ -208,18 +211,7 @@ public class RepositoryClient {
 		}
 	}
 
-	protected HTTPConnection getQueryMethod(QueryLanguage ql, String query, Dataset dataset,
-			boolean includeInferred, Binding... bindings)
-	{
-		HTTPConnection method = repository.post();
-
-		method.sendForm(getQueryMethodParameters(ql, query, dataset, includeInferred,
-				bindings));
-
-		return method;
-	}
-
-	protected List<NameValuePair> getQueryMethodParameters(QueryLanguage ql, String query, Dataset dataset,
+	protected List<NameValuePair> getQueryParams(QueryLanguage ql, String query, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
 	{
 		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);

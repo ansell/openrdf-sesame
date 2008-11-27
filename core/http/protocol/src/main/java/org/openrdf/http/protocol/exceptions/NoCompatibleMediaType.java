@@ -5,19 +5,18 @@
  */
 package org.openrdf.http.protocol.exceptions;
 
+import org.openrdf.OpenRDFException;
+
 /**
- * Thrown when the client cannot serialise the request to the server.
+ * Thrown when the client cannot serialise the request to the server or parse
+ * the result from the server.
  * 
  * @author James Leigh
  */
-public class NoCompatibleMediaType extends UnsupportedMediaType {
+public class NoCompatibleMediaType extends OpenRDFException {
 
 	private static final long serialVersionUID = 8540515029592553577L;
 
-	/**
-	 * Creates a {@link NoCompatibleMediaType} with status code 415 Unsupported
-	 * Media Type.
-	 */
 	public NoCompatibleMediaType(String msg) {
 		super(msg);
 	}
