@@ -5,9 +5,9 @@
  */
 package org.openrdf.http.server;
 
-import static org.openrdf.http.protocol.Protocol.BINDINGS;
-import static org.openrdf.http.protocol.Protocol.BOOLEAN;
-import static org.openrdf.http.protocol.Protocol.GRAPH;
+import static org.openrdf.http.protocol.Protocol.BINDINGS_QUERY;
+import static org.openrdf.http.protocol.Protocol.BOOLEAN_QUERY;
+import static org.openrdf.http.protocol.Protocol.GRAPH_QUERY;
 import static org.openrdf.http.protocol.Protocol.QUERY_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.X_QUERY_TYPE;
 
@@ -169,7 +169,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				TupleQueryResultWriterRegistry registry = TupleQueryResultWriterRegistry.getInstance();
 				TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 				setContentType(resp, factory.getTupleQueryResultFormat());
-				resp.setHeader(X_QUERY_TYPE, BINDINGS);
+				resp.setHeader(X_QUERY_TYPE, BINDINGS_QUERY);
 				if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 					return;
 
@@ -201,7 +201,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
 				RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 				setContentType(resp, factory.getRDFFormat());
-				resp.setHeader(X_QUERY_TYPE, GRAPH);
+				resp.setHeader(X_QUERY_TYPE, GRAPH_QUERY);
 				if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 					return;
 
@@ -231,7 +231,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		BooleanQueryResultWriterRegistry registry = BooleanQueryResultWriterRegistry.getInstance();
 		BooleanQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 		setContentType(resp, factory.getBooleanQueryResultFormat());
-		resp.setHeader(X_QUERY_TYPE, BOOLEAN);
+		resp.setHeader(X_QUERY_TYPE, BOOLEAN_QUERY);
 		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 			return;
 

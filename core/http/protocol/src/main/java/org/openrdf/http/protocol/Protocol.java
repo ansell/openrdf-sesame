@@ -122,6 +122,45 @@ public abstract class Protocol {
 	 * Relative location of the 'size' resource of a repository.
 	 */
 	public static final String SIZE = "size";
+	
+	/**
+	 * Relative location of the repository configurations resource.
+	 */
+	public static final String CONFIGURATIONS = "configurations";
+	
+	/**
+	 * Relative location of the templates resource.
+	 */
+	public static final String TEMPLATES = "templates";
+	
+	/**
+	 * Relative location of the template schemas resource.
+	 */
+	public static final String SCHEMAS = "schemas";
+
+	/**
+	 * Custom header used to convey query types from a server to a client. The
+	 * client can use the header to decide which set of result parsers are
+	 * relevant for the response body.
+	 */
+	public static final String X_QUERY_TYPE = "X-Query-Type";
+
+	/**
+	 * Value for {@link #X_QUERY_TYPE} for tuple query results.
+	 */
+	public static final String BINDINGS_QUERY = "bindings";
+
+	/**
+	 * Value for {@link #X_QUERY_TYPE} for graph query results.
+	 */
+	public static final String GRAPH_QUERY = "graph";
+
+	/**
+	 * Value for {@link #X_QUERY_TYPE} for boolean query results.
+	 */
+	public static final String BOOLEAN_QUERY = "boolean";
+
+	public static final String IF_NONE_MATCH = "If-None-Match";
 
 	/**
 	 * MIME type for transactions: <tt>application/x-rdftransaction</tt>.
@@ -133,29 +172,11 @@ public abstract class Protocol {
 	 */
 	public static final String FORM_MIME_TYPE = "application/x-www-form-urlencoded";
 
-	public static final String CONFIGURATIONS = "configurations";
-
-	public static final String TEMPLATES = "templates";
-
-	public static final String SCHEMAS = "schemas";
-
-	public static final String X_QUERY_TYPE = "X-Query-Type";
-
-	public static final String BINDINGS = "bindings";
-
-	public static final String GRAPH = "graph";
-
-	public static final String BOOLEAN = "boolean";
-
-	public static final String IF_NONE_MATCH = "If-None-Match";
-
 	private static String getServerDir(String serverLocation) {
-		if (serverLocation.endsWith("/")) {
-			return serverLocation;
+		if (!serverLocation.endsWith("/")) {
+			serverLocation += "/";
 		}
-		else {
-			return serverLocation + "/";
-		}
+		return serverLocation;
 	}
 
 	/**
@@ -226,7 +247,8 @@ public abstract class Protocol {
 
 		if (matcher.matches() && matcher.groupCount() == 1) {
 			return matcher.group(1);
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
