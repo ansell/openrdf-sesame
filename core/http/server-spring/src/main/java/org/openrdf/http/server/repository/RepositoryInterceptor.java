@@ -186,8 +186,7 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		long lastModified = lastModified(request); // update
 		String eTag = eTag(request); // update
 		response.setDateHeader(DATE, now);
-		String method = request.getMethod();
-		if ("GET".equals(method) || "HEAD".equals(method)) {
+		if (isSafe(request)) {
 			response.setDateHeader(LAST_MODIFIED, lastModified);
 			response.setHeader(ETAG, eTag);
 			response.setHeader("Cache-Control", getCacheControl(now, lastModified));
@@ -247,6 +246,14 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 			if (since < lastModified(request))
 				return false;
 		}
+		return true;
+	}
+
+	private boolean isSafe(HttpServletRequest request) {
+		if (request.getAttribute(MANAGER_MODIFIED_KEY) != null)
+			return false;
+		if (request.getAttribute(REPOSITORY_MODIFIED_KEY) != null)
+			return false;
 		return true;
 	}
 
