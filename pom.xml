@@ -230,13 +230,13 @@
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-http-server</artifactId>
+				<artifactId>sesame-http-server-webapp</artifactId>
 				<version>2.5-SNAPSHOT</version>
 				<type>war</type>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-http-server-spring</artifactId>
+				<artifactId>sesame-http-server</artifactId>
 				<version>2.5-SNAPSHOT</version>
 			</dependency>
 

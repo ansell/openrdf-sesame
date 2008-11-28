@@ -72,7 +72,7 @@
 
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-http-server-spring</artifactId>
+			<artifactId>sesame-http-server</artifactId>
 		</dependency>
 
 		<dependency>

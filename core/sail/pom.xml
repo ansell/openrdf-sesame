@@ -21,6 +21,7 @@
 		<module>memory</module>
 		<module>nativerdf</module>
 		<module>rdbms</module>
+		<module>federation</module>
 	</modules>
 
 	<scm>
