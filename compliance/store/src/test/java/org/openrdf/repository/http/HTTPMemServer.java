@@ -21,7 +21,7 @@ public class HTTPMemServer {
 
 	public static final String TEST_REPO_ID = "memory";
 
-	public static final String TEST_INFERENCE_REPO_ID = "memory-rdfs-dt";
+	public static final String TEST_INFERENCE_REPO_ID = "memory-rdfs";
 
 	public static int DEFAULT_PORT = 8080;
 
@@ -50,6 +50,10 @@ public class HTTPMemServer {
 		server.setMaxCacheAge(maxCacheAge);
 	}
 
+	public RepositoryManager getRepositoryManager() {
+		return server.getRepositoryManager();
+	}
+
 	public void stop()
 		throws Exception
 	{
@@ -64,8 +68,8 @@ public class HTTPMemServer {
 	{
 		RepositoryManager manager = server.getRepositoryManager();
 		ConfigTemplate memory = manager.getConfigTemplateManager().getTemplate("memory");
-		manager.addRepositoryConfig("memory", memory.createConfig(null));
-		ConfigTemplate memory_rdfs_dt = manager.getConfigTemplateManager().getTemplate("memory-rdfs-dt");
-		manager.addRepositoryConfig("memory-rdfs-dt", memory_rdfs_dt.createConfig(null));
+		manager.addRepositoryConfig(TEST_REPO_ID, memory.createConfig(null));
+		ConfigTemplate memory_rdfs_dt = manager.getConfigTemplateManager().getTemplate("memory-rdfs");
+		manager.addRepositoryConfig(TEST_INFERENCE_REPO_ID, memory_rdfs_dt.createConfig(null));
 	}
 }
