@@ -4,6 +4,5 @@ META-INF/templates/memory.ttl
 META-INF/templates/native-rdfs-dt.ttl
 META-INF/templates/native-rdfs.ttl
 META-INF/templates/native.ttl
-META-INF/templates/remote.ttl
 META-INF/templates/pgsql.ttl
 META-INF/templates/mysql.ttl
