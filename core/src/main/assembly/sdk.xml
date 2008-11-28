@@ -42,7 +42,7 @@
 
 	<files>
 		<file>
-			<source>http/server/target/openrdf-sesame.war</source>
+			<source>http/server-webapp/target/openrdf-sesame.war</source>
 			<outputDirectory>war</outputDirectory>
 		</file>
 
