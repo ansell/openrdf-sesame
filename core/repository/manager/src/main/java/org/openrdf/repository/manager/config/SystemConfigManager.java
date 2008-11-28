@@ -8,7 +8,6 @@ package org.openrdf.repository.manager.config;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY_CONTEXT;
 import static org.openrdf.repository.manager.SystemRepository.REPOSITORYID;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -28,9 +27,6 @@ import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.sail.LockManager;
-import org.openrdf.sail.SailReadOnlyException;
-import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
@@ -193,25 +189,13 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	{
 		Repository systemRepo = getSystemRepository();
 		try {
+			RepositoryConnection con = systemRepo.getConnection();
 			try {
-				RepositoryConnection con = systemRepo.getConnection();
-				try {
-					con.add(model);
-				}
-				finally {
-					con.close();
-				}
+				con.add(model);
 			}
-			catch (SailReadOnlyException e) {
-				if (tryToRemoveLock(e, systemRepo)) {
-					addSystemModel(model);
-				} else {
-					throw e;
-				}
+			finally {
+				con.close();
 			}
-		}
-		catch (IOException e) {
-			throw new StoreConfigException(e);
 		}
 		catch (StoreException e) {
 			throw new StoreConfigException(e);
@@ -226,44 +210,16 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	{
 		Repository systemRepo = getSystemRepository();
 		try {
+			RepositoryConnection con = systemRepo.getConnection();
 			try {
-				RepositoryConnection con = systemRepo.getConnection();
-				try {
-					con.clear(context);
-				}
-				finally {
-					con.close();
-				}
+				con.clear(context);
 			}
-			catch (SailReadOnlyException e) {
-				if (tryToRemoveLock(e, systemRepo)) {
-					clearSystemModel(context);
-				} else {
-					throw e;
-				}
+			finally {
+				con.close();
 			}
-		}
-		catch (IOException e) {
-			throw new StoreConfigException(e);
 		}
 		catch (StoreException e) {
 			throw new StoreConfigException(e);
 		}
-	}
-
-	private boolean tryToRemoveLock(SailReadOnlyException e, Repository repo)
-		throws IOException, StoreException
-	{
-		boolean lockRemoved = false;
-
-		LockManager lockManager = new DirectoryLockManager(repo.getDataDir());
-
-		if (lockManager.isLocked()) {
-			repo.shutDown();
-			lockRemoved = lockManager.revokeLock();
-			repo.initialize();
-		}
-
-		return lockRemoved;
 	}
 }

@@ -1,0 +1,39 @@
+<assembly>
+	<id>runtime</id>
+
+	<formats>
+		<format>jar</format>
+	</formats>
+
+	<baseDirectory>openrdf-sesame</baseDirectory>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<includeSiteDirectory>false</includeSiteDirectory>
+
+	<moduleSets>
+		<moduleSet>
+			<includes>
+				<include>org.openrdf.sesame:sesame-runtime</include>
+			</includes>
+			<binaries>
+				<unpack>true</unpack>
+				<outputDirectory></outputDirectory>
+				<outputFileNameMapping></outputFileNameMapping>
+				<useStrictFiltering>true</useStrictFiltering>
+				<dependencySets>
+					<dependencySet>
+						<unpack>true</unpack>
+						<outputDirectory></outputDirectory>
+						<outputFileNameMapping></outputFileNameMapping>
+						<scope>runtime</scope>
+						<useTransitiveFiltering>true</useTransitiveFiltering>
+						<includes>
+							<include>org.openrdf.sesame:*:jar:*</include>
+							<include>info.aduna.commons:*:jar:*</include>
+							<include>info.aduna.appbase:*:jar:*</include>
+						</includes>
+					</dependencySet>
+				</dependencySets>
+			</binaries>
+		</moduleSet>
+	</moduleSets>
+</assembly>

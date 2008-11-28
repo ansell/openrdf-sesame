@@ -10,11 +10,39 @@
 		<echo message=" " />
 		<echo message="Available targets: " />
 		<echo message=" " />
+		<echo message="- clean: deletes artifacts" />
+		<echo message="- build: builds artifacts" />
 		<echo message="- package: package all of Sesame for release" />
 		<echo message="- docs:		create user and system documentation only" />
 	</target>
 
-	<target name="package" depends="issuewarnings,mvn,override-onejar-services" description="Create release artifacts"/>
+	<target name="clean">
+		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+			<env key="MAVEN_OPTS" value="-Xmx512m"/>
+			<arg line="clean" />
+		</exec>
+
+		<exec os="Linux" executable="mvn" failonerror="true">
+			<env key="MAVEN_OPTS" value="-Xmx512m"/>
+			<arg line="clean" />
+		</exec>
+	</target>
+
+	<target name="build" depends="mvn-package,override-services" description="Creates artifacts"/>
+
+	<target name="mvn-package">
+		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+			<env key="MAVEN_OPTS" value="-Xmx512m"/>
+			<arg line="package assembly:assembly" />
+		</exec>
+
+		<exec os="Linux" executable="mvn" failonerror="true">
+			<env key="MAVEN_OPTS" value="-Xmx512m"/>
+			<arg line="package assembly:assembly" />
+		</exec>
+	</target>
+
+	<target name="package" depends="issuewarnings,mvn,override-services" description="Creates and packages release artifacts"/>
 
 	<target name="mvn">
 		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
@@ -48,7 +76,7 @@
 		</exec>
 	</target>
 
-	<target name="override-onejar-services">
+	<target name="override-services">
 		<xmlproperty file="pom.xml" />
 
 		<antcall target="concat-service-file">
@@ -78,9 +106,18 @@
 		<antcall target="concat-service-file">
 			<param name="service" value="org.openrdf.rio.RDFWriterFactory"/>
 		</antcall>
+
+		<zip destfile="target/openrdf-sesame-${project.version}-client.jar" update="true">
+			<fileset dir="target/services"/>
+		</zip>
+
 		<antcall target="concat-service-file">
 			<param name="service" value="org.openrdf.sail.config.SailFactory"/>
 		</antcall>
+
+		<zip destfile="target/openrdf-sesame-${project.version}-runtime.jar" update="true">
+			<fileset dir="target/services"/>
+		</zip>
 
 		<zip destfile="target/openrdf-sesame-${project.version}-onejar.jar" update="true">
 			<fileset dir="target/services"/>

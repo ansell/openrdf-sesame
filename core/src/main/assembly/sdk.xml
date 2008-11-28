@@ -42,10 +42,18 @@
 
 	<files>
 		<file>
-			<source>http/server-webapp/target/openrdf-sesame.war</source>
-			<outputDirectory>war</outputDirectory>
+			<source>src/main/dist/bin/server.bat</source>
+			<outputDirectory>bin</outputDirectory>
+			<lineEnding>dos</lineEnding>
+			<filtered>true</filtered>
 		</file>
-
+		<file>
+			<source>src/main/dist/bin/server.sh</source>
+			<outputDirectory>bin</outputDirectory>
+			<fileMode>755</fileMode>
+			<lineEnding>unix</lineEnding>
+			<filtered>true</filtered>
+		</file>
 		<file>
 			<source>src/main/dist/bin/console.bat</source>
 			<outputDirectory>bin</outputDirectory>
