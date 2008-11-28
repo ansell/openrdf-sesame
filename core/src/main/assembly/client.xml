@@ -26,11 +26,6 @@
 						<outputFileNameMapping></outputFileNameMapping>
 						<scope>runtime</scope>
 						<useTransitiveFiltering>true</useTransitiveFiltering>
-						<includes>
-							<include>org.openrdf.sesame:*:jar:*</include>
-							<include>info.aduna.commons:*:jar:*</include>
-							<include>info.aduna.appbase:*:jar:*</include>
-						</includes>
 					</dependencySet>
 				</dependencySets>
 			</binaries>
