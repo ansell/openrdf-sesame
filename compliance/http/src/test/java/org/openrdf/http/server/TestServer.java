@@ -5,7 +5,6 @@
  */
 package org.openrdf.http.server;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.openrdf.http.protocol.Protocol;
@@ -21,38 +20,43 @@ import org.openrdf.store.StoreException;
  * @author Herko ter Horst
  * @author James Leigh
  */
-public class TestServer extends EmbeddedServer {
+public class TestServer {
 
 	public static final String TEST_REPO_ID = "Test";
 
 	public static final String TEST_INFERENCE_REPO_ID = "Test-RDFS";
 
-	public static String SERVER_URL = "http://localhost:" + DEFAULT_PORT;
+	public static int DEFAULT_PORT = 8080;
+
+	public static String SERVER_URL = "http://localhost:" + 8080;
 
 	public static String REPOSITORY_URL = Protocol.getRepositoryLocation(TestServer.SERVER_URL, TEST_REPO_ID);
 
 	public static String INFERENCE_REPOSITORY_URL = Protocol.getRepositoryLocation(TestServer.SERVER_URL,
 			TEST_INFERENCE_REPO_ID);
 
-	public static final String OPENRDF_SERVER_WAR = "./target/openrdf-sesame";
+	private SesameServer server;
 
 	public TestServer() throws StoreConfigException, IOException {
-		// warPath configured in pom.xml maven-war-plugin configuration
-		super(DEFAULT_PORT);
+		server = new SesameServer(DEFAULT_PORT);
 	}
 
-	@Override
 	public void start()
 		throws Exception
 	{
-		File dataDir = new File(System.getProperty("user.dir") + "/target/datadir");
-		dataDir.mkdirs();
-		System.setProperty("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
-//		System.setProperty("DEBUG", "true");
-
-		super.start();
+		server.start();
 
 		createTestRepositories();
+	}
+
+	public void setMaxCacheAge(int maxCacheAge) {
+		server.setMaxCacheAge(maxCacheAge);
+	}
+
+	public void stop()
+		throws Exception
+	{
+		server.stop();
 	}
 
 	/**
@@ -61,7 +65,7 @@ public class TestServer extends EmbeddedServer {
 	private void createTestRepositories()
 		throws StoreException, StoreConfigException
 	{
-		RepositoryManager manager = getRepositoryManager();
+		RepositoryManager manager = server.getRepositoryManager();
 
 		// create a (non-inferencing) memory store
 		MemoryStoreConfig memStoreConfig = new MemoryStoreConfig();

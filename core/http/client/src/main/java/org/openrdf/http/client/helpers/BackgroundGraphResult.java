@@ -22,24 +22,36 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
  * @author James Leigh
  */
 public class BackgroundGraphResult implements GraphQueryResult, Runnable, RDFHandler {
+
+	private volatile boolean aborted;
+
 	private URI uri = new URIImpl("urn:stop");
+
 	private Statement afterLast = new StatementImpl(uri, uri, uri);
+
 	private String baseURI;
+
 	private volatile boolean completed;
-	private volatile Throwable exception;
-	private InputStream in;
-	private Map<String, String> namespaces = new ConcurrentHashMap<String, String>();
-	private Statement next;
-	private RDFParser parser;
-	private volatile Thread parserThread;
-	private BlockingQueue<Statement> queue = new ArrayBlockingQueue<Statement>(10);
+
 	private HTTPConnection connection;
+
+	private volatile Throwable exception;
+
+	private InputStream in;
+
+	private Map<String, String> namespaces = new ConcurrentHashMap<String, String>();
+
+	private Statement next;
+
+	private RDFParser parser;
+
+	private volatile Thread parserThread;
+
+	private BlockingQueue<Statement> queue = new ArrayBlockingQueue<Statement>(10);
 
 	public BackgroundGraphResult(RDFParser parser, InputStream in, String baseURI, HTTPConnection connection) {
 		this.parser = parser;
@@ -52,10 +64,10 @@ public class BackgroundGraphResult implements GraphQueryResult, Runnable, RDFHan
 	public synchronized void close()
 		throws StoreException
 	{
+		aborted = true;
 		if (parserThread != null) {
 			parserThread.interrupt();
 		}
-		connection.release();
 	}
 
 	public void endRDF()
@@ -83,6 +95,8 @@ public class BackgroundGraphResult implements GraphQueryResult, Runnable, RDFHan
 	public void handleStatement(Statement st)
 		throws RDFHandlerException
 	{
+		if (aborted)
+			throw new RDFHandlerException("Result closed");
 		try {
 			queue.put(st);
 		}
@@ -137,6 +151,8 @@ public class BackgroundGraphResult implements GraphQueryResult, Runnable, RDFHan
 		parserThread = Thread.currentThread();
 		try {
 			parser.parse(in, baseURI);
+			// release connection back into pool if all results have been read
+			connection.release();
 		}
 		catch (RDFHandlerException e) {
 			queue.clear(); // abort
@@ -147,7 +163,9 @@ public class BackgroundGraphResult implements GraphQueryResult, Runnable, RDFHan
 			exception = e;
 		}
 		try {
-			queue.put(afterLast);
+			if (!aborted) {
+				queue.put(afterLast);
+			}
 		}
 		catch (InterruptedException e) {
 			exception = e;

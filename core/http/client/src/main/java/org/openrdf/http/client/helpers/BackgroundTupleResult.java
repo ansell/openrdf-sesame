@@ -19,20 +19,29 @@ import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
  * @author James Leigh
  */
 public class BackgroundTupleResult implements TupleQueryResult, Runnable, TupleQueryResultHandler {
+
+	private volatile boolean aborted;
+
 	private BindingSet afterLast = EmptyBindingSet.getInstance();
+
 	private volatile boolean completed;
+
 	private volatile Throwable exception;
+
 	private InputStream in;
+
 	private BindingSet next;
+
 	private TupleQueryResultParser parser;
+
 	private volatile Thread parserThread;
+
 	private BlockingQueue<BindingSet> queue = new ArrayBlockingQueue<BindingSet>(10);
+
 	private HTTPConnection connection;
 
 	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in, HTTPConnection connection) {
@@ -45,10 +54,10 @@ public class BackgroundTupleResult implements TupleQueryResult, Runnable, TupleQ
 	public synchronized void close()
 		throws StoreException
 	{
+		aborted = true;
 		if (parserThread != null) {
 			parserThread.interrupt();
 		}
-		connection.release();
 	}
 
 	public void endQueryResult()
@@ -65,6 +74,8 @@ public class BackgroundTupleResult implements TupleQueryResult, Runnable, TupleQ
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
+		if (aborted)
+			throw new TupleQueryResultHandlerException("Result closed");
 		try {
 			queue.put(bindingSet);
 		}
@@ -119,6 +130,8 @@ public class BackgroundTupleResult implements TupleQueryResult, Runnable, TupleQ
 		parserThread = Thread.currentThread();
 		try {
 			parser.parse(in);
+			// release connection back into pool if all results have been read
+			connection.release();
 		}
 		catch (TupleQueryResultHandlerException e) {
 			queue.clear(); // abort
@@ -129,7 +142,9 @@ public class BackgroundTupleResult implements TupleQueryResult, Runnable, TupleQ
 			exception = e;
 		}
 		try {
-			queue.put(afterLast);
+			if (!aborted) {
+				queue.put(afterLast);
+			}
 		}
 		catch (InterruptedException e) {
 			exception = e;

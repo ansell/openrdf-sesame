@@ -72,7 +72,7 @@
 
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-http-server</artifactId>
+			<artifactId>sesame-http-server-standalone</artifactId>
 		</dependency>
 
 		<dependency>
@@ -103,11 +103,6 @@
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-repository-manager</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-net-http-server-embedded</artifactId>
 		</dependency>
 
 		<dependency>
