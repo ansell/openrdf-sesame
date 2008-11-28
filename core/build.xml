@@ -33,12 +33,12 @@
 	<target name="mvn-package">
 		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
 			<env key="MAVEN_OPTS" value="-Xmx512m"/>
-			<arg line="package assembly:assembly" />
+			<arg line="--offline -Dmaven.test.skip=true package assembly:assembly" />
 		</exec>
 
 		<exec os="Linux" executable="mvn" failonerror="true">
 			<env key="MAVEN_OPTS" value="-Xmx512m"/>
-			<arg line="package assembly:assembly" />
+			<arg line="--offline -Dmaven.test.skip=true package assembly:assembly" />
 		</exec>
 	</target>
 
