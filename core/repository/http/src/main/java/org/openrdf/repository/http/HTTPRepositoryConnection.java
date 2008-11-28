@@ -138,11 +138,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws StoreException, MalformedQueryException
 	{
 		String type = getRepository().getClient().getQueryType(ql, queryString);
-		if (Protocol.GRAPH.equals(type))
+		if (Protocol.GRAPH_QUERY.equals(type))
 			return new HTTPGraphQuery(this, ql, queryString, baseURI);
-		if (Protocol.BOOLEAN.equals(type))
+		if (Protocol.BOOLEAN_QUERY.equals(type))
 			return new HTTPBooleanQuery(this, ql, queryString, baseURI);
-		if (Protocol.BINDINGS.equals(type))
+		if (Protocol.BINDINGS_QUERY.equals(type))
 			return new HTTPTupleQuery(this, ql, queryString, baseURI);
 		throw new StoreException("Unsupported query type: " + type);
 	}
