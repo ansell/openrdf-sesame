@@ -30,7 +30,7 @@ import org.openrdf.store.StoreConfigException;
 
 /**
  * Stand alone server for Sesame.
- *
+ * 
  * @author James Leigh
  */
 public class SesameServer {
@@ -120,8 +120,7 @@ public class SesameServer {
 			e.printStackTrace();
 			return null;
 		}
-		String version = (String)pom.get("version");
-		return version;
+		return (String)pom.get("version");
 	}
 
 	public static int DEFAULT_PORT = 8080;
@@ -133,8 +132,6 @@ public class SesameServer {
 	private RepositoryManager manager;
 
 	private SesameServlet servlet;
-
-	private boolean temp;
 
 	public SesameServer()
 		throws IOException, StoreConfigException
@@ -159,8 +156,7 @@ public class SesameServer {
 	{
 		this.dataDir = dir;
 		if (dataDir == null) {
-			temp = true;
-			dataDir = FileUtil.createTempDir("sesame");
+			dataDir = createTempDir();
 		}
 		manager = new LocalRepositoryManager(dataDir);
 		manager.initialize();
@@ -168,6 +164,25 @@ public class SesameServer {
 		servlet = new SesameServlet(manager);
 		Context root = new Context(jetty, "/");
 		root.addServlet(new ServletHolder(servlet), "/*");
+	}
+
+	private File createTempDir()
+		throws IOException
+	{
+		final File dir = FileUtil.createTempDir("sesame");
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+
+			@Override
+			public void run() {
+				try {
+					FileUtil.deleteDir(dir);
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		return dir;
 	}
 
 	public void setMaxCacheAge(int maxCacheAge) {
@@ -188,9 +203,6 @@ public class SesameServer {
 		throws Exception
 	{
 		jetty.stop();
-		if (temp) {
-			FileUtil.deleteDir(dataDir);
-		}
 	}
 
 }
