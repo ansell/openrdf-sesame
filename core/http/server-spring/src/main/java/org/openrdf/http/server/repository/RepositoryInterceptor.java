@@ -150,7 +150,7 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 
 		if (!precondition(request, response)) {
 			response.setStatus(HttpServletResponse.SC_PRECONDITION_FAILED);
-			postHandle(request, response, null, null);
+			response.setDateHeader(DATE, System.currentTimeMillis() / 1000 * 1000);
 			return false;
 		}
 
