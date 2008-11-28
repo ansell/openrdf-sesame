@@ -3,11 +3,12 @@
  *
  * Licensed under the Open Software License version 3.0.
  */
-package org.openrdf.sail.federation;
+package org.openrdf.repository.sail.federation;
 
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.RDFStoreTest;
 import org.openrdf.sail.Sail;
+import org.openrdf.sail.federation.Federation;
 import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.store.StoreException;
 

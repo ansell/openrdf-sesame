@@ -23,6 +23,7 @@
 		<module>repository</module>
 		<module>rio</module>
 		<module>runtime</module>
+		<module>client</module>
 		<module>sail</module>
 	</modules>
 
@@ -38,6 +39,8 @@
 					<finalName>openrdf-sesame-${project.version}</finalName>
 					<descriptors>
 						<descriptor>src/main/assembly/onejar.xml</descriptor>
+						<descriptor>src/main/assembly/runtime.xml</descriptor>
+						<descriptor>src/main/assembly/client.xml</descriptor>
 						<descriptor>src/main/assembly/sdk.xml</descriptor>
 					</descriptors>
 				</configuration>

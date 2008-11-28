@@ -3,7 +3,7 @@
  *
  * Licensed under the Open Software License version 3.0.
  */
-package org.openrdf.sail.federation;
+package org.openrdf.repository.sail.federation;
 
 import junit.framework.Test;
 
@@ -13,6 +13,7 @@ import org.openrdf.query.parser.sparql.SPARQLQueryTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.dataset.DatasetRepository;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.federation.Federation;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class FederationSparqlTest extends SPARQLQueryTest {
