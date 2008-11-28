@@ -31,7 +31,7 @@
 	<target name="issuewarnings">
 		<echo message="WARNING: Do not forget to update version numbers in:" />
 		<echo message=" - org.openrdf.console.Console" />
-		<echo message=" - http/server/src/main/webapp/WEB-INF/openrdf-servlet.xml" />
+		<echo message=" - http/server-webapp/src/main/webapp/WEB-INF/openrdf-servlet.xml" />
 		<echo message=" - http/webclient/src/main/webapp/WEB-INF/openrdf-webclient-servlet.xml" />
 		<input>Press return to continue</input>
 	</target>
