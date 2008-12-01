@@ -9,7 +9,7 @@ package org.openrdf.query.algebra;
  * The SLICE operator, as defined in <a
  * href="http://www.w3.org/TR/rdf-sparql-query/#defn_algSlice">SPARQL Query
  * Language for RDF</a>. The SLICE operator selects specific results from the
- * underlying tuple expression based onan offset and limit value (both
+ * underlying tuple expression based on an offset and limit value (both
  * optional).
  * 
  * @author Arjohn Kampman
