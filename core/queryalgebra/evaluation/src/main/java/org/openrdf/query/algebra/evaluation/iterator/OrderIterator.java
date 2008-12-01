@@ -12,6 +12,7 @@ import java.util.List;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.DelayedIteration;
+import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 import info.aduna.iteration.IteratorIteration;
@@ -52,8 +53,14 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 		throws QueryEvaluationException
 	{
 		List<BindingSet> list = Iterations.addAll(iter, new ArrayList<BindingSet>(1024));
-		Collections.sort(list, comparator);
-		return new IteratorIteration<BindingSet, QueryEvaluationException>(list.iterator());
+		
+		if (!isClosed()) {
+			Collections.sort(list, comparator);
+			return new IteratorIteration<BindingSet, QueryEvaluationException>(list.iterator());
+		}
+		else {
+			return new EmptyIteration<BindingSet, QueryEvaluationException>();
+		}
 	}
 
 	@Override
