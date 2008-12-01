@@ -100,7 +100,7 @@ import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
-import org.openrdf.query.algebra.evaluation.iterator.CompatibleBindingSetFilter;
+import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.ExtensionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.FilterIterator;
 import org.openrdf.query.algebra.evaluation.iterator.GroupIterator;
@@ -488,16 +488,16 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(LeftJoin leftJoin,
-			BindingSet bindings)
+			final BindingSet bindings)
 		throws QueryEvaluationException
 	{
 		// Check whether optional join is "well designed" as defined in section
-		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge Pérez et al.
+		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge Pï¿½rez et al.
 		Set<String> boundVars = bindings.getBindingNames();
 		Set<String> leftVars = leftJoin.getLeftArg().getBindingNames();
 		Set<String> optionalVars = leftJoin.getRightArg().getBindingNames();
 
-		Set<String> problemVars = new HashSet<String>(boundVars);
+		final Set<String> problemVars = new HashSet<String>(boundVars);
 		problemVars.retainAll(optionalVars);
 		problemVars.removeAll(leftVars);
 
@@ -506,14 +506,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			return new LeftJoinIterator(this, leftJoin, bindings);
 		}
 		else {
-			QueryBindingSet filteredBindings = new QueryBindingSet(bindings);
-			filteredBindings.removeAll(problemVars);
-			CloseableIteration<BindingSet, QueryEvaluationException> iter;
-
-			iter = new LeftJoinIterator(this, leftJoin, filteredBindings);
-			iter = new CompatibleBindingSetFilter(iter, bindings);
-
-			return iter;
+			return new BadlyDesignedLeftJoinIterator(this, leftJoin, bindings, problemVars);
 		}
 	}
 
@@ -1013,12 +1006,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 	/**
 	 * Determines whether the two operands match according to the
-	 * <code>like</code> operator. The operator is defined as a string
-	 * comparison with the possible use of an asterisk (*) at the end and/or the
-	 * start of the second operand to indicate substring matching.
+	 * <code>like</code> operator. The operator is defined as a string comparison
+	 * with the possible use of an asterisk (*) at the end and/or the start of
+	 * the second operand to indicate substring matching.
 	 * 
-	 * @return <tt>true</tt> if the operands match according to the
-	 *         <tt>like</tt> operator, <tt>false</tt> otherwise.
+	 * @return <tt>true</tt> if the operands match according to the <tt>like</tt>
+	 *         operator, <tt>false</tt> otherwise.
 	 */
 	public Value evaluate(Like node, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException
@@ -1384,7 +1377,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			// Note: Java already handles cases like divide-by-zero appropriately
 			// for floats and doubles, see:
-			// http://www.particle.kth.se/~lindsey/JavaCourse/Book/Part1/Tech/Chapter02/floatingPt2.html
+			// http://www.particle.kth.se/~lindsey/JavaCourse/Book/Part1/Tech/
+			// Chapter02/floatingPt2.html
 
 			try {
 				if (commonDatatype.equals(XMLSchema.DOUBLE)) {
