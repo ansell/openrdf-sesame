@@ -14,7 +14,10 @@ import org.openrdf.query.QueryResultUtil;
 
 /**
  * @author Arjohn Kampman
+ * 
+ * @deprecated
  */
+@Deprecated
 public class CompatibleBindingSetFilter extends FilterIteration<BindingSet, QueryEvaluationException> {
 
 	private BindingSet inputBindings;
