@@ -1,47 +1,45 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIterationBase;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
+
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.DelayedIteration;
+import info.aduna.iteration.Iteration;
+import info.aduna.iteration.Iterations;
+import info.aduna.iteration.IteratorIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 
 /**
- * 
  * @author james
- *
+ * @author Arjohn Kampman
  */
-public class OrderIterator extends
-		CloseableIterationBase<BindingSet, QueryEvaluationException> {
+public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationException> {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> iter;
+	private final CloseableIteration<BindingSet, QueryEvaluationException> iter;
 
-	private Comparator<BindingSet> comparator;
-
-	private Iterator<BindingSet> ordered;
+	private final Comparator<BindingSet> comparator;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public OrderIterator(
-			CloseableIteration<BindingSet, QueryEvaluationException> iter,
-			Comparator<BindingSet> comparator) {
+	public OrderIterator(CloseableIteration<BindingSet, QueryEvaluationException> iter,
+			Comparator<BindingSet> comparator)
+	{
 		this.iter = iter;
 		this.comparator = comparator;
 	}
@@ -50,29 +48,26 @@ public class OrderIterator extends
 	 * Methods *
 	 *---------*/
 
-	private Iterator<BindingSet> getOrderedIterator()
-			throws QueryEvaluationException {
-		if (ordered == null) {
-			List<BindingSet> list = new ArrayList<BindingSet>(1024);
-			while (iter.hasNext()) {
-				list.add(iter.next());
-			}
-			Collections.sort(list, comparator);
-			ordered = list.iterator();
-		}
-		return ordered;
+	protected Iteration<BindingSet, QueryEvaluationException> createIteration()
+		throws QueryEvaluationException
+	{
+		List<BindingSet> list = Iterations.addAll(iter, new ArrayList<BindingSet>(1024));
+		Collections.sort(list, comparator);
+		return new IteratorIteration<BindingSet, QueryEvaluationException>(list.iterator());
 	}
 
-	public boolean hasNext() throws QueryEvaluationException {
-		return getOrderedIterator().hasNext();
-	}
-
-	public BindingSet next() throws QueryEvaluationException {
-		return getOrderedIterator().next();
-	}
-
-	public void remove() throws QueryEvaluationException {
+	@Override
+	public void remove()
+		throws QueryEvaluationException
+	{
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	protected void handleClose()
+		throws QueryEvaluationException
+	{
+		super.handleClose();
+		iter.close();
+	}
 }
