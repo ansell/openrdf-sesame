@@ -7,8 +7,12 @@ package org.openrdf.model.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Locale;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import info.aduna.i18n.languagetag.LanguageTag;
+import info.aduna.i18n.languagetag.LanguageTagSyntaxException;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
@@ -401,5 +405,40 @@ public class LiteralUtil {
 		else {
 			return fallback;
 		}
+	}
+
+	/**
+	 * Determine the Locale from a literal's language tag, as specified by RFC
+	 * 3166. Note that RFC 3166 isn't fully covered by the current (JSE 6)
+	 * implementation of java.util.Locale. Therefore, this method will only
+	 * return a specific locale for language tags that comply with the Locale
+	 * API, i.e. those that contain an ISO639 language, an optional ISO3166
+	 * country and an optional variant. In all other cases (i.e. if an error
+	 * occurs or the language tag represents an IANA-registred language tag), the
+	 * fallback value will be returned.
+	 * 
+	 * @param l
+	 *        the literal
+	 * @param fallback
+	 *        a fallback value for the locale
+	 * @return the Locale, or the fallback if a suitable Locale could not be
+	 *         constructed for the language tag.
+	 * @see http://www.ietf.org/rfc/rfc3066.txt
+	 */
+	public static Locale getLocale(Literal l, Locale fallback) {
+		Locale result = fallback;
+
+		try {
+			String lang = l.getLanguage();
+			if(lang != null) {
+				LanguageTag tag = new LanguageTag(lang);
+				result = tag.toLocale();
+			}
+		}
+		catch (LanguageTagSyntaxException e) {
+			result = fallback;
+		}
+
+		return result;
 	}
 }
