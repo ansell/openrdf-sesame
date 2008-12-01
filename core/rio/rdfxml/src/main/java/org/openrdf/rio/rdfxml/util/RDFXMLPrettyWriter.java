@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Stack;
 
+import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -377,10 +378,10 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			URI uri = (URI)value;
 			writeAttribute(RDF.NAMESPACE, "about", uri.toString());
 		}
-		// else {
-		// BNode bNode = (BNode)subj;
-		// writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
-		// }
+		else {
+			BNode bNode = (BNode)value;
+			writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
+		}
 	}
 
 	/**
@@ -434,10 +435,10 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				URI uri = (URI)objRes;
 				writeAttribute(RDF.NAMESPACE, "resource", uri.toString());
 			}
-			// else {
-			// BNode bNode = (BNode)objRes;
-			// writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
-			// }
+			else {
+				BNode bNode = (BNode)objRes;
+				writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
+			}
 
 			writeEndOfEmptyTag();
 		}
