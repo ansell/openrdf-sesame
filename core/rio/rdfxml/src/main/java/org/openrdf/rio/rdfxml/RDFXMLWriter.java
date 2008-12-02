@@ -36,6 +36,8 @@ public class RDFXMLWriter implements RDFWriter {
 	 * Variables *
 	 *-----------*/
 
+	protected String baseURI;
+
 	protected Writer writer;
 
 	protected Map<String, String> namespaceTable;
@@ -80,6 +82,10 @@ public class RDFXMLWriter implements RDFWriter {
 
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.RDFXML;
+	}
+
+	public void setBaseURI(String baseURI) {
+		this.baseURI = baseURI;
 	}
 
 	public void startRDF() {

@@ -44,6 +44,8 @@ public class TriXWriter implements RDFWriter {
 	 * Variables *
 	 *-----------*/
 
+	private String baseURI;
+
 	private XMLWriter xmlWriter;
 
 	private boolean writingStarted;
@@ -91,6 +93,10 @@ public class TriXWriter implements RDFWriter {
 
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.TRIX;
+	}
+
+	public void setBaseURI(String baseURI) {
+		this.baseURI = baseURI;
 	}
 
 	public void startRDF()

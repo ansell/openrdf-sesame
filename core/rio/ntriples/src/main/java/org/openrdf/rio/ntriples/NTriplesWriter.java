@@ -33,6 +33,8 @@ public class NTriplesWriter implements RDFWriter {
 	 * Variables *
 	 *-----------*/
 
+	private String baseURI;
+
 	private Writer writer;
 
 	private boolean writingStarted;
@@ -68,6 +70,10 @@ public class NTriplesWriter implements RDFWriter {
 
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.NTRIPLES;
+	}
+
+	public void setBaseURI(String baseURI) {
+		this.baseURI = baseURI;
 	}
 
 	public void startRDF()
