@@ -990,7 +990,7 @@ public class HTTPClient {
 		}
 	}
 
-	protected void getRDF(HttpMethod method, RDFHandler handler, boolean requireContext)
+	protected void getRDF(HttpMethod method, RDFHandler handler, boolean statements)
 		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException
 	{
@@ -1005,7 +1005,7 @@ public class HTTPClient {
 			// support and the user specified preference
 			int qValue = 10;
 
-			if (requireContext && !format.supportsContexts()) {
+			if (statements && !format.supportsContexts()) {
 				// Prefer context-supporting formats over pure triple-formats
 				qValue -= 5;
 			}
@@ -1051,6 +1051,9 @@ public class HTTPClient {
 		}
 		else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 			throw new UnauthorizedException();
+		}
+		else if (httpCode == HttpURLConnection.HTTP_NOT_FOUND && statements) {
+			return; // no statements found
 		}
 		else {
 			ErrorInfo errInfo = getErrorInfo(method);
