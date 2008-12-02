@@ -60,7 +60,7 @@ public class NamespaceController extends AbstractController {
 
 		String reqMethod = request.getMethod();
 		if (METHOD_GET.equals(reqMethod)) {
-			logger.info("GET namespace for prefix {}" + prefix);
+			logger.info("GET namespace for prefix {}", prefix);
 			return getExportNamespaceResult(repositoryCon, prefix);
 		}
 		else if ("PUT".equals(reqMethod)) {
