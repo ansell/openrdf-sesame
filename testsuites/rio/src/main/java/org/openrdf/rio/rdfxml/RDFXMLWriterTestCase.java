@@ -61,4 +61,35 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 		assertTrue("result of serialization and re-upload should be equal to original", RepositoryUtil.equals(
 				rep1, rep2));
 	}
+
+	public void testRelativeWrite()
+		throws StoreException, RDFParseException, IOException, RDFHandlerException
+	{
+		Repository rep1 = new SailRepository(new MemoryStore());
+		rep1.initialize();
+
+		RepositoryConnection con1 = rep1.getConnection();
+
+		URL ciaScheme = this.getClass().getResource("/cia-factbook/CIA-onto-enhanced.rdf");
+
+		con1.add(ciaScheme, ciaScheme.toExternalForm(), RDFFormat.forFileName(ciaScheme.toExternalForm()));
+
+		StringWriter writer = new StringWriter();
+		RDFWriter rdfWriter = rdfWriterFactory.getWriter(writer);
+		rdfWriter.setBaseURI(ciaScheme.toExternalForm());
+		con1.export(rdfWriter);
+
+		con1.close();
+
+		Repository rep2 = new SailRepository(new MemoryStore());
+		rep2.initialize();
+
+		RepositoryConnection con2 = rep2.getConnection();
+
+		con2.add(new StringReader(writer.toString()), "foo:bar", RDFFormat.RDFXML);
+		con2.close();
+
+		assertTrue("result of serialization and re-upload should be equal to original", RepositoryUtil.equals(
+				rep1, rep2));
+	}
 }
