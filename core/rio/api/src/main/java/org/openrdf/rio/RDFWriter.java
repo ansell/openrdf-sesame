@@ -20,4 +20,12 @@ public interface RDFWriter extends RDFHandler {
 	 * Gets the RDF format that this RDFWriter uses.
 	 */
 	public RDFFormat getRDFFormat();
+
+	/**
+	 * The baseURI that should be used in the output.
+	 * 
+	 * @param baseURI
+	 *        The URI associated with the data.
+	 */
+	public void setBaseURI(String baseURI);
 }
