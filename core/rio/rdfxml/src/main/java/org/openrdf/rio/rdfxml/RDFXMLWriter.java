@@ -123,6 +123,15 @@ public class RDFXMLWriter implements RDFWriter {
 				writer.write("\"");
 			}
 
+			if (baseURI != null) {
+				writeNewLine();
+				writeIndent();
+				writer.write("xml:base");
+				writer.write("=\"");
+				writer.write(XMLUtil.escapeDoubleQuotedAttValue(baseURI));
+				writer.write("\"");
+			}
+
 			writeEndOfStartTag();
 
 			writeNewLine();

@@ -10,6 +10,7 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.util.Stack;
 
 import org.openrdf.model.BNode;
@@ -111,6 +112,8 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * one for subjects/objects.
 	 */
 
+	private java.net.URI relativeURI;
+
 	/**
 	 * Stack for remembering the nodes (subjects/objects) of statements at each
 	 * level.
@@ -159,6 +162,17 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		setNamespace("rdfs", RDFS.NAMESPACE, false);
 
 		super.writeHeader();
+	}
+
+	@Override
+	public void setBaseURI(String baseURI) {
+		super.setBaseURI(baseURI);
+		try {
+			this.relativeURI = new java.net.URI(baseURI);
+		}
+		catch (URISyntaxException e) {
+			// don't use relative URIs
+		}
 	}
 
 	public void flush()
@@ -376,11 +390,31 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 		if (value instanceof URI) {
 			URI uri = (URI)value;
-			writeAttribute(RDF.NAMESPACE, "about", uri.toString());
+			writeAttribute(RDF.NAMESPACE, "about", relativize(uri.stringValue()));
 		}
 		else {
 			BNode bNode = (BNode)value;
 			writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
+		}
+	}
+
+	private String relativize(String stringValue) {
+		if (baseURI == null)
+			return stringValue;
+		if (stringValue.equals(baseURI))
+			return "";
+		if (!stringValue.startsWith(baseURI))
+			return stringValue;
+		if ('#' == stringValue.charAt(baseURI.length()))
+			return stringValue.substring(baseURI.length());
+		if (relativeURI == null)
+			return stringValue;
+		try {
+			java.net.URI uri = new java.net.URI(stringValue);
+			return relativeURI.relativize(uri).toString();
+		}
+		catch (URISyntaxException e) {
+			return stringValue;
 		}
 	}
 
@@ -433,7 +467,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 			if (objRes instanceof URI) {
 				URI uri = (URI)objRes;
-				writeAttribute(RDF.NAMESPACE, "resource", uri.toString());
+				writeAttribute(RDF.NAMESPACE, "resource", relativize(uri.stringValue()));
 			}
 			else {
 				BNode bNode = (BNode)objRes;
