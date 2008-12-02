@@ -12,7 +12,9 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
@@ -27,6 +29,7 @@ import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.MalformedData;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
+import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.protocol.exceptions.Unauthorized;
 import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
@@ -34,11 +37,15 @@ import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
 import org.openrdf.http.protocol.transaction.TransactionWriter;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
+import org.openrdf.query.impl.EmptyCursor;
+import org.openrdf.query.impl.GraphQueryResultImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -72,8 +79,13 @@ public class StatementClient {
 		try {
 			method.acceptRDF(true);
 			method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
-			execute(method);
-			return method.getGraphQueryResult();
+			if (execute(method)) {
+				return method.getGraphQueryResult();
+			} else {
+				Map<String, String> ns = Collections.emptyMap();
+				Cursor<Statement> cursor = EmptyCursor.emptyCursor();
+				return new GraphQueryResultImpl(ns, cursor);
+			}
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new StoreException(e);
@@ -95,8 +107,9 @@ public class StatementClient {
 		try {
 			method.acceptRDF(true);
 			method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
-			execute(method);
-			method.readRDF(handler);
+			if (execute(method)) {
+				method.readRDF(handler);
+			}
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new StoreException(e);
@@ -141,7 +154,9 @@ public class StatementClient {
 		});
 
 		try {
-			execute(method);
+			if (!execute(method)) {
+				throw new StoreException("Not Found");
+			}
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -251,11 +266,15 @@ public class StatementClient {
 		return params;
 	}
 
-	private void execute(HTTPConnection method)
+	private boolean execute(HTTPConnection method)
 		throws IOException, StoreException
 	{
 		try {
 			method.execute();
+			return true;
+		}
+		catch (NotFound e) {
+			return false;
 		}
 		catch (UnsupportedQueryLanguage e) {
 			throw new UnsupportedQueryLanguageException(e);
