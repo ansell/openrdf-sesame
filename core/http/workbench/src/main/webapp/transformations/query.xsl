@@ -76,25 +76,29 @@
 			}
 			/* MSIE6 does not like xslt w/ this querystring, so we use url parameters. */
 			function doSubmit() {
-				var url = [];
-				url[url.length] = 'query';
-				if (document.all) {
-					url[url.length] = ';';
-				} else {
-					url[url.length] = '?';
+				if (document.getElementById('query').value.length >= 1000) {
+					// some functionality will not work as expected on result pages
+					return true;
+				} else { // safe to use in request-URI
+					var url = [];
+					url[url.length] = 'query';
+					if (document.all) {
+						url[url.length] = ';';
+					} else {
+						url[url.length] = '?';
+					}
+					addParam(url, 'queryLn');
+					addParam(url, 'query');
+					addParam(url, 'limit');
+					addParam(url, 'infer');
+					url[url.length - 1] = '';
+					document.location.href = url.join('');
+					return false;
 				}
-				addParam(url, 'queryLn');
-				addParam(url, 'query');
-				addParam(url, 'limit');
-				addParam(url, 'infer');
-				url[url.length - 1] = '';
-				document.location.href = url.join('');
-				return false;
-				return true;
 			}
 			]]>
 		</script>
-		<form action="query" onsubmit="return doSubmit()">
+		<form action="query" method="POST" onsubmit="return doSubmit()">
 			<table class="dataentry">
 				<tbody>
 					<tr>
