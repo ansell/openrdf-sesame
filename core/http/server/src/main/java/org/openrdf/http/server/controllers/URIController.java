@@ -48,12 +48,8 @@ public class URIController {
 	public Model get(HttpServletRequest request)
 		throws StoreConfigException, StoreException, RDFHandlerException, MalformedQueryException, NotFound
 	{
-		StringBuffer sb = request.getRequestURL();
-		if (request.getQueryString() != null) {
-			sb.append(request.getQueryString());
-		}
-		URI uri = new URIImpl(sb.toString());
-		String namespace = sb.append("#").toString();
+		URI uri = new URIImpl(request.getRequestURL().toString());
+		String namespace = request.getRequestURL().append("#").toString();
 		URI ns = new URIImpl(namespace);
 		StatementCollector rdf = new StatementCollector();
 		boolean head = HEAD.equals(RequestMethod.valueOf(request.getMethod()));
