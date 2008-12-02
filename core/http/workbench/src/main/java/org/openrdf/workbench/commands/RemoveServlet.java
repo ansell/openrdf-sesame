@@ -10,6 +10,11 @@ import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.openrdf.http.protocol.Protocol;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -19,8 +24,6 @@ import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RemoveServlet extends TransformationServlet {
 	private Logger logger = LoggerFactory.getLogger(RemoveServlet.class);
@@ -40,11 +43,11 @@ public class RemoveServlet extends TransformationServlet {
 				Value obj = req.getValue("obj");
 				if (subj == pred && pred == obj && obj == null)
 					throw new BadRequestException("No values");
-				if (req.isParameterPresent("context")) {
-					Resource ctx = req.getResource("context");
-					con.remove(subj, pred, obj, ctx);
-				} else {
-					con.remove(subj, pred, obj);
+				remove(con, subj, pred, obj, req);
+				// HACK: HTML sends \r\n, but SAX strips out the \r, try both ways
+				if (obj instanceof Literal && obj.stringValue().contains("\r\n")) {
+					obj = Protocol.decodeValue(o.replace("\r\n", "\n"), con.getValueFactory());
+					remove(con, subj, pred, obj, req);
 				}
 			} catch (ClassCastException exc) {
 				throw new BadRequestException(exc.getMessage(), exc);
@@ -62,6 +65,26 @@ public class RemoveServlet extends TransformationServlet {
 			builder.link("info");
 			builder.result(exc.getMessage(), s, p, o, c);
 			builder.end();
+		}
+	}
+
+	/**
+	 * @param con
+	 * @param subj
+	 * @param pred
+	 * @param obj
+	 * @param req
+	 * @throws BadRequestException
+	 * @throws RepositoryException
+	 */
+	private void remove(RepositoryConnection con, Resource subj, URI pred, Value obj, WorkbenchRequest req)
+		throws BadRequestException, RepositoryException
+	{
+		if (req.isParameterPresent("context")) {
+			Resource ctx = req.getResource("context");
+			con.remove(subj, pred, obj, ctx);
+		} else {
+			con.remove(subj, pred, obj);
 		}
 	}
 
