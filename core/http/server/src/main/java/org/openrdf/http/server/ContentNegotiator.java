@@ -207,7 +207,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 
 				ServletOutputStream out = resp.getOutputStream();
 				try {
-					QueryResultUtil.report(model, factory.getWriter(out));
+					RDFWriter writer = factory.getWriter(out);
+					writer.setBaseURI(req.getRequestURL().toString());
+					QueryResultUtil.report(model, writer);
 				}
 				catch (RDFHandlerException e) {
 					throw new IOException("Serialization error: " + e.getMessage());
@@ -256,6 +258,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		ServletOutputStream out = resp.getOutputStream();
 		try {
 			RDFWriter rdfHandler = factory.getWriter(out);
+			rdfHandler.setBaseURI(req.getRequestURL().toString());
 			rdfHandler.startRDF();
 
 			for (Map.Entry<String, String> ns : model.getNamespaces().entrySet()) {
