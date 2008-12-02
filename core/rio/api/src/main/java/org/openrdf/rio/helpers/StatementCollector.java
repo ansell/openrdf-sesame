@@ -113,4 +113,12 @@ public class StatementCollector extends RDFHandlerBase {
 	{
 		statements.add(st);
 	}
+
+	public boolean isEmpty() {
+		return statements.isEmpty();
+	}
+
+	public int size() {
+		return statements.size();
+	}
 }
