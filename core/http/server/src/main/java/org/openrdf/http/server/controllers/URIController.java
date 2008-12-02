@@ -81,7 +81,7 @@ public class URIController {
 			}
 		}
 		if (rdf.isEmpty())
-			throw new NotFound(uri.toString());
+			throw new NotFound("Not Found <" + uri.stringValue() + ">");
 		return rdf.getModel();
 	}
 
