@@ -42,11 +42,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna.appbase</groupId>
-			<artifactId>aduna-appbase-core</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-iteration</artifactId>
 		</dependency>

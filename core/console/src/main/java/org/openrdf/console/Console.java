@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -39,8 +40,7 @@ import org.apache.commons.cli.PosixParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.app.AppConfiguration;
-import info.aduna.app.AppVersion;
+import info.aduna.io.FileUtil;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.text.StringUtil;
 
@@ -109,9 +109,7 @@ public class Console {
 	 * Static constants *
 	 *------------------*/
 
-	private static final AppVersion VERSION = new AppVersion(2, 5, "SNAPSHOT");
-
-	private static final String APP_NAME = "OpenRDF Sesame console";
+	private static final String POM_PROPERTIES = "/META-INF/maven/org.openrdf.sesame/sesame-console/pom.properties";
 
 	public static final Map<String, Level> LOG_LEVELS;
 
@@ -128,8 +126,6 @@ public class Console {
 	/*-----------*
 	 * Constants *
 	 *-----------*/
-
-	private final AppConfiguration appConfig = new AppConfiguration(APP_NAME, APP_NAME, VERSION);
 
 	private final java.util.logging.Logger jdkRootLogger = java.util.logging.Logger.getLogger("");
 
@@ -193,7 +189,7 @@ public class Console {
 			}
 
 			if (commandLine.hasOption(versionOption.getOpt())) {
-				System.out.println(console.appConfig.getFullName());
+				System.out.println(getVersion());
 				System.exit(0);
 			}
 
@@ -248,13 +244,27 @@ public class Console {
 		System.out.println("For bug reports and suggestions, see http://www.openrdf.org/");
 	}
 
+	private static String getVersion() {
+		InputStream in = Console.class.getClassLoader().getResourceAsStream(POM_PROPERTIES);
+		if (in == null)
+			return null;
+		Properties pom = new Properties();
+		try {
+			pom.load(in);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		String version = (String)pom.get("version");
+		return version;
+	}
+
 	public Console()
 		throws IOException
 	{
 		// Set log level to WARNING by default
 		jdkRootLogger.setLevel(Level.WARNING);
-
-		appConfig.init();
 
 		in = new BufferedReader(new InputStreamReader(System.in));
 		out = System.out;
@@ -292,6 +302,8 @@ public class Console {
 	{
 		boolean exit = false;
 		String[] tokens = parse(command);
+		if (tokens.length == 0)
+			return exit;
 		String operation = tokens[0].toLowerCase(Locale.ENGLISH);
 
 		if ("quit".equals(operation) || "exit".equals(operation)) {
@@ -445,8 +457,13 @@ public class Console {
 	}
 
 	private void printInfo() {
-		writeln(appConfig.getFullName());
-		writeln("Data dir: " + appConfig.getDataDir());
+		writeln(getVersion());
+		try {
+			writeln("Data location: " + (manager == null ? "-" : manager.getLocation()));
+		}
+		catch (MalformedURLException e) {
+			// can't display data location
+		}
 		writeln("Connected to: " + (managerID == null ? "-" : managerID));
 	}
 
@@ -457,7 +474,7 @@ public class Console {
 		writeln("connect <serverURL>       Connects to a Sesame server");
 	}
 
-	private void connect(String[] tokens) {
+	private void connect(String[] tokens) throws IOException {
 		if (tokens.length != 2) {
 			printHelpConnect();
 			return;
@@ -481,8 +498,27 @@ public class Console {
 		}
 	}
 
-	private boolean connectDefault() {
-		return installNewManager(new LocalRepositoryManager(appConfig.getDataDir()), "default data directory");
+	private boolean connectDefault() throws IOException {
+		return connectLocal(createTempDir().getPath());
+	}
+
+	private File createTempDir()
+		throws IOException
+	{
+		final File dir = FileUtil.createTempDir("sesame");
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+
+			@Override
+			public void run() {
+				try {
+					FileUtil.deleteDir(dir);
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		return dir;
 	}
 
 	private boolean connectLocal(String path) {
