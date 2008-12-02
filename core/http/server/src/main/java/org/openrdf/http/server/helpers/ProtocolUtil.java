@@ -206,20 +206,24 @@ public class ProtocolUtil {
 		throws ClientHTTPException
 	{
 		// Accept-parameter takes precedence over request headers
-		String mimeType = request.getParameter(Protocol.ACCEPT_PARAM_NAME);
-		boolean hasAcceptParam = mimeType != null;
+		String[] accept = request.getParameterValues(Protocol.ACCEPT_PARAM_NAME);
+		boolean hasAcceptParam = accept != null;
 
-		if (mimeType == null) {
-			// Find an acceptable MIME type based on the request headers
-			logAcceptableFormats(request);
+		if (hasAcceptParam) {
+			request = overrideHeader(HttpServerUtil.ACCEPT_HEADER_NAME, accept, request);
+		}
 
-			Collection<String> mimeTypes = new ArrayList<String>(16);
-			for (FileFormat format : serviceRegistry.getKeys()) {
-				mimeTypes.addAll(format.getMIMETypes());
-			}
+		// Find an acceptable MIME type based on the request headers
+		logAcceptableFormats(request);
 
-			mimeType = HttpServerUtil.selectPreferredMIMEType(mimeTypes.iterator(), request);
+		Collection<String> mimeTypes = new ArrayList<String>(16);
+		for (FileFormat format : serviceRegistry.getKeys()) {
+			mimeTypes.addAll(format.getMIMETypes());
+		}
 
+		String mimeType = HttpServerUtil.selectPreferredMIMEType(mimeTypes.iterator(), request);
+
+		if (!hasAcceptParam){ 
 			response.setHeader("Vary", HttpServerUtil.ACCEPT_HEADER_NAME);
 		}
 
@@ -258,5 +262,34 @@ public class ProtocolUtil {
 
 			logger.debug("Acceptable formats: " + acceptable);
 		}
+	}
+
+	private static HttpServletRequest overrideHeader(final String header, final String[] values,
+			HttpServletRequest request)
+	{
+		return new HttpServletRequestWrapper(request) {
+
+			@Override
+			public String getHeader(String name) {
+				if (header.equals(name) && values.length == 0)
+					return null;
+				if (header.equals(name))
+					return values[0];
+				return super.getHeader(name);
+			}
+
+			@Override
+			@SuppressWarnings("unchecked")
+			public Enumeration getHeaders(String name) {
+				if (header.equals(name)) {
+					Vector vector = new Vector();
+					for (int i = 0; i < values.length; i++) {
+						vector.add(values[i]);
+					}
+					return vector.elements();
+				}
+				return super.getHeaders(name);
+			}
+		};
 	}
 }
