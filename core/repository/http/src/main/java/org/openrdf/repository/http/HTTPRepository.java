@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SizeClient;
+import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Resource;
@@ -51,6 +52,8 @@ public class HTTPRepository implements Repository {
 	 * Variables *
 	 *-----------*/
 
+	private HTTPValueFactory vf = new HTTPValueFactory();
+
 	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
@@ -71,16 +74,22 @@ public class HTTPRepository implements Repository {
 	 *--------------*/
 
 	public HTTPRepository(String serverURL, String repositoryID) {
-		server = new SesameClient(serverURL);
+		HTTPConnectionPool pool = new HTTPConnectionPool(serverURL);
+		pool.setValueFactory(vf);
+		server = new SesameClient(pool);
 		client = server.repositories().slash(repositoryID);
 	}
 
 	public HTTPRepository(String repositoryURL) {
 		String serverURL = Protocol.getServerLocation(repositoryURL);
 		if (serverURL != null) {
-			server = new SesameClient(serverURL);
+			HTTPConnectionPool pool = new HTTPConnectionPool(serverURL);
+			pool.setValueFactory(vf);
+			server = new SesameClient(pool);
 		}
-		client = new RepositoryClient(repositoryURL);
+		HTTPConnectionPool pool = new HTTPConnectionPool(repositoryURL);
+		pool.setValueFactory(vf);
+		client = new RepositoryClient(pool);
 	}
 
 	/*---------*
@@ -116,15 +125,15 @@ public class HTTPRepository implements Repository {
 	}
 
 	public LiteralFactory getLiteralFactory() {
-		return client.getValueFactory();
+		return vf;
 	}
 
 	public URIFactory getURIFactory() {
-		return client.getValueFactory();
+		return vf;
 	}
 
 	public ValueFactory getValueFactory() {
-		return client.getValueFactory();
+		return vf;
 	}
 
 	public RepositoryConnection getConnection()
@@ -253,6 +262,8 @@ public class HTTPRepository implements Repository {
 	boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
+		if (!vf.member(subj) || !vf.member(obj) || !vf.member(contexts))
+			return true;
 		if (noSubject(subj))
 			return true;
 		long now = System.currentTimeMillis();
@@ -271,6 +282,8 @@ public class HTTPRepository implements Repository {
 	long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
+		if (!vf.member(subj) || !vf.member(obj) || !vf.member(contexts))
+			return 0;
 		if (noSubject(subj))
 			return 0;
 		long now = System.currentTimeMillis();
