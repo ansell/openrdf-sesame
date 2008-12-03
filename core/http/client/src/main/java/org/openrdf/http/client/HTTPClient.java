@@ -907,6 +907,9 @@ public class HTTPClient {
 					throw new RepositoryException("Server responded with invalid size value: " + response);
 				}
 			}
+			else if (httpCode == HttpURLConnection.HTTP_NOT_FOUND) {
+				return 0; // no statements found
+			}
 			else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				throw new UnauthorizedException();
 			}
