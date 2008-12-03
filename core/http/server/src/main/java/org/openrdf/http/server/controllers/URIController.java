@@ -49,10 +49,15 @@ public class URIController {
 		throws StoreConfigException, StoreException, RDFHandlerException, MalformedQueryException, NotFound
 	{
 		URI uri = new URIImpl(request.getRequestURL().toString());
+
+		// FIXME: not all namespaces end with a '#'
 		String namespace = request.getRequestURL().append("#").toString();
 		URI ns = new URIImpl(namespace);
+
 		StatementCollector rdf = new StatementCollector();
+	
 		boolean head = HEAD.equals(RequestMethod.valueOf(request.getMethod()));
+		
 		RepositoryManager manager = getReadOnlyManager(request);
 
 		for (String id : manager.getRepositoryIDs()) {
@@ -61,13 +66,15 @@ public class URIController {
 			try {
 				con.exportStatements(uri, null, null, true, rdf);
 				if (con.hasStatement(null, null, null, true, uri)) {
-					if (head)
+					if (head) {
 						return new ModelImpl();
+					}
 					con.exportStatements(null, null, null, true, rdf, uri);
 				}
 				else if (con.hasStatement(null, null, null, true, ns)) {
-					if (head)
+					if (head) {
 						return new ModelImpl();
+					}
 					con.exportStatements(null, null, null, true, rdf, ns);
 				}
 				else if (hasNamespace(namespace, con)) {
@@ -80,8 +87,11 @@ public class URIController {
 				con.close();
 			}
 		}
-		if (rdf.isEmpty())
+		
+		if (rdf.isEmpty()) {
 			throw new NotFound("Not Found <" + uri.stringValue() + ">");
+		}
+		
 		return rdf.getModel();
 	}
 
@@ -89,10 +99,10 @@ public class URIController {
 		throws StoreException
 	{
 		for (Namespace ns : con.getNamespaces().asList()) {
-			if (ns.getName().equals(namespace))
+			if (ns.getName().equals(namespace)) {
 				return true;
+			}
 		}
 		return false;
 	}
-
 }
