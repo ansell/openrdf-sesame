@@ -7,6 +7,7 @@ package org.openrdf.repository.http;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.openrdf.http.client.RepositoryClient;
@@ -27,6 +28,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.repository.http.helpers.CachedLong;
+import org.openrdf.repository.http.helpers.PrefixHashSet;
 import org.openrdf.repository.http.helpers.StatementPattern;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.store.StoreException;
@@ -55,6 +57,8 @@ public class HTTPRepository implements Repository {
 	private SesameClient server;
 
 	private RepositoryClient client;
+
+	private PrefixHashSet subjectSpace;
 
 	private File dataDir;
 
@@ -89,6 +93,10 @@ public class HTTPRepository implements Repository {
 
 	public File getDataDir() {
 		return dataDir;
+	}
+
+	public void setSubjectSpace(Set<String> uriSpace) {
+		this.subjectSpace = new PrefixHashSet(uriSpace);
 	}
 
 	public void initialize()
@@ -245,6 +253,8 @@ public class HTTPRepository implements Repository {
 	boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
+		if (noSubject(subj))
+			return true;
 		long now = System.currentTimeMillis();
 		if (noExactMatch(now, subj, pred, obj, includeInferred, contexts))
 			return true;
@@ -261,6 +271,8 @@ public class HTTPRepository implements Repository {
 	long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
+		if (noSubject(subj))
+			return 0;
 		long now = System.currentTimeMillis();
 		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts))
 			return 0;
@@ -269,6 +281,32 @@ public class HTTPRepository implements Repository {
 		if (noExactMatchRefreshable(now, null, null, null, true, contexts))
 			return 0;
 		return loadSize(now, subj, pred, obj, includeInferred, contexts);
+	}
+
+	/**
+	 * If this repository cannot contain this subject.
+	 */
+	private boolean noSubject(Resource subj) {
+		if (subj instanceof URI && subjectSpace != null) {
+			return !subjectSpace.match(subj.stringValue());
+		}
+		return false;
+	}
+
+	/**
+	 * Will never connect to the remote server.
+	 * 
+	 * @return if it is known that this pattern has no matches.
+	 */
+	private boolean noExactMatch(long now, Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws StoreException
+	{
+		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
+		CachedLong cached = cachedSizes.get(pattern);
+		if (cached == null)
+			return false; // don't know
+		return cached.isFresh(now) && cached.getValue() == 0;
 	}
 
 	/**
@@ -345,21 +383,5 @@ public class HTTPRepository implements Repository {
 		if (cached.isFresh(now))
 			return true; // no match
 		return 0 == loadExactSize(now, subj, pred, obj, includeInferred, contexts);
-	}
-
-	/**
-	 * Will never connect to the remote server.
-	 * 
-	 * @return if it is known that this pattern has no matches.
-	 */
-	private boolean noExactMatch(long now, Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
-		throws StoreException
-	{
-		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
-		CachedLong cached = cachedSizes.get(pattern);
-		if (cached == null)
-			return false; // don't know
-		return cached.isFresh(now) && cached.getValue() == 0;
 	}
 }

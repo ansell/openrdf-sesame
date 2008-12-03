@@ -9,7 +9,11 @@ import static org.openrdf.repository.http.config.HTTPRepositorySchema.PASSWORD;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYID;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYURL;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.SERVERURL;
+import static org.openrdf.repository.http.config.HTTPRepositorySchema.SUBJECTSPACE;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.USERNAME;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
@@ -32,6 +36,8 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 	private String username;
 
 	private String password;
+
+	private Set<String> subjectSpace = new HashSet<String>();
 
 	public HTTPRepositoryConfig() {
 		super(HTTPRepositoryFactory.REPOSITORY_TYPE);
@@ -64,6 +70,14 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public Set<String> getSubjectSpace() {
+		return subjectSpace;
+	}
+
+	public void setSubjectSpace(Set<String> subjectSpace) {
+		this.subjectSpace = new HashSet<String>(subjectSpace);
 	}
 
 	@Override
@@ -118,6 +132,9 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 			Literal password = ModelUtil.getOptionalObjectLiteral(model, implNode, PASSWORD);
 			if (password != null) {
 				setPassword(password.getLabel());
+			}
+			for (Value obj : model.filter(implNode, SUBJECTSPACE, null).objects()) {
+				subjectSpace.add(obj.stringValue());
 			}
 		}
 		catch (ModelUtilException e) {
