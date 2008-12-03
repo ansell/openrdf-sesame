@@ -15,7 +15,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -112,6 +113,8 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 	 * Variables *
 	 *-----------*/
 
+	private Logger logger = LoggerFactory.getLogger(RepositoryInterceptor.class);
+
 	private RepositoryManager repositoryManager;
 
 	private int maxCacheAge;
@@ -186,7 +189,7 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		long lastModified = lastModified(request); // update
 		String eTag = eTag(request); // update
 		response.setDateHeader(DATE, now);
-		if (isSafe(request)) {
+		if (isSafe(request) && eTag != null && 0 < lastModified && lastModified < Long.MAX_VALUE) {
 			response.setDateHeader(LAST_MODIFIED, lastModified);
 			response.setHeader(ETAG, eTag);
 			response.setHeader("Cache-Control", getCacheControl(now, lastModified));
@@ -209,20 +212,17 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 	}
 
 	private boolean notModified(HttpServletRequest request, HttpServletResponse response) {
-		RequestMethod method = RequestMethod.valueOf(request.getMethod());
-		if (RequestMethod.GET.equals(method) || RequestMethod.HEAD.equals(method)) {
-			long since = request.getDateHeader(IF_MODIFIED_SINCE);
-			if (since != -1) {
-				response.addHeader(VARY, IF_MODIFIED_SINCE);
-				if (since >= lastModified(request))
-					return true;
-			}
-			String etag = request.getHeader(IF_NONE_MATCH);
-			if (etag != null) {
-				response.addHeader(VARY, IF_NONE_MATCH);
-				if (etag.equals(eTag(request)))
-					return true;
-			}
+		long since = request.getDateHeader(IF_MODIFIED_SINCE);
+		if (since != -1) {
+			response.addHeader(VARY, IF_MODIFIED_SINCE);
+			if (since >= lastModified(request))
+				return true;
+		}
+		String etag = request.getHeader(IF_NONE_MATCH);
+		if (etag != null) {
+			response.addHeader(VARY, IF_NONE_MATCH);
+			if (etag.equals(eTag(request)))
+				return true;
 		}
 		return false;
 	}
@@ -271,16 +271,26 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		long modified = managerLastModified(request);
 
 		String id = getRepositoryID(request);
-		if (id == null)
-			return modified;
-
-		long repositoryModified = repositoryLastModified(id, request);
-		if (modified < repositoryModified) {
-			return repositoryModified;
+		if (id == null) {
+			try {
+				for (String i : repositoryManager.getRepositoryIDs()) {
+					long repositoryModified = repositoryLastModified(i, request);
+					if (modified < repositoryModified) {
+						modified = repositoryModified;
+					}
+				}
+			}
+			catch (StoreConfigException e) {
+				logger.error(e.toString(), e);
+				return Long.MAX_VALUE;
+			}
+		} else {
+			long repositoryModified = repositoryLastModified(id, request);
+			if (modified < repositoryModified) {
+				modified = repositoryModified;
+			}
 		}
-		else {
-			return modified;
-		}
+		return modified;
 	}
 
 	private long managerLastModified(HttpServletRequest request) {
@@ -307,8 +317,18 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		long version = managerVersion(request);
 
 		String id = getRepositoryID(request);
-		if (id != null) {
-			version = version + repositoryVersion(id, request);
+		if (id == null) {
+			try {
+				for (String i : repositoryManager.getRepositoryIDs()) {
+					version += repositoryVersion(i, request);
+				}
+			}
+			catch (StoreConfigException e) {
+				logger.error(e.toString(), e);
+				return null;
+			}
+		} else {
+			version += repositoryVersion(id, request);
 		}
 		return "W/\"" + Long.toHexString(version) + "\"";
 	}
