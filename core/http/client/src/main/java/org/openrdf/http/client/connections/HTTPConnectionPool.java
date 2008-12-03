@@ -8,8 +8,10 @@ package org.openrdf.http.client.connections;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.Executor;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
@@ -46,7 +48,7 @@ public class HTTPConnectionPool implements Cloneable {
 
 	private HttpClient httpClient;
 
-	private Executor executor = Executors.newCachedThreadPool();
+	private ExecutorService executor = Executors.newCachedThreadPool();
 
 	private String url;
 
@@ -254,14 +256,18 @@ public class HTTPConnectionPool implements Cloneable {
 		return new HTTPConnection(this, method);
 	}
 
-	int executeMethod(HttpMethod method)
-		throws IOException
-	{
-		return httpClient.executeMethod(method);
+	public <V> Future<V> submitTask(Callable<V> task) {
+		return executor.submit(task);
 	}
 
 	void executeTask(Runnable task) {
 		executor.execute(task);
+	}
+
+	int executeMethod(HttpMethod method)
+		throws IOException
+	{
+		return httpClient.executeMethod(method);
 	}
 
 	protected final void setDoAuthentication(HttpMethod method) {

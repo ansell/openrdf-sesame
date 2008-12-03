@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
@@ -24,6 +25,7 @@ import info.aduna.io.IOUtil;
 
 import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
+import org.openrdf.http.client.helpers.FutureGraphQueryResult;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.http.protocol.exceptions.HTTPException;
@@ -74,28 +76,36 @@ public class StatementClient {
 			Resource... contexts)
 		throws StoreException
 	{
-		HTTPConnection method = statements.get();
+		final HTTPConnection method = statements.get();
+		method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
+		Callable<GraphQueryResult> task = new Callable<GraphQueryResult>() {
 
-		try {
-			method.acceptRDF(true);
-			method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
-			if (execute(method)) {
-				return method.getGraphQueryResult();
-			} else {
-				Map<String, String> ns = Collections.emptyMap();
-				Cursor<Statement> cursor = EmptyCursor.emptyCursor();
-				return new GraphQueryResultImpl(ns, cursor);
+			public GraphQueryResult call()
+				throws StoreException
+			{
+				try {
+					method.acceptRDF(true);
+					if (execute(method)) {
+						return method.getGraphQueryResult();
+					}
+					else {
+						Map<String, String> ns = Collections.emptyMap();
+						Cursor<Statement> cursor = EmptyCursor.emptyCursor();
+						return new GraphQueryResultImpl(ns, cursor);
+					}
+				}
+				catch (NoCompatibleMediaType e) {
+					throw new StoreException(e);
+				}
+				catch (IOException e) {
+					throw new StoreException(e);
+				}
+				catch (RDFParseException e) {
+					throw new StoreException(e);
+				}
 			}
-		}
-		catch (NoCompatibleMediaType e) {
-			throw new StoreException(e);
-		}
-		catch (IOException e) {
-			throw new StoreException(e);
-		}
-		catch (RDFParseException e) {
-			throw new StoreException(e);
-		}
+		};
+		return new FutureGraphQueryResult(statements.submitTask(task));
 	}
 
 	public void get(Resource subj, URI pred, Value obj, boolean includeInferred, RDFHandler handler,
@@ -208,7 +218,34 @@ public class StatementClient {
 		upload(entity, baseURI, overwrite, contexts);
 	}
 
-	protected void upload(RequestEntity reqEntity, String baseURI, boolean overwrite, Resource... contexts)
+	boolean execute(HTTPConnection method)
+		throws IOException, StoreException
+	{
+		try {
+			method.execute();
+			return true;
+		}
+		catch (NotFound e) {
+			return false;
+		}
+		catch (UnsupportedQueryLanguage e) {
+			throw new UnsupportedQueryLanguageException(e);
+		}
+		catch (UnsupportedFileFormat e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (UnsupportedMediaType e) {
+			throw new UnsupportedRDFormatException(e);
+		}
+		catch (Unauthorized e) {
+			throw new StoreException(e);
+		}
+		catch (HTTPException e) {
+			throw new StoreException(e);
+		}
+	}
+
+	private void upload(RequestEntity reqEntity, String baseURI, boolean overwrite, Resource... contexts)
 		throws RDFParseException, StoreException
 	{
 		// Select appropriate HTTP method
@@ -264,33 +301,6 @@ public class StatementClient {
 		}
 		params.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred)));
 		return params;
-	}
-
-	private boolean execute(HTTPConnection method)
-		throws IOException, StoreException
-	{
-		try {
-			method.execute();
-			return true;
-		}
-		catch (NotFound e) {
-			return false;
-		}
-		catch (UnsupportedQueryLanguage e) {
-			throw new UnsupportedQueryLanguageException(e);
-		}
-		catch (UnsupportedFileFormat e) {
-			throw new UnsupportedRDFormatException(e);
-		}
-		catch (UnsupportedMediaType e) {
-			throw new UnsupportedRDFormatException(e);
-		}
-		catch (Unauthorized e) {
-			throw new StoreException(e);
-		}
-		catch (HTTPException e) {
-			throw new StoreException(e);
-		}
 	}
 
 	private void executeUpload(HTTPConnection method)
