@@ -111,6 +111,8 @@ public class Console {
 
 	private static final String POM_PROPERTIES = "/META-INF/maven/org.openrdf.sesame/sesame-console/pom.properties";
 
+	private static final String APP_NAME = "OpenRDF Sesame console";
+
 	public static final Map<String, Level> LOG_LEVELS;
 
 	static {
@@ -245,18 +247,29 @@ public class Console {
 	}
 
 	private static String getVersion() {
+		String version = null;
+
 		InputStream in = Console.class.getClassLoader().getResourceAsStream(POM_PROPERTIES);
-		if (in == null)
-			return null;
-		Properties pom = new Properties();
-		try {
-			pom.load(in);
+		if (in != null) {
+			try {
+				try {
+					Properties pom = new Properties();
+					pom.load(in);
+					version = (String)pom.get("version");
+				}
+				finally {
+					in.close();
+				}
+			}
+			catch (IOException e) {
+				System.err.println("ERROR: Unable to read version info " + e.getMessage());
+			}
 		}
-		catch (IOException e) {
-			e.printStackTrace();
-			return null;
+
+		if (version == null) {
+			version = "devel";
 		}
-		String version = (String)pom.get("version");
+
 		return version;
 	}
 
@@ -300,11 +313,14 @@ public class Console {
 	private boolean executeCommand(String command)
 		throws IOException
 	{
-		boolean exit = false;
 		String[] tokens = parse(command);
-		if (tokens.length == 0)
-			return exit;
+
+		if (tokens.length == 0) {
+			return false;
+		}
+
 		String operation = tokens[0].toLowerCase(Locale.ENGLISH);
+		boolean exit = false;
 
 		if ("quit".equals(operation) || "exit".equals(operation)) {
 			exit = true;
@@ -457,14 +473,14 @@ public class Console {
 	}
 
 	private void printInfo() {
-		writeln(getVersion());
+		writeln(APP_NAME + " " + getVersion());
+		writeln("Connected to: " + (managerID == null ? "-" : managerID));
 		try {
 			writeln("Data location: " + (manager == null ? "-" : manager.getLocation()));
 		}
 		catch (MalformedURLException e) {
-			// can't display data location
+			writeError("Unable to show data location (" + e.getMessage() + ")");
 		}
-		writeln("Connected to: " + (managerID == null ? "-" : managerID));
 	}
 
 	private void printHelpConnect() {
@@ -474,7 +490,9 @@ public class Console {
 		writeln("connect <serverURL>       Connects to a Sesame server");
 	}
 
-	private void connect(String[] tokens) throws IOException {
+	private void connect(String[] tokens)
+		throws IOException
+	{
 		if (tokens.length != 2) {
 			printHelpConnect();
 			return;
@@ -498,7 +516,9 @@ public class Console {
 		}
 	}
 
-	private boolean connectDefault() throws IOException {
+	private boolean connectDefault()
+		throws IOException
+	{
 		return connectLocal(createTempDir().getPath());
 	}
 
@@ -506,6 +526,7 @@ public class Console {
 		throws IOException
 	{
 		final File dir = FileUtil.createTempDir("sesame");
+
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 
 			@Override
@@ -518,6 +539,7 @@ public class Console {
 				}
 			}
 		});
+
 		return dir;
 	}
 
