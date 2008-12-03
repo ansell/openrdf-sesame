@@ -10,7 +10,6 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.util.Stack;
 
 import org.openrdf.model.BNode;
@@ -19,6 +18,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.rio.RDFHandlerException;
@@ -112,7 +112,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * one for subjects/objects.
 	 */
 
-	private java.net.URI relativeURI;
+	private String relativeURI;
 
 	/**
 	 * Stack for remembering the nodes (subjects/objects) of statements at each
@@ -167,11 +167,19 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	@Override
 	public void setBaseURI(String baseURI) {
 		super.setBaseURI(baseURI);
-		try {
-			this.relativeURI = new java.net.URI(baseURI);
+		if (baseURI == null) {
+			relativeURI = null;
 		}
-		catch (URISyntaxException e) {
-			// don't use relative URIs
+		else if (baseURI.charAt(baseURI.length() - 1) == '/') {
+			relativeURI = baseURI;
+		}
+		else {
+			String ns = new URIImpl(baseURI).getNamespace();
+			if (ns.charAt(ns.length() - 1) == '/') {
+				relativeURI = ns;
+			} else {
+				relativeURI = null;
+			}
 		}
 	}
 
@@ -403,19 +411,13 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			return stringValue;
 		if (stringValue.equals(baseURI))
 			return "";
-		if (!stringValue.startsWith(baseURI))
-			return stringValue;
-		if ('#' == stringValue.charAt(baseURI.length()))
+		if (stringValue.length() > baseURI.length() && '#' == stringValue.charAt(baseURI.length()))
 			return stringValue.substring(baseURI.length());
 		if (relativeURI == null)
 			return stringValue;
-		try {
-			java.net.URI uri = new java.net.URI(stringValue);
-			return relativeURI.relativize(uri).toString();
-		}
-		catch (URISyntaxException e) {
-			return stringValue;
-		}
+		if (stringValue.length() > relativeURI.length() && stringValue.startsWith(relativeURI))
+			return stringValue.substring(relativeURI.length());
+		return stringValue;
 	}
 
 	/**
