@@ -10,6 +10,7 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.util.Stack;
 
 import org.openrdf.model.BNode;
@@ -112,7 +113,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * one for subjects/objects.
 	 */
 
-	private String relativeURI;
+	private java.net.URI relativeURI;
 
 	/**
 	 * Stack for remembering the nodes (subjects/objects) of statements at each
@@ -167,19 +168,23 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	@Override
 	public void setBaseURI(String baseURI) {
 		super.setBaseURI(baseURI);
-		if (baseURI == null) {
-			relativeURI = null;
-		}
-		else if (baseURI.charAt(baseURI.length() - 1) == '/') {
-			relativeURI = baseURI;
-		}
-		else {
-			String ns = new URIImpl(baseURI).getNamespace();
-			if (ns.charAt(ns.length() - 1) == '/') {
-				relativeURI = ns;
-			} else {
+		try {
+			if (baseURI == null) {
 				relativeURI = null;
 			}
+			else if (baseURI.charAt(baseURI.length() - 1) == '/') {
+				relativeURI = new java.net.URI(baseURI);
+			}
+			else {
+				String ns = new URIImpl(baseURI).getNamespace();
+				if (ns.charAt(ns.length() - 1) == '/') {
+					relativeURI = new java.net.URI(ns);
+				} else {
+					relativeURI = null;
+				}
+			}
+		} catch (URISyntaxException e) {
+			relativeURI = null;
 		}
 	}
 
@@ -415,8 +420,12 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			return stringValue.substring(baseURI.length());
 		if (relativeURI == null)
 			return stringValue;
-		if (stringValue.length() > relativeURI.length() && stringValue.startsWith(relativeURI))
-			return stringValue.substring(relativeURI.length());
+		try {
+			if (stringValue.startsWith(relativeURI.toString()))
+				return relativeURI.relativize(new java.net.URI(stringValue)).toString();
+		} catch (URISyntaxException e) {
+			// can't create a relative URI
+		}
 		return stringValue;
 	}
 
