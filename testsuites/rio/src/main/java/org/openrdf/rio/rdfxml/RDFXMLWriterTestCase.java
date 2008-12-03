@@ -71,12 +71,14 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 		RepositoryConnection con1 = rep1.getConnection();
 
 		URL ciaScheme = this.getClass().getResource("/cia-factbook/CIA-onto-enhanced.rdf");
+		URL ciaFacts = this.getClass().getResource("/cia-factbook/CIA-facts-enhanced.rdf");
 
 		con1.add(ciaScheme, ciaScheme.toExternalForm(), RDFFormat.forFileName(ciaScheme.toExternalForm()));
+		con1.add(ciaFacts, ciaFacts.toExternalForm(), RDFFormat.forFileName(ciaFacts.toExternalForm()));
 
 		StringWriter writer = new StringWriter();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(writer);
-		rdfWriter.setBaseURI(ciaScheme.toExternalForm());
+		rdfWriter.setBaseURI(ciaFacts.toExternalForm());
 		con1.export(rdfWriter);
 
 		con1.close();
