@@ -157,7 +157,7 @@ public class SesameServlet implements Servlet {
 			registerPrototype(ConfigurationController.class);
 			registerPrototype(TemplateController.class);
 			registerPrototype(SchemaController.class);
-			registerPrototype(URIController.class);
+//			registerPrototype(URIController.class);
 
 			// Exceptions
 			registerPrototype(ExceptionWritter.class);
