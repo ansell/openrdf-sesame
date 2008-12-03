@@ -15,15 +15,12 @@ public class CachedLong {
 
 	private String eTag;
 
-	private long expires;
+	private volatile long expires;
 
-	public CachedLong(long value, String eTag, int maxAge) {
+	public CachedLong(long value, String eTag) {
 		super();
 		this.value = value;
 		this.eTag = eTag;
-		if (maxAge > 0) {
-			this.expires = System.currentTimeMillis() + maxAge * 1000;
-		}
 	}
 
 	public long getValue() {
@@ -34,8 +31,21 @@ public class CachedLong {
 		return eTag;
 	}
 
-	public boolean isFresh() {
-		return expires != 0 && System.currentTimeMillis() < expires;
+	public boolean isFresh(long now) {
+		if (expires == 0)
+			return false;
+		if (now < expires)
+			return true;
+		expires = 0;
+		return false;
+	}
+
+	public void refreshed(long now, int maxAge) {
+		if (maxAge > 0) {
+			expires = now + maxAge * 1000;
+		} else {
+			stale();
+		}
 	}
 
 	public void stale() {

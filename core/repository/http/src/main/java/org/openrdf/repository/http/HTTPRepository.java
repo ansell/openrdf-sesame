@@ -228,37 +228,138 @@ public class HTTPRepository implements Repository {
 		return client;
 	}
 
+	/**
+	 * Indicates that the cache needs validation.
+	 */
 	void modified() {
 		for (CachedLong cached : cachedSizes.values()) {
 			cached.stale();
 		}
 	}
 
+	/**
+	 * Will never connect to the remote server.
+	 * 
+	 * @return if it is known that this pattern (or super set) has no matches.
+	 */
+	boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		long now = System.currentTimeMillis();
+		if (noExactMatch(now, subj, pred, obj, includeInferred, contexts))
+			return true;
+		if (noExactMatch(now, null, pred, null, true))
+			return true;
+		if (noExactMatch(now, null, null, null, true, contexts))
+			return true;
+		return false; // don't know, maybe
+	}
+
+	/**
+	 * Uses cache of given pattern or super patterns before loading size.
+	 */
 	long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		long now = System.currentTimeMillis();
+		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts))
+			return 0;
+		if (noExactMatchRefreshable(now, null, pred, null, true))
+			return 0;
+		if (noExactMatchRefreshable(now, null, null, null, true, contexts))
+			return 0;
+		return loadSize(now, subj, pred, obj, includeInferred, contexts);
+	}
+
+	/**
+	 * Will connect to the remote server. If no matches, may query the server for
+	 * super patterns not in cache.
+	 */
+	private long loadSize(long now, Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws StoreException
+	{
+		long size = loadExactSize(now, subj, pred, obj, includeInferred, contexts);
+		if (size == 0) {
+			StatementPattern orig = new StatementPattern(subj, pred, obj, includeInferred, contexts);
+			StatementPattern predOnly = new StatementPattern(null, pred, null, true);
+			StatementPattern ctxOnly = new StatementPattern(null, null, null, true, contexts);
+			if (pred != null && !orig.equals(predOnly)) {
+				// no values, does it have this predicate?
+				if (!cachedSizes.containsKey(predOnly)) {
+					loadExactSize(now, null, pred, null, true);
+				}
+			}
+			if ((contexts == null || contexts.length > 0) && !orig.equals(ctxOnly)) {
+				// no values, does it have this context?
+				if (!cachedSizes.containsKey(ctxOnly)) {
+					loadExactSize(now, null, null, null, true, contexts);
+				}
+			}
+		}
+		return size;
+	}
+
+	/**
+	 * Will always connect to the remote server to ensure cache is valid (if
+	 * available).
+	 */
+	private long loadExactSize(long now, Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
 		throws StoreException
 	{
 		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
 		CachedLong cached = cachedSizes.get(pattern);
-		if (cached == null || !cached.isFresh()) {
-			SizeClient client = getClient().size();
-			if (cached != null) {
-				// Only calculate size if cached value is old
-				client.ifNoneMatch(cached.getETag());
-			}
-			Long size = client.get(subj, pred, obj, includeInferred, contexts);
-			if (size != null) {
-				cached = new CachedLong(size, client.getETag(), client.getMaxAge());
-				cachedSizes.put(pattern, cached);
-			}
+		SizeClient client = getClient().size();
+		if (cached != null) {
+			// Only calculate size if cached value is old
+			client.ifNoneMatch(cached.getETag());
+		}
+		Long size = client.get(subj, pred, obj, includeInferred, contexts);
+		if (size == null) {
+			assert cached != null : "Server did not return a size value";
+			cached.refreshed(now, client.getMaxAge());
+		}
+		else {
+			cached = new CachedLong(size, client.getETag());
+			cached.refreshed(now, client.getMaxAge());
+			cachedSizes.put(pattern, cached);
 		}
 		return cached.getValue();
 	}
 
-	boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+	/**
+	 * Will connect to the remote server for validation, if it is believed that
+	 * there will be no match.
+	 * 
+	 * @return if it is known that this pattern has no matches.
+	 */
+	private boolean noExactMatchRefreshable(long now, Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
 		CachedLong cached = cachedSizes.get(pattern);
-		return cached != null && cached.isFresh() && cached.getValue() == 0;
+		if (cached == null || cached.getValue() != 0)
+			return false; // might have a match
+		if (cached.isFresh(now))
+			return true; // no match
+		return 0 == loadExactSize(now, subj, pred, obj, includeInferred, contexts);
+	}
+
+	/**
+	 * Will never connect to the remote server.
+	 * 
+	 * @return if it is known that this pattern has no matches.
+	 */
+	private boolean noExactMatch(long now, Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws StoreException
+	{
+		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
+		CachedLong cached = cachedSizes.get(pattern);
+		if (cached == null)
+			return false; // don't know
+		return cached.isFresh(now) && cached.getValue() == 0;
 	}
 }
