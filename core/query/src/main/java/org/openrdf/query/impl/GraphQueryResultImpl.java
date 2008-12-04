@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2006-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2006-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -31,7 +31,7 @@ public class GraphQueryResultImpl extends IterationWrapper<Statement, QueryEvalu
 	 * Variables *
 	 *-----------*/
 
-	private Map<String, String> namespaces;
+	private final Map<String, String> namespaces;
 
 	/*--------------*
 	 * Constructors *
