@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -10,21 +10,23 @@ import java.util.Collection;
 import java.util.List;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIterationBase;
 import info.aduna.iteration.DistinctIteration;
-import info.aduna.iteration.IterationWrapper;
+import info.aduna.iteration.Iteration;
+import info.aduna.iteration.Iterations;
 
 /**
  * A RepositoryResult is a result collection of objects (for example
- * {@link org.openrdf.model.Statement}, {@link org.openrdf.model.Namespace},
- * or {@link org.openrdf.model.Resource} objects) that can be iterated over. It
+ * {@link org.openrdf.model.Statement}, {@link org.openrdf.model.Namespace}, or
+ * {@link org.openrdf.model.Resource} objects) that can be iterated over. It
  * keeps an open connection to the backend for lazy retrieval of individual
  * results. Additionally it has some utility methods to fetch all results and
  * add them to a collection.
  * <p>
  * By default, a RepositoryResult is not necessarily a (mathematical) set: it
- * may contain duplicate objects. Duplicate filtering can be {{@link #enableDuplicateFilter() switched on},
- * but this should not be used lightly as the filtering mechanism is potentially
- * memory-intensive.
+ * may contain duplicate objects. Duplicate filtering can be {
+ * {@link #enableDuplicateFilter() switched on}, but this should not be used
+ * lightly as the filtering mechanism is potentially memory-intensive.
  * <p>
  * A RepositoryResult needs to be {@link #close() closed} after use to free up
  * any resources (open connections, read locks, etc.) it has on the underlying
@@ -38,10 +40,39 @@ import info.aduna.iteration.IterationWrapper;
  * @author jeen
  * @author Arjohn Kampman
  */
-public class RepositoryResult<T> extends IterationWrapper<T, RepositoryException> {
+public class RepositoryResult<T> extends CloseableIterationBase<T, RepositoryException> {
+
+	private volatile Iteration<? extends T, RepositoryException> wrappedIter;
 
 	public RepositoryResult(CloseableIteration<? extends T, RepositoryException> iter) {
-		super(iter);
+		assert iter != null;
+		wrappedIter = iter;
+	}
+
+	public boolean hasNext()
+		throws RepositoryException
+	{
+		return wrappedIter.hasNext();
+	}
+
+	public T next()
+		throws RepositoryException
+	{
+		return wrappedIter.next();
+	}
+
+	public void remove()
+		throws RepositoryException
+	{
+		wrappedIter.remove();
+	}
+
+	@Override
+	protected void handleClose()
+		throws RepositoryException
+	{
+		super.handleClose();
+		Iterations.closeCloseable(wrappedIter);
 	}
 
 	/**
@@ -58,6 +89,10 @@ public class RepositoryResult<T> extends IterationWrapper<T, RepositoryException
 	public void enableDuplicateFilter()
 		throws RepositoryException
 	{
+		if (wrappedIter instanceof DistinctIteration) {
+			return;
+		}
+
 		wrappedIter = new DistinctIteration<T, RepositoryException>(wrappedIter);
 	}
 
