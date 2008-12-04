@@ -49,7 +49,9 @@ public class RepositoryWrapper implements DelegatingRepository {
 		return delegate;
 	}
 
-	public RepositoryMetaData getRepositoryMetaData() {
+	public RepositoryMetaData getRepositoryMetaData()
+		throws StoreException
+	{
 		return getDelegate().getRepositoryMetaData();
 	}
 

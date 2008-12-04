@@ -7,7 +7,7 @@ package org.openrdf.repository.sail;
 
 import static org.openrdf.query.parser.QueryParserRegistry.getInstance;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -33,32 +33,29 @@ public class SailRepositoryMetaData extends SailMetaDataWrapper implements Repos
 
 	public RDFFormat[] getAddRDFFormats() {
 		Collection<RDFParserFactory> parsers = RDFParserRegistry.getInstance().getAll();
-		RDFFormat[] formats = new RDFFormat[parsers.size()];
-		List<RDFFormat> list = Arrays.asList(formats);
+		List<RDFFormat> list = new ArrayList<RDFFormat>(parsers.size());
 		for (RDFParserFactory parser : parsers) {
 			list.add(parser.getRDFFormat());
 		}
-		return formats;
+		return list.toArray(new RDFFormat[list.size()]);
 	}
 
 	public RDFFormat[] getExportRDFFormats() {
 		Collection<RDFWriterFactory> writers = RDFWriterRegistry.getInstance().getAll();
-		RDFFormat[] formats = new RDFFormat[writers.size()];
-		List<RDFFormat> list = Arrays.asList(formats);
+		List<RDFFormat> list = new ArrayList<RDFFormat>(writers.size());
 		for (RDFWriterFactory writer : writers) {
 			list.add(writer.getRDFFormat());
 		}
-		return formats;
+		return list.toArray(new RDFFormat[list.size()]);
 	}
 
 	public QueryLanguage[] getQueryLanguages() {
 		Collection<QueryParserFactory> parsers = getInstance().getAll();
-		QueryLanguage[] languages = new QueryLanguage[parsers.size()];
-		List<QueryLanguage> list = Arrays.asList(languages);
+		List<QueryLanguage> list = new ArrayList<QueryLanguage>(parsers.size());
 		for (QueryParserFactory parser : parsers) {
 			list.add(parser.getQueryLanguage());
 		}
-		return languages;
+		return list.toArray(new QueryLanguage[list.size()]);
 	}
 
 	public boolean isRemoteDatasetSupported() {

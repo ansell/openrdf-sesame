@@ -1563,6 +1563,15 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals(3, testCon.size(null, null, null, false, uriImplContext1));
 	}
 
+	public void testMetaData() throws Exception {
+		RepositoryMetaData metadata = testRepository.getRepositoryMetaData();
+		assertFalse(metadata.isReadOnly());
+		assertTrue(metadata.getAddRDFFormats().length > 0);
+		assertTrue(metadata.getExportRDFFormats().length > 0);
+		assertTrue(metadata.getQueryFunctions().length > 0);
+		assertTrue(metadata.getQueryLanguages().length > 0);
+	}
+
 	private int getTotalStatementCount(RepositoryConnection connection)
 		throws StoreException
 	{

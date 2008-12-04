@@ -28,7 +28,8 @@ import org.openrdf.store.StoreException;
  */
 public interface Repository {
 
-	public RepositoryMetaData getRepositoryMetaData();
+	public RepositoryMetaData getRepositoryMetaData()
+		throws StoreException;
 
 	/**
 	 * Set the directory where data and logging for this repository is stored.

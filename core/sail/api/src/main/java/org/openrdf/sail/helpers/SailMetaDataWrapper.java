@@ -33,8 +33,8 @@ public class SailMetaDataWrapper implements SailMetaData {
 		return delegate.getMaxLiteralLength();
 	}
 
-	public int getMaxURILengeth() {
-		return delegate.getMaxURILengeth();
+	public int getMaxURILength() {
+		return delegate.getMaxURILength();
 	}
 
 	public String[] getQueryFunctions() {

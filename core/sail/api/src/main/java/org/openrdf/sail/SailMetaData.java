@@ -34,7 +34,7 @@ public interface SailMetaData {
 
 	int getMaxLiteralLength();
 
-	int getMaxURILengeth();
+	int getMaxURILength();
 
 	String[] getQueryFunctions();
 

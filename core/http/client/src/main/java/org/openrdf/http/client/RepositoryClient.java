@@ -83,6 +83,10 @@ public class RepositoryClient {
 		return repository;
 	}
 
+	public MetaDataClient metadata() {
+		return new MetaDataClient(repository.slash(Protocol.METADATA));
+	}
+
 	public ContextClient contexts() {
 		return new ContextClient(repository.slash(Protocol.CONTEXTS));
 	}
