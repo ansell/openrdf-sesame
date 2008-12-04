@@ -5,6 +5,7 @@
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
@@ -14,14 +15,14 @@ import info.aduna.iteration.LookAheadIteration;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 
 public class LeftJoinIterator extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
 	/*-----------*
-	 * Constants *
+	 * Variables *
 	 *-----------*/
 
 	private EvaluationStrategy strategy;
@@ -35,13 +36,9 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, QueryEvalua
 	 */
 	private final Set<String> scopeBindingNames;
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	private final CloseableIteration<BindingSet, QueryEvaluationException> leftIter;
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> leftIter;
-
-	private CloseableIteration<BindingSet, QueryEvaluationException> rightIter;
+	private volatile CloseableIteration<BindingSet, QueryEvaluationException> rightIter;
 
 	/*--------------*
 	 * Constructors *
@@ -56,7 +53,7 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, QueryEvalua
 
 		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
 
-		// Initialize with empty iteration so that var is not null
+		// Initialize with empty iteration so that var is never null
 		rightIter = new EmptyIteration<BindingSet, QueryEvaluationException>();
 	}
 
@@ -68,44 +65,51 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, QueryEvalua
 	protected BindingSet getNextElement()
 		throws QueryEvaluationException
 	{
-		while (rightIter.hasNext() || leftIter.hasNext()) {
-			BindingSet leftBindings = null;
+		try {
+			while (rightIter.hasNext() || leftIter.hasNext()) {
+				BindingSet leftBindings = null;
 
-			if (!rightIter.hasNext()) {
-				// Use left arg's bindings in case join fails
-				leftBindings = leftIter.next();
+				if (!rightIter.hasNext()) {
+					// Use left arg's bindings in case join fails
+					leftBindings = leftIter.next();
 
-				rightIter.close();
-				rightIter = strategy.evaluate(join.getRightArg(), leftBindings);
-			}
+					rightIter.close();
+					rightIter = strategy.evaluate(join.getRightArg(), leftBindings);
+				}
 
-			while (rightIter.hasNext()) {
-				BindingSet rightBindings = rightIter.next();
+				while (rightIter.hasNext()) {
+					BindingSet rightBindings = rightIter.next();
 
-				try {
-					if (join.getCondition() == null) {
-						return rightBindings;
-					}
-					else {
-						// Limit the bindings to the ones that are in scope for this
-						// filter
-						QueryBindingSet scopeBindings = new QueryBindingSet(rightBindings);
-						scopeBindings.retainAll(scopeBindingNames);
-
-						if (strategy.isTrue(join.getCondition(), scopeBindings)) {
+					try {
+						if (join.getCondition() == null) {
 							return rightBindings;
 						}
+						else {
+							// Limit the bindings to the ones that are in scope for
+							// this
+							// filter
+							QueryBindingSet scopeBindings = new QueryBindingSet(rightBindings);
+							scopeBindings.retainAll(scopeBindingNames);
+
+							if (strategy.isTrue(join.getCondition(), scopeBindings)) {
+								return rightBindings;
+							}
+						}
+					}
+					catch (ValueExprEvaluationException e) {
+						// Ignore, condition not evaluated successfully
 					}
 				}
-				catch (ValueExprEvaluationException e) {
-					// Ignore, condition not evaluated successfully
+
+				if (leftBindings != null) {
+					// Join failed, return left arg's bindings
+					return leftBindings;
 				}
 			}
-
-			if (leftBindings != null) {
-				// Join failed, return left arg's bindings
-				return leftBindings;
-			}
+		}
+		catch (NoSuchElementException ignore) {
+			// probably, one of the iterations has been closed concurrently in
+			// handleClose()
 		}
 
 		return null;

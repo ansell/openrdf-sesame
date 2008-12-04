@@ -1,9 +1,11 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra.evaluation.iterator;
+
+import java.util.NoSuchElementException;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
@@ -17,20 +19,16 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
 	/*-----------*
-	 * Constants *
+	 * Variables *
 	 *-----------*/
 
 	private final EvaluationStrategy strategy;
 
 	private final Join join;
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	private final CloseableIteration<BindingSet, QueryEvaluationException> leftIter;
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> leftIter;
-
-	private CloseableIteration<BindingSet, QueryEvaluationException> rightIter;
+	private volatile CloseableIteration<BindingSet, QueryEvaluationException> rightIter;
 
 	/*--------------*
 	 * Constructors *
@@ -44,7 +42,7 @@ public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluation
 
 		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
 
-		// Initialize with empty iteration so that var is not null
+		// Initialize with empty iteration so that var is never null
 		rightIter = new EmptyIteration<BindingSet, QueryEvaluationException>();
 	}
 
@@ -56,17 +54,23 @@ public class JoinIterator extends LookAheadIteration<BindingSet, QueryEvaluation
 	protected BindingSet getNextElement()
 		throws QueryEvaluationException
 	{
-		while (rightIter.hasNext() || leftIter.hasNext()) {
-			if (rightIter.hasNext()) {
-				return rightIter.next();
-			}
+		try {
+			while (rightIter.hasNext() || leftIter.hasNext()) {
+				if (rightIter.hasNext()) {
+					return rightIter.next();
+				}
 
-			// Right iteration exhausted
-			rightIter.close();
+				// Right iteration exhausted
+				rightIter.close();
 
-			if (leftIter.hasNext()) {
-				rightIter = strategy.evaluate(join.getRightArg(), leftIter.next());
+				if (leftIter.hasNext()) {
+					rightIter = strategy.evaluate(join.getRightArg(), leftIter.next());
+				}
 			}
+		}
+		catch (NoSuchElementException ignore) {
+			// probably, one of the iterations has been closed concurrently in
+			// handleClose()
 		}
 
 		return null;
