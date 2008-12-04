@@ -14,6 +14,7 @@ import static org.openrdf.http.protocol.Protocol.X_QUERY_TYPE;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
@@ -31,15 +32,17 @@ import org.springframework.web.servlet.ViewResolver;
 
 import info.aduna.lang.FileFormat;
 
+import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Statement;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQueryResult;
-import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultWriterFactory;
 import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
@@ -126,6 +129,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 					return;
 
+				int limit = ProtocolUtil.parseIntegerParam(req, Protocol.LIMIT, Integer.MAX_VALUE);
 				ServletOutputStream out = resp.getOutputStream();
 				try {
 					RDFWriter rdfHandler = factory.getWriter(out);
@@ -138,7 +142,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 						rdfHandler.handleNamespace(prefix, namespace);
 					}
 
-					while (gqr.hasNext()) {
+					for (int i = 0; gqr.hasNext() && i < limit; i++) {
 						Statement st = gqr.next();
 						rdfHandler.handleStatement(st);
 					}
@@ -173,9 +177,18 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 					return;
 
+				int limit = ProtocolUtil.parseIntegerParam(req, Protocol.LIMIT, Integer.MAX_VALUE);
 				ServletOutputStream out = resp.getOutputStream();
 				try {
-					QueryResultUtil.report(model, factory.getWriter(out));
+					TupleQueryResultHandler handler = factory.getWriter(out);
+					handler.startQueryResult(model.getBindingNames());
+
+					for (int i = 0; model.hasNext() && i < limit; i++) {
+						BindingSet bindingSet = model.next();
+						handler.handleSolution(bindingSet);
+					}
+
+					handler.endQueryResult();
 				}
 				catch (TupleQueryResultHandlerException e) {
 					throw new IOException("Serialization error: " + e.getMessage());
@@ -205,11 +218,25 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 					return;
 
+				int limit = ProtocolUtil.parseIntegerParam(req, Protocol.LIMIT, Integer.MAX_VALUE);
 				ServletOutputStream out = resp.getOutputStream();
 				try {
 					RDFWriter writer = factory.getWriter(out);
 					writer.setBaseURI(req.getRequestURL().toString());
-					QueryResultUtil.report(model, writer);
+					writer.startRDF();
+
+					for (Map.Entry<String, String> entry : model.getNamespaces().entrySet()) {
+						String prefix = entry.getKey();
+						String namespace = entry.getValue();
+						writer.handleNamespace(prefix, namespace);
+					}
+
+					for (int i = 0; model.hasNext() && i < limit; i++) {
+						Statement st = model.next();
+						writer.handleStatement(st);
+					}
+
+					writer.endRDF();
 				}
 				catch (RDFHandlerException e) {
 					throw new IOException("Serialization error: " + e.getMessage());
@@ -255,6 +282,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 			return;
 
+		int limit = ProtocolUtil.parseIntegerParam(req, Protocol.LIMIT, Integer.MAX_VALUE);
 		ServletOutputStream out = resp.getOutputStream();
 		try {
 			RDFWriter rdfHandler = factory.getWriter(out);
@@ -265,8 +293,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				rdfHandler.handleNamespace(ns.getKey(), ns.getValue());
 			}
 
-			for (Statement st : model) {
-				rdfHandler.handleStatement(st);
+			Iterator<Statement> iter = model.iterator();
+			for (int i = 0; iter.hasNext() && i < limit; i++) {
+				rdfHandler.handleStatement(iter.next());
 			}
 
 			rdfHandler.endRDF();

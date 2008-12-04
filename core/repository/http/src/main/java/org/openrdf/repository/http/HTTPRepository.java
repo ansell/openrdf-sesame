@@ -6,13 +6,10 @@
 package org.openrdf.repository.http;
 
 import java.io.File;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.SesameClient;
-import org.openrdf.http.client.SizeClient;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Resource;
@@ -24,9 +21,8 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryMetaData;
-import org.openrdf.repository.http.helpers.CachedLong;
-import org.openrdf.repository.http.helpers.PrefixHashSet;
-import org.openrdf.repository.http.helpers.StatementPattern;
+import org.openrdf.repository.http.helpers.HTTPValueFactory;
+import org.openrdf.repository.http.helpers.RepositoryCache;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.store.StoreException;
 
@@ -55,13 +51,11 @@ public class HTTPRepository implements Repository {
 	 */
 	private RepositoryClient client;
 
-	private PrefixHashSet subjectSpace;
+	private RepositoryCache cache;
 
 	private File dataDir;
 
 	private boolean initialized = false;
-
-	private Map<StatementPattern, CachedLong> cachedSizes = new ConcurrentHashMap<StatementPattern, CachedLong>();
 
 	/*--------------*
 	 * Constructors *
@@ -71,12 +65,14 @@ public class HTTPRepository implements Repository {
 		HTTPConnectionPool pool = new HTTPConnectionPool(serverURL);
 		pool.setValueFactory(vf);
 		client = new SesameClient(pool).repositories().slash(repositoryID);
+		cache = new RepositoryCache(client, vf);
 	}
 
 	public HTTPRepository(String repositoryURL) {
 		HTTPConnectionPool pool = new HTTPConnectionPool(repositoryURL);
 		pool.setValueFactory(vf);
 		client = new RepositoryClient(pool);
+		cache = new RepositoryCache(client, vf);
 	}
 
 	/*---------*
@@ -92,7 +88,7 @@ public class HTTPRepository implements Repository {
 	}
 
 	public void setSubjectSpace(Set<String> uriSpace) {
-		this.subjectSpace = new PrefixHashSet(uriSpace);
+		cache.setSubjectSpace(uriSpace);
 	}
 
 	public void initialize()
@@ -214,9 +210,13 @@ public class HTTPRepository implements Repository {
 	 * Indicates that the cache needs validation.
 	 */
 	void modified() {
-		for (CachedLong cached : cachedSizes.values()) {
-			cached.stale();
-		}
+		cache.modified();
+	}
+
+	boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource[] contexts) throws StoreException
+	{
+		return cache.hasStatement(subj, pred, obj, includeInferred, contexts);
 	}
 
 	/**
@@ -227,18 +227,7 @@ public class HTTPRepository implements Repository {
 	boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (!vf.member(subj) || !vf.member(obj) || !vf.member(contexts))
-			return true;
-		if (noSubject(subj))
-			return true;
-		long now = System.currentTimeMillis();
-		if (noExactMatch(now, subj, pred, obj, includeInferred, contexts))
-			return true;
-		if (noExactMatch(now, null, pred, null, true))
-			return true;
-		if (noExactMatch(now, null, null, null, true, contexts))
-			return true;
-		return false; // don't know, maybe
+		return cache.noMatch(subj, pred, obj, includeInferred, contexts);
 	}
 
 	/**
@@ -247,119 +236,6 @@ public class HTTPRepository implements Repository {
 	long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (!vf.member(subj) || !vf.member(obj) || !vf.member(contexts))
-			return 0;
-		if (noSubject(subj))
-			return 0;
-		long now = System.currentTimeMillis();
-		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts))
-			return 0;
-		if (noExactMatchRefreshable(now, null, pred, null, true))
-			return 0;
-		if (noExactMatchRefreshable(now, null, null, null, true, contexts))
-			return 0;
-		return loadSize(now, subj, pred, obj, includeInferred, contexts);
-	}
-
-	/**
-	 * If this repository cannot contain this subject.
-	 */
-	private boolean noSubject(Resource subj) {
-		if (subj instanceof URI && subjectSpace != null) {
-			return !subjectSpace.match(subj.stringValue());
-		}
-		return false;
-	}
-
-	/**
-	 * Will never connect to the remote server.
-	 * 
-	 * @return if it is known that this pattern has no matches.
-	 */
-	private boolean noExactMatch(long now, Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
-		throws StoreException
-	{
-		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
-		CachedLong cached = cachedSizes.get(pattern);
-		if (cached == null)
-			return false; // don't know
-		return cached.isFresh(now) && cached.getValue() == 0;
-	}
-
-	/**
-	 * Will connect to the remote server. If no matches, may query the server for
-	 * super patterns not in cache.
-	 */
-	private long loadSize(long now, Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
-		throws StoreException
-	{
-		long size = loadExactSize(now, subj, pred, obj, includeInferred, contexts);
-		if (size == 0) {
-			StatementPattern orig = new StatementPattern(subj, pred, obj, includeInferred, contexts);
-			StatementPattern predOnly = new StatementPattern(null, pred, null, true);
-			StatementPattern ctxOnly = new StatementPattern(null, null, null, true, contexts);
-			if (pred != null && !orig.equals(predOnly)) {
-				// no values, does it have this predicate?
-				if (!cachedSizes.containsKey(predOnly)) {
-					loadExactSize(now, null, pred, null, true);
-				}
-			}
-			if ((contexts == null || contexts.length > 0) && !orig.equals(ctxOnly)) {
-				// no values, does it have this context?
-				if (!cachedSizes.containsKey(ctxOnly)) {
-					loadExactSize(now, null, null, null, true, contexts);
-				}
-			}
-		}
-		return size;
-	}
-
-	/**
-	 * Will always connect to the remote server to ensure cache is valid (if
-	 * available).
-	 */
-	private long loadExactSize(long now, Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
-		throws StoreException
-	{
-		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
-		CachedLong cached = cachedSizes.get(pattern);
-		SizeClient client = getClient().size();
-		if (cached != null) {
-			// Only calculate size if cached value is old
-			client.ifNoneMatch(cached.getETag());
-		}
-		Long size = client.get(subj, pred, obj, includeInferred, contexts);
-		if (size == null) {
-			assert cached != null : "Server did not return a size value";
-			cached.refreshed(now, client.getMaxAge());
-		}
-		else {
-			cached = new CachedLong(size, client.getETag());
-			cached.refreshed(now, client.getMaxAge());
-			cachedSizes.put(pattern, cached);
-		}
-		return cached.getValue();
-	}
-
-	/**
-	 * Will connect to the remote server for validation, if it is believed that
-	 * there will be no match.
-	 * 
-	 * @return if it is known that this pattern has no matches.
-	 */
-	private boolean noExactMatchRefreshable(long now, Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
-		throws StoreException
-	{
-		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
-		CachedLong cached = cachedSizes.get(pattern);
-		if (cached == null || cached.getValue() != 0)
-			return false; // might have a match
-		if (cached.isFresh(now))
-			return true; // no match
-		return 0 == loadExactSize(now, subj, pred, obj, includeInferred, contexts);
+		return cache.size(subj, pred, obj, includeInferred, contexts);
 	}
 }

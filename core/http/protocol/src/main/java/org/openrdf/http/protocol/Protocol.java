@@ -176,6 +176,8 @@ public abstract class Protocol {
 
 	public static final String METADATA_NAMESPACE = "http://www.openrdf.org/metadata/repository#";
 
+	public static final String LIMIT = "limit";
+
 	private static String getServerDir(String serverLocation) {
 		if (!serverLocation.endsWith("/")) {
 			serverLocation += "/";
