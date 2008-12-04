@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -9,8 +9,6 @@ import java.util.List;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIterationBase;
-import info.aduna.iteration.Iteration;
-import info.aduna.iteration.Iterations;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -25,7 +23,7 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 
 	private final List<ProjectionElemList> projections;
 
-	private final Iteration<BindingSet, QueryEvaluationException> iter;
+	private final CloseableIteration<BindingSet, QueryEvaluationException> iter;
 
 	private final BindingSet parentBindings;
 
@@ -35,7 +33,7 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 
 	private BindingSet currentBindings;
 
-	private int nextProjectionIdx;
+	private volatile int nextProjectionIdx;
 
 	/*--------------*
 	 * Constructors *
@@ -66,12 +64,16 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 	public BindingSet next()
 		throws QueryEvaluationException
 	{
-		if (nextProjectionIdx >= projections.size()) {
+		int idx = nextProjectionIdx;
+
+		if (idx >= projections.size()) {
 			currentBindings = iter.next();
-			nextProjectionIdx = 0;
+			idx = nextProjectionIdx = 0;
 		}
 
-		ProjectionElemList nextProjection = projections.get(nextProjectionIdx++);
+		ProjectionElemList nextProjection = projections.get(idx);
+		nextProjectionIdx++;
+
 		return ProjectionIterator.project(nextProjection, currentBindings, parentBindings);
 	}
 
@@ -84,7 +86,7 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 		throws QueryEvaluationException
 	{
 		super.handleClose();
-		Iterations.closeCloseable(iter);
+		iter.close();
 		nextProjectionIdx = projections.size();
 	}
 }
