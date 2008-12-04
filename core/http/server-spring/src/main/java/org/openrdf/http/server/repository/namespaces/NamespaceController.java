@@ -110,6 +110,7 @@ public class NamespaceController extends AbstractController {
 
 		try {
 			repositoryCon.setNamespace(prefix, namespace);
+			repositoryCon.commit();
 		}
 		catch (RepositoryException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
@@ -123,6 +124,7 @@ public class NamespaceController extends AbstractController {
 	{
 		try {
 			repositoryCon.removeNamespace(prefix);
+			repositoryCon.commit();
 		}
 		catch (RepositoryException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
