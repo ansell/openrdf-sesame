@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -23,7 +23,7 @@ class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 
 	private final SailConnectionBase connection;
 
-	private Throwable creatorTrace;
+	private final Throwable creatorTrace;
 
 	/**
 	 * Creates a new memory-store specific iteration object.
@@ -40,9 +40,7 @@ class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 		super(iter);
 		this.connection = connection;
 
-		if (SailBase.debugEnabled()) {
-			creatorTrace = new Throwable();
-		}
+		this.creatorTrace = SailBase.debugEnabled() ? new Throwable() : null;
 	}
 
 	@Override
