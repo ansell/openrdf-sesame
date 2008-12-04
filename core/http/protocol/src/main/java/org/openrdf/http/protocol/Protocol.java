@@ -172,6 +172,10 @@ public abstract class Protocol {
 	 */
 	public static final String FORM_MIME_TYPE = "application/x-www-form-urlencoded";
 
+	public static final String METADATA = "metadata";
+
+	public static final String METADATA_NAMESPACE = "http://www.openrdf.org/metadata/repository#";
+
 	private static String getServerDir(String serverLocation) {
 		if (!serverLocation.endsWith("/")) {
 			serverLocation += "/";

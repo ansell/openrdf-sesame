@@ -47,7 +47,7 @@ public interface RepositoryMetaData {
 
 	int getMaxLiteralLength();
 
-	int getMaxURILengeth();
+	int getMaxURILength();
 
 	String[] getQueryFunctions();
 

@@ -14,16 +14,12 @@ import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SizeClient;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
-import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.util.LiteralUtil;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -57,8 +53,6 @@ public class HTTPRepository implements Repository {
 	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
-	private SesameClient server;
-
 	private RepositoryClient client;
 
 	private PrefixHashSet subjectSpace;
@@ -76,17 +70,10 @@ public class HTTPRepository implements Repository {
 	public HTTPRepository(String serverURL, String repositoryID) {
 		HTTPConnectionPool pool = new HTTPConnectionPool(serverURL);
 		pool.setValueFactory(vf);
-		server = new SesameClient(pool);
-		client = server.repositories().slash(repositoryID);
+		client = new SesameClient(pool).repositories().slash(repositoryID);
 	}
 
 	public HTTPRepository(String repositoryURL) {
-		String serverURL = Protocol.getServerLocation(repositoryURL);
-		if (serverURL != null) {
-			HTTPConnectionPool pool = new HTTPConnectionPool(serverURL);
-			pool.setValueFactory(vf);
-			server = new SesameClient(pool);
-		}
 		HTTPConnectionPool pool = new HTTPConnectionPool(repositoryURL);
 		pool.setValueFactory(vf);
 		client = new RepositoryClient(pool);
@@ -114,8 +101,10 @@ public class HTTPRepository implements Repository {
 		initialized = true;
 	}
 
-	public RepositoryMetaData getRepositoryMetaData() {
-		return new HTTPRepositoryMetaData(this);
+	public RepositoryMetaData getRepositoryMetaData()
+		throws StoreException
+	{
+		return HTTPRepositoryMetaData.create(client.metadata().get());
 	}
 
 	public void shutDown()
@@ -148,31 +137,7 @@ public class HTTPRepository implements Repository {
 		if (!initialized) {
 			throw new IllegalStateException("HTTPRepository not initialized.");
 		}
-		if (server == null) {
-			// we don't have the server URL
-			return false;
-		}
-
-		boolean isWritable = false;
-		String repositoryURL = client.getURL();
-
-		TupleQueryResult repositoryList = server.repositories().list();
-		try {
-			while (repositoryList.hasNext()) {
-				BindingSet bindingSet = repositoryList.next();
-				Value uri = bindingSet.getValue("uri");
-
-				if (uri != null && uri.stringValue().equals(repositoryURL)) {
-					isWritable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
-					break;
-				}
-			}
-		}
-		finally {
-			repositoryList.close();
-		}
-
-		return isWritable;
+		return !getRepositoryMetaData().isReadOnly();
 	}
 
 	/**

@@ -36,7 +36,7 @@ public class SailMetaDataImpl implements SailMetaData {
 		return 0;
 	}
 
-	public int getMaxURILengeth() {
+	public int getMaxURILength() {
 		return 0;
 	}
 

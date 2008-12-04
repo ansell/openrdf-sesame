@@ -52,7 +52,9 @@ public class DatasetRepository extends RepositoryWrapper {
 	}
 
 	@Override
-	public RepositoryMetaData getRepositoryMetaData() {
+	public RepositoryMetaData getRepositoryMetaData()
+		throws StoreException
+	{
 		return new RepositoryMetaDataWrapper(super.getRepositoryMetaData()) {
 
 			@Override

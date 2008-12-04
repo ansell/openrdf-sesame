@@ -17,6 +17,8 @@ public class Federation extends SailBase {
 
 	private List<Repository> members = new ArrayList<Repository>();
 
+	private FederatedMetaData metaData;
+
 	private boolean writable;
 
 	public ValueFactory getValueFactory() {
@@ -33,6 +35,8 @@ public class Federation extends SailBase {
 		for (Repository member : members) {
 			member.initialize();
 		}
+		metaData = new FederatedMetaData(super.getSailMetaData(), members);
+		metaData.setReadOnly(!writable);
 	}
 
 	@Override
@@ -52,6 +56,11 @@ public class Federation extends SailBase {
 
 	public void setWritable(boolean writable) {
 		this.writable = writable;
+	}
+
+	@Override
+	public FederatedMetaData getSailMetaData() {
+		return metaData;
 	}
 
 	@Override

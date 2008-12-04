@@ -51,8 +51,8 @@ public class RepositoryMetaDataWrapper implements RepositoryMetaData {
 		return delegate.getMaxLiteralLength();
 	}
 
-	public int getMaxURILengeth() {
-		return delegate.getMaxURILengeth();
+	public int getMaxURILength() {
+		return delegate.getMaxURILength();
 	}
 
 	public String[] getQueryFunctions() {
