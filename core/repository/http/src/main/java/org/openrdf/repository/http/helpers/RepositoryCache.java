@@ -120,6 +120,10 @@ public class RepositoryCache {
 		if (noSubject(subj))
 			return 0;
 		long now = System.currentTimeMillis();
+		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
+		CachedSize cached = cachedSizes.get(pattern);
+		if (cached != null && cached.isSizeAvailable() && cached.isFresh(now))
+			return cached.getSize(); // we have the valid size in the cache
 		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts))
 			return 0;
 		if (noExactMatchRefreshable(now, null, pred, null, true))
