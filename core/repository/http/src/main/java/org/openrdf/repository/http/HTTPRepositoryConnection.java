@@ -212,10 +212,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			Resource... contexts)
 		throws StoreException
 	{
-		if (getRepository().noMatch(subj, pred, obj, includeInferred, contexts))
-			return false;
-
-		return super.hasStatement(subj, pred, obj, includeInferred, contexts);
+		return getRepository().hasStatement(subj, pred, obj, includeInferred, contexts);
 	}
 
 	public void commit()

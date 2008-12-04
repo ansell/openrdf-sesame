@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.repository.http;
+package org.openrdf.repository.http.helpers;
 
 import java.util.Random;
 
@@ -11,6 +11,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.repository.http.HTTPBNode;
 
 
 /**

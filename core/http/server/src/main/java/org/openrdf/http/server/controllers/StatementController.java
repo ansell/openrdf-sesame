@@ -74,7 +74,7 @@ public class StatementController {
 	 */
 	@ModelAttribute
 	@RequestMapping(value = "/repositories/*/statements", method = { GET, HEAD })
-	public RepositoryResult<Statement> export(HttpServletRequest request)
+	public RepositoryResult<Statement> get(HttpServletRequest request)
 		throws StoreException, ClientHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
@@ -121,6 +121,27 @@ public class StatementController {
 		throws IOException, ClientHTTPException, StoreException, RDFParseException
 	{
 		add(request, true);
+	}
+
+	/**
+	 * Delete data from the repository.
+	 */
+	@ModelAttribute
+	@RequestMapping(value = "/repositories/*/statements", method = DELETE)
+	public void delete(HttpServletRequest request)
+		throws ClientHTTPException, StoreException
+	{
+		ProtocolUtil.logRequestParameters(request);
+	
+		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+		ValueFactory vf = repositoryCon.getValueFactory();
+	
+		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
+		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
+		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
+		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
+	
+		repositoryCon.removeMatch(subj, pred, obj, contexts);
 	}
 
 	/**
@@ -181,26 +202,5 @@ public class StatementController {
 		repositoryCon.add(in, baseURI.toString(), rdfFormat, contexts);
 
 		repositoryCon.setAutoCommit(wasAutoCommit);
-	}
-
-	/**
-	 * Delete data from the repository.
-	 */
-	@ModelAttribute
-	@RequestMapping(value = "/repositories/*/statements", method = DELETE)
-	public void remove(HttpServletRequest request)
-		throws ClientHTTPException, StoreException
-	{
-		ProtocolUtil.logRequestParameters(request);
-
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-		ValueFactory vf = repositoryCon.getValueFactory();
-
-		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
-		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
-		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
-		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
-
-		repositoryCon.removeMatch(subj, pred, obj, contexts);
 	}
 }

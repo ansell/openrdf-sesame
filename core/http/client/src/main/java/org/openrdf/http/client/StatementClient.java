@@ -64,6 +64,14 @@ public class StatementClient {
 
 	private HTTPConnectionPool statements;
 
+	private Integer limit;
+
+	private String match;
+
+	private String eTag;
+
+	private int maxAge;
+
 	public StatementClient(HTTPConnectionPool statements) {
 		this.statements = statements;
 	}
@@ -72,11 +80,30 @@ public class StatementClient {
 	 * Get/add/remove statements *
 	 *---------------------------*/
 
+	public void setLimit(Integer limit) {
+		this.limit = limit;
+	}
+
+	public int getMaxAge() {
+		return maxAge;
+	}
+
+	public String getETag() {
+		return eTag;
+	}
+
+	public void ifNoneMatch(String eTag) {
+		match = eTag;
+	}
+
 	public GraphQueryResult get(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws StoreException
 	{
 		final HTTPConnection method = statements.get();
+		if (match != null) {
+			method.ifNoneMatch(match);
+		}
 		method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
 		Callable<GraphQueryResult> task = new Callable<GraphQueryResult>() {
 
@@ -113,6 +140,9 @@ public class StatementClient {
 		throws RDFHandlerException, StoreException
 	{
 		HTTPConnection method = statements.get();
+		if (match != null) {
+			method.ifNoneMatch(match);
+		}
 
 		try {
 			method.acceptRDF(true);
@@ -300,6 +330,9 @@ public class StatementClient {
 			params.add(new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContext));
 		}
 		params.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred)));
+		if (limit != null) {
+			params.add(new NameValuePair(Protocol.LIMIT, String.valueOf(limit)));
+		}
 		return params;
 	}
 
@@ -308,6 +341,9 @@ public class StatementClient {
 	{
 		try {
 			method.execute();
+			reset();
+			eTag = method.readETag();
+			maxAge = method.readMaxAge();
 		}
 		catch (MalformedData e) {
 			throw new RDFParseException(e);
@@ -327,6 +363,10 @@ public class StatementClient {
 		catch (HTTPException e) {
 			throw new StoreException(e);
 		}
+	}
+
+	private void reset() {
+		match = null;
 	}
 
 }
