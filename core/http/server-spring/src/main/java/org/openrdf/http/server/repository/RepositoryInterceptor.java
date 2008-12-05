@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.server.ClientHTTPException;
-import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.ProtocolUtil;
+import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.ServerInterceptor;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -49,7 +49,7 @@ public class RepositoryInterceptor extends ServerInterceptor {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-	
+
 	private RepositoryManager repositoryManager;
 
 	private String repositoryID;
@@ -63,7 +63,7 @@ public class RepositoryInterceptor extends ServerInterceptor {
 	public void setRepositoryManager(RepositoryManager repMan) {
 		repositoryManager = repMan;
 	}
-	
+
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse respons, Object handler)
 		throws Exception
@@ -87,8 +87,7 @@ public class RepositoryInterceptor extends ServerInterceptor {
 	}
 
 	@Override
-	protected String getThreadName()
-	{
+	protected String getThreadName() {
 		String threadName = Protocol.REPOSITORIES;
 
 		if (repositoryID != null) {
@@ -111,6 +110,13 @@ public class RepositoryInterceptor extends ServerInterceptor {
 				}
 
 				repositoryCon = repository.getConnection();
+
+				// FIXME: hack for repositories that return connections that are not
+				// in auto-commit mode by default
+				if (!repositoryCon.isAutoCommit()) {
+					repositoryCon.setAutoCommit(true);
+				}
+
 				request.setAttribute(REPOSITORY_ID_KEY, repositoryID);
 				request.setAttribute(REPOSITORY_KEY, repository);
 				request.setAttribute(REPOSITORY_CONNECTION_KEY, repositoryCon);

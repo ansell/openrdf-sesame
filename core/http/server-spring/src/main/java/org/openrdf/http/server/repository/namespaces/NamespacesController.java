@@ -119,7 +119,6 @@ public class NamespacesController extends AbstractController {
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 		try {
 			repositoryCon.clearNamespaces();
-			repositoryCon.commit();
 		}
 		catch (RepositoryException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);

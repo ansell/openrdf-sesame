@@ -907,9 +907,6 @@ public class HTTPClient {
 					throw new RepositoryException("Server responded with invalid size value: " + response);
 				}
 			}
-			else if (httpCode == HttpURLConnection.HTTP_NOT_FOUND) {
-				return 0; // no statements found
-			}
 			else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				throw new UnauthorizedException();
 			}
@@ -993,7 +990,7 @@ public class HTTPClient {
 		}
 	}
 
-	protected void getRDF(HttpMethod method, RDFHandler handler, boolean statements)
+	protected void getRDF(HttpMethod method, RDFHandler handler, boolean requireContext)
 		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException
 	{
@@ -1008,7 +1005,7 @@ public class HTTPClient {
 			// support and the user specified preference
 			int qValue = 10;
 
-			if (statements && !format.supportsContexts()) {
+			if (requireContext && !format.supportsContexts()) {
 				// Prefer context-supporting formats over pure triple-formats
 				qValue -= 5;
 			}
@@ -1054,9 +1051,6 @@ public class HTTPClient {
 		}
 		else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 			throw new UnauthorizedException();
-		}
-		else if (httpCode == HttpURLConnection.HTTP_NOT_FOUND && statements) {
-			return; // no statements found
 		}
 		else {
 			ErrorInfo errInfo = getErrorInfo(method);
