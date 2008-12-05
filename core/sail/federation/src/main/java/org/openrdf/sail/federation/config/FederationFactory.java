@@ -50,6 +50,7 @@ public class FederationFactory implements SailFactory {
 			}
 			sail.addMember(factory.getRepository(member));
 		}
+		sail.setLocalPropertySpace(cfg.getLocalPropertySpace());
 		return sail;
 	}
 }

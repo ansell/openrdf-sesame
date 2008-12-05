@@ -17,7 +17,6 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.QueryModel;
-import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
@@ -25,6 +24,7 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.http.helpers.PrefixHashSet;
 import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
 import org.openrdf.store.StoreException;
 
@@ -35,11 +35,18 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 
 	private Collection<RepositoryConnection> members;
 
+	private PrefixHashSet localSpace;
+
+	private boolean local;
+
+	private Var relative;
+
 	private boolean shared;
 
 	private RepositoryConnection owner;
 
-	public FederationJoinOptimizer(Collection<RepositoryConnection> members) {
+	public FederationJoinOptimizer(Collection<RepositoryConnection> members, PrefixHashSet localPropertySpace)
+	{
 		this.members = members;
 	}
 
@@ -53,13 +60,33 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	public void meet(Join node)
 		throws StoreException
 	{
-		Map<RepositoryConnection, Join> map = new LinkedHashMap<RepositoryConnection, Join>(); 
+		Map<RepositoryConnection, Join> map = new LinkedHashMap<RepositoryConnection, Join>();
+		Map<Var, Join> vars = new LinkedHashMap<Var, Join>();
 		for (TupleExpr arg : node.getArgs()) {
 			RepositoryConnection member = getSingleOwner(arg);
 			if (map.containsKey(member)) {
 				map.get(member).addArg(arg.clone());
-			} else {
+			}
+			else {
 				map.put(member, new Join(arg.clone()));
+			}
+		}
+		for (TupleExpr arg : node.getArgs()) {
+			Var subj = getLocalSubject(arg);
+			if (vars.containsKey(subj)) {
+				vars.get(subj).addArg(arg.clone());
+			}
+			else {
+				vars.put(subj, new Join(arg.clone()));
+			}
+		}
+		boolean local = false;
+		if (vars.size() > 1 || !vars.containsKey(null)) {
+			for (Map.Entry<Var, Join> e : vars.entrySet()) {
+				if (e.getKey() != null && e.getValue().getNumberOfArguments() > 1) {
+					local = true;
+					break;
+				}
 			}
 		}
 		if (map.size() == 1) {
@@ -67,12 +94,43 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 			if (o == null) {
 				// every element has multiple owners
 				multipleOwners();
-			} else {
+				if (local) {
+					Join replacement = new Join();
+					for (Join j : vars.values()) {
+						Union union = new Union();
+						for (RepositoryConnection member : members) {
+							union.addArg(new OwnedTupleExpr(member, j.clone()));
+						}
+						replacement.addArg(union);
+					}
+					node.replaceWith(replacement);
+				}
+			}
+			else {
 				// every element is used by the same owner
 				usedBy(o);
 				node.replaceWith(new OwnedTupleExpr(o, node.clone()));
 			}
-		} else {
+		}
+		else if (local) {
+			Join replacement = new Join();
+			for (Join j : vars.values()) {
+				RepositoryConnection owner = getSingleOwner(j);
+				if (owner == null) {
+					Union union = new Union();
+					for (RepositoryConnection member : members) {
+						union.addArg(new OwnedTupleExpr(member, j.clone()));
+					}
+					replacement.addArg(union);
+				}
+				else {
+					replacement.addArg(new OwnedTupleExpr(owner, j));
+				}
+			}
+			multipleOwners();
+			node.replaceWith(replacement);
+		}
+		else {
 			Join replacement = new Join();
 			for (Entry<RepositoryConnection, Join> e : map.entrySet()) {
 				RepositoryConnection o = e.getKey();
@@ -82,14 +140,19 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 					for (TupleExpr arg : join.getArgs()) {
 						replacement.addArg(arg);
 					}
-				} else if (1 == node.getNumberOfArguments()) {
-					replacement.addArg(new OwnedTupleExpr(o, join.getArg(0)));
-				} else {
+				}
+				else {
 					replacement.addArg(new OwnedTupleExpr(o, join));
 				}
 			}
 			multipleOwners();
 			node.replaceWith(replacement);
+		}
+		if (vars.size() == 1 && !vars.containsKey(null)) {
+			local(vars.keySet().iterator().next());
+		}
+		else {
+			notLocal();
 		}
 	}
 
@@ -97,22 +160,55 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	public void meet(LeftJoin node)
 		throws StoreException
 	{
-		TupleExpr left = node.getLeftArg();
-		TupleExpr right = node.getRightArg();
-		RepositoryConnection leftOwner = getSingleOwner(left);
-		RepositoryConnection rightOwner = getSingleOwner(right);
+		Var leftSubject = getLocalSubject(node.getLeftArg());
+		Var rightSubject = getLocalSubject(node.getRightArg());
+		// if local then left and right can be combined
+		boolean local = leftSubject != null && leftSubject.equals(rightSubject);
+		RepositoryConnection leftOwner = getSingleOwner(node.getLeftArg());
+		RepositoryConnection rightOwner = getSingleOwner(node.getRightArg());
 		if (leftOwner == null && rightOwner == null) {
 			multipleOwners();
-		} else if (leftOwner == rightOwner) {
+			if (local) {
+				Union union = new Union();
+				for (RepositoryConnection member : members) {
+					union.addArg(new OwnedTupleExpr(member, node.clone()));
+				}
+				node.replaceWith(union);
+			}
+		}
+		else if (leftOwner == rightOwner) {
 			usedBy(leftOwner);
 			node.replaceWith(new OwnedTupleExpr(leftOwner, node.clone()));
-		} else {
+		}
+		else {
 			multipleOwners();
-			if (leftOwner != null) {
-				left.replaceWith(new OwnedTupleExpr(leftOwner, left.clone()));
+			if (local) {
+				if (rightOwner == null) {
+					node.replaceWith(new OwnedTupleExpr(leftOwner, node.clone()));
+				}
+				else if (leftOwner == null) {
+					Union union = new Union();
+					for (RepositoryConnection member : members) {
+						if (rightOwner == member) {
+							union.addArg(new OwnedTupleExpr(member, node.clone()));
+						}
+						else {
+							union.addArg(new OwnedTupleExpr(member, node.getLeftArg().clone()));
+						}
+					}
+					node.replaceWith(union);
+				}
+				else {
+					node.replaceWith(new OwnedTupleExpr(leftOwner, node.getLeftArg().clone()));
+				}
 			}
-			if (rightOwner != null) {
-				right.replaceWith(new OwnedTupleExpr(rightOwner, right.clone()));
+			else {
+				if (leftOwner != null) {
+					node.getLeftArg().replaceWith(new OwnedTupleExpr(leftOwner, node.getLeftArg().clone()));
+				}
+				if (rightOwner != null) {
+					node.getRightArg().replaceWith(new OwnedTupleExpr(rightOwner, node.getRightArg().clone()));
+				}
 			}
 		}
 	}
@@ -121,12 +217,13 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	public void meet(Union node)
 		throws StoreException
 	{
-		Map<RepositoryConnection, Union> map = new LinkedHashMap<RepositoryConnection, Union>(); 
+		Map<RepositoryConnection, Union> map = new LinkedHashMap<RepositoryConnection, Union>();
 		for (TupleExpr arg : node.getArgs()) {
 			RepositoryConnection member = getSingleOwner(arg);
 			if (map.containsKey(member)) {
 				map.get(member).addArg(arg.clone());
-			} else {
+			}
+			else {
 				map.put(member, new Union(arg.clone()));
 			}
 		}
@@ -135,12 +232,14 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 			if (o == null) {
 				// every element has multiple owners
 				multipleOwners();
-			} else {
+			}
+			else {
 				// every element is used by the same owner
 				usedBy(o);
 				node.replaceWith(new OwnedTupleExpr(o, node.clone()));
 			}
-		} else {
+		}
+		else {
 			Union replacement = new Union();
 			for (Entry<RepositoryConnection, Union> e : map.entrySet()) {
 				RepositoryConnection o = e.getKey();
@@ -150,27 +249,16 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 					for (TupleExpr arg : union.getArgs()) {
 						replacement.addArg(arg.clone());
 					}
-				} else if (1 == node.getNumberOfArguments()) {
+				}
+				else if (1 == node.getNumberOfArguments()) {
 					replacement.addArg(new OwnedTupleExpr(o, union.getArg(0)));
-				} else {
+				}
+				else {
 					replacement.addArg(new OwnedTupleExpr(o, union));
 				}
 			}
 			multipleOwners();
 			node.replaceWith(replacement);
-		}
-	}
-
-	@Override
-	public void meetOther(QueryModelNode node)
-		throws StoreException
-	{
-		if (node instanceof OwnedTupleExpr) {
-			OwnedTupleExpr owned = (OwnedTupleExpr) node;
-			// no need to go look at the children
-			usedBy(owned.getOwner());
-		} else {
-			super.meetOther(node);
 		}
 	}
 
@@ -186,10 +274,23 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		RepositoryConnection member = getSingleOwner(subj, pred, obj, ctx);
 		if (member == null) {
 			multipleOwners();
-		} else {
+		}
+		else {
 			usedBy(member);
 			node.replaceWith(new OwnedTupleExpr(member, node.clone()));
 		}
+		if (pred != null && localSpace != null && localSpace.match(pred.stringValue())) {
+			local(node.getSubjectVar());
+		}
+		else {
+			notLocal();
+		}
+	}
+
+	private Resource[] getContexts(Var var) {
+		if (var == null || !var.hasValue())
+			return new Resource[0];
+		return new Resource[] { (Resource)var.getValue() };
 	}
 
 	private RepositoryConnection getSingleOwner(Resource subj, URI pred, Value obj, Resource[] ctx)
@@ -200,12 +301,48 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 			if (member.hasStatement(subj, pred, obj, true, ctx)) {
 				if (o == null) {
 					o = member;
-				} else if (o != member){
+				}
+				else if (o != member) {
 					return null;
 				}
 			}
 		}
 		return o;
+	}
+
+	/**
+	 * If the argument can be sent as a group to the members.
+	 */
+	private Var getLocalSubject(TupleExpr arg)
+		throws StoreException
+	{
+		boolean local_stack = local;
+		Var relative_stack = relative;
+		try {
+			local = true;
+			relative = null;
+			arg.visit(this);
+			return relative;
+		}
+		finally {
+			// restore
+			local = local_stack;
+			relative = relative_stack;
+		}
+	}
+
+	private void local(Var subj) {
+		if (local && relative == null) {
+			relative = subj;
+		}
+		else if (!subj.equals(relative)) {
+			notLocal();
+		}
+	}
+
+	private void notLocal() {
+		local = false;
+		relative = null;
 	}
 
 	/**
@@ -221,7 +358,8 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 			owner = null;
 			arg.visit(this);
 			return owner;
-		} finally {
+		}
+		finally {
 			// restore
 			shared = pre_shared;
 			owner = pre_owner;
@@ -241,12 +379,6 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	private void multipleOwners() {
 		owner = null;
 		shared = true;
-	}
-
-	private Resource[] getContexts(Var var) {
-		if (var == null || !var.hasValue())
-			return new Resource[0];
-		return new Resource[] { (Resource)var.getValue() };
 	}
 
 }
