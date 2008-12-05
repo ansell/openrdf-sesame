@@ -15,6 +15,12 @@ public class FederationSchema {
 
 	public static URI MEMBER = new URIImpl(NAMESPACE + "member");
 
+	/**
+	 * For all triples with a predicate in this space, the container RDF store
+	 * contains all triples with that subject and any predicate in this space.
+	 */
+	public static URI LOCALPROPERTYSPACE = new URIImpl(NAMESPACE + "localPropertySpace");
+
 	private FederationSchema() {
 		// no constructor
 	}

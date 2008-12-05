@@ -2,11 +2,13 @@ package org.openrdf.sail.federation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.http.helpers.PrefixHashSet;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.store.StoreException;
@@ -16,6 +18,8 @@ public class Federation extends SailBase {
 	private ValueFactory vf = ValueFactoryImpl.getInstance();
 
 	private List<Repository> members = new ArrayList<Repository>();
+
+	private PrefixHashSet localPropertySpace;
 
 	private FederatedMetaData metaData;
 
@@ -27,6 +31,14 @@ public class Federation extends SailBase {
 
 	public void addMember(Repository member) {
 		members.add(member);
+	}
+
+	public PrefixHashSet getLocalPropertySpace() {
+		return localPropertySpace;
+	}
+
+	public void setLocalPropertySpace(Set<String> localPropertySpace) {
+		this.localPropertySpace = new PrefixHashSet(localPropertySpace);
 	}
 
 	public void initialize()

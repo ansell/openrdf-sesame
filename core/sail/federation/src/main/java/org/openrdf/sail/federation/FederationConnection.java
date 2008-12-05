@@ -290,7 +290,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 
 		optimizerList.optimize(query, bindings);
 
-		new FederationJoinOptimizer(members).optimize(query, bindings);
+		new FederationJoinOptimizer(members, federation.getLocalPropertySpace()).optimize(query, bindings);
 
 		logger.trace("Optimized query model:\n{}", query.toString());
 		return query;
