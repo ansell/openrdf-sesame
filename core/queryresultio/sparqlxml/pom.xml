@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-queryresultio</artifactId>
-		<version>2.2.2</version>
+		<version>2.2.3-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-queryresultio-sparqlxml</artifactId>
-	<version>2.2.2</version>
+	<version>2.2.3-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: Query result IO - SPARQL/XML</name>
 	<description>Query result parser and writer implementation for the SPARQL Query Results XML Format.</description>
@@ -47,9 +47,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.2/core/queryresultio/sparqlxml</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.2/core/queryresultio/sparqlxml</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2.2/core/queryresultio/sparqlxml</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/queryresultio/sparqlxml</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/queryresultio/sparqlxml</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/core/queryresultio/sparqlxml</url>
 	</scm>
 
 </project>
