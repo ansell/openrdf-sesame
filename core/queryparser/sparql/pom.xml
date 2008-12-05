@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-queryparser</artifactId>
-		<version>2.2.2-SNAPSHOT</version>
+		<version>2.2.2</version>
 	</parent>
 
 	<artifactId>sesame-queryparser-sparql</artifactId>
-	<version>2.2.2-SNAPSHOT</version>
+	<version>2.2.2</version>
 
 	<name>OpenRDF Sesame: Query parser - SPARQL</name>
 	<description>Query language parser implementation for SPARQL.</description>
@@ -43,9 +43,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/queryparser/sparql</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/queryparser/sparql</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/core/queryparser/sparql</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.2/core/queryparser/sparql</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.2/core/queryparser/sparql</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2.2/core/queryparser/sparql</url>
 	</scm>
 
 </project>
