@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-compliance</artifactId>
-		<version>2.2.2-SNAPSHOT</version>
+		<version>2.2.2</version>
 	</parent>
 
 	<artifactId>sesame-http-compliance</artifactId>
-	<version>2.2.2-SNAPSHOT</version>
+	<version>2.2.2</version>
 	<packaging>war</packaging>
 
 	<name>OpenRDF HTTP server compliance tests</name>
@@ -149,9 +149,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/compliance/http/server</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/compliance/http/server</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/compliance/http/server</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.2/compliance/http/server</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.2/compliance/http/server</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2.2/compliance/http/server</url>
 	</scm>
 
 </project>
