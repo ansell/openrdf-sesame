@@ -169,7 +169,6 @@ public class StatementsController extends AbstractController {
 				op.execute(repositoryCon);
 			}
 
-			repositoryCon.commit();
 			repositoryCon.setAutoCommit(wasAutoCommit);
 
 			logger.debug("Transaction processed ");
@@ -227,7 +226,6 @@ public class StatementsController extends AbstractController {
 			}
 			repositoryCon.add(in, baseURI.toString(), rdfFormat, contexts);
 
-			repositoryCon.commit();
 			repositoryCon.setAutoCommit(wasAutoCommit);
 
 			return new ModelAndView(EmptySuccessView.getInstance());
@@ -266,7 +264,6 @@ public class StatementsController extends AbstractController {
 
 		try {
 			repositoryCon.remove(subj, pred, obj, contexts);
-			repositoryCon.commit();
 
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
