@@ -34,12 +34,15 @@ import org.openrdf.query.algebra.evaluation.impl.FilterOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
-import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.IteratorCursor;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.federation.evaluation.FederationStatistics;
+import org.openrdf.sail.federation.evaluation.FederationStrategy;
+import org.openrdf.sail.federation.optimizers.FederationJoinOptimizer;
+import org.openrdf.sail.federation.optimizers.OwnedTupleExprPruner;
 import org.openrdf.store.StoreException;
 
 abstract class FederationConnection implements SailConnection, TripleSource {
@@ -164,7 +167,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		throws StoreException
 	{
 		EvaluationStrategyImpl strategy;
-		strategy = new FederationStrategy(this, query);
+		strategy = new FederationStrategy(federation.getSailMetaData(), this, query);
 		TupleExpr qry = optimize(query, bindings, strategy);
 		return strategy.evaluate(qry, EmptyBindingSet.getInstance());
 	}
@@ -268,29 +271,28 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		}
 	}
 
-	private QueryModel optimize(QueryModel query, BindingSet bindings,
+	private QueryModel optimize(QueryModel parsed, BindingSet bindings,
 			EvaluationStrategyImpl strategy)
 		throws StoreException
 	{
-		logger.trace("Incoming query model:\n{}", query.toString());
+		logger.trace("Incoming query model:\n{}", parsed.toString());
 
 		// Clone the tuple expression to allow for more aggresive optimizations
-		query = query.clone();
+		QueryModel query = parsed.clone();
 
-		QueryOptimizerList optimizerList = new QueryOptimizerList();
-		optimizerList.add(new BindingAssigner());
-		optimizerList.add(new ConstantOptimizer(strategy));
-		optimizerList.add(new CompareOptimizer());
-		optimizerList.add(new ConjunctiveConstraintSplitter());
-		optimizerList.add(new DisjunctiveConstraintOptimizer());
-		optimizerList.add(new SameTermFilterOptimizer());
-		optimizerList.add(new QueryModelPruner());
-		optimizerList.add(new QueryJoinOptimizer(statistics));
-		optimizerList.add(new FilterOptimizer());
-
-		optimizerList.optimize(query, bindings);
+		new BindingAssigner().optimize(query, bindings);
+		new ConstantOptimizer(strategy).optimize(query, bindings);
+		new CompareOptimizer().optimize(query, bindings);
+		new ConjunctiveConstraintSplitter().optimize(query, bindings);
+		new DisjunctiveConstraintOptimizer().optimize(query, bindings);
+		new SameTermFilterOptimizer().optimize(query, bindings);
+		new QueryModelPruner().optimize(query, bindings);
+		new QueryJoinOptimizer(statistics).optimize(query, bindings);
+		new FilterOptimizer().optimize(query, bindings);
 
 		new FederationJoinOptimizer(members, federation.getLocalPropertySpace()).optimize(query, bindings);
+		new OwnedTupleExprPruner().optimize(query, bindings);
+		new QueryModelPruner().optimize(query, bindings);
 
 		logger.trace("Optimized query model:\n{}", query.toString());
 		return query;

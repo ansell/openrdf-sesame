@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail.federation;
+package org.openrdf.sail.federation.evaluation;
 
 import java.util.Collection;
 
@@ -20,7 +20,7 @@ import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.store.StoreException;
 
-class FederationStatistics extends EvaluationStatistics {
+public class FederationStatistics extends EvaluationStatistics {
 	final Logger logger = LoggerFactory.getLogger(FederationStatistics.class);
 
 	private Collection<RepositoryConnection> members;

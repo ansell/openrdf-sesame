@@ -1,8 +1,8 @@
 package org.openrdf.sail.federation;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -37,7 +37,7 @@ public class Federation extends SailBase {
 		return localPropertySpace;
 	}
 
-	public void setLocalPropertySpace(Set<String> localPropertySpace) {
+	public void setLocalPropertySpace(Collection<String> localPropertySpace) {
 		this.localPropertySpace = new PrefixHashSet(localPropertySpace);
 	}
 
