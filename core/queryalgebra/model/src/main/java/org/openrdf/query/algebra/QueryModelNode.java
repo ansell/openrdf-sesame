@@ -5,10 +5,12 @@
  */
 package org.openrdf.query.algebra;
 
+import java.io.Serializable;
+
 /**
  * Main interface for all query model nodes.
  */
-public interface QueryModelNode extends Cloneable {
+public interface QueryModelNode extends Cloneable, Serializable {
 
 	/**
 	 * Visits this node. The node reports itself to the visitor with the proper

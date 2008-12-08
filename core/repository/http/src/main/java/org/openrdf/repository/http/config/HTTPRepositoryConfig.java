@@ -93,9 +93,13 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 	@Override
 	public Resource export(Model model) {
 		Resource implNode = super.export(model);
+		ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
 
 		if (url != null) {
-			model.add(implNode, REPOSITORYURL, ValueFactoryImpl.getInstance().createURI(url));
+			model.add(implNode, REPOSITORYURL, vf.createURI(url));
+		}
+		for (String space : subjectSpace) {
+			model.add(implNode, SUBJECTSPACE, vf.createURI(space));
 		}
 		// if (username != null) {
 		// graph.add(implNode, USERNAME,

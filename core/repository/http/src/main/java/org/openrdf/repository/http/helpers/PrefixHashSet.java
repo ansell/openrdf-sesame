@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -22,7 +21,7 @@ public class PrefixHashSet {
 
 	private Map<String, List<String>> index = new HashMap<String, List<String>>();
 
-	public PrefixHashSet(Set<String> values) {
+	public PrefixHashSet(Iterable<String> values) {
 		for (String value : values) {
 			if (value.length() < length) {
 				length = value.length();
