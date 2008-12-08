@@ -36,47 +36,50 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 	protected class OrSameTermOptimizer extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
-		public void meet(Or orNode) {
-			boolean top = orNode.getParentNode() instanceof Filter;
-			if (top && containsSameTerm(orNode)) {
-				Filter filter = (Filter)orNode.getParentNode();
-				ValueExpr left = orNode.getLeftArg().clone();
-				ValueExpr right = orNode.getRightArg().clone();
+		public void meet(Filter filter) {
+			if (filter.getCondition() instanceof Or && containsSameTerm(filter.getCondition())) {
+				Or orNode = (Or)filter.getCondition();
+				TupleExpr filterArg = filter.getArg();
+
+				ValueExpr left = orNode.getLeftArg();
+				ValueExpr right = orNode.getRightArg();
 
 				// remove filter
-				filter.replaceWith(filter.getArg());
+				filter.replaceWith(filterArg);
 
 				// Push UNION down below other filters to avoid cloning them
-				TupleExpr node = findNotFilter(filter.getArg());
+				TupleExpr node = findNotFilter(filterArg);
 
 				Filter leftFilter = new Filter(node.clone(), left);
 				Filter rightFilter = new Filter(node.clone(), right);
 				Union union = new Union(leftFilter, rightFilter);
 				node.replaceWith(union);
 
-				filter.getParentNode().visit(this);
+				filterArg.visit(this);
 			}
 			else {
-				super.meet(orNode);
+				super.meet(filter);
 			}
 		}
 
 		private TupleExpr findNotFilter(TupleExpr node) {
-			if (node instanceof Filter)
-				return findNotFilter(((Filter) node).getArg());
+			if (node instanceof Filter) {
+				return findNotFilter(((Filter)node).getArg());
+			}
 			return node;
 		}
 
 		private boolean containsSameTerm(ValueExpr node) {
-			if (node instanceof SameTerm)
+			if (node instanceof SameTerm) {
 				return true;
+			}
 			if (node instanceof Or) {
-				Or or = (Or) node;
+				Or or = (Or)node;
 				boolean left = containsSameTerm(or.getLeftArg());
 				return left || containsSameTerm(or.getRightArg());
 			}
 			if (node instanceof And) {
-				And and = (And) node;
+				And and = (And)node;
 				boolean left = containsSameTerm(and.getLeftArg());
 				return left || containsSameTerm(and.getRightArg());
 			}
