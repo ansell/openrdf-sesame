@@ -7,13 +7,13 @@
 @prefix c:<urn:schema:c:> .			# member 2 exclusively
 @prefix d:<urn:schema:d:> .			# member 2 exclusively and declared as local
 
-three:jim a:parentOf shared:megan .
-three:jim a:spouse two:mary .
-three:jim b:name "Jim" .
-three:jim b:desc "Jim, Mother of Megan" .
-three:jim b:interests one:war .
+three:john a:parentOf shared:bell .
+three:john a:spouse two:margret .
+three:john b:name "John" .
+three:john b:desc "John, Mother of Bell" .
+three:john b:interests one:family .
 
-shared:megan a:mother two:mary .
+shared:bell a:mother two:margret .
 
 shared:james b:name "James" .
-shared:james b:desc "James, husband of Megan" .
+shared:james b:desc "James, husband of Bell" .
