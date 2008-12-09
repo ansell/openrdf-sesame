@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 
 import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.query.BindingSet;
@@ -44,6 +45,10 @@ public class BackgroundTupleResult implements TupleQueryResult, Runnable, TupleQ
 
 	private HTTPConnection connection;
 
+	private List<String> bindingNames;
+
+	private CountDownLatch start = new CountDownLatch(1);
+
 	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in, HTTPConnection connection) {
 		this.parser = parser;
 		this.in = in;
@@ -67,8 +72,14 @@ public class BackgroundTupleResult implements TupleQueryResult, Runnable, TupleQ
 	}
 
 	public List<String> getBindingNames() {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			start.await();
+		}
+		catch (InterruptedException e) {
+			// FIXME getBindingNames should throw StoreException
+			throw new AssertionError(e);
+		}
+		return bindingNames;
 	}
 
 	public void handleSolution(BindingSet bindingSet)
@@ -160,7 +171,8 @@ public class BackgroundTupleResult implements TupleQueryResult, Runnable, TupleQ
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
-		// no-op
+		this.bindingNames = bindingNames;
+		start.countDown();
 	}
 
 }
