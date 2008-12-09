@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import info.aduna.webapp.util.HttpServerUtil;
 
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;
+import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.model.Model;
 import org.openrdf.model.impl.LiteralImpl;
@@ -34,6 +35,7 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.repository.manager.templates.ConfigTemplate;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFParserFactory;
@@ -74,7 +76,10 @@ public class TemplateController {
 	{
 		String id = getPathParam(request);
 		RepositoryManager manager = getReadOnlyManager(request);
-		return manager.getConfigTemplateManager().getTemplate(id).getModel();
+		ConfigTemplate template = manager.getConfigTemplateManager().getTemplate(id);
+		if (template == null)
+			throw new NotFound(id);
+		return template.getModel();
 	}
 
 	@ModelAttribute

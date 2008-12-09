@@ -10,6 +10,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.http.helpers.PrefixHashSet;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.store.StoreException;
 
@@ -21,9 +22,7 @@ public class Federation extends SailBase {
 
 	private PrefixHashSet localPropertySpace;
 
-	private FederatedMetaData metaData;
-
-	private boolean writable;
+	private boolean writable = true;
 
 	public ValueFactory getValueFactory() {
 		return vf;
@@ -47,8 +46,6 @@ public class Federation extends SailBase {
 		for (Repository member : members) {
 			member.initialize();
 		}
-		metaData = new FederatedMetaData(super.getSailMetaData(), members);
-		metaData.setReadOnly(!writable);
 	}
 
 	@Override
@@ -71,7 +68,12 @@ public class Federation extends SailBase {
 	}
 
 	@Override
-	public FederatedMetaData getSailMetaData() {
+	public FederatedMetaData getSailMetaData()
+		throws StoreException
+	{
+		SailMetaData sailMetaData = super.getSailMetaData();
+		FederatedMetaData metaData = new FederatedMetaData(sailMetaData, members);
+		metaData.setReadOnly(!writable);
 		return metaData;
 	}
 

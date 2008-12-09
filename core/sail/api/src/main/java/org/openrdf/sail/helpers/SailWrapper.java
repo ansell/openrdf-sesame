@@ -53,7 +53,9 @@ public class SailWrapper implements StackableSail {
 	 * Methods *
 	 *---------*/
 
-	public SailMetaData getSailMetaData() {
+	public SailMetaData getSailMetaData()
+		throws StoreException
+	{
 		return baseSail.getSailMetaData();
 	}
 

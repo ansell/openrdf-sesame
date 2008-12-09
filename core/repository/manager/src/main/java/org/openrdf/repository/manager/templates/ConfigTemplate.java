@@ -26,6 +26,8 @@ public class ConfigTemplate {
 	private Model schema;
 
 	public ConfigTemplate(Model statements, Model schema) {
+		assert statements != null;
+		assert schema != null;
 		this.statements = statements;
 		this.schema = schema;
 	}

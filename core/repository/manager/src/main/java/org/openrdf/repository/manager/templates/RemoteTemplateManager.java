@@ -79,7 +79,10 @@ public class RemoteTemplateManager implements ConfigTemplateManager {
 	 * @throws StoreConfigException 
 	 */
 	public ConfigTemplate getTemplate(String key) throws StoreConfigException {
-		return new ConfigTemplate(client.templates().get(key), client.schemas().get());
+		Model statements = client.templates().get(key);
+		if (statements == null)
+			return null;
+		return new ConfigTemplate(statements, client.schemas().get());
 	}
 
 	/**

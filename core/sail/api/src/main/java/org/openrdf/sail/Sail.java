@@ -11,17 +11,18 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.store.StoreException;
 
 /**
- * An interface for an RDF Storage. RDF Sails can store RDF
- * statements and evaluate queries over them. Statements can be stored in named
- * contexts or in the null context. Contexts can be used to group sets of
- * statements that logically belong together, for example because they come from
- * the same source. Both URIs and bnodes can be used as context identifiers.
+ * An interface for an RDF Storage. RDF Sails can store RDF statements and
+ * evaluate queries over them. Statements can be stored in named contexts or in
+ * the null context. Contexts can be used to group sets of statements that
+ * logically belong together, for example because they come from the same
+ * source. Both URIs and bnodes can be used as context identifiers.
  * 
  * @author Arjohn Kampman
  */
 public interface Sail {
 
-	public SailMetaData getSailMetaData();
+	public SailMetaData getSailMetaData()
+		throws StoreException;
 
 	public void setDataDir(File dataDir);
 

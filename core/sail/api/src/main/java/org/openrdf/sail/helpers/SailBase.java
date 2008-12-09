@@ -65,7 +65,8 @@ public abstract class SailBase implements Sail {
 		return new SailConnectionTracker();
 	}
 
-	public SailMetaData getSailMetaData() {
+	public SailMetaData getSailMetaData()
+		throws StoreException {
 		return new SailMetaDataImpl();
 	}
 

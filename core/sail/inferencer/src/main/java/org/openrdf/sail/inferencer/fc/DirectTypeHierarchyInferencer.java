@@ -168,7 +168,9 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 	}
 
 	@Override
-	public SailMetaData getSailMetaData() {
+	public SailMetaData getSailMetaData()
+		throws StoreException
+	{
 		return new SailMetaDataWrapper(super.getSailMetaData()) {
 
 			@Override
