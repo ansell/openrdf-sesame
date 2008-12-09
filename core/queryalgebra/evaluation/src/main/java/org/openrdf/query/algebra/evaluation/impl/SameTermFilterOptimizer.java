@@ -56,18 +56,19 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 	protected class SameTermFilterVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
-		public void meet(SameTerm sameTerm) {
-			super.meet(sameTerm);
+		public void meet(Filter filter) {
+			super.meet(filter);
 
-			if (sameTerm.getParentNode() instanceof Filter) {
+			if (filter.getCondition() instanceof SameTerm) {
 				// SameTerm applies to the filter's argument
-				Filter filter = (Filter)sameTerm.getParentNode();
+				SameTerm sameTerm = (SameTerm)filter.getCondition();
+				TupleExpr filterArg = filter.getArg();
 
 				ValueExpr leftArg = sameTerm.getLeftArg();
 				ValueExpr rightArg = sameTerm.getRightArg();
 
 				// Verify that vars are bound by filterArg
-				Set<String> bindingNames = filter.getArg().getBindingNames();
+				Set<String> bindingNames = filterArg.getBindingNames();
 
 				if (leftArg instanceof Var && !bindingNames.contains(((Var)leftArg).getName())
 						|| rightArg instanceof Var && !bindingNames.contains(((Var)rightArg).getName()))
@@ -136,11 +137,11 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(ProjectionElem node)
+		public void meet(ProjectionElem projElem)
 			throws RuntimeException
 		{
-			if (node.getSourceName().equals(oldName)) {
-				node.setSourceName(newName);
+			if (projElem.getSourceName().equals(oldName)) {
+				projElem.setSourceName(newName);
 			}
 		}
 	}
@@ -173,51 +174,51 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		private List<Var> vars = new ArrayList<Var>();
 
 		@Override
-		public void meet(Filter node) {
-			if (node.getCondition() instanceof Bound) {
-				Bound bound = (Bound)node.getCondition();
+		public void meet(Filter filter) {
+			if (filter.getCondition() instanceof Bound) {
+				Bound bound = (Bound)filter.getCondition();
 				vars.add(bound.getArg());
 				innerJoins.add(Boolean.FALSE);
-				node.getArg().visit(this);
+				filter.getArg().visit(this);
 				vars.remove(vars.size() - 1);
 				if (innerJoins.remove(innerJoins.size() - 1)) {
-					node.replaceWith(node.getArg());
+					filter.replaceWith(filter.getArg());
 				}
 			}
 			else {
-				node.visitChildren(this);
+				filter.visitChildren(this);
 			}
 		}
 
 		@Override
-		public void meet(Join node)
+		public void meet(Join join)
 			throws RuntimeException
 		{
 			// search for statement patterns
-			node.visitChildren(this);
+			join.visitChildren(this);
 		}
 
 		@Override
-		public void meet(LeftJoin node)
+		public void meet(LeftJoin leftJoin)
 			throws RuntimeException
 		{
 			// search the left side, but not the optional right side
-			node.getLeftArg().visit(this);
+			leftJoin.getLeftArg().visit(this);
 		}
 
 		@Override
-		public void meet(Union node)
+		public void meet(Union union)
 			throws RuntimeException
 		{
 			List<Boolean> orig = innerJoins;
 
 			// search left (independent of right)
 			List<Boolean> left = innerJoins = new ArrayList<Boolean>(orig);
-			node.getLeftArg().visit(this);
+			union.getLeftArg().visit(this);
 
 			// search right (independent of left)
 			List<Boolean> right = innerJoins = new ArrayList<Boolean>(orig);
-			node.getRightArg().visit(this);
+			union.getRightArg().visit(this);
 
 			// compare results
 			if (!left.equals(right)) {
@@ -241,20 +242,20 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(StatementPattern node)
+		public void meet(StatementPattern sp)
 			throws RuntimeException
 		{
 			inSP = true;
-			super.meet(node);
+			super.meet(sp);
 			inSP = false;
 		}
 
 		@Override
-		public void meet(Var node)
+		public void meet(Var var)
 			throws RuntimeException
 		{
-			if (inSP && vars.contains(node)) {
-				innerJoins.set(vars.indexOf(node), Boolean.TRUE);
+			if (inSP && vars.contains(var)) {
+				innerJoins.set(vars.indexOf(var), Boolean.TRUE);
 			}
 		}
 	}
