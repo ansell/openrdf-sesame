@@ -11,6 +11,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -23,7 +24,7 @@ public class FilterCursor extends FilteringCursor<BindingSet> {
 	 * Constants *
 	 *-----------*/
 
-	private final Filter filter;
+	private final ValueExpr condition;
 
 	private final EvaluationStrategy strategy;
 
@@ -43,9 +44,18 @@ public class FilterCursor extends FilteringCursor<BindingSet> {
 		throws EvaluationException
 	{
 		super(iter);
-		this.filter = filter;
+		this.condition = filter.getCondition();
 		this.strategy = strategy;
 		this.scopeBindingNames = filter.getBindingNames();
+	}
+
+	public FilterCursor(Cursor<? extends BindingSet> iter, ValueExpr condition, Set<String> scopeBindingNames,
+			EvaluationStrategy strategy)
+	{
+		super(iter);
+		this.condition = condition;
+		this.scopeBindingNames = scopeBindingNames;
+		this.strategy = strategy;
 	}
 
 	/*---------*
@@ -61,7 +71,7 @@ public class FilterCursor extends FilteringCursor<BindingSet> {
 			QueryBindingSet scopeBindings = new QueryBindingSet(bindings);
 			scopeBindings.retainAll(scopeBindingNames);
 
-			return strategy.isTrue(filter.getCondition(), scopeBindings);
+			return strategy.isTrue(condition, scopeBindings);
 		}
 		catch (ValueExprEvaluationException e) {
 			// failed to evaluate condition
@@ -71,6 +81,6 @@ public class FilterCursor extends FilteringCursor<BindingSet> {
 
 	@Override
 	public String getName() {
-		return filter.getCondition().toString();
+		return condition.toString();
 	}
 }
