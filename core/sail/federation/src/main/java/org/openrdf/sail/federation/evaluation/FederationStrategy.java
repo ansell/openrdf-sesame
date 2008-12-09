@@ -180,7 +180,7 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 		if (metadata.getSesameMinorVersion() != md.getSesameMinorVersion())
 			return false;
 		for (QueryLanguage ql : md.getQueryLanguages()) {
-			if (ql.equals(QueryModelSerializer.LANGUAGE))
+			if (QueryModelSerializer.LANGUAGE.equals(ql))
 				return true;
 		}
 		return false;
