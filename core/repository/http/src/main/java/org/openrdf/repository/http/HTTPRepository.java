@@ -221,6 +221,14 @@ public class HTTPRepository implements Repository {
 
 	/**
 	 * Will never connect to the remote server.
+	 * @return if this statement cannot be stored in the remote server
+	 */
+	boolean isIllegal(Resource subj, URI pred, Value obj, Resource... contexts) {
+		return cache.isIllegal(subj, pred, obj, contexts);
+	}
+
+	/**
+	 * Will never connect to the remote server.
 	 * 
 	 * @return if it is known that this pattern (or super set) has no matches.
 	 */

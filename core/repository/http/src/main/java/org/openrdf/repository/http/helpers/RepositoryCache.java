@@ -66,6 +66,10 @@ public class RepositoryCache {
 		}
 	}
 
+	public boolean isIllegal(Resource subj, URI pred, Value obj, Resource... contexts) {
+		return noSubject(subj);
+	}
+
 	/**
 	 * Will never connect to the remote server.
 	 * 
@@ -76,7 +80,7 @@ public class RepositoryCache {
 	{
 		if (!vf.member(subj) || !vf.member(obj) || !vf.member(contexts))
 			return true;
-		if (noSubject(subj))
+		if (isIllegal(subj, pred, obj, contexts))
 			return true;
 		long now = System.currentTimeMillis();
 		if (noExactMatch(now, subj, pred, obj, includeInferred, contexts))
@@ -97,7 +101,7 @@ public class RepositoryCache {
 	{
 		if (!vf.member(subj) || !vf.member(obj) || !vf.member(contexts))
 			return false;
-		if (noSubject(subj))
+		if (isIllegal(subj, pred, obj, contexts))
 			return false;
 		long now = System.currentTimeMillis();
 		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts))
@@ -117,7 +121,7 @@ public class RepositoryCache {
 	{
 		if (!vf.member(subj) || !vf.member(obj) || !vf.member(contexts))
 			return 0;
-		if (noSubject(subj))
+		if (isIllegal(subj, pred, obj, contexts))
 			return 0;
 		long now = System.currentTimeMillis();
 		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);

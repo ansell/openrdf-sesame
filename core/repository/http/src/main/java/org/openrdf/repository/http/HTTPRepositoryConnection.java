@@ -42,6 +42,7 @@ import org.openrdf.query.impl.EmptyCursor;
 import org.openrdf.query.impl.IteratorCursor;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
+import org.openrdf.repository.http.exceptions.IllegalStatementException;
 import org.openrdf.repository.http.helpers.GraphQueryResultCursor;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
@@ -273,6 +274,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
+		if (getRepository().isIllegal(subject, predicate, object, contexts))
+			throw new IllegalStatementException();
 		txn.add(new AddStatementOperation(subject, predicate, object, contexts));
 	}
 
@@ -280,7 +283,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		txn.add(new RemoveStatementsOperation(subject, predicate, object, contexts));
+		if (!getRepository().noMatch(subject, predicate, object, true, contexts)) {
+			txn.add(new RemoveStatementsOperation(subject, predicate, object, contexts));
+		}
 	}
 
 	@Override
