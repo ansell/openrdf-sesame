@@ -41,8 +41,8 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 				Or orNode = (Or)filter.getCondition();
 				TupleExpr filterArg = filter.getArg();
 
-				ValueExpr left = orNode.getLeftArg();
-				ValueExpr right = orNode.getRightArg();
+				ValueExpr leftConstraint = orNode.getLeftArg();
+				ValueExpr rightConstraint = orNode.getRightArg();
 
 				// remove filter
 				filter.replaceWith(filterArg);
@@ -50,8 +50,8 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 				// Push UNION down below other filters to avoid cloning them
 				TupleExpr node = findNotFilter(filterArg);
 
-				Filter leftFilter = new Filter(node.clone(), left);
-				Filter rightFilter = new Filter(node.clone(), right);
+				Filter leftFilter = new Filter(node, leftConstraint);
+				Filter rightFilter = new Filter(node.clone(), rightConstraint);
 				Union union = new Union(leftFilter, rightFilter);
 				node.replaceWith(union);
 
