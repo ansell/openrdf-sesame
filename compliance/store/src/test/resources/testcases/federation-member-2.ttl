@@ -7,23 +7,23 @@
 @prefix c:<urn:schema:c:> .			# member 2 exclusively
 @prefix d:<urn:schema:d:> .			# member 2 exclusively and declared as local
 
-two:mary a:parentOf shared:megan .
-two:mary a:spouse shared:jim .
-two:mary b:name "Mary" .
-two:mary b:desc "Mary, Mother of Megan" .
+two:margret a:parentOf shared:bell .
+two:margret a:spouse shared:jim .
+two:margret b:name "Margret" .
+two:margret b:desc "Margret, Mother of Bell" .
 
-two:mary c:job one:teacher .
-two:mary c:livesIn one:niagra .
+two:margret c:job one:manager .
+two:margret c:livesIn one:ottawa .
 
-shared:megan c:job one:researcher .
-shared:megan c:livesIn one:toronto .
+shared:bell c:job one:cio .
+shared:bell c:livesIn one:toronto .
 
-shared:megan d:worksIn one:toronto .
+shared:bell d:worksIn one:toronto .
 
-shared:megan a:father three:jim .
-shared:james a:mother two:doreen .
+shared:bell a:father three:john .
+shared:james a:mother two:doris .
 
-shared:megan b:name "Megan" .
-shared:megan b:desc "Megan, love of my life" .
-shared:megan b:interests one:christmas .
+shared:bell b:name "Bell" .
+shared:bell b:desc "Bell, love of my life" .
+shared:bell b:interests one:family .
 

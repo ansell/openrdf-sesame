@@ -7,10 +7,10 @@
 @prefix c:<urn:schema:c:> .			# member 2 exclusively
 @prefix d:<urn:schema:d:> .			# member 2 exclusively and declared as local
 
-one:niagra b:name "Niagra" .
+one:ottawa b:name "Ottawa" .
 one:toronto b:name "Toronto" .
-one:teacher b:name "Teacher" .
-one:farmer b:name "Farmer" .
+one:manager b:name "Manager" .
+one:ceo b:name "CEO" .
 
-shared:megan a:spouse shared:james .
+shared:bell a:spouse shared:james .
 
