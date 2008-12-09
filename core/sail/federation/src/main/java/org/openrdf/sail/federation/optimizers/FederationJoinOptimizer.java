@@ -55,6 +55,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	public void meet(Join node)
 		throws StoreException
 	{
+		super.meet(node);
 		Map<RepositoryConnection, Join> map = new LinkedHashMap<RepositoryConnection, Join>();
 		Map<Var, Join> vars = new LinkedHashMap<Var, Join>();
 		for (TupleExpr arg : node.getArgs()) {
@@ -82,6 +83,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	public void meet(LeftJoin node)
 		throws StoreException
 	{
+		super.meet(node);
 		Var leftSubject = getLocalSubject(node.getLeftArg());
 		Var rightSubject = getLocalSubject(node.getRightArg());
 		// if local then left and right can be combined
@@ -95,6 +97,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	public void meet(Union node)
 		throws StoreException
 	{
+		super.meet(node);
 		Map<RepositoryConnection, Union> map = new LinkedHashMap<RepositoryConnection, Union>();
 		for (TupleExpr arg : node.getArgs()) {
 			RepositoryConnection member = getSingleOwner(arg);
@@ -349,7 +352,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 						if (owner == null) {
 							owner = o;
 						}
-						else if (owner != o) {
+						else if (o != null && owner != o) {
 							multipleOwners = true;
 							owner = null;
 							break;

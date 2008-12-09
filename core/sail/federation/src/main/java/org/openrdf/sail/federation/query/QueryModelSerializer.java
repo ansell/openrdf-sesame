@@ -24,7 +24,11 @@ import org.openrdf.query.parser.QueryParser;
  */
 public class QueryModelSerializer implements QueryParser {
 
-	public static final QueryLanguage LANGUAGE = new QueryLanguage("QueryModelSerializer");
+	public static final QueryLanguage LANGUAGE;
+	static {
+		QueryLanguage.register("QueryModelSerializer");
+		LANGUAGE = QueryLanguage.valueOf("QueryModelSerializer");
+	}
 
 	private static final String UTF_8 = "UTF-8";
 

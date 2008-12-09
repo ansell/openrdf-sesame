@@ -24,6 +24,8 @@ public class Federation extends SailBase {
 
 	private boolean writable = true;
 
+	private FederatedMetaData metadata;
+
 	public ValueFactory getValueFactory() {
 		return vf;
 	}
@@ -71,10 +73,9 @@ public class Federation extends SailBase {
 	public FederatedMetaData getSailMetaData()
 		throws StoreException
 	{
-		SailMetaData sailMetaData = super.getSailMetaData();
-		FederatedMetaData metaData = new FederatedMetaData(sailMetaData, members);
-		metaData.setReadOnly(!writable);
-		return metaData;
+		if (metadata != null)
+			return metadata;
+		return metadata = createMetaData();
 	}
 
 	@Override
@@ -101,6 +102,15 @@ public class Federation extends SailBase {
 			closeAll(connections);
 			throw e;
 		}
+	}
+
+	private FederatedMetaData createMetaData()
+		throws StoreException
+	{
+		SailMetaData sailMetaData = super.getSailMetaData();
+		FederatedMetaData metaData = new FederatedMetaData(sailMetaData, members);
+		metaData.setReadOnly(!writable);
+		return metaData;
 	}
 
 	private void closeAll(List<RepositoryConnection> connections) {
