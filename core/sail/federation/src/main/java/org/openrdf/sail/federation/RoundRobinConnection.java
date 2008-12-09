@@ -7,6 +7,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.http.exceptions.IllegalStatementException;
 import org.openrdf.store.StoreException;
 
 class RoundRobinConnection extends WriteToAllConnection {
@@ -38,10 +39,24 @@ class RoundRobinConnection extends WriteToAllConnection {
 	private void roundRobin(Procedure operation)
 		throws StoreException
 	{
+		int size = members.size();
 		int i = idx;
-		RepositoryConnection member = members.get(i);
-		idx = (i + 1) % members.size();
-		operation.run(member);
+		idx = (i + 1) % size;
+		try {
+			operation.run(members.get(i));
+		}
+		catch (IllegalStatementException e) {
+			for (int j = i + 1; j < i + size; j++) {
+				try {
+					operation.run(members.get(j % size));
+					return;
+				}
+				catch (IllegalStatementException e2) {
+					continue;
+				}
+			}
+			throw e;
+		}
 	}
 
 }
