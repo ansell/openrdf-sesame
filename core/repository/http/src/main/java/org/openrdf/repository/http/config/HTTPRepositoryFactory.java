@@ -16,6 +16,7 @@ import org.openrdf.store.StoreConfigException;
  * RDF configuration data.
  * 
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public class HTTPRepositoryFactory implements RepositoryFactory {
 
@@ -46,6 +47,7 @@ public class HTTPRepositoryFactory implements RepositoryFactory {
 			HTTPRepositoryConfig httpConfig = (HTTPRepositoryConfig)config;
 			result = new HTTPRepository(httpConfig.getURL());
 			result.setSubjectSpace(httpConfig.getSubjectSpace());
+			result.setTypeSpace(httpConfig.getTypeSpace());
 //			result.setUsernameAndPassword(httpConfig.getUsername(), httpConfig.getPassword());
 		}
 		else {

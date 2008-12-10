@@ -91,6 +91,10 @@ public class HTTPRepository implements Repository {
 		cache.setSubjectSpace(uriSpace);
 	}
 
+	public void setTypeSpace(Set<String> uriSpace) {
+		cache.setTypeSpace(uriSpace);
+	}
+
 	public void initialize()
 		throws StoreException
 	{
@@ -199,6 +203,11 @@ public class HTTPRepository implements Repository {
 	 */
 	public void setUsernameAndPassword(String username, String password) {
 		client.setUsernameAndPassword(username, password);
+	}
+
+	@Override
+	public String toString() {
+		return client.getURL();
 	}
 
 	// httpClient is shared with HTTPConnection

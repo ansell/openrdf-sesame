@@ -33,4 +33,9 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 		visitor.meetOther(this);
 	}
 
+	@Override
+	public String getSignature() {
+		return this.getClass().getSimpleName() + " " + owner.toString();
+	}
+
 }

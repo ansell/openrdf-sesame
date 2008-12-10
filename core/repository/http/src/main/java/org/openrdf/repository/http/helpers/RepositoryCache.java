@@ -15,6 +15,7 @@ import org.openrdf.http.client.StatementClient;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.store.StoreException;
 
@@ -37,6 +38,8 @@ public class RepositoryCache {
 
 	private PrefixHashSet subjectSpace;
 
+	private PrefixHashSet typeSpace;
+
 	private Map<StatementPattern, CachedSize> cachedSizes = new ConcurrentHashMap<StatementPattern, CachedSize>();
 
 	/*--------------*
@@ -57,6 +60,10 @@ public class RepositoryCache {
 		this.subjectSpace = new PrefixHashSet(uriSpace);
 	}
 
+	public void setTypeSpace(Set<String> uriSpace) {
+		this.typeSpace = new PrefixHashSet(uriSpace);
+	}
+
 	/**
 	 * Indicates that the cache needs validation.
 	 */
@@ -67,7 +74,15 @@ public class RepositoryCache {
 	}
 
 	public boolean isIllegal(Resource subj, URI pred, Value obj, Resource... contexts) {
-		return noSubject(subj);
+		if (subj instanceof URI && subjectSpace != null) {
+			if (!subjectSpace.match(subj.stringValue()))
+				return true;
+		}
+		if (obj instanceof URI && pred != null && RDF.TYPE.equals(pred) && typeSpace != null) {
+			if (!typeSpace.match(obj.stringValue()))
+				return true;
+		}
+		return false;
 	}
 
 	/**
@@ -135,16 +150,6 @@ public class RepositoryCache {
 		if (noExactMatchRefreshable(now, null, null, null, true, contexts))
 			return 0;
 		return loadSize(now, subj, pred, obj, includeInferred, contexts);
-	}
-
-	/**
-	 * If this repository cannot contain this subject.
-	 */
-	private boolean noSubject(Resource subj) {
-		if (subj instanceof URI && subjectSpace != null) {
-			return !subjectSpace.match(subj.stringValue());
-		}
-		return false;
 	}
 
 	/**
