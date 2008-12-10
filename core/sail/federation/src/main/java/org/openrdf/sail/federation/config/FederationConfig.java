@@ -22,8 +22,16 @@ import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.sail.config.SailImplConfigBase;
 import org.openrdf.store.StoreConfigException;
 
+/**
+ * Lists the members of a federation and which properties describe a resource
+ * subject in a unique member.
+ * 
+ * @author James Leigh
+ */
 public class FederationConfig extends SailImplConfigBase {
+
 	private List<RepositoryImplConfig> members = new ArrayList<RepositoryImplConfig>();
+
 	private Set<String> localPropertySpace = new HashSet<String>();
 
 	public List<RepositoryImplConfig> getMembers() {

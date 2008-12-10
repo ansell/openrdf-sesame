@@ -32,6 +32,9 @@ import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
 import org.openrdf.store.StoreException;
 
 /**
+ * Search for Join, LeftJoin, and Union arguments that can be evaluated in a
+ * single member.
+ * 
  * @author James Leigh
  */
 public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreException> implements QueryOptimizer {

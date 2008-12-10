@@ -8,6 +8,11 @@ package org.openrdf.sail.federation.config;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.URIImpl;
 
+/**
+ * RDF Schema used by the federation configuration.
+ * 
+ * @author James Leigh
+ */
 public class FederationSchema {
 
 	/** http://www.openrdf.org/config/sail/federation# */

@@ -16,17 +16,21 @@ import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.SailMetaDataWrapper;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
+ * Load {@link RepositoryMetaData} from the members and union them into a
+ * {@link SailMetaData}.
+ * 
  * @author James Leigh
  */
 public class FederatedMetaData extends SailMetaDataWrapper {
+
 	private List<RepositoryMetaData> members;
 
 	private boolean readOnly;
 
-	public FederatedMetaData(SailMetaData delegate, Collection<Repository> members) throws StoreException {
+	public FederatedMetaData(SailMetaData delegate, Collection<Repository> members)
+		throws StoreException
+	{
 		super(delegate);
 		this.members = new ArrayList<RepositoryMetaData>(members.size());
 		for (Repository r : members) {

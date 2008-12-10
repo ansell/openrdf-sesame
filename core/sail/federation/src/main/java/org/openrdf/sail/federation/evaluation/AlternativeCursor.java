@@ -9,6 +9,8 @@ import org.openrdf.query.Cursor;
 import org.openrdf.store.StoreException;
 
 /**
+ * If the primary cursor is empty, use the alternative cursor.
+ * 
  * @author James Leigh
  */
 public class AlternativeCursor<E> implements Cursor<E> {
@@ -22,10 +24,6 @@ public class AlternativeCursor<E> implements Cursor<E> {
 	public AlternativeCursor(Cursor<? extends E> primary, Cursor<? extends E> alternative) {
 		this.alternative = alternative;
 		this.primary = primary;
-	}
-
-	public boolean isAlternative() {
-		return delegate == alternative;
 	}
 
 	public void close()

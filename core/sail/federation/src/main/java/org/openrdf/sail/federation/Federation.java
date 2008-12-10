@@ -14,6 +14,11 @@ import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.store.StoreException;
 
+/**
+ * Union multiple (possibly remote) Repositories into a single RDF store.
+ * 
+ * @author James Leigh
+ */
 public class Federation extends SailBase {
 
 	private ValueFactory vf = ValueFactoryImpl.getInstance();

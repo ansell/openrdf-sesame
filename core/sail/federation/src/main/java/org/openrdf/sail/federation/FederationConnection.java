@@ -45,6 +45,12 @@ import org.openrdf.sail.federation.optimizers.FederationJoinOptimizer;
 import org.openrdf.sail.federation.optimizers.OwnedTupleExprPruner;
 import org.openrdf.store.StoreException;
 
+/**
+ * Unions the results from multiple {@link RepositoryConnection} into one
+ * {@link SailConnection}.
+ * 
+ * @author James Leigh
+ */
 abstract class FederationConnection implements SailConnection, TripleSource {
 
 	private Logger logger = LoggerFactory.getLogger(FederationConnection.class);
@@ -162,8 +168,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		});
 	}
 
-	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings,
-			boolean includeInferred)
+	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		EvaluationStrategyImpl strategy;
@@ -271,8 +276,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		}
 	}
 
-	private QueryModel optimize(QueryModel parsed, BindingSet bindings,
-			EvaluationStrategyImpl strategy)
+	private QueryModel optimize(QueryModel parsed, BindingSet bindings, EvaluationStrategyImpl strategy)
 		throws StoreException
 	{
 		logger.trace("Incoming query model:\n{}", parsed.toString());

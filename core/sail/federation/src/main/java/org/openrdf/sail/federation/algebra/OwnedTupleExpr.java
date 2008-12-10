@@ -10,12 +10,13 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.repository.RepositoryConnection;
 
-
 /**
- *
+ * Indicates that the argument should be evaluated in a particular member.
+ * 
  * @author James Leigh
  */
 public class OwnedTupleExpr extends UnaryTupleOperator {
+
 	private RepositoryConnection owner;
 
 	public OwnedTupleExpr(RepositoryConnection owner, TupleExpr arg) {

@@ -19,6 +19,12 @@ import org.openrdf.query.algebra.evaluation.cursors.SingletonCursor;
 import org.openrdf.query.impl.EmptyCursor;
 import org.openrdf.store.StoreException;
 
+/**
+ * Transform the condition into a filter and the right side into an
+ * {@link AlternativeCursor}, then evaluate as a {@link ParallelJoinCursor}.
+ * 
+ * @author James Leigh
+ */
 public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 
 	/*-----------*

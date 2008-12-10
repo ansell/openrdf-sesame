@@ -20,6 +20,8 @@ import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.parser.QueryParser;
 
 /**
+ * Serialize and Deserialize a {@link QueryModel} to a String.
+ * 
  * @author James Leigh
  */
 public class QueryModelSerializer implements QueryParser {

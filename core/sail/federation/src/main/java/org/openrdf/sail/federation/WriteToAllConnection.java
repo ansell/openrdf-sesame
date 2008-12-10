@@ -8,6 +8,11 @@ import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.store.StoreException;
 
+/**
+ * Echos all write operations to all members.
+ * 
+ * @author James Leigh
+ */
 class WriteToAllConnection extends FederationConnection {
 
 	private boolean closed;
@@ -138,7 +143,7 @@ class WriteToAllConnection extends FederationConnection {
 			public void run(RepositoryConnection member)
 				throws StoreException
 			{
-				member.remove(subj, pred, obj, contexts);
+				member.removeMatch(subj, pred, obj, contexts);
 			}
 		});
 	}

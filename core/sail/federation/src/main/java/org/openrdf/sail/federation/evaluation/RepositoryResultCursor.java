@@ -9,12 +9,13 @@ import org.openrdf.query.Cursor;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
+ * Wrap a RepositoryResult as a Cursor.
+ * 
  * @author James Leigh
  */
 public class RepositoryResultCursor<T> implements Cursor<T> {
+
 	private RepositoryResult<T> result;
 
 	public RepositoryResultCursor(RepositoryResult<T> result) {
