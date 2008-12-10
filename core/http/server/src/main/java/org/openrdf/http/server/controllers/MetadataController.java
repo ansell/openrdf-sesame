@@ -5,6 +5,8 @@
  */
 package org.openrdf.http.server.controllers;
 
+import static org.openrdf.http.protocol.Protocol.CONN_PATH;
+import static org.openrdf.http.protocol.Protocol.REPO_PATH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 
@@ -41,8 +43,14 @@ import org.openrdf.store.StoreException;
 public class MetadataController {
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = "/repositories/*/metadata")
-	public Model list(HttpServletRequest request)
+	@RequestMapping(method = HEAD, value = { REPO_PATH + "/metadata", CONN_PATH + "/metadata" })
+	public Model head(HttpServletRequest request) {
+		return new ModelImpl();
+	}
+
+	@ModelAttribute
+	@RequestMapping(method = GET, value = { REPO_PATH + "/metadata", CONN_PATH + "/metadata" })
+	public Model get(HttpServletRequest request)
 		throws StoreException, IntrospectionException, IllegalArgumentException, IllegalAccessException,
 		InvocationTargetException
 	{
@@ -59,7 +67,7 @@ public class MetadataController {
 		for (PropertyDescriptor p : properties) {
 			Object o = p.getReadMethod().invoke(data);
 			if (o instanceof Object[]) {
-				for (Object e : (Object[]) o) {
+				for (Object e : (Object[])o) {
 					add(model, subj, uf, p.getName(), lf, e);
 				}
 			}
@@ -95,7 +103,8 @@ public class MetadataController {
 		}
 		else if (o instanceof RDFFormat) {
 			model.add(subj, pred, uf.createURI(Protocol.METADATA_NAMESPACE, ((RDFFormat)o).getName()));
-		} else {
+		}
+		else {
 			throw new AssertionError("Unsupported type: " + o.getClass());
 		}
 	}

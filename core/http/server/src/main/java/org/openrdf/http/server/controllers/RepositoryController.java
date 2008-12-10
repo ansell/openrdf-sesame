@@ -6,11 +6,14 @@
 package org.openrdf.http.server.controllers;
 
 import static org.openrdf.http.protocol.Protocol.BINDING_PREFIX;
+import static org.openrdf.http.protocol.Protocol.CONN_PATH;
 import static org.openrdf.http.protocol.Protocol.DEFAULT_GRAPH_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.NAMED_GRAPH_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.QUERY_LANGUAGE_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.QUERY_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.REPO_PATH;
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -85,7 +88,7 @@ public class RepositoryController {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@ModelAttribute
-	@RequestMapping(value = "/repositories", method = { GET, HEAD })
+	@RequestMapping(method = { GET, HEAD }, value = "/repositories")
 	public TupleQueryResult list(HttpServletRequest request)
 		throws HTTPException, StoreConfigException
 	{
@@ -116,8 +119,27 @@ public class RepositoryController {
 		return new TupleQueryResultImpl(bindingNames, bindingSets);
 	}
 
+	@RequestMapping(method = POST, value = REPO_PATH + "/connections")
+	public void post(HttpServletRequest request, HttpServletResponse response)
+		throws StoreException
+	{
+		String id = RepositoryInterceptor.createConnection(request);
+		StringBuffer url = request.getRequestURL();
+		String location = url.append("/").append(id).toString();
+		response.setStatus(HttpServletResponse.SC_CREATED);
+		response.setHeader("Location", location);
+	}
+
 	@ModelAttribute
-	@RequestMapping(value = "/repositories/*", method = { GET, POST, HEAD })
+	@RequestMapping(method = DELETE, value = CONN_PATH)
+	public void delete(HttpServletRequest request)
+		throws StoreException
+	{
+		RepositoryInterceptor.closeConnection(request);
+	}
+
+	@ModelAttribute
+	@RequestMapping(method = { GET, POST, HEAD }, value = { REPO_PATH, CONN_PATH })
 	public QueryResult<?> query(HttpServletRequest request, HttpServletResponse response)
 		throws HTTPException, IOException, StoreException, MalformedQueryException
 	{

@@ -146,6 +146,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				ServletOutputStream out = resp.getOutputStream();
 				try {
 					RDFWriter rdfHandler = factory.getWriter(out);
+					rdfHandler.setBaseURI(req.getRequestURL().toString());
 					rdfHandler.startRDF();
 
 					Set<String> namespaces = new HashSet<String>();

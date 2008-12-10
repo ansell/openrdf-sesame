@@ -8,6 +8,7 @@ package org.openrdf.http.server.repository;
 import static org.openrdf.http.protocol.Protocol.IF_NONE_MATCH;
 
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -60,17 +61,25 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 
 	private static final String REPOSITORIES = "/repositories/";
 
+	private static final String CONNECTIONS = "/connections/";
+
 	private static final String REPOSITORY_MANAGER = "repositoryManager";
 
 	private static final String REPOSITORY_KEY = "repository";
 
 	private static final String REPOSITORY_CONNECTION_KEY = "repositoryConnection";
 
-	private static final String REPOSITORY_MODIFIED_KEY = RepositoryInterceptor.class.getName()
-			+ "#repository-modified";
+	private static final String BASE = RepositoryInterceptor.class.getName() + "#";
 
-	private static final String MANAGER_MODIFIED_KEY = RepositoryInterceptor.class.getName()
-			+ "#manager-modified";
+	private static final String REPOSITORY_MODIFIED_KEY = BASE + "repository-modified";
+
+	private static final String MANAGER_MODIFIED_KEY = BASE + "manager-modified";
+
+	private static final String CONN_CREATE_KEY = BASE + "create-connection";
+
+	private static final String CONN_CLOSED_KEY = BASE + "close-connection";
+
+	private static AtomicLong seq = new AtomicLong(new Random().nextLong());
 
 	public static RepositoryManager getRepositoryManager(HttpServletRequest request) {
 		request.setAttribute(MANAGER_MODIFIED_KEY, Boolean.TRUE);
@@ -96,6 +105,21 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		return id;
 	}
 
+	public static String getConnectionID(HttpServletRequest request) {
+		String path = request.getRequestURI();
+		int start = path.indexOf(CONNECTIONS);
+		if (start < 0) {
+			return null;
+		}
+		String id = path.substring(start + CONNECTIONS.length());
+		if (id.contains("/")) {
+			id = id.substring(0, id.indexOf('/'));
+		}
+		if (id.length() == 0)
+			return null;
+		return id;
+	}
+
 	public static Repository getRepository(HttpServletRequest request) {
 		return (Repository)request.getAttribute(REPOSITORY_KEY);
 	}
@@ -107,6 +131,16 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 
 	public static RepositoryConnection getReadOnlyConnection(HttpServletRequest request) {
 		return (RepositoryConnection)request.getAttribute(REPOSITORY_CONNECTION_KEY);
+	}
+
+	public static String createConnection(HttpServletRequest request) {
+		String id = Long.toHexString(seq.getAndIncrement());
+		request.setAttribute(CONN_CREATE_KEY, id);
+		return id;
+	}
+
+	public static void closeConnection(HttpServletRequest request) {
+		request.setAttribute(CONN_CLOSED_KEY, Boolean.TRUE);
 	}
 
 	/*-----------*
@@ -127,6 +161,8 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 	private Map<String, Long> repositoriesLastModified = new ConcurrentHashMap<String, Long>();
 
 	private ConcurrentMap<String, AtomicLong> repositoriesVersion = new ConcurrentHashMap<String, AtomicLong>();
+
+	private ConcurrentMap<String, RepositoryConnection> activeConnections = new ConcurrentHashMap<String, RepositoryConnection>();
 
 	/*---------*
 	 * Methods *
@@ -168,7 +204,16 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 					throw new NotFound("Unknown repository: " + repositoryID);
 				}
 
-				RepositoryConnection repositoryCon = repository.getConnection();
+				RepositoryConnection repositoryCon;
+				String connectionID = getConnectionID(request);
+				if (connectionID == null) {
+					repositoryCon = repository.getConnection();
+				} else {
+					repositoryCon = activeConnections.get(connectionID);
+					if (repositoryCon == null) {
+						throw new NotFound("Unknown connection: " + connectionID);
+					}
+				}
 				request.setAttribute(REPOSITORY_KEY, repository);
 				request.setAttribute(REPOSITORY_CONNECTION_KEY, repositoryCon);
 			}
@@ -200,14 +245,22 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 			Exception exception)
 		throws ServerHTTPException
 	{
+		String id = getConnectionID(request);
+		boolean close = request.getAttribute(CONN_CLOSED_KEY) != null;
+		String newId = (String) request.getAttribute(CONN_CREATE_KEY);
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
-		if (repositoryCon != null) {
+		if (repositoryCon != null && (close || id == null && newId == null)) {
 			try {
 				repositoryCon.close();
+				if (id != null) {
+					activeConnections.remove(id);
+				}
 			}
 			catch (StoreException e) {
 				throw new ServerHTTPException(e.getMessage(), e);
 			}
+		} else if (newId != null) {
+			activeConnections.put(newId, repositoryCon);
 		}
 	}
 
@@ -284,7 +337,8 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 				logger.error(e.toString(), e);
 				return Long.MAX_VALUE;
 			}
-		} else {
+		}
+		else {
 			long repositoryModified = repositoryLastModified(id, request);
 			if (modified < repositoryModified) {
 				modified = repositoryModified;
@@ -327,7 +381,8 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 				logger.error(e.toString(), e);
 				return null;
 			}
-		} else {
+		}
+		else {
 			version += repositoryVersion(id, request);
 		}
 		return "W/\"" + Long.toHexString(version) + "\"";
