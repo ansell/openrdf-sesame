@@ -43,6 +43,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
@@ -1570,6 +1571,137 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(metadata.getExportRDFFormats().length > 0);
 		assertTrue(metadata.getQueryFunctions().length > 0);
 		assertTrue(metadata.getQueryLanguages().length > 0);
+	}
+
+	public void testLongURIRoundTrip()
+		throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < 512; i++) {
+			sb.append(Character.toChars('A' + (i % 26)));
+		}
+		String EXAMPLE_NS = "urn:test:";
+		URI subj = new URIImpl(EXAMPLE_NS + "PICASSO");
+		URI pred = new URIImpl(EXAMPLE_NS + "PAINTS");
+		URI obj = new URIImpl(EXAMPLE_NS + "GUERNICA" + sb.toString());
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
+	public void testLongLiteralRoundTrip()
+		throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < 512; i++) {
+			sb.append(Character.toChars('A' + (i % 26)));
+		}
+		String EXAMPLE_NS = "urn:test:";
+		URI subj = new URIImpl(EXAMPLE_NS + "PICASSO");
+		URI pred = new URIImpl(EXAMPLE_NS + "PAINTS");
+		Literal obj = new LiteralImpl("guernica" + sb.toString());
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
+	public void disabledtestReallyLongLiteralRoundTrip()
+		throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < 1024000; i++) {
+			sb.append(Character.toChars('A' + (i % 26)));
+		}
+		String EXAMPLE_NS = "urn:test:";
+		URI subj = new URIImpl(EXAMPLE_NS + "PICASSO");
+		URI pred = new URIImpl(EXAMPLE_NS + "PAINTS");
+		Literal obj = new LiteralImpl("guernica" + sb.toString());
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
+	public void testLongLangRoundTrip()
+		throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < 512; i++) {
+			sb.append(Character.toChars('A' + (i % 26)));
+		}
+		String EXAMPLE_NS = "urn:test:";
+		URI subj = new URIImpl(EXAMPLE_NS + "PICASSO");
+		URI pred = new URIImpl(EXAMPLE_NS + "PAINTS");
+		Literal obj = new LiteralImpl("guernica" + sb.toString(), "es");
+
+		testValueRoundTrip(subj, pred, obj);
+	}
+
+	private void testValueRoundTrip(Resource subj, URI pred, Value obj)
+		throws Exception
+	{
+		testCon.add(subj, pred, obj);
+		testCon.commit();
+
+		RepositoryResult<Statement> stIter = testCon.getStatements(null, null, null, false);
+
+		try {
+			assertTrue(stIter.hasNext());
+			Statement st = stIter.next();
+			assertEquals(subj, st.getSubject());
+			assertEquals(pred, st.getPredicate());
+			assertEquals(obj, st.getObject());
+			assertFalse(stIter.hasNext());
+		}
+		finally {
+			stIter.close();
+		}
+
+		stIter = testCon.getStatements(subj, pred, obj, false);
+
+		try {
+			assertTrue(stIter.hasNext());
+			Statement st = stIter.next();
+			assertEquals(subj, st.getSubject());
+			assertEquals(pred, st.getPredicate());
+			assertEquals(obj, st.getObject());
+			assertFalse(stIter.hasNext());
+		}
+		finally {
+			stIter.close();
+		}
+
+		TupleQuery tupleQuery = testCon.prepareTupleQuery(QueryLanguage.SERQL,
+				"SELECT S, P, O FROM {S} P {O} WHERE P = <" + pred.stringValue() + ">", null);
+
+		TupleQueryResult iter;
+		iter = tupleQuery.evaluate();
+
+		try {
+			BindingSet bindings = iter.next();
+			assertEquals(subj, bindings.getValue("S"));
+			assertEquals(pred, bindings.getValue("P"));
+			assertEquals(obj, bindings.getValue("O"));
+			assertNull(iter.next());
+		}
+		finally {
+			iter.close();
+		}
+
+		tupleQuery = testCon.prepareTupleQuery(QueryLanguage.SERQL,
+				"SELECT S, P, O FROM {S} P {O} WHERE P = <" + pred.stringValue() + ">", null);
+		tupleQuery.setBinding("S", subj);
+		tupleQuery.setBinding("P", pred);
+		tupleQuery.setBinding("O", obj);
+
+		iter = tupleQuery.evaluate();
+
+		try {
+			BindingSet bindings = iter.next();
+			assertEquals(subj, bindings.getValue("S"));
+			assertEquals(pred, bindings.getValue("P"));
+			assertEquals(obj, bindings.getValue("O"));
+			assertNull(iter.next());
+		}
+		finally {
+			iter.close();
+		}
 	}
 
 	private int getTotalStatementCount(RepositoryConnection connection)
