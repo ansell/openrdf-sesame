@@ -162,11 +162,16 @@ public class StatementController {
 		boolean wasAutoCommit = repositoryCon.isAutoCommit();
 		repositoryCon.setAutoCommit(false);
 
-		for (TransactionOperation op : txn) {
-			op.execute(repositoryCon);
+		try {
+			for (TransactionOperation op : txn) {
+				op.execute(repositoryCon);
+			}
+		} catch (StoreException e) {
+			repositoryCon.rollback();
+			throw e;
+		} finally {
+			repositoryCon.setAutoCommit(wasAutoCommit);
 		}
-
-		repositoryCon.setAutoCommit(wasAutoCommit);
 
 		logger.debug("Transaction processed ");
 	}
@@ -198,11 +203,16 @@ public class StatementController {
 		boolean wasAutoCommit = repositoryCon.isAutoCommit();
 		repositoryCon.setAutoCommit(false);
 
-		if (replaceCurrent) {
-			repositoryCon.clear(contexts);
+		try {
+			if (replaceCurrent) {
+				repositoryCon.clear(contexts);
+			}
+			repositoryCon.add(in, baseURI.toString(), rdfFormat, contexts);
+		} catch (StoreException e) {
+			repositoryCon.rollback();
+			throw e;
+		} finally {
+			repositoryCon.setAutoCommit(wasAutoCommit);
 		}
-		repositoryCon.add(in, baseURI.toString(), rdfFormat, contexts);
-
-		repositoryCon.setAutoCommit(wasAutoCommit);
 	}
 }

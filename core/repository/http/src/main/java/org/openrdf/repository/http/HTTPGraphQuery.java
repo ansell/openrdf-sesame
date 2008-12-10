@@ -36,7 +36,7 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 	public GraphQueryResult evaluate()
 		throws HTTPQueryEvaluationException
 	{
-		RepositoryClient client = httpCon.getRepository().getClient();
+		RepositoryClient client = httpCon.getClient();
 
 		try {
 			return client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred, getBindingsArray());
@@ -52,7 +52,7 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 	public void evaluate(RDFHandler handler)
 		throws HTTPQueryEvaluationException, RDFHandlerException
 	{
-		RepositoryClient client = httpCon.getRepository().getClient();
+		RepositoryClient client = httpCon.getClient();
 		try {
 			client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred, handler, getBindingsArray());
 		}

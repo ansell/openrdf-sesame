@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.openrdf.http.client.ConnectionClient;
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.StatementClient;
 import org.openrdf.http.protocol.Protocol;
+import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;
@@ -60,6 +62,7 @@ import org.openrdf.store.StoreException;
  * @see org.openrdf.http.protocol.NotAllowedException
  * @author Arjohn Kampman
  * @author Herko ter Horst
+ * @author James Leigh
  */
 class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
@@ -88,6 +91,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Variables *
 	 *-----------*/
 
+	private ConnectionClient client;
+
+	private volatile boolean closed;
+
 	private List<TransactionOperation> txn = Collections.synchronizedList(new ArrayList<TransactionOperation>());
 
 	/*
@@ -100,8 +107,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Constructors *
 	 *--------------*/
 
-	public HTTPRepositoryConnection(HTTPRepository repository) {
+	public HTTPRepositoryConnection(HTTPRepository repository, ConnectionClient client) {
 		super(repository);
+		this.client = client;
 
 		if (debugEnabled()) {
 			creatorTrace = new Throwable();
@@ -138,7 +146,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public Query prepareQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
-		String type = getRepository().getClient().getQueryType(ql, queryString);
+		String type = client.getQueryType(ql, queryString);
 		if (Protocol.GRAPH_QUERY.equals(type))
 			return new HTTPGraphQuery(this, ql, queryString, baseURI);
 		if (Protocol.BOOLEAN_QUERY.equals(type))
@@ -165,7 +173,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		List<Resource> contextList = new ArrayList<Resource>();
 
-		TupleQueryResult contextIDs = getClient().contexts().list();
+		TupleQueryResult contextIDs = client.contexts().list();
 		try {
 			while (contextIDs.hasNext()) {
 				BindingSet bindingSet = contextIDs.next();
@@ -190,7 +198,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		if (getRepository().noMatch(subj, pred, obj, inf, ctx))
 			return emptyRepositoryResult();
 
-		StatementClient statements = getClient().statements();
+		StatementClient statements = client.statements();
 		GraphQueryResult result = statements.get(subj, pred, obj, inf, ctx);
 		return createRepositoryResult(result);
 	}
@@ -199,7 +207,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			RDFHandler handler, Resource... contexts)
 		throws RDFHandlerException, StoreException
 	{
-		getClient().statements().get(subj, pred, obj, includeInferred, handler, contexts);
+		client.statements().get(subj, pred, obj, includeInferred, handler, contexts);
 	}
 
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
@@ -216,20 +224,41 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return getRepository().hasStatement(subj, pred, obj, includeInferred, contexts);
 	}
 
+	@Override
+	public void setAutoCommit(boolean autoCommit)
+		throws StoreException
+	{
+		boolean currently = super.isAutoCommit();
+		if (!autoCommit && currently) {
+			client.begin();
+		} else if (autoCommit && !currently) {
+			client.commit();
+		}
+		super.setAutoCommit(autoCommit);
+	}
+
 	public void commit()
 		throws StoreException
 	{
 		synchronized (txn) {
 			if (txn.size() > 0) {
-				getClient().statements().post(txn);
+				client.statements().post(txn);
+				client.commit();
 				getRepository().modified();
 				txn.clear();
+				if (!isAutoCommit()) {
+					client.begin();
+				}
 			}
 		}
 	}
 
-	public void rollback() {
+	public void rollback()
+		throws StoreException
+	{
 		txn.clear();
+		client.rollback();
+		client.begin();
 	}
 
 	@Override
@@ -241,6 +270,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			rollback();
 		}
 
+		if (!closed) {
+			closed = true;
+			client.close();
+		}
 		super.close();
 	}
 
@@ -251,7 +284,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		if (isAutoCommit()) {
 			// Send bytes directly to the server
-			StatementClient httpClient = getClient().statements();
+			StatementClient httpClient = client.statements();
 			if (inputStreamOrReader instanceof InputStream) {
 				httpClient.upload(((InputStream)inputStreamOrReader), baseURI, dataFormat, false, contexts);
 			}
@@ -322,7 +355,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		List<Namespace> namespaceList = new ArrayList<Namespace>();
 
-		TupleQueryResult namespaces = getClient().namespaces().list();
+		TupleQueryResult namespaces = client.namespaces().list();
 		try {
 			while (namespaces.hasNext()) {
 				BindingSet bindingSet = namespaces.next();
@@ -346,7 +379,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public String getNamespace(String prefix)
 		throws StoreException
 	{
-		return getClient().namespaces().get(prefix);
+		return client.namespaces().get(prefix);
 	}
 
 	@Override
@@ -368,7 +401,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return new RepositoryResult<Statement>(new GraphQueryResultCursor(result));
 	}
 
-	private RepositoryClient getClient() {
-		return getRepository().getClient();
+	protected RepositoryClient getClient() {
+		return client;
 	}
 }
