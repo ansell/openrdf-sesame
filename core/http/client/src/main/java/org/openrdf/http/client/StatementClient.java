@@ -112,10 +112,12 @@ public class StatementClient {
 			{
 				try {
 					method.acceptRDF(true);
-					if (execute(method)) {
+					if (execute(method) && !method.isNotModified()) {
 						return method.getGraphQueryResult();
 					}
-					else {
+					else if (method.isNotModified()) {
+						return null;
+					} else {
 						Map<String, String> ns = Collections.emptyMap();
 						Cursor<Statement> cursor = EmptyCursor.emptyCursor();
 						return new GraphQueryResultImpl(ns, cursor);
@@ -132,7 +134,20 @@ public class StatementClient {
 				}
 			}
 		};
-		return new FutureGraphQueryResult(statements.submitTask(task));
+		if (match == null)
+			return new FutureGraphQueryResult(statements.submitTask(task));
+		try {
+			return task.call();
+		}
+		catch (StoreException e) {
+			throw e;
+		}
+		catch (RuntimeException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new StoreException(e);
+		}
 	}
 
 	public void get(Resource subj, URI pred, Value obj, boolean includeInferred, RDFHandler handler,
@@ -147,7 +162,7 @@ public class StatementClient {
 		try {
 			method.acceptRDF(true);
 			method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
-			if (execute(method)) {
+			if (execute(method) && method.isNotModified()) {
 				method.readRDF(handler);
 			}
 		}
