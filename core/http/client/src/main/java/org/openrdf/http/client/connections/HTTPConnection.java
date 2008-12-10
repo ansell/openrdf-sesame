@@ -484,6 +484,10 @@ public class HTTPConnection {
 		return readHeader("ETag");
 	}
 
+	public String readLocation() {
+		return readHeader("Location");
+	}
+
 	public int readMaxAge() {
 		Header[] headers = method.getResponseHeaders("Cache-Control");
 

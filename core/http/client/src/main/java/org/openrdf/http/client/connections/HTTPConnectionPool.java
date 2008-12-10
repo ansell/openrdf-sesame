@@ -200,12 +200,16 @@ public class HTTPConnectionPool implements Cloneable {
 	}
 
 	public HTTPConnectionPool slash(String path) {
+		if (this.url == null) {
+			throw new IllegalStateException("URL has not been set");
+		}
+		return location(url + "/" + path);
+	}
+
+	public HTTPConnectionPool location(String url) {
 		try {
-			if (url == null) {
-				throw new IllegalStateException("URL has not been set");
-			}
 			HTTPConnectionPool clone = (HTTPConnectionPool)clone();
-			clone.url = url + "/" + path;
+			clone.url = url;
 			return clone;
 		}
 		catch (CloneNotSupportedException e) {

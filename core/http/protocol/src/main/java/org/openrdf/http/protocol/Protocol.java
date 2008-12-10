@@ -182,6 +182,14 @@ public abstract class Protocol {
 
 	public static final String CONN_PATH = "/repositories/*/connections/*";
 
+	public static final String CONNECTIONS = "connections";
+
+	public static final String BEGIN = "begin";
+
+	public static final String COMMIT = "commit";
+
+	public static final String ROLLBACK = "rollback";
+
 	private static String getServerDir(String serverLocation) {
 		if (!serverLocation.endsWith("/")) {
 			serverLocation += "/";
