@@ -349,8 +349,10 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 	protected void logEndOfRequest(HttpServletRequest request) {
 		if (logger.isInfoEnabled()) {
 			String queryStr = request.getParameter(QUERY_PARAM_NAME);
-			int qryCode = String.valueOf(queryStr).hashCode();
-			logger.info("Request for query {} is finished", qryCode);
+			if (queryStr != null) {
+				int qryCode = String.valueOf(queryStr).hashCode();
+				logger.info("Request for query {} is finished", qryCode);
+			}
 		}
 	}
 }
