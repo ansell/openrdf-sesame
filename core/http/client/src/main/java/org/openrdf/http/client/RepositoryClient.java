@@ -83,6 +83,10 @@ public class RepositoryClient {
 		return repository;
 	}
 
+	public ConnectionsClient connections() {
+		return new ConnectionsClient(repository.slash(Protocol.CONNECTIONS));
+	}
+
 	public MetaDataClient metadata() {
 		return new MetaDataClient(repository.slash(Protocol.METADATA));
 	}

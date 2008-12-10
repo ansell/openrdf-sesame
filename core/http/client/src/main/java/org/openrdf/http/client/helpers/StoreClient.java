@@ -58,6 +58,22 @@ public class StoreClient {
 		}
 	}
 
+	public String create()
+		throws StoreException
+	{
+		HTTPConnection method = server.post();
+		try {
+			execute(method);
+			return method.readLocation();
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+		finally {
+			method.release();
+		}
+	}
+
 	public <T> T get(Class<T> type)
 		throws StoreException
 	{
@@ -81,6 +97,21 @@ public class StoreClient {
 			throw new StoreException(e);
 		}
 		catch (RDFParseException e) {
+			throw new StoreException(e);
+		}
+		finally {
+			method.release();
+		}
+	}
+
+	public void post()
+		throws StoreException
+	{
+		HTTPConnection method = server.post();
+		try {
+			execute(method);
+		}
+		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
