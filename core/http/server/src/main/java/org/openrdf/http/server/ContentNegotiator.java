@@ -14,9 +14,11 @@ import static org.openrdf.http.protocol.Protocol.X_QUERY_TYPE;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +40,11 @@ import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.TupleQueryResult;
@@ -59,6 +65,8 @@ import org.openrdf.store.StoreException;
 class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, View {
 
 	static final String BEAN_NAME = DispatcherServlet.REQUEST_TO_VIEW_NAME_TRANSLATOR_BEAN_NAME;
+
+	private static int SMALL = 10;
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -118,6 +126,11 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		return map.values().iterator().next();
 	}
 
+	/**
+	 * Prints the result in RDF using the namespaces of the repository. If the
+	 * result is small, less then ten results, it will only print the namespaces
+	 * used in the result. Otherwise it will print all namespaces in the repository.
+	 */
 	private void render(RepositoryResult<Statement> gqr, HttpServletRequest req, HttpServletResponse resp)
 		throws ClientHTTPException, IOException
 	{
@@ -135,14 +148,39 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 					RDFWriter rdfHandler = factory.getWriter(out);
 					rdfHandler.startRDF();
 
+					Set<String> namespaces = new HashSet<String>();
+					Model first10 = new ModelImpl();
+
+					int i = 0;
+					for (; gqr.hasNext() && i < SMALL && i < limit; i++) {
+						Statement st = gqr.next();
+						Resource subj = st.getSubject();
+						URI pred = st.getPredicate();
+						Value obj = st.getObject();
+						Resource ctx = st.getContext();
+						addNamespace(subj, namespaces);
+						addNamespace(pred, namespaces);
+						addNamespace(obj, namespaces);
+						addNamespace(ctx, namespaces);
+						first10.add(subj, pred, obj, ctx);
+					}
+
+					boolean largeResult = first10.size() >= SMALL;
+
 					RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(req);
 					for (Namespace ns : repositoryCon.getNamespaces().asList()) {
 						String prefix = ns.getPrefix();
 						String namespace = ns.getName();
-						rdfHandler.handleNamespace(prefix, namespace);
+						if (largeResult || namespaces.contains(namespace)) {
+							rdfHandler.handleNamespace(prefix, namespace);
+						}
 					}
 
-					for (int i = 0; gqr.hasNext() && i < limit; i++) {
+					for (Statement st : first10) {
+						rdfHandler.handleStatement(st);
+					}
+
+					for (; gqr.hasNext() && i < limit; i++) {
 						Statement st = gqr.next();
 						rdfHandler.handleStatement(st);
 					}
@@ -162,6 +200,13 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		}
 		catch (StoreException e) {
 			throw new IOException("Query evaluation error: " + e.getMessage());
+		}
+	}
+
+	private void addNamespace(Value value, Set<String> namespaces) {
+		if (value instanceof URI) {
+			URI uri = (URI) value;
+			namespaces.add(uri.getNamespace());
 		}
 	}
 
