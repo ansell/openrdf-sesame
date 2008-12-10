@@ -349,6 +349,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return getClient().namespaces().get(prefix);
 	}
 
+	@Override
+	public String toString() {
+		return getRepository().toString() + " Connection";
+	}
+
 	/**
 	 * Creates a RepositoryResult for the supplied element set.
 	 */

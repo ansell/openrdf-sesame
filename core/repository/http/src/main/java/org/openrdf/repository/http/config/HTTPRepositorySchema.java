@@ -39,6 +39,9 @@ public class HTTPRepositorySchema {
 	/** <tt>http://www.openrdf.org/config/repository/http#subjectSpace</tt> */
 	public final static URI SUBJECTSPACE;
 
+	/** <tt>http://www.openrdf.org/config/repository/http#typeSpace</tt> */
+	public final static URI TYPESPACE;
+
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		REPOSITORYURL = factory.createURI(NAMESPACE, "repositoryURL");
@@ -47,5 +50,6 @@ public class HTTPRepositorySchema {
 		USERNAME = factory.createURI(NAMESPACE, "username");
 		PASSWORD = factory.createURI(NAMESPACE, "password");
 		SUBJECTSPACE = factory.createURI(NAMESPACE, "subjectSpace");
+		TYPESPACE = factory.createURI(NAMESPACE, "typeSpace");
 	}
 }
