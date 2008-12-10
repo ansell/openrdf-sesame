@@ -178,6 +178,10 @@ public abstract class Protocol {
 
 	public static final String LIMIT = "limit";
 
+	public static final String REPO_PATH = "/repositories/*";
+
+	public static final String CONN_PATH = "/repositories/*/connections/*";
+
 	private static String getServerDir(String serverLocation) {
 		if (!serverLocation.endsWith("/")) {
 			serverLocation += "/";

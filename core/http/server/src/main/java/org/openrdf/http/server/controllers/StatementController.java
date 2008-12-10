@@ -6,10 +6,12 @@
 package org.openrdf.http.server.controllers;
 
 import static org.openrdf.http.protocol.Protocol.BASEURI_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.CONN_PATH;
 import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.REPO_PATH;
 import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -73,7 +75,7 @@ public class StatementController {
 	 * @return a model and view for exporting the statements.
 	 */
 	@ModelAttribute
-	@RequestMapping(value = "/repositories/*/statements", method = { GET, HEAD })
+	@RequestMapping(method = { GET, HEAD }, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
 	public RepositoryResult<Statement> get(HttpServletRequest request)
 		throws StoreException, ClientHTTPException
 	{
@@ -96,7 +98,7 @@ public class StatementController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(value = "/repositories/*/statements", method = POST)
+	@RequestMapping(method = POST, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
 	public void post(HttpServletRequest request, HttpServletResponse response)
 		throws Exception
 	{
@@ -116,7 +118,7 @@ public class StatementController {
 	 * Upload data to the repository.
 	 */
 	@ModelAttribute
-	@RequestMapping(value = "/repositories/*/statements", method = PUT)
+	@RequestMapping(method = PUT, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
 	public void put(HttpServletRequest request)
 		throws IOException, ClientHTTPException, StoreException, RDFParseException
 	{
@@ -127,20 +129,20 @@ public class StatementController {
 	 * Delete data from the repository.
 	 */
 	@ModelAttribute
-	@RequestMapping(value = "/repositories/*/statements", method = DELETE)
+	@RequestMapping(method = DELETE, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
 	public void delete(HttpServletRequest request)
 		throws ClientHTTPException, StoreException
 	{
 		ProtocolUtil.logRequestParameters(request);
-	
+
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 		ValueFactory vf = repositoryCon.getValueFactory();
-	
+
 		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
 		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
 		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
-	
+
 		repositoryCon.removeMatch(subj, pred, obj, contexts);
 	}
 

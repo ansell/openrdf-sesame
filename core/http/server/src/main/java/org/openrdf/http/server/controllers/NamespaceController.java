@@ -5,6 +5,8 @@
  */
 package org.openrdf.http.server.controllers;
 
+import static org.openrdf.http.protocol.Protocol.CONN_PATH;
+import static org.openrdf.http.protocol.Protocol.REPO_PATH;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
@@ -50,7 +52,7 @@ import org.openrdf.store.StoreException;
 public class NamespaceController {
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = "/repositories/*/namespaces")
+	@RequestMapping(method = { GET, HEAD }, value = { REPO_PATH + "/namespaces", CONN_PATH + "/namespaces" })
 	public TupleQueryResult list(HttpServletRequest request)
 		throws StoreException
 	{
@@ -79,7 +81,7 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = DELETE, value = "/repositories/*/namespaces")
+	@RequestMapping(method = DELETE, value = { REPO_PATH + "/namespaces", CONN_PATH + "/namespaces" })
 	public void clear(HttpServletRequest request)
 		throws StoreException
 	{
@@ -88,7 +90,7 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = "/repositories/*/namespaces/*")
+	@RequestMapping(method = { GET, HEAD }, value = { REPO_PATH + "/namespaces/*", CONN_PATH + "/namespaces/*" })
 	public StringReader get(HttpServletRequest request)
 		throws StoreException, NotFound
 	{
@@ -104,7 +106,7 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = PUT, value = "/repositories/*/namespaces/*")
+	@RequestMapping(method = PUT, value = { REPO_PATH + "/namespaces/*", CONN_PATH + "/namespaces/*" })
 	public void put(HttpServletRequest request)
 		throws StoreException, IOException, BadRequest
 	{
@@ -122,7 +124,7 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = DELETE, value = "/repositories/*/namespaces/*")
+	@RequestMapping(method = DELETE, value = { REPO_PATH + "/namespaces/*", CONN_PATH + "/namespaces/*" })
 	public void delete(HttpServletRequest request)
 		throws StoreException
 	{

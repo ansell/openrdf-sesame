@@ -5,9 +5,11 @@
  */
 package org.openrdf.http.server.controllers;
 
+import static org.openrdf.http.protocol.Protocol.CONN_PATH;
 import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.REPO_PATH;
 import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
@@ -40,7 +42,7 @@ import org.openrdf.repository.RepositoryConnection;
 public class SizeController {
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = "/repositories/*/size")
+	@RequestMapping(method = { GET, HEAD }, value = { REPO_PATH + "/size", CONN_PATH + "/size" })
 	public StringReader size(HttpServletRequest request)
 		throws Exception
 	{
@@ -56,7 +58,7 @@ public class SizeController {
 		boolean useInferencing = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, false);
 
 		if (HEAD.equals(RequestMethod.valueOf(request.getMethod())))
-				return new StringReader("");
+			return new StringReader("");
 
 		long size = repositoryCon.size(subj, pred, obj, useInferencing, contexts);
 		return new StringReader(String.valueOf(size));
