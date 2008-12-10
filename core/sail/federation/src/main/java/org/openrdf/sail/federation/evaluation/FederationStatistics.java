@@ -20,7 +20,13 @@ import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.store.StoreException;
 
+/**
+ * Calculate the statistics based on the sum of the size from each member.
+ * 
+ * @author James Leigh
+ */
 public class FederationStatistics extends EvaluationStatistics {
+
 	final Logger logger = LoggerFactory.getLogger(FederationStatistics.class);
 
 	private Collection<RepositoryConnection> members;
@@ -41,6 +47,7 @@ public class FederationStatistics extends EvaluationStatistics {
 	}
 
 	protected class Calculator extends CardinalityCalculator {
+
 		@Override
 		protected double getCardinality(StatementPattern sp) {
 			Resource subj = (Resource)getConstantValue(sp.getSubjectVar());

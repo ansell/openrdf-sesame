@@ -11,13 +11,15 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
+ * Wrap a TupleQueryResult as a Cursor.
+ * 
  * @author James Leigh
  */
 public class TupleQueryResultCursor implements Cursor<BindingSet> {
+
 	private TupleQueryResult result;
+
 	private BindingSet bindings;
 
 	public TupleQueryResultCursor(TupleQueryResult result, BindingSet bindings) {

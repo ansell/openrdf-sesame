@@ -9,9 +9,9 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.QueryParser;
 import org.openrdf.query.parser.QueryParserFactory;
 
-
 /**
- *
+ * Create a {@link QueryModelSerializer}.
+ * 
  * @author James Leigh
  */
 public class QueryModelSerializerFactory implements QueryParserFactory {

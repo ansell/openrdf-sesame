@@ -16,6 +16,12 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.impl.EmptyCursor;
 import org.openrdf.store.StoreException;
 
+/**
+ * Iterate the left side and evaluate the right side in separate thread, only
+ * iterate the right side in the controlling thread.
+ * 
+ * @author James Leigh
+ */
 public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 
 	/*-----------*

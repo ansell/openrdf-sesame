@@ -42,6 +42,11 @@ import org.openrdf.sail.federation.query.QueryModelSerializer;
 import org.openrdf.store.StoreException;
 
 /**
+ * Evaluate Join, LeftJoin and Union in parallel and only evaluate {@linked
+ * OwnedTupleExpr} is the given member.
+ * 
+ * @see ParallelJoinCursor
+ * @see ParallelLeftJoinCursor
  * @author James Leigh
  */
 public class FederationStrategy extends EvaluationStrategyImpl {

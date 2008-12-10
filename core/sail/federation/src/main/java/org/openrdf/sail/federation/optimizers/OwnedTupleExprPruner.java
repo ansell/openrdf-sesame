@@ -15,6 +15,8 @@ import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
 import org.openrdf.store.StoreException;
 
 /**
+ * Remove redundent {@link OwnedTupleExpr}.
+ * 
  * @author James Leigh
  */
 public class OwnedTupleExprPruner extends QueryModelVisitorBase<StoreException> implements QueryOptimizer {
@@ -47,7 +49,8 @@ public class OwnedTupleExprPruner extends QueryModelVisitorBase<StoreException> 
 			owned = node;
 			super.meetOther(node);
 			owned = null;
-		} else {
+		}
+		else {
 			// no nested OwnedTupleExpr
 			TupleExpr replacement = node.getArg().clone();
 			node.replaceWith(replacement);

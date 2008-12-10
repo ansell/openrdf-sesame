@@ -16,12 +16,13 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
+ * Allow a single repository member to control a EvaulationStrategy.
+ * 
  * @author James Leigh
  */
 public class RepositoryTripleSource implements TripleSource {
+
 	private RepositoryConnection repo;
 
 	public RepositoryTripleSource(RepositoryConnection repo) {

@@ -6,9 +6,16 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.store.StoreException;
 
+/**
+ * Finishes the {@link SailConnection} by throwing @
+ * {@link SailReadOnlyException} in all write operations.
+ * 
+ * @author James Leigh
+ */
 class ReadOnlyConnection extends FederationConnection {
 
 	private boolean closed;

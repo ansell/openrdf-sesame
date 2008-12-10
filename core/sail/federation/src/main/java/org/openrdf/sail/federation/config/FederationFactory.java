@@ -14,6 +14,12 @@ import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.federation.Federation;
 import org.openrdf.store.StoreConfigException;
 
+/**
+ * Creates a federation based on its configuration.
+ * 
+ * @see FederationConfig
+ * @author James Leigh
+ */
 public class FederationFactory implements SailFactory {
 
 	/**
@@ -41,7 +47,7 @@ public class FederationFactory implements SailFactory {
 			throw new StoreConfigException("Invalid Sail type: " + config.getType());
 		}
 		assert config instanceof FederationConfig;
-		FederationConfig cfg = (FederationConfig) config;
+		FederationConfig cfg = (FederationConfig)config;
 		Federation sail = new Federation();
 		for (RepositoryImplConfig member : cfg.getMembers()) {
 			RepositoryFactory factory = RepositoryRegistry.getInstance().get(member.getType());
