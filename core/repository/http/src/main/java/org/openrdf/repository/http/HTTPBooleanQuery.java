@@ -30,7 +30,7 @@ public class HTTPBooleanQuery extends HTTPQuery implements BooleanQuery {
 	public boolean evaluate()
 		throws HTTPQueryEvaluationException
 	{
-		RepositoryClient client = httpCon.getRepository().getClient();
+		RepositoryClient client = httpCon.getClient();
 
 		try {
 			return client.sendBooleanQuery(queryLanguage, queryString, dataset, includeInferred, getBindingsArray());

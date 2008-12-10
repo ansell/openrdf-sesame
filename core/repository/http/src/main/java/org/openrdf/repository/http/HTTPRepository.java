@@ -8,6 +8,7 @@ package org.openrdf.repository.http;
 import java.io.File;
 import java.util.Set;
 
+import org.openrdf.http.client.ConnectionClient;
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
@@ -128,7 +129,8 @@ public class HTTPRepository implements Repository {
 	public RepositoryConnection getConnection()
 		throws StoreException
 	{
-		return new HTTPRepositoryConnection(this);
+		ConnectionClient connection = client.connections().post();
+		return new HTTPRepositoryConnection(this, connection);
 	}
 
 	public boolean isWritable()
@@ -208,11 +210,6 @@ public class HTTPRepository implements Repository {
 	@Override
 	public String toString() {
 		return client.getURL();
-	}
-
-	// httpClient is shared with HTTPConnection
-	RepositoryClient getClient() {
-		return client;
 	}
 
 	/**
