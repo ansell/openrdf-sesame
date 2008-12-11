@@ -9,14 +9,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.openrdf.http.client.ConnectionClient;
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.StatementClient;
 import org.openrdf.http.protocol.Protocol;
-import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;
@@ -66,6 +64,8 @@ import org.openrdf.store.StoreException;
  */
 class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
+	private static final int MAX_TRAN_QUEUE = 1024;
+
 	@SuppressWarnings("unchecked")
 	private static <T> RepositoryResult<T> emptyRepositoryResult() {
 		return new RepositoryResult(EmptyCursor.emptyCursor());
@@ -95,7 +95,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	private volatile boolean closed;
 
-	private List<TransactionOperation> txn = Collections.synchronizedList(new ArrayList<TransactionOperation>());
+	private List<TransactionOperation> txn = new ArrayList<TransactionOperation>(MAX_TRAN_QUEUE / 2);
 
 	/*
 	 * Stores a stack trace that indicates where this connection as created if
@@ -231,7 +231,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		boolean currently = super.isAutoCommit();
 		if (!autoCommit && currently) {
 			client.begin();
-		} else if (autoCommit && !currently) {
+		}
+		else if (autoCommit && !currently) {
 			client.commit();
 		}
 		super.setAutoCommit(autoCommit);
@@ -240,23 +241,20 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void commit()
 		throws StoreException
 	{
-		synchronized (txn) {
-			if (txn.size() > 0) {
-				client.statements().post(txn);
-				client.commit();
-				getRepository().modified();
-				txn.clear();
-				if (!isAutoCommit()) {
-					client.begin();
-				}
-			}
+		flush();
+		client.commit();
+		getRepository().modified();
+		if (!isAutoCommit()) {
+			client.begin();
 		}
 	}
 
 	public void rollback()
 		throws StoreException
 	{
-		txn.clear();
+		synchronized (txn) {
+			txn.clear();
+		}
 		client.rollback();
 		client.begin();
 	}
@@ -265,13 +263,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void close()
 		throws StoreException
 	{
-		if (txn.size() > 0) {
-			logger.warn("Rolling back transaction due to connection close", new Throwable());
-			rollback();
-		}
-
 		if (!closed) {
 			closed = true;
+			if (isAutoCommit()) {
+				logger.warn("Rolling back transaction due to connection close", new Throwable());
+				rollback();
+			}
 			client.close();
 		}
 		super.close();
@@ -282,24 +279,18 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
-		if (isAutoCommit()) {
-			// Send bytes directly to the server
-			StatementClient httpClient = client.statements();
-			if (inputStreamOrReader instanceof InputStream) {
-				httpClient.upload(((InputStream)inputStreamOrReader), baseURI, dataFormat, false, contexts);
-			}
-			else if (inputStreamOrReader instanceof Reader) {
-				httpClient.upload(((Reader)inputStreamOrReader), baseURI, dataFormat, false, contexts);
-			}
-			else {
-				throw new IllegalArgumentException(
-						"inputStreamOrReader must be an InputStream or a Reader, is a: "
-								+ inputStreamOrReader.getClass());
-			}
+		// Send bytes directly to the server
+		StatementClient httpClient = client.statements();
+		if (inputStreamOrReader instanceof InputStream) {
+			httpClient.upload(((InputStream)inputStreamOrReader), baseURI, dataFormat, false, contexts);
+		}
+		else if (inputStreamOrReader instanceof Reader) {
+			httpClient.upload(((Reader)inputStreamOrReader), baseURI, dataFormat, false, contexts);
 		}
 		else {
-			// Parse files locally
-			super.addInputStreamOrReader(inputStreamOrReader, baseURI, dataFormat, contexts);
+			throw new IllegalArgumentException(
+					"inputStreamOrReader must be an InputStream or a Reader, is a: "
+							+ inputStreamOrReader.getClass());
 		}
 	}
 
@@ -309,7 +300,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		if (getRepository().isIllegal(subject, predicate, object, contexts))
 			throw new IllegalStatementException();
-		txn.add(new AddStatementOperation(subject, predicate, object, contexts));
+		add(new AddStatementOperation(subject, predicate, object, contexts));
 	}
 
 	@Override
@@ -317,7 +308,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws StoreException
 	{
 		if (!getRepository().noMatch(subject, predicate, object, true, contexts)) {
-			txn.add(new RemoveStatementsOperation(subject, predicate, object, contexts));
+			add(new RemoveStatementsOperation(subject, predicate, object, contexts));
 		}
 	}
 
@@ -325,28 +316,28 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void clear(Resource... contexts)
 		throws StoreException
 	{
-		txn.add(new ClearOperation(contexts));
+		add(new ClearOperation(contexts));
 		autoCommit();
 	}
 
 	public void removeNamespace(String prefix)
 		throws StoreException
 	{
-		txn.add(new RemoveNamespaceOperation(prefix));
+		add(new RemoveNamespaceOperation(prefix));
 		autoCommit();
 	}
 
 	public void clearNamespaces()
 		throws StoreException
 	{
-		txn.add(new ClearNamespacesOperation());
+		add(new ClearNamespacesOperation());
 		autoCommit();
 	}
 
 	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
-		txn.add(new SetNamespaceOperation(prefix, name));
+		add(new SetNamespaceOperation(prefix, name));
 		autoCommit();
 	}
 
@@ -403,5 +394,27 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	protected RepositoryClient getClient() {
 		return client;
+	}
+
+	private void add(TransactionOperation operation)
+		throws StoreException
+	{
+		synchronized (txn) {
+			txn.add(operation);
+			if (txn.size() >= MAX_TRAN_QUEUE) {
+				flush();
+			}
+		}
+	}
+
+	private void flush()
+		throws StoreException
+	{
+		synchronized (txn) {
+			if (txn.size() > 0) {
+				client.statements().post(txn);
+				txn.clear();
+			}
+		}
 	}
 }
