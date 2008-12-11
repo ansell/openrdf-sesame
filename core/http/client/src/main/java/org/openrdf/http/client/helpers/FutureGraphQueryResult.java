@@ -26,14 +26,10 @@ public class FutureGraphQueryResult implements GraphQueryResult {
 		this.delegate = delegate;
 	}
 
-	public Map<String, String> getNamespaces() {
-		try {
-			return getDelegate().getNamespaces();
-		}
-		catch (StoreException e) {
-			// FIXME getNamespaces should throw StoreException
-			throw new AssertionError(e);
-		}
+	public Map<String, String> getNamespaces()
+		throws StoreException
+	{
+		return getDelegate().getNamespaces();
 	}
 
 	public void close()

@@ -71,13 +71,14 @@ public class BackgroundTupleResult implements TupleQueryResult, Runnable, TupleQ
 		// no-op
 	}
 
-	public List<String> getBindingNames() {
+	public List<String> getBindingNames()
+		throws StoreException
+	{
 		try {
 			start.await();
 		}
 		catch (InterruptedException e) {
-			// FIXME getBindingNames should throw StoreException
-			throw new AssertionError(e);
+			throw new StoreException(e);
 		}
 		return bindingNames;
 	}

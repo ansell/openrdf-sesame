@@ -7,6 +7,8 @@ package org.openrdf.query;
 
 import java.util.List;
 
+import org.openrdf.store.StoreException;
+
 /**
  * A representation of a variable-binding query result as a sequence of
  * {@link BindingSet} objects. Each query result consists of zero or more
@@ -22,6 +24,8 @@ public interface TupleQueryResult extends QueryResult<BindingSet> {
 	 * Gets the names of the bindings, in order of projection.
 	 * 
 	 * @return The binding names, in order of projection.
+	 * @throws StoreException
 	 */
-	public List<String> getBindingNames();
+	public List<String> getBindingNames()
+		throws StoreException;
 }

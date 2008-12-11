@@ -24,14 +24,10 @@ public class FutureTupleQueryResult implements TupleQueryResult {
 		this.delegate = delegate;
 	}
 
-	public List<String> getBindingNames() {
-		try {
-			return getDelegate().getBindingNames();
-		}
-		catch (StoreException e) {
-			// FIXME getBindingNames should throw StoreException
-			throw new AssertionError(e);
-		}
+	public List<String> getBindingNames()
+		throws StoreException
+	{
+		return getDelegate().getBindingNames();
 	}
 
 	public void close()
