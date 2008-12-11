@@ -49,10 +49,10 @@ public class RepositoryWrapper implements DelegatingRepository {
 		return delegate;
 	}
 
-	public RepositoryMetaData getRepositoryMetaData()
+	public RepositoryMetaData getMetaData()
 		throws StoreException
 	{
-		return getDelegate().getRepositoryMetaData();
+		return getDelegate().getMetaData();
 	}
 
 	public void setDataDir(File dataDir) {

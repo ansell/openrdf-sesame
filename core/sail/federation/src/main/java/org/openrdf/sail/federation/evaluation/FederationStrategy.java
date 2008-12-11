@@ -179,7 +179,7 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 	{
 		if (expr instanceof StatementPattern)
 			return false;
-		RepositoryMetaData md = owner.getRepository().getRepositoryMetaData();
+		RepositoryMetaData md = owner.getRepository().getMetaData();
 		if (metadata.getSesameMajorVersion() != md.getSesameMajorVersion())
 			return false;
 		if (metadata.getSesameMinorVersion() != md.getSesameMinorVersion())

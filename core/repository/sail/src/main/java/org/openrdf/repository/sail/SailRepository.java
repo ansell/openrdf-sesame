@@ -69,10 +69,10 @@ public class SailRepository implements Repository {
 	 * Methods *
 	 *---------*/
 
-	public RepositoryMetaData getRepositoryMetaData()
+	public RepositoryMetaData getMetaData()
 		throws StoreException
 	{
-		return new SailRepositoryMetaData(sail.getSailMetaData());
+		return new SailRepositoryMetaData(sail.getMetaData());
 	}
 
 	public File getDataDir() {

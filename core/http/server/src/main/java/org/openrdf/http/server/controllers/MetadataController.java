@@ -58,7 +58,7 @@ public class MetadataController {
 		PropertyDescriptor[] properties = info.getPropertyDescriptors();
 
 		Repository repository = RepositoryInterceptor.getRepository(request);
-		RepositoryMetaData data = repository.getRepositoryMetaData();
+		RepositoryMetaData data = repository.getMetaData();
 		URIFactory uf = repository.getURIFactory();
 		LiteralFactory lf = repository.getLiteralFactory();
 		URI subj = uf.createURI(request.getRequestURL().toString());

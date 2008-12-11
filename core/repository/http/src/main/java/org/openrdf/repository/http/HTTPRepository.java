@@ -102,7 +102,7 @@ public class HTTPRepository implements Repository {
 		initialized = true;
 	}
 
-	public RepositoryMetaData getRepositoryMetaData()
+	public RepositoryMetaData getMetaData()
 		throws StoreException
 	{
 		return HTTPRepositoryMetaData.create(client.metadata().get());
@@ -139,7 +139,7 @@ public class HTTPRepository implements Repository {
 		if (!initialized) {
 			throw new IllegalStateException("HTTPRepository not initialized.");
 		}
-		return !getRepositoryMetaData().isReadOnly();
+		return !getMetaData().isReadOnly();
 	}
 
 	/**

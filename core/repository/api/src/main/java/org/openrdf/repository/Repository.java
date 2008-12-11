@@ -28,7 +28,7 @@ import org.openrdf.store.StoreException;
  */
 public interface Repository {
 
-	public RepositoryMetaData getRepositoryMetaData()
+	public RepositoryMetaData getMetaData()
 		throws StoreException;
 
 	/**

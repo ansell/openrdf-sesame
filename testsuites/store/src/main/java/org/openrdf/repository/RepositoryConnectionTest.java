@@ -1565,7 +1565,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	}
 
 	public void testMetaData() throws Exception {
-		RepositoryMetaData metadata = testRepository.getRepositoryMetaData();
+		RepositoryMetaData metadata = testRepository.getMetaData();
 		assertFalse(metadata.isReadOnly());
 		assertTrue(metadata.getAddRDFFormats().length > 0);
 		assertTrue(metadata.getExportRDFFormats().length > 0);

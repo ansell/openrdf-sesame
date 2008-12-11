@@ -75,10 +75,10 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 	}
 
 	@Override
-	public SailMetaData getSailMetaData()
+	public SailMetaData getMetaData()
 		throws StoreException
 	{
-		return new SailMetaDataWrapper(super.getSailMetaData()) {
+		return new SailMetaDataWrapper(super.getMetaData()) {
 
 			@Override
 			public String[] getReasoners() {

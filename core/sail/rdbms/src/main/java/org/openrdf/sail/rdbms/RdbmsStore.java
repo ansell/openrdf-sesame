@@ -106,7 +106,7 @@ public class RdbmsStore extends SailBase {
 		this.password = password;
 	}
 
-	public SailMetaData getSailMetaData() {
+	public SailMetaData getMetaData() {
 		return new RdbmsStoreMetaData(this);
 	}
 

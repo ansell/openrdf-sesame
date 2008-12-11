@@ -172,7 +172,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		throws StoreException
 	{
 		EvaluationStrategyImpl strategy;
-		strategy = new FederationStrategy(federation.getSailMetaData(), this, query);
+		strategy = new FederationStrategy(federation.getMetaData(), this, query);
 		TupleExpr qry = optimize(query, bindings, strategy);
 		return strategy.evaluate(qry, EmptyBindingSet.getInstance());
 	}

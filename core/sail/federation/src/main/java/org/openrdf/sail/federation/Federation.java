@@ -75,7 +75,7 @@ public class Federation extends SailBase {
 	}
 
 	@Override
-	public FederatedMetaData getSailMetaData()
+	public FederatedMetaData getMetaData()
 		throws StoreException
 	{
 		if (metadata != null)
@@ -112,7 +112,7 @@ public class Federation extends SailBase {
 	private FederatedMetaData createMetaData()
 		throws StoreException
 	{
-		SailMetaData sailMetaData = super.getSailMetaData();
+		SailMetaData sailMetaData = super.getMetaData();
 		FederatedMetaData metaData = new FederatedMetaData(sailMetaData, members);
 		metaData.setReadOnly(!writable);
 		return metaData;
