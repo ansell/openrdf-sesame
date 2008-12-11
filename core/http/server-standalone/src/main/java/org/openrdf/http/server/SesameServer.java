@@ -14,7 +14,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
@@ -51,11 +50,9 @@ public class SesameServer {
 				"How many seconds clients can use their cache before validating it with the server");
 
 		options.addOption(helpOption);
+		options.addOption(dirOption);
 		options.addOption(portOption);
-
-		OptionGroup connectGroup = new OptionGroup();
-		connectGroup.addOption(dirOption);
-		options.addOptionGroup(connectGroup);
+		options.addOption(maxAgeOption);
 
 		CommandLineParser argsParser = new PosixParser();
 

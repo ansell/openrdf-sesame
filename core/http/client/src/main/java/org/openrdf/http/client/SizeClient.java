@@ -113,8 +113,8 @@ public class SizeClient {
 		throws IOException, StoreException
 	{
 		try {
-			method.execute();
 			reset();
+			method.execute();
 			eTag = method.readETag();
 			maxAge = method.readMaxAge();
 		}
