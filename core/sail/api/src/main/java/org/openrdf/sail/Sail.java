@@ -21,7 +21,7 @@ import org.openrdf.store.StoreException;
  */
 public interface Sail {
 
-	public SailMetaData getSailMetaData()
+	public SailMetaData getMetaData()
 		throws StoreException;
 
 	public void setDataDir(File dataDir);

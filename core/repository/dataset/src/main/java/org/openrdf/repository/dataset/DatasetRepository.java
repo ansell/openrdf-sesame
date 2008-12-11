@@ -52,10 +52,10 @@ public class DatasetRepository extends RepositoryWrapper {
 	}
 
 	@Override
-	public RepositoryMetaData getRepositoryMetaData()
+	public RepositoryMetaData getMetaData()
 		throws StoreException
 	{
-		return new RepositoryMetaDataWrapper(super.getRepositoryMetaData()) {
+		return new RepositoryMetaDataWrapper(super.getMetaData()) {
 
 			@Override
 			public boolean isRemoteDatasetSupported() {

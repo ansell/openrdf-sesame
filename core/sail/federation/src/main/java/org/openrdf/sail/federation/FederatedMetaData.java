@@ -34,7 +34,7 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 		super(delegate);
 		this.members = new ArrayList<RepositoryMetaData>(members.size());
 		for (Repository r : members) {
-			this.members.add(r.getRepositoryMetaData());
+			this.members.add(r.getMetaData());
 		}
 	}
 
