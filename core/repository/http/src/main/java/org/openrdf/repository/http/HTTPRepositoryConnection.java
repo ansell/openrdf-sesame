@@ -95,6 +95,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	private volatile boolean closed;
 
+	/** If connection cannot use shared repository cache. */
+	private boolean modified;
+
 	private List<TransactionOperation> txn = new ArrayList<TransactionOperation>(MAX_TRAN_QUEUE / 2);
 
 	/*
@@ -171,6 +174,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public RepositoryResult<Resource> getContextIDs()
 		throws StoreException
 	{
+		flush();
 		List<Resource> contextList = new ArrayList<Resource>();
 
 		TupleQueryResult contextIDs = client.contexts().list();
@@ -195,9 +199,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			Resource... ctx)
 		throws StoreException
 	{
-		if (getRepository().noMatch(subj, pred, obj, inf, ctx))
+		if (noMatch(subj, pred, obj, inf, ctx))
 			return emptyRepositoryResult();
 
+		flush();
 		StatementClient statements = client.statements();
 		GraphQueryResult result = statements.get(subj, pred, obj, inf, ctx);
 		return createRepositoryResult(result);
@@ -207,13 +212,17 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			RDFHandler handler, Resource... contexts)
 		throws RDFHandlerException, StoreException
 	{
+		flush();
 		client.statements().get(subj, pred, obj, includeInferred, handler, contexts);
 	}
 
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return getRepository().size(subj, pred, obj, includeInferred, contexts);
+		if (!modified)
+			return getRepository().size(subj, pred, obj, includeInferred, contexts);
+		flush();
+		return client.size().get(subj, pred, obj, includeInferred, contexts);
 	}
 
 	@Override
@@ -221,7 +230,17 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			Resource... contexts)
 		throws StoreException
 	{
-		return getRepository().hasStatement(subj, pred, obj, includeInferred, contexts);
+		if (!modified)
+			return getRepository().hasStatement(subj, pred, obj, includeInferred, contexts);
+		flush();
+		StatementClient statements = client.statements();
+		statements.setLimit(1);
+		GraphQueryResult result = statements.get(subj, pred, obj, includeInferred, contexts);
+		try {
+			return result.hasNext();
+		} finally {
+			result.close();
+		}
 	}
 
 	@Override
@@ -234,6 +253,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 		else if (autoCommit && !currently) {
 			client.commit();
+			modified = false;
 		}
 		super.setAutoCommit(autoCommit);
 	}
@@ -244,6 +264,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		flush();
 		client.commit();
 		getRepository().modified();
+		modified = false;
 		if (!isAutoCommit()) {
 			client.begin();
 		}
@@ -256,6 +277,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			txn.clear();
 		}
 		client.rollback();
+		modified = false;
 		client.begin();
 	}
 
@@ -280,6 +302,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws IOException, RDFParseException, StoreException
 	{
 		// Send bytes directly to the server
+		modified = true;
+		flush();
 		StatementClient httpClient = client.statements();
 		if (inputStreamOrReader instanceof InputStream) {
 			httpClient.upload(((InputStream)inputStreamOrReader), baseURI, dataFormat, false, contexts);
@@ -307,7 +331,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		if (!getRepository().noMatch(subject, predicate, object, true, contexts)) {
+		if (!noMatch(subject, predicate, object, true, contexts)) {
 			add(new RemoveStatementsOperation(subject, predicate, object, contexts));
 		}
 	}
@@ -344,6 +368,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public RepositoryResult<Namespace> getNamespaces()
 		throws StoreException
 	{
+		flush();
 		List<Namespace> namespaceList = new ArrayList<Namespace>();
 
 		TupleQueryResult namespaces = client.namespaces().list();
@@ -370,6 +395,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public String getNamespace(String prefix)
 		throws StoreException
 	{
+		flush();
 		return client.namespaces().get(prefix);
 	}
 
@@ -392,13 +418,30 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return new RepositoryResult<Statement>(new GraphQueryResultCursor(result));
 	}
 
-	protected RepositoryClient getClient() {
+	protected RepositoryClient getClient()
+		throws StoreException
+	{
+		flush();
 		return client;
+	}
+
+	/**
+	 * Will never connect to the remote server.
+	 * 
+	 * @return if it is known that this pattern (or super set) has no matches.
+	 */
+	private boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		if (modified)
+			return false;
+		return getRepository().noMatch(subj, pred, obj, includeInferred, contexts);
 	}
 
 	private void add(TransactionOperation operation)
 		throws StoreException
 	{
+		modified = true;
 		synchronized (txn) {
 			txn.add(operation);
 			if (txn.size() >= MAX_TRAN_QUEUE) {

@@ -36,9 +36,8 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 	public TupleQueryResult evaluate()
 		throws HTTPQueryEvaluationException
 	{
-		RepositoryClient client = httpCon.getClient();
-
 		try {
+			RepositoryClient client = httpCon.getClient();
 			return client.sendTupleQuery(queryLanguage, queryString, dataset, includeInferred, getBindingsArray());
 		}
 		catch (StoreException e) {
