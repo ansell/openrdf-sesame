@@ -119,6 +119,10 @@ public class RepositoryCache {
 		if (isIllegal(subj, pred, obj, contexts))
 			return false;
 		long now = System.currentTimeMillis();
+		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
+		CachedSize cached = cachedSizes.get(pattern);
+		if (cached != null && cached.isFresh(now))
+			return !cached.isAbsent(); // we have the valid cache
 		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts))
 			return false;
 		if (noExactMatchRefreshable(now, null, pred, null, true))
@@ -209,7 +213,7 @@ public class RepositoryCache {
 		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
 		CachedSize cached = cachedSizes.get(pattern);
 		SizeClient client = this.client.size();
-		if (cached != null) {
+		if (cached != null && cached.isSizeAvailable()) {
 			// Only calculate size if cached value is old
 			client.ifNoneMatch(cached.getETag());
 		}
@@ -258,7 +262,7 @@ public class RepositoryCache {
 		CachedSize cached = cachedSizes.get(pattern);
 		StatementClient client = this.client.statements();
 		client.setLimit(1);
-		if (cached != null) {
+		if (cached != null && (cached.isAbsent() || !cached.isSizeAvailable())) {
 			// Only calculate if cached value is old
 			client.ifNoneMatch(cached.getETag());
 		}

@@ -58,6 +58,8 @@ public class HTTPRepository implements Repository {
 
 	private boolean initialized = false;
 
+	private RepositoryMetaData metadata;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -105,7 +107,10 @@ public class HTTPRepository implements Repository {
 	public RepositoryMetaData getMetaData()
 		throws StoreException
 	{
-		return HTTPRepositoryMetaData.create(client.metadata().get());
+		if (metadata == null) {
+			metadata = HTTPRepositoryMetaData.create(client.metadata().get());
+		}
+		return metadata;
 	}
 
 	public void shutDown()

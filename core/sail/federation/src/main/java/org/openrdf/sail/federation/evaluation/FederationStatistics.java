@@ -55,8 +55,8 @@ public class FederationStatistics extends EvaluationStatistics {
 			Value obj = getConstantValue(sp.getObjectVar());
 			Resource context = (Resource)getConstantValue(sp.getContextVar());
 			try {
-				long size = size(subj, pred, obj, true, context);
-				double result = size;
+				long cardinality = cardinality(subj, pred, obj, true, context);
+				double result = cardinality;
 				if (result == Double.NaN || result < 0)
 					return Double.MAX_VALUE;
 				return result;
@@ -72,7 +72,7 @@ public class FederationStatistics extends EvaluationStatistics {
 		}
 	}
 
-	long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+	long cardinality(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		long size = 0;

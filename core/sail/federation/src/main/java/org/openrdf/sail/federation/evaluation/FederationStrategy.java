@@ -180,9 +180,10 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 		if (expr instanceof StatementPattern)
 			return false;
 		RepositoryMetaData md = owner.getRepository().getMetaData();
-		if (metadata.getSesameMajorVersion() != md.getSesameMajorVersion())
+		int version = metadata.getSesameMajorVersion();
+		if (version != 0 && version != md.getSesameMajorVersion())
 			return false;
-		if (metadata.getSesameMinorVersion() != md.getSesameMinorVersion())
+		if (version != 0 && metadata.getSesameMinorVersion() != md.getSesameMinorVersion())
 			return false;
 		for (QueryLanguage ql : md.getQueryLanguages()) {
 			if (QueryModelSerializer.LANGUAGE.equals(ql))

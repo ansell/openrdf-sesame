@@ -267,7 +267,10 @@ public class StatementClient {
 		throws IOException, StoreException
 	{
 		try {
+			reset();
 			method.execute();
+			eTag = method.readETag();
+			maxAge = method.readMaxAge();
 			return true;
 		}
 		catch (NotFound e) {
@@ -355,8 +358,8 @@ public class StatementClient {
 		throws IOException, StoreException, RDFParseException
 	{
 		try {
-			method.execute();
 			reset();
+			method.execute();
 			eTag = method.readETag();
 			maxAge = method.readMaxAge();
 		}
