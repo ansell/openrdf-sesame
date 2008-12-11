@@ -500,20 +500,6 @@ class SAXFilter implements ContentHandler {
 	}
 
 	private ParsedURI createBaseURI(String uriString) {
-		if (uriString.length() > 4 && uriString.substring(0, 4).equalsIgnoreCase("jar:")) {
-			// uriString is e.g.
-			// jar:http://www.foo.com/bar/baz.jar!/COM/foo/Quux.class
-			// Treat the part up to and including the exclamation mark as the
-			// scheme and
-			// the rest as the path to enable 'correct' resolving of relative URIs
-			int idx = uriString.indexOf('!');
-			if (idx != -1) {
-				String scheme = uriString.substring(0, idx + 1);
-				String path = uriString.substring(idx + 1);
-				return new ParsedURI(scheme, null, path, null, null);
-			}
-		}
-
 		ParsedURI uri = new ParsedURI(uriString);
 		uri.normalize();
 		return uri;
