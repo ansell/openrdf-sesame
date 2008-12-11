@@ -116,7 +116,8 @@ public class NativeStore extends InferencerSailBase {
 	 * Methods *
 	 *---------*/
 
-	public SailMetaData getSailMetaData() {
+	@Override
+	public SailMetaData getMetaData() {
 		return new NativeStoreMetaData(this);
 	}
 
