@@ -13,6 +13,8 @@ import java.util.Set;
  */
 public class SingletonSet extends QueryModelNodeBase implements TupleExpr {
 
+	private static final long serialVersionUID = 8941506172099241645L;
+
 	public Set<String> getBindingNames() {
 		return Collections.emptySet();
 	}

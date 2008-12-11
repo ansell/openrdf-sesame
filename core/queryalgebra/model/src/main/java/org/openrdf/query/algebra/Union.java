@@ -15,6 +15,8 @@ import java.util.Set;
  */
 public class Union extends NaryTupleOperator {
 
+	private static final long serialVersionUID = -1894706875682296935L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

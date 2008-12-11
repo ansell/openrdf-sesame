@@ -11,6 +11,8 @@ package org.openrdf.query.algebra;
  */
 public class In extends CompareSubQueryValueOperator {
 
+	private static final long serialVersionUID = 3329055265002869613L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

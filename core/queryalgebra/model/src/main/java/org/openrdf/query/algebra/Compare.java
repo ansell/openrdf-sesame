@@ -10,6 +10,8 @@ package org.openrdf.query.algebra;
  */
 public class Compare extends BinaryValueOperator {
 
+	private static final long serialVersionUID = 1526058328982063476L;
+
 	/*---------------*
 	 * enum Operator *
 	 *---------------*/

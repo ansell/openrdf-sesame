@@ -16,6 +16,8 @@ import java.util.Set;
  */
 public class Extension extends UnaryTupleOperator {
 
+	private static final long serialVersionUID = 6757351376006917206L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

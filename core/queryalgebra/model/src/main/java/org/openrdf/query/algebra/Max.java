@@ -10,6 +10,8 @@ package org.openrdf.query.algebra;
  */
 public class Max extends UnaryValueOperator implements AggregateOperator {
 
+	private static final long serialVersionUID = 7342478403996244599L;
+
 	public Max(ValueExpr arg) {
 		super(arg);
 	}

@@ -20,6 +20,8 @@ import org.openrdf.model.URI;
  */
 public class QueryModel extends UnaryTupleOperator {
 
+	private static final long serialVersionUID = 6117214014374287092L;
+
 	/**
 	 * The dataset that was specified in the query, if any.
 	 */

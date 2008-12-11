@@ -10,6 +10,8 @@ package org.openrdf.query.algebra;
  */
 public class OrderElem extends QueryModelNodeBase {
 
+	private static final long serialVersionUID = 7396400799906586625L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

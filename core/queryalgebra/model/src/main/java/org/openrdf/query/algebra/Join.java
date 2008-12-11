@@ -14,6 +14,8 @@ import java.util.Set;
  */
 public class Join extends NaryTupleOperator {
 
+	private static final long serialVersionUID = -1501013589230065874L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

@@ -12,6 +12,8 @@ package org.openrdf.query.algebra;
  */
 public class LocalName extends UnaryValueOperator {
 
+	private static final long serialVersionUID = 343832787278986470L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

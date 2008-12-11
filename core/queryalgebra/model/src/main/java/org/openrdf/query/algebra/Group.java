@@ -24,6 +24,8 @@ import info.aduna.collections.iterators.Iterators;
  */
 public class Group extends UnaryTupleOperator {
 
+	private static final long serialVersionUID = -2277435833337397267L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

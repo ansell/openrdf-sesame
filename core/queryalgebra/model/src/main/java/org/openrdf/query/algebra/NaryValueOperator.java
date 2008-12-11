@@ -15,6 +15,8 @@ import java.util.List;
  */
 public abstract class NaryValueOperator extends QueryModelNodeBase implements ValueExpr {
 
+	private static final long serialVersionUID = -3331959115645639034L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

@@ -16,6 +16,8 @@ import org.openrdf.model.impl.LiteralImpl;
  */
 public class Regex extends NaryValueOperator {
 
+	private static final long serialVersionUID = 2823066093898975827L;
+
 	private Pattern compiled;
 
 	/*--------------*

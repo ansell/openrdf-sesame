@@ -10,6 +10,8 @@ package org.openrdf.query.algebra;
  */
 public class MathExpr extends BinaryValueOperator {
 
+	private static final long serialVersionUID = -7482888990585197880L;
+
 	/*---------------*
 	 * enum Operator *
 	 *---------------*/

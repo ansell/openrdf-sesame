@@ -17,6 +17,8 @@ import java.util.Set;
  */
 public class LeftJoin extends BinaryTupleOperator {
 
+	private static final long serialVersionUID = -7541267070580841572L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

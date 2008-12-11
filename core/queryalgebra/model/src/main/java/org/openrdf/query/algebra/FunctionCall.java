@@ -15,6 +15,8 @@ import java.util.List;
  */
 public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
 
+	private static final long serialVersionUID = 6812901135136982600L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

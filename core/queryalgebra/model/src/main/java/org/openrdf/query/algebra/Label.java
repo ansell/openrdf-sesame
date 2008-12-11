@@ -12,6 +12,8 @@ package org.openrdf.query.algebra;
  */
 public class Label extends UnaryValueOperator {
 
+	private static final long serialVersionUID = 431767488160395846L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

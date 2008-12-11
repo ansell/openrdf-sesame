@@ -13,6 +13,8 @@ import java.util.Set;
  */
 public abstract class UnaryTupleOperator extends NaryTupleOperator {
 
+	private static final long serialVersionUID = -3843189239446570796L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

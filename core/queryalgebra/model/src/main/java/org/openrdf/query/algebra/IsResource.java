@@ -7,6 +7,8 @@ package org.openrdf.query.algebra;
 
 public class IsResource extends UnaryValueOperator {
 
+	private static final long serialVersionUID = -4552582845932698642L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

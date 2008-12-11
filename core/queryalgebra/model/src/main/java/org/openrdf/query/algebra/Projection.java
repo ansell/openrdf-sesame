@@ -13,6 +13,8 @@ import java.util.Set;
  */
 public class Projection extends UnaryTupleOperator {
 
+	private static final long serialVersionUID = -2878982614878677889L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

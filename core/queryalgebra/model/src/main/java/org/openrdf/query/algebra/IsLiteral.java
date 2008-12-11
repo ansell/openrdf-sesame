@@ -7,6 +7,8 @@ package org.openrdf.query.algebra;
 
 public class IsLiteral extends UnaryValueOperator {
 
+	private static final long serialVersionUID = 4676127518119593726L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

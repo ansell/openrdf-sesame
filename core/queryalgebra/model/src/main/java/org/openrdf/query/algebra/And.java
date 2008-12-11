@@ -12,6 +12,8 @@ import java.util.List;
  */
 public class And extends NaryValueOperator {
 
+	private static final long serialVersionUID = 857801347313680392L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

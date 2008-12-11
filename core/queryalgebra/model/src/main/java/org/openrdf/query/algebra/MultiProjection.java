@@ -17,6 +17,8 @@ import java.util.Set;
  */
 public class MultiProjection extends UnaryTupleOperator {
 
+	private static final long serialVersionUID = -2042227764892695037L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

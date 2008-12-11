@@ -14,6 +14,8 @@ package org.openrdf.query.algebra;
  */
 public class Bound extends QueryModelNodeBase implements ValueExpr {
 
+	private static final long serialVersionUID = 7222248835654567074L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

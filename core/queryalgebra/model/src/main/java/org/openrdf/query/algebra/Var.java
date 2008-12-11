@@ -12,6 +12,8 @@ import org.openrdf.model.Value;
  */
 public class Var extends QueryModelNodeBase implements ValueExpr {
 
+	private static final long serialVersionUID = 7714597681794522915L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

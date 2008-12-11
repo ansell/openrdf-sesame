@@ -15,6 +15,8 @@ package org.openrdf.query.algebra;
  */
 public class Filter extends UnaryTupleOperator {
 
+	private static final long serialVersionUID = -3445678053512493672L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
