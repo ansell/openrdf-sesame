@@ -59,12 +59,9 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 
 	private Collection<RepositoryConnection> members;
 
-	private FederationStatistics statistics;
-
 	public FederationConnection(Federation federation, Collection<RepositoryConnection> members) {
 		this.federation = federation;
 		this.members = members;
-		this.statistics = new FederationStatistics(members);
 	}
 
 	public ValueFactory getValueFactory() {
@@ -291,6 +288,8 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		new DisjunctiveConstraintOptimizer().optimize(query, bindings);
 		new SameTermFilterOptimizer().optimize(query, bindings);
 		new QueryModelPruner().optimize(query, bindings);
+
+		FederationStatistics statistics = new FederationStatistics(members, query);
 		new QueryJoinOptimizer(statistics).optimize(query, bindings);
 		new FilterOptimizer().optimize(query, bindings);
 
