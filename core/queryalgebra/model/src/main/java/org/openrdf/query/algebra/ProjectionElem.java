@@ -7,6 +7,8 @@ package org.openrdf.query.algebra;
 
 public class ProjectionElem extends QueryModelNodeBase {
 
+	private static final long serialVersionUID = 6690705760605338877L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

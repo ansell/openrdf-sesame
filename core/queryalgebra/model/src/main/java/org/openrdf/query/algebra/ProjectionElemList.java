@@ -14,6 +14,8 @@ import java.util.Set;
  */
 public class ProjectionElemList extends QueryModelNodeBase {
 
+	private static final long serialVersionUID = -6598982775837381713L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

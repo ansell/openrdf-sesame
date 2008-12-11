@@ -16,6 +16,8 @@ import org.openrdf.query.algebra.TupleExpr;
  */
 public class BooleanQueryModel extends QueryModel {
 
+	private static final long serialVersionUID = 584685980300490140L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

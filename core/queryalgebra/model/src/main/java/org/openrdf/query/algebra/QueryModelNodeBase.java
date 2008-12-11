@@ -12,6 +12,8 @@ import org.openrdf.query.algebra.helpers.QueryModelTreePrinter;
  */
 public abstract class QueryModelNodeBase implements QueryModelNode {
 
+	private static final long serialVersionUID = -7604638176470413398L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

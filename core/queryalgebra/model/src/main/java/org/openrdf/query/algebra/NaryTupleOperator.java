@@ -15,6 +15,8 @@ import java.util.List;
  */
 public abstract class NaryTupleOperator extends QueryModelNodeBase implements TupleExpr {
 
+	private static final long serialVersionUID = 4703129201150946365L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

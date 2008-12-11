@@ -16,6 +16,8 @@ package org.openrdf.query.algebra;
  */
 public class Slice extends UnaryTupleOperator {
 
+	private static final long serialVersionUID = -2457327353149198244L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

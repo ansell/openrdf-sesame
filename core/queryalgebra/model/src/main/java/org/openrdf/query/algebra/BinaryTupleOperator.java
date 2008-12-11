@@ -11,6 +11,8 @@ package org.openrdf.query.algebra;
  */
 public abstract class BinaryTupleOperator extends NaryTupleOperator implements TupleExpr {
 
+	private static final long serialVersionUID = -2448897680662339140L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

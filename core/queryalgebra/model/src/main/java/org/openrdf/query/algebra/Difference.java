@@ -14,6 +14,8 @@ import java.util.Set;
  */
 public class Difference extends BinaryTupleOperator {
 
+	private static final long serialVersionUID = -8298294746871540229L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

@@ -11,6 +11,8 @@ import org.openrdf.query.algebra.Compare.CompareOp;
  */
 public class CompareAny extends CompareSubQueryValueOperator {
 
+	private static final long serialVersionUID = -3401122323745631889L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

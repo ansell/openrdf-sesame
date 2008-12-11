@@ -7,6 +7,8 @@ package org.openrdf.query.algebra;
 
 public abstract class SubQueryValueOperator extends QueryModelNodeBase implements ValueExpr {
 
+	private static final long serialVersionUID = -94320049138474906L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

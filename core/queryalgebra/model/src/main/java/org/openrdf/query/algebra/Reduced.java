@@ -7,6 +7,8 @@ package org.openrdf.query.algebra;
 
 public class Reduced extends UnaryTupleOperator {
 
+	private static final long serialVersionUID = 3622200326118326417L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

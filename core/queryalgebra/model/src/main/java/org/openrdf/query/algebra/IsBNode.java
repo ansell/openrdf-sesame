@@ -7,6 +7,8 @@ package org.openrdf.query.algebra;
 
 public class IsBNode extends UnaryValueOperator {
 
+	private static final long serialVersionUID = 5442417368920337210L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

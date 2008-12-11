@@ -16,6 +16,8 @@ import java.util.List;
  */
 public class Order extends UnaryTupleOperator {
 
+	private static final long serialVersionUID = -7017439492263769705L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

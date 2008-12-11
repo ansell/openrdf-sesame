@@ -10,6 +10,8 @@ package org.openrdf.query.algebra;
  */
 public class Not extends UnaryValueOperator {
 
+	private static final long serialVersionUID = 6840464078544033786L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

@@ -11,6 +11,8 @@ package org.openrdf.query.algebra;
  */
 public class BNodeGenerator extends QueryModelNodeBase implements ValueExpr {
 
+	private static final long serialVersionUID = -5178853853484084984L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

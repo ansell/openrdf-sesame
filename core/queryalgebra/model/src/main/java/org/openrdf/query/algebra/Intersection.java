@@ -14,6 +14,8 @@ import java.util.Set;
  */
 public class Intersection extends BinaryTupleOperator {
 
+	private static final long serialVersionUID = -6155595773038518175L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

@@ -10,6 +10,8 @@ package org.openrdf.query.algebra;
  */
 public class Exists extends SubQueryValueOperator {
 
+	private static final long serialVersionUID = 3328911404628559582L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

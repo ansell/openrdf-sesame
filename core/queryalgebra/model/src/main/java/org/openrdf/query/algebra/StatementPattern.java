@@ -18,6 +18,8 @@ import java.util.Set;
  */
 public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 
+	private static final long serialVersionUID = -6167861066584739956L;
+
 	/*------------*
 	 * enum Scope *
 	 *------------*/

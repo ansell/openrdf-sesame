@@ -12,6 +12,8 @@ package org.openrdf.query.algebra;
  */
 public class Namespace extends UnaryValueOperator {
 
+	private static final long serialVersionUID = -4488015257656828790L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/

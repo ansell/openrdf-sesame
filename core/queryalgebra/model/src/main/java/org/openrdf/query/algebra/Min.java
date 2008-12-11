@@ -10,6 +10,8 @@ package org.openrdf.query.algebra;
  */
 public class Min extends UnaryValueOperator implements AggregateOperator {
 
+	private static final long serialVersionUID = 1243977670340749000L;
+
 	public Min(ValueExpr arg) {
 		super(arg);
 	}

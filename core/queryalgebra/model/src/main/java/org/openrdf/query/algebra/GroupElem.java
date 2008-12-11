@@ -15,6 +15,8 @@ package org.openrdf.query.algebra;
  */
 public class GroupElem extends QueryModelNodeBase {
 
+	private static final long serialVersionUID = 6964450231466745847L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/

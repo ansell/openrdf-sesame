@@ -7,6 +7,8 @@ package org.openrdf.query.algebra;
 
 public class Distinct extends UnaryTupleOperator {
 
+	private static final long serialVersionUID = 6332322848583834708L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
