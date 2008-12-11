@@ -1674,11 +1674,12 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		iter = tupleQuery.evaluate();
 
 		try {
+			assertTrue(iter.hasNext());
 			BindingSet bindings = iter.next();
 			assertEquals(subj, bindings.getValue("S"));
 			assertEquals(pred, bindings.getValue("P"));
 			assertEquals(obj, bindings.getValue("O"));
-			assertNull(iter.next());
+			assertFalse(iter.hasNext());
 		}
 		finally {
 			iter.close();
@@ -1693,11 +1694,12 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		iter = tupleQuery.evaluate();
 
 		try {
+			assertTrue(iter.hasNext());
 			BindingSet bindings = iter.next();
 			assertEquals(subj, bindings.getValue("S"));
 			assertEquals(pred, bindings.getValue("P"));
 			assertEquals(obj, bindings.getValue("O"));
-			assertNull(iter.next());
+			assertFalse(iter.hasNext());
 		}
 		finally {
 			iter.close();
