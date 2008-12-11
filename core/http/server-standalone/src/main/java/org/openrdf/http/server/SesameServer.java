@@ -47,6 +47,8 @@ public class SesameServer {
 		Option versionOption = new Option("v", "version", false, "print version information");
 		Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
 		Option portOption = new Option("p", "port", true, "port to listen on");
+		Option maxAgeOption = new Option("c", "maxCacheAge", true,
+				"How many seconds clients can use their cache before validating it with the server");
 
 		options.addOption(helpOption);
 		options.addOption(portOption);
@@ -90,6 +92,12 @@ public class SesameServer {
 			else {
 				server = new SesameServer(port);
 			}
+
+			String ageString = commandLine.getOptionValue(maxAgeOption.getOpt());
+			if (ageString != null) {
+				server.setMaxCacheAge(Integer.parseInt(ageString));
+			}
+
 			server.start();
 		}
 		catch (ParseException e) {
