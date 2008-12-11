@@ -287,7 +287,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		if (!closed) {
 			closed = true;
-			if (isAutoCommit()) {
+			if (modified) {
 				logger.warn("Rolling back transaction due to connection close", new Throwable());
 				rollback();
 			}
