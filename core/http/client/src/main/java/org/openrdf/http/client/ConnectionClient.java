@@ -46,4 +46,8 @@ public class ConnectionClient extends RepositoryClient {
 		new StoreClient(connection).delete();
 	}
 
+	public QueriesClient queries() {
+		return new QueriesClient(connection.slash(Protocol.QUERIES));
+	}
+
 }

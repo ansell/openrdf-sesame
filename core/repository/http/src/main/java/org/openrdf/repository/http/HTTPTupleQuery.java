@@ -5,9 +5,7 @@
  */
 package org.openrdf.repository.http;
 
-import org.openrdf.http.client.RepositoryClient;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryLanguage;
+import org.openrdf.http.client.TupleQueryClient;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
@@ -15,48 +13,34 @@ import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.store.StoreException;
 
 /**
- * TupleQuery specific to the HTTP protocol.
- * 
- * Methods in this class may throw the specific StoreException subclasses
- * UnautorizedException and NotAllowedException, the semantics of which are
- * defined by the HTTP protocol.
+ * TupleQuery specific to the HTTP protocol. Methods in this class may throw the
+ * specific StoreException subclasses UnautorizedException and
+ * NotAllowedException, the semantics of which are defined by the HTTP protocol.
  * 
  * @see org.openrdf.http.protocol.UnauthorizedException
  * @see org.openrdf.http.protocol.NotAllowedException
- * 
  * @author Arjohn Kampman
  * @author Herko ter Horst
+ * @author James Leigh
  */
 public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 
-	public HTTPTupleQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
-		super(con, ql, queryString, baseURI);
+	private TupleQueryClient client;
+
+	public HTTPTupleQuery(String qry, TupleQueryClient client) {
+		super(qry);
+		this.client = client;
 	}
 
 	public TupleQueryResult evaluate()
-		throws HTTPQueryEvaluationException
+		throws StoreException
 	{
-		try {
-			RepositoryClient client = httpCon.getClient();
-			return client.sendTupleQuery(queryLanguage, queryString, dataset, includeInferred, getBindingsArray());
-		}
-		catch (StoreException e) {
-			throw new HTTPQueryEvaluationException(e.getMessage(), e);
-		}
-		catch (MalformedQueryException e) {
-			throw new HTTPQueryEvaluationException(e.getMessage(), e);
-		}
+		return client.get(dataset, includeInferred, getBindingsArray());
 	}
 
 	public void evaluate(TupleQueryResultHandler handler)
 		throws StoreException, TupleQueryResultHandlerException
 	{
-		RepositoryClient client = httpCon.getClient();
-		try {
-			client.sendTupleQuery(queryLanguage, queryString, dataset, includeInferred, handler, getBindingsArray());
-		}
-		catch (MalformedQueryException e) {
-			throw new HTTPQueryEvaluationException(e.getMessage(), e);
-		}
+		client.get(dataset, includeInferred, handler, getBindingsArray());
 	}
 }

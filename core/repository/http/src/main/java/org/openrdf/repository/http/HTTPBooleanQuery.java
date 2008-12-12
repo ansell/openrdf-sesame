@@ -5,10 +5,8 @@
  */
 package org.openrdf.repository.http;
 
-import org.openrdf.http.client.RepositoryClient;
+import org.openrdf.http.client.BooleanQueryClient;
 import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryLanguage;
 import org.openrdf.store.StoreException;
 
 /**
@@ -19,26 +17,20 @@ import org.openrdf.store.StoreException;
  * @see org.openrdf.http.protocol.UnauthorizedException
  * @see org.openrdf.http.protocol.NotAllowedException
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public class HTTPBooleanQuery extends HTTPQuery implements BooleanQuery {
 
-	public HTTPBooleanQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI)
-	{
-		super(con, ql, queryString, baseURI);
+	private BooleanQueryClient client;
+
+	public HTTPBooleanQuery(String qry, BooleanQueryClient client) {
+		super(qry);
+		this.client = client;
 	}
 
 	public boolean evaluate()
-		throws HTTPQueryEvaluationException
+		throws StoreException
 	{
-		try {
-			RepositoryClient client = httpCon.getClient();
-			return client.sendBooleanQuery(queryLanguage, queryString, dataset, includeInferred, getBindingsArray());
-		}
-		catch (StoreException e) {
-			throw new HTTPQueryEvaluationException(e.getMessage(), e);
-		}
-		catch (MalformedQueryException e) {
-			throw new HTTPQueryEvaluationException(e.getMessage(), e);
-		}
+		return client.get(dataset, includeInferred, getBindingsArray());
 	}
 }
