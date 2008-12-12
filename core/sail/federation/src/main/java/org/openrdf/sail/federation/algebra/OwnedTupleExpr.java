@@ -7,6 +7,8 @@ package org.openrdf.sail.federation.algebra;
 
 import static org.openrdf.sail.federation.query.QueryModelSerializer.LANGUAGE;
 
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,13 +40,21 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 
 	private TupleQuery query;
 
+	private Set<String> bindingNames;
+
 	public OwnedTupleExpr(RepositoryConnection owner, TupleExpr arg) {
 		super(arg);
 		this.owner = owner;
+		this.bindingNames = arg.getBindingNames();
 	}
 
 	public RepositoryConnection getOwner() {
 		return owner;
+	}
+
+	@Override
+	public Set<String> getBindingNames() {
+		return bindingNames;
 	}
 
 	public void prepare()
@@ -68,7 +78,9 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 			return null;
 		synchronized (query) {
 			for (String name : bindings.getBindingNames()) {
-				query.setBinding(name, bindings.getValue(name));
+				if (bindingNames.contains(name)) {
+					query.setBinding(name, bindings.getValue(name));
+				}
 			}
 			query.setDataset(dataset);
 			TupleQueryResult result = query.evaluate();

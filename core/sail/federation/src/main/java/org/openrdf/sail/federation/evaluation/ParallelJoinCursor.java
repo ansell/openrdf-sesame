@@ -44,7 +44,7 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 
 	private volatile Exception exception;
 
-	private BlockingQueue<Cursor<BindingSet>> rightQueue = new ArrayBlockingQueue<Cursor<BindingSet>>(10);
+	private BlockingQueue<Cursor<BindingSet>> rightQueue = new ArrayBlockingQueue<Cursor<BindingSet>>(1024);
 
 	private Cursor<BindingSet> end = EmptyCursor.emptyCursor();
 
