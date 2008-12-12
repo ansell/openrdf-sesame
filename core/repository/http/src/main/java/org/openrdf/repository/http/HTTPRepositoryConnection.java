@@ -11,10 +11,13 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openrdf.http.client.BooleanQueryClient;
 import org.openrdf.http.client.ConnectionClient;
+import org.openrdf.http.client.GraphQueryClient;
+import org.openrdf.http.client.QueryClient;
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.StatementClient;
-import org.openrdf.http.protocol.Protocol;
+import org.openrdf.http.client.TupleQueryClient;
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;
@@ -146,29 +149,38 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
-	public Query prepareQuery(QueryLanguage ql, String queryString, String baseURI)
+	public Query prepareQuery(QueryLanguage ql, String qry, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
-		String type = client.getQueryType(ql, queryString);
-		if (Protocol.GRAPH_QUERY.equals(type))
-			return new HTTPGraphQuery(this, ql, queryString, baseURI);
-		if (Protocol.BOOLEAN_QUERY.equals(type))
-			return new HTTPBooleanQuery(this, ql, queryString, baseURI);
-		if (Protocol.BINDINGS_QUERY.equals(type))
-			return new HTTPTupleQuery(this, ql, queryString, baseURI);
-		throw new StoreException("Unsupported query type: " + type);
+		QueryClient query = client.queries().postQuery(ql, qry, baseURI);
+		if (query instanceof GraphQueryClient)
+			return new HTTPGraphQuery(qry, (GraphQueryClient)query);
+		if (query instanceof BooleanQueryClient)
+			return new HTTPBooleanQuery(qry, (BooleanQueryClient)query);
+		if (query instanceof TupleQueryClient)
+			return new HTTPTupleQuery(qry, (TupleQueryClient)query);
+		throw new StoreException("Unsupported query type: " + query);
 	}
 
-	public TupleQuery prepareTupleQuery(QueryLanguage ql, String queryString, String baseURI) {
-		return new HTTPTupleQuery(this, ql, queryString, baseURI);
+	public TupleQuery prepareTupleQuery(QueryLanguage ql, String qry, String baseURI)
+		throws StoreException, MalformedQueryException
+	{
+		TupleQueryClient query = client.queries().postTupleQuery(ql, qry, baseURI);
+		return new HTTPTupleQuery(qry, query);
 	}
 
-	public GraphQuery prepareGraphQuery(QueryLanguage ql, String queryString, String baseURI) {
-		return new HTTPGraphQuery(this, ql, queryString, baseURI);
+	public GraphQuery prepareGraphQuery(QueryLanguage ql, String qry, String baseURI)
+		throws StoreException, MalformedQueryException
+	{
+		GraphQueryClient query = client.queries().postGraphQuery(ql, qry, baseURI);
+		return new HTTPGraphQuery(qry, query);
 	}
 
-	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String queryString, String baseURI) {
-		return new HTTPBooleanQuery(this, ql, queryString, baseURI);
+	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String qry, String baseURI)
+		throws StoreException, MalformedQueryException
+	{
+		BooleanQueryClient query = client.queries().postBooleanQuery(ql, qry, baseURI);
+		return new HTTPBooleanQuery(qry, query);
 	}
 
 	public RepositoryResult<Resource> getContextIDs()
@@ -238,7 +250,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		GraphQueryResult result = statements.get(subj, pred, obj, includeInferred, contexts);
 		try {
 			return result.hasNext();
-		} finally {
+		}
+		finally {
 			result.close();
 		}
 	}
@@ -312,9 +325,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			httpClient.upload(((Reader)inputStreamOrReader), baseURI, dataFormat, false, contexts);
 		}
 		else {
-			throw new IllegalArgumentException(
-					"inputStreamOrReader must be an InputStream or a Reader, is a: "
-							+ inputStreamOrReader.getClass());
+			throw new IllegalArgumentException("inputStreamOrReader must be an InputStream or a Reader, is a: "
+					+ inputStreamOrReader.getClass());
 		}
 	}
 

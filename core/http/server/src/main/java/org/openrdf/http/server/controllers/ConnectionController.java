@@ -6,7 +6,6 @@
 package org.openrdf.http.server.controllers;
 
 import static org.openrdf.http.protocol.Protocol.CONN_PATH;
-import static org.openrdf.http.server.repository.RepositoryInterceptor.getReadOnlyConnection;
 import static org.openrdf.http.server.repository.RepositoryInterceptor.getRepositoryConnection;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -32,7 +31,7 @@ public class ConnectionController {
 	public void begin(HttpServletRequest request)
 		throws StoreException
 	{
-		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
+		RepositoryConnection repositoryCon = getRepositoryConnection(request);
 		repositoryCon.setAutoCommit(false);
 	}
 
@@ -53,7 +52,7 @@ public class ConnectionController {
 	public void rollback(HttpServletRequest request)
 		throws StoreException
 	{
-		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
+		RepositoryConnection repositoryCon = getRepositoryConnection(request);
 		if (!repositoryCon.isAutoCommit()) {
 			repositoryCon.rollback();
 			repositoryCon.setAutoCommit(true);

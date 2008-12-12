@@ -190,6 +190,8 @@ public abstract class Protocol {
 
 	public static final String ROLLBACK = "rollback";
 
+	public static final String QUERIES = "queries";
+
 	private static String getServerDir(String serverLocation) {
 		if (!serverLocation.endsWith("/")) {
 			serverLocation += "/";

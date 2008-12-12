@@ -9,27 +9,18 @@ import java.util.Iterator;
 
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.AbstractQuery;
 
 /**
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public abstract class HTTPQuery extends AbstractQuery {
 
-	protected HTTPRepositoryConnection httpCon;
+	private String queryString;
 
-	protected QueryLanguage queryLanguage;
-
-	protected String queryString;
-
-	protected String baseURI;
-
-	public HTTPQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
-		this.httpCon = con;
-		this.queryLanguage = ql;
+	public HTTPQuery(String queryString) {
 		this.queryString = queryString;
-		this.baseURI = baseURI;
 	}
 
 	protected Binding[] getBindingsArray() {
