@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-rio</artifactId>
-		<version>2.2.3-SNAPSHOT</version>
+		<version>2.2.3</version>
 	</parent>
 
 	<artifactId>sesame-rio-trig</artifactId>
-	<version>2.2.3-SNAPSHOT</version>
+	<version>2.2.3</version>
 
 	<name>OpenRDF Sesame: Rio - TriG</name>
 	<description>Rio parser and writer implementation for the TriG file format.</description>
@@ -34,9 +34,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/rio/trig</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/rio/trig</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/core/rio/trig</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.3/core/rio/trig</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.3/core/rio/trig</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2.3/core/rio/trig</url>
 	</scm>
 
 </project>
