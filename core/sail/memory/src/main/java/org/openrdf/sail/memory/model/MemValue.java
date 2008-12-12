@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -61,4 +61,14 @@ public interface MemValue extends Value {
 	 * is the object.
 	 */
 	public void removeObjectStatement(MemStatement st);
+
+	/**
+	 * Removes statements from old snapshots (those that have expired at or
+	 * before the specified snapshot version) from this MemValue's list of
+	 * statements for which it is the object.
+	 * 
+	 * @param currentSnapshot
+	 *        The current snapshot version.
+	 */
+	public void cleanSnapshotsFromObjectStatements(int currentSnapshot);
 }

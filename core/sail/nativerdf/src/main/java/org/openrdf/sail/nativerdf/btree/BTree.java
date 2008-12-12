@@ -1023,30 +1023,29 @@ public class BTree {
 	 * 
 	 * @param node
 	 *        The root of the (sub) tree.
-	 * @return The value that was removed from the B-Tree, or <tt>null</tt> if
-	 *         the supplied node is empty.
+	 * @return The value that was removed from the B-Tree.
 	 * @throws IOException
 	 *         If an I/O error occurred.
+	 * @throws IllegalArgumentException
+	 *         If the supplied node is an empty leaf node
 	 */
 	private byte[] removeSmallestValueFromTree(Node node)
 		throws IOException
 	{
-		byte[] value = null;
-
 		if (node.isLeaf()) {
-			if (!node.isEmpty()) {
-				value = node.removeValueLeft(0);
+			if (node.isEmpty()) {
+				throw new IllegalArgumentException("Trying to remove smallest value from an empty node");
 			}
+			return node.removeValueLeft(0);
 		}
 		else {
 			// Recurse into left-most child node
 			Node childNode = node.getChildNode(0);
-			value = removeSmallestValueFromTree(childNode);
+			byte[] value = removeSmallestValueFromTree(childNode);
 			balanceChildNode(node, childNode, 0);
 			childNode.release();
+			return value;
 		}
-
-		return value;
 	}
 
 	private void balanceChildNode(Node parentNode, Node childNode, int childIdx)
