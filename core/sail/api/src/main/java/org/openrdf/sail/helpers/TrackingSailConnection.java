@@ -142,7 +142,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		try {
 			if (isOpen()) {
 				if (creatorTrace != null) {
-					logger.warn("Closing connection due to garbage collection, connection was create in:",
+					logger.warn("Closing connection due to garbage collection, connection was created in:",
 							creatorTrace);
 				}
 				close();

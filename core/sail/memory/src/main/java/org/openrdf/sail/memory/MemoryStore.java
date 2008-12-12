@@ -7,6 +7,7 @@ package org.openrdf.sail.memory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -750,7 +751,7 @@ public class MemoryStore extends InferencerSailBase {
 			notifySailChanged(event);
 		}
 
-		if (statementsDeprecated) {
+		if (statementsRemoved || statementsDeprecated) {
 			scheduleSnapshotCleanup();
 		}
 	}
@@ -760,12 +761,15 @@ public class MemoryStore extends InferencerSailBase {
 	{
 		logger.debug("rolling back transaction");
 
+		boolean statementsDeprecated = false;
+
 		for (MemStatement st : txnStatements.keySet()) {
 			TxnStatus txnStatus = st.getTxnStatus();
 			if (txnStatus == TxnStatus.NEW || txnStatus == TxnStatus.ZOMBIE) {
 				// Statement has been added during this transaction and deprecates
 				// immediately
 				st.setTillSnapshot(currentSnapshot);
+				statementsDeprecated = true;
 			}
 			else if (txnStatus != TxnStatus.NEUTRAL) {
 				// Return statement to neutral status
@@ -775,7 +779,9 @@ public class MemoryStore extends InferencerSailBase {
 
 		txnStatements = null;
 
-		scheduleSnapshotCleanup();
+		if (statementsDeprecated) {
+			scheduleSnapshotCleanup();
+		}
 	}
 
 	protected void scheduleSyncTask()
@@ -878,6 +884,8 @@ public class MemoryStore extends InferencerSailBase {
 	protected void cleanSnapshots()
 		throws InterruptedException
 	{
+		//System.out.println("cleanSnapshots() starting...");
+		//long startTime = System.currentTimeMillis();
 		MemStatementList statements = this.statements;
 
 		if (statements == null) {
@@ -885,14 +893,39 @@ public class MemoryStore extends InferencerSailBase {
 			return;
 		}
 
+		// Sets used to keep track of which lists have already been processed
+		HashSet<MemValue> processedSubjects = new HashSet<MemValue>();
+		HashSet<MemValue> processedPredicates = new HashSet<MemValue>();
+		HashSet<MemValue> processedObjects = new HashSet<MemValue>();
+		HashSet<MemValue> processedContexts = new HashSet<MemValue>();
+
 		Lock stLock = statementListLockManager.getWriteLock();
 		try {
 			for (int i = statements.size() - 1; i >= 0; i--) {
 				MemStatement st = statements.get(i);
 
 				if (st.getTillSnapshot() <= currentSnapshot) {
+					MemResource subj = st.getSubject();
+					if (processedSubjects.add(subj)) {
+						subj.cleanSnapshotsFromSubjectStatements(currentSnapshot);
+					}
+
+					MemURI pred = st.getPredicate();
+					if (processedPredicates.add(pred)) {
+						pred.cleanSnapshotsFromPredicateStatements(currentSnapshot);
+					}
+
+					MemValue obj = st.getObject();
+					if (processedObjects.add(obj)) {
+						obj.cleanSnapshotsFromObjectStatements(currentSnapshot);
+					}
+
+					MemResource context = st.getContext();
+					if (context != null && processedContexts.add(context)) {
+						context.cleanSnapshotsFromContextStatements(currentSnapshot);
+					}
+
 					// stale statement
-					st.removeFromComponentLists();
 					statements.remove(i);
 				}
 				else {
@@ -906,6 +939,9 @@ public class MemoryStore extends InferencerSailBase {
 		finally {
 			stLock.release();
 		}
+
+		//long endTime = System.currentTimeMillis();
+		//System.out.println("cleanSnapshots() took " + (endTime - startTime) + " ms");
 	}
 
 	protected void scheduleSnapshotCleanup() {
