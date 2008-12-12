@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>2.2.3-SNAPSHOT</version>
+		<version>2.2.3</version>
 	</parent>
 
 	<artifactId>sesame-console</artifactId>
-	<version>2.2.3-SNAPSHOT</version>
+	<version>2.2.3</version>
 
 	<name>OpenRDF Sesame: Console</name>
 	<description>Command line user interface to Sesame repositories.</description>
@@ -83,9 +83,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/console</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/console</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/core/console</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.3/core/console</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.3/core/console</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2.3/core/console</url>
 	</scm>
 
 </project>
