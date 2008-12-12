@@ -29,6 +29,8 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.lang.FileFormat;
+
 import org.openrdf.http.client.helpers.BackgroundGraphResult;
 import org.openrdf.http.client.helpers.BackgroundTupleResult;
 import org.openrdf.http.protocol.Protocol;
@@ -114,6 +116,11 @@ public class HTTPConnection {
 	public void acceptBoolean()
 		throws NoCompatibleMediaType
 	{
+		if (pool.isPreferredBooleanQueryResultFormatUsed()) {
+			FileFormat format = pool.getPreferredBooleanQueryResultFormat();
+			method.addRequestHeader(ACCEPT_PARAM_NAME, format.getDefaultMIMEType());
+			return;
+		}
 		// Specify which formats we support using Accept headers
 		Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
 		if (booleanFormats.isEmpty()) {
@@ -145,6 +152,11 @@ public class HTTPConnection {
 	public void acceptTupleQueryResult()
 		throws NoCompatibleMediaType
 	{
+		if (pool.isPreferredTupleQueryResultFormatUsed()) {
+			FileFormat format = pool.getPreferredTupleQueryResultFormat();
+			method.addRequestHeader(ACCEPT_PARAM_NAME, format.getDefaultMIMEType());
+			return;
+		}
 		// Specify which formats we support using Accept headers
 		Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
 		if (tqrFormats.isEmpty()) {
@@ -176,6 +188,11 @@ public class HTTPConnection {
 	public void acceptGraphQueryResult()
 		throws NoCompatibleMediaType
 	{
+		if (pool.isPreferredTupleQueryResultFormatUsed()) {
+			FileFormat format = pool.getPreferredTupleQueryResultFormat();
+			method.addRequestHeader(ACCEPT_PARAM_NAME, format.getDefaultMIMEType());
+			return;
+		}
 		acceptRDF(false);
 	}
 
