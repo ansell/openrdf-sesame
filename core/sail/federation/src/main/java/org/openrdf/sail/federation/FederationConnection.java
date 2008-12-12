@@ -41,6 +41,7 @@ import org.openrdf.repository.RepositoryResult;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.federation.evaluation.FederationStatistics;
 import org.openrdf.sail.federation.evaluation.FederationStrategy;
+import org.openrdf.sail.federation.optimizers.EmptyPatternOptimizer;
 import org.openrdf.sail.federation.optimizers.FederationJoinOptimizer;
 import org.openrdf.sail.federation.optimizers.OwnedTupleExprPruner;
 import org.openrdf.sail.federation.optimizers.PrepareOwnedTupleExpr;
@@ -294,10 +295,12 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		new QueryJoinOptimizer(statistics).optimize(query, bindings);
 		new FilterOptimizer().optimize(query, bindings);
 
+		new EmptyPatternOptimizer(members).optimize(query, bindings);
 		new FederationJoinOptimizer(members, federation.getLocalPropertySpace()).optimize(query, bindings);
 		new OwnedTupleExprPruner().optimize(query, bindings);
 		new QueryModelPruner().optimize(query, bindings);
 		new QueryJoinOptimizer(statistics).optimize(query, bindings);
+		statistics.await(); // let statistics throw any exceptions it has
 
 		new PrepareOwnedTupleExpr(federation.getMetaData()).optimize(query, bindings);
 

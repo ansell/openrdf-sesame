@@ -28,6 +28,7 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.store.StoreException;
 
 /**
@@ -49,6 +50,12 @@ public class FederationStatistics extends EvaluationStatistics {
 		Calculator cc = new Calculator();
 		expr.visit(cc);
 		return cc.getCardinality();
+	}
+
+	public void await()
+		throws StoreException
+	{
+		calculator.await();
 	}
 
 	protected class Calculator extends CardinalityCalculator {
@@ -138,6 +145,7 @@ public class FederationStatistics extends EvaluationStatistics {
 				final AtomicLong cardinality = new AtomicLong(0l);
 				cardinalities.put(key, cardinality);
 				for (final RepositoryConnection member : members) {
+					final StoreException source = SailUtil.isDebugEnabled() ? new StoreException() : null;
 					executor.execute(new Runnable() {
 
 						public void run() {
@@ -147,8 +155,23 @@ public class FederationStatistics extends EvaluationStatistics {
 									cardinality.getAndAdd(size);
 								}
 							}
+							catch (RuntimeException e) {
+								if (source != null) {
+									source.initCause(e);
+									exception = source;
+								}
+								else {
+									exception = e;
+								}
+							}
 							catch (StoreException e) {
-								exception = e;
+								if (source != null) {
+									source.initCause(e);
+									exception = source;
+								}
+								else {
+									exception = e;
+								}
 							}
 							finally {
 								latch.countDown();
@@ -159,11 +182,7 @@ public class FederationStatistics extends EvaluationStatistics {
 			}
 		}
 
-		private Value getConstantValue(Var var) {
-			return (var != null) ? var.getValue() : null;
-		}
-
-		private void await()
+		public void await()
 			throws StoreException
 		{
 			try {
@@ -180,6 +199,10 @@ public class FederationStatistics extends EvaluationStatistics {
 			catch (Exception e) {
 				throw new StoreException(e);
 			}
+		}
+
+		private Value getConstantValue(Var var) {
+			return (var != null) ? var.getValue() : null;
 		}
 	}
 

@@ -18,19 +18,25 @@ public class SailUtil {
 	 */
 	public static final String DEBUG_PROP = "org.openrdf.repository.debug";
 
-	/**
-	 * Utility method that checks whether store debugging has been enabled.
-	 */
-	public static boolean isDebugEnabled() {
+	private static boolean debugEnabled;
+
+	static {
 		try {
 			String value = System.getProperty(DEBUG_PROP);
-			return value != null && !value.equals("false");
+			debugEnabled = value != null && !value.equals("false");
 		}
 		catch (SecurityException e) {
 			// Thrown when not allowed to read system properties, for example when
 			// running in applets
-			return false;
+			debugEnabled = false;
 		}
+	}
+
+	/**
+	 * Utility method that checks whether store debugging has been enabled.
+	 */
+	public static boolean isDebugEnabled() {
+		return debugEnabled;
 	}
 
 	/**
