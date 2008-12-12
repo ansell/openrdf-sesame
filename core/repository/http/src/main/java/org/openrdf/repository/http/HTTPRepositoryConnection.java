@@ -315,7 +315,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws IOException, RDFParseException, StoreException
 	{
 		// Send bytes directly to the server
-		modified = true;
 		flush();
 		StatementClient httpClient = client.statements();
 		if (inputStreamOrReader instanceof InputStream) {
@@ -328,6 +327,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			throw new IllegalArgumentException("inputStreamOrReader must be an InputStream or a Reader, is a: "
 					+ inputStreamOrReader.getClass());
 		}
+		modified = !isAutoCommit();
 	}
 
 	@Override

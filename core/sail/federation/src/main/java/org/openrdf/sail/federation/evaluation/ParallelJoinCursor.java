@@ -14,6 +14,7 @@ import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.impl.EmptyCursor;
+import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.store.StoreException;
 
 /**
@@ -48,6 +49,8 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 
 	private Cursor<BindingSet> end = EmptyCursor.emptyCursor();
 
+	StoreException source;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -59,6 +62,7 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 		this.strategy = strategy;
 		this.leftIter = leftIter;
 		this.rightArg = rightArg;
+		this.source = SailUtil.isDebugEnabled() ? new StoreException() : null;
 	}
 
 	/*---------*
@@ -74,13 +78,28 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 			rightQueue.put(end);
 		}
 		catch (RuntimeException e) {
-			this.exception = e;
+			if (source != null) {
+				source.initCause(e);
+				exception = source;
+			} else {
+				exception = e;
+			}
 		}
 		catch (StoreException e) {
-			this.exception = e;
+			if (source != null) {
+				source.initCause(e);
+				exception = source;
+			} else {
+				exception = e;
+			}
 		}
 		catch (InterruptedException e) {
-			this.exception = e;
+			if (source != null) {
+				source.initCause(e);
+				exception = source;
+			} else {
+				exception = e;
+			}
 		}
 	}
 
