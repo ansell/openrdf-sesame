@@ -194,7 +194,7 @@ public abstract class Protocol {
 	 * Get the location of the statements resource for a specific repository.
 	 * 
 	 * @param repositoryLocation
-	 *        the location of a repositor implementing this REST protocol.
+	 *        the location of a repository implementing this REST protocol.
 	 * @return the location of the statements resource for the specified
 	 *         repository
 	 */
@@ -218,10 +218,8 @@ public abstract class Protocol {
 	 * Get the location of the namespaces lists resource for a specific
 	 * repository on the specified server.
 	 * 
-	 * @param serverLocation
+	 * @param repositoryLocation
 	 *        the base location of a server implementing this REST protocol.
-	 * @param repositoryID
-	 *        the ID of the repository
 	 * @return the location of the namespaces lists resource for a specific
 	 *         repository on the specified server
 	 */
@@ -233,10 +231,8 @@ public abstract class Protocol {
 	 * Get the location of the namespace with the specified prefix for a specific
 	 * repository on the specified server.
 	 * 
-	 * @param serverLocation
-	 *        the base location of a server implementing this REST protocol.
-	 * @param repositoryID
-	 *        the ID of the repository
+	 * @param repositoryLocation
+	 *        the location of a repository implementing this REST protocol.
 	 * @param prefix
 	 *        the namespace prefix
 	 * @return the location of the the namespace with the specified prefix for a
@@ -250,10 +246,8 @@ public abstract class Protocol {
 	 * Get the location of the 'size' resource for a specific repository on the
 	 * specified server.
 	 * 
-	 * @param serverLocation
-	 *        the base location of a server implementing this REST protocol.
-	 * @param repositoryID
-	 *        the ID of the repository
+	 * @param repositoryLocation
+	 *        the location of a repository implementing this REST protocol.
 	 * @return the location of the 'size' resource for a specific repository on
 	 *         the specified server
 	 */
@@ -281,7 +275,7 @@ public abstract class Protocol {
 	 * @param valueFactory
 	 *        the factory to use for constructing the Value
 	 * @return the decoded Value
-	 * @see encodeValue(org.openrdf.model.Value)
+	 * @see #encodeValue(Value)
 	 */
 	public static Value decodeValue(String encodedValue, ValueFactory valueFactory) {
 		if (encodedValue != null) {
@@ -299,7 +293,7 @@ public abstract class Protocol {
 	 * @param valueFactory
 	 *        the factory to use for constructing the Resource
 	 * @return the decoded Resource
-	 * @see encodeValue(org.openrdf.model.Value)
+	 * @see #encodeValue(Value)
 	 */
 	public static Resource decodeResource(String encodedValue, ValueFactory valueFactory) {
 		if (encodedValue != null) {
@@ -317,7 +311,7 @@ public abstract class Protocol {
 	 * @param valueFactory
 	 *        the factory to use for constructing the URI
 	 * @return the decoded URI
-	 * @see encodeValue(org.openrdf.model.Value)
+	 * @see #encodeValue(Value)
 	 */
 	public static URI decodeURI(String encodedValue, ValueFactory valueFactory) {
 		if (encodedValue != null) {
@@ -330,9 +324,9 @@ public abstract class Protocol {
 	/**
 	 * Encodes a context resource for use in a URL.
 	 * 
-	 * @param value
-	 *        The resource to encode, possibly <tt>null</tt>.
-	 * @return The N-Triples representation of the supplied resource, or
+	 * @param context
+	 *        The context to encode, possibly <tt>null</tt>.
+	 * @return The N-Triples representation of the supplied context, or
 	 *         {@link #NULL_PARAM_VALUE} if the supplied value was <tt>null</tt>.
 	 */
 	public static String encodeContext(Resource context) {

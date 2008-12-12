@@ -320,14 +320,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public void exportStatements(Resource subj, URI pred, Value obj, RDFHandler hander, Resource... contexts)
+	public void exportStatements(Resource subj, URI pred, Value obj, RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
 	{
 		if (contexts == null || contexts.length < 1) {
-			super.exportStatements(subj, pred, obj, includeInferred, hander, readContexts);
+			super.exportStatements(subj, pred, obj, includeInferred, handler, readContexts);
 		}
 		else {
-			super.exportStatements(subj, pred, obj, includeInferred, hander, contexts);
+			super.exportStatements(subj, pred, obj, includeInferred, handler, contexts);
 		}
 	}
 

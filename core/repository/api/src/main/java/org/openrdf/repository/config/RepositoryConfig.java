@@ -159,11 +159,6 @@ public class RepositoryConfig {
 	 * Creates a new <tt>RepositoryConfig</tt> object and initializes it by
 	 * supplying the <tt>graph</tt> and <tt>repositoryNode</tt> to its
 	 * {@link #parse(Graph, Resource) parse} method.
-	 * 
-	 * @param graph
-	 * @param repositoryNode
-	 * @return
-	 * @throws RepositoryConfigException
 	 */
 	public static RepositoryConfig create(Graph graph, Resource repositoryNode)
 		throws RepositoryConfigException

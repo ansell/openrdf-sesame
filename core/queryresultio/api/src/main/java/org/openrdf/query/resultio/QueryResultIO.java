@@ -38,7 +38,7 @@ public class QueryResultIO {
 	 *        A MIME type, e.g. "application/sparql-results+xml".
 	 * @return An RDFFormat object if a match was found, or <tt>null</tt>
 	 *         otherwise.
-	 * @see #getParserFormatForMIMEType(String, RDFFormat)
+	 * @see #getParserFormatForMIMEType(String, TupleQueryResultFormat)
 	 */
 	public static TupleQueryResultFormat getParserFormatForMIMEType(String mimeType) {
 		return TupleQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(mimeType, null);

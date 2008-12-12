@@ -80,7 +80,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(long, URI)} with the supplied value and
+	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value and
 	 * {@link XMLSchema#BYTE} as parameters.
 	 */
 	public Literal createLiteral(byte value) {
@@ -88,7 +88,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(long, URI)} with the supplied value and
+	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value and
 	 * {@link XMLSchema#SHORT} as parameters.
 	 */
 	public Literal createLiteral(short value) {
@@ -96,7 +96,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(long, URI)} with the supplied value and
+	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value and
 	 * {@link XMLSchema#INT} as parameters.
 	 */
 	public Literal createLiteral(int value) {
@@ -104,7 +104,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(long, URI)} with the supplied value and
+	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value and
 	 * {@link XMLSchema#LONG} as parameters.
 	 */
 	public Literal createLiteral(long value) {

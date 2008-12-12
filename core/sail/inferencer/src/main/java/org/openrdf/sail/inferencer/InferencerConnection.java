@@ -28,9 +28,10 @@ public interface InferencerConnection extends NotifyingSailConnection {
 	 *        The predicate of the statement to add.
 	 * @param obj
 	 *        The object of the statement to add.
-	 * @param context
-	 *        A resource identifying the named context to add the statement to,
-	 *        or <tt>null</tt> to add the statement to the null context.
+	 * @param contexts
+	 *        The context(s) to add the statement to. Note that this parameter is
+	 *        a vararg and as such is optional. If no contexts are supplied the
+	 *        method operates on the entire repository.
 	 * @throws SailException
 	 *         If the statement could not be added.
 	 */
@@ -47,10 +48,10 @@ public interface InferencerConnection extends NotifyingSailConnection {
 	 *        The predicate of the statement that should be removed.
 	 * @param obj
 	 *        The object of the statement that should be removed.
-	 * @param context
-	 *        A resource identifying the named context to remove the statement
-	 *        from, or <tt>null</tt> to remove the statement from the null
-	 *        context.
+	 * @param contexts
+	 *        The context(s) from which to remove the statements. Note that this
+	 *        parameter is a vararg and as such is optional. If no contexts are
+	 *        supplied the method operates on the entire repository.
 	 * @throws SailException
 	 *         If the statement could not be removed.
 	 */

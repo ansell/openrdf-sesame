@@ -49,8 +49,6 @@ public abstract class ServerInterceptor extends HandlerInterceptorAdapter {
 	 * Determine the thread name to use. Called before the request is forwarded
 	 * to a handler.
 	 * 
-	 * @param request
-	 *        the request
 	 * @return a name that makes sense based on the request
 	 * @throws ServerHTTPException
 	 *         if it was impossible to determine a name due to an internal error

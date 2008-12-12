@@ -44,12 +44,11 @@ import org.openrdf.sail.rdbms.schema.URITable;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
- * Facade to {@link TransTableManager}, {@link ResourceTable}, and
+ * Facade to {@link TransTableManager}, {@link URITable}, {@link BNodeTable} and
  * {@link LiteralTable} for adding, removing, and retrieving statements from the
  * database.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsTripleRepository {
 
@@ -354,7 +353,9 @@ public class RdbmsTripleRepository {
 		return STMT_BUFFER;
 	}
 
-	private synchronized void acquireLock() throws InterruptedException {
+	private synchronized void acquireLock()
+		throws InterruptedException
+	{
 		if (readLock == null) {
 			readLock = vf.getIdReadLock();
 		}

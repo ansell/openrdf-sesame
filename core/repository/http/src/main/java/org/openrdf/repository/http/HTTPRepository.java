@@ -24,15 +24,11 @@ import org.openrdf.rio.RDFFormat;
 
 /**
  * A repository that serves as a proxy for a remote repository on a Sesame
- * server.
- * 
- * Methods in this class may throw the specific RepositoryException subclasses
- * UnautorizedException and NotAllowedException, the semantics of which are
- * defined by the HTTP protocol.
+ * server. Methods in this class may throw the specific RepositoryException
+ * subclass UnautorizedException, the semantics of which is defined by the HTTP
+ * protocol.
  * 
  * @see org.openrdf.http.protocol.UnauthorizedException
- * @see org.openrdf.http.protocol.NotAllowedException
- * 
  * @author Arjohn Kampman
  * @author jeen
  * @author Herko ter Horst
@@ -155,10 +151,10 @@ public class HTTPRepository implements Repository {
 
 	/**
 	 * Sets the preferred serialization format for tuple query results to the
-	 * supplied {@link TupleQueryResultFormat}, overriding the
-	 * {@link HTTPClient}'s default preference. Setting this parameter is not
-	 * necessary in most cases as the {@link HTTPClient} by default indicates a
-	 * preference for the most compact and efficient format available.
+	 * supplied {@link TupleQueryResultFormat}, overriding the {@link HTTPClient}
+	 * 's default preference. Setting this parameter is not necessary in most
+	 * cases as the {@link HTTPClient} by default indicates a preference for the
+	 * most compact and efficient format available.
 	 * 
 	 * @param format
 	 *        the preferred {@link TupleQueryResultFormat}. If set to 'null' no
@@ -180,8 +176,8 @@ public class HTTPRepository implements Repository {
 
 	/**
 	 * Sets the preferred serialization format for RDF to the supplied
-	 * {@link RDFFormat}, overriding the {@link HTTPClient}'s default
-	 * preference. Setting this parameter is not necessary in most cases as the
+	 * {@link RDFFormat}, overriding the {@link HTTPClient}'s default preference.
+	 * Setting this parameter is not necessary in most cases as the
 	 * {@link HTTPClient} by default indicates a preference for the most compact
 	 * and efficient format available.
 	 * <p>

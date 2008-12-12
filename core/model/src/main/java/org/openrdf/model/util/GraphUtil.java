@@ -30,8 +30,8 @@ public class GraphUtil {
 	/**
 	 * Gets the subject of the statements with the specified predicate, object
 	 * and (optionally) contexts from the supplied graph. Calling this method is
-	 * equivalent to calling <tt>graph.match(null, pred, obj, contexts)</tt>
-	 * and extracting the subjects of the matching statements from the returned
+	 * equivalent to calling <tt>graph.match(null, pred, obj, contexts)</tt> and
+	 * extracting the subjects of the matching statements from the returned
 	 * iterator. See {@link Graph#match(Resource, URI, Value, Resource[])} for a
 	 * description of the parameter values.
 	 */
@@ -54,8 +54,8 @@ public class GraphUtil {
 	/**
 	 * Gets the subject of the statements with the specified predicate, object
 	 * and (optionally) contexts from the supplied graph. Calling this method is
-	 * equivalent to calling <tt>graph.match(null, pred, obj, contexts)</tt>
-	 * and adding the subjects of the matching statements to a set. See
+	 * equivalent to calling <tt>graph.match(null, pred, obj, contexts)</tt> and
+	 * adding the subjects of the matching statements to a set. See
 	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
 	 * the parameter values.
 	 */
@@ -124,7 +124,7 @@ public class GraphUtil {
 	 * object from the specified contexts in the supplied graph. If the
 	 * combination of predicate, object and contexts matches one or more
 	 * statements, all these statements should have the same subject. A
-	 * {@link RepositoryConfigException} is thrown if this is not the case. See
+	 * {@link GraphUtilException} is thrown if this is not the case. See
 	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
 	 * the parameter values.
 	 * 
@@ -178,8 +178,8 @@ public class GraphUtil {
 	/**
 	 * Gets the objects of the statements with the specified subject, predicate
 	 * and (optionally) contexts from the supplied graph. Calling this method is
-	 * equivalent to calling <tt>graph.match(subj, pred, null, contexts)</tt>
-	 * and extracting the objects of the matching statements from the returned
+	 * equivalent to calling <tt>graph.match(subj, pred, null, contexts)</tt> and
+	 * extracting the objects of the matching statements from the returned
 	 * iterator. See {@link Graph#match(Resource, URI, Value, Resource[])} for a
 	 * description of the parameter values.
 	 */
@@ -202,8 +202,8 @@ public class GraphUtil {
 	/**
 	 * Gets the objects of the statements with the specified subject, predicate
 	 * and (optionally) contexts from the supplied graph. Calling this method is
-	 * equivalent to calling <tt>graph.match(subj, pred, null, contexts)</tt>
-	 * and adding the objects of the matching statements to a set. See
+	 * equivalent to calling <tt>graph.match(subj, pred, null, contexts)</tt> and
+	 * adding the objects of the matching statements to a set. See
 	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
 	 * the parameter values.
 	 */
@@ -338,7 +338,7 @@ public class GraphUtil {
 	 * predicate from the specified contexts in the supplied graph. If the
 	 * combination of subject, predicate and contexts matches one or more
 	 * statements, all these statements should have the same object. A
-	 * {@link RepositoryConfigException} is thrown if this is not the case. See
+	 * {@link GraphUtilException} is thrown if this is not the case. See
 	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
 	 * the parameter values.
 	 * 

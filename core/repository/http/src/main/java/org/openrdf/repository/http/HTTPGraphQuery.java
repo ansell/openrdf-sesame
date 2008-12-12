@@ -17,15 +17,11 @@ import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 
 /**
- * GraphQuery implementation specific to the HTTP protocol.
- * 
- * Methods in this class may throw the specific RepositoryException subclasses
- * UnautorizedException and NotAllowedException, the semantics of which are
- * defined by the HTTP protocol.
+ * GraphQuery implementation specific to the HTTP protocol. Methods in this
+ * class may throw the specific RepositoryException subclass
+ * UnautorizedException, the semantics of which is defined by the HTTP protocol.
  * 
  * @see org.openrdf.http.protocol.UnauthorizedException
- * @see org.openrdf.http.protocol.NotAllowedException
- * 
  * @author Arjohn Kampman
  * @author Herko ter Horst
  */
@@ -41,7 +37,8 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 
 		try {
-			return client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred, getBindingsArray());
+			return client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred,
+					getBindingsArray());
 		}
 		catch (IOException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
@@ -59,7 +56,8 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 	{
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 		try {
-			client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred, handler, getBindingsArray());
+			client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred, handler,
+					getBindingsArray());
 		}
 		catch (IOException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);

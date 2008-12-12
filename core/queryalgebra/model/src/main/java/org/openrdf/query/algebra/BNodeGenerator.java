@@ -6,8 +6,8 @@
 package org.openrdf.query.algebra;
 
 /**
- * A BNode generator, which generates a new BNode for each new call to
- * {@link #getValue}.
+ * A BNode generator, which generates a new BNode each time it needs to supply a
+ * value.
  */
 public class BNodeGenerator extends QueryModelNodeBase implements ValueExpr {
 

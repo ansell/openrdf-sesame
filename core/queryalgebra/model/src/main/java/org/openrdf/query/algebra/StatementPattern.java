@@ -147,8 +147,6 @@ public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 
 	/**
 	 * Returns the context variable, if available.
-	 * 
-	 * @return
 	 */
 	public Var getContextVar() {
 		return contextVar;

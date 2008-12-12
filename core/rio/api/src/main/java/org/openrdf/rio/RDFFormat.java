@@ -137,7 +137,7 @@ public class RDFFormat extends FileFormat {
 	 * @return An RDFFormat object if the MIME type was recognized, or
 	 *         <tt>null</tt> otherwise.
 	 * @see #forMIMEType(String,RDFFormat)
-	 * @see #getMIMEType
+	 * @see #getMIMETypes()
 	 */
 	public static RDFFormat forMIMEType(String mimeType) {
 		return forMIMEType(mimeType, null);
@@ -153,7 +153,7 @@ public class RDFFormat extends FileFormat {
 	 * @return An RDFFormat that matches the MIME type, or the fallback format if
 	 *         the extension was not recognized.
 	 * @see #forMIMEType(String)
-	 * @see #getMIMEType
+	 * @see #getMIMETypes()
 	 */
 	public static RDFFormat forMIMEType(String mimeType, RDFFormat fallback) {
 		return matchMIMEType(mimeType, RDF_FORMATS, fallback);
@@ -168,7 +168,7 @@ public class RDFFormat extends FileFormat {
 	 * @return An RDFFormat object if the file extension was recognized, or
 	 *         <tt>null</tt> otherwise.
 	 * @see #forFileName(String,RDFFormat)
-	 * @see #getFileExtension
+	 * @see #getFileExtensions()
 	 */
 	public static RDFFormat forFileName(String fileName) {
 		return forFileName(fileName, null);
@@ -184,7 +184,7 @@ public class RDFFormat extends FileFormat {
 	 * @return An RDFFormat that matches the file name extension, or the fallback
 	 *         format if the extension was not recognized.
 	 * @see #forFileName(String)
-	 * @see #getFileExtension
+	 * @see #getFileExtensions()
 	 */
 	public static RDFFormat forFileName(String fileName, RDFFormat fallback) {
 		return matchFileName(fileName, RDF_FORMATS, fallback);

@@ -21,8 +21,6 @@ public class TransactionReader {
 	/**
 	 * parse the transaction from the serialization
 	 * 
-	 * @param in
-	 * @return
 	 * @throws SAXException
 	 *         If the SimpleSAXParser was unable to create an XMLReader or if the
 	 *         XML is faulty.
@@ -42,8 +40,6 @@ public class TransactionReader {
 	/**
 	 * parse the transaction from the serialization
 	 * 
-	 * @param in
-	 * @return
 	 * @throws SAXException
 	 *         If the SimpleSAXParser was unable to create an XMLReader or if the
 	 *         XML is faulty.

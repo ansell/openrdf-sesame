@@ -32,10 +32,6 @@ public class CompareOptimizer implements QueryOptimizer {
 	/**
 	 * Applies generally applicable optimizations to the supplied query: variable
 	 * assignments are inlined.
-	 * 
-	 * @param tupleExpr
-	 * @return optimized TupleExpr
-	 * @throws QueryEvaluationException
 	 */
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		tupleExpr.visit(new CompareVisitor());

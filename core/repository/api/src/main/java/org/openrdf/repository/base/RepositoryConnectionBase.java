@@ -322,10 +322,8 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	 *        The base URI for the data.
 	 * @param dataFormat
 	 *        The file format of the data.
-	 * @param context
-	 *        The context to which the data should be added in case
-	 *        <tt>enforceContext</tt> is <tt>true</tt>. The value <tt>null</tt>
-	 *        indicates the null context.
+	 * @param contexts
+	 *        The context(s) to which the data should be added.
 	 * @throws IOException
 	 * @throws UnsupportedRDFormatException
 	 * @throws RDFParseException

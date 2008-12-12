@@ -15,11 +15,10 @@ import org.openrdf.repository.RepositoryException;
 
 /**
  * TupleQuery specific to the HTTP protocol. Methods in this class may throw the
- * specific RepositoryException subclasses UnautorizedException and
- * NotAllowedException, the semantics of which are defined by the HTTP protocol.
+ * specific RepositoryException subclass UnautorizedException, the semantics of
+ * which is defined by the HTTP protocol.
  * 
  * @see org.openrdf.http.protocol.UnauthorizedException
- * @see org.openrdf.http.protocol.NotAllowedException
  * @author Arjohn Kampman
  */
 public class HTTPBooleanQuery extends HTTPQuery implements BooleanQuery {
@@ -35,7 +34,8 @@ public class HTTPBooleanQuery extends HTTPQuery implements BooleanQuery {
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 
 		try {
-			return client.sendBooleanQuery(queryLanguage, queryString, dataset, includeInferred, getBindingsArray());
+			return client.sendBooleanQuery(queryLanguage, queryString, dataset, includeInferred,
+					getBindingsArray());
 		}
 		catch (IOException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);

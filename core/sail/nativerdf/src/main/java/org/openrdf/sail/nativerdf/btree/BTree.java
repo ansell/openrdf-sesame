@@ -560,18 +560,14 @@ public class BTree {
 	}
 
 	/**
-	 * Finds the minimum key that is equal or larger than the given key. For this
-	 * minimum key, it returns the path through the B-Tree. The result is a list
-	 * of vector of integer, e.g. [[1, 3], [2, 3], [2, 3]]. Each vector provides
-	 * information about each node on the path to the minimum key. The first
-	 * integer of the vector represents the index of the child pointer array
-	 * taken to reach the next node. The second integer of the vector represents
-	 * the size of that array. In case of the last vector, the values represent
-	 * the index of the key array and the size of this array, respectively.
+	 * Gives an estimate of the number of values between <tt>minValue</tt> and
+	 * <tt>maxValue</tt>.
 	 * 
-	 * @param key
-	 *        The key to search the minimum key for.
-	 * @return The list of vectors representing the path to the minimum key.
+	 * @param minValue
+	 *        the lower bound of the range.
+	 * @param maxValue
+	 *        the upper bound of the range,
+	 * @return an estimate of the number of values in the specified range.
 	 */
 	public long getValueCountEstimate(byte[] minValue, byte[] maxValue)
 		throws IOException
