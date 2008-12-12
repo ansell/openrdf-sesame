@@ -30,9 +30,9 @@ import org.openrdf.store.StoreException;
 /**
  * Forward-chaining RDF Schema inferencer, using the rules from the <a
  * href="http://www.w3.org/TR/2004/REC-rdf-mt-20040210/">RDF Semantics
- * Recommendation (10 February 2004)</a>. This inferencer can be used to add
- * RDF Schema semantics to any Sail that returns {@link InferencerConnection}s
- * from their {@link Sail#getConnection()} method.
+ * Recommendation (10 February 2004)</a>. This inferencer can be used to add RDF
+ * Schema semantics to any Sail that returns {@link InferencerConnection}s from
+ * their {@link Sail#getConnection()} method.
  */
 class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrapper implements
 		SailConnectionListener
@@ -137,10 +137,10 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	public void rollback()
 		throws StoreException
 	{
+		super.rollback();
+
 		statementsRemoved = false;
 		newStatements = null;
-
-		super.rollback();
 	}
 
 	/**
