@@ -50,7 +50,7 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 				// Push UNION down below other filters to avoid cloning them
 				TupleExpr node = findNotFilter(filterArg);
 
-				Filter leftFilter = new Filter(node, leftConstraint);
+				Filter leftFilter = new Filter(node.clone(), leftConstraint);
 				Filter rightFilter = new Filter(node.clone(), rightConstraint);
 				Union union = new Union(leftFilter, rightFilter);
 				node.replaceWith(union);
