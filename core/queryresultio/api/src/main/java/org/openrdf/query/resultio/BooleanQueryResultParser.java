@@ -25,8 +25,6 @@ public interface BooleanQueryResultParser {
 	 * 
 	 * @param in
 	 *        The InputStream from which to read the data.
-	 * @param baseURI
-	 *        The URI associated with the data in the InputStream.
 	 * @throws IOException
 	 *         If an I/O error occurred while data was read from the InputStream.
 	 * @throws QueryResultParseException

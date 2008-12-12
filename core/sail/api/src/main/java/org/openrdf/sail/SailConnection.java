@@ -50,8 +50,8 @@ public interface SailConnection {
 	 * object, using the (optional) dataset and supplied bindings as input
 	 * parameters.
 	 * 
-	 * @param tupleQuery
-	 *        The TupleQuery to evaluate.
+	 * @param tupleExpr
+	 *        The tuple expression to evaluate.
 	 * @param dataset
 	 *        The dataset to use for evaluating the query, <tt>null</tt> to use
 	 *        the Sail's default dataset.
@@ -85,13 +85,12 @@ public interface SailConnection {
 	/**
 	 * Gets all statements from the specified contexts that have a specific
 	 * subject, predicate and/or object. All three parameters may be null to
-	 * indicate wildcards. The <tt>includeInferred</tt> parameter can be used
-	 * to control which statements are fetched: all statements or only the
+	 * indicate wildcards. The <tt>includeInferred</tt> parameter can be used to
+	 * control which statements are fetched: all statements or only the
 	 * statements that have been added explicitly.
 	 * 
 	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a
-	 *        wildcard.
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
 	 * @param pred
 	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
 	 * @param obj
@@ -180,7 +179,7 @@ public interface SailConnection {
 	 * @throws SailException
 	 *         If the statement could not be removed.
 	 */
-	public void removeStatements(Resource subj, URI pred, Value obj, Resource... context)
+	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException;
 
 	/**
@@ -200,8 +199,8 @@ public interface SailConnection {
 	/**
 	 * Gets the namespaces relevant to the data contained in this Sail object.
 	 * 
-	 * @returns An iterator over the relevant namespaces, should not contain any
-	 *          duplicates.
+	 * @return An iterator over the relevant namespaces, should not contain any
+	 *         duplicates.
 	 * @throws SailException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.

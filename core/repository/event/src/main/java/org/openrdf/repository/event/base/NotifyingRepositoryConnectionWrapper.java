@@ -25,10 +25,8 @@ import org.openrdf.repository.event.RepositoryConnectionListener;
 
 /**
  * This broadcaster is used by the RepositoryBroadcaster to wrap the delegate
- * repository connection. There are two types of listeners for the repository
- * connection, {@link RepositoryConnectionStateListener} and
- * {@link RepositoryConnectionListener}. Listeners are notified of changes
- * after they have occurred.
+ * repository connection. Listeners are notified of changes after they have
+ * occurred.
  * 
  * @author James Leigh
  * @author Herko ter Horst
@@ -93,14 +91,12 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	}
 
 	@Override
-	protected boolean isDelegatingAdd()
-	{
+	protected boolean isDelegatingAdd() {
 		return !activated;
 	}
 
 	@Override
-	protected boolean isDelegatingRemove()
-	{
+	protected boolean isDelegatingRemove() {
 		return !activated;
 	}
 
@@ -130,12 +126,14 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	{
 		if (activated && reportDeltas()) {
 			removeWithoutCommit(null, null, null, contexts);
-		} else if (activated) {
+		}
+		else if (activated) {
 			getDelegate().clear(contexts);
 			for (RepositoryConnectionListener listener : listeners) {
 				listener.clear(this, contexts);
 			}
-		} else {
+		}
+		else {
 			getDelegate().clear(contexts);
 		}
 	}
@@ -178,7 +176,8 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 				while (stmts.hasNext()) {
 					list.add(stmts.next());
 				}
-			} finally {
+			}
+			finally {
 				stmts.close();
 			}
 			getDelegate().remove(subj, pred, obj, ctx);
@@ -191,12 +190,14 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 					listener.remove(this, s, p, o, c);
 				}
 			}
-		} else if (activated) {
+		}
+		else if (activated) {
 			getDelegate().remove(subj, pred, obj, ctx);
 			for (RepositoryConnectionListener listener : listeners) {
 				listener.remove(this, subj, pred, obj, ctx);
 			}
-		} else {
+		}
+		else {
 			getDelegate().remove(subj, pred, obj, ctx);
 		}
 	}
@@ -227,19 +228,22 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 					Namespace ns = namespaces.next();
 					prefix.add(ns.getPrefix());
 				}
-			} finally {
+			}
+			finally {
 				namespaces.close();
 			}
 			getDelegate().clearNamespaces();
 			for (String p : prefix) {
 				removeNamespace(p);
 			}
-		} else if (activated) {
+		}
+		else if (activated) {
 			getDelegate().clearNamespaces();
 			for (RepositoryConnectionListener listener : listeners) {
 				listener.clearNamespaces(this);
 			}
-		} else {
+		}
+		else {
 			getDelegate().clearNamespaces();
 		}
 	}

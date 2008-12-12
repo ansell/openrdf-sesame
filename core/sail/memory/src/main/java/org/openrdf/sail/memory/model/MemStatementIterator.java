@@ -74,7 +74,7 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 	/**
 	 * Creates a new MemStatementIterator that will iterate over the statements
 	 * contained in the supplied MemStatementList searching for statements that
-	 * match the specified pattern of subject, predicate, object and context.
+	 * match the specified pattern of subject, predicate, object and context(s).
 	 * 
 	 * @param statementList
 	 *        the statements over which to iterate.
@@ -84,8 +84,8 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 	 *        predicate of pattern.
 	 * @param object
 	 *        object of pattern.
-	 * @param context
-	 *        context of pattern.
+	 * @param contexts
+	 *        context(s) of pattern.
 	 */
 	public MemStatementIterator(MemStatementList statementList, MemResource subject, MemURI predicate,
 			MemValue object, boolean explicitOnly, int snapshot, ReadMode readMode, MemResource... contexts)

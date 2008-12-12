@@ -17,7 +17,7 @@ import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 
 /**
- * Extracts a SPARQL {@link #Dataset} from an ASTQueryContainer, if one is
+ * Extracts a SPARQL {@link Dataset} from an ASTQueryContainer, if one is
  * contained.
  * 
  * @author Simon Schenk
@@ -26,7 +26,7 @@ import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 public class DatasetDeclProcessor {
 
 	/**
-	 * Extracts a SPARQL {@link #Dataset} from an ASTQueryContainer, if one is
+	 * Extracts a SPARQL {@link Dataset} from an ASTQueryContainer, if one is
 	 * contained. Returns null otherwise.
 	 * 
 	 * @param qc

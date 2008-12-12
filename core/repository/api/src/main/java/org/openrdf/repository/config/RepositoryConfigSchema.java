@@ -11,7 +11,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
  * Defines constants for the repository configuration schema that is used by
- * {@link RepositoryManager}s.
+ * {@link org.openrdf.repository.manager.RepositoryManager}s.
  * 
  * @author Arjohn Kampman
  */

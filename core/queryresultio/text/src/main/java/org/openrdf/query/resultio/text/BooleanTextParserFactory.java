@@ -18,7 +18,7 @@ import org.openrdf.query.resultio.BooleanQueryResultParserFactory;
 public class BooleanTextParserFactory implements BooleanQueryResultParserFactory {
 
 	/**
-	 * Returns {@link BooleanQueryResultFormat#BINARY}.
+	 * Returns {@link BooleanQueryResultFormat#TEXT}.
 	 */
 	public BooleanQueryResultFormat getBooleanQueryResultFormat() {
 		return BooleanQueryResultFormat.TEXT;

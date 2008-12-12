@@ -103,7 +103,7 @@ public class BooleanQueryResultFormat extends FileFormat {
 	 * @return A TupleQueryResultFormat object if the MIME type was recognized,
 	 *         or <tt>null</tt> otherwise.
 	 * @see #forMIMEType(String,BooleanQueryResultFormat)
-	 * @see #getMIMEType
+	 * @see #getMIMETypes
 	 */
 	public static BooleanQueryResultFormat forMIMEType(String mimeType) {
 		return forMIMEType(mimeType, null);
@@ -122,7 +122,7 @@ public class BooleanQueryResultFormat extends FileFormat {
 	 * @return A TupleQueryResultFormat that matches the MIME type, or the
 	 *         fallback format if the extension was not recognized.
 	 * @see #forMIMEType(String)
-	 * @see #getMIMEType
+	 * @see #getMIMETypes
 	 */
 	public static BooleanQueryResultFormat forMIMEType(String mimeType, BooleanQueryResultFormat fallback) {
 		return matchMIMEType(mimeType, VALUES, fallback);
@@ -137,7 +137,7 @@ public class BooleanQueryResultFormat extends FileFormat {
 	 * @return A TupleQueryResultFormat object if the file extension was
 	 *         recognized, or <tt>null</tt> otherwise.
 	 * @see #forFileName(String,BooleanQueryResultFormat)
-	 * @see #getFileExtension
+	 * @see #getFileExtensions
 	 */
 	public static BooleanQueryResultFormat forFileName(String fileName) {
 		return forFileName(fileName, null);
@@ -153,7 +153,7 @@ public class BooleanQueryResultFormat extends FileFormat {
 	 * @return A TupleQueryResultFormat that matches the file name extension, or
 	 *         the fallback format if the extension was not recognized.
 	 * @see #forFileName(String)
-	 * @see #getFileExtension
+	 * @see #getFileExtensions
 	 */
 	public static BooleanQueryResultFormat forFileName(String fileName, BooleanQueryResultFormat fallback) {
 		return matchFileName(fileName, VALUES, fallback);

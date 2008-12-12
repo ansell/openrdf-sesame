@@ -40,8 +40,8 @@ public class TransactionWriter {
 	 * 
 	 * @param txn
 	 *        the operations
-	 * @param writer
-	 *        the writer to write to
+	 * @param out
+	 *        the output stream to write to
 	 * @throws IllegalArgumentException
 	 *         when one of the parameters is null
 	 */
