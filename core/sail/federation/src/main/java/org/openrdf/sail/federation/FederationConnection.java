@@ -43,6 +43,7 @@ import org.openrdf.sail.federation.evaluation.FederationStatistics;
 import org.openrdf.sail.federation.evaluation.FederationStrategy;
 import org.openrdf.sail.federation.optimizers.FederationJoinOptimizer;
 import org.openrdf.sail.federation.optimizers.OwnedTupleExprPruner;
+import org.openrdf.sail.federation.optimizers.PrepareOwnedTupleExpr;
 import org.openrdf.store.StoreException;
 
 /**
@@ -169,7 +170,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		throws StoreException
 	{
 		EvaluationStrategyImpl strategy;
-		strategy = new FederationStrategy(federation.getMetaData(), this, query);
+		strategy = new FederationStrategy(this, query);
 		TupleExpr qry = optimize(query, bindings, strategy);
 		return strategy.evaluate(qry, EmptyBindingSet.getInstance());
 	}
@@ -297,6 +298,8 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		new OwnedTupleExprPruner().optimize(query, bindings);
 		new QueryModelPruner().optimize(query, bindings);
 		new QueryJoinOptimizer(statistics).optimize(query, bindings);
+
+		new PrepareOwnedTupleExpr(federation.getMetaData()).optimize(query, bindings);
 
 		logger.trace("Optimized query model:\n{}", query.toString());
 		return query;

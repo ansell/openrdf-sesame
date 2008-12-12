@@ -5,27 +5,16 @@
  */
 package org.openrdf.sail.federation.evaluation;
 
-import static org.openrdf.sail.federation.query.QueryModelSerializer.LANGUAGE;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.QueryModel;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
@@ -34,11 +23,7 @@ import org.openrdf.query.algebra.evaluation.cursors.CompatibleBindingSetFilter;
 import org.openrdf.query.algebra.evaluation.cursors.UnionCursor;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.parser.TupleQueryModel;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryMetaData;
-import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
-import org.openrdf.sail.federation.query.QueryModelSerializer;
 import org.openrdf.store.StoreException;
 
 /**
@@ -53,13 +38,8 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 
 	private static Executor executor = Executors.newCachedThreadPool();
 
-	private Logger logger = LoggerFactory.getLogger(FederationStrategy.class);
-
-	private SailMetaData metadata;
-
-	public FederationStrategy(SailMetaData md, TripleSource tripleSource, QueryModel query) {
+	public FederationStrategy(TripleSource tripleSource, QueryModel query) {
 		super(tripleSource, query);
-		this.metadata = md;
 	}
 
 	@Override
@@ -142,25 +122,11 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 	private Cursor<BindingSet> evaluate(OwnedTupleExpr expr, BindingSet bindings)
 		throws StoreException
 	{
-		RepositoryConnection owner = expr.getOwner();
+		Cursor<BindingSet> result = expr.evaluate(dataset, bindings);
+		if (result != null)
+			return result;
 		QueryModel query = createQueryModel(expr);
-		if (isRemoteQueryModelSupported(owner, expr.getArg())) {
-			try {
-				String qry = new QueryModelSerializer().writeQueryModel(query, "");
-				TupleQuery pqry = owner.prepareTupleQuery(LANGUAGE, qry);
-				for (String name : bindings.getBindingNames()) {
-					pqry.setBinding(name, bindings.getValue(name));
-				}
-				pqry.setDataset(dataset);
-				TupleQueryResult result = pqry.evaluate();
-				return new TupleQueryResultCursor(result, bindings);
-			}
-			catch (MalformedQueryException e) {
-				// remote QueryModel does not work
-				logger.warn(e.toString(), e);
-			}
-		}
-		TripleSource source = new RepositoryTripleSource(owner);
+		TripleSource source = new RepositoryTripleSource(expr.getOwner());
 		EvaluationStrategyImpl eval = new EvaluationStrategyImpl(source, query);
 		return eval.evaluate(query, bindings);
 	}
@@ -172,24 +138,6 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 			query.setNamedGraphs(dataset.getNamedGraphs());
 		}
 		return query;
-	}
-
-	private boolean isRemoteQueryModelSupported(RepositoryConnection owner, TupleExpr expr)
-		throws StoreException
-	{
-		if (expr instanceof StatementPattern)
-			return false;
-		RepositoryMetaData md = owner.getRepository().getMetaData();
-		int version = metadata.getSesameMajorVersion();
-		if (version != 0 && version != md.getSesameMajorVersion())
-			return false;
-		if (version != 0 && metadata.getSesameMinorVersion() != md.getSesameMinorVersion())
-			return false;
-		for (QueryLanguage ql : md.getQueryLanguages()) {
-			if (QueryModelSerializer.LANGUAGE.equals(ql))
-				return true;
-		}
-		return false;
 	}
 
 }
