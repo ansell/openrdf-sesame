@@ -75,7 +75,9 @@ public class SailConnectionTracker {
 		connection = wrapConnection(connection);
 
 		Throwable stackTrace = SailUtil.isDebugEnabled() ? new Throwable() : null;
-		activeConnections.put(connection, stackTrace);
+		synchronized (activeConnections) {
+			activeConnections.put(connection, stackTrace);
+		}
 
 		return connection;
 	}
