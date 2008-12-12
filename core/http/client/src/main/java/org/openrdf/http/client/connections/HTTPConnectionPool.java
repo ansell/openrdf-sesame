@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.HttpMethod;
@@ -59,6 +60,12 @@ public class HTTPConnectionPool implements Cloneable {
 	private BooleanQueryResultFormat preferredBQRFormat = BooleanQueryResultFormat.TEXT;
 
 	private RDFFormat preferredRDFFormat = RDFFormat.TURTLE;
+
+	private boolean preferredTQRFormatUsed;
+
+	private boolean preferredBQRFormatUsed;
+
+	private boolean preferredRDFFormatUsed;
 
 	public HTTPConnectionPool(String url) {
 		this();
@@ -166,6 +173,18 @@ public class HTTPConnectionPool implements Cloneable {
 		return preferredBQRFormat;
 	}
 
+	public boolean isPreferredTupleQueryResultFormatUsed() {
+		return preferredTQRFormatUsed;
+	}
+
+	public boolean isPreferredBooleanQueryResultFormatUsed() {
+		return preferredBQRFormatUsed;
+	}
+
+	public boolean isPreferredRDFFormatUsed() {
+		return preferredRDFFormatUsed;
+	}
+
 	/**
 	 * Set the username and password for authenication with the remote server.
 	 * 
@@ -271,7 +290,23 @@ public class HTTPConnectionPool implements Cloneable {
 	int executeMethod(HttpMethod method)
 		throws IOException
 	{
-		return httpClient.executeMethod(method);
+		int status = httpClient.executeMethod(method);
+		if (!preferredBQRFormatUsed || !preferredRDFFormatUsed || !preferredTQRFormatUsed) {
+			Header header = method.getResponseHeader("Content-Type");
+			if (header != null) {
+				String mimetype = header.getValue();
+				if (preferredBQRFormat.getDefaultMIMEType().equals(mimetype)) {
+					preferredBQRFormatUsed = true;
+				}
+				if (preferredRDFFormat.getDefaultMIMEType().equals(mimetype)) {
+					preferredRDFFormatUsed = true;
+				}
+				if (preferredTQRFormat.getDefaultMIMEType().equals(mimetype)) {
+					preferredTQRFormatUsed = true;
+				}
+			}
+		}
+		return status;
 	}
 
 	protected final void setDoAuthentication(HttpMethod method) {
