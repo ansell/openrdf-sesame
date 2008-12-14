@@ -13,14 +13,14 @@ import org.openrdf.query.base.FilteringCursor;
 
 /**
  * @author Arjohn Kampman
+ * @deprecated
  */
+@Deprecated
 public class CompatibleBindingSetFilter extends FilteringCursor<BindingSet> {
 
 	private BindingSet inputBindings;
 
-	public CompatibleBindingSetFilter(Cursor<BindingSet> iter,
-			BindingSet inputBindings)
-	{
+	public CompatibleBindingSetFilter(Cursor<BindingSet> iter, BindingSet inputBindings) {
 		super(iter);
 		this.inputBindings = inputBindings;
 	}

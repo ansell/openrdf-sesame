@@ -85,7 +85,7 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.query.algebra.evaluation.cursors.CompatibleBindingSetFilter;
+import org.openrdf.query.algebra.evaluation.cursors.BadlyDesignedLeftJoinCursor;
 import org.openrdf.query.algebra.evaluation.cursors.DelayedCursor;
 import org.openrdf.query.algebra.evaluation.cursors.DistinctCursor;
 import org.openrdf.query.algebra.evaluation.cursors.ExtensionCursor;
@@ -151,8 +151,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * Methods *
 	 *---------*/
 
-	public Cursor<BindingSet> evaluate(TupleExpr expr,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(TupleExpr expr, BindingSet bindings)
 		throws StoreException
 	{
 		if (expr instanceof StatementPattern) {
@@ -175,8 +174,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	public Cursor<BindingSet> evaluate(StatementPattern sp,
-			final BindingSet bindings)
+	public Cursor<BindingSet> evaluate(StatementPattern sp, final BindingSet bindings)
 		throws StoreException
 	{
 		final Var subjVar = sp.getSubjectVar();
@@ -328,8 +326,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	public Cursor<BindingSet> evaluate(UnaryTupleOperator expr,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(UnaryTupleOperator expr, BindingSet bindings)
 		throws StoreException
 	{
 		if (expr instanceof Projection) {
@@ -370,8 +367,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	public Cursor<BindingSet> evaluate(Projection projection,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(Projection projection, BindingSet bindings)
 		throws StoreException
 	{
 		Cursor<BindingSet> result;
@@ -380,8 +376,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return result;
 	}
 
-	public Cursor<BindingSet> evaluate(MultiProjection multiProjection,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(MultiProjection multiProjection, BindingSet bindings)
 		throws StoreException
 	{
 		Cursor<BindingSet> result;
@@ -415,8 +410,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return result;
 	}
 
-	public Cursor<BindingSet> evaluate(Extension extension,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(Extension extension, BindingSet bindings)
 		throws StoreException
 	{
 		Cursor<BindingSet> result;
@@ -425,16 +419,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return result;
 	}
 
-	public Cursor<BindingSet> evaluate(Distinct distinct,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(Distinct distinct, BindingSet bindings)
 		throws StoreException
 	{
-		return new DistinctCursor<BindingSet>(
-				evaluate(distinct.getArg(), bindings));
+		return new DistinctCursor<BindingSet>(evaluate(distinct.getArg(), bindings));
 	}
 
-	public Cursor<BindingSet> evaluate(Reduced reduced,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(Reduced reduced, BindingSet bindings)
 		throws StoreException
 	{
 		return evaluate(reduced.getArg(), bindings);
@@ -454,8 +445,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return new OrderCursor(evaluate(node.getArg(), bindings), cmp);
 	}
 
-	public Cursor<BindingSet> evaluate(NaryTupleOperator expr,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(NaryTupleOperator expr, BindingSet bindings)
 		throws StoreException
 	{
 		if (expr instanceof BinaryTupleOperator) {
@@ -478,8 +468,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	public Cursor<BindingSet> evaluate(BinaryTupleOperator expr,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(BinaryTupleOperator expr, BindingSet bindings)
 		throws StoreException
 	{
 		if (expr instanceof LeftJoin) {
@@ -511,17 +500,16 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return result;
 	}
 
-	public Cursor<BindingSet> evaluate(LeftJoin leftJoin,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(LeftJoin leftJoin, final BindingSet bindings)
 		throws StoreException
 	{
 		// Check whether optional join is "well designed" as defined in section
-		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge P�rez et al.
+		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge Pérez et al.
 		Set<String> boundVars = bindings.getBindingNames();
 		Set<String> leftVars = leftJoin.getLeftArg().getBindingNames();
 		Set<String> optionalVars = leftJoin.getRightArg().getBindingNames();
 
-		Set<String> problemVars = new HashSet<String>(boundVars);
+		final Set<String> problemVars = new HashSet<String>(boundVars);
 		problemVars.retainAll(optionalVars);
 		problemVars.removeAll(leftVars);
 
@@ -530,25 +518,17 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			return new LeftJoinCursor(this, leftJoin, bindings);
 		}
 		else {
-			QueryBindingSet filteredBindings = new QueryBindingSet(bindings);
-			filteredBindings.removeAll(problemVars);
-			Cursor<BindingSet> iter;
-
-			iter = new LeftJoinCursor(this, leftJoin, filteredBindings);
-			iter = new CompatibleBindingSetFilter(iter, bindings);
-
-			return iter;
+			return new BadlyDesignedLeftJoinCursor(this, leftJoin, bindings, problemVars);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public Cursor<BindingSet> evaluate(final Union union,
-			final BindingSet bindings)
+	public Cursor<BindingSet> evaluate(final Union union, final BindingSet bindings)
 		throws StoreException
 	{
 		int size = union.getNumberOfArguments();
 		Cursor<BindingSet>[] iters = new Cursor[size];
-		for (int i=0;i<size;i++) {
+		for (int i = 0; i < size; i++) {
 			final TupleExpr arg = union.getArg(i);
 			iters[i] = new DelayedCursor(this, arg, bindings);
 		}
@@ -556,8 +536,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return new UnionCursor<BindingSet>(iters);
 	}
 
-	public Cursor<BindingSet> evaluate(final Intersection intersection,
-			final BindingSet bindings)
+	public Cursor<BindingSet> evaluate(final Intersection intersection, final BindingSet bindings)
 		throws StoreException
 	{
 		Cursor<BindingSet> leftArg, rightArg;
@@ -569,8 +548,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return new IntersectCursor<BindingSet>(leftArg, rightArg);
 	}
 
-	public Cursor<BindingSet> evaluate(final Difference difference,
-			final BindingSet bindings)
+	public Cursor<BindingSet> evaluate(final Difference difference, final BindingSet bindings)
 		throws StoreException
 	{
 		Cursor<BindingSet> leftArg, rightArg;
@@ -582,15 +560,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return new MinusCursor<BindingSet>(leftArg, rightArg);
 	}
 
-	public Cursor<BindingSet> evaluate(SingletonSet singletonSet,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(SingletonSet singletonSet, BindingSet bindings)
 		throws StoreException
 	{
 		return new SingletonCursor<BindingSet>(bindings);
 	}
 
-	public Cursor<BindingSet> evaluate(EmptySet emptySet,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(EmptySet emptySet, BindingSet bindings)
 		throws StoreException
 	{
 		return new EmptyCursor<BindingSet>();
@@ -1013,7 +989,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					// further
 					return BooleanLiteralImpl.TRUE;
 				}
-			} catch (ValueExprEvaluationException e) {
+			}
+			catch (ValueExprEvaluationException e) {
 				// Failed to evaluate the left argument. Result is 'true' when
 				// the right argument evaluates to 'true', failure otherwise.
 				failure = e;
@@ -1218,7 +1195,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			// Note: Java already handles cases like divide-by-zero appropriately
 			// for floats and doubles, see:
-			// http://www.particle.kth.se/~lindsey/JavaCourse/Book/Part1/Tech/Chapter02/floatingPt2.html
+			// http://www.particle.kth.se/~lindsey/JavaCourse/Book/Part1/Tech/
+			// Chapter02/floatingPt2.html
 
 			try {
 				if (commonDatatype.equals(XMLSchema.DOUBLE)) {
