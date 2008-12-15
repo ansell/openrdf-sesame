@@ -142,7 +142,7 @@ public class QueryController {
 		else if (query instanceof BooleanQuery) {
 			BooleanQuery bQuery = (BooleanQuery)query;
 			// @ModelAttribute does not support a return type of boolean
-			return new BooleanQueryResult(bQuery.evaluate());
+			return new BooleanQueryResult(bQuery.ask());
 		}
 		else {
 			throw new NotImplemented("Unsupported query type: " + query.getClass().getName());

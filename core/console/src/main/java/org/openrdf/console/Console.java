@@ -1503,7 +1503,7 @@ public class Console {
 			writeln("Evaluating query...");
 			long startTime = System.nanoTime();
 
-			boolean booleanQueryResult = con.prepareBooleanQuery(ql, queryString).evaluate();
+			boolean booleanQueryResult = con.prepareBooleanQuery(ql, queryString).ask();
 
 			writeln("Answer: " + booleanQueryResult);
 

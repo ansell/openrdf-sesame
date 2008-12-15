@@ -7,6 +7,8 @@ package org.openrdf.repository.http;
 
 import org.openrdf.http.client.BooleanQueryClient;
 import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.BooleanResult;
+import org.openrdf.query.impl.BooleanResultImpl;
 import org.openrdf.store.StoreException;
 
 /**
@@ -28,7 +30,13 @@ public class HTTPBooleanQuery extends HTTPQuery implements BooleanQuery {
 		this.client = client;
 	}
 
-	public boolean evaluate()
+	public BooleanResult evaluate()
+		throws StoreException
+	{
+		return new BooleanResultImpl(ask());
+	}
+
+	public boolean ask()
 		throws StoreException
 	{
 		return client.get(dataset, includeInferred, getBindingsArray());

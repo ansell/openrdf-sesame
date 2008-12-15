@@ -6,6 +6,7 @@
 package org.openrdf.query;
 
 import org.openrdf.model.Value;
+import org.openrdf.store.StoreException;
 
 /**
  * A query on a {@link Repository} that can be formulated in one of the
@@ -97,4 +98,7 @@ public interface Query {
 	 * @see #maxQueryTime
 	 */
 	public int getMaxQueryTime();
+
+	public Result<?> evaluate()
+		throws StoreException;
 }

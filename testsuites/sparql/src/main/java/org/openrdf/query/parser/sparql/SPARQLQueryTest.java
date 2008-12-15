@@ -179,7 +179,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 				compareGraphs(queryResult, expectedResult);
 			}
 			else if (query instanceof BooleanQuery) {
-				boolean queryResult = ((BooleanQuery)query).evaluate();
+				boolean queryResult = ((BooleanQuery)query).ask();
 				boolean expectedResult = readExpectedBooleanQueryResult();
 				assertEquals(expectedResult, queryResult);
 			}

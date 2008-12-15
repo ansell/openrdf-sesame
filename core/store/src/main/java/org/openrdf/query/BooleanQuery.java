@@ -12,6 +12,8 @@ import org.openrdf.store.StoreException;
  */
 public interface BooleanQuery extends Query {
 
-	public boolean evaluate()
+	public BooleanResult evaluate()
 		throws StoreException;
+
+	public boolean ask() throws StoreException;
 }

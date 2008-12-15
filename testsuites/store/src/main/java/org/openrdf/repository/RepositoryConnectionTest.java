@@ -665,7 +665,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		queryBuilder.append("ASK ");
 		queryBuilder.append("{ ?p foaf:name ?name }");
 
-		boolean exists = testCon.prepareBooleanQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate();
+		boolean exists = testCon.prepareBooleanQuery(QueryLanguage.SPARQL, queryBuilder.toString()).ask();
 
 		assertTrue(exists);
 	}
@@ -689,7 +689,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		BooleanQuery query = testCon.prepareBooleanQuery(QueryLanguage.SPARQL, queryBuilder.toString());
 		query.setBinding("name", nameBob);
 
-		assertTrue(query.evaluate());
+		assertTrue(query.ask());
 	}
 
 	public void testDataset()
@@ -711,24 +711,24 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		BooleanQuery query = testCon.prepareBooleanQuery(QueryLanguage.SPARQL, queryBuilder.toString());
 		query.setBinding("name", nameBob);
 
-		assertTrue(query.evaluate());
+		assertTrue(query.ask());
 
 		DatasetImpl dataset = new DatasetImpl();
 
 		// default graph: {context1}
 		dataset.addDefaultGraph(context1);
 		query.setDataset(dataset);
-		assertTrue(query.evaluate());
+		assertTrue(query.ask());
 
 		// default graph: {context1, context2}
 		dataset.addDefaultGraph(context2);
 		query.setDataset(dataset);
-		assertTrue(query.evaluate());
+		assertTrue(query.ask());
 
 		// default graph: {context2}
 		dataset.removeDefaultGraph(context1);
 		query.setDataset(dataset);
-		assertFalse(query.evaluate());
+		assertFalse(query.ask());
 
 		queryBuilder.setLength(0);
 		queryBuilder.append("PREFIX foaf: <" + FOAF_NS + "> ");
@@ -740,18 +740,18 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		// default graph: {context2}; named graph: {}
 		query.setDataset(dataset);
-		assertFalse(query.evaluate());
+		assertFalse(query.ask());
 
 		// default graph: {context1, context2}; named graph: {context2}
 		dataset.addDefaultGraph(context1);
 		dataset.addNamedGraph(context2);
 		query.setDataset(dataset);
-		assertFalse(query.evaluate());
+		assertFalse(query.ask());
 
 		// default graph: {context1, context2}; named graph: {context1, context2}
 		dataset.addNamedGraph(context1);
 		query.setDataset(dataset);
-		assertTrue(query.evaluate());
+		assertTrue(query.ask());
 	}
 
 	public void testGetStatements()

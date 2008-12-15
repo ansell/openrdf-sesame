@@ -3,9 +3,8 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.cursors;
+package org.openrdf.query;
 
-import org.openrdf.query.Cursor;
 import org.openrdf.store.StoreException;
 
 /**
