@@ -5,12 +5,8 @@
  */
 package org.openrdf.results;
 
-import java.util.Map;
-
-import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.query.GraphQueryResult;
-import org.openrdf.store.StoreException;
 
 /**
  * A representation of a query result as a sequence of {@link Statement}
@@ -21,17 +17,5 @@ import org.openrdf.store.StoreException;
  * 
  * @author jeen
  */
-public interface GraphResult extends GraphQueryResult {
-
-	/**
-	 * Retrieves relevant namespaces from the query result.
-	 * 
-	 * @return a Map<String, String> object containing (prefix, namespace) pairs.
-	 * @throws StoreException
-	 */
-	public Map<String, String> getNamespaces()
-		throws StoreException;
-
-	public Model asModel()
-		throws StoreException;
+public interface GraphResult extends ModelResult, GraphQueryResult {
 }

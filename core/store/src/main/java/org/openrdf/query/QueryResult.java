@@ -5,7 +5,7 @@
  */
 package org.openrdf.query;
 
-import org.openrdf.repository.RepositoryResult;
+import org.openrdf.results.Result;
 
 /**
  * Super type of all query result types (TupleQueryResult, GraphQueryResult,
@@ -15,5 +15,5 @@ import org.openrdf.repository.RepositoryResult;
  * @author James Leigh
  */
 @Deprecated
-public interface QueryResult<T> extends RepositoryResult<T> {
+public interface QueryResult<T> extends Result<T> {
 }
