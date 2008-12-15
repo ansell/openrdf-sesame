@@ -6,6 +6,7 @@
 package org.openrdf.repository.dataset;
 
 import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.BooleanResult;
 import org.openrdf.repository.sail.SailBooleanQuery;
 import org.openrdf.store.StoreException;
 
@@ -19,10 +20,17 @@ class DatasetBooleanQuery extends DatasetQuery implements BooleanQuery {
 		super(con, sailQuery);
 	}
 
-	public boolean evaluate()
+	public BooleanResult evaluate()
 		throws StoreException
 	{
 		con.loadDataset(sailQuery.getActiveDataset());
 		return ((BooleanQuery)sailQuery).evaluate();
+	}
+
+	public boolean ask()
+		throws StoreException
+	{
+		con.loadDataset(sailQuery.getActiveDataset());
+		return ((BooleanQuery)sailQuery).ask();
 	}
 }
