@@ -36,6 +36,7 @@
 	<bean class="org.openrdf.http.server.controllers.MetadataController" />
 	<bean class="org.openrdf.http.server.controllers.ConnectionController" />
 	<bean class="org.openrdf.http.server.controllers.QueryController" />
+	<bean class="org.openrdf.http.server.controllers.BNodeController" />
 
 <!-- Exceptions -->
 	<bean class="org.openrdf.http.server.ExceptionWritter" />

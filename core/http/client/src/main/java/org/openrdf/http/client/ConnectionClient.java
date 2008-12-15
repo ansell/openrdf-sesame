@@ -8,6 +8,7 @@ package org.openrdf.http.client;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.StoreClient;
 import org.openrdf.http.protocol.Protocol;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.store.StoreException;
 
 /**
@@ -22,10 +23,28 @@ public class ConnectionClient extends RepositoryClient {
 		this.connection = connection;
 	}
 
+	public ValueFactory getValueFactory() {
+		return connection.getValueFactory();
+	}
+
+	public void setValueFactory(ValueFactory valueFactory) {
+		connection.setValueFactory(valueFactory);
+	}
+
+	public BNodeClient bnodes() {
+		return new BNodeClient(connection.slash(Protocol.BNODES));
+	}
+
 	public void begin()
 		throws StoreException
 	{
 		new StoreClient(connection.slash(Protocol.BEGIN)).post();
+	}
+
+	public void ping()
+		throws StoreException
+	{
+		new StoreClient(connection.slash(Protocol.PING)).post();
 	}
 
 	public void commit()

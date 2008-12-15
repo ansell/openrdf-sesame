@@ -20,6 +20,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping;
 
+import org.openrdf.http.server.controllers.BNodeController;
 import org.openrdf.http.server.controllers.ConfigurationController;
 import org.openrdf.http.server.controllers.ConnectionController;
 import org.openrdf.http.server.controllers.ContextController;
@@ -162,6 +163,7 @@ public class SesameServlet implements Servlet {
 			registerPrototype(MetadataController.class);
 			registerPrototype(ConnectionController.class);
 			registerPrototype(QueryController.class);
+			registerPrototype(BNodeController.class);
 //			registerPrototype(URIController.class);
 
 			// Exceptions
