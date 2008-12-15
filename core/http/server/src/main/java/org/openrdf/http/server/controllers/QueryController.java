@@ -104,7 +104,6 @@ public class QueryController {
 	{
 		String id = getPathParam(request);
 		Query query = RepositoryInterceptor.getQuery(request, id);
-		new QueryBuilder(request).prepareQuery(query);
 		if (query instanceof TupleQuery) {
 			List<String> names = Collections.emptyList();
 			Set<BindingSet> bindings = Collections.emptySet();
@@ -131,22 +130,9 @@ public class QueryController {
 	{
 		String id = getPathParam(request);
 		Query query = RepositoryInterceptor.getQuery(request, id);
-		new QueryBuilder(request).prepareQuery(query);
-		if (query instanceof TupleQuery) {
-			TupleQuery tQuery = (TupleQuery)query;
-			return tQuery.evaluate();
-		}
-		else if (query instanceof GraphQuery) {
-			GraphQuery gQuery = (GraphQuery)query;
-			return gQuery.evaluate();
-		}
-		else if (query instanceof BooleanQuery) {
-			BooleanQuery bQuery = (BooleanQuery)query;
-			// @ModelAttribute does not support a return type of boolean
-			return new BooleanResultImpl(bQuery.ask());
-		}
-		else {
-			throw new NotImplemented("Unsupported query type: " + query.getClass().getName());
+		synchronized (query) {
+			new QueryBuilder(request).prepareQuery(query);
+			return query.evaluate();
 		}
 	}
 

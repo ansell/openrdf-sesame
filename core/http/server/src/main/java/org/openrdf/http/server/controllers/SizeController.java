@@ -6,11 +6,7 @@
 package org.openrdf.http.server.controllers;
 
 import static org.openrdf.http.protocol.Protocol.CONN_PATH;
-import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.REPO_PATH;
-import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 
@@ -23,8 +19,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.server.helpers.ProtocolUtil;
+import org.openrdf.http.server.helpers.RDFRequest;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -51,11 +47,12 @@ public class SizeController {
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 
 		ValueFactory vf = repositoryCon.getValueFactory();
-		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
-		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
-		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
-		Resource[] contexts = ProtocolUtil.parseContextParam(request, Protocol.CONTEXT_PARAM_NAME, vf);
-		boolean useInferencing = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, false);
+		RDFRequest req = new RDFRequest(vf, request);
+		Resource subj = req.getSubject();
+		URI pred = req.getPredicate();
+		Value obj = req.getObject();
+		Resource[] contexts = req.getContext();
+		boolean useInferencing = req.isIncludeInferred();
 
 		if (HEAD.equals(RequestMethod.valueOf(request.getMethod())))
 			return new StringReader("");
