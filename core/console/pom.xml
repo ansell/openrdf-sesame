@@ -43,10 +43,6 @@
 
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-iteration</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-io</artifactId>
 		</dependency>
 		<dependency>
