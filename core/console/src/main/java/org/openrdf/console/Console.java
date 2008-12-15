@@ -41,7 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.io.FileUtil;
-import info.aduna.iteration.CloseableIteration;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.http.client.SesameClient;
@@ -72,6 +71,7 @@ import org.openrdf.query.parser.serql.SeRQLUtil;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryInfo;
@@ -907,7 +907,7 @@ public class Console {
 			con = repository.getConnection();
 
 			try {
-				CloseableIteration<? extends Namespace, StoreException> namespaces = con.getNamespaces();
+				RepositoryResult<Namespace> namespaces = con.getNamespaces();
 
 				try {
 					if (namespaces.hasNext()) {
@@ -947,7 +947,7 @@ public class Console {
 			con = repository.getConnection();
 
 			try {
-				CloseableIteration<? extends Resource, StoreException> contexts = con.getContextIDs();
+				RepositoryResult<Resource> contexts = con.getContextIDs();
 
 				try {
 					if (contexts.hasNext()) {

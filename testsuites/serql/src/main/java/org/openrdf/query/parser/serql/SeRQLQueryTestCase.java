@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.FileUtil;
 import info.aduna.io.IOUtil;
-import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
@@ -148,8 +147,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 			try {
 				con.add(url(resultFile), base(resultFile), RDFFormat.forFileName(resultFile));
 
-				expectedStatements = Iterations.addAll(con.getStatements(null, null, null, false),
-						new ArrayList<Statement>(1));
+				expectedStatements = con.getStatements(null, null, null, false).asList();
 			}
 			finally {
 				con.close();

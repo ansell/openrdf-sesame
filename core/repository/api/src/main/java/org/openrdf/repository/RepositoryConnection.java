@@ -11,9 +11,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.Iteration;
-
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -21,6 +18,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
@@ -687,8 +685,7 @@ public interface RepositoryConnection {
 	 * named contexts.
 	 * 
 	 * @param statementIter
-	 *        The statements to add. In case the iterator is a
-	 *        {@link CloseableIteration}, it will be closed before this method
+	 *        The statements to add. It will be closed before this method
 	 *        returns.
 	 * @param contexts
 	 *        The contexts to add the statements to. Note that this parameter is
@@ -702,9 +699,8 @@ public interface RepositoryConnection {
 	 *         If the statements could not be added to the repository, for
 	 *         example because the repository is not writable.
 	 */
-	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
-		throws StoreException, E;
+	public void add(Cursor<? extends Statement> statementIter, Resource... contexts)
+		throws StoreException;
 
 	/**
 	 * Removes the statement(s) with the specified subject, predicate and object
@@ -793,8 +789,7 @@ public interface RepositoryConnection {
 	 * themselves.
 	 * 
 	 * @param statementIter
-	 *        The statements to remove. In case the iterator is a
-	 *        {@link CloseableIteration}, it will be closed before this method
+	 *        The statements to remove. It will be closed before this method
 	 *        returns.
 	 * @param contexts
 	 *        The context(s) to remove the data from. Note that this parameter is
@@ -806,9 +801,8 @@ public interface RepositoryConnection {
 	 *         If the statements could not be removed from the repository, for
 	 *         example because the repository is not writable.
 	 */
-	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
-		throws StoreException, E;
+	public void remove(Cursor<? extends Statement> statementIter, Resource... contexts)
+		throws StoreException;
 
 	/**
 	 * Removes all statements from a specific contexts in the repository.

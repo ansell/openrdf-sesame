@@ -11,14 +11,13 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 
-import info.aduna.iteration.Iteration;
-
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
@@ -145,9 +144,8 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
-		throws StoreException, E
+	public void add(Cursor<? extends Statement> statementIter, Resource... contexts)
+		throws StoreException
 	{
 		if (isDelegatingAdd()) {
 			getDelegate().add(statementIter, contexts);
@@ -350,9 +348,8 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
-		throws StoreException, E
+	public void remove(Cursor<? extends Statement> statementIter, Resource... contexts)
+		throws StoreException
 	{
 		if (isDelegatingRemove()) {
 			getDelegate().remove(statementIter, contexts);

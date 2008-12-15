@@ -9,16 +9,15 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import info.aduna.iteration.Iteration;
-
 import org.openrdf.model.Namespace;
 import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.base.ConvertingCursor;
 import org.openrdf.query.impl.IteratorCursor;
 import org.openrdf.store.StoreException;
 
 /**
- * {@link Namespace} typed {@link Iteration}.
+ * {@link Namespace} typed {@link Cursor}.
  * 
  * @author James Leigh
  * 
