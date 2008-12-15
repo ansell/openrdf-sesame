@@ -8,11 +8,7 @@ package org.openrdf.http.server.controllers;
 import static org.openrdf.http.protocol.Protocol.BASEURI_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.CONN_PATH;
 import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.REPO_PATH;
-import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
@@ -30,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.xml.sax.SAXException;
 
 import info.aduna.webapp.util.HttpServerUtil;
@@ -42,6 +37,7 @@ import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.transaction.TransactionReader;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.http.server.helpers.ProtocolUtil;
+import org.openrdf.http.server.helpers.RDFRequest;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -70,31 +66,48 @@ public class StatementController {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	/**
-	 * Get all statements and export them as RDF.
-	 * 
-	 * @return a model and view for exporting the statements.
-	 */
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
-	public ModelResult get(HttpServletRequest request)
-		throws StoreException, ClientHTTPException
+	@RequestMapping(method = HEAD, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
+	public ModelResult head(HttpServletRequest request)
+		throws StoreException, ClientHTTPException, IOException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 		ValueFactory vf = repositoryCon.getValueFactory();
 
-		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
-		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
-		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
-		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
-		boolean useInferencing = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
+		RDFRequest req = new RDFRequest(vf, request);
+		req.getSubject();
+		req.getPredicate();
+		req.getObject();
+		req.getContext();
 
-		if (HEAD.equals(RequestMethod.valueOf(request.getMethod()))) {
-			Cursor<Statement> nothing = EmptyCursor.emptyCursor();
-			return new ModelResultImpl(nothing);
-		}
+		Cursor<Statement> nothing = EmptyCursor.emptyCursor();
+		return new ModelResultImpl(nothing);
+	}
+
+	/**
+	 * Get all statements and export them as RDF.
+	 * 
+	 * @return a model and view for exporting the statements.
+	 */
+	@ModelAttribute
+	@RequestMapping(method = GET, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
+	public ModelResult get(HttpServletRequest request)
+		throws StoreException, ClientHTTPException, IOException
+	{
+		ProtocolUtil.logRequestParameters(request);
+
+		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
+		ValueFactory vf = repositoryCon.getValueFactory();
+
+		RDFRequest req = new RDFRequest(vf, request);
+		Resource subj = req.getSubject();
+		URI pred = req.getPredicate();
+		Value obj = req.getObject();
+		Resource[] contexts = req.getContext();
+		boolean useInferencing = req.isIncludeInferred();
+
 		return repositoryCon.match(subj, pred, obj, useInferencing, contexts);
 	}
 
@@ -132,17 +145,18 @@ public class StatementController {
 	@ModelAttribute
 	@RequestMapping(method = DELETE, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
 	public void delete(HttpServletRequest request)
-		throws ClientHTTPException, StoreException
+		throws ClientHTTPException, StoreException, IOException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 		ValueFactory vf = repositoryCon.getValueFactory();
 
-		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
-		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
-		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
-		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
+		RDFRequest req = new RDFRequest(vf, request);
+		Resource subj = req.getSubject();
+		URI pred = req.getPredicate();
+		Value obj = req.getObject();
+		Resource[] contexts = req.getContext();
 
 		repositoryCon.removeMatch(subj, pred, obj, contexts);
 	}
@@ -167,10 +181,12 @@ public class StatementController {
 			for (TransactionOperation op : txn) {
 				op.execute(repositoryCon);
 			}
-		} catch (StoreException e) {
+		}
+		catch (StoreException e) {
 			repositoryCon.rollback();
 			throw e;
-		} finally {
+		}
+		finally {
 			repositoryCon.setAutoCommit(wasAutoCommit);
 		}
 
@@ -209,10 +225,12 @@ public class StatementController {
 				repositoryCon.clear(contexts);
 			}
 			repositoryCon.add(in, baseURI.toString(), rdfFormat, contexts);
-		} catch (StoreException e) {
+		}
+		catch (StoreException e) {
 			repositoryCon.rollback();
 			throw e;
-		} finally {
+		}
+		finally {
 			repositoryCon.setAutoCommit(wasAutoCommit);
 		}
 	}
