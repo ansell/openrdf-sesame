@@ -168,6 +168,7 @@ public class SesameServer {
 		jetty = new Server(port);
 		servlet = new SesameServlet(manager);
 		Context root = new Context(jetty, "/");
+		root.setMaxFormContentSize(0);
 		root.addServlet(new ServletHolder(servlet), "/*");
 	}
 

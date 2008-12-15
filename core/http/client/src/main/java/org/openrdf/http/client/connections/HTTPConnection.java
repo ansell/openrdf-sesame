@@ -26,6 +26,7 @@ import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.util.EncodingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -312,7 +313,13 @@ public class HTTPConnection {
 	}
 
 	public void sendQueryString(List<NameValuePair> params) {
-		method.setQueryString(params.toArray(new NameValuePair[params.size()]));
+		NameValuePair[] pairs = params.toArray(new NameValuePair[params.size()]);
+		String queryString = EncodingUtil.formUrlEncode(pairs, "UTF-8");
+		if (queryString.length() < 1024) {
+			method.setQueryString(queryString);
+		} else {
+			sendForm(params);
+		}
 	}
 
 	public void sendEntity(RequestEntity requestEntity) {
