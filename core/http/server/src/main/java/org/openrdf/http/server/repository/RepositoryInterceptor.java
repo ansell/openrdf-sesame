@@ -9,8 +9,10 @@ import static org.openrdf.http.protocol.Protocol.IF_NONE_MATCH;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -22,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
+import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.protocol.exceptions.ServerHTTPException;
@@ -88,6 +91,8 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 
 	private static final String QUERY_CLOSED_KEY = BASE + "close-query";
 
+	private static final String NOT_SAFE_KEY = BASE + "not-safe";
+
 	private static AtomicInteger seq = new AtomicInteger(new Random().nextInt());
 
 	public static RepositoryManager getRepositoryManager(HttpServletRequest request) {
@@ -140,6 +145,10 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 
 	public static RepositoryConnection getReadOnlyConnection(HttpServletRequest request) {
 		return (RepositoryConnection)request.getAttribute(REPOSITORY_CONNECTION_KEY);
+	}
+
+	public static void notSafe(HttpServletRequest request) {
+		request.setAttribute(NOT_SAFE_KEY, Boolean.TRUE);
 	}
 
 	public static String createConnection(HttpServletRequest request) {
@@ -209,7 +218,9 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 		throws HTTPException
 	{
+		long now = System.currentTimeMillis();
 		ProtocolUtil.logRequestParameters(request);
+		expungeConnections(now);
 
 		if (notModified(request, response)) {
 			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -246,7 +257,7 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 					}
 				}
 				request.setAttribute(REPOSITORY_KEY, repository);
-				request.setAttribute(REPOSITORY_CONNECTION_KEY, repositoryCon.getConnection());
+				request.setAttribute(REPOSITORY_CONNECTION_KEY, repositoryCon.getConnection(now));
 				request.setAttribute(QUERY_MAP_KEY, repositoryCon);
 			}
 			catch (StoreConfigException e) {
@@ -307,6 +318,24 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		}
 	}
 
+	private void expungeConnections(long now) {
+		long max = Protocol.TIME_OUT_UNITS.toMillis(Protocol.MAX_TIME_OUT);
+		for (Entry<String, ActiveConnection> e : activeConnections.entrySet()) {
+			long since = now - e.getValue().getLastAccessed();
+			if (since > max) {
+				String id = e.getKey();
+				logger.warn("Connection {} has expired", id);
+				activeConnections.remove(id);
+				try {
+					e.getValue().getConnection(now).close();
+				}
+				catch (StoreException exc) {
+					logger.error(exc.toString(), exc);
+				}
+			}
+		}
+	}
+
 	private boolean notModified(HttpServletRequest request, HttpServletResponse response) {
 		long since = request.getDateHeader(IF_MODIFIED_SINCE);
 		if (since != -1) {
@@ -357,6 +386,8 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		if (request.getAttribute(QUERY_CREATE_KEY) != null)
 			return false;
 		if (request.getAttribute(QUERY_CLOSED_KEY) != null)
+			return false;
+		if (request.getAttribute(NOT_SAFE_KEY) != null)
 			return false;
 		return true;
 	}

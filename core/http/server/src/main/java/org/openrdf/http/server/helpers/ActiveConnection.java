@@ -22,12 +22,19 @@ public class ActiveConnection {
 
 	private Map<String, Query> queries = new ConcurrentHashMap<String, Query>();
 
+	private long lastAccessed;
+
 	public ActiveConnection(RepositoryConnection connection) {
 		this.connection = connection;
 	}
 
-	public RepositoryConnection getConnection() {
+	public RepositoryConnection getConnection(long now) {
+		lastAccessed = now;
 		return connection;
+	}
+
+	public long getLastAccessed() {
+		return lastAccessed;
 	}
 
 	public void putQuery(String id, Query query) {

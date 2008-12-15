@@ -5,8 +5,16 @@
  */
 package org.openrdf.repository.http;
 
+import static org.openrdf.http.protocol.Protocol.MIN_TIME_OUT;
+import static org.openrdf.http.protocol.Protocol.TIME_OUT_UNITS;
+
 import java.io.File;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openrdf.http.client.ConnectionClient;
 import org.openrdf.http.client.RepositoryClient;
@@ -40,9 +48,13 @@ import org.openrdf.store.StoreException;
  */
 public class HTTPRepository implements Repository {
 
+	private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	Logger logger = LoggerFactory.getLogger(HTTPRepository.class);
 
 	private HTTPValueFactory vf = new HTTPValueFactory();
 
@@ -133,8 +145,24 @@ public class HTTPRepository implements Repository {
 	public RepositoryConnection getConnection()
 		throws StoreException
 	{
-		ConnectionClient connection = client.connections().post();
-		return new HTTPRepositoryConnection(this, connection);
+		final ConnectionClient connection = client.connections().post();
+		final HTTPRepositoryConnection con = new HTTPRepositoryConnection(this, connection);
+		executor.scheduleAtFixedRate(new Runnable() {
+
+			public void run() {
+				try {
+					if (con.isOpen()) {
+						connection.ping();
+					} else {
+						throw new RuntimeException("connection already closed");
+					}
+				} catch (StoreException e) {
+					// try again later
+					logger.warn(e.toString(), e);
+				}
+			}
+		}, MIN_TIME_OUT, MIN_TIME_OUT, TIME_OUT_UNITS);
+		return con;
 	}
 
 	public boolean isWritable()
@@ -223,14 +251,15 @@ public class HTTPRepository implements Repository {
 		cache.modified();
 	}
 
-	boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource[] contexts) throws StoreException
+	boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred, Resource[] contexts)
+		throws StoreException
 	{
 		return cache.hasStatement(subj, pred, obj, includeInferred, contexts);
 	}
 
 	/**
 	 * Will never connect to the remote server.
+	 * 
 	 * @return if this statement cannot be stored in the remote server
 	 */
 	boolean isIllegal(Resource subj, URI pred, Value obj, Resource... contexts) {

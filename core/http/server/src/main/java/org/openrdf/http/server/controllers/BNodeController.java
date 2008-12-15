@@ -7,6 +7,7 @@ package org.openrdf.http.server.controllers;
 
 import static org.openrdf.http.protocol.Protocol.CONN_PATH;
 import static org.openrdf.http.server.repository.RepositoryInterceptor.getReadOnlyConnection;
+import static org.openrdf.http.server.repository.RepositoryInterceptor.notSafe;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ public class BNodeController {
 	public TupleResult post(HttpServletRequest request)
 		throws StoreException, BadRequest
 	{
+		notSafe(request);
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
 		int size = 1;
 		String amount = request.getParameter(Protocol.AMOUNT);

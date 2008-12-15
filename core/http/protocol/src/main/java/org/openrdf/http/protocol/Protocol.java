@@ -5,6 +5,7 @@
  */
 package org.openrdf.http.protocol;
 
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -199,6 +200,12 @@ public abstract class Protocol {
 	public static final String BNODE = "bnode";
 
 	public static final String BNODES = "bnodes";
+
+	public static final long MIN_TIME_OUT = 60;
+
+	public static final long MAX_TIME_OUT = 3 * MIN_TIME_OUT;
+
+	public static final TimeUnit TIME_OUT_UNITS = TimeUnit.SECONDS;
 
 	private static String getServerDir(String serverLocation) {
 		if (!serverLocation.endsWith("/")) {
