@@ -8,16 +8,15 @@ package org.openrdf.query.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import info.aduna.iteration.Iteration;
-import info.aduna.iteration.Iterations;
-
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResult;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.store.StoreException;
 
@@ -78,12 +77,12 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 		this.bindingSets.addAll(bindingSets);
 	}
 
-	public <E extends Exception> MutableTupleQueryResult(Collection<String> bindingNames,
-			Iteration<? extends BindingSet, E> bindingSetIter)
-		throws E
+	public MutableTupleQueryResult(Collection<String> bindingNames,
+			QueryResult<? extends BindingSet> bindingSetIter)
+		throws StoreException
 	{
 		this.bindingNames.addAll(bindingNames);
-		Iterations.addAll(bindingSetIter, this.bindingSets);
+		bindingSetIter.addTo(this.bindingSets);
 	}
 
 	public MutableTupleQueryResult(TupleQueryResult tqr)
@@ -235,6 +234,25 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 		lastReturned = -1;
 
 		return result;
+	}
+
+	public <C extends Collection<? super BindingSet>> C addTo(C bindingSets)
+		throws StoreException
+	{
+		bindingSets.addAll(this.bindingSets);
+		return bindingSets;
+	}
+
+	public List<BindingSet> asList()
+		throws StoreException
+	{
+		return this.bindingSets;
+	}
+
+	public Set<BindingSet> asSet()
+		throws StoreException
+	{
+		return new HashSet<BindingSet>(this.bindingSets);
 	}
 
 	public void clear() {

@@ -6,7 +6,11 @@
 package org.openrdf.http.client.helpers;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -132,10 +136,26 @@ public class BackgroundTupleResult implements TupleQueryResult, Runnable, TupleQ
 		}
 	}
 
-	public void remove()
+	public <C extends Collection<? super BindingSet>> C addTo(C collection)
 		throws StoreException
 	{
-		throw new UnsupportedOperationException();
+		BindingSet bindings;
+		while ((bindings = next()) != null) {
+			collection.add(bindings);
+		}
+		return collection;
+	}
+
+	public List<BindingSet> asList()
+		throws StoreException
+	{
+		return addTo(new ArrayList<BindingSet>());
+	}
+
+	public Set<BindingSet> asSet()
+		throws StoreException
+	{
+		return addTo(new HashSet<BindingSet>());
 	}
 
 	public void run() {

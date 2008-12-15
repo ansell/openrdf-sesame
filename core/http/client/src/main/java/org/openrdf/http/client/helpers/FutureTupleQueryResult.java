@@ -5,7 +5,9 @@
  */
 package org.openrdf.http.client.helpers;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -48,10 +50,22 @@ public class FutureTupleQueryResult implements TupleQueryResult {
 		return getDelegate().next();
 	}
 
-	public void remove()
+	public <C extends Collection<? super BindingSet>> C addTo(C collection)
 		throws StoreException
 	{
-		getDelegate().remove();
+		return getDelegate().addTo(collection);
+	}
+
+	public List<BindingSet> asList()
+		throws StoreException
+	{
+		return getDelegate().asList();
+	}
+
+	public Set<BindingSet> asSet()
+		throws StoreException
+	{
+		return getDelegate().asSet();
 	}
 
 	private TupleQueryResult getDelegate()

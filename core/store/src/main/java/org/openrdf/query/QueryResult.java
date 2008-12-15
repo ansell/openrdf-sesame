@@ -5,7 +5,9 @@
  */
 package org.openrdf.query;
 
-import info.aduna.iteration.CloseableIteration;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import org.openrdf.store.StoreException;
 
@@ -14,7 +16,19 @@ import org.openrdf.store.StoreException;
  * etc.).
  * 
  * @author Arjohn Kampman
+ * @author James Leigh
  */
-public interface QueryResult<T> extends CloseableIteration<T, StoreException> {
+public interface QueryResult<T> extends Cursor<T> {
 
+	public boolean hasNext()
+		throws StoreException;
+
+	public List<T> asList()
+		throws StoreException;
+
+	public Set<T> asSet()
+		throws StoreException;
+
+	public <C extends Collection<? super T>> C addTo(C collection)
+		throws StoreException;
 }
