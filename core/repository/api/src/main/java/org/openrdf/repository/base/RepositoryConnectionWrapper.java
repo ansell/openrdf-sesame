@@ -23,7 +23,10 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
+import org.openrdf.repository.ContextResult;
 import org.openrdf.repository.DelegatingRepositoryConnection;
+import org.openrdf.repository.ModelResult;
+import org.openrdf.repository.NamespaceResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
@@ -241,7 +244,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		}
 	}
 
-	public RepositoryResult<Resource> getContextIDs()
+	public ContextResult getContextIDs()
 		throws StoreException
 	{
 		return getDelegate().getContextIDs();
@@ -253,13 +256,13 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return getDelegate().getNamespace(prefix);
 	}
 
-	public RepositoryResult<Namespace> getNamespaces()
+	public NamespaceResult getNamespaces()
 		throws StoreException
 	{
 		return getDelegate().getNamespaces();
 	}
 
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+	public ModelResult getStatements(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{

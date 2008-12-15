@@ -10,7 +10,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.query.Cursor;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.QueryModel;
@@ -18,6 +17,9 @@ import org.openrdf.query.parser.BooleanQueryModel;
 import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.TupleQueryModel;
+import org.openrdf.repository.ContextResult;
+import org.openrdf.repository.ModelResult;
+import org.openrdf.repository.NamespaceResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
@@ -129,17 +131,17 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return new SailBooleanQuery(parsedQuery, this);
 	}
 
-	public RepositoryResult<Resource> getContextIDs()
+	public ContextResult getContextIDs()
 		throws StoreException
 	{
-		return createRepositoryResult(sailConnection.getContextIDs());
+		return new ContextResult(sailConnection.getContextIDs());
 	}
 
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+	public ModelResult getStatements(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return createRepositoryResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
+		return new ModelResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
 		contexts));
 	}
 
@@ -226,25 +228,15 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		autoCommit();
 	}
 
-	public RepositoryResult<Namespace> getNamespaces()
+	public NamespaceResult getNamespaces()
 		throws StoreException
 	{
-		return createRepositoryResult(sailConnection.getNamespaces());
+		return new NamespaceResult(sailConnection.getNamespaces());
 	}
 
 	public String getNamespace(String prefix)
 		throws StoreException
 	{
 		return sailConnection.getNamespace(prefix);
-	}
-
-	/**
-	 * Wraps a CloseableIteration coming from a Sail in a RepositoryResult
-	 * object, applying the required conversions
-	 */
-	protected <E> RepositoryResult<E> createRepositoryResult(
-			Cursor<? extends E> sailIter)
-	{
-		return new RepositoryResult<E>(sailIter);
 	}
 }

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.openrdf.query.Cursor;
+import org.openrdf.query.QueryResult;
 import org.openrdf.query.base.CursorWrapper;
 import org.openrdf.store.StoreException;
 
@@ -41,7 +42,7 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class RepositoryResult<T> extends CursorWrapper<T> {
+public class RepositoryResult<T> extends CursorWrapper<T> implements QueryResult<T> {
 
 	private T next;
 
