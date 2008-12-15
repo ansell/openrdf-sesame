@@ -166,6 +166,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof EmptySet) {
 			return evaluate((EmptySet)expr, bindings);
 		}
+		else if (expr instanceof ExternalSet) {
+			return evaluate((ExternalSet)expr, bindings);
+		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
 		}
@@ -570,6 +573,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws StoreException
 	{
 		return new EmptyCursor<BindingSet>();
+	}
+
+	public Cursor<BindingSet> evaluate(ExternalSet external, BindingSet bindings)
+		throws StoreException
+	{
+		return external.evaluate(dataset, bindings);
 	}
 
 	public Value evaluate(ValueExpr expr, BindingSet bindings)
