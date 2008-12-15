@@ -26,6 +26,11 @@ public class FederationSchema {
 	 */
 	public static URI LOCALPROPERTYSPACE = new URIImpl(NAMESPACE + "localPropertySpace");
 
+	/**
+	 * If no two members contain the same statement.
+	 */
+	public static URI DISJOINT = new URIImpl(NAMESPACE + "disjoint");
+
 	private FederationSchema() {
 		// no constructor
 	}

@@ -89,14 +89,14 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 	public Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
-		return union(new Function<Resource>() {
+		return new DistinctCursor<Resource>(union(new Function<Resource>() {
 
 			public ContextResult call(RepositoryConnection member)
 				throws StoreException
 			{
 				return member.getContextIDs();
 			}
-		});
+		}));
 	}
 
 	public String getNamespace(String prefix)
@@ -139,21 +139,41 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		// TODO Does size have to be exact?
-		Cursor<? extends Statement> cursor;
-		cursor = getStatements(subj, pred, obj, includeInferred, contexts);
-		long size = 0;
-		while (cursor.next() != null) {
-			size++;
+		if (federation.isDisjoint()) {
+			long size = 0;
+			for (RepositoryConnection member : members) {
+				size += member.sizeMatch(subj, pred, obj, includeInferred, contexts);
+			}
+			return size;
 		}
-		return size;
+		else {
+			Cursor<? extends Statement> cursor;
+			cursor = getStatements(subj, pred, obj, includeInferred, contexts);
+			try {
+				long size = 0;
+				while (cursor.next() != null) {
+					size++;
+				}
+				return size;
+			}
+			finally {
+				cursor.close();
+			}
+		}
 	}
 
 	public Cursor<? extends Statement> getStatements(final Resource subj, final URI pred, final Value obj,
 			final boolean includeInferred, final Resource... contexts)
 		throws StoreException
 	{
-		return getStatements(subj, pred, obj, contexts);
+		return union(new Function<Statement>() {
+
+			public ModelResult call(RepositoryConnection member)
+				throws StoreException
+			{
+				return member.match(subj, pred, obj, includeInferred, contexts);
+			}
+		});
 	}
 
 	public Cursor<? extends Statement> getStatements(final Resource subj, final URI pred, final Value obj,
@@ -228,7 +248,10 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 			for (RepositoryConnection member : members) {
 				cursors.add(converter.call(member));
 			}
-			return new DistinctCursor<E>(new UnionCursor<E>(cursors));
+			UnionCursor<E> cursor = new UnionCursor<E>(cursors);
+			if (federation.isDisjoint())
+				return cursor;
+			return new DistinctCursor<E>(cursor);
 		}
 		catch (StoreException e) {
 			closeAll(cursors);
