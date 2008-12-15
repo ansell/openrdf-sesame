@@ -24,10 +24,10 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.results.Cursor;
+import org.openrdf.results.ModelResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -364,7 +364,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @param obj
 	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
 	 * @return The statements matching the specified pattern. The result object
-	 *         is a {@link RepositoryResult} object, a lazy Iterator-like object
+	 *         is a {@link modelResult} object, a lazy Iterator-like object
 	 *         containing {@link Statement}s and optionally throwing a
 	 *         {@link StoreException} when an error when a problem occurs
 	 *         during retrieval.
@@ -372,7 +372,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #isIncludeInferred()
 	 */
 	@Deprecated
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
+	public ModelResult getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		return match(subj, pred, obj, contexts);
@@ -390,14 +390,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @param obj
 	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
 	 * @return The statements matching the specified pattern. The result object
-	 *         is a {@link RepositoryResult} object, a lazy Iterator-like object
+	 *         is a {@link ModelResult} object, a lazy Iterator-like object
 	 *         containing {@link Statement}s and optionally throwing a
 	 *         {@link StoreException} when an error when a problem occurs
 	 *         during retrieval.
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public RepositoryResult<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts)
+	public ModelResult match(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		if (contexts != null && contexts.length == 0) {

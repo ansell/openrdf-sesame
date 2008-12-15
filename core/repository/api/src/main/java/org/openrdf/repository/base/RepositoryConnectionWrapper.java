@@ -482,13 +482,13 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	 * Exports all statements contained in the supplied statement iterator and
 	 * all relevant namespace information to the supplied RDFHandler.
 	 */
-	protected void exportStatements(RepositoryResult<Statement> stIter, RDFHandler handler)
+	protected void exportStatements(ModelResult stIter, RDFHandler handler)
 		throws StoreException, RDFHandlerException
 	{
 		try {
 			handler.startRDF();
 			// Export namespace information
-			RepositoryResult<Namespace> nsIter = getNamespaces();
+			NamespaceResult nsIter = getNamespaces();
 			try {
 				while (nsIter.hasNext()) {
 					Namespace ns = nsIter.next();

@@ -23,7 +23,7 @@ public class BooleanResultImpl extends ResultImpl<Boolean> implements BooleanRes
 		super(delegate);
 	}
 
-	public boolean asBoolean()
+	public Boolean asBoolean()
 		throws StoreException
 	{
 		try {

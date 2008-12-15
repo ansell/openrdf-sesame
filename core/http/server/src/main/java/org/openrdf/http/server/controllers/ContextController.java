@@ -10,10 +10,6 @@ import static org.openrdf.http.protocol.Protocol.REPO_PATH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Controller;
@@ -22,12 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
-import org.openrdf.results.TupleResult;
-import org.openrdf.results.impl.TupleResultImpl;
+import org.openrdf.results.ContextResult;
+import org.openrdf.results.impl.ContextResultImpl;
+import org.openrdf.results.impl.EmptyCursor;
 import org.openrdf.store.StoreException;
 
 /**
@@ -41,34 +35,16 @@ public class ContextController {
 
 	@ModelAttribute
 	@RequestMapping(method = HEAD, value = { REPO_PATH + "/contexts", CONN_PATH + "/contexts" })
-	public TupleResult head(HttpServletRequest request) {
-		List<String> columnNames = Arrays.asList("contextID");
-		List<BindingSet> contexts = new ArrayList<BindingSet>();
-
-		return new TupleResultImpl(columnNames, contexts);
+	public ContextResult head(HttpServletRequest request) {
+		return new ContextResultImpl(new EmptyCursor<Resource>());
 	}
 
 	@ModelAttribute
 	@RequestMapping(method = GET, value = { REPO_PATH + "/contexts", CONN_PATH + "/contexts" })
-	public TupleResult get(HttpServletRequest request)
+	public ContextResult get(HttpServletRequest request)
 		throws StoreException
 	{
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
-
-		List<String> columnNames = Arrays.asList("contextID");
-		List<BindingSet> contexts = new ArrayList<BindingSet>();
-		RepositoryResult<Resource> contextIter = repositoryCon.getContextIDs();
-
-		try {
-			while (contextIter.hasNext()) {
-				BindingSet bindingSet = new ListBindingSet(columnNames, contextIter.next());
-				contexts.add(bindingSet);
-			}
-		}
-		finally {
-			contextIter.close();
-		}
-
-		return new TupleResultImpl(columnNames, contexts);
+		return repositoryCon.getContextIDs();
 	}
 }

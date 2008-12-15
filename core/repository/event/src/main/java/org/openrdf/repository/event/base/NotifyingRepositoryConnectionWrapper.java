@@ -17,10 +17,11 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.event.NotifyingRepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionListener;
+import org.openrdf.results.ModelResult;
+import org.openrdf.results.NamespaceResult;
 import org.openrdf.store.StoreException;
 
 /**
@@ -171,7 +172,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 		throws StoreException
 	{
 		if (activated && reportDeltas()) {
-			RepositoryResult<Statement> stmts;
+			ModelResult stmts;
 			stmts = getDelegate().match(subj, pred, obj, false, ctx);
 			List<Statement> list = new ArrayList<Statement>();
 			try {
@@ -219,7 +220,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 		throws StoreException
 	{
 		if (activated && reportDeltas()) {
-			RepositoryResult<Namespace> namespaces;
+			NamespaceResult namespaces;
 			namespaces = getDelegate().getNamespaces();
 			List<String> prefix = new ArrayList<String>();
 			try {

@@ -5,10 +5,10 @@
  */
 package org.openrdf.repository;
 
-import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.results.ModelResult;
 
 /**
  * @author jeen
@@ -76,7 +76,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 	public void testExplicitFlag()
 		throws Exception
 	{
-		RepositoryResult<Statement> result = testCon.match(RDF.TYPE, RDF.TYPE, null, true);
+		ModelResult result = testCon.match(RDF.TYPE, RDF.TYPE, null, true);
 		try {
 			assertTrue("result should not be empty", result.hasNext());
 		}

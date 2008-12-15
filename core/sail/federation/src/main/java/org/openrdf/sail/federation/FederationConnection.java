@@ -35,8 +35,11 @@ import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
+import org.openrdf.results.ContextResult;
 import org.openrdf.results.Cursor;
+import org.openrdf.results.ModelResult;
+import org.openrdf.results.NamespaceResult;
+import org.openrdf.results.Result;
 import org.openrdf.results.impl.IteratorCursor;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.federation.evaluation.FederationStatistics;
@@ -88,7 +91,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 	{
 		return union(new Function<Resource>() {
 
-			public RepositoryResult<? extends Resource> call(RepositoryConnection member)
+			public ContextResult call(RepositoryConnection member)
 				throws StoreException
 			{
 				return member.getContextIDs();
@@ -118,7 +121,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		Map<String, Namespace> namespaces = new HashMap<String, Namespace>();
 		Set<String> prefixes = new HashSet<String>();
 		for (RepositoryConnection member : members) {
-			RepositoryResult<Namespace> ns = member.getNamespaces();
+			NamespaceResult ns = member.getNamespaces();
 			while (ns.hasNext()) {
 				Namespace next = ns.next();
 				String prefix = next.getPrefix();
@@ -159,7 +162,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 	{
 		return union(new Function<Statement>() {
 
-			public RepositoryResult<? extends Statement> call(RepositoryConnection member)
+			public ModelResult call(RepositoryConnection member)
 				throws StoreException
 			{
 				return member.match(subj, pred, obj, true, contexts);
@@ -213,35 +216,8 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 
 	private interface Function<E> {
 
-		public abstract RepositoryResult<? extends E> call(RepositoryConnection member)
+		public abstract Result<E> call(RepositoryConnection member)
 			throws StoreException;
-	}
-
-	private class ResultCursor<E> implements Cursor<E> {
-
-		private RepositoryResult<? extends E> result;
-
-		public ResultCursor(RepositoryResult<? extends E> result) {
-			this.result = result;
-		}
-
-		public E next()
-			throws StoreException
-		{
-			if (result.hasNext())
-				return result.next();
-			return null;
-		}
-
-		public void close()
-			throws StoreException
-		{
-			result.close();
-		}
-
-		public String toString() {
-			return result.toString();
-		}
 	}
 
 	private <E> Cursor<? extends E> union(Function<E> converter)
@@ -250,7 +226,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		List<Cursor<? extends E>> cursors = new ArrayList<Cursor<? extends E>>(members.size());
 		try {
 			for (RepositoryConnection member : members) {
-				cursors.add(new ResultCursor<E>(converter.call(member)));
+				cursors.add(converter.call(member));
 			}
 			return new DistinctCursor<E>(new UnionCursor<E>(cursors));
 		}

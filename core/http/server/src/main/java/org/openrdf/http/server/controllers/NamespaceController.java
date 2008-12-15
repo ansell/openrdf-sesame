@@ -14,9 +14,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,15 +26,8 @@ import info.aduna.io.IOUtil;
 import org.openrdf.http.protocol.exceptions.BadRequest;
 import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Namespace;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
-import org.openrdf.results.TupleResult;
-import org.openrdf.results.impl.TupleResultImpl;
+import org.openrdf.results.NamespaceResult;
 import org.openrdf.store.StoreException;
 
 /**
@@ -53,31 +43,11 @@ public class NamespaceController {
 
 	@ModelAttribute
 	@RequestMapping(method = { GET, HEAD }, value = { REPO_PATH + "/namespaces", CONN_PATH + "/namespaces" })
-	public TupleResult list(HttpServletRequest request)
+	public NamespaceResult list(HttpServletRequest request)
 		throws StoreException
 	{
-		List<String> columnNames = Arrays.asList("prefix", "namespace");
-		List<BindingSet> namespaces = new ArrayList<BindingSet>();
-
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
-		RepositoryResult<Namespace> iter = repositoryCon.getNamespaces();
-
-		try {
-			while (iter.hasNext()) {
-				Namespace ns = iter.next();
-
-				Literal prefix = new LiteralImpl(ns.getPrefix());
-				Literal namespace = new LiteralImpl(ns.getName());
-
-				BindingSet bindingSet = new ListBindingSet(columnNames, prefix, namespace);
-				namespaces.add(bindingSet);
-			}
-		}
-		finally {
-			iter.close();
-		}
-
-		return new TupleResultImpl(columnNames, namespaces);
+		return repositoryCon.getNamespaces();
 	}
 
 	@ModelAttribute

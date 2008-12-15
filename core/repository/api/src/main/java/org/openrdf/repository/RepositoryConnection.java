@@ -282,7 +282,7 @@ public interface RepositoryConnection {
 
 	/**
 	 * Gets all resources that are used as content identifiers. Care should be
-	 * taken that the returned {@link RepositoryResult} is closed to free any
+	 * taken that the returned {@link ContextResult} is closed to free any
 	 * resources that it keeps hold of.
 	 * 
 	 * @return a RepositoryResult object containing Resources that are used as
@@ -310,7 +310,7 @@ public interface RepositoryConnection {
 	 *        if false, no inferred statements are returned; if true, inferred
 	 *        statements are returned if available. The default is true.
 	 * @return The statements matching the specified pattern. The result object
-	 *         is a {@link RepositoryResult} object, a lazy Iterator-like object
+	 *         is a {@link ModelResult} object, a lazy Iterator-like object
 	 *         containing {@link Statement}s and optionally throwing a
 	 *         {@link StoreException} when an error when a problem occurs during
 	 *         retrieval.
@@ -339,7 +339,7 @@ public interface RepositoryConnection {
 	 *        if false, no inferred statements are returned; if true, inferred
 	 *        statements are returned if available. The default is true.
 	 * @return The statements matching the specified pattern. The result object
-	 *         is a {@link RepositoryResult} object, a lazy Iterator-like object
+	 *         is a {@link ModelResult} object, a lazy Iterator-like object
 	 *         containing {@link Statement}s and optionally throwing a
 	 *         {@link StoreException} when an error when a problem occurs during
 	 *         retrieval.

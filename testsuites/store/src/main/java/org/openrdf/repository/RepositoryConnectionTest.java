@@ -54,6 +54,8 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.results.GraphResult;
+import org.openrdf.results.ModelResult;
+import org.openrdf.results.NamespaceResult;
 import org.openrdf.results.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -761,7 +763,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertTrue("Repository should contain statement", testCon.hasMatch(bob, name, nameBob, false));
 
-		RepositoryResult<Statement> result = testCon.match(null, name, null, false);
+		ModelResult result = testCon.match(null, name, null, false);
 
 		try {
 			assertTrue("Iterator should not be null", result != null);
@@ -805,7 +807,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 				nameBob, false, context2));
 
 		// Check handling of getStatements without context IDs
-		RepositoryResult<Statement> result = testCon.match(bob, name, null, false);
+		ModelResult result = testCon.match(bob, name, null, false);
 		try {
 			while (result.hasNext()) {
 				Statement st = result.next();
@@ -859,7 +861,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.setAutoCommit(true);
 
 		// get statements with either no context or context2
-		RepositoryResult<? extends Statement> iter = testCon.match(null, null,
+		ModelResult iter = testCon.match(null, null,
 				null, false, null, context2);
 
 		try {
@@ -1015,7 +1017,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(testCon.hasMatch(bob, name, nameBob, false));
 		assertTrue(testCon.hasMatch(alice, name, nameAlice, false));
 
-		RepositoryResult<? extends Statement> iter = testCon.match(null, null,
+		ModelResult iter = testCon.match(null, null,
 				null, false);
 
 		try {
@@ -1045,7 +1047,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		testCon.add(new StringReader(rdfFragment.toString()), "", RDFFormat.RDFXML);
 
-		RepositoryResult<? extends Namespace> nsIter = testCon.getNamespaces();
+		NamespaceResult nsIter = testCon.getNamespaces();
 		try {
 			Map<String, String> map = new HashMap<String, String>();
 			int nsCount = 0;
@@ -1111,7 +1113,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 
 		Statement st;
-		RepositoryResult<Statement> statements = testCon.match(null, null, null, true);
+		ModelResult statements = testCon.match(null, null, null, true);
 		try {
 			st = statements.next();
 		}
@@ -1141,7 +1143,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 
 		Statement st;
-		RepositoryResult<Statement> statements = testCon.match(null, null, null, false);
+		ModelResult statements = testCon.match(null, null, null, false);
 		try {
 			st = statements.next();
 		}
@@ -1173,7 +1175,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 
 		Statement st;
-		RepositoryResult<Statement> statements = testCon.match(null, null, null, false);
+		ModelResult statements = testCon.match(null, null, null, false);
 		try {
 			st = statements.next();
 		}
@@ -1205,7 +1207,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 
 		Statement st;
-		RepositoryResult<Statement> statements = testCon.match(null, null, null, false);
+		ModelResult statements = testCon.match(null, null, null, false);
 		try {
 			st = statements.next();
 		}
@@ -1238,7 +1240,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(alice, name, nameAlice);
 
 		Model model;
-		RepositoryResult<Statement> statements = testCon.match(null, null, null, true);
+		ModelResult statements = testCon.match(null, null, null, true);
 		try {
 			model = new ModelImpl(statements.asList());
 		}
@@ -1633,7 +1635,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(subj, pred, obj);
 		testCon.commit();
 
-		RepositoryResult<Statement> stIter = testCon.match(null, null, null, false);
+		ModelResult stIter = testCon.match(null, null, null, false);
 
 		try {
 			assertTrue(stIter.hasNext());
@@ -1703,7 +1705,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	private int getTotalStatementCount(RepositoryConnection connection)
 		throws StoreException
 	{
-		RepositoryResult<? extends Statement> iter = connection.match(null,
+		ModelResult iter = connection.match(null,
 				null, null, true);
 
 		try {
