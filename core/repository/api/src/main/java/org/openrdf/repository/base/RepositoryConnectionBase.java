@@ -121,11 +121,21 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		return prepareBooleanQuery(ql, query, null);
 	}
 
+	/**
+	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)} instead
+	 */
 	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws StoreException
 	{
-		RepositoryResult<Statement> stIter = getStatements(subj, pred, obj, includeInferred, contexts);
+		return hasMatch(subj, pred, obj, includeInferred, contexts);
+	}
+
+	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws StoreException
+	{
+		RepositoryResult<Statement> stIter = match(subj, pred, obj, includeInferred, contexts);
 		try {
 			return stIter.hasNext();
 		}
@@ -137,7 +147,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public boolean hasStatement(Statement st, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return hasStatement(st.getSubject(), st.getPredicate(), st.getObject(), includeInferred, contexts);
+		return hasMatch(st.getSubject(), st.getPredicate(), st.getObject(), includeInferred, contexts);
 	}
 
 	public boolean isEmpty()
@@ -149,7 +159,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void export(RDFHandler handler, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
-		exportStatements(null, null, null, false, handler, contexts);
+		exportMatch(null, null, null, false, handler, contexts);
 	}
 
 	public void setAutoCommit(boolean autoCommit)
@@ -538,7 +548,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public long size(Resource... contexts)
 		throws StoreException
 	{
-		return size(null, null, null, false, contexts);
+		return sizeMatch(null, null, null, false, contexts);
 	}
 
 	protected void addWithoutCommit(Statement st, Resource... contexts)

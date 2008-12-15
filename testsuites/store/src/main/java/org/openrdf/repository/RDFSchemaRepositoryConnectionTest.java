@@ -43,7 +43,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		testCon.add(name, RDFS.DOMAIN, person);
 		testCon.add(bob, name, nameBob);
 
-		assertTrue(testCon.hasStatement(bob, RDF.TYPE, person, true));
+		assertTrue(testCon.hasMatch(bob, RDF.TYPE, person, true));
 	}
 
 	public void testSubClassInference()
@@ -55,7 +55,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		testCon.add(alice, RDF.TYPE, woman);
 		testCon.setAutoCommit(true);
 
-		assertTrue(testCon.hasStatement(alice, RDF.TYPE, person, true));
+		assertTrue(testCon.hasMatch(alice, RDF.TYPE, person, true));
 	}
 
 	public void testMakeExplicit()
@@ -66,17 +66,17 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		testCon.add(alice, RDF.TYPE, woman);
 		testCon.setAutoCommit(true);
 
-		assertTrue(testCon.hasStatement(alice, RDF.TYPE, person, true));
+		assertTrue(testCon.hasMatch(alice, RDF.TYPE, person, true));
 
 		testCon.add(alice, RDF.TYPE, person);
 
-		assertTrue(testCon.hasStatement(alice, RDF.TYPE, person, true));
+		assertTrue(testCon.hasMatch(alice, RDF.TYPE, person, true));
 	}
 
 	public void testExplicitFlag()
 		throws Exception
 	{
-		RepositoryResult<Statement> result = testCon.getStatements(RDF.TYPE, RDF.TYPE, null, true);
+		RepositoryResult<Statement> result = testCon.match(RDF.TYPE, RDF.TYPE, null, true);
 		try {
 			assertTrue("result should not be empty", result.hasNext());
 		}
@@ -84,7 +84,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		result.close();
 		}
 
-		result = testCon.getStatements(RDF.TYPE, RDF.TYPE, null, false);
+		result = testCon.match(RDF.TYPE, RDF.TYPE, null, false);
 		try {
 			assertFalse("result should be empty", result.hasNext());
 		}
@@ -103,7 +103,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 
 		testCon.setAutoCommit(true);
 
-		assertFalse(testCon.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
+		assertFalse(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
 	}
 
 	public void testInferencerQueryDuringTransaction()
@@ -112,7 +112,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		testCon.setAutoCommit(false);
 
 		testCon.add(bob, name, nameBob);
-		assertTrue(testCon.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
+		assertTrue(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
 
 		testCon.setAutoCommit(true);
 	}
@@ -123,12 +123,12 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		testCon.setAutoCommit(false);
 		testCon.add(bob, name, nameBob);
 
-		assertTrue(testCon.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
-		assertFalse(testCon2.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
+		assertTrue(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
+		assertFalse(testCon2.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
 
 		testCon.setAutoCommit(true);
 
-		assertTrue(testCon.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
-		assertTrue(testCon2.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
+		assertTrue(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
+		assertTrue(testCon2.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
 	}
 }

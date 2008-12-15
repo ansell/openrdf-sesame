@@ -116,7 +116,7 @@ public class InferencingTest extends TestCase {
 			con.add(stream, inputData, RDFFormat.NTRIPLES);
 			con.commit();
 
-			entailedStatements = con.getStatements(null, null, null, true).asSet();
+			entailedStatements = con.match(null, null, null, true).asSet();
 		}
 		finally {
 			stream.close();
@@ -134,7 +134,7 @@ public class InferencingTest extends TestCase {
 			con.add(stream, outputData, RDFFormat.NTRIPLES);
 			con.commit();
 
-			expectedStatements = con.getStatements(null, null, null, false).asSet();
+			expectedStatements = con.match(null, null, null, false).asSet();
 		}
 		finally {
 			stream.close();

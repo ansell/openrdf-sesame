@@ -64,18 +64,18 @@ public class URIController {
 			Repository repository = manager.getRepository(id);
 			RepositoryConnection con = repository.getConnection();
 			try {
-				con.exportStatements(uri, null, null, true, rdf);
-				if (con.hasStatement(null, null, null, true, uri)) {
+				con.exportMatch(uri, null, null, true, rdf);
+				if (con.hasMatch(null, null, null, true, uri)) {
 					if (head) {
 						return new ModelImpl();
 					}
-					con.exportStatements(null, null, null, true, rdf, uri);
+					con.exportMatch(null, null, null, true, rdf, uri);
 				}
-				else if (con.hasStatement(null, null, null, true, ns)) {
+				else if (con.hasMatch(null, null, null, true, ns)) {
 					if (head) {
 						return new ModelImpl();
 					}
-					con.exportStatements(null, null, null, true, rdf, ns);
+					con.exportMatch(null, null, null, true, rdf, ns);
 				}
 				else if (hasNamespace(namespace, con)) {
 					GraphQuery query = con.prepareGraphQuery(SERQL, FILTER_NS);

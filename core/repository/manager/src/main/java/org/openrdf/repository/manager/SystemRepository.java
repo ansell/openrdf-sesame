@@ -190,7 +190,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 		throws StoreException, StoreConfigException
 	{
 		Literal idLiteral = con.getValueFactory().createLiteral(repositoryID);
-		List<Statement> idStatementList = con.getStatements(null, REPOSITORYID, idLiteral, true).asList();
+		List<Statement> idStatementList = con.match(null, REPOSITORYID, idLiteral, true).asList();
 
 		if (idStatementList.size() == 1) {
 			return idStatementList.get(0);

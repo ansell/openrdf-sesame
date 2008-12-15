@@ -361,7 +361,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 				List<String> ids = new ArrayList<String>();
 				for (Resource ctx : con.getContextIDs().asList()) {
 					Model model = new ModelImpl();
-					con.getStatements(null, null, null, false, ctx).addTo(model);
+					con.match(null, null, null, false, ctx).addTo(model);
 					String id = getConfigId(model);
 					ids.add(id);
 					if (hasRepositoryConfig(id)) {

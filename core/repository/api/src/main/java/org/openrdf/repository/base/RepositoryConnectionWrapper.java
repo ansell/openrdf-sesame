@@ -86,7 +86,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	/**
 	 * If true then the has/export/isEmpty methods will call
-	 * {@link #getStatements(Resource, URI, Value, boolean, Resource[])}.
+	 * {@link #match(Resource, URI, Value, boolean, Resource[])}.
 	 * 
 	 * @return <code>false</code>
 	 * @throws StoreException
@@ -232,15 +232,25 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().commit();
 	}
 
+	/**
+	 * @deprecated Use {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)} instead
+	 */
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
+		exportMatch(subj, pred, obj, includeInferred, handler, contexts);
+	}
+
+	public void exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
+			RDFHandler handler, Resource... contexts)
+		throws StoreException, RDFHandlerException
+	{
 		if (isDelegatingRead()) {
-			getDelegate().exportStatements(subj, pred, obj, includeInferred, handler, contexts);
+			getDelegate().exportMatch(subj, pred, obj, includeInferred, handler, contexts);
 		}
 		else {
-			exportStatements(getStatements(subj, pred, obj, includeInferred, contexts), handler);
+			exportStatements(match(subj, pred, obj, includeInferred, contexts), handler);
 		}
 	}
 
@@ -262,22 +272,43 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return getDelegate().getNamespaces();
 	}
 
+	/**
+	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)} instead
+	 */
 	public ModelResult getStatements(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return getDelegate().getStatements(subj, pred, obj, includeInferred, contexts);
+		return match(subj, pred, obj, includeInferred, contexts);
 	}
 
+	public ModelResult match(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		return getDelegate().match(subj, pred, obj, includeInferred, contexts);
+	}
+
+	/**
+	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)} instead
+	 */
 	@Override
 	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws StoreException
 	{
+		return hasMatch(subj, pred, obj, includeInferred, contexts);
+	}
+
+	@Override
+	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws StoreException
+	{
 		if (isDelegatingRead()) {
-			return getDelegate().hasStatement(subj, pred, obj, includeInferred, contexts);
+			return getDelegate().hasMatch(subj, pred, obj, includeInferred, contexts);
 		}
-		return super.hasStatement(subj, pred, obj, includeInferred, contexts);
+		return super.hasMatch(subj, pred, obj, includeInferred, contexts);
 	}
 
 	@Override
@@ -418,10 +449,19 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().setNamespace(prefix, name);
 	}
 
+	/**
+	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)} instead
+	 */
 	public long size(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return getDelegate().size(subject, predicate, object, includeInferred, contexts);
+		return sizeMatch(subject, predicate, object, includeInferred, contexts);
+	}
+
+	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		return getDelegate().sizeMatch(subject, predicate, object, includeInferred, contexts);
 	}
 
 	@Override

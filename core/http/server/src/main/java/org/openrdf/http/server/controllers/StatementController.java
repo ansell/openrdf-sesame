@@ -95,7 +95,7 @@ public class StatementController {
 			Cursor<Statement> nothing = EmptyCursor.emptyCursor();
 			return new ModelResultImpl(nothing);
 		}
-		return repositoryCon.getStatements(subj, pred, obj, useInferencing, contexts);
+		return repositoryCon.match(subj, pred, obj, useInferencing, contexts);
 	}
 
 	@ModelAttribute
