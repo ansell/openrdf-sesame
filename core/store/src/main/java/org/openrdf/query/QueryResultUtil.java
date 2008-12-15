@@ -37,7 +37,7 @@ public class QueryResultUtil {
 	 * @throws TupleQueryResultHandlerException
 	 *         If such an exception is thrown by the used query result writer.
 	 */
-	public static void report(TupleQueryResult tqr, TupleQueryResultHandler handler)
+	public static void report(TupleResult tqr, TupleQueryResultHandler handler)
 		throws TupleQueryResultHandlerException, StoreException
 	{
 		handler.startQueryResult(tqr.getBindingNames());
@@ -64,7 +64,7 @@ public class QueryResultUtil {
 	 *         If such an exception is thrown by the used RDF writer.
 	 * @throws StoreException
 	 */
-	public static void report(GraphQueryResult gqr, RDFHandler rdfHandler)
+	public static void report(GraphResult gqr, RDFHandler rdfHandler)
 		throws RDFHandlerException, StoreException
 	{
 		try {
@@ -98,7 +98,7 @@ public class QueryResultUtil {
 	 * 
 	 * @throws StoreException
 	 */
-	public static boolean equals(TupleQueryResult tqr1, TupleQueryResult tqr2)
+	public static boolean equals(TupleResult tqr1, TupleResult tqr2)
 		throws StoreException
 	{
 		List<BindingSet> list1 = tqr1.asList();
@@ -112,7 +112,7 @@ public class QueryResultUtil {
 		return matchBindingSets(list1, list2);
 	}
 
-	public static boolean equals(GraphQueryResult result1, GraphQueryResult result2)
+	public static boolean equals(GraphResult result1, GraphResult result2)
 		throws StoreException
 	{
 		Set<? extends Statement> graph1 = result1.asSet();

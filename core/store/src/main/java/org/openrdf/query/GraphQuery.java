@@ -11,7 +11,7 @@ import org.openrdf.store.StoreException;
 
 public interface GraphQuery extends Query {
 
-	public GraphQueryResult evaluate()
+	public GraphResult evaluate()
 		throws StoreException;
 
 	public void evaluate(RDFHandler handler)

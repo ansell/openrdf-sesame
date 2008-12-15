@@ -31,7 +31,7 @@ import info.aduna.io.IOUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
@@ -193,7 +193,7 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 		logger.info("Searching for sub-manifests");
 		List<String> subManifestList = new ArrayList<String>();
 
-		TupleQueryResult subManifests = con.prepareTupleQuery(QueryLanguage.SERQL, SUBMANIFEST_QUERY).evaluate();
+		TupleResult subManifests = con.prepareTupleQuery(QueryLanguage.SERQL, SUBMANIFEST_QUERY).evaluate();
 		while (subManifests.hasNext()) {
 			BindingSet bindings = subManifests.next();
 			subManifestList.add(bindings.getValue("subManifest").toString());
@@ -212,7 +212,7 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 			TestSuite subSuite = new TestSuite(subManifest.substring(HOST.length()));
 
 			logger.info("Creating test cases for {}", subManifest);
-			TupleQueryResult tests = con.prepareTupleQuery(QueryLanguage.SERQL, TESTCASE_QUERY).evaluate();
+			TupleResult tests = con.prepareTupleQuery(QueryLanguage.SERQL, TESTCASE_QUERY).evaluate();
 			while (tests.hasNext()) {
 				BindingSet bindingSet = tests.next();
 

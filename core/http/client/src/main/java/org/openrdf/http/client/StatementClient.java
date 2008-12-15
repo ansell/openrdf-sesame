@@ -44,10 +44,10 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.Cursor;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.impl.EmptyCursor;
-import org.openrdf.query.impl.GraphQueryResultImpl;
+import org.openrdf.query.impl.GraphResultImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -96,7 +96,7 @@ public class StatementClient {
 		match = eTag;
 	}
 
-	public GraphQueryResult get(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public GraphResult get(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws StoreException
 	{
@@ -105,9 +105,9 @@ public class StatementClient {
 			method.ifNoneMatch(match);
 		}
 		method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
-		Callable<GraphQueryResult> task = new Callable<GraphQueryResult>() {
+		Callable<GraphResult> task = new Callable<GraphResult>() {
 
-			public GraphQueryResult call()
+			public GraphResult call()
 				throws StoreException
 			{
 				try {
@@ -120,7 +120,7 @@ public class StatementClient {
 					} else {
 						Map<String, String> ns = Collections.emptyMap();
 						Cursor<Statement> cursor = EmptyCursor.emptyCursor();
-						return new GraphQueryResultImpl(ns, cursor);
+						return new GraphResultImpl(ns, cursor);
 					}
 				}
 				catch (NoCompatibleMediaType e) {

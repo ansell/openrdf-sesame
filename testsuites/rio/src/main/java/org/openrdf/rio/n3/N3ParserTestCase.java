@@ -23,7 +23,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
@@ -73,7 +73,7 @@ public abstract class N3ParserTestCase {
 				+ "               n3test:outputDocument {outputURL} "
 				+ "USING NAMESPACE n3test = <http://www.w3.org/2004/11/n3test#>";
 
-		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		TupleResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
 		while(queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String testURI = bindingSet.getValue("testURI").toString();

@@ -18,7 +18,7 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public interface QueryResult<T> extends Cursor<T> {
+public interface Result<T> extends Cursor<T> {
 
 	public boolean hasNext()
 		throws StoreException;

@@ -10,10 +10,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.QueryResultUtil;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
@@ -337,7 +337,7 @@ public class QueryResultIO {
 	 * @throws IllegalArgumentException
 	 *         If an unsupported query result file format was specified.
 	 */
-	public static TupleQueryResult parse(InputStream in, TupleQueryResultFormat format)
+	public static TupleResult parse(InputStream in, TupleQueryResultFormat format)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
 		UnsupportedQueryResultFormatException
 	{
@@ -390,7 +390,7 @@ public class QueryResultIO {
 	 * @throws EvaluationException
 	 *         If an unsupported query result file format was specified.
 	 */
-	public static void write(TupleQueryResult tqr, TupleQueryResultFormat format, OutputStream out)
+	public static void write(TupleResult tqr, TupleQueryResultFormat format, OutputStream out)
 		throws IOException, TupleQueryResultHandlerException, UnsupportedQueryResultFormatException,
 		StoreException
 	{
@@ -450,7 +450,7 @@ public class QueryResultIO {
 	 * @throws UnsupportedRDFormatException
 	 *         If an unsupported query result file format was specified.
 	 */
-	public static void write(GraphQueryResult gqr, RDFFormat format, OutputStream out)
+	public static void write(GraphResult gqr, RDFFormat format, OutputStream out)
 		throws IOException, RDFHandlerException, UnsupportedRDFormatException, StoreException
 	{
 		RDFWriter writer = Rio.createWriter(format, out);

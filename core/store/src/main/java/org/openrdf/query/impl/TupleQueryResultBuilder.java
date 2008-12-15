@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandlerBase;
 import org.openrdf.query.TupleQueryResultHandlerException;
 
@@ -45,7 +45,7 @@ public class TupleQueryResultBuilder extends TupleQueryResultHandlerBase {
 		bindingSetList.add(bindingSet);
 	}
 
-	public TupleQueryResult getQueryResult() {
-		return new TupleQueryResultImpl(bindingNames, bindingSetList);
+	public TupleResult getQueryResult() {
+		return new TupleResultImpl(bindingNames, bindingSetList);
 	}
 }

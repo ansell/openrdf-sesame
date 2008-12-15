@@ -18,7 +18,7 @@ import org.openrdf.query.EvaluationException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.store.StoreException;
 
 public abstract class SparqlOrderByTest extends TestCase {
@@ -108,7 +108,7 @@ public abstract class SparqlOrderByTest extends TestCase {
 			EvaluationException {
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL,
 				queryStr);
-		TupleQueryResult result = query.evaluate();
+		TupleResult result = query.evaluate();
 		for (String name : names) {
 			Value value = result.next().getValue("name");
 			assertEquals(name, ((Literal) value).getLabel());

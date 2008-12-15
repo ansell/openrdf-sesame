@@ -13,7 +13,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.store.StoreException;
 
 public abstract class SparqlRegexTest extends TestCase {
@@ -51,7 +51,7 @@ public abstract class SparqlRegexTest extends TestCase {
 	public void testInline() throws Exception {
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL,
 				queryInline);
-		TupleQueryResult result = query.evaluate();
+		TupleResult result = query.evaluate();
 		assertEquals(hunt, result.next().getValue("name"));
 		assertFalse(result.hasNext());
 		result.close();
@@ -61,7 +61,7 @@ public abstract class SparqlRegexTest extends TestCase {
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL,
 				queryBinding);
 		query.setBinding("pattern", vf.createLiteral("@work.example"));
-		TupleQueryResult result = query.evaluate();
+		TupleResult result = query.evaluate();
 		assertEquals(hunt, result.next().getValue("name"));
 		assertFalse(result.hasNext());
 		result.close();
@@ -72,7 +72,7 @@ public abstract class SparqlRegexTest extends TestCase {
 				queryBindingFlags);
 		query.setBinding("pattern", vf.createLiteral("@Work.example"));
 		query.setBinding("flags", vf.createLiteral("i"));
-		TupleQueryResult result = query.evaluate();
+		TupleResult result = query.evaluate();
 		assertEquals(hunt, result.next().getValue("name"));
 		assertFalse(result.hasNext());
 		result.close();
@@ -86,7 +86,7 @@ public abstract class SparqlRegexTest extends TestCase {
 		conn.add(bnode, flags, vf.createLiteral("i"));
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL,
 				queryExpr);
-		TupleQueryResult result = query.evaluate();
+		TupleResult result = query.evaluate();
 		assertEquals(hunt, result.next().getValue("name"));
 		assertFalse(result.hasNext());
 		result.close();

@@ -17,7 +17,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.EmptyBindingSet;
@@ -27,7 +27,7 @@ import org.openrdf.store.StoreException;
 /**
  * @author James Leigh
  */
-public class BackgroundTupleResult implements TupleQueryResult, Runnable, TupleQueryResultHandler {
+public class BackgroundTupleResult implements TupleResult, Runnable, TupleQueryResultHandler {
 
 	private volatile boolean aborted;
 

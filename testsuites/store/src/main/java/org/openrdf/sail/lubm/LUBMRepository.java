@@ -14,7 +14,7 @@ import edu.lehigh.swat.bench.ubt.api.QueryResult;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -125,7 +125,7 @@ public abstract class LUBMRepository implements edu.lehigh.swat.bench.ubt.api.Re
 
 		try {
 			RepositoryConnection con = repository.getConnection();
-			TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query.getString()).evaluate();
+			TupleResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query.getString()).evaluate();
 			con.close();
 
 			return new LUBMQueryResult(queryResult);
@@ -159,9 +159,9 @@ public abstract class LUBMRepository implements edu.lehigh.swat.bench.ubt.api.Re
 
 		private int num;
 
-		private TupleQueryResult queryResult;
+		private TupleResult queryResult;
 
-		public LUBMQueryResult(TupleQueryResult queryResult) {
+		public LUBMQueryResult(TupleResult queryResult) {
 			this.queryResult = queryResult;
 		}
 

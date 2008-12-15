@@ -31,9 +31,9 @@ import org.openrdf.model.Model;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.impl.TupleResultImpl;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.repository.manager.templates.ConfigTemplate;
 import org.openrdf.rio.RDFFormat;
@@ -55,7 +55,7 @@ public class TemplateController {
 
 	@ModelAttribute
 	@RequestMapping(method = { GET, HEAD }, value = "/templates")
-	public TupleQueryResult list(HttpServletRequest request)
+	public TupleResult list(HttpServletRequest request)
 		throws StoreConfigException
 	{
 		List<String> columnNames = Arrays.asList("id");
@@ -66,7 +66,7 @@ public class TemplateController {
 			ids.add(new ListBindingSet(columnNames, new LiteralImpl(id)));
 		}
 
-		return new TupleQueryResultImpl(columnNames, ids);
+		return new TupleResultImpl(columnNames, ids);
 	}
 
 	@ModelAttribute

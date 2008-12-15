@@ -13,11 +13,11 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.base.ConvertingCursor;
 import org.openrdf.query.base.FilteringCursor;
-import org.openrdf.query.impl.GraphQueryResultImpl;
+import org.openrdf.query.impl.GraphResultImpl;
 import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -38,7 +38,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		return (GraphQueryModel)super.getParsedQuery();
 	}
 
-	public GraphQueryResult evaluate()
+	public GraphResult evaluate()
 		throws StoreException
 	{
 		GraphQueryModel query = getParsedQuery();
@@ -96,13 +96,13 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 			}
 		};
 
-		return new GraphQueryResultImpl(query.getQueryNamespaces(), stIter);
+		return new GraphResultImpl(query.getQueryNamespaces(), stIter);
 	}
 
 	public void evaluate(RDFHandler handler)
 		throws StoreException, RDFHandlerException
 	{
-		GraphQueryResult queryResult = evaluate();
+		GraphResult queryResult = evaluate();
 		QueryResultUtil.report(queryResult, handler);
 	}
 }

@@ -42,12 +42,12 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
-import org.openrdf.query.QueryResult;
+import org.openrdf.query.Result;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.impl.GraphQueryResultImpl;
+import org.openrdf.query.TupleResult;
+import org.openrdf.query.impl.GraphResultImpl;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.impl.TupleResultImpl;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.store.StoreConfigException;
@@ -65,7 +65,7 @@ public class RepositoryController {
 
 	@ModelAttribute
 	@RequestMapping(method = { GET, HEAD }, value = "/repositories")
-	public TupleQueryResult list(HttpServletRequest request)
+	public TupleResult list(HttpServletRequest request)
 		throws HTTPException, StoreConfigException
 	{
 		List<String> bindingNames = Arrays.asList("uri", "id", "title", "readable", "writable");
@@ -92,7 +92,7 @@ public class RepositoryController {
 			bindingSets.add(bindings);
 		}
 
-		return new TupleQueryResultImpl(bindingNames, bindingSets);
+		return new TupleResultImpl(bindingNames, bindingSets);
 	}
 
 	@RequestMapping(method = POST, value = REPO_PATH + "/connections")
@@ -116,19 +116,19 @@ public class RepositoryController {
 
 	@ModelAttribute
 	@RequestMapping(method = HEAD, value = { REPO_PATH, CONN_PATH })
-	public QueryResult<?> head(HttpServletRequest request, HttpServletResponse response)
+	public Result<?> head(HttpServletRequest request, HttpServletResponse response)
 		throws HTTPException, IOException, StoreException, MalformedQueryException
 	{
 		Query query = new QueryBuilder(request).prepareQuery();
 		if (query instanceof TupleQuery) {
 			List<String> names = Collections.emptyList();
 			Set<BindingSet> bindings = Collections.emptySet();
-			return new TupleQueryResultImpl(names, bindings);
+			return new TupleResultImpl(names, bindings);
 		}
 		else if (query instanceof GraphQuery) {
 			Map<String, String> namespaces = Collections.emptyMap();
 			Set<Statement> statements = Collections.emptySet();
-			return new GraphQueryResultImpl(namespaces, statements);
+			return new GraphResultImpl(namespaces, statements);
 		}
 		else if (query instanceof BooleanQuery) {
 			// @ModelAttribute does not support a return type of boolean
@@ -141,7 +141,7 @@ public class RepositoryController {
 
 	@ModelAttribute
 	@RequestMapping(method = { GET, POST }, value = { REPO_PATH, CONN_PATH })
-	public QueryResult<?> query(HttpServletRequest request, HttpServletResponse response)
+	public Result<?> query(HttpServletRequest request, HttpServletResponse response)
 		throws HTTPException, IOException, StoreException, MalformedQueryException
 	{
 		Query query = new QueryBuilder(request).prepareQuery();

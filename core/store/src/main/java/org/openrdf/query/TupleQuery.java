@@ -9,7 +9,7 @@ import org.openrdf.store.StoreException;
 
 public interface TupleQuery extends Query {
 
-	public TupleQueryResult evaluate()
+	public TupleResult evaluate()
 		throws StoreException;
 
 	public void evaluate(TupleQueryResultHandler handler)

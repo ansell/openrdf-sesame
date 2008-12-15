@@ -15,7 +15,7 @@ import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultParseException;
@@ -31,13 +31,13 @@ public class TupleQueryClient extends QueryClient {
 		super(query);
 	}
 
-	public TupleQueryResult get(final Dataset dataset, final boolean includeInferred,
+	public TupleResult get(final Dataset dataset, final boolean includeInferred,
 			final Binding... bindings)
 		throws StoreException
 	{
-		Callable<TupleQueryResult> task = new Callable<TupleQueryResult>() {
+		Callable<TupleResult> task = new Callable<TupleResult>() {
 
-			public TupleQueryResult call()
+			public TupleResult call()
 				throws StoreException, MalformedQueryException
 			{
 				try {

@@ -7,7 +7,7 @@ package org.openrdf.repository.http;
 
 import org.openrdf.http.client.TupleQueryClient;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.store.StoreException;
@@ -32,7 +32,7 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 		this.client = client;
 	}
 
-	public TupleQueryResult evaluate()
+	public TupleResult evaluate()
 		throws StoreException
 	{
 		return client.get(dataset, includeInferred, getBindingsArray());

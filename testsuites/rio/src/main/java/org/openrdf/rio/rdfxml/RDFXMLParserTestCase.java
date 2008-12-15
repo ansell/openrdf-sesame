@@ -33,7 +33,7 @@ import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
@@ -93,7 +93,7 @@ public abstract class RDFXMLParserTestCase {
 				+ "                test:outputDocument {OUTPUT}; "
 				+ "                test:status {\"APPROVED\"} "
 				+ "using namespace test = <http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema#>";
-		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		TupleResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String caseURI = bindingSet.getValue("TESTCASE").toString();

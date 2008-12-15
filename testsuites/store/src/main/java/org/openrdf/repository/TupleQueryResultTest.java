@@ -12,7 +12,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
@@ -103,7 +103,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 	public void testGetBindingNames()
 		throws Exception
 	{
-		TupleQueryResult result = con.prepareTupleQuery(QueryLanguage.SERQL, multipleResultQuery).evaluate();
+		TupleResult result = con.prepareTupleQuery(QueryLanguage.SERQL, multipleResultQuery).evaluate();
 		try {
 			List<String> headers = result.getBindingNames();
 
@@ -151,7 +151,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 	public void testIterator()
 		throws Exception
 	{
-		TupleQueryResult result = con.prepareTupleQuery(QueryLanguage.SERQL, multipleResultQuery).evaluate();
+		TupleResult result = con.prepareTupleQuery(QueryLanguage.SERQL, multipleResultQuery).evaluate();
 
 		try {
 			int count = 0;
@@ -172,7 +172,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 	public void testIsEmpty()
 		throws Exception
 	{
-		TupleQueryResult result = con.prepareTupleQuery(QueryLanguage.SERQL, emptyResultQuery).evaluate();
+		TupleResult result = con.prepareTupleQuery(QueryLanguage.SERQL, emptyResultQuery).evaluate();
 
 		try {
 			if (result.hasNext()) {

@@ -66,6 +66,11 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		this.namespaces.putAll(namespaces);
 	}
 
+	public ModelImpl(Map<String, String> namespaces) {
+		this();
+		this.namespaces.putAll(namespaces);
+	}
+
 	public String getNamespace(String prefix) {
 		return namespaces.get(prefix);
 	}

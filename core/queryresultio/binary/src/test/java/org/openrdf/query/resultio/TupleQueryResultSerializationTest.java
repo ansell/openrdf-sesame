@@ -19,10 +19,10 @@ import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultUtil;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.MapBindingSet;
-import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.impl.TupleResultImpl;
 import org.openrdf.store.StoreException;
 
 public class TupleQueryResultSerializationTest extends TestCase {
@@ -38,20 +38,20 @@ public class TupleQueryResultSerializationTest extends TestCase {
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
 		UnsupportedQueryResultFormatException, StoreException
 	{
-		TupleQueryResult input = createQueryResult();
-		TupleQueryResult expected = createQueryResult();
+		TupleResult input = createQueryResult();
+		TupleResult expected = createQueryResult();
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		QueryResultIO.write(input, format, out);
 		input.close();
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleQueryResult output = QueryResultIO.parse(in, format);
+		TupleResult output = QueryResultIO.parse(in, format);
 
 		assertTrue(QueryResultUtil.equals(expected, output));
 	}
 
-	private TupleQueryResult createQueryResult() {
+	private TupleResult createQueryResult() {
 		List<String> bindingNames = Arrays.asList("a", "b", "c");
 
 		MapBindingSet solution1 = new MapBindingSet(bindingNames.size());
@@ -65,7 +65,7 @@ public class TupleQueryResultSerializationTest extends TestCase {
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2);
 
-		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
+		TupleResultImpl result = new TupleResultImpl(bindingNames, bindingSetList);
 
 		return result;
 	}

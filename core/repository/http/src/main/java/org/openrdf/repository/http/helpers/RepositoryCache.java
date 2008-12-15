@@ -16,7 +16,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.store.StoreException;
 
 /**
@@ -266,7 +266,7 @@ public class RepositoryCache {
 			// Only calculate if cached value is old
 			client.ifNoneMatch(cached.getETag());
 		}
-		GraphQueryResult result = client.get(subj, pred, obj, includeInferred, contexts);
+		GraphResult result = client.get(subj, pred, obj, includeInferred, contexts);
 		if (result == null) {
 			assert cached != null : "Server did not return a size value";
 			cached.refreshed(now, client.getMaxAge());

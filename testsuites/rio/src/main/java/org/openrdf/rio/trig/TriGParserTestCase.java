@@ -22,7 +22,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
@@ -72,7 +72,7 @@ public abstract class TriGParserTestCase {
 				+ "USING NAMESPACE " + "  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
 				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
 
-		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		TupleResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
 
 		// Add all positive parser tests to the test suite
 		while (queryResult.hasNext()) {

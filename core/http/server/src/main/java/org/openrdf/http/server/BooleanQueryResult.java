@@ -13,7 +13,7 @@ import java.util.Set;
 
 import info.aduna.iteration.SingletonIteration;
 
-import org.openrdf.query.QueryResult;
+import org.openrdf.query.Result;
 import org.openrdf.store.StoreException;
 
 /**
@@ -23,7 +23,7 @@ import org.openrdf.store.StoreException;
  * @author James Leigh
  */
 public class BooleanQueryResult extends SingletonIteration<Boolean, StoreException> implements
-		QueryResult<Boolean>
+		Result<Boolean>
 {
 
 	public static BooleanQueryResult EMPTY = new BooleanQueryResult(null);

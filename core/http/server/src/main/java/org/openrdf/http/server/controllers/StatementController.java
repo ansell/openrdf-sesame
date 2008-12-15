@@ -50,6 +50,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Cursor;
 import org.openrdf.query.impl.EmptyCursor;
+import org.openrdf.query.impl.ModelResultImpl;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.rio.RDFFormat;
@@ -92,7 +93,7 @@ public class StatementController {
 
 		if (HEAD.equals(RequestMethod.valueOf(request.getMethod()))) {
 			Cursor<Statement> nothing = EmptyCursor.emptyCursor();
-			return new RepositoryResult<Statement>(nothing);
+			return new ModelResultImpl(nothing);
 		}
 		return repositoryCon.getStatements(subj, pred, obj, useInferencing, contexts);
 	}

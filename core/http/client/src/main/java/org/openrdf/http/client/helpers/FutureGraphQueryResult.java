@@ -12,18 +12,19 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.store.StoreException;
 
 /**
  * @author James Leigh
  */
-public class FutureGraphQueryResult implements GraphQueryResult {
+public class FutureGraphQueryResult implements GraphResult {
 
-	private Future<GraphQueryResult> delegate;
+	private Future<GraphResult> delegate;
 
-	public FutureGraphQueryResult(Future<GraphQueryResult> delegate) {
+	public FutureGraphQueryResult(Future<GraphResult> delegate) {
 		this.delegate = delegate;
 	}
 
@@ -69,7 +70,13 @@ public class FutureGraphQueryResult implements GraphQueryResult {
 		return getDelegate().asSet();
 	}
 
-	private GraphQueryResult getDelegate()
+	public Model asModel()
+		throws StoreException
+	{
+		return getDelegate().asModel();
+	}
+
+	private GraphResult getDelegate()
 		throws StoreException
 	{
 		try {

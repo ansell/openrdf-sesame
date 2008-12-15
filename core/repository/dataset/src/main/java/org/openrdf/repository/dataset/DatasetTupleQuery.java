@@ -6,7 +6,7 @@
 package org.openrdf.repository.dataset;
 
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.repository.sail.SailTupleQuery;
@@ -21,7 +21,7 @@ class DatasetTupleQuery extends DatasetQuery implements TupleQuery {
 		super(con, sailQuery);
 	}
 
-	public TupleQueryResult evaluate()
+	public TupleResult evaluate()
 		throws StoreException
 	{
 		con.loadDataset(sailQuery.getActiveDataset());

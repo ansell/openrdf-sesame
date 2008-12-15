@@ -15,12 +15,12 @@ import org.openrdf.model.URI;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.impl.AbstractQuery;
 import org.openrdf.repository.Repository;
@@ -34,7 +34,7 @@ public class ContextAwareConnectionTest extends TestCase {
 
 	static class GraphQueryStub extends AbstractQuery implements GraphQuery {
 
-		public GraphQueryResult evaluate() {
+		public GraphResult evaluate() {
 			return null;
 		}
 
@@ -70,7 +70,7 @@ public class ContextAwareConnectionTest extends TestCase {
 
 	static class TupleQueryStub extends AbstractQuery implements TupleQuery {
 
-		public TupleQueryResult evaluate() {
+		public TupleResult evaluate() {
 			return null;
 		}
 

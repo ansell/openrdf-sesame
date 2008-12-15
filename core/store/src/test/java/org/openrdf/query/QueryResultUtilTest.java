@@ -17,7 +17,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.impl.MutableTupleQueryResult;
+import org.openrdf.query.impl.MutableTupleResult;
 import org.openrdf.store.StoreException;
 
 /**
@@ -25,9 +25,9 @@ import org.openrdf.store.StoreException;
  */
 public class QueryResultUtilTest extends TestCase {
 
-	private MutableTupleQueryResult tqr1;
+	private MutableTupleResult tqr1;
 
-	private MutableTupleQueryResult tqr2;
+	private MutableTupleResult tqr2;
 
 	private static ValueFactory VF = new ValueFactoryImpl();
 
@@ -47,8 +47,8 @@ public class QueryResultUtilTest extends TestCase {
 
 	@Override
 	protected void setUp() {
-		tqr1 = new MutableTupleQueryResult(bindingNames);
-		tqr2 = new MutableTupleQueryResult(bindingNames);
+		tqr1 = new MutableTupleResult(bindingNames);
+		tqr2 = new MutableTupleResult(bindingNames);
 
 		foo = VF.createURI("http://example.org/foo");
 		bar = VF.createURI("http://example.org/bar");

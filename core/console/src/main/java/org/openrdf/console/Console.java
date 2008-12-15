@@ -56,11 +56,11 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.parser.BooleanQueryModel;
@@ -1373,7 +1373,7 @@ public class Console {
 
 			Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
 
-			TupleQueryResult tupleQueryResult = con.prepareTupleQuery(ql, queryString).evaluate();
+			TupleResult tupleQueryResult = con.prepareTupleQuery(ql, queryString).evaluate();
 
 			try {
 				int resultCount = 0;
@@ -1460,7 +1460,7 @@ public class Console {
 
 			Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
 
-			GraphQueryResult queryResult = con.prepareGraphQuery(ql, queryString).evaluate();
+			GraphResult queryResult = con.prepareGraphQuery(ql, queryString).evaluate();
 
 			try {
 				int resultCount = 0;

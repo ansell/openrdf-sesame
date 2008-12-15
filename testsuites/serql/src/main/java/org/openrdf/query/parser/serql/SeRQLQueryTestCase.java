@@ -33,9 +33,9 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
@@ -122,7 +122,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 				}
 
 				// Evaluate the query on the query data
-				GraphQueryResult result = con.prepareGraphQuery(getQueryLanguage(), query).evaluate();
+				GraphResult result = con.prepareGraphQuery(getQueryLanguage(), query).evaluate();
 				try {
 					actualStatements = result.asList();
 				}
@@ -296,7 +296,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>, "
 				+ "  tck = <urn:openrdf.org:sesame:tests#> ";
 
-		TupleQueryResult tests = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		TupleResult tests = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
 		while (tests.hasNext()) {
 			BindingSet testBindings = tests.next();
 			String testName = ((Literal)testBindings.getValue("testName")).getLabel();
@@ -313,7 +313,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 			List<String> graphNames = new ArrayList<String>();
 
-			TupleQueryResult graphs = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+			TupleResult graphs = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
 			while (graphs.hasNext()) {
 				BindingSet graphBindings = graphs.next();
 				graphNames.add(graphBindings.getValue("graph").toString());

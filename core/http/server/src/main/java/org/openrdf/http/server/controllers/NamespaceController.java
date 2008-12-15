@@ -33,9 +33,9 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.impl.TupleResultImpl;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.store.StoreException;
@@ -53,7 +53,7 @@ public class NamespaceController {
 
 	@ModelAttribute
 	@RequestMapping(method = { GET, HEAD }, value = { REPO_PATH + "/namespaces", CONN_PATH + "/namespaces" })
-	public TupleQueryResult list(HttpServletRequest request)
+	public TupleResult list(HttpServletRequest request)
 		throws StoreException
 	{
 		List<String> columnNames = Arrays.asList("prefix", "namespace");
@@ -77,7 +77,7 @@ public class NamespaceController {
 			iter.close();
 		}
 
-		return new TupleQueryResultImpl(columnNames, namespaces);
+		return new TupleResultImpl(columnNames, namespaces);
 	}
 
 	@ModelAttribute

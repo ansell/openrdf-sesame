@@ -6,7 +6,7 @@
 package org.openrdf.repository.dataset;
 
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.repository.sail.SailGraphQuery;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -21,7 +21,7 @@ class DatasetGraphQuery extends DatasetQuery implements GraphQuery {
 		super(con, sailQuery);
 	}
 
-	public GraphQueryResult evaluate()
+	public GraphResult evaluate()
 		throws StoreException
 	{
 		con.loadDataset(sailQuery.getActiveDataset());

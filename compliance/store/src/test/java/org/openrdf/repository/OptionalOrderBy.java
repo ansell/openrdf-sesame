@@ -18,7 +18,7 @@ import junit.framework.TestCase;
 
 import org.openrdf.model.Value;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.memory.MemoryStore;
@@ -51,7 +51,7 @@ public class OptionalOrderBy extends TestCase {
 		try {
 			assertTrue(con.size() > 0);
 			TupleQuery qry = con.prepareTupleQuery(SPARQL, query);
-			TupleQueryResult result = qry.evaluate();
+			TupleResult result = qry.evaluate();
 			try {
 				while (result.hasNext()) {
 					Value value = result.next().getValue(name);

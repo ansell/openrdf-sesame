@@ -7,7 +7,7 @@ package org.openrdf.repository.http.helpers;
 
 import org.openrdf.model.Statement;
 import org.openrdf.query.Cursor;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.store.StoreException;
 
 
@@ -16,9 +16,9 @@ import org.openrdf.store.StoreException;
  * @author James Leigh
  */
 public class GraphQueryResultCursor implements Cursor<Statement> {
-	private GraphQueryResult result;
+	private GraphResult result;
 
-	public GraphQueryResultCursor(GraphQueryResult result) {
+	public GraphQueryResultCursor(GraphResult result) {
 		this.result = result;
 	}
 

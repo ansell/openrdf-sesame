@@ -10,7 +10,7 @@ import junit.framework.TestCase;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 
 public abstract class CascadeValueExceptionTest extends TestCase {
 
@@ -26,7 +26,7 @@ public abstract class CascadeValueExceptionTest extends TestCase {
 		throws Exception
 	{
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStr1);
-		TupleQueryResult evaluate = query.evaluate();
+		TupleResult evaluate = query.evaluate();
 		try {
 			assertFalse(evaluate.hasNext());
 		}
@@ -39,7 +39,7 @@ public abstract class CascadeValueExceptionTest extends TestCase {
 		throws Exception
 	{
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStr2);
-		TupleQueryResult evaluate = query.evaluate();
+		TupleResult evaluate = query.evaluate();
 		try {
 			assertFalse(evaluate.hasNext());
 		}

@@ -6,17 +6,12 @@
 package org.openrdf.repository;
 
 import org.openrdf.model.Resource;
-import org.openrdf.query.Cursor;
 
 
 /**
  *
- * @author Jabmes Leigh
+ * @author James Leigh
  */
-public class ContextResult extends RepositoryResult<Resource> {
-
-	public ContextResult(Cursor<? extends Resource> delegate) {
-		super(delegate);
-	}
+public interface ContextResult extends RepositoryResult<Resource> {
 
 }

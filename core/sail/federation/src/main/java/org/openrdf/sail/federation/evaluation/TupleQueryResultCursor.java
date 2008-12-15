@@ -7,7 +7,7 @@ package org.openrdf.sail.federation.evaluation;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Cursor;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.store.StoreException;
 
@@ -18,11 +18,11 @@ import org.openrdf.store.StoreException;
  */
 public class TupleQueryResultCursor implements Cursor<BindingSet> {
 
-	private TupleQueryResult result;
+	private TupleResult result;
 
 	private BindingSet bindings;
 
-	public TupleQueryResultCursor(TupleQueryResult result, BindingSet bindings) {
+	public TupleQueryResultCursor(TupleResult result, BindingSet bindings) {
 		this.result = result;
 		this.bindings = bindings;
 	}

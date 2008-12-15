@@ -7,7 +7,7 @@ package org.openrdf.repository.http;
 
 import org.openrdf.http.client.GraphQueryClient;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.store.StoreException;
@@ -33,7 +33,7 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 		this.client = client;
 	}
 
-	public GraphQueryResult evaluate()
+	public GraphResult evaluate()
 		throws StoreException
 	{
 		return client.get(dataset, includeInferred, getBindingsArray());
