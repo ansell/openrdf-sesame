@@ -288,11 +288,6 @@
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
-				<artifactId>aduna-commons-iteration</artifactId>
-				<version>2.2</version>
-			</dependency>
-			<dependency>
-				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-concurrent</artifactId>
 				<version>2.2</version>
 			</dependency>
