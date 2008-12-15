@@ -12,7 +12,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleResult;
+import org.openrdf.results.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;

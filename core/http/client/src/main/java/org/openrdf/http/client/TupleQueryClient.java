@@ -15,10 +15,10 @@ import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultParseException;
+import org.openrdf.results.TupleResult;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.store.StoreException;
 

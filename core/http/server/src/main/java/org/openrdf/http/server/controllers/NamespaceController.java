@@ -33,11 +33,11 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleResult;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.impl.TupleResultImpl;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.results.TupleResult;
+import org.openrdf.results.impl.TupleResultImpl;
 import org.openrdf.store.StoreException;
 
 /**

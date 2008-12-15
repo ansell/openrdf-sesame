@@ -18,11 +18,11 @@ import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryResultUtil;
-import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.MapBindingSet;
-import org.openrdf.query.impl.TupleResultImpl;
+import org.openrdf.results.TupleResult;
+import org.openrdf.results.impl.TupleResultImpl;
+import org.openrdf.results.util.QueryResultUtil;
 import org.openrdf.store.StoreException;
 
 public class TupleQueryResultSerializationTest extends TestCase {

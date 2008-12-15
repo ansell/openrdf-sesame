@@ -3,9 +3,10 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.repository;
+package org.openrdf.results;
 
 import org.openrdf.model.Resource;
+import org.openrdf.repository.RepositoryResult;
 
 
 /**

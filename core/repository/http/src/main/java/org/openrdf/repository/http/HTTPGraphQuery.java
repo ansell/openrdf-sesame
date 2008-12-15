@@ -7,7 +7,7 @@ package org.openrdf.repository.http;
 
 import org.openrdf.http.client.GraphQueryClient;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphResult;
+import org.openrdf.results.GraphResult;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.store.StoreException;

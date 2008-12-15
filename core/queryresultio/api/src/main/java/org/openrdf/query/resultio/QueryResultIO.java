@@ -10,13 +10,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.GraphResult;
 import org.openrdf.query.EvaluationException;
-import org.openrdf.query.QueryResultUtil;
-import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.impl.TupleQueryResultBuilder;
+import org.openrdf.results.GraphResult;
+import org.openrdf.results.TupleResult;
+import org.openrdf.results.util.QueryResultUtil;
+import org.openrdf.results.util.TupleQueryResultBuilder;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;

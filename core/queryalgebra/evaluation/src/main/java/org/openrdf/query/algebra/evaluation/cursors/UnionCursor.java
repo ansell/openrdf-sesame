@@ -8,8 +8,8 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.openrdf.query.Cursor;
-import org.openrdf.query.impl.EmptyCursor;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.impl.EmptyCursor;
 import org.openrdf.store.StoreException;
 
 /**

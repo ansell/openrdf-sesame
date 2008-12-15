@@ -6,8 +6,8 @@
 package org.openrdf.query.algebra.evaluation.cursors;
 
 import org.openrdf.model.Statement;
-import org.openrdf.query.Cursor;
-import org.openrdf.query.base.FilteringCursor;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.base.FilteringCursor;
 
 /**
  * Named contexts are matched by retrieving all statements from the store and

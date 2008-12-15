@@ -3,9 +3,8 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.repository;
+package org.openrdf.results;
 
-import org.openrdf.query.GraphResult;
 
 /**
  * @author James Leigh

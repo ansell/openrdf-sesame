@@ -23,11 +23,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleResult;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.impl.TupleResultImpl;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.results.TupleResult;
+import org.openrdf.results.impl.TupleResultImpl;
 import org.openrdf.store.StoreException;
 
 /**

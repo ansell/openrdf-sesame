@@ -6,8 +6,8 @@
 package org.openrdf.repository.http.helpers;
 
 import org.openrdf.model.Statement;
-import org.openrdf.query.Cursor;
-import org.openrdf.query.GraphResult;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.GraphResult;
 import org.openrdf.store.StoreException;
 
 

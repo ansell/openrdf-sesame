@@ -3,11 +3,11 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.impl;
+package org.openrdf.results.impl;
 
 import java.util.Iterator;
 
-import org.openrdf.query.Cursor;
+import org.openrdf.results.Cursor;
 
 /**
  * An Cursor that can convert an {@link Iterator} to a {@link Cursor}.

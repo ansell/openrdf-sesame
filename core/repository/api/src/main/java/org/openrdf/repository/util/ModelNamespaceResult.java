@@ -8,9 +8,9 @@ package org.openrdf.repository.util;
 import java.util.Map;
 
 import org.openrdf.model.Statement;
-import org.openrdf.query.Cursor;
-import org.openrdf.query.impl.ModelResultImpl;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.impl.ModelResultImpl;
 import org.openrdf.store.StoreException;
 
 /**

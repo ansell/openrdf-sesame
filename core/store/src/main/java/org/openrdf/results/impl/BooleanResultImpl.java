@@ -3,11 +3,11 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.impl;
+package org.openrdf.results.impl;
 
-import org.openrdf.query.BooleanResult;
-import org.openrdf.query.Cursor;
-import org.openrdf.query.SingletonCursor;
+import org.openrdf.results.BooleanResult;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.base.ResultImpl;
 import org.openrdf.store.StoreException;
 
 /**

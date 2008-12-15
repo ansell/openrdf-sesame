@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query;
+package org.openrdf.results;
 
 import java.util.Collection;
 import java.util.List;

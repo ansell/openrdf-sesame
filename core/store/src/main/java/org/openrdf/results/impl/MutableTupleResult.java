@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.impl;
+package org.openrdf.results.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,8 +16,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Result;
-import org.openrdf.query.TupleResult;
+import org.openrdf.results.Result;
+import org.openrdf.results.TupleResult;
 import org.openrdf.store.StoreException;
 
 /**

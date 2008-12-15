@@ -13,16 +13,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleResult;
 import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.TupleResult;
 import org.openrdf.sail.federation.evaluation.TupleQueryResultCursor;
 import org.openrdf.sail.federation.query.QueryModelSerializer;
 import org.openrdf.store.StoreException;

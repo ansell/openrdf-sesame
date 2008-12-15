@@ -20,7 +20,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.query.Cursor;
+import org.openrdf.results.Cursor;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.inferencer.InferencerConnection;

@@ -42,14 +42,14 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
-import org.openrdf.query.Result;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleResult;
-import org.openrdf.query.impl.GraphResultImpl;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.impl.TupleResultImpl;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.results.Result;
+import org.openrdf.results.TupleResult;
+import org.openrdf.results.impl.GraphResultImpl;
+import org.openrdf.results.impl.TupleResultImpl;
 import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 

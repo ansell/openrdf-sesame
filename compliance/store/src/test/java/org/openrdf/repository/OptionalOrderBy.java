@@ -18,8 +18,8 @@ import junit.framework.TestCase;
 
 import org.openrdf.model.Value;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleResult;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.results.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.memory.MemoryStore;
 
