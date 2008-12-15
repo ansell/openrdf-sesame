@@ -22,6 +22,8 @@ import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.results.Cursor;
+import org.openrdf.results.TupleResult;
+import org.openrdf.sail.federation.evaluation.InsertBindingSetCursor;
 import org.openrdf.sail.federation.query.QueryModelSerializer;
 import org.openrdf.store.StoreException;
 
@@ -81,7 +83,8 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 				}
 			}
 			query.setDataset(dataset);
-			return query.evaluate();
+			TupleResult result = query.evaluate();
+			return new InsertBindingSetCursor(result, bindings);
 		}
 	}
 
