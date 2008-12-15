@@ -285,7 +285,7 @@ public interface RepositoryConnection {
 	 * @return a RepositoryResult object containing Resources that are used as
 	 *         context identifiers.
 	 */
-	public RepositoryResult<Resource> getContextIDs()
+	public ContextResult getContextIDs()
 		throws StoreException;
 
 	/**
@@ -312,7 +312,7 @@ public interface RepositoryConnection {
 	 *         {@link StoreException} when an error when a problem occurs during
 	 *         retrieval.
 	 */
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+	public ModelResult getStatements(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws StoreException;
 
@@ -827,7 +827,7 @@ public interface RepositoryConnection {
 	 * @throws StoreException
 	 *         If the namespaces could not be read from the repository.
 	 */
-	public RepositoryResult<Namespace> getNamespaces()
+	public NamespaceResult getNamespaces()
 		throws StoreException;
 
 	/**
