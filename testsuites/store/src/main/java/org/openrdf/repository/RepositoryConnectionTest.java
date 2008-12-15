@@ -1599,7 +1599,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testValueRoundTrip(subj, pred, obj);
 	}
 
-	public void disabledtestReallyLongLiteralRoundTrip()
+	public void testReallyLongLiteralRoundTrip()
 		throws Exception
 	{
 		StringBuffer sb = new StringBuffer();
