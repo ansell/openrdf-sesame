@@ -9,6 +9,8 @@ import static org.openrdf.http.protocol.Protocol.CONN_PATH;
 import static org.openrdf.http.server.repository.RepositoryInterceptor.getRepositoryConnection;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import java.io.StringReader;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Controller;
@@ -33,6 +35,14 @@ public class ConnectionController {
 	{
 		RepositoryConnection repositoryCon = getRepositoryConnection(request);
 		repositoryCon.setAutoCommit(false);
+	}
+
+	@ModelAttribute
+	@RequestMapping(method = POST, value = CONN_PATH + "/ping")
+	public StringReader ping(HttpServletRequest request)
+		throws StoreException
+	{
+		return new StringReader("pong");
 	}
 
 	@ModelAttribute

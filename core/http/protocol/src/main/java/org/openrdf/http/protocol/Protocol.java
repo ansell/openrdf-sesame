@@ -192,6 +192,14 @@ public abstract class Protocol {
 
 	public static final String QUERIES = "queries";
 
+	public static final String AMOUNT = "amount";
+
+	public static final String PING = "ping";
+
+	public static final String BNODE = "bnode";
+
+	public static final String BNODES = "bnodes";
+
 	private static String getServerDir(String serverLocation) {
 		if (!serverLocation.endsWith("/")) {
 			serverLocation += "/";

@@ -9,14 +9,13 @@ import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.StoreClient;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
  * @author James Leigh
  */
 public class ConnectionsClient {
 
 	private HTTPConnectionPool connections;
+
 	private StoreClient client;
 
 	public ConnectionsClient(HTTPConnectionPool connections) {

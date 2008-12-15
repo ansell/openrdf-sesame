@@ -1603,7 +1603,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		throws Exception
 	{
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < 1024000; i++) {
+		for (int i = 0; i < 5120; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
 		String EXAMPLE_NS = "urn:test:";

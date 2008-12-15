@@ -31,6 +31,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
@@ -42,6 +43,7 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.repository.http.exceptions.IllegalStatementException;
 import org.openrdf.repository.http.helpers.GraphQueryResultCursor;
+import org.openrdf.repository.http.helpers.HTTPValueFactory;
 import org.openrdf.repository.util.ModelNamespaceResult;
 import org.openrdf.results.ContextResult;
 import org.openrdf.results.GraphResult;
@@ -97,6 +99,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	private ConnectionClient client;
 
+	private HTTPValueFactory vf;
+
 	private volatile boolean closed;
 
 	/** If connection cannot use shared repository cache. */
@@ -117,6 +121,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public HTTPRepositoryConnection(HTTPRepository repository, ConnectionClient client) {
 		super(repository);
 		this.client = client;
+		this.vf = repository.getValueFactory().fork(client.bnodes());
+		client.setValueFactory(vf);
 
 		if (debugEnabled()) {
 			creatorTrace = new Throwable();
@@ -130,6 +136,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	@Override
 	public HTTPRepository getRepository() {
 		return (HTTPRepository)super.getRepository();
+	}
+
+	@Override
+	public ValueFactory getValueFactory() {
+		return vf;
 	}
 
 	@Override
@@ -209,17 +220,16 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	/**
-	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)} instead
+	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)}
+	 *             instead
 	 */
-	public ModelResult getStatements(Resource subj, URI pred, Value obj, boolean inf,
-			Resource... ctx)
+	public ModelResult getStatements(Resource subj, URI pred, Value obj, boolean inf, Resource... ctx)
 		throws StoreException
 	{
 		return match(subj, pred, obj, inf, ctx);
 	}
 
-	public ModelResult match(Resource subj, URI pred, Value obj, boolean inf,
-			Resource... ctx)
+	public ModelResult match(Resource subj, URI pred, Value obj, boolean inf, Resource... ctx)
 		throws StoreException
 	{
 		if (noMatch(subj, pred, obj, inf, ctx))
@@ -232,7 +242,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	/**
-	 * @deprecated Use {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)} instead
+	 * @deprecated Use
+	 *             {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)}
+	 *             instead
 	 */
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
@@ -241,8 +253,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		exportMatch(subj, pred, obj, includeInferred, handler, contexts);
 	}
 
-	public void exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
-			RDFHandler handler, Resource... contexts)
+	public void exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred, RDFHandler handler,
+			Resource... contexts)
 		throws RDFHandlerException, StoreException
 	{
 		flush();
@@ -250,7 +262,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	/**
-	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)} instead
+	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)}
+	 *             instead
 	 */
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
@@ -268,7 +281,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	/**
-	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)} instead
+	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)}
+	 *             instead
 	 */
 	@Override
 	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -279,8 +293,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
+	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		if (!modified)

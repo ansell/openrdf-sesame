@@ -17,7 +17,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -127,7 +126,7 @@ public class HTTPRepository implements Repository {
 		return vf;
 	}
 
-	public ValueFactory getValueFactory() {
+	public HTTPValueFactory getValueFactory() {
 		return vf;
 	}
 
