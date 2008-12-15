@@ -13,7 +13,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.query.Cursor;
+import org.openrdf.results.Cursor;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.store.StoreException;
 

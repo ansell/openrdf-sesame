@@ -3,18 +3,15 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.repository;
+package org.openrdf.results;
 
-import java.util.Map;
-
-import org.openrdf.model.Namespace;
 import org.openrdf.store.StoreException;
 
 /**
  * @author James Leigh
  */
-public interface NamespaceResult extends RepositoryResult<Namespace> {
+public interface BooleanResult extends Result<Boolean> {
 
-	public Map<String, String> asMap()
+	public boolean asBoolean()
 		throws StoreException;
 }

@@ -6,8 +6,8 @@
 package org.openrdf.repository.dataset;
 
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphResult;
 import org.openrdf.repository.sail.SailGraphQuery;
+import org.openrdf.results.GraphResult;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.store.StoreException;

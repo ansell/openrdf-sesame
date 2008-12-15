@@ -9,11 +9,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Cursor;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
-import org.openrdf.query.impl.EmptyCursor;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.impl.EmptyCursor;
 import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.store.StoreException;
 

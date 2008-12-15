@@ -23,7 +23,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.query.GraphResult;
+import org.openrdf.results.GraphResult;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParser;

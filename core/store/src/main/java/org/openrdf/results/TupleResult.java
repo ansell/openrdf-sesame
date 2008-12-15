@@ -3,10 +3,11 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query;
+package org.openrdf.results;
 
 import java.util.List;
 
+import org.openrdf.query.BindingSet;
 import org.openrdf.store.StoreException;
 
 /**

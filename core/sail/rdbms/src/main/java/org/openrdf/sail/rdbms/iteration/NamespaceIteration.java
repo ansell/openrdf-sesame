@@ -11,9 +11,9 @@ import java.util.Map.Entry;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.query.Cursor;
-import org.openrdf.query.base.ConvertingCursor;
-import org.openrdf.query.impl.IteratorCursor;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.base.ConvertingCursor;
+import org.openrdf.results.impl.IteratorCursor;
 import org.openrdf.store.StoreException;
 
 /**

@@ -17,13 +17,13 @@ import junit.framework.TestCase;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryResultUtil;
-import org.openrdf.query.TupleResult;
-import org.openrdf.query.impl.MutableTupleResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
+import org.openrdf.results.TupleResult;
+import org.openrdf.results.impl.MutableTupleResult;
+import org.openrdf.results.util.QueryResultUtil;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.federation.Federation;

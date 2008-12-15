@@ -26,10 +26,8 @@ import org.openrdf.model.impl.IntegerLiteralImpl;
 import org.openrdf.model.impl.NumericLiteralImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.EvaluationException;
-import org.openrdf.query.SingletonCursor;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BinaryTupleOperator;
@@ -108,10 +106,12 @@ import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
-import org.openrdf.query.base.ConvertingCursor;
-import org.openrdf.query.base.FilteringCursor;
 import org.openrdf.query.impl.DatasetImpl;
-import org.openrdf.query.impl.EmptyCursor;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.base.ConvertingCursor;
+import org.openrdf.results.base.FilteringCursor;
+import org.openrdf.results.impl.EmptyCursor;
+import org.openrdf.results.impl.SingletonCursor;
 import org.openrdf.store.StoreException;
 
 /**

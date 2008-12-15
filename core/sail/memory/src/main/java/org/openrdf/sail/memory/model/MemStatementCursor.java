@@ -7,7 +7,7 @@ package org.openrdf.sail.memory.model;
 
 import info.aduna.lang.ObjectUtil;
 
-import org.openrdf.query.Cursor;
+import org.openrdf.results.Cursor;
 
 /**
  * A StatementIterator that can iterate over a list of Statement objects. This

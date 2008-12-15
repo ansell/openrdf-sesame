@@ -10,10 +10,10 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.Cursor;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.results.Cursor;
 import org.openrdf.store.StoreException;
 
 /**

@@ -3,9 +3,9 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.base;
+package org.openrdf.results.base;
 
-import org.openrdf.query.Cursor;
+import org.openrdf.results.Cursor;
 import org.openrdf.store.StoreException;
 
 /**

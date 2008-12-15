@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query;
+package org.openrdf.results.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +16,12 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.ModelUtil;
+import org.openrdf.query.Binding;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.TupleQueryResultHandler;
+import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.results.GraphResult;
+import org.openrdf.results.TupleResult;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.store.StoreException;

@@ -5,7 +5,7 @@
  */
 package org.openrdf.repository;
 
-import org.openrdf.query.Result;
+import org.openrdf.results.Result;
 
 
 /**

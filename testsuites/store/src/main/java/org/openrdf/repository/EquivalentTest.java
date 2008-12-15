@@ -19,7 +19,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleResult;
+import org.openrdf.results.TupleResult;
 import org.openrdf.store.StoreException;
 
 public abstract class EquivalentTest extends TestCase {

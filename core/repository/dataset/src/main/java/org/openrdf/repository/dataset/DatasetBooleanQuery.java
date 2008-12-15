@@ -6,8 +6,8 @@
 package org.openrdf.repository.dataset;
 
 import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.BooleanResult;
 import org.openrdf.repository.sail.SailBooleanQuery;
+import org.openrdf.results.BooleanResult;
 import org.openrdf.store.StoreException;
 
 /**

@@ -21,7 +21,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Cursor;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Group;
@@ -31,7 +30,8 @@ import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.query.impl.IteratorCursor;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.impl.IteratorCursor;
 import org.openrdf.store.StoreException;
 
 /**

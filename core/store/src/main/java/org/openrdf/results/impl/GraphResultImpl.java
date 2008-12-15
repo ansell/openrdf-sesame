@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.impl;
+package org.openrdf.results.impl;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,8 +13,9 @@ import java.util.Map;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.ModelImpl;
-import org.openrdf.query.Cursor;
-import org.openrdf.query.GraphResult;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.GraphResult;
+import org.openrdf.results.base.ResultImpl;
 import org.openrdf.store.StoreException;
 
 /**

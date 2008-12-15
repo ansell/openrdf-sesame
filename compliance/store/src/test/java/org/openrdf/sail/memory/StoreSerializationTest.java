@@ -17,11 +17,11 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Cursor;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.TupleQueryModel;
+import org.openrdf.results.Cursor;
 import org.openrdf.sail.SailConnection;
 
 public class StoreSerializationTest extends TestCase {

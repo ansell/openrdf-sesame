@@ -5,7 +5,7 @@
  */
 package org.openrdf.sail.federation.evaluation;
 
-import org.openrdf.query.Cursor;
+import org.openrdf.results.Cursor;
 import org.openrdf.store.StoreException;
 
 /**

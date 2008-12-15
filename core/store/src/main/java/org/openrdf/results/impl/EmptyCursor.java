@@ -3,9 +3,9 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.impl;
+package org.openrdf.results.impl;
 
-import org.openrdf.query.Cursor;
+import org.openrdf.results.Cursor;
 
 /**
  * @author James Leigh

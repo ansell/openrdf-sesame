@@ -13,7 +13,7 @@ import java.util.Set;
 
 import info.aduna.iteration.SingletonIteration;
 
-import org.openrdf.query.Result;
+import org.openrdf.results.Result;
 import org.openrdf.store.StoreException;
 
 /**

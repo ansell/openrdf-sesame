@@ -6,10 +6,10 @@
 package org.openrdf.repository.dataset;
 
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.repository.sail.SailTupleQuery;
+import org.openrdf.results.TupleResult;
 import org.openrdf.store.StoreException;
 
 /**

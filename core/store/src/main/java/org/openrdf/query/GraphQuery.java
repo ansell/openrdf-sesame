@@ -5,6 +5,7 @@
  */
 package org.openrdf.query;
 
+import org.openrdf.results.GraphResult;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.store.StoreException;

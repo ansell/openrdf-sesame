@@ -17,7 +17,8 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.impl.MutableTupleResult;
+import org.openrdf.results.impl.MutableTupleResult;
+import org.openrdf.results.util.QueryResultUtil;
 import org.openrdf.store.StoreException;
 
 /**

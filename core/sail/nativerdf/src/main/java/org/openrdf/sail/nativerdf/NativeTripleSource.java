@@ -12,9 +12,9 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.Cursor;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.results.Cursor;
 
 public class NativeTripleSource implements TripleSource {
 

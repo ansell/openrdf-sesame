@@ -18,8 +18,8 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Cursor;
 import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.results.Cursor;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.store.StoreException;
 

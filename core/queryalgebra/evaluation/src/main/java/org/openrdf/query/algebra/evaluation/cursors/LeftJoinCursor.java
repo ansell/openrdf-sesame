@@ -8,12 +8,12 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import java.util.Set;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Cursor;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.results.Cursor;
 import org.openrdf.store.StoreException;
 
 public class LeftJoinCursor implements Cursor<BindingSet> {

@@ -6,10 +6,10 @@
 package org.openrdf.query.algebra.evaluation.cursors;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Cursor;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
+import org.openrdf.results.Cursor;
 import org.openrdf.store.StoreException;
 
 public class JoinCursor implements Cursor<BindingSet> {

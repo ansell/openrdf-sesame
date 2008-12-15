@@ -6,9 +6,9 @@
 package org.openrdf.sail.federation.evaluation;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Cursor;
-import org.openrdf.query.TupleResult;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.results.Cursor;
+import org.openrdf.results.TupleResult;
 import org.openrdf.store.StoreException;
 
 /**

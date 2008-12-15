@@ -8,10 +8,10 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import java.util.Set;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.results.util.QueryResultUtil;
 import org.openrdf.store.StoreException;
 
 /**
