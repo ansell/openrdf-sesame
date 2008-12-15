@@ -7,7 +7,6 @@ package org.openrdf.repository.sail;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.MalformedQueryException;
@@ -18,7 +17,6 @@ import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.repository.util.ModelNamespaceResult;
 import org.openrdf.results.ContextResult;
@@ -175,7 +173,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		handler.startRDF();
 
 		// Export namespace information
-		RepositoryResult<? extends Namespace> nsIter = getNamespaces();
+		NamespaceResult nsIter = getNamespaces();
 		try {
 			while (nsIter.hasNext()) {
 				Namespace ns = nsIter.next();
@@ -187,7 +185,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 
 		// Export statements
-		RepositoryResult<? extends Statement> stIter = match(subj, pred, obj,
+		ModelResult stIter = match(subj, pred, obj,
 				includeInferred, contexts);
 
 		try {

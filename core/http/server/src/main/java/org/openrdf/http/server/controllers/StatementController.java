@@ -49,8 +49,8 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
 import org.openrdf.results.Cursor;
+import org.openrdf.results.ModelResult;
 import org.openrdf.results.impl.EmptyCursor;
 import org.openrdf.results.impl.ModelResultImpl;
 import org.openrdf.rio.RDFFormat;
@@ -77,7 +77,7 @@ public class StatementController {
 	 */
 	@ModelAttribute
 	@RequestMapping(method = { GET, HEAD }, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
-	public RepositoryResult<Statement> get(HttpServletRequest request)
+	public ModelResult get(HttpServletRequest request)
 		throws StoreException, ClientHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);

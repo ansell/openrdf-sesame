@@ -69,14 +69,15 @@ import org.openrdf.query.parser.serql.SeRQLUtil;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.repository.manager.templates.ConfigProperty;
 import org.openrdf.repository.manager.templates.ConfigTemplate;
+import org.openrdf.results.ContextResult;
 import org.openrdf.results.GraphResult;
+import org.openrdf.results.NamespaceResult;
 import org.openrdf.results.TupleResult;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.RDFFormat;
@@ -907,7 +908,7 @@ public class Console {
 			con = repository.getConnection();
 
 			try {
-				RepositoryResult<Namespace> namespaces = con.getNamespaces();
+				NamespaceResult namespaces = con.getNamespaces();
 
 				try {
 					if (namespaces.hasNext()) {
@@ -947,7 +948,7 @@ public class Console {
 			con = repository.getConnection();
 
 			try {
-				RepositoryResult<Resource> contexts = con.getContextIDs();
+				ContextResult contexts = con.getContextIDs();
 
 				try {
 					if (contexts.hasNext()) {

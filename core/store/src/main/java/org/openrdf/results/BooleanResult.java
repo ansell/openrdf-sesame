@@ -12,6 +12,6 @@ import org.openrdf.store.StoreException;
  */
 public interface BooleanResult extends Result<Boolean> {
 
-	public boolean asBoolean()
+	public Boolean asBoolean()
 		throws StoreException;
 }

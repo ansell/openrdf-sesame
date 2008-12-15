@@ -5,12 +5,7 @@
  */
 package org.openrdf.repository;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import org.openrdf.results.Result;
-import org.openrdf.store.StoreException;
 
 /**
  * A RepositoryResult is a result collection of objects (for example
@@ -40,16 +35,4 @@ import org.openrdf.store.StoreException;
  */
 @Deprecated
 public interface RepositoryResult<T> extends Result<T> {
-
-	public boolean hasNext()
-		throws StoreException;
-
-	public List<T> asList()
-		throws StoreException;
-
-	public Set<T> asSet()
-		throws StoreException;
-
-	public <C extends Collection<? super T>> C addTo(C bindingSets)
-		throws StoreException;
 }

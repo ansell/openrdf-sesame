@@ -12,7 +12,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
 import org.openrdf.results.Cursor;
 import org.openrdf.store.StoreException;
 
@@ -32,8 +31,7 @@ public class RepositoryTripleSource implements TripleSource {
 	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		RepositoryResult<Statement> result = repo.match(subj, pred, obj, true, contexts);
-		return new RepositoryResultCursor<Statement>(result);
+		return repo.match(subj, pred, obj, true, contexts);
 	}
 
 	public ValueFactory getValueFactory() {

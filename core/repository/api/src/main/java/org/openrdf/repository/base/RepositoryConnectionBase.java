@@ -36,9 +36,9 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.results.Cursor;
+import org.openrdf.results.ModelResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -135,7 +135,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 			Resource... contexts)
 		throws StoreException
 	{
-		RepositoryResult<Statement> stIter = match(subj, pred, obj, includeInferred, contexts);
+		ModelResult stIter = match(subj, pred, obj, includeInferred, contexts);
 		try {
 			return stIter.hasNext();
 		}

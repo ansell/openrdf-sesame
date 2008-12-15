@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NotImplemented;
-import org.openrdf.http.server.BooleanQueryResult;
 import org.openrdf.http.server.helpers.QueryBuilder;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Literal;
@@ -48,6 +47,8 @@ import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.results.Result;
 import org.openrdf.results.TupleResult;
+import org.openrdf.results.impl.BooleanResultImpl;
+import org.openrdf.results.impl.EmptyCursor;
 import org.openrdf.results.impl.GraphResultImpl;
 import org.openrdf.results.impl.TupleResultImpl;
 import org.openrdf.store.StoreConfigException;
@@ -132,7 +133,7 @@ public class RepositoryController {
 		}
 		else if (query instanceof BooleanQuery) {
 			// @ModelAttribute does not support a return type of boolean
-			return BooleanQueryResult.EMPTY;
+			return new BooleanResultImpl(new EmptyCursor<Boolean>());
 		}
 		else {
 			throw new NotImplemented("Unsupported query type: " + query.getClass().getName());
@@ -144,22 +145,6 @@ public class RepositoryController {
 	public Result<?> query(HttpServletRequest request, HttpServletResponse response)
 		throws HTTPException, IOException, StoreException, MalformedQueryException
 	{
-		Query query = new QueryBuilder(request).prepareQuery();
-		if (query instanceof TupleQuery) {
-			TupleQuery tQuery = (TupleQuery)query;
-			return tQuery.evaluate();
-		}
-		else if (query instanceof GraphQuery) {
-			GraphQuery gQuery = (GraphQuery)query;
-			return gQuery.evaluate();
-		}
-		else if (query instanceof BooleanQuery) {
-			BooleanQuery bQuery = (BooleanQuery)query;
-			// @ModelAttribute does not support a return type of boolean
-			return new BooleanQueryResult(bQuery.ask());
-		}
-		else {
-			throw new NotImplemented("Unsupported query type: " + query.getClass().getName());
-		}
+		return new QueryBuilder(request).prepareQuery().evaluate();
 	}
 }

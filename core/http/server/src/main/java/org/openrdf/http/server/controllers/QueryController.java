@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.openrdf.http.protocol.exceptions.BadRequest;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NotImplemented;
-import org.openrdf.http.server.BooleanQueryResult;
 import org.openrdf.http.server.helpers.QueryBuilder;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Statement;
@@ -42,6 +41,8 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.results.Result;
+import org.openrdf.results.impl.BooleanResultImpl;
+import org.openrdf.results.impl.EmptyCursor;
 import org.openrdf.results.impl.GraphResultImpl;
 import org.openrdf.results.impl.TupleResultImpl;
 import org.openrdf.store.StoreException;
@@ -116,7 +117,7 @@ public class QueryController {
 		}
 		else if (query instanceof BooleanQuery) {
 			// @ModelAttribute does not support a return type of boolean
-			return BooleanQueryResult.EMPTY;
+			return new BooleanResultImpl(new EmptyCursor<Boolean>());
 		}
 		else {
 			throw new NotImplemented("Unsupported query type: " + query.getClass().getName());
@@ -142,7 +143,7 @@ public class QueryController {
 		else if (query instanceof BooleanQuery) {
 			BooleanQuery bQuery = (BooleanQuery)query;
 			// @ModelAttribute does not support a return type of boolean
-			return new BooleanQueryResult(bQuery.ask());
+			return new BooleanResultImpl(bQuery.ask());
 		}
 		else {
 			throw new NotImplemented("Unsupported query type: " + query.getClass().getName());
