@@ -27,6 +27,8 @@ public class Federation extends SailBase {
 
 	private PrefixHashSet localPropertySpace;
 
+	private boolean disjoint;
+
 	private boolean writable = true;
 
 	private FederatedMetaData metadata;
@@ -45,6 +47,14 @@ public class Federation extends SailBase {
 
 	public void setLocalPropertySpace(Collection<String> localPropertySpace) {
 		this.localPropertySpace = new PrefixHashSet(localPropertySpace);
+	}
+
+	public boolean isDisjoint() {
+		return disjoint;
+	}
+
+	public void setDisjoint(boolean disjoint) {
+		this.disjoint = disjoint;
 	}
 
 	public void initialize()

@@ -6,6 +6,7 @@
 package org.openrdf.sail.federation.config;
 
 import static org.openrdf.repository.config.RepositoryImplConfigBase.create;
+import static org.openrdf.sail.federation.config.FederationSchema.DISJOINT;
 import static org.openrdf.sail.federation.config.FederationSchema.LOCALPROPERTYSPACE;
 import static org.openrdf.sail.federation.config.FederationSchema.MEMBER;
 
@@ -14,10 +15,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.util.ModelUtilException;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.sail.config.SailImplConfigBase;
 import org.openrdf.store.StoreConfigException;
@@ -33,6 +36,8 @@ public class FederationConfig extends SailImplConfigBase {
 	private List<RepositoryImplConfig> members = new ArrayList<RepositoryImplConfig>();
 
 	private Set<String> localPropertySpace = new HashSet<String>();
+
+	private boolean disjoint;
 
 	public List<RepositoryImplConfig> getMembers() {
 		return members;
@@ -52,6 +57,14 @@ public class FederationConfig extends SailImplConfigBase {
 
 	public void addLocalPropertySpace(String localPropertySpace) {
 		this.localPropertySpace.add(localPropertySpace);
+	}
+
+	public boolean isDisjoint() {
+		return disjoint;
+	}
+
+	public void setDisjoint(boolean disjoint) {
+		this.disjoint = disjoint;
 	}
 
 	@Override
@@ -76,6 +89,15 @@ public class FederationConfig extends SailImplConfigBase {
 		}
 		for (Value space : model.filter(implNode, LOCALPROPERTYSPACE, null).objects()) {
 			addLocalPropertySpace(space.stringValue());
+		}
+		try {
+			Literal bool = model.filter(implNode, DISJOINT, null).literal();
+			if (bool != null && bool.booleanValue()) {
+				disjoint = true;
+			}
+		}
+		catch (ModelUtilException e) {
+			throw new StoreConfigException(e);
 		}
 	}
 
