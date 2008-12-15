@@ -5,6 +5,12 @@
  */
 package org.openrdf.http.server;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import info.aduna.iteration.SingletonIteration;
 
 import org.openrdf.query.QueryResult;
@@ -19,9 +25,32 @@ import org.openrdf.store.StoreException;
 public class BooleanQueryResult extends SingletonIteration<Boolean, StoreException> implements
 		QueryResult<Boolean>
 {
+
 	public static BooleanQueryResult EMPTY = new BooleanQueryResult(null);
 
 	public BooleanQueryResult(Boolean result) {
 		super(result);
+	}
+
+	public <C extends Collection<? super Boolean>> C addTo(C collection)
+		throws StoreException
+	{
+		Boolean bool;
+		while ((bool = next()) != null) {
+			collection.add(bool);
+		}
+		return collection;
+	}
+
+	public List<Boolean> asList()
+		throws StoreException
+	{
+		return addTo(new ArrayList<Boolean>());
+	}
+
+	public Set<Boolean> asSet()
+		throws StoreException
+	{
+		return addTo(new HashSet<Boolean>());
 	}
 }

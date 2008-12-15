@@ -5,7 +5,10 @@
  */
 package org.openrdf.http.client.helpers;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -13,9 +16,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
  * @author James Leigh
  */
 public class FutureGraphQueryResult implements GraphQueryResult {
@@ -50,10 +51,22 @@ public class FutureGraphQueryResult implements GraphQueryResult {
 		return getDelegate().next();
 	}
 
-	public void remove()
+	public <C extends Collection<? super Statement>> C addTo(C collection)
 		throws StoreException
 	{
-		getDelegate().remove();
+		return getDelegate().addTo(collection);
+	}
+
+	public List<Statement> asList()
+		throws StoreException
+	{
+		return getDelegate().asList();
+	}
+
+	public Set<Statement> asSet()
+		throws StoreException
+	{
+		return getDelegate().asSet();
 	}
 
 	private GraphQueryResult getDelegate()
@@ -67,7 +80,7 @@ public class FutureGraphQueryResult implements GraphQueryResult {
 		}
 		catch (ExecutionException e) {
 			if (e.getCause() instanceof StoreException)
-				throw (StoreException) e.getCause();
+				throw (StoreException)e.getCause();
 			throw new StoreException(e);
 		}
 	}

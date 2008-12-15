@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.io.IOUtil;
-import info.aduna.iteration.Iterations;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.model.Resource;
@@ -34,11 +33,11 @@ import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.EvaluationException;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
-import org.openrdf.query.EvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQuery;
@@ -173,7 +172,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			}
 			else if (query instanceof GraphQuery) {
 				GraphQueryResult gqr = ((GraphQuery)query).evaluate();
-				Set<Statement> queryResult = Iterations.asSet(gqr);
+				Set<Statement> queryResult = gqr.asSet();
 
 				Set<Statement> expectedResult = readExpectedGraphQueryResult();
 
@@ -222,8 +221,8 @@ public abstract class SPARQLQueryTest extends TestCase {
 			 * message.append("========================\n");
 			 */
 
-			List<BindingSet> queryBindings = Iterations.asList(queryResultTable);
-			List<BindingSet> expectedBindings = Iterations.asList(expectedResultTable);
+			List<BindingSet> queryBindings = queryResultTable.asList();
+			List<BindingSet> expectedBindings = expectedResultTable.asList();
 
 			List<BindingSet> missingBindings = new ArrayList<BindingSet>(expectedBindings);
 			missingBindings.removeAll(queryBindings);

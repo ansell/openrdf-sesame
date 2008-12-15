@@ -6,7 +6,12 @@
 package org.openrdf.http.client.helpers;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -141,10 +146,26 @@ public class BackgroundGraphResult implements GraphQueryResult, Runnable, RDFHan
 		}
 	}
 
-	public void remove()
+	public <C extends Collection<? super Statement>> C addTo(C collection)
 		throws StoreException
 	{
-		throw new UnsupportedOperationException();
+		Statement st;
+		while ((st = next()) != null) {
+			collection.add(st);
+		}
+		return collection;
+	}
+
+	public List<Statement> asList()
+		throws StoreException
+	{
+		return addTo(new ArrayList<Statement>());
+	}
+
+	public Set<Statement> asSet()
+		throws StoreException
+	{
+		return addTo(new HashSet<Statement>());
 	}
 
 	public void run() {

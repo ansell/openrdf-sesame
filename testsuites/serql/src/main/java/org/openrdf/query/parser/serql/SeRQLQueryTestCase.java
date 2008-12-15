@@ -125,7 +125,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 				// Evaluate the query on the query data
 				GraphQueryResult result = con.prepareGraphQuery(getQueryLanguage(), query).evaluate();
 				try {
-					actualStatements = Iterations.addAll(result, new ArrayList<Statement>(1));
+					actualStatements = result.asList();
 				}
 				finally {
 					result.close();

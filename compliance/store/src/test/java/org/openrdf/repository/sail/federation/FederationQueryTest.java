@@ -14,7 +14,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import info.aduna.iteration.Iterations;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.query.BindingSet;
@@ -237,8 +236,8 @@ public class FederationQueryTest extends TestCase {
 			 * message.append("========================\n");
 			 */
 
-			List<BindingSet> queryBindings = Iterations.asList(queryResultTable);
-			List<BindingSet> expectedBindings = Iterations.asList(expectedResultTable);
+			List<BindingSet> queryBindings = queryResultTable.asList();
+			List<BindingSet> expectedBindings = expectedResultTable.asList();
 
 			List<BindingSet> missingBindings = new ArrayList<BindingSet>(expectedBindings);
 			missingBindings.removeAll(queryBindings);

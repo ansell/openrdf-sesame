@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import info.aduna.iteration.Iterations;
-
 import org.openrdf.model.BNode;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
@@ -103,8 +101,8 @@ public class QueryResultUtil {
 	public static boolean equals(TupleQueryResult tqr1, TupleQueryResult tqr2)
 		throws StoreException
 	{
-		List<BindingSet> list1 = Iterations.asList(tqr1);
-		List<BindingSet> list2 = Iterations.asList(tqr2);
+		List<BindingSet> list1 = tqr1.asList();
+		List<BindingSet> list2 = tqr2.asList();
 
 		// Compare the number of statements in both sets
 		if (list1.size() != list2.size()) {
@@ -117,8 +115,8 @@ public class QueryResultUtil {
 	public static boolean equals(GraphQueryResult result1, GraphQueryResult result2)
 		throws StoreException
 	{
-		Set<? extends Statement> graph1 = Iterations.asSet(result1);
-		Set<? extends Statement> graph2 = Iterations.asSet(result1);
+		Set<? extends Statement> graph1 = result1.asSet();
+		Set<? extends Statement> graph2 = result1.asSet();
 
 		return ModelUtil.equals(graph1, graph2);
 	}
