@@ -14,8 +14,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import info.aduna.iteration.Iterations;
-
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -52,7 +50,7 @@ public class RepositoryUtil {
 
 		RepositoryConnection con1 = rep1.getConnection();
 		try {
-			model1 = Iterations.asSet(con1.getStatements(null, null, null, true));
+			model1 = con1.getStatements(null, null, null, true).asSet();
 		}
 		finally {
 			con1.close();
@@ -60,7 +58,7 @@ public class RepositoryUtil {
 
 		RepositoryConnection con2 = rep2.getConnection();
 		try {
-			model2 = Iterations.asSet(con2.getStatements(null, null, null, true));
+			model2 = con2.getStatements(null, null, null, true).asSet();
 		}
 		finally {
 			con2.close();
@@ -81,7 +79,7 @@ public class RepositoryUtil {
 
 		RepositoryConnection con1 = rep1.getConnection();
 		try {
-			model1 = Iterations.asSet(con1.getStatements(null, null, null, true));
+			model1 = con1.getStatements(null, null, null, true).asSet();
 		}
 		finally {
 			con1.close();
@@ -89,7 +87,7 @@ public class RepositoryUtil {
 
 		RepositoryConnection con2 = rep2.getConnection();
 		try {
-			model2 = Iterations.asSet(con2.getStatements(null, null, null, true));
+			model2 = con2.getStatements(null, null, null, true).asSet();
 		}
 		finally {
 			con2.close();
@@ -121,7 +119,7 @@ public class RepositoryUtil {
 
 		RepositoryConnection con1 = rep1.getConnection();
 		try {
-			Iterations.addAll(con1.getStatements(null, null, null, false), model1);
+			con1.getStatements(null, null, null, false).addTo(model1);
 		}
 		finally {
 			con1.close();
@@ -129,7 +127,7 @@ public class RepositoryUtil {
 
 		RepositoryConnection con2 = rep2.getConnection();
 		try {
-			Iterations.addAll(con2.getStatements(null, null, null, false), model2);
+			con2.getStatements(null, null, null, false).addTo(model2);
 		}
 		finally {
 			con2.close();

@@ -7,25 +7,26 @@ package org.openrdf.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-
-import info.aduna.iteration.LookAheadIteration;
+import java.util.Set;
 
 import org.openrdf.query.Cursor;
+import org.openrdf.query.base.CursorWrapper;
 import org.openrdf.store.StoreException;
 
 /**
  * A RepositoryResult is a result collection of objects (for example
- * {@link org.openrdf.model.Statement}, {@link org.openrdf.model.Namespace},
- * or {@link org.openrdf.model.Resource} objects) that can be iterated over. It
+ * {@link org.openrdf.model.Statement}, {@link org.openrdf.model.Namespace}, or
+ * {@link org.openrdf.model.Resource} objects) that can be iterated over. It
  * keeps an open connection to the backend for lazy retrieval of individual
  * results. Additionally it has some utility methods to fetch all results and
  * add them to a collection.
  * <p>
  * By default, a RepositoryResult is not necessarily a (mathematical) set: it
- * may contain duplicate objects. Duplicate filtering can be {{@link #enableDuplicateFilter() switched on},
- * but this should not be used lightly as the filtering mechanism is potentially
- * memory-intensive.
+ * may contain duplicate objects. Duplicate filtering can be {
+ * {@link #enableDuplicateFilter() switched on}, but this should not be used
+ * lightly as the filtering mechanism is potentially memory-intensive.
  * <p>
  * A RepositoryResult needs to be {@link #close() closed} after use to free up
  * any resources (open connections, read locks, etc.) it has on the underlying
@@ -40,30 +41,29 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class RepositoryResult<T> extends LookAheadIteration<T, StoreException> {
-	Cursor<? extends T> delegate;
+public class RepositoryResult<T> extends CursorWrapper<T> {
+
+	private T next;
 
 	public RepositoryResult(Cursor<? extends T> delegate) {
-		this.delegate = delegate;
+		super(delegate);
 	}
 
-	public String toString() {
-		return delegate.toString();
+	public boolean hasNext()
+		throws StoreException
+	{
+		return next != null || (next = next()) != null;
 	}
 
 	@Override
-	protected T getNextElement()
+	public T next()
 		throws StoreException
 	{
-		return delegate.next();
-	}
-
-	@Override
-	protected void handleClose()
-		throws StoreException
-	{
-		super.handleClose();
-		delegate.close();
+		T result = next;
+		if (result == null)
+			return super.next();
+		next = null;
+		return result;
 	}
 
 	/**
@@ -86,6 +86,25 @@ public class RepositoryResult<T> extends LookAheadIteration<T, StoreException> {
 	}
 
 	/**
+	 * Returns a {@link Set} containing all objects of this RepositoryResult. The
+	 * RepositoryResult is fully consumed and automatically closed by this
+	 * operation.
+	 * <P>
+	 * Note: use this method with caution! It pulls the entire RepositoryResult
+	 * in memory and as such is potentially very memory-intensive.
+	 * 
+	 * @return a Set containing all objects of this RepositoryResult.
+	 * @throws StoreException
+	 *         if a problem occurred during retrieval of the results.
+	 * @see #addTo(Collection)
+	 */
+	public Set<T> asSet()
+		throws StoreException
+	{
+		return addTo(new HashSet<T>());
+	}
+
+	/**
 	 * Adds all objects of this RepositoryResult to the supplied collection. The
 	 * RepositoryResult is fully consumed and automatically closed by this
 	 * operation.
@@ -94,12 +113,13 @@ public class RepositoryResult<T> extends LookAheadIteration<T, StoreException> {
 	 * @throws StoreException
 	 *         if a problem occurred during retrieval of the results.
 	 */
-	public <C extends Collection<T>> C addTo(C collection)
+	public <C extends Collection<? super T>> C addTo(C collection)
 		throws StoreException
 	{
 		try {
-			while (hasNext()) {
-				collection.add(next());
+			T next;
+			while ((next = next()) != null) {
+				collection.add(next);
 			}
 
 			return collection;

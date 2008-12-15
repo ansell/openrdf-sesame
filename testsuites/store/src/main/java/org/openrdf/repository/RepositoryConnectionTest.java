@@ -31,9 +31,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import junit.framework.TestCase;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.Iterations;
-
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
@@ -780,8 +777,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			result.close();
 		}
 
-		List<Statement> list = Iterations.addAll(testCon.getStatements(null, name, null, false),
-				new ArrayList<Statement>());
+		List<Statement> list = testCon.getStatements(null, name, null, false).asList();
 
 		assertTrue("List should not be null", list != null);
 		assertFalse("List should not be empty", list.isEmpty());
@@ -845,8 +841,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			result.close();
 		}
 
-		List<Statement> list = Iterations.addAll(testCon.getStatements(null, name, null, false, context1),
-				new ArrayList<Statement>());
+		List<Statement> list = testCon.getStatements(null, name, null, false, context1).asList();
 
 		assertTrue("List should not be null", list != null);
 		assertFalse("List should not be empty", list.isEmpty());
@@ -864,7 +859,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.setAutoCommit(true);
 
 		// get statements with either no context or context2
-		CloseableIteration<? extends Statement, StoreException> iter = testCon.getStatements(null, null,
+		RepositoryResult<? extends Statement> iter = testCon.getStatements(null, null,
 				null, false, null, context2);
 
 		try {
@@ -1001,8 +996,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
 		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
 
-		Collection<Statement> c = Iterations.addAll(testCon.getStatements(null, null, null, false),
-				new ArrayList<Statement>());
+		Collection<Statement> c = testCon.getStatements(null, null, null, false).asList();
 
 		testCon.remove(c);
 
@@ -1021,7 +1015,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
 		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
 
-		CloseableIteration<? extends Statement, StoreException> iter = testCon.getStatements(null, null,
+		RepositoryResult<? extends Statement> iter = testCon.getStatements(null, null,
 				null, false);
 
 		try {
@@ -1051,7 +1045,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		testCon.add(new StringReader(rdfFragment.toString()), "", RDFFormat.RDFXML);
 
-		CloseableIteration<? extends Namespace, StoreException> nsIter = testCon.getNamespaces();
+		RepositoryResult<? extends Namespace> nsIter = testCon.getNamespaces();
 		try {
 			Map<String, String> map = new HashMap<String, String>();
 			int nsCount = 0;
@@ -1709,7 +1703,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	private int getTotalStatementCount(RepositoryConnection connection)
 		throws StoreException
 	{
-		CloseableIteration<? extends Statement, StoreException> iter = connection.getStatements(null,
+		RepositoryResult<? extends Statement> iter = connection.getStatements(null,
 				null, null, true);
 
 		try {

@@ -20,8 +20,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.query.BindingSet;
@@ -29,6 +27,7 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.store.StoreException;
 
 /**
@@ -58,7 +57,7 @@ public class ContextController {
 
 		List<String> columnNames = Arrays.asList("contextID");
 		List<BindingSet> contexts = new ArrayList<BindingSet>();
-		CloseableIteration<? extends Resource, StoreException> contextIter = repositoryCon.getContextIDs();
+		RepositoryResult<Resource> contextIter = repositoryCon.getContextIDs();
 
 		try {
 			while (contextIter.hasNext()) {

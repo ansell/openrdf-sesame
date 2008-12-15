@@ -10,13 +10,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
-import java.util.HashSet;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
-import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Statement;
 import org.openrdf.model.util.ModelUtil;
@@ -119,8 +116,7 @@ public class InferencingTest extends TestCase {
 			con.add(stream, inputData, RDFFormat.NTRIPLES);
 			con.commit();
 
-			entailedStatements = Iterations.addAll(con.getStatements(null, null, null, true),
-					new HashSet<Statement>());
+			entailedStatements = con.getStatements(null, null, null, true).asSet();
 		}
 		finally {
 			stream.close();
@@ -138,8 +134,7 @@ public class InferencingTest extends TestCase {
 			con.add(stream, outputData, RDFFormat.NTRIPLES);
 			con.commit();
 
-			expectedStatements = Iterations.addAll(con.getStatements(null, null, null, false),
-					new HashSet<Statement>());
+			expectedStatements = con.getStatements(null, null, null, false).asSet();
 		}
 		finally {
 			stream.close();

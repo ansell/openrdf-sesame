@@ -5,8 +5,6 @@
  */
 package org.openrdf.repository.sail;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -152,7 +150,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		handler.startRDF();
 
 		// Export namespace information
-		CloseableIteration<? extends Namespace, StoreException> nsIter = getNamespaces();
+		RepositoryResult<? extends Namespace> nsIter = getNamespaces();
 		try {
 			while (nsIter.hasNext()) {
 				Namespace ns = nsIter.next();
@@ -164,7 +162,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 
 		// Export statements
-		CloseableIteration<? extends Statement, StoreException> stIter = getStatements(subj, pred, obj,
+		RepositoryResult<? extends Statement> stIter = getStatements(subj, pred, obj,
 				includeInferred, contexts);
 
 		try {

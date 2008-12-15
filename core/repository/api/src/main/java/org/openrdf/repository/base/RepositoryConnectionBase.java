@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.GZipUtil;
 import info.aduna.io.ZipUtil;
-import info.aduna.iteration.Iteration;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -30,6 +29,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
@@ -406,16 +406,16 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 	}
 
-	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
-		throws StoreException, E
+	public void add(Cursor<? extends Statement> statementIter, Resource... contexts)
+		throws StoreException
 	{
 		boolean autoCommit = isAutoCommit();
 		setAutoCommit(false);
 
 		try {
-			while (statementIter.hasNext()) {
-				addWithoutCommit(statementIter.next(), contexts);
+			Statement st;
+			while ((st = statementIter.next()) != null) {
+				addWithoutCommit(st, contexts);
 			}
 		}
 		catch (StoreException e) {
@@ -431,6 +431,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 			throw e;
 		}
 		finally {
+			statementIter.close();
 			setAutoCommit(autoCommit);
 		}
 	}
@@ -477,16 +478,16 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 	}
 
-	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
-		throws StoreException, E
+	public void remove(Cursor<? extends Statement> statementIter, Resource... contexts)
+		throws StoreException
 	{
 		boolean autoCommit = isAutoCommit();
 		setAutoCommit(false);
 
 		try {
-			while (statementIter.hasNext()) {
-				remove(statementIter.next(), contexts);
+			Statement st;
+			while ((st = statementIter.next()) != null) {
+				remove(st, contexts);
 			}
 		}
 		catch (StoreException e) {
@@ -502,6 +503,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 			throw e;
 		}
 		finally {
+			statementIter.close();
 			setAutoCommit(autoCommit);
 		}
 	}

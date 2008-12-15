@@ -11,14 +11,12 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.Iteration;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.Cursor;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
@@ -219,9 +217,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	@Override
-	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
-		throws StoreException, E
+	public void add(Cursor<? extends Statement> statementIter, Resource... contexts)
+		throws StoreException
 	{
 		if (contexts != null && contexts.length == 0) {
 			super.add(statementIter, addContexts);
@@ -574,8 +571,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * themselves.
 	 * 
 	 * @param statementIter
-	 *        The statements to remove. In case the iterator is a
-	 *        {@link CloseableIteration}, it will be closed before this method
+	 *        The statements to remove. It will be closed before this method
 	 *        returns.
 	 * @throws StoreException
 	 *         If the statements could not be removed from the repository, for
@@ -583,9 +579,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getRemoveContexts()
 	 */
 	@Override
-	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
-		throws StoreException, E
+	public void remove(Cursor<? extends Statement> statementIter, Resource... contexts)
+		throws StoreException
 	{
 		if (contexts != null && contexts.length == 0) {
 			super.remove(statementIter, removeContexts);
