@@ -3,12 +3,10 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.results;
+package org.openrdf.query;
 
 import java.util.List;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResult;
 import org.openrdf.store.StoreException;
 
 /**
@@ -20,7 +18,8 @@ import org.openrdf.store.StoreException;
  * 
  * @author jeen
  */
-public interface TupleResult extends TupleQueryResult {
+@Deprecated
+public interface TupleQueryResult extends QueryResult<BindingSet> {
 
 	/**
 	 * Gets the names of the bindings, in order of projection.

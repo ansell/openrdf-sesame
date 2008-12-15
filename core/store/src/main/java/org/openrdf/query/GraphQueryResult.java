@@ -3,13 +3,11 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.results;
+package org.openrdf.query;
 
 import java.util.Map;
 
-import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.query.GraphQueryResult;
 import org.openrdf.store.StoreException;
 
 /**
@@ -21,7 +19,8 @@ import org.openrdf.store.StoreException;
  * 
  * @author jeen
  */
-public interface GraphResult extends GraphQueryResult {
+@Deprecated
+public interface GraphQueryResult extends QueryResult<Statement> {
 
 	/**
 	 * Retrieves relevant namespaces from the query result.
@@ -30,8 +29,5 @@ public interface GraphResult extends GraphQueryResult {
 	 * @throws StoreException
 	 */
 	public Map<String, String> getNamespaces()
-		throws StoreException;
-
-	public Model asModel()
 		throws StoreException;
 }
