@@ -72,10 +72,10 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 		throws StoreConfigException
 	{
 		try {
-			Resource sailImplNode = ModelUtil.getOptionalObjectResource(model, repImplNode, SAILIMPL);
+			Resource sailImplNode = model.filter(repImplNode, SAILIMPL, null).resource();
 
 			if (sailImplNode != null) {
-				Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, sailImplNode, SAILTYPE);
+				Literal typeLit = model.filter(sailImplNode, SAILTYPE, null).literal();
 
 				if (typeLit != null) {
 					SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());

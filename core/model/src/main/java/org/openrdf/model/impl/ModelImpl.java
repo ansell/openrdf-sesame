@@ -26,11 +26,14 @@ import java.util.Set;
 import info.aduna.collections.iterators.FilterIterator;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.ModelUtilException;
 
 /**
  * @author James Leigh
@@ -181,6 +184,66 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 
 	public Set<Resource> contexts() {
 		return contexts(null, null, null);
+	}
+
+	public Value value()
+		throws ModelUtilException
+	{
+		Iterator<Value> iter = objects().iterator();
+		if (iter.hasNext()) {
+			Value obj = iter.next();
+			if (iter.hasNext())
+				throw new ModelUtilException();
+			return obj;
+		}
+		return null;
+	}
+
+	public Literal literal()
+		throws ModelUtilException
+	{
+		Value obj = value();
+		if (obj == null)
+			return null;
+		if (obj instanceof Literal)
+			return (Literal)obj;
+		throw new ModelUtilException();
+	}
+
+	public Resource resource()
+		throws ModelUtilException
+	{
+		Value obj = value();
+		if (obj == null)
+			return null;
+		if (obj instanceof Resource)
+			return (Resource)obj;
+		throw new ModelUtilException();
+	}
+
+	public URI uri()
+		throws ModelUtilException
+	{
+		Value obj = value();
+		if (obj == null)
+			return null;
+		if (obj instanceof URI)
+			return (URI)obj;
+		throw new ModelUtilException();
+	}
+
+	public int hashCode() {
+		return size();
+	}
+
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o instanceof Model) {
+			Model model = (Model)o;
+			return ModelUtil.equals(this, model);
+		}
+		return false;
 	}
 
 	Set<Resource> contexts(final Resource subj, final URI pred, final Value obj) {
@@ -480,10 +543,6 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			namespaces.remove(prefix);
 		}
 
-		private <T> Set<T> emptySet() {
-			return Collections.emptySet();
-		}
-
 		@Override
 		public Iterator<Statement> iterator() {
 			return emptySet.iterator();
@@ -512,7 +571,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		}
 
 		public Set<Resource> contexts() {
-			return emptySet();
+			return Collections.emptySet();
 		}
 
 		public Model filter(Resource subj, URI pred, Value obj, Resource... contexts) {
@@ -520,11 +579,11 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		}
 
 		public Set<Value> objects() {
-			return emptySet();
+			return Collections.emptySet();
 		}
 
 		public Set<URI> predicates() {
-			return emptySet();
+			return Collections.emptySet();
 		}
 
 		public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
@@ -532,7 +591,37 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		}
 
 		public Set<Resource> subjects() {
-			return emptySet();
+			return Collections.emptySet();
+		}
+
+		public Literal literal() {
+			return null;
+		}
+
+		public Value value() {
+			return null;
+		}
+
+		public Resource resource() {
+			return null;
+		}
+
+		public URI uri() {
+			return null;
+		}
+
+		public int hashCode() {
+			return size();
+		}
+
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o instanceof Model) {
+				Model model = (Model)o;
+				return model.isEmpty();
+			}
+			return false;
 		}
 
 	}
@@ -747,6 +836,66 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 				return Collections.singleton(subj);
 			}
 			return ModelImpl.this.subjects(pred, obj, contexts);
+		}
+
+		public Value value()
+			throws ModelUtilException
+		{
+			Iterator<Value> iter = objects().iterator();
+			if (iter.hasNext()) {
+				Value obj = iter.next();
+				if (iter.hasNext())
+					throw new ModelUtilException();
+				return obj;
+			}
+			return null;
+		}
+
+		public Literal literal()
+			throws ModelUtilException
+		{
+			Value obj = value();
+			if (obj == null)
+				return null;
+			if (obj instanceof Literal)
+				return (Literal)obj;
+			throw new ModelUtilException();
+		}
+
+		public Resource resource()
+			throws ModelUtilException
+		{
+			Value obj = value();
+			if (obj == null)
+				return null;
+			if (obj instanceof Resource)
+				return (Resource)obj;
+			throw new ModelUtilException();
+		}
+
+		public URI uri()
+			throws ModelUtilException
+		{
+			Value obj = value();
+			if (obj == null)
+				return null;
+			if (obj instanceof URI)
+				return (URI)obj;
+			throw new ModelUtilException();
+		}
+
+		public int hashCode() {
+			return size();
+		}
+
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o instanceof Model) {
+				Model model = (Model)o;
+				return ModelUtil.equals(this, model);
+			}
+			return false;
 		}
 
 		private ModelIterator statementIterator() {

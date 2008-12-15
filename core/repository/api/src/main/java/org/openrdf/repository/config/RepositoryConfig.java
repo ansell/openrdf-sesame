@@ -119,17 +119,17 @@ public class RepositoryConfig {
 		throws StoreConfigException
 	{
 		try {
-			Literal titleLit = ModelUtil.getOptionalObjectLiteral(model, repositoryNode, RDFS.LABEL);
+			Literal titleLit = model.filter(repositoryNode, RDFS.LABEL, null).literal();
 			if (titleLit != null) {
 				setTitle(titleLit.getLabel());
 			}
 
-			titleLit = ModelUtil.getOptionalObjectLiteral(model, repositoryNode, REPOSITORYTITLE);
+			titleLit = model.filter(repositoryNode, REPOSITORYTITLE, null).literal();
 			if (titleLit != null) {
 				setTitle(titleLit.getLabel());
 			}
 
-			Resource implNode = ModelUtil.getOptionalObjectResource(model, repositoryNode, REPOSITORYIMPL);
+			Resource implNode = model.filter(repositoryNode, REPOSITORYIMPL, null).resource();
 			if (implNode != null) {
 				setRepositoryImplConfig(RepositoryImplConfigBase.create(model, implNode));
 			}

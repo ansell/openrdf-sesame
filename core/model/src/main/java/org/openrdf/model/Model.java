@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.model.util.ModelUtilException;
 
 /**
  * An RDF model, represented as a set of {@link Statement}s with predictable
@@ -59,8 +60,8 @@ public interface Model extends Set<Statement>, Serializable {
 	/**
 	 * Determines if statements with the specified subject, predicate, object and
 	 * (optionally) context exist in this model. The <tt>subject</tt>,
-	 * <tt>predicate</tt> and <tt>object</tt> parameters can be <tt>null</tt>
-	 * to indicate wildcards. The <tt>contexts</tt> parameter is a wildcard and
+	 * <tt>predicate</tt> and <tt>object</tt> parameters can be <tt>null</tt> to
+	 * indicate wildcards. The <tt>contexts</tt> parameter is a wildcard and
 	 * accepts zero or more values. If no contexts are specified, statements will
 	 * match disregarding their context. If one or more contexts are specified,
 	 * statements with a context matching one of these will match. Note: to match
@@ -69,8 +70,8 @@ public interface Model extends Set<Statement>, Serializable {
 	 * <p>
 	 * Examples: <tt>model.contains(s1, null, null)</tt> is true if any
 	 * statements in this model have subject <tt>s1</tt>,<br>
-	 * <tt>model.contains(null, null, null, c1)</tt> is true if any statements
-	 * in this model have context <tt>c1</tt>,<br>
+	 * <tt>model.contains(null, null, null, c1)</tt> is true if any statements in
+	 * this model have context <tt>c1</tt>,<br>
 	 * <tt>model.contains(null, null, null, (Resource)null)</tt> is true if any
 	 * statements in this model have no associated context,<br>
 	 * <tt>model.contains(null, null, null, c1, c2, c3)</tt> is true if any
@@ -141,30 +142,29 @@ public interface Model extends Set<Statement>, Serializable {
 	/**
 	 * Removes statements with the specified subject, predicate, object and
 	 * (optionally) context exist in this model. The <tt>subject</tt>,
-	 * <tt>predicate</tt> and <tt>object</tt> parameters can be <tt>null</tt>
-	 * to indicate wildcards. The <tt>contexts</tt> parameter is a wildcard and
+	 * <tt>predicate</tt> and <tt>object</tt> parameters can be <tt>null</tt> to
+	 * indicate wildcards. The <tt>contexts</tt> parameter is a wildcard and
 	 * accepts zero or more values. If no contexts are specified, statements will
 	 * be removed disregarding their context. If one or more contexts are
 	 * specified, statements with a context matching one of these will be
 	 * removed. Note: to remove statements without an associated context, specify
 	 * the value <tt>null</tt> and explicitly cast it to type <tt>Resource</tt>.
 	 * <p>
-	 * Examples: <tt>model.remove(s1, null, null)</tt> removes any statements
-	 * in this model have subject <tt>s1</tt>,<br>
-	 * <tt>model.remove(null, null, null, c1)</tt> removes any statements in
-	 * this model have context <tt>c1</tt>,<br>
+	 * Examples: <tt>model.remove(s1, null, null)</tt> removes any statements in
+	 * this model have subject <tt>s1</tt>,<br>
+	 * <tt>model.remove(null, null, null, c1)</tt> removes any statements in this
+	 * model have context <tt>c1</tt>,<br>
 	 * <tt>model.remove(null, null, null, (Resource)null)</tt> removes any
 	 * statements in this model have no associated context,<br>
-	 * <tt>model.remove(null, null, null, c1, c2, c3)</tt> removes any
-	 * statements in this model have context <tt>c1</tt>, <tt>c2</tt> or
-	 * <tt>c3</tt>.
+	 * <tt>model.remove(null, null, null, c1, c2, c3)</tt> removes any statements
+	 * in this model have context <tt>c1</tt>, <tt>c2</tt> or <tt>c3</tt>.
 	 * 
 	 * @param subj
 	 *        The subject of the statements to remove, <tt>null</tt> to remove
 	 *        statements with any subject.
 	 * @param pred
-	 *        The predicate of the statements to remove, <tt>null</tt> to
-	 *        remove statements with any predicate.
+	 *        The predicate of the statements to remove, <tt>null</tt> to remove
+	 *        statements with any predicate.
 	 * @param obj
 	 *        The object of the statements to remove, <tt>null</tt> to remove
 	 *        statements with any object.
@@ -186,14 +186,14 @@ public interface Model extends Set<Statement>, Serializable {
 
 	/**
 	 * Returns a view of the statements with the specified subject, predicate,
-	 * object and (optionally) context. The <tt>subject</tt>,
-	 * <tt>predicate</tt> and <tt>object</tt> parameters can be <tt>null</tt>
-	 * to indicate wildcards. The <tt>contexts</tt> parameter is a wildcard and
-	 * accepts zero or more values. If no contexts are specified, statements will
-	 * match disregarding their context. If one or more contexts are specified,
-	 * statements with a context matching one of these will match. Note: to match
-	 * statements without an associated context, specify the value <tt>null</tt>
-	 * and explicitly cast it to type <tt>Resource</tt>.
+	 * object and (optionally) context. The <tt>subject</tt>, <tt>predicate</tt>
+	 * and <tt>object</tt> parameters can be <tt>null</tt> to indicate wildcards.
+	 * The <tt>contexts</tt> parameter is a wildcard and accepts zero or more
+	 * values. If no contexts are specified, statements will match disregarding
+	 * their context. If one or more contexts are specified, statements with a
+	 * context matching one of these will match. Note: to match statements
+	 * without an associated context, specify the value <tt>null</tt> and
+	 * explicitly cast it to type <tt>Resource</tt>.
 	 * <p>
 	 * The returned model is backed by this Model, so changes to this Model are
 	 * reflected in the returned model, and vice-versa. If this Model is modified
@@ -202,9 +202,9 @@ public interface Model extends Set<Statement>, Serializable {
 	 * iteration are undefined. The model supports element removal, which removes
 	 * the corresponding statement from this Model, via the
 	 * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>,
-	 * <tt>retainAll</tt>, and <tt>clear</tt> operations. The statements
-	 * passed to the <tt>add</tt> and <tt>addAll</tt> operations must match
-	 * the parameter pattern.
+	 * <tt>retainAll</tt>, and <tt>clear</tt> operations. The statements passed
+	 * to the <tt>add</tt> and <tt>addAll</tt> operations must match the
+	 * parameter pattern.
 	 * <p>
 	 * Examples: <tt>model.filter(s1, null, null)</tt> matches all statements
 	 * that have subject <tt>s1</tt>,<br>
@@ -212,8 +212,8 @@ public interface Model extends Set<Statement>, Serializable {
 	 * have context <tt>c1</tt>,<br>
 	 * <tt>model.filter(null, null, null, (Resource)null)</tt> matches all
 	 * statements that have no associated context,<br>
-	 * <tt>model.filter(null, null, null, c1, c2, c3)</tt> matches all
-	 * statements that have context <tt>c1</tt>, <tt>c2</tt> or <tt>c3</tt>.
+	 * <tt>model.filter(null, null, null, c1, c2, c3)</tt> matches all statements
+	 * that have context <tt>c1</tt>, <tt>c2</tt> or <tt>c3</tt>.
 	 * 
 	 * @param subj
 	 *        The subject of the statements to match, <tt>null</tt> to match
@@ -245,10 +245,10 @@ public interface Model extends Set<Statement>, Serializable {
 	 * set is in progress (except through the iterator's own <tt>remove</tt>
 	 * operation), the results of the iteration are undefined. The set supports
 	 * element removal, which removes the corresponding statement from the model,
-	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>,
-	 * <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt>
-	 * operations. It does not support the <tt>add</tt> or <tt>addAll</tt>
-	 * operations if the parameters <tt>pred</tt> or <tt>obj</tt> are null.
+	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>,
+	 * <tt>retainAll</tt>, and <tt>clear</tt> operations. It does not support the
+	 * <tt>add</tt> or <tt>addAll</tt> operations if the parameters <tt>pred</tt>
+	 * or <tt>obj</tt> are null.
 	 * 
 	 * @return a set view of the subjects contained in this model
 	 */
@@ -261,10 +261,10 @@ public interface Model extends Set<Statement>, Serializable {
 	 * set is in progress (except through the iterator's own <tt>remove</tt>
 	 * operation), the results of the iteration are undefined. The set supports
 	 * element removal, which removes the corresponding statement from the model,
-	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>,
-	 * <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt>
-	 * operations. It does not support the <tt>add</tt> or <tt>addAll</tt>
-	 * operations if the parameters <tt>subj</tt> or <tt>obj</tt> are null.
+	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>,
+	 * <tt>retainAll</tt>, and <tt>clear</tt> operations. It does not support the
+	 * <tt>add</tt> or <tt>addAll</tt> operations if the parameters <tt>subj</tt>
+	 * or <tt>obj</tt> are null.
 	 * 
 	 * @return a set view of the predicates contained in this model
 	 */
@@ -277,10 +277,10 @@ public interface Model extends Set<Statement>, Serializable {
 	 * is in progress (except through the iterator's own <tt>remove</tt>
 	 * operation), the results of the iteration are undefined. The set supports
 	 * element removal, which removes the corresponding statement from the model,
-	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>,
-	 * <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt>
-	 * operations. It does not support the <tt>add</tt> or <tt>addAll</tt>
-	 * operations if the parameters <tt>subj</tt> or <tt>pred</tt> are null.
+	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>,
+	 * <tt>retainAll</tt>, and <tt>clear</tt> operations. It does not support the
+	 * <tt>add</tt> or <tt>addAll</tt> operations if the parameters <tt>subj</tt>
+	 * or <tt>pred</tt> are null.
 	 * 
 	 * @return a set view of the objects contained in this model
 	 */
@@ -293,13 +293,68 @@ public interface Model extends Set<Statement>, Serializable {
 	 * set is in progress (except through the iterator's own <tt>remove</tt>
 	 * operation), the results of the iteration are undefined. The set supports
 	 * element removal, which removes the corresponding statement from the model,
-	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>,
-	 * <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt>
-	 * operations. It does not support the <tt>add</tt> or <tt>addAll</tt>
-	 * operations if the parameters <tt>subj</tt>, <tt>pred</tt> or
-	 * <tt>obj</tt> are null.
+	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>,
+	 * <tt>retainAll</tt>, and <tt>clear</tt> operations. It does not support the
+	 * <tt>add</tt> or <tt>addAll</tt> operations if the parameters <tt>subj</tt>
+	 * , <tt>pred</tt> or <tt>obj</tt> are null.
 	 * 
 	 * @return a set view of the contexts contained in this model
 	 */
 	public Set<Resource> contexts();
+
+	/**
+	 * Gets the object of the statement(s). If contains one or more statements,
+	 * all these statements should have the same object. A
+	 * {@link ModelUtilException} is thrown if this is not the case.
+	 * 
+	 * @return The object of the matched statement(s), or <tt>null</tt> if no
+	 *         matching statements were found.
+	 * @throws ModelUtilException
+	 *         If the statements matched by the specified parameters have more
+	 *         than one unique object.
+	 */
+	public Value value()
+		throws ModelUtilException;
+
+	/**
+	 * Utility method that casts the return value of {@link #value()} to a
+	 * Literal, or throws a ModelUtilException if that value is not a Literal.
+	 * 
+	 * @return The object of the matched statement(s), or <tt>null</tt> if no
+	 *         matching statements were found.
+	 * @throws ModelUtilException
+	 *         If such an exception is thrown by
+	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
+	 *         its return value is not a Literal.
+	 */
+	public Literal literal()
+		throws ModelUtilException;
+
+	/**
+	 * Utility method that casts the return value of {@link #value()} to a
+	 * Resource, or throws a ModelUtilException if that value is not a Resource.
+	 * 
+	 * @return The object of the matched statement(s), or <tt>null</tt> if no
+	 *         matching statements were found.
+	 * @throws ModelUtilException
+	 *         If such an exception is thrown by
+	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
+	 *         its return value is not a Resource.
+	 */
+	public Resource resource()
+		throws ModelUtilException;
+
+	/**
+	 * Utility method that casts the return value of {@link #value()} to a URI,
+	 * or throws a ModelUtilException if that value is not a URI.
+	 * 
+	 * @return The object of the matched statement(s), or <tt>null</tt> if no
+	 *         matching statements were found.
+	 * @throws ModelUtilException
+	 *         If such an exception is thrown by
+	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
+	 *         its return value is not a URI.
+	 */
+	public URI uri()
+		throws ModelUtilException;
 }

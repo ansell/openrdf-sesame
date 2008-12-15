@@ -134,20 +134,20 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			Value server = ModelUtil.getOptionalObject(model, implNode, SERVERURL);
-			Literal id = ModelUtil.getOptionalObjectLiteral(model, implNode, REPOSITORYID);
+			Value server = model.filter(implNode, SERVERURL, null).value();
+			Literal id = model.filter(implNode, REPOSITORYID, null).literal();
 			if (server != null && id != null) {
 				setURL(server.stringValue() + "/repositories/" + id.stringValue());
 			}
-			URI uri = ModelUtil.getOptionalObjectURI(model, implNode, REPOSITORYURL);
+			URI uri = model.filter(implNode, REPOSITORYURL, null).uri();
 			if (uri != null) {
 				setURL(uri.toString());
 			}
-			Literal username = ModelUtil.getOptionalObjectLiteral(model, implNode, USERNAME);
+			Literal username = model.filter(implNode, USERNAME, null).literal();
 			if (username != null) {
 				setUsername(username.getLabel());
 			}
-			Literal password = ModelUtil.getOptionalObjectLiteral(model, implNode, PASSWORD);
+			Literal password = model.filter(implNode, PASSWORD, null).literal();
 			if (password != null) {
 				setPassword(password.getLabel());
 			}
