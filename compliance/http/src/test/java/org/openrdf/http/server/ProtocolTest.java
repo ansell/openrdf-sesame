@@ -19,7 +19,7 @@ import info.aduna.net.http.HttpClientUtil;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.rio.RDFFormat;
@@ -120,7 +120,7 @@ public class ProtocolTest extends TestCase {
 	public void testSeRQLselect()
 		throws Exception
 	{
-		TupleQueryResult queryResult = evaluate(TestServer.REPOSITORY_URL, "select * from {X} P {Y}",
+		TupleResult queryResult = evaluate(TestServer.REPOSITORY_URL, "select * from {X} P {Y}",
 				QueryLanguage.SERQL);
 		QueryResultIO.write(queryResult, TupleQueryResultFormat.SPARQL, System.out);
 	}
@@ -186,7 +186,7 @@ public class ProtocolTest extends TestCase {
 		}
 	}
 
-	private TupleQueryResult evaluate(String location, String query, QueryLanguage queryLn)
+	private TupleResult evaluate(String location, String query, QueryLanguage queryLn)
 		throws Exception
 	{
 		location += "?query=" + URLEncoder.encode(query, "UTF-8") + "&queryLn=" + queryLn.getName();

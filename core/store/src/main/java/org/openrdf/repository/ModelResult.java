@@ -5,19 +5,11 @@
  */
 package org.openrdf.repository;
 
-import org.openrdf.model.Statement;
-import org.openrdf.query.Cursor;
-
-
+import org.openrdf.query.GraphResult;
 
 /**
- *
  * @author James Leigh
  */
-public class ModelResult extends RepositoryResult<Statement> {
-
-	public ModelResult(Cursor<? extends Statement> delegate) {
-		super(delegate);
-	}
+public interface ModelResult extends GraphResult {
 
 }

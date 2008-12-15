@@ -18,7 +18,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.LiteralUtil;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.repository.manager.config.RemoteConfigManager;
@@ -190,7 +190,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 			SesameClient client = new SesameClient(serverURL);
 			client.setUsernameAndPassword(username, password);
 
-			TupleQueryResult responseFromServer = client.repositories().list();
+			TupleResult responseFromServer = client.repositories().list();
 			while (responseFromServer.hasNext()) {
 				BindingSet bindingSet = responseFromServer.next();
 				RepositoryInfo repInfo = new RepositoryInfo();

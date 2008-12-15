@@ -12,17 +12,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.store.StoreException;
 
 /**
  * @author James Leigh
  */
-public class FutureTupleQueryResult implements TupleQueryResult {
+public class FutureTupleQueryResult implements TupleResult {
 
-	private Future<TupleQueryResult> delegate;
+	private Future<TupleResult> delegate;
 
-	public FutureTupleQueryResult(Future<TupleQueryResult> delegate) {
+	public FutureTupleQueryResult(Future<TupleResult> delegate) {
 		this.delegate = delegate;
 	}
 
@@ -68,7 +68,7 @@ public class FutureTupleQueryResult implements TupleQueryResult {
 		return getDelegate().asSet();
 	}
 
-	private TupleQueryResult getDelegate()
+	private TupleResult getDelegate()
 		throws StoreException
 	{
 		try {

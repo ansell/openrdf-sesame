@@ -18,8 +18,8 @@ import info.aduna.text.StringUtil;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultUtil;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.impl.MutableTupleQueryResult;
+import org.openrdf.query.TupleResult;
+import org.openrdf.query.impl.MutableTupleResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
@@ -169,8 +169,8 @@ public class FederationQueryTest extends TestCase {
 	private void assertQuery(String qry)
 		throws Exception
 	{
-		TupleQueryResult expected = reference.prepareTupleQuery(SPARQL, WHERE + qry).evaluate();
-		TupleQueryResult result = con.prepareTupleQuery(SPARQL, WHERE + qry).evaluate();
+		TupleResult expected = reference.prepareTupleQuery(SPARQL, WHERE + qry).evaluate();
+		TupleResult result = con.prepareTupleQuery(SPARQL, WHERE + qry).evaluate();
 		compareTupleQueryResults(expected, result);
 	}
 
@@ -207,13 +207,13 @@ public class FederationQueryTest extends TestCase {
 		return member;
 	}
 
-	private void compareTupleQueryResults(TupleQueryResult expectedResult, TupleQueryResult queryResult)
+	private void compareTupleQueryResults(TupleResult expectedResult, TupleResult queryResult)
 		throws Exception
 	{
 		// Create MutableTupleQueryResult to be able to re-iterate over the
 		// results
-		MutableTupleQueryResult queryResultTable = new MutableTupleQueryResult(queryResult);
-		MutableTupleQueryResult expectedResultTable = new MutableTupleQueryResult(expectedResult);
+		MutableTupleResult queryResultTable = new MutableTupleResult(queryResult);
+		MutableTupleResult expectedResultTable = new MutableTupleResult(expectedResult);
 
 		if (!QueryResultUtil.equals(expectedResultTable, queryResultTable)) {
 			queryResultTable.beforeFirst();

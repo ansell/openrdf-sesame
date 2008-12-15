@@ -8,7 +8,7 @@ package org.openrdf.query.dawg;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.ModelImpl;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.rio.RDFHandlerException;
@@ -20,7 +20,7 @@ import org.openrdf.store.StoreException;
  */
 public class DAWGTestResultSetUtil {
 
-	public static TupleQueryResult toTupleQueryResult(Iterable<? extends Statement> dawgGraph)
+	public static TupleResult toTupleQueryResult(Iterable<? extends Statement> dawgGraph)
 		throws DAWGTestResultSetParseException
 	{
 		TupleQueryResultBuilder tqrBuilder = new TupleQueryResultBuilder();
@@ -40,7 +40,7 @@ public class DAWGTestResultSetUtil {
 		}
 	}
 
-	public static Model toGraph(TupleQueryResult tqr)
+	public static Model toGraph(TupleResult tqr)
 		throws StoreException
 	{
 		Model model = new ModelImpl();

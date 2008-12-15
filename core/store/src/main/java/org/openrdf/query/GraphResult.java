@@ -7,7 +7,9 @@ package org.openrdf.query;
 
 import java.util.Map;
 
+import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.store.StoreException;
 
 /**
@@ -19,7 +21,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author jeen
  */
-public interface GraphQueryResult extends QueryResult<Statement> {
+public interface GraphResult extends RepositoryResult<Statement> {
 
 	/**
 	 * Retrieves relevant namespaces from the query result.
@@ -28,5 +30,8 @@ public interface GraphQueryResult extends QueryResult<Statement> {
 	 * @throws StoreException
 	 */
 	public Map<String, String> getNamespaces()
+		throws StoreException;
+
+	public Model asModel()
 		throws StoreException;
 }

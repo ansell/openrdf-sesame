@@ -48,11 +48,11 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
@@ -399,7 +399,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		queryBuilder.append("         foaf:mbox {mbox}");
 		queryBuilder.append(" USING NAMESPACE foaf = <" + FOAF_NS + ">");
 
-		TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SERQL, queryBuilder.toString()).evaluate();
+		TupleResult result = testCon.prepareTupleQuery(QueryLanguage.SERQL, queryBuilder.toString()).evaluate();
 
 		try {
 			assertTrue(result != null);
@@ -432,7 +432,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		queryBuilder.append(" FROM {person} foaf:name {").append(Александър.getLabel()).append("}");
 		queryBuilder.append(" USING NAMESPACE foaf = <" + FOAF_NS + ">");
 
-		TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SERQL, queryBuilder.toString()).evaluate();
+		TupleResult result = testCon.prepareTupleQuery(QueryLanguage.SERQL, queryBuilder.toString()).evaluate();
 
 		try {
 			assertTrue(result != null);
@@ -469,7 +469,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SERQL, queryBuilder.toString());
 		query.setBinding("name", nameBob);
 
-		TupleQueryResult result = query.evaluate();
+		TupleResult result = query.evaluate();
 
 		try {
 			assertTrue(result != null);
@@ -513,7 +513,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(query instanceof TupleQuery);
 		query.setBinding("name", nameBob);
 
-		TupleQueryResult result = ((TupleQuery) query).evaluate();
+		TupleResult result = ((TupleQuery) query).evaluate();
 
 		try {
 			assertTrue(result != null);
@@ -549,7 +549,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SERQL, queryBuilder.toString());
 		query.setBinding("name", Александър);
 
-		TupleQueryResult result = query.evaluate();
+		TupleResult result = query.evaluate();
 
 		try {
 			assertTrue(result != null);
@@ -583,7 +583,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		queryBuilder.append("         foaf:mbox {mbox}");
 		queryBuilder.append(" USING NAMESPACE foaf = <" + FOAF_NS + ">");
 
-		GraphQueryResult result = testCon.prepareGraphQuery(QueryLanguage.SERQL, queryBuilder.toString()).evaluate();
+		GraphResult result = testCon.prepareGraphQuery(QueryLanguage.SERQL, queryBuilder.toString()).evaluate();
 
 		try {
 			assertTrue(result != null);
@@ -625,7 +625,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		GraphQuery query = testCon.prepareGraphQuery(QueryLanguage.SERQL, queryBuilder.toString());
 		query.setBinding("name", nameBob);
 
-		GraphQueryResult result = query.evaluate();
+		GraphResult result = query.evaluate();
 
 		try {
 			assertTrue(result != null);
@@ -1424,7 +1424,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		xcal.setTimezone(OFFSET);
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, SELECT_BY_DATE);
 		query.setBinding("date", vf.createLiteral(xcal));
-		TupleQueryResult result = query.evaluate();
+		TupleResult result = query.evaluate();
 		List<BindingSet> list = new ArrayList<BindingSet>();
 		while (result.hasNext()) {
 			list.add(result.next());
@@ -1447,7 +1447,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(s, p1, v3);
 		String qry = "PREFIX :<urn:test:> SELECT ?s ?v1 ?v2 WHERE " + optional;
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, qry);
-		TupleQueryResult result = query.evaluate();
+		TupleResult result = query.evaluate();
 		Set<List<Value>> set = new HashSet<List<Value>>();
 		while (result.hasNext()) {
 			BindingSet bindings = result.next();
@@ -1470,7 +1470,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(s, p2, o);
 		String qry = "PREFIX :<urn:test:> SELECT ?p WHERE " + union;
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, qry);
-		TupleQueryResult result = query.evaluate();
+		TupleResult result = query.evaluate();
 		List<Value> list = new ArrayList<Value>();
 		while (result.hasNext()) {
 			BindingSet bindings = result.next();
@@ -1492,7 +1492,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		String qry = "PREFIX :<urn:test:>\nPREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>\n"
 				+ "SELECT ?s WHERE { ?s :p1 ?one ; :p3 ?three FILTER (datatype(?one / ?three) = xsd:decimal) }";
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, qry);
-		TupleQueryResult result = query.evaluate();
+		TupleResult result = query.evaluate();
 		assertTrue (result.hasNext());
 		result.close();
 	}
@@ -1664,7 +1664,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleQuery tupleQuery = testCon.prepareTupleQuery(QueryLanguage.SERQL,
 				"SELECT S, P, O FROM {S} P {O} WHERE P = <" + pred.stringValue() + ">", null);
 
-		TupleQueryResult iter;
+		TupleResult iter;
 		iter = tupleQuery.evaluate();
 
 		try {

@@ -18,7 +18,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author jeen
  */
-public interface TupleQueryResult extends QueryResult<BindingSet> {
+public interface TupleResult extends Result<BindingSet> {
 
 	/**
 	 * Gets the names of the bindings, in order of projection.

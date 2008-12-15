@@ -39,8 +39,8 @@ import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.ModelImpl;
-import org.openrdf.query.GraphQueryResult;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.GraphResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
@@ -382,7 +382,7 @@ public class HTTPConnection {
 		}
 	}
 
-	public TupleQueryResult getTupleQueryResult()
+	public TupleResult getTupleQueryResult()
 		throws IOException, QueryResultParseException, NoCompatibleMediaType
 	{
 		String mimeType = readContentType();
@@ -431,7 +431,7 @@ public class HTTPConnection {
 		return model;
 	}
 
-	public GraphQueryResult getGraphQueryResult()
+	public GraphResult getGraphQueryResult()
 		throws IOException, RDFParseException, NoCompatibleMediaType
 	{
 		String mimeType = readContentType();

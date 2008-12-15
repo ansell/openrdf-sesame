@@ -16,19 +16,19 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryResult;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.Result;
+import org.openrdf.query.TupleResult;
 import org.openrdf.store.StoreException;
 
 /**
- * An implementation of the {@link TupleQueryResult} interface that stores the
+ * An implementation of the {@link TupleResult} interface that stores the
  * complete query result in memory. The query results in a
  * MutableTupleQueryResult can be iterated over multiple times and can also be
  * iterated over in reverse order.
  * 
  * @author Arjohn Kampman
  */
-public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
+public class MutableTupleResult implements TupleResult, Cloneable {
 
 	/*-----------*
 	 * Variables *
@@ -55,7 +55,7 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 	 * Constructors *
 	 *--------------*/
 
-	public <E extends Exception> MutableTupleQueryResult(Collection<String> bindingNames,
+	public <E extends Exception> MutableTupleResult(Collection<String> bindingNames,
 			BindingSet... bindingSets)
 	{
 		this(bindingNames, Arrays.asList(bindingSets));
@@ -70,22 +70,22 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 	 * @param bindingNames
 	 *        The binding names, in order of projection.
 	 */
-	public MutableTupleQueryResult(Collection<String> bindingNames,
+	public MutableTupleResult(Collection<String> bindingNames,
 			Collection<? extends BindingSet> bindingSets)
 	{
 		this.bindingNames.addAll(bindingNames);
 		this.bindingSets.addAll(bindingSets);
 	}
 
-	public MutableTupleQueryResult(Collection<String> bindingNames,
-			QueryResult<? extends BindingSet> bindingSetIter)
+	public MutableTupleResult(Collection<String> bindingNames,
+			Result<? extends BindingSet> bindingSetIter)
 		throws StoreException
 	{
 		this.bindingNames.addAll(bindingNames);
 		bindingSetIter.addTo(this.bindingSets);
 	}
 
-	public MutableTupleQueryResult(TupleQueryResult tqr)
+	public MutableTupleResult(TupleResult tqr)
 		throws StoreException
 	{
 		this(tqr.getBindingNames(), tqr);
@@ -267,10 +267,10 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 	}
 
 	@Override
-	public MutableTupleQueryResult clone()
+	public MutableTupleResult clone()
 		throws CloneNotSupportedException
 	{
-		MutableTupleQueryResult clone = (MutableTupleQueryResult)super.clone();
+		MutableTupleResult clone = (MutableTupleResult)super.clone();
 		clone.bindingNames = new LinkedHashSet<String>(bindingNames);
 		clone.bindingSets = new LinkedList<BindingSet>(bindingSets);
 		return clone;

@@ -14,7 +14,7 @@ import org.openrdf.http.client.helpers.FutureGraphQueryResult;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -31,13 +31,13 @@ public class GraphQueryClient extends QueryClient {
 		super(query);
 	}
 
-	public GraphQueryResult get(final Dataset dataset, final boolean includeInferred,
+	public GraphResult get(final Dataset dataset, final boolean includeInferred,
 			final Binding... bindings)
 		throws StoreException
 	{
-		Callable<GraphQueryResult> task = new Callable<GraphQueryResult>() {
+		Callable<GraphResult> task = new Callable<GraphResult>() {
 
-			public GraphQueryResult call()
+			public GraphResult call()
 				throws StoreException, MalformedQueryException
 			{
 				try {

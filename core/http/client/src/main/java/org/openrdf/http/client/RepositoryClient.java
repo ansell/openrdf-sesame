@@ -29,10 +29,10 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.UnsupportedQueryLanguageException;
@@ -135,15 +135,15 @@ public class RepositoryClient {
 		}
 	}
 
-	public TupleQueryResult sendTupleQuery(QueryLanguage ql, String query, Dataset dataset,
+	public TupleResult sendTupleQuery(QueryLanguage ql, String query, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
 		throws StoreException, MalformedQueryException
 	{
 		final HTTPConnection method = repository.post();
 		method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
-		Callable<TupleQueryResult> task = new Callable<TupleQueryResult>() {
+		Callable<TupleResult> task = new Callable<TupleResult>() {
 
-			public TupleQueryResult call()
+			public TupleResult call()
 				throws StoreException, MalformedQueryException
 			{
 				try {
@@ -191,15 +191,15 @@ public class RepositoryClient {
 		}
 	}
 
-	public GraphQueryResult sendGraphQuery(QueryLanguage ql, String query, Dataset dataset,
+	public GraphResult sendGraphQuery(QueryLanguage ql, String query, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
 		throws StoreException, MalformedQueryException
 	{
 		final HTTPConnection method = repository.post();
 		method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
-		Callable<GraphQueryResult> task = new Callable<GraphQueryResult>() {
+		Callable<GraphResult> task = new Callable<GraphResult>() {
 
-			public GraphQueryResult call()
+			public GraphResult call()
 				throws StoreException, MalformedQueryException
 			{
 				try {

@@ -5,16 +5,16 @@
  */
 package org.openrdf.repository;
 
+import java.util.Map;
+
 import org.openrdf.model.Namespace;
-import org.openrdf.query.Cursor;
+import org.openrdf.store.StoreException;
 
 /**
  * @author James Leigh
  */
-public class NamespaceResult extends RepositoryResult<Namespace> {
+public interface NamespaceResult extends RepositoryResult<Namespace> {
 
-	public NamespaceResult(Cursor<? extends Namespace> delegate) {
-		super(delegate);
-	}
-
+	public Map<String, String> asMap()
+		throws StoreException;
 }

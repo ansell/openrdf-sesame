@@ -40,10 +40,10 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
-import org.openrdf.query.QueryResult;
+import org.openrdf.query.Result;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.impl.GraphQueryResultImpl;
-import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.impl.GraphResultImpl;
+import org.openrdf.query.impl.TupleResultImpl;
 import org.openrdf.store.StoreException;
 
 /**
@@ -98,7 +98,7 @@ public class QueryController {
 
 	@ModelAttribute
 	@RequestMapping(method = HEAD, value = CONN_PATH + "/queries/*")
-	public QueryResult<?> head(HttpServletRequest request)
+	public Result<?> head(HttpServletRequest request)
 		throws StoreException, BadRequest, HTTPException, IOException
 	{
 		String id = getPathParam(request);
@@ -107,12 +107,12 @@ public class QueryController {
 		if (query instanceof TupleQuery) {
 			List<String> names = Collections.emptyList();
 			Set<BindingSet> bindings = Collections.emptySet();
-			return new TupleQueryResultImpl(names, bindings);
+			return new TupleResultImpl(names, bindings);
 		}
 		else if (query instanceof GraphQuery) {
 			Map<String, String> namespaces = Collections.emptyMap();
 			Set<Statement> statements = Collections.emptySet();
-			return new GraphQueryResultImpl(namespaces, statements);
+			return new GraphResultImpl(namespaces, statements);
 		}
 		else if (query instanceof BooleanQuery) {
 			// @ModelAttribute does not support a return type of boolean
@@ -125,7 +125,7 @@ public class QueryController {
 
 	@ModelAttribute
 	@RequestMapping(method = { GET, POST }, value = CONN_PATH + "/queries/*")
-	public QueryResult<?> get(HttpServletRequest request)
+	public Result<?> get(HttpServletRequest request)
 		throws StoreException, BadRequest, HTTPException, IOException
 	{
 		String id = getPathParam(request);

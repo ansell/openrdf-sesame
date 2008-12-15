@@ -7,7 +7,7 @@ package org.openrdf.http.client;
 
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.StoreClient;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.store.StoreException;
 
 /**
@@ -22,7 +22,7 @@ public class NamespaceClient {
 		this.client = new StoreClient(namespaces);
 	}
 
-	public TupleQueryResult list()
+	public TupleResult list()
 		throws StoreException
 	{
 		return client.list();

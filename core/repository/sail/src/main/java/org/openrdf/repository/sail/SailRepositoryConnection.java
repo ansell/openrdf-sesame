@@ -13,6 +13,8 @@ import org.openrdf.model.Value;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.impl.ContextResultImpl;
+import org.openrdf.query.impl.NamespaceResultImpl;
 import org.openrdf.query.parser.BooleanQueryModel;
 import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.query.parser.QueryParserUtil;
@@ -23,6 +25,7 @@ import org.openrdf.repository.NamespaceResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
+import org.openrdf.repository.util.ModelNamespaceResult;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.SailConnection;
@@ -134,14 +137,14 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	public ContextResult getContextIDs()
 		throws StoreException
 	{
-		return new ContextResult(sailConnection.getContextIDs());
+		return new ContextResultImpl(sailConnection.getContextIDs());
 	}
 
 	public ModelResult getStatements(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return new ModelResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
+		return new ModelNamespaceResult(this, sailConnection.getStatements(subj, pred, obj, includeInferred,
 		contexts));
 	}
 
@@ -231,7 +234,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	public NamespaceResult getNamespaces()
 		throws StoreException
 	{
-		return new NamespaceResult(sailConnection.getNamespaces());
+		return new NamespaceResultImpl(sailConnection.getNamespaces());
 	}
 
 	public String getNamespace(String prefix)

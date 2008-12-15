@@ -17,11 +17,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParser;
@@ -30,7 +32,7 @@ import org.openrdf.store.StoreException;
 /**
  * @author James Leigh
  */
-public class BackgroundGraphResult implements GraphQueryResult, Runnable, RDFHandler {
+public class BackgroundGraphResult implements GraphResult, Runnable, RDFHandler {
 
 	private volatile boolean aborted;
 
@@ -166,6 +168,12 @@ public class BackgroundGraphResult implements GraphQueryResult, Runnable, RDFHan
 		throws StoreException
 	{
 		return addTo(new HashSet<Statement>());
+	}
+
+	public Model asModel()
+		throws StoreException
+	{
+		return addTo(new ModelImpl(getNamespaces()));
 	}
 
 	public void run() {

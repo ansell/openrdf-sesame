@@ -23,9 +23,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.impl.TupleResultImpl;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.store.StoreException;
@@ -41,16 +41,16 @@ public class ContextController {
 
 	@ModelAttribute
 	@RequestMapping(method = HEAD, value = { REPO_PATH + "/contexts", CONN_PATH + "/contexts" })
-	public TupleQueryResult head(HttpServletRequest request) {
+	public TupleResult head(HttpServletRequest request) {
 		List<String> columnNames = Arrays.asList("contextID");
 		List<BindingSet> contexts = new ArrayList<BindingSet>();
 
-		return new TupleQueryResultImpl(columnNames, contexts);
+		return new TupleResultImpl(columnNames, contexts);
 	}
 
 	@ModelAttribute
 	@RequestMapping(method = GET, value = { REPO_PATH + "/contexts", CONN_PATH + "/contexts" })
-	public TupleQueryResult get(HttpServletRequest request)
+	public TupleResult get(HttpServletRequest request)
 		throws StoreException
 	{
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
@@ -69,6 +69,6 @@ public class ContextController {
 			contextIter.close();
 		}
 
-		return new TupleQueryResultImpl(columnNames, contexts);
+		return new TupleResultImpl(columnNames, contexts);
 	}
 }

@@ -19,7 +19,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.store.StoreException;
 
 public abstract class EquivalentTest extends TestCase {
@@ -288,7 +288,7 @@ public abstract class EquivalentTest extends TestCase {
 	private boolean evaluateSparql(String qry) throws StoreException,
 			MalformedQueryException, EvaluationException {
 		TupleQuery query = con.prepareTupleQuery(QueryLanguage.SPARQL, qry);
-		TupleQueryResult evaluate = query.evaluate();
+		TupleResult evaluate = query.evaluate();
 		try {
 			return evaluate.hasNext();
 		} finally {

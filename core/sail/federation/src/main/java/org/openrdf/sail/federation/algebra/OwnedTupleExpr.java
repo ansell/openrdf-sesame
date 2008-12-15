@@ -17,7 +17,7 @@ import org.openrdf.query.Cursor;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
@@ -83,7 +83,7 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 				}
 			}
 			query.setDataset(dataset);
-			TupleQueryResult result = query.evaluate();
+			TupleResult result = query.evaluate();
 			return new TupleQueryResultCursor(result, bindings);
 		}
 	}

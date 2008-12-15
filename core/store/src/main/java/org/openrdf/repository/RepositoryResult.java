@@ -1,20 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.repository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import org.openrdf.query.Result;
 
-import org.openrdf.query.Cursor;
-import org.openrdf.query.QueryResult;
-import org.openrdf.query.base.CursorWrapper;
-import org.openrdf.store.StoreException;
 
 /**
  * A RepositoryResult is a result collection of objects (for example
@@ -42,91 +34,7 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class RepositoryResult<T> extends CursorWrapper<T> implements QueryResult<T> {
+@Deprecated
+public interface RepositoryResult<T> extends Result<T> {
 
-	private T next;
-
-	public RepositoryResult(Cursor<? extends T> delegate) {
-		super(delegate);
-	}
-
-	public boolean hasNext()
-		throws StoreException
-	{
-		return next != null || (next = next()) != null;
-	}
-
-	@Override
-	public T next()
-		throws StoreException
-	{
-		T result = next;
-		if (result == null)
-			return super.next();
-		next = null;
-		return result;
-	}
-
-	/**
-	 * Returns a {@link List} containing all objects of this RepositoryResult in
-	 * order of iteration. The RepositoryResult is fully consumed and
-	 * automatically closed by this operation.
-	 * <P>
-	 * Note: use this method with caution! It pulls the entire RepositoryResult
-	 * in memory and as such is potentially very memory-intensive.
-	 * 
-	 * @return a List containing all objects of this RepositoryResult.
-	 * @throws StoreException
-	 *         if a problem occurred during retrieval of the results.
-	 * @see #addTo(Collection)
-	 */
-	public List<T> asList()
-		throws StoreException
-	{
-		return addTo(new ArrayList<T>());
-	}
-
-	/**
-	 * Returns a {@link Set} containing all objects of this RepositoryResult. The
-	 * RepositoryResult is fully consumed and automatically closed by this
-	 * operation.
-	 * <P>
-	 * Note: use this method with caution! It pulls the entire RepositoryResult
-	 * in memory and as such is potentially very memory-intensive.
-	 * 
-	 * @return a Set containing all objects of this RepositoryResult.
-	 * @throws StoreException
-	 *         if a problem occurred during retrieval of the results.
-	 * @see #addTo(Collection)
-	 */
-	public Set<T> asSet()
-		throws StoreException
-	{
-		return addTo(new HashSet<T>());
-	}
-
-	/**
-	 * Adds all objects of this RepositoryResult to the supplied collection. The
-	 * RepositoryResult is fully consumed and automatically closed by this
-	 * operation.
-	 * 
-	 * @return A reference to the collection that was supplied.
-	 * @throws StoreException
-	 *         if a problem occurred during retrieval of the results.
-	 */
-	public <C extends Collection<? super T>> C addTo(C collection)
-		throws StoreException
-	{
-		try {
-			T next;
-			while ((next = next()) != null) {
-				collection.add(next);
-			}
-
-			return collection;
-		}
-		finally {
-			close();
-		}
-	}
 }

@@ -35,20 +35,24 @@ import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
+import org.openrdf.query.impl.ContextResultImpl;
 import org.openrdf.query.impl.EmptyCursor;
 import org.openrdf.query.impl.IteratorCursor;
+import org.openrdf.query.impl.ModelResultImpl;
+import org.openrdf.query.impl.NamespaceResultImpl;
 import org.openrdf.repository.ContextResult;
 import org.openrdf.repository.ModelResult;
 import org.openrdf.repository.NamespaceResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.repository.http.exceptions.IllegalStatementException;
 import org.openrdf.repository.http.helpers.GraphQueryResultCursor;
+import org.openrdf.repository.util.ModelNamespaceResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -186,7 +190,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		flush();
 		List<Resource> contextList = new ArrayList<Resource>();
 
-		TupleQueryResult contextIDs = client.contexts().list();
+		TupleResult contextIDs = client.contexts().list();
 		try {
 			while (contextIDs.hasNext()) {
 				BindingSet bindingSet = contextIDs.next();
@@ -201,7 +205,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			contextIDs.close();
 		}
 
-		return new ContextResult(new IteratorCursor<Resource>(contextList.iterator()));
+		return new ContextResultImpl(new IteratorCursor<Resource>(contextList.iterator()));
 	}
 
 	public ModelResult getStatements(Resource subj, URI pred, Value obj, boolean inf,
@@ -209,12 +213,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws StoreException
 	{
 		if (noMatch(subj, pred, obj, inf, ctx))
-			return new ModelResult(new EmptyCursor<Statement>());
+			return new ModelNamespaceResult(this, new EmptyCursor<Statement>());
 
 		flush();
 		StatementClient statements = client.statements();
-		GraphQueryResult result = statements.get(subj, pred, obj, inf, ctx);
-		return new ModelResult(new GraphQueryResultCursor(result));
+		GraphResult result = statements.get(subj, pred, obj, inf, ctx);
+		return new ModelResultImpl(new GraphQueryResultCursor(result));
 	}
 
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -244,7 +248,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		flush();
 		StatementClient statements = client.statements();
 		statements.setLimit(1);
-		GraphQueryResult result = statements.get(subj, pred, obj, includeInferred, contexts);
+		GraphResult result = statements.get(subj, pred, obj, includeInferred, contexts);
 		try {
 			return result.hasNext();
 		}
@@ -380,7 +384,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		flush();
 		List<Namespace> namespaceList = new ArrayList<Namespace>();
 
-		TupleQueryResult namespaces = client.namespaces().list();
+		TupleResult namespaces = client.namespaces().list();
 		try {
 			while (namespaces.hasNext()) {
 				BindingSet bindingSet = namespaces.next();
@@ -398,7 +402,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			namespaces.close();
 		}
 
-		return new NamespaceResult(new IteratorCursor<Namespace>(namespaceList.iterator()));
+		return new NamespaceResultImpl(new IteratorCursor<Namespace>(namespaceList.iterator()));
 	}
 
 	public String getNamespace(String prefix)

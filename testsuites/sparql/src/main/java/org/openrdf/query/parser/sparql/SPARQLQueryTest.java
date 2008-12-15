@@ -35,16 +35,16 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.GraphResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.dawg.DAWGTestResultSetUtil;
 import org.openrdf.query.impl.DatasetImpl;
-import org.openrdf.query.impl.MutableTupleQueryResult;
+import org.openrdf.query.impl.MutableTupleResult;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParserRegistry;
@@ -161,9 +161,9 @@ public abstract class SPARQLQueryTest extends TestCase {
 			}
 
 			if (query instanceof TupleQuery) {
-				TupleQueryResult queryResult = ((TupleQuery)query).evaluate();
+				TupleResult queryResult = ((TupleQuery)query).evaluate();
 
-				TupleQueryResult expectedResult = readExpectedTupleQueryResult();
+				TupleResult expectedResult = readExpectedTupleQueryResult();
 				compareTupleQueryResults(queryResult, expectedResult);
 
 				// Graph queryGraph = RepositoryUtil.asGraph(queryResult);
@@ -171,7 +171,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 				// compareGraphs(queryGraph, expectedGraph);
 			}
 			else if (query instanceof GraphQuery) {
-				GraphQueryResult gqr = ((GraphQuery)query).evaluate();
+				GraphResult gqr = ((GraphQuery)query).evaluate();
 				Set<Statement> queryResult = gqr.asSet();
 
 				Set<Statement> expectedResult = readExpectedGraphQueryResult();
@@ -192,13 +192,13 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 	}
 
-	private void compareTupleQueryResults(TupleQueryResult queryResult, TupleQueryResult expectedResult)
+	private void compareTupleQueryResults(TupleResult queryResult, TupleResult expectedResult)
 		throws Exception
 	{
 		// Create MutableTupleQueryResult to be able to re-iterate over the
 		// results
-		MutableTupleQueryResult queryResultTable = new MutableTupleQueryResult(queryResult);
-		MutableTupleQueryResult expectedResultTable = new MutableTupleQueryResult(expectedResult);
+		MutableTupleResult queryResultTable = new MutableTupleResult(queryResult);
+		MutableTupleResult expectedResultTable = new MutableTupleResult(expectedResult);
 
 		if (!QueryResultUtil.equals(expectedResultTable, queryResultTable)) {
 			queryResultTable.beforeFirst();
@@ -380,7 +380,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 	}
 
-	private TupleQueryResult readExpectedTupleQueryResult()
+	private TupleResult readExpectedTupleQueryResult()
 		throws Exception
 	{
 		TupleQueryResultFormat tqrFormat = QueryResultIO.getParserFormatForFileName(resultFileURL);
@@ -509,7 +509,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		TupleQuery namedGraphsQuery = con.prepareTupleQuery(QueryLanguage.SERQL, query.toString());
 
 		logger.debug("evaluating query..");
-		TupleQueryResult testCases = testCaseQuery.evaluate();
+		TupleResult testCases = testCaseQuery.evaluate();
 		while (testCases.hasNext()) {
 			BindingSet bindingSet = testCases.next();
 
@@ -524,7 +524,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 			// Query named graphs
 			namedGraphsQuery.setBinding("action", action);
-			TupleQueryResult namedGraphs = namedGraphsQuery.evaluate();
+			TupleResult namedGraphs = namedGraphsQuery.evaluate();
 
 			DatasetImpl dataset = null;
 
@@ -564,7 +564,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		TupleQuery manifestNameQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
 				"SELECT ManifestName FROM {ManifestURL} rdfs:label {ManifestName}");
 		manifestNameQuery.setBinding("ManifestURL", con.getValueFactory().createURI(manifestFileURL));
-		TupleQueryResult manifestNames = manifestNameQuery.evaluate();
+		TupleResult manifestNames = manifestNameQuery.evaluate();
 		try {
 			if (manifestNames.hasNext()) {
 				return manifestNames.next().getValue("ManifestName").stringValue();

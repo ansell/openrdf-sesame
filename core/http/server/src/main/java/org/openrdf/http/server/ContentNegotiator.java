@@ -46,8 +46,8 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.GraphQueryResult;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.GraphResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultWriterFactory;
@@ -97,11 +97,11 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		else if (model instanceof RepositoryResult) {
 			render((RepositoryResult)model, req, resp);
 		}
-		else if (model instanceof TupleQueryResult) {
-			render((TupleQueryResult)model, req, resp);
+		else if (model instanceof TupleResult) {
+			render((TupleResult)model, req, resp);
 		}
-		else if (model instanceof GraphQueryResult) {
-			render((GraphQueryResult)model, req, resp);
+		else if (model instanceof GraphResult) {
+			render((GraphResult)model, req, resp);
 		}
 		else if (model instanceof BooleanQueryResult) {
 			render((BooleanQueryResult)model, req, resp);
@@ -211,7 +211,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		}
 	}
 
-	private void render(TupleQueryResult model, HttpServletRequest req, HttpServletResponse resp)
+	private void render(TupleResult model, HttpServletRequest req, HttpServletResponse resp)
 		throws ClientHTTPException, IOException
 	{
 		try {
@@ -252,7 +252,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		}
 	}
 
-	private void render(GraphQueryResult model, HttpServletRequest req, HttpServletResponse resp)
+	private void render(GraphResult model, HttpServletRequest req, HttpServletResponse resp)
 		throws ClientHTTPException, IOException
 	{
 		try {

@@ -17,7 +17,7 @@ import org.openrdf.http.protocol.exceptions.Unauthorized;
 import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.rio.RDFParseException;
@@ -37,7 +37,7 @@ public class StoreClient {
 		this.server = server;
 	}
 
-	public TupleQueryResult list()
+	public TupleResult list()
 		throws StoreException
 	{
 		HTTPConnection method = server.get();
