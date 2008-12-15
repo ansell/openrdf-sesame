@@ -495,17 +495,7 @@ public class ModelUtil {
 	public static Value getOptionalObject(Model model, Resource subj, URI pred, Resource... contexts)
 		throws ModelUtilException
 	{
-		Set<Value> objects = model.filter(subj, pred, null, contexts).objects();
-
-		if (objects.isEmpty()) {
-			return null;
-		}
-		else if (objects.size() == 1) {
-			return objects.iterator().next();
-		}
-		else {
-			throw new ModelUtilException("Multiple " + pred + " properties found");
-		}
+		return model.filter(subj, pred, null, contexts).value();
 	}
 
 	/**
@@ -523,14 +513,7 @@ public class ModelUtil {
 	public static Resource getOptionalObjectResource(Model model, Resource subj, URI pred)
 		throws ModelUtilException
 	{
-		Value obj = getOptionalObject(model, subj, pred);
-
-		if (obj == null || obj instanceof Resource) {
-			return (Resource)obj;
-		}
-		else {
-			throw new ModelUtilException("Expected URI or blank node for property " + pred);
-		}
+		return model.filter(subj, pred, null).resource();
 	}
 
 	/**
@@ -548,14 +531,7 @@ public class ModelUtil {
 	public static URI getOptionalObjectURI(Model model, Resource subj, URI pred)
 		throws ModelUtilException
 	{
-		Value obj = getOptionalObject(model, subj, pred);
-
-		if (obj == null || obj instanceof URI) {
-			return (URI)obj;
-		}
-		else {
-			throw new ModelUtilException("Expected URI for property " + pred);
-		}
+		return model.filter(subj, pred, null).uri();
 	}
 
 	/**
@@ -573,14 +549,7 @@ public class ModelUtil {
 	public static Literal getOptionalObjectLiteral(Model model, Resource subj, URI pred)
 		throws ModelUtilException
 	{
-		Value obj = getOptionalObject(model, subj, pred);
-
-		if (obj == null || obj instanceof Literal) {
-			return (Literal)obj;
-		}
-		else {
-			throw new ModelUtilException("Expected literal for property " + pred);
-		}
+		return model.filter(subj, pred, null).literal();
 	}
 
 	/**
@@ -596,13 +565,6 @@ public class ModelUtil {
 	public static String getOptionalObjectStringValue(Model model, Resource subj, URI pred)
 		throws ModelUtilException
 	{
-		Value obj = getOptionalObject(model, subj, pred);
-
-		if (obj != null) {
-			return obj.stringValue();
-		}
-		else {
-			return null;
-		}
+		return model.filter(subj, pred, null).value().stringValue();
 	}
 }

@@ -185,15 +185,15 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			Literal includeInferred = ModelUtil.getOptionalObjectLiteral(model, implNode, INCLUDE_INFERRED);
+			Literal includeInferred = model.filter(implNode, INCLUDE_INFERRED, null).literal();
 			if (includeInferred != null) {
 				setIncludeInferred(includeInferred.booleanValue());
 			}
-			Literal maxQueryTime = ModelUtil.getOptionalObjectLiteral(model, implNode, MAX_QUERY_TIME);
+			Literal maxQueryTime = model.filter(implNode, MAX_QUERY_TIME, null).literal();
 			if (maxQueryTime != null) {
 				setMaxQueryTime(maxQueryTime.intValue());
 			}
-			Literal queryLanguage = ModelUtil.getOptionalObjectLiteral(model, implNode, QUERY_LANGUAGE);
+			Literal queryLanguage = model.filter(implNode, QUERY_LANGUAGE, null).literal();
 			if (queryLanguage != null) {
 				setQueryLanguage(QueryLanguage.valueOf(queryLanguage.getLabel()));
 			}

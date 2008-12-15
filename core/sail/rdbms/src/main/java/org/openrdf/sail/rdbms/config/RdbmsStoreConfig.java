@@ -142,36 +142,36 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			Literal jdbcDriverLit = ModelUtil.getOptionalObjectLiteral(model, implNode, JDBC_DRIVER);
+			Literal jdbcDriverLit = model.filter(implNode, JDBC_DRIVER, null).literal();
 			if (jdbcDriverLit != null) {
 				setJdbcDriver(jdbcDriverLit.getLabel());
 			}
 
-			String template = ModelUtil.getOptionalObjectStringValue(model, implNode, URL_TEMPLATE);
-			String host = ModelUtil.getOptionalObjectStringValue(model, implNode, HOST);
-			String port = ModelUtil.getOptionalObjectStringValue(model, implNode, PORT);
-			String database = ModelUtil.getOptionalObjectStringValue(model, implNode, DATABASE);
-			String properties = ModelUtil.getOptionalObjectStringValue(model, implNode, URL_PROPERTIES);
+			String template = model.filter(implNode, URL_TEMPLATE, null).value().stringValue();
+			String host = model.filter(implNode, HOST, null).value().stringValue();
+			String port = model.filter(implNode, PORT, null).value().stringValue();
+			String database = model.filter(implNode, DATABASE, null).value().stringValue();
+			String properties = model.filter(implNode, URL_PROPERTIES, null).value().stringValue();
 			if (template != null && database != null) {
 				setUrl(format(template, host, port, database, properties));
 			}
 
-			Literal urlLit = ModelUtil.getOptionalObjectLiteral(model, implNode, URL);
+			Literal urlLit = model.filter(implNode, URL, null).literal();
 			if (urlLit != null) {
 				setUrl(urlLit.getLabel());
 			}
 
-			Literal userLit = ModelUtil.getOptionalObjectLiteral(model, implNode, USER);
+			Literal userLit = model.filter(implNode, USER, null).literal();
 			if (userLit != null) {
 				setUser(userLit.getLabel());
 			}
 
-			Literal passwordLit = ModelUtil.getOptionalObjectLiteral(model, implNode, PASSWORD);
+			Literal passwordLit = model.filter(implNode, PASSWORD, null).literal();
 			if (passwordLit != null) {
 				setPassword(passwordLit.getLabel());
 			}
 
-			Literal maxTripleTablesLit = ModelUtil.getOptionalObjectLiteral(model, implNode, MAX_TRIPLE_TABLES);
+			Literal maxTripleTablesLit = model.filter(implNode, MAX_TRIPLE_TABLES, null).literal();
 			if (maxTripleTablesLit != null) {
 				try {
 					setMaxTripleTables(maxTripleTablesLit.intValue());

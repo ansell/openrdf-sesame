@@ -69,7 +69,7 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 		throws StoreConfigException
 	{
 		try {
-			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, REPOSITORYTYPE);
+			Literal typeLit = model.filter(implNode, REPOSITORYTYPE, null).literal();
 			if (typeLit != null) {
 				setType(typeLit.getLabel());
 			}
@@ -83,7 +83,7 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 		throws StoreConfigException
 	{
 		try {
-			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, REPOSITORYTYPE);
+			Literal typeLit = model.filter(implNode, REPOSITORYTYPE, null).literal();
 
 			if (typeLit != null) {
 				RepositoryFactory factory = RepositoryRegistry.getInstance().get(typeLit.getLabel());

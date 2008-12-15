@@ -69,7 +69,7 @@ public class SailImplConfigBase implements SailImplConfig {
 		throws StoreConfigException
 	{
 		try {
-			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, SAILTYPE);
+			Literal typeLit = model.filter(implNode, SAILTYPE, null).literal();
 			if (typeLit != null) {
 				setType(typeLit.getLabel());
 			}

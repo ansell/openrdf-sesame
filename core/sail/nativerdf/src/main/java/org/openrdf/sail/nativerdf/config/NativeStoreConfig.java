@@ -91,12 +91,12 @@ public class NativeStoreConfig extends SailImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			Literal tripleIndexLit = ModelUtil.getOptionalObjectLiteral(model, implNode, TRIPLE_INDEXES);
+			Literal tripleIndexLit = model.filter(implNode, TRIPLE_INDEXES, null).literal();
 			if (tripleIndexLit != null) {
 				setTripleIndexes((tripleIndexLit).getLabel());
 			}
 
-			Literal forceSyncLit = ModelUtil.getOptionalObjectLiteral(model, implNode, FORCE_SYNC);
+			Literal forceSyncLit = model.filter(implNode, FORCE_SYNC, null).literal();
 			if (forceSyncLit != null) {
 				try {
 					setForceSync(forceSyncLit.booleanValue());

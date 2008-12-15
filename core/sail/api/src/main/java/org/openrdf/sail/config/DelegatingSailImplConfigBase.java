@@ -80,7 +80,7 @@ public class DelegatingSailImplConfigBase extends SailImplConfigBase implements 
 		super.parse(model, implNode);
 
 		try {
-			Resource delegateNode = ModelUtil.getOptionalObjectResource(model, implNode, DELEGATE);
+			Resource delegateNode = model.filter(implNode, DELEGATE, null).resource();
 			if (delegateNode != null) {
 				setDelegate(SailConfigUtil.parseRepositoryImpl(model, delegateNode));
 			}

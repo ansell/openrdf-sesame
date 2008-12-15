@@ -82,7 +82,7 @@ public class DelegatingRepositoryImplConfigBase extends RepositoryImplConfigBase
 		super.parse(model, implNode);
 
 		try {
-			Resource delegateNode = ModelUtil.getOptionalObjectResource(model, implNode, DELEGATE);
+			Resource delegateNode = model.filter(implNode, DELEGATE, null).resource();
 			if (delegateNode != null) {
 				setDelegate(create(model, delegateNode));
 			}

@@ -80,7 +80,7 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			Literal persistValue = ModelUtil.getOptionalObjectLiteral(model, implNode, PERSIST);
+			Literal persistValue = model.filter(implNode, PERSIST, null).literal();
 			if (persistValue != null) {
 				try {
 					setPersist((persistValue).booleanValue());
@@ -91,7 +91,7 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 				}
 			}
 
-			Literal syncDelayValue = ModelUtil.getOptionalObjectLiteral(model, implNode, SYNC_DELAY);
+			Literal syncDelayValue = model.filter(implNode, SYNC_DELAY, null).literal();
 			if (syncDelayValue != null) {
 				try {
 					setSyncDelay((syncDelayValue).longValue());

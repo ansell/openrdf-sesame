@@ -18,7 +18,7 @@ public class SailConfigUtil {
 		throws StoreConfigException
 	{
 		try {
-			Literal typeLit = ModelUtil.getOptionalObjectLiteral(model, implNode, SailConfigSchema.SAILTYPE);
+			Literal typeLit = model.filter(implNode, SailConfigSchema.SAILTYPE, null).literal();
 
 			if (typeLit != null) {
 				SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
