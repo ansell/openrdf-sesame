@@ -208,7 +208,17 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return new ContextResultImpl(new IteratorCursor<Resource>(contextList.iterator()));
 	}
 
+	/**
+	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)} instead
+	 */
 	public ModelResult getStatements(Resource subj, URI pred, Value obj, boolean inf,
+			Resource... ctx)
+		throws StoreException
+	{
+		return match(subj, pred, obj, inf, ctx);
+	}
+
+	public ModelResult match(Resource subj, URI pred, Value obj, boolean inf,
 			Resource... ctx)
 		throws StoreException
 	{
@@ -221,7 +231,17 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return new ModelResultImpl(new GraphQueryResultCursor(result));
 	}
 
+	/**
+	 * @deprecated Use {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)} instead
+	 */
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+			RDFHandler handler, Resource... contexts)
+		throws RDFHandlerException, StoreException
+	{
+		exportMatch(subj, pred, obj, includeInferred, handler, contexts);
+	}
+
+	public void exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws RDFHandlerException, StoreException
 	{
@@ -229,7 +249,16 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		client.statements().get(subj, pred, obj, includeInferred, handler, contexts);
 	}
 
+	/**
+	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)} instead
+	 */
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		return sizeMatch(subj, pred, obj, includeInferred, contexts);
+	}
+
+	public long sizeMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		if (!modified)
@@ -238,8 +267,19 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return client.size().get(subj, pred, obj, includeInferred, contexts);
 	}
 
+	/**
+	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)} instead
+	 */
 	@Override
 	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws StoreException
+	{
+		return hasMatch(subj, pred, obj, includeInferred, contexts);
+	}
+
+	@Override
+	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws StoreException
 	{

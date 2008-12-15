@@ -162,7 +162,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 			public RepositoryResult<? extends Statement> call(RepositoryConnection member)
 				throws StoreException
 			{
-				return member.getStatements(subj, pred, obj, true, contexts);
+				return member.match(subj, pred, obj, true, contexts);
 			}
 		});
 	}

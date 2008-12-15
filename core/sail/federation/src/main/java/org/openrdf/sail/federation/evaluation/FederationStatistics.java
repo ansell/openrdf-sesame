@@ -150,7 +150,7 @@ public class FederationStatistics extends EvaluationStatistics {
 
 						public void run() {
 							try {
-								long size = member.size(subj, pred, obj, true, context);
+								long size = member.sizeMatch(subj, pred, obj, true, context);
 								if (size > 0) {
 									cardinality.getAndAdd(size);
 								}

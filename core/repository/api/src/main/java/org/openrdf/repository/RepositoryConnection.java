@@ -314,8 +314,37 @@ public interface RepositoryConnection {
 	 *         containing {@link Statement}s and optionally throwing a
 	 *         {@link StoreException} when an error when a problem occurs during
 	 *         retrieval.
+	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)} instead
 	 */
 	public ModelResult getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
+		throws StoreException;
+
+	/**
+	 * Gets all statements with a specific subject, predicate and/or object from
+	 * the repository. The result is optionally restricted to the specified set
+	 * of named contexts.
+	 * 
+	 * @param subj
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
+	 * @param pred
+	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
+	 * @param obj
+	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
+	 * @param contexts
+	 *        The context(s) to get the data from. Note that this parameter is a
+	 *        vararg and as such is optional. If no contexts are supplied the
+	 *        method operates on the entire repository.
+	 * @param includeInferred
+	 *        if false, no inferred statements are returned; if true, inferred
+	 *        statements are returned if available. The default is true.
+	 * @return The statements matching the specified pattern. The result object
+	 *         is a {@link RepositoryResult} object, a lazy Iterator-like object
+	 *         containing {@link Statement}s and optionally throwing a
+	 *         {@link StoreException} when an error when a problem occurs during
+	 *         retrieval.
+	 */
+	public ModelResult match(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws StoreException;
 
@@ -338,8 +367,33 @@ public interface RepositoryConnection {
 	 *        statements are considered if available
 	 * @return true If a matching statement is in the repository in the specified
 	 *         context, false otherwise.
+	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)} instead
 	 */
 	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws StoreException;
+
+	/**
+	 * Checks whether the repository contains statements with a specific subject,
+	 * predicate and/or object, optionally in the specified contexts.
+	 * 
+	 * @param subj
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
+	 * @param pred
+	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
+	 * @param obj
+	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
+	 * @param contexts
+	 *        The context(s) the need to be searched. Note that this parameter is
+	 *        a vararg and as such is optional. If no contexts are supplied the
+	 *        method operates on the entire repository.
+	 * @param includeInferred
+	 *        if false, no inferred statements are considered; if true, inferred
+	 *        statements are considered if available
+	 * @return true If a matching statement is in the repository in the specified
+	 *         context, false otherwise.
+	 */
+	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws StoreException;
 
@@ -384,8 +438,35 @@ public interface RepositoryConnection {
 	 *        statements are returned if available
 	 * @throws RDFHandlerException
 	 *         If the handler encounters an unrecoverable error.
+	 * @deprecated Use {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)} instead
 	 */
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+			RDFHandler handler, Resource... contexts)
+		throws StoreException, RDFHandlerException;
+
+	/**
+	 * Exports all statements with a specific subject, predicate and/or object
+	 * from the repository, optionally from the specified contexts.
+	 * 
+	 * @param subj
+	 *        The subject, or null if the subject doesn't matter.
+	 * @param pred
+	 *        The predicate, or null if the predicate doesn't matter.
+	 * @param obj
+	 *        The object, or null if the object doesn't matter.
+	 * @param contexts
+	 *        The context(s) to get the data from. Note that this parameter is a
+	 *        vararg and as such is optional. If no contexts are supplied the
+	 *        method operates on the entire repository.
+	 * @param handler
+	 *        The handler that will handle the RDF data.
+	 * @param includeInferred
+	 *        if false, no inferred statements are returned; if true, inferred
+	 *        statements are returned if available
+	 * @throws RDFHandlerException
+	 *         If the handler encounters an unrecoverable error.
+	 */
+	public void exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws StoreException, RDFHandlerException;
 
@@ -432,8 +513,31 @@ public interface RepositoryConnection {
 	 *        method matches the pattern on the entire repository.
 	 * @return The number of explicit statements from the specified pattern in
 	 *         this repository.
+	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)} instead
 	 */
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws StoreException;
+
+	/**
+	 * Returns the number of statements that match in the specified pattern in
+	 * this repository.
+	 * 
+	 * @param subj
+	 *        The subject, or null if the subject doesn't matter.
+	 * @param pred
+	 *        The predicate, or null if the predicate doesn't matter.
+	 * @param obj
+	 *        The object, or null if the object doesn't matter.
+	 * @param includeInferred
+	 *        Indicates whether inferred statements should be counted.
+	 * @param contexts
+	 *        The context(s) to get the data from. Note that this parameter is a
+	 *        vararg and as such is optional. If no contexts are supplied the
+	 *        method matches the pattern on the entire repository.
+	 * @return The number of explicit statements from the specified pattern in
+	 *         this repository.
+	 */
+	public long sizeMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException;
 
 	/**

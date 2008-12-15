@@ -147,7 +147,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 			try {
 				con.add(url(resultFile), base(resultFile), RDFFormat.forFileName(resultFile));
 
-				expectedStatements = con.getStatements(null, null, null, false).asList();
+				expectedStatements = con.match(null, null, null, false).asList();
 			}
 			finally {
 				con.close();

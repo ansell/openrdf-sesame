@@ -60,7 +60,7 @@ public class SizeController {
 		if (HEAD.equals(RequestMethod.valueOf(request.getMethod())))
 			return new StringReader("");
 
-		long size = repositoryCon.size(subj, pred, obj, useInferencing, contexts);
+		long size = repositoryCon.sizeMatch(subj, pred, obj, useInferencing, contexts);
 		return new StringReader(String.valueOf(size));
 	}
 }

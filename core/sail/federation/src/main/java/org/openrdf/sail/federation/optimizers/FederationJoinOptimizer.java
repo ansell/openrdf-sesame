@@ -199,7 +199,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		{
 			RepositoryConnection o = null;
 			for (RepositoryConnection member : members) {
-				if (member.hasStatement(subj, pred, obj, true, ctx)) {
+				if (member.hasMatch(subj, pred, obj, true, ctx)) {
 					if (o == null) {
 						o = member;
 					}

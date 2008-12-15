@@ -48,7 +48,7 @@ public class EmptyPatternOptimizer extends QueryModelVisitorBase<StoreException>
 		Value obj = node.getObjectVar().getValue();
 		Resource[] ctx = getContexts(node.getContextVar());
 		for (RepositoryConnection member : members) {
-			if (member.hasStatement(subj, pred, obj, true, ctx)) {
+			if (member.hasMatch(subj, pred, obj, true, ctx)) {
 				return;
 			}
 		}

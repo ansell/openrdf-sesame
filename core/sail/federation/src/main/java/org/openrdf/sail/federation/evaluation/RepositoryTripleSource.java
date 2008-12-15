@@ -32,7 +32,7 @@ public class RepositoryTripleSource implements TripleSource {
 	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		RepositoryResult<Statement> result = repo.getStatements(subj, pred, obj, true, contexts);
+		RepositoryResult<Statement> result = repo.match(subj, pred, obj, true, contexts);
 		return new RepositoryResultCursor<Statement>(result);
 	}
 

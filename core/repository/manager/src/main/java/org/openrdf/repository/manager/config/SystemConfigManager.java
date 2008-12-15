@@ -170,7 +170,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 		try {
 			RepositoryConnection con = system.getConnection();
 			try {
-				return con.getStatements(null, null, null, false).addTo(new ModelImpl());
+				return con.match(null, null, null, false).addTo(new ModelImpl());
 			}
 			finally {
 				con.close();

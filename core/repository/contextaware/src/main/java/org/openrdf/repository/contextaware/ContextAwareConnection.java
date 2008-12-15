@@ -345,10 +345,10 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws StoreException, RDFHandlerException
 	{
 		if (contexts != null && contexts.length == 0) {
-			super.exportStatements(subj, pred, obj, includeInferred, hander, readContexts);
+			super.exportMatch(subj, pred, obj, includeInferred, hander, readContexts);
 		}
 		else {
-			super.exportStatements(subj, pred, obj, includeInferred, hander, contexts);
+			super.exportMatch(subj, pred, obj, includeInferred, hander, contexts);
 		}
 	}
 
@@ -401,10 +401,10 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws StoreException
 	{
 		if (contexts != null && contexts.length == 0) {
-			return super.getStatements(subj, pred, obj, includeInferred, readContexts);
+			return super.match(subj, pred, obj, includeInferred, readContexts);
 		}
 		else {
-			return super.getStatements(subj, pred, obj, includeInferred, contexts);
+			return super.match(subj, pred, obj, includeInferred, contexts);
 		}
 	}
 
@@ -449,10 +449,10 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws StoreException
 	{
 		if (contexts != null && contexts.length == 0) {
-			return super.hasStatement(subj, pred, obj, includeInferred, readContexts);
+			return super.hasMatch(subj, pred, obj, includeInferred, readContexts);
 		}
 		else {
-			return super.hasStatement(subj, pred, obj, includeInferred, contexts);
+			return super.hasMatch(subj, pred, obj, includeInferred, contexts);
 		}
 	}
 
@@ -664,22 +664,32 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws StoreException
 	{
 		if (contexts != null && contexts.length == 0) {
-			return super.size(subject, predicate, object, includeInferred, readContexts);
+			return super.sizeMatch(subject, predicate, object, includeInferred, readContexts);
 		}
 		else {
-			return super.size(subject, predicate, object, includeInferred, contexts);
+			return super.sizeMatch(subject, predicate, object, includeInferred, contexts);
 		}
 	}
 
+	/**
+	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)} instead
+	 */
 	@Override
 	public long size(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
+		return sizeMatch(subject, predicate, object, includeInferred, contexts);
+	}
+
+	@Override
+	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
 		if (contexts != null && contexts.length == 0) {
-			return super.size(subject, predicate, object, includeInferred, readContexts);
+			return super.sizeMatch(subject, predicate, object, includeInferred, readContexts);
 		}
 		else {
-			return super.size(subject, predicate, object, includeInferred, contexts);
+			return super.sizeMatch(subject, predicate, object, includeInferred, contexts);
 		}
 	}
 
@@ -689,7 +699,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	{
 		RDFHandler handler = new RDFInserter(getDelegate());
 		try {
-			getDelegate().exportStatements(subject, predicate, object, true, handler, archiveContexts);
+			getDelegate().exportMatch(subject, predicate, object, true, handler, archiveContexts);
 		}
 		catch (RDFHandlerException e) {
 			if (e.getCause() instanceof StoreException) {

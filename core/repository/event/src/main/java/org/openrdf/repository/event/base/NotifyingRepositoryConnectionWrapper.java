@@ -112,7 +112,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 		if (reportEvent && reportDeltas()) {
 			// Only report if the stament is not present yet
-			reportEvent = !getDelegate().hasStatement(subject, predicate, object, false, contexts);
+			reportEvent = !getDelegate().hasMatch(subject, predicate, object, false, contexts);
 		}
 
 		getDelegate().add(subject, predicate, object, contexts);
@@ -172,7 +172,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	{
 		if (activated && reportDeltas()) {
 			RepositoryResult<Statement> stmts;
-			stmts = getDelegate().getStatements(subj, pred, obj, false, ctx);
+			stmts = getDelegate().match(subj, pred, obj, false, ctx);
 			List<Statement> list = new ArrayList<Statement>();
 			try {
 				while (stmts.hasNext()) {

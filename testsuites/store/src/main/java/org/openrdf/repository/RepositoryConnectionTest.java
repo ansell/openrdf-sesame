@@ -178,23 +178,23 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		testCon.add(bob, name, nameBob);
 
-		assertTrue("Repository should contain newly added statement", testCon.hasStatement(bob, name, nameBob,
+		assertTrue("Repository should contain newly added statement", testCon.hasMatch(bob, name, nameBob,
 				false));
 
 		Statement statement = vf.createStatement(alice, name, nameAlice);
 		testCon.add(statement);
 
 		assertTrue("Repository should contain newly added statement", testCon.hasStatement(statement, false));
-		assertTrue("Repository should contain newly added statement", testCon.hasStatement(alice, name,
+		assertTrue("Repository should contain newly added statement", testCon.hasMatch(alice, name,
 				nameAlice, false));
 
 		Repository tempRep = new SailRepository(new MemoryStore());
 		tempRep.initialize();
 		RepositoryConnection con = tempRep.getConnection();
 
-		con.add(testCon.getStatements(null, null, null, false));
+		con.add(testCon.match(null, null, null, false));
 
-		assertTrue("Temp Repository should contain newly added statement", con.hasStatement(bob, name, nameBob,
+		assertTrue("Temp Repository should contain newly added statement", con.hasMatch(bob, name, nameBob,
 				false));
 		con.close();
 		tempRep.shutDown();
@@ -206,13 +206,13 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.setAutoCommit(false);
 		testCon.add(bob, name, nameBob);
 
-		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
-		assertFalse(testCon2.hasStatement(bob, name, nameBob, false));
+		assertTrue(testCon.hasMatch(bob, name, nameBob, false));
+		assertFalse(testCon2.hasMatch(bob, name, nameBob, false));
 
 		testCon.commit();
 
-		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
-		assertTrue(testCon2.hasStatement(bob, name, nameBob, false));
+		assertTrue(testCon.hasMatch(bob, name, nameBob, false));
+		assertTrue(testCon2.hasMatch(bob, name, nameBob, false));
 	}
 
 	public void testAddReader()
@@ -226,9 +226,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		defaultGraph.close();
 
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
+		assertTrue("Repository should contain newly added statements", testCon.hasMatch(null, publisher,
 				nameBob, false));
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
+		assertTrue("Repository should contain newly added statements", testCon.hasMatch(null, publisher,
 				nameAlice, false));
 
 		// add file graph1.ttl to context1
@@ -249,19 +249,19 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		graph2.close();
 
-		assertTrue("alice should be known in the store", testCon.hasStatement(null, name, nameAlice, false));
+		assertTrue("alice should be known in the store", testCon.hasMatch(null, name, nameAlice, false));
 
-		assertFalse("alice should not be known in context1", testCon.hasStatement(null, name, nameAlice, false,
+		assertFalse("alice should not be known in context1", testCon.hasMatch(null, name, nameAlice, false,
 				context1));
-		assertTrue("alice should be known in context2", testCon.hasStatement(null, name, nameAlice, false,
+		assertTrue("alice should be known in context2", testCon.hasMatch(null, name, nameAlice, false,
 				context2));
 
-		assertTrue("bob should be known in the store", testCon.hasStatement(null, name, nameBob, false));
+		assertTrue("bob should be known in the store", testCon.hasMatch(null, name, nameBob, false));
 
-		assertFalse("bob should not be known in context2", testCon.hasStatement(null, name, nameBob, false,
+		assertFalse("bob should not be known in context2", testCon.hasMatch(null, name, nameBob, false,
 				context2));
 		assertTrue("bib should be known in context1",
-				testCon.hasStatement(null, name, nameBob, false, context1));
+				testCon.hasMatch(null, name, nameBob, false, context1));
 
 	}
 
@@ -276,9 +276,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		defaultGraph.close();
 
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
+		assertTrue("Repository should contain newly added statements", testCon.hasMatch(null, publisher,
 				nameBob, false));
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
+		assertTrue("Repository should contain newly added statements", testCon.hasMatch(null, publisher,
 				nameAlice, false));
 
 		// add file graph1.ttl to context1
@@ -295,19 +295,19 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		graph2.close();
 
-		assertTrue("alice should be known in the store", testCon.hasStatement(null, name, nameAlice, false));
+		assertTrue("alice should be known in the store", testCon.hasMatch(null, name, nameAlice, false));
 
-		assertFalse("alice should not be known in context1", testCon.hasStatement(null, name, nameAlice, false,
+		assertFalse("alice should not be known in context1", testCon.hasMatch(null, name, nameAlice, false,
 				context1));
-		assertTrue("alice should be known in context2", testCon.hasStatement(null, name, nameAlice, false,
+		assertTrue("alice should be known in context2", testCon.hasMatch(null, name, nameAlice, false,
 				context2));
 
-		assertTrue("bob should be known in the store", testCon.hasStatement(null, name, nameBob, false));
+		assertTrue("bob should be known in the store", testCon.hasMatch(null, name, nameBob, false));
 
-		assertFalse("bob should not be known in context2", testCon.hasStatement(null, name, nameBob, false,
+		assertFalse("bob should not be known in context2", testCon.hasMatch(null, name, nameBob, false,
 				context2));
 		assertTrue("bib should be known in context1",
-				testCon.hasStatement(null, name, nameBob, false, context1));
+				testCon.hasMatch(null, name, nameBob, false, context1));
 
 	}
 
@@ -324,9 +324,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			defaultGraph.close();
 		}
 
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
+		assertTrue("Repository should contain newly added statements", testCon.hasMatch(null, publisher,
 				nameBob, false));
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
+		assertTrue("Repository should contain newly added statements", testCon.hasMatch(null, publisher,
 				nameAlice, false));
 
 	}
@@ -338,14 +338,14 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		testCon.add(in, "", RDFFormat.TURTLE);
 
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
+		assertTrue("Repository should contain newly added statements", testCon.hasMatch(null, publisher,
 				nameBob, false));
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
+		assertTrue("Repository should contain newly added statements", testCon.hasMatch(null, publisher,
 				nameAlice, false));
 
-		assertTrue("alice should be known in the store", testCon.hasStatement(null, name, nameAlice, false));
+		assertTrue("alice should be known in the store", testCon.hasMatch(null, name, nameAlice, false));
 
-		assertTrue("bob should be known in the store", testCon.hasStatement(null, name, nameBob, false));
+		assertTrue("bob should be known in the store", testCon.hasMatch(null, name, nameBob, false));
 	}
 
 	public void testAutoCommit()
@@ -354,12 +354,12 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.setAutoCommit(false);
 		testCon.add(alice, name, nameAlice);
 
-		assertTrue("Uncommitted update should be visible to own connection", testCon.hasStatement(alice, name,
+		assertTrue("Uncommitted update should be visible to own connection", testCon.hasMatch(alice, name,
 				nameAlice, false));
 
 		testCon.commit();
 
-		assertTrue("Repository should contain statement after commit", testCon.hasStatement(alice, name,
+		assertTrue("Repository should contain statement after commit", testCon.hasMatch(alice, name,
 				nameAlice, false));
 
 		testCon.setAutoCommit(true);
@@ -371,12 +371,12 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.setAutoCommit(false);
 		testCon.add(alice, name, nameAlice);
 
-		assertTrue("Uncommitted updates should be visible to own connection", testCon.hasStatement(alice, name,
+		assertTrue("Uncommitted updates should be visible to own connection", testCon.hasMatch(alice, name,
 				nameAlice, false));
 
 		testCon.rollback();
 
-		assertFalse("Repository should not contain statement after rollback", testCon.hasStatement(alice, name,
+		assertFalse("Repository should not contain statement after rollback", testCon.hasMatch(alice, name,
 				nameAlice, false));
 
 		testCon.setAutoCommit(true);
@@ -759,9 +759,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		testCon.add(bob, name, nameBob);
 
-		assertTrue("Repository should contain statement", testCon.hasStatement(bob, name, nameBob, false));
+		assertTrue("Repository should contain statement", testCon.hasMatch(bob, name, nameBob, false));
 
-		RepositoryResult<Statement> result = testCon.getStatements(null, name, null, false);
+		RepositoryResult<Statement> result = testCon.match(null, name, null, false);
 
 		try {
 			assertTrue("Iterator should not be null", result != null);
@@ -777,7 +777,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			result.close();
 		}
 
-		List<Statement> list = testCon.getStatements(null, name, null, false).asList();
+		List<Statement> list = testCon.match(null, name, null, false).asList();
 
 		assertTrue("List should not be null", list != null);
 		assertFalse("List should not be empty", list.isEmpty());
@@ -796,16 +796,16 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(context2, publisher, nameAlice);
 		testCon.setAutoCommit(true);
 
-		assertTrue("Repository should contain statement", testCon.hasStatement(bob, name, nameBob, false));
+		assertTrue("Repository should contain statement", testCon.hasMatch(bob, name, nameBob, false));
 
-		assertTrue("Repository should contain statement in context1", testCon.hasStatement(bob, name, nameBob,
+		assertTrue("Repository should contain statement in context1", testCon.hasMatch(bob, name, nameBob,
 				false, context1));
 
-		assertFalse("Repository should not contain statement in context2", testCon.hasStatement(bob, name,
+		assertFalse("Repository should not contain statement in context2", testCon.hasMatch(bob, name,
 				nameBob, false, context2));
 
 		// Check handling of getStatements without context IDs
-		RepositoryResult<Statement> result = testCon.getStatements(bob, name, null, false);
+		RepositoryResult<Statement> result = testCon.match(bob, name, null, false);
 		try {
 			while (result.hasNext()) {
 				Statement st = result.next();
@@ -820,7 +820,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 
 		// Check handling of getStatements with a known context ID
-		result = testCon.getStatements(null, null, null, false, context1);
+		result = testCon.match(null, null, null, false, context1);
 		try {
 			while (result.hasNext()) {
 				Statement st = result.next();
@@ -832,7 +832,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 
 		// Check handling of getStatements with an unknown context ID
-		result = testCon.getStatements(null, null, null, false, unknownContext);
+		result = testCon.match(null, null, null, false, unknownContext);
 		try {
 			assertTrue(result != null);
 			assertFalse(result.hasNext());
@@ -841,7 +841,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			result.close();
 		}
 
-		List<Statement> list = testCon.getStatements(null, name, null, false, context1).asList();
+		List<Statement> list = testCon.match(null, name, null, false, context1).asList();
 
 		assertTrue("List should not be null", list != null);
 		assertFalse("List should not be empty", list.isEmpty());
@@ -859,7 +859,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.setAutoCommit(true);
 
 		// get statements with either no context or context2
-		RepositoryResult<? extends Statement> iter = testCon.getStatements(null, null,
+		RepositoryResult<? extends Statement> iter = testCon.match(null, null,
 				null, false, null, context2);
 
 		try {
@@ -881,7 +881,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		// context2 are both known
 		// in the store because they have been created through the store's own
 		// value vf.
-		iter = testCon.getStatements(null, null, null, false, context1, context2);
+		iter = testCon.match(null, null, null, false, context1, context2);
 
 		try {
 			int count = 0;
@@ -898,7 +898,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 
 		// get all statements with unknownContext or context2.
-		iter = testCon.getStatements(null, null, null, false, unknownContext, context2);
+		iter = testCon.match(null, null, null, false, unknownContext, context2);
 
 		try {
 			int count = 0;
@@ -921,7 +921,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(context1, publisher, nameBob);
 		testCon.setAutoCommit(true);
 
-		iter = testCon.getStatements(null, null, null, false, context1);
+		iter = testCon.match(null, null, null, false, context1);
 		try {
 			assertTrue(iter != null);
 			assertTrue(iter.hasNext());
@@ -931,7 +931,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 
 		// get statements with either no context or context2
-		iter = testCon.getStatements(null, null, null, false, null, context2);
+		iter = testCon.match(null, null, null, false, null, context2);
 		try {
 			int count = 0;
 			while (iter.hasNext()) {
@@ -948,7 +948,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 
 		// get all statements with context1 or context2
-		iter = testCon.getStatements(null, null, null, false, context1, context2);
+		iter = testCon.match(null, null, null, false, context1, context2);
 
 		try {
 			int count = 0;
@@ -972,16 +972,16 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(alice, name, nameAlice);
 		testCon.setAutoCommit(true);
 
-		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
-		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
+		assertTrue(testCon.hasMatch(bob, name, nameBob, false));
+		assertTrue(testCon.hasMatch(alice, name, nameAlice, false));
 
 		testCon.removeMatch(bob, name, nameBob);
 
-		assertFalse(testCon.hasStatement(bob, name, nameBob, false));
-		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
+		assertFalse(testCon.hasMatch(bob, name, nameBob, false));
+		assertTrue(testCon.hasMatch(alice, name, nameAlice, false));
 
 		testCon.removeMatch(alice, null, null);
-		assertFalse(testCon.hasStatement(alice, name, nameAlice, false));
+		assertFalse(testCon.hasMatch(alice, name, nameAlice, false));
 		assertTrue(testCon.isEmpty());
 	}
 
@@ -993,15 +993,15 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 		testCon.setAutoCommit(true);
 
-		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
-		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
+		assertTrue(testCon.hasMatch(bob, name, nameBob, false));
+		assertTrue(testCon.hasMatch(alice, name, nameAlice, false));
 
-		Collection<Statement> c = testCon.getStatements(null, null, null, false).asList();
+		Collection<Statement> c = testCon.match(null, null, null, false).asList();
 
 		testCon.remove(c);
 
-		assertFalse(testCon.hasStatement(bob, name, nameBob, false));
-		assertFalse(testCon.hasStatement(alice, name, nameAlice, false));
+		assertFalse(testCon.hasMatch(bob, name, nameBob, false));
+		assertFalse(testCon.hasMatch(alice, name, nameAlice, false));
 	}
 
 	public void testRemoveStatementIteration()
@@ -1012,10 +1012,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 		testCon.setAutoCommit(true);
 
-		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
-		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
+		assertTrue(testCon.hasMatch(bob, name, nameBob, false));
+		assertTrue(testCon.hasMatch(alice, name, nameAlice, false));
 
-		RepositoryResult<? extends Statement> iter = testCon.getStatements(null, null,
+		RepositoryResult<? extends Statement> iter = testCon.match(null, null,
 				null, false);
 
 		try {
@@ -1025,8 +1025,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			iter.close();
 		}
 
-		assertFalse(testCon.hasStatement(bob, name, nameBob, false));
-		assertFalse(testCon.hasStatement(alice, name, nameAlice, false));
+		assertFalse(testCon.hasMatch(bob, name, nameBob, false));
+		assertFalse(testCon.hasMatch(alice, name, nameAlice, false));
 
 	}
 
@@ -1076,9 +1076,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		throws Exception
 	{
 		testCon.add(bob, name, nameBob);
-		assertTrue(testCon.hasStatement(null, name, nameBob, false));
+		assertTrue(testCon.hasMatch(null, name, nameBob, false));
 		testCon.clear();
-		assertFalse(testCon.hasStatement(null, name, nameBob, false));
+		assertFalse(testCon.hasMatch(null, name, nameBob, false));
 	}
 
 	public void testRecoverFromParseError()
@@ -1111,7 +1111,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 
 		Statement st;
-		RepositoryResult<Statement> statements = testCon.getStatements(null, null, null, true);
+		RepositoryResult<Statement> statements = testCon.match(null, null, null, true);
 		try {
 			st = statements.next();
 		}
@@ -1141,7 +1141,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 
 		Statement st;
-		RepositoryResult<Statement> statements = testCon.getStatements(null, null, null, false);
+		RepositoryResult<Statement> statements = testCon.match(null, null, null, false);
 		try {
 			st = statements.next();
 		}
@@ -1163,8 +1163,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertTrue(bnode.equals(deserializedBNode));
 
-		assertTrue(testCon.hasStatement(bnode, name, nameBob, true));
-		assertTrue(testCon.hasStatement(deserializedBNode, name, nameBob, true));
+		assertTrue(testCon.hasMatch(bnode, name, nameBob, true));
+		assertTrue(testCon.hasMatch(deserializedBNode, name, nameBob, true));
 	}
 
 	public void testURISerialization()
@@ -1173,7 +1173,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 
 		Statement st;
-		RepositoryResult<Statement> statements = testCon.getStatements(null, null, null, false);
+		RepositoryResult<Statement> statements = testCon.match(null, null, null, false);
 		try {
 			st = statements.next();
 		}
@@ -1195,8 +1195,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertTrue(uri.equals(deserializedURI));
 
-		assertTrue(testCon.hasStatement(bob, uri, nameBob, true));
-		assertTrue(testCon.hasStatement(bob, deserializedURI, nameBob, true));
+		assertTrue(testCon.hasMatch(bob, uri, nameBob, true));
+		assertTrue(testCon.hasMatch(bob, deserializedURI, nameBob, true));
 	}
 
 	public void testLiteralSerialization()
@@ -1205,7 +1205,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 
 		Statement st;
-		RepositoryResult<Statement> statements = testCon.getStatements(null, null, null, false);
+		RepositoryResult<Statement> statements = testCon.match(null, null, null, false);
 		try {
 			st = statements.next();
 		}
@@ -1227,8 +1227,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertTrue(literal.equals(deserializedLiteral));
 
-		assertTrue(testCon.hasStatement(bob, name, literal, true));
-		assertTrue(testCon.hasStatement(bob, name, deserializedLiteral, true));
+		assertTrue(testCon.hasMatch(bob, name, literal, true));
+		assertTrue(testCon.hasMatch(bob, name, deserializedLiteral, true));
 	}
 
 	public void testGraphSerialization()
@@ -1238,7 +1238,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(alice, name, nameAlice);
 
 		Model model;
-		RepositoryResult<Statement> statements = testCon.getStatements(null, null, null, true);
+		RepositoryResult<Statement> statements = testCon.match(null, null, null, true);
 		try {
 			model = new ModelImpl(statements.asList());
 		}
@@ -1349,7 +1349,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.remove(stmt);
 		testCon.commit();
 
-		testCon.exportStatements(null, null, null, false, new RDFHandlerBase() {
+		testCon.exportMatch(null, null, null, false, new RDFHandlerBase() {
 
 			@Override
 			public void handleStatement(Statement st)
@@ -1520,14 +1520,14 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		URI unknownContext = new URIImpl(EXAMPLE_NS + "unknown");
 
 		Thread.sleep(2000); // increase modified age
-		assertEquals(0, testCon.size(null, null, null, false));
+		assertEquals(0, testCon.sizeMatch(null, null, null, false));
 		for (Resource subj : Arrays.asList(null, picasso)) {
 			for (URI pred : Arrays.asList(null, paints, RDF.TYPE)) {
 				for (Value obj : Arrays.asList(null, guernica)) {
 					for (Resource[] ctx : Arrays.asList(new Resource[0], new Resource[] { context1 },
 							new Resource[] { unknownContext }))
 					{
-						assertEquals(0, testCon.size(subj, pred, obj, false, ctx));
+						assertEquals(0, testCon.sizeMatch(subj, pred, obj, false, ctx));
 					}
 				}
 			}
@@ -1542,20 +1542,20 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.commit();
 
 		Thread.sleep(1000); // increase modified age
-		assertEquals(5, testCon.size(null, null, null, false));
-		assertEquals(5, testCon.size(null, null, null, false));
-		assertEquals(3, testCon.size(null, null, null, false, context1));
-		assertEquals(4, testCon.size(null, RDF.TYPE, null, false));
-		assertEquals(1, testCon.size(null, paints, null, false));
-		assertEquals(2, testCon.size(picasso, null, null, false));
-		assertEquals(2, testCon.size(picasso, null, null, false));
+		assertEquals(5, testCon.sizeMatch(null, null, null, false));
+		assertEquals(5, testCon.sizeMatch(null, null, null, false));
+		assertEquals(3, testCon.sizeMatch(null, null, null, false, context1));
+		assertEquals(4, testCon.sizeMatch(null, RDF.TYPE, null, false));
+		assertEquals(1, testCon.sizeMatch(null, paints, null, false));
+		assertEquals(2, testCon.sizeMatch(picasso, null, null, false));
+		assertEquals(2, testCon.sizeMatch(picasso, null, null, false));
 
-		assertEquals(0, testCon.size(null, null, null, false, unknownContext));
-		assertEquals(0, testCon.size(null, picasso, null, false));
+		assertEquals(0, testCon.sizeMatch(null, null, null, false, unknownContext));
+		assertEquals(0, testCon.sizeMatch(null, picasso, null, false));
 
 		URIImpl uriImplContext1 = new URIImpl(context1.toString());
 
-		assertEquals(3, testCon.size(null, null, null, false, uriImplContext1));
+		assertEquals(3, testCon.sizeMatch(null, null, null, false, uriImplContext1));
 	}
 
 	public void testMetaData() throws Exception {
@@ -1633,7 +1633,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(subj, pred, obj);
 		testCon.commit();
 
-		RepositoryResult<Statement> stIter = testCon.getStatements(null, null, null, false);
+		RepositoryResult<Statement> stIter = testCon.match(null, null, null, false);
 
 		try {
 			assertTrue(stIter.hasNext());
@@ -1647,7 +1647,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			stIter.close();
 		}
 
-		stIter = testCon.getStatements(subj, pred, obj, false);
+		stIter = testCon.match(subj, pred, obj, false);
 
 		try {
 			assertTrue(stIter.hasNext());
@@ -1703,7 +1703,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	private int getTotalStatementCount(RepositoryConnection connection)
 		throws StoreException
 	{
-		RepositoryResult<? extends Statement> iter = connection.getStatements(null,
+		RepositoryResult<? extends Statement> iter = connection.match(null,
 				null, null, true);
 
 		try {
