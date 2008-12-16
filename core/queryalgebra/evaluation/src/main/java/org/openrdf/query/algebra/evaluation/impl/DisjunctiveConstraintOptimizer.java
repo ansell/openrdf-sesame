@@ -55,7 +55,7 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 				Union union = new Union(leftFilter, rightFilter);
 				node.replaceWith(union);
 
-				filterArg.visit(this);
+				filter.getParentNode().visit(this);
 			}
 			else {
 				super.meet(filter);
