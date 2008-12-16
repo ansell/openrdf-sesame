@@ -7,67 +7,37 @@ package org.openrdf.model.impl;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
+import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * Abstract base class for {@link ValueFactory} implementations that implements
- * the utility methods for creating literals for basic types by calling the
- * generic {@link ValueFactory#createLiteral(String, URI)} with the appropriate
- * value and datatype.
+ * implements {@link LiteralFactory} creating literals for basic types by
+ * calling the generic {@link ValueFactory#createLiteral(String, URI)} with the
+ * appropriate value and datatype.
  * 
  * @author Arjohn Kampman
+ * @author James Leigh
  */
-public abstract class ValueFactoryBase implements ValueFactory {
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	/**
-	 * The ID for the next bnode that is created.
-	 */
-	private int nextBNodeID;
-
-	/**
-	 * The prefix for any new bnode IDs.
-	 */
-	private String bnodePrefix;
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public ValueFactoryBase() {
-		initBNodeParams();
-	}
+public class LiteralFactoryImpl implements LiteralFactory {
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	/**
-	 * Generates a new bnode prefix based on <tt>currentTimeMillis()</tt> and
-	 * resets <tt>_nextBNodeID</tt> to <tt>1</tt>.
-	 */
-	protected void initBNodeParams() {
-		// BNode prefix is based on currentTimeMillis(). Combined with a
-		// sequential number per session, this gives a unique identifier.
-		bnodePrefix = "node" + Long.toString(System.currentTimeMillis(), 32) + "x";
-		nextBNodeID = 1;
+	public Literal createLiteral(String label) {
+		return new LiteralImpl(label);
 	}
 
-	public BNode createBNode() {
-		if (nextBNodeID == Integer.MAX_VALUE) {
-			// Start with a new bnode prefix
-			initBNodeParams();
-		}
+	public Literal createLiteral(String label, String language) {
+		return new LiteralImpl(label, language);
+	}
 
-		return createBNode(bnodePrefix + nextBNodeID++);
+	public Literal createLiteral(String label, URI datatype) {
+		return new LiteralImpl(label, datatype);
 	}
 
 	/**

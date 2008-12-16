@@ -12,13 +12,15 @@ import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.BNode;
+import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryBase;
+import org.openrdf.model.impl.BNodeFactoryImpl;
+import org.openrdf.model.impl.LiteralFactoryImpl;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.managers.BNodeManager;
@@ -46,10 +48,12 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * @author James Leigh
  * 
  */
-public class RdbmsValueFactory extends ValueFactoryBase {
+public class RdbmsValueFactory extends LiteralFactoryImpl implements ValueFactory {
 
 	@Deprecated
 	public static final String NIL_LABEL = "nil";
+
+	private BNodeFactory bf = new BNodeFactoryImpl();
 
 	private ValueFactory vf;
 
@@ -103,6 +107,10 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		catch (InterruptedException e) {
 			throw new RdbmsException(e);
 		}
+	}
+
+	public RdbmsBNode createBNode() {
+		return createBNode(bf.createBNode().getID());
 	}
 
 	public RdbmsBNode createBNode(String nodeID) {

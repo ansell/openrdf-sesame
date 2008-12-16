@@ -14,14 +14,17 @@ import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 import info.aduna.io.ByteArrayUtil;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.BNodeFactoryImpl;
 import org.openrdf.model.impl.ContextStatementImpl;
+import org.openrdf.model.impl.LiteralFactoryImpl;
 import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.ValueFactoryBase;
 import org.openrdf.sail.nativerdf.datastore.DataStore;
 import org.openrdf.sail.nativerdf.model.NativeBNode;
 import org.openrdf.sail.nativerdf.model.NativeLiteral;
@@ -35,7 +38,7 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
  * 
  * @author Arjohn Kampman
  */
-public class ValueStore extends ValueFactoryBase {
+public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 
 	/*-----------*
 	 * Constants *
@@ -62,6 +65,8 @@ public class ValueStore extends ValueFactoryBase {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	private BNodeFactory bnodes = new BNodeFactoryImpl();
 
 	/**
 	 * Used to do the actual storage of values, once they're translated to byte
@@ -362,8 +367,6 @@ public class ValueStore extends ValueFactoryBase {
 					namespaceIDCache.clear();
 				}
 
-				initBNodeParams();
-
 				setNewRevision();
 			}
 			finally {
@@ -644,6 +647,10 @@ public class ValueStore extends ValueFactoryBase {
 
 	public NativeURI createURI(String namespace, String localName) {
 		return new NativeURI(revision, namespace, localName);
+	}
+
+	public NativeBNode createBNode() {
+		return createBNode(bnodes.createBNode().getID());
 	}
 
 	public NativeBNode createBNode(String nodeID) {

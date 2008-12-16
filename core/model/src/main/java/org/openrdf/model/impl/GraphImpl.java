@@ -29,9 +29,6 @@ import org.openrdf.model.ValueFactory;
 @Deprecated
 public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -5307095904382050478L;
 
 	protected LinkedList<Statement> statements;

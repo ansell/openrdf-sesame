@@ -11,6 +11,7 @@ import java.util.Map;
 import info.aduna.net.ParsedURI;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -18,8 +19,8 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.impl.MappedBNodeFactoryImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
-
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.RDFHandler;
@@ -55,6 +56,11 @@ public abstract class RDFParserBase implements RDFParser {
 	private ParseLocationListener locationListener;
 
 	/**
+	 * The ValueFactory passed to the parser.
+	 */
+	private ValueFactory originalValueFactory;
+
+	/**
 	 * The ValueFactory to use for creating RDF model objects.
 	 */
 	private ValueFactory valueFactory;
@@ -87,13 +93,6 @@ public abstract class RDFParserBase implements RDFParser {
 	private ParsedURI baseURI;
 
 	/**
-	 * Mapping from blank node identifiers as used in the RDF document to the
-	 * object created for it by the ValueFactory. This mapping is used to return
-	 * identical BNode objects for recurring blank node identifiers.
-	 */
-	private Map<String, BNode> bNodeIDMap;
-
-	/**
 	 * Mapping from namespace prefixes to namespace names.
 	 */
 	private Map<String, String> namespaceTable;
@@ -118,7 +117,6 @@ public abstract class RDFParserBase implements RDFParser {
 	 *        A ValueFactory.
 	 */
 	public RDFParserBase(ValueFactory valueFactory) {
-		bNodeIDMap = new HashMap<String, BNode>(16);
 		namespaceTable = new HashMap<String, String>(16);
 
 		setValueFactory(valueFactory);
@@ -132,8 +130,9 @@ public abstract class RDFParserBase implements RDFParser {
 	 * Methods *
 	 *---------*/
 
-	public void setValueFactory(ValueFactory valueFactory) {
-		this.valueFactory = valueFactory;
+	public void setValueFactory(ValueFactory vf) {
+		this.originalValueFactory = vf;
+		clearBNodeIDMap();
 	}
 
 	public void setRDFHandler(RDFHandler handler) {
@@ -170,6 +169,7 @@ public abstract class RDFParserBase implements RDFParser {
 
 	public void setPreserveBNodeIDs(boolean preserveBNodeIDs) {
 		this.preserveBNodeIDs = preserveBNodeIDs;
+		clearBNodeIDMap();
 	}
 
 	public boolean preserveBNodeIDs() {
@@ -241,7 +241,13 @@ public abstract class RDFParserBase implements RDFParser {
 	 * bnode scope ends.
 	 */
 	protected void clearBNodeIDMap() {
-		bNodeIDMap.clear();
+		if (preserveBNodeIDs) {
+			valueFactory = originalValueFactory;
+		}
+		else if (originalValueFactory != null) {
+			BNodeFactory map = new MappedBNodeFactoryImpl(originalValueFactory);
+			valueFactory = new ValueFactoryImpl(map, originalValueFactory);
+		}
 	}
 
 	/**
@@ -306,28 +312,13 @@ public abstract class RDFParserBase implements RDFParser {
 	protected BNode createBNode(String nodeID)
 		throws RDFParseException
 	{
-		// Maybe the node ID has been used before:
-		BNode result = bNodeIDMap.get(nodeID);
-
-		if (result == null) {
-			// This is a new node ID, create a new BNode object for it
-			try {
-				if (preserveBNodeIDs) {
-					result = valueFactory.createBNode(nodeID);
-				}
-				else {
-					result = valueFactory.createBNode();
-				}
-			}
-			catch (Exception e) {
-				reportFatalError(e);
-			}
-
-			// Remember it, the nodeID might occur again.
-			bNodeIDMap.put(nodeID, result);
+		try {
+			return valueFactory.createBNode(nodeID);
 		}
-
-		return result;
+		catch (RuntimeException e) {
+			reportFatalError(e);
+			throw e;
+		}
 	}
 
 	/**
