@@ -232,6 +232,15 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		throw new ModelUtilException();
 	}
 
+	public String stringValue()
+		throws ModelUtilException
+	{
+		Value obj = value();
+		if (obj == null)
+			return null;
+		return obj.stringValue();
+	}
+
 	public int hashCode() {
 		return size();
 	}
@@ -610,6 +619,12 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			return null;
 		}
 
+		public String stringValue()
+			throws ModelUtilException
+		{
+			return null;
+		}
+
 		public int hashCode() {
 			return size();
 		}
@@ -882,6 +897,15 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (obj instanceof URI)
 				return (URI)obj;
 			throw new ModelUtilException();
+		}
+
+		public String stringValue()
+			throws ModelUtilException
+		{
+			Value obj = value();
+			if (obj == null)
+				return null;
+			return obj.stringValue();
 		}
 
 		public int hashCode() {

@@ -357,4 +357,16 @@ public interface Model extends Set<Statement>, Serializable {
 	 */
 	public URI uri()
 		throws ModelUtilException;
+
+	/**
+	 * Utility method that returns the string value of {@link #value()}.
+	 * 
+	 * @return The object string value of the matched statement(s), or
+	 *         <tt>null</tt> if no matching statements were found.
+	 * @throws ModelUtilException
+	 *         If the statements matched by the specified parameters have more
+	 *         than one unique object.
+	 */
+	public String stringValue()
+		throws ModelUtilException;
 }
