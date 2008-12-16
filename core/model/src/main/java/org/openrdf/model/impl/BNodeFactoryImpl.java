@@ -5,6 +5,8 @@
  */
 package org.openrdf.model.impl;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.openrdf.model.BNode;
 import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.ValueFactory;
@@ -25,7 +27,7 @@ public class BNodeFactoryImpl implements BNodeFactory {
 	/**
 	 * The ID for the next bnode that is created.
 	 */
-	private int nextBNodeID;
+	private AtomicLong nextBNodeID;
 
 	/**
 	 * The prefix for any new bnode IDs.
@@ -48,16 +50,16 @@ public class BNodeFactoryImpl implements BNodeFactory {
 		// BNode prefix is based on currentTimeMillis(). Combined with a
 		// sequential number per session, this gives a unique identifier.
 		bnodePrefix = "node" + Long.toString(System.currentTimeMillis(), 32) + "x";
-		nextBNodeID = 1;
+		nextBNodeID = new AtomicLong(0);
 	}
 
 	public BNode createBNode() {
-		if (nextBNodeID == Integer.MAX_VALUE) {
+		long nextId = nextBNodeID.incrementAndGet();
+		if (nextId == Long.MAX_VALUE) {
 			// Start with a new bnode prefix
 			initBNodeParams();
 		}
-
-		return createBNode(bnodePrefix + nextBNodeID++);
+		return createBNode(bnodePrefix + nextId);
 	}
 
 	public BNode createBNode(String nodeID) {

@@ -26,11 +26,14 @@ import java.util.zip.GZIPOutputStream;
 import info.aduna.io.IOUtil;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.MappedBNodeFactoryImpl;
 import org.openrdf.results.Cursor;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
@@ -88,6 +91,10 @@ class FileIO {
 
 	private final MemoryStore store;
 
+	private BNodeFactory bf;
+
+	private final ValueFactory vf;
+
 	private final CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
 
 	private final CharsetDecoder charsetDecoder = Charset.forName("UTF-8").newDecoder();
@@ -98,8 +105,9 @@ class FileIO {
 	 * Constructors *
 	 *--------------*/
 
-	public FileIO(MemoryStore store) {
+	public FileIO(MemoryStore store, ValueFactory vf) {
 		this.store = store;
+		this.vf = vf;
 	}
 
 	/*---------*
@@ -156,6 +164,8 @@ class FileIO {
 	public void read(File dataFile)
 		throws IOException
 	{
+		// map all read BNodes into local ValueFactory
+		this.bf = new MappedBNodeFactoryImpl(vf);
 		InputStream in = new FileInputStream(dataFile);
 		try {
 			byte[] magicNumber = IOUtil.readBytes(in, MAGIC_NUMBER.length);
@@ -197,6 +207,7 @@ class FileIO {
 		}
 		finally {
 			in.close();
+			this.bf = null;
 		}
 	}
 
@@ -327,25 +338,25 @@ class FileIO {
 
 		if (valueTypeMarker == URI_MARKER) {
 			String uriString = readString(dataIn);
-			return store.getValueFactory().createURI(uriString);
+			return vf.createURI(uriString);
 		}
 		else if (valueTypeMarker == BNODE_MARKER) {
 			String bnodeID = readString(dataIn);
-			return store.getValueFactory().createBNode(bnodeID);
+			return bf.createBNode(bnodeID);
 		}
 		else if (valueTypeMarker == PLAIN_LITERAL_MARKER) {
 			String label = readString(dataIn);
-			return store.getValueFactory().createLiteral(label);
+			return vf.createLiteral(label);
 		}
 		else if (valueTypeMarker == LANG_LITERAL_MARKER) {
 			String label = readString(dataIn);
 			String language = readString(dataIn);
-			return store.getValueFactory().createLiteral(label, language);
+			return vf.createLiteral(label, language);
 		}
 		else if (valueTypeMarker == DATATYPE_LITERAL_MARKER) {
 			String label = readString(dataIn);
 			URI datatype = (URI)readValue(dataIn);
-			return store.getValueFactory().createLiteral(label, datatype);
+			return vf.createLiteral(label, datatype);
 		}
 		else {
 			throw new IOException("Invalid value type marker: " + valueTypeMarker);
