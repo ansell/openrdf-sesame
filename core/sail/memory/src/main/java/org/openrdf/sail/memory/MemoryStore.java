@@ -311,7 +311,7 @@ public class MemoryStore extends InferencerSailBase {
 				}
 				else {
 					try {
-						new FileIO(this).read(dataFile);
+						new FileIO(this, valueFactory).read(dataFile);
 						logger.debug("Data file read successfully");
 					}
 					catch (IOException e) {
@@ -335,7 +335,7 @@ public class MemoryStore extends InferencerSailBase {
 					dirLock = locker.lockOrFail();
 
 					logger.debug("Initializing data file...");
-					new FileIO(this).write(syncFile, dataFile);
+					new FileIO(this, valueFactory).write(syncFile, dataFile);
 					logger.debug("Data file initialized");
 				}
 				catch (IOException e) {
@@ -879,7 +879,7 @@ public class MemoryStore extends InferencerSailBase {
 			if (persist && contentsChanged) {
 				logger.debug("syncing data to file...");
 				try {
-					new FileIO(this).write(syncFile, dataFile);
+					new FileIO(this, valueFactory).write(syncFile, dataFile);
 					contentsChanged = false;
 					logger.debug("Data synced to file");
 				}

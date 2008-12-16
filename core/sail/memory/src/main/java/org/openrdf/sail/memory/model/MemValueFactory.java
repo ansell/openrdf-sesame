@@ -8,11 +8,11 @@ package org.openrdf.sail.memory.model;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -20,9 +20,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.BNodeFactoryImpl;
 import org.openrdf.model.impl.BNodeImpl;
-import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.model.impl.LiteralFactoryImpl;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.StatementImpl;
@@ -43,7 +41,16 @@ public class MemValueFactory extends LiteralFactoryImpl implements ValueFactory 
 	 * Variables *
 	 *-----------*/
 
-	private BNodeFactory bnodes = new BNodeFactoryImpl();
+	/**
+	 * BNode prefix is based on currentTimeMillis(). Combined with a
+	 * sequential number per session, this gives a unique identifier.
+	 */
+	private String bnodePrefix = "node" + Long.toString(System.currentTimeMillis(), 32) + "x";
+
+	/**
+	 * The ID for the next bnode that is created.
+	 */
+	private AtomicLong nextBNodeID = new AtomicLong();
 
 	/**
 	 * Registry containing the set of MemURI objects as used by a MemoryStore.
@@ -371,10 +378,12 @@ public class MemValueFactory extends LiteralFactoryImpl implements ValueFactory 
 	}
 
 	public BNode createBNode() {
-		return createBNode(bnodes.createBNode().getID());
+		return createBNode(bnodePrefix + nextBNodeID.incrementAndGet());
 	}
 
 	public synchronized BNode createBNode(String nodeID) {
+		if (!nodeID.startsWith(bnodePrefix))
+			throw new IllegalArgumentException("BNode not created from this ValueFactory");
 		BNode tempBNode = new BNodeImpl(nodeID);
 		MemBNode memBNode = getMemBNode(tempBNode);
 
@@ -463,7 +472,7 @@ public class MemValueFactory extends LiteralFactoryImpl implements ValueFactory 
 			return new StatementImpl(subject, predicate, object);
 		}
 		else {
-			return new ContextStatementImpl(subject, predicate, object, context);
+			return new StatementImpl(subject, predicate, object, context);
 		}
 	}
 }
