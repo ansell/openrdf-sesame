@@ -35,6 +35,7 @@ import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.http.helpers.PrefixHashSet;
 import org.openrdf.results.ContextResult;
 import org.openrdf.results.Cursor;
 import org.openrdf.results.ModelResult;
@@ -166,7 +167,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 			final boolean includeInferred, final Resource... contexts)
 		throws StoreException
 	{
-		return union(new Function<Statement>() {
+		Cursor<? extends Statement> cursor = union(new Function<Statement>() {
 
 			public ModelResult call(RepositoryConnection member)
 				throws StoreException
@@ -174,13 +175,16 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 				return member.match(subj, pred, obj, includeInferred, contexts);
 			}
 		});
+		if (federation.isDisjoint() || isLocal(pred))
+			return cursor;
+		return new DistinctCursor<Statement>(cursor);
 	}
 
 	public Cursor<? extends Statement> getStatements(final Resource subj, final URI pred, final Value obj,
 			final Resource... contexts)
 		throws StoreException
 	{
-		return union(new Function<Statement>() {
+		Cursor<? extends Statement> cursor = union(new Function<Statement>() {
 
 			public ModelResult call(RepositoryConnection member)
 				throws StoreException
@@ -188,6 +192,9 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 				return member.match(subj, pred, obj, true, contexts);
 			}
 		});
+		if (federation.isDisjoint() || isLocal(pred))
+			return cursor;
+		return new DistinctCursor<Statement>(cursor);
 	}
 
 	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
@@ -240,6 +247,15 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 			throws StoreException;
 	}
 
+	private boolean isLocal(URI pred) {
+		if (pred == null)
+			return false;
+		PrefixHashSet hash = federation.getLocalPropertySpace();
+		if (hash == null)
+			return false;
+		return hash.match(pred.stringValue());
+	}
+
 	private <E> Cursor<? extends E> union(Function<E> converter)
 		throws StoreException
 	{
@@ -248,10 +264,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 			for (RepositoryConnection member : members) {
 				cursors.add(converter.call(member));
 			}
-			UnionCursor<E> cursor = new UnionCursor<E>(cursors);
-			if (federation.isDisjoint())
-				return cursor;
-			return new DistinctCursor<E>(cursor);
+			return new UnionCursor<E>(cursors);
 		}
 		catch (StoreException e) {
 			closeAll(cursors);
@@ -279,7 +292,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 	{
 		logger.trace("Incoming query model:\n{}", parsed.toString());
 
-		// Clone the tuple expression to allow for more aggresive optimizations
+		// Clone the tuple expression to allow for more aggressive optimisations
 		QueryModel query = parsed.clone();
 
 		new BindingAssigner().optimize(query, bindings);
@@ -295,7 +308,9 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		new FilterOptimizer().optimize(query, bindings);
 
 		new EmptyPatternOptimizer(members).optimize(query, bindings);
-		new FederationJoinOptimizer(members, federation.getLocalPropertySpace()).optimize(query, bindings);
+		boolean disjoint = federation.isDisjoint();
+		PrefixHashSet local = federation.getLocalPropertySpace();
+		new FederationJoinOptimizer(members, disjoint, local).optimize(query, bindings);
 		new OwnedTupleExprPruner().optimize(query, bindings);
 		new QueryModelPruner().optimize(query, bindings);
 		new QueryJoinOptimizer(statistics).optimize(query, bindings);
