@@ -10,6 +10,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.results.Cursor;
@@ -69,6 +70,10 @@ public class SailConnectionWrapper implements SailConnection {
 		throws StoreException
 	{
 		wrappedCon.close();
+	}
+
+	public ValueFactory getValueFactory() {
+		return wrappedCon.getValueFactory();
 	}
 
 	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)

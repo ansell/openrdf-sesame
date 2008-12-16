@@ -19,6 +19,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
@@ -85,6 +86,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public ValueFactory getValueFactory() {
+		return nativeStore.getValueFactory();
+	}
 
 	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings,
 			boolean includeInferred)

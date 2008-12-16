@@ -12,6 +12,7 @@ import org.openrdf.model.URIFactory;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryMetaData;
+import org.openrdf.repository.util.URILiteralFactory;
 import org.openrdf.sail.Sail;
 import org.openrdf.store.StoreException;
 
@@ -106,15 +107,15 @@ public class SailRepository implements Repository {
 	}
 
 	public LiteralFactory getLiteralFactory() {
-		return sail.getValueFactory();
+		return sail.getLiteralFactory();
 	}
 
 	public URIFactory getURIFactory() {
-		return sail.getValueFactory();
+		return sail.getURIFactory();
 	}
 
 	public ValueFactory getValueFactory() {
-		return sail.getValueFactory();
+		return new URILiteralFactory(getURIFactory(), getLiteralFactory());
 	}
 
 	public SailRepositoryConnection getConnection()
