@@ -54,13 +54,6 @@ public interface Sail {
 		throws StoreException;
 
 	/**
-	 * Checks whether this Sail object is writable, i.e. if the data contained in
-	 * this Sail object can be changed.
-	 */
-	public boolean isWritable()
-		throws StoreException;
-
-	/**
 	 * Opens a connection on the Sail which can be used to query and update data.
 	 * Depending on how the implementation handles concurrent access, a call to
 	 * this method might block when there is another open connection on this

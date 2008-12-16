@@ -75,12 +75,6 @@ public class RepositoryWrapper implements DelegatingRepository {
 		getDelegate().shutDown();
 	}
 
-	public boolean isWritable()
-		throws StoreException
-	{
-		return getDelegate().isWritable();
-	}
-
 	public RepositoryConnection getConnection()
 		throws StoreException
 	{

@@ -65,15 +65,6 @@ public interface Repository {
 		throws StoreException;
 
 	/**
-	 * Checks whether this repository is writable, i.e. if the data contained in
-	 * this repository can be changed. The writability of the repository is
-	 * determined by the writability of the Sail that this repository operates
-	 * on.
-	 */
-	public boolean isWritable()
-		throws StoreException;
-
-	/**
 	 * Opens a connection to this repository that can be used for querying and
 	 * updating the contents of the repository. Created connections need to be
 	 * closed to make sure that any resources they keep hold of are released. The
