@@ -26,19 +26,17 @@ import java.util.zip.GZIPOutputStream;
 import info.aduna.io.IOUtil;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.MappedBNodeFactoryImpl;
 import org.openrdf.results.Cursor;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
+import org.openrdf.sail.memory.model.MemValueFactory;
 import org.openrdf.sail.memory.model.ReadMode;
 import org.openrdf.store.StoreException;
 
@@ -91,9 +89,7 @@ class FileIO {
 
 	private final MemoryStore store;
 
-	private BNodeFactory bf;
-
-	private final ValueFactory vf;
+	private MemValueFactory vf;
 
 	private final CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
 
@@ -105,7 +101,7 @@ class FileIO {
 	 * Constructors *
 	 *--------------*/
 
-	public FileIO(MemoryStore store, ValueFactory vf) {
+	public FileIO(MemoryStore store, MemValueFactory vf) {
 		this.store = store;
 		this.vf = vf;
 	}
@@ -164,8 +160,6 @@ class FileIO {
 	public void read(File dataFile)
 		throws IOException
 	{
-		// map all read BNodes into local ValueFactory
-		this.bf = new MappedBNodeFactoryImpl(vf);
 		InputStream in = new FileInputStream(dataFile);
 		try {
 			byte[] magicNumber = IOUtil.readBytes(in, MAGIC_NUMBER.length);
@@ -207,7 +201,6 @@ class FileIO {
 		}
 		finally {
 			in.close();
-			this.bf = null;
 		}
 	}
 
@@ -239,7 +232,7 @@ class FileIO {
 		throws IOException, StoreException
 	{
 		Cursor<MemStatement> stIter = store.createStatementIterator(
-				null, null, null, false, store.getCurrentSnapshot(), ReadMode.COMMITTED);
+				null, null, null, false, store.getCurrentSnapshot(), ReadMode.COMMITTED, vf);
 
 		try {
 			MemStatement st;
@@ -342,7 +335,7 @@ class FileIO {
 		}
 		else if (valueTypeMarker == BNODE_MARKER) {
 			String bnodeID = readString(dataIn);
-			return bf.createBNode(bnodeID);
+			return vf.createBNode(bnodeID);
 		}
 		else if (valueTypeMarker == PLAIN_LITERAL_MARKER) {
 			String label = readString(dataIn);

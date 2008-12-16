@@ -14,7 +14,7 @@ import info.aduna.io.FileUtil;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
@@ -58,7 +58,7 @@ public class StoreSerializationTest extends TestCase {
 		MemoryStore store = new MemoryStore(dataDir);
 		store.initialize();
 
-		ValueFactory factory = store.getValueFactory();
+		URIFactory factory = store.getURIFactory();
 		URI foo = factory.createURI("http://www.foo.example/foo");
 		URI bar = factory.createURI("http://www.foo.example/bar");
 
@@ -85,7 +85,7 @@ public class StoreSerializationTest extends TestCase {
 		store = new MemoryStore(dataDir);
 		store.initialize();
 
-		factory = store.getValueFactory();
+		factory = store.getURIFactory();
 		foo = factory.createURI("http://www.foo.example/foo");
 		bar = factory.createURI("http://www.foo.example/bar");
 
@@ -113,7 +113,7 @@ public class StoreSerializationTest extends TestCase {
 		MemoryStore store = new MemoryStore(dataDir);
 		store.initialize();
 
-		ValueFactory factory = store.getValueFactory();
+		URIFactory factory = store.getURIFactory();
 		URI foo = factory.createURI("http://www.foo.example/foo");
 
 		StringBuilder sb = new StringBuilder(66000);
@@ -121,7 +121,7 @@ public class StoreSerializationTest extends TestCase {
 			sb.append('a');
 		}
 
-		Literal longLiteral = factory.createLiteral(sb.toString());
+		Literal longLiteral = store.getLiteralFactory().createLiteral(sb.toString());
 
 		SailConnection con = store.getConnection();
 		con.addStatement(foo, RDF.TYPE, longLiteral);

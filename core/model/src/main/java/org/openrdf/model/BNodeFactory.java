@@ -15,7 +15,8 @@ public interface BNodeFactory {
 	 * 
 	 * @return An object representing the bNode.
 	 */
-	public BNode createBNode();
+	public BNode createBNode()
+		throws UnsupportedOperationException;
 
 	/**
 	 * Creates a new blank node with the given node identifier.
@@ -24,5 +25,6 @@ public interface BNodeFactory {
 	 *        The blank node identifier.
 	 * @return An object representing the blank node.
 	 */
-	public BNode createBNode(String nodeID);
+	public BNode createBNode(String nodeID)
+		throws IllegalArgumentException;
 }

@@ -47,10 +47,6 @@ public class ValueFactoryImpl extends LiteralFactoryImpl implements ValueFactory
 
 	private LiteralFactory literals;
 
-	/*---------*
-	 * Methods *
-	 *---------*/
-
 	public ValueFactoryImpl() {
 		this(new BNodeFactoryImpl(), new URIFactoryImpl(), new LiteralFactoryImpl());
 	}
@@ -67,6 +63,22 @@ public class ValueFactoryImpl extends LiteralFactoryImpl implements ValueFactory
 		this.bnodes = bnodes;
 		this.uris = uris;
 		this.literals = literals;
+	}
+
+	/*---------*
+	 * Methods *
+	 *---------*/
+
+	public BNodeFactory getBNodeFactory() {
+		return bnodes;
+	}
+
+	public URIFactory getURIFactory() {
+		return uris;
+	}
+
+	public LiteralFactory getLiteralFactory() {
+		return literals;
 	}
 
 	public BNode createBNode() {

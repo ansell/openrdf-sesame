@@ -19,7 +19,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.MappedBNodeFactoryImpl;
+import org.openrdf.model.impl.MappedBNodeFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
@@ -245,7 +245,7 @@ public abstract class RDFParserBase implements RDFParser {
 			valueFactory = originalValueFactory;
 		}
 		else if (originalValueFactory != null) {
-			BNodeFactory map = new MappedBNodeFactoryImpl(originalValueFactory);
+			BNodeFactory map = new MappedBNodeFactory(originalValueFactory);
 			valueFactory = new ValueFactoryImpl(map, originalValueFactory);
 		}
 	}

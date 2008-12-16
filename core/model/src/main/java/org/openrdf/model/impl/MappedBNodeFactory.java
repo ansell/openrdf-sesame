@@ -14,7 +14,7 @@ import org.openrdf.model.BNodeFactory;
 /**
  * @author James Leigh
  */
-public class MappedBNodeFactoryImpl implements BNodeFactory {
+public class MappedBNodeFactory implements BNodeFactory {
 
 	/**
 	 * Mapping from blank node identifiers as used in the RDF document to the
@@ -25,14 +25,12 @@ public class MappedBNodeFactoryImpl implements BNodeFactory {
 
 	private BNodeFactory bnodes;
 
-	public MappedBNodeFactoryImpl(BNodeFactory bnodes) {
+	public MappedBNodeFactory(BNodeFactory bnodes) {
 		this.bnodes = bnodes;
 	}
 
 	public BNode createBNode() {
-		BNode bnode = bnodes.createBNode();
-		map.put(bnode.getID(), bnode);
-		return bnode;
+		return bnodes.createBNode();
 	}
 
 	public BNode createBNode(String nodeID) {
@@ -40,7 +38,7 @@ public class MappedBNodeFactoryImpl implements BNodeFactory {
 		BNode bnode = map.get(nodeID);
 		if (bnode == null) {
 			// This is a new node ID, create a new BNode object for it
-			bnode = createBNode();
+			bnode = bnodes.createBNode();
 			// Remember it, the nodeID might occur again.
 			BNode o = map.putIfAbsent(nodeID, bnode);
 			if (o != null) {

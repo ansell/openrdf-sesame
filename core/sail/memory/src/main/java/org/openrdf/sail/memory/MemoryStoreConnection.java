@@ -19,7 +19,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.StatementPattern;
@@ -68,6 +67,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 	protected final MemoryStore store;
 
+	protected final MemValueFactory vf;
+
 	/**
 	 * The exclusive transaction lock held by this connection during
 	 * transactions.
@@ -87,14 +88,15 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 	protected MemoryStoreConnection(MemoryStore store) {
 		this.store = store;
+		this.vf = store.createValueFactory();
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public ValueFactory getValueFactory() {
-		return store.getValueFactory();
+	public MemValueFactory getValueFactory() {
+		return vf;
 	}
 
 	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings,
@@ -168,16 +170,15 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 					: store.getCurrentSnapshot();
 			final ReadMode readMode = transactionActive() ? ReadMode.TRANSACTION : ReadMode.COMMITTED;
 
-			MemValueFactory valueFactory = store.getValueFactory();
-
-			synchronized (valueFactory) {
-				for (MemResource memResource : valueFactory.getMemURIs()) {
+			synchronized (vf.getURIFactory()) {
+				for (MemResource memResource : vf.getMemURIs()) {
 					if (isContextResource(memResource, snapshot, readMode)) {
 						contextIDs.add(memResource);
 					}
 				}
-
-				for (MemResource memResource : valueFactory.getMemBNodes()) {
+			}
+			synchronized (vf.getBNodeFactory()) {
+				for (MemResource memResource : vf.getMemBNodes()) {
 					if (isContextResource(memResource, snapshot, readMode)) {
 						contextIDs.add(memResource);
 					}
@@ -228,7 +229,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			}
 
 			return new LockingCursor<MemStatement>(stLock, store.createStatementIterator(subj, pred, obj,
-					!includeInferred, snapshot, readMode, contexts));
+					!includeInferred, snapshot, readMode, vf, contexts));
 		}
 		catch (RuntimeException e) {
 			stLock.release();
@@ -338,14 +339,14 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		Statement st = null;
 
 		if (contexts != null && contexts.length == 0) {
-			st = store.addStatement(subj, pred, obj, null, explicit);
+			st = store.addStatement(subj, pred, obj, null, explicit, vf);
 			if (st != null) {
 				notifyStatementAdded(st);
 			}
 		}
 		else {
 			for (Resource context : OpenRDFUtil.notNull(contexts)) {
-				st = store.addStatement(subj, pred, obj, context, explicit);
+				st = store.addStatement(subj, pred, obj, context, explicit, vf);
 				if (st != null) {
 					notifyStatementAdded(st);
 				}
@@ -395,7 +396,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		throws StoreException
 	{
 		Cursor<MemStatement> stIter = store.createStatementIterator(subj, pred, obj, explicit,
-				store.getCurrentSnapshot() + 1, ReadMode.TRANSACTION, contexts);
+				store.getCurrentSnapshot() + 1, ReadMode.TRANSACTION, vf, contexts);
 
 		return removeIteratorStatements(stIter, explicit);
 	}
@@ -471,11 +472,11 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 
 		public Cursor<MemStatement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts) {
-			return store.createStatementIterator(subj, pred, obj, !includeInferred, snapshot, readMode, contexts);
+			return store.createStatementIterator(subj, pred, obj, !includeInferred, snapshot, readMode, vf, contexts);
 		}
 
 		public MemValueFactory getValueFactory() {
-			return store.getValueFactory();
+			return vf;
 		}
 	} // end inner class MemTripleSource
 
@@ -507,13 +508,11 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 				Value obj = getConstantValue(sp.getObjectVar());
 				Resource context = (Resource)getConstantValue(sp.getContextVar());
 
-				MemValueFactory valueFactory = store.getValueFactory();
-
 				// Perform look-ups for value-equivalents of the specified values
-				MemResource memSubj = valueFactory.getMemResource(subj);
-				MemURI memPred = valueFactory.getMemURI(pred);
-				MemValue memObj = valueFactory.getMemValue(obj);
-				MemResource memContext = valueFactory.getMemResource(context);
+				MemResource memSubj = vf.getMemResource(subj);
+				MemURI memPred = vf.getMemURI(pred);
+				MemValue memObj = vf.getMemValue(obj);
+				MemResource memContext = vf.getMemResource(context);
 
 				if (subj != null && memSubj == null || pred != null && memPred == null || obj != null
 						&& memObj == null || context != null && memContext == null)

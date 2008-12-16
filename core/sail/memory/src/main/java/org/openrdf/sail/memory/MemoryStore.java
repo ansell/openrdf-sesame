@@ -33,11 +33,14 @@ import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.helpers.InferencerSailBase;
 import org.openrdf.sail.inferencer.helpers.SynchronizedInferencerConnection;
+import org.openrdf.sail.memory.model.MemBNodeFactory;
+import org.openrdf.sail.memory.model.MemLiteralFactory;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemStatementCursor;
 import org.openrdf.sail.memory.model.MemStatementList;
 import org.openrdf.sail.memory.model.MemURI;
+import org.openrdf.sail.memory.model.MemURIFactory;
 import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
 import org.openrdf.sail.memory.model.ReadMode;
@@ -71,9 +74,19 @@ public class MemoryStore extends InferencerSailBase {
 	 *-----------*/
 
 	/**
-	 * Factory/cache for MemValue objects.
+	 * Factory/cache for MemBNode objects.
 	 */
-	private MemValueFactory valueFactory;
+	private MemBNodeFactory bf;
+
+	/**
+	 * Factory/cache for MemURI objects.
+	 */
+	private MemURIFactory uf;
+
+	/**
+	 * Factory/cache for MemLiteral objects.
+	 */
+	private MemLiteralFactory lf;
 
 	/**
 	 * List containing all available statements.
@@ -281,7 +294,10 @@ public class MemoryStore extends InferencerSailBase {
 		txnLockManager = new ExclusiveLockManager(SailUtil.isDebugEnabled());
 		namespaceStore = new MemNamespaceStore();
 
-		valueFactory = new MemValueFactory();
+		bf = new MemBNodeFactory();
+		uf = new MemURIFactory();
+		lf = new MemLiteralFactory();
+		MemValueFactory valueFactory = createValueFactory();
 		statements = new MemStatementList(256);
 		currentSnapshot = 1;
 
@@ -376,7 +392,6 @@ public class MemoryStore extends InferencerSailBase {
 				cancelSyncTimer();
 				sync();
 
-				valueFactory = null;
 				statements = null;
 				dataFile = null;
 				syncFile = null;
@@ -412,28 +427,24 @@ public class MemoryStore extends InferencerSailBase {
 		return new SynchronizedInferencerConnection(con);
 	}
 
-	public MemValueFactory getURIFactory() {
-		if (valueFactory == null) {
+	public MemURIFactory getURIFactory() {
+		if (uf == null) {
 			throw new IllegalStateException("sail not initialized.");
 		}
 
-		return valueFactory;
+		return uf;
 	}
 
-	public MemValueFactory getLiteralFactory() {
-		if (valueFactory == null) {
+	public MemLiteralFactory getLiteralFactory() {
+		if (lf == null) {
 			throw new IllegalStateException("sail not initialized.");
 		}
 
-		return valueFactory;
+		return lf;
 	}
 
-	public MemValueFactory getValueFactory() {
-		if (valueFactory == null) {
-			throw new IllegalStateException("sail not initialized.");
-		}
-
-		return valueFactory;
+	MemValueFactory createValueFactory() {
+		return new MemValueFactory(bf, uf, lf);
 	}
 
 	protected MemNamespaceStore getNamespaceStore() {
@@ -484,22 +495,22 @@ public class MemoryStore extends InferencerSailBase {
 	 */
 	protected Cursor<MemStatement> createStatementIterator(
 			Resource subj, URI pred, Value obj, boolean explicitOnly, int snapshot,
-			ReadMode readMode, Resource... contexts)
+			ReadMode readMode, MemValueFactory vf, Resource... contexts)
 	{
 		// Perform look-ups for value-equivalents of the specified values
-		MemResource memSubj = valueFactory.getMemResource(subj);
+		MemResource memSubj = vf.getMemResource(subj);
 		if (subj != null && memSubj == null) {
 			// non-existent subject
 			return new EmptyCursor<MemStatement>();
 		}
 
-		MemURI memPred = valueFactory.getMemURI(pred);
+		MemURI memPred = vf.getMemURI(pred);
 		if (pred != null && memPred == null) {
 			// non-existent predicate
 			return new EmptyCursor<MemStatement>();
 		}
 
-		MemValue memObj = valueFactory.getMemValue(obj);
+		MemValue memObj = vf.getMemValue(obj);
 		if (obj != null && memObj == null) {
 			// non-existent object
 			return new EmptyCursor<MemStatement>();
@@ -514,7 +525,7 @@ public class MemoryStore extends InferencerSailBase {
 			smallestList = statements;
 		}
 		else if (contexts.length == 1 && contexts[0] != null) {
-			MemResource memContext = valueFactory.getMemResource(contexts[0]);
+			MemResource memContext = vf.getMemResource(contexts[0]);
 			if (memContext == null) {
 				// non-existent context
 				return new EmptyCursor<MemStatement>();
@@ -527,7 +538,7 @@ public class MemoryStore extends InferencerSailBase {
 			Set<MemResource> contextSet = new LinkedHashSet<MemResource>(2 * contexts.length);
 
 			for (Resource context : contexts) {
-				MemResource memContext = valueFactory.getMemResource(context);
+				MemResource memContext = vf.getMemResource(context);
 				if (context == null || memContext != null) {
 					contextSet.add(memContext);
 				}
@@ -567,30 +578,31 @@ public class MemoryStore extends InferencerSailBase {
 				readMode, memContexts);
 	}
 
-	protected Statement addStatement(Resource subj, URI pred, Value obj, Resource context, boolean explicit)
+	protected Statement addStatement(Resource subj, URI pred, Value obj, Resource context, boolean explicit,
+			MemValueFactory vf)
 		throws StoreException
 	{
 		boolean newValueCreated = false;
 
 		// Get or create MemValues for the operands
-		MemResource memSubj = valueFactory.getMemResource(subj);
+		MemResource memSubj = vf.getMemResource(subj);
 		if (memSubj == null) {
-			memSubj = valueFactory.createMemResource(subj);
+			memSubj = vf.createMemResource(subj);
 			newValueCreated = true;
 		}
-		MemURI memPred = valueFactory.getMemURI(pred);
+		MemURI memPred = vf.getMemURI(pred);
 		if (memPred == null) {
-			memPred = valueFactory.createMemURI(pred);
+			memPred = vf.createMemURI(pred);
 			newValueCreated = true;
 		}
-		MemValue memObj = valueFactory.getMemValue(obj);
+		MemValue memObj = vf.getMemValue(obj);
 		if (memObj == null) {
-			memObj = valueFactory.createMemValue(obj);
+			memObj = vf.createMemValue(obj);
 			newValueCreated = true;
 		}
-		MemResource memContext = valueFactory.getMemResource(context);
+		MemResource memContext = vf.getMemResource(context);
 		if (context != null && memContext == null) {
-			memContext = valueFactory.createMemResource(context);
+			memContext = vf.createMemResource(context);
 			newValueCreated = true;
 		}
 
@@ -599,7 +611,7 @@ public class MemoryStore extends InferencerSailBase {
 			// statement is already present. Check this.
 			Cursor<MemStatement> stIter = createStatementIterator(
 					memSubj, memPred, memObj, false, currentSnapshot + 1, ReadMode.RAW,
-					memContext);
+					vf, memContext);
 
 			try {
 				MemStatement st = stIter.next();
@@ -879,7 +891,7 @@ public class MemoryStore extends InferencerSailBase {
 			if (persist && contentsChanged) {
 				logger.debug("syncing data to file...");
 				try {
-					new FileIO(this, valueFactory).write(syncFile, dataFile);
+					new FileIO(this, createValueFactory()).write(syncFile, dataFile);
 					contentsChanged = false;
 					logger.debug("Data synced to file");
 				}
