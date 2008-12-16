@@ -51,31 +51,27 @@ public class HTTPValueFactory extends ValueFactoryImpl {
 
 	@Override
 	public HTTPBNode createBNode() {
-		BNode bnode;
-		if (queue == null) {
-			bnode = super.createBNode();
-		}
-		else {
-			synchronized (queue) {
-				bnode = queue.poll();
-				if (bnode == null) {
-					try {
-						bnode = loadBNodes();
-					}
-					catch (StoreException e) {
-						// FIXME throw StoreException
-						throw new AssertionError(e);
-					}
-					catch (QueryResultParseException e) {
-						throw new AssertionError(e);
-					}
-					catch (NoCompatibleMediaType e) {
-						throw new AssertionError(e);
-					}
+		if (queue == null)
+			throw new UnsupportedOperationException();
+		synchronized (queue) {
+			BNode bnode = queue.poll();
+			if (bnode == null) {
+				try {
+					bnode = loadBNodes();
+				}
+				catch (StoreException e) {
+					// FIXME throw StoreException
+					throw new AssertionError(e);
+				}
+				catch (QueryResultParseException e) {
+					throw new AssertionError(e);
+				}
+				catch (NoCompatibleMediaType e) {
+					throw new AssertionError(e);
 				}
 			}
+			return new HTTPBNode(bnode.getID(), key);
 		}
-		return new HTTPBNode(bnode.getID(), key);
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.QueryModel;
@@ -70,6 +71,10 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	 */
 	public SailConnection getSailConnection() {
 		return sailConnection;
+	}
+
+	public ValueFactory getValueFactory() {
+		return sailConnection.getValueFactory();
 	}
 
 	public void commit()
