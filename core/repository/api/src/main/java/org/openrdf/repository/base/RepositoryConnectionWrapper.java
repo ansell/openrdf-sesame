@@ -16,6 +16,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
@@ -25,7 +26,6 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.DelegatingRepositoryConnection;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
 import org.openrdf.results.ContextResult;
 import org.openrdf.results.Cursor;
 import org.openrdf.results.ModelResult;
@@ -52,6 +52,8 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	private RepositoryConnection delegate;
 
+	private ValueFactory vf;
+
 	public RepositoryConnectionWrapper(Repository repository) {
 		super(repository);
 	}
@@ -69,6 +71,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	public void setDelegate(RepositoryConnection delegate) {
 		this.delegate = delegate;
+		this.vf = delegate.getValueFactory();
 	}
 
 	/**
@@ -108,6 +111,10 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		throws StoreException
 	{
 		return true;
+	}
+
+	public ValueFactory getValueFactory() {
+		return vf;
 	}
 
 	@Override

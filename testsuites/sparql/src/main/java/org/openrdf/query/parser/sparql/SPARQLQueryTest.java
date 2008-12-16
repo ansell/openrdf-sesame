@@ -85,6 +85,8 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 	protected Repository dataRep;
 
+	private RepositoryConnection con;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -122,6 +124,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 				throw exc;
 			}
 		}
+		con = dataRep.getConnection();
 	}
 
 	protected Repository createRepository()
@@ -145,6 +148,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected void tearDown()
 		throws Exception
 	{
+		con.close();
 		dataRep.shutDown();
 	}
 
@@ -152,43 +156,37 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected void runTest()
 		throws Exception
 	{
-		RepositoryConnection con = dataRep.getConnection();
-		try {
-			String queryString = readQueryString();
-			Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);
-			if (dataset != null) {
-				query.setDataset(dataset);
-			}
-
-			if (query instanceof TupleQuery) {
-				TupleResult queryResult = ((TupleQuery)query).evaluate();
-
-				TupleResult expectedResult = readExpectedTupleQueryResult();
-				compareTupleQueryResults(queryResult, expectedResult);
-
-				// Graph queryGraph = RepositoryUtil.asGraph(queryResult);
-				// Graph expectedGraph = readExpectedTupleQueryResult();
-				// compareGraphs(queryGraph, expectedGraph);
-			}
-			else if (query instanceof GraphQuery) {
-				GraphResult gqr = ((GraphQuery)query).evaluate();
-				Set<Statement> queryResult = gqr.asSet();
-
-				Set<Statement> expectedResult = readExpectedGraphQueryResult();
-
-				compareGraphs(queryResult, expectedResult);
-			}
-			else if (query instanceof BooleanQuery) {
-				boolean queryResult = ((BooleanQuery)query).ask();
-				boolean expectedResult = readExpectedBooleanQueryResult();
-				assertEquals(expectedResult, queryResult);
-			}
-			else {
-				throw new RuntimeException("Unexpected query type: " + query.getClass());
-			}
+		String queryString = readQueryString();
+		Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);
+		if (dataset != null) {
+			query.setDataset(dataset);
 		}
-		finally {
-			con.close();
+
+		if (query instanceof TupleQuery) {
+			TupleResult queryResult = ((TupleQuery)query).evaluate();
+
+			TupleResult expectedResult = readExpectedTupleQueryResult();
+			compareTupleQueryResults(queryResult, expectedResult);
+
+			// Graph queryGraph = RepositoryUtil.asGraph(queryResult);
+			// Graph expectedGraph = readExpectedTupleQueryResult();
+			// compareGraphs(queryGraph, expectedGraph);
+		}
+		else if (query instanceof GraphQuery) {
+			GraphResult gqr = ((GraphQuery)query).evaluate();
+			Set<Statement> queryResult = gqr.asSet();
+
+			Set<Statement> expectedResult = readExpectedGraphQueryResult();
+
+			compareGraphs(queryResult, expectedResult);
+		}
+		else if (query instanceof BooleanQuery) {
+			boolean queryResult = ((BooleanQuery)query).ask();
+			boolean expectedResult = readExpectedBooleanQueryResult();
+			assertEquals(expectedResult, queryResult);
+		}
+		else {
+			throw new RuntimeException("Unexpected query type: " + query.getClass());
 		}
 	}
 
@@ -461,7 +459,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	 * @return
 	 */
 	private ValueFactory getValueFactory() {
-		return dataRep.getValueFactory();
+		return con.getValueFactory();
 	}
 
 	public interface Factory {

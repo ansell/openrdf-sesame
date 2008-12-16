@@ -138,7 +138,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return (HTTPRepository)super.getRepository();
 	}
 
-	@Override
 	public ValueFactory getValueFactory() {
 		return vf;
 	}
