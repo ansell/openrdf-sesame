@@ -5,20 +5,27 @@
  */
 package org.openrdf.model.impl;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.openrdf.model.BNode;
+import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Literal;
+import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 
 /**
  * Default implementation of the ValueFactory interface that uses the RDF model
  * classes from this package.
  * 
  * @author Arjohn Kampman
+ * @author James Leigh
  */
-public class ValueFactoryImpl extends ValueFactoryBase {
+public class ValueFactoryImpl extends LiteralFactoryImpl implements ValueFactory {
 
 	/*-----------*
 	 * Constants *
@@ -30,32 +37,48 @@ public class ValueFactoryImpl extends ValueFactoryBase {
 		return sharedInstance;
 	}
 
+	/*-----------*
+	 * Variables *
+	 *-----------*/
+
+	private BNodeFactory bnodes;
+
+	private URIFactory uris;
+
+	private LiteralFactory literals;
+
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public URI createURI(String uri) {
-		return new URIImpl(uri);
+	public ValueFactoryImpl() {
+		this(new BNodeFactoryImpl(), new URIFactoryImpl(), new LiteralFactoryImpl());
 	}
 
-	public URI createURI(String namespace, String localName) {
-		return createURI(namespace + localName);
+	public ValueFactoryImpl(URIFactory uris, LiteralFactory literals) {
+		this(null, uris, literals);
+	}
+
+	public ValueFactoryImpl(BNodeFactory bnodes, ValueFactory values) {
+		this(bnodes, values, values);
+	}
+
+	public ValueFactoryImpl(BNodeFactory bnodes, URIFactory uris, LiteralFactory literals) {
+		this.bnodes = bnodes;
+		this.uris = uris;
+		this.literals = literals;
+	}
+
+	public BNode createBNode() {
+		if (bnodes == null)
+			throw new UnsupportedOperationException();
+		return bnodes.createBNode();
 	}
 
 	public BNode createBNode(String nodeID) {
-		return new BNodeImpl(nodeID);
-	}
-
-	public Literal createLiteral(String value) {
-		return new LiteralImpl(value);
-	}
-
-	public Literal createLiteral(String value, String language) {
-		return new LiteralImpl(value, language);
-	}
-
-	public Literal createLiteral(String value, URI datatype) {
-		return new LiteralImpl(value, datatype);
+		if (bnodes == null)
+			throw new UnsupportedOperationException();
+		return bnodes.createBNode(nodeID);
 	}
 
 	public Statement createStatement(Resource subject, URI predicate, Value object) {
@@ -65,4 +88,57 @@ public class ValueFactoryImpl extends ValueFactoryBase {
 	public Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {
 		return new StatementImpl(subject, predicate, object, context);
 	}
+
+	public URI createURI(String uri) {
+		return uris.createURI(uri);
+	}
+
+	public URI createURI(String namespace, String localName) {
+		return uris.createURI(namespace, localName);
+	}
+
+	public Literal createLiteral(boolean value) {
+		return literals.createLiteral(value);
+	}
+
+	public Literal createLiteral(byte value) {
+		return literals.createLiteral(value);
+	}
+
+	public Literal createLiteral(double value) {
+		return literals.createLiteral(value);
+	}
+
+	public Literal createLiteral(float value) {
+		return literals.createLiteral(value);
+	}
+
+	public Literal createLiteral(int value) {
+		return literals.createLiteral(value);
+	}
+
+	public Literal createLiteral(long value) {
+		return literals.createLiteral(value);
+	}
+
+	public Literal createLiteral(short value) {
+		return literals.createLiteral(value);
+	}
+
+	public Literal createLiteral(String label, String language) {
+		return literals.createLiteral(label, language);
+	}
+
+	public Literal createLiteral(String label, URI datatype) {
+		return literals.createLiteral(label, datatype);
+	}
+
+	public Literal createLiteral(String label) {
+		return literals.createLiteral(label);
+	}
+
+	public Literal createLiteral(XMLGregorianCalendar calendar) {
+		return literals.createLiteral(calendar);
+	}
+
 }

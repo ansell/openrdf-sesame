@@ -5,29 +5,13 @@
  */
 package org.openrdf.model;
 
-
 /**
  * A factory for creating URIs, blank nodes, literals and statements.
  * 
  * @author Arjohn Kampman
+ * @author James Leigh
  */
-public interface ValueFactory extends URIFactory, LiteralFactory {
-
-	/**
-	 * Creates a new bNode.
-	 * 
-	 * @return An object representing the bNode.
-	 */
-	public BNode createBNode();
-
-	/**
-	 * Creates a new blank node with the given node identifier.
-	 * 
-	 * @param nodeID
-	 *        The blank node identifier.
-	 * @return An object representing the blank node.
-	 */
-	public BNode createBNode(String nodeID);
+public interface ValueFactory extends BNodeFactory, URIFactory, LiteralFactory {
 
 	/**
 	 * Creates a new statement with the supplied subject, predicate and object.

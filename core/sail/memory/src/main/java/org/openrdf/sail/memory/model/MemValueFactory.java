@@ -12,18 +12,21 @@ import java.util.Set;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.impl.BNodeFactoryImpl;
 import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.ContextStatementImpl;
+import org.openrdf.model.impl.LiteralFactoryImpl;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.impl.ValueFactoryBase;
 import org.openrdf.model.util.URIUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
 
@@ -34,11 +37,13 @@ import org.openrdf.model.vocabulary.XMLSchema;
  * @author Arjohn Kampman
  * @author David Huynh
  */
-public class MemValueFactory extends ValueFactoryBase {
+public class MemValueFactory extends LiteralFactoryImpl implements ValueFactory {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	private BNodeFactory bnodes = new BNodeFactoryImpl();
 
 	/**
 	 * Registry containing the set of MemURI objects as used by a MemoryStore.
@@ -363,6 +368,10 @@ public class MemValueFactory extends ValueFactoryBase {
 		}
 
 		return memURI;
+	}
+
+	public BNode createBNode() {
+		return createBNode(bnodes.createBNode().getID());
 	}
 
 	public synchronized BNode createBNode(String nodeID) {
