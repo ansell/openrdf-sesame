@@ -95,13 +95,6 @@ public class SailWrapper implements StackableSail {
 		baseSail.shutDown();
 	}
 
-	public boolean isWritable()
-		throws StoreException
-	{
-		verifyBaseSailSet();
-		return baseSail.isWritable();
-	}
-
 	public SailConnection getConnection()
 		throws StoreException
 	{

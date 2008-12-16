@@ -105,12 +105,6 @@ public class SailRepository implements Repository {
 		return sail;
 	}
 
-	public boolean isWritable()
-		throws StoreException
-	{
-		return sail.isWritable();
-	}
-
 	public LiteralFactory getLiteralFactory() {
 		return sail.getValueFactory();
 	}
