@@ -22,7 +22,6 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelUtilException;
 import org.openrdf.sail.config.SailImplConfigBase;
 import org.openrdf.store.StoreConfigException;
@@ -147,11 +146,11 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 				setJdbcDriver(jdbcDriverLit.getLabel());
 			}
 
-			String template = model.filter(implNode, URL_TEMPLATE, null).value().stringValue();
-			String host = model.filter(implNode, HOST, null).value().stringValue();
-			String port = model.filter(implNode, PORT, null).value().stringValue();
-			String database = model.filter(implNode, DATABASE, null).value().stringValue();
-			String properties = model.filter(implNode, URL_PROPERTIES, null).value().stringValue();
+			String template = model.filter(implNode, URL_TEMPLATE, null).stringValue();
+			String host = model.filter(implNode, HOST, null).stringValue();
+			String port = model.filter(implNode, PORT, null).stringValue();
+			String database = model.filter(implNode, DATABASE, null).stringValue();
+			String properties = model.filter(implNode, URL_PROPERTIES, null).stringValue();
 			if (template != null && database != null) {
 				setUrl(format(template, host, port, database, properties));
 			}

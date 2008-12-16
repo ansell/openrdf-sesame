@@ -565,6 +565,6 @@ public class ModelUtil {
 	public static String getOptionalObjectStringValue(Model model, Resource subj, URI pred)
 		throws ModelUtilException
 	{
-		return model.filter(subj, pred, null).value().stringValue();
+		return model.filter(subj, pred, null).stringValue();
 	}
 }
