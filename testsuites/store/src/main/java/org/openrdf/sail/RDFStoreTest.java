@@ -131,7 +131,7 @@ public abstract class RDFStoreTest extends TestCase {
 		con = sail.getConnection();
 
 		// Create values
-		vf = sail.getValueFactory();
+		vf = con.getValueFactory();
 
 		painter = vf.createURI(EXAMPLE_NS, PAINTER);
 		paints = vf.createURI(EXAMPLE_NS, PAINTS);

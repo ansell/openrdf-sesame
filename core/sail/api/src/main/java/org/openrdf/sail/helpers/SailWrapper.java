@@ -7,7 +7,8 @@ package org.openrdf.sail.helpers;
 
 import java.io.File;
 
-import org.openrdf.model.ValueFactory;
+import org.openrdf.model.LiteralFactory;
+import org.openrdf.model.URIFactory;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailMetaData;
@@ -102,8 +103,13 @@ public class SailWrapper implements StackableSail {
 		return baseSail.getConnection();
 	}
 
-	public ValueFactory getValueFactory() {
+	public URIFactory getURIFactory() {
 		verifyBaseSailSet();
-		return baseSail.getValueFactory();
+		return baseSail.getURIFactory();
+	}
+
+	public LiteralFactory getLiteralFactory() {
+		verifyBaseSailSet();
+		return baseSail.getLiteralFactory();
 	}
 }

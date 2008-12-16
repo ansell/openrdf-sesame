@@ -412,6 +412,22 @@ public class MemoryStore extends InferencerSailBase {
 		return new SynchronizedInferencerConnection(con);
 	}
 
+	public MemValueFactory getURIFactory() {
+		if (valueFactory == null) {
+			throw new IllegalStateException("sail not initialized.");
+		}
+
+		return valueFactory;
+	}
+
+	public MemValueFactory getLiteralFactory() {
+		if (valueFactory == null) {
+			throw new IllegalStateException("sail not initialized.");
+		}
+
+		return valueFactory;
+	}
+
 	public MemValueFactory getValueFactory() {
 		if (valueFactory == null) {
 			throw new IllegalStateException("sail not initialized.");

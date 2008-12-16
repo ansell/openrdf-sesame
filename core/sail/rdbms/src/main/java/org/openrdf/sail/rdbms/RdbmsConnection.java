@@ -17,11 +17,9 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
-import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.results.Cursor;
 import org.openrdf.sail.SailConnection;
@@ -65,6 +63,10 @@ public class RdbmsConnection extends SailConnectionBase {
 		this.sail = sail;
 		this.vf = sail.getValueFactory();
 		this.triples = triples;
+	}
+
+	public RdbmsValueFactory getValueFactory() {
+		return vf;
 	}
 
 	public void setNamespaces(NamespaceManager namespaces) {

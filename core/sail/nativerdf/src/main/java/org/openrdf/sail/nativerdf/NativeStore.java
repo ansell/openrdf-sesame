@@ -18,9 +18,11 @@ import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.cursors.DistinctCursor;
@@ -272,6 +274,14 @@ public class NativeStore extends InferencerSailBase {
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
+	}
+
+	public URIFactory getURIFactory() {
+		return valueStore;
+	}
+
+	public LiteralFactory getLiteralFactory() {
+		return valueStore;
 	}
 
 	public ValueFactory getValueFactory() {

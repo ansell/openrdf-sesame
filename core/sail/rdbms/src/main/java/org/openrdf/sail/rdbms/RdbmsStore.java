@@ -18,6 +18,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
+import org.openrdf.model.LiteralFactory;
+import org.openrdf.model.URIFactory;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.SailBase;
@@ -169,6 +171,14 @@ public class RdbmsStore extends SailBase {
 		throws StoreException
 	{
 		return factory.getLocation();
+	}
+
+	public URIFactory getURIFactory() {
+		return factory.getValueFactory();
+	}
+
+	public LiteralFactory getLiteralFactory() {
+		return factory.getValueFactory();
 	}
 
 	public RdbmsValueFactory getValueFactory() {

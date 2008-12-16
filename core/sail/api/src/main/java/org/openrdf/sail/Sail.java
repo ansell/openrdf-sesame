@@ -7,7 +7,8 @@ package org.openrdf.sail;
 
 import java.io.File;
 
-import org.openrdf.model.ValueFactory;
+import org.openrdf.model.LiteralFactory;
+import org.openrdf.model.URIFactory;
 import org.openrdf.store.StoreException;
 
 /**
@@ -67,10 +68,16 @@ public interface Sail {
 		throws StoreException;
 
 	/**
-	 * Gets a ValueFactory object that can be used to create URI-, blank node-,
-	 * literal- and statement objects.
+	 * Gets a URIFactory object that can be used to create URIs.
 	 * 
-	 * @return a ValueFactory object for this Sail object.
+	 * @return a URIFactory object for this Sail object.
 	 */
-	public ValueFactory getValueFactory();
+	public URIFactory getURIFactory();
+
+	/**
+	 * Gets a LiteralFactory object that can be used to create literals.
+	 * 
+	 * @return a LiteralFactory object for this Sail object.
+	 */
+	public LiteralFactory getLiteralFactory();
 }

@@ -10,6 +10,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.results.Cursor;
@@ -42,6 +43,14 @@ public interface SailConnection {
 	 */
 	public void close()
 		throws StoreException;
+
+	/**
+	 * Gets a ValueFactory object that can be used to create URI-, blank node-,
+	 * literal- and statement objects.
+	 * 
+	 * @return a ValueFactory object for this Sail object.
+	 */
+	public ValueFactory getValueFactory();
 
 	/**
 	 * Evaluates the supplied TupleExpr on the data contained in this Sail

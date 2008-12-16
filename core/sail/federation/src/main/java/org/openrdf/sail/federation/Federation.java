@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.openrdf.model.LiteralFactory;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
@@ -32,6 +34,14 @@ public class Federation extends SailBase {
 	private boolean writable = true;
 
 	private FederatedMetaData metadata;
+
+	public URIFactory getURIFactory() {
+		return vf;
+	}
+
+	public LiteralFactory getLiteralFactory() {
+		return vf;
+	}
 
 	public ValueFactory getValueFactory() {
 		return vf;
