@@ -20,7 +20,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.sail.config.SailImplConfigBase;
 import org.openrdf.store.StoreConfigException;
@@ -91,12 +91,12 @@ public class FederationConfig extends SailImplConfigBase {
 			addLocalPropertySpace(space.stringValue());
 		}
 		try {
-			Literal bool = model.filter(implNode, DISJOINT, null).literal();
+			Literal bool = model.filter(implNode, DISJOINT, null).objectLiteral();
 			if (bool != null && bool.booleanValue()) {
 				disjoint = true;
 			}
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e);
 		}
 	}

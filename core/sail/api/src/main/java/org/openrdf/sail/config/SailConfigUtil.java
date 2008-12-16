@@ -9,7 +9,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.util.ModelUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.store.StoreConfigException;
 
 public class SailConfigUtil {
@@ -18,7 +18,7 @@ public class SailConfigUtil {
 		throws StoreConfigException
 	{
 		try {
-			Literal typeLit = model.filter(implNode, SailConfigSchema.SAILTYPE, null).literal();
+			Literal typeLit = model.filter(implNode, SailConfigSchema.SAILTYPE, null).objectLiteral();
 
 			if (typeLit != null) {
 				SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
@@ -35,7 +35,7 @@ public class SailConfigUtil {
 
 			return null;
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}

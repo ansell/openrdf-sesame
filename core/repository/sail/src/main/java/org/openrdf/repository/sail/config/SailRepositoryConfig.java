@@ -12,7 +12,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.util.ModelUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
@@ -72,10 +72,10 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 		throws StoreConfigException
 	{
 		try {
-			Resource sailImplNode = model.filter(repImplNode, SAILIMPL, null).resource();
+			Resource sailImplNode = model.filter(repImplNode, SAILIMPL, null).objectResource();
 
 			if (sailImplNode != null) {
-				Literal typeLit = model.filter(sailImplNode, SAILTYPE, null).literal();
+				Literal typeLit = model.filter(sailImplNode, SAILTYPE, null).objectLiteral();
 
 				if (typeLit != null) {
 					SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
@@ -89,7 +89,7 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 				}
 			}
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}

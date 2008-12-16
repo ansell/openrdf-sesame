@@ -13,7 +13,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.store.StoreConfigException;
 
 /**
@@ -69,12 +69,12 @@ public class SailImplConfigBase implements SailImplConfig {
 		throws StoreConfigException
 	{
 		try {
-			Literal typeLit = model.filter(implNode, SAILTYPE, null).literal();
+			Literal typeLit = model.filter(implNode, SAILTYPE, null).objectLiteral();
 			if (typeLit != null) {
 				setType(typeLit.getLabel());
 			}
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}

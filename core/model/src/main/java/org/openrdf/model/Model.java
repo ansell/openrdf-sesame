@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 
 /**
  * An RDF model, represented as a set of {@link Statement}s with predictable
@@ -305,68 +305,68 @@ public interface Model extends Set<Statement>, Serializable {
 	/**
 	 * Gets the object of the statement(s). If contains one or more statements,
 	 * all these statements should have the same object. A
-	 * {@link ModelUtilException} is thrown if this is not the case.
+	 * {@link ModelException} is thrown if this is not the case.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
-	 * @throws ModelUtilException
+	 * @throws ModelException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique object.
 	 */
-	public Value value()
-		throws ModelUtilException;
+	public Value objectValue()
+		throws ModelException;
 
 	/**
-	 * Utility method that casts the return value of {@link #value()} to a
+	 * Utility method that casts the return value of {@link #objectValue()} to a
 	 * Literal, or throws a ModelUtilException if that value is not a Literal.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
-	 * @throws ModelUtilException
+	 * @throws ModelException
 	 *         If such an exception is thrown by
 	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
 	 *         its return value is not a Literal.
 	 */
-	public Literal literal()
-		throws ModelUtilException;
+	public Literal objectLiteral()
+		throws ModelException;
 
 	/**
-	 * Utility method that casts the return value of {@link #value()} to a
+	 * Utility method that casts the return value of {@link #objectValue()} to a
 	 * Resource, or throws a ModelUtilException if that value is not a Resource.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
-	 * @throws ModelUtilException
+	 * @throws ModelException
 	 *         If such an exception is thrown by
 	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
 	 *         its return value is not a Resource.
 	 */
-	public Resource resource()
-		throws ModelUtilException;
+	public Resource objectResource()
+		throws ModelException;
 
 	/**
-	 * Utility method that casts the return value of {@link #value()} to a URI,
+	 * Utility method that casts the return value of {@link #objectValue()} to a URI,
 	 * or throws a ModelUtilException if that value is not a URI.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
-	 * @throws ModelUtilException
+	 * @throws ModelException
 	 *         If such an exception is thrown by
 	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
 	 *         its return value is not a URI.
 	 */
-	public URI uri()
-		throws ModelUtilException;
+	public URI objectURI()
+		throws ModelException;
 
 	/**
-	 * Utility method that returns the string value of {@link #value()}.
+	 * Utility method that returns the string value of {@link #objectValue()}.
 	 * 
 	 * @return The object string value of the matched statement(s), or
 	 *         <tt>null</tt> if no matching statements were found.
-	 * @throws ModelUtilException
+	 * @throws ModelException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique object.
 	 */
-	public String stringValue()
-		throws ModelUtilException;
+	public String objectString()
+		throws ModelException;
 }

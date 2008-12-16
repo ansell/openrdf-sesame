@@ -23,7 +23,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.config.DelegatingRepositoryImplConfigBase;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
@@ -185,15 +185,15 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			Literal includeInferred = model.filter(implNode, INCLUDE_INFERRED, null).literal();
+			Literal includeInferred = model.filter(implNode, INCLUDE_INFERRED, null).objectLiteral();
 			if (includeInferred != null) {
 				setIncludeInferred(includeInferred.booleanValue());
 			}
-			Literal maxQueryTime = model.filter(implNode, MAX_QUERY_TIME, null).literal();
+			Literal maxQueryTime = model.filter(implNode, MAX_QUERY_TIME, null).objectLiteral();
 			if (maxQueryTime != null) {
 				setMaxQueryTime(maxQueryTime.intValue());
 			}
-			Literal queryLanguage = model.filter(implNode, QUERY_LANGUAGE, null).literal();
+			Literal queryLanguage = model.filter(implNode, QUERY_LANGUAGE, null).objectLiteral();
 			if (queryLanguage != null) {
 				setQueryLanguage(QueryLanguage.valueOf(queryLanguage.getLabel()));
 			}
@@ -210,7 +210,7 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 			objects = model.filter(implNode, ARCHIVE_CONTEXT, null).objects();
 			setArchiveContexts(objects.toArray(new URI[objects.size()]));
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e);
 		}
 		catch (ArrayStoreException e) {

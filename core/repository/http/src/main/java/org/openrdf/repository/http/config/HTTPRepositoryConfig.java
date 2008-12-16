@@ -23,7 +23,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
 import org.openrdf.store.StoreConfigException;
 
@@ -134,20 +134,20 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			Value server = model.filter(implNode, SERVERURL, null).value();
-			Literal id = model.filter(implNode, REPOSITORYID, null).literal();
+			Value server = model.filter(implNode, SERVERURL, null).objectValue();
+			Literal id = model.filter(implNode, REPOSITORYID, null).objectLiteral();
 			if (server != null && id != null) {
 				setURL(server.stringValue() + "/repositories/" + id.stringValue());
 			}
-			URI uri = model.filter(implNode, REPOSITORYURL, null).uri();
+			URI uri = model.filter(implNode, REPOSITORYURL, null).objectURI();
 			if (uri != null) {
 				setURL(uri.toString());
 			}
-			Literal username = model.filter(implNode, USERNAME, null).literal();
+			Literal username = model.filter(implNode, USERNAME, null).objectLiteral();
 			if (username != null) {
 				setUsername(username.getLabel());
 			}
-			Literal password = model.filter(implNode, PASSWORD, null).literal();
+			Literal password = model.filter(implNode, PASSWORD, null).objectLiteral();
 			if (password != null) {
 				setPassword(password.getLabel());
 			}
@@ -158,7 +158,7 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 				typeSpace.add(obj.stringValue());
 			}
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
