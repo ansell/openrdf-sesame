@@ -5,31 +5,32 @@
  */
 package org.openrdf.model.util;
 
-import org.openrdf.OpenRDFException;
+import org.openrdf.model.Model;
+
 
 /**
- * An exception thrown by {@link ModelUtil} when specific conditions are not
+ * An exception thrown by {@link Model} and {@link ModelUtil} when specific conditions are not
  * met.
  * 
  * @author Arjohn Kampman
  */
-public class ModelUtilException extends OpenRDFException {
+public class ModelException extends RuntimeException {
 
 	private static final long serialVersionUID = 3886967415616842867L;
 
-	public ModelUtilException() {
+	public ModelException() {
 		super();
 	}
 
-	public ModelUtilException(String message) {
+	public ModelException(String message) {
 		super(message);
 	}
 
-	public ModelUtilException(Throwable t) {
+	public ModelException(Throwable t) {
 		super(t);
 	}
 
-	public ModelUtilException(String message, Throwable t) {
+	public ModelException(String message, Throwable t) {
 		super(message, t);
 	}
 }

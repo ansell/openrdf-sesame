@@ -13,7 +13,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.store.StoreConfigException;
 
 /**
@@ -69,12 +69,12 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 		throws StoreConfigException
 	{
 		try {
-			Literal typeLit = model.filter(implNode, REPOSITORYTYPE, null).literal();
+			Literal typeLit = model.filter(implNode, REPOSITORYTYPE, null).objectLiteral();
 			if (typeLit != null) {
 				setType(typeLit.getLabel());
 			}
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
@@ -83,7 +83,7 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 		throws StoreConfigException
 	{
 		try {
-			Literal typeLit = model.filter(implNode, REPOSITORYTYPE, null).literal();
+			Literal typeLit = model.filter(implNode, REPOSITORYTYPE, null).objectLiteral();
 
 			if (typeLit != null) {
 				RepositoryFactory factory = RepositoryRegistry.getInstance().get(typeLit.getLabel());
@@ -99,7 +99,7 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 
 			return null;
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}

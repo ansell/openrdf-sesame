@@ -17,7 +17,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.store.StoreConfigException;
@@ -119,22 +119,22 @@ public class RepositoryConfig {
 		throws StoreConfigException
 	{
 		try {
-			Literal titleLit = model.filter(repositoryNode, RDFS.LABEL, null).literal();
+			Literal titleLit = model.filter(repositoryNode, RDFS.LABEL, null).objectLiteral();
 			if (titleLit != null) {
 				setTitle(titleLit.getLabel());
 			}
 
-			titleLit = model.filter(repositoryNode, REPOSITORYTITLE, null).literal();
+			titleLit = model.filter(repositoryNode, REPOSITORYTITLE, null).objectLiteral();
 			if (titleLit != null) {
 				setTitle(titleLit.getLabel());
 			}
 
-			Resource implNode = model.filter(repositoryNode, REPOSITORYIMPL, null).resource();
+			Resource implNode = model.filter(repositoryNode, REPOSITORYIMPL, null).objectResource();
 			if (implNode != null) {
 				setRepositoryImplConfig(RepositoryImplConfigBase.create(model, implNode));
 			}
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}

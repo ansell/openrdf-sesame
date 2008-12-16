@@ -22,7 +22,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.sail.config.SailImplConfigBase;
 import org.openrdf.store.StoreConfigException;
 
@@ -141,36 +141,36 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			Literal jdbcDriverLit = model.filter(implNode, JDBC_DRIVER, null).literal();
+			Literal jdbcDriverLit = model.filter(implNode, JDBC_DRIVER, null).objectLiteral();
 			if (jdbcDriverLit != null) {
 				setJdbcDriver(jdbcDriverLit.getLabel());
 			}
 
-			String template = model.filter(implNode, URL_TEMPLATE, null).stringValue();
-			String host = model.filter(implNode, HOST, null).stringValue();
-			String port = model.filter(implNode, PORT, null).stringValue();
-			String database = model.filter(implNode, DATABASE, null).stringValue();
-			String properties = model.filter(implNode, URL_PROPERTIES, null).stringValue();
+			String template = model.filter(implNode, URL_TEMPLATE, null).objectString();
+			String host = model.filter(implNode, HOST, null).objectString();
+			String port = model.filter(implNode, PORT, null).objectString();
+			String database = model.filter(implNode, DATABASE, null).objectString();
+			String properties = model.filter(implNode, URL_PROPERTIES, null).objectString();
 			if (template != null && database != null) {
 				setUrl(format(template, host, port, database, properties));
 			}
 
-			Literal urlLit = model.filter(implNode, URL, null).literal();
+			Literal urlLit = model.filter(implNode, URL, null).objectLiteral();
 			if (urlLit != null) {
 				setUrl(urlLit.getLabel());
 			}
 
-			Literal userLit = model.filter(implNode, USER, null).literal();
+			Literal userLit = model.filter(implNode, USER, null).objectLiteral();
 			if (userLit != null) {
 				setUser(userLit.getLabel());
 			}
 
-			Literal passwordLit = model.filter(implNode, PASSWORD, null).literal();
+			Literal passwordLit = model.filter(implNode, PASSWORD, null).objectLiteral();
 			if (passwordLit != null) {
 				setPassword(passwordLit.getLabel());
 			}
 
-			Literal maxTripleTablesLit = model.filter(implNode, MAX_TRIPLE_TABLES, null).literal();
+			Literal maxTripleTablesLit = model.filter(implNode, MAX_TRIPLE_TABLES, null).objectLiteral();
 			if (maxTripleTablesLit != null) {
 				try {
 					setMaxTripleTables(maxTripleTablesLit.intValue());
@@ -180,7 +180,7 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 				}
 			}
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}

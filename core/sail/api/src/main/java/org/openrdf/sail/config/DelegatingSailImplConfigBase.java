@@ -10,7 +10,7 @@ import static org.openrdf.sail.config.SailConfigSchema.DELEGATE;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.util.ModelUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.store.StoreConfigException;
 
 /**
@@ -80,12 +80,12 @@ public class DelegatingSailImplConfigBase extends SailImplConfigBase implements 
 		super.parse(model, implNode);
 
 		try {
-			Resource delegateNode = model.filter(implNode, DELEGATE, null).resource();
+			Resource delegateNode = model.filter(implNode, DELEGATE, null).objectResource();
 			if (delegateNode != null) {
 				setDelegate(SailConfigUtil.parseRepositoryImpl(model, delegateNode));
 			}
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}

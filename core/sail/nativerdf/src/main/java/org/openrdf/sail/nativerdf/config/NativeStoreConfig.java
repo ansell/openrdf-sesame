@@ -13,7 +13,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.sail.config.SailImplConfigBase;
 import org.openrdf.store.StoreConfigException;
 
@@ -91,12 +91,12 @@ public class NativeStoreConfig extends SailImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			Literal tripleIndexLit = model.filter(implNode, TRIPLE_INDEXES, null).literal();
+			Literal tripleIndexLit = model.filter(implNode, TRIPLE_INDEXES, null).objectLiteral();
 			if (tripleIndexLit != null) {
 				setTripleIndexes((tripleIndexLit).getLabel());
 			}
 
-			Literal forceSyncLit = model.filter(implNode, FORCE_SYNC, null).literal();
+			Literal forceSyncLit = model.filter(implNode, FORCE_SYNC, null).objectLiteral();
 			if (forceSyncLit != null) {
 				try {
 					setForceSync(forceSyncLit.booleanValue());
@@ -107,7 +107,7 @@ public class NativeStoreConfig extends SailImplConfigBase {
 				}
 			}
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}

@@ -33,7 +33,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.ModelUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 
 /**
  * @author James Leigh
@@ -186,56 +186,56 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		return contexts(null, null, null);
 	}
 
-	public Value value()
-		throws ModelUtilException
+	public Value objectValue()
+		throws ModelException
 	{
 		Iterator<Value> iter = objects().iterator();
 		if (iter.hasNext()) {
 			Value obj = iter.next();
 			if (iter.hasNext())
-				throw new ModelUtilException();
+				throw new ModelException();
 			return obj;
 		}
 		return null;
 	}
 
-	public Literal literal()
-		throws ModelUtilException
+	public Literal objectLiteral()
+		throws ModelException
 	{
-		Value obj = value();
+		Value obj = objectValue();
 		if (obj == null)
 			return null;
 		if (obj instanceof Literal)
 			return (Literal)obj;
-		throw new ModelUtilException();
+		throw new ModelException();
 	}
 
-	public Resource resource()
-		throws ModelUtilException
+	public Resource objectResource()
+		throws ModelException
 	{
-		Value obj = value();
+		Value obj = objectValue();
 		if (obj == null)
 			return null;
 		if (obj instanceof Resource)
 			return (Resource)obj;
-		throw new ModelUtilException();
+		throw new ModelException();
 	}
 
-	public URI uri()
-		throws ModelUtilException
+	public URI objectURI()
+		throws ModelException
 	{
-		Value obj = value();
+		Value obj = objectValue();
 		if (obj == null)
 			return null;
 		if (obj instanceof URI)
 			return (URI)obj;
-		throw new ModelUtilException();
+		throw new ModelException();
 	}
 
-	public String stringValue()
-		throws ModelUtilException
+	public String objectString()
+		throws ModelException
 	{
-		Value obj = value();
+		Value obj = objectValue();
 		if (obj == null)
 			return null;
 		return obj.stringValue();
@@ -603,24 +603,24 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			return Collections.emptySet();
 		}
 
-		public Literal literal() {
+		public Literal objectLiteral() {
 			return null;
 		}
 
-		public Value value() {
+		public Value objectValue() {
 			return null;
 		}
 
-		public Resource resource() {
+		public Resource objectResource() {
 			return null;
 		}
 
-		public URI uri() {
+		public URI objectURI() {
 			return null;
 		}
 
-		public String stringValue()
-			throws ModelUtilException
+		public String objectString()
+			throws ModelException
 		{
 			return null;
 		}
@@ -853,56 +853,56 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			return ModelImpl.this.subjects(pred, obj, contexts);
 		}
 
-		public Value value()
-			throws ModelUtilException
+		public Value objectValue()
+			throws ModelException
 		{
 			Iterator<Value> iter = objects().iterator();
 			if (iter.hasNext()) {
 				Value obj = iter.next();
 				if (iter.hasNext())
-					throw new ModelUtilException();
+					throw new ModelException();
 				return obj;
 			}
 			return null;
 		}
 
-		public Literal literal()
-			throws ModelUtilException
+		public Literal objectLiteral()
+			throws ModelException
 		{
-			Value obj = value();
+			Value obj = objectValue();
 			if (obj == null)
 				return null;
 			if (obj instanceof Literal)
 				return (Literal)obj;
-			throw new ModelUtilException();
+			throw new ModelException();
 		}
 
-		public Resource resource()
-			throws ModelUtilException
+		public Resource objectResource()
+			throws ModelException
 		{
-			Value obj = value();
+			Value obj = objectValue();
 			if (obj == null)
 				return null;
 			if (obj instanceof Resource)
 				return (Resource)obj;
-			throw new ModelUtilException();
+			throw new ModelException();
 		}
 
-		public URI uri()
-			throws ModelUtilException
+		public URI objectURI()
+			throws ModelException
 		{
-			Value obj = value();
+			Value obj = objectValue();
 			if (obj == null)
 				return null;
 			if (obj instanceof URI)
 				return (URI)obj;
-			throw new ModelUtilException();
+			throw new ModelException();
 		}
 
-		public String stringValue()
-			throws ModelUtilException
+		public String objectString()
+			throws ModelException
 		{
-			Value obj = value();
+			Value obj = objectValue();
 			if (obj == null)
 				return null;
 			return obj.stringValue();

@@ -13,7 +13,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
-import org.openrdf.model.util.ModelUtilException;
+import org.openrdf.model.util.ModelException;
 import org.openrdf.sail.config.SailImplConfigBase;
 import org.openrdf.store.StoreConfigException;
 
@@ -80,7 +80,7 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 		super.parse(model, implNode);
 
 		try {
-			Literal persistValue = model.filter(implNode, PERSIST, null).literal();
+			Literal persistValue = model.filter(implNode, PERSIST, null).objectLiteral();
 			if (persistValue != null) {
 				try {
 					setPersist((persistValue).booleanValue());
@@ -91,7 +91,7 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 				}
 			}
 
-			Literal syncDelayValue = model.filter(implNode, SYNC_DELAY, null).literal();
+			Literal syncDelayValue = model.filter(implNode, SYNC_DELAY, null).objectLiteral();
 			if (syncDelayValue != null) {
 				try {
 					setSyncDelay((syncDelayValue).longValue());
@@ -102,7 +102,7 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 				}
 			}
 		}
-		catch (ModelUtilException e) {
+		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
 		}
 	}
