@@ -119,7 +119,7 @@ public class StatementClient {
 						return null;
 					} else {
 						Map<String, String> ns = Collections.emptyMap();
-						Cursor<Statement> cursor = EmptyCursor.emptyCursor();
+						Cursor<Statement> cursor = EmptyCursor.getInstance();
 						return new GraphResultImpl(ns, cursor);
 					}
 				}

@@ -82,7 +82,7 @@ public class StatementController {
 		req.getObject();
 		req.getContext();
 
-		Cursor<Statement> nothing = EmptyCursor.emptyCursor();
+		Cursor<Statement> nothing = EmptyCursor.getInstance();
 		return new ModelResultImpl(nothing);
 	}
 
