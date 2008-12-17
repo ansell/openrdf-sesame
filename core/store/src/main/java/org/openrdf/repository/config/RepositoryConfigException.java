@@ -12,6 +12,7 @@ import org.openrdf.sail.config.SailConfigException;
  * 
  * @author Arjohn Kampman
  */
+@Deprecated
 public abstract class RepositoryConfigException extends SailConfigException {
 
 	private static final long serialVersionUID = -6643040675968955429L;
