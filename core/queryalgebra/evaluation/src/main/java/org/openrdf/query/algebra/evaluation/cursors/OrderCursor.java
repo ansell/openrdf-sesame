@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -16,9 +16,7 @@ import org.openrdf.results.Cursor;
 import org.openrdf.store.StoreException;
 
 /**
- * 
  * @author James Leigh
- *
  */
 public class OrderCursor implements Cursor<BindingSet> {
 
@@ -26,9 +24,9 @@ public class OrderCursor implements Cursor<BindingSet> {
 	 * Variables *
 	 *-----------*/
 
-	private Cursor<BindingSet> cursor;
+	private final Cursor<BindingSet> cursor;
 
-	private Comparator<BindingSet> comparator;
+	private final Comparator<BindingSet> comparator;
 
 	private Iterator<BindingSet> ordered;
 
@@ -36,9 +34,10 @@ public class OrderCursor implements Cursor<BindingSet> {
 	 * Constructors *
 	 *--------------*/
 
-	public OrderCursor(
-			Cursor<BindingSet> cursor,
-			Comparator<BindingSet> comparator) {
+	public OrderCursor(Cursor<BindingSet> cursor, Comparator<BindingSet> comparator) {
+		assert cursor != null : "cursor must not be null";
+		assert comparator != null : " comparator must not be null";
+
 		this.cursor = cursor;
 		this.comparator = comparator;
 	}
@@ -48,7 +47,8 @@ public class OrderCursor implements Cursor<BindingSet> {
 	 *---------*/
 
 	private Iterator<BindingSet> getOrderedIterator()
-			throws StoreException {
+		throws StoreException
+	{
 		if (ordered == null) {
 			List<BindingSet> list = new ArrayList<BindingSet>(1024);
 			BindingSet next;
@@ -58,13 +58,17 @@ public class OrderCursor implements Cursor<BindingSet> {
 			Collections.sort(list, comparator);
 			ordered = list.iterator();
 		}
+
 		return ordered;
 	}
 
-	public BindingSet next() throws StoreException {
+	public BindingSet next()
+		throws StoreException
+	{
 		Iterator<BindingSet> iter = getOrderedIterator();
-		if (iter.hasNext())
+		if (iter.hasNext()) {
 			return iter.next();
+		}
 		return null;
 	}
 
@@ -78,5 +82,4 @@ public class OrderCursor implements Cursor<BindingSet> {
 	public String toString() {
 		return "Order " + cursor.toString();
 	}
-
 }
