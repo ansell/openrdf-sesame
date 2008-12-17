@@ -16,15 +16,17 @@ import org.openrdf.results.Cursor;
  */
 public class IteratorCursor<E> implements Cursor<E> {
 
-	private Iterator<? extends E> iter;
+	private final Iterator<? extends E> iter;
 
 	public IteratorCursor(Iterator<? extends E> iter) {
+		assert iter != null : "iterator must not be null";
 		this.iter = iter;
 	}
 
 	public E next() {
-		if (iter.hasNext())
+		if (iter.hasNext()) {
 			return iter.next();
+		}
 		return null;
 	}
 
@@ -36,5 +38,4 @@ public class IteratorCursor<E> implements Cursor<E> {
 	public String toString() {
 		return "Iterator " + iter.toString();
 	}
-
 }
