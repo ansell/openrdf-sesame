@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.URIFactory;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.LiteralFactoryImpl;
+import org.openrdf.model.impl.URIFactoryImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.http.helpers.PrefixHashSet;
@@ -23,7 +23,9 @@ import org.openrdf.store.StoreException;
  */
 public class Federation extends SailBase {
 
-	private ValueFactory vf = ValueFactoryImpl.getInstance();
+	private URIFactory uf = new URIFactoryImpl();
+
+	private LiteralFactory lf = new LiteralFactoryImpl();
 
 	private List<Repository> members = new ArrayList<Repository>();
 
@@ -36,15 +38,11 @@ public class Federation extends SailBase {
 	private FederatedMetaData metadata;
 
 	public URIFactory getURIFactory() {
-		return vf;
+		return uf;
 	}
 
 	public LiteralFactory getLiteralFactory() {
-		return vf;
-	}
-
-	public ValueFactory getValueFactory() {
-		return vf;
+		return lf;
 	}
 
 	public void addMember(Repository member) {

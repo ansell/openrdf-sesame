@@ -1,7 +1,6 @@
 package org.openrdf.sail.federation;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,12 +12,16 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.IteratorCursor;
+import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.BNodeFactoryImpl;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
@@ -45,6 +48,7 @@ import org.openrdf.result.Result;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.federation.evaluation.FederationStatistics;
 import org.openrdf.sail.federation.evaluation.FederationStrategy;
+import org.openrdf.sail.federation.members.MemberConnection;
 import org.openrdf.sail.federation.optimizers.EmptyPatternOptimizer;
 import org.openrdf.sail.federation.optimizers.FederationJoinOptimizer;
 import org.openrdf.sail.federation.optimizers.OwnedTupleExprPruner;
@@ -63,15 +67,25 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 
 	private Federation federation;
 
-	private Collection<RepositoryConnection> members;
+	private BNodeFactoryImpl bf = new BNodeFactoryImpl();
 
-	public FederationConnection(Federation federation, Collection<RepositoryConnection> members) {
+	private ValueFactory vf;
+
+	List<RepositoryConnection> members;
+
+	public FederationConnection(Federation federation, List<RepositoryConnection> members) {
 		this.federation = federation;
-		this.members = members;
+		this.members = new ArrayList<RepositoryConnection>(members.size());
+		for (RepositoryConnection member : members) {
+			this.members.add(new MemberConnection(member, bf));
+		}
+		URIFactory uf = federation.getURIFactory();
+		LiteralFactory lf = federation.getLiteralFactory();
+		vf = new ValueFactoryImpl(bf, uf, lf);
 	}
 
 	public ValueFactory getValueFactory() {
-		return federation.getValueFactory();
+		return vf;
 	}
 
 	public void close()

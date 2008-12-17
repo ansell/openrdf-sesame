@@ -1,6 +1,6 @@
 package org.openrdf.sail.federation;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -17,7 +17,7 @@ class WriteToAllConnection extends FederationConnection {
 
 	private boolean closed;
 
-	public WriteToAllConnection(Federation federation, Collection<RepositoryConnection> members) {
+	public WriteToAllConnection(Federation federation, List<RepositoryConnection> members) {
 		super(federation, members);
 	}
 

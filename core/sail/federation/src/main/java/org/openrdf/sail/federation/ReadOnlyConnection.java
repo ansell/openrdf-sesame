@@ -1,6 +1,6 @@
 package org.openrdf.sail.federation;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -20,7 +20,7 @@ class ReadOnlyConnection extends FederationConnection {
 
 	private boolean closed;
 
-	public ReadOnlyConnection(Federation federation, Collection<RepositoryConnection> members) {
+	public ReadOnlyConnection(Federation federation, List<RepositoryConnection> members) {
 		super(federation, members);
 	}
 

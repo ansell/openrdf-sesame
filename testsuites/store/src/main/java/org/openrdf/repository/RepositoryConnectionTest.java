@@ -205,6 +205,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testTransactionIsolation()
 		throws Exception
 	{
+		URI bob = new URIImpl("urn:test:bob");
 		testCon.setAutoCommit(false);
 		testCon.add(bob, name, nameBob);
 
