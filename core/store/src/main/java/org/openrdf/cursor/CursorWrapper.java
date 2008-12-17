@@ -18,16 +18,10 @@ import org.openrdf.store.StoreException;
  */
 public abstract class CursorWrapper<E> implements Cursor<E> {
 
-	private Cursor<? extends E> delegate;
+	private final Cursor<? extends E> delegate;
 
 	public CursorWrapper(Cursor<? extends E> delegate) {
 		this.delegate = delegate;
-	}
-
-	public void close()
-		throws StoreException
-	{
-		delegate.close();
 	}
 
 	public E next()
@@ -36,6 +30,13 @@ public abstract class CursorWrapper<E> implements Cursor<E> {
 		return delegate.next();
 	}
 
+	public void close()
+		throws StoreException
+	{
+		delegate.close();
+	}
+
+	@Override
 	public String toString() {
 		String name = getName().trim();
 		if (name.contains("\n")) {
