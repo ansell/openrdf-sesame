@@ -43,6 +43,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  * @see #isDelegatingAdd()
+ * @see #isDelegatingImport()
  * @see #isDelegatingRemove()
  * @see #isDelegatingRead()
  */
@@ -88,6 +89,19 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	/**
+	 * If true then each import method (parsed RDF) will call
+	 * {@link #addWithoutCommit(Resource, URI, Value, Resource[])}.
+	 * 
+	 * @return <code>false</code>
+	 * @throws StoreException
+	 */
+	protected boolean isDelegatingImport()
+		throws StoreException
+	{
+		return isDelegatingAdd();
+	}
+
+	/**
 	 * If true then the has/export/isEmpty methods will call
 	 * {@link #match(Resource, URI, Value, boolean, Resource[])}.
 	 * 
@@ -121,7 +135,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
-		if (isDelegatingAdd()) {
+		if (isDelegatingImport()) {
 			getDelegate().add(file, baseURI, dataFormat, contexts);
 		}
 		else {
@@ -133,7 +147,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
-		if (isDelegatingAdd()) {
+		if (isDelegatingImport()) {
 			getDelegate().add(in, baseURI, dataFormat, contexts);
 		}
 		else {
@@ -169,7 +183,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
-		if (isDelegatingAdd()) {
+		if (isDelegatingImport()) {
 			getDelegate().add(reader, baseURI, dataFormat, contexts);
 		}
 		else {
@@ -205,7 +219,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
-		if (isDelegatingAdd()) {
+		if (isDelegatingImport()) {
 			getDelegate().add(url, baseURI, dataFormat, contexts);
 		}
 		else {
@@ -239,16 +253,6 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().commit();
 	}
 
-	/**
-	 * @deprecated Use {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)} instead
-	 */
-	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
-			RDFHandler handler, Resource... contexts)
-		throws StoreException, RDFHandlerException
-	{
-		exportMatch(subj, pred, obj, includeInferred, handler, contexts);
-	}
-
 	public void exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws StoreException, RDFHandlerException
@@ -279,32 +283,11 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return getDelegate().getNamespaces();
 	}
 
-	/**
-	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)} instead
-	 */
-	public ModelResult getStatements(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
-		throws StoreException
-	{
-		return match(subj, pred, obj, includeInferred, contexts);
-	}
-
 	public ModelResult match(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		return getDelegate().match(subj, pred, obj, includeInferred, contexts);
-	}
-
-	/**
-	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)} instead
-	 */
-	@Override
-	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
-		throws StoreException
-	{
-		return hasMatch(subj, pred, obj, includeInferred, contexts);
 	}
 
 	@Override
@@ -454,15 +437,6 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		throws StoreException
 	{
 		getDelegate().setNamespace(prefix, name);
-	}
-
-	/**
-	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)} instead
-	 */
-	public long size(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
-		throws StoreException
-	{
-		return sizeMatch(subject, predicate, object, includeInferred, contexts);
 	}
 
 	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)

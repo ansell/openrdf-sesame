@@ -317,30 +317,6 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	@Deprecated
-	public void exportStatements(Resource subj, URI pred, Value obj, RDFHandler handler, Resource... contexts)
-		throws StoreException, RDFHandlerException
-	{
-		exportMatch(subj, pred, obj, handler, contexts);
-	}
-
-	/**
-	 * Exports all statements with a specific subject, predicate and/or object
-	 * from the repository, optionally from the specified contexts.
-	 * 
-	 * @param subj
-	 *        The subject, or null if the subject doesn't matter.
-	 * @param pred
-	 *        The predicate, or null if the predicate doesn't matter.
-	 * @param obj
-	 *        The object, or null if the object doesn't matter.
-	 * @param handler
-	 *        The handler that will handle the RDF data.
-	 * @throws RDFHandlerException
-	 *         If the handler encounters an unrecoverable error.
-	 * @see #getReadContexts()
-	 * @see #isIncludeInferred()
-	 */
 	public void exportMatch(Resource subj, URI pred, Value obj, RDFHandler hander, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
@@ -669,16 +645,6 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		else {
 			return super.sizeMatch(subject, predicate, object, includeInferred, contexts);
 		}
-	}
-
-	/**
-	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)} instead
-	 */
-	@Override
-	public long size(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
-		throws StoreException
-	{
-		return sizeMatch(subject, predicate, object, includeInferred, contexts);
 	}
 
 	@Override
