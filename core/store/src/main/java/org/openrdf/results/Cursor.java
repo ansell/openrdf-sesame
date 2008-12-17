@@ -36,10 +36,10 @@ import org.openrdf.store.StoreException;
 public interface Cursor<E> {
 
 	/**
-	 * Returns the next element in the iteration if the cursor has more elements.
+	 * Returns the next element from this cursor.
 	 * 
-	 * @return the next element in the iteration if the cursor has more elements,
-	 *         null otherwise.
+	 * @return the next element from this cursor, or <tt>null</tt> if the cursor
+	 *         has no more elements.
 	 */
 	public E next()
 		throws StoreException;
@@ -47,12 +47,21 @@ public interface Cursor<E> {
 	/**
 	 * Closes this cursor, freeing any resources that it is holding. If the
 	 * cursor has already been closed then invoking this method has no effect.
+	 * After closing a cursor, any subsequent calls to {@link #next()} will
+	 * return <tt>null</tt>.
+	 * <p>
+	 * Note to implementors: this method is also used to abort long running
+	 * evaluations. It should be implemented in such a way that it can be called
+	 * concurrently with {@link #next()} and that it stops evaluation as soon as
+	 * possible. Calls to {@link #next()} that are already in progress are
+	 * allowed to still return results, but after returning from {@link #close()}
+	 * , the cursor must not produce any more results.
 	 */
 	public void close()
 		throws StoreException;
 
 	/**
-	 * Describes this and any wrapped cursors.
+	 * Describes this cursor (recursively for any wrapped cursors).
 	 */
 	public String toString();
 }
