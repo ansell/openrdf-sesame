@@ -8,31 +8,24 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.DelayedCursor;
+import org.openrdf.cursor.EmptyCursor;
+import org.openrdf.cursor.IteratorCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.store.StoreException;
 
 /**
  * @author James Leigh
+ * @author Arjohn Kampman
  */
-public class OrderCursor implements Cursor<BindingSet> {
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+public class OrderCursor extends DelayedCursor<BindingSet> {
 
 	private final Cursor<BindingSet> cursor;
 
 	private final Comparator<BindingSet> comparator;
-
-	private Iterator<BindingSet> ordered;
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
 
 	public OrderCursor(Cursor<BindingSet> cursor, Comparator<BindingSet> comparator) {
 		assert cursor != null : "cursor must not be null";
@@ -42,39 +35,31 @@ public class OrderCursor implements Cursor<BindingSet> {
 		this.comparator = comparator;
 	}
 
-	/*---------*
-	 * Methods *
-	 *---------*/
-
-	private Iterator<BindingSet> getOrderedIterator()
+	protected Cursor<BindingSet> createCursor()
 		throws StoreException
 	{
-		if (ordered == null) {
-			List<BindingSet> list = new ArrayList<BindingSet>(1024);
-			BindingSet next;
-			while ((next = cursor.next()) != null) {
-				list.add(next);
-			}
+		List<BindingSet> list = new ArrayList<BindingSet>(1024);
+
+		BindingSet next;
+		while ((next = cursor.next()) != null) {
+			list.add(next);
+		}
+		cursor.close();
+
+		if (!isClosed()) {
 			Collections.sort(list, comparator);
-			ordered = list.iterator();
+			return new IteratorCursor<BindingSet>(list.iterator());
 		}
-
-		return ordered;
+		else {
+			return EmptyCursor.getInstance();
+		}
 	}
 
-	public BindingSet next()
+	@Override
+	protected void handleClose()
 		throws StoreException
 	{
-		Iterator<BindingSet> iter = getOrderedIterator();
-		if (iter.hasNext()) {
-			return iter.next();
-		}
-		return null;
-	}
-
-	public void close()
-		throws StoreException
-	{
+		super.handleClose();
 		cursor.close();
 	}
 
