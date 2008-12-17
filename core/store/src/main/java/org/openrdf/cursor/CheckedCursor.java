@@ -53,7 +53,7 @@ public abstract class CheckedCursor<E> implements Cursor<E> {
 	{
 	}
 
-	public E next()
+	public final E next()
 		throws StoreException
 	{
 		if (isClosed()) {

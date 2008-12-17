@@ -90,7 +90,7 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.cursors.BadlyDesignedLeftJoinCursor;
-import org.openrdf.query.algebra.evaluation.cursors.DelayedCursor;
+import org.openrdf.query.algebra.evaluation.cursors.DelayedEvaluationCursor;
 import org.openrdf.query.algebra.evaluation.cursors.DistinctCursor;
 import org.openrdf.query.algebra.evaluation.cursors.ExtensionCursor;
 import org.openrdf.query.algebra.evaluation.cursors.FilterCursor;
@@ -533,7 +533,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Cursor<BindingSet>[] iters = new Cursor[size];
 		for (int i = 0; i < size; i++) {
 			final TupleExpr arg = union.getArg(i);
-			iters[i] = new DelayedCursor(this, arg, bindings);
+			iters[i] = new DelayedEvaluationCursor(this, arg, bindings);
 		}
 
 		return new UnionCursor<BindingSet>(iters);
@@ -544,9 +544,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		Cursor<BindingSet> leftArg, rightArg;
 
-		leftArg = new DelayedCursor(this, intersection.getLeftArg(), bindings);
+		leftArg = new DelayedEvaluationCursor(this, intersection.getLeftArg(), bindings);
 
-		rightArg = new DelayedCursor(this, intersection.getRightArg(), bindings);
+		rightArg = new DelayedEvaluationCursor(this, intersection.getRightArg(), bindings);
 
 		return new IntersectCursor<BindingSet>(leftArg, rightArg);
 	}
@@ -556,9 +556,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		Cursor<BindingSet> leftArg, rightArg;
 
-		leftArg = new DelayedCursor(this, difference.getLeftArg(), bindings);
+		leftArg = new DelayedEvaluationCursor(this, difference.getLeftArg(), bindings);
 
-		rightArg = new DelayedCursor(this, difference.getRightArg(), bindings);
+		rightArg = new DelayedEvaluationCursor(this, difference.getRightArg(), bindings);
 
 		return new MinusCursor<BindingSet>(leftArg, rightArg);
 	}
