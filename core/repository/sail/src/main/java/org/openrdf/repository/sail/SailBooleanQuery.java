@@ -5,11 +5,11 @@
  */
 package org.openrdf.repository.sail;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.parser.BooleanQueryModel;
 import org.openrdf.result.BooleanResult;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.impl.BooleanResultImpl;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.store.StoreException;

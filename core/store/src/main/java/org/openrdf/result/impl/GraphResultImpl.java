@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.IteratorCursor;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.ModelImpl;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.GraphResult;
-import org.openrdf.result.base.ResultImpl;
 import org.openrdf.store.StoreException;
 
 /**

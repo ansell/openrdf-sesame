@@ -5,6 +5,8 @@
  */
 package org.openrdf.query.algebra.evaluation.cursors;
 
+import org.openrdf.cursor.ConvertingCursor;
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
@@ -12,8 +14,6 @@ import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.base.ConvertingCursor;
 
 public class ProjectionCursor extends ConvertingCursor<BindingSet, BindingSet>
 {

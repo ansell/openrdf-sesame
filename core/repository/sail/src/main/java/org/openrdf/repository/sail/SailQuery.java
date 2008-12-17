@@ -5,14 +5,14 @@
  */
 package org.openrdf.repository.sail;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.TimeLimitCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.impl.AbstractQuery;
 import org.openrdf.query.impl.DatasetImpl;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.impl.TimeLimitCursor;
 import org.openrdf.store.StoreException;
 
 /**

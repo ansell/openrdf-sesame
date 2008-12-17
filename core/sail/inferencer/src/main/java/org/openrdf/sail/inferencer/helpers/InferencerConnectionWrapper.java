@@ -5,13 +5,13 @@
  */
 package org.openrdf.sail.inferencer.helpers;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.QueryModel;
-import org.openrdf.result.Cursor;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.NotifyingSailConnectionWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;

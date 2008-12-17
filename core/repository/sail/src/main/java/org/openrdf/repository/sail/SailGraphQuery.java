@@ -5,6 +5,9 @@
  */
 package org.openrdf.repository.sail;
 
+import org.openrdf.cursor.ConvertingCursor;
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.FilteringCursor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -13,10 +16,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.parser.GraphQueryModel;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.GraphResult;
-import org.openrdf.result.base.ConvertingCursor;
-import org.openrdf.result.base.FilteringCursor;
 import org.openrdf.result.impl.GraphResultImpl;
 import org.openrdf.result.util.QueryResultUtil;
 import org.openrdf.rio.RDFHandler;

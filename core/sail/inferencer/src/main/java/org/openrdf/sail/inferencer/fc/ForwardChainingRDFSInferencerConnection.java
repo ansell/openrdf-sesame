@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.text.ASCIIUtil;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -20,7 +21,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.result.Cursor;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.inferencer.InferencerConnection;

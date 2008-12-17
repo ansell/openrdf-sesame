@@ -8,12 +8,12 @@ package org.openrdf.query.algebra.evaluation.impl;
 import java.util.Collections;
 import java.util.Set;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.QueryModelNodeBase;
 import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.result.Cursor;
 import org.openrdf.store.StoreException;
 
 /**

@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import info.aduna.io.GZipUtil;
 import info.aduna.io.ZipUtil;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -36,7 +37,6 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.util.RDFInserter;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.ModelResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;

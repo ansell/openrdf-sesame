@@ -9,9 +9,9 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.result.Cursor;
 import org.openrdf.store.StoreException;
 
 /**

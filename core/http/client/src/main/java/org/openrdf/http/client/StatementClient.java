@@ -23,6 +23,8 @@ import org.apache.commons.httpclient.methods.RequestEntity;
 
 import info.aduna.io.IOUtil;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.FutureGraphQueryResult;
@@ -44,9 +46,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.GraphResult;
-import org.openrdf.result.impl.EmptyCursor;
 import org.openrdf.result.impl.GraphResultImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;

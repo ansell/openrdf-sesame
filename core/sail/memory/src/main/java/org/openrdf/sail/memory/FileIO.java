@@ -25,13 +25,13 @@ import java.util.zip.GZIPOutputStream;
 
 import info.aduna.io.IOUtil;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.result.Cursor;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemURI;

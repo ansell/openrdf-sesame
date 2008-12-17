@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
@@ -22,7 +23,6 @@ import org.openrdf.query.algebra.evaluation.cursors.CompatibleBindingSetFilter;
 import org.openrdf.query.algebra.evaluation.cursors.UnionCursor;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.parser.TupleQueryModel;
-import org.openrdf.result.Cursor;
 import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
 import org.openrdf.store.StoreException;
 

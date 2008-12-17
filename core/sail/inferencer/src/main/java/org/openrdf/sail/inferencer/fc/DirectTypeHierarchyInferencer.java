@@ -11,6 +11,7 @@ import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -25,7 +26,6 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.query.parser.QueryParserUtil;
-import org.openrdf.result.Cursor;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailConnectionListener;

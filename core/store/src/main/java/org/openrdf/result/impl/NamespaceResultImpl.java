@@ -8,10 +8,9 @@ package org.openrdf.result.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Namespace;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.NamespaceResult;
-import org.openrdf.result.base.ResultImpl;
 import org.openrdf.store.StoreException;
 
 /**

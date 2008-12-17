@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.result.impl;
+package org.openrdf.cursor;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -11,8 +11,6 @@ import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.result.Cursor;
-import org.openrdf.result.base.CursorWrapper;
 import org.openrdf.store.StoreException;
 
 /**

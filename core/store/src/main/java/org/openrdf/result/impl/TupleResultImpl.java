@@ -9,10 +9,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.IteratorCursor;
 import org.openrdf.query.BindingSet;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.TupleResult;
-import org.openrdf.result.base.ResultImpl;
 
 /**
  * A generic implementation of the {@link TupleResult} interface.

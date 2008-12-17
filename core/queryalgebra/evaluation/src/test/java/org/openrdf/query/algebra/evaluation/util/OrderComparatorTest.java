@@ -10,6 +10,7 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
@@ -19,7 +20,6 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.result.Cursor;
 
 /**
  * 

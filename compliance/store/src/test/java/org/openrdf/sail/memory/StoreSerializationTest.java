@@ -11,6 +11,7 @@ import junit.framework.TestCase;
 
 import info.aduna.io.FileUtil;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -21,7 +22,6 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.TupleQueryModel;
-import org.openrdf.result.Cursor;
 import org.openrdf.sail.SailConnection;
 
 public class StoreSerializationTest extends TestCase {
