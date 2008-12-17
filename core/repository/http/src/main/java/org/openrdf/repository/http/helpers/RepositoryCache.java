@@ -5,9 +5,12 @@
  */
 package org.openrdf.repository.http.helpers;
 
+import static java.util.Collections.synchronizedMap;
+
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+
+import info.aduna.collections.LRUMap;
 
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.SizeClient;
@@ -20,7 +23,6 @@ import org.openrdf.result.GraphResult;
 import org.openrdf.store.StoreException;
 
 /**
- *
  * @author James Leigh
  */
 public class RepositoryCache {
@@ -40,7 +42,9 @@ public class RepositoryCache {
 
 	private PrefixHashSet typeSpace;
 
-	private Map<StatementPattern, CachedSize> cachedSizes = new ConcurrentHashMap<StatementPattern, CachedSize>();
+	private Map<StatementPattern, CachedSize> cachedSizes;
+
+	private volatile boolean containsFreshValues;
 
 	/*--------------*
 	 * Constructors *
@@ -50,6 +54,7 @@ public class RepositoryCache {
 		super();
 		this.client = client;
 		this.vf = vf;
+		cachedSizes = synchronizedMap(new LRUMap<StatementPattern, CachedSize>(2048));
 	}
 
 	/*---------*
@@ -68,8 +73,13 @@ public class RepositoryCache {
 	 * Indicates that the cache needs validation.
 	 */
 	public void modified() {
-		for (CachedSize cached : cachedSizes.values()) {
-			cached.stale();
+		if (containsFreshValues) {
+			synchronized (cachedSizes) {
+				for (CachedSize cached : cachedSizes.values()) {
+					cached.stale();
+				}
+				containsFreshValues = false;
+			}
 		}
 	}
 
@@ -218,15 +228,17 @@ public class RepositoryCache {
 			client.ifNoneMatch(cached.getETag());
 		}
 		Long size = client.get(subj, pred, obj, includeInferred, contexts);
+		int maxAge = client.getMaxAge();
 		if (size == null) {
 			assert cached != null : "Server did not return a size value";
-			cached.refreshed(now, client.getMaxAge());
+			cached.refreshed(now, maxAge);
 		}
 		else {
 			cached = new CachedSize(size, client.getETag());
-			cached.refreshed(now, client.getMaxAge());
+			cached.refreshed(now, maxAge);
 			cachedSizes.put(pattern, cached);
 		}
+		containsFreshValues |= maxAge > 0;
 		assert cached.isSizeAvailable();
 		return cached.getSize();
 	}
@@ -252,6 +264,7 @@ public class RepositoryCache {
 
 	/**
 	 * Connects to the server.
+	 * 
 	 * @return <code>true</code> if this pattern does not exist on the server.
 	 */
 	private boolean loadExactAbsent(long now, Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -267,15 +280,17 @@ public class RepositoryCache {
 			client.ifNoneMatch(cached.getETag());
 		}
 		GraphResult result = client.get(subj, pred, obj, includeInferred, contexts);
+		int maxAge = client.getMaxAge();
 		if (result == null) {
 			assert cached != null : "Server did not return a size value";
-			cached.refreshed(now, client.getMaxAge());
+			cached.refreshed(now, maxAge);
 		}
 		else {
 			cached = new CachedSize(result.hasNext(), client.getETag());
-			cached.refreshed(now, client.getMaxAge());
+			cached.refreshed(now, maxAge);
 			cachedSizes.put(pattern, cached);
 		}
+		containsFreshValues |= maxAge > 0;
 		return cached.isAbsent();
 	}
 }
