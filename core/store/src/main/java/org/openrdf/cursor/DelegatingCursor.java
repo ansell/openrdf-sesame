@@ -8,19 +8,19 @@ package org.openrdf.cursor;
 import org.openrdf.store.StoreException;
 
 /**
- * Abstract superclass for Cursors that wrap other Cursors. This abstract class
- * <tt>CursorWrapper</tt> itself provides default methods that forward method
- * calls to the wrapped Cursor. Subclasses of <tt>CursorWrapper</tt> should
- * override some of these methods and may also provide additional methods and
- * fields.
+ * Abstract superclass for cursors that delegate calls to other cursors. This
+ * class provides default method implementations that forward method calls to
+ * the wrapped cursor. Subclasses of this class should override some of these
+ * methods and may also provide additional methods and fields.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
-public abstract class CursorWrapper<E> implements Cursor<E> {
+public abstract class DelegatingCursor<E> implements Cursor<E> {
 
 	private final Cursor<? extends E> delegate;
 
-	public CursorWrapper(Cursor<? extends E> delegate) {
+	public DelegatingCursor(Cursor<? extends E> delegate) {
 		this.delegate = delegate;
 	}
 

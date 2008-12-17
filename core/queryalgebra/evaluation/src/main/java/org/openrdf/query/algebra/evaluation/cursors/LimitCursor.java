@@ -6,7 +6,7 @@
 package org.openrdf.query.algebra.evaluation.cursors;
 
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.CursorWrapper;
+import org.openrdf.cursor.DelegatingCursor;
 import org.openrdf.store.StoreException;
 
 /**
@@ -16,7 +16,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-public class LimitCursor<E> extends CursorWrapper<E> {
+public class LimitCursor<E> extends DelegatingCursor<E> {
 
 	private int limit;
 

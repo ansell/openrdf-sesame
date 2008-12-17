@@ -16,7 +16,7 @@ import org.openrdf.store.StoreException;
 /**
  * @author Arjohn Kampman
  */
-public abstract class TimeLimitCursor<E> extends CursorWrapper<E> {
+public abstract class TimeLimitCursor<E> extends DelegatingCursor<E> {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
