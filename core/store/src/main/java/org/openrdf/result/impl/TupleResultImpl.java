@@ -3,16 +3,16 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.results.impl;
+package org.openrdf.result.impl;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.results.Cursor;
-import org.openrdf.results.TupleResult;
-import org.openrdf.results.base.ResultImpl;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.TupleResult;
+import org.openrdf.result.base.ResultImpl;
 
 /**
  * A generic implementation of the {@link TupleResult} interface.

@@ -11,7 +11,7 @@ import junit.framework.TestCase;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.results.Cursor;
+import org.openrdf.result.Cursor;
 import org.openrdf.store.StoreException;
 
 /**

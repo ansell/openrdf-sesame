@@ -12,8 +12,8 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
-import org.openrdf.results.Cursor;
-import org.openrdf.results.impl.EmptyCursor;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.impl.EmptyCursor;
 import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.store.StoreException;
 

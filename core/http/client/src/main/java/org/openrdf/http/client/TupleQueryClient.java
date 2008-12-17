@@ -18,7 +18,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultParseException;
-import org.openrdf.results.TupleResult;
+import org.openrdf.result.TupleResult;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.store.StoreException;
 

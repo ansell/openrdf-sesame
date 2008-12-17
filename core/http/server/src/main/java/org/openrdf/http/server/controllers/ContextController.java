@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.results.ContextResult;
-import org.openrdf.results.impl.ContextResultImpl;
-import org.openrdf.results.impl.EmptyCursor;
+import org.openrdf.result.ContextResult;
+import org.openrdf.result.impl.ContextResultImpl;
+import org.openrdf.result.impl.EmptyCursor;
 import org.openrdf.store.StoreException;
 
 /**

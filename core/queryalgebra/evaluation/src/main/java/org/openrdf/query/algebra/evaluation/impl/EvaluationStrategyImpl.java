@@ -107,11 +107,11 @@ import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.impl.DatasetImpl;
-import org.openrdf.results.Cursor;
-import org.openrdf.results.base.ConvertingCursor;
-import org.openrdf.results.base.FilteringCursor;
-import org.openrdf.results.impl.EmptyCursor;
-import org.openrdf.results.impl.SingletonCursor;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.base.ConvertingCursor;
+import org.openrdf.result.base.FilteringCursor;
+import org.openrdf.result.impl.EmptyCursor;
+import org.openrdf.result.impl.SingletonCursor;
 import org.openrdf.store.StoreException;
 
 /**

@@ -6,7 +6,7 @@
 package org.openrdf.query;
 
 import org.openrdf.model.Value;
-import org.openrdf.results.Result;
+import org.openrdf.result.Result;
 import org.openrdf.store.StoreException;
 
 /**

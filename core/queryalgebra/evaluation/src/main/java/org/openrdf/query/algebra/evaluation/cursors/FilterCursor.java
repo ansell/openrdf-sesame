@@ -14,8 +14,8 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.results.Cursor;
-import org.openrdf.results.base.FilteringCursor;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.base.FilteringCursor;
 import org.openrdf.store.StoreException;
 
 public class FilterCursor extends FilteringCursor<BindingSet> {

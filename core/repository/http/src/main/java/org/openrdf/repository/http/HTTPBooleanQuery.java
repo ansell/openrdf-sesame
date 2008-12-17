@@ -7,8 +7,8 @@ package org.openrdf.repository.http;
 
 import org.openrdf.http.client.BooleanQueryClient;
 import org.openrdf.query.BooleanQuery;
-import org.openrdf.results.BooleanResult;
-import org.openrdf.results.impl.BooleanResultImpl;
+import org.openrdf.result.BooleanResult;
+import org.openrdf.result.impl.BooleanResultImpl;
 import org.openrdf.store.StoreException;
 
 /**

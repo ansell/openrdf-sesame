@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.results.Cursor;
+import org.openrdf.result.Cursor;
 import org.openrdf.store.StoreException;
 
 /**

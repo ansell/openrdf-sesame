@@ -3,12 +3,12 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.results.impl;
+package org.openrdf.result.impl;
 
 import org.openrdf.model.Resource;
-import org.openrdf.results.ContextResult;
-import org.openrdf.results.Cursor;
-import org.openrdf.results.base.ResultImpl;
+import org.openrdf.result.ContextResult;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.base.ResultImpl;
 
 /**
  * @author Jabmes Leigh

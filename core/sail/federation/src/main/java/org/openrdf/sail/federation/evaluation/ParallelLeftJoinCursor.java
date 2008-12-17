@@ -14,9 +14,9 @@ import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.cursors.FilterCursor;
-import org.openrdf.results.Cursor;
-import org.openrdf.results.impl.EmptyCursor;
-import org.openrdf.results.impl.SingletonCursor;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.impl.EmptyCursor;
+import org.openrdf.result.impl.SingletonCursor;
 import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.store.StoreException;
 

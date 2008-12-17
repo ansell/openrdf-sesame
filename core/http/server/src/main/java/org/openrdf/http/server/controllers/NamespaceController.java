@@ -27,7 +27,7 @@ import org.openrdf.http.protocol.exceptions.BadRequest;
 import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.results.NamespaceResult;
+import org.openrdf.result.NamespaceResult;
 import org.openrdf.store.StoreException;
 
 /**

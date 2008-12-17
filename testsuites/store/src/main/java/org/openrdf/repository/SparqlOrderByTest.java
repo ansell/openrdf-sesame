@@ -18,7 +18,7 @@ import org.openrdf.query.EvaluationException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.results.TupleResult;
+import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
 
 public abstract class SparqlOrderByTest extends TestCase {

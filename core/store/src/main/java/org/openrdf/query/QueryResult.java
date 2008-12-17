@@ -5,7 +5,7 @@
  */
 package org.openrdf.query;
 
-import org.openrdf.results.Result;
+import org.openrdf.result.Result;
 
 /**
  * Super type of all query result types (TupleQueryResult, GraphQueryResult,

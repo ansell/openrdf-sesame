@@ -19,7 +19,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.repository.http.HTTPBNode;
-import org.openrdf.results.TupleResult;
+import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
 
 /**

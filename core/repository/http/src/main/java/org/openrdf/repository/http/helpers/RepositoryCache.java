@@ -16,7 +16,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.results.GraphResult;
+import org.openrdf.result.GraphResult;
 import org.openrdf.store.StoreException;
 
 /**

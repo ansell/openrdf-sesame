@@ -30,8 +30,8 @@ import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.results.Cursor;
-import org.openrdf.results.impl.IteratorCursor;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.impl.IteratorCursor;
 import org.openrdf.store.StoreException;
 
 /**

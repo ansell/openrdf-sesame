@@ -15,7 +15,7 @@ import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.results.GraphResult;
+import org.openrdf.result.GraphResult;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
