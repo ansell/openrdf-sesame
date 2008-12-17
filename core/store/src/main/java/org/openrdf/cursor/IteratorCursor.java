@@ -7,13 +7,13 @@ package org.openrdf.cursor;
 
 import java.util.Iterator;
 
-
 /**
- * An Cursor that can convert an {@link Iterator} to a {@link Cursor}.
+ * An cursor that iterates over an {@link Iterator}'s elements.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
-public class IteratorCursor<E> implements Cursor<E> {
+public class IteratorCursor<E> extends CheckedCursor<E> {
 
 	private final Iterator<? extends E> iter;
 
@@ -22,15 +22,11 @@ public class IteratorCursor<E> implements Cursor<E> {
 		this.iter = iter;
 	}
 
-	public E next() {
+	protected E checkedNext() {
 		if (iter.hasNext()) {
 			return iter.next();
 		}
 		return null;
-	}
-
-	public void close() {
-		// no-op
 	}
 
 	@Override
