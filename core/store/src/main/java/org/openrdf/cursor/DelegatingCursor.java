@@ -21,6 +21,7 @@ public abstract class DelegatingCursor<E> implements Cursor<E> {
 	private final Cursor<? extends E> delegate;
 
 	public DelegatingCursor(Cursor<? extends E> delegate) {
+		assert delegate != null : "delegate must not be null";
 		this.delegate = delegate;
 	}
 
