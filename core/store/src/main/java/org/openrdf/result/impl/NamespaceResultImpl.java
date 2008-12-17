@@ -3,15 +3,15 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.results.impl;
+package org.openrdf.result.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.results.Cursor;
-import org.openrdf.results.NamespaceResult;
-import org.openrdf.results.base.ResultImpl;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.NamespaceResult;
+import org.openrdf.result.base.ResultImpl;
 import org.openrdf.store.StoreException;
 
 /**

@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.results.util;
+package org.openrdf.result.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +11,8 @@ import java.util.List;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResultHandlerBase;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.results.TupleResult;
-import org.openrdf.results.impl.TupleResultImpl;
+import org.openrdf.result.TupleResult;
+import org.openrdf.result.impl.TupleResultImpl;
 
 /**
  * A TupleQueryResultHandler that can be used to create a TupleQueryResult object.

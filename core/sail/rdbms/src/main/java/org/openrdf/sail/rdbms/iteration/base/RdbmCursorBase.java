@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.openrdf.results.Cursor;
+import org.openrdf.result.Cursor;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 
 /**

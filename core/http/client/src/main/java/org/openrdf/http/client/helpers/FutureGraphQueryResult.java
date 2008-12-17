@@ -14,7 +14,7 @@ import java.util.concurrent.Future;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.results.GraphResult;
+import org.openrdf.result.GraphResult;
 import org.openrdf.store.StoreException;
 
 /**

@@ -5,7 +5,7 @@
  */
 package org.openrdf.query;
 
-import org.openrdf.results.BooleanResult;
+import org.openrdf.result.BooleanResult;
 import org.openrdf.store.StoreException;
 
 /**

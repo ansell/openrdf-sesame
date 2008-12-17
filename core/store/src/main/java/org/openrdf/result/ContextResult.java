@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.results;
+package org.openrdf.result;
 
 import org.openrdf.model.Resource;
 import org.openrdf.repository.RepositoryResult;

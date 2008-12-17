@@ -36,7 +36,7 @@ import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.TupleQueryModel;
-import org.openrdf.results.Cursor;
+import org.openrdf.result.Cursor;
 import org.openrdf.store.StoreException;
 
 /**

@@ -7,8 +7,8 @@ package org.openrdf.query.algebra.evaluation.cursors;
 
 import info.aduna.concurrent.locks.Lock;
 
-import org.openrdf.results.Cursor;
-import org.openrdf.results.base.CursorWrapper;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.base.CursorWrapper;
 import org.openrdf.store.StoreException;
 
 /**

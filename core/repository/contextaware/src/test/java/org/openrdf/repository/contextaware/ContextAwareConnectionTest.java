@@ -25,9 +25,9 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.base.RepositoryWrapper;
-import org.openrdf.results.GraphResult;
-import org.openrdf.results.Result;
-import org.openrdf.results.TupleResult;
+import org.openrdf.result.GraphResult;
+import org.openrdf.result.Result;
+import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.store.StoreException;
 

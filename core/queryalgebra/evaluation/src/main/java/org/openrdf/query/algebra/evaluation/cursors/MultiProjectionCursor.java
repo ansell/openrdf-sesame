@@ -10,7 +10,7 @@ import java.util.List;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.ProjectionElemList;
-import org.openrdf.results.Cursor;
+import org.openrdf.result.Cursor;
 import org.openrdf.store.StoreException;
 
 public class MultiProjectionCursor implements Cursor<BindingSet> {

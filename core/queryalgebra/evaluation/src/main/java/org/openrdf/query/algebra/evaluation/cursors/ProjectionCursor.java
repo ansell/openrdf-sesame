@@ -12,8 +12,8 @@ import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.results.Cursor;
-import org.openrdf.results.base.ConvertingCursor;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.base.ConvertingCursor;
 
 public class ProjectionCursor extends ConvertingCursor<BindingSet, BindingSet>
 {

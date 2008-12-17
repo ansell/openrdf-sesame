@@ -7,7 +7,7 @@ package org.openrdf.http.client;
 
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.StoreClient;
-import org.openrdf.results.TupleResult;
+import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
 
 /**

@@ -8,8 +8,8 @@ package org.openrdf.sail.helpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.results.Cursor;
-import org.openrdf.results.base.CursorWrapper;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.base.CursorWrapper;
 import org.openrdf.store.StoreException;
 
 /**

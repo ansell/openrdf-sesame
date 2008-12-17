@@ -45,12 +45,12 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.results.Result;
-import org.openrdf.results.TupleResult;
-import org.openrdf.results.impl.BooleanResultImpl;
-import org.openrdf.results.impl.EmptyCursor;
-import org.openrdf.results.impl.GraphResultImpl;
-import org.openrdf.results.impl.TupleResultImpl;
+import org.openrdf.result.Result;
+import org.openrdf.result.TupleResult;
+import org.openrdf.result.impl.BooleanResultImpl;
+import org.openrdf.result.impl.EmptyCursor;
+import org.openrdf.result.impl.GraphResultImpl;
+import org.openrdf.result.impl.TupleResultImpl;
 import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 

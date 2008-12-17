@@ -5,7 +5,7 @@
  */
 package org.openrdf.repository;
 
-import org.openrdf.results.Result;
+import org.openrdf.result.Result;
 
 /**
  * A RepositoryResult is a result collection of objects (for example

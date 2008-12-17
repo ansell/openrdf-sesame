@@ -8,8 +8,8 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.openrdf.results.Cursor;
-import org.openrdf.results.base.FilteringCursor;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.base.FilteringCursor;
 import org.openrdf.store.StoreException;
 
 /**

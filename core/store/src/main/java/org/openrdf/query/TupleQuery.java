@@ -5,7 +5,7 @@
  */
 package org.openrdf.query;
 
-import org.openrdf.results.TupleResult;
+import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
 
 public interface TupleQuery extends Query {

@@ -20,7 +20,7 @@ import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.resultio.QueryResultParseException;
-import org.openrdf.results.TupleResult;
+import org.openrdf.result.TupleResult;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.store.StoreException;
 

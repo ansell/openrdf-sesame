@@ -8,7 +8,7 @@ package org.openrdf.repository;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.results.ModelResult;
+import org.openrdf.result.ModelResult;
 
 /**
  * @author jeen

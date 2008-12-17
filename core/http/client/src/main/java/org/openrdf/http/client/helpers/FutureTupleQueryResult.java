@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.results.TupleResult;
+import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
 
 /**

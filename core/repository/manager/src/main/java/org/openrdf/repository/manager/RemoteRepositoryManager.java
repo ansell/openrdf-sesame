@@ -22,7 +22,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.repository.manager.config.RemoteConfigManager;
 import org.openrdf.repository.manager.templates.RemoteTemplateManager;
-import org.openrdf.results.TupleResult;
+import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 

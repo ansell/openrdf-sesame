@@ -25,7 +25,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.parser.GraphQueryModel;
 import org.openrdf.query.parser.QueryParserUtil;
-import org.openrdf.results.Cursor;
+import org.openrdf.result.Cursor;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailConnectionListener;

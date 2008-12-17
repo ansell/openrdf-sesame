@@ -12,10 +12,10 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.parser.TupleQueryModel;
-import org.openrdf.results.Cursor;
-import org.openrdf.results.TupleResult;
-import org.openrdf.results.impl.TupleResultImpl;
-import org.openrdf.results.util.QueryResultUtil;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.TupleResult;
+import org.openrdf.result.impl.TupleResultImpl;
+import org.openrdf.result.util.QueryResultUtil;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.store.StoreException;
 

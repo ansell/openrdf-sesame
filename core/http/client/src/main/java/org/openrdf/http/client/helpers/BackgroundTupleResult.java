@@ -21,7 +21,7 @@ import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.resultio.TupleQueryResultParser;
-import org.openrdf.results.TupleResult;
+import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
 
 /**

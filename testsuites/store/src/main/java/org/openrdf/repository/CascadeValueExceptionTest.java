@@ -10,7 +10,7 @@ import junit.framework.TestCase;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.results.TupleResult;
+import org.openrdf.result.TupleResult;
 
 public abstract class CascadeValueExceptionTest extends TestCase {
 

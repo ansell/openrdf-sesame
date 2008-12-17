@@ -20,8 +20,8 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.event.NotifyingRepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionListener;
-import org.openrdf.results.ModelResult;
-import org.openrdf.results.NamespaceResult;
+import org.openrdf.result.ModelResult;
+import org.openrdf.result.NamespaceResult;
 import org.openrdf.store.StoreException;
 
 /**

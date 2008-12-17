@@ -8,7 +8,7 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
-import org.openrdf.results.Cursor;
+import org.openrdf.result.Cursor;
 import org.openrdf.store.StoreException;
 
 

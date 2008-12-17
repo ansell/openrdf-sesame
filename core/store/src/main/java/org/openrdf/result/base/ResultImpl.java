@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.results.base;
+package org.openrdf.result.base;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,8 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.results.Cursor;
-import org.openrdf.results.Result;
+import org.openrdf.result.Cursor;
+import org.openrdf.result.Result;
 import org.openrdf.store.StoreException;
 
 /**
