@@ -143,32 +143,12 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return new ContextResultImpl(sailConnection.getContextIDs());
 	}
 
-	/**
-	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)} instead
-	 */
-	public ModelResult getStatements(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
-		throws StoreException
-	{
-		return match(subj, pred, obj, includeInferred, contexts);
-	}
-
 	public ModelResult match(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		return new ModelNamespaceResult(this, sailConnection.getStatements(subj, pred, obj, includeInferred,
 		contexts));
-	}
-
-	/**
-	 * @deprecated Use {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)} instead
-	 */
-	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
-			RDFHandler handler, Resource... contexts)
-		throws StoreException, RDFHandlerException
-	{
-		exportMatch(subj, pred, obj, includeInferred, handler, contexts);
 	}
 
 	public void exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -203,15 +183,6 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 
 		handler.endRDF();
-	}
-
-	/**
-	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)} instead
-	 */
-	public long size(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
-		throws StoreException
-	{
-		return sizeMatch(subject, predicate, object, includeInferred, contexts);
 	}
 
 	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)

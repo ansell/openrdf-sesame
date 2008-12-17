@@ -116,16 +116,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		return prepareBooleanQuery(ql, query, null);
 	}
 
-	/**
-	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)} instead
-	 */
-	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
-		throws StoreException
-	{
-		return hasMatch(subj, pred, obj, includeInferred, contexts);
-	}
-
 	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws StoreException
@@ -520,13 +510,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		autoCommit();
 	}
 
-	@Deprecated
-	public final void remove(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
-	{
-		removeMatch(subject, predicate, object, contexts);
-	}
-
 	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
@@ -544,6 +527,57 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws StoreException
 	{
 		return sizeMatch(null, null, null, false, contexts);
+	}
+
+	/**
+	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)}
+	 *             instead
+	 */
+	public final ModelResult getStatements(Resource subj, URI pred, Value obj, boolean inf, Resource... ctx)
+		throws StoreException
+	{
+		return match(subj, pred, obj, inf, ctx);
+	}
+
+	/**
+	 * @deprecated Use
+	 *             {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)}
+	 *             instead
+	 */
+	public final void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+			RDFHandler handler, Resource... contexts)
+		throws RDFHandlerException, StoreException
+	{
+		exportMatch(subj, pred, obj, includeInferred, handler, contexts);
+	}
+
+	/**
+	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)}
+	 *             instead
+	 */
+	public final long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		return sizeMatch(subj, pred, obj, includeInferred, contexts);
+	}
+
+	/**
+	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)}
+	 *             instead
+	 */
+	@Deprecated
+	public final boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws StoreException
+	{
+		return hasMatch(subj, pred, obj, includeInferred, contexts);
+	}
+
+	@Deprecated
+	public final void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws StoreException
+	{
+		removeMatch(subject, predicate, object, contexts);
 	}
 
 	protected void addWithoutCommit(Statement st, Resource... contexts)
