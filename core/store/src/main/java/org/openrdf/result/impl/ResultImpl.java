@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.CursorWrapper;
+import org.openrdf.cursor.DelegatingCursor;
 import org.openrdf.result.Result;
 import org.openrdf.store.StoreException;
 
@@ -42,7 +42,7 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class ResultImpl<T> extends CursorWrapper<T> implements Result<T> {
+public class ResultImpl<T> extends DelegatingCursor<T> implements Result<T> {
 
 	private T next;
 

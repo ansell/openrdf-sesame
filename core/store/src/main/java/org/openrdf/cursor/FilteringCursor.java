@@ -15,7 +15,7 @@ import org.openrdf.store.StoreException;
  * @author James Leigh
  * @author Arjohn Kampman
  */
-public abstract class FilteringCursor<E> extends CursorWrapper<E> {
+public abstract class FilteringCursor<E> extends DelegatingCursor<E> {
 
 	public FilteringCursor(Cursor<? extends E> delegate) {
 		super(delegate);

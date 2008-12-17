@@ -6,7 +6,7 @@
 package org.openrdf.sail.federation.evaluation;
 
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.CursorWrapper;
+import org.openrdf.cursor.DelegatingCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.store.StoreException;
@@ -16,7 +16,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-public class InsertBindingSetCursor extends CursorWrapper<BindingSet> {
+public class InsertBindingSetCursor extends DelegatingCursor<BindingSet> {
 
 	private BindingSet bindings;
 

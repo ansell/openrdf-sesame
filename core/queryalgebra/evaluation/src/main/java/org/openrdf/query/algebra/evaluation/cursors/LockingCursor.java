@@ -8,7 +8,7 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.CursorWrapper;
+import org.openrdf.cursor.DelegatingCursor;
 import org.openrdf.store.StoreException;
 
 /**
@@ -18,7 +18,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-public class LockingCursor<E> extends CursorWrapper<E> {
+public class LockingCursor<E> extends DelegatingCursor<E> {
 
 	private Lock lock;
 

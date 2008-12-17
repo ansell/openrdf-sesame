@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.CursorWrapper;
+import org.openrdf.cursor.DelegatingCursor;
 import org.openrdf.store.StoreException;
 
 /**
@@ -20,7 +20,7 @@ import org.openrdf.store.StoreException;
  * @author jeen
  * @author James Leigh
  */
-class TrackingSailCursor<T> extends CursorWrapper<T> {
+class TrackingSailCursor<T> extends DelegatingCursor<T> {
 	
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
