@@ -16,11 +16,11 @@ import org.openrdf.store.StoreException;
  */
 public abstract class ConvertingCursor<S, T> implements Cursor<T> {
 
-	private final Cursor<? extends S> cursor;
+	private final Cursor<? extends S> delegate;
 
-	public ConvertingCursor(Cursor<? extends S> cursor) {
-		assert cursor != null : "cursor must not be null";
-		this.cursor = cursor;
+	public ConvertingCursor(Cursor<? extends S> delegate) {
+		assert delegate != null : "delegate must not be null";
+		this.delegate = delegate;
 	}
 
 	/**
@@ -32,7 +32,7 @@ public abstract class ConvertingCursor<S, T> implements Cursor<T> {
 	public T next()
 		throws StoreException
 	{
-		S next = cursor.next();
+		S next = delegate.next();
 		if (next != null) {
 			return convert(next);
 		}
@@ -42,12 +42,12 @@ public abstract class ConvertingCursor<S, T> implements Cursor<T> {
 	public void close()
 		throws StoreException
 	{
-		cursor.close();
+		delegate.close();
 	}
 
 	@Override
 	public String toString() {
-		return getName() + " " + cursor.toString();
+		return getName() + " " + delegate.toString();
 	}
 
 	protected String getName() {
