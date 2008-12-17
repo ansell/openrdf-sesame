@@ -5,10 +5,9 @@
  */
 package org.openrdf.result.impl;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Resource;
 import org.openrdf.result.ContextResult;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.base.ResultImpl;
 
 /**
  * @author Jabmes Leigh

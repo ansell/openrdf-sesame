@@ -12,6 +12,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
@@ -21,7 +22,6 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.TupleResult;
 import org.openrdf.sail.federation.evaluation.InsertBindingSetCursor;
 import org.openrdf.sail.federation.query.QueryModelSerializer;

@@ -30,6 +30,8 @@ import org.xml.sax.SAXException;
 
 import info.aduna.webapp.util.HttpServerUtil;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.protocol.exceptions.ServerHTTPException;
@@ -45,9 +47,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.ModelResult;
-import org.openrdf.result.impl.EmptyCursor;
 import org.openrdf.result.impl.ModelResultImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;

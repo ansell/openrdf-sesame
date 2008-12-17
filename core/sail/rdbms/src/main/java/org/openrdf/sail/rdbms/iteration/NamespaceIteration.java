@@ -9,11 +9,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.openrdf.cursor.ConvertingCursor;
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.IteratorCursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.base.ConvertingCursor;
-import org.openrdf.result.impl.IteratorCursor;
 import org.openrdf.store.StoreException;
 
 /**

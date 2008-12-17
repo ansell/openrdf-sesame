@@ -5,8 +5,8 @@
  */
 package org.openrdf.result.impl;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Statement;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.ModelResult;
 
 

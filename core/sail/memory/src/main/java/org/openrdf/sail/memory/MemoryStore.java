@@ -20,12 +20,12 @@ import info.aduna.concurrent.locks.ReadPrefReadWriteLockManager;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.impl.EmptyCursor;
 import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.DirectoryLockManager;

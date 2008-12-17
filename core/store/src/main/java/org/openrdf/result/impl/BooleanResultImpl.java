@@ -5,9 +5,9 @@
  */
 package org.openrdf.result.impl;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.SingletonCursor;
 import org.openrdf.result.BooleanResult;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.base.ResultImpl;
 import org.openrdf.store.StoreException;
 
 /**

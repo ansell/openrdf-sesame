@@ -5,10 +5,10 @@
  */
 package org.openrdf.query.algebra.evaluation.cursors;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.FilteringCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.base.FilteringCursor;
 import org.openrdf.result.util.QueryResultUtil;
 
 /**

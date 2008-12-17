@@ -7,12 +7,12 @@ package org.openrdf.repository.sail;
 
 import java.util.ArrayList;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.parser.TupleQueryModel;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.TupleResult;
 import org.openrdf.result.impl.TupleResultImpl;
 import org.openrdf.result.util.QueryResultUtil;

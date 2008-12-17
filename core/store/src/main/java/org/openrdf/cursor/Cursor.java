@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.result;
+package org.openrdf.cursor;
 
 import org.openrdf.store.StoreException;
 

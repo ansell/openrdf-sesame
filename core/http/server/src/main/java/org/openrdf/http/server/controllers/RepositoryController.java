@@ -27,6 +27,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NotImplemented;
 import org.openrdf.http.server.helpers.QueryBuilder;
@@ -48,7 +49,6 @@ import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.result.Result;
 import org.openrdf.result.TupleResult;
 import org.openrdf.result.impl.BooleanResultImpl;
-import org.openrdf.result.impl.EmptyCursor;
 import org.openrdf.result.impl.GraphResultImpl;
 import org.openrdf.result.impl.TupleResultImpl;
 import org.openrdf.store.StoreConfigException;

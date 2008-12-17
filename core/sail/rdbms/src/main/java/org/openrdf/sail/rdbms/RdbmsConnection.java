@@ -11,6 +11,7 @@ import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -21,7 +22,6 @@ import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.result.Cursor;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.SailConnectionBase;

@@ -8,12 +8,12 @@ package org.openrdf.sail.federation.evaluation;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.impl.EmptyCursor;
 import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.store.StoreException;
 

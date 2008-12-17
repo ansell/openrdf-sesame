@@ -5,10 +5,10 @@
  */
 package org.openrdf.sail.federation.evaluation;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.CursorWrapper;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.base.CursorWrapper;
 import org.openrdf.store.StoreException;
 
 /**

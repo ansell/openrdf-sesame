@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -26,7 +27,6 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.util.RDFInserter;
-import org.openrdf.result.Cursor;
 import org.openrdf.result.ModelResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;

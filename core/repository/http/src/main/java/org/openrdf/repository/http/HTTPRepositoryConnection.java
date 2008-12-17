@@ -11,6 +11,8 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openrdf.cursor.EmptyCursor;
+import org.openrdf.cursor.IteratorCursor;
 import org.openrdf.http.client.BooleanQueryClient;
 import org.openrdf.http.client.ConnectionClient;
 import org.openrdf.http.client.GraphQueryClient;
@@ -51,8 +53,6 @@ import org.openrdf.result.ModelResult;
 import org.openrdf.result.NamespaceResult;
 import org.openrdf.result.TupleResult;
 import org.openrdf.result.impl.ContextResultImpl;
-import org.openrdf.result.impl.EmptyCursor;
-import org.openrdf.result.impl.IteratorCursor;
 import org.openrdf.result.impl.ModelResultImpl;
 import org.openrdf.result.impl.NamespaceResultImpl;
 import org.openrdf.rio.RDFFormat;

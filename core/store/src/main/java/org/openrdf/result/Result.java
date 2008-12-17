@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.store.StoreException;
 
 /**

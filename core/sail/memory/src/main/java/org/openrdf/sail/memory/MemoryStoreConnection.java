@@ -14,6 +14,8 @@ import java.util.List;
 import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.IteratorCursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -38,8 +40,6 @@ import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.impl.IteratorCursor;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;

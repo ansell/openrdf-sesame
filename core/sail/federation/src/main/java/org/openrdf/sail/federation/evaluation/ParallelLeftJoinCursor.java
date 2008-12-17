@@ -9,14 +9,14 @@ import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.EmptyCursor;
+import org.openrdf.cursor.SingletonCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.cursors.FilterCursor;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.impl.EmptyCursor;
-import org.openrdf.result.impl.SingletonCursor;
 import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.store.StoreException;
 

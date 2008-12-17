@@ -5,11 +5,11 @@
  */
 package org.openrdf.query.algebra.evaluation;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
-import org.openrdf.result.Cursor;
 import org.openrdf.store.StoreException;
 
 /**

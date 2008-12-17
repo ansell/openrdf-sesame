@@ -13,6 +13,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.openrdf.cursor.ConvertingCursor;
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.EmptyCursor;
+import org.openrdf.cursor.FilteringCursor;
+import org.openrdf.cursor.SingletonCursor;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -107,11 +112,6 @@ import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.impl.DatasetImpl;
-import org.openrdf.result.Cursor;
-import org.openrdf.result.base.ConvertingCursor;
-import org.openrdf.result.base.FilteringCursor;
-import org.openrdf.result.impl.EmptyCursor;
-import org.openrdf.result.impl.SingletonCursor;
 import org.openrdf.store.StoreException;
 
 /**

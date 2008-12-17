@@ -5,12 +5,12 @@
  */
 package org.openrdf.sail.rdbms.evaluation;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.result.Cursor;
 import org.openrdf.sail.rdbms.RdbmsTripleRepository;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
