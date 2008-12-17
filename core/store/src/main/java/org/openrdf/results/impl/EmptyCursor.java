@@ -12,11 +12,11 @@ import org.openrdf.results.Cursor;
  */
 public class EmptyCursor<E> implements Cursor<E> {
 
-	private static final EmptyCursor<?> emptyCursor = new EmptyCursor<Object>();
+	private static final EmptyCursor<?> singleton = new EmptyCursor<Object>();
 
 	@SuppressWarnings("unchecked")
 	public static <E> Cursor<E> getInstance() {
-		return (Cursor<E>)emptyCursor;
+		return (Cursor<E>)singleton;
 	}
 
 	public void close() {
