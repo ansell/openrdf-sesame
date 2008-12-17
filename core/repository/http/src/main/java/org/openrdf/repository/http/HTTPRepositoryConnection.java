@@ -27,6 +27,7 @@ import org.openrdf.http.protocol.transaction.operations.RemoveNamespaceOperation
 import org.openrdf.http.protocol.transaction.operations.RemoveStatementsOperation;
 import org.openrdf.http.protocol.transaction.operations.SetNamespaceOperation;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
+import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -273,7 +274,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public long sizeMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (!modified)
+		if (cachable(subj, pred, obj, contexts))
 			return getRepository().size(subj, pred, obj, includeInferred, contexts);
 		flush();
 		return client.size().get(subj, pred, obj, includeInferred, contexts);
@@ -295,7 +296,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (!modified)
+		if (cachable(subj, pred, obj, contexts))
 			return getRepository().hasStatement(subj, pred, obj, includeInferred, contexts);
 		flush();
 		StatementClient statements = client.statements();
@@ -484,9 +485,25 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	private boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
+		if (cachable(subj, pred, obj, contexts))
+			return getRepository().noMatch(subj, pred, obj, includeInferred, contexts);
+		return false;
+	}
+
+	private boolean cachable(Resource subj, URI pred, Value obj, Resource... contexts) {
 		if (modified)
 			return false;
-		return getRepository().noMatch(subj, pred, obj, includeInferred, contexts);
+		if (subj instanceof BNode)
+			return false;
+		if (obj instanceof BNode)
+			return false;
+		if (contexts == null)
+			return true;
+		for (Resource ctx : contexts) {
+			if (ctx instanceof BNode)
+				return false;
+		}
+		return true;
 	}
 
 	private void add(TransactionOperation operation)
