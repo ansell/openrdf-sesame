@@ -5,6 +5,8 @@
  */
 package org.openrdf.cursor;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.openrdf.store.StoreException;
 
 /**
@@ -12,28 +14,27 @@ import org.openrdf.store.StoreException;
  */
 public class SingletonCursor<E> implements Cursor<E> {
 
-	private E element;
+	private final AtomicReference<E> value;
 
-	public SingletonCursor(E element) {
-		this.element = element;
+	public SingletonCursor(E value) {
+		assert value != null : "value must not be null";
+		this.value = new AtomicReference<E>(value);
 	}
 
 	public E next()
 		throws StoreException
 	{
-		E next = element;
-		element = null;
-		return next;
+		return value.getAndSet(null);
 	}
 
 	public void close()
 		throws StoreException
 	{
-		element = null;
+		value.set(null);
 	}
 
 	@Override
 	public String toString() {
-		return element.toString();
+		return value.get().toString();
 	}
 }
