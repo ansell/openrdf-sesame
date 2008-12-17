@@ -485,7 +485,7 @@ public class NativeStore extends InferencerSailBase {
 			return perContextIterList.get(0);
 		}
 		else if (perContextIterList.isEmpty()) {
-			return EmptyCursor.emptyCursor();
+			return EmptyCursor.getInstance();
 		}
 		else {
 			return new UnionCursor<Statement>(perContextIterList);

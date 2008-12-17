@@ -57,7 +57,7 @@ public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 
 	private BlockingQueue<Cursor<BindingSet>> rightQueue = new ArrayBlockingQueue<Cursor<BindingSet>>(1024);
 
-	private Cursor<BindingSet> end = EmptyCursor.emptyCursor();
+	private Cursor<BindingSet> end = EmptyCursor.getInstance();
 
 	StoreException source;
 
