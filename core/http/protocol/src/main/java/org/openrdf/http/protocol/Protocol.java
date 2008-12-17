@@ -207,6 +207,8 @@ public abstract class Protocol {
 
 	public static final TimeUnit TIME_OUT_UNITS = TimeUnit.SECONDS;
 
+	public static final String NODE_ID = "nodeID";
+
 	private static String getServerDir(String serverLocation) {
 		if (!serverLocation.endsWith("/")) {
 			serverLocation += "/";

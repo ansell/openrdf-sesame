@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -7,11 +7,10 @@ package org.openrdf.sail.memory.model;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.BNodeFactoryImpl;
 import org.openrdf.model.impl.BNodeImpl;
 
 /**
@@ -22,22 +21,11 @@ import org.openrdf.model.impl.BNodeImpl;
  * @author David Huynh
  * @author James Leigh
  */
-public class MemBNodeFactory implements BNodeFactory {
+public class MemBNodeFactory extends BNodeFactoryImpl {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-
-	/**
-	 * BNode prefix is based on currentTimeMillis(). Combined with a
-	 * sequential number per session, this gives a unique identifier.
-	 */
-	private String bnodePrefix = "node" + Long.toString(System.currentTimeMillis(), 32) + "x";
-
-	/**
-	 * The ID for the next bnode that is created.
-	 */
-	private AtomicLong nextBNodeID = new AtomicLong();
 
 	/**
 	 * Registry containing the set of MemBNode objects as used by a MemoryStore.
@@ -58,8 +46,7 @@ public class MemBNodeFactory implements BNodeFactory {
 			return (MemBNode)bnode;
 		}
 		else {
-			String nodeID = bnode.getID();
-			if (!nodeID.startsWith(bnodePrefix))
+			if (!isInternalBNode(bnode))
 				throw new IllegalArgumentException("BNode not created from this ValueFactory");
 			return bnodeRegistry.get(bnode);
 		}
@@ -90,10 +77,9 @@ public class MemBNodeFactory implements BNodeFactory {
 	 * See createMemValue() for description.
 	 */
 	public synchronized MemBNode createMemBNode(BNode bnode) {
-		String nodeID = bnode.getID();
-		if (!nodeID.startsWith(bnodePrefix))
+		if (!isInternalBNode(bnode))
 			throw new IllegalArgumentException("BNode not created from this ValueFactory");
-		MemBNode memBNode = new MemBNode(this, nodeID);
+		MemBNode memBNode = new MemBNode(this, bnode.getID());
 
 		boolean wasNew = bnodeRegistry.add(memBNode);
 		assert wasNew : "Created a duplicate MemBNode for bnode " + bnode;
@@ -101,10 +87,7 @@ public class MemBNodeFactory implements BNodeFactory {
 		return memBNode;
 	}
 
-	public BNode createBNode() {
-		return createBNode(bnodePrefix + nextBNodeID.incrementAndGet());
-	}
-
+	@Override
 	public synchronized BNode createBNode(String nodeID) {
 		BNode tempBNode = new BNodeImpl(nodeID);
 		MemBNode memBNode = getMemBNode(tempBNode);

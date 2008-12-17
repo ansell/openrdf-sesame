@@ -25,11 +25,15 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.BNodeFactoryImpl;
+import org.openrdf.model.impl.LiteralFactoryImpl;
+import org.openrdf.model.impl.URIFactoryImpl;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryMetaData;
-import org.openrdf.repository.http.helpers.HTTPValueFactory;
 import org.openrdf.repository.http.helpers.RepositoryCache;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.store.StoreException;
@@ -56,7 +60,9 @@ public class HTTPRepository implements Repository {
 
 	Logger logger = LoggerFactory.getLogger(HTTPRepository.class);
 
-	private HTTPValueFactory vf = new HTTPValueFactory();
+	private URIFactory uf = new URIFactoryImpl();
+
+	private LiteralFactory lf = new LiteralFactoryImpl();
 
 	/**
 	 * The HTTP client that takes care of the client-server communication.
@@ -77,16 +83,16 @@ public class HTTPRepository implements Repository {
 
 	public HTTPRepository(String serverURL, String repositoryID) {
 		HTTPConnectionPool pool = new HTTPConnectionPool(serverURL);
-		pool.setValueFactory(vf);
+		pool.setValueFactory(new ValueFactoryImpl(new BNodeFactoryImpl(), uf, lf));
 		client = new SesameClient(pool).repositories().slash(repositoryID);
-		cache = new RepositoryCache(client, vf);
+		cache = new RepositoryCache(client);
 	}
 
 	public HTTPRepository(String repositoryURL) {
 		HTTPConnectionPool pool = new HTTPConnectionPool(repositoryURL);
-		pool.setValueFactory(vf);
+		pool.setValueFactory(new ValueFactoryImpl(new BNodeFactoryImpl(), uf, lf));
 		client = new RepositoryClient(pool);
-		cache = new RepositoryCache(client, vf);
+		cache = new RepositoryCache(client);
 	}
 
 	/*---------*
@@ -130,16 +136,16 @@ public class HTTPRepository implements Repository {
 		initialized = false;
 	}
 
-	public LiteralFactory getLiteralFactory() {
-		return vf;
-	}
-
 	public URIFactory getURIFactory() {
-		return vf;
+		return uf;
 	}
 
-	public HTTPValueFactory getValueFactory() {
-		return vf;
+	public LiteralFactory getLiteralFactory() {
+		return lf;
+	}
+
+	public ValueFactory getValueFactory() {
+		return new ValueFactoryImpl(uf, lf);
 	}
 
 	public RepositoryConnection getConnection()

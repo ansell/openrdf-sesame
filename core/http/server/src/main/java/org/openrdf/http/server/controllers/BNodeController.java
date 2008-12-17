@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.BadRequest;
+import org.openrdf.model.BNode;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.impl.ListBindingSet;
@@ -43,23 +44,36 @@ public class BNodeController {
 	{
 		notSafe(request);
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
-		int size = 1;
-		String amount = request.getParameter(Protocol.AMOUNT);
-		if (amount != null) {
-			try {
-				size = Integer.parseInt(amount);
-			}
-			catch (NumberFormatException e) {
-				throw new BadRequest(e.toString());
-			}
-		}
 		ValueFactory vf = repositoryCon.getValueFactory();
+		int amount = getAmount(request);
+		String nodeID = request.getParameter(Protocol.NODE_ID);
 		List<String> columns = Arrays.asList(Protocol.BNODE);
-		List<BindingSet> bnodes = new ArrayList<BindingSet>(size);
-		for (int i = 0; i < size; i++) {
-			bnodes.add(new ListBindingSet(columns, vf.createBNode()));
+		List<BindingSet> bnodes = new ArrayList<BindingSet>(amount);
+		for (int i = 0; i < amount; i++) {
+			BNode bnode = createBNode(vf, nodeID, i);
+			bnodes.add(new ListBindingSet(columns, bnode));
 		}
 		return new TupleResultImpl(columns, bnodes);
+	}
+
+	private int getAmount(HttpServletRequest request)
+		throws BadRequest
+	{
+		String amount = request.getParameter(Protocol.AMOUNT);
+		if (amount == null)
+			return 1;
+		try {
+			return Integer.parseInt(amount);
+		}
+		catch (NumberFormatException e) {
+			throw new BadRequest(e.toString());
+		}
+	}
+
+	private BNode createBNode(ValueFactory vf, String nodeID, int i) {
+		if (i == 0 && nodeID != null)
+			return vf.createBNode(nodeID);
+		return vf.createBNode();
 	}
 
 }

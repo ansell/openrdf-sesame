@@ -31,8 +31,6 @@ public class RepositoryCache {
 	 * Variables *
 	 *-----------*/
 
-	private HTTPValueFactory vf = new HTTPValueFactory();
-
 	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
@@ -50,10 +48,9 @@ public class RepositoryCache {
 	 * Constructors *
 	 *--------------*/
 
-	public RepositoryCache(RepositoryClient client, HTTPValueFactory vf) {
+	public RepositoryCache(RepositoryClient client) {
 		super();
 		this.client = client;
-		this.vf = vf;
 		cachedSizes = synchronizedMap(new LRUMap<StatementPattern, CachedSize>(2048));
 	}
 
@@ -103,8 +100,6 @@ public class RepositoryCache {
 	public boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (!vf.member(subj) || !vf.member(obj) || !vf.member(contexts))
-			return true;
 		if (isIllegal(subj, pred, obj, contexts))
 			return true;
 		long now = System.currentTimeMillis();
@@ -124,8 +119,6 @@ public class RepositoryCache {
 			Resource[] contexts)
 		throws StoreException
 	{
-		if (!vf.member(subj) || !vf.member(obj) || !vf.member(contexts))
-			return false;
 		if (isIllegal(subj, pred, obj, contexts))
 			return false;
 		long now = System.currentTimeMillis();
@@ -148,8 +141,6 @@ public class RepositoryCache {
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (!vf.member(subj) || !vf.member(obj) || !vf.member(contexts))
-			return 0;
 		if (isIllegal(subj, pred, obj, contexts))
 			return 0;
 		long now = System.currentTimeMillis();
