@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -20,21 +20,19 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.store.StoreException;
 
 /**
- * 
  * @author James Leigh
- * 
  */
 public class OrderComparator implements Comparator<BindingSet> {
-	private Logger logger = LoggerFactory.getLogger(OrderComparator.class);
 
-	private EvaluationStrategy strategy;
+	private final Logger logger = LoggerFactory.getLogger(OrderComparator.class);
 
-	private Order order;
+	private final EvaluationStrategy strategy;
 
-	private ValueComparator cmp;
+	private final Order order;
 
-	public OrderComparator(EvaluationStrategy strategy, Order order,
-			ValueComparator vcmp) {
+	private final ValueComparator cmp;
+
+	public OrderComparator(EvaluationStrategy strategy, Order order, ValueComparator vcmp) {
 		this.strategy = strategy;
 		this.order = order;
 		this.cmp = vcmp;
@@ -45,21 +43,20 @@ public class OrderComparator implements Comparator<BindingSet> {
 			for (OrderElem element : order.getElements()) {
 				Value v1 = evaluate(element.getExpr(), o1);
 				Value v2 = evaluate(element.getExpr(), o2);
+
 				int compare = cmp.compare(v1, v2);
-				if (compare == 0)
-					continue;
-				if (element.isAscending())
-					return compare;
-				if (compare > 0)
-					return -1;
-				if (compare < 0)
-					return 1;
+
+				if (compare != 0) {
+					return element.isAscending() ? compare : -compare;
+				}
 			}
 			return 0;
-		} catch (StoreException e) {
+		}
+		catch (StoreException e) {
 			logger.error(e.getMessage(), e);
 			return 0;
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			logger.error(e.getMessage(), e);
 			return 0;
 		}
@@ -70,9 +67,9 @@ public class OrderComparator implements Comparator<BindingSet> {
 	{
 		try {
 			return strategy.evaluate(valueExpr, o);
-		} catch (ValueExprEvaluationException exc) {
+		}
+		catch (ValueExprEvaluationException exc) {
 			return null;
 		}
 	}
-
 }
