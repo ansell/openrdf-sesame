@@ -75,30 +75,22 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 			while (!closed && (leftNext = leftIter.next()) != null) {
 				rightQueue.put(strategy.evaluate(rightArg, leftNext));
 			}
-			rightQueue.put(end);
 		}
 		catch (RuntimeException e) {
-			if (source != null) {
-				source.initCause(e);
-				exception = source;
-			} else {
-				exception = e;
-			}
+			handle(e);
 		}
 		catch (StoreException e) {
-			if (source != null) {
-				source.initCause(e);
-				exception = source;
-			} else {
-				exception = e;
-			}
+			handle(e);
 		}
 		catch (InterruptedException e) {
-			if (source != null) {
-				source.initCause(e);
-				exception = source;
-			} else {
-				exception = e;
+			handle(e);
+		}
+		finally {
+			try {
+				rightQueue.put(end);
+			}
+			catch (InterruptedException e) {
+				// The other thread will also need to be interrupted
 			}
 		}
 	}
@@ -118,12 +110,23 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 					rightIter = null;
 				}
 			}
+			throwException(exception);
 		}
 		catch (InterruptedException e) {
 			throw new StoreException(e);
 		}
 
 		return null;
+	}
+
+	private void handle(Exception e) {
+		if (source != null) {
+			source.initCause(e);
+			exception = source;
+		}
+		else {
+			exception = e;
+		}
 	}
 
 	private void throwException(Exception exception)

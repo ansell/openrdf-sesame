@@ -12,9 +12,7 @@ import java.util.Map;
 
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.IteratorCursor;
-import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.result.GraphResult;
 import org.openrdf.store.StoreException;
 
@@ -25,7 +23,7 @@ import org.openrdf.store.StoreException;
  * @author jeen
  * @author James Leigh
  */
-public class GraphResultImpl extends ResultImpl<Statement> implements GraphResult {
+public class GraphResultImpl extends ModelResultImpl implements GraphResult {
 
 	/*-----------*
 	 * Variables *
@@ -62,11 +60,5 @@ public class GraphResultImpl extends ResultImpl<Statement> implements GraphResul
 		throws StoreException
 	{
 		return namespaces;
-	}
-
-	public Model asModel()
-		throws StoreException
-	{
-		return addTo(new ModelImpl(getNamespaces()));
 	}
 }

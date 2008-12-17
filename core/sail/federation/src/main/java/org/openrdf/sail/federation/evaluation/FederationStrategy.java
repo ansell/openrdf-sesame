@@ -17,9 +17,8 @@ import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
-import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.cursors.CompatibleBindingSetFilter;
+import org.openrdf.query.algebra.evaluation.cursors.BadlyDesignedLeftJoinCursor;
 import org.openrdf.query.algebra.evaluation.cursors.UnionCursor;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.parser.TupleQueryModel;
@@ -70,39 +69,25 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 		return result;
 	}
 
-	@Override
-	public Cursor<BindingSet> evaluate(LeftJoin leftJoin, BindingSet bindings)
+	public Cursor<BindingSet> evaluate(LeftJoin leftJoin, final BindingSet bindings)
 		throws StoreException
 	{
 		// Check whether optional join is "well designed" as defined in section
-		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge P�rez et al.
+		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge Pérez et al.
 		Set<String> boundVars = bindings.getBindingNames();
 		Set<String> leftVars = leftJoin.getLeftArg().getBindingNames();
 		Set<String> optionalVars = leftJoin.getRightArg().getBindingNames();
 
-		Set<String> problemVars = new HashSet<String>(boundVars);
+		final Set<String> problemVars = new HashSet<String>(boundVars);
 		problemVars.retainAll(optionalVars);
 		problemVars.removeAll(leftVars);
 
 		if (problemVars.isEmpty()) {
 			// left join is "well designed"
-			ParallelLeftJoinCursor result;
-			result = new ParallelLeftJoinCursor(this, leftJoin, bindings);
-			executor.execute(result);
-			return result;
+			return new ParallelLeftJoinCursor(this, leftJoin, bindings);
 		}
 		else {
-			QueryBindingSet filteredBindings = new QueryBindingSet(bindings);
-			filteredBindings.removeAll(problemVars);
-			Cursor<BindingSet> iter;
-
-			ParallelLeftJoinCursor result;
-			result = new ParallelLeftJoinCursor(this, leftJoin, filteredBindings);
-			executor.execute(result);
-			iter = result;
-			iter = new CompatibleBindingSetFilter(iter, bindings);
-
-			return iter;
+			return new BadlyDesignedLeftJoinCursor(this, leftJoin, bindings, problemVars);
 		}
 	}
 

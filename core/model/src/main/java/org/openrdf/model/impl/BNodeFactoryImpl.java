@@ -5,6 +5,8 @@
  */
 package org.openrdf.model.impl;
 
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.openrdf.model.BNode;
@@ -19,6 +21,8 @@ import org.openrdf.model.ValueFactory;
  * @author James Leigh
  */
 public class BNodeFactoryImpl implements BNodeFactory {
+
+	private static AtomicInteger seq = new AtomicInteger(new Random().nextInt());
 
 	/*-----------*
 	 * Variables *
@@ -39,15 +43,17 @@ public class BNodeFactoryImpl implements BNodeFactory {
 	 *--------------*/
 
 	public BNodeFactoryImpl() {
-		// BNode prefix is based on currentTimeMillis(). Combined with a
-		// sequential number per session, this gives a unique identifier.
-		bnodePrefix = "node" + Long.toString(System.currentTimeMillis(), 32) + "x";
+		bnodePrefix = "node" + Integer.toString(seq.incrementAndGet(), 32) + "x";
 		nextBNodeID = new AtomicLong(0);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public BNode createBNode(String nodeID) {
+		return new BNodeImpl(nodeID);
+	}
 
 	public BNode createBNode() {
 		return createBNode(bnodePrefix + nextBNodeID.incrementAndGet());
@@ -60,7 +66,7 @@ public class BNodeFactoryImpl implements BNodeFactory {
 		return node.getID().startsWith(bnodePrefix);
 	}
 
-	public BNode createBNode(String nodeID) {
-		return new BNodeImpl(nodeID);
+	public boolean isUsed() {
+		return nextBNodeID.get() != 0;
 	}
 }

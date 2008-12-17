@@ -449,14 +449,14 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		super.add(subject, predicate, object, contexts);
+		getDelegate().add(subject, predicate, object, contexts);
 	}
 
 	@Override
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		super.removeMatch(subject, predicate, object, contexts);
+		getDelegate().removeMatch(subject, predicate, object, contexts);
 	}
 
 	/**
