@@ -8,10 +8,10 @@ package org.openrdf.cursor;
 import org.openrdf.store.StoreException;
 
 /**
- *
  * @author James Leigh
  */
 public class SingletonCursor<E> implements Cursor<E> {
+
 	private E element;
 
 	public SingletonCursor(E element) {
@@ -29,12 +29,11 @@ public class SingletonCursor<E> implements Cursor<E> {
 	public void close()
 		throws StoreException
 	{
-		// no-op
+		element = null;
 	}
 
 	@Override
 	public String toString() {
 		return element.toString();
 	}
-
 }

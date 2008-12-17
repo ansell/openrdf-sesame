@@ -9,24 +9,33 @@ import org.openrdf.store.StoreException;
 
 /**
  * A Cursor that converts another cursor over objects of type <tt>S</tt> (the
- * source type) to an cursor over objects of type <tt>T</tt> (the target type).
+ * source type) to a cursor over objects of type <tt>T</tt> (the target type).
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
 public abstract class ConvertingCursor<S, T> implements Cursor<T> {
 
-	private Cursor<? extends S> cursor;
+	private final Cursor<? extends S> cursor;
 
 	public ConvertingCursor(Cursor<? extends S> cursor) {
+		assert cursor != null : "cursor must not be null";
 		this.cursor = cursor;
 	}
+
+	/**
+	 * Converts a source type object to a target type object.
+	 */
+	protected abstract T convert(S sourceObject)
+		throws StoreException;
 
 	public T next()
 		throws StoreException
 	{
 		S next = cursor.next();
-		if (next != null)
+		if (next != null) {
 			return convert(next);
+		}
 		return null;
 	}
 
@@ -36,6 +45,7 @@ public abstract class ConvertingCursor<S, T> implements Cursor<T> {
 		cursor.close();
 	}
 
+	@Override
 	public String toString() {
 		return getName() + " " + cursor.toString();
 	}
@@ -43,8 +53,4 @@ public abstract class ConvertingCursor<S, T> implements Cursor<T> {
 	protected String getName() {
 		return getClass().getName().replaceAll("^.*\\.|Cursor$", "");
 	}
-
-	protected abstract T convert(S next)
-		throws StoreException;
-
 }
