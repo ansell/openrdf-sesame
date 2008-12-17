@@ -5,6 +5,11 @@
  */
 package org.openrdf.http.client;
 
+import static java.lang.String.valueOf;
+import static org.openrdf.http.protocol.Protocol.AMOUNT;
+import static org.openrdf.http.protocol.Protocol.BNODE;
+import static org.openrdf.http.protocol.Protocol.NODE_ID;
+
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -18,6 +23,8 @@ import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
 import org.openrdf.http.protocol.exceptions.Unauthorized;
 import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
+import org.openrdf.model.BNode;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.result.TupleResult;
@@ -40,12 +47,35 @@ public class BNodeClient {
 	{
 		HTTPConnection method = bnodes.post();
 		try {
-			String name = "amount";
-			String value = String.valueOf(amount);
-			NameValuePair pair = new NameValuePair(name, value);
+			NameValuePair pair = new NameValuePair(AMOUNT, valueOf(amount));
 			method.sendQueryString(Arrays.asList(pair));
 			execute(method);
 			return method.getTupleQueryResult();
+		}
+		catch (IOException e) {
+			throw new StoreException(e);
+		}
+	}
+
+	public BNode post(String nodeID)
+		throws StoreException, QueryResultParseException, NoCompatibleMediaType
+	{
+		HTTPConnection method = bnodes.post();
+		try {
+			NameValuePair pair = new NameValuePair(NODE_ID, nodeID);
+			method.sendQueryString(Arrays.asList(pair));
+			execute(method);
+			TupleResult result = method.getTupleQueryResult();
+			try {
+				if (result.hasNext()) {
+					BindingSet bindings = result.next();
+					return (BNode)bindings.getValue(BNODE);
+				}
+				return null;
+			}
+			finally {
+				result.close();
+			}
 		}
 		catch (IOException e) {
 			throw new StoreException(e);

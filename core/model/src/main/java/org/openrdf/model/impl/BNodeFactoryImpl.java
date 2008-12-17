@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -25,41 +25,39 @@ public class BNodeFactoryImpl implements BNodeFactory {
 	 *-----------*/
 
 	/**
-	 * The ID for the next bnode that is created.
-	 */
-	private AtomicLong nextBNodeID;
-
-	/**
 	 * The prefix for any new bnode IDs.
 	 */
 	private String bnodePrefix;
+
+	/**
+	 * The ID for the next bnode that is created.
+	 */
+	private AtomicLong nextBNodeID;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	public BNodeFactoryImpl() {
-		initBNodeParams();
-	}
-
-	/*---------*
-	 * Methods *
-	 *---------*/
-
-	protected void initBNodeParams() {
 		// BNode prefix is based on currentTimeMillis(). Combined with a
 		// sequential number per session, this gives a unique identifier.
 		bnodePrefix = "node" + Long.toString(System.currentTimeMillis(), 32) + "x";
 		nextBNodeID = new AtomicLong(0);
 	}
 
+	/*---------*
+	 * Methods *
+	 *---------*/
+
 	public BNode createBNode() {
-		long nextId = nextBNodeID.incrementAndGet();
-		if (nextId == Long.MAX_VALUE) {
-			// Start with a new bnode prefix
-			initBNodeParams();
-		}
-		return createBNode(bnodePrefix + nextId);
+		return createBNode(bnodePrefix + nextBNodeID.incrementAndGet());
+	}
+
+	/**
+	 * If nodeID was created in this instance's {@link createBNode()}.
+	 */
+	public boolean isInternalBNode(BNode node) {
+		return node.getID().startsWith(bnodePrefix);
 	}
 
 	public BNode createBNode(String nodeID) {

@@ -29,13 +29,17 @@ import org.openrdf.http.protocol.transaction.operations.SetNamespaceOperation;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
+import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.BNodeFactoryImpl;
 import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
@@ -46,7 +50,8 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.repository.http.exceptions.IllegalStatementException;
 import org.openrdf.repository.http.helpers.GraphQueryResultCursor;
-import org.openrdf.repository.http.helpers.HTTPValueFactory;
+import org.openrdf.repository.http.helpers.HTTPBNodeFactory;
+import org.openrdf.repository.http.helpers.TaggingBNodeFactory;
 import org.openrdf.repository.util.ModelNamespaceResult;
 import org.openrdf.result.ContextResult;
 import org.openrdf.result.GraphResult;
@@ -100,7 +105,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	private ConnectionClient client;
 
-	private HTTPValueFactory vf;
+	private TaggingBNodeFactory bf;
+
+	private ValueFactory vf;
 
 	private volatile boolean closed;
 
@@ -122,8 +129,13 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public HTTPRepositoryConnection(HTTPRepository repository, ConnectionClient client) {
 		super(repository);
 		this.client = client;
-		this.vf = repository.getValueFactory().fork(client.bnodes());
-		client.setValueFactory(vf);
+		this.bf = new TaggingBNodeFactory(new BNodeFactoryImpl());
+		URIFactory uf = repository.getURIFactory();
+		LiteralFactory lf = repository.getLiteralFactory();
+		// TaggingBNodeFactory for received BNodes
+		client.setValueFactory(new ValueFactoryImpl(bf, uf, lf));
+		// HTTPBNodeFactory for newly created BNodes
+		this.vf = new ValueFactoryImpl(new HTTPBNodeFactory(client.bnodes()), uf, lf);
 
 		if (debugEnabled()) {
 			creatorTrace = new Throwable();
@@ -478,18 +490,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	/**
-	 * Will never connect to the remote server.
-	 * 
-	 * @return if it is known that this pattern (or super set) has no matches.
+	 * If this connection has not modified any statements and the pattern does
+	 * not contains connection specific BNodes.
 	 */
-	private boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
-	{
-		if (cachable(subj, pred, obj, contexts))
-			return getRepository().noMatch(subj, pred, obj, includeInferred, contexts);
-		return false;
-	}
-
 	private boolean cachable(Resource subj, URI pred, Value obj, Resource... contexts) {
 		if (modified)
 			return false;
@@ -504,6 +507,38 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 				return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Will never connect to the remote server.
+	 * 
+	 * @return if it is known that this pattern (or super set) has no matches.
+	 */
+	private boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		if (cachable(subj, pred, obj, contexts))
+			return getRepository().noMatch(subj, pred, obj, includeInferred, contexts);
+		if (isTaggedByAnotherConnection(subj, obj, contexts))
+			return true;
+		return false;
+	}
+
+	/**
+	 * If any of the values are BNodes from a different HTTPRepositoryConnection.
+	 */
+	private boolean isTaggedByAnotherConnection(Resource subj, Value obj, Resource... contexts) {
+		if (subj instanceof BNode && bf.isAlreadyTagged((BNode)subj))
+			return true;
+		if (obj instanceof BNode && bf.isAlreadyTagged((BNode)obj))
+			return true;
+		if (contexts == null)
+			return false;
+		for (Resource ctx : contexts) {
+			if (ctx instanceof BNode && bf.isAlreadyTagged((BNode)ctx))
+				return true;
+		}
+		return false;
 	}
 
 	private void add(TransactionOperation operation)
