@@ -111,10 +111,6 @@ public class HTTPRepository implements Repository {
 		cache.setSubjectSpace(uriSpace);
 	}
 
-	public void setTypeSpace(Set<String> uriSpace) {
-		cache.setTypeSpace(uriSpace);
-	}
-
 	public void initialize()
 		throws StoreException
 	{

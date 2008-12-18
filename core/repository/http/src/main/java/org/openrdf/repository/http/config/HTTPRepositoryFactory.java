@@ -47,7 +47,6 @@ public class HTTPRepositoryFactory implements RepositoryFactory {
 			HTTPRepositoryConfig httpConfig = (HTTPRepositoryConfig)config;
 			result = new HTTPRepository(httpConfig.getURL());
 			result.setSubjectSpace(httpConfig.getSubjectSpace());
-			result.setTypeSpace(httpConfig.getTypeSpace());
 //			result.setUsernameAndPassword(httpConfig.getUsername(), httpConfig.getPassword());
 		}
 		else {
