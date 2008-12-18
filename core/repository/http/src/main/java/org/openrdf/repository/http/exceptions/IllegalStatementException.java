@@ -7,9 +7,10 @@ package org.openrdf.repository.http.exceptions;
 
 import org.openrdf.store.StoreException;
 
-
 /**
- *
+ * Thrown to indicate the the remote server is not configured to contains this
+ * statement.
+ * 
  * @author James Leigh
  */
 public class IllegalStatementException extends StoreException {

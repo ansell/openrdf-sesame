@@ -42,7 +42,7 @@ public class FederationStatistics extends EvaluationStatistics {
 
 	PatternCalculator calculator;
 
-	public FederationStatistics(Collection<RepositoryConnection> members, QueryModel query) {
+	public FederationStatistics(Collection<? extends RepositoryConnection> members, QueryModel query) {
 		this.calculator = new PatternCalculator(members, query);
 	}
 
@@ -106,11 +106,11 @@ public class FederationStatistics extends EvaluationStatistics {
 
 		volatile Exception exception;
 
-		private Collection<RepositoryConnection> members;
+		private Collection<? extends RepositoryConnection> members;
 
 		private Map<List<Value>, AtomicLong> cardinalities = new ConcurrentHashMap<List<Value>, AtomicLong>();
 
-		public PatternCalculator(Collection<RepositoryConnection> members, QueryModel query) {
+		public PatternCalculator(Collection<? extends RepositoryConnection> members, QueryModel query) {
 			this.members = members;
 			int count = new PatternCounter(query).count();
 			this.latch = new CountDownLatch(count * members.size());

@@ -39,13 +39,13 @@ import org.openrdf.store.StoreException;
  */
 public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreException> implements QueryOptimizer {
 
-	Collection<RepositoryConnection> members;
+	Collection<? extends RepositoryConnection> members;
 
 	PrefixHashSet localSpace;
 
 	boolean disjoint;
 
-	public FederationJoinOptimizer(Collection<RepositoryConnection> members, boolean disjoint, PrefixHashSet localSpace) {
+	public FederationJoinOptimizer(Collection<? extends RepositoryConnection> members, boolean disjoint, PrefixHashSet localSpace) {
 		this.members = members;
 		this.localSpace = localSpace;
 		this.disjoint = disjoint;

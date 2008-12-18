@@ -5,11 +5,11 @@
  */
 package org.openrdf.sail.federation.signatures;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.BNodeFactory;
@@ -18,6 +18,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.BNodeFactoryImpl;
+import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
@@ -29,27 +30,29 @@ import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.result.ModelResult;
 
-
 /**
- *
  * @author James Leigh
  */
 public class BNodeSigner {
 
+	private static AtomicInteger seq = new AtomicInteger(new Random().nextInt());
+
+	private String suffix = "i" + Integer.toHexString(seq.incrementAndGet());
+
 	/** This will only accept external BNodes created by this BNodeFactory. */
 	private BNodeFactoryImpl external;
 
-	/** External BNode should be mapped to new BNodes created by this BNodeFactory. */
+	/**
+	 * External BNode should be mapped to new BNodes created by this
+	 * BNodeFactory.
+	 */
 	private BNodeFactory internal;
 
 	/** external to internal */
-	private Map<BNode, BNode> in = new ConcurrentHashMap<BNode, BNode>();
+	private ConcurrentMap<BNode, BNode> in = new ConcurrentHashMap<BNode, BNode>();
 
 	/** internal to external */
 	private Map<BNode, BNode> out = new ConcurrentHashMap<BNode, BNode>();
-
-	/** Every BNodes returned by this connection or added to this connection */
-	private Set<BNode> contains = Collections.synchronizedSet(new HashSet<BNode>(512));
 
 	public BNodeSigner(BNodeFactoryImpl external, BNodeFactory internal) {
 		this.external = external;
@@ -57,25 +60,44 @@ public class BNodeSigner {
 	}
 
 	public Value internalize(Value obj) {
-		return isExternalBNode(obj) ? internalize((BNode)obj) : obj;
+		if (obj instanceof BNode) {
+			BNode node = (BNode)obj;
+			if (external.isInternalBNode(node) && !in.containsKey(node)) {
+				BNode b = internal.createBNode(node.getID());
+				BNode o = in.putIfAbsent(node, b);
+				if (o != null)
+					return o;
+				out.put(b, node);
+				return b;
+			}
+		}
+		return removeSignature(obj);
 	}
 
 	public Resource internalize(Resource subj) {
-		return isExternalBNode(subj) ? internalize((BNode)subj) : subj;
+		return (Resource)internalize((Value)subj);
 	}
 
 	public Resource[] internalize(Resource... contexts) {
 		Resource[] c = contexts;
 		if (c != null) {
 			for (int i = 0; i < c.length; i++) {
-				c[i] = isExternalBNode(c[i]) ? internalize((BNode)c[i]) : c[i];
+				c[i] = internalize(c[i]);
 			}
 		}
 		return c;
 	}
 
 	public boolean isNotSignedBNode(Value o) {
-		return o instanceof BNode && !contains.contains(o);
+		if (o instanceof BNode) {
+			BNode node = (BNode)o;
+			if (external.isInternalBNode(node) && in.containsKey(o))
+				return false;
+			if (node.getID().endsWith(suffix))
+				return false;
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -96,91 +118,103 @@ public class BNodeSigner {
 		return false;
 	}
 
+	public boolean isSignedBNode(Value o) {
+		if (o instanceof BNode) {
+			BNode node = (BNode)o;
+			if (external.isInternalBNode(node) && in.containsKey(o))
+				return true;
+			if (node.getID().endsWith(suffix))
+				return true;
+			return false;
+		}
+		return false;
+	}
+
+	/**
+	 * If this pattern contains a BNode that has been added or did come from this
+	 * connection.
+	 */
+	public boolean isSignedBNode(Resource subj, URI pred, Value obj, Resource... contexts) {
+		if (isSignedBNode(subj))
+			return true;
+		if (isSignedBNode(obj))
+			return true;
+		if (contexts != null) {
+			for (Resource ctx : contexts) {
+				if (isSignedBNode(ctx))
+					return true;
+			}
+		}
+		return false;
+	}
+
 	public Value removeSignature(Value subj) {
-		if (isExternalBNode(subj)) {
-			BNode b = in.get(subj);
-			return b == null ? subj : b;
+		if (subj instanceof BNode) {
+			BNode node = (BNode)subj;
+			String nodeID = node.getID();
+			if (nodeID.endsWith(suffix)) {
+				nodeID = nodeID.substring(0, nodeID.length() - suffix.length());
+				return new BNodeImpl(nodeID);
+			}
+			if (external.isInternalBNode(node)) {
+				BNode b = in.get(node);
+				return b == null ? node : b;
+			}
 		}
 		return subj;
 	}
 
 	public Resource removeSignature(Resource subj) {
-		if (isExternalBNode(subj)) {
-			BNode b = in.get(subj);
-			return b == null ? subj : b;
-		}
-		return subj;
+		return (Resource)removeSignature((Value)subj);
 	}
 
 	public Resource[] removeSignature(Resource... contexts) {
-		if (external.isUsed() && contexts != null) {
+		if (contexts != null) {
 			for (Resource ctx : contexts) {
-				if (isExternalBNode(ctx)) {
+				if (ctx instanceof BNode) {
 					Resource[] bnodes = new Resource[contexts.length];
 					for (int i = 0; i < contexts.length; i++) {
-						if (isExternalBNode(contexts[i])) {
-							BNode b = in.get(contexts[i]);
-							bnodes[i] = b == null ? contexts[i] : b;
-						}
-						else {
-							bnodes[i] = contexts[i];
-						}
+						bnodes[i] = removeSignature(contexts[i]);
 					}
+					return bnodes;
 				}
 			}
 		}
 		return contexts;
 	}
 
-	public BindingSet sign(BindingSet internal) {
-		if (internal == null)
+	public Value sign(Value value) {
+		if (value == null)
 			return null;
-		MapBindingSet external = new MapBindingSet(internal.size());
-		for (Binding binding : internal) {
-			Value v = out.get(binding.getValue());
-			if (v == null && binding.getValue() instanceof BNode) {
-				contains.add(((BNode)binding.getValue()));
-				external.addBinding(binding);
-			}
-			else if (v == null) {
-				external.addBinding(binding);
-			}
-			else {
-				external.addBinding(binding.getName(), v);
-			}
+		Value v = out.get(value);
+		if (v == null && value instanceof BNode) {
+			return new BNodeImpl(((BNode)value).getID() + suffix);
 		}
-		return external;
+		if (v == null)
+			return value;
+		return v;
+	}
+
+	public Resource sign(Resource resource) {
+		return (Resource)sign((Value)resource);
+	}
+
+	public BindingSet sign(BindingSet bindings) {
+		if (bindings == null)
+			return null;
+		MapBindingSet signed = new MapBindingSet(bindings.size());
+		for (Binding binding : bindings) {
+			signed.addBinding(binding.getName(), sign(binding.getValue()));
+		}
+		return signed;
 	}
 
 	public Statement sign(Statement st) {
 		if (st == null)
 			return null;
-		Resource subj = out.get(st.getSubject());
-		Value obj = out.get(st.getObject());
-		Resource ctx = st.getContext();
-		if (ctx != null) {
-			ctx = out.get(ctx);
-		}
-		if (subj == null && st.getSubject() instanceof BNode) {
-			contains.add(((BNode)st.getSubject()));
-		}
-		if (obj == null && st.getObject() instanceof BNode) {
-			contains.add(((BNode)st.getObject()));
-		}
-		if (ctx == null && st.getContext() instanceof BNode) {
-			contains.add(((BNode)st.getContext()));
-		}
-		if (subj == null && obj == null && ctx == null)
-			return st;
-		if (subj == null) {
-			subj = st.getSubject();
-		}
-		if (obj == null) {
-			obj = st.getObject();
-		}
-		if (ctx == null) {
-			ctx = st.getContext();
-		}
+		Resource subj = sign(st.getSubject());
+		Value obj = sign(st.getObject());
+		Resource ctx = sign(st.getContext());
 		return new StatementImpl(subj, st.getPredicate(), obj, ctx);
 	}
 
@@ -210,26 +244,8 @@ public class BNodeSigner {
 		throw new AssertionError(query.getClass().getName());
 	}
 
-	public RepositoryConnection sign(RepositoryConnection con) {
+	public SignedConnection sign(RepositoryConnection con) {
 		return new SignedConnection(con, this);
-	}
-
-	/**
-	 * Map this external BNode into an internal BNode.
-	 */
-	private BNode internalize(BNode node) {
-		BNode b = internal.createBNode(node.getID());
-		in.put(node, b);
-		out.put(b, node);
-		contains.add(node);
-		return b;
-	}
-
-	/**
-	 * If value is a BNode created by the BNodeFactoryImpl.
-	 */
-	private boolean isExternalBNode(Value value) {
-		return external.isUsed() && value instanceof BNode && external.isInternalBNode(((BNode)value));
 	}
 
 }

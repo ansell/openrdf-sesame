@@ -37,17 +37,12 @@ class WritableConnection extends EchoWriteConnection {
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		int size = members.size();
-		int i = 1;
-		// only use round-robin for none-BNode statement
-		if (!isBNode(subj, obj, contexts)) {
-			i = idx;
-			idx = (i + 1) % size;
-		}
+		int i = findIndex(subj, pred, obj, contexts);
 		try {
 			add(members.get(i), subj, pred, obj, contexts);
 		}
 		catch (IllegalStatementException e) {
+			int size = members.size();
 			for (int j = i + 1; j < i + size; j++) {
 				try {
 					add(members.get(j % size), subj, pred, obj, contexts);
@@ -59,6 +54,23 @@ class WritableConnection extends EchoWriteConnection {
 			}
 			throw e;
 		}
+	}
+
+	private int findIndex(Resource subj, URI pred, Value obj, Resource... contexts) {
+		int size = members.size();
+		if (isBNode(subj, obj, contexts)) {
+			for (int i=0;i<size;i++) {
+				// if one of the BNodes came from an existing member use that
+				if (members.get(i).isSignedBNode(subj, pred, obj, contexts))
+					return i;
+			}
+			// otherwise use a consistent member in case two BNodes need to be linked
+			return 0;
+		}
+		// use round-robin for none-BNode statement to distribute the load
+		int i = idx;
+		idx = (i + 1) % size;
+		return i;
 	}
 
 	private boolean isBNode(Resource subj, Value obj, Resource... contexts) {
