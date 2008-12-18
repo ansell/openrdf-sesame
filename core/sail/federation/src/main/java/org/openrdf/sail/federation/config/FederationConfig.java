@@ -9,6 +9,7 @@ import static org.openrdf.repository.config.RepositoryImplConfigBase.create;
 import static org.openrdf.sail.federation.config.FederationSchema.DISJOINT;
 import static org.openrdf.sail.federation.config.FederationSchema.LOCALPROPERTYSPACE;
 import static org.openrdf.sail.federation.config.FederationSchema.MEMBER;
+import static org.openrdf.sail.federation.config.FederationSchema.READ_ONLY;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,7 +20,8 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.sail.config.SailImplConfigBase;
@@ -38,6 +40,8 @@ public class FederationConfig extends SailImplConfigBase {
 	private Set<String> localPropertySpace = new HashSet<String>();
 
 	private boolean disjoint;
+
+	private boolean readOnly;
 
 	public List<RepositoryImplConfig> getMembers() {
 		return members;
@@ -67,15 +71,26 @@ public class FederationConfig extends SailImplConfigBase {
 		this.disjoint = disjoint;
 	}
 
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
+
 	@Override
 	public Resource export(Model model) {
+		ValueFactory vf = ValueFactoryImpl.getInstance();
 		Resource self = super.export(model);
 		for (RepositoryImplConfig member : getMembers()) {
 			model.add(self, MEMBER, member.export(model));
 		}
 		for (String space : getLocalPropertySpace()) {
-			model.add(self, LOCALPROPERTYSPACE, new URIImpl(space));
+			model.add(self, LOCALPROPERTYSPACE, vf.createURI(space));
 		}
+		model.add(self, DISJOINT, vf.createLiteral(disjoint));
+		model.add(self, READ_ONLY, vf.createLiteral(readOnly));
 		return self;
 	}
 
@@ -94,6 +109,10 @@ public class FederationConfig extends SailImplConfigBase {
 			Literal bool = model.filter(implNode, DISJOINT, null).objectLiteral();
 			if (bool != null && bool.booleanValue()) {
 				disjoint = true;
+			}
+			bool = model.filter(implNode, READ_ONLY, null).objectLiteral();
+			if (bool != null && bool.booleanValue()) {
+				readOnly = true;
 			}
 		}
 		catch (ModelException e) {

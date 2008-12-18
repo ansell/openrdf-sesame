@@ -33,7 +33,7 @@ public class Federation extends SailBase {
 
 	private boolean disjoint;
 
-	private boolean writable = true;
+	private boolean readOnly;
 
 	private FederatedMetaData metadata;
 
@@ -82,14 +82,12 @@ public class Federation extends SailBase {
 		}
 	}
 
-	public boolean isWritable()
-		throws StoreException
-	{
-		return writable;
+	public boolean isReadOnly() {
+		return readOnly;
 	}
 
-	public void setWritable(boolean writable) {
-		this.writable = writable;
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
 	}
 
 	@Override
@@ -110,11 +108,12 @@ public class Federation extends SailBase {
 			for (Repository member : members) {
 				connections.add(member.getConnection());
 			}
-			if (writable) {
-				return new RoundRobinConnection(this, connections);
+			if (readOnly) {
+				return new ReadOnlyConnection(this, connections);
 			}
 			else {
-				return new ReadOnlyConnection(this, connections);
+				return new WritableConnection(this, connections);
+
 			}
 		}
 		catch (StoreException e) {
@@ -132,7 +131,7 @@ public class Federation extends SailBase {
 	{
 		SailMetaData sailMetaData = super.getMetaData();
 		FederatedMetaData metaData = new FederatedMetaData(sailMetaData, members);
-		metaData.setReadOnly(!writable);
+		metaData.setReadOnly(readOnly);
 		return metaData;
 	}
 

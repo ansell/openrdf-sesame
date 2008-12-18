@@ -27,7 +27,6 @@ public class FederationConnectionTest extends RepositoryConnectionTest {
 		sail.addMember(new SailRepository(new MemoryStore()));
 		sail.addMember(new SailRepository(new MemoryStore()));
 		sail.addMember(new SailRepository(new MemoryStore()));
-		sail.setWritable(true);
 		return new SailRepository(sail);
 	}
 }
