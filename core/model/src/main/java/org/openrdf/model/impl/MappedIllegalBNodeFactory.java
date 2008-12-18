@@ -35,4 +35,8 @@ public class MappedIllegalBNodeFactory implements BNodeFactory {
 		}
 	}
 
+	public String toString() {
+		return "MappedIllegal" + plain.toString();
+	}
+
 }

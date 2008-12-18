@@ -48,4 +48,8 @@ public class MappedBNodeFactory implements BNodeFactory {
 		return bnode;
 	}
 
+	public String toString() {
+		return "Mapped" + bnodes.toString();
+	}
+
 }
