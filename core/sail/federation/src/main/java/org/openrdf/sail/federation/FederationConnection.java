@@ -53,6 +53,7 @@ import org.openrdf.sail.federation.optimizers.FederationJoinOptimizer;
 import org.openrdf.sail.federation.optimizers.OwnedTupleExprPruner;
 import org.openrdf.sail.federation.optimizers.PrepareOwnedTupleExpr;
 import org.openrdf.sail.federation.signatures.BNodeSigner;
+import org.openrdf.sail.federation.signatures.SignedConnection;
 import org.openrdf.store.StoreException;
 
 /**
@@ -69,11 +70,11 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 
 	private ValueFactory vf;
 
-	List<RepositoryConnection> members;
+	List<SignedConnection> members;
 
 	public FederationConnection(Federation federation, List<RepositoryConnection> members) {
 		BNodeFactoryImpl bf = new BNodeFactoryImpl();
-		List<RepositoryConnection> result = new ArrayList<RepositoryConnection>(members.size());
+		List<SignedConnection> result = new ArrayList<SignedConnection>(members.size());
 		for (RepositoryConnection member : members) {
 			BNodeSigner signer = new BNodeSigner(bf, member.getValueFactory());
 			result.add(signer.sign(member));

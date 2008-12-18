@@ -27,9 +27,9 @@ import org.openrdf.store.StoreException;
  */
 public class EmptyPatternOptimizer extends QueryModelVisitorBase<StoreException> implements QueryOptimizer {
 
-	private Collection<RepositoryConnection> members;
+	private Collection<? extends RepositoryConnection> members;
 
-	public EmptyPatternOptimizer(Collection<RepositoryConnection> members) {
+	public EmptyPatternOptimizer(Collection<? extends RepositoryConnection> members) {
 		this.members = members;
 	}
 

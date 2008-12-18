@@ -34,50 +34,8 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 		this.signer = signer;
 	}
 
-	@Override
-	protected boolean isDelegatingImport()
-		throws StoreException
-	{
-		return true;
-	}
-
-	@Override
-	protected boolean isDelegatingAdd()
-		throws StoreException
-	{
-		return false;
-	}
-
-	@Override
-	protected boolean isDelegatingRead()
-		throws StoreException
-	{
-		return false;
-	}
-
-	@Override
-	protected boolean isDelegatingRemove()
-		throws StoreException
-	{
-		return false;
-	}
-
-	@Override
-	protected void addWithoutCommit(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
-	{
-		Resource s = signer.internalize(subj);
-		Value o = signer.internalize(obj);
-		Resource[] c = signer.internalize(contexts);
-		super.addWithoutCommit(s, pred, o, c);
-	}
-
-	@Override
-	protected void removeWithoutCommit(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
-	{
-		if (!signer.isNotSignedBNode(subj, pred, obj, contexts))
-			super.removeWithoutCommit(s(subj), pred, o(obj), c(contexts));
+	public boolean isSignedBNode(Resource subj, URI pred, Value obj, Resource... contexts) {
+		return signer.isSignedBNode(subj, pred, obj, contexts);
 	}
 
 	@Override
@@ -133,6 +91,52 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 		throws MalformedQueryException, StoreException
 	{
 		return signer.sign(super.prepareQuery(ql, query, baseURI));
+	}
+
+	@Override
+	protected boolean isDelegatingImport()
+		throws StoreException
+	{
+		return true;
+	}
+
+	@Override
+	protected boolean isDelegatingAdd()
+		throws StoreException
+	{
+		return false;
+	}
+
+	@Override
+	protected boolean isDelegatingRead()
+		throws StoreException
+	{
+		return false;
+	}
+
+	@Override
+	protected boolean isDelegatingRemove()
+		throws StoreException
+	{
+		return false;
+	}
+
+	@Override
+	protected void addWithoutCommit(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		Resource s = signer.internalize(subj);
+		Value o = signer.internalize(obj);
+		Resource[] c = signer.internalize(contexts);
+		super.addWithoutCommit(s, pred, o, c);
+	}
+
+	@Override
+	protected void removeWithoutCommit(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		if (!signer.isNotSignedBNode(subj, pred, obj, contexts))
+			super.removeWithoutCommit(s(subj), pred, o(obj), c(contexts));
 	}
 
 	private Resource s(Resource subj) {
