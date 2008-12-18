@@ -3,14 +3,11 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail.federation.members;
+package org.openrdf.sail.federation.signatures;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.openrdf.cursor.Cursor;
-import org.openrdf.model.BNode;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResultHandler;
@@ -22,17 +19,14 @@ import org.openrdf.store.StoreException;
 /**
  * @author James Leigh
  */
-public class MemberTupleQuery extends MemberQuery implements TupleQuery {
+public class SignedTupleQuery extends SignedQuery implements TupleQuery {
 
 	private TupleQuery query;
 
-	Set<BNode> contains;
-
-	public MemberTupleQuery(TupleQuery query, Map<BNode, BNode> in, Map<BNode, BNode> out, Set<BNode> contains)
+	public SignedTupleQuery(TupleQuery query, BNodeSigner signer)
 	{
-		super(query, in, out);
+		super(query, signer);
 		this.query = query;
-		this.contains = contains;
 	}
 
 	public TupleResult evaluate()
@@ -50,7 +44,7 @@ public class MemberTupleQuery extends MemberQuery implements TupleQuery {
 			public BindingSet next()
 				throws StoreException
 			{
-				return export(result.next(), contains);
+				return signer.sign(result.next());
 			}
 		});
 	}
@@ -69,7 +63,7 @@ public class MemberTupleQuery extends MemberQuery implements TupleQuery {
 			public void handleSolution(BindingSet bindingSet)
 				throws TupleQueryResultHandlerException
 			{
-				handler.handleSolution(export(bindingSet, contains));
+				handler.handleSolution(signer.sign(bindingSet));
 			}
 
 			public void startQueryResult(List<String> bindingNames)
