@@ -34,7 +34,7 @@
 	</modules>
 
 	<properties>
-		<aduna.appbase.version>3.4-SNAPSHOT</aduna.appbase.version>
+		<aduna.appbase.version>3.4</aduna.appbase.version>
 		<slf4j.version>1.5.0</slf4j.version>
 	</properties>
 
@@ -284,7 +284,7 @@
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-collections</artifactId>
-				<version>2.2</version>
+				<version>2.3</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
@@ -294,22 +294,22 @@
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-i18n</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-io</artifactId>
-				<version>2.4-SNAPSHOT</version>
+				<version>2.4</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-lang</artifactId>
-				<version>2.2</version>
+				<version>2.3-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-net</artifactId>
-				<version>2.1</version>
+				<version>2.2</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
@@ -319,17 +319,17 @@
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-text</artifactId>
-				<version>2.1</version>
-			</dependency>
-			<dependency>
-				<groupId>info.aduna.commons</groupId>
-				<artifactId>aduna-commons-webapp-core</artifactId>
 				<version>2.2</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
+				<artifactId>aduna-commons-webapp-core</artifactId>
+				<version>2.3</version>
+			</dependency>
+			<dependency>
+				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-xml</artifactId>
-				<version>2.1</version>
+				<version>2.2</version>
 			</dependency>
 
 			<!-- Apache Commons -->
@@ -438,19 +438,19 @@
 				<version>1.1</version>
 			</dependency>
 
-		<!-- JDBC Drivers -->
+			<!-- JDBC Drivers -->
 
-		<dependency>
-			<groupId>postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>8.3-603.jdbc3</version>
-		</dependency>
+			<dependency>
+				<groupId>postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>8.3-603.jdbc3</version>
+			</dependency>
 
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.6</version>
-		</dependency>
+			<dependency>
+				<groupId>mysql</groupId>
+				<artifactId>mysql-connector-java</artifactId>
+				<version>5.1.6</version>
+			</dependency>
 
 			<!-- various -->
 			<dependency>
@@ -459,11 +459,11 @@
 				<version>2.1_3</version>
 			</dependency>
 
-		<dependency>
-			<groupId>org.mortbay.jetty</groupId>
-			<artifactId>jetty</artifactId>
-			<version>6.1.9</version>
-		</dependency>
+			<dependency>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty</artifactId>
+				<version>6.1.9</version>
+			</dependency>
 
 			<!-- Logging: SLF4J -->
 			<dependency>
