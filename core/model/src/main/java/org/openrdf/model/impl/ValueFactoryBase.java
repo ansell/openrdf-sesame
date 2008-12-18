@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -23,6 +23,16 @@ import org.openrdf.model.vocabulary.XMLSchema;
  * @author Arjohn Kampman
  */
 public abstract class ValueFactoryBase implements ValueFactory {
+
+	/**
+	 * "universal" ID for bnode prefixes to prevent blank node clashes (unique
+	 * per classloaded instance of this class)
+	 */
+	private static long lastBNodePrefixUID = 0;
+
+	private static synchronized long getNextBNodePrefixUid() {
+		return lastBNodePrefixUID = Math.max(System.currentTimeMillis(), lastBNodePrefixUID + 1);
+	}
 
 	/*-----------*
 	 * Variables *
@@ -51,23 +61,27 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	 *---------*/
 
 	/**
-	 * Generates a new bnode prefix based on <tt>currentTimeMillis()</tt> and
-	 * resets <tt>_nextBNodeID</tt> to <tt>1</tt>.
+	 * Generates a new bnode prefix and resets <tt>nextBNodeID</tt> to <tt>1</tt>
+	 * .
 	 */
 	protected void initBNodeParams() {
 		// BNode prefix is based on currentTimeMillis(). Combined with a
 		// sequential number per session, this gives a unique identifier.
-		bnodePrefix = "node" + Long.toString(System.currentTimeMillis(), 32) + "x";
+		bnodePrefix = "node" + Long.toString(getNextBNodePrefixUid(), 32) + "x";
 		nextBNodeID = 1;
 	}
 
-	public BNode createBNode() {
-		if (nextBNodeID == Integer.MAX_VALUE) {
+	public synchronized BNode createBNode() {
+		int id = nextBNodeID++;
+
+		BNode result = createBNode(bnodePrefix + id);
+
+		if (id == Integer.MAX_VALUE) {
 			// Start with a new bnode prefix
 			initBNodeParams();
 		}
 
-		return createBNode(bnodePrefix + nextBNodeID++);
+		return result;
 	}
 
 	/**
@@ -80,32 +94,32 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value and
-	 * {@link XMLSchema#BYTE} as parameters.
+	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
+	 * and {@link XMLSchema#BYTE} as parameters.
 	 */
 	public Literal createLiteral(byte value) {
 		return createIntegerLiteral(value, XMLSchema.BYTE);
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value and
-	 * {@link XMLSchema#SHORT} as parameters.
+	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
+	 * and {@link XMLSchema#SHORT} as parameters.
 	 */
 	public Literal createLiteral(short value) {
 		return createIntegerLiteral(value, XMLSchema.SHORT);
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value and
-	 * {@link XMLSchema#INT} as parameters.
+	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
+	 * and {@link XMLSchema#INT} as parameters.
 	 */
 	public Literal createLiteral(int value) {
 		return createIntegerLiteral(value, XMLSchema.INT);
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value and
-	 * {@link XMLSchema#LONG} as parameters.
+	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
+	 * and {@link XMLSchema#LONG} as parameters.
 	 */
 	public Literal createLiteral(long value) {
 		return createIntegerLiteral(value, XMLSchema.LONG);
