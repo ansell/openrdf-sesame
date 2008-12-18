@@ -38,14 +38,6 @@
 		<slf4j.version>1.5.0</slf4j.version>
 	</properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
 	<dependencyManagement>
 		<dependencies>
 			<!-- OpenRDF modules -->
