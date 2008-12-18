@@ -18,7 +18,10 @@ import org.openrdf.repository.http.HTTPRepository;
  */
 public class HTTPRepositorySchema {
 
-	/** The HTTPRepository schema namespace (<tt>http://www.openrdf.org/config/repository/http#</tt>). */
+	/**
+	 * The HTTPRepository schema namespace (
+	 * <tt>http://www.openrdf.org/config/repository/http#</tt>).
+	 */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/repository/http#";
 
 	/** <tt>http://www.openrdf.org/config/repository/http#repositoryURL</tt> */
@@ -36,11 +39,11 @@ public class HTTPRepositorySchema {
 	/** <tt>http://www.openrdf.org/config/repository/http#password</tt> */
 	public final static URI PASSWORD;
 
-	/** <tt>http://www.openrdf.org/config/repository/http#subjectSpace</tt> */
+	/**
+	 * The set of all URI prefixes of subjects in statements on the server.
+	 * <tt>http://www.openrdf.org/config/repository/http#subjectSpace</tt>
+	 */
 	public final static URI SUBJECTSPACE;
-
-	/** <tt>http://www.openrdf.org/config/repository/http#typeSpace</tt> */
-	public final static URI TYPESPACE;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -50,6 +53,5 @@ public class HTTPRepositorySchema {
 		USERNAME = factory.createURI(NAMESPACE, "username");
 		PASSWORD = factory.createURI(NAMESPACE, "password");
 		SUBJECTSPACE = factory.createURI(NAMESPACE, "subjectSpace");
-		TYPESPACE = factory.createURI(NAMESPACE, "typeSpace");
 	}
 }

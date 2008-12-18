@@ -38,8 +38,6 @@ public class RepositoryCache {
 
 	private PrefixHashSet subjectSpace;
 
-	private PrefixHashSet typeSpace;
-
 	private Map<StatementPattern, CachedSize> cachedSizes;
 
 	private volatile boolean containsFreshValues;
@@ -62,10 +60,6 @@ public class RepositoryCache {
 		this.subjectSpace = new PrefixHashSet(uriSpace);
 	}
 
-	public void setTypeSpace(Set<String> uriSpace) {
-		this.typeSpace = new PrefixHashSet(uriSpace);
-	}
-
 	/**
 	 * Indicates that the cache needs validation.
 	 */
@@ -85,10 +79,6 @@ public class RepositoryCache {
 			if (!subjectSpace.match(subj.stringValue()))
 				return true;
 		}
-		if (obj instanceof URI && RDF.TYPE.equals(pred) && typeSpace != null) {
-			if (!typeSpace.match(obj.stringValue()))
-				return true;
-		}
 		return false;
 	}
 
@@ -104,6 +94,8 @@ public class RepositoryCache {
 			return true;
 		long now = System.currentTimeMillis();
 		if (noExactMatch(now, subj, pred, obj, includeInferred, contexts))
+			return true;
+		if (noExactMatch(now, null, pred, obj, true))
 			return true;
 		if (noExactMatch(now, null, pred, null, true))
 			return true;
@@ -128,6 +120,8 @@ public class RepositoryCache {
 			return !cached.isAbsent(); // we have the valid cache
 		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts))
 			return false;
+		if (noExactMatchRefreshable(now, null, pred, obj, true))
+			return false;
 		if (noExactMatchRefreshable(now, null, pred, null, true))
 			return false;
 		if (noExactMatchRefreshable(now, null, null, null, true, contexts))
@@ -149,6 +143,8 @@ public class RepositoryCache {
 		if (cached != null && cached.isSizeAvailable() && cached.isFresh(now))
 			return cached.getSize(); // we have the valid size in the cache
 		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts))
+			return 0;
+		if (noExactMatchRefreshable(now, null, pred, obj, true))
 			return 0;
 		if (noExactMatchRefreshable(now, null, pred, null, true))
 			return 0;
@@ -184,9 +180,16 @@ public class RepositoryCache {
 		long size = loadExactSize(now, subj, pred, obj, includeInferred, contexts);
 		if (size == 0) {
 			StatementPattern orig = new StatementPattern(subj, pred, obj, includeInferred, contexts);
+			StatementPattern ofType = new StatementPattern(null, pred, obj, true);
 			StatementPattern predOnly = new StatementPattern(null, pred, null, true);
 			StatementPattern ctxOnly = new StatementPattern(null, null, null, true, contexts);
 
+			if (RDF.TYPE.equals(pred) && !orig.equals(ofType)) {
+				// no values, does it have anything of this type?
+				if (!cachedSizes.containsKey(ofType)) {
+					loadExactAbsent(now, null, pred, obj, true);
+				}
+			}
 			if (pred != null && !orig.equals(predOnly)) {
 				// no values, does it have this predicate?
 				if (!cachedSizes.containsKey(predOnly)) {

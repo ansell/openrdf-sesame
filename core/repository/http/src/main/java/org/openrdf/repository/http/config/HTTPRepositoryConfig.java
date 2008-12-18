@@ -10,7 +10,6 @@ import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORY
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYURL;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.SERVERURL;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.SUBJECTSPACE;
-import static org.openrdf.repository.http.config.HTTPRepositorySchema.TYPESPACE;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.USERNAME;
 
 import java.util.HashSet;
@@ -22,7 +21,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
 import org.openrdf.store.StoreConfigException;
@@ -39,8 +37,6 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 	private String password;
 
 	private Set<String> subjectSpace = new HashSet<String>();
-
-	private Set<String> typeSpace = new HashSet<String>();
 
 	public HTTPRepositoryConfig() {
 		super(HTTPRepositoryFactory.REPOSITORY_TYPE);
@@ -83,14 +79,6 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		this.subjectSpace = new HashSet<String>(subjectSpace);
 	}
 
-	public Set<String> getTypeSpace() {
-		return typeSpace;
-	}
-
-	public void setTypeSpace(Set<String> typeSpace) {
-		this.typeSpace = typeSpace;
-	}
-
 	@Override
 	public void validate()
 		throws StoreConfigException
@@ -111,9 +99,6 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		}
 		for (String space : subjectSpace) {
 			model.add(implNode, SUBJECTSPACE, vf.createURI(space));
-		}
-		for (String space : typeSpace) {
-			model.add(implNode, TYPESPACE, vf.createURI(space));
 		}
 		// if (username != null) {
 		// graph.add(implNode, USERNAME,
@@ -153,9 +138,6 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 			}
 			for (Value obj : model.filter(implNode, SUBJECTSPACE, null).objects()) {
 				subjectSpace.add(obj.stringValue());
-			}
-			for (Value obj : model.filter(implNode, TYPESPACE, null).objects()) {
-				typeSpace.add(obj.stringValue());
 			}
 		}
 		catch (ModelException e) {
