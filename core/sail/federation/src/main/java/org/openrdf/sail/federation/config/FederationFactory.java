@@ -58,6 +58,7 @@ public class FederationFactory implements SailFactory {
 		}
 		sail.setLocalPropertySpace(cfg.getLocalPropertySpace());
 		sail.setDisjoint(cfg.isDisjoint());
+		sail.setReadOnly(cfg.isReadOnly());
 		return sail;
 	}
 }

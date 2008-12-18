@@ -2,6 +2,7 @@ package org.openrdf.sail.federation;
 
 import java.util.List;
 
+import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -13,12 +14,12 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-class WriteToAllConnection extends FederationConnection {
+abstract class EchoConnection extends FederationConnection {
 
 	private boolean closed;
 
-	public WriteToAllConnection(Federation federation, List<RepositoryConnection> members) {
-		super(federation, members);
+	public EchoConnection(Federation federation, List<RepositoryConnection> members, BNodeFactory bf) {
+		super(federation, members, bf);
 	}
 
 	public boolean isOpen()
@@ -117,19 +118,6 @@ class WriteToAllConnection extends FederationConnection {
 				throws StoreException
 			{
 				member.removeNamespace(prefix);
-			}
-		});
-	}
-
-	public void addStatement(final Resource subj, final URI pred, final Value obj, final Resource... contexts)
-		throws StoreException
-	{
-		excute(new Procedure() {
-
-			public void run(RepositoryConnection member)
-				throws StoreException
-			{
-				member.add(subj, pred, obj, contexts);
 			}
 		});
 	}

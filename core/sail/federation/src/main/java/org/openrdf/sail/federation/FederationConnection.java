@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.IteratorCursor;
+import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -20,7 +21,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.BNodeFactoryImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.QueryModel;
@@ -48,7 +48,6 @@ import org.openrdf.result.Result;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.federation.evaluation.FederationStatistics;
 import org.openrdf.sail.federation.evaluation.FederationStrategy;
-import org.openrdf.sail.federation.members.MemberConnection;
 import org.openrdf.sail.federation.optimizers.EmptyPatternOptimizer;
 import org.openrdf.sail.federation.optimizers.FederationJoinOptimizer;
 import org.openrdf.sail.federation.optimizers.OwnedTupleExprPruner;
@@ -67,18 +66,17 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 
 	private Federation federation;
 
-	private BNodeFactoryImpl bf = new BNodeFactoryImpl();
-
 	private ValueFactory vf;
 
 	List<RepositoryConnection> members;
 
 	public FederationConnection(Federation federation, List<RepositoryConnection> members) {
+		this(federation, members, null);
+	}
+
+	public FederationConnection(Federation federation, List<RepositoryConnection> members, BNodeFactory bf) {
 		this.federation = federation;
-		this.members = new ArrayList<RepositoryConnection>(members.size());
-		for (RepositoryConnection member : members) {
-			this.members.add(new MemberConnection(member, bf));
-		}
+		this.members = members;
 		URIFactory uf = federation.getURIFactory();
 		LiteralFactory lf = federation.getLiteralFactory();
 		vf = new ValueFactoryImpl(bf, uf, lf);

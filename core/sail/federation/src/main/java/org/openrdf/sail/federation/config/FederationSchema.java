@@ -31,6 +31,11 @@ public class FederationSchema {
 	 */
 	public static URI DISJOINT = new URIImpl(NAMESPACE + "disjoint");
 
+	/**
+	 * If the federation should not try and add statements to its members.
+	 */
+	public static URI READ_ONLY = new URIImpl(NAMESPACE + "readOnly");
+
 	private FederationSchema() {
 		// no constructor
 	}

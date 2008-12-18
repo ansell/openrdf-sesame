@@ -42,7 +42,7 @@ public class FederationSparqlTest extends SPARQLQueryTest {
 		Federation sail = new Federation();
 		sail.addMember(new SailRepository(new MemoryStore()));
 		sail.addMember(new SailRepository(new MemoryStore()));
-		sail.addMember(new SailRepository(new MemoryStore()));		sail.setWritable(true);
+		sail.addMember(new SailRepository(new MemoryStore()));
 		return new DatasetRepository(new SailRepository(sail));
 	}
 }
