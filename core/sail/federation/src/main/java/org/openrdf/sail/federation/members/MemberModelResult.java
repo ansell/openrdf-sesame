@@ -6,6 +6,7 @@
 package org.openrdf.sail.federation.members;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.model.BNode;
@@ -26,15 +27,19 @@ public class MemberModelResult extends ModelResultImpl {
 
 	private Map<BNode, BNode> map;
 
-	public MemberModelResult(Map<BNode, BNode> map) {
+	private Set<BNode> contains;
+
+	public MemberModelResult(Map<BNode, BNode> map, Set<BNode> contains) {
 		super(new EmptyCursor<Statement>());
 		this.map = map;
+		this.contains = contains;
 	}
 
-	public MemberModelResult(ModelResult result, Map<BNode, BNode> map) {
+	public MemberModelResult(ModelResult result, Map<BNode, BNode> map, Set<BNode> contains) {
 		super(result);
 		this.result = result;
 		this.map = map;
+		this.contains = contains;
 	}
 
 	@Override
@@ -59,6 +64,15 @@ public class MemberModelResult extends ModelResultImpl {
 		Resource ctx = st.getContext();
 		if (ctx != null) {
 			ctx = map.get(ctx);
+		}
+		if (subj == null && st.getSubject() instanceof BNode) {
+			contains.add((BNode)st.getSubject());
+		}
+		if (obj == null && st.getObject() instanceof BNode) {
+			contains.add((BNode)st.getObject());
+		}
+		if (ctx == null && st.getContext() instanceof BNode) {
+			contains.add((BNode)st.getContext());
 		}
 		if (subj == null && obj == null && ctx == null)
 			return st;

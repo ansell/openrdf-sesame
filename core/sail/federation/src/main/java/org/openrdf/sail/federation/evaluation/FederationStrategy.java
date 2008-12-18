@@ -84,7 +84,10 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 
 		if (problemVars.isEmpty()) {
 			// left join is "well designed"
-			return new ParallelLeftJoinCursor(this, leftJoin, bindings);
+			ParallelLeftJoinCursor arg;
+			arg = new ParallelLeftJoinCursor(this, leftJoin, bindings);
+			executor.execute(arg);
+			return arg;
 		}
 		else {
 			return new BadlyDesignedLeftJoinCursor(this, leftJoin, bindings, problemVars);

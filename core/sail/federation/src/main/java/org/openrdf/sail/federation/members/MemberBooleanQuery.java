@@ -8,7 +8,6 @@ package org.openrdf.sail.federation.members;
 import java.util.Map;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.impl.BNodeFactoryImpl;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.result.BooleanResult;
 import org.openrdf.store.StoreException;
@@ -22,8 +21,8 @@ public class MemberBooleanQuery extends MemberQuery implements BooleanQuery {
 
 	private BooleanQuery query;
 
-	public MemberBooleanQuery(BooleanQuery query, BNodeFactoryImpl bf, Map<BNode, BNode> in, Map<BNode, BNode> out) {
-		super(query, bf, in, out);
+	public MemberBooleanQuery(BooleanQuery query, Map<BNode, BNode> in, Map<BNode, BNode> out) {
+		super(query, in, out);
 		this.query = query;
 	}
 
