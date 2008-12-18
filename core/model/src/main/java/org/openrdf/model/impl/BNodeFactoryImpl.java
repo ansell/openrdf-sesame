@@ -69,4 +69,8 @@ public class BNodeFactoryImpl implements BNodeFactory {
 	public boolean isUsed() {
 		return nextBNodeID.get() != 0;
 	}
+
+	public String toString() {
+		return getClass().getSimpleName() + " " + bnodePrefix;
+	}
 }
