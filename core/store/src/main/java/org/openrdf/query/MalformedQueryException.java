@@ -1,11 +1,10 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query;
 
-import org.openrdf.OpenRDFException;
 
 /**
  * An exception indicating that a query could not be processed by the query
@@ -14,7 +13,7 @@ import org.openrdf.OpenRDFException;
  * @author jeen
  * @author Herko ter Horst
  */
-public class MalformedQueryException extends OpenRDFException {
+public class MalformedQueryException extends RuntimeException {
 
 	private static final long serialVersionUID = 1210214405486786142L;
 
