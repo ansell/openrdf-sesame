@@ -85,7 +85,7 @@ public class RepositoryCache {
 			if (!subjectSpace.match(subj.stringValue()))
 				return true;
 		}
-		if (obj instanceof URI && pred != null && RDF.TYPE.equals(pred) && typeSpace != null) {
+		if (obj instanceof URI && RDF.TYPE.equals(pred) && typeSpace != null) {
 			if (!typeSpace.match(obj.stringValue()))
 				return true;
 		}
