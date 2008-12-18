@@ -48,11 +48,11 @@ import org.openrdf.result.Result;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.federation.evaluation.FederationStatistics;
 import org.openrdf.sail.federation.evaluation.FederationStrategy;
-import org.openrdf.sail.federation.members.MemberConnection;
 import org.openrdf.sail.federation.optimizers.EmptyPatternOptimizer;
 import org.openrdf.sail.federation.optimizers.FederationJoinOptimizer;
 import org.openrdf.sail.federation.optimizers.OwnedTupleExprPruner;
 import org.openrdf.sail.federation.optimizers.PrepareOwnedTupleExpr;
+import org.openrdf.sail.federation.signatures.BNodeSigner;
 import org.openrdf.store.StoreException;
 
 /**
@@ -75,7 +75,8 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		BNodeFactoryImpl bf = new BNodeFactoryImpl();
 		List<RepositoryConnection> result = new ArrayList<RepositoryConnection>(members.size());
 		for (RepositoryConnection member : members) {
-			result.add(new MemberConnection(member, bf));
+			BNodeSigner signer = new BNodeSigner(bf, member.getValueFactory());
+			result.add(signer.sign(member));
 		}
 		this.federation = federation;
 		this.members = result;

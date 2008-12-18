@@ -3,12 +3,8 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail.federation.members;
+package org.openrdf.sail.federation.signatures;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.openrdf.model.BNode;
 import org.openrdf.model.Statement;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.result.GraphResult;
@@ -20,30 +16,26 @@ import org.openrdf.store.StoreException;
 /**
  * @author James Leigh
  */
-public class MemberGraphQuery extends MemberQuery implements GraphQuery {
+public class SignedGraphQuery extends SignedQuery implements GraphQuery {
 
 	private GraphQuery query;
 
-	private Set<BNode> contains;
-
-	public MemberGraphQuery(GraphQuery query, Map<BNode, BNode> in, Map<BNode, BNode> out, Set<BNode> contains)
+	public SignedGraphQuery(GraphQuery query, BNodeSigner signer)
 	{
-		super(query, in, out);
+		super(query, signer);
 		this.query = query;
-		this.contains = contains;
 	}
 
 	public GraphResult evaluate()
 		throws StoreException
 	{
 		final GraphResult result = query.evaluate();
-		return new GraphResultImpl(result.getNamespaces(), new MemberModelResult(result, out, contains));
+		return new GraphResultImpl(result.getNamespaces(), signer.sign(result));
 	}
 
 	public void evaluate(final RDFHandler handler)
 		throws StoreException, RDFHandlerException
 	{
-		final MemberModelResult result = new MemberModelResult(out, contains);
 		query.evaluate(new RDFHandler() {
 
 			public void endRDF()
@@ -67,7 +59,7 @@ public class MemberGraphQuery extends MemberQuery implements GraphQuery {
 			public void handleStatement(Statement st)
 				throws RDFHandlerException
 			{
-				handler.handleStatement(result.export(st));
+				handler.handleStatement(signer.sign(st));
 			}
 
 			public void startRDF()

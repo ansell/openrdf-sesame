@@ -3,26 +3,21 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail.federation.members;
+package org.openrdf.sail.federation.signatures;
 
-import java.util.Map;
-
-import org.openrdf.model.BNode;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.result.BooleanResult;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
  * @author James Leigh
  */
-public class MemberBooleanQuery extends MemberQuery implements BooleanQuery {
+public class SignedBooleanQuery extends SignedQuery implements BooleanQuery {
 
 	private BooleanQuery query;
 
-	public MemberBooleanQuery(BooleanQuery query, Map<BNode, BNode> in, Map<BNode, BNode> out) {
-		super(query, in, out);
+	public SignedBooleanQuery(BooleanQuery query, BNodeSigner signer) {
+		super(query, signer);
 		this.query = query;
 	}
 
