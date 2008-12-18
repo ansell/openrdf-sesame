@@ -7,10 +7,10 @@ package org.openrdf.sail.federation.members;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.cursor.Cursor;
 import org.openrdf.model.BNode;
-import org.openrdf.model.impl.BNodeFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResultHandler;
@@ -26,17 +26,19 @@ public class MemberTupleQuery extends MemberQuery implements TupleQuery {
 
 	private TupleQuery query;
 
-	public MemberTupleQuery(TupleQuery query, BNodeFactoryImpl bf, Map<BNode, BNode> in, Map<BNode, BNode> out) {
-		super(query, bf, in, out);
+	Set<BNode> contains;
+
+	public MemberTupleQuery(TupleQuery query, Map<BNode, BNode> in, Map<BNode, BNode> out, Set<BNode> contains)
+	{
+		super(query, in, out);
 		this.query = query;
+		this.contains = contains;
 	}
 
 	public TupleResult evaluate()
 		throws StoreException
 	{
 		final TupleResult result = query.evaluate();
-		if (out.isEmpty())
-			return result;
 		return new TupleResultImpl(result.getBindingNames(), new Cursor<BindingSet>() {
 
 			public void close()
@@ -48,7 +50,7 @@ public class MemberTupleQuery extends MemberQuery implements TupleQuery {
 			public BindingSet next()
 				throws StoreException
 			{
-				return export(result.next());
+				return export(result.next(), contains);
 			}
 		});
 	}
@@ -56,31 +58,26 @@ public class MemberTupleQuery extends MemberQuery implements TupleQuery {
 	public void evaluate(final TupleQueryResultHandler handler)
 		throws StoreException, TupleQueryResultHandlerException
 	{
-		if (out.isEmpty()) {
-			query.evaluate(handler);
-		}
-		else {
-			query.evaluate(new TupleQueryResultHandler() {
+		query.evaluate(new TupleQueryResultHandler() {
 
-				public void endQueryResult()
-					throws TupleQueryResultHandlerException
-				{
-					handler.endQueryResult();
-				}
+			public void endQueryResult()
+				throws TupleQueryResultHandlerException
+			{
+				handler.endQueryResult();
+			}
 
-				public void handleSolution(BindingSet bindingSet)
-					throws TupleQueryResultHandlerException
-				{
-					handler.handleSolution(export(bindingSet));
-				}
+			public void handleSolution(BindingSet bindingSet)
+				throws TupleQueryResultHandlerException
+			{
+				handler.handleSolution(export(bindingSet, contains));
+			}
 
-				public void startQueryResult(List<String> bindingNames)
-					throws TupleQueryResultHandlerException
-				{
-					handler.startQueryResult(bindingNames);
-				}
-			});
-		}
+			public void startQueryResult(List<String> bindingNames)
+				throws TupleQueryResultHandlerException
+			{
+				handler.startQueryResult(bindingNames);
+			}
+		});
 	}
 
 }

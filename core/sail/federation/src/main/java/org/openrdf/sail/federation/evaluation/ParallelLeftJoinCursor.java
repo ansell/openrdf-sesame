@@ -137,12 +137,10 @@ public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 	}
 
 	private void handle(Exception e) {
+		exception = e;
 		if (source != null) {
 			source.initCause(e);
 			exception = source;
-		}
-		else {
-			exception = e;
 		}
 	}
 

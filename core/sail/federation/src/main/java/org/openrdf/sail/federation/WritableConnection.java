@@ -1,6 +1,5 @@
 package org.openrdf.sail.federation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -11,10 +10,8 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.BNodeFactoryImpl;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.http.exceptions.IllegalStatementException;
-import org.openrdf.sail.federation.members.MemberConnection;
 import org.openrdf.store.StoreException;
 
 /**
@@ -25,27 +22,14 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-class WritableConnection extends EchoConnection {
-
-	private static List<RepositoryConnection> wrap(List<RepositoryConnection> members, BNodeFactoryImpl bf) {
-		List<RepositoryConnection> result = new ArrayList<RepositoryConnection>(members.size());
-		for (RepositoryConnection member : members) {
-			result.add(new MemberConnection(member, bf));
-		}
-		return result;
-	}
+class WritableConnection extends EchoWriteConnection {
 
 	private int idx;
 
 	Map<BNode, RepositoryConnection> owners = new ConcurrentHashMap<BNode, RepositoryConnection>();
 
 	public WritableConnection(Federation federation, List<RepositoryConnection> members) {
-		this(federation, members, new BNodeFactoryImpl());
-	}
-
-	private WritableConnection(Federation federation, List<RepositoryConnection> members, BNodeFactoryImpl bf)
-	{
-		super(federation, wrap(members, bf), bf);
+		super(federation, members);
 		int size = members.size();
 		idx = (new Random().nextInt() % size + size) % size;
 	}
