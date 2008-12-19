@@ -159,7 +159,7 @@ public class HTTPRepository implements Repository {
 						throw new RuntimeException("connection already closed");
 					}
 				} catch (StoreException e) {
-					logger.warn(e.toString(), e);
+					logger.warn(e.toString());
 					throw new RuntimeException(e);
 				}
 			}
