@@ -43,12 +43,12 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 
 	PrefixHashSet localSpace;
 
-	boolean disjoint;
+	boolean distinct;
 
-	public FederationJoinOptimizer(Collection<? extends RepositoryConnection> members, boolean disjoint, PrefixHashSet localSpace) {
+	public FederationJoinOptimizer(Collection<? extends RepositoryConnection> members, boolean distinct, PrefixHashSet localSpace) {
 		this.members = members;
 		this.localSpace = localSpace;
-		this.disjoint = disjoint;
+		this.distinct = distinct;
 	}
 
 	public void optimize(QueryModel query, BindingSet bindings)
@@ -325,7 +325,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 				if (local) {
 					Join replacement = new Join();
 					for (Entry<Var, Join> e : vars.entrySet()) {
-						if (disjoint || e.getKey() != null) {
+						if (distinct || e.getKey() != null) {
 							Union union = new Union();
 							for (RepositoryConnection member : members) {
 								union.addArg(new OwnedTupleExpr(member, e.getValue().clone()));

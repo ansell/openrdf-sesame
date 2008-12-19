@@ -6,7 +6,7 @@
 package org.openrdf.sail.federation.config;
 
 import static org.openrdf.repository.config.RepositoryImplConfigBase.create;
-import static org.openrdf.sail.federation.config.FederationSchema.DISJOINT;
+import static org.openrdf.sail.federation.config.FederationSchema.DISTINCT;
 import static org.openrdf.sail.federation.config.FederationSchema.LOCALPROPERTYSPACE;
 import static org.openrdf.sail.federation.config.FederationSchema.MEMBER;
 import static org.openrdf.sail.federation.config.FederationSchema.READ_ONLY;
@@ -39,7 +39,7 @@ public class FederationConfig extends SailImplConfigBase {
 
 	private Set<String> localPropertySpace = new HashSet<String>();
 
-	private boolean disjoint;
+	private boolean distinct;
 
 	private boolean readOnly;
 
@@ -63,12 +63,12 @@ public class FederationConfig extends SailImplConfigBase {
 		this.localPropertySpace.add(localPropertySpace);
 	}
 
-	public boolean isDisjoint() {
-		return disjoint;
+	public boolean isDistinct() {
+		return distinct;
 	}
 
-	public void setDisjoint(boolean disjoint) {
-		this.disjoint = disjoint;
+	public void setDistinct(boolean disjoint) {
+		this.distinct = disjoint;
 	}
 
 	public boolean isReadOnly() {
@@ -89,7 +89,7 @@ public class FederationConfig extends SailImplConfigBase {
 		for (String space : getLocalPropertySpace()) {
 			model.add(self, LOCALPROPERTYSPACE, vf.createURI(space));
 		}
-		model.add(self, DISJOINT, vf.createLiteral(disjoint));
+		model.add(self, DISTINCT, vf.createLiteral(distinct));
 		model.add(self, READ_ONLY, vf.createLiteral(readOnly));
 		return self;
 	}
@@ -106,9 +106,9 @@ public class FederationConfig extends SailImplConfigBase {
 			addLocalPropertySpace(space.stringValue());
 		}
 		try {
-			Literal bool = model.filter(implNode, DISJOINT, null).objectLiteral();
+			Literal bool = model.filter(implNode, DISTINCT, null).objectLiteral();
 			if (bool != null && bool.booleanValue()) {
-				disjoint = true;
+				distinct = true;
 			}
 			bool = model.filter(implNode, READ_ONLY, null).objectLiteral();
 			if (bool != null && bool.booleanValue()) {

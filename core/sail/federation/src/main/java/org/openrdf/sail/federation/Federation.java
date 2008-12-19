@@ -31,7 +31,7 @@ public class Federation extends SailBase {
 
 	private PrefixHashSet localPropertySpace;
 
-	private boolean disjoint;
+	private boolean distinct;
 
 	private boolean readOnly;
 
@@ -57,12 +57,12 @@ public class Federation extends SailBase {
 		this.localPropertySpace = new PrefixHashSet(localPropertySpace);
 	}
 
-	public boolean isDisjoint() {
-		return disjoint;
+	public boolean isDistinct() {
+		return distinct;
 	}
 
-	public void setDisjoint(boolean disjoint) {
-		this.disjoint = disjoint;
+	public void setDistinct(boolean distinct) {
+		this.distinct = distinct;
 	}
 
 	public void initialize()

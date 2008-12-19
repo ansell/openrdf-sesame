@@ -156,7 +156,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (federation.isDisjoint()) {
+		if (federation.isDistinct()) {
 			long size = 0;
 			for (RepositoryConnection member : members) {
 				size += member.sizeMatch(subj, pred, obj, includeInferred, contexts);
@@ -191,7 +191,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 				return member.match(subj, pred, obj, includeInferred, contexts);
 			}
 		});
-		if (federation.isDisjoint() || isLocal(pred))
+		if (federation.isDistinct() || isLocal(pred))
 			return cursor;
 		return new DistinctCursor<Statement>(cursor);
 	}
@@ -208,7 +208,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 				return member.match(subj, pred, obj, true, contexts);
 			}
 		});
-		if (federation.isDisjoint() || isLocal(pred))
+		if (federation.isDistinct() || isLocal(pred))
 			return cursor;
 		return new DistinctCursor<Statement>(cursor);
 	}
@@ -324,9 +324,9 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		new FilterOptimizer().optimize(query, bindings);
 
 		new EmptyPatternOptimizer(members).optimize(query, bindings);
-		boolean disjoint = federation.isDisjoint();
+		boolean distinct = federation.isDistinct();
 		PrefixHashSet local = federation.getLocalPropertySpace();
-		new FederationJoinOptimizer(members, disjoint, local).optimize(query, bindings);
+		new FederationJoinOptimizer(members, distinct, local).optimize(query, bindings);
 		new OwnedTupleExprPruner().optimize(query, bindings);
 		new QueryModelPruner().optimize(query, bindings);
 		new QueryJoinOptimizer(statistics).optimize(query, bindings);
