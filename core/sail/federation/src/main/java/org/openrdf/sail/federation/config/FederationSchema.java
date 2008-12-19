@@ -29,7 +29,7 @@ public class FederationSchema {
 	/**
 	 * If no two members contain the same statement.
 	 */
-	public static URI DISJOINT = new URIImpl(NAMESPACE + "disjoint");
+	public static URI DISTINCT = new URIImpl(NAMESPACE + "distinct");
 
 	/**
 	 * If the federation should not try and add statements to its members.
