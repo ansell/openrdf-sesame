@@ -144,7 +144,7 @@ public class RepositoryClient {
 		Callable<TupleResult> task = new Callable<TupleResult>() {
 
 			public TupleResult call()
-				throws StoreException, MalformedQueryException
+				throws Exception
 			{
 				try {
 					method.acceptTupleQueryResult();
@@ -153,12 +153,6 @@ public class RepositoryClient {
 				}
 				catch (NoCompatibleMediaType e) {
 					throw new UnsupportedRDFormatException(e);
-				}
-				catch (IOException e) {
-					throw new StoreException(e);
-				}
-				catch (QueryResultParseException e) {
-					throw new StoreException(e);
 				}
 			}
 		};
@@ -200,7 +194,7 @@ public class RepositoryClient {
 		Callable<GraphResult> task = new Callable<GraphResult>() {
 
 			public GraphResult call()
-				throws StoreException, MalformedQueryException
+				throws Exception
 			{
 				try {
 					method.acceptGraphQueryResult();
@@ -209,12 +203,6 @@ public class RepositoryClient {
 				}
 				catch (NoCompatibleMediaType e) {
 					throw new UnsupportedRDFormatException(e);
-				}
-				catch (IOException e) {
-					throw new StoreException(e);
-				}
-				catch (RDFParseException e) {
-					throw new StoreException(e);
 				}
 			}
 		};

@@ -6,18 +6,15 @@
 package org.openrdf.sail.federation.evaluation;
 
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.EmptyCursor;
+import org.openrdf.cursor.QueueCursor;
 import org.openrdf.cursor.SingletonCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.cursors.FilterCursor;
-import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.store.StoreException;
 
 /**
@@ -53,13 +50,7 @@ public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 
 	private volatile boolean closed;
 
-	private volatile Exception exception;
-
-	private BlockingQueue<Cursor<BindingSet>> rightQueue = new ArrayBlockingQueue<Cursor<BindingSet>>(1024);
-
-	private Cursor<BindingSet> end = EmptyCursor.getInstance();
-
-	StoreException source;
+	private QueueCursor<Cursor<BindingSet>> rightQueue = new QueueCursor<Cursor<BindingSet>>(1024);
 
 	/*--------------*
 	 * Constructors *
@@ -73,7 +64,6 @@ public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 		this.scopeBindingNames = join.getBindingNames();
 
 		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
-		this.source = SailUtil.isDebugEnabled() ? new StoreException() : null;
 	}
 
 	/*---------*
@@ -90,21 +80,21 @@ public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 					result = new FilterCursor(result, condition, scopeBindingNames, strategy);
 				}
 				Cursor<BindingSet> alt = new SingletonCursor<BindingSet>(leftBindings);
-				rightQueue.put(new AlternativeCursor<BindingSet>(result, alt));
+				rightQueue.add(new AlternativeCursor<BindingSet>(result, alt));
 			}
 		}
 		catch (RuntimeException e) {
-			handle(e);
+			rightQueue.toss(e);
 		}
 		catch (StoreException e) {
-			handle(e);
+			rightQueue.toss(e);
 		}
 		catch (InterruptedException e) {
-			handle(e);
+			// stop
 		}
 		finally {
 			try {
-				rightQueue.put(end);
+				rightQueue.done();
 			}
 			catch (InterruptedException e) {
 				// The other thread will also need to be interrupted
@@ -115,51 +105,24 @@ public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 	public BindingSet next()
 		throws StoreException
 	{
-		try {
-			while (rightIter != null || (rightIter = rightQueue.take()) != end) {
-				throwException(exception);
-				BindingSet rightNext = rightIter.next();
-				if (rightNext != null) {
-					return rightNext;
-				}
-				else {
-					rightIter.close();
-					rightIter = null;
-				}
+		while (rightIter != null || (rightIter = rightQueue.next()) != null) {
+			BindingSet rightNext = rightIter.next();
+			if (rightNext != null) {
+				return rightNext;
 			}
-			throwException(exception);
-		}
-		catch (InterruptedException e) {
-			throw new StoreException(e);
+			else {
+				rightIter.close();
+				rightIter = null;
+			}
 		}
 
 		return null;
-	}
-
-	private void handle(Exception e) {
-		exception = e;
-		if (source != null) {
-			source.initCause(e);
-			exception = source;
-		}
-	}
-
-	private void throwException(Exception exception)
-		throws StoreException, InterruptedException
-	{
-		if (exception instanceof RuntimeException)
-			throw (RuntimeException)exception;
-		if (exception instanceof StoreException)
-			throw (StoreException)exception;
-		if (exception instanceof InterruptedException)
-			throw (InterruptedException)exception;
 	}
 
 	public void close()
 		throws StoreException
 	{
 		closed = true;
-		rightQueue.clear();
 		if (rightIter != null) {
 			rightIter.close();
 			rightIter = null;
