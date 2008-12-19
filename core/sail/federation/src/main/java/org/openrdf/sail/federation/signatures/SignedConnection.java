@@ -44,7 +44,7 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 	{
 		if (signer.isNotSignedBNode(subj, pred, obj, contexts))
 			return false;
-		return super.hasMatch(s(subj), pred, o(obj), inf, c(contexts));
+		return getDelegate().hasMatch(s(subj), pred, o(obj), inf, c(contexts));
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 	{
 		if (signer.isNotSignedBNode(subj, pred, obj, contexts))
 			return new ModelResultImpl(new EmptyCursor<Statement>());
-		return signer.sign(super.match(s(subj), pred, o(obj), inf, c(contexts)));
+		return signer.sign(getDelegate().match(s(subj), pred, o(obj), inf, c(contexts)));
 	}
 
 	@Override
@@ -62,35 +62,35 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 	{
 		if (signer.isNotSignedBNode(subj, pred, obj, contexts))
 			return 0;
-		return super.sizeMatch(s(subj), pred, o(obj), inf, c(contexts));
+		return getDelegate().sizeMatch(s(subj), pred, o(obj), inf, c(contexts));
 	}
 
 	@Override
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, StoreException
 	{
-		return signer.sign(super.prepareBooleanQuery(ql, query, baseURI));
+		return signer.sign(getDelegate().prepareBooleanQuery(ql, query, baseURI));
 	}
 
 	@Override
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, StoreException
 	{
-		return signer.sign(super.prepareGraphQuery(ql, query, baseURI));
+		return signer.sign(getDelegate().prepareGraphQuery(ql, query, baseURI));
 	}
 
 	@Override
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, StoreException
 	{
-		return signer.sign(super.prepareTupleQuery(ql, query, baseURI));
+		return signer.sign(getDelegate().prepareTupleQuery(ql, query, baseURI));
 	}
 
 	@Override
 	public Query prepareQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, StoreException
 	{
-		return signer.sign(super.prepareQuery(ql, query, baseURI));
+		return signer.sign(getDelegate().prepareQuery(ql, query, baseURI));
 	}
 
 	@Override

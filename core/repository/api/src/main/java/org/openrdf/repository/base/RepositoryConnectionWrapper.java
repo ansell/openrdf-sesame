@@ -445,6 +445,15 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return getDelegate().sizeMatch(subject, predicate, object, includeInferred, contexts);
 	}
 
+	public String toString() {
+		try {
+			return getClass().getSimpleName() + " " + getDelegate().toString();
+		}
+		catch (StoreException e) {
+			return getClass().getSimpleName();
+		}
+	}
+
 	@Override
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
