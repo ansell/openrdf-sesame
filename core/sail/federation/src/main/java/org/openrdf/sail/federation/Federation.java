@@ -54,7 +54,9 @@ public class Federation extends SailBase {
 	}
 
 	public void setLocalPropertySpace(Collection<String> localPropertySpace) {
-		this.localPropertySpace = new PrefixHashSet(localPropertySpace);
+		if (!localPropertySpace.isEmpty()) {
+			this.localPropertySpace = new PrefixHashSet(localPropertySpace);
+		}
 	}
 
 	public boolean isDistinct() {

@@ -10,9 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 /**
- *
  * @author James Leigh
  */
 public class PrefixHashSet {
@@ -50,5 +48,9 @@ public class PrefixHashSet {
 				return true;
 		}
 		return false;
+	}
+
+	public String toString() {
+		return index.toString();
 	}
 }
