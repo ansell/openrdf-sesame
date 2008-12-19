@@ -28,6 +28,10 @@ public class ActiveConnection {
 		this.connection = connection;
 	}
 
+	public RepositoryConnection getConnection() {
+		return connection;
+	}
+
 	public RepositoryConnection getConnection(long now) {
 		lastAccessed = now;
 		return connection;
