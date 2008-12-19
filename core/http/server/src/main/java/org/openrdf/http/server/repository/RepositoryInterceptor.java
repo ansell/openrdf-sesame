@@ -6,13 +6,16 @@
 package org.openrdf.http.server.repository;
 
 import static org.openrdf.http.protocol.Protocol.IF_NONE_MATCH;
+import static org.openrdf.http.protocol.Protocol.MAX_TIME_OUT;
+import static org.openrdf.http.protocol.Protocol.TIME_OUT_UNITS;
 
 import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -45,7 +48,9 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class RepositoryInterceptor implements HandlerInterceptor {
+public class RepositoryInterceptor implements HandlerInterceptor, Runnable {
+
+	private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
 	/*-----------*
 	 * Constants *
@@ -94,6 +99,10 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 	private static final String NOT_SAFE_KEY = BASE + "not-safe";
 
 	private static AtomicInteger seq = new AtomicInteger(new Random().nextInt());
+
+	public RepositoryInterceptor() {
+		executor.scheduleWithFixedDelay(this, MAX_TIME_OUT, MAX_TIME_OUT, TIME_OUT_UNITS);
+	}
 
 	public static RepositoryManager getRepositoryManager(HttpServletRequest request) {
 		request.setAttribute(MANAGER_MODIFIED_KEY, Boolean.TRUE);
@@ -220,7 +229,6 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 	{
 		long now = System.currentTimeMillis();
 		ProtocolUtil.logRequestParameters(request);
-		expungeConnections(now);
 
 		if (notModified(request, response)) {
 			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -318,7 +326,8 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 		}
 	}
 
-	private void expungeConnections(long now) {
+	public void run() {
+		long now = System.currentTimeMillis();
 		long max = Protocol.TIME_OUT_UNITS.toMillis(Protocol.MAX_TIME_OUT);
 		for (Entry<String, ActiveConnection> e : activeConnections.entrySet()) {
 			long since = now - e.getValue().getLastAccessed();
@@ -327,7 +336,7 @@ public class RepositoryInterceptor implements HandlerInterceptor {
 				logger.warn("Connection {} has expired", id);
 				activeConnections.remove(id);
 				try {
-					e.getValue().getConnection(now).close();
+					e.getValue().getConnection().close();
 				}
 				catch (StoreException exc) {
 					logger.error(exc.toString(), exc);
