@@ -93,13 +93,8 @@ public class BackgroundTupleResult extends ResultImpl<BindingSet> implements Tup
 			queue.toss(e);
 		}
 		finally {
-			try {
-				parserThread = null;
-				queue.done();
-			}
-			catch (InterruptedException e) {
-				// the other thread may need to be interrupted as well
-			}
+			parserThread = null;
+			queue.done();
 		}
 	}
 
@@ -116,7 +111,7 @@ public class BackgroundTupleResult extends ResultImpl<BindingSet> implements Tup
 		if (closed)
 			throw new TupleQueryResultHandlerException("Result closed");
 		try {
-			queue.add(bindingSet);
+			queue.put(bindingSet);
 		}
 		catch (InterruptedException e) {
 			throw new TupleQueryResultHandlerException(e);

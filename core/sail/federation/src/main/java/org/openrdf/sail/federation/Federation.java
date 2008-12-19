@@ -54,7 +54,10 @@ public class Federation extends SailBase {
 	}
 
 	public void setLocalPropertySpace(Collection<String> localPropertySpace) {
-		if (!localPropertySpace.isEmpty()) {
+		if (localPropertySpace.isEmpty()) {
+			this.localPropertySpace = null;
+		}
+		else {
 			this.localPropertySpace = new PrefixHashSet(localPropertySpace);
 		}
 	}

@@ -88,13 +88,8 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 			queue.toss(e);
 		}
 		finally {
-			try {
-				parserThread = null;
-				queue.done();
-			}
-			catch (InterruptedException e) {
-				// the other thread may need to be interrupted as well
-			}
+			parserThread = null;
+			queue.done();
 		}
 	}
 
@@ -135,7 +130,7 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 		if (closed)
 			throw new RDFHandlerException("Result closed");
 		try {
-			queue.add(st);
+			queue.put(st);
 		}
 		catch (InterruptedException e) {
 			throw new RDFHandlerException(e);

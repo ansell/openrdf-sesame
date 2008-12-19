@@ -66,7 +66,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	private final Repository repository;
 
-	private boolean isOpen;
+	private volatile boolean isOpen;
 
 	private boolean autoCommit;
 

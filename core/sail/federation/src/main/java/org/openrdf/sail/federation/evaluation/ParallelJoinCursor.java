@@ -33,6 +33,8 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 	 * Variables *
 	 *-----------*/
 
+	private volatile Thread evaluationThread;
+
 	private Cursor<BindingSet> leftIter;
 
 	private Cursor<BindingSet> rightIter;
@@ -59,10 +61,11 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 	 *---------*/
 
 	public void run() {
+		evaluationThread = Thread.currentThread();
 		try {
 			BindingSet leftNext;
 			while (!closed && (leftNext = leftIter.next()) != null) {
-				rightQueue.add(strategy.evaluate(rightArg, leftNext));
+				rightQueue.put(strategy.evaluate(rightArg, leftNext));
 			}
 		}
 		catch (RuntimeException e) {
@@ -75,12 +78,8 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 			// stop
 		}
 		finally {
-			try {
-				rightQueue.done();
-			}
-			catch (InterruptedException e) {
-				// The other thread will also need to be interrupted
-			}
+			evaluationThread = null;
+			rightQueue.done();
 		}
 	}
 
@@ -105,6 +104,9 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 		throws StoreException
 	{
 		closed = true;
+		if (evaluationThread != null) {
+			evaluationThread.interrupt();
+		}
 		if (rightIter != null) {
 			rightIter.close();
 			rightIter = null;
