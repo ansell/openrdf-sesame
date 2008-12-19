@@ -96,8 +96,7 @@ public class StatementClient {
 		match = eTag;
 	}
 
-	public GraphResult get(Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
+	public GraphResult get(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		final HTTPConnection method = statements.get();
@@ -108,29 +107,19 @@ public class StatementClient {
 		Callable<GraphResult> task = new Callable<GraphResult>() {
 
 			public GraphResult call()
-				throws StoreException
+				throws Exception
 			{
-				try {
-					method.acceptRDF(true);
-					if (execute(method) && !method.isNotModified()) {
-						return method.getGraphQueryResult();
-					}
-					else if (method.isNotModified()) {
-						return null;
-					} else {
-						Map<String, String> ns = Collections.emptyMap();
-						Cursor<Statement> cursor = EmptyCursor.getInstance();
-						return new GraphResultImpl(ns, cursor);
-					}
+				method.acceptRDF(true);
+				if (execute(method) && !method.isNotModified()) {
+					return method.getGraphQueryResult();
 				}
-				catch (NoCompatibleMediaType e) {
-					throw new StoreException(e);
+				else if (method.isNotModified()) {
+					return null;
 				}
-				catch (IOException e) {
-					throw new StoreException(e);
-				}
-				catch (RDFParseException e) {
-					throw new StoreException(e);
+				else {
+					Map<String, String> ns = Collections.emptyMap();
+					Cursor<Statement> cursor = EmptyCursor.getInstance();
+					return new GraphResultImpl(ns, cursor);
 				}
 			}
 		};

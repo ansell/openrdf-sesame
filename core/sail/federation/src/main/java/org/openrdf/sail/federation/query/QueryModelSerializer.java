@@ -5,6 +5,8 @@
  */
 package org.openrdf.sail.federation.query;
 
+import static org.openrdf.query.QueryLanguage.register;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,11 +28,7 @@ import org.openrdf.query.parser.QueryParser;
  */
 public class QueryModelSerializer implements QueryParser {
 
-	public static final QueryLanguage LANGUAGE;
-	static {
-		QueryLanguage.register("QueryModelSerializer");
-		LANGUAGE = QueryLanguage.valueOf("QueryModelSerializer");
-	}
+	public static final QueryLanguage LANGUAGE = register("QueryModelSerializer");
 
 	private static final String UTF_8 = "UTF-8";
 

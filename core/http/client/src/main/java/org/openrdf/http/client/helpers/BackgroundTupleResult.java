@@ -5,187 +5,101 @@
  */
 package org.openrdf.http.client.helpers;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 
+import org.openrdf.cursor.QueueCursor;
 import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.impl.EmptyBindingSet;
+import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.result.TupleResult;
+import org.openrdf.result.impl.ResultImpl;
 import org.openrdf.store.StoreException;
 
 /**
  * @author James Leigh
  */
-public class BackgroundTupleResult implements TupleResult, Runnable, TupleQueryResultHandler {
+public class BackgroundTupleResult extends ResultImpl<BindingSet> implements TupleResult, Runnable, TupleQueryResultHandler {
 
-	private volatile boolean aborted;
-
-	private BindingSet afterLast = EmptyBindingSet.getInstance();
-
-	private volatile boolean completed;
-
-	private volatile Throwable exception;
-
-	private InputStream in;
-
-	private BindingSet next;
-
-	private TupleQueryResultParser parser;
+	private volatile boolean closed;
 
 	private volatile Thread parserThread;
 
-	private BlockingQueue<BindingSet> queue = new ArrayBlockingQueue<BindingSet>(10);
+	private TupleQueryResultParser parser;
+
+	private InputStream in;
 
 	private HTTPConnection connection;
 
+	private QueueCursor<BindingSet> queue;
+
 	private List<String> bindingNames;
 
-	private CountDownLatch start = new CountDownLatch(1);
+	private CountDownLatch bindingNamesReady = new CountDownLatch(1);
 
 	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in, HTTPConnection connection) {
+		this(new QueueCursor<BindingSet>(10), parser, in, connection);
+	}
+
+	public BackgroundTupleResult(QueueCursor<BindingSet> queue, TupleQueryResultParser parser, InputStream in, HTTPConnection connection) {
+		super(queue);
+		this.queue = queue;
 		this.parser = parser;
 		this.in = in;
 		this.connection = connection;
-		parser.setTupleQueryResultHandler(this);
 	}
 
 	public synchronized void close()
 		throws StoreException
 	{
-		aborted = true;
+		closed = true;
 		if (parserThread != null) {
 			parserThread.interrupt();
 		}
-	}
-
-	public void endQueryResult()
-		throws TupleQueryResultHandlerException
-	{
-		// no-op
 	}
 
 	public List<String> getBindingNames()
 		throws StoreException
 	{
 		try {
-			start.await();
+			bindingNamesReady.await();
+			return bindingNames;
 		}
 		catch (InterruptedException e) {
 			throw new StoreException(e);
 		}
-		return bindingNames;
-	}
-
-	public void handleSolution(BindingSet bindingSet)
-		throws TupleQueryResultHandlerException
-	{
-		if (aborted)
-			throw new TupleQueryResultHandlerException("Result closed");
-		try {
-			queue.put(bindingSet);
-		}
-		catch (InterruptedException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
-	}
-
-	public boolean hasNext()
-		throws StoreException
-	{
-		if (next != null)
-			return true;
-		next = next();
-		return next != null;
-	}
-
-	public BindingSet next()
-		throws StoreException
-	{
-		if (next != null) {
-			BindingSet st = next;
-			next = null;
-			return st;
-		}
-		if (completed && queue.isEmpty())
-			return null;
-		if (exception != null)
-			throw new StoreException(exception);
-		try {
-			BindingSet take = queue.take();
-			if (exception != null)
-				throw new StoreException(exception);
-			if (take == afterLast)
-				return null;
-			return take;
-		}
-		catch (InterruptedException e) {
-			if (exception != null)
-				throw new StoreException(exception);
-			throw new StoreException(e);
-		}
-	}
-
-	public <C extends Collection<? super BindingSet>> C addTo(C collection)
-		throws StoreException
-	{
-		BindingSet bindings;
-		while ((bindings = next()) != null) {
-			collection.add(bindings);
-		}
-		return collection;
-	}
-
-	public List<BindingSet> asList()
-		throws StoreException
-	{
-		return addTo(new ArrayList<BindingSet>());
-	}
-
-	public Set<BindingSet> asSet()
-		throws StoreException
-	{
-		return addTo(new HashSet<BindingSet>());
 	}
 
 	public void run() {
 		parserThread = Thread.currentThread();
 		try {
+			parser.setTupleQueryResultHandler(this);
 			parser.parse(in);
 			// release connection back into pool if all results have been read
 			connection.release();
 		}
 		catch (TupleQueryResultHandlerException e) {
-			queue.clear(); // abort
-			exception = e.getCause();
+			// parsing cancelled or interrupted
 		}
-		catch (Exception e) {
-			queue.clear(); // abort
-			exception = e;
+		catch (QueryResultParseException e) {
+			queue.toss(e);
 		}
-		try {
-			if (!aborted) {
-				queue.put(afterLast);
+		catch (IOException e) {
+			queue.toss(e);
+		}
+		finally {
+			try {
+				parserThread = null;
+				queue.done();
 			}
-		}
-		catch (InterruptedException e) {
-			exception = e;
-		}
-		synchronized (this) {
-			completed = true;
-			parserThread = null;
-			// clear interrupted flag
-			Thread.interrupted();
+			catch (InterruptedException e) {
+				// the other thread may need to be interrupted as well
+			}
 		}
 	}
 
@@ -193,7 +107,26 @@ public class BackgroundTupleResult implements TupleResult, Runnable, TupleQueryR
 		throws TupleQueryResultHandlerException
 	{
 		this.bindingNames = bindingNames;
-		start.countDown();
+		bindingNamesReady.countDown();
+	}
+
+	public void handleSolution(BindingSet bindingSet)
+		throws TupleQueryResultHandlerException
+	{
+		if (closed)
+			throw new TupleQueryResultHandlerException("Result closed");
+		try {
+			queue.add(bindingSet);
+		}
+		catch (InterruptedException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	public void endQueryResult()
+		throws TupleQueryResultHandlerException
+	{
+		// no-op
 	}
 
 }

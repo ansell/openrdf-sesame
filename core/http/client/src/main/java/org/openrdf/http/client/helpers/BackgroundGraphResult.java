@@ -5,86 +5,115 @@
  */
 package org.openrdf.http.client.helpers;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 
+import org.openrdf.cursor.QueueCursor;
 import org.openrdf.http.client.connections.HTTPConnection;
-import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.ModelImpl;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.result.GraphResult;
+import org.openrdf.result.impl.ModelResultImpl;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.store.StoreException;
 
 /**
  * @author James Leigh
  */
-public class BackgroundGraphResult implements GraphResult, Runnable, RDFHandler {
+public class BackgroundGraphResult extends ModelResultImpl implements GraphResult, Runnable, RDFHandler {
 
-	private volatile boolean aborted;
-
-	private URI uri = new URIImpl("urn:stop");
-
-	private Statement afterLast = new StatementImpl(uri, uri, uri);
-
-	private String baseURI;
-
-	private volatile boolean completed;
-
-	private HTTPConnection connection;
-
-	private volatile Throwable exception;
-
-	private InputStream in;
-
-	private Map<String, String> namespaces = new ConcurrentHashMap<String, String>();
-
-	private Statement next;
-
-	private RDFParser parser;
+	private volatile boolean closed;
 
 	private volatile Thread parserThread;
 
-	private BlockingQueue<Statement> queue = new ArrayBlockingQueue<Statement>(10);
+	private RDFParser parser;
+
+	private InputStream in;
+
+	private String baseURI;
+
+	private HTTPConnection connection;
+
+	private CountDownLatch namespacesReady = new CountDownLatch(1);
+
+	private Map<String, String> namespaces = new ConcurrentHashMap<String, String>();
+
+	private QueueCursor<Statement> queue;
 
 	public BackgroundGraphResult(RDFParser parser, InputStream in, String baseURI, HTTPConnection connection) {
+		this(new QueueCursor<Statement>(10), parser, in, baseURI, connection);
+	}
+
+	public BackgroundGraphResult(QueueCursor<Statement> queue, RDFParser parser, InputStream in,
+			String baseURI, HTTPConnection connection)
+	{
+		super(queue);
+		this.queue = queue;
 		this.parser = parser;
 		this.in = in;
 		this.baseURI = baseURI;
 		this.connection = connection;
-		parser.setRDFHandler(this);
 	}
 
-	public synchronized void close()
+	public void close()
 		throws StoreException
 	{
-		aborted = true;
+		closed = true;
 		if (parserThread != null) {
 			parserThread.interrupt();
 		}
+		super.close();
 	}
 
-	public void endRDF()
+	public void run() {
+		parserThread = Thread.currentThread();
+		try {
+			parser.setRDFHandler(this);
+			parser.parse(in, baseURI);
+			// release connection back into pool if all results have been read
+			connection.release();
+		}
+		catch (RDFHandlerException e) {
+			// parsing was cancelled or interrupted
+		}
+		catch (RDFParseException e) {
+			queue.toss(e);
+		}
+		catch (IOException e) {
+			queue.toss(e);
+		}
+		finally {
+			try {
+				parserThread = null;
+				queue.done();
+			}
+			catch (InterruptedException e) {
+				// the other thread may need to be interrupted as well
+			}
+		}
+	}
+
+	public void startRDF()
 		throws RDFHandlerException
 	{
 		// no-op
 	}
 
-	public Map<String, String> getNamespaces() {
-		return namespaces;
+	public Map<String, String> getNamespaces()
+		throws StoreException
+	{
+		try {
+			namespacesReady.await();
+			return namespaces;
+		}
+		catch (InterruptedException e) {
+			throw new StoreException(e);
+		}
 	}
 
 	public void handleComment(String comment)
@@ -102,115 +131,21 @@ public class BackgroundGraphResult implements GraphResult, Runnable, RDFHandler 
 	public void handleStatement(Statement st)
 		throws RDFHandlerException
 	{
-		if (aborted)
+		namespacesReady.countDown();
+		if (closed)
 			throw new RDFHandlerException("Result closed");
 		try {
-			queue.put(st);
+			queue.add(st);
 		}
 		catch (InterruptedException e) {
 			throw new RDFHandlerException(e);
 		}
 	}
 
-	public boolean hasNext()
-		throws StoreException
-	{
-		if (next != null)
-			return true;
-		next = next();
-		return next != null;
-	}
-
-	public Statement next()
-		throws StoreException
-	{
-		if (next != null) {
-			Statement st = next;
-			next = null;
-			return st;
-		}
-		if (completed && queue.isEmpty())
-			return null;
-		if (exception != null)
-			throw new StoreException(exception);
-		try {
-			Statement take = queue.take();
-			if (exception != null)
-				throw new StoreException(exception);
-			if (take == afterLast)
-				return null;
-			return take;
-		}
-		catch (InterruptedException e) {
-			if (exception != null)
-				throw new StoreException(exception);
-			throw new StoreException(e);
-		}
-	}
-
-	public <C extends Collection<? super Statement>> C addTo(C collection)
-		throws StoreException
-	{
-		Statement st;
-		while ((st = next()) != null) {
-			collection.add(st);
-		}
-		return collection;
-	}
-
-	public List<Statement> asList()
-		throws StoreException
-	{
-		return addTo(new ArrayList<Statement>());
-	}
-
-	public Set<Statement> asSet()
-		throws StoreException
-	{
-		return addTo(new HashSet<Statement>());
-	}
-
-	public Model asModel()
-		throws StoreException
-	{
-		return addTo(new ModelImpl(getNamespaces()));
-	}
-
-	public void run() {
-		parserThread = Thread.currentThread();
-		try {
-			parser.parse(in, baseURI);
-			// release connection back into pool if all results have been read
-			connection.release();
-		}
-		catch (RDFHandlerException e) {
-			queue.clear(); // abort
-			exception = e.getCause();
-		}
-		catch (Exception e) {
-			queue.clear(); // abort
-			exception = e;
-		}
-		try {
-			if (!aborted) {
-				queue.put(afterLast);
-			}
-		}
-		catch (InterruptedException e) {
-			exception = e;
-		}
-		synchronized (this) {
-			completed = true;
-			parserThread = null;
-			// clear interrupted flag
-			Thread.interrupted();
-		}
-	}
-
-	public void startRDF()
+	public void endRDF()
 		throws RDFHandlerException
 	{
-		// no-op
+		namespacesReady.countDown();
 	}
 
 }

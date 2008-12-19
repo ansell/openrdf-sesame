@@ -8,6 +8,9 @@ package org.openrdf.http.client.connections;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,6 +35,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.store.StoreException;
 
 /**
  * Store the url, authentication, preference, and a shared {@link HttpClient}
@@ -279,8 +283,34 @@ public class HTTPConnectionPool implements Cloneable {
 		return new HTTPConnection(this, method);
 	}
 
-	public <V> Future<V> submitTask(Callable<V> task) {
-		return executor.submit(task);
+	public <V> Future<V> submitTask(final Callable<V> task) {
+		return executor.submit(new Callable<V>() {
+
+			public V call()
+				throws StoreException
+			{
+				try {
+					return task.call();
+				}
+				catch (StoreException e) {
+					List<StackTraceElement> stack = new ArrayList<StackTraceElement>();
+					stack.addAll(Arrays.asList(e.getStackTrace()));
+					stack.addAll(Arrays.asList(new Throwable().getStackTrace()));
+					e.setStackTrace(stack.toArray(new StackTraceElement[stack.size()]));
+					throw e;
+				}
+				catch (RuntimeException e) {
+					List<StackTraceElement> stack = new ArrayList<StackTraceElement>();
+					stack.addAll(Arrays.asList(e.getStackTrace()));
+					stack.addAll(Arrays.asList(new Throwable().getStackTrace()));
+					e.setStackTrace(stack.toArray(new StackTraceElement[stack.size()]));
+					throw e;
+				}
+				catch (Exception e) {
+					throw new StoreException(e);
+				}
+			}
+		});
 	}
 
 	void executeTask(Runnable task) {
