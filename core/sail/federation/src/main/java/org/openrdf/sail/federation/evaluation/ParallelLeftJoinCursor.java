@@ -44,6 +44,8 @@ public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 	 * Variables *
 	 *-----------*/
 
+	private volatile Thread evaluationThread;
+
 	private Cursor<BindingSet> leftIter;
 
 	private Cursor<BindingSet> rightIter;
@@ -71,6 +73,7 @@ public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 	 *---------*/
 
 	public void run() {
+		evaluationThread = Thread.currentThread();
 		try {
 			BindingSet leftBindings;
 			ValueExpr condition = join.getCondition();
@@ -80,7 +83,7 @@ public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 					result = new FilterCursor(result, condition, scopeBindingNames, strategy);
 				}
 				Cursor<BindingSet> alt = new SingletonCursor<BindingSet>(leftBindings);
-				rightQueue.add(new AlternativeCursor<BindingSet>(result, alt));
+				rightQueue.put(new AlternativeCursor<BindingSet>(result, alt));
 			}
 		}
 		catch (RuntimeException e) {
@@ -93,12 +96,8 @@ public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 			// stop
 		}
 		finally {
-			try {
-				rightQueue.done();
-			}
-			catch (InterruptedException e) {
-				// The other thread will also need to be interrupted
-			}
+			evaluationThread = null;
+			rightQueue.done();
 		}
 	}
 
@@ -123,6 +122,9 @@ public class ParallelLeftJoinCursor implements Cursor<BindingSet>, Runnable {
 		throws StoreException
 	{
 		closed = true;
+		if (evaluationThread != null) {
+			evaluationThread.interrupt();
+		}
 		if (rightIter != null) {
 			rightIter.close();
 			rightIter = null;

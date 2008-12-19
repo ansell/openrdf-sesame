@@ -57,7 +57,10 @@ public class RepositoryCache {
 	 *---------*/
 
 	public void setSubjectSpace(Set<String> uriSpace) {
-		if (!uriSpace.isEmpty()) {
+		if (uriSpace.isEmpty()) {
+			this.subjectSpace = null;
+		}
+		else {
 			this.subjectSpace = new PrefixHashSet(uriSpace);
 		}
 	}

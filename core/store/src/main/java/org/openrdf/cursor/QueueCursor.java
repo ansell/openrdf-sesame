@@ -24,6 +24,8 @@ import org.openrdf.store.StoreException;
  */
 public class QueueCursor<E> implements Cursor<E> {
 
+	private volatile boolean done;
+
 	private BlockingQueue<E> queue;
 
 	private E afterLast = createAfterLast();
@@ -36,8 +38,6 @@ public class QueueCursor<E> implements Cursor<E> {
 	 * 
 	 * @param capacity
 	 *        the capacity of this queue
-	 * @throws IllegalArgumentException
-	 *         if <tt>capacity</tt> is less than 1
 	 */
 	public QueueCursor(int capacity) {
 		this(capacity, false);
@@ -53,8 +53,6 @@ public class QueueCursor<E> implements Cursor<E> {
 	 *        if <tt>true</tt> then queue accesses for threads blocked on
 	 *        insertion or removal, are processed in FIFO order; if
 	 *        <tt>false</tt> the access order is unspecified.
-	 * @throws IllegalArgumentException
-	 *         if <tt>capacity</tt> is less than 1
 	 */
 	public QueueCursor(int capacity, boolean fair) {
 		this.queue = new ArrayBlockingQueue<E>(capacity, fair);
@@ -74,7 +72,7 @@ public class QueueCursor<E> implements Cursor<E> {
 	/**
 	 * Adds another item to the queue, blocking while the queue is full.
 	 */
-	public void add(E st)
+	public void put(E st)
 		throws InterruptedException
 	{
 		queue.put(st);
@@ -82,14 +80,16 @@ public class QueueCursor<E> implements Cursor<E> {
 
 	/**
 	 * Indicates the method {@link #add(Object)} will not be called in the queue
-	 * anymore, blocking while the queue is full.
-	 * 
-	 * @throws InterruptedException
+	 * anymore.
 	 */
 	public void done()
-		throws InterruptedException
 	{
-		queue.put(afterLast);
+		done = true;
+		try {
+			queue.add(afterLast);
+		} catch (IllegalStateException e) {
+			// no thread is waiting on this queue anyway
+		}
 	}
 
 	/**
@@ -100,10 +100,18 @@ public class QueueCursor<E> implements Cursor<E> {
 	{
 		try {
 			checkException();
-			E take = queue.take();
+			E take;
+			if (done) {
+				take = queue.poll();
+			} else {
+				take = queue.take();
+				if (done) {
+					done(); // in case the queue was full before
+				}
+			}
 			if (isAfterLast(take)) {
 				checkException();
-				done();
+				done(); // put afterLast back for others
 				return null;
 			}
 			return take;
@@ -121,7 +129,7 @@ public class QueueCursor<E> implements Cursor<E> {
 	}
 
 	private boolean isAfterLast(E take) {
-		return take == afterLast;
+		return take == null || take == afterLast;
 	}
 
 	@SuppressWarnings("unchecked")
