@@ -99,7 +99,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 
 	private static final String NOT_SAFE_KEY = BASE + "not-safe";
 
-	private static final String ACTIVE_CONNECTIONS_KEY = BASE + "active-connections";
+	private static final String SELF_KEY = BASE + "self";
 
 	private static AtomicInteger seq = new AtomicInteger(new Random().nextInt());
 
@@ -199,12 +199,13 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	/**
 	 * @return Set of req.getMethod() + " " + req.getRequestURL()
 	 */
-	@SuppressWarnings("unchecked")
 	public static Set<String> getActiveRequests(HttpServletRequest request) {
-		Object attr = request.getAttribute(ACTIVE_CONNECTIONS_KEY);
-		Map<String, ActiveConnection> connections = (Map<String, ActiveConnection>) attr;
-		Set<String> result = new HashSet<String>(connections.size() * 2);
-		for (ActiveConnection con : connections.values()) {
+		RepositoryInterceptor self = (RepositoryInterceptor)request.getAttribute(SELF_KEY);
+		Set<String> result = new HashSet<String>(self.activeConnections.size() * 2 + self.singleConnections.size());
+		for (ActiveConnection con : self.activeConnections.values()) {
+			result.addAll(con.getActiveRequests());
+		}
+		for (ActiveConnection con : self.singleConnections.keySet()) {
 			result.addAll(con.getActiveRequests());
 		}
 		return result;
@@ -230,6 +231,8 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	private ConcurrentMap<String, AtomicLong> repositoriesVersion = new ConcurrentHashMap<String, AtomicLong>();
 
 	private Map<String, ActiveConnection> activeConnections = new ConcurrentHashMap<String, ActiveConnection>();
+
+	private Map<ActiveConnection, HttpServletRequest> singleConnections = new ConcurrentHashMap<ActiveConnection, HttpServletRequest>();
 
 	/*---------*
 	 * Methods *
@@ -279,18 +282,19 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 				String connectionID = getConnectionID(request);
 				if (connectionID == null) {
 					repositoryCon = new ActiveConnection(repository.getConnection());
+					singleConnections.put(repositoryCon, request);
 				}
 				else {
 					repositoryCon = activeConnections.get(connectionID);
-					repositoryCon.open(request);
 					if (repositoryCon == null) {
 						throw new NotFound("Unknown connection: " + connectionID);
 					}
 				}
+				repositoryCon.open(request);
 				request.setAttribute(REPOSITORY_KEY, repository);
 				request.setAttribute(REPOSITORY_CONNECTION_KEY, repositoryCon.getConnection());
 				request.setAttribute(QUERY_MAP_KEY, repositoryCon);
-				request.setAttribute(ACTIVE_CONNECTIONS_KEY, activeConnections);
+				request.setAttribute(SELF_KEY, this);
 			}
 			catch (StoreConfigException e) {
 				throw new ServerHTTPException(e.getMessage(), e);
@@ -325,23 +329,26 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		String newId = (String)request.getAttribute(CONN_CREATE_KEY);
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
 		String queryId = (String)request.getAttribute(QUERY_CREATE_KEY);
-		ActiveConnection activeQueries = (ActiveConnection)request.getAttribute(QUERY_MAP_KEY);
-		if (activeQueries != null) {
-			activeQueries.accessed(System.currentTimeMillis());
+		ActiveConnection activeConnection = (ActiveConnection)request.getAttribute(QUERY_MAP_KEY);
+		if (activeConnection != null) {
+			activeConnection.accessed(System.currentTimeMillis());
+			activeConnection.close(request);
+			if (id == null) {
+				singleConnections.remove(activeConnection);
+			}
 		}
 		if (queryId != null) {
 			Query query = (Query)request.getAttribute(QUERY_CREATE_KEY + queryId);
-			activeQueries.putQuery(queryId, query);
+			activeConnection.putQuery(queryId, query);
 		}
 		queryId = (String)request.getAttribute(QUERY_CLOSED_KEY);
 		if (queryId != null) {
-			activeQueries.removeQuery(queryId);
+			activeConnection.removeQuery(queryId);
 		}
 		if (repositoryCon != null && (close || id == null && newId == null)) {
 			try {
 				repositoryCon.close();
 				if (id != null) {
-					activeQueries.close(request);
 					activeConnections.remove(id);
 				}
 			}
@@ -350,7 +357,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 			}
 		}
 		else if (newId != null) {
-			activeConnections.put(newId, activeQueries);
+			activeConnections.put(newId, activeConnection);
 		}
 	}
 
