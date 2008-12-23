@@ -196,11 +196,14 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		request.setAttribute(QUERY_CLOSED_KEY, id);
 	}
 
+	/**
+	 * @return Set of req.getMethod() + " " + req.getRequestURL()
+	 */
 	@SuppressWarnings("unchecked")
-	public static Set<HttpServletRequest> getActiveRequests(HttpServletRequest request) {
+	public static Set<String> getActiveRequests(HttpServletRequest request) {
 		Object attr = request.getAttribute(ACTIVE_CONNECTIONS_KEY);
 		Map<String, ActiveConnection> connections = (Map<String, ActiveConnection>) attr;
-		Set<HttpServletRequest> result = new HashSet<HttpServletRequest>(connections.size() * 2);
+		Set<String> result = new HashSet<String>(connections.size() * 2);
 		for (ActiveConnection con : connections.values()) {
 			result.addAll(con.getActiveRequests());
 		}
