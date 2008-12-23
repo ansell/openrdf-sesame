@@ -21,16 +21,8 @@ public class RemoteTemplateManager implements ConfigTemplateManager {
 
 	private SesameClient client;
 
-	public RemoteTemplateManager(String serverURL) {
-		this(new SesameClient(serverURL));
-	}
-
 	public RemoteTemplateManager(SesameClient client) {
 		this.client = client;
-	}
-
-	public void setUsernameAndPassword(String username, String password) {
-		client.setUsernameAndPassword(username, password);
 	}
 
 	public URL getLocation()

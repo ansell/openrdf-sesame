@@ -3,6 +3,9 @@ package org.openrdf.sail.federation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.URIFactory;
@@ -21,7 +24,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-public class Federation extends SailBase {
+public class Federation extends SailBase implements Executor {
 
 	private URIFactory uf = new URIFactoryImpl();
 
@@ -36,6 +39,8 @@ public class Federation extends SailBase {
 	private boolean readOnly;
 
 	private FederatedMetaData metadata;
+
+	private ExecutorService executor = Executors.newCachedThreadPool(); 
 
 	public URIFactory getURIFactory() {
 		return uf;
@@ -85,6 +90,7 @@ public class Federation extends SailBase {
 		for (Repository member : members) {
 			member.shutDown();
 		}
+		executor.shutdown();
 	}
 
 	public boolean isReadOnly() {
@@ -102,6 +108,10 @@ public class Federation extends SailBase {
 		if (metadata != null)
 			return metadata;
 		return metadata = createMetaData();
+	}
+
+	public void execute(Runnable command) {
+		executor.execute(command);
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-abstract class FederationConnection implements SailConnection, TripleSource {
+abstract class FederationConnection implements SailConnection, TripleSource, Executor {
 
 	private Logger logger = LoggerFactory.getLogger(FederationConnection.class);
 
@@ -217,9 +218,13 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		throws StoreException
 	{
 		EvaluationStrategyImpl strategy;
-		strategy = new FederationStrategy(this, query);
+		strategy = new FederationStrategy(this, this, query);
 		TupleExpr qry = optimize(query, bindings, strategy);
 		return strategy.evaluate(qry, EmptyBindingSet.getInstance());
+	}
+
+	public void execute(Runnable command) {
+		federation.execute(command);
 	}
 
 	interface Procedure {
@@ -319,7 +324,7 @@ abstract class FederationConnection implements SailConnection, TripleSource {
 		new SameTermFilterOptimizer().optimize(query, bindings);
 		new QueryModelPruner().optimize(query, bindings);
 
-		FederationStatistics statistics = new FederationStatistics(members, query);
+		FederationStatistics statistics = new FederationStatistics(this, members, query);
 		new QueryJoinOptimizer(statistics).optimize(query, bindings);
 		new FilterOptimizer().optimize(query, bindings);
 

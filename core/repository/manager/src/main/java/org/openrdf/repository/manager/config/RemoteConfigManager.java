@@ -27,10 +27,6 @@ public class RemoteConfigManager implements RepositoryConfigManager {
 	 * Constructors *
 	 *--------------*/
 
-	public RemoteConfigManager(String serverURL) {
-		this(new SesameClient(serverURL));
-	}
-
 	public RemoteConfigManager(SesameClient client) {
 		this(client.configurations());
 	}

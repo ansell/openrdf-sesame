@@ -80,12 +80,15 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 		}
 		catch (RDFHandlerException e) {
 			// parsing was cancelled or interrupted
+			connection.abort();
 		}
 		catch (RDFParseException e) {
 			queue.toss(e);
+			connection.abort();
 		}
 		catch (IOException e) {
 			queue.toss(e);
+			connection.abort();
 		}
 		finally {
 			parserThread = null;

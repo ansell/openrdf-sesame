@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -77,6 +78,10 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 	private String password;
 
+	private SesameClient client;
+
+	private HTTPConnectionPool pool;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -101,10 +106,17 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * Initializes the repository manager.
 	 */
 	public void initialize() {
-		SesameClient client = new SesameClient(serverURL);
-		client.setUsernameAndPassword(username, password);
+		pool = new HTTPConnectionPool(serverURL);
+		pool.setUsernameAndPassword(username, password);
+		client = new SesameClient(pool);
 		setConfigTemplateManager(new RemoteTemplateManager(client));
 		setRepositoryConfigManager(new RemoteConfigManager(client));
+	}
+
+	@Override
+	public void shutDown() {
+		pool.shutdown();
+		super.shutDown();
 	}
 
 	/**
@@ -187,9 +199,6 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
 		try {
-			SesameClient client = new SesameClient(serverURL);
-			client.setUsernameAndPassword(username, password);
-
 			TupleResult responseFromServer = client.repositories().list();
 			while (responseFromServer.hasNext()) {
 				BindingSet bindingSet = responseFromServer.next();

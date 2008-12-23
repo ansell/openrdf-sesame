@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -48,9 +49,7 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class RepositoryInterceptor implements HandlerInterceptor, Runnable {
-
-	private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+public class RepositoryInterceptor implements HandlerInterceptor, Runnable, DisposableBean {
 
 	/*-----------*
 	 * Constants *
@@ -99,6 +98,8 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable {
 	private static final String NOT_SAFE_KEY = BASE + "not-safe";
 
 	private static AtomicInteger seq = new AtomicInteger(new Random().nextInt());
+
+	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
 	public RepositoryInterceptor() {
 		executor.scheduleWithFixedDelay(this, MAX_TIME_OUT, MAX_TIME_OUT, TIME_OUT_UNITS);
@@ -222,6 +223,10 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable {
 
 	public void setMaxCacheAge(int maxCacheAge) {
 		this.maxCacheAge = maxCacheAge;
+	}
+
+	public void destroy() {
+		executor.shutdown();
 	}
 
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)

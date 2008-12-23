@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
@@ -42,8 +41,8 @@ public class FederationStatistics extends EvaluationStatistics {
 
 	PatternCalculator calculator;
 
-	public FederationStatistics(Collection<? extends RepositoryConnection> members, QueryModel query) {
-		this.calculator = new PatternCalculator(members, query);
+	public FederationStatistics(Executor executor, Collection<? extends RepositoryConnection> members, QueryModel query) {
+		this.calculator = new PatternCalculator(executor, members, query);
 	}
 
 	public double getCardinality(TupleExpr expr) {
@@ -100,7 +99,7 @@ public class FederationStatistics extends EvaluationStatistics {
 
 	static class PatternCalculator extends QueryModelVisitorBase<RuntimeException> {
 
-		static Executor executor = Executors.newCachedThreadPool();
+		Executor executor;
 
 		CountDownLatch latch;
 
@@ -110,7 +109,8 @@ public class FederationStatistics extends EvaluationStatistics {
 
 		private Map<List<Value>, AtomicLong> cardinalities = new ConcurrentHashMap<List<Value>, AtomicLong>();
 
-		public PatternCalculator(Collection<? extends RepositoryConnection> members, QueryModel query) {
+		public PatternCalculator(Executor executor, Collection<? extends RepositoryConnection> members, QueryModel query) {
+			this.executor = executor;
 			this.members = members;
 			int count = new PatternCounter(query).count();
 			this.latch = new CountDownLatch(count * members.size());

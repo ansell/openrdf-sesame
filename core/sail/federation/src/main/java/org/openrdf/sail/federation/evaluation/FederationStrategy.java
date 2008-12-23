@@ -8,7 +8,6 @@ package org.openrdf.sail.federation.evaluation;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import org.openrdf.cursor.Cursor;
 import org.openrdf.query.BindingSet;
@@ -35,10 +34,11 @@ import org.openrdf.store.StoreException;
  */
 public class FederationStrategy extends EvaluationStrategyImpl {
 
-	private static Executor executor = Executors.newCachedThreadPool();
+	private Executor executor;
 
-	public FederationStrategy(TripleSource tripleSource, QueryModel query) {
+	public FederationStrategy(Executor executor, TripleSource tripleSource, QueryModel query) {
 		super(tripleSource, query);
+		this.executor = executor;
 	}
 
 	@Override

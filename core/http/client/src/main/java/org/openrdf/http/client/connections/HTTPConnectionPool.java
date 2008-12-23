@@ -222,6 +222,10 @@ public class HTTPConnectionPool implements Cloneable {
 		}
 	}
 
+	public void shutdown() {
+		executor.shutdown();
+	}
+
 	public HTTPConnectionPool slash(String path) {
 		if (this.url == null) {
 			throw new IllegalStateException("URL has not been set");

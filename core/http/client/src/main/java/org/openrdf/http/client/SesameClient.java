@@ -12,7 +12,6 @@ import static org.openrdf.http.protocol.Protocol.SCHEMAS;
 import static org.openrdf.http.protocol.Protocol.TEMPLATES;
 
 import org.openrdf.http.client.connections.HTTPConnectionPool;
-import org.openrdf.model.ValueFactory;
 
 /**
  * Low-level HTTP client for Sesame's HTTP protocol. Methods correspond directly
@@ -26,32 +25,8 @@ public class SesameClient {
 
 	private HTTPConnectionPool server;
 
-	public SesameClient(String serverURL) {
-		this.server = new HTTPConnectionPool(serverURL);
-	}
-
 	public SesameClient(HTTPConnectionPool info) {
 		this.server = info;
-	}
-
-	public String getURL() {
-		return server.getURL();
-	}
-
-	public void setUsernameAndPassword(String username, String password) {
-		server.setUsernameAndPassword(username, password);
-	}
-
-	public ValueFactory getValueFactory() {
-		return server.getValueFactory();
-	}
-
-	public void setValueFactory(ValueFactory valueFactory) {
-		server.setValueFactory(valueFactory);
-	}
-
-	public HTTPConnectionPool getPool() {
-		return server;
 	}
 
 	public ProtocolClient protocol() {
