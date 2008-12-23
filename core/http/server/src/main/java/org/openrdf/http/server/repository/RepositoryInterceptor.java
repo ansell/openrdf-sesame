@@ -323,7 +323,9 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
 		String queryId = (String)request.getAttribute(QUERY_CREATE_KEY);
 		ActiveConnection activeQueries = (ActiveConnection)request.getAttribute(QUERY_MAP_KEY);
-		activeQueries.accessed(System.currentTimeMillis());
+		if (activeQueries != null) {
+			activeQueries.accessed(System.currentTimeMillis());
+		}
 		if (queryId != null) {
 			Query query = (Query)request.getAttribute(QUERY_CREATE_KEY + queryId);
 			activeQueries.putQuery(queryId, query);
