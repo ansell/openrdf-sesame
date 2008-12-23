@@ -96,6 +96,28 @@ public class RepositoryController {
 		return new TupleResultImpl(bindingNames, bindingSets);
 	}
 
+	@ModelAttribute
+	@RequestMapping(method = { GET, HEAD }, value = REPO_PATH + "/connections")
+	public TupleResult listConnections(HttpServletRequest request)
+		throws HTTPException, StoreConfigException
+	{
+		List<String> bindingNames = Arrays.asList("method", "url", "user", "ip");
+		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
+
+		ValueFactory vf = new ValueFactoryImpl();
+		Set<HttpServletRequest> set = RepositoryInterceptor.getActiveRequests(request);
+		for (HttpServletRequest req : set) {
+			Literal method = vf.createLiteral(req.getMethod());
+			Literal url = vf.createLiteral(req.getRequestURL().toString());
+			Literal user =  req.getRemoteUser() == null ? null : vf.createLiteral(req.getRemoteUser());
+			Literal ip = req.getRemoteAddr() == null ? null : vf.createLiteral(req.getRemoteAddr());
+
+			bindingSets.add(new ListBindingSet(bindingNames, method, url, user, ip));
+		}
+
+		return new TupleResultImpl(bindingNames, bindingSets);
+	}
+
 	@RequestMapping(method = POST, value = REPO_PATH + "/connections")
 	public void post(HttpServletRequest request, HttpServletResponse response)
 		throws StoreException

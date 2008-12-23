@@ -9,8 +9,10 @@ import static org.openrdf.http.protocol.Protocol.IF_NONE_MATCH;
 import static org.openrdf.http.protocol.Protocol.MAX_TIME_OUT;
 import static org.openrdf.http.protocol.Protocol.TIME_OUT_UNITS;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -96,6 +98,8 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	private static final String QUERY_CLOSED_KEY = BASE + "close-query";
 
 	private static final String NOT_SAFE_KEY = BASE + "not-safe";
+
+	private static final String ACTIVE_CONNECTIONS_KEY = BASE + "active-connections";
 
 	private static AtomicInteger seq = new AtomicInteger(new Random().nextInt());
 
@@ -192,6 +196,17 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		request.setAttribute(QUERY_CLOSED_KEY, id);
 	}
 
+	@SuppressWarnings("unchecked")
+	public static Set<HttpServletRequest> getActiveRequests(HttpServletRequest request) {
+		Object attr = request.getAttribute(ACTIVE_CONNECTIONS_KEY);
+		Map<String, ActiveConnection> connections = (Map<String, ActiveConnection>) attr;
+		Set<HttpServletRequest> result = new HashSet<HttpServletRequest>(connections.size() * 2);
+		for (ActiveConnection con : connections.values()) {
+			result.addAll(con.getActiveRequests());
+		}
+		return result;
+	}
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -232,7 +247,6 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 		throws HTTPException
 	{
-		long now = System.currentTimeMillis();
 		ProtocolUtil.logRequestParameters(request);
 
 		if (notModified(request, response)) {
@@ -265,13 +279,15 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 				}
 				else {
 					repositoryCon = activeConnections.get(connectionID);
+					repositoryCon.open(request);
 					if (repositoryCon == null) {
 						throw new NotFound("Unknown connection: " + connectionID);
 					}
 				}
 				request.setAttribute(REPOSITORY_KEY, repository);
-				request.setAttribute(REPOSITORY_CONNECTION_KEY, repositoryCon.getConnection(now));
+				request.setAttribute(REPOSITORY_CONNECTION_KEY, repositoryCon.getConnection());
 				request.setAttribute(QUERY_MAP_KEY, repositoryCon);
+				request.setAttribute(ACTIVE_CONNECTIONS_KEY, activeConnections);
 			}
 			catch (StoreConfigException e) {
 				throw new ServerHTTPException(e.getMessage(), e);
@@ -307,6 +323,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
 		String queryId = (String)request.getAttribute(QUERY_CREATE_KEY);
 		ActiveConnection activeQueries = (ActiveConnection)request.getAttribute(QUERY_MAP_KEY);
+		activeQueries.accessed(System.currentTimeMillis());
 		if (queryId != null) {
 			Query query = (Query)request.getAttribute(QUERY_CREATE_KEY + queryId);
 			activeQueries.putQuery(queryId, query);
@@ -319,6 +336,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 			try {
 				repositoryCon.close();
 				if (id != null) {
+					activeQueries.close(request);
 					activeConnections.remove(id);
 				}
 			}
@@ -336,7 +354,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		long max = Protocol.TIME_OUT_UNITS.toMillis(Protocol.MAX_TIME_OUT);
 		for (Entry<String, ActiveConnection> e : activeConnections.entrySet()) {
 			long since = now - e.getValue().getLastAccessed();
-			if (since > max) {
+			if (since > max && !e.getValue().isActive()) {
 				String id = e.getKey();
 				logger.warn("Connection {} has expired", id);
 				activeConnections.remove(id);
