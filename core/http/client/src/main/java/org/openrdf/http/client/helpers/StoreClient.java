@@ -33,8 +33,26 @@ public class StoreClient {
 
 	private HTTPConnectionPool server;
 
+	private String match;
+
+	private String eTag;
+
+	private int maxAge;
+
 	public StoreClient(HTTPConnectionPool server) {
 		this.server = server;
+	}
+
+	public int getMaxAge() {
+		return maxAge;
+	}
+
+	public String getETag() {
+		return eTag;
+	}
+
+	public void ifNoneMatch(String eTag) {
+		match = eTag;
 	}
 
 	public TupleResult list()
@@ -45,6 +63,8 @@ public class StoreClient {
 		try {
 			method.acceptTupleQueryResult();
 			execute(method);
+			if (method.isNotModified())
+				return null;
 			return method.getTupleQueryResult();
 		}
 		catch (IOException e) {
@@ -64,6 +84,8 @@ public class StoreClient {
 		HTTPConnection method = server.post();
 		try {
 			execute(method);
+			if (method.isNotModified())
+				return null;
 			return method.readLocation();
 		}
 		catch (IOException e) {
@@ -82,6 +104,8 @@ public class StoreClient {
 		try {
 			method.accept(type);
 			execute(method);
+			if (method.isNotModified())
+				return null;
 			return method.read(type);
 		}
 		catch (IOException e) {
@@ -175,6 +199,8 @@ public class StoreClient {
 			method.accept(type);
 			try {
 				method.execute();
+				if (method.isNotModified())
+					return null;
 			}
 			catch (NotFound e) {
 				return null;
@@ -251,7 +277,13 @@ public class StoreClient {
 		throws IOException, StoreException
 	{
 		try {
+			if (match != null) {
+				method.ifNoneMatch(match);
+				match = null;
+			}
 			method.execute();
+			eTag = method.readETag();
+			maxAge = method.readMaxAge();
 		}
 		catch (UnsupportedQueryLanguage e) {
 			throw new UnsupportedQueryLanguageException(e);

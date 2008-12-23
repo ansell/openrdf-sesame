@@ -349,7 +349,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 	private void render(NamespaceResult result, HttpServletRequest req, HttpServletResponse resp)
 		throws ClientHTTPException, IOException, StoreException
 	{
-		List<String> columnNames = Arrays.asList("prefix", "namespace");
+		List<String> columnNames = Arrays.asList(Protocol.PREFIX, Protocol.NAMESPACE);
 		List<BindingSet> namespaces = new ArrayList<BindingSet>();
 
 		try {

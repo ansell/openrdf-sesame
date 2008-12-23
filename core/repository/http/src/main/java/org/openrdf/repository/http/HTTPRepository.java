@@ -9,6 +9,7 @@ import static org.openrdf.http.protocol.Protocol.MIN_TIME_OUT;
 import static org.openrdf.http.protocol.Protocol.TIME_OUT_UNITS;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.http.client.ConnectionClient;
+import org.openrdf.http.client.NamespaceClient;
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
@@ -34,7 +36,10 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryMetaData;
+import org.openrdf.repository.http.helpers.CachedNamespaceResult;
 import org.openrdf.repository.http.helpers.RepositoryCache;
+import org.openrdf.result.NamespaceResult;
+import org.openrdf.result.impl.NamespaceResultImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.store.StoreException;
 
@@ -70,6 +75,8 @@ public class HTTPRepository implements Repository {
 	private RepositoryClient client;
 
 	private RepositoryCache cache;
+
+	private CachedNamespaceResult namespaces;
 
 	private File dataDir;
 
@@ -159,10 +166,12 @@ public class HTTPRepository implements Repository {
 				try {
 					if (con.isOpen()) {
 						connection.ping();
-					} else {
+					}
+					else {
 						throw new RuntimeException("connection already closed");
 					}
-				} catch (StoreException e) {
+				}
+				catch (StoreException e) {
 					logger.warn(e.toString());
 					throw new RuntimeException(e);
 				}
@@ -254,7 +263,10 @@ public class HTTPRepository implements Repository {
 	 * Indicates that the cache needs validation.
 	 */
 	void modified() {
-		cache.modified();
+		cache.stale();
+		if (namespaces != null) {
+			namespaces.stale();
+		}
 	}
 
 	boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred, Resource[] contexts)
@@ -290,5 +302,38 @@ public class HTTPRepository implements Repository {
 		throws StoreException
 	{
 		return cache.size(subj, pred, obj, includeInferred, contexts);
+	}
+
+	NamespaceResult getNamespaces()
+		throws StoreException
+	{
+		return new NamespaceResultImpl(getNamespaceMap());
+	}
+
+	String getNamespace(String prefix)
+		throws StoreException
+	{
+		return getNamespaceMap().get(prefix);
+	}
+
+	private Map<String, String> getNamespaceMap()
+		throws StoreException
+	{
+		long now = System.currentTimeMillis();
+		if (namespaces == null || !namespaces.isFresh(now)) {
+			NamespaceClient client = this.client.namespaces();
+			if (namespaces != null) {
+				client.ifNoneMatch(namespaces.getETag());
+			}
+			NamespaceResult result = client.list();
+			if (result == null) {
+				assert namespaces != null;
+				namespaces.refreshed(now, client.getMaxAge());
+			}
+			else {
+				namespaces = new CachedNamespaceResult(result.asMap(), client.getETag());
+			}
+		}
+		return namespaces.getNamespaces();
 	}
 }

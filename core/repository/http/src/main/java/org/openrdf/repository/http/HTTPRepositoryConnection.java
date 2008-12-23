@@ -28,16 +28,13 @@ import org.openrdf.http.protocol.transaction.operations.RemoveStatementsOperatio
 import org.openrdf.http.protocol.transaction.operations.SetNamespaceOperation;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
 import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
@@ -58,7 +55,6 @@ import org.openrdf.result.NamespaceResult;
 import org.openrdf.result.TupleResult;
 import org.openrdf.result.impl.ContextResultImpl;
 import org.openrdf.result.impl.ModelResultImpl;
-import org.openrdf.result.impl.NamespaceResultImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -118,12 +114,15 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 */
 	private Throwable creatorTrace;
 
+	private HTTPRepository repository;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	public HTTPRepositoryConnection(HTTPRepository repository, ConnectionClient client) {
 		super(repository);
+		this.repository = repository;
 		this.client = client;
 		URIFactory uf = repository.getURIFactory();
 		LiteralFactory lf = repository.getLiteralFactory();
@@ -138,11 +137,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	/*---------*
 	 * Methods *
 	 *---------*/
-
-	@Override
-	public HTTPRepository getRepository() {
-		return (HTTPRepository)super.getRepository();
-	}
 
 	public ValueFactory getValueFactory() {
 		return vf;
@@ -248,7 +242,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws StoreException
 	{
 		if (cachable(subj, pred, obj, contexts))
-			return getRepository().size(subj, pred, obj, includeInferred, contexts);
+			return repository.size(subj, pred, obj, includeInferred, contexts);
 		flush();
 		return client.size().get(subj, pred, obj, includeInferred, contexts);
 	}
@@ -258,7 +252,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws StoreException
 	{
 		if (cachable(subj, pred, obj, contexts))
-			return getRepository().hasStatement(subj, pred, obj, includeInferred, contexts);
+			return repository.hasStatement(subj, pred, obj, includeInferred, contexts);
 		flush();
 		StatementClient statements = client.statements();
 		statements.setLimit(1);
@@ -291,7 +285,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		flush();
 		client.commit();
-		getRepository().modified();
+		repository.modified();
 		modified = false;
 		if (!isAutoCommit()) {
 			client.begin();
@@ -349,7 +343,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		if (getRepository().isIllegal(subject, predicate, object, contexts))
+		if (repository.isIllegal(subject, predicate, object, contexts))
 			throw new IllegalStatementException();
 		add(new AddStatementOperation(subject, predicate, object, contexts));
 	}
@@ -395,40 +389,24 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public NamespaceResult getNamespaces()
 		throws StoreException
 	{
+		if (!modified)
+			return repository.getNamespaces();
 		flush();
-		List<Namespace> namespaceList = new ArrayList<Namespace>();
-
-		TupleResult namespaces = client.namespaces().list();
-		try {
-			while (namespaces.hasNext()) {
-				BindingSet bindingSet = namespaces.next();
-				Value prefix = bindingSet.getValue("prefix");
-				Value namespace = bindingSet.getValue("namespace");
-
-				if (prefix instanceof Literal && namespace instanceof Literal) {
-					String prefixStr = ((Literal)prefix).getLabel();
-					String namespaceStr = ((Literal)namespace).getLabel();
-					namespaceList.add(new NamespaceImpl(prefixStr, namespaceStr));
-				}
-			}
-		}
-		finally {
-			namespaces.close();
-		}
-
-		return new NamespaceResultImpl(new IteratorCursor<Namespace>(namespaceList.iterator()));
+		return client.namespaces().list();
 	}
 
 	public String getNamespace(String prefix)
 		throws StoreException
 	{
+		if (!modified)
+			return repository.getNamespace(prefix);
 		flush();
 		return client.namespaces().get(prefix);
 	}
 
 	@Override
 	public String toString() {
-		return getRepository().toString() + " Connection";
+		return repository.toString() + " Connection";
 	}
 
 	protected RepositoryClient getClient()
@@ -467,7 +445,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws StoreException
 	{
 		if (cachable(subj, pred, obj, contexts))
-			return getRepository().noMatch(subj, pred, obj, includeInferred, contexts);
+			return repository.noMatch(subj, pred, obj, includeInferred, contexts);
 		return false;
 	}
 
