@@ -209,6 +209,10 @@ public abstract class Protocol {
 
 	public static final String NODE_ID = "nodeID";
 
+	public static final String PREFIX = "prefix";
+
+	public static final String NAMESPACE = "namespace";
+
 	private static String getServerDir(String serverLocation) {
 		if (!serverLocation.endsWith("/")) {
 			serverLocation += "/";
