@@ -76,8 +76,9 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		}
 		for (TupleExpr arg : node.getArgs()) {
 			Var subj = getLocalSubject(arg);
-			if (vars.size() > 0 && vars.get(vars.size() - 1).getVar() == subj) {
-				vars.get(vars.size() - 1).getJoin().addArg(arg.clone());
+			LocalJoin local = findLocalJoin(subj, vars);
+			if (local != null) {
+				local.getJoin().addArg(arg.clone());
 			}
 			else {
 				vars.add(new LocalJoin(subj, new Join(arg.clone())));
@@ -147,6 +148,10 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		public O getOperation() {
 			return operation;
 		}
+
+		public String toString() {
+			return owner + "=" + operation;
+		}
 	}
 
 	class LocalJoin {
@@ -166,6 +171,10 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 
 		public Join getJoin() {
 			return join;
+		}
+
+		public String toString() {
+			return var + "=" + join;
 		}
 	}
 
@@ -330,6 +339,20 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	}
 
 	/**
+	 * If two basic graph patterns have the same subject and can be run on the
+	 * same member, we can change the order.
+	 */
+	private LocalJoin findLocalJoin(Var subj, List<LocalJoin> vars) {
+		if (vars.size() > 0 && vars.get(vars.size() - 1).getVar() == subj)
+			return vars.get(vars.size() - 1);
+		for (LocalJoin local : vars) {
+			if (subj != null && subj.equals(local.getVar()))
+				return local;
+		}
+		return null;
+	}
+
+	/**
 	 * If the argument can be sent to a single member.
 	 */
 	private RepositoryConnection getSingleOwner(TupleExpr arg)
@@ -464,7 +487,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 				OwnedTupleExpr existing = (OwnedTupleExpr)expr;
 				boolean sameOwner = newArg.getOwner() == existing.getOwner();
 				if (sameOwner && existing.getArg() instanceof Join) {
-					// already added this owner
+					// recently added this owner
 					Join existingJoin = (Join)existing.getArg();
 					Join newJoin = (Join)newArg.getArg();
 					for (TupleExpr t : newJoin.getArgs()) {
