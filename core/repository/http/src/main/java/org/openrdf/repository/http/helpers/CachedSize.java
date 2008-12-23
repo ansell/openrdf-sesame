@@ -10,29 +10,22 @@ package org.openrdf.repository.http.helpers;
  *
  * @author James Leigh
  */
-public class CachedSize {
+public class CachedSize extends Cache {
 	private long size;
 
-	private String eTag;
-
-	private volatile long expires;
-
 	public CachedSize(long size, String eTag) {
-		super();
+		super(eTag);
 		this.size = size;
-		this.eTag = eTag;
 	}
 
 	public CachedSize(boolean present, String eTag) {
-		super();
+		super(eTag);
 		this.size = present ? -1 : 0;
-		this.eTag = eTag;
 	}
 
 	public boolean isAbsent() {
 		return size == 0;
 	}
-
 
 	public boolean isSizeAvailable() {
 		return size != -1;
@@ -42,31 +35,6 @@ public class CachedSize {
 		if (size == -1)
 			return null;
 		return size;
-	}
-
-	public String getETag() {
-		return eTag;
-	}
-
-	public boolean isFresh(long now) {
-		if (expires == 0)
-			return false;
-		if (now < expires)
-			return true;
-		expires = 0;
-		return false;
-	}
-
-	public void refreshed(long now, int maxAge) {
-		if (maxAge > 0) {
-			expires = now + maxAge * 1000;
-		} else {
-			stale();
-		}
-	}
-
-	public void stale() {
-		expires = 0;
 	}
 
 }

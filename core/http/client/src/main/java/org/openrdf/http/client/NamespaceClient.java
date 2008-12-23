@@ -5,9 +5,16 @@
  */
 package org.openrdf.http.client;
 
+import org.openrdf.cursor.ConvertingCursor;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.StoreClient;
+import org.openrdf.http.protocol.Protocol;
+import org.openrdf.model.Namespace;
+import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.query.BindingSet;
+import org.openrdf.result.NamespaceResult;
 import org.openrdf.result.TupleResult;
+import org.openrdf.result.impl.NamespaceResultImpl;
 import org.openrdf.store.StoreException;
 
 /**
@@ -16,16 +23,42 @@ import org.openrdf.store.StoreException;
  * @author James Leigh
  */
 public class NamespaceClient {
+
 	private StoreClient client;
 
 	public NamespaceClient(HTTPConnectionPool namespaces) {
 		this.client = new StoreClient(namespaces);
 	}
 
-	public TupleResult list()
+	public int getMaxAge() {
+		return client.getMaxAge();
+	}
+
+	public String getETag() {
+		return client.getETag();
+	}
+
+	public void ifNoneMatch(String eTag) {
+		client.ifNoneMatch(eTag);
+	}
+
+	public NamespaceResult list()
 		throws StoreException
 	{
-		return client.list();
+		TupleResult result = client.list();
+		if (result == null)
+			return null;
+		return new NamespaceResultImpl(new ConvertingCursor<BindingSet, Namespace>(result) {
+
+			@Override
+			protected Namespace convert(BindingSet bindings)
+				throws StoreException
+			{
+				String prefix = bindings.getValue(Protocol.PREFIX).stringValue();
+				String name = bindings.getValue(Protocol.NAMESPACE).stringValue();
+				return new NamespaceImpl(prefix, name);
+			}
+		});
 	}
 
 	public String get(String prefix)

@@ -68,7 +68,7 @@ public class RepositoryCache {
 	/**
 	 * Indicates that the cache needs validation.
 	 */
-	public void modified() {
+	public void stale() {
 		if (containsFreshValues) {
 			synchronized (cachedSizes) {
 				for (CachedSize cached : cachedSizes.values()) {
