@@ -5,8 +5,12 @@
  */
 package org.openrdf.http.server.helpers;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.openrdf.query.Query;
 import org.openrdf.repository.RepositoryConnection;
@@ -22,6 +26,8 @@ public class ActiveConnection {
 
 	private Map<String, Query> queries = new ConcurrentHashMap<String, Query>();
 
+	private Set<HttpServletRequest> activeRequests = new HashSet<HttpServletRequest>();
+
 	private long lastAccessed;
 
 	public ActiveConnection(RepositoryConnection connection) {
@@ -32,13 +38,36 @@ public class ActiveConnection {
 		return connection;
 	}
 
-	public RepositoryConnection getConnection(long now) {
+	public void accessed(long now) {
 		lastAccessed = now;
-		return connection;
 	}
 
 	public long getLastAccessed() {
 		return lastAccessed;
+	}
+
+	public void open(HttpServletRequest request) {
+		synchronized (activeRequests) {
+			activeRequests.add(request);
+		}
+	}
+
+	public void close(HttpServletRequest request) {
+		synchronized (activeRequests) {
+			activeRequests.remove(request);
+		}
+	}
+
+	public boolean isActive() {
+		synchronized (activeRequests) {
+			return !activeRequests.isEmpty();
+		}
+	}
+
+	public Set<HttpServletRequest> getActiveRequests() {
+		synchronized (activeRequests) {
+			return new HashSet<HttpServletRequest>(activeRequests);
+		}
 	}
 
 	public void putQuery(String id, Query query) {
