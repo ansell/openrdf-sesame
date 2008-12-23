@@ -101,18 +101,17 @@ public class RepositoryController {
 	public TupleResult listConnections(HttpServletRequest request)
 		throws HTTPException, StoreConfigException
 	{
-		List<String> bindingNames = Arrays.asList("method", "url", "user", "ip");
+		List<String> bindingNames = Arrays.asList("method", "url");
 		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
 
 		ValueFactory vf = new ValueFactoryImpl();
-		Set<HttpServletRequest> set = RepositoryInterceptor.getActiveRequests(request);
-		for (HttpServletRequest req : set) {
-			Literal method = vf.createLiteral(req.getMethod());
-			Literal url = vf.createLiteral(req.getRequestURL().toString());
-			Literal user =  req.getRemoteUser() == null ? null : vf.createLiteral(req.getRemoteUser());
-			Literal ip = req.getRemoteAddr() == null ? null : vf.createLiteral(req.getRemoteAddr());
+		Set<String> set = RepositoryInterceptor.getActiveRequests(request);
+		for (String req : set) {
+			String[] split = req.split(" ", 2);
+			Literal method = vf.createLiteral(split[0]);
+			Literal url = vf.createLiteral(split[1]);
 
-			bindingSets.add(new ListBindingSet(bindingNames, method, url, user, ip));
+			bindingSets.add(new ListBindingSet(bindingNames, method, url));
 		}
 
 		return new TupleResultImpl(bindingNames, bindingSets);

@@ -64,9 +64,16 @@ public class ActiveConnection {
 		}
 	}
 
-	public Set<HttpServletRequest> getActiveRequests() {
+	/**
+	 * @return Set of req.getMethod() + " " + req.getRequestURL()
+	 */
+	public Set<String> getActiveRequests() {
 		synchronized (activeRequests) {
-			return new HashSet<HttpServletRequest>(activeRequests);
+			Set<String> set = new HashSet<String>(activeRequests.size());
+			for (HttpServletRequest req : activeRequests) {
+				set.add(req.getMethod() + " " + req.getRequestURL());
+			}
+			return set;
 		}
 	}
 
