@@ -157,7 +157,8 @@ abstract class FederationConnection implements SailConnection, TripleSource, Exe
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (federation.isDistinct()) {
+		PrefixHashSet hash = federation.getLocalPropertySpace();
+		if (federation.isDistinct() || pred != null && hash != null && hash.match(pred.stringValue())) {
 			long size = 0;
 			for (RepositoryConnection member : members) {
 				size += member.sizeMatch(subj, pred, obj, includeInferred, contexts);

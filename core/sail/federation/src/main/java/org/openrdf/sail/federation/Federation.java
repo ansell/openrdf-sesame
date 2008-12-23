@@ -40,7 +40,7 @@ public class Federation extends SailBase implements Executor {
 
 	private FederatedMetaData metadata;
 
-	private ExecutorService executor = Executors.newCachedThreadPool(); 
+	private ExecutorService executor = Executors.newCachedThreadPool();
 
 	public URIFactory getURIFactory() {
 		return uf;
@@ -54,6 +54,9 @@ public class Federation extends SailBase implements Executor {
 		members.add(member);
 	}
 
+	/**
+	 * @return PrefixHashSet or null
+	 */
 	public PrefixHashSet getLocalPropertySpace() {
 		return localPropertySpace;
 	}
