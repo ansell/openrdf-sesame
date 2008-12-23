@@ -5,7 +5,10 @@
  */
 package org.openrdf.http.server.helpers;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,9 +70,9 @@ public class ActiveConnection {
 	/**
 	 * @return Set of req.getMethod() + " " + req.getRequestURL()
 	 */
-	public Set<String> getActiveRequests() {
+	public Collection<String> getActiveRequests() {
 		synchronized (activeRequests) {
-			Set<String> set = new HashSet<String>(activeRequests.size());
+			List<String> set = new ArrayList<String>(activeRequests.size());
 			for (HttpServletRequest req : activeRequests) {
 				set.add(req.getMethod() + " " + req.getRequestURL());
 			}

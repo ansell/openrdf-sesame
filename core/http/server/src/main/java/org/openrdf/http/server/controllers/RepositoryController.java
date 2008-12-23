@@ -15,6 +15,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -105,8 +106,8 @@ public class RepositoryController {
 		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
 
 		ValueFactory vf = new ValueFactoryImpl();
-		Set<String> set = RepositoryInterceptor.getActiveRequests(request);
-		for (String req : set) {
+		Collection<String> requests = RepositoryInterceptor.getActiveRequests(request);
+		for (String req : requests) {
 			String[] split = req.split(" ", 2);
 			Literal method = vf.createLiteral(split[0]);
 			Literal url = vf.createLiteral(split[1]);

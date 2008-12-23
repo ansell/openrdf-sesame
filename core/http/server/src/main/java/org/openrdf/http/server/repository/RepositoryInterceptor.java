@@ -9,10 +9,11 @@ import static org.openrdf.http.protocol.Protocol.IF_NONE_MATCH;
 import static org.openrdf.http.protocol.Protocol.MAX_TIME_OUT;
 import static org.openrdf.http.protocol.Protocol.TIME_OUT_UNITS;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -199,9 +200,9 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	/**
 	 * @return Set of req.getMethod() + " " + req.getRequestURL()
 	 */
-	public static Set<String> getActiveRequests(HttpServletRequest request) {
+	public static Collection<String> getActiveRequests(HttpServletRequest request) {
 		RepositoryInterceptor self = (RepositoryInterceptor)request.getAttribute(SELF_KEY);
-		Set<String> result = new HashSet<String>(self.activeConnections.size() * 2 + self.singleConnections.size());
+		List<String> result = new ArrayList<String>(self.activeConnections.size() * 2 + self.singleConnections.size());
 		for (ActiveConnection con : self.activeConnections.values()) {
 			result.addAll(con.getActiveRequests());
 		}
