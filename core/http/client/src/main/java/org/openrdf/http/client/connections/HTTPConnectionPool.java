@@ -18,7 +18,6 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -50,6 +49,8 @@ public class HTTPConnectionPool implements Cloneable {
 	private final Logger logger = LoggerFactory.getLogger(HTTPConnectionPool.class);
 
 	private ValueFactory valueFactory;
+
+	private MultiThreadedHttpConnectionManager manager;
 
 	private HttpClient httpClient;
 
@@ -85,7 +86,7 @@ public class HTTPConnectionPool implements Cloneable {
 
 		// Use MultiThreadedHttpConnectionManager to allow concurrent access on
 		// HttpClient
-		HttpConnectionManager manager = new MultiThreadedHttpConnectionManager();
+		manager = new MultiThreadedHttpConnectionManager();
 
 		// Allow 20 concurrent connections to the same host (default is 2)
 		HttpConnectionManagerParams params = new HttpConnectionManagerParams();
@@ -224,6 +225,7 @@ public class HTTPConnectionPool implements Cloneable {
 
 	public void shutdown() {
 		executor.shutdown();
+		manager.shutdown();
 	}
 
 	public HTTPConnectionPool slash(String path) {
