@@ -26,7 +26,6 @@ import org.openrdf.http.protocol.exceptions.UnsupportedFileFormat;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
 import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
@@ -55,32 +54,12 @@ public class RepositoryClient {
 
 	private HTTPConnectionPool repository;
 
-	public RepositoryClient(String repositoryURL) {
-		this.repository = new HTTPConnectionPool(repositoryURL);
-	}
-
 	public RepositoryClient(HTTPConnectionPool repository) {
 		this.repository = repository;
 	}
 
-	public String getURL() {
+	public String toString() {
 		return repository.getURL();
-	}
-
-	public void setUsernameAndPassword(String username, String password) {
-		repository.setUsernameAndPassword(username, password);
-	}
-
-	public ValueFactory getValueFactory() {
-		return repository.getValueFactory();
-	}
-
-	public void setValueFactory(ValueFactory valueFactory) {
-		repository.setValueFactory(valueFactory);
-	}
-
-	public HTTPConnectionPool getPool() {
-		return repository;
 	}
 
 	public ConnectionsClient connections() {

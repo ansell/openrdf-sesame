@@ -52,13 +52,13 @@ import org.openrdf.store.StoreException;
  */
 public class HTTPRepository implements Repository {
 
-	private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
 	Logger logger = LoggerFactory.getLogger(HTTPRepository.class);
+
+	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
 	private URIFactory uf = new URIFactoryImpl();
 
@@ -77,19 +77,21 @@ public class HTTPRepository implements Repository {
 
 	private RepositoryMetaData metadata;
 
+	private HTTPConnectionPool pool;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	public HTTPRepository(String serverURL, String repositoryID) {
-		HTTPConnectionPool pool = new HTTPConnectionPool(serverURL);
+		pool = new HTTPConnectionPool(serverURL);
 		pool.setValueFactory(new ValueFactoryImpl(new BNodeFactoryImpl(), uf, lf));
 		client = new SesameClient(pool).repositories().slash(repositoryID);
 		cache = new RepositoryCache(client);
 	}
 
 	public HTTPRepository(String repositoryURL) {
-		HTTPConnectionPool pool = new HTTPConnectionPool(repositoryURL);
+		pool = new HTTPConnectionPool(repositoryURL);
 		pool.setValueFactory(new ValueFactoryImpl(new BNodeFactoryImpl(), uf, lf));
 		client = new RepositoryClient(pool);
 		cache = new RepositoryCache(client);
@@ -130,6 +132,8 @@ public class HTTPRepository implements Repository {
 		throws StoreException
 	{
 		initialized = false;
+		pool.shutdown();
+		executor.shutdown();
 	}
 
 	public URIFactory getURIFactory() {
@@ -188,7 +192,7 @@ public class HTTPRepository implements Repository {
 	 *        explicit preference will be stated.
 	 */
 	public void setPreferredTupleQueryResultFormat(TupleQueryResultFormat format) {
-		client.getPool().setPreferredTupleQueryResultFormat(format);
+		pool.setPreferredTupleQueryResultFormat(format);
 	}
 
 	/**
@@ -198,7 +202,7 @@ public class HTTPRepository implements Repository {
 	 *         defined.
 	 */
 	public TupleQueryResultFormat getPreferredTupleQueryResultFormat() {
-		return client.getPool().getPreferredTupleQueryResultFormat();
+		return pool.getPreferredTupleQueryResultFormat();
 	}
 
 	/**
@@ -215,7 +219,7 @@ public class HTTPRepository implements Repository {
 	 *        preference will be stated.
 	 */
 	public void setPreferredRDFFormat(RDFFormat format) {
-		client.getPool().setPreferredRDFFormat(format);
+		pool.setPreferredRDFFormat(format);
 	}
 
 	/**
@@ -225,7 +229,7 @@ public class HTTPRepository implements Repository {
 	 *         defined.
 	 */
 	public RDFFormat getPreferredRDFFormat() {
-		return client.getPool().getPreferredRDFFormat();
+		return pool.getPreferredRDFFormat();
 	}
 
 	/**
@@ -238,12 +242,12 @@ public class HTTPRepository implements Repository {
 	 *        the password. Setting this to null will disable authentication.
 	 */
 	public void setUsernameAndPassword(String username, String password) {
-		client.setUsernameAndPassword(username, password);
+		pool.setUsernameAndPassword(username, password);
 	}
 
 	@Override
 	public String toString() {
-		return client.getURL();
+		return client.toString();
 	}
 
 	/**

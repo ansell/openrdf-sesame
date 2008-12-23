@@ -44,6 +44,7 @@ import info.aduna.io.FileUtil;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
@@ -557,7 +558,12 @@ public class Console {
 	private boolean connectRemote(String url) {
 		try {
 			// Ping server
-			new SesameClient(url).protocol().get();
+			HTTPConnectionPool pool = new HTTPConnectionPool(url);
+			try {
+				new SesameClient(pool).protocol().get();
+			} finally {
+				pool.shutdown();
+			}
 
 			return installNewManager(new RemoteRepositoryManager(url), url);
 		}

@@ -85,12 +85,15 @@ public class BackgroundTupleResult extends ResultImpl<BindingSet> implements Tup
 		}
 		catch (TupleQueryResultHandlerException e) {
 			// parsing cancelled or interrupted
+			connection.abort();
 		}
 		catch (QueryResultParseException e) {
 			queue.toss(e);
+			connection.abort();
 		}
 		catch (IOException e) {
 			queue.toss(e);
+			connection.abort();
 		}
 		finally {
 			parserThread = null;

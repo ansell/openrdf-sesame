@@ -500,6 +500,10 @@ public class HTTPConnection {
 		}
 	}
 
+	public void abort() {
+		method.abort();
+	}
+
 	public String readQueryType() {
 		return readHeader(Protocol.X_QUERY_TYPE);
 	}
