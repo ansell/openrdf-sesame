@@ -55,6 +55,7 @@ import org.openrdf.sail.federation.optimizers.OwnedTupleExprPruner;
 import org.openrdf.sail.federation.optimizers.PrepareOwnedTupleExpr;
 import org.openrdf.sail.federation.signatures.BNodeSigner;
 import org.openrdf.sail.federation.signatures.SignedConnection;
+import org.openrdf.sail.helpers.SailConnectionBase;
 import org.openrdf.store.StoreException;
 
 /**
@@ -63,7 +64,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-abstract class FederationConnection implements SailConnection, TripleSource, Executor {
+abstract class FederationConnection extends SailConnectionBase implements TripleSource, Executor {
 
 	private Logger logger = LoggerFactory.getLogger(FederationConnection.class);
 
@@ -102,6 +103,7 @@ abstract class FederationConnection implements SailConnection, TripleSource, Exe
 				member.close();
 			}
 		});
+		super.close();
 	}
 
 	public Cursor<? extends Resource> getContextIDs()

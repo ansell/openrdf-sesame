@@ -72,6 +72,30 @@ public class SailConnectionWrapper implements SailConnection {
 		wrappedCon.close();
 	}
 
+	public boolean isActive()
+		throws StoreException
+	{
+		return wrappedCon.isActive();
+	}
+
+	public void begin()
+		throws StoreException
+	{
+		wrappedCon.begin();
+	}
+
+	public void commit()
+		throws StoreException
+	{
+		wrappedCon.commit();
+	}
+
+	public void rollback()
+		throws StoreException
+	{
+		wrappedCon.rollback();
+	}
+
 	public ValueFactory getValueFactory() {
 		return wrappedCon.getValueFactory();
 	}
@@ -99,24 +123,6 @@ public class SailConnectionWrapper implements SailConnection {
 		throws StoreException
 	{
 		return wrappedCon.size(subj, pred, obj, includeInferred, contexts);
-	}
-
-	public void begin()
-		throws StoreException
-	{
-		wrappedCon.begin();
-	}
-
-	public void commit()
-		throws StoreException
-	{
-		wrappedCon.commit();
-	}
-
-	public void rollback()
-		throws StoreException
-	{
-		wrappedCon.rollback();
 	}
 
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)

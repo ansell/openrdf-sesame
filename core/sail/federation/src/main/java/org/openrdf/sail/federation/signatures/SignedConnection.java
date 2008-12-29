@@ -122,21 +122,21 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 	}
 
 	@Override
-	protected void addWithoutCommit(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void add(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		Resource s = signer.internalize(subj);
 		Value o = signer.internalize(obj);
 		Resource[] c = signer.internalize(contexts);
-		super.addWithoutCommit(s, pred, o, c);
+		super.add(s, pred, o, c);
 	}
 
 	@Override
-	protected void removeWithoutCommit(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void removeMatch(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		if (!signer.isNotSignedBNode(subj, pred, obj, contexts))
-			super.removeWithoutCommit(s(subj), pred, o(obj), c(contexts));
+			super.removeMatch(s(subj), pred, o(obj), c(contexts));
 	}
 
 	private Resource s(Resource subj) {

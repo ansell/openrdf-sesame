@@ -139,6 +139,16 @@ public interface SailConnection {
 		throws StoreException;
 
 	/**
+	 * Indicates if {@link #begin()} has been called and {@link #commit()} or
+	 * {@link #rollback()} has to be called to close the transaction.
+	 * 
+	 * @throws StoreException
+	 *         If the SailConnection could not start a transaction.
+	 */
+	public boolean isActive()
+		throws StoreException;
+
+	/**
 	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
 	 * be called to close the transaction.
 	 * 

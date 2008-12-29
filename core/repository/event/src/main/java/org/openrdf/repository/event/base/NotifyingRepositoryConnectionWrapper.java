@@ -106,7 +106,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	}
 
 	@Override
-	public void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		boolean reportEvent = activated;
@@ -130,7 +130,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 		throws StoreException
 	{
 		if (activated && reportDeltas()) {
-			removeWithoutCommit(null, null, null, contexts);
+			removeMatch(null, null, null, contexts);
 		} else if (activated) {
 			getDelegate().clear(contexts);
 			for (RepositoryConnectionListener listener : listeners) {
@@ -168,7 +168,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	}
 
 	@Override
-	public void removeWithoutCommit(Resource subj, URI pred, Value obj, Resource... ctx)
+	public void removeMatch(Resource subj, URI pred, Value obj, Resource... ctx)
 		throws StoreException
 	{
 		if (activated && reportDeltas()) {

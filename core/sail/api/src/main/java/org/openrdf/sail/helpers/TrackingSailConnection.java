@@ -38,9 +38,11 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 	 * Variables *
 	 *-----------*/
 
-	private boolean isOpen;
+	private volatile boolean isOpen;
 
-	private boolean txnActive;
+	private volatile boolean txnActive;
+
+	private volatile boolean modified;
 
 	// FIXME: use weak references here?
 	private List<TrackingSailCursor<?>> activeIterations = Collections.synchronizedList(new LinkedList<TrackingSailCursor<?>>());
@@ -114,16 +116,8 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 
 				assert activeIterations.isEmpty();
 
-				if (txnActive) {
+				if (txnActive && modified) {
 					logger.warn("Rolling back transaction due to connection close", new Throwable());
-					try {
-						// Use internal method to avoid deadlock: the public
-						// rollback method will try to obtain a connection lock
-						super.rollback();
-					}
-					finally {
-						txnActive = false;
-					}
 				}
 
 				super.close();
@@ -187,12 +181,6 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		return super.size(subj, pred, obj, includeInferred, contexts);
 	}
 
-	protected void autoStartTransaction()
-		throws StoreException
-	{
-		begin();
-	}
-
 	@Override
 	public void begin()
 		throws StoreException
@@ -200,6 +188,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		if (!txnActive) {
 			super.begin();
 			txnActive = true;
+			modified = false;
 		}
 	}
 
@@ -211,6 +200,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		if (txnActive) {
 			super.commit();
 			txnActive = false;
+			modified = false;
 		}
 	}
 
@@ -225,6 +215,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 			}
 			finally {
 				txnActive = false;
+				modified = false;
 			}
 		}
 	}
@@ -234,7 +225,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		throws StoreException
 	{
 		verifyIsOpen();
-		autoStartTransaction();
+		modified();
 		super.addStatement(subj, pred, obj, contexts);
 	}
 
@@ -243,7 +234,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		throws StoreException
 	{
 		verifyIsOpen();
-		autoStartTransaction();
+		modified();
 		super.removeStatements(subj, pred, obj, contexts);
 	}
 
@@ -268,7 +259,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		throws StoreException
 	{
 		verifyIsOpen();
-		autoStartTransaction();
+		modified();
 		super.setNamespace(prefix, name);
 	}
 
@@ -277,7 +268,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		throws StoreException
 	{
 		verifyIsOpen();
-		autoStartTransaction();
+		modified();
 		super.removeNamespace(prefix);
 	}
 
@@ -286,8 +277,12 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		throws StoreException
 	{
 		verifyIsOpen();
-		autoStartTransaction();
+		modified();
 		super.clearNamespaces();
+	}
+
+	protected void modified() {
+		modified = true;
 	}
 
 	/**
