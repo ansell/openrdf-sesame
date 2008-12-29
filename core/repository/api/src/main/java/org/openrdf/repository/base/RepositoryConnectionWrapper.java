@@ -77,7 +77,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	/**
 	 * If true then each add method will call
-	 * {@link #addWithoutCommit(Resource, URI, Value, Resource[])}.
+	 * {@link #add(Resource, URI, Value, Resource[])}.
 	 * 
 	 * @return <code>false</code>
 	 * @throws StoreException
@@ -90,7 +90,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	/**
 	 * If true then each import method (parsed RDF) will call
-	 * {@link #addWithoutCommit(Resource, URI, Value, Resource[])}.
+	 * {@link #add(Resource, URI, Value, Resource[])}.
 	 * 
 	 * @return <code>false</code>
 	 * @throws StoreException
@@ -116,7 +116,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	/**
 	 * If true then each remove method will call
-	 * {@link #removeWithoutCommit(Resource, URI, Value, Resource[])}.
+	 * {@link #removeMatch(Resource, URI, Value, Resource[])}.
 	 * 
 	 * @return <code>false</code>
 	 * @throws StoreException
@@ -192,18 +192,6 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
-	{
-		if (isDelegatingAdd()) {
-			getDelegate().add(subject, predicate, object, contexts);
-		}
-		else {
-			super.add(subject, predicate, object, contexts);
-		}
-	}
-
-	@Override
 	public void add(Statement st, Resource... contexts)
 		throws StoreException
 	{
@@ -239,12 +227,10 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		}
 	}
 
-	@Override
 	public void close()
 		throws StoreException
 	{
 		getDelegate().close();
-		super.close();
 	}
 
 	public void commit()
@@ -311,7 +297,6 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return super.hasStatement(st, includeInferred, contexts);
 	}
 
-	@Override
 	public boolean isAutoCommit()
 		throws StoreException
 	{
@@ -328,7 +313,6 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return super.isEmpty();
 	}
 
-	@Override
 	public boolean isOpen()
 		throws StoreException
 	{
@@ -384,18 +368,6 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
-	{
-		if (isDelegatingRemove()) {
-			getDelegate().removeMatch(subject, predicate, object, contexts);
-		}
-		else {
-			super.removeMatch(subject, predicate, object, contexts);
-		}
-	}
-
-	@Override
 	public void remove(Statement st, Resource... contexts)
 		throws StoreException
 	{
@@ -425,11 +397,9 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().rollback();
 	}
 
-	@Override
 	public void setAutoCommit(boolean autoCommit)
 		throws StoreException
 	{
-		super.setAutoCommit(autoCommit);
 		getDelegate().setAutoCommit(autoCommit);
 	}
 
@@ -454,15 +424,13 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		}
 	}
 
-	@Override
-	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		getDelegate().add(subject, predicate, object, contexts);
 	}
 
-	@Override
-	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		getDelegate().removeMatch(subject, predicate, object, contexts);
@@ -472,7 +440,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	 * Exports all statements contained in the supplied statement iterator and
 	 * all relevant namespace information to the supplied RDFHandler.
 	 */
-	protected void exportStatements(ModelResult stIter, RDFHandler handler)
+	private void exportStatements(ModelResult stIter, RDFHandler handler)
 		throws StoreException, RDFHandlerException
 	{
 		try {

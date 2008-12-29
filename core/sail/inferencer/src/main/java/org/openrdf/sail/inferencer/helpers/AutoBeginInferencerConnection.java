@@ -9,26 +9,23 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.SailConnectionListener;
-import org.openrdf.sail.helpers.SailConnectionTracker;
-import org.openrdf.sail.helpers.TrackingSailConnection;
+import org.openrdf.sail.helpers.AutoBeginSailConnection;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.store.StoreException;
 
 /**
- * Tracks SailConnection iterations and verifies that the connection is open.
+ * Auto begins and commits transactions.
  * 
- * @author Arjohn Kampman
- * @author jeen
  * @author James Leigh
  */
-public class TrackingInferencerConnection extends TrackingSailConnection implements InferencerConnection {
+public class AutoBeginInferencerConnection extends AutoBeginSailConnection implements InferencerConnection {
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public TrackingInferencerConnection(InferencerConnection con, SailConnectionTracker tracker) {
-		super(con, tracker);
+	public AutoBeginInferencerConnection(InferencerConnection con) {
+		super(con);
 	}
 
 	/*---------*
@@ -43,23 +40,56 @@ public class TrackingInferencerConnection extends TrackingSailConnection impleme
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		verifyIsOpen();
-		modified();
-		return getWrappedConnection().addInferredStatement(subj, pred, obj, contexts);
+		InferencerConnection con = getWrappedConnection();
+		if (isActive()) {
+			return con.addInferredStatement(subj, pred, obj, contexts);
+		}
+		else {
+			try {
+				begin();
+				boolean result = con.addInferredStatement(subj, pred, obj, contexts);
+				commit();
+				return result;
+			}
+			catch (RuntimeException e) {
+				rollback();
+				throw e;
+			}
+			catch (StoreException e) {
+				rollback();
+				throw e;
+			}
+		}
 	}
 
 	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		verifyIsOpen();
-		modified();
-		return getWrappedConnection().removeInferredStatement(subj, pred, obj, contexts);
+		InferencerConnection con = getWrappedConnection();
+		if (isActive()) {
+			return con.removeInferredStatement(subj, pred, obj, contexts);
+		}
+		else {
+			try {
+				begin();
+				boolean result = con.removeInferredStatement(subj, pred, obj, contexts);
+				commit();
+				return result;
+			}
+			catch (RuntimeException e) {
+				rollback();
+				throw e;
+			}
+			catch (StoreException e) {
+				rollback();
+				throw e;
+			}
+		}
 	}
 
 	public void flushUpdates()
 		throws StoreException
 	{
-		verifyIsOpen();
 		getWrappedConnection().flushUpdates();
 	}
 

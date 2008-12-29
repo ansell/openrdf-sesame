@@ -66,30 +66,12 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	private final Repository repository;
 
-	private volatile boolean isOpen;
-
-	private boolean autoCommit;
-
 	protected RepositoryConnectionBase(Repository repository) {
 		this.repository = repository;
-		this.isOpen = true;
-		this.autoCommit = true;
 	}
 
 	public Repository getRepository() {
 		return repository;
-	}
-
-	public boolean isOpen()
-		throws StoreException
-	{
-		return isOpen;
-	}
-
-	public void close()
-		throws StoreException
-	{
-		isOpen = false;
 	}
 
 	public Query prepareQuery(QueryLanguage ql, String query)
@@ -145,39 +127,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws StoreException, RDFHandlerException
 	{
 		exportMatch(null, null, null, false, handler, contexts);
-	}
-
-	public void setAutoCommit(boolean autoCommit)
-		throws StoreException
-	{
-		if (autoCommit == this.autoCommit) {
-			return;
-		}
-
-		this.autoCommit = autoCommit;
-
-		// if we are switching from non-autocommit to autocommit mode, commit any
-		// pending updates
-		if (autoCommit) {
-			commit();
-		}
-	}
-
-	public boolean isAutoCommit()
-		throws StoreException
-	{
-		return autoCommit;
-	}
-
-	/**
-	 * Calls {@link #commit} when in auto-commit mode.
-	 */
-	protected void autoCommit()
-		throws StoreException
-	{
-		if (isAutoCommit()) {
-			commit();
-		}
 	}
 
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
@@ -381,7 +330,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 		try {
 			for (Statement st : statements) {
-				addWithoutCommit(st, contexts);
+				add(st, contexts);
 			}
 		}
 		catch (StoreException e) {
@@ -410,7 +359,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		try {
 			Statement st;
 			while ((st = statementIter.next()) != null) {
-				addWithoutCommit(st, contexts);
+				add(st, contexts);
 			}
 		}
 		catch (StoreException e) {
@@ -434,15 +383,11 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void add(Statement st, Resource... contexts)
 		throws StoreException
 	{
-		addWithoutCommit(st, contexts);
-		autoCommit();
-	}
-
-	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
-	{
-		addWithoutCommit(subject, predicate, object, contexts);
-		autoCommit();
+		if (contexts != null && contexts.length == 0 && st.getContext() != null) {
+			contexts = new Resource[] { st.getContext() };
+		}
+		
+		add(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
 	}
 
 	public void remove(Iterable<? extends Statement> statements, Resource... contexts)
@@ -506,15 +451,11 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void remove(Statement st, Resource... contexts)
 		throws StoreException
 	{
-		removeWithoutCommit(st, contexts);
-		autoCommit();
-	}
-
-	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
-	{
-		removeWithoutCommit(subject, predicate, object, contexts);
-		autoCommit();
+		if (contexts != null && contexts.length == 0 && st.getContext() != null) {
+			contexts = new Resource[] { st.getContext() };
+		}
+		
+		removeMatch(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
 	}
 
 	public void clear(Resource... contexts)
@@ -579,32 +520,4 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	{
 		removeMatch(subject, predicate, object, contexts);
 	}
-
-	protected void addWithoutCommit(Statement st, Resource... contexts)
-		throws StoreException
-	{
-		if (contexts != null && contexts.length == 0 && st.getContext() != null) {
-			contexts = new Resource[] { st.getContext() };
-		}
-
-		addWithoutCommit(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
-	}
-
-	protected abstract void addWithoutCommit(Resource subject, URI predicate, Value object,
-			Resource... contexts)
-		throws StoreException;
-
-	protected void removeWithoutCommit(Statement st, Resource... contexts)
-		throws StoreException
-	{
-		if (contexts != null && contexts.length == 0 && st.getContext() != null) {
-			contexts = new Resource[] { st.getContext() };
-		}
-
-		removeWithoutCommit(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
-	}
-
-	protected abstract void removeWithoutCommit(Resource subject, URI predicate, Value object,
-			Resource... contexts)
-		throws StoreException;
 }

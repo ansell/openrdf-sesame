@@ -22,6 +22,7 @@ import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.URIFactory;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailMetaData;
+import org.openrdf.sail.helpers.AutoBeginSailConnection;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.helpers.SynchronizedSailConnection;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
@@ -190,7 +191,9 @@ public class RdbmsStore extends SailBase {
 		throws StoreException
 	{
 		SailConnection con = factory.createConnection();
-		return new SynchronizedSailConnection(con);
+		con = new SynchronizedSailConnection(con);
+		con = new AutoBeginSailConnection(con);
+		return con;
 	}
 
 	@Override

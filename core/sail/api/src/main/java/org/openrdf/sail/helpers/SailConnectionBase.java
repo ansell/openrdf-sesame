@@ -29,6 +29,8 @@ public abstract class SailConnectionBase implements SailConnection {
 
 	private boolean txnActive;
 
+	private volatile boolean closed;
+
 	/*---------*
 	 * Methods *
 	 *---------*/
@@ -36,16 +38,16 @@ public abstract class SailConnectionBase implements SailConnection {
 	public boolean isOpen()
 		throws StoreException
 	{
-		return true;
+		return !closed;
 	}
 
 	public void close()
 		throws StoreException
 	{
-		// no-op
+		closed = true;
 	}
 
-	protected boolean transactionActive() {
+	public boolean isActive() {
 		return txnActive;
 	}
 

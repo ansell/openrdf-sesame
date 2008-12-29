@@ -18,41 +18,8 @@ import org.openrdf.store.StoreException;
  */
 class ReadOnlyConnection extends FederationConnection {
 
-	private boolean closed;
-
 	public ReadOnlyConnection(Federation federation, List<RepositoryConnection> members) {
 		super(federation, members);
-	}
-
-	public void begin()
-		throws StoreException
-	{
-		// no-op
-	}
-
-	public boolean isOpen()
-		throws StoreException
-	{
-		return !closed;
-	}
-
-	public void close()
-		throws StoreException
-	{
-		super.close();
-		closed = true;
-	}
-
-	public void rollback()
-		throws StoreException
-	{
-		// no-op
-	}
-
-	public void commit()
-		throws StoreException
-	{
-		// no-op
 	}
 
 	public void setNamespace(String prefix, String name)

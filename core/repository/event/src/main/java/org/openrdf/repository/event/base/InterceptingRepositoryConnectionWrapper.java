@@ -81,7 +81,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 	}
 
 	@Override
-	public void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		boolean denied = false;
@@ -153,7 +153,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 	}
 
 	@Override
-	public void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		boolean denied = false;

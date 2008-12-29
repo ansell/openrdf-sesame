@@ -7,6 +7,7 @@ package org.openrdf.sail.federation.evaluation;
 
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.DelegatingCursor;
+import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.store.StoreException;
@@ -34,7 +35,9 @@ public class InsertBindingSetCursor extends DelegatingCursor<BindingSet> {
 		int size = bindings.size() + next.size();
 		QueryBindingSet set = new QueryBindingSet(size);
 		set.addAll(bindings);
-		set.addAll(next);
+		for (Binding binding : next) {
+			set.setBinding(binding);
+		}
 		return set;
 	}
 

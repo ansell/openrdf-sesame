@@ -103,8 +103,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	private volatile boolean closed;
 
+	private volatile boolean active;
+
 	/** If connection cannot use shared repository cache. */
-	private boolean modified;
+	private volatile boolean modified;
 
 	private List<TransactionOperation> txn = new ArrayList<TransactionOperation>(MAX_TRAN_QUEUE / 2);
 
@@ -142,6 +144,26 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return vf;
 	}
 
+	public boolean isOpen()
+		throws StoreException
+	{
+		return !closed;
+	}
+
+	public void close()
+		throws StoreException
+	{
+		if (!closed) {
+			flush();
+			closed = true;
+			if (modified) {
+				logger.warn("Rolling back transaction due to connection close", new Throwable());
+				rollback();
+			}
+			client.close();
+		}
+	}
+
 	@Override
 	protected void finalize()
 		throws Throwable
@@ -160,9 +182,58 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	public boolean isAutoCommit()
+		throws StoreException
+	{
+		return !active;
+	}
+
+	public void setAutoCommit(boolean autoCommit)
+		throws StoreException
+	{
+		boolean currently = isAutoCommit();
+		if (!autoCommit && currently) {
+			client.begin();
+			active = true;
+		}
+		else if (autoCommit && !currently) {
+			flush();
+			client.commit();
+			repository.modified();
+			modified = false;
+			active = false;
+		}
+	}
+
+	public void commit()
+		throws StoreException
+	{
+		flush();
+		if (!isAutoCommit()) {
+			client.commit();
+			repository.modified();
+			client.begin();
+		}
+		modified = false;
+	}
+
+	public void rollback()
+		throws StoreException
+	{
+		synchronized (txn) {
+			txn.clear();
+		}
+		if (!isAutoCommit()) {
+			client.rollback();
+			client.begin();
+		}
+		modified = false;
+	}
+
 	public Query prepareQuery(QueryLanguage ql, String qry, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
+		flush();
 		QueryClient query = client.queries().postQuery(ql, qry, baseURI);
 		if (query instanceof GraphQueryClient)
 			return new HTTPGraphQuery(qry, (GraphQueryClient)query);
@@ -176,6 +247,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String qry, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
+		flush();
 		TupleQueryClient query = client.queries().postTupleQuery(ql, qry, baseURI);
 		return new HTTPTupleQuery(qry, query);
 	}
@@ -183,6 +255,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String qry, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
+		flush();
 		GraphQueryClient query = client.queries().postGraphQuery(ql, qry, baseURI);
 		return new HTTPGraphQuery(qry, query);
 	}
@@ -190,6 +263,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String qry, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
+		flush();
 		BooleanQueryClient query = client.queries().postBooleanQuery(ql, qry, baseURI);
 		return new HTTPBooleanQuery(qry, query);
 	}
@@ -266,59 +340,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	public void setAutoCommit(boolean autoCommit)
-		throws StoreException
-	{
-		boolean currently = super.isAutoCommit();
-		if (!autoCommit && currently) {
-			client.begin();
-		}
-		else if (autoCommit && !currently) {
-			client.commit();
-			modified = false;
-		}
-		super.setAutoCommit(autoCommit);
-	}
-
-	public void commit()
-		throws StoreException
-	{
-		flush();
-		client.commit();
-		repository.modified();
-		modified = false;
-		if (!isAutoCommit()) {
-			client.begin();
-		}
-	}
-
-	public void rollback()
-		throws StoreException
-	{
-		synchronized (txn) {
-			txn.clear();
-		}
-		client.rollback();
-		modified = false;
-		client.begin();
-	}
-
-	@Override
-	public void close()
-		throws StoreException
-	{
-		if (!closed) {
-			closed = true;
-			if (modified) {
-				logger.warn("Rolling back transaction due to connection close", new Throwable());
-				rollback();
-			}
-			client.close();
-		}
-		super.close();
-	}
-
-	@Override
 	protected void addInputStreamOrReader(Object inputStreamOrReader, String baseURI, RDFFormat dataFormat,
 			Resource... contexts)
 		throws IOException, RDFParseException, StoreException
@@ -336,11 +357,14 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			throw new IllegalArgumentException("inputStreamOrReader must be an InputStream or a Reader, is a: "
 					+ inputStreamOrReader.getClass());
 		}
-		modified = !isAutoCommit();
+		if (isAutoCommit()) {
+			repository.modified();
+		} else {
+			modified = true;
+		}
 	}
 
-	@Override
-	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		if (repository.isIllegal(subject, predicate, object, contexts))
@@ -348,8 +372,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		add(new AddStatementOperation(subject, predicate, object, contexts));
 	}
 
-	@Override
-	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		if (!noMatch(subject, predicate, object, true, contexts)) {
@@ -362,34 +385,30 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws StoreException
 	{
 		add(new ClearOperation(contexts));
-		autoCommit();
 	}
 
 	public void removeNamespace(String prefix)
 		throws StoreException
 	{
 		add(new RemoveNamespaceOperation(prefix));
-		autoCommit();
 	}
 
 	public void clearNamespaces()
 		throws StoreException
 	{
 		add(new ClearNamespacesOperation());
-		autoCommit();
 	}
 
 	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
 		add(new SetNamespaceOperation(prefix, name));
-		autoCommit();
 	}
 
 	public NamespaceResult getNamespaces()
 		throws StoreException
 	{
-		if (!modified)
+		if (!modified && isAutoCommit())
 			return repository.getNamespaces();
 		flush();
 		return client.namespaces().list();
@@ -398,7 +417,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public String getNamespace(String prefix)
 		throws StoreException
 	{
-		if (!modified)
+		if (!modified && isAutoCommit())
 			return repository.getNamespace(prefix);
 		flush();
 		return client.namespaces().get(prefix);
@@ -420,8 +439,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * If this connection has not modified any statements and the pattern does
 	 * not contains connection specific BNodes.
 	 */
-	private boolean cachable(Resource subj, URI pred, Value obj, Resource... contexts) {
-		if (modified)
+	private boolean cachable(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		if (modified || !isAutoCommit())
 			return false;
 		if (subj instanceof BNode)
 			return false;
@@ -465,9 +486,13 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws StoreException
 	{
 		synchronized (txn) {
-			if (txn.size() > 0) {
+			if (!txn.isEmpty()) {
 				client.statements().post(txn);
 				txn.clear();
+				if (isAutoCommit()) {
+					repository.modified();
+					modified = false;
+				}
 			}
 		}
 	}

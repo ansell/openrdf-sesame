@@ -15,35 +15,14 @@ import org.openrdf.store.StoreException;
  */
 abstract class EchoWriteConnection extends FederationConnection {
 
-	private boolean closed;
-
 	public EchoWriteConnection(Federation federation, List<RepositoryConnection> members) {
 		super(federation, members);
-	}
-
-	public boolean isOpen()
-		throws StoreException
-	{
-		return !closed;
-	}
-
-	public void close()
-		throws StoreException
-	{
-		excute(new Procedure() {
-
-			public void run(RepositoryConnection member)
-				throws StoreException
-			{
-				member.close();
-			}
-		});
-		closed = true;
 	}
 
 	public void begin()
 		throws StoreException
 	{
+		super.begin();
 		excute(new Procedure() {
 
 			public void run(RepositoryConnection member)
@@ -66,6 +45,7 @@ abstract class EchoWriteConnection extends FederationConnection {
 				member.setAutoCommit(true);
 			}
 		});
+		super.rollback();
 	}
 
 	public void commit()
@@ -80,6 +60,7 @@ abstract class EchoWriteConnection extends FederationConnection {
 				member.setAutoCommit(false);
 			}
 		});
+		super.commit();
 	}
 
 	public void setNamespace(final String prefix, final String name)

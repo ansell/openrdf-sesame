@@ -567,33 +567,6 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	/**
-	 * Removes the statement with the specified subject, predicate and object
-	 * from the repository, optionally restricted to the specified contexts.
-	 * 
-	 * @param subject
-	 *        The statement's subject.
-	 * @param predicate
-	 *        The statement's predicate.
-	 * @param object
-	 *        The statement's object.
-	 * @throws StoreException
-	 *         If the statement could not be removed from the repository, for
-	 *         example because the repository is not writable.
-	 * @see #getRemoveContexts()
-	 */
-	@Override
-	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
-	{
-		if (contexts != null && contexts.length == 0) {
-			super.removeMatch(subject, predicate, object, removeContexts);
-		}
-		else {
-			super.removeMatch(subject, predicate, object, contexts);
-		}
-	}
-
-	/**
 	 * Removes the supplied statement from the specified contexts in the
 	 * repository.
 	 * 
@@ -659,8 +632,23 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		}
 	}
 
+	/**
+	 * Removes the statement with the specified subject, predicate and object
+	 * from the repository, optionally restricted to the specified contexts.
+	 * 
+	 * @param subject
+	 *        The statement's subject.
+	 * @param predicate
+	 *        The statement's predicate.
+	 * @param object
+	 *        The statement's object.
+	 * @throws StoreException
+	 *         If the statement could not be removed from the repository, for
+	 *         example because the repository is not writable.
+	 * @see #getRemoveContexts()
+	 */
 	@Override
-	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		RDFHandler handler = new RDFInserter(getDelegate());
@@ -673,7 +661,12 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			}
 			throw new AssertionError(e);
 		}
-		getDelegate().removeMatch(subject, predicate, object, contexts);
+		if (contexts != null && contexts.length == 0) {
+			super.removeMatch(subject, predicate, object, removeContexts);
+		}
+		else {
+			super.removeMatch(subject, predicate, object, contexts);
+		}
 	}
 
 	private <Q extends Query> Q initQuery(Q query) {

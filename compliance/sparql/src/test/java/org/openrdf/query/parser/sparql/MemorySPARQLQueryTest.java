@@ -23,6 +23,7 @@ public class MemorySPARQLQueryTest extends SPARQLQueryTest {
 			public MemorySPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 					String resultFileURL, Dataset dataSet)
 			{
+				if (!name.contains("Basic - Prefix/Base 1")) return null;
 				return new MemorySPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet);
 			}
 		});

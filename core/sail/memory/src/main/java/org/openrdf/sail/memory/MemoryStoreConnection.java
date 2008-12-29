@@ -114,7 +114,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			int snapshot = store.getCurrentSnapshot();
 			ReadMode readMode = ReadMode.COMMITTED;
 
-			if (transactionActive()) {
+			if (isActive()) {
 				snapshot++;
 				readMode = ReadMode.TRANSACTION;
 			}
@@ -166,9 +166,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
-			final int snapshot = transactionActive() ? store.getCurrentSnapshot() + 1
-					: store.getCurrentSnapshot();
-			final ReadMode readMode = transactionActive() ? ReadMode.TRANSACTION : ReadMode.COMMITTED;
+			final int snapshot = isActive() ? store.getCurrentSnapshot() + 1 : store.getCurrentSnapshot();
+			final ReadMode readMode = isActive() ? ReadMode.TRANSACTION : ReadMode.COMMITTED;
 
 			synchronized (vf.getURIFactory()) {
 				for (MemResource memResource : vf.getMemURIs()) {
@@ -223,7 +222,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			int snapshot = store.getCurrentSnapshot();
 			ReadMode readMode = ReadMode.COMMITTED;
 
-			if (transactionActive()) {
+			if (isActive()) {
 				snapshot++;
 				readMode = ReadMode.TRANSACTION;
 			}

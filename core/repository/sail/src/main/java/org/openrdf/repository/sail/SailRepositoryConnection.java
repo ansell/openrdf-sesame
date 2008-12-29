@@ -77,24 +77,52 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return sailConnection.getValueFactory();
 	}
 
+	public boolean isOpen()
+		throws StoreException
+	{
+		return sailConnection.isOpen();
+	}
+
+	public void close()
+		throws StoreException
+	{
+		sailConnection.close();
+	}
+
+	public boolean isAutoCommit()
+		throws StoreException
+	{
+		return !sailConnection.isActive();
+	}
+
+	public void setAutoCommit(boolean autoCommit)
+		throws StoreException
+	{
+		boolean currently = isAutoCommit();
+		if (!autoCommit && currently) {
+			sailConnection.begin();
+		}
+		else if (autoCommit && !currently) {
+			sailConnection.commit();
+		}
+	}
+
 	public void commit()
 		throws StoreException
 	{
-		sailConnection.commit();
+		if (sailConnection.isActive()) {
+			sailConnection.commit();
+			sailConnection.begin();
+		}
 	}
 
 	public void rollback()
 		throws StoreException
 	{
-		sailConnection.rollback();
-	}
-
-	@Override
-	public void close()
-		throws StoreException
-	{
-		sailConnection.close();
-		super.close();
+		if (sailConnection.isActive()) {
+			sailConnection.rollback();
+			sailConnection.begin();
+		}
 	}
 
 	public SailQuery prepareQuery(QueryLanguage ql, String queryString, String baseURI)
@@ -191,15 +219,13 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return sailConnection.size(subject, predicate, object, includeInferred, contexts);
 	}
 
-	@Override
-	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		sailConnection.addStatement(subject, predicate, object, contexts);
 	}
 
-	@Override
-	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
 		sailConnection.removeStatements(subject, predicate, object, contexts);
@@ -210,28 +236,24 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		throws StoreException
 	{
 		sailConnection.removeStatements(null, null, null, contexts);
-		autoCommit();
 	}
 
 	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
 		sailConnection.setNamespace(prefix, name);
-		autoCommit();
 	}
 
 	public void removeNamespace(String prefix)
 		throws StoreException
 	{
 		sailConnection.removeNamespace(prefix);
-		autoCommit();
 	}
 
 	public void clearNamespaces()
 		throws StoreException
 	{
 		sailConnection.clearNamespaces();
-		autoCommit();
 	}
 
 	public NamespaceResult getNamespaces()
