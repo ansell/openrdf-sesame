@@ -84,7 +84,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 	protected Repository dataRep;
 
-	private RepositoryConnection con;
+	protected RepositoryConnection con;
 
 	/*--------------*
 	 * Constructors *
@@ -156,10 +156,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		throws Exception
 	{
 		String queryString = readQueryString();
-		Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);
-		if (dataset != null) {
-			query.setDataset(dataset);
-		}
+		Query query = prepareQuery(queryString);
 
 		if (query instanceof TupleQuery) {
 			TupleResult queryResult = ((TupleQuery)query).evaluate();
@@ -187,6 +184,16 @@ public abstract class SPARQLQueryTest extends TestCase {
 		else {
 			throw new RuntimeException("Unexpected query type: " + query.getClass());
 		}
+	}
+
+	protected Query prepareQuery(String queryString)
+		throws StoreException
+	{
+		Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);
+		if (dataset != null) {
+			query.setDataset(dataset);
+		}
+		return query;
 	}
 
 	private void compareTupleQueryResults(TupleResult queryResult, TupleResult expectedResult)
