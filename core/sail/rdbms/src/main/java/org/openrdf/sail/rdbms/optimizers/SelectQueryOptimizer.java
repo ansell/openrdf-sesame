@@ -217,6 +217,10 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 		SelectQuery right = (SelectQuery)r;
 		if (left.isComplex() || right.isComplex())
 			return;
+		Set<String> names = new HashSet<String>(left.getBindingNames());
+		names.retainAll(right.getBindingNames());
+		if (names.isEmpty())
+			return;
 		left = left.clone();
 		right = right.clone();
 		filterOn(left, right);
