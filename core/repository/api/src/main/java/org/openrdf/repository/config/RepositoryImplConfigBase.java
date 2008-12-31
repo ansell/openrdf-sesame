@@ -69,9 +69,9 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 		throws StoreConfigException
 	{
 		try {
-			Literal typeLit = model.filter(implNode, REPOSITORYTYPE, null).objectLiteral();
-			if (typeLit != null) {
-				setType(typeLit.getLabel());
+			String type = model.filter(implNode, REPOSITORYTYPE, null).objectString();
+			if (type != null) {
+				setType(type);
 			}
 		}
 		catch (ModelException e) {
