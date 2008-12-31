@@ -439,7 +439,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		}
 		resp.setHeader("Content-Type", contentType);
 		if (format.getDefaultFileExtension() != null) {
-			String contentDisposition = "attachment; filename=result" + "." + format.getDefaultFileExtension();
+			String contentDisposition = "inline; filename=result" + "." + format.getDefaultFileExtension();
 			resp.setHeader("Content-Disposition", contentDisposition);
 		}
 	}
