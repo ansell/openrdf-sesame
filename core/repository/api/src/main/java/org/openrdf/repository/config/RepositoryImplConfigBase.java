@@ -8,11 +8,9 @@ package org.openrdf.repository.config;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYTYPE;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.store.StoreConfigException;
 
@@ -83,13 +81,13 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 		throws StoreConfigException
 	{
 		try {
-			Literal typeLit = model.filter(implNode, REPOSITORYTYPE, null).objectLiteral();
+			String type = model.filter(implNode, REPOSITORYTYPE, null).objectString();
 
-			if (typeLit != null) {
-				RepositoryFactory factory = RepositoryRegistry.getInstance().get(typeLit.getLabel());
+			if (type != null) {
+				RepositoryFactory factory = RepositoryRegistry.getInstance().get(type);
 
 				if (factory == null) {
-					throw new StoreConfigException("Unsupported repository type: " + typeLit.getLabel());
+					throw new StoreConfigException("Unsupported repository type: " + type);
 				}
 
 				RepositoryImplConfig implConfig = factory.getConfig();
