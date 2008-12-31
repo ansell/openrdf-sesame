@@ -33,6 +33,7 @@ import org.openrdf.http.server.controllers.SchemaController;
 import org.openrdf.http.server.controllers.SizeController;
 import org.openrdf.http.server.controllers.StatementController;
 import org.openrdf.http.server.controllers.TemplateController;
+import org.openrdf.http.server.controllers.URIController;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.repository.manager.RepositoryManager;
 
@@ -55,12 +56,18 @@ public class SesameServlet implements Servlet {
 
 	private int maxCacheAge;
 
+	private boolean urlResolution;
+
 	public SesameServlet(RepositoryManager manager) {
 		this.manager = manager;
 	}
 
 	public void setMaxCacheAge(int maxCacheAge) {
 		this.maxCacheAge = maxCacheAge;
+	}
+
+	public void setUrlResolution(boolean urlResolution) {
+		this.urlResolution = urlResolution;
 	}
 
 	public void destroy() {
@@ -90,9 +97,11 @@ public class SesameServlet implements Servlet {
 		synchronized (SesameApplication.class) {
 			SesameApplication.staticManager = manager;
 			SesameApplication.maxCacheAge = maxCacheAge;
+			SesameApplication.urlResolution = urlResolution;
 			delegate.init(new SesameServletConfig(config));
 			SesameApplication.staticManager = null;
 			SesameApplication.maxCacheAge = 0;
+			SesameApplication.urlResolution = false;
 		}
 	}
 
@@ -146,6 +155,8 @@ public class SesameServlet implements Servlet {
 	
 		static int maxCacheAge;
 
+		static boolean urlResolution;
+
 		public SesameApplication() {
 			// RepositoryManager
 			registerSingleton(RepositoryManager.class, staticManager);
@@ -164,7 +175,9 @@ public class SesameServlet implements Servlet {
 			registerPrototype(ConnectionController.class);
 			registerPrototype(QueryController.class);
 			registerPrototype(BNodeController.class);
-//			registerPrototype(URIController.class);
+			if (urlResolution) {
+				registerPrototype(URIController.class);
+			}
 
 			// Exceptions
 			registerPrototype(ExceptionWritter.class);
