@@ -11,8 +11,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -51,8 +52,6 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 
 	private Logger logger = LoggerFactory.getLogger(LocalTemplateManager.class);
 
-	private Model schema = new ModelImpl();
-
 	private Map<String, ConfigTemplate> services = new ConcurrentHashMap<String, ConfigTemplate>();
 
 	private ClassLoader cl;
@@ -73,15 +72,6 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	{
 		if (cl == null) {
 			cl = Thread.currentThread().getContextClassLoader();
-		}
-		try {
-			loadTemplates(cl);
-			if (templateDir != null && templateDir.isDirectory()) {
-				loadTemplates(templateDir);
-			}
-		}
-		catch (IOException e) {
-			throw new StoreConfigException(e);
 		}
 	}
 
@@ -105,7 +95,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	public void addTemplate(String id, Model model)
 		throws StoreConfigException
 	{
-		services.put(id, new ConfigTemplate(model, schema));
+		services.put(id, new ConfigTemplate(model, getSchemas()));
 	}
 
 	/**
@@ -119,7 +109,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		throws StoreConfigException
 	{
 		if (services.remove(id) == null) {
-			throw new StoreConfigException("Template does not exists");
+			throw new StoreConfigException("Template does not exists or cannot be removed");
 		}
 	}
 
@@ -130,53 +120,85 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	 *        The key identifying which service to get.
 	 * @return The service for the specified key, or <tt>null</tt> if no such
 	 *         service is avaiable.
+	 * @throws StoreConfigException
 	 */
-	public ConfigTemplate getTemplate(String key) {
-		return services.get(key);
+	public ConfigTemplate getTemplate(String key)
+		throws StoreConfigException
+	{
+		ConfigTemplate template = services.get(key);
+		if (template != null)
+			return template;
+		URL url = loadTemplates().get(key);
+		if (url == null)
+			return null;
+		try {
+			return new ConfigTemplate(parse(url), getSchemas());
+		}
+		catch (RDFParseException e) {
+			throw new StoreConfigException(e);
+		}
+		catch (IOException e) {
+			throw new StoreConfigException(e);
+		}
 	}
 
 	/**
 	 * Gets the set of registered keys.
 	 * 
 	 * @return An unmodifiable set containing all registered keys.
+	 * @throws StoreConfigException
 	 */
-	public Set<String> getIDs() {
-		return Collections.unmodifiableSet(services.keySet());
+	public Set<String> getIDs()
+		throws StoreConfigException
+	{
+		Set<String> set = new HashSet<String>();
+		set.addAll(services.keySet());
+		set.addAll(loadTemplates().keySet());
+		return set;
 	}
 
 	public Model getSchemas()
 		throws StoreConfigException
 	{
-		return schema;
+		try {
+			return loadResources(new ModelImpl(), cl, STORE_SCHEMAS);
+		}
+		catch (IOException e) {
+			throw new StoreConfigException(e);
+		}
 	}
 
-	private void loadTemplates(ClassLoader cl)
-		throws IOException, StoreConfigException
+	private Map<String, URL> loadTemplates()
+		throws StoreConfigException
 	{
-		loadResources(schema, cl, STORE_SCHEMAS);
-		loadTemplates(cl, REPOSITORY_TEMPLATES);
+		Map<String, URL> map = new HashMap<String, URL>();
+		try {
+			map = loadTemplates(cl, REPOSITORY_TEMPLATES, map);
+			if (templateDir != null && templateDir.isDirectory()) {
+				map = loadTemplates(templateDir, map);
+			}
+		}
+		catch (IOException e) {
+			throw new StoreConfigException(e);
+		}
+		return map;
 	}
 
-	private void loadTemplates(File dir)
+	private Map<String, URL> loadTemplates(File dir, Map<String, URL> map)
 		throws IOException, StoreConfigException
 	{
 		assert dir.isDirectory();
 		for (File file : dir.listFiles()) {
-			try {
-				String id = file.getName();
-				if (id.indexOf('.') > 0) {
-					id = id.substring(0, id.indexOf('.'));
-				}
-				addTemplate(id, parse(file.toURI().toURL()));
+			String id = file.getName();
+			if (id.indexOf('.') > 0) {
+				id = id.substring(0, id.indexOf('.'));
 			}
-			catch (RDFParseException e) {
-				logger.warn(e.toString(), e);
-				continue;
-			}
+			map.put(id, file.toURI().toURL());
 		}
+		return map;
 	}
 
-	private void loadResources(Model model, ClassLoader cl, String resource)
+	private Model loadResources(Model model, ClassLoader cl, String resource)
 		throws IOException
 	{
 		Enumeration<URL> schemas = cl.getResources(resource);
@@ -225,9 +247,10 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 				}
 			}
 		}
+		return model;
 	}
 
-	private void loadTemplates(ClassLoader cl, String resource)
+	private Map<String, URL> loadTemplates(ClassLoader cl, String resource, Map<String, URL> map)
 		throws IOException, StoreConfigException
 	{
 		Enumeration<URL> templates = cl.getResources(resource);
@@ -242,20 +265,15 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 					logger.warn("{} not found", name);
 					continue;
 				}
-				try {
-					String id = new File(URLDecoder.decode(url.getPath(), "UTF-8")).getName();
-					if (id.indexOf('.') > 0) {
-						id = id.substring(0, id.indexOf('.'));
-					}
-					addTemplate(id, parse(url));
+				String id = new File(URLDecoder.decode(url.getPath(), "UTF-8")).getName();
+				if (id.indexOf('.') > 0) {
+					id = id.substring(0, id.indexOf('.'));
 				}
-				catch (RDFParseException e) {
-					logger.warn(e.toString(), e);
-					continue;
-				}
+				map.put(id, url);
 			}
 
 		}
+		return map;
 	}
 
 	private Model parse(URL url)
@@ -289,7 +307,8 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 			IOException ioe = new IOException("Unsupported file format: " + url.getFile());
 			ioe.initCause(e);
 			throw ioe;
-		} catch (RDFParseException e) {
+		}
+		catch (RDFParseException e) {
 			e.setFilename(url.toString());
 			throw e;
 		}
