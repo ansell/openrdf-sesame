@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.cursor.EmptyCursor;
-import org.openrdf.cursor.IteratorCursor;
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.http.client.BooleanQueryClient;
 import org.openrdf.http.client.ConnectionClient;
 import org.openrdf.http.client.GraphQueryClient;
@@ -289,7 +289,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			contextIDs.close();
 		}
 
-		return new ContextResultImpl(new IteratorCursor<Resource>(contextList.iterator()));
+		return new ContextResultImpl(new CollectionCursor<Resource>(contextList));
 	}
 
 	public ModelResult match(Resource subj, URI pred, Value obj, boolean inf, Resource... ctx)

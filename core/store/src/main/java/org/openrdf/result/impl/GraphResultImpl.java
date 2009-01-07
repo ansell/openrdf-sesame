@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2006-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2006-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.IteratorCursor;
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.model.Statement;
 import org.openrdf.result.GraphResult;
 import org.openrdf.store.StoreException;
@@ -29,7 +29,7 @@ public class GraphResultImpl extends ModelResultImpl implements GraphResult {
 	 * Variables *
 	 *-----------*/
 
-	private Map<String, String> namespaces;
+	private final Map<String, String> namespaces;
 
 	/*--------------*
 	 * Constructors *
@@ -44,7 +44,7 @@ public class GraphResultImpl extends ModelResultImpl implements GraphResult {
 	}
 
 	public GraphResultImpl(Map<String, String> namespaces, Iterator<? extends Statement> statementIter) {
-		this(namespaces, new IteratorCursor<Statement>(statementIter));
+		this(namespaces, new CollectionCursor<Statement>(statementIter));
 	}
 
 	public GraphResultImpl(Map<String, String> namespaces, Cursor<? extends Statement> statementIter) {
@@ -56,6 +56,7 @@ public class GraphResultImpl extends ModelResultImpl implements GraphResult {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public Map<String, String> getNamespaces()
 		throws StoreException
 	{

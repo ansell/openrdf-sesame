@@ -17,7 +17,7 @@ import java.util.Set;
 import info.aduna.lang.ObjectUtil;
 
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.IteratorCursor;
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
@@ -38,7 +38,7 @@ import org.openrdf.store.StoreException;
  * @author David Huynh
  * @author Arjohn Kampman
  */
-public class GroupCursor extends IteratorCursor<BindingSet> {
+public class GroupCursor extends CollectionCursor<BindingSet> {
 
 	/*--------------*
 	 * Constructors *

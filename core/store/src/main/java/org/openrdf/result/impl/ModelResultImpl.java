@@ -15,10 +15,7 @@ import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.result.ModelResult;
 import org.openrdf.store.StoreException;
 
-
-
 /**
- *
  * @author James Leigh
  */
 public class ModelResultImpl extends ResultImpl<Statement> implements ModelResult {
@@ -38,5 +35,4 @@ public class ModelResultImpl extends ResultImpl<Statement> implements ModelResul
 	{
 		return addTo(new ModelImpl(getNamespaces()));
 	}
-
 }

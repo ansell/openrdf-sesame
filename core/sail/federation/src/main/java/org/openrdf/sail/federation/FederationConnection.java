@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,13 +11,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.IteratorCursor;
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -68,29 +67,31 @@ import org.openrdf.store.StoreException;
  * {@link SailConnection}.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
-abstract class FederationConnection extends SailConnectionBase implements TripleSource, Executor {
+abstract class FederationConnection extends SailConnectionBase {
 
-	private Logger logger = LoggerFactory.getLogger(FederationConnection.class);
+	private final Logger logger = LoggerFactory.getLogger(FederationConnection.class);
 
-	private Federation federation;
+	private final Federation federation;
 
-	private ValueFactory vf;
+	private final ValueFactory vf;
 
-	List<SignedConnection> members;
+	final List<SignedConnection> members;
 
 	public FederationConnection(Federation federation, List<RepositoryConnection> members) {
-		BNodeFactoryImpl bf = new BNodeFactoryImpl();
-		List<SignedConnection> result = new ArrayList<SignedConnection>(members.size());
-		for (RepositoryConnection member : members) {
-			BNodeSigner signer = new BNodeSigner(bf, member.getValueFactory());
-			result.add(signer.sign(member));
-		}
 		this.federation = federation;
-		this.members = result;
+
+		BNodeFactoryImpl bf = new BNodeFactoryImpl();
 		URIFactory uf = federation.getURIFactory();
 		LiteralFactory lf = federation.getLiteralFactory();
 		vf = new ValueFactoryImpl(bf, uf, lf);
+
+		this.members = new ArrayList<SignedConnection>(members.size());
+		for (RepositoryConnection member : members) {
+			BNodeSigner signer = new BNodeSigner(bf, member.getValueFactory());
+			this.members.add(signer.sign(member));
+		}
 	}
 
 	public ValueFactory getValueFactory() {
@@ -103,34 +104,41 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 	{
 		excute(new Procedure() {
 
-			public void run(RepositoryConnection member)
+			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				member.close();
+				con.close();
 			}
 		});
+
 		super.close();
 	}
 
 	public Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
-		return new DistinctCursor<Resource>(union(new Function<Resource>() {
+		Cursor<? extends Resource> cursor = union(new Function<Resource>() {
 
 			public ContextResult call(RepositoryConnection member)
 				throws StoreException
 			{
 				return member.getContextIDs();
 			}
-		}));
+		});
+
+		cursor = new DistinctCursor<Resource>(cursor);
+
+		return cursor;
 	}
 
 	public String getNamespace(String prefix)
 		throws StoreException
 	{
 		String namespace = null;
+
 		for (RepositoryConnection member : members) {
 			String ns = member.getNamespace(prefix);
+
 			if (namespace == null) {
 				namespace = ns;
 			}
@@ -138,6 +146,7 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 				return null;
 			}
 		}
+
 		return namespace;
 	}
 
@@ -146,26 +155,35 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 	{
 		Map<String, Namespace> namespaces = new HashMap<String, Namespace>();
 		Set<String> prefixes = new HashSet<String>();
+
 		for (RepositoryConnection member : members) {
 			NamespaceResult ns = member.getNamespaces();
-			while (ns.hasNext()) {
-				Namespace next = ns.next();
-				String prefix = next.getPrefix();
-				if (prefixes.add(prefix)) {
-					namespaces.put(prefix, next);
-				}
-				else if (!next.equals(namespaces.get(prefix))) {
-					namespaces.remove(prefix);
+			try {
+				while (ns.hasNext()) {
+					Namespace next = ns.next();
+					String prefix = next.getPrefix();
+
+					if (prefixes.add(prefix)) {
+						namespaces.put(prefix, next);
+					}
+					else if (!next.equals(namespaces.get(prefix))) {
+						namespaces.remove(prefix);
+					}
 				}
 			}
+			finally {
+				ns.close();
+			}
 		}
-		return new IteratorCursor<Namespace>(namespaces.values().iterator());
+
+		return new CollectionCursor<Namespace>(namespaces.values());
 	}
 
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		PrefixHashSet hash = federation.getLocalPropertySpace();
+
 		if (federation.isDistinct() || pred != null && hash != null && hash.match(pred.stringValue())) {
 			long size = 0;
 			for (RepositoryConnection member : members) {
@@ -174,8 +192,7 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 			return size;
 		}
 		else {
-			Cursor<? extends Statement> cursor;
-			cursor = getStatements(subj, pred, obj, includeInferred, contexts);
+			Cursor<? extends Statement> cursor = getStatements(subj, pred, obj, includeInferred, contexts);
 			try {
 				long size = 0;
 				while (cursor.next() != null) {
@@ -201,125 +218,41 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 				return member.match(subj, pred, obj, includeInferred, contexts);
 			}
 		});
-		if (federation.isDistinct() || isLocal(pred)) {
-			return cursor;
-		}
-		return new DistinctCursor<Statement>(cursor);
-	}
 
-	public Cursor<? extends Statement> getStatements(final Resource subj, final URI pred, final Value obj,
-			final Resource... contexts)
-		throws StoreException
-	{
-		Cursor<? extends Statement> cursor = union(new Function<Statement>() {
-
-			public ModelResult call(RepositoryConnection member)
-				throws StoreException
-			{
-				return member.match(subj, pred, obj, true, contexts);
-			}
-		});
-		if (federation.isDistinct() || isLocal(pred)) {
-			return cursor;
+		if (!federation.isDistinct() && !isLocal(pred)) {
+			// Filter any duplicates
+			cursor = new DistinctCursor<Statement>(cursor);
 		}
-		return new DistinctCursor<Statement>(cursor);
+
+		return cursor;
 	}
 
 	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
-		EvaluationStrategyImpl strategy;
-		strategy = new FederationStrategy(this, this, query);
+		TripleSource tripleSource = new FederationTripleSource(includeInferred);
+		EvaluationStrategyImpl strategy = new FederationStrategy(federation, tripleSource, query);
 		TupleExpr qry = optimize(query, bindings, strategy);
 		return strategy.evaluate(qry, EmptyBindingSet.getInstance());
 	}
 
-	public void execute(Runnable command) {
-		federation.execute(command);
-	}
+	private class FederationTripleSource implements TripleSource {
 
-	interface Procedure {
+		private final boolean includeInferred;
 
-		void run(RepositoryConnection member)
-			throws StoreException;
-	}
-
-	void excute(Procedure operation)
-		throws StoreException
-	{
-		StoreException store = null;
-		RuntimeException runtime = null;
-		for (RepositoryConnection member : members) {
-			try {
-				operation.run(member);
-			}
-			catch (StoreException e) {
-				logger.error(e.toString(), e);
-				if (store != null) {
-					store = e;
-				}
-			}
-			catch (RuntimeException e) {
-				logger.error(e.toString(), e);
-				if (runtime != null) {
-					runtime = e;
-				}
-
-			}
+		public FederationTripleSource(boolean includeInferred) {
+			this.includeInferred = includeInferred;
 		}
-		if (store != null) {
-			throw store;
-		}
-		if (runtime != null) {
-			throw runtime;
-		}
-	}
 
-	private interface Function<E> {
+		public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
+				Resource... contexts)
+			throws StoreException
+		{
+			return FederationConnection.this.getStatements(subj, pred, obj, includeInferred, contexts);
+		}
 
-		public abstract Result<E> call(RepositoryConnection member)
-			throws StoreException;
-	}
-
-	private boolean isLocal(URI pred) {
-		if (pred == null) {
-			return false;
-		}
-		PrefixHashSet hash = federation.getLocalPropertySpace();
-		if (hash == null) {
-			return false;
-		}
-		return hash.match(pred.stringValue());
-	}
-
-	private <E> Cursor<? extends E> union(Function<E> converter)
-		throws StoreException
-	{
-		List<Cursor<? extends E>> cursors = new ArrayList<Cursor<? extends E>>(members.size());
-		try {
-			for (RepositoryConnection member : members) {
-				cursors.add(converter.call(member));
-			}
-			return new UnionCursor<E>(cursors);
-		}
-		catch (StoreException e) {
-			closeAll(cursors);
-			throw e;
-		}
-		catch (RuntimeException e) {
-			closeAll(cursors);
-			throw e;
-		}
-	}
-
-	private <E> void closeAll(Iterable<? extends Cursor<? extends E>> cursors) {
-		for (Cursor<? extends E> cursor : cursors) {
-			try {
-				cursor.close();
-			}
-			catch (StoreException e) {
-				logger.error(e.toString(), e);
-			}
+		public ValueFactory getValueFactory() {
+			return vf;
 		}
 	}
 
@@ -339,7 +272,7 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 		new SameTermFilterOptimizer().optimize(query, bindings);
 		new QueryModelPruner().optimize(query, bindings);
 
-		FederationStatistics statistics = new FederationStatistics(this, members, query);
+		FederationStatistics statistics = new FederationStatistics(federation, members, query);
 		new QueryJoinOptimizer(statistics).optimize(query, bindings);
 		new FilterOptimizer().optimize(query, bindings);
 
@@ -358,4 +291,92 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 		return query;
 	}
 
+	interface Procedure {
+
+		public void run(RepositoryConnection member)
+			throws StoreException;
+	}
+
+	void excute(Procedure operation)
+		throws StoreException
+	{
+		StoreException storeExc = null;
+		RuntimeException runtimeExc = null;
+
+		for (RepositoryConnection member : members) {
+			try {
+				operation.run(member);
+			}
+			catch (StoreException e) {
+				logger.error("Failed to execute procedure on federation members", e);
+				if (storeExc != null) {
+					storeExc = e;
+				}
+			}
+			catch (RuntimeException e) {
+				logger.error("Failed to execute procedure on federation members", e);
+				if (runtimeExc != null) {
+					runtimeExc = e;
+				}
+			}
+		}
+
+		if (storeExc != null) {
+			throw storeExc;
+		}
+		else if (runtimeExc != null) {
+			throw runtimeExc;
+		}
+	}
+
+	private interface Function<E> {
+
+		public Result<E> call(RepositoryConnection member)
+			throws StoreException;
+	}
+
+	private <E> Cursor<? extends E> union(Function<E> function)
+		throws StoreException
+	{
+		List<Cursor<? extends E>> cursors = new ArrayList<Cursor<? extends E>>(members.size());
+
+		try {
+			for (RepositoryConnection member : members) {
+				cursors.add(function.call(member));
+			}
+			return new UnionCursor<E>(cursors);
+		}
+		catch (StoreException e) {
+			closeAll(cursors);
+			throw e;
+		}
+		catch (RuntimeException e) {
+			closeAll(cursors);
+			throw e;
+		}
+	}
+
+	private boolean isLocal(URI pred) {
+		if (pred == null) {
+			return false;
+		}
+
+		PrefixHashSet hash = federation.getLocalPropertySpace();
+		if (hash == null) {
+			return false;
+		}
+
+		return hash.match(pred.stringValue());
+	}
+
+	private void closeAll(Iterable<? extends Cursor<?>> cursors) {
+		for (Cursor<?> cursor : cursors) {
+			try {
+				cursor.close();
+			}
+			catch (StoreException e) {
+				logger.error("Failed to close cursor", e);
+			}
+		}
+	}
 }

@@ -17,5 +17,4 @@ public class ContextResultImpl extends ResultImpl<Resource> implements ContextRe
 	public ContextResultImpl(Cursor<? extends Resource> delegate) {
 		super(delegate);
 	}
-
 }

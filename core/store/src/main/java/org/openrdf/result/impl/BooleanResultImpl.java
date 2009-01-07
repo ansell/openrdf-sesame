@@ -33,5 +33,4 @@ public class BooleanResultImpl extends ResultImpl<Boolean> implements BooleanRes
 			close();
 		}
 	}
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.IteratorCursor;
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.result.TupleResult;
 
@@ -23,7 +23,7 @@ public class TupleResultImpl extends ResultImpl<BindingSet> implements TupleResu
 	 * Variables *
 	 *-----------*/
 
-	private List<String> bindingNames;
+	private final List<String> bindingNames;
 
 	/*--------------*
 	 * Constructors *
@@ -43,7 +43,7 @@ public class TupleResultImpl extends ResultImpl<BindingSet> implements TupleResu
 	}
 
 	public TupleResultImpl(List<String> bindingNames, Iterator<? extends BindingSet> bindingSetIter) {
-		this(bindingNames, new IteratorCursor<BindingSet>(bindingSetIter));
+		this(bindingNames, new CollectionCursor<BindingSet>(bindingSetIter));
 	}
 
 	/**

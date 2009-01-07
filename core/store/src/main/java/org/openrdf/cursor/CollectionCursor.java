@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,16 +8,20 @@ package org.openrdf.cursor;
 import java.util.Iterator;
 
 /**
- * An cursor that iterates over an {@link Iterator}'s elements.
+ * An cursor that iterates over a collection's elements.
  * 
  * @author James Leigh
  * @author Arjohn Kampman
  */
-public class IteratorCursor<E> extends CheckedCursor<E> {
+public class CollectionCursor<E> extends CheckedCursor<E> {
 
 	private final Iterator<? extends E> iter;
 
-	public IteratorCursor(Iterator<? extends E> iter) {
+	public CollectionCursor(Iterable<? extends E> iterable) {
+		this(iterable.iterator());
+	}
+
+	public CollectionCursor(Iterator<? extends E> iter) {
 		assert iter != null : "iterator must not be null";
 		this.iter = iter;
 	}
