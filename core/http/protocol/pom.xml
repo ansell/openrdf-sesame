@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-http</artifactId>
-		<version>2.5-SNAPSHOT</version>
+		<version>3.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-http-protocol</artifactId>
-	<version>2.5-SNAPSHOT</version>
+	<version>3.0-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: HTTP protocol</name>
 	<description>HTTP protocol (REST-style)</description>
