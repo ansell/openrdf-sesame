@@ -31,7 +31,7 @@ class WritableConnection extends EchoWriteConnection {
 
 	private int idx;
 
-	Map<BNode, RepositoryConnection> owners = new ConcurrentHashMap<BNode, RepositoryConnection>();
+	final Map<BNode, RepositoryConnection> owners = new ConcurrentHashMap<BNode, RepositoryConnection>();
 
 	public WritableConnection(Federation federation, List<RepositoryConnection> members) {
 		super(federation, members);
@@ -64,12 +64,14 @@ class WritableConnection extends EchoWriteConnection {
 	private int findIndex(Resource subj, URI pred, Value obj, Resource... contexts) {
 		int size = members.size();
 		if (isBNode(subj, obj, contexts)) {
-			for (int i=0;i<size;i++) {
+			for (int i = 0; i < size; i++) {
 				// if one of the BNodes came from an existing member use that
-				if (members.get(i).isSignedBNode(subj, pred, obj, contexts))
+				if (members.get(i).isSignedBNode(subj, pred, obj, contexts)) {
 					return i;
+				}
 			}
-			// otherwise use a consistent member in case two BNodes need to be linked
+			// otherwise use a consistent member in case two BNodes need to be
+			// linked
 			return 0;
 		}
 		// use round-robin for none-BNode statement to distribute the load
@@ -79,14 +81,17 @@ class WritableConnection extends EchoWriteConnection {
 	}
 
 	private boolean isBNode(Resource subj, Value obj, Resource... contexts) {
-		if (subj instanceof BNode)
+		if (subj instanceof BNode) {
 			return true;
-		if (obj instanceof BNode)
+		}
+		if (obj instanceof BNode) {
 			return true;
+		}
 		if (contexts != null) {
 			for (Resource ctx : contexts) {
-				if (ctx instanceof BNode)
+				if (ctx instanceof BNode) {
 					return true;
+				}
 			}
 		}
 		return false;
@@ -104,14 +109,17 @@ class WritableConnection extends EchoWriteConnection {
 		throws IllegalStatementException
 	{
 		if (!owners.isEmpty()) {
-			if (notEqual(member, owners.get(subj)))
+			if (notEqual(member, owners.get(subj))) {
 				throw illegal(subj, obj, contexts);
-			if (notEqual(member, owners.get(obj)))
+			}
+			if (notEqual(member, owners.get(obj))) {
 				throw illegal(subj, obj, contexts);
+			}
 			if (contexts != null) {
 				for (Resource ctx : contexts) {
-					if (ctx != null && notEqual(member, owners.get(ctx)))
+					if (ctx != null && notEqual(member, owners.get(ctx))) {
 						throw illegal(subj, obj, contexts);
+					}
 				}
 			}
 		}

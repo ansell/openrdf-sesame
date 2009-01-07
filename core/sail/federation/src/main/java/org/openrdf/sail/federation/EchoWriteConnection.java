@@ -24,6 +24,7 @@ abstract class EchoWriteConnection extends FederationConnection {
 		super(federation, members);
 	}
 
+	@Override
 	public void begin()
 		throws StoreException
 	{
@@ -38,6 +39,7 @@ abstract class EchoWriteConnection extends FederationConnection {
 		});
 	}
 
+	@Override
 	public void rollback()
 		throws StoreException
 	{
@@ -53,6 +55,7 @@ abstract class EchoWriteConnection extends FederationConnection {
 		super.rollback();
 	}
 
+	@Override
 	public void commit()
 		throws StoreException
 	{

@@ -41,10 +41,13 @@ public class FederationStatistics extends EvaluationStatistics {
 
 	PatternCalculator calculator;
 
-	public FederationStatistics(Executor executor, Collection<? extends RepositoryConnection> members, QueryModel query) {
+	public FederationStatistics(Executor executor, Collection<? extends RepositoryConnection> members,
+			QueryModel query)
+	{
 		this.calculator = new PatternCalculator(executor, members, query);
 	}
 
+	@Override
 	public double getCardinality(TupleExpr expr) {
 		Calculator cc = new Calculator();
 		expr.visit(cc);
@@ -110,7 +113,9 @@ public class FederationStatistics extends EvaluationStatistics {
 
 		private Map<List<Value>, AtomicLong> cardinalities = new ConcurrentHashMap<List<Value>, AtomicLong>();
 
-		public PatternCalculator(Executor executor, Collection<? extends RepositoryConnection> members, QueryModel query) {
+		public PatternCalculator(Executor executor, Collection<? extends RepositoryConnection> members,
+				QueryModel query)
+		{
 			this.executor = executor;
 			this.members = members;
 			int count = new PatternCounter(query).count();
@@ -188,8 +193,9 @@ public class FederationStatistics extends EvaluationStatistics {
 		{
 			try {
 				latch.await();
-				if (exception != null)
+				if (exception != null) {
 					throw exception;
+				}
 			}
 			catch (StoreException e) {
 				throw e;

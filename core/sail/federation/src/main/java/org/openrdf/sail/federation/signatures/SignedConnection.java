@@ -42,8 +42,9 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean inf, Resource... contexts)
 		throws StoreException
 	{
-		if (signer.isNotSignedBNode(subj, pred, obj, contexts))
+		if (signer.isNotSignedBNode(subj, pred, obj, contexts)) {
 			return false;
+		}
 		return getDelegate().hasMatch(s(subj), pred, o(obj), inf, c(contexts));
 	}
 
@@ -51,8 +52,9 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 	public ModelResult match(Resource subj, URI pred, Value obj, boolean inf, Resource... contexts)
 		throws StoreException
 	{
-		if (signer.isNotSignedBNode(subj, pred, obj, contexts))
+		if (signer.isNotSignedBNode(subj, pred, obj, contexts)) {
 			return new ModelResultImpl(new EmptyCursor<Statement>());
+		}
 		return signer.sign(getDelegate().match(s(subj), pred, o(obj), inf, c(contexts)));
 	}
 
@@ -60,8 +62,9 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 	public long sizeMatch(Resource subj, URI pred, Value obj, boolean inf, Resource... contexts)
 		throws StoreException
 	{
-		if (signer.isNotSignedBNode(subj, pred, obj, contexts))
+		if (signer.isNotSignedBNode(subj, pred, obj, contexts)) {
 			return 0;
+		}
 		return getDelegate().sizeMatch(s(subj), pred, o(obj), inf, c(contexts));
 	}
 
@@ -135,8 +138,9 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 	public void removeMatch(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		if (!signer.isNotSignedBNode(subj, pred, obj, contexts))
+		if (!signer.isNotSignedBNode(subj, pred, obj, contexts)) {
 			super.removeMatch(s(subj), pred, o(obj), c(contexts));
+		}
 	}
 
 	private Resource s(Resource subj) {

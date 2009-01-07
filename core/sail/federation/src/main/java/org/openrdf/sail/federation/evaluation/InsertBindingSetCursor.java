@@ -26,12 +26,14 @@ public class InsertBindingSetCursor extends DelegatingCursor<BindingSet> {
 		this.bindings = bindings;
 	}
 
+	@Override
 	public BindingSet next()
 		throws StoreException
 	{
 		BindingSet next = super.next();
-		if (next == null)
+		if (next == null) {
 			return null;
+		}
 		int size = bindings.size() + next.size();
 		QueryBindingSet set = new QueryBindingSet(size);
 		set.addAll(bindings);

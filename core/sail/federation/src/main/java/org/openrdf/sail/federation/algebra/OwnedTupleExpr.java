@@ -74,8 +74,9 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 	public Cursor<BindingSet> evaluate(Dataset dataset, BindingSet bindings)
 		throws StoreException
 	{
-		if (query == null)
+		if (query == null) {
 			return null;
+		}
 		synchronized (query) {
 			for (String name : bindings.getBindingNames()) {
 				if (bindingNames.contains(name)) {

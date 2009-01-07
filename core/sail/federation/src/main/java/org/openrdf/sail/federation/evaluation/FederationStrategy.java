@@ -69,6 +69,7 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 		return result;
 	}
 
+	@Override
 	public Cursor<BindingSet> evaluate(LeftJoin leftJoin, final BindingSet bindings)
 		throws StoreException
 	{
@@ -111,8 +112,9 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 		throws StoreException
 	{
 		Cursor<BindingSet> result = expr.evaluate(dataset, bindings);
-		if (result != null)
+		if (result != null) {
 			return result;
+		}
 		QueryModel query = createQueryModel(expr);
 		TripleSource source = new RepositoryTripleSource(expr.getOwner());
 		EvaluationStrategyImpl eval = new EvaluationStrategyImpl(source, query);
