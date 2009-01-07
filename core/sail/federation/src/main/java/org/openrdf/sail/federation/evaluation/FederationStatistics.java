@@ -64,8 +64,9 @@ public class FederationStatistics extends EvaluationStatistics {
 			try {
 				long cardinality = calculator.getCardinality(sp);
 				double result = cardinality;
-				if (result == Double.NaN || result < 0)
+				if (Double.isNaN(result) || result < 0) {
 					return Double.MAX_VALUE;
+				}
 				return result;
 			}
 			catch (StoreException e) {
