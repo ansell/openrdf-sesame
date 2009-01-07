@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -38,11 +38,11 @@ import org.openrdf.store.StoreException;
  */
 public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreException> implements QueryOptimizer {
 
-	Collection<? extends RepositoryConnection> members;
+	private final Collection<? extends RepositoryConnection> members;
 
-	PrefixHashSet localSpace;
+	private final PrefixHashSet localSpace;
 
-	boolean distinct;
+	private final boolean distinct;
 
 	public FederationJoinOptimizer(Collection<? extends RepositoryConnection> members, boolean distinct,
 			PrefixHashSet localSpace)
@@ -130,7 +130,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		}
 	}
 
-	class Owned<O> {
+	private static class Owned<O> {
 
 		private RepositoryConnection owner;
 
@@ -149,12 +149,13 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 			return operation;
 		}
 
+		@Override
 		public String toString() {
 			return owner + "=" + operation;
 		}
 	}
 
-	class LocalJoin {
+	private static class LocalJoin {
 
 		private Var var;
 
@@ -173,12 +174,13 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 			return join;
 		}
 
+		@Override
 		public String toString() {
 			return var + "=" + join;
 		}
 	}
 
-	class OwnerScanner extends QueryModelVisitorBase<StoreException> {
+	private class OwnerScanner extends QueryModelVisitorBase<StoreException> {
 
 		private boolean shared;
 
@@ -242,8 +244,9 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		}
 
 		private Resource[] getContexts(Var var) {
-			if (var == null || !var.hasValue())
+			if (var == null || !var.hasValue()) {
 				return new Resource[0];
+			}
 			return new Resource[] { (Resource)var.getValue() };
 		}
 
@@ -281,7 +284,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 
 	}
 
-	class LocalScanner extends QueryModelVisitorBase<StoreException> {
+	private class LocalScanner extends QueryModelVisitorBase<StoreException> {
 
 		private boolean local;
 
@@ -343,11 +346,13 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	 * same member, we can change the order.
 	 */
 	private LocalJoin findLocalJoin(Var subj, List<LocalJoin> vars) {
-		if (vars.size() > 0 && vars.get(vars.size() - 1).getVar() == subj)
+		if (vars.size() > 0 && vars.get(vars.size() - 1).getVar() == subj) {
 			return vars.get(vars.size() - 1);
+		}
 		for (LocalJoin local : vars) {
-			if (subj != null && subj.equals(local.getVar()))
+			if (subj != null && subj.equals(local.getVar())) {
 				return local;
+			}
 		}
 		return null;
 	}
