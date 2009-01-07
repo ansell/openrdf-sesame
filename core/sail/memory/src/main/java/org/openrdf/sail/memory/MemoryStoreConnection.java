@@ -15,7 +15,7 @@ import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.IteratorCursor;
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -188,7 +188,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			stLock.release();
 		}
 
-		return new IteratorCursor<MemResource>(contextIDs.iterator());
+		return new CollectionCursor<MemResource>(contextIDs);
 	}
 
 	private boolean isContextResource(MemResource memResource, int snapshot, ReadMode readMode)
@@ -265,7 +265,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	public Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
-		return new IteratorCursor<Namespace>(store.getNamespaceStore().iterator());
+		return new CollectionCursor<Namespace>(store.getNamespaceStore());
 	}
 
 	public String getNamespace(String prefix)

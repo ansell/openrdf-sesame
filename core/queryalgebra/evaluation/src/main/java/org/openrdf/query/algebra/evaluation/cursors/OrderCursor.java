@@ -13,7 +13,7 @@ import java.util.List;
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.DelayedCursor;
 import org.openrdf.cursor.EmptyCursor;
-import org.openrdf.cursor.IteratorCursor;
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.store.StoreException;
 
@@ -48,7 +48,7 @@ public class OrderCursor extends DelayedCursor<BindingSet> {
 
 		if (!isClosed()) {
 			Collections.sort(list, comparator);
-			return new IteratorCursor<BindingSet>(list.iterator());
+			return new CollectionCursor<BindingSet>(list);
 		}
 		else {
 			return EmptyCursor.getInstance();

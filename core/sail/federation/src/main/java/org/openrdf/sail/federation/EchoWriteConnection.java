@@ -31,10 +31,10 @@ abstract class EchoWriteConnection extends FederationConnection {
 		super.begin();
 		excute(new Procedure() {
 
-			public void run(RepositoryConnection member)
+			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				member.setAutoCommit(false);
+				con.setAutoCommit(false);
 			}
 		});
 	}
@@ -45,11 +45,11 @@ abstract class EchoWriteConnection extends FederationConnection {
 	{
 		excute(new Procedure() {
 
-			public void run(RepositoryConnection member)
+			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				member.rollback();
-				member.setAutoCommit(true);
+				con.rollback();
+				con.setAutoCommit(true);
 			}
 		});
 		super.rollback();
@@ -61,11 +61,11 @@ abstract class EchoWriteConnection extends FederationConnection {
 	{
 		excute(new Procedure() {
 
-			public void run(RepositoryConnection member)
+			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				member.commit();
-				member.setAutoCommit(false);
+				con.commit();
+				con.setAutoCommit(false);
 			}
 		});
 		super.commit();
@@ -76,10 +76,10 @@ abstract class EchoWriteConnection extends FederationConnection {
 	{
 		excute(new Procedure() {
 
-			public void run(RepositoryConnection member)
+			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				member.setNamespace(prefix, name);
+				con.setNamespace(prefix, name);
 			}
 		});
 	}
@@ -89,10 +89,10 @@ abstract class EchoWriteConnection extends FederationConnection {
 	{
 		excute(new Procedure() {
 
-			public void run(RepositoryConnection member)
+			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				member.clearNamespaces();
+				con.clearNamespaces();
 			}
 		});
 	}
@@ -102,10 +102,10 @@ abstract class EchoWriteConnection extends FederationConnection {
 	{
 		excute(new Procedure() {
 
-			public void run(RepositoryConnection member)
+			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				member.removeNamespace(prefix);
+				con.removeNamespace(prefix);
 			}
 		});
 	}
@@ -116,12 +116,11 @@ abstract class EchoWriteConnection extends FederationConnection {
 	{
 		excute(new Procedure() {
 
-			public void run(RepositoryConnection member)
+			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				member.removeMatch(subj, pred, obj, contexts);
+				con.removeMatch(subj, pred, obj, contexts);
 			}
 		});
 	}
-
 }

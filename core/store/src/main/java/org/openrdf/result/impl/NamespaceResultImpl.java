@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 
 import org.openrdf.cursor.ConvertingCursor;
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.IteratorCursor;
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.result.NamespaceResult;
@@ -24,7 +24,7 @@ public class NamespaceResultImpl extends ResultImpl<Namespace> implements Namesp
 
 	public NamespaceResultImpl(Map<String, String> namespaces) {
 		this(new ConvertingCursor<Map.Entry<String, String>, Namespace>(
-				new IteratorCursor<Map.Entry<String, String>>(namespaces.entrySet().iterator()))
+				new CollectionCursor<Map.Entry<String, String>>(namespaces.entrySet()))
 		{
 			@Override
 			protected Namespace convert(Entry<String, String> e)
@@ -49,5 +49,4 @@ public class NamespaceResultImpl extends ResultImpl<Namespace> implements Namesp
 		}
 		return map;
 	}
-
 }

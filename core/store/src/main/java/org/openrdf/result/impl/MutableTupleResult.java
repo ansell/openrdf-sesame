@@ -55,8 +55,7 @@ public class MutableTupleResult implements TupleResult, Cloneable {
 	 * Constructors *
 	 *--------------*/
 
-	public <E extends Exception> MutableTupleResult(Collection<String> bindingNames,
-			BindingSet... bindingSets)
+	public <E extends Exception> MutableTupleResult(Collection<String> bindingNames, BindingSet... bindingSets)
 	{
 		this(bindingNames, Arrays.asList(bindingSets));
 	}
@@ -70,15 +69,12 @@ public class MutableTupleResult implements TupleResult, Cloneable {
 	 * @param bindingNames
 	 *        The binding names, in order of projection.
 	 */
-	public MutableTupleResult(Collection<String> bindingNames,
-			Collection<? extends BindingSet> bindingSets)
-	{
+	public MutableTupleResult(Collection<String> bindingNames, Collection<? extends BindingSet> bindingSets) {
 		this.bindingNames.addAll(bindingNames);
 		this.bindingSets.addAll(bindingSets);
 	}
 
-	public MutableTupleResult(Collection<String> bindingNames,
-			Result<? extends BindingSet> bindingSetIter)
+	public MutableTupleResult(Collection<String> bindingNames, Result<? extends BindingSet> bindingSetIter)
 		throws StoreException
 	{
 		this.bindingNames.addAll(bindingNames);
@@ -169,12 +165,12 @@ public class MutableTupleResult implements TupleResult, Cloneable {
 	/**
 	 * Inserts the specified binding set into the list. The binding set is
 	 * inserted immediately before the next element that would be returned by
-	 * {@link #next()}, if any, and after the next element that would be
-	 * returned by {@link #previous}, if any. (If the table contains no binding
-	 * sets, the new element becomes the sole element on the table.) The new
-	 * element is inserted before the implicit cursor: a subsequent call to
-	 * <tt>next()</tt> would be unaffected, and a subsequent call to
-	 * <tt>previous()</tt> would return the new binding set.
+	 * {@link #next()}, if any, and after the next element that would be returned
+	 * by {@link #previous}, if any. (If the table contains no binding sets, the
+	 * new element becomes the sole element on the table.) The new element is
+	 * inserted before the implicit cursor: a subsequent call to <tt>next()</tt>
+	 * would be unaffected, and a subsequent call to <tt>previous()</tt> would
+	 * return the new binding set.
 	 * 
 	 * @param bindingSet
 	 *        The binding set to insert.

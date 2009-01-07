@@ -15,7 +15,7 @@ import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.IteratorCursor;
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -91,11 +91,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		return nativeStore.getValueFactory();
 	}
 
-	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings,
-			boolean includeInferred)
+	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
-//		logger.trace("Incoming query model:\n{}", query.toString());
+		// logger.trace("Incoming query model:\n{}", query.toString());
 
 		// Clone the tuple expression to allow for more aggressive optimizations
 		query = query.clone();
@@ -268,8 +267,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	{
 		Lock readLock = nativeStore.getReadLock();
 		try {
-			return new LockingCursor<NamespaceImpl>(readLock, new IteratorCursor<NamespaceImpl>(
-					nativeStore.getNamespaceStore().iterator()));
+			return new LockingCursor<NamespaceImpl>(readLock, new CollectionCursor<NamespaceImpl>(
+					nativeStore.getNamespaceStore()));
 		}
 		catch (RuntimeException e) {
 			readLock.release();

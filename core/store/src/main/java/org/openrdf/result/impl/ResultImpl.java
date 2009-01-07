@@ -61,8 +61,9 @@ public class ResultImpl<T> extends DelegatingCursor<T> implements Result<T> {
 		throws StoreException
 	{
 		T result = next;
-		if (result == null)
+		if (result == null) {
 			return super.next();
+		}
 		next = null;
 		return result;
 	}

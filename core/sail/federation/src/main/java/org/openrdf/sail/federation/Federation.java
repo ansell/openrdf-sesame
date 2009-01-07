@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -28,6 +28,7 @@ import org.openrdf.store.StoreException;
  * Union multiple (possibly remote) Repositories into a single RDF store.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
 public class Federation extends SailBase implements Executor {
 
@@ -82,6 +83,14 @@ public class Federation extends SailBase implements Executor {
 	public void setDistinct(boolean distinct) {
 		this.distinct = distinct;
 	}
+	
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+	
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
 
 	public void initialize()
 		throws StoreException
@@ -101,14 +110,6 @@ public class Federation extends SailBase implements Executor {
 		executor.shutdown();
 	}
 
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
-	}
-
 	@Override
 	public FederatedMetaData getMetaData()
 		throws StoreException
@@ -117,6 +118,15 @@ public class Federation extends SailBase implements Executor {
 			return metadata;
 		}
 		return metadata = createMetaData();
+	}
+
+	private FederatedMetaData createMetaData()
+		throws StoreException
+	{
+		SailMetaData sailMetaData = super.getMetaData();
+		FederatedMetaData metaData = new FederatedMetaData(sailMetaData, members);
+		metaData.setReadOnly(readOnly);
+		return metaData;
 	}
 
 	public void execute(Runnable command) {
@@ -132,6 +142,7 @@ public class Federation extends SailBase implements Executor {
 			for (Repository member : members) {
 				connections.add(member.getConnection());
 			}
+			
 			if (readOnly) {
 				return new ReadOnlyConnection(this, connections);
 			}
@@ -150,22 +161,13 @@ public class Federation extends SailBase implements Executor {
 		}
 	}
 
-	private FederatedMetaData createMetaData()
-		throws StoreException
-	{
-		SailMetaData sailMetaData = super.getMetaData();
-		FederatedMetaData metaData = new FederatedMetaData(sailMetaData, members);
-		metaData.setReadOnly(readOnly);
-		return metaData;
-	}
-
 	private void closeAll(Iterable<RepositoryConnection> connections) {
 		for (RepositoryConnection con : connections) {
 			try {
 				con.close();
 			}
 			catch (StoreException e) {
-				logger.error(e.toString(), e);
+				logger.error(e.getMessage(), e);
 			}
 		}
 	}
