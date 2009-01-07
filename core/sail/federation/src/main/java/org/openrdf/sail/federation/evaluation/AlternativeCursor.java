@@ -49,6 +49,7 @@ public class AlternativeCursor<E> implements Cursor<E> {
 		return delegate.next();
 	}
 
+	@Override
 	public String toString() {
 		String name = getClass().getName().replaceAll("^.*\\.|Cursor$", "");
 		return name + "\n\t" + primary.toString() + "\n\t" + alternative.toString();

@@ -97,6 +97,7 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 		return vf;
 	}
 
+	@Override
 	public void close()
 		throws StoreException
 	{
@@ -200,8 +201,9 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 				return member.match(subj, pred, obj, includeInferred, contexts);
 			}
 		});
-		if (federation.isDistinct() || isLocal(pred))
+		if (federation.isDistinct() || isLocal(pred)) {
 			return cursor;
+		}
 		return new DistinctCursor<Statement>(cursor);
 	}
 
@@ -217,8 +219,9 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 				return member.match(subj, pred, obj, true, contexts);
 			}
 		});
-		if (federation.isDistinct() || isLocal(pred))
+		if (federation.isDistinct() || isLocal(pred)) {
 			return cursor;
+		}
 		return new DistinctCursor<Statement>(cursor);
 	}
 
@@ -264,10 +267,12 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 
 			}
 		}
-		if (store != null)
+		if (store != null) {
 			throw store;
-		if (runtime != null)
+		}
+		if (runtime != null) {
 			throw runtime;
+		}
 	}
 
 	private interface Function<E> {
@@ -277,11 +282,13 @@ abstract class FederationConnection extends SailConnectionBase implements Triple
 	}
 
 	private boolean isLocal(URI pred) {
-		if (pred == null)
+		if (pred == null) {
 			return false;
+		}
 		PrefixHashSet hash = federation.getLocalPropertySpace();
-		if (hash == null)
+		if (hash == null) {
 			return false;
+		}
 		return hash.match(pred.stringValue());
 	}
 

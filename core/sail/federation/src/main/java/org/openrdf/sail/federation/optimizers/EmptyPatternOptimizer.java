@@ -56,8 +56,9 @@ public class EmptyPatternOptimizer extends QueryModelVisitorBase<StoreException>
 	}
 
 	private Resource[] getContexts(Var var) {
-		if (var == null || !var.hasValue())
+		if (var == null || !var.hasValue()) {
 			return new Resource[0];
+		}
 		return new Resource[] { (Resource)var.getValue() };
 	}
 

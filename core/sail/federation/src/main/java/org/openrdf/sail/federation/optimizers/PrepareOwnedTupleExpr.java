@@ -62,17 +62,21 @@ public class PrepareOwnedTupleExpr extends QueryModelVisitorBase<StoreException>
 	private boolean isRemoteQueryModelSupported(RepositoryConnection owner, TupleExpr expr)
 		throws StoreException
 	{
-		if (expr instanceof StatementPattern)
+		if (expr instanceof StatementPattern) {
 			return false;
+		}
 		RepositoryMetaData md = owner.getRepository().getMetaData();
 		int version = metadata.getSesameMajorVersion();
-		if (version != 0 && version != md.getSesameMajorVersion())
+		if (version != 0 && version != md.getSesameMajorVersion()) {
 			return false;
-		if (version != 0 && metadata.getSesameMinorVersion() != md.getSesameMinorVersion())
+		}
+		if (version != 0 && metadata.getSesameMinorVersion() != md.getSesameMinorVersion()) {
 			return false;
+		}
 		for (QueryLanguage ql : md.getQueryLanguages()) {
-			if (QueryModelSerializer.LANGUAGE.equals(ql))
+			if (QueryModelSerializer.LANGUAGE.equals(ql)) {
 				return true;
+			}
 		}
 		return false;
 	}

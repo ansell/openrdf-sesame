@@ -65,8 +65,9 @@ public class BNodeSigner {
 			if (external.isInternalBNode(node) && !in.containsKey(node)) {
 				BNode b = internal.createBNode(node.getID());
 				BNode o = in.putIfAbsent(node, b);
-				if (o != null)
+				if (o != null) {
 					return o;
+				}
 				out.put(b, node);
 				return b;
 			}
@@ -91,10 +92,12 @@ public class BNodeSigner {
 	public boolean isNotSignedBNode(Value o) {
 		if (o instanceof BNode) {
 			BNode node = (BNode)o;
-			if (external.isInternalBNode(node) && in.containsKey(o))
+			if (external.isInternalBNode(node) && in.containsKey(o)) {
 				return false;
-			if (node.getID().endsWith(suffix))
+			}
+			if (node.getID().endsWith(suffix)) {
 				return false;
+			}
 			return true;
 		}
 		return false;
@@ -105,14 +108,17 @@ public class BNodeSigner {
 	 * from this connection.
 	 */
 	public boolean isNotSignedBNode(Resource subj, URI pred, Value obj, Resource... contexts) {
-		if (isNotSignedBNode(subj))
+		if (isNotSignedBNode(subj)) {
 			return true;
-		if (isNotSignedBNode(obj))
+		}
+		if (isNotSignedBNode(obj)) {
 			return true;
+		}
 		if (contexts != null) {
 			for (Resource ctx : contexts) {
-				if (isNotSignedBNode(ctx))
+				if (isNotSignedBNode(ctx)) {
 					return true;
+				}
 			}
 		}
 		return false;
@@ -121,10 +127,12 @@ public class BNodeSigner {
 	public boolean isSignedBNode(Value o) {
 		if (o instanceof BNode) {
 			BNode node = (BNode)o;
-			if (external.isInternalBNode(node) && in.containsKey(o))
+			if (external.isInternalBNode(node) && in.containsKey(o)) {
 				return true;
-			if (node.getID().endsWith(suffix))
+			}
+			if (node.getID().endsWith(suffix)) {
 				return true;
+			}
 			return false;
 		}
 		return false;
@@ -135,14 +143,17 @@ public class BNodeSigner {
 	 * connection.
 	 */
 	public boolean isSignedBNode(Resource subj, URI pred, Value obj, Resource... contexts) {
-		if (isSignedBNode(subj))
+		if (isSignedBNode(subj)) {
 			return true;
-		if (isSignedBNode(obj))
+		}
+		if (isSignedBNode(obj)) {
 			return true;
+		}
 		if (contexts != null) {
 			for (Resource ctx : contexts) {
-				if (isSignedBNode(ctx))
+				if (isSignedBNode(ctx)) {
 					return true;
+				}
 			}
 		}
 		return false;
@@ -184,14 +195,16 @@ public class BNodeSigner {
 	}
 
 	public Value sign(Value value) {
-		if (value == null)
+		if (value == null) {
 			return null;
+		}
 		Value v = out.get(value);
 		if (v == null && value instanceof BNode) {
 			return new BNodeImpl(((BNode)value).getID() + suffix);
 		}
-		if (v == null)
+		if (v == null) {
 			return value;
+		}
 		return v;
 	}
 
@@ -200,8 +213,9 @@ public class BNodeSigner {
 	}
 
 	public BindingSet sign(BindingSet bindings) {
-		if (bindings == null)
+		if (bindings == null) {
 			return null;
+		}
 		MapBindingSet signed = new MapBindingSet(bindings.size());
 		for (Binding binding : bindings) {
 			signed.addBinding(binding.getName(), sign(binding.getValue()));
@@ -210,8 +224,9 @@ public class BNodeSigner {
 	}
 
 	public Statement sign(Statement st) {
-		if (st == null)
+		if (st == null) {
 			return null;
+		}
 		Resource subj = sign(st.getSubject());
 		Value obj = sign(st.getObject());
 		Resource ctx = sign(st.getContext());
@@ -235,12 +250,15 @@ public class BNodeSigner {
 	}
 
 	public Query sign(Query query) {
-		if (query instanceof TupleQuery)
+		if (query instanceof TupleQuery) {
 			return sign((TupleQuery)query);
-		if (query instanceof GraphQuery)
+		}
+		if (query instanceof GraphQuery) {
 			return sign((GraphQuery)query);
-		if (query instanceof BooleanQuery)
+		}
+		if (query instanceof BooleanQuery) {
 			return sign((BooleanQuery)query);
+		}
 		throw new AssertionError(query.getClass().getName());
 	}
 

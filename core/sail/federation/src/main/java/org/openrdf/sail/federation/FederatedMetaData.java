@@ -101,8 +101,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	@Override
 	public boolean isBNodeIDPreserved() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isBNodeIDPreserved())
+			if (!md.isBNodeIDPreserved()) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -110,8 +111,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	@Override
 	public boolean isContextBNodesSupported() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isContextBNodesSupported())
+			if (!md.isContextBNodesSupported()) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -119,8 +121,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	@Override
 	public boolean isContextSupported() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isContextSupported())
+			if (!md.isContextSupported()) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -128,8 +131,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	@Override
 	public boolean isHierarchicalInferencing() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isHierarchicalInferencing())
+			if (!md.isHierarchicalInferencing()) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -137,8 +141,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	@Override
 	public boolean isInferencing() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isInferencing())
+			if (!md.isInferencing()) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -146,8 +151,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	@Override
 	public boolean isLiteralDatatypePreserved() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isLiteralDatatypePreserved())
+			if (!md.isLiteralDatatypePreserved()) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -155,8 +161,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	@Override
 	public boolean isLiteralLabelPreserved() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isLiteralLabelPreserved())
+			if (!md.isLiteralLabelPreserved()) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -164,8 +171,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	@Override
 	public boolean isLocalStore() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isLocalStore())
+			if (!md.isLocalStore()) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -173,8 +181,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	@Override
 	public boolean isMatchingOnlySameTerm() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isMatchingOnlySameTerm())
+			if (!md.isMatchingOnlySameTerm()) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -182,8 +191,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	@Override
 	public boolean isOWLInferencing() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isOWLInferencing())
+			if (!md.isOWLInferencing()) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -191,8 +201,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	@Override
 	public boolean isRDFSInferencing() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isRDFSInferencing())
+			if (!md.isRDFSInferencing()) {
 				return false;
+			}
 		}
 		return true;
 	}

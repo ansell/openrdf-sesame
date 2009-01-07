@@ -23,8 +23,7 @@ public class SignedTupleQuery extends SignedQuery implements TupleQuery {
 
 	private TupleQuery query;
 
-	public SignedTupleQuery(TupleQuery query, BNodeSigner signer)
-	{
+	public SignedTupleQuery(TupleQuery query, BNodeSigner signer) {
 		super(query, signer);
 		this.query = query;
 	}

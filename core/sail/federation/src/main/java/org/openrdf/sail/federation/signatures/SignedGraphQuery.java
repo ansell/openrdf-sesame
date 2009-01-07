@@ -20,8 +20,7 @@ public class SignedGraphQuery extends SignedQuery implements GraphQuery {
 
 	private GraphQuery query;
 
-	public SignedGraphQuery(GraphQuery query, BNodeSigner signer)
-	{
+	public SignedGraphQuery(GraphQuery query, BNodeSigner signer) {
 		super(query, signer);
 		this.query = query;
 	}
