@@ -1,3 +1,8 @@
+/*
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ *
+ * Licensed under the Aduna BSD-style license.
+ */
 package org.openrdf.sail.federation;
 
 import java.util.ArrayList;
@@ -26,11 +31,13 @@ import org.openrdf.store.StoreException;
  */
 public class Federation extends SailBase implements Executor {
 
-	private URIFactory uf = new URIFactoryImpl();
+	private final URIFactory uf = new URIFactoryImpl();
 
-	private LiteralFactory lf = new LiteralFactoryImpl();
+	private final LiteralFactory lf = new LiteralFactoryImpl();
 
-	private List<Repository> members = new ArrayList<Repository>();
+	private final List<Repository> members = new ArrayList<Repository>();
+
+	private final ExecutorService executor = Executors.newCachedThreadPool();
 
 	private PrefixHashSet localPropertySpace;
 
@@ -39,8 +46,6 @@ public class Federation extends SailBase implements Executor {
 	private boolean readOnly;
 
 	private FederatedMetaData metadata;
-
-	private ExecutorService executor = Executors.newCachedThreadPool();
 
 	public URIFactory getURIFactory() {
 		return uf;
@@ -108,8 +113,9 @@ public class Federation extends SailBase implements Executor {
 	public FederatedMetaData getMetaData()
 		throws StoreException
 	{
-		if (metadata != null)
+		if (metadata != null) {
 			return metadata;
+		}
 		return metadata = createMetaData();
 	}
 
@@ -153,7 +159,7 @@ public class Federation extends SailBase implements Executor {
 		return metaData;
 	}
 
-	private void closeAll(List<RepositoryConnection> connections) {
+	private void closeAll(Iterable<RepositoryConnection> connections) {
 		for (RepositoryConnection con : connections) {
 			try {
 				con.close();
@@ -163,5 +169,4 @@ public class Federation extends SailBase implements Executor {
 			}
 		}
 	}
-
 }
