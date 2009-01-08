@@ -11,8 +11,8 @@
 	<artifactId>sesame-store</artifactId>
 	<version>3.0-SNAPSHOT</version>
 
-	<name>OpenRDF Sesame: Query</name>
-	<description>Query interfaces and implementations</description>
+	<name>OpenRDF Sesame: Store</name>
+	<description>Store related interfaces and implementations, contains functionality common for the Sail API and Repository API</description>
 
 	<dependencies>
 		<dependency>
