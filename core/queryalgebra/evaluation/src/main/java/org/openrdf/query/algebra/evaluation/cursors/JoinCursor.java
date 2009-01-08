@@ -1,11 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra.evaluation.cursors;
 
 import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
@@ -15,33 +16,30 @@ import org.openrdf.store.StoreException;
 public class JoinCursor implements Cursor<BindingSet> {
 
 	/*-----------*
-	 * Constants *
+	 * Variables *
 	 *-----------*/
 
 	private final EvaluationStrategy strategy;
 
 	private final TupleExpr rightArg;
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	private final Cursor<BindingSet> leftCursor;
 
-	private Cursor<BindingSet> leftIter;
-
-	private Cursor<BindingSet> rightIter;
+	private volatile Cursor<BindingSet> rightCursor;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public JoinCursor(EvaluationStrategy strategy,
-			Cursor<BindingSet> leftIter, TupleExpr rightArg,
-			BindingSet bindings)
+	public JoinCursor(EvaluationStrategy strategy, Cursor<BindingSet> leftCursor, TupleExpr rightArg)
 		throws EvaluationException
 	{
 		this.strategy = strategy;
-		this.leftIter = leftIter;
 		this.rightArg = rightArg;
+		this.leftCursor = leftCursor;
+
+		// Initialize with empty cursor so that var is never null
+		this.rightCursor = EmptyCursor.getInstance();
 	}
 
 	/*---------*
@@ -51,43 +49,47 @@ public class JoinCursor implements Cursor<BindingSet> {
 	public BindingSet next()
 		throws StoreException
 	{
-		BindingSet leftNext = null;
-		while (rightIter != null || (leftNext = leftIter.next()) != null) {
-			if (rightIter == null) {
-				rightIter = strategy.evaluate(rightArg, leftNext);
-			}
+		BindingSet rightBindings = rightCursor.next();
 
-			BindingSet rightNext = rightIter.next();
-			if (rightNext != null) {
-				return rightNext;
+		while (rightBindings == null) {
+			// right cursor exhausted
+			rightCursor.close();
+
+			BindingSet leftBindings = leftCursor.next();
+			if (leftBindings != null) {
+				rightCursor = strategy.evaluate(rightArg, leftBindings);
+				rightBindings = rightCursor.next();
 			}
 			else {
-				rightIter.close();
-				rightIter = null;
+				// left cursor exhausted
+				leftCursor.close();
+				break;
 			}
 		}
 
-		return null;
+		return rightBindings;
 	}
 
 	public void close()
 		throws StoreException
 	{
-		if (rightIter != null) {
-			rightIter.close();
-			rightIter = null;
-		}
-
-		leftIter.close();
+		leftCursor.close();
+		rightCursor.close();
 	}
 
 	@Override
 	public String toString() {
-		String left = leftIter.toString().replace("\n", "\n\t");
-		String right = rightArg.toString();
-		if (rightIter != null) {
-			right = rightIter.toString();
+		String result = "Join\n";
+		result += leftCursor.toString();
+		result += "\n";
+
+		if (rightCursor instanceof EmptyCursor) {
+			result += rightArg.toString();
 		}
-		return "Join\n\t" + left + "\n\t" + right.replace("\n", "\n\t");
+		else {
+			result += rightCursor.toString();
+		}
+
+		return result.replace("\n", "\n\t");
 	}
 }

@@ -24,44 +24,44 @@ public class MemStatementCursor implements Cursor<MemStatement> {
 	/**
 	 * The lists of statements over which to iterate.
 	 */
-	private MemStatementList statementList;
+	private final MemStatementList statementList;
 
 	/**
 	 * The subject of statements to return, or null if any subject is OK.
 	 */
-	private MemResource subject;
+	private final MemResource subject;
 
 	/**
 	 * The predicate of statements to return, or null if any predicate is OK.
 	 */
-	private MemURI predicate;
+	private final MemURI predicate;
 
 	/**
 	 * The object of statements to return, or null if any object is OK.
 	 */
-	private MemValue object;
+	private final MemValue object;
 
 	/**
 	 * The context of statements to return, or null if any context is OK.
 	 */
-	private MemResource[] contexts;
+	private final MemResource[] contexts;
 
 	/**
 	 * Flag indicating whether this iterator should only return explicitly added
 	 * statements.
 	 */
-	private boolean explicitOnly;
+	private final boolean explicitOnly;
 
 	/**
 	 * Indicates which snapshot should be iterated over.
 	 */
-	private int snapshot;
+	private final int snapshot;
 
 	/**
 	 * Flag indicating whether or not the iterator should read any non-committed
 	 * changes to the data.
 	 */
-	private ReadMode readMode;
+	private final ReadMode readMode;
 
 	/**
 	 * The index of the last statement that has been returned.
