@@ -498,7 +498,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Cursor<BindingSet> result;
 		result = evaluate(join.getArg(0), bindings);
 		for (int i = 1, n = join.getNumberOfArguments(); i < n; i++) {
-			result = new JoinCursor(this, result, join.getArg(i), bindings);
+			result = new JoinCursor(this, result, join.getArg(i));
 		}
 		return result;
 	}

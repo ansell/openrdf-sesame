@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,20 +8,19 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import java.util.List;
 
 import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.DelegatingCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.store.StoreException;
 
-public class MultiProjectionCursor implements Cursor<BindingSet> {
+public class MultiProjectionCursor extends DelegatingCursor<BindingSet> {
 
 	/*-----------*
 	 * Constants *
 	 *-----------*/
 
 	private final List<ProjectionElemList> projections;
-
-	private final Cursor<BindingSet> cursor;
 
 	private final BindingSet parentBindings;
 
@@ -31,17 +30,17 @@ public class MultiProjectionCursor implements Cursor<BindingSet> {
 
 	private BindingSet currentBindings;
 
-	private int nextProjectionIdx;
+	private volatile int nextProjectionIdx;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public MultiProjectionCursor(MultiProjection multiProjection,
-			Cursor<BindingSet> cursor, BindingSet bindings)
+	public MultiProjectionCursor(MultiProjection multiProjection, Cursor<BindingSet> cursor,
+			BindingSet bindings)
 	{
+		super(cursor);
 		this.projections = multiProjection.getProjections();
-		this.cursor = cursor;
 		this.parentBindings = bindings;
 	}
 
@@ -49,27 +48,33 @@ public class MultiProjectionCursor implements Cursor<BindingSet> {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public BindingSet next()
 		throws StoreException
 	{
-		if (currentBindings == null || nextProjectionIdx >= projections.size()) {
-			currentBindings = cursor.next();
-			nextProjectionIdx = 0;
-			if (currentBindings == null)
+		int idx = nextProjectionIdx;
+
+		if (currentBindings == null || idx >= projections.size()) {
+			currentBindings = super.next();
+
+			if (currentBindings == null) {
 				return null;
+			}
+
+			idx = nextProjectionIdx = 0;
 		}
 
-		ProjectionElemList nextProjection = projections.get(nextProjectionIdx++);
+		ProjectionElemList nextProjection = projections.get(idx++);
+		nextProjectionIdx++;
+
 		return ProjectionCursor.project(nextProjection, currentBindings, parentBindings);
 	}
 
-	public void close() {
-		nextProjectionIdx = projections.size();
-		currentBindings = null;
-	}
-
 	@Override
-	public String toString() {
-		return "MultProjection " + cursor.toString();
+	public void close()
+		throws StoreException
+	{
+		super.close();
+		nextProjectionIdx = projections.size();
 	}
 }

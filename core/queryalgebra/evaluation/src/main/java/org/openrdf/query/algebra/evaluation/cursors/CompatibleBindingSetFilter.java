@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -18,10 +18,11 @@ import org.openrdf.result.util.QueryResultUtil;
 @Deprecated
 public class CompatibleBindingSetFilter extends FilteringCursor<BindingSet> {
 
-	private BindingSet inputBindings;
+	private final BindingSet inputBindings;
 
 	public CompatibleBindingSetFilter(Cursor<BindingSet> iter, BindingSet inputBindings) {
 		super(iter);
+		assert inputBindings != null;
 		this.inputBindings = inputBindings;
 	}
 

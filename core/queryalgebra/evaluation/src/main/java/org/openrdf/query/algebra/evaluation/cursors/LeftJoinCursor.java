@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,9 +8,9 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import java.util.Set;
 
 import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -19,12 +19,12 @@ import org.openrdf.store.StoreException;
 public class LeftJoinCursor implements Cursor<BindingSet> {
 
 	/*-----------*
-	 * Constants *
+	 * Variables *
 	 *-----------*/
 
-	private EvaluationStrategy strategy;
+	private final EvaluationStrategy strategy;
 
-	private final LeftJoin join;
+	private final LeftJoin leftJoin;
 
 	/**
 	 * The set of binding names that are "in scope" for the filter. The filter
@@ -33,26 +33,25 @@ public class LeftJoinCursor implements Cursor<BindingSet> {
 	 */
 	private final Set<String> scopeBindingNames;
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	private final Cursor<BindingSet> leftCursor;
 
-	private Cursor<BindingSet> leftIter;
-
-	private Cursor<BindingSet> rightIter;
+	private volatile Cursor<BindingSet> rightCursor;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public LeftJoinCursor(EvaluationStrategy strategy, LeftJoin join, BindingSet bindings)
+	public LeftJoinCursor(EvaluationStrategy strategy, LeftJoin leftJoin, BindingSet bindings)
 		throws StoreException
 	{
 		this.strategy = strategy;
-		this.join = join;
-		this.scopeBindingNames = join.getBindingNames();
+		this.leftJoin = leftJoin;
+		this.scopeBindingNames = leftJoin.getBindingNames();
 
-		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
+		this.leftCursor = strategy.evaluate(leftJoin.getLeftArg(), bindings);
+
+		// Initialize with empty cursor so that var is never null
+		this.rightCursor = EmptyCursor.getInstance();
 	}
 
 	/*---------*
@@ -63,38 +62,43 @@ public class LeftJoinCursor implements Cursor<BindingSet> {
 		throws StoreException
 	{
 		BindingSet leftBindings = null;
-		while (rightIter != null || (leftBindings = leftIter.next()) != null) {
+		BindingSet rightBindings = rightCursor.next();
 
-			if (rightIter == null) {
-				// Use left arg's bindings in case join fails
-				rightIter = strategy.evaluate(join.getRightArg(), leftBindings);
+		while (rightBindings != null || (leftBindings = leftCursor.next()) != null) {
+			if (rightBindings == null) {
+				// right cursor exhausted
+				rightCursor.close();
+
+				// join with next value from left argument, use left arg's bindings
+				// in case the join fails
+				rightCursor = strategy.evaluate(leftJoin.getRightArg(), leftBindings);
+				rightBindings = rightCursor.next();
 			}
 
-			BindingSet rightBindings;
-			while ((rightBindings = rightIter.next()) != null) {
+			if (leftJoin.hasCondition()) {
+				// Find a binding for which the join condition holds
+				while (rightBindings != null) {
+					// Limit the bindings to the ones that are in scope for this
+					// filter
+					QueryBindingSet scopeBindings = new QueryBindingSet(rightBindings);
+					scopeBindings.retainAll(scopeBindingNames);
 
-				try {
-					if (join.getCondition() == null) {
-						return rightBindings;
-					}
-					else {
-						// Limit the bindings to the ones that are in scope for this
-						// filter
-						QueryBindingSet scopeBindings = new QueryBindingSet(rightBindings);
-						scopeBindings.retainAll(scopeBindingNames);
-
-						if (strategy.isTrue(join.getCondition(), scopeBindings)) {
+					try {
+						if (strategy.isTrue(leftJoin.getCondition(), scopeBindings)) {
 							return rightBindings;
 						}
 					}
-				}
-				catch (ValueExprEvaluationException e) {
-					// Ignore, condition not evaluated successfully
+					catch (ValueExprEvaluationException e) {
+						// Ignore, condition not evaluated successfully
+					}
+
+					rightBindings = rightCursor.next();
 				}
 			}
-
-			rightIter.close();
-			rightIter = null;
+			else if (rightBindings != null) {
+				// Found bindings and no join condition specified
+				return rightBindings;
+			}
 
 			if (leftBindings != null) {
 				// Join failed, return left arg's bindings
@@ -108,26 +112,29 @@ public class LeftJoinCursor implements Cursor<BindingSet> {
 	public void close()
 		throws StoreException
 	{
-		if (rightIter != null) {
-			rightIter.close();
-			rightIter = null;
-		}
-
-		leftIter.close();
+		leftCursor.close();
+		rightCursor.close();
 	}
 
 	@Override
 	public String toString() {
-		String left = leftIter.toString().replace("\n", "\n\t");
-		String right = join.getRightArg().toString();
-		if (rightIter != null) {
-			right = rightIter.toString();
+		String result = "LeftJoin ";
+
+		if (leftJoin.hasCondition()) {
+			result += leftJoin.getCondition().toString().trim();
 		}
-		ValueExpr condition = join.getCondition();
-		String filter = "";
-		if (condition != null) {
-			filter = condition.toString().trim().replace("\n", "\n\t");
+
+		result += "\n";
+		result += leftCursor.toString();
+
+		result += "\n";
+		if (rightCursor instanceof EmptyCursor) {
+			result += leftJoin.getRightArg().toString();
 		}
-		return "LeftJoin " + filter + "\n\t" + left + "\n\t" + right.replace("\n", "\n\t");
+		else {
+			result += rightCursor.toString();
+		}
+
+		return result.replace("\n", "\n\t");
 	}
 }

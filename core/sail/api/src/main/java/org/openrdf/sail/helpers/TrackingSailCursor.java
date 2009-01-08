@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -19,14 +19,15 @@ import org.openrdf.store.StoreException;
  * 
  * @author jeen
  * @author James Leigh
+ * @author Arjohn Kampman
  */
 class TrackingSailCursor<T> extends DelegatingCursor<T> {
-	
+
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private TrackingSailConnection connection;
+	private final TrackingSailConnection connection;
 
-	private Throwable creatorTrace;
+	private final Throwable creatorTrace;
 
 	private boolean closed = true;
 
@@ -40,14 +41,10 @@ class TrackingSailCursor<T> extends DelegatingCursor<T> {
 	 * @param connection
 	 *        the connection from which this iteration originates.
 	 */
-	public TrackingSailCursor(Cursor<? extends T> iter, TrackingSailConnection connection)
-	{
+	public TrackingSailCursor(Cursor<? extends T> iter, TrackingSailConnection connection) {
 		super(iter);
 		this.connection = connection;
-
-		if (SailUtil.isDebugEnabled()) {
-			creatorTrace = new Throwable();
-		}
+		this.creatorTrace = SailUtil.isDebugEnabled() ? new Throwable() : null;
 	}
 
 	@Override
@@ -68,8 +65,8 @@ class TrackingSailCursor<T> extends DelegatingCursor<T> {
 	{
 		closed = true;
 		super.close();
-			connection.iterationClosed(this);
-		}
+		connection.iterationClosed(this);
+	}
 
 	@Override
 	protected void finalize()
