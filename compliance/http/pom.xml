@@ -117,19 +117,13 @@
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna.appbase</groupId>
-			<artifactId>aduna-appbase-logging-file</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>jcl104-over-slf4j</artifactId>
+			<artifactId>jcl-over-slf4j</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
