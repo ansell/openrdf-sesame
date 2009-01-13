@@ -11,8 +11,8 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.parser.sparql.ManifestTest;
 import org.openrdf.query.parser.sparql.SPARQLQueryTest;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.dataset.DatasetRepository;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.dataset.DatasetSail;
 import org.openrdf.sail.rdbms.mysql.MySqlStore;
 
 public class MySqlSPARQLQueryTest extends SPARQLQueryTest {
@@ -37,6 +37,6 @@ public class MySqlSPARQLQueryTest extends SPARQLQueryTest {
 		MySqlStore sail = new MySqlStore("sesame_test");
 		sail.setUser("sesame");
 		sail.setPassword("opensesame");
-		return new DatasetRepository(new SailRepository(sail));
+		return new SailRepository(new DatasetSail(sail));
 	}
 }
