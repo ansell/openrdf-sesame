@@ -79,7 +79,9 @@ abstract class EchoWriteConnection extends FederationConnection {
 			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				con.setNamespace(prefix, name);
+				if (!con.getRepository().getMetaData().isReadOnly()) {
+					con.setNamespace(prefix, name);
+				}
 			}
 		});
 	}
@@ -92,7 +94,9 @@ abstract class EchoWriteConnection extends FederationConnection {
 			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				con.clearNamespaces();
+				if (!con.getRepository().getMetaData().isReadOnly()) {
+					con.clearNamespaces();
+				}
 			}
 		});
 	}
@@ -105,7 +109,9 @@ abstract class EchoWriteConnection extends FederationConnection {
 			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				con.removeNamespace(prefix);
+				if (!con.getRepository().getMetaData().isReadOnly()) {
+					con.removeNamespace(prefix);
+				}
 			}
 		});
 	}
@@ -119,7 +125,9 @@ abstract class EchoWriteConnection extends FederationConnection {
 			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				con.removeMatch(subj, pred, obj, contexts);
+				if (!con.getRepository().getMetaData().isReadOnly()) {
+					con.removeMatch(subj, pred, obj, contexts);
+				}
 			}
 		});
 	}

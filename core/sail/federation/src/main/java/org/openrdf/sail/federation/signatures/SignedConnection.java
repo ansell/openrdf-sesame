@@ -38,6 +38,12 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 		return signer.isSignedBNode(subj, pred, obj, contexts);
 	}
 
+	public boolean isReadOnly()
+		throws StoreException
+	{
+		return getDelegate().getRepository().getMetaData().isReadOnly();
+	}
+
 	@Override
 	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean inf, Resource... contexts)
 		throws StoreException

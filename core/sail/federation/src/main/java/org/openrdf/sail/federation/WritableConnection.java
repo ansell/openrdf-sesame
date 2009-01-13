@@ -50,8 +50,10 @@ class WritableConnection extends EchoWriteConnection {
 			int size = members.size();
 			for (int j = i + 1; j < i + size; j++) {
 				try {
-					add(members.get(j % size), subj, pred, obj, contexts);
-					return;
+					if (!members.get(i).isReadOnly()) {
+						add(members.get(j % size), subj, pred, obj, contexts);
+						return;
+					}
 				}
 				catch (IllegalStatementException e2) {
 					continue;
@@ -61,7 +63,9 @@ class WritableConnection extends EchoWriteConnection {
 		}
 	}
 
-	private int findIndex(Resource subj, URI pred, Value obj, Resource... contexts) {
+	private int findIndex(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
 		int size = members.size();
 		if (isBNode(subj, obj, contexts)) {
 			for (int i = 0; i < size; i++) {
@@ -70,14 +74,24 @@ class WritableConnection extends EchoWriteConnection {
 					return i;
 				}
 			}
-			// otherwise use a consistent member in case two BNodes need to be
-			// linked
-			return 0;
+			// otherwise use the first writable member
+			// in case two BNodes need to be linked
+			for (int i = 0; i < size; i++) {
+				if (!members.get(i).isReadOnly()) {
+					return i;
+				}
+			}
 		}
 		// use round-robin for none-BNode statement to distribute the load
-		int i = idx;
-		idx = (i + 1) % size;
-		return i;
+		for (int i = idx, n = i + size; i < n; i++) {
+			int j = (i + 1) % size;
+			if (!members.get(i % size).isReadOnly()) {
+				idx = j;
+				return i % size;
+			}
+		}
+		// no writable members, try the first one
+		return 0;
 	}
 
 	private boolean isBNode(Resource subj, Value obj, Resource... contexts) {
