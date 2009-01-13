@@ -69,6 +69,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-rio-rdfa</artifactId>
+				<version>2.5-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-trix</artifactId>
 				<version>3.0-SNAPSHOT</version>
 			</dependency>
@@ -168,7 +173,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-dataset</artifactId>
+				<artifactId>sesame-sail-dataset</artifactId>
 				<version>3.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
