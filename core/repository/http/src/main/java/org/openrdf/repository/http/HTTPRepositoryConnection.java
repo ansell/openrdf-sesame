@@ -11,8 +11,8 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.cursor.CollectionCursor;
+import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.http.client.BooleanQueryClient;
 import org.openrdf.http.client.ConnectionClient;
 import org.openrdf.http.client.GraphQueryClient;
@@ -45,6 +45,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.repository.http.exceptions.IllegalStatementException;
+import org.openrdf.repository.http.exceptions.RepositoryReadOnlyException;
 import org.openrdf.repository.http.helpers.GraphQueryResultCursor;
 import org.openrdf.repository.http.helpers.HTTPBNodeFactory;
 import org.openrdf.repository.util.ModelNamespaceResult;
@@ -344,6 +345,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
+		if (repository.isReadOnly())
+			throw new RepositoryReadOnlyException();
 		// Send bytes directly to the server
 		flush();
 		StatementClient httpClient = client.statements();
@@ -367,6 +370,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
+		if (repository.isReadOnly())
+			throw new RepositoryReadOnlyException();
 		if (repository.isIllegal(subject, predicate, object, contexts))
 			throw new IllegalStatementException();
 		add(new AddStatementOperation(subject, predicate, object, contexts));
@@ -375,6 +380,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
+		if (repository.isReadOnly())
+			throw new RepositoryReadOnlyException();
 		if (!noMatch(subject, predicate, object, true, contexts)) {
 			add(new RemoveStatementsOperation(subject, predicate, object, contexts));
 		}
@@ -384,24 +391,32 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void clear(Resource... contexts)
 		throws StoreException
 	{
+		if (repository.isReadOnly())
+			throw new RepositoryReadOnlyException();
 		add(new ClearOperation(contexts));
 	}
 
 	public void removeNamespace(String prefix)
 		throws StoreException
 	{
+		if (repository.isReadOnly())
+			throw new RepositoryReadOnlyException();
 		add(new RemoveNamespaceOperation(prefix));
 	}
 
 	public void clearNamespaces()
 		throws StoreException
 	{
+		if (repository.isReadOnly())
+			throw new RepositoryReadOnlyException();
 		add(new ClearNamespacesOperation());
 	}
 
 	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
+		if (repository.isReadOnly())
+			throw new RepositoryReadOnlyException();
 		add(new SetNamespaceOperation(prefix, name));
 	}
 

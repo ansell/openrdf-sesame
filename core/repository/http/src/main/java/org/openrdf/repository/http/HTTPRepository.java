@@ -86,6 +86,8 @@ public class HTTPRepository implements Repository {
 
 	private HTTPConnectionPool pool;
 
+	private boolean readOnly;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -116,6 +118,14 @@ public class HTTPRepository implements Repository {
 		return dataDir;
 	}
 
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
+
 	public void setSubjectSpace(Set<String> uriSpace) {
 		cache.setSubjectSpace(uriSpace);
 	}
@@ -130,7 +140,7 @@ public class HTTPRepository implements Repository {
 		throws StoreException
 	{
 		if (metadata == null) {
-			metadata = HTTPRepositoryMetaData.create(client.metadata().get());
+			metadata = HTTPRepositoryMetaData.create(this, client.metadata().get());
 		}
 		return metadata;
 	}
