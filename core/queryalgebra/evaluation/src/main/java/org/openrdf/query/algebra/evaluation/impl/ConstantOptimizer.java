@@ -6,8 +6,6 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,8 +145,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 		{
 			super.meet(functionCall);
 
-			List<ValueExpr> args = functionCall.getArgs();
-			for (ValueExpr arg : args) {
+			for (ValueExpr arg : functionCall.getArgs()) {
 				if (!isConstant(arg)) {
 					return;
 				}

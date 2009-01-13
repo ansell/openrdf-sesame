@@ -58,8 +58,4 @@ public class SailRepositoryMetaData extends SailMetaDataWrapper implements Repos
 		return list.toArray(new QueryLanguage[list.size()]);
 	}
 
-	public boolean isRemoteDatasetSupported() {
-		return false;
-	}
-
 }

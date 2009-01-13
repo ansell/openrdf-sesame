@@ -8,6 +8,7 @@ package org.openrdf.model.impl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.Literal;
@@ -246,6 +247,10 @@ public class LiteralImpl implements Literal {
 
 	public BigDecimal decimalValue() {
 		return XMLDatatypeUtil.parseDecimal(getLabel());
+	}
+
+	public Duration durationValue() {
+		return XMLDatatypeUtil.parseDuration(getLabel());
 	}
 
 	public XMLGregorianCalendar calendarValue() {

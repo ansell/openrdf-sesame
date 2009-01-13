@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -46,7 +46,8 @@ import org.openrdf.store.StoreException;
 
 /**
  * Interceptor for repository requests. Handles the opening and closing of
- * connections to the repository specified in the request.
+ * connections to the repository specified in the request and handles the
+ * caching headers.
  * 
  * @author Herko ter Horst
  * @author Arjohn Kampman
@@ -153,13 +154,32 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		return (Repository)request.getAttribute(REPOSITORY_KEY);
 	}
 
-	public static RepositoryConnection getRepositoryConnection(HttpServletRequest request) {
+	public static RepositoryConnection getModifyingConnection(HttpServletRequest request) {
 		request.setAttribute(REPOSITORY_MODIFIED_KEY, Boolean.TRUE);
 		return (RepositoryConnection)request.getAttribute(REPOSITORY_CONNECTION_KEY);
 	}
 
-	public static RepositoryConnection getReadOnlyConnection(HttpServletRequest request) {
-		return (RepositoryConnection)request.getAttribute(REPOSITORY_CONNECTION_KEY);
+	public static RepositoryConnection getRepositoryConnection(HttpServletRequest request)
+		throws StoreException
+	{
+		notSafe(request);
+		Object attr = request.getAttribute(REPOSITORY_CONNECTION_KEY);
+		RepositoryConnection con = (RepositoryConnection)attr;
+		if (con.isAutoCommit()) {
+			request.setAttribute(REPOSITORY_MODIFIED_KEY, Boolean.TRUE);
+		}
+		return con;
+	}
+
+	public static RepositoryConnection getReadOnlyConnection(HttpServletRequest request)
+		throws StoreException
+	{
+		Object attr = request.getAttribute(REPOSITORY_CONNECTION_KEY);
+		RepositoryConnection con = (RepositoryConnection)attr;
+		if (!con.isAutoCommit()) {
+			notSafe(request);
+		}
+		return con;
 	}
 
 	public static void notSafe(HttpServletRequest request) {
@@ -202,7 +222,8 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	 */
 	public static Collection<String> getActiveRequests(HttpServletRequest request) {
 		RepositoryInterceptor self = (RepositoryInterceptor)request.getAttribute(SELF_KEY);
-		List<String> result = new ArrayList<String>(self.activeConnections.size() * 2 + self.singleConnections.size());
+		List<String> result = new ArrayList<String>(self.activeConnections.size() * 2
+				+ self.singleConnections.size());
 		for (ActiveConnection con : self.activeConnections.values()) {
 			result.addAll(con.getActiveRequests());
 		}
@@ -328,7 +349,8 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		String id = getConnectionID(request);
 		boolean close = request.getAttribute(CONN_CLOSED_KEY) != null;
 		String newId = (String)request.getAttribute(CONN_CREATE_KEY);
-		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
+		Object attr = request.getAttribute(REPOSITORY_CONNECTION_KEY);
+		RepositoryConnection repositoryCon = (RepositoryConnection)attr;
 		String queryId = (String)request.getAttribute(QUERY_CREATE_KEY);
 		ActiveConnection activeConnection = (ActiveConnection)request.getAttribute(QUERY_MAP_KEY);
 		if (activeConnection != null) {

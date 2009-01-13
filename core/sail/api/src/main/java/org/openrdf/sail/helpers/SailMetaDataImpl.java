@@ -115,6 +115,10 @@ public class SailMetaDataImpl implements SailMetaData {
 		return null;
 	}
 
+	public boolean isRemoteDatasetSupported() {
+		return false;
+	}
+
 	public boolean isContextBNodesSupported() {
 		return false;
 	}

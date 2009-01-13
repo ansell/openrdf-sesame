@@ -94,7 +94,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	public void meet(Bound node)
 		throws X
 	{
-		meetNode(node);
+		meetUnaryValueOperator(node);
 	}
 
 	public void meet(Compare node)
@@ -172,7 +172,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	public void meet(FunctionCall node)
 		throws X
 	{
-		meetNode(node);
+		meetNaryValueOperator(node);
 	}
 
 	public void meet(Group node)

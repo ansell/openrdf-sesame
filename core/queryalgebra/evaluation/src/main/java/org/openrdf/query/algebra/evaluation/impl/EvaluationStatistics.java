@@ -119,7 +119,15 @@ public class EvaluationStatistics {
 
 		@Override
 		protected void meetNode(QueryModelNode node) {
-			throw new IllegalArgumentException("Unhandled node type: " + node.getClass());
+			if (node instanceof ExternalSet) {
+				meetExternalSet((ExternalSet) node);
+			} else {
+				throw new IllegalArgumentException("Unhandled node type: " + node.getClass());
+			}
+		}
+
+		protected void meetExternalSet(ExternalSet node) {
+			cardinality = node.cardinality();
 		}
 	}
 }

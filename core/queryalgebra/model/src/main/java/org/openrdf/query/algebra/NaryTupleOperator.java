@@ -7,7 +7,9 @@ package org.openrdf.query.algebra;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * An abstract superclass for n-ary tuple operators which have one or more
@@ -161,6 +163,16 @@ public abstract class NaryTupleOperator extends QueryModelNodeBase implements Tu
 	public boolean removeArg(TupleExpr arg) {
 		assert arg != null;
 		return args.remove(arg);
+	}
+
+	public Set<String> getBindingNames() {
+		Set<String> bindingNames = new LinkedHashSet<String>(16);
+
+		for (TupleExpr arg : getArgs()) {
+			bindingNames.addAll(arg.getBindingNames());
+		}
+
+		return bindingNames;
 	}
 
 	@Override

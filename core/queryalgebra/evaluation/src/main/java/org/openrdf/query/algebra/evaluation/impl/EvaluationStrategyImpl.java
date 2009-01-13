@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -578,7 +577,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public Cursor<BindingSet> evaluate(ExternalSet external, BindingSet bindings)
 		throws StoreException
 	{
-		return external.evaluate(dataset, bindings);
+		return external.evaluate(bindings);
 	}
 
 	public Value evaluate(ValueExpr expr, BindingSet bindings)
@@ -952,12 +951,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new EvaluationException("Unknown function '" + node.getURI() + "'");
 		}
 
-		List<ValueExpr> args = node.getArgs();
+		ValueExpr[] args = node.getArgs();
 
-		Value[] argValues = new Value[args.size()];
+		Value[] argValues = new Value[args.length];
 
-		for (int i = 0; i < args.size(); i++) {
-			argValues[i] = evaluate(args.get(i), bindings);
+		for (int i = 0; i < args.length; i++) {
+			argValues[i] = evaluate(args[i], bindings);
 		}
 
 		return function.evaluate(tripleSource.getValueFactory(), argValues);

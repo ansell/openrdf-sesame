@@ -73,6 +73,10 @@ public class SailMetaDataWrapper implements SailMetaData {
 		return delegate.getStoreVersion();
 	}
 
+	public boolean isRemoteDatasetSupported() {
+		return delegate.isRemoteDatasetSupported();
+	}
+
 	public boolean isContextBNodesSupported() {
 		return delegate.isContextBNodesSupported();
 	}

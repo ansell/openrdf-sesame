@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,19 +11,15 @@ package org.openrdf.query.algebra;
  * Language for RDF</a>; checks if a variable is bound.
  * 
  * @author Arjohn Kampman
+ * @author James Leigh
  */
-public class Bound extends QueryModelNodeBase implements ValueExpr {
+public class Bound extends UnaryValueOperator implements ValueExpr {
 
 	private static final long serialVersionUID = 7222248835654567074L;
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-
-	/**
-	 * The operator's argument.
-	 */
-	protected Var arg;
 
 	/*--------------*
 	 * Constructors *
@@ -46,7 +42,7 @@ public class Bound extends QueryModelNodeBase implements ValueExpr {
 	 * @return The operator's argument.
 	 */
 	public Var getArg() {
-		return arg;
+		return (Var)super.getArg();
 	}
 
 	/**
@@ -55,40 +51,14 @@ public class Bound extends QueryModelNodeBase implements ValueExpr {
 	 * @param arg
 	 *        The (new) argument for this operator, must not be <tt>null</tt>.
 	 */
-	public void setArg(Var arg) {
-		assert arg != null : "arg must not be null";
-		arg.setParentNode(this);
-		this.arg = arg;
+	public void setArg(ValueExpr arg) {
+		assert arg instanceof Var;
+		super.setArg(arg);
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
 		visitor.meet(this);
-	}
-
-	@Override
-	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-		throws X
-	{
-		arg.visit(visitor);
-	}
-
-	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
-		if (arg == current) {
-			setArg((Var)replacement);
-		}
-		else {
-			super.replaceChildNode(current, replacement);
-		}
-	}
-
-	@Override
-	public Bound clone() {
-		Bound clone = (Bound)super.clone();
-		clone.setArg(getArg().clone());
-		return clone;
 	}
 }

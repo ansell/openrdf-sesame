@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.openrdf.cursor.Cursor;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.QueryModelNodeBase;
 import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.TupleExpr;
@@ -37,7 +36,11 @@ public abstract class ExternalSet extends QueryModelNodeBase implements TupleExp
 		return (ExternalSet)super.clone();
 	}
 
-	public abstract Cursor<BindingSet> evaluate(Dataset dataset, BindingSet bindings)
+	public double cardinality() {
+		return 1;
+	}
+
+	public abstract Cursor<BindingSet> evaluate(BindingSet bindings)
 		throws StoreException;
 
 }

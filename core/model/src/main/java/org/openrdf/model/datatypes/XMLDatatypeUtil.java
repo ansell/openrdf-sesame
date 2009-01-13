@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
@@ -95,7 +96,9 @@ public class XMLDatatypeUtil {
 			datatype.equals(XMLSchema.UNSIGNED_LONG) ||
 			datatype.equals(XMLSchema.UNSIGNED_INT) ||
 			datatype.equals(XMLSchema.UNSIGNED_SHORT) ||
-			datatype.equals(XMLSchema.UNSIGNED_BYTE);
+			datatype.equals(XMLSchema.UNSIGNED_BYTE) ||
+			datatype.equals(XMLSchema.DURATION_DAYTIME) ||
+			datatype.equals(XMLSchema.DURATION_YEARMONTH);
 	}
 
 	/**
@@ -152,6 +155,22 @@ public class XMLDatatypeUtil {
 		return
 			datatype.equals(XMLSchema.FLOAT) ||
 			datatype.equals(XMLSchema.DOUBLE);
+	}
+
+	/**
+	 * Checks whether the supplied datatype is equal to xsd:duration,
+	 * xsd:dayTimeduration, or xsd:yearMonthDuration.
+	 * 
+	 * @see http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#duration
+	 * @see http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#dayTimeDuration
+	 * @see http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#yearMonthDuration
+	 */
+	public static boolean isDurationDatatype(URI datatype) {
+		return
+			datatype.equals(XMLSchema.DURATION) ||
+			datatype.equals(XMLSchema.DURATION_DAYTIME)||
+			datatype.equals(XMLSchema.DURATION_YEARMONTH);
+
 	}
 
 	/**
@@ -1667,6 +1686,19 @@ public class XMLDatatypeUtil {
 	}
 
 	/**
+	 * Parses the supplied duration value string and returns its value.
+	 * 
+	 * @param s
+	 *        A string representation of an xsd:duration.
+	 * @return The duration value represented by the supplied string argument.
+	 * @throws NumberFormatException
+	 *         If the supplied string is not a valid duration value.
+	 */
+	public static Duration parseDuration(String s) {
+		return dtFactory.newDuration(s);
+	}
+
+	/**
 	 * Parses the supplied calendar value string and returns its value.
 	 * 
 	 * @param s
@@ -1734,6 +1766,12 @@ public class XMLDatatypeUtil {
 		}
 		else if (DatatypeConstants.DURATION.equals(qname)) {
 			return XMLSchema.DURATION;
+		}
+		else if (DatatypeConstants.DURATION_DAYTIME.equals(qname)) {
+			return XMLSchema.DURATION_DAYTIME;
+		}
+		else if (DatatypeConstants.DURATION_YEARMONTH.equals(qname)) {
+			return XMLSchema.DURATION_YEARMONTH;
 		}
 		else {
 			throw new IllegalArgumentException("QName cannot be mapped to an XML Schema URI: "
