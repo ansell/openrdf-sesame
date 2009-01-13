@@ -39,6 +39,9 @@ public class HTTPRepositorySchema {
 	/** <tt>http://www.openrdf.org/config/repository/http#password</tt> */
 	public final static URI PASSWORD;
 
+	/** <tt>http://www.openrdf.org/config/repository/http#readOnly</tt> */
+	public final static URI READ_ONLY;
+
 	/**
 	 * The set of all URI prefixes of subjects in statements on the server.
 	 * <tt>http://www.openrdf.org/config/repository/http#subjectSpace</tt>
@@ -52,6 +55,7 @@ public class HTTPRepositorySchema {
 		REPOSITORYID = factory.createURI(NAMESPACE, "repositoryID");
 		USERNAME = factory.createURI(NAMESPACE, "username");
 		PASSWORD = factory.createURI(NAMESPACE, "password");
+		READ_ONLY = factory.createURI(NAMESPACE, "readOnly");
 		SUBJECTSPACE = factory.createURI(NAMESPACE, "subjectSpace");
 	}
 }

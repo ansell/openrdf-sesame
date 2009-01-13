@@ -5,7 +5,7 @@
  */
 package org.openrdf.repository.http.config;
 
-import static org.openrdf.repository.http.config.HTTPRepositorySchema.PASSWORD;
+import static org.openrdf.repository.http.config.HTTPRepositorySchema.*;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYID;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYURL;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.SERVERURL;
@@ -35,6 +35,8 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 	private String username;
 
 	private String password;
+
+	private boolean readOnly;
 
 	private Set<String> subjectSpace = new HashSet<String>();
 
@@ -71,6 +73,14 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		this.password = password;
 	}
 
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
+
 	public Set<String> getSubjectSpace() {
 		return subjectSpace;
 	}
@@ -96,6 +106,9 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 
 		if (url != null) {
 			model.add(implNode, REPOSITORYURL, vf.createURI(url));
+		}
+		if (readOnly) {
+			model.add(implNode, READ_ONLY, vf.createLiteral(readOnly));
 		}
 		for (String space : subjectSpace) {
 			model.add(implNode, SUBJECTSPACE, vf.createURI(space));
@@ -135,6 +148,10 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 			Literal password = model.filter(implNode, PASSWORD, null).objectLiteral();
 			if (password != null) {
 				setPassword(password.getLabel());
+			}
+			Literal readOnly = model.filter(implNode, READ_ONLY, null).objectLiteral();
+			if (readOnly != null) {
+				setReadOnly(readOnly.booleanValue());
 			}
 			for (Value obj : model.filter(implNode, SUBJECTSPACE, null).objects()) {
 				subjectSpace.add(obj.stringValue());

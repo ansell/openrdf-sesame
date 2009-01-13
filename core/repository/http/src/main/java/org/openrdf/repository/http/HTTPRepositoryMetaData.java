@@ -24,7 +24,6 @@ import org.openrdf.model.Model;
 import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.rio.RDFFormat;
@@ -32,7 +31,7 @@ import org.openrdf.store.StoreException;
 
 class HTTPRepositoryMetaData implements InvocationHandler {
 
-	public static RepositoryMetaData create(Model model)
+	public static RepositoryMetaData create(HTTPRepository repository, Model model)
 		throws StoreException
 	{
 		ClassLoader cl = HTTPRepositoryMetaData.class.getClassLoader();
@@ -40,7 +39,7 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 		try {
 			BeanInfo info = Introspector.getBeanInfo(RepositoryMetaData.class);
 			PropertyDescriptor[] properties = info.getPropertyDescriptors();
-			HTTPRepositoryMetaData h = new HTTPRepositoryMetaData(model, properties);
+			HTTPRepositoryMetaData h = new HTTPRepositoryMetaData(repository, model, properties);
 			return (RepositoryMetaData)Proxy.newProxyInstance(cl, interfaces, h);
 		}
 		catch (IntrospectionException e) {
@@ -50,11 +49,12 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 
 	private Model model;
 
-	private URIFactory uf = ValueFactoryImpl.getInstance();
+	private HTTPRepository repository;
 
 	private PropertyDescriptor[] properties;
 
-	public HTTPRepositoryMetaData(Model model, PropertyDescriptor[] properties) {
+	public HTTPRepositoryMetaData(HTTPRepository repository, Model model, PropertyDescriptor[] properties) {
+		this.repository = repository;
 		this.model = model;
 		this.properties = properties;
 	}
@@ -64,6 +64,8 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 	{
 		String name = getName(method);
 		Class<?> type = method.getReturnType();
+		if ("isReadOnly".equals(name))
+			return repository.isReadOnly();
 		if (type.isArray())
 			return getArrayOf(type.getComponentType(), name);
 		return getArrayOf(type, name)[0];
@@ -80,6 +82,7 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 	private Object[] getArrayOf(Class<?> type, String name)
 		throws MalformedURLException
 	{
+		URIFactory uf = repository.getURIFactory();
 		URI pred = uf.createURI(Protocol.METADATA_NAMESPACE, name);
 		if (type.isAssignableFrom(String.class)) {
 			return getString(pred);
