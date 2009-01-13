@@ -1,13 +1,13 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.http.server.controllers;
 
 import static org.openrdf.http.protocol.Protocol.CONN_PATH;
+import static org.openrdf.http.server.repository.RepositoryInterceptor.getModifyingConnection;
 import static org.openrdf.http.server.repository.RepositoryInterceptor.getReadOnlyConnection;
-import static org.openrdf.http.server.repository.RepositoryInterceptor.getRepositoryConnection;
 import static org.openrdf.http.server.repository.RepositoryInterceptor.notSafe;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -54,7 +54,7 @@ public class ConnectionController {
 	public void commit(HttpServletRequest request)
 		throws StoreException
 	{
-		RepositoryConnection repositoryCon = getRepositoryConnection(request);
+		RepositoryConnection repositoryCon = getModifyingConnection(request);
 		if (!repositoryCon.isAutoCommit()) {
 			repositoryCon.commit();
 			repositoryCon.setAutoCommit(true);
@@ -66,7 +66,6 @@ public class ConnectionController {
 	public void rollback(HttpServletRequest request)
 		throws StoreException
 	{
-		notSafe(request);
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
 		if (!repositoryCon.isAutoCommit()) {
 			repositoryCon.rollback();

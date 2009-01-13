@@ -64,6 +64,12 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		addAll(c);
 	}
 
+	public ModelImpl(int size) {
+		super();
+		values = new HashMap<Value, ModelNode>(size * 2);
+		statements = new LinkedHashSet<ModelStatement>(size);
+	}
+
 	public ModelImpl(Map<String, String> namespaces, Collection<? extends Statement> c) {
 		this(c);
 		this.namespaces.putAll(namespaces);
@@ -71,6 +77,11 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 
 	public ModelImpl(Map<String, String> namespaces) {
 		this();
+		this.namespaces.putAll(namespaces);
+	}
+
+	public ModelImpl(Map<String, String> namespaces, int size) {
+		this(size);
 		this.namespaces.putAll(namespaces);
 	}
 

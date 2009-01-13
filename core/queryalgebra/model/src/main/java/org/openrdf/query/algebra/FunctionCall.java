@@ -5,15 +5,14 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * A call to an (external) function that operates on zero or more arguments.
  * 
  * @author Arjohn Kampman
  */
-public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
+public class FunctionCall extends NaryValueOperator implements ValueExpr {
 
 	private static final long serialVersionUID = 6812901135136982600L;
 
@@ -22,11 +21,6 @@ public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
 	 *-----------*/
 
 	protected String uri;
-
-	/**
-	 * The operator's argument.
-	 */
-	protected List<ValueExpr> args = new ArrayList<ValueExpr>();
 
 	/*--------------*
 	 * Constructors *
@@ -42,13 +36,13 @@ public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
 	 *        The operator's argument, must not be <tt>null</tt>.
 	 */
 	public FunctionCall(String uri, ValueExpr... args) {
+		super(args);
 		setURI(uri);
-		addArgs(args);
 	}
 
-	public FunctionCall(String uri, Iterable<ValueExpr> args) {
+	public FunctionCall(String uri, Collection<ValueExpr> args) {
+		super(args);
 		setURI(uri);
-		addArgs(args);
 	}
 
 	/*---------*
@@ -63,33 +57,6 @@ public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
 		this.uri = uri;
 	}
 
-	public List<ValueExpr> getArgs() {
-		return args;
-	}
-
-	public void setArgs(Iterable<ValueExpr> args) {
-		this.args.clear();
-		addArgs(args);
-	}
-
-	public void addArgs(ValueExpr... args) {
-		for (ValueExpr arg : args) {
-			addArg(arg);
-		}
-	}
-
-	public void addArgs(Iterable<ValueExpr> args) {
-		for (ValueExpr arg : args) {
-			addArg(arg);
-		}
-	}
-
-	public void addArg(ValueExpr arg) {
-		assert arg != null : "arg must not be null";
-		args.add(arg);
-		arg.setParentNode(this);
-	}
-
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -97,38 +64,7 @@ public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
 	}
 
 	@Override
-	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-		throws X
-	{
-		for (ValueExpr arg : args) {
-			arg.visit(visitor);
-		}
-
-		super.visitChildren(visitor);
-	}
-
-	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
-		int index = args.indexOf(current);
-		if (index >= 0) {
-			args.set(index, (ValueExpr)replacement);
-			replacement.setParentNode(this);
-		}
-		else {
-			super.replaceChildNode(current, replacement);
-		}
-	}
-
-	@Override
 	public FunctionCall clone() {
-		FunctionCall clone = (FunctionCall)super.clone();
-
-		clone.args = new ArrayList<ValueExpr>(getArgs().size());
-		for (ValueExpr arg : getArgs()) {
-			clone.addArg(arg.clone());
-		}
-
-		return clone;
+		return (FunctionCall)super.clone();
 	}
 }

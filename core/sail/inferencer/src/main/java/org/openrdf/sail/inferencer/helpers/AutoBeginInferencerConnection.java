@@ -8,8 +8,7 @@ package org.openrdf.sail.inferencer.helpers;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.sail.SailConnectionListener;
-import org.openrdf.sail.helpers.AutoBeginSailConnection;
+import org.openrdf.sail.helpers.AutoBeginNotifyingConnection;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.store.StoreException;
 
@@ -18,7 +17,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-public class AutoBeginInferencerConnection extends AutoBeginSailConnection implements InferencerConnection {
+public class AutoBeginInferencerConnection extends AutoBeginNotifyingConnection implements InferencerConnection {
 
 	/*--------------*
 	 * Constructors *
@@ -91,13 +90,5 @@ public class AutoBeginInferencerConnection extends AutoBeginSailConnection imple
 		throws StoreException
 	{
 		getWrappedConnection().flushUpdates();
-	}
-
-	public void addConnectionListener(SailConnectionListener listener) {
-		getWrappedConnection().addConnectionListener(listener);
-	}
-
-	public void removeConnectionListener(SailConnectionListener listener) {
-		getWrappedConnection().removeConnectionListener(listener);
 	}
 }

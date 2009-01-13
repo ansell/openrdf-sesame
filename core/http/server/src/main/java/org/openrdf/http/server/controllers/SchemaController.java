@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.model.Model;
+import org.openrdf.model.util.ModelOrganizer;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.store.StoreConfigException;
 
@@ -33,6 +34,7 @@ public class SchemaController {
 		throws StoreConfigException
 	{
 		RepositoryManager manager = getReadOnlyManager(request);
-		return manager.getConfigTemplateManager().getSchemas();
+		Model schemas = manager.getConfigTemplateManager().getSchemas();
+		return new ModelOrganizer(schemas).organize();
 	}
 }

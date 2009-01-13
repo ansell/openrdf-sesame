@@ -5,6 +5,7 @@
  */
 package org.openrdf.rio.rdfxml;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -48,6 +49,7 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(writer);
 		con1.export(rdfWriter);
 
+		long before = con1.size();
 		con1.close();
 
 		Repository rep2 = new SailRepository(new MemoryStore());
@@ -55,8 +57,11 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 
 		RepositoryConnection con2 = rep2.getConnection();
 
-		con2.add(new StringReader(writer.toString()), "foo:bar", RDFFormat.RDFXML);
+		con2.add(new StringReader(writer.toString()), "foo:bar", rdfWriterFactory.getRDFFormat());
+		long after = con2.size();
 		con2.close();
+
+		assertEquals("result of serialization and re-upload should be equal to original", before, after);
 
 		assertTrue("result of serialization and re-upload should be equal to original", RepositoryUtil.equals(
 				rep1, rep2));
@@ -81,6 +86,7 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 		rdfWriter.setBaseURI(ciaFacts.toExternalForm());
 		con1.export(rdfWriter);
 
+		long before = con1.size();
 		con1.close();
 
 		Repository rep2 = new SailRepository(new MemoryStore());
@@ -88,8 +94,11 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 
 		RepositoryConnection con2 = rep2.getConnection();
 
-		con2.add(new StringReader(writer.toString()), "foo:bar", RDFFormat.RDFXML);
+		con2.add(new StringReader(writer.toString()), ciaFacts.toExternalForm(), rdfWriterFactory.getRDFFormat());
+		long after = con2.size();
 		con2.close();
+
+		assertEquals("result of serialization and re-upload should be equal to original", before, after);
 
 		assertTrue("result of serialization and re-upload should be equal to original", RepositoryUtil.equals(
 				rep1, rep2));

@@ -8,6 +8,7 @@ package org.openrdf.model;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
@@ -139,6 +140,19 @@ public interface Literal extends Value {
 	 *         If the literal's label cannot be represented by a <tt>boolean</tt>.
 	 */
 	public boolean booleanValue();
+
+	/**
+	 * Returns the {@link Duration} value of this literal. A duration
+	 * representation can be given for literals whose label conforms to the
+	 * syntax of the following <a href="http://www.w3.org/TR/xmlschema-2/">XML
+	 * Schema datatypes</a>: <tt>duration</tt>, <tt>dayTimeDuration</tt>, or
+	 * <tt>yearMonthDuration</tt>.
+	 * 
+	 * @return The duration value of the literal.
+	 * @throws IllegalArgumentException
+	 *         If the literal cannot be represented by a {@link Duration}.
+	 */
+	public Duration durationValue();
 
 	/**
 	 * Returns the {@link XMLGregorianCalendar} value of this literal. A calendar

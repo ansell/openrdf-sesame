@@ -38,6 +38,8 @@ public interface SailMetaData {
 
 	String[] getQueryFunctions();
 
+	boolean isRemoteDatasetSupported();
+
 	boolean isContextSupported();
 
 	boolean isContextBNodesSupported();

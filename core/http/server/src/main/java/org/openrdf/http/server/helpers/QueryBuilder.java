@@ -54,7 +54,7 @@ public class QueryBuilder {
 	private ValueFactory vf;
 
 	public QueryBuilder(HttpServletRequest request)
-		throws IOException, UnsupportedMediaType
+		throws IOException, UnsupportedMediaType, StoreException
 	{
 		this.request = request;
 		this.repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);

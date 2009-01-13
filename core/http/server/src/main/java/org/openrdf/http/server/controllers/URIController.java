@@ -1,5 +1,5 @@
 /*
- * Copyright James Leigh (c) 2008.
+ * Copyright James Leigh (c) 2008-2009.
  *
  * Licensed under the BSD license.
  */
@@ -23,6 +23,7 @@ import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.ModelImpl;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.util.ModelOrganizer;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.repository.Repository;
@@ -50,7 +51,6 @@ public class URIController {
 	{
 		URI uri = new URIImpl(request.getRequestURL().toString());
 
-		// FIXME: not all namespaces end with a '#'
 		String namespace = request.getRequestURL().append("#").toString();
 		URI ns = new URIImpl(namespace);
 
@@ -92,7 +92,9 @@ public class URIController {
 			throw new NotFound("Not Found <" + uri.stringValue() + ">");
 		}
 		
-		return rdf.getModel();
+		ModelOrganizer organizer = new ModelOrganizer(rdf.getModel());
+		organizer.setSubjectOrder(uri, ns);
+		return organizer.organize();
 	}
 
 	private boolean hasNamespace(String namespace, RepositoryConnection con)

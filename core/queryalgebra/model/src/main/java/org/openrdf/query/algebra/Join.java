@@ -41,16 +41,6 @@ public class Join extends NaryTupleOperator {
 	 * Methods *
 	 *---------*/
 
-	public Set<String> getBindingNames() {
-		Set<String> bindingNames = new LinkedHashSet<String>(16);
-
-		for (TupleExpr arg : getArgs()) {
-			bindingNames.addAll(arg.getBindingNames());
-		}
-
-		return bindingNames;
-	}
-
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{

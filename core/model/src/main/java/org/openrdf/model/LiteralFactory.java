@@ -1,16 +1,21 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.model;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * A factory for creating  literals.
  * 
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public interface LiteralFactory {
 
@@ -113,6 +118,36 @@ public interface LiteralFactory {
 	 * @return An <tt>xsd:double</tt>-typed literal for the specified value.
 	 */
 	public Literal createLiteral(double value);
+
+	/**
+	 * Creates a new <tt>xsd:integer</tt>-typed literal representing the
+	 * specified value.
+	 * 
+	 * @param value
+	 *        The value for the literal.
+	 * @return An <tt>xsd:integer</tt>-typed literal for the specified value.
+	 */
+	public Literal createLiteral(BigInteger integer);
+
+	/**
+	 * Creates a new <tt>xsd:decimal</tt>-typed literal representing the
+	 * specified value.
+	 * 
+	 * @param value
+	 *        The value for the literal.
+	 * @return An <tt>xsd:decimal</tt>-typed literal for the specified value.
+	 */
+	public Literal createLiteral(BigDecimal decimal);
+
+	/**
+	 * Creates a new literal representing the specified duration that is typed
+	 * using the appropriate XML Schema duration datatypes.
+	 * 
+	 * @param duration
+	 *        The value for the literal.
+	 * @return An typed literal for the specified duration.
+	 */
+	public Literal createLiteral(Duration duration);
 
 	/**
 	 * Creates a new literal representing the specified calendar that is typed

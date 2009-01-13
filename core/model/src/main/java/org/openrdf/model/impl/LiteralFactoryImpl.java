@@ -5,6 +5,10 @@
  */
 package org.openrdf.model.impl;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.Literal;
@@ -82,6 +86,14 @@ public class LiteralFactoryImpl implements LiteralFactory {
 	}
 
 	/**
+	 * Calls {@link #createIntegerLiteral(long, URI)} with the supplied value and
+	 * {@link XMLSchema#INTEGER} as parameters.
+	 */
+	public Literal createLiteral(BigInteger value) {
+		return createIntegerLiteral(value, XMLSchema.INTEGER);
+	}
+
+	/**
 	 * Calls {@link #createNumericLiteral(Number, URI)} with the supplied value
 	 * and datatype as parameters.
 	 */
@@ -106,6 +118,14 @@ public class LiteralFactoryImpl implements LiteralFactory {
 	}
 
 	/**
+	 * Calls {@link #createFPLiteral(Number, URI)} with the supplied value and
+	 * {@link XMLSchema#DECIMAL} as parameters.
+	 */
+	public Literal createLiteral(BigDecimal value) {
+		return createFPLiteral(value, XMLSchema.DECIMAL);
+	}
+
+	/**
 	 * Calls {@link #createNumericLiteral(Number, URI)} with the supplied value
 	 * and datatype as parameters.
 	 */
@@ -120,6 +140,19 @@ public class LiteralFactoryImpl implements LiteralFactory {
 	 */
 	protected Literal createNumericLiteral(Number number, URI datatype) {
 		return createLiteral(number.toString(), datatype);
+	}
+
+	/**
+	 * Calls {@link ValueFactory#createLiteral(String, URI)} with the
+	 * String-value of the supplied calendar and the appropriate datatype as
+	 * parameters.
+	 * 
+	 * @see Duration#toString()
+	 * @see Duration#getXMLSchemaType()
+	 * @see XMLDatatypeUtil#qnameToURI(javax.xml.namespace.QName)
+	 */
+	public Literal createLiteral(Duration duration) {
+		return createLiteral(duration.toString(), XMLDatatypeUtil.qnameToURI(duration.getXMLSchemaType()));
 	}
 
 	/**

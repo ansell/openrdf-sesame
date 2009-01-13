@@ -5,8 +5,6 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * The LeftJoin operator, as defined in <a
@@ -58,13 +56,6 @@ public class LeftJoin extends BinaryTupleOperator {
 
 	public boolean hasCondition() {
 		return condition != null;
-	}
-
-	public Set<String> getBindingNames() {
-		Set<String> bindingNames = new LinkedHashSet<String>(16);
-		bindingNames.addAll(getLeftArg().getBindingNames());
-		bindingNames.addAll(getRightArg().getBindingNames());
-		return bindingNames;
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
