@@ -21,7 +21,6 @@
 		<module>event</module>
 		<module>http</module>
 		<module>sail</module>
-		<module>dataset</module>
 		<module>contextaware</module>
 	</modules>
 

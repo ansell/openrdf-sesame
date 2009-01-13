@@ -22,6 +22,7 @@
 		<module>nativerdf</module>
 		<module>rdbms</module>
 		<module>federation</module>
+		<module>dataset</module>
 	</modules>
 
 	<scm>
