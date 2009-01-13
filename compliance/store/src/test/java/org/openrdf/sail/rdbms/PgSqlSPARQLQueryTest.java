@@ -11,8 +11,8 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.parser.sparql.ManifestTest;
 import org.openrdf.query.parser.sparql.SPARQLQueryTest;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.dataset.DatasetRepository;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.dataset.DatasetSail;
 import org.openrdf.sail.rdbms.postgresql.PgSqlStore;
 
 public class PgSqlSPARQLQueryTest extends SPARQLQueryTest {
@@ -40,6 +40,6 @@ public class PgSqlSPARQLQueryTest extends SPARQLQueryTest {
 		PgSqlStore sail = new PgSqlStore("sesame_test");
 		sail.setUser("sesame");
 		sail.setPassword("opensesame");
-		return new DatasetRepository(new SailRepository(sail));
+		return new SailRepository(new DatasetSail(sail));
 	}
 }

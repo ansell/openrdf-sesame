@@ -70,7 +70,7 @@
 
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-repository-dataset</artifactId>
+			<artifactId>sesame-sail-dataset</artifactId>
 		</dependency>
 
 		<dependency>

@@ -11,8 +11,8 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.parser.sparql.ManifestTest;
 import org.openrdf.query.parser.sparql.SPARQLQueryTest;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.dataset.DatasetRepository;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.dataset.DatasetSail;
 import org.openrdf.sail.federation.Federation;
 import org.openrdf.sail.memory.MemoryStore;
 
@@ -43,6 +43,6 @@ public class FederationSparqlTest extends SPARQLQueryTest {
 		sail.addMember(new SailRepository(new MemoryStore()));
 		sail.addMember(new SailRepository(new MemoryStore()));
 		sail.addMember(new SailRepository(new MemoryStore()));
-		return new DatasetRepository(new SailRepository(sail));
+		return new SailRepository(new DatasetSail(sail));
 	}
 }

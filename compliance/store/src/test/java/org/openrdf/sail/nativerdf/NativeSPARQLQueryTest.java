@@ -16,8 +16,8 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.parser.sparql.ManifestTest;
 import org.openrdf.query.parser.sparql.SPARQLQueryTest;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.dataset.DatasetRepository;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.dataset.DatasetSail;
 import org.openrdf.sail.nativerdf.NativeStore;
 
 public class NativeSPARQLQueryTest extends SPARQLQueryTest {
@@ -48,7 +48,7 @@ public class NativeSPARQLQueryTest extends SPARQLQueryTest {
 		throws IOException
 	{
 		dataDir = FileUtil.createTempDir("nativestore");
-		return new DatasetRepository(new SailRepository(new NativeStore(dataDir, "spoc")));
+		return new SailRepository(new DatasetSail(new NativeStore(dataDir, "spoc")));
 	}
 
 	@Override
