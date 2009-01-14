@@ -85,7 +85,7 @@ public class ResultImpl<T> extends DelegatingCursor<T> implements Result<T> {
 	{
 		try {
 			T next = next();
-			if (next() == null)
+			if (next == null)
 				throw new SingleResultException("No result");
 			if (next() != null)
 				throw new SingleResultException("More than one result");
