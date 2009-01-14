@@ -50,6 +50,12 @@ public class FutureTupleQueryResult implements TupleResult {
 		return getDelegate().next();
 	}
 
+	public BindingSet getSingle()
+		throws StoreException
+	{
+		return getDelegate().getSingle();
+	}
+
 	public <C extends Collection<? super BindingSet>> C addTo(C collection)
 		throws StoreException
 	{
