@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -22,6 +22,9 @@ import org.openrdf.store.StoreException;
 public interface Result<T> extends Cursor<T> {
 
 	public boolean hasNext()
+		throws StoreException;
+
+	public T getSingle()
 		throws StoreException;
 
 	public List<T> asList()

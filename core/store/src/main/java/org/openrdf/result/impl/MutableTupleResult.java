@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.result.Result;
+import org.openrdf.result.SingleResultException;
 import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
 
@@ -230,6 +231,14 @@ public class MutableTupleResult implements TupleResult, Cloneable {
 		lastReturned = -1;
 
 		return result;
+	}
+
+	public BindingSet getSingle()
+		throws StoreException
+	{
+		if (this.bindingSets.size() != 1)
+			throw new SingleResultException("expected zero, but was:" + bindingSets.size());
+		return this.bindingSets.get(0);
 	}
 
 	public <C extends Collection<? super BindingSet>> C addTo(C bindingSets)

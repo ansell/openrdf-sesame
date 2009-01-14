@@ -14,6 +14,7 @@ import java.util.Set;
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.DelegatingCursor;
 import org.openrdf.result.Result;
+import org.openrdf.result.SingleResultException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -66,6 +67,33 @@ public class ResultImpl<T> extends DelegatingCursor<T> implements Result<T> {
 		}
 		next = null;
 		return result;
+	}
+
+	/**
+	 * Returns the value of this RepositoryResult. The RepositoryResult is fully
+	 * consumed and automatically closed by this operation.
+	 * 
+	 * @return the only object of this RepositoryResult.
+	 * @throws StoreException
+	 *         if a problem occurred during retrieval of the results.
+	 * @throws NonUniqueResultException
+	 *         if the result did not contain exactly one result.
+	 * @see #addTo(Collection)
+	 */
+	public T getSingle()
+		throws StoreException
+	{
+		try {
+			T next = next();
+			if (next() == null)
+				throw new SingleResultException("No result");
+			if (next() != null)
+				throw new SingleResultException("More than one result");
+			return next;
+		}
+		finally {
+			close();
+		}
 	}
 
 	/**

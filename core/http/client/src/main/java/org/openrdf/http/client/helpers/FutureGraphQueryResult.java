@@ -52,6 +52,12 @@ public class FutureGraphQueryResult implements GraphResult {
 		return getDelegate().next();
 	}
 
+	public Statement getSingle()
+		throws StoreException
+	{
+		return getDelegate().getSingle();
+	}
+
 	public <C extends Collection<? super Statement>> C addTo(C collection)
 		throws StoreException
 	{
