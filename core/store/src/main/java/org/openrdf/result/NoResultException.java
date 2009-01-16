@@ -12,15 +12,15 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-public class SingleResultException extends StoreException {
+public class NoResultException extends StoreException {
 
 	private static final long serialVersionUID = 75463068807557049L;
 
-	public SingleResultException() {
+	public NoResultException() {
 		super();
 	}
 
-	public SingleResultException(String msg) {
+	public NoResultException(String msg) {
 		super(msg);
 	}
 

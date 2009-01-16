@@ -16,8 +16,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.openrdf.query.BindingSet;
+import org.openrdf.result.MultipleResultException;
+import org.openrdf.result.NoResultException;
 import org.openrdf.result.Result;
-import org.openrdf.result.SingleResultException;
 import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
 
@@ -233,11 +234,13 @@ public class MutableTupleResult implements TupleResult, Cloneable {
 		return result;
 	}
 
-	public BindingSet getSingle()
+	public BindingSet singleResult()
 		throws StoreException
 	{
-		if (this.bindingSets.size() != 1)
-			throw new SingleResultException("expected zero, but was:" + bindingSets.size());
+		if (bindingSets.isEmpty())
+			throw new NoResultException("expected zero, but was:" + bindingSets.size());
+		if (bindingSets.size() > 1)
+			throw new MultipleResultException("expected zero, but was:" + bindingSets.size());
 		return this.bindingSets.get(0);
 	}
 
