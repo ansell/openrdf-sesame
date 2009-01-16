@@ -24,8 +24,8 @@ public interface Result<T> extends Cursor<T> {
 	public boolean hasNext()
 		throws StoreException;
 
-	public T getSingle()
-		throws StoreException;
+	public T singleResult()
+		throws StoreException, NoResultException, MultipleResultException;
 
 	public List<T> asList()
 		throws StoreException;

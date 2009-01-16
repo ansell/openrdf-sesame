@@ -13,8 +13,9 @@ import java.util.Set;
 
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.DelegatingCursor;
+import org.openrdf.result.MultipleResultException;
+import org.openrdf.result.NoResultException;
 import org.openrdf.result.Result;
-import org.openrdf.result.SingleResultException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -80,15 +81,15 @@ public class ResultImpl<T> extends DelegatingCursor<T> implements Result<T> {
 	 *         if the result did not contain exactly one result.
 	 * @see #addTo(Collection)
 	 */
-	public T getSingle()
+	public T singleResult()
 		throws StoreException
 	{
 		try {
 			T next = next();
 			if (next == null)
-				throw new SingleResultException("No result");
+				throw new NoResultException("No result");
 			if (next() != null)
-				throw new SingleResultException("More than one result");
+				throw new MultipleResultException("More than one result");
 			return next;
 		}
 		finally {
