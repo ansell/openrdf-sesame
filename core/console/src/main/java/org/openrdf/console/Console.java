@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -43,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import info.aduna.io.FileUtil;
 import info.aduna.text.StringUtil;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.UnauthorizedException;
@@ -111,7 +111,7 @@ public class Console {
 	 * Static constants *
 	 *------------------*/
 
-	private static final String POM_PROPERTIES = "/META-INF/maven/org.openrdf.sesame/sesame-console/pom.properties";
+	private static final String VERSION = OpenRDFUtil.findVersion(Console.class, "org.openrdf.sesame", "sesame-console");
 
 	private static final String APP_NAME = "OpenRDF Sesame console";
 
@@ -176,6 +176,7 @@ public class Console {
 		Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
 
 		options.addOption(helpOption);
+		options.addOption(versionOption);
 
 		OptionGroup connectGroup = new OptionGroup();
 		connectGroup.addOption(serverURLOption);
@@ -193,7 +194,7 @@ public class Console {
 			}
 
 			if (commandLine.hasOption(versionOption.getOpt())) {
-				System.out.println(getVersion());
+				System.out.println(VERSION);
 				System.exit(0);
 			}
 
@@ -246,33 +247,6 @@ public class Console {
 		// writeln(" -d, --dataDir=DIR Sesame data dir to 'connect' to");
 		System.out.println();
 		System.out.println("For bug reports and suggestions, see http://www.openrdf.org/");
-	}
-
-	private static String getVersion() {
-		String version = null;
-
-		InputStream in = Console.class.getClassLoader().getResourceAsStream(POM_PROPERTIES);
-		if (in != null) {
-			try {
-				try {
-					Properties pom = new Properties();
-					pom.load(in);
-					version = (String)pom.get("version");
-				}
-				finally {
-					in.close();
-				}
-			}
-			catch (IOException e) {
-				System.err.println("ERROR: Unable to read version info " + e.getMessage());
-			}
-		}
-
-		if (version == null) {
-			version = "devel";
-		}
-
-		return version;
 	}
 
 	public Console()
@@ -475,7 +449,7 @@ public class Console {
 	}
 
 	private void printInfo() {
-		writeln(APP_NAME + " " + getVersion());
+		writeln(APP_NAME + " " + VERSION);
 		writeln("Connected to: " + (managerID == null ? "-" : managerID));
 		try {
 			writeln("Data location: " + (manager == null ? "-" : manager.getLocation()));

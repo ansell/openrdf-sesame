@@ -7,8 +7,6 @@ package org.openrdf.http.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -34,8 +32,6 @@ import org.openrdf.store.StoreConfigException;
  */
 public class SesameServer {
 
-	private static final String POM_PROPERTIES = "/META-INF/maven/org.openrdf.sesame/sesame-http-server/pom.properties";
-
 	public static void main(String[] args)
 		throws Exception
 	{
@@ -44,6 +40,8 @@ public class SesameServer {
 
 		Option helpOption = new Option("h", "help", false, "print this help");
 		Option versionOption = new Option("v", "version", false, "print version information");
+		Option nameOption = new Option("n", "name", true, "Server name");
+		nameOption.setOptionalArg(true);
 		Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
 		Option portOption = new Option("p", "port", true, "port to listen on");
 		Option maxAgeOption = new Option("c", "maxCacheAge", true,
@@ -52,6 +50,8 @@ public class SesameServer {
 				"If the server should resolve URLs to URI descriptions");
 
 		options.addOption(helpOption);
+		options.addOption(versionOption);
+		options.addOption(nameOption);
 		options.addOption(dirOption);
 		options.addOption(portOption);
 		options.addOption(maxAgeOption);
@@ -68,7 +68,7 @@ public class SesameServer {
 			}
 
 			if (commandLine.hasOption(versionOption.getOpt())) {
-				System.out.println(getVersion());
+				System.out.println(SesameServlet.getDefaultServerName());
 				System.exit(0);
 			}
 
@@ -102,6 +102,10 @@ public class SesameServer {
 				server.setUrlResolution(true);
 			}
 
+			if (commandLine.hasOption(nameOption.getOpt())) {
+				server.setServerName(commandLine.getOptionValue(nameOption.getOpt()));
+			}
+
 			server.start();
 		}
 		catch (ParseException e) {
@@ -118,21 +122,6 @@ public class SesameServer {
 		formatter.printHelp("server [OPTION]", options);
 		System.out.println();
 		System.out.println("For bug reports and suggestions, see http://www.openrdf.org/");
-	}
-
-	private static String getVersion() {
-		InputStream in = SesameServer.class.getClassLoader().getResourceAsStream(POM_PROPERTIES);
-		if (in == null)
-			return null;
-		Properties pom = new Properties();
-		try {
-			pom.load(in);
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return (String)pom.get("version");
 	}
 
 	public static int DEFAULT_PORT = 8080;
@@ -174,9 +163,23 @@ public class SesameServer {
 		manager.initialize();
 		jetty = new Server(port);
 		servlet = new SesameServlet(manager);
+		servlet.setServerName(servlet.getServerName() + " Jetty/" + Server.getVersion());
 		Context root = new Context(jetty, "/");
 		root.setMaxFormContentSize(0);
 		root.addServlet(new ServletHolder(servlet), "/*");
+	}
+
+	public String getServerName() {
+		return servlet.getServerName();
+	}
+
+	public void setServerName(String name) {
+		if (name == null || name.trim().length() == 0) {
+			jetty.setSendServerVersion(false);
+			servlet.setServerName(null);
+		} else {
+			servlet.setServerName(name);
+		}
 	}
 
 	private File createTempDir()
