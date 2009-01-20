@@ -23,6 +23,7 @@
 		<module>trix</module>
 		<module>turtle</module>
 		<module>trig</module>
+		<module>rdfa</module>
 	</modules>
 
 	<scm>

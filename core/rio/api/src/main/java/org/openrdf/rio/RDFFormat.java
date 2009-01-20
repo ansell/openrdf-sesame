@@ -26,6 +26,16 @@ import info.aduna.lang.FileFormat;
  */
 public class RDFFormat extends FileFormat {
 
+	/*------------------*
+	 * Static variables *
+	 *------------------*/
+
+	/**
+	 * List of known RDF file formats.
+	 */
+	// FIXME: remove/deprecate this list?
+	private static List<RDFFormat> RDF_FORMATS = new ArrayList<RDFFormat>(8);
+
 	/*-----------*
 	 * Constants *
 	 *-----------*/
@@ -68,15 +78,8 @@ public class RDFFormat extends FileFormat {
 	public static final RDFFormat TRIG = new RDFFormat("TriG", "application/x-trig", Charset.forName("UTF-8"),
 			"trig", true, true);
 
-	/*------------------*
-	 * Static variables *
-	 *------------------*/
-
-	/**
-	 * List of known RDF file formats.
-	 */
-	// FIXME: remove/deprecate this list?
-	private static List<RDFFormat> RDF_FORMATS = new ArrayList<RDFFormat>(8);
+	public static final RDFFormat RDFA = RDFFormat.register("RDFa",
+			"application/xhtml+xml", "xhtml", Charset.forName("UTF-8"));
 
 	/*--------------------*
 	 * Static initializer *
