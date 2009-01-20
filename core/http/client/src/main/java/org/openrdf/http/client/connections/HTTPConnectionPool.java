@@ -25,10 +25,13 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
@@ -45,6 +48,10 @@ import org.openrdf.store.StoreException;
  * @author James Leigh
  */
 public class HTTPConnectionPool implements Cloneable {
+
+	private static final String VERSION = OpenRDFUtil.findVersion(HTTPConnectionPool.class, "org.openrdf.sesame", "sesame-http-client");
+
+	private static final String APP_NAME = "OpenRDF HTTP client";
 
 	private final Logger logger = LoggerFactory.getLogger(HTTPConnectionPool.class);
 
@@ -91,9 +98,13 @@ public class HTTPConnectionPool implements Cloneable {
 		// Allow 20 concurrent connections to the same host (default is 2)
 		HttpConnectionManagerParams params = new HttpConnectionManagerParams();
 		params.setDefaultMaxConnectionsPerHost(20);
+		// TODO 20% speed up by params.setStaleCheckingEnabled(false);
 		manager.setParams(params);
 
-		httpClient = new HttpClient(manager);
+		HttpClientParams clientParams = new HttpClientParams();
+		clientParams.setParameter(HttpMethodParams.USER_AGENT, APP_NAME + "/" + VERSION + " "
+				+ clientParams.getParameter(HttpMethodParams.USER_AGENT));
+		httpClient = new HttpClient(clientParams, manager);
 	}
 
 	public String getURL() {

@@ -5,6 +5,10 @@
  */
 package org.openrdf;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import org.openrdf.model.Resource;
 
 /**
@@ -15,7 +19,7 @@ import org.openrdf.model.Resource;
  */
 public class OpenRDFUtil {
 
-	private static final Resource[] DEFAULT_CONTEXTS = new Resource[]{null};
+	private static final Resource[] DEFAULT_CONTEXTS = new Resource[] { null };
 
 	/**
 	 * Verifies that the supplied contexts parameter is not <tt>null</tt>,
@@ -29,5 +33,33 @@ public class OpenRDFUtil {
 		if (contexts == null)
 			return DEFAULT_CONTEXTS;
 		return contexts;
+	}
+
+	public static String findVersion(Class<?> app, String groupId, String artifactId) {
+		String version = null;
+
+		String properties = "META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties";
+		InputStream in = app.getClassLoader().getResourceAsStream(properties);
+		if (in != null) {
+			try {
+				try {
+					Properties pom = new Properties();
+					pom.load(in);
+					version = (String)pom.get("version");
+				}
+				finally {
+					in.close();
+				}
+			}
+			catch (IOException e) {
+				System.err.println("ERROR: Unable to read version info " + e.getMessage());
+			}
+		}
+
+		if (version == null) {
+			version = "devel";
+		}
+
+		return version;
 	}
 }

@@ -59,6 +59,8 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	 * Constants *
 	 *-----------*/
 
+	private static final String SERVER = "Server";
+
 	private static final String DATE = "Date";
 
 	private static final String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
@@ -239,6 +241,8 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 
 	private Logger logger = LoggerFactory.getLogger(RepositoryInterceptor.class);
 
+	private String serverName;
+
 	private RepositoryManager repositoryManager;
 
 	private int maxCacheAge;
@@ -259,6 +263,10 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public void setServerName(String serverName) {
+		this.serverName = serverName;
+	}
 
 	public void setRepositoryManager(RepositoryManager repMan) {
 		repositoryManager = repMan;
@@ -335,6 +343,9 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		long lastModified = lastModified(request); // update
 		String eTag = eTag(request); // update
 		response.setDateHeader(DATE, now);
+		if (serverName != null) {
+			response.setHeader(SERVER, serverName);
+		}
 		if (isSafe(request) && eTag != null && 0 < lastModified && lastModified < Long.MAX_VALUE) {
 			response.setDateHeader(LAST_MODIFIED, lastModified);
 			response.setHeader(ETAG, eTag);

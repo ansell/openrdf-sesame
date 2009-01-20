@@ -25,6 +25,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.http.server.controllers.BNodeController;
 import org.openrdf.http.server.controllers.ConfigurationController;
 import org.openrdf.http.server.controllers.ConnectionController;
@@ -49,9 +50,16 @@ import org.openrdf.repository.manager.RepositoryManager;
  */
 public class SesameServlet implements Servlet {
 
+	private static final String VERSION = OpenRDFUtil.findVersion(SesameServlet.class, "org.openrdf.sesame",
+			"sesame-http-server");
+
+	private static final String APP_NAME = "OpenRDF Sesame server";
+
 	private static final String APPLICATION_CONFIG_CLASS = "contextClass";
 
-	private static final String SERVLET_NAME = "Sesame Server";
+	public static String getDefaultServerName() {
+		return APP_NAME + "/" + VERSION;
+	}
 
 	private Logger logger = LoggerFactory.getLogger(SesameServlet.class);
 
@@ -63,8 +71,23 @@ public class SesameServlet implements Servlet {
 
 	private boolean urlResolution;
 
+	private String name = getDefaultServerName();
+
 	public SesameServlet(RepositoryManager manager) {
 		this.manager = manager;
+	}
+
+	public String getServerName() {
+		return name;
+	}
+
+	public void setServerName(String name) {
+		if (name == null || name.trim().length() == 0) {
+			this.name = null;
+		}
+		else {
+			this.name = name.trim();
+		}
 	}
 
 	public void setMaxCacheAge(int maxCacheAge) {
@@ -85,7 +108,7 @@ public class SesameServlet implements Servlet {
 	}
 
 	public String getServletInfo() {
-		return SERVLET_NAME;
+		return getDefaultServerName();
 	}
 
 	public void init(ServletConfig config)
@@ -95,15 +118,18 @@ public class SesameServlet implements Servlet {
 		if (maxCacheAge == 0 && maxCacheAgeParam != null) {
 			try {
 				maxCacheAge = Integer.parseInt(maxCacheAgeParam);
-			} catch (NumberFormatException e) {
+			}
+			catch (NumberFormatException e) {
 				logger.error("Cannot read max-cache-age parameter: {}", e.toString());
 			}
 		}
 		synchronized (SesameApplication.class) {
+			SesameApplication.serverName = name;
 			SesameApplication.staticManager = manager;
 			SesameApplication.maxCacheAge = maxCacheAge;
 			SesameApplication.urlResolution = urlResolution;
 			delegate.init(new SesameServletConfig(config));
+			SesameApplication.serverName = null;
 			SesameApplication.staticManager = null;
 			SesameApplication.maxCacheAge = 0;
 			SesameApplication.urlResolution = false;
@@ -156,8 +182,10 @@ public class SesameServlet implements Servlet {
 
 	public static class SesameApplication extends StaticWebApplicationContext {
 
+		static String serverName;
+
 		static RepositoryManager staticManager;
-	
+
 		static int maxCacheAge;
 
 		static boolean urlResolution;
@@ -192,6 +220,7 @@ public class SesameServlet implements Servlet {
 
 			// Interceptors
 			RepositoryInterceptor connections = new RepositoryInterceptor();
+			connections.setServerName(serverName);
 			connections.setRepositoryManager(staticManager);
 			connections.setMaxCacheAge(maxCacheAge);
 			registerSingleton(connections);
