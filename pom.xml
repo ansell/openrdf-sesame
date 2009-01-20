@@ -43,6 +43,16 @@
 			<!-- OpenRDF modules -->
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-client</artifactId>
+				<version>3.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-runtime</artifactId>
+				<version>3.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-model</artifactId>
 				<version>3.0-SNAPSHOT</version>
 			</dependency>
@@ -85,6 +95,11 @@
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-trig</artifactId>
+				<version>3.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-rio-rdfa</artifactId>
 				<version>3.0-SNAPSHOT</version>
 			</dependency>
 
@@ -173,11 +188,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-dataset</artifactId>
-				<version>3.0-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-contextaware</artifactId>
 				<version>3.0-SNAPSHOT</version>
 			</dependency>
@@ -196,6 +206,11 @@
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-api</artifactId>
+				<version>3.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-sail-dataset</artifactId>
 				<version>3.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
@@ -221,12 +236,6 @@
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-federation</artifactId>
-				<version>3.0-SNAPSHOT</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-runtime</artifactId>
 				<version>3.0-SNAPSHOT</version>
 			</dependency>
 

@@ -21,7 +21,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ModelImpl;
 
 /**
  * @author Arjohn Kampman
@@ -106,8 +105,6 @@ public class ModelUtil {
 			}
 			else {
 				if (!model2.contains(st)) {
-					System.out.println(st);
-					System.out.println(new ModelImpl(model2).filter(st.getSubject(), st.getPredicate(), null).objects());
 					return false;
 				}
 			}
