@@ -342,8 +342,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @return The statements matching the specified pattern. The result object
 	 *         is a {@link modelResult} object, a lazy Iterator-like object
 	 *         containing {@link Statement}s and optionally throwing a
-	 *         {@link StoreException} when an error when a problem occurs
-	 *         during retrieval.
+	 *         {@link StoreException} when an error when a problem occurs during
+	 *         retrieval.
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
@@ -368,8 +368,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @return The statements matching the specified pattern. The result object
 	 *         is a {@link ModelResult} object, a lazy Iterator-like object
 	 *         containing {@link Statement}s and optionally throwing a
-	 *         {@link StoreException} when an error when a problem occurs
-	 *         during retrieval.
+	 *         {@link StoreException} when an error when a problem occurs during
+	 *         retrieval.
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
@@ -621,7 +621,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	@Override
-	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
+	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred,
+			Resource... contexts)
 		throws StoreException
 	{
 		if (contexts != null && contexts.length == 0) {
@@ -651,15 +652,17 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		RDFHandler handler = new RDFInserter(getDelegate());
-		try {
-			getDelegate().exportMatch(subject, predicate, object, true, handler, archiveContexts);
-		}
-		catch (RDFHandlerException e) {
-			if (e.getCause() instanceof StoreException) {
-				throw (StoreException)e.getCause();
+		if (archiveContexts.length > 0) {
+			RDFHandler handler = new RDFInserter(getDelegate());
+			try {
+				getDelegate().exportMatch(subject, predicate, object, true, handler, archiveContexts);
 			}
-			throw new AssertionError(e);
+			catch (RDFHandlerException e) {
+				if (e.getCause() instanceof StoreException) {
+					throw (StoreException)e.getCause();
+				}
+				throw new AssertionError(e);
+			}
 		}
 		if (contexts != null && contexts.length == 0) {
 			super.removeMatch(subject, predicate, object, removeContexts);
