@@ -239,15 +239,16 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().commit();
 	}
 
-	public void exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
-			RDFHandler handler, Resource... contexts)
+	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
+			H handler, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
 		if (isDelegatingRead()) {
-			getDelegate().exportMatch(subj, pred, obj, includeInferred, handler, contexts);
+			return getDelegate().exportMatch(subj, pred, obj, includeInferred, handler, contexts);
 		}
 		else {
 			exportStatements(match(subj, pred, obj, includeInferred, contexts), handler);
+			return handler;
 		}
 	}
 

@@ -44,7 +44,8 @@ public class ContextAwareConnectionTest extends TestCase {
 			return null;
 		}
 
-		public void evaluate(RDFHandler handler) {
+		public <H extends RDFHandler> H evaluate(H handler) {
+			return handler;
 		}
 	}
 
@@ -86,7 +87,8 @@ public class ContextAwareConnectionTest extends TestCase {
 			return null;
 		}
 
-		public void evaluate(TupleQueryResultHandler arg0) {
+		public <H extends TupleQueryResultHandler> H evaluate(H handler) {
+			return handler;
 		}
 	}
 

@@ -38,9 +38,10 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 		return client.get(dataset, includeInferred, getBindingsArray());
 	}
 
-	public void evaluate(TupleQueryResultHandler handler)
+	public <H extends TupleQueryResultHandler> H evaluate(H handler)
 		throws StoreException, TupleQueryResultHandlerException
 	{
 		client.get(dataset, includeInferred, handler, getBindingsArray());
+		return handler;
 	}
 }

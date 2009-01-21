@@ -32,7 +32,7 @@ public class SignedGraphQuery extends SignedQuery implements GraphQuery {
 		return new GraphResultImpl(result.getNamespaces(), signer.sign(result));
 	}
 
-	public void evaluate(final RDFHandler handler)
+	public <H extends RDFHandler> H evaluate(final H handler)
 		throws StoreException, RDFHandlerException
 	{
 		query.evaluate(new RDFHandler() {
@@ -67,6 +67,7 @@ public class SignedGraphQuery extends SignedQuery implements GraphQuery {
 				handler.startRDF();
 			}
 		});
+		return handler;
 	}
 
 }

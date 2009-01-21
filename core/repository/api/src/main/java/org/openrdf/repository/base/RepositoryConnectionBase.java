@@ -123,10 +123,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		return size() == 0;
 	}
 
-	public void export(RDFHandler handler, Resource... contexts)
+	public <H extends RDFHandler> H export(H handler, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
-		exportMatch(null, null, null, false, handler, contexts);
+		return exportMatch(null, null, null, false, handler, contexts);
 	}
 
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)

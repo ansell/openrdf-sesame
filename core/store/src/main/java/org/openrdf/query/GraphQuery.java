@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -15,6 +15,6 @@ public interface GraphQuery extends Query {
 	public GraphResult evaluate()
 		throws StoreException;
 
-	public void evaluate(RDFHandler handler)
+	public <H extends RDFHandler> H evaluate(H handler)
 		throws StoreException, RDFHandlerException;
 }

@@ -289,14 +289,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	@Override
-	public void export(RDFHandler handler, Resource... contexts)
+	public <H extends RDFHandler> H export(H handler, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
 		if (contexts != null && contexts.length == 0) {
-			super.export(handler, readContexts);
+			return super.export(handler, readContexts);
 		}
 		else {
-			super.export(handler, contexts);
+			return super.export(handler, contexts);
 		}
 	}
 
@@ -317,14 +317,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public void exportMatch(Resource subj, URI pred, Value obj, RDFHandler hander, Resource... contexts)
+	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, H hander, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
 		if (contexts != null && contexts.length == 0) {
-			super.exportMatch(subj, pred, obj, includeInferred, hander, readContexts);
+			return super.exportMatch(subj, pred, obj, includeInferred, hander, readContexts);
 		}
 		else {
-			super.exportMatch(subj, pred, obj, includeInferred, hander, contexts);
+			return super.exportMatch(subj, pred, obj, includeInferred, hander, contexts);
 		}
 	}
 

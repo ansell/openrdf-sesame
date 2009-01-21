@@ -179,8 +179,8 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		contexts));
 	}
 
-	public void exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
-			RDFHandler handler, Resource... contexts)
+	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
+			H handler, Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
 		handler.startRDF();
@@ -211,6 +211,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 
 		handler.endRDF();
+		return handler;
 	}
 
 	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)

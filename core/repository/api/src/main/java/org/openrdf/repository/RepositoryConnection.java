@@ -466,8 +466,8 @@ public interface RepositoryConnection {
 	 * @throws RDFHandlerException
 	 *         If the handler encounters an unrecoverable error.
 	 */
-	public void exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
-			RDFHandler handler, Resource... contexts)
+	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
+			H handler, Resource... contexts)
 		throws StoreException, RDFHandlerException;
 
 	/**
@@ -483,7 +483,7 @@ public interface RepositoryConnection {
 	 * @throws RDFHandlerException
 	 *         If the handler encounters an unrecoverable error.
 	 */
-	public void export(RDFHandler handler, Resource... contexts)
+	public <H extends RDFHandler> H  export(H handler, Resource... contexts)
 		throws StoreException, RDFHandlerException;
 
 	/**

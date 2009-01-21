@@ -47,10 +47,11 @@ public class SailTupleQuery extends SailQuery implements TupleQuery {
 		return new TupleResultImpl(new ArrayList<String>(query.getBindingNames()), bindingsIter);
 	}
 
-	public void evaluate(TupleQueryResultHandler handler)
+	public <H extends TupleQueryResultHandler> H evaluate(H handler)
 		throws StoreException, TupleQueryResultHandlerException
 	{
 		TupleResult queryResult = evaluate();
 		QueryResultUtil.report(queryResult, handler);
+		return handler;
 	}
 }
