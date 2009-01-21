@@ -34,10 +34,10 @@ public class DatasetConnection extends SailConnectionWrapper {
 		throws StoreException
 	{
 		for (URI dataset : query.getDefaultGraphs()) {
-			repository.loadDataset(dataset.stringValue(), dataset);
+			repository.loadGraph(dataset);
 		}
 		for (URI dataset : query.getNamedGraphs()) {
-			repository.loadNamedGraph(dataset);
+			repository.loadGraph(dataset);
 		}
 		return super.evaluate(query, bindings, includeInferred);
 	}
