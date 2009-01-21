@@ -26,16 +26,6 @@ import info.aduna.lang.FileFormat;
  */
 public class RDFFormat extends FileFormat {
 
-	/*------------------*
-	 * Static variables *
-	 *------------------*/
-
-	/**
-	 * List of known RDF file formats.
-	 */
-	// FIXME: remove/deprecate this list?
-	private static List<RDFFormat> RDF_FORMATS = new ArrayList<RDFFormat>(8);
-
 	/*-----------*
 	 * Constants *
 	 *-----------*/
@@ -78,8 +68,18 @@ public class RDFFormat extends FileFormat {
 	public static final RDFFormat TRIG = new RDFFormat("TriG", "application/x-trig", Charset.forName("UTF-8"),
 			"trig", true, true);
 
-	public static final RDFFormat RDFA = RDFFormat.register("RDFa",
-			"application/xhtml+xml", "xhtml", Charset.forName("UTF-8"));
+	public static final RDFFormat RDFA = new RDFFormat("RDFa", "application/xhtml+xml",
+			Charset.forName("UTF-8"), "xhtml", false, false);
+
+	/*------------------*
+	 * Static variables *
+	 *------------------*/
+
+	/**
+	 * List of known RDF file formats.
+	 */
+	// FIXME: remove/deprecate this list?
+	private static List<RDFFormat> RDF_FORMATS = new ArrayList<RDFFormat>(8);
 
 	/*--------------------*
 	 * Static initializer *
@@ -93,6 +93,7 @@ public class RDFFormat extends FileFormat {
 		register(N3);
 		register(TRIX);
 		register(TRIG);
+		register(RDFA);
 	}
 
 	/*----------------*
@@ -280,9 +281,9 @@ public class RDFFormat extends FileFormat {
 	 *        The name of the RDF file format, e.g. "RDF/XML".
 	 * @param mimeTypes
 	 *        The MIME types of the RDF file format, e.g.
-	 *        <tt>application/rdf+xml</tt> for the RDF/XML file format. The
-	 *        first item in the list is interpreted as the default MIME type for
-	 *        the format.
+	 *        <tt>application/rdf+xml</tt> for the RDF/XML file format. The first
+	 *        item in the list is interpreted as the default MIME type for the
+	 *        format.
 	 * @param charset
 	 *        The default character encoding of the RDF file format. Specify
 	 *        <tt>null</tt> if not applicable.
