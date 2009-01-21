@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -13,6 +13,6 @@ public interface TupleQuery extends Query {
 	public TupleResult evaluate()
 		throws StoreException;
 
-	public void evaluate(TupleQueryResultHandler handler)
+	public <H extends TupleQueryResultHandler> H evaluate(H handler)
 		throws StoreException, TupleQueryResultHandlerException;
 }

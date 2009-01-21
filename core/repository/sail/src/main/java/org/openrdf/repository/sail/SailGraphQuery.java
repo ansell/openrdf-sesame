@@ -99,10 +99,11 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		return new GraphResultImpl(query.getQueryNamespaces(), stIter);
 	}
 
-	public void evaluate(RDFHandler handler)
+	public <H extends RDFHandler> H evaluate(H handler)
 		throws StoreException, RDFHandlerException
 	{
 		GraphResult queryResult = evaluate();
 		QueryResultUtil.report(queryResult, handler);
+		return handler;
 	}
 }

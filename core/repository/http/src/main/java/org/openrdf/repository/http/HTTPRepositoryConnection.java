@@ -305,12 +305,13 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return new ModelResultImpl(new GraphQueryResultCursor(result));
 	}
 
-	public void exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred, RDFHandler handler,
+	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred, H handler,
 			Resource... contexts)
 		throws RDFHandlerException, StoreException
 	{
 		flush();
 		client.statements().get(subj, pred, obj, includeInferred, handler, contexts);
+		return handler;
 	}
 
 	public long sizeMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)

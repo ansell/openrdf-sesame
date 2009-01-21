@@ -48,7 +48,7 @@ public class SignedTupleQuery extends SignedQuery implements TupleQuery {
 		});
 	}
 
-	public void evaluate(final TupleQueryResultHandler handler)
+	public <H extends TupleQueryResultHandler> H evaluate(final H handler)
 		throws StoreException, TupleQueryResultHandlerException
 	{
 		query.evaluate(new TupleQueryResultHandler() {
@@ -71,6 +71,7 @@ public class SignedTupleQuery extends SignedQuery implements TupleQuery {
 				handler.startQueryResult(bindingNames);
 			}
 		});
+		return handler;
 	}
 
 }
