@@ -382,45 +382,50 @@ public class PrettyRDFWriter implements RDFWriter {
 		// Write tags for the top subject
 		Node topNode = nodeStack.pop();
 
-		assert !predicateStack.isEmpty();
-		URI topPredicate = predicateStack.pop();
-		Value obj = topNode.getValue();
-		int indent = nodeStack.size() * 2 - 1;
-		if (obj instanceof URI) {
-			String relativize = relativize(obj.stringValue());
-			assert topNode.getTypes().isEmpty();
-			writer.handleURI(indent, topPredicate, relativize);
+		if (predicateStack.isEmpty()) {
+			openStartTag(0, topNode.getValue(), topNode.getTypes());
+			endTag(0, topNode.getValue(), topNode.getTypes());
 		}
-		else if (obj instanceof BNode && topNode.getTypes().isEmpty()) {
-			writer.handleBlankNode(indent, topPredicate, (BNode)obj);
-		}
-		else if (obj instanceof BNode) {
-			writer.openProperty(indent, topPredicate);
-			writer.startBlankNode(indent, (BNode)obj, topNode.getTypes());
-			writer.endBlankNode(indent, (BNode)obj, topNode.getTypes());
-			writer.closeProperty(indent, topPredicate);
-		}
-		else if (obj instanceof Literal) {
-			writer.handleLiteral(indent, topPredicate, (Literal)obj);
-		}
-
-		// Write out the end tags until we find the subject
-		while (!nodeStack.isEmpty()) {
-			Node nextElement = nodeStack.peek();
-			if (nextElement.getValue().equals(newSubject)) {
-				break;
+		else {
+			URI topPredicate = predicateStack.pop();
+			Value obj = topNode.getValue();
+			int indent = nodeStack.size() * 2 - 1;
+			if (obj instanceof URI) {
+				String relativize = relativize(obj.stringValue());
+				assert topNode.getTypes().isEmpty();
+				writer.handleURI(indent, topPredicate, relativize);
 			}
-			else {
-				Node node = nodeStack.pop();
-				// We have already written out the subject/object,
-				// but we still need to close the tag
-				indent = predicateStack.size() + nodeStack.size();
-				endTag(indent, nextElement.getValue(), nextElement.getTypes());
-				if (predicateStack.size() > 0) {
-					URI predicate = predicateStack.pop();
+			else if (obj instanceof BNode && topNode.getTypes().isEmpty()) {
+				writer.handleBlankNode(indent, topPredicate, (BNode)obj);
+			}
+			else if (obj instanceof BNode) {
+				writer.openProperty(indent, topPredicate);
+				writer.startBlankNode(indent, (BNode)obj, topNode.getTypes());
+				writer.endBlankNode(indent, (BNode)obj, topNode.getTypes());
+				writer.closeProperty(indent, topPredicate);
+			}
+			else if (obj instanceof Literal) {
+				writer.handleLiteral(indent, topPredicate, (Literal)obj);
+			}
+
+			// Write out the end tags until we find the subject
+			while (!nodeStack.isEmpty()) {
+				Node nextElement = nodeStack.peek();
+				if (nextElement.getValue().equals(newSubject)) {
+					break;
+				}
+				else {
+					Node node = nodeStack.pop();
+					// We have already written out the subject/object,
+					// but we still need to close the tag
 					indent = predicateStack.size() + nodeStack.size();
-					assert node.getValue() instanceof BNode;
-					writer.closeProperty(indent, predicate);
+					endTag(indent, nextElement.getValue(), nextElement.getTypes());
+					if (predicateStack.size() > 0) {
+						URI predicate = predicateStack.pop();
+						indent = predicateStack.size() + nodeStack.size();
+						assert node.getValue() instanceof BNode;
+						writer.closeProperty(indent, predicate);
+					}
 				}
 			}
 		}

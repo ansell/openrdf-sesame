@@ -86,5 +86,7 @@ a[rel="rdfs:seeAlso"]:before {
   <rdfs:label>Foot label</rdfs:label>
 </rdf:Description>
 
+<rnd:Type rdf:ID="type"/>
+
 </rdf:RDF>
 
