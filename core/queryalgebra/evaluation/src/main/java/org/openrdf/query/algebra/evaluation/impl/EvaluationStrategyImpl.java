@@ -241,6 +241,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		// The same variable might have been used multiple times in this
 		// StatementPattern, verify value equality in those cases.
+		// TODO: check if this cursor is actually needed. If not, don't add to
+		// prevent processing overhead
 		stIter = new FilteringCursor<Statement>(stIter) {
 
 			@Override
