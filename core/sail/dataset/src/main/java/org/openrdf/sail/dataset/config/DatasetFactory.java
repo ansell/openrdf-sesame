@@ -45,7 +45,7 @@ public class DatasetFactory implements SailFactory {
 		if (config instanceof DatasetConfig) {
 			DatasetConfig dc = (DatasetConfig) config;
 			DatasetSail sail = new DatasetSail();
-			sail.setNamedGraphs(dc.getNamedGraphs());
+			sail.setGraphs(dc.getGraphs());
 			sail.setClosed(dc.isClosed());
 			return sail;
 		}

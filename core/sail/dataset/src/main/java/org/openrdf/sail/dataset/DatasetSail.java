@@ -40,7 +40,7 @@ public class DatasetSail extends SailWrapper {
 
 	private boolean closed;
 
-	private Map<URI, String> namedGraphs = new HashMap<URI, String>();
+	private Map<URI, String> graphs = new HashMap<URI, String>();
 
 	private Map<URL, Long> lastModified = new ConcurrentHashMap<URL, Long>();
 
@@ -74,19 +74,18 @@ public class DatasetSail extends SailWrapper {
 	}
 
 	/**
-	 * null dataset indicates the graph is known, but will be loaded
-	 * externally.
+	 * null dataset indicates the graph is known, but will be loaded externally.
 	 */
-	public void addNamedGraph(URI name, String dataset) {
-		namedGraphs.put(name, dataset);
+	public void addGraph(URI name, String dataset) {
+		graphs.put(name, dataset);
 	}
 
-	public void setNamedGraphs(Map<URI, String> graphs) {
-		namedGraphs = new HashMap<URI, String>(graphs);
+	public void setGraphs(Map<URI, String> graphs) {
+		this.graphs = new HashMap<URI, String>(graphs);
 	}
 
-	public Map<URI, String> getNamedGraphs() {
-		return namedGraphs;
+	public Map<URI, String> getGraphs() {
+		return graphs;
 	}
 
 	@Override
@@ -108,8 +107,8 @@ public class DatasetSail extends SailWrapper {
 	{
 		repository = new SailRepository(getBaseSail());
 		repository.initialize();
-		for (URI graph : namedGraphs.keySet()) {
-			loadNamedGraph(graph);
+		for (URI graph : graphs.keySet()) {
+			loadGraph(graph);
 		}
 	}
 
@@ -127,12 +126,13 @@ public class DatasetSail extends SailWrapper {
 		return new DatasetConnection(this, getBaseSail().getConnection());
 	}
 
-	public void loadNamedGraph(URI graph)
+	public void loadGraph(URI graph)
 		throws StoreException
 	{
-		if (namedGraphs.containsKey(graph)) {
-			loadDataset(namedGraphs.get(graph), graph);
-		} else if (!closed) {
+		if (graphs.containsKey(graph)) {
+			loadDataset(graphs.get(graph), graph);
+		}
+		else if (!closed) {
 			loadDataset(graph.stringValue(), graph);
 		}
 	}
@@ -141,7 +141,7 @@ public class DatasetSail extends SailWrapper {
 		throws StoreException
 	{
 		try {
-			if (path == null || closed && !path.equals(namedGraphs.get(context)))
+			if (path == null || closed && !path.equals(graphs.get(context)))
 				return;
 			URL url = findURL(path);
 			Long since = lastModified.get(url);
@@ -178,16 +178,19 @@ public class DatasetSail extends SailWrapper {
 		}
 
 		// Try to determine the data's MIME type
+		RDFFormat format = null;
 		String mimeType = urlCon.getContentType();
-		int semiColonIdx = mimeType.indexOf(';');
-		if (semiColonIdx >= 0) {
-			mimeType = mimeType.substring(0, semiColonIdx);
+		if (mimeType != null) {
+			int semiColonIdx = mimeType.indexOf(';');
+			if (semiColonIdx >= 0) {
+				mimeType = mimeType.substring(0, semiColonIdx);
+			}
+			format = RDFParserRegistry.getInstance().getFileFormatForMIMEType(mimeType);
 		}
-		RDFFormat format = RDFParserRegistry.getInstance().getFileFormatForMIMEType(mimeType);
 
 		// Fall back to using file name extensions
 		if (format == null) {
-			format = RDFParserRegistry.getInstance().getFileFormatForFileName(url.getFile());
+			format = RDFParserRegistry.getInstance().getFileFormatForFileName(url.getFile(), RDFFormat.RDFXML);
 		}
 
 		InputStream stream = urlCon.getInputStream();
