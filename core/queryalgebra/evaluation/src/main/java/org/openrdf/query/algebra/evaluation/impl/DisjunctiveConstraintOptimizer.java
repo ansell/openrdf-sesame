@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  * Copyright James Leigh (c) 2006.
  *
  * Licensed under the Aduna BSD-style license.
@@ -12,9 +12,9 @@ import java.util.List;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.NaryValueOperator;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.QueryModel;
-import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
@@ -40,81 +40,75 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 	protected class OrSameTermOptimizer extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
-		public void meet(Or or) {
-			boolean top = or.getParentNode() instanceof Filter;
-			if (or.getNumberOfArguments() == 0) {
-				return;
-			}
-			else if (or.getNumberOfArguments() == 1) {
-				or.replaceWith(or.getArg(0));
-				or.getParentNode().visit(this);
-			}
-			else if (top && containsSameTerm(or)) {
-				Filter filter = (Filter)or.getParentNode();
-				QueryModelNode parentNode = filter.getParentNode();
+		public void meet(Filter filter) {
+			if (filter.getCondition() instanceof Or) {
+				Or orNode = (Or)filter.getCondition();
 
-				// Find SameTerm(s)
-				List<ValueExpr> args = new ArrayList<ValueExpr>();
-				for (ValueExpr arg : or.getArgs()) {
+				// Search constraints that contain SameTerm's
+				List<ValueExpr> constraints = new ArrayList<ValueExpr>();
+
+				for (ValueExpr arg : orNode.getArgs()) {
 					if (containsSameTerm(arg)) {
-						args.add(arg);
-						or.removeArg(arg);
+						constraints.add(arg);
+						orNode.removeArg(arg);
 					}
 				}
 
-				// Add the rest
-				if (or.getNumberOfArguments() == 1) {
-					args.add(or.getArg(0));
+				// Check there were any constraints with SameTerm's
+				if (!constraints.isEmpty()) {
+					// Add the rest of the constraint to the args list
+					if (orNode.getNumberOfArguments() == 1) {
+						constraints.add(orNode.getArg(0));
+					}
+					else if (orNode.getNumberOfArguments() > 1) {
+						constraints.add(orNode);
+					}
+
+					// remove the existing Filter
+					TupleExpr filterArg = filter.getArg();
+					filter.replaceWith(filterArg);
+
+					// Insert a Union over the individual constraints, pushing it
+					// down below other filters to avoid cloning them
+					TupleExpr node = findNotFilter(filterArg);
+
+					Union union = new Union();
+					for (ValueExpr arg : constraints) {
+						union.addArg(new Filter(node.clone(), arg));
+					}
+
+					node.replaceWith(union);
+
+					// Enter recursion
+					filter.getParentNode().visit(this);
+
+					return;
 				}
-				else if (or.getNumberOfArguments() > 1) {
-					args.add(or);
-				}
-
-				// remove filter
-				filter.replaceWith(filter.getArg());
-
-				// Push UNION down below other filters to avoid cloning them
-				TupleExpr node = findNotFilter(filter.getArg());
-
-				List<Filter> filters = new ArrayList<Filter>(args.size());
-				for (ValueExpr arg : args) {
-					filters.add(new Filter(node.clone(), arg));
-				}
-				node.replaceWith(new Union(filters));
-
-				parentNode.visit(this);
 			}
-			else {
-				super.meet(or);
-			}
+
+			super.meet(filter);
 		}
 
 		private TupleExpr findNotFilter(TupleExpr node) {
-			if (node instanceof Filter)
+			if (node instanceof Filter) {
 				return findNotFilter(((Filter)node).getArg());
+			}
 			return node;
 		}
 
 		private boolean containsSameTerm(ValueExpr node) {
-			if (node instanceof SameTerm)
-				return true;
-			if (node instanceof Or) {
-				Or or = (Or)node;
-				boolean contains = false;
-				for (ValueExpr arg : or.getArgs()) {
-					contains |= containsSameTerm(arg);
-				}
-				return contains;
+			boolean result = false;
+
+			if (node instanceof SameTerm) {
+				result = true;
 			}
-			if (node instanceof And) {
-				And and = (And)node;
-				boolean contains = false;
-				for (ValueExpr arg : and.getArgs()) {
-					contains |= containsSameTerm(arg);
+			else if (node instanceof Or || node instanceof And) {
+				for (ValueExpr arg : ((NaryValueOperator)node).getArgs()) {
+					result |= containsSameTerm(arg);
 				}
-				return contains;
 			}
-			return false;
+
+			return result;
 		}
 	}
 }
