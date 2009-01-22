@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -46,6 +46,8 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.algebra.evaluation.cursors.LimitCursor;
+import org.openrdf.query.algebra.evaluation.cursors.OffsetCursor;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.result.ModelResult;
 import org.openrdf.result.impl.ModelResultImpl;
@@ -76,11 +78,15 @@ public class StatementController {
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 		ValueFactory vf = repositoryCon.getValueFactory();
 
+		// check if the syntax of the request
 		RDFRequest req = new RDFRequest(vf, request);
 		req.getSubject();
 		req.getPredicate();
 		req.getObject();
 		req.getContext();
+		req.isIncludeInferred();
+		req.getOffset();
+		req.getLimit();
 
 		Cursor<Statement> nothing = EmptyCursor.getInstance();
 		return new ModelResultImpl(nothing);
@@ -107,8 +113,17 @@ public class StatementController {
 		Value obj = req.getObject();
 		Resource[] contexts = req.getContext();
 		boolean useInferencing = req.isIncludeInferred();
+		int offset = req.getOffset();
+		int limit = req.getLimit();
 
-		return repositoryCon.match(subj, pred, obj, useInferencing, contexts);
+		Cursor<Statement> cursor = repositoryCon.match(subj, pred, obj, useInferencing, contexts);
+		if (offset > 0) {
+			cursor = new OffsetCursor<Statement>(cursor, offset);
+		}
+		if (limit > -1) {
+			cursor = new LimitCursor<Statement>(cursor, limit);
+		}
+		return new ModelResultImpl(cursor);
 	}
 
 	@ModelAttribute

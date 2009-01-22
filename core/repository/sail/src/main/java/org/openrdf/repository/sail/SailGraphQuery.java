@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -21,11 +21,11 @@ import org.openrdf.result.impl.GraphResultImpl;
 import org.openrdf.result.util.QueryResultUtil;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.sail.SailConnection;
 import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public class SailGraphQuery extends SailQuery implements GraphQuery {
 
@@ -44,10 +44,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		GraphQueryModel query = getParsedQuery();
 
 
-		Cursor<? extends BindingSet> bindingsIter;
-
-		SailConnection sailCon = getConnection().getSailConnection();
-		bindingsIter = sailCon.evaluate(query, getBindings(), getIncludeInferred());
+		Cursor<? extends BindingSet> bindingsIter = evaluate(query);
 
 		// Filters out all partial and invalid matches
 		bindingsIter = new FilteringCursor<BindingSet>(bindingsIter) {
@@ -67,8 +64,6 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 				return "FilterOutPartialMatches";
 			}
 		};
-
-		bindingsIter = enforceMaxQueryTime(bindingsIter);
 
 		// Convert the BindingSet objects to actual RDF statements
 		final ValueFactory vf = getConnection().getValueFactory();

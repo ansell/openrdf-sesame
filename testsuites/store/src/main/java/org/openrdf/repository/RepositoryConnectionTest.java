@@ -1630,6 +1630,34 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	public void testOffset()
+		throws Exception
+	{
+		testCon.add(alice, name, nameAlice);
+		testCon.add(alice, mbox, mboxAlice);
+		testCon.add(bob, name, nameBob);
+		testCon.add(bob, mbox, mboxBob);
+
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SERQL, "SELECT o FROM {} P {o}");
+		query.setOffset(1);
+		List<BindingSet> result = query.evaluate().asList();
+		assertEquals(3, result.size());
+	}
+
+	public void testLimit()
+		throws Exception
+	{
+		testCon.add(alice, name, nameAlice);
+		testCon.add(alice, mbox, mboxAlice);
+		testCon.add(bob, name, nameBob);
+		testCon.add(bob, mbox, mboxBob);
+
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SERQL, "SELECT o FROM {} P {o}");
+		query.setLimit(1);
+		List<BindingSet> result = query.evaluate().asList();
+		assertEquals(1, result.size());
+	}
+
 	private void testValueRoundTrip(Resource subj, URI pred, Value obj)
 		throws Exception
 	{

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,11 +11,11 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.parser.BooleanQueryModel;
 import org.openrdf.result.BooleanResult;
 import org.openrdf.result.impl.BooleanResultImpl;
-import org.openrdf.sail.SailConnection;
 import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 
@@ -37,12 +37,7 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 	public boolean ask()
 		throws StoreException
 	{
-		SailConnection sailCon = getConnection().getSailConnection();
-
-		Cursor<? extends BindingSet> bindingsIter;
-		bindingsIter = sailCon.evaluate(getParsedQuery(), getBindings(), getIncludeInferred());
-
-		bindingsIter = enforceMaxQueryTime(bindingsIter);
+		Cursor<? extends BindingSet> bindingsIter = evaluate(getParsedQuery());
 
 		try {
 			return bindingsIter.next() != null;

@@ -27,21 +27,47 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 
 	private TupleQueryClient client;
 
+	protected int offset = 0;
+
+	protected int limit = -1;
+
 	public HTTPTupleQuery(String qry, TupleQueryClient client) {
 		super(qry);
 		this.client = client;
 	}
 
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+
+	public int getOffset() {
+		return offset;
+	}
+
+	public void setLimit(int limit) {
+		this.limit = limit;
+	}
+
+	public int getLimit() {
+		return limit;
+	}
+
 	public TupleResult evaluate()
 		throws StoreException
 	{
-		return client.get(dataset, includeInferred, getBindingsArray());
+		prepareClient(client);
+		client.setOffset(offset);
+		client.setLimit(limit);
+		return client.get();
 	}
 
 	public <H extends TupleQueryResultHandler> H evaluate(H handler)
 		throws StoreException, TupleQueryResultHandlerException
 	{
-		client.get(dataset, includeInferred, handler, getBindingsArray());
+		prepareClient(client);
+		client.setOffset(offset);
+		client.setLimit(limit);
+		client.get(handler);
 		return handler;
 	}
 }

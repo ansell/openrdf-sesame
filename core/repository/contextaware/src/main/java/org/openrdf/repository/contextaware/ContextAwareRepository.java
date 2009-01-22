@@ -24,6 +24,8 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	private int maxQueryTime;
 
+	private int queryResultLimit = -1;
+
 	private QueryLanguage ql = QueryLanguage.SPARQL;
 
 	private URI[] readContexts = ALL_CONTEXTS;
@@ -48,6 +50,14 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	public void setMaxQueryTime(int maxQueryTime) {
 		this.maxQueryTime = maxQueryTime;
+	}
+
+	public int getQueryResultLimit() {
+		return queryResultLimit;
+	}
+
+	public void setQueryResultLimit(int queryResultLimit) {
+		this.queryResultLimit = queryResultLimit;
 	}
 
 	/**
@@ -158,6 +168,7 @@ public class ContextAwareRepository extends RepositoryWrapper {
 		con.setAddContexts(getAddContexts());
 		con.setRemoveContexts(getRemoveContexts());
 		con.setArchiveContexts(getArchiveContexts());
+		con.setQueryResultLimit(getQueryResultLimit());
 		return con;
 	}
 }

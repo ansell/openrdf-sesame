@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -13,10 +13,12 @@ import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.impl.AbstractQuery;
 import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.sail.SailConnection;
 import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public abstract class SailQuery extends AbstractQuery {
 
@@ -50,9 +52,14 @@ public abstract class SailQuery extends AbstractQuery {
 		return con;
 	}
 
-	protected Cursor<? extends BindingSet> enforceMaxQueryTime(
-			Cursor<? extends BindingSet> bindingsIter)
+	protected Cursor<? extends BindingSet> evaluate(QueryModel query)
+		throws StoreException
 	{
+		SailConnection sailCon = getConnection().getSailConnection();
+
+		Cursor<? extends BindingSet> bindingsIter;
+		bindingsIter = sailCon.evaluate(query, getBindings(), getIncludeInferred());
+
 		if (maxQueryTime > 0) {
 			bindingsIter = new QueryInterruptCursor(bindingsIter, 1000L * maxQueryTime);
 		}

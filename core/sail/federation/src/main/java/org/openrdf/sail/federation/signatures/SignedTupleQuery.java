@@ -28,6 +28,22 @@ public class SignedTupleQuery extends SignedQuery implements TupleQuery {
 		this.query = query;
 	}
 
+	public int getLimit() {
+		return query.getLimit();
+	}
+
+	public int getOffset() {
+		return query.getOffset();
+	}
+
+	public void setLimit(int limit) {
+		query.setLimit(limit);
+	}
+
+	public void setOffset(int offset) {
+		query.setOffset(offset);
+	}
+
 	public TupleResult evaluate()
 		throws StoreException
 	{

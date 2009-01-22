@@ -26,6 +26,9 @@ public class ContextAwareSchema {
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#maxQueryTime</tt> */
 	public final static URI MAX_QUERY_TIME;
 
+	/** <tt>http://www.openrdf.org/config/repository/contextaware#queryResultLimit</tt> */
+	public final static URI QUERY_RESULT_LIMIT;
+
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#queryLanguage</tt> */
 	public final static URI QUERY_LANGUAGE;
 
@@ -50,5 +53,6 @@ public class ContextAwareSchema {
 		REMOVE_CONTEXT = factory.createURI(NAMESPACE, "removeContext");
 		ARCHIVE_CONTEXT = factory.createURI(NAMESPACE, "archiveContext");
 		MAX_QUERY_TIME = factory.createURI(NAMESPACE, "maxQueryTime");
+		QUERY_RESULT_LIMIT = factory.createURI(NAMESPACE, "queryResultLimit");
 	}
 }

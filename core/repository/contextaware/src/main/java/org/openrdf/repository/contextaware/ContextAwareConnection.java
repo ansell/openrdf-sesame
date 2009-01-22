@@ -47,6 +47,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 	private int maxQueryTime;
 
+	private int queryResultLimit = -1;
+
 	private QueryLanguage ql = QueryLanguage.SPARQL;
 
 	private URI[] readContexts = ALL_CONTEXTS;
@@ -94,6 +96,14 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 	public void setMaxQueryTime(int maxQueryTime) {
 		this.maxQueryTime = maxQueryTime;
+	}
+
+	public int getQueryResultLimit() {
+		return queryResultLimit;
+	}
+
+	public void setQueryResultLimit(int queryResultLimit) {
+		this.queryResultLimit = queryResultLimit;
 	}
 
 	public QueryLanguage getQueryLanguage() {
@@ -317,7 +327,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, H hander, Resource... contexts)
+	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, H hander,
+			Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
 		if (contexts != null && contexts.length == 0) {
@@ -677,6 +688,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			DatasetImpl ds = new DatasetImpl();
 			for (URI graph : readContexts) {
 				ds.addDefaultGraph(graph);
+				ds.addNamedGraph(graph);
 			}
 			query.setDataset(ds);
 		}
@@ -684,6 +696,11 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		query.setIncludeInferred(includeInferred);
 
 		query.setMaxQueryTime(maxQueryTime);
+
+		if (query instanceof TupleQuery) {
+			TupleQuery tuple = (TupleQuery)query;
+			tuple.setLimit(getQueryResultLimit());
+		}
 
 		return query;
 	}

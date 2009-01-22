@@ -83,6 +83,20 @@ public class ContextAwareConnectionTest extends TestCase {
 
 	static class TupleQueryStub extends AbstractQuery implements TupleQuery {
 
+		public int getLimit() {
+			return -1;
+		}
+
+		public int getOffset() {
+			return 0;
+		}
+
+		public void setLimit(int limit) {
+		}
+
+		public void setOffset(int offset) {
+		}
+
 		public TupleResult evaluate() {
 			return null;
 		}
