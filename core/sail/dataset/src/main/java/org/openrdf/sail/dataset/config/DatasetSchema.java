@@ -16,7 +16,7 @@ public class DatasetSchema {
 	/** http://www.openrdf.org/config/sail/dataset# */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/dataset#";
 
-	public static final URI graph = new URIImpl(NAMESPACE + "graph");
+	public static final URI GRAPH = new URIImpl(NAMESPACE + "graph");
 
 	public static final URI NAME = new URIImpl(NAMESPACE + "name");
 
