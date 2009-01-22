@@ -8,7 +8,7 @@ package org.openrdf.sail.dataset.config;
 import static org.openrdf.sail.dataset.config.DatasetSchema.CLOSED;
 import static org.openrdf.sail.dataset.config.DatasetSchema.DATASET;
 import static org.openrdf.sail.dataset.config.DatasetSchema.NAME;
-import static org.openrdf.sail.dataset.config.DatasetSchema.graph;
+import static org.openrdf.sail.dataset.config.DatasetSchema.GRAPH;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,7 +69,7 @@ public class DatasetConfig extends DelegatingSailImplConfigBase {
 		Resource resource = super.export(model);
 		for (Map.Entry<URI, String> e : getGraphs().entrySet()) {
 			BNode node = vf.createBNode();
-			model.add(resource, graph, node);
+			model.add(resource, GRAPH, node);
 			model.add(node, NAME, e.getKey());
 			if (e.getValue() != null) {
 				model.add(node, DATASET, vf.createLiteral(e.getValue()));
@@ -84,7 +84,7 @@ public class DatasetConfig extends DelegatingSailImplConfigBase {
 		throws StoreConfigException
 	{
 		super.parse(model, implNode);
-		for (Value node : model.filter(implNode, graph, null).objects()) {
+		for (Value node : model.filter(implNode, GRAPH, null).objects()) {
 			URI name = model.filter((Resource)node, NAME, null).objectURI();
 			String url = model.filter((Resource)node, DATASET, null).objectString();
 			addGraph(name, url);
