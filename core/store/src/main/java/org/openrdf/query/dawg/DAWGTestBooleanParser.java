@@ -14,7 +14,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
@@ -28,7 +28,7 @@ public class DAWGTestBooleanParser extends RDFHandlerBase {
 	 * Variables *
 	 *-----------*/
 
-	private Model model = new ModelImpl();
+	private Model model = new LinkedHashModel();
 
 	private boolean value;
 

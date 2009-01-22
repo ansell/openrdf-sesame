@@ -18,7 +18,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.sail.Sail;
@@ -98,7 +98,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		}
 
 		if (newStatements == null) {
-			newStatements = new ModelImpl();
+			newStatements = new LinkedHashModel();
 		}
 		newStatements.add(st);
 	}
@@ -117,11 +117,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 		if (statementsRemoved) {
 			logger.debug("statements removed, starting inferencing from scratch");
-			removeInferredStatement(null, null, null);
+			removeInferredStatements(null, null, null);
 			addAxiomStatements();
 
-			newStatements = new ModelImpl();
-			Cursor<? extends Statement> cursor = getWrappedConnection().getStatements(null, null, null, true);
+			newStatements = new LinkedHashModel();
+			Cursor<? extends Statement> cursor = getDelegate().getStatements(null, null, null, true);
 			Statement st;
 			while ((st = cursor.next()) != null) {
 				newStatements.add(st);
@@ -282,7 +282,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		}
 
 		newThisIteration = newStatements;
-		newStatements = new ModelImpl();
+		newStatements = new LinkedHashModel();
 	}
 
 	protected boolean hasNewStatements() {
@@ -433,7 +433,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			URI aaa = nt.getPredicate();
 
 			Cursor<? extends Statement> t1Iter;
-			t1Iter = getWrappedConnection().getStatements(aaa, RDFS.DOMAIN, null, true);
+			t1Iter = getDelegate().getStatements(aaa, RDFS.DOMAIN, null, true);
 
 			Statement t1;
 			while ((t1 = t1Iter.next()) != null) {
@@ -468,7 +468,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 			if (aaa instanceof URI && zzz instanceof Resource) {
 				Cursor<? extends Statement> t1Iter;
-				t1Iter = getWrappedConnection().getStatements(null, (URI)aaa, null, true);
+				t1Iter = getDelegate().getStatements(null, (URI)aaa, null, true);
 
 				Statement t1;
 				while ((t1 = t1Iter.next()) != null) {
@@ -502,7 +502,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 			if (uuu instanceof Resource) {
 				Cursor<? extends Statement> t1Iter;
-				t1Iter = getWrappedConnection().getStatements(aaa, RDFS.RANGE, null, true);
+				t1Iter = getDelegate().getStatements(aaa, RDFS.RANGE, null, true);
 
 				Statement t1;
 				while ((t1 = t1Iter.next()) != null) {
@@ -537,7 +537,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 			if (aaa instanceof URI && zzz instanceof Resource) {
 				Cursor<? extends Statement> t1Iter;
-				t1Iter = getWrappedConnection().getStatements(null, (URI)aaa, null, true);
+				t1Iter = getDelegate().getStatements(null, (URI)aaa, null, true);
 
 				Statement t1;
 				while ((t1 = t1Iter.next()) != null) {
@@ -618,7 +618,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 			if (bbb instanceof Resource) {
 				Cursor<? extends Statement> t1Iter;
-				t1Iter = getWrappedConnection().getStatements((Resource)bbb, RDFS.SUBPROPERTYOF, null, true);
+				t1Iter = getDelegate().getStatements((Resource)bbb, RDFS.SUBPROPERTYOF, null, true);
 
 				Statement t1;
 				while ((t1 = t1Iter.next()) != null) {
@@ -656,7 +656,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 			if (ccc instanceof Resource) {
 				Cursor<? extends Statement> t1Iter;
-				t1Iter = getWrappedConnection().getStatements(null, RDFS.SUBPROPERTYOF, bbb, true);
+				t1Iter = getDelegate().getStatements(null, RDFS.SUBPROPERTYOF, bbb, true);
 
 				Statement t1;
 				while ((t1 = t1Iter.next()) != null) {
@@ -711,7 +711,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Value yyy = nt.getObject();
 
 			Cursor<? extends Statement> t1Iter;
-			t1Iter = getWrappedConnection().getStatements(aaa, RDFS.SUBPROPERTYOF, null, true);
+			t1Iter = getDelegate().getStatements(aaa, RDFS.SUBPROPERTYOF, null, true);
 
 			Statement t1;
 			while ((t1 = t1Iter.next()) != null) {
@@ -746,7 +746,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 			if (aaa instanceof URI && bbb instanceof URI) {
 				Cursor<? extends Statement> t1Iter;
-				t1Iter = getWrappedConnection().getStatements(null, (URI)aaa, null, true);
+				t1Iter = getDelegate().getStatements(null, (URI)aaa, null, true);
 
 				Statement t1;
 				while ((t1 = t1Iter.next()) != null) {
@@ -804,7 +804,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 			if (yyy instanceof Resource) {
 				Cursor<? extends Statement> t1Iter;
-				t1Iter = getWrappedConnection().getStatements(null, RDF.TYPE, xxx, true);
+				t1Iter = getDelegate().getStatements(null, RDF.TYPE, xxx, true);
 
 				Statement t1;
 				while ((t1 = t1Iter.next()) != null) {
@@ -839,7 +839,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 			if (xxx instanceof Resource) {
 				Cursor<? extends Statement> t1Iter;
-				t1Iter = getWrappedConnection().getStatements((Resource)xxx, RDFS.SUBCLASSOF, null, true);
+				t1Iter = getDelegate().getStatements((Resource)xxx, RDFS.SUBCLASSOF, null, true);
 
 				Statement t1;
 				while ((t1 = t1Iter.next()) != null) {
@@ -899,7 +899,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 			if (yyy instanceof Resource) {
 				Cursor<? extends Statement> t1Iter;
-				t1Iter = getWrappedConnection().getStatements((Resource)yyy, RDFS.SUBCLASSOF, null, true);
+				t1Iter = getDelegate().getStatements((Resource)yyy, RDFS.SUBCLASSOF, null, true);
 
 				Statement t1;
 				while ((t1 = t1Iter.next()) != null) {
@@ -937,7 +937,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 			if (zzz instanceof Resource) {
 				Cursor<? extends Statement> t1Iter;
-				t1Iter = getWrappedConnection().getStatements(null, RDFS.SUBCLASSOF, yyy, true);
+				t1Iter = getDelegate().getStatements(null, RDFS.SUBCLASSOF, yyy, true);
 
 				Statement t1;
 				while ((t1 = t1Iter.next()) != null) {

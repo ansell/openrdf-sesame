@@ -278,7 +278,7 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 				Resource[] contexts = new Resource[] { null };
 
 				for (Statement st : oldStatements) {
-					removeInferredStatement(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
+					removeInferredStatements(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
 				}
 
 				for (Statement st : newStatements) {
@@ -301,7 +301,7 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 		private void evaluateIntoStatements(GraphQueryModel query, Collection<Statement> statements)
 			throws StoreException, RDFHandlerException, StoreException
 		{
-			Cursor<? extends BindingSet> bindingsIter = getWrappedConnection().evaluate(query,
+			Cursor<? extends BindingSet> bindingsIter = getDelegate().evaluate(query,
 					EmptyBindingSet.getInstance(), true);
 
 			try {

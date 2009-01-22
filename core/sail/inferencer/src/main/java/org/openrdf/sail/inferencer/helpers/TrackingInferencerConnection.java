@@ -36,8 +36,8 @@ public class TrackingInferencerConnection extends TrackingSailConnection impleme
 	 *---------*/
 
 	@Override
-	protected InferencerConnection getWrappedConnection() {
-		return (InferencerConnection)super.getWrappedConnection();
+	protected InferencerConnection getDelegate() {
+		return (InferencerConnection)super.getDelegate();
 	}
 
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
@@ -45,29 +45,29 @@ public class TrackingInferencerConnection extends TrackingSailConnection impleme
 	{
 		verifyIsOpen();
 		modified();
-		return getWrappedConnection().addInferredStatement(subj, pred, obj, contexts);
+		return getDelegate().addInferredStatement(subj, pred, obj, contexts);
 	}
 
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean removeInferredStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		verifyIsOpen();
 		modified();
-		return getWrappedConnection().removeInferredStatement(subj, pred, obj, contexts);
+		return getDelegate().removeInferredStatements(subj, pred, obj, contexts);
 	}
 
 	public void flushUpdates()
 		throws StoreException
 	{
 		verifyIsOpen();
-		getWrappedConnection().flushUpdates();
+		getDelegate().flushUpdates();
 	}
 
 	public void addConnectionListener(SailConnectionListener listener) {
-		getWrappedConnection().addConnectionListener(listener);
+		getDelegate().addConnectionListener(listener);
 	}
 
 	public void removeConnectionListener(SailConnectionListener listener) {
-		getWrappedConnection().removeConnectionListener(listener);
+		getDelegate().removeConnectionListener(listener);
 	}
 }

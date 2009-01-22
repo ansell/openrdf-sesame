@@ -42,7 +42,7 @@ public class ModelTest extends TestCase {
 	private Model model = createModel();
 
 	public Model createModel() {
-		return new ModelImpl();
+		return new LinkedHashModel();
 	}
 
 	public void testEmpty() {

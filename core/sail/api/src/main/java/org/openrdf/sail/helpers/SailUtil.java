@@ -69,7 +69,7 @@ public class SailUtil {
 			// Current Sail is not an instance of sailClass, check the
 			// rest of the stack
 			if (currentSail instanceof StackableSail) {
-				currentSail = ((StackableSail)currentSail).getBaseSail();
+				currentSail = ((StackableSail)currentSail).getDelegate();
 			}
 			else {
 				// We've reached the bottom of the stack

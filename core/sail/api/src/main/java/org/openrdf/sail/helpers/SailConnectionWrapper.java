@@ -56,7 +56,7 @@ public class SailConnectionWrapper implements SailConnection {
 	 * @return The SailConnection object that was supplied to the constructor of
 	 *         this class.
 	 */
-	protected SailConnection getWrappedConnection() {
+	protected SailConnection getDelegate() {
 		return wrappedCon;
 	}
 

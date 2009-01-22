@@ -14,10 +14,10 @@ public interface StackableSail extends Sail {
 	 * Sets the base Sail that this Sail will work on top of. This method
 	 * will be called before the initialize() method is called.
 	 */
-	public void setBaseSail(Sail baseSail);
+	public void setDelegate(Sail baseSail);
 
 	/**
 	 * Gets the base Sail that this Sail works on top of.
 	 */
-	public Sail getBaseSail();
+	public Sail getDelegate();
 }

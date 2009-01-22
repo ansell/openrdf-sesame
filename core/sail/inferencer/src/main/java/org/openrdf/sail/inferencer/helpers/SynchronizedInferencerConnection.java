@@ -40,8 +40,8 @@ public class SynchronizedInferencerConnection extends SynchronizedSailConnection
 	 *---------*/
 
 	@Override
-	protected InferencerConnection getWrappedConnection() {
-		return (InferencerConnection)super.getWrappedConnection();
+	protected InferencerConnection getDelegate() {
+		return (InferencerConnection)super.getDelegate();
 	}
 
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
@@ -51,7 +51,7 @@ public class SynchronizedInferencerConnection extends SynchronizedSailConnection
 		try {
 			Lock txnLock = getTransactionLock();
 			try {
-				return getWrappedConnection().addInferredStatement(subj, pred, obj, contexts);
+				return getDelegate().addInferredStatement(subj, pred, obj, contexts);
 			}
 			finally {
 				txnLock.release();
@@ -62,14 +62,14 @@ public class SynchronizedInferencerConnection extends SynchronizedSailConnection
 		}
 	}
 
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean removeInferredStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();
 		try {
 			Lock txnLock = getTransactionLock();
 			try {
-				return getWrappedConnection().removeInferredStatement(subj, pred, obj, contexts);
+				return getDelegate().removeInferredStatements(subj, pred, obj, contexts);
 			}
 			finally {
 				txnLock.release();
@@ -87,7 +87,7 @@ public class SynchronizedInferencerConnection extends SynchronizedSailConnection
 		try {
 			Lock txnLock = getTransactionLock();
 			try {
-				getWrappedConnection().flushUpdates();
+				getDelegate().flushUpdates();
 			}
 			finally {
 				txnLock.release();
@@ -99,10 +99,10 @@ public class SynchronizedInferencerConnection extends SynchronizedSailConnection
 	}
 
 	public void addConnectionListener(SailConnectionListener listener) {
-		getWrappedConnection().addConnectionListener(listener);
+		getDelegate().addConnectionListener(listener);
 	}
 
 	public void removeConnectionListener(SailConnectionListener listener) {
-		getWrappedConnection().removeConnectionListener(listener);
+		getDelegate().removeConnectionListener(listener);
 	}
 }

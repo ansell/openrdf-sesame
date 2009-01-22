@@ -11,7 +11,7 @@ import java.util.Map;
 import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.result.ModelResult;
 import org.openrdf.store.StoreException;
 
@@ -33,6 +33,6 @@ public class ModelResultImpl extends ResultImpl<Statement> implements ModelResul
 	public Model asModel()
 		throws StoreException
 	{
-		return addTo(new ModelImpl(getNamespaces()));
+		return addTo(new LinkedHashModel(getNamespaces()));
 	}
 }

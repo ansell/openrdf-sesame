@@ -29,7 +29,7 @@ import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryMetaData;
@@ -45,7 +45,7 @@ public class MetadataController {
 	@ModelAttribute
 	@RequestMapping(method = HEAD, value = { REPO_PATH + "/metadata", CONN_PATH + "/metadata" })
 	public Model head(HttpServletRequest request) {
-		return new ModelImpl();
+		return new LinkedHashModel();
 	}
 
 	@ModelAttribute
@@ -63,7 +63,7 @@ public class MetadataController {
 		LiteralFactory lf = repository.getLiteralFactory();
 		URI subj = uf.createURI(request.getRequestURL().toString());
 
-		Model model = new ModelImpl();
+		Model model = new LinkedHashModel();
 		for (PropertyDescriptor p : properties) {
 			Object o = p.getReadMethod().invoke(data);
 			if (o instanceof Object[]) {

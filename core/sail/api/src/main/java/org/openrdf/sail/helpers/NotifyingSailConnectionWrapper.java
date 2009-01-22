@@ -34,15 +34,15 @@ public class NotifyingSailConnectionWrapper extends SailConnectionWrapper implem
 	 *---------*/
 
 	@Override
-	protected NotifyingSailConnection getWrappedConnection() {
-		return (NotifyingSailConnection)super.getWrappedConnection();
+	protected NotifyingSailConnection getDelegate() {
+		return (NotifyingSailConnection)super.getDelegate();
 	}
 
 	public void addConnectionListener(SailConnectionListener listener) {
-		getWrappedConnection().addConnectionListener(listener);
+		getDelegate().addConnectionListener(listener);
 	}
 
 	public void removeConnectionListener(SailConnectionListener listener) {
-		getWrappedConnection().removeConnectionListener(listener);
+		getDelegate().removeConnectionListener(listener);
 	}
 }

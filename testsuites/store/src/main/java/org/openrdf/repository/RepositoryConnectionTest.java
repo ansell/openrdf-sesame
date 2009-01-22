@@ -41,7 +41,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -1243,7 +1243,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		Model model;
 		ModelResult statements = testCon.match(null, null, null, true);
 		try {
-			model = new ModelImpl(statements.asList());
+			model = new LinkedHashModel(statements.asList());
 		}
 		finally {
 			statements.close();

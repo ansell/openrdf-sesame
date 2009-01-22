@@ -19,7 +19,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
@@ -166,7 +166,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 
 		con.add(context, RDF.TYPE, REPOSITORY_CONTEXT);
 
-		Model model = new ModelImpl();
+		Model model = new LinkedHashModel();
 		config.export(model);
 		con.add(model, context);
 

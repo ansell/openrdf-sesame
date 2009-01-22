@@ -22,7 +22,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.Binding;
 import org.openrdf.query.TupleQueryResultHandler;
@@ -50,7 +50,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	 * Variables *
 	 *-----------*/
 
-	private Model model = new ModelImpl();
+	private Model model = new LinkedHashModel();
 
 	/*--------------*
 	 * Constructors *

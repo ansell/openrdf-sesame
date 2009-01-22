@@ -23,7 +23,7 @@ import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.util.ModelOrganizer;
 import org.openrdf.query.Dataset;
@@ -67,20 +67,20 @@ public class URIController {
 			RepositoryConnection con = repository.getConnection();
 			try {
 				if (con.hasMatch(uri, null, null, true)) {
-					return new ModelImpl();
+					return new LinkedHashModel();
 				}
 				else if (hasNamespace(ns, con)) {
 					GraphQuery query = con.prepareGraphQuery(SERQL, FILTER_NS + "\nLIMIT 1");
 					query.setBinding("ns", ns);
 					if (!query.evaluate().asList().isEmpty()) {
-						return new ModelImpl();
+						return new LinkedHashModel();
 					}
 				}
 				else {
 					GraphQuery query = con.prepareGraphQuery(SERQL, CONSTRUCT_ALL + "\nLIMIT 1");
 					query.setDataset(dataset);
 					if (!query.evaluate().asList().isEmpty()) {
-						return new ModelImpl();
+						return new LinkedHashModel();
 					}
 				}
 			}

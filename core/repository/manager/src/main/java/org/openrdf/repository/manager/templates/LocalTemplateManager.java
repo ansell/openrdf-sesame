@@ -27,7 +27,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.rio.RDFFormat;
@@ -161,7 +161,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		throws StoreConfigException
 	{
 		try {
-			return loadResources(new ModelImpl(), cl, STORE_SCHEMAS);
+			return loadResources(new LinkedHashModel(), cl, STORE_SCHEMAS);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
@@ -287,7 +287,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		try {
 			RDFParser parser = Rio.createParser(format);
 
-			Model statements = new ModelImpl();
+			Model statements = new LinkedHashModel();
 			parser.setRDFHandler(new StatementCollector(statements));
 
 			InputStream stream = url.openStream();

@@ -55,7 +55,7 @@ public interface InferencerConnection extends NotifyingSailConnection {
 	 *         If the statement could not be removed.
 	 */
 	// FIXME: remove boolean result value to enable batch-wise processing
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean removeInferredStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException;
 
 	/**

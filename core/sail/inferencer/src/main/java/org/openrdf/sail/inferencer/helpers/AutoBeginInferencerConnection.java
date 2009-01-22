@@ -32,14 +32,14 @@ public class AutoBeginInferencerConnection extends AutoBeginNotifyingConnection 
 	 *---------*/
 
 	@Override
-	protected InferencerConnection getWrappedConnection() {
-		return (InferencerConnection)super.getWrappedConnection();
+	protected InferencerConnection getDelegate() {
+		return (InferencerConnection)super.getDelegate();
 	}
 
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		InferencerConnection con = getWrappedConnection();
+		InferencerConnection con = getDelegate();
 		if (isActive()) {
 			return con.addInferredStatement(subj, pred, obj, contexts);
 		}
@@ -61,17 +61,17 @@ public class AutoBeginInferencerConnection extends AutoBeginNotifyingConnection 
 		}
 	}
 
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean removeInferredStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		InferencerConnection con = getWrappedConnection();
+		InferencerConnection con = getDelegate();
 		if (isActive()) {
-			return con.removeInferredStatement(subj, pred, obj, contexts);
+			return con.removeInferredStatements(subj, pred, obj, contexts);
 		}
 		else {
 			try {
 				begin();
-				boolean result = con.removeInferredStatement(subj, pred, obj, contexts);
+				boolean result = con.removeInferredStatements(subj, pred, obj, contexts);
 				commit();
 				return result;
 			}
@@ -89,6 +89,6 @@ public class AutoBeginInferencerConnection extends AutoBeginNotifyingConnection 
 	public void flushUpdates()
 		throws StoreException
 	{
-		getWrappedConnection().flushUpdates();
+		getDelegate().flushUpdates();
 	}
 }

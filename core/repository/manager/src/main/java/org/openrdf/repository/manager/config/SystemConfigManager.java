@@ -23,7 +23,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -114,7 +114,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	public void addConfig(String id, Model config)
 		throws StoreConfigException
 	{
-		Model model = new ModelImpl();
+		Model model = new LinkedHashModel();
 		Resource context = vf.createBNode(id);
 		model.add(context, RDF.TYPE, REPOSITORY_CONTEXT);
 		model.add(context, REPOSITORYID, new LiteralImpl(id), context);
@@ -132,7 +132,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 			removeConfig(value.stringValue());
 		}
 
-		Model model = new ModelImpl();
+		Model model = new LinkedHashModel();
 		Resource context = vf.createBNode(id);
 		model.add(context, RDF.TYPE, REPOSITORY_CONTEXT);
 		model.add(context, REPOSITORYID, new LiteralImpl(id), context);
@@ -170,7 +170,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 		try {
 			RepositoryConnection con = system.getConnection();
 			try {
-				return con.match(null, null, null, false).addTo(new ModelImpl());
+				return con.match(null, null, null, false).addTo(new LinkedHashModel());
 			}
 			finally {
 				con.close();

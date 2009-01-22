@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -90,7 +90,7 @@ public class LocalConfigManager implements RepositoryConfigManager {
 		try {
 			RDFParser parser = Rio.createParser(format);
 
-			Model model = new ModelImpl();
+			Model model = new LinkedHashModel();
 			parser.setRDFHandler(new StatementCollector(model));
 
 			InputStream stream = new FileInputStream(file);

@@ -7,7 +7,7 @@ package org.openrdf.query.dawg;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.result.TupleResult;
 import org.openrdf.result.util.TupleQueryResultBuilder;
@@ -43,7 +43,7 @@ public class DAWGTestResultSetUtil {
 	public static Model toGraph(TupleResult tqr)
 		throws StoreException
 	{
-		Model model = new ModelImpl();
+		Model model = new LinkedHashModel();
 		DAWGTestResultSetWriter writer = new DAWGTestResultSetWriter(new StatementCollector(model));
 
 		try {

@@ -12,7 +12,7 @@ import java.util.Map;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.rio.RDFHandlerException;
 
 /**
@@ -96,7 +96,7 @@ public class StatementCollector extends RDFHandlerBase {
 	}
 
 	public Model getModel() {
-		return new ModelImpl(namespaces, statements);
+		return new LinkedHashModel(namespaces, statements);
 	}
 
 	@Override

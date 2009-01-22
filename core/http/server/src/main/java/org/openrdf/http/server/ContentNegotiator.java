@@ -48,7 +48,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -297,7 +297,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				rdfHandler.startRDF();
 
 				Set<String> namespaces = new HashSet<String>();
-				Model first10 = new ModelImpl();
+				Model first10 = new LinkedHashModel();
 
 				int i = 0;
 				for (; result.hasNext() && i < SMALL && i < limit; i++) {

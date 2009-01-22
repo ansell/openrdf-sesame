@@ -47,7 +47,7 @@ public class SailWrapper implements StackableSail {
 	 * Creates a new SailWrapper that wraps the supplied Sail.
 	 */
 	public SailWrapper(Sail baseSail) {
-		setBaseSail(baseSail);
+		setDelegate(baseSail);
 	}
 
 	/*---------*
@@ -60,11 +60,11 @@ public class SailWrapper implements StackableSail {
 		return baseSail.getMetaData();
 	}
 
-	public void setBaseSail(Sail baseSail) {
+	public void setDelegate(Sail baseSail) {
 		this.baseSail = baseSail;
 	}
 
-	public Sail getBaseSail() {
+	public Sail getDelegate() {
 		return baseSail;
 	}
 

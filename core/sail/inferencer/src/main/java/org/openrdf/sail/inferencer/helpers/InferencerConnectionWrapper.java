@@ -56,26 +56,26 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * @return The connection that was supplied to the constructor of this class.
 	 */
 	@Override
-	protected InferencerConnection getWrappedConnection() {
-		return (InferencerConnection)super.getWrappedConnection();
+	protected InferencerConnection getDelegate() {
+		return (InferencerConnection)super.getDelegate();
 	}
 
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		return getWrappedConnection().addInferredStatement(subj, pred, obj, contexts);
+		return getDelegate().addInferredStatement(subj, pred, obj, contexts);
 	}
 
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean removeInferredStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		return getWrappedConnection().removeInferredStatement(subj, pred, obj, contexts);
+		return getDelegate().removeInferredStatements(subj, pred, obj, contexts);
 	}
 
 	public void flushUpdates()
 		throws StoreException
 	{
-		getWrappedConnection().flushUpdates();
+		getDelegate().flushUpdates();
 	}
 
 	/**

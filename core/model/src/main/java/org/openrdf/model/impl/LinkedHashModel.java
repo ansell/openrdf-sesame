@@ -39,7 +39,7 @@ import org.openrdf.model.util.ModelException;
  * @author James Leigh
  */
 @SuppressWarnings("unchecked")
-public class ModelImpl extends AbstractSet<Statement> implements Model {
+public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 
 	private static final long serialVersionUID = -9161104123818983614L;
 
@@ -51,36 +51,36 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 
 	transient Set<ModelStatement> statements;
 
-	public ModelImpl() {
+	public LinkedHashModel() {
 		super();
 		values = new HashMap<Value, ModelNode>();
 		statements = new LinkedHashSet<ModelStatement>();
 	}
 
-	public ModelImpl(Collection<? extends Statement> c) {
+	public LinkedHashModel(Collection<? extends Statement> c) {
 		super();
 		values = new HashMap<Value, ModelNode>(c.size() * 2);
 		statements = new LinkedHashSet<ModelStatement>(c.size());
 		addAll(c);
 	}
 
-	public ModelImpl(int size) {
+	public LinkedHashModel(int size) {
 		super();
 		values = new HashMap<Value, ModelNode>(size * 2);
 		statements = new LinkedHashSet<ModelStatement>(size);
 	}
 
-	public ModelImpl(Map<String, String> namespaces, Collection<? extends Statement> c) {
+	public LinkedHashModel(Map<String, String> namespaces, Collection<? extends Statement> c) {
 		this(c);
 		this.namespaces.putAll(namespaces);
 	}
 
-	public ModelImpl(Map<String, String> namespaces) {
+	public LinkedHashModel(Map<String, String> namespaces) {
 		this();
 		this.namespaces.putAll(namespaces);
 	}
 
-	public ModelImpl(Map<String, String> namespaces, int size) {
+	public LinkedHashModel(Map<String, String> namespaces, int size) {
 		this(size);
 		this.namespaces.putAll(namespaces);
 	}
@@ -272,7 +272,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			@Override
 			public boolean contains(Object o) {
 				if (o instanceof Resource || o == null) {
-					return ModelImpl.this.contains(subj, pred, obj, (Resource)o);
+					return LinkedHashModel.this.contains(subj, pred, obj, (Resource)o);
 				}
 				return false;
 			}
@@ -280,7 +280,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			@Override
 			public boolean remove(Object o) {
 				if (o instanceof Resource || o == null)
-					return ModelImpl.this.remove(subj, pred, obj, (Resource)o);
+					return LinkedHashModel.this.remove(subj, pred, obj, (Resource)o);
 				return false;
 			}
 
@@ -290,12 +290,12 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 					throw new UnsupportedOperationException("Incomplete statement");
 				if (contains(ctx))
 					return false;
-				return ModelImpl.this.add(subj, pred, obj, ctx);
+				return LinkedHashModel.this.add(subj, pred, obj, ctx);
 			}
 
 			@Override
 			public void clear() {
-				ModelImpl.this.remove(subj, pred, obj);
+				LinkedHashModel.this.remove(subj, pred, obj);
 			}
 
 			@Override
@@ -321,7 +321,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			@Override
 			public boolean contains(Object o) {
 				if (o instanceof Value) {
-					return ModelImpl.this.contains(subj, pred, (Value)o, contexts);
+					return LinkedHashModel.this.contains(subj, pred, (Value)o, contexts);
 				}
 				return false;
 			}
@@ -329,7 +329,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			@Override
 			public boolean remove(Object o) {
 				if (o instanceof Value)
-					return ModelImpl.this.remove(subj, pred, (Value)o, contexts);
+					return LinkedHashModel.this.remove(subj, pred, (Value)o, contexts);
 				return false;
 			}
 
@@ -339,12 +339,12 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 					throw new UnsupportedOperationException("Incomplete statement");
 				if (contains(obj))
 					return false;
-				return ModelImpl.this.add(subj, pred, obj, contexts);
+				return LinkedHashModel.this.add(subj, pred, obj, contexts);
 			}
 
 			@Override
 			public void clear() {
-				ModelImpl.this.remove(subj, pred, null, contexts);
+				LinkedHashModel.this.remove(subj, pred, null, contexts);
 			}
 
 			@Override
@@ -370,7 +370,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			@Override
 			public boolean contains(Object o) {
 				if (o instanceof URI) {
-					return ModelImpl.this.contains(subj, (URI)o, obj, contexts);
+					return LinkedHashModel.this.contains(subj, (URI)o, obj, contexts);
 				}
 				return false;
 			}
@@ -378,7 +378,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			@Override
 			public boolean remove(Object o) {
 				if (o instanceof URI)
-					return ModelImpl.this.remove(subj, (URI)o, obj, contexts);
+					return LinkedHashModel.this.remove(subj, (URI)o, obj, contexts);
 				return false;
 			}
 
@@ -388,12 +388,12 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 					throw new UnsupportedOperationException("Incomplete statement");
 				if (contains(pred))
 					return false;
-				return ModelImpl.this.add(subj, pred, obj, contexts);
+				return LinkedHashModel.this.add(subj, pred, obj, contexts);
 			}
 
 			@Override
 			public void clear() {
-				ModelImpl.this.remove(subj, null, obj, contexts);
+				LinkedHashModel.this.remove(subj, null, obj, contexts);
 			}
 
 			@Override
@@ -419,7 +419,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			@Override
 			public boolean contains(Object o) {
 				if (o instanceof Resource) {
-					return ModelImpl.this.contains((Resource)o, pred, obj, contexts);
+					return LinkedHashModel.this.contains((Resource)o, pred, obj, contexts);
 				}
 				return false;
 			}
@@ -427,7 +427,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			@Override
 			public boolean remove(Object o) {
 				if (o instanceof Resource)
-					return ModelImpl.this.remove((Resource)o, pred, obj, contexts);
+					return LinkedHashModel.this.remove((Resource)o, pred, obj, contexts);
 				return false;
 			}
 
@@ -437,12 +437,12 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 					throw new UnsupportedOperationException("Incomplete statement");
 				if (contains(subj))
 					return false;
-				return ModelImpl.this.add(subj, pred, obj, contexts);
+				return LinkedHashModel.this.add(subj, pred, obj, contexts);
 			}
 
 			@Override
 			public void clear() {
-				ModelImpl.this.remove(null, pred, obj, contexts);
+				LinkedHashModel.this.remove(null, pred, obj, contexts);
 			}
 
 			@Override
@@ -734,7 +734,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (o instanceof Statement) {
 				Statement st = (Statement)o;
 				if (accept(st))
-					return ModelImpl.this.contains(o);
+					return LinkedHashModel.this.contains(o);
 			}
 			return false;
 		}
@@ -742,7 +742,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 		@Override
 		public boolean add(Statement st) {
 			if (accept(st))
-				return ModelImpl.this.add(st);
+				return LinkedHashModel.this.add(st);
 			throw new IllegalArgumentException("Statement is filtered out of view: " + st);
 		}
 
@@ -761,12 +761,12 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (c != null && c.length == 0) {
 				c = contexts;
 			}
-			return ModelImpl.this.add(s, p, o, c);
+			return LinkedHashModel.this.add(s, p, o, c);
 		}
 
 		@Override
 		public void clear() {
-			ModelImpl.this.remove(subj, pred, obj, contexts);
+			LinkedHashModel.this.remove(subj, pred, obj, contexts);
 		}
 
 		public boolean clear(Resource... c) {
@@ -775,7 +775,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 				return remove(subj, pred, obj, contexts);
 			}
 			else if (matches(c, contexts)) {
-				return ModelImpl.this.remove(subj, pred, obj, c);
+				return LinkedHashModel.this.remove(subj, pred, obj, c);
 			}
 			else {
 				return false;
@@ -797,7 +797,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (c != null && c.length == 0) {
 				c = contexts;
 			}
-			return ModelImpl.this.remove(s, p, o, c);
+			return LinkedHashModel.this.remove(s, p, o, c);
 		}
 
 		public boolean contains(Resource s, URI p, Value o, Resource... c) {
@@ -815,7 +815,7 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (c != null && c.length == 0) {
 				c = contexts;
 			}
-			return ModelImpl.this.contains(s, p, o, c);
+			return LinkedHashModel.this.contains(s, p, o, c);
 		}
 
 		public Model filter(Resource s, URI p, Value o, Resource... c) {
@@ -833,35 +833,35 @@ public class ModelImpl extends AbstractSet<Statement> implements Model {
 			if (c != null && c.length == 0) {
 				c = contexts;
 			}
-			return ModelImpl.this.filter(s, p, o, c);
+			return LinkedHashModel.this.filter(s, p, o, c);
 		}
 
 		public Set<Resource> contexts() {
 			if (contexts != null || contexts.length > 0) {
 				return unmodifiableSet(new LinkedHashSet<Resource>(asList(contexts)));
 			}
-			return ModelImpl.this.contexts(subj, pred, obj);
+			return LinkedHashModel.this.contexts(subj, pred, obj);
 		}
 
 		public Set<Value> objects() {
 			if (obj != null) {
 				return Collections.singleton(obj);
 			}
-			return ModelImpl.this.objects(subj, pred, contexts);
+			return LinkedHashModel.this.objects(subj, pred, contexts);
 		}
 
 		public Set<URI> predicates() {
 			if (pred != null) {
 				return Collections.singleton(pred);
 			}
-			return ModelImpl.this.predicates(subj, obj, contexts);
+			return LinkedHashModel.this.predicates(subj, obj, contexts);
 		}
 
 		public Set<Resource> subjects() {
 			if (subj != null) {
 				return Collections.singleton(subj);
 			}
-			return ModelImpl.this.subjects(pred, obj, contexts);
+			return LinkedHashModel.this.subjects(pred, obj, contexts);
 		}
 
 		public Value objectValue()

@@ -431,7 +431,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		removeStatements(subj, pred, obj, true, contexts);
 	}
 
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean removeInferredStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		int removeCount = removeStatements(subj, pred, obj, false, contexts);
