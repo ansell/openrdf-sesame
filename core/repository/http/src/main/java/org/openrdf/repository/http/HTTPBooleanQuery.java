@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -39,6 +39,7 @@ public class HTTPBooleanQuery extends HTTPQuery implements BooleanQuery {
 	public boolean ask()
 		throws StoreException
 	{
-		return client.get(dataset, includeInferred, getBindingsArray());
+		prepareClient(client);
+		return client.get();
 	}
 }

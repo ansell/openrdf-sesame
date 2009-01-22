@@ -177,6 +177,8 @@ public abstract class Protocol {
 
 	public static final String METADATA_NAMESPACE = "http://www.openrdf.org/metadata/repository#";
 
+	public static final String OFFSET = "offset";
+
 	public static final String LIMIT = "limit";
 
 	public static final String REPO_PATH = "/repositories/*";

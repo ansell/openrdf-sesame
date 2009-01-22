@@ -206,7 +206,6 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 				return;
 
-			int limit = ProtocolUtil.parseIntegerParam(req, Protocol.LIMIT, Integer.MAX_VALUE);
 			ServletOutputStream out = resp.getOutputStream();
 			try {
 				RDFWriter writer = factory.getWriter(out);
@@ -219,7 +218,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 					writer.handleNamespace(prefix, namespace);
 				}
 
-				for (int i = 0; model.hasNext() && i < limit; i++) {
+				while (model.hasNext()) {
 					Statement st = model.next();
 					writer.handleStatement(st);
 				}
@@ -247,7 +246,6 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 			return;
 
-		int limit = ProtocolUtil.parseIntegerParam(req, Protocol.LIMIT, Integer.MAX_VALUE);
 		ServletOutputStream out = resp.getOutputStream();
 		try {
 			RDFWriter rdfHandler = factory.getWriter(out);
@@ -259,7 +257,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 			}
 
 			Iterator<Statement> iter = model.iterator();
-			for (int i = 0; iter.hasNext() && i < limit; i++) {
+			while (iter.hasNext()) {
 				rdfHandler.handleStatement(iter.next());
 			}
 
@@ -289,7 +287,6 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 				return;
 
-			int limit = ProtocolUtil.parseIntegerParam(req, Protocol.LIMIT, Integer.MAX_VALUE);
 			ServletOutputStream out = resp.getOutputStream();
 			try {
 				RDFWriter rdfHandler = factory.getWriter(out);
@@ -299,8 +296,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				Set<String> namespaces = new HashSet<String>();
 				Model first10 = new LinkedHashModel();
 
-				int i = 0;
-				for (; result.hasNext() && i < SMALL && i < limit; i++) {
+				for (int i=0; result.hasNext() && i < SMALL; i++) {
 					Statement st = result.next();
 					Resource subj = st.getSubject();
 					URI pred = st.getPredicate();
@@ -327,7 +323,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 					rdfHandler.handleStatement(st);
 				}
 
-				for (; result.hasNext() && i < limit; i++) {
+				while (result.hasNext()) {
 					Statement st = result.next();
 					rdfHandler.handleStatement(st);
 				}
@@ -406,13 +402,12 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
 				return;
 
-			int limit = ProtocolUtil.parseIntegerParam(req, Protocol.LIMIT, Integer.MAX_VALUE);
 			ServletOutputStream out = resp.getOutputStream();
 			try {
 				TupleQueryResultHandler handler = factory.getWriter(out);
 				handler.startQueryResult(model.getBindingNames());
 
-				for (int i = 0; model.hasNext() && i < limit; i++) {
+				while (model.hasNext()) {
 					BindingSet bindingSet = model.next();
 					handler.handleSolution(bindingSet);
 				}

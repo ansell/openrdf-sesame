@@ -1,14 +1,11 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007--2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.repository.http;
 
-import java.util.Iterator;
-
-import org.openrdf.query.Binding;
-import org.openrdf.query.BindingSet;
+import org.openrdf.http.client.QueryClient;
 import org.openrdf.query.impl.AbstractQuery;
 
 /**
@@ -23,17 +20,10 @@ public abstract class HTTPQuery extends AbstractQuery {
 		this.queryString = queryString;
 	}
 
-	protected Binding[] getBindingsArray() {
-		BindingSet bindings = this.getBindings();
-
-		Binding[] bindingsArray = new Binding[bindings.size()];
-
-		Iterator<Binding> iter = bindings.iterator();
-		for (int i = 0; i < bindings.size(); i++) {
-			bindingsArray[i] = iter.next();
-		}
-
-		return bindingsArray;
+	protected void prepareClient(QueryClient client) {
+		client.setIncludeInferred(includeInferred);
+		client.setDataset(dataset);
+		client.setBindingSet(bindings);
 	}
 
 	@Override

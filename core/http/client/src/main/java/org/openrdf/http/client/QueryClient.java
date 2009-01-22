@@ -24,6 +24,7 @@ import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
 import org.openrdf.model.URI;
 import org.openrdf.query.Binding;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.rio.UnsupportedRDFormatException;
@@ -36,21 +37,87 @@ public class QueryClient {
 
 	private HTTPConnectionPool query;
 
+	private Dataset dataset;
+
+	private boolean includeInferred;
+
+	private BindingSet bindings;
+
+	private int offset = 0;
+
+	private int limit = -1;
+
 	public QueryClient(HTTPConnectionPool query) {
 		this.query = query;
 	}
 
-	protected HTTPConnection get() {
+	public Dataset getDataset() {
+		return dataset;
+	}
+
+	public void setDataset(Dataset dataset) {
+		this.dataset = dataset;
+	}
+
+	public boolean isIncludeInferred() {
+		return includeInferred;
+	}
+
+	public void setIncludeInferred(boolean includeInferred) {
+		this.includeInferred = includeInferred;
+	}
+
+	public BindingSet getBindingSet() {
+		return bindings;
+	}
+
+	public void setBindingSet(BindingSet bindings) {
+		this.bindings = bindings;
+	}
+
+	public int getOffset() {
+		return offset;
+	}
+
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+
+	public int getLimit() {
+		return limit;
+	}
+
+	public void setLimit(int limit) {
+		this.limit = limit;
+	}
+
+	protected HTTPConnection createConnection() {
 		return query.post();
 	}
 
-	protected HTTPConnection execute(HTTPConnection method, Dataset dataset, boolean includeInferred,
-			Binding... bindings)
+	protected HTTPConnection execute(HTTPConnection method)
 		throws StoreException
 	{
 		try {
-			method.sendForm(getQueryParams(dataset, includeInferred, bindings));
-			execute(method);
+			method.sendForm(getQueryParams());
+			try {
+				method.execute();
+			}
+			catch (UnsupportedQueryLanguage e) {
+				throw new UnsupportedQueryLanguageException(e);
+			}
+			catch (UnsupportedFileFormat e) {
+				throw new UnsupportedRDFormatException(e);
+			}
+			catch (UnsupportedMediaType e) {
+				throw new UnsupportedRDFormatException(e);
+			}
+			catch (Unauthorized e) {
+				throw new UnauthorizedException(e);
+			}
+			catch (HTTPException e) {
+				throw new StoreException(e);
+			}
 			return method;
 		}
 		catch (IOException e) {
@@ -62,8 +129,8 @@ public class QueryClient {
 		return query.submitTask(task);
 	}
 
-	private List<NameValuePair> getQueryParams(Dataset dataset, boolean includeInferred, Binding... bindings) {
-		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
+	private List<NameValuePair> getQueryParams() {
+		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.size() + 10);
 
 		queryParams.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
 				Boolean.toString(includeInferred)));
@@ -77,36 +144,20 @@ public class QueryClient {
 			}
 		}
 
-		for (int i = 0; i < bindings.length; i++) {
-			String paramName = Protocol.BINDING_PREFIX + bindings[i].getName();
-			String paramValue = Protocol.encodeValue(bindings[i].getValue());
+		if (offset > 0) {
+			queryParams.add(new NameValuePair(Protocol.OFFSET, String.valueOf(offset)));
+		}
+		if (limit >= 0) {
+			queryParams.add(new NameValuePair(Protocol.LIMIT, String.valueOf(limit)));
+		}
+
+		for (Binding binding : bindings) {
+			String paramName = Protocol.BINDING_PREFIX + binding.getName();
+			String paramValue = Protocol.encodeValue(binding.getValue());
 			queryParams.add(new NameValuePair(paramName, paramValue));
 		}
 
 		return queryParams;
-	}
-
-	void execute(HTTPConnection method)
-		throws IOException, StoreException
-	{
-		try {
-			method.execute();
-		}
-		catch (UnsupportedQueryLanguage e) {
-			throw new UnsupportedQueryLanguageException(e);
-		}
-		catch (UnsupportedFileFormat e) {
-			throw new UnsupportedRDFormatException(e);
-		}
-		catch (UnsupportedMediaType e) {
-			throw new UnsupportedRDFormatException(e);
-		}
-		catch (Unauthorized e) {
-			throw new UnauthorizedException(e);
-		}
-		catch (HTTPException e) {
-			throw new StoreException(e);
-		}
 	}
 
 }

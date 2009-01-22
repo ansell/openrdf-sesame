@@ -8,11 +8,14 @@ package org.openrdf.http.server.helpers;
 import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.FORM_MIME_TYPE;
 import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.LIMIT;
 import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.OFFSET;
 import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
 import static org.openrdf.http.server.helpers.ProtocolUtil.parseBooleanParam;
 import static org.openrdf.http.server.helpers.ProtocolUtil.parseContextParam;
+import static org.openrdf.http.server.helpers.ProtocolUtil.parseIntegerParam;
 import static org.openrdf.http.server.helpers.ProtocolUtil.parseResourceParam;
 import static org.openrdf.http.server.helpers.ProtocolUtil.parseURIParam;
 import static org.openrdf.http.server.helpers.ProtocolUtil.parseValueParam;
@@ -87,6 +90,14 @@ public class RDFRequest {
 
 	public boolean isIncludeInferred() {
 		return parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
+	}
+
+	public int getOffset() {
+		return parseIntegerParam(request, OFFSET, 0);
+	}
+
+	public int getLimit() {
+		return parseIntegerParam(request, LIMIT, -1);
 	}
 
 }

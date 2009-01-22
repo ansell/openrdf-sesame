@@ -36,13 +36,15 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 	public GraphResult evaluate()
 		throws StoreException
 	{
-		return client.get(dataset, includeInferred, getBindingsArray());
+		prepareClient(client);
+		return client.get();
 	}
 
 	public <H extends RDFHandler> H evaluate(H handler)
 		throws StoreException, RDFHandlerException
 	{
-		client.get(dataset, includeInferred, handler, getBindingsArray());
+		prepareClient(client);
+		client.get(handler);
 		return handler;
 	}
 }

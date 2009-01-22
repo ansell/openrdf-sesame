@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -12,8 +12,6 @@ import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.FutureGraphQueryResult;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
-import org.openrdf.query.Binding;
-import org.openrdf.query.Dataset;
 import org.openrdf.result.GraphResult;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -30,7 +28,7 @@ public class GraphQueryClient extends QueryClient {
 		super(query);
 	}
 
-	public GraphResult get(final Dataset dataset, final boolean includeInferred, final Binding... bindings)
+	public GraphResult get()
 		throws StoreException
 	{
 		Callable<GraphResult> task = new Callable<GraphResult>() {
@@ -39,9 +37,9 @@ public class GraphQueryClient extends QueryClient {
 				throws Exception
 			{
 				try {
-					HTTPConnection method = get();
+					HTTPConnection method = createConnection();
 					method.acceptGraphQueryResult();
-					execute(method, dataset, includeInferred, bindings);
+					execute(method);
 					return method.getGraphQueryResult();
 				}
 				catch (NoCompatibleMediaType e) {
@@ -52,14 +50,14 @@ public class GraphQueryClient extends QueryClient {
 		return new FutureGraphQueryResult(submitTask(task));
 	}
 
-	public void get(Dataset dataset, boolean includeInferred, RDFHandler handler, Binding... bindings)
+	public void get(RDFHandler handler)
 		throws RDFHandlerException, StoreException
 	{
-		HTTPConnection method = get();
+		HTTPConnection method = createConnection();
 
 		try {
 			method.acceptRDF(false);
-			execute(method, dataset, includeInferred, bindings);
+			execute(method);
 			method.readRDF(handler);
 		}
 		catch (NoCompatibleMediaType e) {

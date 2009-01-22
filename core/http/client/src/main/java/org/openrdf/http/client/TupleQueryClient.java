@@ -12,8 +12,6 @@ import org.openrdf.http.client.connections.HTTPConnection;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.FutureTupleQueryResult;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
-import org.openrdf.query.Binding;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultParseException;
@@ -30,7 +28,7 @@ public class TupleQueryClient extends QueryClient {
 		super(query);
 	}
 
-	public TupleResult get(final Dataset dataset, final boolean includeInferred, final Binding... bindings)
+	public TupleResult get()
 		throws StoreException
 	{
 		Callable<TupleResult> task = new Callable<TupleResult>() {
@@ -39,9 +37,9 @@ public class TupleQueryClient extends QueryClient {
 				throws Exception
 			{
 				try {
-					HTTPConnection method = get();
+					HTTPConnection method = createConnection();
 					method.acceptTupleQueryResult();
-					execute(method, dataset, includeInferred, bindings);
+					execute(method);
 					return method.getTupleQueryResult();
 				}
 				catch (NoCompatibleMediaType e) {
@@ -52,15 +50,14 @@ public class TupleQueryClient extends QueryClient {
 		return new FutureTupleQueryResult(submitTask(task));
 	}
 
-	public void get(Dataset dataset, boolean includeInferred, TupleQueryResultHandler handler,
-			Binding... bindings)
+	public void get(TupleQueryResultHandler handler)
 		throws TupleQueryResultHandlerException, StoreException
 	{
-		HTTPConnection method = get();
+		HTTPConnection method = createConnection();
 
 		try {
 			method.acceptRDF(false);
-			execute(method, dataset, includeInferred, bindings);
+			execute(method);
 			method.readTupleQueryResult(handler);
 		}
 		catch (NoCompatibleMediaType e) {

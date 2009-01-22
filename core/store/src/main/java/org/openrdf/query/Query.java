@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -17,6 +17,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author Arjohn Kampman
  * @author jeen
+ * @author James Leigh
  * @see org.openrdf.repository.RepositoryConnection
  */
 public interface Query {
@@ -80,7 +81,7 @@ public interface Query {
 	 *         <tt>false</tt> otherwise.
 	 */
 	public boolean getIncludeInferred();
-	
+
 	/**
 	 * Specifies the maximum time that a query is allowed to run. The query will
 	 * be interrupted when it exceeds the time limit. Any consecutive requests to

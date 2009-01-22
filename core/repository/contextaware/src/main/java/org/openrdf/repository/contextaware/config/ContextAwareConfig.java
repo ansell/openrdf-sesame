@@ -10,6 +10,7 @@ import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ARCH
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.INCLUDE_INFERRED;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.MAX_QUERY_TIME;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.QUERY_LANGUAGE;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.QUERY_RESULT_LIMIT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.READ_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.REMOVE_CONTEXT;
 
@@ -22,7 +23,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.config.DelegatingRepositoryImplConfigBase;
@@ -39,6 +39,8 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	private Boolean includeInferred = true;
 
 	private int maxQueryTime = 0;
+
+	private int queryResultLimit = -1;
 
 	private QueryLanguage queryLanguage = QueryLanguage.SPARQL;
 
@@ -60,6 +62,14 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 
 	public void setMaxQueryTime(int maxQueryTime) {
 		this.maxQueryTime = maxQueryTime;
+	}
+
+	public int getQueryResultLimit() {
+		return queryResultLimit;
+	}
+
+	public void setQueryResultLimit(int queryResultLimit) {
+		this.queryResultLimit = queryResultLimit;
 	}
 
 	/**
@@ -159,6 +169,9 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 		if (maxQueryTime > 0) {
 			model.add(repImplNode, MAX_QUERY_TIME, vf.createLiteral(maxQueryTime));
 		}
+		if (queryResultLimit >= 0) {
+			model.add(repImplNode, QUERY_RESULT_LIMIT, vf.createLiteral(queryResultLimit));
+		}
 		if (queryLanguage != null) {
 			model.add(repImplNode, QUERY_LANGUAGE, vf.createLiteral(queryLanguage.getName()));
 		}
@@ -192,6 +205,10 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 			Literal maxQueryTime = model.filter(implNode, MAX_QUERY_TIME, null).objectLiteral();
 			if (maxQueryTime != null) {
 				setMaxQueryTime(maxQueryTime.intValue());
+			}
+			Literal queryResultLimit = model.filter(implNode, QUERY_RESULT_LIMIT, null).objectLiteral();
+			if (queryResultLimit != null) {
+				setQueryResultLimit(queryResultLimit.intValue());
 			}
 			Literal queryLanguage = model.filter(implNode, QUERY_LANGUAGE, null).objectLiteral();
 			if (queryLanguage != null) {

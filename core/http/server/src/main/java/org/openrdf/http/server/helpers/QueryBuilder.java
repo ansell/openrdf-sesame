@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -36,6 +36,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.store.StoreException;
@@ -105,6 +106,11 @@ public class QueryBuilder {
 		DatasetImpl dataset = getDataset();
 		if (dataset != null) {
 			result.setDataset(dataset);
+		}
+		if (result instanceof TupleQuery) {
+			TupleQuery tuple = (TupleQuery) result;
+			tuple.setOffset(ProtocolUtil.parseIntegerParam(request, Protocol.OFFSET, 0));
+			tuple.setLimit(ProtocolUtil.parseIntegerParam(request, Protocol.LIMIT, -1));
 		}
 		setBindings(result);
 		return result;
