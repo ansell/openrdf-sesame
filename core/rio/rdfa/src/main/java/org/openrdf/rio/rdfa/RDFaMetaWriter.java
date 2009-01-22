@@ -265,14 +265,14 @@ public class RDFaMetaWriter {
 	public void handleBlankNode(int indent, URI pred, BNode node)
 		throws IOException
 	{
-		String a = tagName(pred, "a");
+		String span = tagName(pred, "span");
 		writer.indent(indent);
-		writer.openStartTag(XHTML, a);
+		writer.openStartTag(XHTML, span);
 		writer.curie(XHTML, "rel", VOCAB, pred);
 		writer.attribute(XHTML, "resource", "[_:" + node.getID() + "]");
 		writer.closeStartTag();
 		writer.data(node.toString());
-		writer.endTag(XHTML, a);
+		writer.endTag(XHTML, span);
 	}
 
 	public void handleURI(int indent, URI pred, String relativize)
