@@ -12,6 +12,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.openrdf.model.URI;
@@ -45,6 +46,8 @@ public class DatasetSail extends SailWrapper {
 	private Map<URL, Long> lastModified = new ConcurrentHashMap<URL, Long>();
 
 	private SailRepository repository;
+
+	private String accept;
 
 	public DatasetSail() {
 		super();
@@ -110,6 +113,7 @@ public class DatasetSail extends SailWrapper {
 		for (URI graph : graphs.keySet()) {
 			loadGraph(graph);
 		}
+		accept = getAcceptHeader();
 	}
 
 	@Override
@@ -149,6 +153,9 @@ public class DatasetSail extends SailWrapper {
 			if (since != null) {
 				urlCon.setIfModifiedSince(since);
 			}
+			if (accept != null) {
+				urlCon.setRequestProperty("Accept", accept);
+			}
 			if (since == null || since < urlCon.getLastModified()) {
 				load(url, urlCon, context);
 			}
@@ -159,6 +166,20 @@ public class DatasetSail extends SailWrapper {
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
+	}
+	private String getAcceptHeader() {
+		StringBuilder sb = new StringBuilder();
+		String preferred = RDFFormat.RDFXML.getDefaultMIMEType();
+		sb.append(preferred).append(";q=0.2");
+		Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
+		for (RDFFormat format : rdfFormats) {
+			for (String type : format.getMIMETypes()) {
+				if (!preferred.equals(type)) {
+					sb.append(", ").append(type);
+				}
+			}
+		}
+		return sb.toString();
 	}
 
 	private URL findURL(String path)
