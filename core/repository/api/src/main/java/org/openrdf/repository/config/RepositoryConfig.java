@@ -14,7 +14,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelException;
@@ -93,7 +93,7 @@ public class RepositoryConfig {
 	}
 
 	public Model export() {
-		Model model = new ModelImpl();
+		Model model = new LinkedHashModel();
 		export(model);
 		return model;
 	}

@@ -97,7 +97,7 @@ public class SailRepositoryFactory implements RepositoryFactory {
 		Sail delegateSail = createSailStack(config);
 
 		try {
-			((StackableSail)sail).setBaseSail(delegateSail);
+			((StackableSail)sail).setDelegate(delegateSail);
 		}
 		catch (ClassCastException e) {
 			throw new StoreConfigException("Delegate configured but " + sail.getClass()

@@ -14,7 +14,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 
 /**
  * @author james
@@ -53,7 +53,7 @@ public class ConfigTemplate {
 
 	public Model createConfig(List<ConfigProperty> properties) {
 		int idx = 0;
-		Model model = new ModelImpl();
+		Model model = new LinkedHashModel();
 		model.getNamespaces().putAll(statements.getNamespaces());
 		for (Statement st : statements) {
 			Resource subj = st.getSubject();

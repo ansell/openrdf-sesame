@@ -26,7 +26,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
@@ -360,7 +360,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 			try {
 				List<String> ids = new ArrayList<String>();
 				for (Resource ctx : con.getContextIDs().asList()) {
-					Model model = new ModelImpl();
+					Model model = new LinkedHashModel();
 					con.match(null, null, null, false, ctx).addTo(model);
 					String id = getConfigId(model);
 					ids.add(id);

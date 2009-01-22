@@ -28,7 +28,7 @@ import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.model.Model;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.repository.manager.RepositoryManager;
@@ -117,6 +117,6 @@ public class ConfigurationController {
 		StatementCollector statements = new StatementCollector();
 		parser.setRDFHandler(statements);
 		parser.parse(request.getInputStream(), "");
-		return new ModelImpl(statements.getStatements());
+		return new LinkedHashModel(statements.getStatements());
 	}
 }

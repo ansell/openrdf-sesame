@@ -39,7 +39,7 @@ import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
@@ -428,7 +428,7 @@ public class HTTPConnection {
 	public Model readModel()
 		throws IOException, RDFParseException, NoCompatibleMediaType
 	{
-		Model model = new ModelImpl();
+		Model model = new LinkedHashModel();
 		try {
 			readRDF(new StatementCollector(model));
 		}

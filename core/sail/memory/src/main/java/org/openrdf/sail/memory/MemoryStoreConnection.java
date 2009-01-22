@@ -363,7 +363,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		removeStatementsInternal(subj, pred, obj, true, contexts);
 	}
 
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean removeInferredStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
 		return removeStatementsInternal(subj, pred, obj, false, contexts);

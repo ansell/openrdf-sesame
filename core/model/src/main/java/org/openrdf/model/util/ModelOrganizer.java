@@ -29,7 +29,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ModelImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -132,7 +132,7 @@ public class ModelOrganizer {
 
 	private void init() {
 		covered = new HashSet<Resource>(source.size() / 2);
-		destination = new ModelImpl(source.getNamespaces());
+		destination = new LinkedHashModel(source.getNamespaces());
 	}
 
 	private void organizedTheRest() {

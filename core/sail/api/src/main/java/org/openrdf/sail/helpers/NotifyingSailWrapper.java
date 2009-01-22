@@ -35,7 +35,7 @@ public class NotifyingSailWrapper extends SailWrapper implements NotifyingSail {
 	 * Creates a new SailWrapper that wraps the supplied Sail.
 	 */
 	public NotifyingSailWrapper(NotifyingSail baseSail) {
-		setBaseSail(baseSail);
+		setDelegate(baseSail);
 	}
 
 	/*---------*
@@ -43,13 +43,13 @@ public class NotifyingSailWrapper extends SailWrapper implements NotifyingSail {
 	 *---------*/
 
 	@Override
-	public void setBaseSail(Sail baseSail) {
-		super.setBaseSail((NotifyingSail)baseSail);
+	public void setDelegate(Sail baseSail) {
+		super.setDelegate((NotifyingSail)baseSail);
 	}
 
 	@Override
-	public NotifyingSail getBaseSail() {
-		return (NotifyingSail)super.getBaseSail();
+	public NotifyingSail getDelegate() {
+		return (NotifyingSail)super.getDelegate();
 	}
 
 	@Override
@@ -61,11 +61,11 @@ public class NotifyingSailWrapper extends SailWrapper implements NotifyingSail {
 
 	public void addSailChangedListener(SailChangedListener listener) {
 		verifyBaseSailSet();
-		getBaseSail().addSailChangedListener(listener);
+		getDelegate().addSailChangedListener(listener);
 	}
 
 	public void removeSailChangedListener(SailChangedListener listener) {
 		verifyBaseSailSet();
-		getBaseSail().removeSailChangedListener(listener);
+		getDelegate().removeSailChangedListener(listener);
 	}
 }

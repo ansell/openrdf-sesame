@@ -105,7 +105,7 @@ public class DatasetSail extends SailWrapper {
 	public void initialize()
 		throws StoreException
 	{
-		repository = new SailRepository(getBaseSail());
+		repository = new SailRepository(getDelegate());
 		repository.initialize();
 		for (URI graph : graphs.keySet()) {
 			loadGraph(graph);
@@ -123,7 +123,7 @@ public class DatasetSail extends SailWrapper {
 	public SailConnection getConnection()
 		throws StoreException
 	{
-		return new DatasetConnection(this, getBaseSail().getConnection());
+		return new DatasetConnection(this, getDelegate().getConnection());
 	}
 
 	public void loadGraph(URI graph)
