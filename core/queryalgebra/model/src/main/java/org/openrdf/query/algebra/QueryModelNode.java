@@ -65,7 +65,7 @@ public interface QueryModelNode extends Cloneable, Serializable {
 	 * @throws ClassCastException
 	 *         If <tt>replacement</tt> is of an incompatible type.
 	 */
-	public void replaceWith(QueryModelNode replacement);
+	public <N extends QueryModelNode> N replaceWith(N replacement);
 
 	/**
 	 * Returns an indented print of the node tree, starting from this node.

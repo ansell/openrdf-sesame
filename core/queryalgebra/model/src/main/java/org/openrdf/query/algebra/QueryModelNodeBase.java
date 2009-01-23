@@ -58,12 +58,13 @@ public abstract class QueryModelNodeBase implements QueryModelNode {
 	 * that throws an {@link IllegalArgumentException} indicating that
 	 * <tt>current</tt> is not a child node of this node.
 	 */
-	public void replaceWith(QueryModelNode replacement) {
+	public <N extends QueryModelNode> N replaceWith(N replacement) {
 		if (parent == null) {
 			throw new IllegalStateException("Node has no parent");
 		}
 
 		parent.replaceChildNode(this, replacement);
+		return replacement;
 	}
 
 	/**
