@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-repository</artifactId>
-		<version>2.2.4</version>
+		<version>2.2.5-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-repository-dataset</artifactId>
-	<version>2.2.4</version>
+	<version>2.2.5-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: DatasetRepository (wrapper)</name>
 	<description>Implementation that loads all referenced datasets into a wrapped repository</description>
@@ -43,9 +43,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.4/core/repository/dataset</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.4/core/repository/dataset</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2.4/core/repository/dataset</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/repository/dataset</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/repository/dataset</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/core/repository/dataset</url>
 	</scm>
 
 </project>
