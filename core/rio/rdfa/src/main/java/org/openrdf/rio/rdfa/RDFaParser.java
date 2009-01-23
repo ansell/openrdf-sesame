@@ -5,7 +5,6 @@
  */
 package org.openrdf.rio.rdfa;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -92,9 +91,9 @@ public class RDFaParser implements RDFParser {
 		catch (TransformerException e) {
 			handleException();
 			throw new RDFParseException(e);
-		} finally {
+		}
+		finally {
 			out.close();
-			pipe.close();
 		}
 
 		await(latch);
@@ -105,7 +104,12 @@ public class RDFaParser implements RDFParser {
 
 			public void run() {
 				try {
-					parser.parse(pipe, baseURI);
+					try {
+						parser.parse(pipe, baseURI);
+					}
+					finally {
+						pipe.close();
+					}
 				}
 				catch (Exception e) {
 					exception = e;
