@@ -34,7 +34,7 @@
 	</modules>
 
 	<properties>
-		<aduna.appbase.version>3.4.1</aduna.appbase.version>
+		<aduna.appbase.version>3.5-SNAPSHOT</aduna.appbase.version>
 		<slf4j.version>1.5.0</slf4j.version>
 	</properties>
 
@@ -394,7 +394,7 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-webmvc</artifactId>
-				<version>2.5.1</version>
+				<version>2.5.6</version>
 				<exclusions>
 					<exclusion>
 						<groupId>commons-logging</groupId>
@@ -405,7 +405,7 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-aop</artifactId>
-				<version>2.5.1</version>
+				<version>2.5.6</version>
 				<exclusions>
 					<exclusion>
 						<groupId>commons-logging</groupId>
