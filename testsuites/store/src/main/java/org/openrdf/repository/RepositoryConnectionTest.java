@@ -1639,9 +1639,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, mbox, mboxBob);
 
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SERQL, "SELECT o FROM {} P {o}");
+		int total = query.evaluate().asList().size();
 		query.setOffset(1);
-		List<BindingSet> result = query.evaluate().asList();
-		assertEquals(3, result.size());
+		assertEquals(total -1 , query.evaluate().asList().size());
 	}
 
 	public void testLimit()
@@ -1654,8 +1654,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SERQL, "SELECT o FROM {} P {o}");
 		query.setLimit(1);
-		List<BindingSet> result = query.evaluate().asList();
-		assertEquals(1, result.size());
+		assertEquals(1 , query.evaluate().asList().size());
 	}
 
 	private void testValueRoundTrip(Resource subj, URI pred, Value obj)
