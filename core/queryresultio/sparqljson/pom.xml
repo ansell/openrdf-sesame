@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-queryresultio</artifactId>
-		<version>2.2.4</version>
+		<version>2.2.5-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-queryresultio-sparqljson</artifactId>
-	<version>2.2.4</version>
+	<version>2.2.5-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: Query result IO - SPARQL/JSON</name>
 	<description>Query result writer implementation for the SPARQL Query Results JSON Format.</description>
@@ -39,9 +39,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.4/core/queryresultio/sparqljson</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.2.4/core/queryresultio/sparqljson</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.2.4/core/queryresultio/sparqljson</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/queryresultio/sparqljson</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/queryresultio/sparqljson</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/core/queryresultio/sparqljson</url>
 	</scm>
 
 </project>
