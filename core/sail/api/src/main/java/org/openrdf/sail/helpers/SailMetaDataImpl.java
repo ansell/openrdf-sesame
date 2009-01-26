@@ -147,7 +147,7 @@ public class SailMetaDataImpl implements SailMetaData {
 		return false;
 	}
 
-	public boolean isLocalStore() {
+	public boolean isEmbedded() {
 		return false;
 	}
 

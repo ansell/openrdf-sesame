@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -16,7 +16,7 @@ public interface SailMetaData {
 
 	URL getLocation();
 
-	boolean isLocalStore();
+	boolean isEmbedded();
 
 	String getStoreName();
 

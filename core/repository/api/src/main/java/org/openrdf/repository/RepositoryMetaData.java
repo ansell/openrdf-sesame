@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -21,15 +21,15 @@ public interface RepositoryMetaData {
 
 	RDFFormat[] getExportRDFFormats();
 
-	boolean isRemoteDatasetSupported();
-
 	// properties shared by SailMetaData
+
+	boolean isRemoteDatasetSupported();
 
 	boolean isReadOnly();
 
 	URL getLocation();
 
-	boolean isLocalStore();
+	boolean isEmbedded();
 
 	String getStoreName();
 

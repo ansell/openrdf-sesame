@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -30,6 +30,10 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.store.StoreException;
 
 class HTTPRepositoryMetaData implements InvocationHandler {
+
+	private static final String IS_EMBEDDED = "isEmbedded";
+
+	private static final String IS_READ_ONLY = "isReadOnly";
 
 	public static RepositoryMetaData create(HTTPRepository repository, Model model)
 		throws StoreException
@@ -64,8 +68,10 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 	{
 		String name = getName(method);
 		Class<?> type = method.getReturnType();
-		if ("isReadOnly".equals(name))
+		if (IS_READ_ONLY.equals(name))
 			return repository.isReadOnly();
+		if (IS_EMBEDDED.equals(name))
+			return false;
 		if (type.isArray())
 			return getArrayOf(type.getComponentType(), name);
 		return getArrayOf(type, name)[0];
