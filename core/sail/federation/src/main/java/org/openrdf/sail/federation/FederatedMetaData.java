@@ -169,9 +169,9 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	}
 
 	@Override
-	public boolean isLocalStore() {
+	public boolean isEmbedded() {
 		for (RepositoryMetaData md : members) {
-			if (!md.isLocalStore()) {
+			if (!md.isEmbedded()) {
 				return false;
 			}
 		}

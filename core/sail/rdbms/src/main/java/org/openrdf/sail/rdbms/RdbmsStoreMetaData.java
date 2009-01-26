@@ -57,7 +57,7 @@ class RdbmsStoreMetaData extends SailMetaDataImpl {
 	}
 
 	@Override
-	public boolean isLocalStore() {
+	public boolean isEmbedded() {
 		return false;
 	}
 

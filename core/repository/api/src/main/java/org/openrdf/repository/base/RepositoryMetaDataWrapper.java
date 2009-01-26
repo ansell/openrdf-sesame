@@ -119,8 +119,8 @@ public class RepositoryMetaDataWrapper implements RepositoryMetaData {
 		return delegate.isBNodeIDPreserved();
 	}
 
-	public boolean isLocalStore() {
-		return delegate.isLocalStore();
+	public boolean isEmbedded() {
+		return delegate.isEmbedded();
 	}
 
 	public boolean isMatchingOnlySameTerm() {

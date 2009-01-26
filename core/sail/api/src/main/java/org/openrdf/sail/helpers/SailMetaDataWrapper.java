@@ -105,8 +105,8 @@ public class SailMetaDataWrapper implements SailMetaData {
 		return delegate.isBNodeIDPreserved();
 	}
 
-	public boolean isLocalStore() {
-		return delegate.isLocalStore();
+	public boolean isEmbedded() {
+		return delegate.isEmbedded();
 	}
 
 	public boolean isMatchingOnlySameTerm() {

@@ -87,7 +87,7 @@ class MemoryStoreMetaData extends SailMetaDataImpl {
 	}
 
 	@Override
-	public boolean isLocalStore() {
+	public boolean isEmbedded() {
 		return true;
 	}
 
