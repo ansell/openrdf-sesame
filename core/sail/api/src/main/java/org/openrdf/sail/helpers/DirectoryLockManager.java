@@ -27,12 +27,19 @@ import org.openrdf.sail.SailLockedException;
  * Used to create a lock in a directory.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
 public class DirectoryLockManager implements LockManager {
 
-	Logger logger = LoggerFactory.getLogger(DirectoryLockManager.class);
+	private static final String LOCK_DIR_NAME = "lock";
 
-	private File dir;
+	private static final String LOCK_FILE_NAME = "locked";
+
+	private static final String INFO_FILE_NAME = "process";
+
+	private final Logger logger = LoggerFactory.getLogger(DirectoryLockManager.class);
+
+	private final File dir;
 
 	public DirectoryLockManager(File dir) {
 		this.dir = dir;
@@ -42,13 +49,17 @@ public class DirectoryLockManager implements LockManager {
 		return dir.toString();
 	}
 
+	private File getLockDir() {
+		return new File(dir, LOCK_DIR_NAME);
+	}
+
 	/**
 	 * Determines if the directory is locked.
 	 * 
 	 * @return <code>true</code> if the directory is already locked.
 	 */
 	public boolean isLocked() {
-		return new File(dir, "lock").exists();
+		return getLockDir().exists();
 	}
 
 	/**
@@ -57,32 +68,44 @@ public class DirectoryLockManager implements LockManager {
 	 * @return a newly acquired lock or null if the directory is already locked.
 	 */
 	public Lock tryLock() {
-		File lockDir = new File(dir, "lock");
+		File lockDir = getLockDir();
+
 		if (lockDir.exists()) {
-			removeInValidLock(lockDir);
+			removeInvalidLock(lockDir);
 		}
+
 		if (!lockDir.mkdir()) {
 			return null;
 		}
 
+		Lock lock = null;
+
 		try {
-			File infoFile = new File(lockDir, "process");
-			File lockedFile = new File(lockDir, "locked");
+			File infoFile = new File(lockDir, INFO_FILE_NAME);
+			File lockedFile = new File(lockDir, LOCK_FILE_NAME);
+
 			RandomAccessFile raf = new RandomAccessFile(lockedFile, "rw");
-			FileLock locked = raf.getChannel().lock();
-			Lock lock = createLock(lockDir, infoFile, lockedFile, raf, locked);
 			try {
+				FileLock fileLock = raf.getChannel().lock();
+				lock = createLock(raf, fileLock);
 				sign(infoFile);
-				return lock;
 			}
-			catch (IOException exc) {
-				lock.release();
-				throw exc;
+			catch (IOException e) {
+				if (lock != null) {
+					// Also closes raf
+					lock.release();
+				}
+				else {
+					raf.close();
+				}
+				throw e;
 			}
-		} catch (IOException exc) {
-			logger.error(exc.toString(), exc);
-			return null;
 		}
+		catch (IOException e) {
+			logger.error(e.toString(), e);
+		}
+
+		return lock;
 	}
 
 	/**
@@ -96,12 +119,14 @@ public class DirectoryLockManager implements LockManager {
 		throws SailLockedException
 	{
 		Lock lock = tryLock();
+
 		if (lock != null) {
 			return lock;
 		}
 
 		String requestedBy = getProcessName();
 		String lockedBy = getLockedBy();
+
 		if (lockedBy != null) {
 			throw new SailLockedException(lockedBy, requestedBy, this);
 		}
@@ -120,41 +145,50 @@ public class DirectoryLockManager implements LockManager {
 	 * @return <code>true</code> if a lock was successfully revoked.
 	 */
 	public boolean revokeLock() {
-		File lockDir = new File(dir, "lock");
-		File lockedFile = new File(lockDir, "locked");
-		File infoFile = new File(lockDir, "process");
+		File lockDir = getLockDir();
+		File lockedFile = new File(lockDir, LOCK_FILE_NAME);
+		File infoFile = new File(lockDir, INFO_FILE_NAME);
 		lockedFile.delete();
 		infoFile.delete();
 		return lockDir.delete();
 	}
 
-	private void removeInValidLock(File lockDir) {
+	private void removeInvalidLock(File lockDir) {
 		try {
-			File lockedFile = new File(lockDir, "locked");
+			boolean revokeLock = false;
+
+			File lockedFile = new File(lockDir, LOCK_FILE_NAME);
 			RandomAccessFile raf = new RandomAccessFile(lockedFile, "rw");
 			try {
-				FileLock locked = raf.getChannel().tryLock();
-				if (locked != null) {
+				FileLock fileLock = raf.getChannel().tryLock();
+
+				if (fileLock != null) {
 					logger.warn("Removing invalid lock {}", getLockedBy());
-					locked.release();
-					raf.close();
-					revokeLock();
-				} else {
-					raf.close();
+					fileLock.release();
+					revokeLock = true;
 				}
-			} catch (OverlappingFileLockException exc) {
+			}
+			catch (OverlappingFileLockException exc) {
+				// lock is still valid
+			}
+			finally {
 				raf.close();
 			}
-		} catch (IOException exc) {
-			logger.warn(exc.toString(), exc);
+
+			if (revokeLock) {
+				revokeLock();
+			}
+		}
+		catch (IOException e) {
+			logger.warn(e.toString(), e);
 		}
 	}
 
 	private String getLockedBy() {
 		try {
-			File lockDir = new File(dir, "lock");
-			File lockFile = new File(lockDir, "process");
-			BufferedReader reader = new BufferedReader(new FileReader(lockFile));
+			File lockDir = getLockDir();
+			File infoFile = new File(lockDir, INFO_FILE_NAME);
+			BufferedReader reader = new BufferedReader(new FileReader(infoFile));
 			try {
 				return reader.readLine();
 			}
@@ -162,15 +196,13 @@ public class DirectoryLockManager implements LockManager {
 				reader.close();
 			}
 		}
-		catch (IOException exc) {
-			logger.warn(exc.toString(), exc);
+		catch (IOException e) {
+			logger.warn(e.toString(), e);
 			return null;
 		}
 	}
 
-	private Lock createLock(final File lockDir, final File infoFile, final File lockedFile,
-			final RandomAccessFile raf, final FileLock locked)
-	{
+	private Lock createLock(final RandomAccessFile raf, final FileLock fileLock) {
 		return new Lock() {
 
 			private boolean active = true;
@@ -197,23 +229,22 @@ public class DirectoryLockManager implements LockManager {
 
 			void delete() {
 				try {
-					locked.release();
+					fileLock.release();
 					raf.close();
 				}
 				catch (IOException e) {
 					logger.warn(e.toString(), e);
 				}
-				lockedFile.delete();
-				infoFile.delete();
-				lockDir.delete();
+
+				revokeLock();
 			}
 		};
 	}
 
-	private void sign(File lockFile)
+	private void sign(File infoFile)
 		throws IOException
 	{
-		FileWriter out = new FileWriter(lockFile);
+		FileWriter out = new FileWriter(infoFile);
 		try {
 			out.write(getProcessName());
 			out.flush();
