@@ -57,8 +57,8 @@ public interface SailConnection {
 	 * object, using the (optional) dataset and supplied bindings as input
 	 * parameters.
 	 * 
-	 * @param tupleQuery
-	 *        The TupleQuery to evaluate.
+	 * @param tupleExpr
+	 *        The tuple expression to evaluate.
 	 * @param dataset
 	 *        The dataset to use for evaluating the query, <tt>null</tt> to use
 	 *        the Sail's default dataset.
@@ -218,14 +218,14 @@ public interface SailConnection {
 	 * @throws StoreException
 	 *         If the statement could not be removed.
 	 */
-	public void removeStatements(Resource subj, URI pred, Value obj, Resource... context)
+	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException;
 
 	/**
 	 * Gets the namespaces relevant to the data contained in this Sail object.
 	 * 
-	 * @returns An iterator over the relevant namespaces, should not contain any
-	 *          duplicates.
+	 * @return An iterator over the relevant namespaces, should not contain any
+	 *         duplicates.
 	 * @throws StoreException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.

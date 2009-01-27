@@ -148,7 +148,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	/**
 	 * Resolves the specified path against the manager's base directory.
 	 * 
-	 * @see #getDataDir
+	 * @see #getBaseDir
 	 */
 	public File resolvePath(String path) {
 		return new File(getBaseDir(), path);

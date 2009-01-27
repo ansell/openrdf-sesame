@@ -11,9 +11,9 @@ import org.openrdf.store.StoreConfigException;
 /**
  * A SailFactory takes care of creating and initializing a specific type of
  * {@link Sail}s based on RDF configuration data. SailFactory's are used by the
- * {@link org.openrdf.repository.sail.SailRepositoryFactory} to create specific
- * Sails and to initialize them based on the configuration data that iis
- * supplied to it, for example in a server environment.
+ * {@link org.openrdf.repository.sail.config.SailRepositoryFactory} to create
+ * specific Sails and to initialize them based on the configuration data that
+ * iis supplied to it, for example in a server environment.
  * 
  * @author Arjohn Kampman
  */
@@ -32,8 +32,9 @@ public interface SailFactory {
 	/**
 	 * Returns a Sail instance that has been initialized using the supplied
 	 * configuration data.
-	 * @param config TODO
 	 * 
+	 * @param config
+	 *        TODO
 	 * @return The created (but un-initialized) Sail.
 	 * @throws StoreConfigException
 	 *         If no Sail could be created due to invalid or incomplete
