@@ -59,12 +59,7 @@ public abstract class RepositoryManager {
 	 *--------------*/
 
 	/**
-	 * Creates a new RepositoryManager that operates on the specfified base
-	 * directory.
-	 * 
-	 * @param baseDir
-	 *        The base directory where data for repositories can be stored, among
-	 *        other things.
+	 * Creates a new RepositoryManager.
 	 */
 	public RepositoryManager() {
 		this.initializedRepositories = new HashMap<String, Repository>();

@@ -32,7 +32,7 @@ public class FunctionCall extends NaryValueOperator implements ValueExpr {
 	/**
 	 * Creates a new unary value operator.
 	 * 
-	 * @param arg
+	 * @param args
 	 *        The operator's argument, must not be <tt>null</tt>.
 	 */
 	public FunctionCall(String uri, ValueExpr... args) {

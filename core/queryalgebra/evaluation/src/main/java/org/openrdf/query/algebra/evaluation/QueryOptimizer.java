@@ -9,9 +9,10 @@ package org.openrdf.query.algebra.evaluation;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.store.StoreException;
+import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 
 /**
- * Interface used by {@link EvalutationStrategyImpl} prior to evalutating the
+ * Interface used by {@link EvaluationStrategyImpl} prior to evalutating the
  * query.
  * 
  * @author James Leigh

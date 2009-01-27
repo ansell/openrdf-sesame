@@ -11,13 +11,17 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
  * Defines constants for the SailRepository schema which is used by
- * {@link SailRepositoryFactory}s to initialize {@link SailRepository}s.
+ * {@link org.openrdf.repository.sail.config.SailRepositoryFactory}s to
+ * initialize {@link org.openrdf.repository.sail.SailRepository}s.
  * 
  * @author Arjohn Kampman
  */
 public class SailConfigSchema {
 
-	/** The Sail API schema namespace (<tt>http://www.openrdf.org/config/sail#</tt>). */
+	/**
+	 * The Sail API schema namespace (
+	 * <tt>http://www.openrdf.org/config/sail#</tt>).
+	 */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail#";
 
 	/** <tt>http://www.openrdf.org/config/sail#sailType</tt> */

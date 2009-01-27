@@ -78,7 +78,7 @@ public class SPARQLResultsXMLWriter implements TupleQueryResultWriter {
 	 * XML document. By default, pretty-printing is set to <tt>true</tt>. If
 	 * set to <tt>false</tt>, no indentation and newlines are added to the XML
 	 * document. This method has to be used before writing starts (that is,
-	 * before {@link #startTupleSet} is called).
+	 * before {@link #startQueryResult(List)} is called).
 	 */
 	public void setPrettyPrint(boolean prettyPrint) {
 		xmlWriter.setPrettyPrint(prettyPrint);

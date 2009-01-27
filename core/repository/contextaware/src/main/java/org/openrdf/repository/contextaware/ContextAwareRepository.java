@@ -61,7 +61,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @return
 	 * @see ContextAwareConnection#getAddContexts()
 	 */
 	public URI[] getAddContexts() {
@@ -69,7 +68,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @return
 	 * @see ContextAwareConnection#getArchiveContexts()
 	 */
 	public URI[] getArchiveContexts() {
@@ -77,7 +75,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @return
 	 * @see ContextAwareConnection#getQueryLanguage()
 	 */
 	public QueryLanguage getQueryLanguage() {
@@ -85,7 +82,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @return
 	 * @see ContextAwareConnection#getReadContexts()
 	 */
 	public URI[] getReadContexts() {
@@ -93,7 +89,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @return
 	 * @see ContextAwareConnection#getRemoveContexts()
 	 */
 	public URI[] getRemoveContexts() {
@@ -101,7 +96,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @param includeInferred
 	 * @see ContextAwareConnection#isIncludeInferred()
 	 */
 	public boolean isIncludeInferred() {
@@ -109,7 +103,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @param addContexts
 	 * @see ContextAwareConnection#setAddContexts(URI[])
 	 */
 	public void setAddContexts(URI... addContexts) {
@@ -117,7 +110,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @param archiveContexts
 	 * @see ContextAwareConnection#setArchiveContexts(URI[])
 	 */
 	public void setArchiveContexts(URI... archiveContexts) {
@@ -125,7 +117,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @param includeInferred
 	 * @see ContextAwareConnection#setIncludeInferred(boolean)
 	 */
 	public void setIncludeInferred(boolean includeInferred) {
@@ -133,7 +124,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @param ql
 	 * @see ContextAwareConnection#setQueryLanguage(QueryLanguage)
 	 */
 	public void setQueryLanguage(QueryLanguage ql) {
@@ -141,7 +131,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @param readContexts
 	 * @see ContextAwareConnection#setReadContexts(URI[])
 	 */
 	public void setReadContexts(URI... readContexts) {
@@ -149,7 +138,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @param removeContexts
 	 * @see ContextAwareConnection#setRemoveContexts(URI[])
 	 */
 	public void setRemoveContexts(URI... removeContexts) {

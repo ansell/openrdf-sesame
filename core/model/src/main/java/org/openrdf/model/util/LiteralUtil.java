@@ -40,9 +40,9 @@ public class LiteralUtil {
 	}
 
 	/**
-	 * Returns the result of
-	 * {@link #getLabel(Literal, String) getLabel((Literal)v, fallback} in case
-	 * the supplied value is a literal, returns the fallback value otherwise.
+	 * Returns the result of {@link #getLabel(Literal, String)
+	 * getLabel((Literal)v, fallback} in case the supplied value is a literal,
+	 * returns the fallback value otherwise.
 	 */
 	public static String getLabel(Value v, String fallback) {
 		return v instanceof Literal ? getLabel((Literal)v, fallback) : fallback;
@@ -70,10 +70,9 @@ public class LiteralUtil {
 	}
 
 	/**
-	 * Returns the result of
-	 * {@link #getByteValue(Literal, byte) getByteValue((Literal)value, fallback)}
-	 * in case the supplied value is a literal, returns the fallback value
-	 * otherwise.
+	 * Returns the result of {@link #getByteValue(Literal, byte)
+	 * getByteValue((Literal)value, fallback)} in case the supplied value is a
+	 * literal, returns the fallback value otherwise.
 	 */
 	public static byte getByteValue(Value v, byte fallback) {
 		if (v instanceof Literal) {
@@ -106,10 +105,9 @@ public class LiteralUtil {
 	}
 
 	/**
-	 * Returns the result of
-	 * {@link #getByteValue(Literal, short) getByteValue((Literal)value, fallback)}
-	 * in case the supplied value is a literal, returns the fallback value
-	 * otherwise.
+	 * Returns the result of {@link #getShortValue(Literal, short)
+	 * getShortValue((Literal)value, fallback)} in case the supplied value is a
+	 * literal, returns the fallback value otherwise.
 	 */
 	public static short getShortValue(Value v, short fallback) {
 		if (v instanceof Literal) {
@@ -141,10 +139,9 @@ public class LiteralUtil {
 	}
 
 	/**
-	 * Returns the result of
-	 * {@link #getByteValue(Literal, int) getByteValue((Literal)value, fallback)}
-	 * in case the supplied value is a literal, returns the fallback value
-	 * otherwise.
+	 * Returns the result of {@link #getIntValue(Literal, int)
+	 * getIntValue((Literal)value, fallback)} in case the supplied value is a
+	 * literal, returns the fallback value otherwise.
 	 */
 	public static int getIntValue(Value v, int fallback) {
 		if (v instanceof Literal) {
@@ -177,10 +174,9 @@ public class LiteralUtil {
 	}
 
 	/**
-	 * Returns the result of
-	 * {@link #getByteValue(Literal, long) getByteValue((Literal)value, fallback)}
-	 * in case the supplied value is a literal, returns the fallback value
-	 * otherwise.
+	 * Returns the result of {@link #getLongValue(Literal, long)
+	 * getLongValue((Literal)value, fallback)} in case the supplied value is a
+	 * literal, returns the fallback value otherwise.
 	 */
 	public static long getLongValue(Value v, long fallback) {
 		if (v instanceof Literal) {
@@ -213,10 +209,9 @@ public class LiteralUtil {
 	}
 
 	/**
-	 * Returns the result of
-	 * {@link #getByteValue(Literal, BigInteger) getByteValue((Literal)value, fallback)}
-	 * in case the supplied value is a literal, returns the fallback value
-	 * otherwise.
+	 * Returns the result of {@link #getIntegerValue(Literal, BigInteger)
+	 * getIntegerValue((Literal)value, fallback)} in case the supplied value is a
+	 * literal, returns the fallback value otherwise.
 	 */
 	public static BigInteger getIntegerValue(Value v, BigInteger fallback) {
 		if (v instanceof Literal) {
@@ -249,10 +244,9 @@ public class LiteralUtil {
 	}
 
 	/**
-	 * Returns the result of
-	 * {@link #getByteValue(Literal, BigDecimal) getByteValue((Literal)value, fallback)}
-	 * in case the supplied value is a literal, returns the fallback value
-	 * otherwise.
+	 * Returns the result of {@link #getDecimalValue(Literal, BigDecimal)
+	 * getDecimalValue((Literal)value, fallback)} in case the supplied value is a
+	 * literal, returns the fallback value otherwise.
 	 */
 	public static BigDecimal getDecimalValue(Value v, BigDecimal fallback) {
 		if (v instanceof Literal) {
@@ -285,10 +279,9 @@ public class LiteralUtil {
 	}
 
 	/**
-	 * Returns the result of
-	 * {@link #getByteValue(Literal, float) getByteValue((Literal)value, fallback)}
-	 * in case the supplied value is a literal, returns the fallback value
-	 * otherwise.
+	 * Returns the result of {@link #getFloatValue(Literal, float)
+	 * getFloatValue((Literal)value, fallback)} in case the supplied value is a
+	 * literal, returns the fallback value otherwise.
 	 */
 	public static float getFloatValue(Value v, float fallback) {
 		if (v instanceof Literal) {
@@ -321,10 +314,9 @@ public class LiteralUtil {
 	}
 
 	/**
-	 * Returns the result of
-	 * {@link #getByteValue(Literal, double) getByteValue((Literal)value, fallback)}
-	 * in case the supplied value is a literal, returns the fallback value
-	 * otherwise.
+	 * Returns the result of {@link #getDoubleValue(Literal, double)
+	 * getDoubleValue((Literal)value, fallback)} in case the supplied value is a
+	 * literal, returns the fallback value otherwise.
 	 */
 	public static double getDoubleValue(Value v, double fallback) {
 		if (v instanceof Literal) {
@@ -357,10 +349,9 @@ public class LiteralUtil {
 	}
 
 	/**
-	 * Returns the result of
-	 * {@link #getByteValue(Literal, boolean) getByteValue((Literal)value, fallback)}
-	 * in case the supplied value is a literal, returns the fallback value
-	 * otherwise.
+	 * Returns the result of {@link #getBooleanValue(Literal, boolean)
+	 * getBooleanValue((Literal)value, fallback)} in case the supplied value is a
+	 * literal, returns the fallback value otherwise.
 	 */
 	public static boolean getBooleanValue(Value v, boolean fallback) {
 		if (v instanceof Literal) {
@@ -394,9 +385,9 @@ public class LiteralUtil {
 
 	/**
 	 * Returns the result of
-	 * {@link #getByteValue(Literal, XMLGregorianCalendar) getByteValue((Literal)value, fallback)}
-	 * in case the supplied value is a literal, returns the fallback value
-	 * otherwise.
+	 * {@link #getCalendarValue(Literal, XMLGregorianCalendar)
+	 * getCalendarValue((Literal)value, fallback)} in case the supplied value is
+	 * a literal, returns the fallback value otherwise.
 	 */
 	public static XMLGregorianCalendar getCalendarValue(Value v, XMLGregorianCalendar fallback) {
 		if (v instanceof Literal) {
@@ -423,14 +414,14 @@ public class LiteralUtil {
 	 *        a fallback value for the locale
 	 * @return the Locale, or the fallback if a suitable Locale could not be
 	 *         constructed for the language tag.
-	 * @see http://www.ietf.org/rfc/rfc3066.txt
+	 * @see <a href="http://www.ietf.org/rfc/rfc3066.txt">RFC 3066</a>
 	 */
 	public static Locale getLocale(Literal l, Locale fallback) {
 		Locale result = fallback;
 
 		try {
 			String lang = l.getLanguage();
-			if(lang != null) {
+			if (lang != null) {
 				LanguageTag tag = new LanguageTag(lang);
 				result = tag.toLocale();
 			}
