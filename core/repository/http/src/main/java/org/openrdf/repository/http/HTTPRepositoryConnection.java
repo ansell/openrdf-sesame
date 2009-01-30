@@ -492,7 +492,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		modified = true;
 		synchronized (txn) {
 			txn.add(operation);
-			if (txn.size() >= MAX_TRAN_QUEUE) {
+			if (isAutoCommit() || txn.size() >= MAX_TRAN_QUEUE) {
 				flush();
 			}
 		}
