@@ -31,9 +31,9 @@ import org.openrdf.store.StoreException;
 
 class HTTPRepositoryMetaData implements InvocationHandler {
 
-	private static final String IS_EMBEDDED = "isEmbedded";
+	private static final String EMBEDDED = "embedded";
 
-	private static final String IS_READ_ONLY = "isReadOnly";
+	private static final String READ_ONLY = "readOnly";
 
 	public static RepositoryMetaData create(HTTPRepository repository, Model model)
 		throws StoreException
@@ -68,9 +68,9 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 	{
 		String name = getName(method);
 		Class<?> type = method.getReturnType();
-		if (IS_READ_ONLY.equals(name))
+		if (READ_ONLY.equals(name))
 			return repository.isReadOnly();
-		if (IS_EMBEDDED.equals(name))
+		if (EMBEDDED.equals(name))
 			return false;
 		if (type.isArray())
 			return getArrayOf(type.getComponentType(), name);
