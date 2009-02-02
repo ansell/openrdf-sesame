@@ -13,10 +13,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.openrdf.cursor.ConvertingCursor;
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.EmptyCursor;
-import org.openrdf.cursor.FilteringCursor;
 import org.openrdf.cursor.SingletonCursor;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -86,7 +84,6 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
-import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.cursors.BadlyDesignedLeftJoinCursor;
@@ -105,6 +102,8 @@ import org.openrdf.query.algebra.evaluation.cursors.NamedContextCursor;
 import org.openrdf.query.algebra.evaluation.cursors.OffsetCursor;
 import org.openrdf.query.algebra.evaluation.cursors.OrderCursor;
 import org.openrdf.query.algebra.evaluation.cursors.ProjectionCursor;
+import org.openrdf.query.algebra.evaluation.cursors.StatementBindingSetCursor;
+import org.openrdf.query.algebra.evaluation.cursors.StatementPatternCursor;
 import org.openrdf.query.algebra.evaluation.cursors.UnionCursor;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
@@ -177,7 +176,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	public Cursor<BindingSet> evaluate(StatementPattern sp, final BindingSet bindings)
+	public Cursor<BindingSet> evaluate(StatementPattern sp, BindingSet bindings)
 		throws StoreException
 	{
 		final Var subjVar = sp.getSubjectVar();
@@ -244,79 +243,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		// StatementPattern, verify value equality in those cases.
 		// TODO: check if this cursor is actually needed. If not, don't add to
 		// prevent processing overhead
-		stIter = new FilteringCursor<Statement>(stIter) {
-
-			@Override
-			protected boolean accept(Statement st) {
-				Resource subj = st.getSubject();
-				URI pred = st.getPredicate();
-				Value obj = st.getObject();
-				Resource context = st.getContext();
-
-				if (subjVar != null) {
-					if (subjVar.equals(predVar) && !subj.equals(pred)) {
-						return false;
-					}
-					if (subjVar.equals(objVar) && !subj.equals(obj)) {
-						return false;
-					}
-					if (subjVar.equals(conVar) && !subj.equals(context)) {
-						return false;
-					}
-				}
-
-				if (predVar != null) {
-					if (predVar.equals(objVar) && !pred.equals(obj)) {
-						return false;
-					}
-					if (predVar.equals(conVar) && !pred.equals(context)) {
-						return false;
-					}
-				}
-
-				if (objVar != null) {
-					if (objVar.equals(conVar) && !obj.equals(context)) {
-						return false;
-					}
-				}
-
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "VerifyPatternMatch";
-			}
-		};
+		stIter = new StatementPatternCursor(stIter, sp);
 
 		// Return an iterator that converts the statements to var bindings
-		return new ConvertingCursor<Statement, BindingSet>(stIter) {
-
-			@Override
-			protected BindingSet convert(Statement st) {
-				QueryBindingSet result = new QueryBindingSet(bindings);
-
-				if (subjVar != null && !result.hasBinding(subjVar.getName())) {
-					result.addBinding(subjVar.getName(), st.getSubject());
-				}
-				if (predVar != null && !result.hasBinding(predVar.getName())) {
-					result.addBinding(predVar.getName(), st.getPredicate());
-				}
-				if (objVar != null && !result.hasBinding(objVar.getName())) {
-					result.addBinding(objVar.getName(), st.getObject());
-				}
-				if (conVar != null && !result.hasBinding(conVar.getName()) && st.getContext() != null) {
-					result.addBinding(conVar.getName(), st.getContext());
-				}
-
-				return result;
-			}
-
-			@Override
-			public String getName() {
-				return "BuildBindingSet";
-			}
-		};
+		return new StatementBindingSetCursor(stIter, sp, bindings);
 	}
 
 	protected Value getVarValue(Var var, BindingSet bindings) {
