@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -953,12 +954,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new EvaluationException("Unknown function '" + node.getURI() + "'");
 		}
 
-		ValueExpr[] args = node.getArgs();
+		List<ValueExpr> args = node.getArgs();
 
-		Value[] argValues = new Value[args.length];
+		Value[] argValues = new Value[args.size()];
 
-		for (int i = 0; i < args.length; i++) {
-			argValues[i] = evaluate(args[i], bindings);
+		for (int i = 0, n = args.size(); i < n; i++) {
+			argValues[i] = evaluate(args.get(i), bindings);
 		}
 
 		return function.evaluate(tripleSource.getValueFactory(), argValues);
