@@ -23,7 +23,7 @@ public class HTTPMemServer {
 
 	public static final String TEST_INFERENCE_REPO_ID = "memory-rdfs";
 
-	public static int DEFAULT_PORT = 8080;
+	public static int DEFAULT_PORT = 18080;
 
 	public static String SERVER_URL = "http://localhost:" + DEFAULT_PORT;
 
