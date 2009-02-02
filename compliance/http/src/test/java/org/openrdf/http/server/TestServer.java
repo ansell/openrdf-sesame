@@ -26,9 +26,9 @@ public class TestServer {
 
 	public static final String TEST_INFERENCE_REPO_ID = "Test-RDFS";
 
-	public static int DEFAULT_PORT = 8080;
+	public static int DEFAULT_PORT = 18080;
 
-	public static String SERVER_URL = "http://localhost:" + 8080;
+	public static String SERVER_URL = "http://localhost:" + DEFAULT_PORT;
 
 	public static String REPOSITORY_URL = Protocol.getRepositoryLocation(TestServer.SERVER_URL, TEST_REPO_ID);
 
