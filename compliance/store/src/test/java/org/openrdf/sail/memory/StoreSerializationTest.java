@@ -9,7 +9,7 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
-import info.aduna.io.FileUtil;
+import info.aduna.io.file.FileUtil;
 
 import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Literal;

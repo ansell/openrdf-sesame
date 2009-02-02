@@ -12,7 +12,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import info.aduna.io.ByteArrayUtil;
-import info.aduna.io.FileUtil;
+import info.aduna.io.file.FileUtil;
 
 /**
  * @author Arjohn Kampman

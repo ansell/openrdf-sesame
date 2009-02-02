@@ -30,7 +30,7 @@ import org.apache.commons.httpclient.util.EncodingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.lang.FileFormat;
+import info.aduna.io.file.FileFormat;
 
 import org.openrdf.http.client.helpers.BackgroundGraphResult;
 import org.openrdf.http.client.helpers.BackgroundTupleResult;

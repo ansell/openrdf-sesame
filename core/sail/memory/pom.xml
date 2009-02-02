@@ -5,11 +5,10 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-sail</artifactId>
-		<version>3.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-sail-memory</artifactId>
-	<version>3.0-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: MemoryStore</name>
 	<description>Sail implementation that stores data in main memory, optionally using a dump-restore file for persistence.</description>

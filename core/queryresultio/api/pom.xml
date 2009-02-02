@@ -5,11 +5,10 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-queryresultio</artifactId>
-		<version>3.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-queryresultio-api</artifactId>
-	<version>3.0-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: Query result IO - API</name>
 	<description>Query result IO API</description>
@@ -30,7 +29,7 @@
 
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-lang</artifactId>
+			<artifactId>aduna-commons-io</artifactId>
 		</dependency>
 	</dependencies>
 

@@ -5,7 +5,7 @@
  */
 package org.openrdf.rio;
 
-import info.aduna.lang.service.FileFormatServiceRegistry;
+import info.aduna.io.file.FileFormatServiceRegistry;
 
 /**
  * A registry that keeps track of the available {@link RDFWriterFactory}s.

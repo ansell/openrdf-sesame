@@ -5,11 +5,10 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-repository</artifactId>
-		<version>3.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-repository-http</artifactId>
-	<version>3.0-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: HTTPRepository</name>
 	<description>"Virtual" repository that communicates with a (remote) repository over the HTTP protocol.</description>

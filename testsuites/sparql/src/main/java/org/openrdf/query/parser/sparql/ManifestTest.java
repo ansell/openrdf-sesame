@@ -17,8 +17,8 @@ import junit.framework.TestSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.io.FileUtil;
 import info.aduna.io.ZipUtil;
+import info.aduna.io.file.FileUtil;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;

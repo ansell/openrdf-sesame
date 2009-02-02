@@ -5,11 +5,10 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-http</artifactId>
-		<version>3.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-http-client</artifactId>
-	<version>3.0-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: HTTP client</name>
 	<description>Client functionality for communicating with an OpenRDF server over HTTP.</description>
@@ -47,10 +46,6 @@
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-net</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-lang</artifactId>
 		</dependency>
 
 		<dependency>

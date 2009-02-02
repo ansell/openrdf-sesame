@@ -39,7 +39,7 @@ import org.apache.commons.cli.PosixParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.io.FileUtil;
+import info.aduna.io.file.FileUtil;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.OpenRDFUtil;

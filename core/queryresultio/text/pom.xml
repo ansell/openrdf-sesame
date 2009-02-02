@@ -5,11 +5,10 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-queryresultio</artifactId>
-		<version>3.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-queryresultio-text</artifactId>
-	<version>3.0-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: Query result IO - plain text booleans</name>
 	<description>Query result parser and writer implementation for OpenRDF's plain text boolean query results format.</description>
