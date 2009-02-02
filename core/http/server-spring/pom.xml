@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-http</artifactId>
-		<version>2.3-SNAPSHOT</version>
+		<version>2.2.5-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-http-server-spring</artifactId>
-	<version>2.3-SNAPSHOT</version>
+	<version>2.2.5-SNAPSHOT</version>
 
 	<name>OpenRDF Sesame: HTTP server - core</name>
 	<description>HTTP server implementing a REST-style protocol</description>
@@ -73,9 +73,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.3/core/http/server-spring</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.3/core/http/server-spring</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.3/core/http/server-spring</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/http/server-spring</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.2/core/http/server-spring</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.2/core/http/server-spring</url>
 	</scm>
 
 </project>
