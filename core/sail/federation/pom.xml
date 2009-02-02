@@ -1,16 +1,18 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-sail</artifactId>
-		<version>3.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
-	<groupId>org.openrdf.sesame</groupId>
+
 	<artifactId>sesame-sail-federation</artifactId>
-	<version>3.0-SNAPSHOT</version>
-	<name>OpenRDF Sesame: Federation</name>
-	<url>http://www.openrdf.org</url>
+
+	<name>OpenRDF Sesame: FederationSail</name>
+	<description>Implementation that provides federated querying over a set of repositories</description>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>

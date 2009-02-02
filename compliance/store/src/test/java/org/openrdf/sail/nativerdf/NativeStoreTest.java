@@ -7,7 +7,7 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 
-import info.aduna.io.FileUtil;
+import info.aduna.io.file.FileUtil;
 
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.sail.NotifyingSail;

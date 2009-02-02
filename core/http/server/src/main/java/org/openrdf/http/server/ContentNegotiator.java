@@ -35,7 +35,7 @@ import org.springframework.web.servlet.RequestToViewNameTranslator;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
-import info.aduna.lang.FileFormat;
+import info.aduna.io.file.FileFormat;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;
@@ -47,8 +47,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;

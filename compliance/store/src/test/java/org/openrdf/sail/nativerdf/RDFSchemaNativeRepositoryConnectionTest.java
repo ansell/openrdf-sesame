@@ -8,13 +8,12 @@ package org.openrdf.sail.nativerdf;
 import java.io.File;
 import java.io.IOException;
 
-import info.aduna.io.FileUtil;
+import info.aduna.io.file.FileUtil;
 
 import org.openrdf.repository.RDFSchemaRepositoryConnectionTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
-import org.openrdf.sail.nativerdf.NativeStore;
 
 public class RDFSchemaNativeRepositoryConnectionTest extends RDFSchemaRepositoryConnectionTest {
 

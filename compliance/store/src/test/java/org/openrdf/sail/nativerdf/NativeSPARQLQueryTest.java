@@ -10,7 +10,7 @@ import java.io.IOException;
 
 import junit.framework.Test;
 
-import info.aduna.io.FileUtil;
+import info.aduna.io.file.FileUtil;
 
 import org.openrdf.query.Dataset;
 import org.openrdf.query.parser.sparql.ManifestTest;
@@ -18,7 +18,6 @@ import org.openrdf.query.parser.sparql.SPARQLQueryTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.dataset.DatasetSail;
-import org.openrdf.sail.nativerdf.NativeStore;
 
 public class NativeSPARQLQueryTest extends SPARQLQueryTest {
 
