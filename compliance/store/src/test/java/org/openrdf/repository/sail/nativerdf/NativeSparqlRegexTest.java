@@ -8,7 +8,7 @@ package org.openrdf.repository.sail.nativerdf;
 import java.io.File;
 import java.io.IOException;
 
-import info.aduna.io.FileUtil;
+import info.aduna.io.file.FileUtil;
 
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.SparqlRegexTest;

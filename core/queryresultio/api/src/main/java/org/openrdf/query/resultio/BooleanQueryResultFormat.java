@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import info.aduna.lang.FileFormat;
+import info.aduna.io.file.FileFormat;
 
 /**
  * Represents the concept of a boolean query result serialization format.

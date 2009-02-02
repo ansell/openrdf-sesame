@@ -10,7 +10,7 @@ import java.io.IOException;
 
 import junit.framework.Test;
 
-import info.aduna.io.FileUtil;
+import info.aduna.io.file.FileUtil;
 
 import org.openrdf.query.Dataset;
 import org.openrdf.query.parser.sparql.ManifestTest;

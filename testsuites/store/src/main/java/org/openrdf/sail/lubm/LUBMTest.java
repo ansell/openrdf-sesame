@@ -5,12 +5,12 @@
  */
 package org.openrdf.sail.lubm;
 
-import info.aduna.io.FileUtil;
-
 import java.io.File;
 
 import junit.framework.TestCase;
 import edu.lehigh.swat.bench.uba.Generator;
+
+import info.aduna.io.file.FileUtil;
 
 /**
  * 

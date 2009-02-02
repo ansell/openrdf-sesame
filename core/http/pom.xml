@@ -5,11 +5,10 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>2.3-SNAPSHOT</version>
+		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-http</artifactId>
-	<version>2.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>OpenRDF Sesame: HTTP</name>
