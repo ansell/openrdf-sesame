@@ -10,9 +10,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
-import info.aduna.io.FileUtil;
-
 import junit.framework.TestCase;
+
+import info.aduna.io.file.FileUtil;
 
 public class DefaultIndexTest extends TestCase {
 
