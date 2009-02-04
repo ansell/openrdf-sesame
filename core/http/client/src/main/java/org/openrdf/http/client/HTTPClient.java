@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -215,8 +215,8 @@ public class HTTPClient {
 	 * default.
 	 * 
 	 * @param format
-	 *        The preferred {@link TupleQueryResultFormat}, or <tt>null</tt>
-	 *        to indicate no specific format is preferred.
+	 *        The preferred {@link TupleQueryResultFormat}, or <tt>null</tt> to
+	 *        indicate no specific format is preferred.
 	 */
 	public void setPreferredTupleQueryResultFormat(TupleQueryResultFormat format) {
 		preferredTQRFormat = format;
@@ -261,8 +261,8 @@ public class HTTPClient {
 	 * default.
 	 * 
 	 * @param format
-	 *        The preferred {@link BooleanQueryResultFormat}, or <tt>null</tt>
-	 *        to indicate no specific format is preferred.
+	 *        The preferred {@link BooleanQueryResultFormat}, or <tt>null</tt> to
+	 *        indicate no specific format is preferred.
 	 */
 	public void setPreferredBooleanQueryResultFormat(BooleanQueryResultFormat format) {
 		preferredBQRFormat = format;
@@ -376,7 +376,7 @@ public class HTTPClient {
 			throw new RepositoryException(e.getMessage(), e);
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -410,7 +410,7 @@ public class HTTPClient {
 			getTupleQueryResult(method, handler);
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -440,7 +440,7 @@ public class HTTPClient {
 			getRDF(method, handler, false);
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -454,7 +454,7 @@ public class HTTPClient {
 			return getBoolean(method);
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -540,7 +540,7 @@ public class HTTPClient {
 			throw new RepositoryException(e.getMessage(), e);
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -587,7 +587,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -692,7 +692,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -730,7 +730,7 @@ public class HTTPClient {
 			throw new RepositoryException(e.getMessage(), e);
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -768,7 +768,7 @@ public class HTTPClient {
 			throw new RepositoryException(e.getMessage(), e);
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -798,7 +798,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -823,7 +823,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -847,7 +847,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -871,7 +871,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			releaseConnection(method);
+			method.releaseConnection();
 		}
 	}
 
@@ -1189,20 +1189,11 @@ public class HTTPClient {
 		}
 	}
 
+	/**
+	 * @deprecated Call <tt>method.releaseConnection()</tt> instead.
+	 */
+	@Deprecated
 	protected final void releaseConnection(HttpMethod method) {
-		try {
-			// Read the entire response body to enable the reuse of the connection
-			InputStream responseStream = method.getResponseBodyAsStream();
-			if (responseStream != null) {
-				while (responseStream.read() >= 0) {
-					// do nothing
-				}
-			}
-
-			method.releaseConnection();
-		}
-		catch (IOException e) {
-			logger.warn("I/O error upon releasing connection", e);
-		}
+		method.releaseConnection();
 	}
 }
