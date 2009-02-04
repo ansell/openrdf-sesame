@@ -22,6 +22,7 @@
 		<module>repository</module>
 		<module>rio</module>
 		<module>runtime</module>
+		<module>runtime-osgi</module>
 		<module>sail</module>
 	</modules>
 
