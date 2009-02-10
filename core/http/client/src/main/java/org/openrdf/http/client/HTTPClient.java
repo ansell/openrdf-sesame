@@ -337,7 +337,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -376,7 +376,7 @@ public class HTTPClient {
 			throw new RepositoryException(e.getMessage(), e);
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -410,7 +410,7 @@ public class HTTPClient {
 			getTupleQueryResult(method, handler);
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -440,7 +440,7 @@ public class HTTPClient {
 			getRDF(method, handler, false);
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -454,7 +454,7 @@ public class HTTPClient {
 			return getBoolean(method);
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -540,7 +540,7 @@ public class HTTPClient {
 			throw new RepositoryException(e.getMessage(), e);
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -587,7 +587,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -692,7 +692,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -730,7 +730,7 @@ public class HTTPClient {
 			throw new RepositoryException(e.getMessage(), e);
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -768,7 +768,7 @@ public class HTTPClient {
 			throw new RepositoryException(e.getMessage(), e);
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -798,7 +798,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -823,7 +823,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -847,7 +847,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -871,7 +871,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -916,7 +916,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			method.releaseConnection();
+			releaseConnection(method);
 		}
 	}
 
@@ -1189,11 +1189,12 @@ public class HTTPClient {
 		}
 	}
 
-	/**
-	 * @deprecated Call <tt>method.releaseConnection()</tt> instead.
-	 */
-	@Deprecated
 	protected final void releaseConnection(HttpMethod method) {
-		method.releaseConnection();
+		if (Thread.currentThread().isInterrupted()) {
+			method.abort();
+		}
+		else {
+			method.releaseConnection();
+		}
 	}
 }
