@@ -60,6 +60,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -108,6 +109,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	/** If connection cannot use shared repository cache. */
 	private volatile boolean modified;
+
+	private Isolation level = Isolation.READ_COMMITTED;
 
 	private List<TransactionOperation> txn = new ArrayList<TransactionOperation>(MAX_TRAN_QUEUE / 2);
 
@@ -181,6 +184,19 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		finally {
 			super.finalize();
 		}
+	}
+
+	public Isolation getTransactionIsolation()
+		throws StoreException
+	{
+		// TODO read from remote store
+		return level;
+	}
+
+	public void setTransactionIsolation(Isolation level)
+		throws StoreException
+	{
+		this.level = level;
 	}
 
 	public boolean isAutoCommit()

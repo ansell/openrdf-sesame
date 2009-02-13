@@ -28,6 +28,7 @@ import org.openrdf.result.impl.NamespaceResultImpl;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -47,6 +48,8 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	 * The Sail connection wrapped by this repository connection object.
 	 */
 	private SailConnection sailConnection;
+
+	private Isolation level = Isolation.READ_COMMITTED;
 
 	/*--------------*
 	 * Constructors *
@@ -87,6 +90,18 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		throws StoreException
 	{
 		sailConnection.close();
+	}
+
+	public Isolation getTransactionIsolation()
+		throws StoreException
+	{
+		return level;
+	}
+
+	public void setTransactionIsolation(Isolation level)
+		throws StoreException
+	{
+		this.level = level;
 	}
 
 	public boolean isAutoCommit()

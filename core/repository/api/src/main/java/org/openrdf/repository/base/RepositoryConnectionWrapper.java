@@ -34,6 +34,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -129,6 +130,18 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	public ValueFactory getValueFactory() {
 		return vf;
+	}
+
+	public Isolation getTransactionIsolation()
+		throws StoreException
+	{
+		return getDelegate().getTransactionIsolation();
+	}
+
+	public void setTransactionIsolation(Isolation level)
+		throws StoreException
+	{
+		getDelegate().setTransactionIsolation(level);
 	}
 
 	@Override
