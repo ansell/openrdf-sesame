@@ -33,6 +33,7 @@ import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -110,6 +111,37 @@ public interface RepositoryConnection {
 	 *         If the connection could not be closed.
 	 */
 	public void close()
+		throws StoreException;
+
+   /**
+	 * Retrieves this <code>Connection</code> object's current transaction
+	 * isolation level.
+	 * 
+	 * @return the current transaction isolation level.
+	 * @exception StoreException
+	 *            if an access error occurs or this method is called on a closed
+	 *            connection
+	 * @see #setTransactionIsolation
+	 */
+	public Isolation getTransactionIsolation()
+		throws StoreException;
+
+	/**
+	 * Attempts to change the transaction isolation level for this
+	 * <code>Connection</code> object to the one given.
+	 * <P>
+	 * <B>Note:</B> If this method is called during a transaction, the result is
+	 * implementation-defined.
+	 * 
+	 * @param level
+	 *        Any Isolation, but <code>NONE</code> cannot be used because it
+	 *        specifies that transactions are not supported.
+	 * @exception StoreException
+	 *            if an access error occurs, this method is called on a closed
+	 *            connection
+	 * @see #getTransactionIsolation
+	 */
+	public void setTransactionIsolation(Isolation level)
 		throws StoreException;
 
 	/**
