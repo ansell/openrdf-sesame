@@ -107,12 +107,15 @@ public class QueryModelPruner implements QueryOptimizer {
 					union.removeArg(arg);
 				}
 			}
+
 			if (union.getNumberOfArguments() == 1) {
 				union.replaceWith(union.getArg(0));
-			} else {
+			}
+			else {
 				for (TupleExpr arg : union.getArgs()) {
-					if (!(arg instanceof SingletonSet))
+					if (!(arg instanceof SingletonSet)) {
 						return;
+					}
 				}
 				union.replaceWith(new SingletonSet());
 			}
