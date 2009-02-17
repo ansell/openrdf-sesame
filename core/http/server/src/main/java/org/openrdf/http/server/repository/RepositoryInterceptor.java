@@ -132,8 +132,9 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		if (id.contains("/")) {
 			id = id.substring(0, id.indexOf('/'));
 		}
-		if (id.length() == 0)
+		if (id.length() == 0) {
 			return null;
+		}
 		return id;
 	}
 
@@ -147,8 +148,9 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		if (id.contains("/")) {
 			id = id.substring(0, id.indexOf('/'));
 		}
-		if (id.length() == 0)
+		if (id.length() == 0) {
 			return null;
+		}
 		return id;
 	}
 
@@ -210,8 +212,9 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	{
 		ActiveConnection activeQueries = (ActiveConnection)request.getAttribute(QUERY_MAP_KEY);
 		Query query = activeQueries.getQuery(id);
-		if (query != null)
+		if (query != null) {
 			return query;
+		}
 		throw new NotFound(id);
 	}
 
@@ -398,14 +401,27 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	public void run() {
 		long now = System.currentTimeMillis();
 		long max = Protocol.TIME_OUT_UNITS.toMillis(Protocol.MAX_TIME_OUT);
-		for (Entry<String, ActiveConnection> e : activeConnections.entrySet()) {
-			long since = now - e.getValue().getLastAccessed();
-			if (since > max && !e.getValue().isActive()) {
-				String id = e.getKey();
-				logger.warn("Connection {} has expired", id);
+
+		for (Entry<String, ActiveConnection> entry : activeConnections.entrySet()) {
+			ActiveConnection activeCon = entry.getValue();
+
+			long since = now - activeCon.getLastAccessed();
+
+			if (since > max && !activeCon.isActive()) {
+				String id = entry.getKey();
+				logger.info("Connection {} has expired", id);
 				activeConnections.remove(id);
 				try {
-					e.getValue().getConnection().close();
+					RepositoryConnection repCon = activeCon.getConnection();
+					try {
+						if (!repCon.isAutoCommit()) {
+							logger.info("Rolling back transaction for expired connection {}", id);
+							repCon.rollback();
+						}
+					}
+					finally {
+						repCon.close();
+					}
 				}
 				catch (StoreException exc) {
 					logger.error(exc.toString(), exc);
@@ -418,14 +434,16 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		long since = request.getDateHeader(IF_MODIFIED_SINCE);
 		if (since != -1) {
 			response.addHeader(VARY, IF_MODIFIED_SINCE);
-			if (since >= lastModified(request))
+			if (since >= lastModified(request)) {
 				return true;
+			}
 		}
 		String etag = request.getHeader(IF_NONE_MATCH);
 		if (etag != null) {
 			response.addHeader(VARY, IF_NONE_MATCH);
-			if (etag.equals(eTag(request)))
+			if (etag.equals(eTag(request))) {
 				return true;
+			}
 		}
 		return false;
 	}
@@ -434,49 +452,61 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		String etag = request.getHeader(IF_MATCH);
 		if (etag != null) {
 			response.addHeader(VARY, IF_MATCH);
-			if (!etag.equals(eTag(request)))
+			if (!etag.equals(eTag(request))) {
 				return false;
+			}
 		}
 		etag = request.getHeader(IF_NONE_MATCH);
 		if (etag != null) {
 			response.addHeader(VARY, IF_NONE_MATCH);
-			if (etag.equals(eTag(request)))
+			if (etag.equals(eTag(request))) {
 				return false;
+			}
 		}
 		long since = request.getDateHeader(IF_UNMODIFIED_SINCE);
 		if (since != -1) {
 			response.addHeader(VARY, IF_UNMODIFIED_SINCE);
-			if (since < lastModified(request))
+			if (since < lastModified(request)) {
 				return false;
+			}
 		}
 		return true;
 	}
 
 	private boolean isSafe(HttpServletRequest request) {
-		if (request.getAttribute(MANAGER_MODIFIED_KEY) != null)
+		if (request.getAttribute(MANAGER_MODIFIED_KEY) != null) {
 			return false;
-		if (request.getAttribute(REPOSITORY_MODIFIED_KEY) != null)
+		}
+		if (request.getAttribute(REPOSITORY_MODIFIED_KEY) != null) {
 			return false;
-		if (request.getAttribute(CONN_CREATE_KEY) != null)
+		}
+		if (request.getAttribute(CONN_CREATE_KEY) != null) {
 			return false;
-		if (request.getAttribute(CONN_CLOSED_KEY) != null)
+		}
+		if (request.getAttribute(CONN_CLOSED_KEY) != null) {
 			return false;
-		if (request.getAttribute(QUERY_CREATE_KEY) != null)
+		}
+		if (request.getAttribute(QUERY_CREATE_KEY) != null) {
 			return false;
-		if (request.getAttribute(QUERY_CLOSED_KEY) != null)
+		}
+		if (request.getAttribute(QUERY_CLOSED_KEY) != null) {
 			return false;
-		if (request.getAttribute(NOT_SAFE_KEY) != null)
+		}
+		if (request.getAttribute(NOT_SAFE_KEY) != null) {
 			return false;
+		}
 		return true;
 	}
 
 	private String getCacheControl(long now, long lastModified) {
 		long age = (now - lastModified) / 1000;
-		if (maxCacheAge < 1 || age < 1)
+		if (maxCacheAge < 1 || age < 1) {
 			return "no-cache";
+		}
 		// Modifications naturally occur near each other
-		if (age < maxCacheAge)
+		if (age < maxCacheAge) {
 			return "max-age=" + age;
+		}
 		return "max-age=" + maxCacheAge;
 	}
 
