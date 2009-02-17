@@ -837,7 +837,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 
 		public Set<Resource> contexts() {
-			if (contexts != null || contexts.length > 0) {
+			if (contexts != null && contexts.length > 0) {
 				return unmodifiableSet(new LinkedHashSet<Resource>(asList(contexts)));
 			}
 			return LinkedHashModel.this.contexts(subj, pred, obj);
