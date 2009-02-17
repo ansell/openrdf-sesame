@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -45,6 +45,32 @@ public interface SailConnection {
 		throws StoreException;
 
 	/**
+	 * Indicates whether this connection is in read-only mode.
+	 * 
+	 * @return <tt>true</tt> if this Connection object is read-only;
+	 *         <tt>false</tt> otherwise.
+	 * @throws StoreException
+	 *         If a repository access error occurs.
+	 */
+	public boolean isReadOnly()
+		throws StoreException;
+
+	/**
+	 * Puts this connection in read-only mode as a hint to the driver to enable
+	 * repository optimizations.
+	 * <p>
+	 * <b>Note:</b> This method cannot be called during a transaction.
+	 * 
+	 * @param readOnly
+	 *        <tt>true</tt> enables read-only mode; <tt>false</tt> disables it
+	 * @throws StoreException
+	 *         If a repository access error occurs or this method is called
+	 *         during a transaction.
+	 */
+	public void setReadOnly(boolean readOnly)
+		throws StoreException;
+
+	/**
 	 * Gets a ValueFactory object that can be used to create URI-, blank node-,
 	 * literal- and statement objects.
 	 * 
@@ -75,8 +101,7 @@ public interface SailConnection {
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
 	 */
-	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings,
-			boolean includeInferred)
+	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException;
 
 	/**
@@ -139,13 +164,15 @@ public interface SailConnection {
 		throws StoreException;
 
 	/**
-	 * Indicates if {@link #begin()} has been called and {@link #commit()} or
-	 * {@link #rollback()} has to be called to close the transaction.
+	 * Indicates if the connection is in auto-commit mode. The connection is
+	 * <em>not</em> in auto-commit when {@link #begin()} has been called but
+	 * {@link #commit()} or {@link #rollback()} still has to be called to finish
+	 * the transaction.
 	 * 
 	 * @throws StoreException
-	 *         If the SailConnection could not start a transaction.
+	 *         If a repository access error occurs.
 	 */
-	public boolean isActive()
+	public boolean isAutoCommit()
 		throws StoreException;
 
 	/**
@@ -153,7 +180,9 @@ public interface SailConnection {
 	 * be called to close the transaction.
 	 * 
 	 * @throws StoreException
-	 *         If the SailConnection could not start a transaction.
+	 *         If the connection could not start a transaction, or if it already
+	 *         has an active transaction.
+	 * @see #isAutoCommit()
 	 */
 	public void begin()
 		throws StoreException;
@@ -163,7 +192,8 @@ public interface SailConnection {
 	 * {@link #commit()} or {@link #rollback()} was called.
 	 * 
 	 * @throws StoreException
-	 *         If the SailConnection could not be committed.
+	 *         If the SailConnection could not be committed, or if the connection
+	 *         does not have an active connection.
 	 */
 	public void commit()
 		throws StoreException;
@@ -173,7 +203,8 @@ public interface SailConnection {
 	 * have been made in this SailConnection.
 	 * 
 	 * @throws StoreException
-	 *         If the SailConnection could not be rolled back.
+	 *         If the SailConnection could not be rolled back, or if the
+	 *         connection does not have an active connection.
 	 */
 	public void rollback()
 		throws StoreException;

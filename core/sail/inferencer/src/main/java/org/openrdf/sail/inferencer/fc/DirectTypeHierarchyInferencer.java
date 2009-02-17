@@ -153,7 +153,6 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 		InferencerConnection con = getConnection();
 		try {
 			con.flushUpdates();
-			con.commit();
 		}
 		finally {
 			con.close();

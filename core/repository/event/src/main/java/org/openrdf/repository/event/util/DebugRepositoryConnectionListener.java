@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -75,9 +75,9 @@ public class DebugRepositoryConnectionListener implements RepositoryConnectionLi
 		}
 	}
 
-	public void setAutoCommit(RepositoryConnection conn, boolean autoCommit) {
+	public void begin(RepositoryConnection conn) {
 		if (printing) {
-			stream.println("SETAUTOCOMMIT (" + getConnectionID(conn) + ") " + autoCommit);
+			stream.println("BEGIN (" + getConnectionID(conn) + ") ");
 		}
 		if (dumpingStack) {
 			Thread.dumpStack();

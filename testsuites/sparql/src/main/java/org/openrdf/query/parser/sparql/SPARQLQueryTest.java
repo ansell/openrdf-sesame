@@ -114,10 +114,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 		if (dataset != null) {
 			try {
 				uploadDataset(dataset);
-			} catch (Exception exc) {
+			}
+			catch (Exception exc) {
 				try {
 					dataRep.shutDown();
-				} catch (Exception e2) {
+				}
+				catch (Exception e2) {
 					logger.error(e2.toString(), e2);
 				}
 				throw exc;
@@ -135,13 +137,15 @@ public abstract class SPARQLQueryTest extends TestCase {
 		try {
 			con.clear();
 			con.clearNamespaces();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 		return repo;
 	}
 
-	protected abstract Repository newRepository() throws Exception;
+	protected abstract Repository newRepository()
+		throws Exception;
 
 	@Override
 	protected void tearDown()
@@ -344,7 +348,8 @@ public abstract class SPARQLQueryTest extends TestCase {
 		throws Exception
 	{
 		RepositoryConnection con = dataRep.getConnection();
-		con.setAutoCommit(false);
+
+		con.begin();
 		try {
 			RDFFormat rdfFormat = Rio.getParserFormatForFileName(graphURI.toString(), RDFFormat.TURTLE);
 			RDFParser rdfParser = Rio.createParser(rdfFormat, con.getValueFactory());
@@ -365,7 +370,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 				in.close();
 			}
 
-			con.setAutoCommit(true);
+			con.commit();
 		}
 		finally {
 			con.close();
@@ -393,10 +398,10 @@ public abstract class SPARQLQueryTest extends TestCase {
 			InputStream in = new URL(resultFileURL).openStream();
 			try {
 				TupleQueryResultParser parser = QueryResultIO.createParser(tqrFormat);
-				
+
 				TupleQueryResultBuilder qrBuilder = new TupleQueryResultBuilder();
 				parser.setTupleQueryResultHandler(qrBuilder);
-				
+
 				parser.parse(in);
 				return qrBuilder.getQueryResult();
 			}
@@ -537,7 +542,8 @@ public abstract class SPARQLQueryTest extends TestCase {
 				}
 			}
 
-			SPARQLQueryTest test = factory.createSPARQLQueryTest(testURI, testName, queryFile, resultFile, dataset);
+			SPARQLQueryTest test = factory.createSPARQLQueryTest(testURI, testName, queryFile, resultFile,
+					dataset);
 			if (test != null) {
 				suite.addTest(test);
 			}

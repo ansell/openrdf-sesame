@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -27,7 +27,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * Variables *
 	 *-----------*/
 
-	private boolean txnActive;
+	private volatile boolean readOnly;
+
+	private volatile boolean autoCommit = true;
 
 	private volatile boolean closed;
 
@@ -47,25 +49,37 @@ public abstract class SailConnectionBase implements SailConnection {
 		closed = true;
 	}
 
-	public boolean isActive() {
-		return txnActive;
+	public boolean isReadOnly()
+		throws StoreException
+	{
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly)
+		throws StoreException
+	{
+		this.readOnly = readOnly;
+	}
+
+	public boolean isAutoCommit() {
+		return autoCommit;
 	}
 
 	public void begin()
 		throws StoreException
 	{
-		txnActive = true;
+		autoCommit = false;
 	}
 
 	public void commit()
 		throws StoreException
 	{
-		txnActive = false;
+		autoCommit = true;
 	}
 
 	public void rollback()
 		throws StoreException
 	{
-		txnActive = false;
+		autoCommit = true;
 	}
 }

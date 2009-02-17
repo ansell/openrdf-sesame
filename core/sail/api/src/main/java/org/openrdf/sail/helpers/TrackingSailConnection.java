@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -24,7 +24,7 @@ import org.openrdf.sail.SailConnection;
 import org.openrdf.store.StoreException;
 
 /**
- * Tracks SailConnection iterations and verifies that the connection is open.
+ * Keeps track of open cursors.
  * 
  * @author Arjohn Kampman
  * @author jeen
@@ -32,28 +32,22 @@ import org.openrdf.store.StoreException;
  */
 public class TrackingSailConnection extends SailConnectionWrapper {
 
-	protected final Logger logger = LoggerFactory.getLogger(TrackingSailConnection.class);
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	private volatile boolean isOpen;
-
-	private volatile boolean txnActive;
-
-	private volatile boolean modified;
+	protected final Logger logger = LoggerFactory.getLogger(TrackingSailConnection.class);
 
 	// FIXME: use weak references here?
-	private List<TrackingSailCursor<?>> activeIterations = Collections.synchronizedList(new LinkedList<TrackingSailCursor<?>>());
+	private final List<TrackingSailCursor<?>> trackedCursors = Collections.synchronizedList(new LinkedList<TrackingSailCursor<?>>());
 
 	/*
 	 * Stores a stack trace that indicates where this connection as created if
 	 * debugging is enabled.
 	 */
-	private Throwable creatorTrace;
+	private final Throwable creatorTrace;
 
-	private SailConnectionTracker tracker;
+	private final SailConnectionTracker tracker;
 
 	/*--------------*
 	 * Constructors *
@@ -61,12 +55,8 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 
 	public TrackingSailConnection(SailConnection con, SailConnectionTracker tracker) {
 		super(con);
-		isOpen = true;
-		txnActive = false;
 		this.tracker = tracker;
-		if (SailUtil.isDebugEnabled()) {
-			creatorTrace = new Throwable();
-		}
+		this.creatorTrace = SailUtil.isDebugEnabled() ? new Throwable() : null;
 	}
 
 	/*---------*
@@ -74,35 +64,20 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 	 *---------*/
 
 	@Override
-	public final boolean isOpen()
-		throws StoreException
-	{
-		return isOpen;
-	}
-
-	protected void verifyIsOpen()
-		throws StoreException
-	{
-		if (!isOpen) {
-			throw new IllegalStateException("Connection has been closed");
-		}
-	}
-
-	@Override
 	public final void close()
 		throws StoreException
 	{
-		if (isOpen) {
+		if (isOpen()) {
 			try {
 				while (true) {
 					TrackingSailCursor<?> ci = null;
 
-					synchronized (activeIterations) {
-						if (activeIterations.isEmpty()) {
+					synchronized (trackedCursors) {
+						if (trackedCursors.isEmpty()) {
 							break;
 						}
 						else {
-							ci = activeIterations.remove(0);
+							ci = trackedCursors.remove(0);
 						}
 					}
 
@@ -114,16 +89,15 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 					}
 				}
 
-				assert activeIterations.isEmpty();
+				assert trackedCursors.isEmpty();
 
-				if (txnActive && modified) {
+				if (!isAutoCommit()) {
 					logger.warn("Rolling back transaction due to connection close", new Throwable());
 				}
 
 				super.close();
 			}
 			finally {
-				isOpen = false;
 				tracker.closed(this);
 			}
 		}
@@ -136,7 +110,7 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 		try {
 			if (isOpen()) {
 				if (creatorTrace != null) {
-					logger.warn("Closing connection due to garbage collection, connection was created in:",
+					logger.warn("Closing connection due to garbage collection, connection was created in: ",
 							creatorTrace);
 				}
 				close();
@@ -152,16 +126,14 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 			boolean includeInferred)
 		throws StoreException
 	{
-		verifyIsOpen();
-		return registerCursor(super.evaluate(query, bindings, includeInferred));
+		return trackCursor(super.evaluate(query, bindings, includeInferred));
 	}
 
 	@Override
 	public final Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
-		verifyIsOpen();
-		return registerCursor(super.getContextIDs());
+		return trackCursor(super.getContextIDs());
 	}
 
 	@Override
@@ -169,138 +141,30 @@ public class TrackingSailConnection extends SailConnectionWrapper {
 			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		verifyIsOpen();
-		return registerCursor(super.getStatements(subj, pred, obj, includeInferred, contexts));
-	}
-
-	@Override
-	public final long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
-	{
-		verifyIsOpen();
-		return super.size(subj, pred, obj, includeInferred, contexts);
-	}
-
-	@Override
-	public void begin()
-		throws StoreException
-	{
-		if (!txnActive) {
-			super.begin();
-			txnActive = true;
-			modified = false;
-		}
-	}
-
-	@Override
-	public final void commit()
-		throws StoreException
-	{
-		verifyIsOpen();
-		if (txnActive) {
-			super.commit();
-			txnActive = false;
-			modified = false;
-		}
-	}
-
-	@Override
-	public final void rollback()
-		throws StoreException
-	{
-		verifyIsOpen();
-		if (txnActive) {
-			try {
-				super.rollback();
-			}
-			finally {
-				txnActive = false;
-				modified = false;
-			}
-		}
-	}
-
-	@Override
-	public final void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
-	{
-		verifyIsOpen();
-		modified();
-		super.addStatement(subj, pred, obj, contexts);
-	}
-
-	@Override
-	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
-	{
-		verifyIsOpen();
-		modified();
-		super.removeStatements(subj, pred, obj, contexts);
+		return trackCursor(super.getStatements(subj, pred, obj, includeInferred, contexts));
 	}
 
 	@Override
 	public final Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
-		verifyIsOpen();
-		return registerCursor(super.getNamespaces());
-	}
-
-	@Override
-	public final String getNamespace(String prefix)
-		throws StoreException
-	{
-		verifyIsOpen();
-		return super.getNamespace(prefix);
-	}
-
-	@Override
-	public final void setNamespace(String prefix, String name)
-		throws StoreException
-	{
-		verifyIsOpen();
-		modified();
-		super.setNamespace(prefix, name);
-	}
-
-	@Override
-	public final void removeNamespace(String prefix)
-		throws StoreException
-	{
-		verifyIsOpen();
-		modified();
-		super.removeNamespace(prefix);
-	}
-
-	@Override
-	public final void clearNamespaces()
-		throws StoreException
-	{
-		verifyIsOpen();
-		modified();
-		super.clearNamespaces();
-	}
-
-	protected void modified() {
-		modified = true;
+		return trackCursor(super.getNamespaces());
 	}
 
 	/**
-	 * Registers an iteration as active by wrapping it in a
-	 * {@link TrackingSailIteration} object and adding it to the list of active
-	 * iterations.
+	 * Tracks a cursor by wrapping it in a {@link TrackingSailCursor} object and
+	 * adding it to the list of {@link #trackedCursors tracked cursors}.
 	 */
-	protected <T> Cursor<T> registerCursor(Cursor<T> iter) {
+	protected <T> Cursor<T> trackCursor(Cursor<T> iter) {
 		TrackingSailCursor<T> result = new TrackingSailCursor<T>(iter, this);
-		activeIterations.add(result);
+		trackedCursors.add(result);
 		return result;
 	}
 
 	/**
-	 * Called by {@link TrackingSailIteration} to indicate that it has been
-	 * closed.
+	 * Called by {@link TrackingSailCursor} to indicate that it has been closed.
 	 */
-	void iterationClosed(TrackingSailCursor<?> iter) {
-		activeIterations.remove(iter);
+	void cursorClosed(TrackingSailCursor<?> iter) {
+		trackedCursors.remove(iter);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2006-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2006-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -99,28 +99,28 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Variables *
 	 *-----------*/
 
-	private ConnectionClient client;
+	private final HTTPRepository repository;
 
-	private ValueFactory vf;
+	private final ConnectionClient client;
 
-	private volatile boolean closed;
+	private final ValueFactory vf;
 
-	private volatile boolean active;
-
-	/** If connection cannot use shared repository cache. */
-	private volatile boolean modified;
-
-	private Isolation level = Isolation.READ_COMMITTED;
-
-	private List<TransactionOperation> txn = new ArrayList<TransactionOperation>(MAX_TRAN_QUEUE / 2);
+	private final List<TransactionOperation> txn = new ArrayList<TransactionOperation>(MAX_TRAN_QUEUE / 2);
 
 	/*
 	 * Stores a stack trace that indicates where this connection as created if
 	 * debugging is enabled.
 	 */
-	private Throwable creatorTrace;
+	private final Throwable creatorTrace;
 
-	private HTTPRepository repository;
+	private volatile boolean isOpen = true;
+
+	private volatile boolean autoCommit = true;
+
+	/** If connection cannot use shared repository cache. */
+	private volatile boolean modified = false;
+
+	private volatile Isolation level = Isolation.READ_COMMITTED;
 
 	/*--------------*
 	 * Constructors *
@@ -130,14 +130,13 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		super(repository);
 		this.repository = repository;
 		this.client = client;
+
 		URIFactory uf = repository.getURIFactory();
 		LiteralFactory lf = repository.getLiteralFactory();
 		HTTPBNodeFactory bf = new HTTPBNodeFactory(client.bnodes());
 		this.vf = new ValueFactoryImpl(bf, uf, lf);
 
-		if (debugEnabled()) {
-			creatorTrace = new Throwable();
-		}
+		this.creatorTrace = debugEnabled() ? new Throwable() : null;
 	}
 
 	/*---------*
@@ -148,18 +147,66 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return vf;
 	}
 
+	/**
+	 * Verifies that the connection is open, throws a {@link StoreException} if
+	 * it isn't.
+	 */
+	protected void verifyIsOpen()
+		throws StoreException
+	{
+		if (!isOpen()) {
+			throw new StoreException("Connection has been closed");
+		}
+	}
+
+	/**
+	 * Verifies that the connection is not in read-only mode, throws a
+	 * {@link StoreException} if it is.
+	 */
+	protected void verifyNotReadOnly()
+		throws StoreException
+	{
+		// if (isReadOnly()) {
+		// throw new StoreException("Connection is in read-only mode");
+		// }
+	}
+
+	/**
+	 * Verifies that the connection has an active transaction, throws a
+	 * {@link StoreException} if it hasn't.
+	 */
+	protected void verifyTxnActive()
+		throws StoreException
+	{
+		if (isAutoCommit()) {
+			throw new StoreException("Connection does not have an active transaction");
+		}
+	}
+
+	/**
+	 * Verifies that the connection does not have an active transaction, throws a
+	 * {@link StoreException} if the connection is it has.
+	 */
+	protected void verifyNotTxnActive(String msg)
+		throws StoreException
+	{
+		if (!isAutoCommit()) {
+			throw new StoreException(msg);
+		}
+	}
+
 	public boolean isOpen()
 		throws StoreException
 	{
-		return !closed;
+		return isOpen;
 	}
 
 	public void close()
 		throws StoreException
 	{
-		if (!closed) {
+		if (isOpen()) {
 			flush();
-			closed = true;
+			isOpen = false;
 			if (modified) {
 				logger.warn("Rolling back transaction due to connection close", new Throwable());
 				rollback();
@@ -196,74 +243,79 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void setTransactionIsolation(Isolation level)
 		throws StoreException
 	{
+		verifyNotTxnActive("transaction isolation level cannot be changed during a transaction");
 		this.level = level;
 	}
 
 	public boolean isAutoCommit()
 		throws StoreException
 	{
-		return !active;
+		return autoCommit;
 	}
 
-	public void setAutoCommit(boolean autoCommit)
+	public void begin()
 		throws StoreException
 	{
-		boolean currently = isAutoCommit();
-		if (!autoCommit && currently) {
-			client.begin();
-			active = true;
-		}
-		else if (autoCommit && !currently) {
-			flush();
-			client.commit();
-			repository.modified();
-			modified = false;
-			active = false;
-		}
+		verifyIsOpen();
+		verifyNotTxnActive("Connection already has an active transaction");
+
+		client.begin();
+		autoCommit = false;
 	}
 
 	public void commit()
 		throws StoreException
 	{
+		verifyIsOpen();
+		verifyTxnActive();
+
 		flush();
-		if (!isAutoCommit()) {
-			client.commit();
-			repository.modified();
-			client.begin();
-		}
+		client.commit();
+		repository.modified();
+		client.begin();
 		modified = false;
+		autoCommit = true;
 	}
 
 	public void rollback()
 		throws StoreException
 	{
+		verifyIsOpen();
+		verifyTxnActive();
+
 		synchronized (txn) {
 			txn.clear();
 		}
-		if (!isAutoCommit()) {
-			client.rollback();
-			client.begin();
-		}
+		client.rollback();
+		client.begin();
 		modified = false;
+		autoCommit = true;
 	}
 
 	public Query prepareQuery(QueryLanguage ql, String qry, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
+		verifyIsOpen();
+
 		flush();
 		QueryClient query = client.queries().postQuery(ql, qry, baseURI);
-		if (query instanceof GraphQueryClient)
+		if (query instanceof GraphQueryClient) {
 			return new HTTPGraphQuery(qry, (GraphQueryClient)query);
-		if (query instanceof BooleanQueryClient)
+		}
+		if (query instanceof BooleanQueryClient) {
 			return new HTTPBooleanQuery(qry, (BooleanQueryClient)query);
-		if (query instanceof TupleQueryClient)
+		}
+		if (query instanceof TupleQueryClient) {
 			return new HTTPTupleQuery(qry, (TupleQueryClient)query);
+		}
 		throw new StoreException("Unsupported query type: " + query);
 	}
 
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String qry, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
+		verifyIsOpen();
+
 		flush();
 		TupleQueryClient query = client.queries().postTupleQuery(ql, qry, baseURI);
 		return new HTTPTupleQuery(qry, query);
@@ -272,6 +324,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String qry, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
+		verifyIsOpen();
+
 		flush();
 		GraphQueryClient query = client.queries().postGraphQuery(ql, qry, baseURI);
 		return new HTTPGraphQuery(qry, query);
@@ -280,6 +334,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String qry, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
+		verifyIsOpen();
+
 		flush();
 		BooleanQueryClient query = client.queries().postBooleanQuery(ql, qry, baseURI);
 		return new HTTPBooleanQuery(qry, query);
@@ -288,6 +344,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public ContextResult getContextIDs()
 		throws StoreException
 	{
+		verifyIsOpen();
+
 		flush();
 		List<Resource> contextList = new ArrayList<Resource>();
 
@@ -312,8 +370,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public ModelResult match(Resource subj, URI pred, Value obj, boolean inf, Resource... ctx)
 		throws StoreException
 	{
-		if (noMatch(subj, pred, obj, inf, ctx))
+		verifyIsOpen();
+
+		if (noMatch(subj, pred, obj, inf, ctx)) {
 			return new ModelNamespaceResult(this, new EmptyCursor<Statement>());
+		}
 
 		flush();
 		StatementClient statements = client.statements();
@@ -321,10 +382,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		return new ModelResultImpl(new GraphQueryResultCursor(result));
 	}
 
-	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred, H handler,
-			Resource... contexts)
+	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
+			H handler, Resource... contexts)
 		throws RDFHandlerException, StoreException
 	{
+		verifyIsOpen();
+
 		flush();
 		client.statements().get(subj, pred, obj, includeInferred, handler, contexts);
 		return handler;
@@ -333,8 +396,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public long sizeMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (cachable(subj, pred, obj, contexts))
+		verifyIsOpen();
+
+		if (cachable(subj, pred, obj, contexts)) {
 			return repository.size(subj, pred, obj, includeInferred, contexts);
+		}
 		flush();
 		return client.size().get(subj, pred, obj, includeInferred, contexts);
 	}
@@ -343,8 +409,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (cachable(subj, pred, obj, contexts))
+		verifyIsOpen();
+
+		if (cachable(subj, pred, obj, contexts)) {
 			return repository.hasStatement(subj, pred, obj, includeInferred, contexts);
+		}
 		flush();
 		StatementClient statements = client.statements();
 		statements.setLimit(1);
@@ -362,8 +431,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			Resource... contexts)
 		throws IOException, RDFParseException, StoreException
 	{
-		if (repository.isReadOnly())
+		if (repository.isReadOnly()) {
 			throw new RepositoryReadOnlyException();
+		}
 		// Send bytes directly to the server
 		flush();
 		StatementClient httpClient = client.statements();
@@ -379,7 +449,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 		if (isAutoCommit()) {
 			repository.modified();
-		} else {
+		}
+		else {
 			modified = true;
 		}
 	}
@@ -387,18 +458,27 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		if (repository.isReadOnly())
+		verifyIsOpen();
+		verifyNotReadOnly();
+
+		if (repository.isReadOnly()) {
 			throw new RepositoryReadOnlyException();
-		if (repository.isIllegal(subject, predicate, object, contexts))
+		}
+		if (repository.isIllegal(subject, predicate, object, contexts)) {
 			throw new IllegalStatementException();
+		}
 		add(new AddStatementOperation(subject, predicate, object, contexts));
 	}
 
 	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
-		if (repository.isReadOnly())
+		verifyIsOpen();
+		verifyNotReadOnly();
+
+		if (repository.isReadOnly()) {
 			throw new RepositoryReadOnlyException();
+		}
 		if (!noMatch(subject, predicate, object, true, contexts)) {
 			add(new RemoveStatementsOperation(subject, predicate, object, contexts));
 		}
@@ -408,40 +488,59 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void clear(Resource... contexts)
 		throws StoreException
 	{
-		if (repository.isReadOnly())
+		verifyIsOpen();
+		verifyNotReadOnly();
+
+		if (repository.isReadOnly()) {
 			throw new RepositoryReadOnlyException();
+		}
 		add(new ClearOperation(contexts));
 	}
 
 	public void removeNamespace(String prefix)
 		throws StoreException
 	{
-		if (repository.isReadOnly())
+		verifyIsOpen();
+		verifyNotReadOnly();
+
+		if (repository.isReadOnly()) {
 			throw new RepositoryReadOnlyException();
+		}
 		add(new RemoveNamespaceOperation(prefix));
 	}
 
 	public void clearNamespaces()
 		throws StoreException
 	{
-		if (repository.isReadOnly())
+		verifyIsOpen();
+		verifyNotReadOnly();
+
+		if (repository.isReadOnly()) {
 			throw new RepositoryReadOnlyException();
+		}
 		add(new ClearNamespacesOperation());
 	}
 
 	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
-		if (repository.isReadOnly())
+		verifyIsOpen();
+		verifyNotReadOnly();
+
+		if (repository.isReadOnly()) {
 			throw new RepositoryReadOnlyException();
+		}
 		add(new SetNamespaceOperation(prefix, name));
 	}
 
 	public NamespaceResult getNamespaces()
 		throws StoreException
 	{
-		if (!modified && isAutoCommit())
+		verifyIsOpen();
+
+		if (!modified && isAutoCommit()) {
 			return repository.getNamespaces();
+		}
 		flush();
 		return client.namespaces().list();
 	}
@@ -449,8 +548,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public String getNamespace(String prefix)
 		throws StoreException
 	{
-		if (!modified && isAutoCommit())
+		verifyIsOpen();
+
+		if (!modified && isAutoCommit()) {
 			return repository.getNamespace(prefix);
+		}
 		flush();
 		return client.namespaces().get(prefix);
 	}
@@ -474,17 +576,22 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	private boolean cachable(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		if (modified || !isAutoCommit())
+		if (modified || !isAutoCommit()) {
 			return false;
-		if (subj instanceof BNode)
+		}
+		if (subj instanceof BNode) {
 			return false;
-		if (obj instanceof BNode)
+		}
+		if (obj instanceof BNode) {
 			return false;
-		if (contexts == null)
+		}
+		if (contexts == null) {
 			return true;
+		}
 		for (Resource ctx : contexts) {
-			if (ctx instanceof BNode)
+			if (ctx instanceof BNode) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -497,8 +604,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	private boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (cachable(subj, pred, obj, contexts))
+		if (cachable(subj, pred, obj, contexts)) {
 			return repository.noMatch(subj, pred, obj, includeInferred, contexts);
+		}
 		return false;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -98,8 +98,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		return prepareBooleanQuery(ql, query, null);
 	}
 
-	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
+	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		ModelResult stIter = match(subj, pred, obj, includeInferred, contexts);
@@ -190,7 +189,11 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws IOException, RDFParseException, StoreException
 	{
 		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
+
+		if (autoCommit) {
+			// Add the zip in a single transaction
+			begin();
+		}
 
 		try {
 			ZipInputStream zipIn = new ZipInputStream(in);
@@ -213,10 +216,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 						add(wrapper, baseURI, format, contexts);
 					}
 					catch (RDFParseException e) {
-						if (autoCommit) {
-							rollback();
-						}
-
 						String msg = e.getMessage() + " in " + entry.getName();
 						RDFParseException pe = new RDFParseException(msg, e.getLineNumber(), e.getColumnNumber());
 						pe.initCause(e);
@@ -230,21 +229,16 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 			finally {
 				zipIn.close();
 			}
-		}
-		catch (IOException e) {
+
 			if (autoCommit) {
-				rollback();
+				commit();
 			}
-			throw e;
-		}
-		catch (StoreException e) {
-			if (autoCommit) {
-				rollback();
-			}
-			throw e;
 		}
 		finally {
-			setAutoCommit(autoCommit);
+			if (autoCommit && !isAutoCommit()) {
+				// restore auto-commit by rolling back
+				rollback();
+			}
 		}
 	}
 
@@ -287,7 +281,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		rdfParser.setRDFHandler(rdfInserter);
 
 		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
+		if (autoCommit) {
+			// Add the stream in a single transaction
+			begin();
+		}
 
 		try {
 			if (inputStreamOrReader instanceof InputStream) {
@@ -301,22 +298,20 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 						"inputStreamOrReader must be an InputStream or a Reader, is a: "
 								+ inputStreamOrReader.getClass());
 			}
+
+			if (autoCommit) {
+				commit();
+			}
 		}
 		catch (RDFHandlerException e) {
-			if (autoCommit) {
-				rollback();
-			}
 			// RDFInserter only throws wrapped StoreExceptions
 			throw (StoreException)e.getCause();
 		}
-		catch (RuntimeException e) {
-			if (autoCommit) {
+		finally {
+			if (autoCommit && !isAutoCommit()) {
+				// restore auto-commit by rolling back
 				rollback();
 			}
-			throw e;
-		}
-		finally {
-			setAutoCommit(autoCommit);
 		}
 	}
 
@@ -324,27 +319,25 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws StoreException
 	{
 		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
+		if (autoCommit) {
+			// Add the statements in a single transaction
+			begin();
+		}
 
 		try {
 			for (Statement st : statements) {
 				add(st, contexts);
 			}
-		}
-		catch (StoreException e) {
+
 			if (autoCommit) {
-				rollback();
+				commit();
 			}
-			throw e;
-		}
-		catch (RuntimeException e) {
-			if (autoCommit) {
-				rollback();
-			}
-			throw e;
 		}
 		finally {
-			setAutoCommit(autoCommit);
+			if (autoCommit && !isAutoCommit()) {
+				// restore auto-commit by rolling back
+				rollback();
+			}
 		}
 	}
 
@@ -352,29 +345,31 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws StoreException
 	{
 		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
+		if (autoCommit) {
+			// Add the statements in a single transaction
+			begin();
+		}
 
 		try {
 			Statement st;
 			while ((st = statementIter.next()) != null) {
 				add(st, contexts);
 			}
-		}
-		catch (StoreException e) {
+
 			if (autoCommit) {
-				rollback();
+				commit();
 			}
-			throw e;
-		}
-		catch (RuntimeException e) {
-			if (autoCommit) {
-				rollback();
-			}
-			throw e;
 		}
 		finally {
-			statementIter.close();
-			setAutoCommit(autoCommit);
+			try {
+				if (autoCommit && !isAutoCommit()) {
+					// restore auto-commit by rolling back
+					rollback();
+				}
+			}
+			finally {
+				statementIter.close();
+			}
 		}
 	}
 
@@ -384,7 +379,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		if (contexts != null && contexts.length == 0 && st.getContext() != null) {
 			contexts = new Resource[] { st.getContext() };
 		}
-		
+
 		add(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
 	}
 
@@ -392,27 +387,25 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws StoreException
 	{
 		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
+		if (autoCommit) {
+			// Add the statements in a single transaction
+			begin();
+		}
 
 		try {
 			for (Statement st : statements) {
 				remove(st, contexts);
 			}
-		}
-		catch (StoreException e) {
+
 			if (autoCommit) {
-				rollback();
+				commit();
 			}
-			throw e;
-		}
-		catch (RuntimeException e) {
-			if (autoCommit) {
-				rollback();
-			}
-			throw e;
 		}
 		finally {
-			setAutoCommit(autoCommit);
+			if (autoCommit && !isAutoCommit()) {
+				// restore auto-commit by rolling back
+				rollback();
+			}
 		}
 	}
 
@@ -420,29 +413,31 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws StoreException
 	{
 		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
+		if (autoCommit) {
+			// Add the statements in a single transaction
+			begin();
+		}
 
 		try {
 			Statement st;
 			while ((st = statementIter.next()) != null) {
 				remove(st, contexts);
 			}
-		}
-		catch (StoreException e) {
+
 			if (autoCommit) {
-				rollback();
+				commit();
 			}
-			throw e;
-		}
-		catch (RuntimeException e) {
-			if (autoCommit) {
-				rollback();
-			}
-			throw e;
 		}
 		finally {
-			statementIter.close();
-			setAutoCommit(autoCommit);
+			try {
+				if (autoCommit && !isAutoCommit()) {
+					// restore auto-commit by rolling back
+					rollback();
+				}
+			}
+			finally {
+				statementIter.close();
+			}
 		}
 	}
 
@@ -452,7 +447,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		if (contexts != null && contexts.length == 0 && st.getContext() != null) {
 			contexts = new Resource[] { st.getContext() };
 		}
-		
+
 		removeMatch(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
 	}
 

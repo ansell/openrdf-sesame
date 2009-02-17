@@ -1,5 +1,5 @@
 /*
- * Copyright James Leigh (c) 2007.
+ * Copyright James Leigh (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -26,9 +26,12 @@ import org.openrdf.store.StoreException;
  * which interceptors are notified is unspecified.
  * 
  * @author Herko ter Horst
+ * @author Arjohn Kampman
  * @see InterceptingRepositoryWrapper
  */
-public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectionWrapper implements InterceptingRepositoryConnection {
+public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectionWrapper implements
+		InterceptingRepositoryConnection
+{
 
 	/*-----------*
 	 * Variables *
@@ -69,15 +72,86 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 	}
 
 	@Override
-	protected boolean isDelegatingAdd()
-	{
+	protected boolean isDelegatingAdd() {
 		return !activated;
 	}
 
 	@Override
-	protected boolean isDelegatingRemove()
-	{
+	protected boolean isDelegatingRemove() {
 		return !activated;
+	}
+
+	@Override
+	public void close()
+		throws StoreException
+	{
+		boolean denied = false;
+		if (activated) {
+			for (RepositoryConnectionInterceptor interceptor : interceptors) {
+				denied = interceptor.close(this);
+				if (denied) {
+					break;
+				}
+			}
+		}
+		if (!denied) {
+			super.close();
+		}
+	}
+
+	@Override
+	public void begin()
+		throws StoreException
+	{
+		boolean denied = false;
+		if (activated) {
+			for (RepositoryConnectionInterceptor interceptor : interceptors) {
+				denied = interceptor.begin(this);
+				if (denied) {
+					break;
+				}
+			}
+		}
+		if (!denied) {
+			getDelegate().begin();
+
+		}
+	}
+
+	@Override
+	public void commit()
+		throws StoreException
+	{
+		boolean denied = false;
+		if (activated) {
+			for (RepositoryConnectionInterceptor interceptor : interceptors) {
+				denied = interceptor.commit(this);
+				if (denied) {
+					break;
+				}
+			}
+		}
+		if (!denied) {
+			getDelegate().commit();
+		}
+	}
+
+	@Override
+	public void rollback()
+		throws StoreException
+	{
+		boolean denied = false;
+		if (activated) {
+			for (RepositoryConnectionInterceptor interceptor : interceptors) {
+				denied = interceptor.rollback(this);
+				if (denied) {
+					break;
+				}
+			}
+		}
+		if (!denied) {
+			getDelegate().rollback();
+		}
 	}
 
 	@Override
@@ -117,42 +191,6 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 	}
 
 	@Override
-	public void close()
-		throws StoreException
-	{
-		boolean denied = false;
-		if (activated) {
-			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.close(this);
-				if (denied) {
-					break;
-				}
-			}
-		}
-		if (!denied) {
-			super.close();
-		}
-	}
-
-	@Override
-	public void commit()
-		throws StoreException
-	{
-		boolean denied = false;
-		if (activated) {
-			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.commit(this);
-				if (denied) {
-					break;
-				}
-			}
-		}
-		if (!denied) {
-			getDelegate().commit();
-		}
-	}
-
-	@Override
 	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
@@ -168,6 +206,24 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		if (!denied) {
 			getDelegate().removeMatch(subject, predicate, object, contexts);
 
+		}
+	}
+
+	@Override
+	public void setNamespace(String prefix, String name)
+		throws StoreException
+	{
+		boolean denied = false;
+		if (activated) {
+			for (RepositoryConnectionInterceptor interceptor : interceptors) {
+				denied = interceptor.setNamespace(this, prefix, name);
+				if (denied) {
+					break;
+				}
+			}
+		}
+		if (!denied) {
+			getDelegate().setNamespace(prefix, name);
 		}
 	}
 
@@ -204,62 +260,6 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		}
 		if (!denied) {
 			getDelegate().clearNamespaces();
-		}
-	}
-
-	@Override
-	public void rollback()
-		throws StoreException
-	{
-		boolean denied = false;
-		if (activated) {
-			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.rollback(this);
-				if (denied) {
-					break;
-				}
-			}
-		}
-		if (!denied) {
-			getDelegate().rollback();
-		}
-	}
-
-	@Override
-	public void setAutoCommit(boolean autoCommit)
-		throws StoreException
-	{
-		boolean denied = false;
-		boolean wasAutoCommit = isAutoCommit();
-		if (activated && wasAutoCommit != autoCommit) {
-			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.setAutoCommit(this, autoCommit);
-				if (denied) {
-					break;
-				}
-			}
-		}
-		if (!denied) {
-			getDelegate().setAutoCommit(autoCommit);
-
-		}
-	}
-
-	@Override
-	public void setNamespace(String prefix, String name)
-		throws StoreException
-	{
-		boolean denied = false;
-		if (activated) {
-			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.setNamespace(this, prefix, name);
-				if (denied) {
-					break;
-				}
-			}
-		}
-		if (!denied) {
-			getDelegate().setNamespace(prefix, name);
 		}
 	}
 }

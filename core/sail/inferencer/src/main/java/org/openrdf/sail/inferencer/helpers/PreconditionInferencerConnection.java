@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -9,26 +9,25 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.SailConnectionListener;
-import org.openrdf.sail.helpers.SailConnectionTracker;
-import org.openrdf.sail.helpers.TrackingSailConnection;
+import org.openrdf.sail.helpers.PreconditionSailConnection;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.store.StoreException;
 
 /**
- * Extension of {@link TrackingSailConnection} that adds inferencer supoprt.
+ * Extension of {@link PreconditionSailConnection} that adds inferencer supoprt.
  * 
  * @author Arjohn Kampman
- * @author jeen
- * @author James Leigh
  */
-public class TrackingInferencerConnection extends TrackingSailConnection implements InferencerConnection {
+public class PreconditionInferencerConnection extends PreconditionSailConnection implements
+		InferencerConnection
+{
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public TrackingInferencerConnection(InferencerConnection con, SailConnectionTracker tracker) {
-		super(con, tracker);
+	public PreconditionInferencerConnection(InferencerConnection con) {
+		super(con);
 	}
 
 	/*---------*
@@ -43,18 +42,24 @@ public class TrackingInferencerConnection extends TrackingSailConnection impleme
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
+		verifyIsOpen();
+		verifyNotReadOnly();
 		return getDelegate().addInferredStatement(subj, pred, obj, contexts);
 	}
 
 	public boolean removeInferredStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
+		verifyIsOpen();
+		verifyNotReadOnly();
 		return getDelegate().removeInferredStatements(subj, pred, obj, contexts);
 	}
 
 	public void flushUpdates()
 		throws StoreException
 	{
+		verifyIsOpen();
+		// verifyActive();
 		getDelegate().flushUpdates();
 	}
 

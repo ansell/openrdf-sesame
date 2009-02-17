@@ -66,7 +66,8 @@ public abstract class SailBase implements Sail {
 	}
 
 	public SailMetaData getMetaData()
-		throws StoreException {
+		throws StoreException
+	{
 		return new SailMetaDataImpl();
 	}
 
@@ -85,7 +86,10 @@ public abstract class SailBase implements Sail {
 			throw new IllegalStateException("shut down in progress");
 		}
 
-		return tracker.track(getConnectionInternal());
+		SailConnection con = getConnectionInternal();
+		con = tracker.track(con);
+		con = wrapConnection(con);
+		return con;
 	}
 
 	/**
@@ -96,6 +100,17 @@ public abstract class SailBase implements Sail {
 	 */
 	protected abstract SailConnection getConnectionInternal()
 		throws StoreException;
+
+	/**
+	 * Called by {@link #getConnection()} to allow sails to wrap returned
+	 * connections with a custom connection. By default, this method wraps
+	 * connections with a {@link PreconditionSailConnection}.
+	 */
+	protected SailConnection wrapConnection(SailConnection con)
+		throws StoreException
+	{
+		return new PreconditionSailConnection(con);
+	}
 
 	public void shutDown()
 		throws StoreException

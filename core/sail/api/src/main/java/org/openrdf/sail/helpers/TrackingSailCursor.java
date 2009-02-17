@@ -65,7 +65,7 @@ class TrackingSailCursor<T> extends DelegatingCursor<T> {
 	{
 		closed = true;
 		super.close();
-		connection.iterationClosed(this);
+		connection.cursorClosed(this);
 	}
 
 	@Override

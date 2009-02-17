@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -32,7 +32,7 @@ public class SailConnectionWrapper implements SailConnection {
 	/**
 	 * The wrapped SailConnection.
 	 */
-	private SailConnection wrappedCon;
+	private final SailConnection delegate;
 
 	/*--------------*
 	 * Constructors *
@@ -42,8 +42,8 @@ public class SailConnectionWrapper implements SailConnection {
 	 * Creates a new TransactionWrapper object that wraps the supplied
 	 * connection.
 	 */
-	public SailConnectionWrapper(SailConnection wrappedCon) {
-		this.wrappedCon = wrappedCon;
+	public SailConnectionWrapper(SailConnection delegate) {
+		this.delegate = delegate;
 	}
 
 	/*---------*
@@ -57,113 +57,125 @@ public class SailConnectionWrapper implements SailConnection {
 	 *         this class.
 	 */
 	protected SailConnection getDelegate() {
-		return wrappedCon;
+		return delegate;
 	}
 
 	public boolean isOpen()
 		throws StoreException
 	{
-		return wrappedCon.isOpen();
+		return getDelegate().isOpen();
 	}
 
 	public void close()
 		throws StoreException
 	{
-		wrappedCon.close();
+		getDelegate().close();
 	}
 
-	public boolean isActive()
+	public boolean isReadOnly()
 		throws StoreException
 	{
-		return wrappedCon.isActive();
+		return getDelegate().isReadOnly();
+	}
+
+	public void setReadOnly(boolean readOnly)
+		throws StoreException
+	{
+		getDelegate().setReadOnly(readOnly);
+	}
+
+	public boolean isAutoCommit()
+		throws StoreException
+	{
+		return getDelegate().isAutoCommit();
 	}
 
 	public void begin()
 		throws StoreException
 	{
-		wrappedCon.begin();
+		getDelegate().begin();
 	}
 
 	public void commit()
 		throws StoreException
 	{
-		wrappedCon.commit();
+		getDelegate().commit();
 	}
 
 	public void rollback()
 		throws StoreException
 	{
-		wrappedCon.rollback();
+		getDelegate().rollback();
 	}
 
 	public ValueFactory getValueFactory() {
-		return wrappedCon.getValueFactory();
+		return getDelegate().getValueFactory();
 	}
 
 	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
-		return wrappedCon.evaluate(query, bindings, includeInferred);
+		return getDelegate().evaluate(query, bindings, includeInferred);
 	}
 
 	public Cursor<? extends Resource> getContextIDs()
 		throws StoreException
 	{
-		return wrappedCon.getContextIDs();
+		return getDelegate().getContextIDs();
 	}
 
-	public Cursor<? extends Statement> getStatements(Resource subj, URI pred,
-			Value obj, boolean includeInferred, Resource... contexts)
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return wrappedCon.getStatements(subj, pred, obj, includeInferred, contexts);
+		return getDelegate().getStatements(subj, pred, obj, includeInferred, contexts);
 	}
 
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		return wrappedCon.size(subj, pred, obj, includeInferred, contexts);
+		return getDelegate().size(subj, pred, obj, includeInferred, contexts);
 	}
 
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		wrappedCon.addStatement(subj, pred, obj, contexts);
+		getDelegate().addStatement(subj, pred, obj, contexts);
 	}
 
 	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		wrappedCon.removeStatements(subj, pred, obj, contexts);
+		getDelegate().removeStatements(subj, pred, obj, contexts);
 	}
 
 	public Cursor<? extends Namespace> getNamespaces()
 		throws StoreException
 	{
-		return wrappedCon.getNamespaces();
+		return getDelegate().getNamespaces();
 	}
 
 	public String getNamespace(String prefix)
 		throws StoreException
 	{
-		return wrappedCon.getNamespace(prefix);
+		return getDelegate().getNamespace(prefix);
 	}
 
 	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
-		wrappedCon.setNamespace(prefix, name);
+		getDelegate().setNamespace(prefix, name);
 	}
 
 	public void removeNamespace(String prefix)
 		throws StoreException
 	{
-		wrappedCon.removeNamespace(prefix);
+		getDelegate().removeNamespace(prefix);
 	}
 
 	public void clearNamespaces()
 		throws StoreException
 	{
-		wrappedCon.clearNamespaces();
+		getDelegate().clearNamespaces();
 	}
 }

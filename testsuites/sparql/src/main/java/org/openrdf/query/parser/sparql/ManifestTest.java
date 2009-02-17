@@ -107,9 +107,9 @@ public class ManifestTest {
 		return suite;
 	}
 
-	static void addTurtle(RepositoryConnection con, URL url,
-			String baseURI, Resource... contexts) throws IOException,
-			StoreException, RDFParseException {
+	static void addTurtle(RepositoryConnection con, URL url, String baseURI, Resource... contexts)
+		throws IOException, StoreException, RDFParseException
+	{
 		if (baseURI == null) {
 			baseURI = url.toExternalForm();
 		}
@@ -129,27 +129,19 @@ public class ManifestTest {
 			rdfInserter.enforceContext(contexts);
 			rdfParser.setRDFHandler(rdfInserter);
 
-			boolean autoCommit = con.isAutoCommit();
-			con.setAutoCommit(false);
-
+			con.begin();
 			try {
 				rdfParser.parse(in, baseURI);
+				con.commit();
 			}
 			catch (RDFHandlerException e) {
-				if (autoCommit) {
-					con.rollback();
-				}
+				con.rollback();
 				// RDFInserter only throws wrapped StoreExceptions
-				throw (StoreException) e.getCause();
+				throw (StoreException)e.getCause();
 			}
 			catch (RuntimeException e) {
-				if (autoCommit) {
-					con.rollback();
-				}
+				con.rollback();
 				throw e;
-			}
-			finally {
-				con.setAutoCommit(autoCommit);
 			}
 		}
 		finally {

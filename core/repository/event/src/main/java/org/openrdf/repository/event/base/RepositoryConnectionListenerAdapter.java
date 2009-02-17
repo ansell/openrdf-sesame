@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -13,13 +13,14 @@ import org.openrdf.repository.event.RepositoryConnectionListener;
 
 /**
  * @author Herko ter Horst
+ * @author Arjohn Kampman
  */
 public class RepositoryConnectionListenerAdapter implements RepositoryConnectionListener {
 
 	public void close(RepositoryConnection conn) {
 	}
 
-	public void setAutoCommit(RepositoryConnection conn, boolean autoCommit) {
+	public void begin(RepositoryConnection conn) {
 	}
 
 	public void commit(RepositoryConnection conn) {

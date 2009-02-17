@@ -189,20 +189,26 @@ public class StatementController {
 		Iterable<? extends TransactionOperation> txn = reader.parse(in);
 
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-		boolean wasAutoCommit = repositoryCon.isAutoCommit();
-		repositoryCon.setAutoCommit(false);
+
+		boolean autoCommit = repositoryCon.isAutoCommit();
+		if (autoCommit) {
+			repositoryCon.begin();
+		}
 
 		try {
 			for (TransactionOperation op : txn) {
 				op.execute(repositoryCon);
 			}
-		}
-		catch (StoreException e) {
-			repositoryCon.rollback();
-			throw e;
+
+			if (autoCommit) {
+				repositoryCon.commit();
+			}
 		}
 		finally {
-			repositoryCon.setAutoCommit(wasAutoCommit);
+			if (autoCommit && !repositoryCon.isAutoCommit()) {
+				// restore auto-commit by rolling back
+				repositoryCon.rollback();
+			}
 		}
 
 		logger.debug("Transaction processed ");
@@ -232,21 +238,27 @@ public class StatementController {
 		}
 
 		InputStream in = request.getInputStream();
-		boolean wasAutoCommit = repositoryCon.isAutoCommit();
-		repositoryCon.setAutoCommit(false);
+
+		boolean autoCommit = repositoryCon.isAutoCommit();
+		if (autoCommit) {
+			repositoryCon.begin();
+		}
 
 		try {
 			if (replaceCurrent) {
 				repositoryCon.clear(contexts);
 			}
 			repositoryCon.add(in, baseURI.toString(), rdfFormat, contexts);
-		}
-		catch (StoreException e) {
-			repositoryCon.rollback();
-			throw e;
+
+			if (autoCommit) {
+				repositoryCon.commit();
+			}
 		}
 		finally {
-			repositoryCon.setAutoCommit(wasAutoCommit);
+			if (autoCommit && !repositoryCon.isAutoCommit()) {
+				// restore auto-commit by rolling back'
+				repositoryCon.rollback();
+			}
 		}
 	}
 }

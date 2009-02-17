@@ -49,11 +49,11 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 	public void testSubClassInference()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(woman, RDFS.SUBCLASSOF, person);
 		testCon.add(man, RDFS.SUBCLASSOF, person);
 		testCon.add(alice, RDF.TYPE, woman);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertTrue(testCon.hasMatch(alice, RDF.TYPE, person, true));
 	}
@@ -61,10 +61,10 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 	public void testMakeExplicit()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(woman, RDFS.SUBCLASSOF, person);
 		testCon.add(alice, RDF.TYPE, woman);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertTrue(testCon.hasMatch(alice, RDF.TYPE, person, true));
 
@@ -81,7 +81,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 			assertTrue("result should not be empty", result.hasNext());
 		}
 		finally {
-		result.close();
+			result.close();
 		}
 
 		result = testCon.match(RDF.TYPE, RDF.TYPE, null, false);
@@ -89,19 +89,17 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 			assertFalse("result should be empty", result.hasNext());
 		}
 		finally {
-		result.close();
+			result.close();
 		}
 	}
 
 	public void testInferencerUpdates()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
-
+		testCon.begin();
 		testCon.add(bob, name, nameBob);
 		testCon.removeMatch(bob, name, nameBob);
-
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertFalse(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
 	}
@@ -109,24 +107,22 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 	public void testInferencerQueryDuringTransaction()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
-
+		testCon.begin();
 		testCon.add(bob, name, nameBob);
 		assertTrue(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
-
-		testCon.setAutoCommit(true);
+		testCon.commit();
 	}
 
 	public void testInferencerTransactionIsolation()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob);
 
 		assertTrue(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
 		assertFalse(testCon2.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
 
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertTrue(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
 		assertTrue(testCon2.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));

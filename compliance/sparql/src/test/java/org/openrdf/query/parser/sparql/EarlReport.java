@@ -51,7 +51,7 @@ public class EarlReport {
 		earlRepository.initialize();
 		con = earlRepository.getConnection();
 		vf = con.getValueFactory();
-		con.setAutoCommit(false);
+		con.begin();
 
 		con.setNamespace("rdf", RDF.NAMESPACE);
 		con.setNamespace("xsd", XMLSchema.NAMESPACE);
@@ -81,7 +81,7 @@ public class EarlReport {
 		MemorySPARQLQueryTest.suite().run(testResult);
 		SPARQLSyntaxTest.suite().run(testResult);
 
-		con.setAutoCommit(true);
+		con.commit();
 
 		RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(RDFFormat.TURTLE);
 		File outFile = File.createTempFile("sesame-sparql-compliance", "."

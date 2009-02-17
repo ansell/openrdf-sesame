@@ -37,7 +37,7 @@ public class ConnectionController {
 	{
 		notSafe(request);
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
-		repositoryCon.setAutoCommit(false);
+		repositoryCon.begin();
 	}
 
 	@ModelAttribute
@@ -55,10 +55,7 @@ public class ConnectionController {
 		throws StoreException
 	{
 		RepositoryConnection repositoryCon = getModifyingConnection(request);
-		if (!repositoryCon.isAutoCommit()) {
-			repositoryCon.commit();
-			repositoryCon.setAutoCommit(true);
-		}
+		repositoryCon.commit();
 	}
 
 	@ModelAttribute
@@ -67,9 +64,6 @@ public class ConnectionController {
 		throws StoreException
 	{
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
-		if (!repositoryCon.isAutoCommit()) {
-			repositoryCon.rollback();
-			repositoryCon.setAutoCommit(true);
-		}
+		repositoryCon.rollback();
 	}
 }

@@ -104,7 +104,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		try {
 			replaceValues(query);
 
-			NativeTripleSource tripleSource = new NativeTripleSource(nativeStore, includeInferred, isActive());
+			NativeTripleSource tripleSource = new NativeTripleSource(nativeStore, includeInferred, !isAutoCommit());
 			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, query);
 
 			QueryOptimizerList optimizerList = new QueryOptimizerList();
@@ -160,7 +160,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		Lock readLock = nativeStore.getReadLock();
 		try {
 			Cursor<? extends Resource> contextIter;
-			contextIter = nativeStore.getContextIDs(isActive());
+			contextIter = nativeStore.getContextIDs(!isAutoCommit());
 			// releasing the read lock when the iterator is closed
 			contextIter = new LockingCursor<Resource>(readLock, contextIter);
 
@@ -183,7 +183,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		Lock readLock = nativeStore.getReadLock();
 		try {
 			Cursor<? extends Statement> iter;
-			iter = nativeStore.createStatementCursor(subj, pred, obj, includeInferred, isActive(), contexts);
+			iter = nativeStore.createStatementCursor(subj, pred, obj, includeInferred, !isAutoCommit(), contexts);
 			iter = new LockingCursor<Statement>(readLock, iter);
 
 			return iter;
@@ -240,7 +240,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			for (int contextID : contextIDs) {
 				// Iterate over all explicit statements
 				RecordIterator iter = nativeStore.getTripleStore().getTriples(subjID, predID, objID, contextID,
-						!includeInferred, isActive());
+						!includeInferred, !isAutoCommit());
 
 				try {
 					while (iter.next() != null) {
