@@ -64,7 +64,6 @@ public class StoreSerializationTest extends TestCase {
 
 		SailConnection con = store.getConnection();
 		con.addStatement(foo, RDF.TYPE, bar);
-		con.commit();
 
 		TupleQueryModel query = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
 				"SELECT X, P, Y FROM {X} P {Y}", null);
@@ -101,7 +100,6 @@ public class StoreSerializationTest extends TestCase {
 
 		iter.close();
 		con.addStatement(bar, RDF.TYPE, foo);
-		con.commit();
 		con.close();
 		
 		store.shutDown();
@@ -125,8 +123,6 @@ public class StoreSerializationTest extends TestCase {
 
 		SailConnection con = store.getConnection();
 		con.addStatement(foo, RDF.TYPE, longLiteral);
-		con.commit();
-
 		con.close();
 		store.shutDown();
 
