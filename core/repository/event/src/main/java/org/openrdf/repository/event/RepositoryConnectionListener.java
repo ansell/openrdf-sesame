@@ -1,5 +1,5 @@
 /*
- * Copyright James Leigh (c) 2007.
+ * Copyright James Leigh (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,12 +14,13 @@ import org.openrdf.repository.RepositoryConnection;
  * Listener interface for connection modification.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
 public interface RepositoryConnectionListener {
 
 	public abstract void close(RepositoryConnection conn);
 
-	public abstract void setAutoCommit(RepositoryConnection conn, boolean autoCommit);
+	public abstract void begin(RepositoryConnection conn);
 
 	public abstract void commit(RepositoryConnection conn);
 

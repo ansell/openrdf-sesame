@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -107,37 +107,25 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	public boolean isAutoCommit()
 		throws StoreException
 	{
-		return !sailConnection.isActive();
+		return sailConnection.isAutoCommit();
 	}
 
-	public void setAutoCommit(boolean autoCommit)
+	public void begin()
 		throws StoreException
 	{
-		boolean currently = isAutoCommit();
-		if (!autoCommit && currently) {
-			sailConnection.begin();
-		}
-		else if (autoCommit && !currently) {
-			sailConnection.commit();
-		}
+		sailConnection.begin();
 	}
 
 	public void commit()
 		throws StoreException
 	{
-		if (sailConnection.isActive()) {
-			sailConnection.commit();
-			sailConnection.begin();
-		}
+		sailConnection.commit();
 	}
 
 	public void rollback()
 		throws StoreException
 	{
-		if (sailConnection.isActive()) {
-			sailConnection.rollback();
-			sailConnection.begin();
-		}
+		sailConnection.rollback();
 	}
 
 	public SailQuery prepareQuery(QueryLanguage ql, String queryString, String baseURI)

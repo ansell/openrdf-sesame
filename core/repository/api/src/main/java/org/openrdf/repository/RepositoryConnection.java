@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -38,10 +38,11 @@ import org.openrdf.store.StoreException;
 
 /**
  * Main interface for updating data in and performing queries on a Sesame
- * repository. By default, a RepositoryConnection is in autoCommit mode, meaning
- * that each operation corresponds to a single transaction on the underlying
- * store. autoCommit can be switched off in which case it is up to the user to
- * handle transaction commit/rollback. Note that care should be taking to always
+ * repository. By default, a RepositoryConnection is in auto-commit mode,
+ * meaning that each operation corresponds to a single transaction on the
+ * underlying store. Auto-commit can be {@link #begin() switched off} in which
+ * case it is up to the user to handle transaction {@link #commit() commit}/
+ * {@link #rollback() rollback}. Note that care should be taking to always
  * properly close a RepositoryConnection after one is finished with it, to free
  * up resources and avoid unnecessary locks.
  * <p>
@@ -105,7 +106,7 @@ public interface RepositoryConnection {
 
 	/**
 	 * Closes the connection, freeing resources. If the connection is not in
-	 * autoCommit mode, all non-committed operations will be lost.
+	 * auto-commit mode, all uncommitted operations will be lost.
 	 * 
 	 * @throws StoreException
 	 *         If the connection could not be closed.
@@ -113,7 +114,7 @@ public interface RepositoryConnection {
 	public void close()
 		throws StoreException;
 
-   /**
+	/**
 	 * Retrieves this <code>Connection</code> object's current transaction
 	 * isolation level.
 	 * 
@@ -346,10 +347,11 @@ public interface RepositoryConnection {
 	 *         containing {@link Statement}s and optionally throwing a
 	 *         {@link StoreException} when an error when a problem occurs during
 	 *         retrieval.
-	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)} instead
+	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)}
+	 *             instead
 	 */
-	public ModelResult getStatements(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
+	public ModelResult getStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
 		throws StoreException;
 
 	/**
@@ -376,8 +378,7 @@ public interface RepositoryConnection {
 	 *         {@link StoreException} when an error when a problem occurs during
 	 *         retrieval.
 	 */
-	public ModelResult match(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
+	public ModelResult match(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException;
 
 	/**
@@ -399,7 +400,8 @@ public interface RepositoryConnection {
 	 *        statements are considered if available
 	 * @return true If a matching statement is in the repository in the specified
 	 *         context, false otherwise.
-	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)} instead
+	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)}
+	 *             instead
 	 */
 	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
@@ -425,8 +427,7 @@ public interface RepositoryConnection {
 	 * @return true If a matching statement is in the repository in the specified
 	 *         context, false otherwise.
 	 */
-	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
+	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException;
 
 	/**
@@ -470,7 +471,9 @@ public interface RepositoryConnection {
 	 *        statements are returned if available
 	 * @throws RDFHandlerException
 	 *         If the handler encounters an unrecoverable error.
-	 * @deprecated Use {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)} instead
+	 * @deprecated Use
+	 *             {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)}
+	 *             instead
 	 */
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
@@ -515,7 +518,7 @@ public interface RepositoryConnection {
 	 * @throws RDFHandlerException
 	 *         If the handler encounters an unrecoverable error.
 	 */
-	public <H extends RDFHandler> H  export(H handler, Resource... contexts)
+	public <H extends RDFHandler> H export(H handler, Resource... contexts)
 		throws StoreException, RDFHandlerException;
 
 	/**
@@ -545,7 +548,8 @@ public interface RepositoryConnection {
 	 *        method matches the pattern on the entire repository.
 	 * @return The number of explicit statements from the specified pattern in
 	 *         this repository.
-	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)} instead
+	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)}
+	 *             instead
 	 */
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException;
@@ -585,47 +589,50 @@ public interface RepositoryConnection {
 		throws StoreException;
 
 	/**
-	 * Enables or disables auto-commit mode for the connection. If a connection
-	 * is in auto-commit mode, then all updates will be executed and committed as
-	 * individual transactions. Otherwise, the updates are grouped into
-	 * transactions that are terminated by a call to either {@link #commit} or
-	 * {@link #rollback}. By default, new connections are in auto-commit mode.
-	 * <p>
-	 * <b>NOTE:</b> If this connection is switched to auto-commit mode during a
-	 * transaction, the transaction is committed.
+	 * Indicates if the connection is in auto-commit mode. The connection is
+	 * <em>not</em> in auto-commit when {@link #begin()} has been called but
+	 * {@link #commit()} or {@link #rollback()} still has to be called to finish
+	 * the transaction.
 	 * 
 	 * @throws StoreException
-	 *         In case the mode switch failed, for example because a currently
-	 *         active transaction failed to commit.
-	 * @see #commit
-	 */
-	public void setAutoCommit(boolean autoCommit)
-		throws StoreException;
-
-	/**
-	 * Checks whether the connection is in auto-commit mode.
-	 * 
-	 * @see #setAutoCommit
+	 *         If a repository access error occurs.
 	 */
 	public boolean isAutoCommit()
 		throws StoreException;
 
 	/**
-	 * Commits all updates that have been performed as part of this connection
-	 * sofar.
+	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
+	 * be called to close the transaction.
 	 * 
 	 * @throws StoreException
-	 *         If the connection could not be committed.
+	 *         If the connection could not start a transaction, or if it already
+	 *         has an active transaction.
+	 * @see #isAutoCommit()
+	 */
+	public void begin()
+		throws StoreException;
+
+	/**
+	 * Commits the active transaction.
+	 * 
+	 * @throws StoreException
+	 *         If the connection could not be committed, or if the connection
+	 *         does not have an active connection.
+	 * @see #isAutoCommit()
+	 * @see #begin()
 	 */
 	public void commit()
 		throws StoreException;
 
 	/**
 	 * Rolls back all updates that have been performed as part of this connection
-	 * sofar.
+	 * so far.
 	 * 
 	 * @throws StoreException
-	 *         If the connection could not be rolled back.
+	 *         If the connection could not be rolled back, or if the connection
+	 *         does not have an active connection.
+	 * @see #isAutoCommit()
+	 * @see #begin()
 	 */
 	public void rollback()
 		throws StoreException;

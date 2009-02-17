@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,12 +14,13 @@ import org.openrdf.repository.RepositoryConnection;
  * Interceptor interface for connection modification.
  * 
  * @author Herko ter Horst
+ * @author Arjohn Kampman
  */
 public interface RepositoryConnectionInterceptor {
 
 	public abstract boolean close(RepositoryConnection conn);
 
-	public abstract boolean setAutoCommit(RepositoryConnection conn, boolean autoCommit);
+	public abstract boolean begin(RepositoryConnection conn);
 
 	public abstract boolean commit(RepositoryConnection conn);
 

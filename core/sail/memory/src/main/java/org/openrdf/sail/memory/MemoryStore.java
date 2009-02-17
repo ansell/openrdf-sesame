@@ -31,7 +31,7 @@ import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.sail.inferencer.InferencerConnection;
-import org.openrdf.sail.inferencer.helpers.AutoBeginInferencerConnection;
+import org.openrdf.sail.inferencer.helpers.AutoCommitInferencerConnection;
 import org.openrdf.sail.inferencer.helpers.InferencerSailBase;
 import org.openrdf.sail.inferencer.helpers.SynchronizedInferencerConnection;
 import org.openrdf.sail.memory.model.MemBNodeFactory;
@@ -426,7 +426,7 @@ public class MemoryStore extends InferencerSailBase {
 
 		InferencerConnection con = new MemoryStoreConnection(this);
 		con = new SynchronizedInferencerConnection(con);
-		con = new AutoBeginInferencerConnection(con);
+		con = new AutoCommitInferencerConnection(con);
 		return con;
 	}
 

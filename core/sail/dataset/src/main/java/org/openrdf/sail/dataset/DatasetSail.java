@@ -218,7 +218,7 @@ public class DatasetSail extends SailWrapper {
 		try {
 			RepositoryConnection repCon = getRepositoryConnection();
 			try {
-				repCon.setAutoCommit(false);
+				repCon.begin();
 				repCon.clear(context);
 				repCon.add(stream, url.toExternalForm(), format, context);
 				repCon.commit();

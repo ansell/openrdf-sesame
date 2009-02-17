@@ -34,7 +34,7 @@ abstract class EchoWriteConnection extends FederationConnection {
 			public void run(RepositoryConnection con)
 				throws StoreException
 			{
-				con.setAutoCommit(false);
+				con.begin();
 			}
 		});
 	}
@@ -49,7 +49,6 @@ abstract class EchoWriteConnection extends FederationConnection {
 				throws StoreException
 			{
 				con.rollback();
-				con.setAutoCommit(true);
 			}
 		});
 		super.rollback();
@@ -65,7 +64,6 @@ abstract class EchoWriteConnection extends FederationConnection {
 				throws StoreException
 			{
 				con.commit();
-				con.setAutoCommit(false);
 			}
 		});
 		super.commit();

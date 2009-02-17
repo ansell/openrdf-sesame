@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -12,17 +12,20 @@ import org.openrdf.sail.SailConnection;
 import org.openrdf.store.StoreException;
 
 /**
- * Auto begins and commits transactions and rolls back transaction before close.
+ * Adds auto-commit functionality to sail connections by wrapping updates with
+ * calls to {@link #begin()} and {@link #commit()} when performed outside an
+ * explicit transactions.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
-public class AutoBeginSailConnection extends SailConnectionWrapper {
+public class AutoCommitSailConnection extends SailConnectionWrapper {
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public AutoBeginSailConnection(SailConnection con) {
+	public AutoCommitSailConnection(SailConnection con) {
 		super(con);
 	}
 
@@ -31,25 +34,15 @@ public class AutoBeginSailConnection extends SailConnectionWrapper {
 	 *---------*/
 
 	@Override
-	public void close()
-		throws StoreException
-	{
-		if (isActive()) {
-			rollback();
-		}
-		super.close();
-	}
-
-	@Override
 	public final void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		if (isActive()) {
+		if (!isAutoCommit()) {
 			super.addStatement(subj, pred, obj, contexts);
 		}
 		else {
+			begin();
 			try {
-				begin();
 				super.addStatement(subj, pred, obj, contexts);
 				commit();
 			}
@@ -68,21 +61,25 @@ public class AutoBeginSailConnection extends SailConnectionWrapper {
 	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		if (isActive()) {
+		if (!isAutoCommit()) {
 			super.removeStatements(subj, pred, obj, contexts);
 		}
 		else {
+			begin();
 			try {
-				begin();
 				super.removeStatements(subj, pred, obj, contexts);
 				commit();
 			}
 			catch (RuntimeException e) {
-				rollback();
+				if (!isAutoCommit()) {
+					rollback();
+				}
 				throw e;
 			}
 			catch (StoreException e) {
-				rollback();
+				if (!isAutoCommit()) {
+					rollback();
+				}
 				throw e;
 			}
 		}
@@ -92,12 +89,12 @@ public class AutoBeginSailConnection extends SailConnectionWrapper {
 	public final void setNamespace(String prefix, String name)
 		throws StoreException
 	{
-		if (isActive()) {
+		if (!isAutoCommit()) {
 			super.setNamespace(prefix, name);
 		}
 		else {
+			begin();
 			try {
-				begin();
 				super.setNamespace(prefix, name);
 				commit();
 			}
@@ -116,12 +113,12 @@ public class AutoBeginSailConnection extends SailConnectionWrapper {
 	public final void removeNamespace(String prefix)
 		throws StoreException
 	{
-		if (isActive()) {
+		if (!isAutoCommit()) {
 			super.removeNamespace(prefix);
 		}
 		else {
+			begin();
 			try {
-				begin();
 				super.removeNamespace(prefix);
 				commit();
 			}
@@ -140,12 +137,12 @@ public class AutoBeginSailConnection extends SailConnectionWrapper {
 	public final void clearNamespaces()
 		throws StoreException
 	{
-		if (isActive()) {
+		if (!isAutoCommit()) {
 			super.clearNamespaces();
 		}
 		else {
+			begin();
 			try {
-				begin();
 				super.clearNamespaces();
 				commit();
 			}

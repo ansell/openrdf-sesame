@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -9,17 +9,22 @@ import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnectionListener;
 
 /**
- * Auto begins and commits transactions.
+ * Adds auto-commit functionality to sail connections by wrapping updates with
+ * calls to {@link #begin()} and {@link #commit()} when performed outside an
+ * explicit transactions.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
-public class AutoBeginNotifyingConnection extends AutoBeginSailConnection implements NotifyingSailConnection {
+public class AutoCommitNotifyingConnection extends AutoCommitSailConnection implements
+		NotifyingSailConnection
+{
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public AutoBeginNotifyingConnection(NotifyingSailConnection con) {
+	public AutoCommitNotifyingConnection(NotifyingSailConnection con) {
 		super(con);
 	}
 

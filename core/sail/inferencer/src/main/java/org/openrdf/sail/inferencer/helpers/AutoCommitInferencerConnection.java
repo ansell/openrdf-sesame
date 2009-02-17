@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,22 +8,27 @@ package org.openrdf.sail.inferencer.helpers;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.sail.helpers.AutoBeginNotifyingConnection;
+import org.openrdf.sail.helpers.AutoCommitNotifyingConnection;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.store.StoreException;
 
 /**
- * Auto begins and commits transactions.
+ * Adds auto-commit functionality to sail connections by wrapping updates with
+ * calls to {@link #begin()} and {@link #commit()} when performed outside an
+ * explicit transactions.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
-public class AutoBeginInferencerConnection extends AutoBeginNotifyingConnection implements InferencerConnection {
+public class AutoCommitInferencerConnection extends AutoCommitNotifyingConnection implements
+		InferencerConnection
+{
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public AutoBeginInferencerConnection(InferencerConnection con) {
+	public AutoCommitInferencerConnection(InferencerConnection con) {
 		super(con);
 	}
 
@@ -39,14 +44,13 @@ public class AutoBeginInferencerConnection extends AutoBeginNotifyingConnection 
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		InferencerConnection con = getDelegate();
-		if (isActive()) {
-			return con.addInferredStatement(subj, pred, obj, contexts);
+		if (!isAutoCommit()) {
+			return getDelegate().addInferredStatement(subj, pred, obj, contexts);
 		}
 		else {
+			begin();
 			try {
-				begin();
-				boolean result = con.addInferredStatement(subj, pred, obj, contexts);
+				boolean result = getDelegate().addInferredStatement(subj, pred, obj, contexts);
 				commit();
 				return result;
 			}
@@ -64,14 +68,13 @@ public class AutoBeginInferencerConnection extends AutoBeginNotifyingConnection 
 	public boolean removeInferredStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		InferencerConnection con = getDelegate();
-		if (isActive()) {
-			return con.removeInferredStatements(subj, pred, obj, contexts);
+		if (!isAutoCommit()) {
+			return getDelegate().removeInferredStatements(subj, pred, obj, contexts);
 		}
 		else {
+			begin();
 			try {
-				begin();
-				boolean result = con.removeInferredStatements(subj, pred, obj, contexts);
+				boolean result = getDelegate().removeInferredStatements(subj, pred, obj, contexts);
 				commit();
 				return result;
 			}

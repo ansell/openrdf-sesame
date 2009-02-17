@@ -1,5 +1,5 @@
 /*
- * Copyright James Leigh (c) 2007.
+ * Copyright James Leigh (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -43,6 +43,7 @@ import org.openrdf.store.StoreException;
  * override.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  * @see #isDelegatingAdd()
  * @see #isDelegatingImport()
  * @see #isDelegatingRemove()
@@ -246,10 +247,28 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().close();
 	}
 
+	public boolean isAutoCommit()
+		throws StoreException
+	{
+		return getDelegate().isAutoCommit();
+	}
+
+	public void begin()
+		throws StoreException
+	{
+		getDelegate().begin();
+	}
+
 	public void commit()
 		throws StoreException
 	{
 		getDelegate().commit();
+	}
+
+	public void rollback()
+		throws StoreException
+	{
+		getDelegate().rollback();
 	}
 
 	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -283,16 +302,14 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return getDelegate().getNamespaces();
 	}
 
-	public ModelResult match(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
+	public ModelResult match(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		return getDelegate().match(subj, pred, obj, includeInferred, contexts);
 	}
 
 	@Override
-	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
+	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		if (isDelegatingRead()) {
@@ -309,12 +326,6 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 			return getDelegate().hasStatement(st, includeInferred, contexts);
 		}
 		return super.hasStatement(st, includeInferred, contexts);
-	}
-
-	public boolean isAutoCommit()
-		throws StoreException
-	{
-		return getDelegate().isAutoCommit();
 	}
 
 	@Override
@@ -405,25 +416,14 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().clearNamespaces();
 	}
 
-	public void rollback()
-		throws StoreException
-	{
-		getDelegate().rollback();
-	}
-
-	public void setAutoCommit(boolean autoCommit)
-		throws StoreException
-	{
-		getDelegate().setAutoCommit(autoCommit);
-	}
-
 	public void setNamespace(String prefix, String name)
 		throws StoreException
 	{
 		getDelegate().setNamespace(prefix, name);
 	}
 
-	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
+	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred,
+			Resource... contexts)
 		throws StoreException
 	{
 		return getDelegate().sizeMatch(subject, predicate, object, includeInferred, contexts);

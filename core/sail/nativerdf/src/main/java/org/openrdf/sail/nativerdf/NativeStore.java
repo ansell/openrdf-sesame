@@ -36,7 +36,7 @@ import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.SailUtil;
 import org.openrdf.sail.inferencer.InferencerConnection;
-import org.openrdf.sail.inferencer.helpers.AutoBeginInferencerConnection;
+import org.openrdf.sail.inferencer.helpers.AutoCommitInferencerConnection;
 import org.openrdf.sail.inferencer.helpers.InferencerSailBase;
 import org.openrdf.sail.inferencer.helpers.SynchronizedInferencerConnection;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
@@ -271,7 +271,7 @@ public class NativeStore extends InferencerSailBase {
 		try {
 			InferencerConnection con = new NativeStoreConnection(this);
 			con = new SynchronizedInferencerConnection(con);
-			con = new AutoBeginInferencerConnection(con);
+			con = new AutoCommitInferencerConnection(con);
 			return con;
 		}
 		catch (IOException e) {

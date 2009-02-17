@@ -14,6 +14,7 @@ import org.openrdf.store.StoreException;
  * @author James Leigh
  */
 public class SailReadOnlyException extends StoreException {
+
 	private static final long serialVersionUID = 2439801771913652923L;
 
 	public SailReadOnlyException() {
@@ -23,5 +24,4 @@ public class SailReadOnlyException extends StoreException {
 	public SailReadOnlyException(String msg) {
 		super(msg);
 	}
-
 }

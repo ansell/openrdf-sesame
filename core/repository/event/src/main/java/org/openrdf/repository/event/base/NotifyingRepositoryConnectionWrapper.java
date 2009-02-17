@@ -1,5 +1,5 @@
 /*
- * Copyright James Leigh (c) 2007.
+ * Copyright James Leigh (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -31,6 +31,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  * @author Herko ter Horst
+ * @author Arjohn Kampman
  */
 public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWrapper implements
 		NotifyingRepositoryConnection
@@ -102,6 +103,58 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	}
 
 	@Override
+	public void close()
+		throws StoreException
+	{
+		super.close();
+
+		if (activated) {
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.close(this);
+			}
+		}
+	}
+
+	@Override
+	public void begin()
+		throws StoreException
+	{
+		getDelegate().begin();
+
+		if (activated) {
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.begin(this);
+			}
+		}
+	}
+
+	@Override
+	public void commit()
+		throws StoreException
+	{
+		getDelegate().commit();
+
+		if (activated) {
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.commit(this);
+			}
+		}
+	}
+
+	@Override
+	public void rollback()
+		throws StoreException
+	{
+		getDelegate().rollback();
+
+		if (activated) {
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.rollback(this);
+			}
+		}
+	}
+
+	@Override
 	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws StoreException
 	{
@@ -117,50 +170,6 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 		if (reportEvent) {
 			for (RepositoryConnectionListener listener : listeners) {
 				listener.add(this, subject, predicate, object, contexts);
-			}
-		}
-	}
-
-	@Override
-	public void clear(Resource... contexts)
-		throws StoreException
-	{
-		if (activated && reportDeltas()) {
-			removeMatch(null, null, null, contexts);
-		}
-		else if (activated) {
-			getDelegate().clear(contexts);
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.clear(this, contexts);
-			}
-		}
-		else {
-			getDelegate().clear(contexts);
-		}
-	}
-
-	@Override
-	public void close()
-		throws StoreException
-	{
-		super.close();
-
-		if (activated) {
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.close(this);
-			}
-		}
-	}
-
-	@Override
-	public void commit()
-		throws StoreException
-	{
-		getDelegate().commit();
-
-		if (activated) {
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.commit(this);
 			}
 		}
 	}
@@ -200,6 +209,37 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 		}
 		else {
 			getDelegate().removeMatch(subj, pred, obj, ctx);
+		}
+	}
+
+	@Override
+	public void clear(Resource... contexts)
+		throws StoreException
+	{
+		if (activated && reportDeltas()) {
+			removeMatch(null, null, null, contexts);
+		}
+		else if (activated) {
+			getDelegate().clear(contexts);
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.clear(this, contexts);
+			}
+		}
+		else {
+			getDelegate().clear(contexts);
+		}
+	}
+
+	@Override
+	public void setNamespace(String prefix, String name)
+		throws StoreException
+	{
+		getDelegate().setNamespace(prefix, name);
+
+		if (activated) {
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.setNamespace(this, prefix, name);
+			}
 		}
 	}
 
@@ -246,51 +286,6 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 		}
 		else {
 			getDelegate().clearNamespaces();
-		}
-	}
-
-	@Override
-	public void rollback()
-		throws StoreException
-	{
-		getDelegate().rollback();
-
-		if (activated) {
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.rollback(this);
-			}
-		}
-	}
-
-	@Override
-	public void setAutoCommit(boolean autoCommit)
-		throws StoreException
-	{
-		boolean wasAutoCommit = isAutoCommit();
-		getDelegate().setAutoCommit(autoCommit);
-
-		if (activated && wasAutoCommit != autoCommit) {
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.setAutoCommit(this, autoCommit);
-			}
-			if (autoCommit) {
-				for (RepositoryConnectionListener listener : listeners) {
-					listener.commit(this);
-				}
-			}
-		}
-	}
-
-	@Override
-	public void setNamespace(String prefix, String name)
-		throws StoreException
-	{
-		getDelegate().setNamespace(prefix, name);
-
-		if (activated) {
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.setNamespace(this, prefix, name);
-			}
 		}
 	}
 }

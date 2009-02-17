@@ -40,8 +40,8 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -187,8 +187,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(statement);
 
 		assertTrue("Repository should contain newly added statement", testCon.hasStatement(statement, false));
-		assertTrue("Repository should contain newly added statement", testCon.hasMatch(alice, name,
-				nameAlice, false));
+		assertTrue("Repository should contain newly added statement", testCon.hasMatch(alice, name, nameAlice,
+				false));
 
 		Repository tempRep = new SailRepository(new MemoryStore());
 		tempRep.initialize();
@@ -206,7 +206,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		throws Exception
 	{
 		URI bob = new URIImpl("urn:test:bob");
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob);
 
 		assertTrue(testCon.hasMatch(bob, name, nameBob, false));
@@ -256,15 +256,14 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertFalse("alice should not be known in context1", testCon.hasMatch(null, name, nameAlice, false,
 				context1));
-		assertTrue("alice should be known in context2", testCon.hasMatch(null, name, nameAlice, false,
-				context2));
+		assertTrue("alice should be known in context2",
+				testCon.hasMatch(null, name, nameAlice, false, context2));
 
 		assertTrue("bob should be known in the store", testCon.hasMatch(null, name, nameBob, false));
 
 		assertFalse("bob should not be known in context2", testCon.hasMatch(null, name, nameBob, false,
 				context2));
-		assertTrue("bib should be known in context1",
-				testCon.hasMatch(null, name, nameBob, false, context1));
+		assertTrue("bib should be known in context1", testCon.hasMatch(null, name, nameBob, false, context1));
 
 	}
 
@@ -302,15 +301,14 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertFalse("alice should not be known in context1", testCon.hasMatch(null, name, nameAlice, false,
 				context1));
-		assertTrue("alice should be known in context2", testCon.hasMatch(null, name, nameAlice, false,
-				context2));
+		assertTrue("alice should be known in context2",
+				testCon.hasMatch(null, name, nameAlice, false, context2));
 
 		assertTrue("bob should be known in the store", testCon.hasMatch(null, name, nameBob, false));
 
 		assertFalse("bob should not be known in context2", testCon.hasMatch(null, name, nameBob, false,
 				context2));
-		assertTrue("bib should be known in context1",
-				testCon.hasMatch(null, name, nameBob, false, context1));
+		assertTrue("bib should be known in context1", testCon.hasMatch(null, name, nameBob, false, context1));
 
 	}
 
@@ -354,7 +352,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testAutoCommit()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(alice, name, nameAlice);
 
 		assertTrue("Uncommitted update should be visible to own connection", testCon.hasMatch(alice, name,
@@ -362,16 +360,14 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		testCon.commit();
 
-		assertTrue("Repository should contain statement after commit", testCon.hasMatch(alice, name,
-				nameAlice, false));
-
-		testCon.setAutoCommit(true);
+		assertTrue("Repository should contain statement after commit", testCon.hasMatch(alice, name, nameAlice,
+				false));
 	}
 
 	public void testRollback()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(alice, name, nameAlice);
 
 		assertTrue("Uncommitted updates should be visible to own connection", testCon.hasMatch(alice, name,
@@ -381,8 +377,6 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertFalse("Repository should not contain statement after rollback", testCon.hasMatch(alice, name,
 				nameAlice, false));
-
-		testCon.setAutoCommit(true);
 	}
 
 	public void testSimpleTupleQuery()
@@ -516,7 +510,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(query instanceof TupleQuery);
 		query.setBinding("name", nameBob);
 
-		TupleResult result = ((TupleQuery) query).evaluate();
+		TupleResult result = ((TupleQuery)query).evaluate();
 
 		try {
 			assertTrue(result != null);
@@ -789,7 +783,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testGetStatementsInSingleContext()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob, context1);
 		testCon.add(bob, mbox, mboxBob, context1);
 		testCon.add(context1, publisher, nameBob);
@@ -797,15 +791,15 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(alice, name, nameAlice, context2);
 		testCon.add(alice, mbox, mboxAlice, context2);
 		testCon.add(context2, publisher, nameAlice);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertTrue("Repository should contain statement", testCon.hasMatch(bob, name, nameBob, false));
 
 		assertTrue("Repository should contain statement in context1", testCon.hasMatch(bob, name, nameBob,
 				false, context1));
 
-		assertFalse("Repository should not contain statement in context2", testCon.hasMatch(bob, name,
-				nameBob, false, context2));
+		assertFalse("Repository should not contain statement in context2", testCon.hasMatch(bob, name, nameBob,
+				false, context2));
 
 		// Check handling of getStatements without context IDs
 		ModelResult result = testCon.match(bob, name, null, false);
@@ -855,15 +849,14 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		testCon.clear();
 
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(alice, name, nameAlice, context2);
 		testCon.add(alice, mbox, mboxAlice, context2);
 		testCon.add(context2, publisher, nameAlice);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		// get statements with either no context or context2
-		ModelResult iter = testCon.match(null, null,
-				null, false, null, context2);
+		ModelResult iter = testCon.match(null, null, null, false, null, context2);
 
 		try {
 			int count = 0;
@@ -918,11 +911,11 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 
 		// add statements to context1
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob, context1);
 		testCon.add(bob, mbox, mboxBob, context1);
 		testCon.add(context1, publisher, nameBob);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		iter = testCon.match(null, null, null, false, context1);
 		try {
@@ -970,10 +963,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testRemoveStatements()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob);
 		testCon.add(alice, name, nameAlice);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertTrue(testCon.hasMatch(bob, name, nameBob, false));
 		assertTrue(testCon.hasMatch(alice, name, nameAlice, false));
@@ -991,10 +984,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testRemoveStatementCollection()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(alice, name, nameAlice);
 		testCon.add(bob, name, nameBob);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertTrue(testCon.hasMatch(bob, name, nameBob, false));
 		assertTrue(testCon.hasMatch(alice, name, nameAlice, false));
@@ -1010,16 +1003,15 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testRemoveStatementIteration()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(alice, name, nameAlice);
 		testCon.add(bob, name, nameBob);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertTrue(testCon.hasMatch(bob, name, nameBob, false));
 		assertTrue(testCon.hasMatch(alice, name, nameAlice, false));
 
-		ModelResult iter = testCon.match(null, null,
-				null, false);
+		ModelResult iter = testCon.match(null, null, null, false);
 
 		try {
 			testCon.remove(iter);
@@ -1272,7 +1264,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		assertTrue(testCon.isEmpty());
 		assertTrue(testCon2.isEmpty());
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(vf.createBNode(), vf.createURI("urn:pred"), vf.createBNode());
 		assertFalse(testCon.isEmpty());
 		assertTrue(testCon2.isEmpty());
@@ -1286,7 +1278,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		assertTrue(testCon.isEmpty());
 		assertTrue(testCon2.isEmpty());
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(vf.createBNode(), vf.createURI("urn:pred"), vf.createBNode());
 		assertFalse(testCon.isEmpty());
 		assertTrue(testCon2.isEmpty());
@@ -1310,7 +1302,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		assertEquals(0, testCon.size());
 		assertEquals(0, testCon2.size());
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(vf.createBNode(), vf.createURI("urn:pred"), vf.createBNode());
 		assertEquals(1, testCon.size());
 		assertEquals(0, testCon2.size());
@@ -1327,7 +1319,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		assertEquals(0, testCon.size());
 		assertEquals(0, testCon2.size());
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(vf.createBNode(), vf.createURI("urn:pred"), vf.createBNode());
 		assertEquals(1, testCon.size());
 		assertEquals(0, testCon2.size());
@@ -1347,7 +1339,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		testCon.add(bob, RDF.TYPE, FOAF_PERSON);
 
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(stmt);
 		testCon.remove(stmt);
 		testCon.commit();
@@ -1384,13 +1376,13 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals(0, testCon.getContextIDs().asList().size());
 
 		// load data
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob, context1);
 		assertEquals(Arrays.asList(context1), testCon.getContextIDs().asList());
 
 		testCon.removeMatch(bob, name, nameBob, context1);
 		assertEquals(0, testCon.getContextIDs().asList().size());
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertEquals(0, testCon.getContextIDs().asList().size());
 
@@ -1484,7 +1476,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(list.contains(p2));
 	}
 
-	public void testSPARQLDivide() throws Exception {
+	public void testSPARQLDivide()
+		throws Exception
+	{
 		URI s = vf.createURI("urn:test:s");
 		URI p1 = vf.createURI("urn:test:p1");
 		URI p3 = vf.createURI("urn:test:p3");
@@ -1496,7 +1490,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 				+ "SELECT ?s WHERE { ?s :p1 ?one ; :p3 ?three FILTER (datatype(?one / ?three) = xsd:decimal) }";
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, qry);
 		TupleResult result = query.evaluate();
-		assertTrue (result.hasNext());
+		assertTrue(result.hasNext());
 		result.close();
 	}
 
@@ -1537,6 +1531,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 
 		// Add some data to the repository
+		testCon.begin();
 		testCon.add(painter, RDF.TYPE, RDFS.CLASS);
 		testCon.add(painting, RDF.TYPE, RDFS.CLASS);
 		testCon.add(picasso, RDF.TYPE, painter, context1);
@@ -1561,7 +1556,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals(3, testCon.sizeMatch(null, null, null, false, uriImplContext1));
 	}
 
-	public void testMetaData() throws Exception {
+	public void testMetaData()
+		throws Exception
+	{
 		RepositoryMetaData metadata = testRepository.getMetaData();
 		assertFalse(metadata.isReadOnly());
 		assertTrue(metadata.getAddRDFFormats().length > 0);
@@ -1641,7 +1638,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SERQL, "SELECT o FROM {} P {o}");
 		int total = query.evaluate().asList().size();
 		query.setOffset(1);
-		assertEquals(total -1 , query.evaluate().asList().size());
+		assertEquals(total - 1, query.evaluate().asList().size());
 	}
 
 	public void testLimit()
@@ -1654,14 +1651,13 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SERQL, "SELECT o FROM {} P {o}");
 		query.setLimit(1);
-		assertEquals(1 , query.evaluate().asList().size());
+		assertEquals(1, query.evaluate().asList().size());
 	}
 
 	private void testValueRoundTrip(Resource subj, URI pred, Value obj)
 		throws Exception
 	{
 		testCon.add(subj, pred, obj);
-		testCon.commit();
 
 		ModelResult stIter = testCon.match(null, null, null, false);
 
@@ -1709,8 +1705,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			iter.close();
 		}
 
-		tupleQuery = testCon.prepareTupleQuery(QueryLanguage.SERQL,
-				"SELECT S, P, O FROM {S} P {O} WHERE P = <" + pred.stringValue() + ">", null);
+		tupleQuery = testCon.prepareTupleQuery(QueryLanguage.SERQL, "SELECT S, P, O FROM {S} P {O} WHERE P = <"
+				+ pred.stringValue() + ">", null);
 		tupleQuery.setBinding("S", subj);
 		tupleQuery.setBinding("P", pred);
 		tupleQuery.setBinding("O", obj);
@@ -1733,8 +1729,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	private int getTotalStatementCount(RepositoryConnection connection)
 		throws StoreException
 	{
-		ModelResult iter = connection.match(null,
-				null, null, true);
+		ModelResult iter = connection.match(null, null, null, true);
 
 		try {
 			int size = 0;

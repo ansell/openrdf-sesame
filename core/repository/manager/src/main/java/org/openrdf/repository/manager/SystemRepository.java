@@ -103,7 +103,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 			if (con.isEmpty()) {
 				logger.info("Initializing empty {} repository", ID);
 
-				con.setAutoCommit(false);
+				con.begin();
 				con.setNamespace("rdf", RDF.NAMESPACE);
 				con.setNamespace("sys", RepositoryConfigSchema.NAMESPACE);
 
@@ -152,8 +152,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 	{
 		ValueFactory vf = con.getValueFactory();
 
-		boolean wasAutoCommit = con.isAutoCommit();
-		con.setAutoCommit(false);
+		con.begin();
 
 		Resource context = getContext(con, id);
 
@@ -170,7 +169,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 		config.export(model);
 		con.add(model, context);
 
-		con.setAutoCommit(wasAutoCommit);
+		con.commit();
 	}
 
 	private Resource getContext(RepositoryConnection con, String repositoryID)

@@ -54,11 +54,11 @@ public class InferencingTest extends TestCase {
 
 	/**
 	 * Creates a new inferencing test. This test can either be positive or
-	 * negative. For positive tests, all triples from <tt>outputData</tt>
-	 * should be present in the triples returned by the supplied
-	 * RdfSchemaRepository after the triples from <tt>intputData</tt> have been
-	 * added to it. For negative tests, none of the triples from
-	 * <tt>outputData</tt> should be present in the returned triples.
+	 * negative. For positive tests, all triples from <tt>outputData</tt> should
+	 * be present in the triples returned by the supplied RdfSchemaRepository
+	 * after the triples from <tt>intputData</tt> have been added to it. For
+	 * negative tests, none of the triples from <tt>outputData</tt> should be
+	 * present in the returned triples.
 	 * 
 	 * @param name
 	 *        The name of the test.
@@ -69,12 +69,12 @@ public class InferencingTest extends TestCase {
 	 *        be added to the RdfSchemaRepository.
 	 * @param outputData
 	 *        The URL of the (N-Triples) data containing the triples that should
-	 *        or should not (depending on the value of <tt>isPositiveTest</tt>
-	 *        be present in the statements returned by the RdfSchemaRepository.
+	 *        or should not (depending on the value of <tt>isPositiveTest</tt> be
+	 *        present in the statements returned by the RdfSchemaRepository.
 	 * @param isPositiveTest
 	 *        Flag indicating whether this is a positive or a negative
-	 *        inferencing test; <tt>true</tt> for a positive test,
-	 *        <tt>false</tt> for a negative test.
+	 *        inferencing test; <tt>true</tt> for a positive test, <tt>false</tt>
+	 *        for a negative test.
 	 */
 	public InferencingTest(String name, Sail sailStack, String inputData, String outputData,
 			boolean isPositiveTest)
@@ -104,18 +104,14 @@ public class InferencingTest extends TestCase {
 		repository.initialize();
 
 		RepositoryConnection con = repository.getConnection();
-		con.setAutoCommit(false);
 
 		// clear the input store
 		con.clear();
-		con.commit();
 
 		// Upload input data
 		InputStream stream = getClass().getResourceAsStream(inputData);
 		try {
 			con.add(stream, inputData, RDFFormat.NTRIPLES);
-			con.commit();
-
 			entailedStatements = con.match(null, null, null, true).asSet();
 		}
 		finally {
@@ -127,13 +123,10 @@ public class InferencingTest extends TestCase {
 		Repository outputRepository = new SailRepository(new MemoryStore());
 		outputRepository.initialize();
 		con = outputRepository.getConnection();
-		con.setAutoCommit(false);
 
 		stream = getClass().getResourceAsStream(outputData);
 		try {
 			con.add(stream, outputData, RDFFormat.NTRIPLES);
-			con.commit();
-
 			expectedStatements = con.match(null, null, null, false).asSet();
 		}
 		finally {
