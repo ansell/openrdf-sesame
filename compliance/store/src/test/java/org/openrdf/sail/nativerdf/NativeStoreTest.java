@@ -71,7 +71,6 @@ public class NativeStoreTest extends RDFNotifyingStoreTest {
 		throws Exception
 	{
 		con.setNamespace("rdf", RDF.NAMESPACE);
-		con.commit();
 		assertEquals(RDF.NAMESPACE, con.getNamespace("rdf"));
 
 		con.close();

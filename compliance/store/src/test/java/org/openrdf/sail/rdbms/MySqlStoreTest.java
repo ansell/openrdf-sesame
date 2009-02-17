@@ -38,6 +38,7 @@ public class MySqlStoreTest extends RDFStoreTest {
 		sail.initialize();
 		SailConnection conn = sail.getConnection();
 		try {
+			conn.begin();
 			conn.removeStatements(null, null, null);
 			conn.clearNamespaces();
 			conn.commit();
