@@ -117,6 +117,7 @@ public class RdbmsConnection extends SailConnectionBase {
 			throw new RdbmsException(e);
 		}
 		finally {
+			super.close();
 			unlock();
 		}
 	}
