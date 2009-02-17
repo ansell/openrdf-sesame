@@ -272,7 +272,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		flush();
 		client.commit();
 		repository.modified();
-		client.begin();
 		modified = false;
 		autoCommit = true;
 	}
