@@ -37,7 +37,10 @@ public class ConnectionController {
 	{
 		notSafe(request);
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
-		repositoryCon.begin();
+		// FIXME: should this generate an error if txn has already started?
+		if (repositoryCon.isAutoCommit()) {
+			repositoryCon.begin();
+		}
 	}
 
 	@ModelAttribute
@@ -55,7 +58,10 @@ public class ConnectionController {
 		throws StoreException
 	{
 		RepositoryConnection repositoryCon = getModifyingConnection(request);
-		repositoryCon.commit();
+		// FIXME: should this generate an error no txn has been started yet?
+		if (!repositoryCon.isAutoCommit()) {
+			repositoryCon.commit();
+		}
 	}
 
 	@ModelAttribute
@@ -64,6 +70,9 @@ public class ConnectionController {
 		throws StoreException
 	{
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
-		repositoryCon.rollback();
+		// FIXME: should this generate an error no txn has been started yet?
+		if (!repositoryCon.isAutoCommit()) {
+			repositoryCon.rollback();
+		}
 	}
 }
