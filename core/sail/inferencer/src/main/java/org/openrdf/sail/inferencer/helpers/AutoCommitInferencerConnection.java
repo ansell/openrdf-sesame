@@ -54,13 +54,11 @@ public class AutoCommitInferencerConnection extends AutoCommitNotifyingConnectio
 				commit();
 				return result;
 			}
-			catch (RuntimeException e) {
-				rollback();
-				throw e;
-			}
-			catch (StoreException e) {
-				rollback();
-				throw e;
+			finally {
+				if (!isAutoCommit()) {
+					// finish the transaction
+					rollback();
+				}
 			}
 		}
 	}
@@ -78,13 +76,11 @@ public class AutoCommitInferencerConnection extends AutoCommitNotifyingConnectio
 				commit();
 				return result;
 			}
-			catch (RuntimeException e) {
-				rollback();
-				throw e;
-			}
-			catch (StoreException e) {
-				rollback();
-				throw e;
+			finally {
+				if (!isAutoCommit()) {
+					// finish the transaction
+					rollback();
+				}
 			}
 		}
 	}
