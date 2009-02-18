@@ -33,6 +33,7 @@ import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.helpers.SailMetaDataWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.config.DirectTypeHierarchyInferencerFactory;
+import org.openrdf.sail.inferencer.helpers.AutoCommitInferencerConnection;
 import org.openrdf.sail.inferencer.helpers.InferencerConnectionWrapper;
 import org.openrdf.store.StoreException;
 
@@ -138,7 +139,9 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 	{
 		try {
 			InferencerConnection con = (InferencerConnection)super.getConnection();
-			return new DirectTypeHierarchyInferencerConnection(con);
+			con = new DirectTypeHierarchyInferencerConnection(con);
+			con = new AutoCommitInferencerConnection(con);
+			return con;
 		}
 		catch (ClassCastException e) {
 			throw new StoreException(e.getMessage(), e);

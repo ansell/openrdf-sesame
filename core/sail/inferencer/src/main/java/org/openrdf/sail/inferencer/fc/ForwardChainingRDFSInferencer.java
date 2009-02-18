@@ -15,6 +15,7 @@ import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.helpers.SailMetaDataWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerFactory;
+import org.openrdf.sail.inferencer.helpers.AutoCommitInferencerConnection;
 import org.openrdf.store.StoreException;
 
 /**
@@ -43,12 +44,14 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 	 *---------*/
 
 	@Override
-	public ForwardChainingRDFSInferencerConnection getConnection()
+	public InferencerConnection getConnection()
 		throws StoreException
 	{
 		try {
 			InferencerConnection con = (InferencerConnection)super.getConnection();
-			return new ForwardChainingRDFSInferencerConnection(con);
+			con = new ForwardChainingRDFSInferencerConnection(con);
+			con = new AutoCommitInferencerConnection(con);
+			return con;
 		}
 		catch (ClassCastException e) {
 			throw new StoreException(e.getMessage(), e);
@@ -64,10 +67,10 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 	{
 		super.initialize();
 
-		ForwardChainingRDFSInferencerConnection con = getConnection();
+		InferencerConnection con = getConnection();
 		try {
 			con.begin();
-			con.addAxiomStatements();
+			ForwardChainingRDFSInferencerConnection.addAxiomStatements(con);
 			con.commit();
 		}
 		finally {
