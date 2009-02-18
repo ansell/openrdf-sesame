@@ -46,13 +46,11 @@ public class AutoCommitSailConnection extends SailConnectionWrapper {
 				super.addStatement(subj, pred, obj, contexts);
 				commit();
 			}
-			catch (RuntimeException e) {
-				rollback();
-				throw e;
-			}
-			catch (StoreException e) {
-				rollback();
-				throw e;
+			finally {
+				if (!isAutoCommit()) {
+					// finish the transaction
+					rollback();
+				}
 			}
 		}
 	}
@@ -70,17 +68,11 @@ public class AutoCommitSailConnection extends SailConnectionWrapper {
 				super.removeStatements(subj, pred, obj, contexts);
 				commit();
 			}
-			catch (RuntimeException e) {
+			finally {
 				if (!isAutoCommit()) {
+					// finish the transaction
 					rollback();
 				}
-				throw e;
-			}
-			catch (StoreException e) {
-				if (!isAutoCommit()) {
-					rollback();
-				}
-				throw e;
 			}
 		}
 	}
@@ -98,13 +90,11 @@ public class AutoCommitSailConnection extends SailConnectionWrapper {
 				super.setNamespace(prefix, name);
 				commit();
 			}
-			catch (RuntimeException e) {
-				rollback();
-				throw e;
-			}
-			catch (StoreException e) {
-				rollback();
-				throw e;
+			finally {
+				if (!isAutoCommit()) {
+					// finish the transaction
+					rollback();
+				}
 			}
 		}
 	}
@@ -122,13 +112,11 @@ public class AutoCommitSailConnection extends SailConnectionWrapper {
 				super.removeNamespace(prefix);
 				commit();
 			}
-			catch (RuntimeException e) {
-				rollback();
-				throw e;
-			}
-			catch (StoreException e) {
-				rollback();
-				throw e;
+			finally {
+				if (!isAutoCommit()) {
+					// finish the transaction
+					rollback();
+				}
 			}
 		}
 	}
@@ -146,13 +134,11 @@ public class AutoCommitSailConnection extends SailConnectionWrapper {
 				super.clearNamespaces();
 				commit();
 			}
-			catch (RuntimeException e) {
-				rollback();
-				throw e;
-			}
-			catch (StoreException e) {
-				rollback();
-				throw e;
+			finally {
+				if (!isAutoCommit()) {
+					// finish the transaction
+					rollback();
+				}
 			}
 		}
 	}
