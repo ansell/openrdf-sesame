@@ -118,7 +118,8 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		if (statementsRemoved) {
 			logger.debug("statements removed, starting inferencing from scratch");
 			removeInferredStatements(null, null, null);
-			addAxiomStatements();
+			logger.debug("Inserting axiom statements");
+			addAxiomStatements(this);
 
 			newStatements = new LinkedHashModel();
 			Cursor<? extends Statement> cursor = getDelegate().getStatements(null, null, null, true);
@@ -147,70 +148,68 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	 * Adds all basic set of axiom statements from which the complete set can be
 	 * inferred to the underlying Sail.
 	 */
-	protected void addAxiomStatements()
+	protected static void addAxiomStatements(InferencerConnection con)
 		throws StoreException
 	{
-		logger.debug("Inserting axiom statements");
-
 		// RDF axiomatic triples (from RDF Semantics, section 3.1):
 
-		addInferredStatement(RDF.TYPE, RDF.TYPE, RDF.PROPERTY);
-		addInferredStatement(RDF.SUBJECT, RDF.TYPE, RDF.PROPERTY);
-		addInferredStatement(RDF.PREDICATE, RDF.TYPE, RDF.PROPERTY);
-		addInferredStatement(RDF.OBJECT, RDF.TYPE, RDF.PROPERTY);
+		con.addInferredStatement(RDF.TYPE, RDF.TYPE, RDF.PROPERTY);
+		con.addInferredStatement(RDF.SUBJECT, RDF.TYPE, RDF.PROPERTY);
+		con.addInferredStatement(RDF.PREDICATE, RDF.TYPE, RDF.PROPERTY);
+		con.addInferredStatement(RDF.OBJECT, RDF.TYPE, RDF.PROPERTY);
 
-		addInferredStatement(RDF.FIRST, RDF.TYPE, RDF.PROPERTY);
-		addInferredStatement(RDF.REST, RDF.TYPE, RDF.PROPERTY);
-		addInferredStatement(RDF.VALUE, RDF.TYPE, RDF.PROPERTY);
+		con.addInferredStatement(RDF.FIRST, RDF.TYPE, RDF.PROPERTY);
+		con.addInferredStatement(RDF.REST, RDF.TYPE, RDF.PROPERTY);
+		con.addInferredStatement(RDF.VALUE, RDF.TYPE, RDF.PROPERTY);
 
-		addInferredStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
+		con.addInferredStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
 
 		// RDFS axiomatic triples (from RDF Semantics, section 4.1):
 
-		addInferredStatement(RDF.TYPE, RDFS.DOMAIN, RDFS.RESOURCE);
-		addInferredStatement(RDFS.DOMAIN, RDFS.DOMAIN, RDF.PROPERTY);
-		addInferredStatement(RDFS.RANGE, RDFS.DOMAIN, RDF.PROPERTY);
-		addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.DOMAIN, RDF.PROPERTY);
-		addInferredStatement(RDFS.SUBCLASSOF, RDFS.DOMAIN, RDFS.CLASS);
-		addInferredStatement(RDF.SUBJECT, RDFS.DOMAIN, RDF.STATEMENT);
-		addInferredStatement(RDF.PREDICATE, RDFS.DOMAIN, RDF.STATEMENT);
-		addInferredStatement(RDF.OBJECT, RDFS.DOMAIN, RDF.STATEMENT);
-		addInferredStatement(RDFS.MEMBER, RDFS.DOMAIN, RDFS.RESOURCE);
-		addInferredStatement(RDF.FIRST, RDFS.DOMAIN, RDF.LIST);
-		addInferredStatement(RDF.REST, RDFS.DOMAIN, RDF.LIST);
-		addInferredStatement(RDFS.SEEALSO, RDFS.DOMAIN, RDFS.RESOURCE);
-		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.DOMAIN, RDFS.RESOURCE);
-		addInferredStatement(RDFS.COMMENT, RDFS.DOMAIN, RDFS.RESOURCE);
-		addInferredStatement(RDFS.LABEL, RDFS.DOMAIN, RDFS.RESOURCE);
-		addInferredStatement(RDF.VALUE, RDFS.DOMAIN, RDFS.RESOURCE);
+		con.addInferredStatement(RDF.TYPE, RDFS.DOMAIN, RDFS.RESOURCE);
+		con.addInferredStatement(RDFS.DOMAIN, RDFS.DOMAIN, RDF.PROPERTY);
+		con.addInferredStatement(RDFS.RANGE, RDFS.DOMAIN, RDF.PROPERTY);
+		con.addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.DOMAIN, RDF.PROPERTY);
+		con.addInferredStatement(RDFS.SUBCLASSOF, RDFS.DOMAIN, RDFS.CLASS);
+		con.addInferredStatement(RDF.SUBJECT, RDFS.DOMAIN, RDF.STATEMENT);
+		con.addInferredStatement(RDF.PREDICATE, RDFS.DOMAIN, RDF.STATEMENT);
+		con.addInferredStatement(RDF.OBJECT, RDFS.DOMAIN, RDF.STATEMENT);
+		con.addInferredStatement(RDFS.MEMBER, RDFS.DOMAIN, RDFS.RESOURCE);
+		con.addInferredStatement(RDF.FIRST, RDFS.DOMAIN, RDF.LIST);
+		con.addInferredStatement(RDF.REST, RDFS.DOMAIN, RDF.LIST);
+		con.addInferredStatement(RDFS.SEEALSO, RDFS.DOMAIN, RDFS.RESOURCE);
+		con.addInferredStatement(RDFS.ISDEFINEDBY, RDFS.DOMAIN, RDFS.RESOURCE);
+		con.addInferredStatement(RDFS.COMMENT, RDFS.DOMAIN, RDFS.RESOURCE);
+		con.addInferredStatement(RDFS.LABEL, RDFS.DOMAIN, RDFS.RESOURCE);
+		con.addInferredStatement(RDF.VALUE, RDFS.DOMAIN, RDFS.RESOURCE);
 
-		addInferredStatement(RDF.TYPE, RDFS.RANGE, RDFS.CLASS);
-		addInferredStatement(RDFS.DOMAIN, RDFS.RANGE, RDFS.CLASS);
-		addInferredStatement(RDFS.RANGE, RDFS.RANGE, RDFS.CLASS);
-		addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.RANGE, RDF.PROPERTY);
-		addInferredStatement(RDFS.SUBCLASSOF, RDFS.RANGE, RDFS.CLASS);
-		addInferredStatement(RDF.SUBJECT, RDFS.RANGE, RDFS.RESOURCE);
-		addInferredStatement(RDF.PREDICATE, RDFS.RANGE, RDFS.RESOURCE);
-		addInferredStatement(RDF.OBJECT, RDFS.RANGE, RDFS.RESOURCE);
-		addInferredStatement(RDFS.MEMBER, RDFS.RANGE, RDFS.RESOURCE);
-		addInferredStatement(RDF.FIRST, RDFS.RANGE, RDFS.RESOURCE);
-		addInferredStatement(RDF.REST, RDFS.RANGE, RDF.LIST);
-		addInferredStatement(RDFS.SEEALSO, RDFS.RANGE, RDFS.RESOURCE);
-		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.RANGE, RDFS.RESOURCE);
-		addInferredStatement(RDFS.COMMENT, RDFS.RANGE, RDFS.LITERAL);
-		addInferredStatement(RDFS.LABEL, RDFS.RANGE, RDFS.LITERAL);
-		addInferredStatement(RDF.VALUE, RDFS.RANGE, RDFS.RESOURCE);
+		con.addInferredStatement(RDF.TYPE, RDFS.RANGE, RDFS.CLASS);
+		con.addInferredStatement(RDFS.DOMAIN, RDFS.RANGE, RDFS.CLASS);
+		con.addInferredStatement(RDFS.RANGE, RDFS.RANGE, RDFS.CLASS);
+		con.addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.RANGE, RDF.PROPERTY);
+		con.addInferredStatement(RDFS.SUBCLASSOF, RDFS.RANGE, RDFS.CLASS);
+		con.addInferredStatement(RDF.SUBJECT, RDFS.RANGE, RDFS.RESOURCE);
+		con.addInferredStatement(RDF.PREDICATE, RDFS.RANGE, RDFS.RESOURCE);
+		con.addInferredStatement(RDF.OBJECT, RDFS.RANGE, RDFS.RESOURCE);
+		con.addInferredStatement(RDFS.MEMBER, RDFS.RANGE, RDFS.RESOURCE);
+		con.addInferredStatement(RDF.FIRST, RDFS.RANGE, RDFS.RESOURCE);
+		con.addInferredStatement(RDF.REST, RDFS.RANGE, RDF.LIST);
+		con.addInferredStatement(RDFS.SEEALSO, RDFS.RANGE, RDFS.RESOURCE);
+		con.addInferredStatement(RDFS.ISDEFINEDBY, RDFS.RANGE, RDFS.RESOURCE);
+		con.addInferredStatement(RDFS.COMMENT, RDFS.RANGE, RDFS.LITERAL);
+		con.addInferredStatement(RDFS.LABEL, RDFS.RANGE, RDFS.LITERAL);
+		con.addInferredStatement(RDF.VALUE, RDFS.RANGE, RDFS.RESOURCE);
 
-		addInferredStatement(RDF.ALT, RDFS.SUBCLASSOF, RDFS.CONTAINER);
-		addInferredStatement(RDF.BAG, RDFS.SUBCLASSOF, RDFS.CONTAINER);
-		addInferredStatement(RDF.SEQ, RDFS.SUBCLASSOF, RDFS.CONTAINER);
-		addInferredStatement(RDFS.CONTAINERMEMBERSHIPPROPERTY, RDFS.SUBCLASSOF, RDF.PROPERTY);
+		con.addInferredStatement(RDF.ALT, RDFS.SUBCLASSOF, RDFS.CONTAINER);
+		con.addInferredStatement(RDF.BAG, RDFS.SUBCLASSOF, RDFS.CONTAINER);
+		con.addInferredStatement(RDF.SEQ, RDFS.SUBCLASSOF, RDFS.CONTAINER);
+		con.addInferredStatement(RDFS.CONTAINERMEMBERSHIPPROPERTY, RDFS.SUBCLASSOF, RDF.PROPERTY);
 
-		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.SUBPROPERTYOF, RDFS.SEEALSO);
+		con.addInferredStatement(RDFS.ISDEFINEDBY, RDFS.SUBPROPERTYOF, RDFS.SEEALSO);
 
-		addInferredStatement(RDF.XMLLITERAL, RDF.TYPE, RDFS.DATATYPE);
-		addInferredStatement(RDF.XMLLITERAL, RDFS.SUBCLASSOF, RDFS.LITERAL);
-		addInferredStatement(RDFS.DATATYPE, RDFS.SUBCLASSOF, RDFS.CLASS);
+		con.addInferredStatement(RDF.XMLLITERAL, RDF.TYPE, RDFS.DATATYPE);
+		con.addInferredStatement(RDF.XMLLITERAL, RDFS.SUBCLASSOF, RDFS.LITERAL);
+		con.addInferredStatement(RDFS.DATATYPE, RDFS.SUBCLASSOF, RDFS.CLASS);
 	}
 
 	protected void doInferencing()
