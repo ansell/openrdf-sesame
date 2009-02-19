@@ -104,6 +104,18 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		this.level = level;
 	}
 
+	public boolean isReadOnly()
+		throws StoreException
+	{
+		return sailConnection.isReadOnly();
+	}
+
+	public void setReadOnly(boolean readOnly)
+		throws StoreException
+	{
+		sailConnection.setReadOnly(readOnly);
+	}
+
 	public boolean isAutoCommit()
 		throws StoreException
 	{
@@ -174,12 +186,11 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return new ContextResultImpl(sailConnection.getContextIDs());
 	}
 
-	public ModelResult match(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
+	public ModelResult match(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		return new ModelNamespaceResult(this, sailConnection.getStatements(subj, pred, obj, includeInferred,
-		contexts));
+				contexts));
 	}
 
 	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -201,8 +212,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 
 		// Export statements
-		ModelResult stIter = match(subj, pred, obj,
-				includeInferred, contexts);
+		ModelResult stIter = match(subj, pred, obj, includeInferred, contexts);
 
 		try {
 			while (stIter.hasNext()) {
@@ -217,7 +227,8 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return handler;
 	}
 
-	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred, Resource... contexts)
+	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred,
+			Resource... contexts)
 		throws StoreException
 	{
 		return sailConnection.size(subject, predicate, object, includeInferred, contexts);

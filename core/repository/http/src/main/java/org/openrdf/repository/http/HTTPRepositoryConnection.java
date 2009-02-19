@@ -122,6 +122,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	private volatile Isolation level = Isolation.READ_COMMITTED;
 
+	private volatile boolean readOnly = false;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -166,9 +168,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void verifyNotReadOnly()
 		throws StoreException
 	{
-		// if (isReadOnly()) {
-		// throw new StoreException("Connection is in read-only mode");
-		// }
+		if (isReadOnly()) {
+			throw new StoreException("Connection is in read-only mode");
+		}
 	}
 
 	/**
@@ -245,6 +247,14 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		verifyNotTxnActive("transaction isolation level cannot be changed during a transaction");
 		this.level = level;
+	}
+
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
 	}
 
 	public boolean isAutoCommit()
