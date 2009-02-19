@@ -17,10 +17,10 @@
 		<property name="version" ref="adunaAppVersion" />
 	</bean>
 	<bean id="adunaAppVersion" class="info.aduna.app.AppVersion">
-		<property name="major" value="2" />
-		<property name="minor" value="2" />
-		<property name="micro" value="1" />
-		<property name="modifier" value="SNAPSHOT" />
+		<property name="major" value="3" />
+		<property name="minor" value="0" />
+		<property name="micro" value="0" />
+		<property name="modifier" value="alpha1" />
 	</bean>
 
 <!-- Controllers -->
