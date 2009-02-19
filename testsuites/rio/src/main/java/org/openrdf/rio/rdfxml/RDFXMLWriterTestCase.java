@@ -5,7 +5,6 @@
  */
 package org.openrdf.rio.rdfxml;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -94,7 +93,8 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 
 		RepositoryConnection con2 = rep2.getConnection();
 
-		con2.add(new StringReader(writer.toString()), ciaFacts.toExternalForm(), rdfWriterFactory.getRDFFormat());
+		con2.add(new StringReader(writer.toString()), ciaFacts.toExternalForm(),
+				rdfWriterFactory.getRDFFormat());
 		long after = con2.size();
 		con2.close();
 
