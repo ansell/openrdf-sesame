@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -13,21 +13,37 @@ import org.openrdf.store.StoreException;
 
 /**
  * An interface for an RDF Storage. RDF Sails can store RDF statements and
- * evaluate queries over them. Statements can be stored in named contexts or in
- * the null context. Contexts can be used to group sets of statements that
- * logically belong together, for example because they come from the same
- * source. Both URIs and bnodes can be used as context identifiers.
+ * evaluate queries over them. Statements can optionally be stored in contexts,
+ * which are identified by URIs or blank nodes. Contexts can be used to group
+ * sets of statements that logically belong together, for example because they
+ * come from the same source.
  * 
  * @author Arjohn Kampman
  */
 public interface Sail {
 
-	public SailMetaData getMetaData()
-		throws StoreException;
-
 	public void setDataDir(File dataDir);
 
 	public File getDataDir();
+
+	public SailMetaData getMetaData()
+		throws StoreException;
+
+	/**
+	 * Gets a URIFactory object that can be used to create Sail-specific URI
+	 * objects.
+	 * 
+	 * @return a URIFactory object for this Sail object.
+	 */
+	public URIFactory getURIFactory();
+
+	/**
+	 * Gets a LiteralFactory object that can be used to create Sail-specific
+	 * literal objects.
+	 * 
+	 * @return a LiteralFactory object for this Sail object.
+	 */
+	public LiteralFactory getLiteralFactory();
 
 	/**
 	 * Initializes the Sail. Care should be taken that required initialization
@@ -61,23 +77,9 @@ public interface Sail {
 	 * Sail.
 	 * 
 	 * @throws StoreException
-	 *         If no transaction could be started, for example because the Sail
-	 *         is not writable.
+	 *         If the Sail object encountered an error or unexpected situation
+	 *         internally.
 	 */
 	public SailConnection getConnection()
 		throws StoreException;
-
-	/**
-	 * Gets a URIFactory object that can be used to create URIs.
-	 * 
-	 * @return a URIFactory object for this Sail object.
-	 */
-	public URIFactory getURIFactory();
-
-	/**
-	 * Gets a LiteralFactory object that can be used to create literals.
-	 * 
-	 * @return a LiteralFactory object for this Sail object.
-	 */
-	public LiteralFactory getLiteralFactory();
 }
