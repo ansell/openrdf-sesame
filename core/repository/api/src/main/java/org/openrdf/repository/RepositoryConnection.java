@@ -115,8 +115,8 @@ public interface RepositoryConnection {
 		throws StoreException;
 
 	/**
-	 * Retrieves this <code>Connection</code> object's current transaction
-	 * isolation level.
+	 * Retrieves this <tt>Connection</tt> object's current transaction isolation
+	 * level.
 	 * 
 	 * @return the current transaction isolation level.
 	 * @exception StoreException
@@ -129,13 +129,13 @@ public interface RepositoryConnection {
 
 	/**
 	 * Attempts to change the transaction isolation level for this
-	 * <code>Connection</code> object to the one given.
+	 * <tt>Connection</tt> object to the one given.
 	 * <P>
 	 * <B>Note:</B> If this method is called during a transaction, the result is
 	 * implementation-defined.
 	 * 
 	 * @param level
-	 *        Any Isolation, but <code>NONE</code> cannot be used because it
+	 *        Any Isolation, but <tt>NONE</tt> cannot be used because it
 	 *        specifies that transactions are not supported.
 	 * @exception StoreException
 	 *            if an access error occurs, this method is called on a closed
@@ -143,6 +143,32 @@ public interface RepositoryConnection {
 	 * @see #getTransactionIsolation
 	 */
 	public void setTransactionIsolation(Isolation level)
+		throws StoreException;
+
+	/**
+	 * Indicates whether this connection is in read-only mode.
+	 * 
+	 * @return <tt>true</tt> if this Connection object is read-only;
+	 *         <tt>false</tt> otherwise.
+	 * @throws StoreException
+	 *         If a repository access error occurs.
+	 */
+	public boolean isReadOnly()
+		throws StoreException;
+
+	/**
+	 * Puts this connection in read-only mode as a hint to the driver to enable
+	 * repository optimizations.
+	 * <p>
+	 * <b>Note:</b> This method cannot be called during a transaction.
+	 * 
+	 * @param readOnly
+	 *        <tt>true</tt> enables read-only mode; <tt>false</tt> disables it
+	 * @throws StoreException
+	 *         If a repository access error occurs or this method is called
+	 *         during a transaction.
+	 */
+	public void setReadOnly(boolean readOnly)
 		throws StoreException;
 
 	/**

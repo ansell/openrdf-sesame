@@ -145,6 +145,18 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().setTransactionIsolation(level);
 	}
 
+	public boolean isReadOnly()
+		throws StoreException
+	{
+		return getDelegate().isReadOnly();
+	}
+
+	public void setReadOnly(boolean readOnly)
+		throws StoreException
+	{
+		getDelegate().setReadOnly(readOnly);
+	}
+
 	@Override
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, StoreException
