@@ -37,6 +37,7 @@ import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.TupleQueryModel;
+import org.openrdf.store.ConnectionClosedException;
 import org.openrdf.store.StoreException;
 
 /**
@@ -706,17 +707,14 @@ public abstract class RDFStoreTest extends TestCase {
 					// invoking any further operation should cause a
 					// IllegalStateException
 					sharedCon.getStatements(null, null, null, true);
-					fail("should have caused an IllegalStateException");
+					fail("expected a ConnectionClosedException");
 				}
-				catch (InterruptedException e) {
-					fail(e.getMessage());
-				}
-				catch (StoreException e) {
-					e.printStackTrace();
-					fail(e.getMessage());
-				}
-				catch (IllegalStateException e) {
+				catch (ConnectionClosedException e) {
 					// do nothing, this is the expected behaviour
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+					fail("expected a ConnectionClosedException");
 				}
 			}
 		}; // end anonymous class declaration
@@ -882,9 +880,9 @@ public abstract class RDFStoreTest extends TestCase {
 			con.addStatement(picasso, RDF.TYPE, painter, context1);
 			con.addStatement(guernica, RDF.TYPE, painting, context1);
 			con.commit();
-			
+
 			assertEquals(4, countAllElements());
-			
+
 			con2.begin();
 			con2.addStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
 			String query = "SELECT S, P, O FROM {S} P {O}";
