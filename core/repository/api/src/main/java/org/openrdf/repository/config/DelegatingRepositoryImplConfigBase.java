@@ -9,7 +9,6 @@ import static org.openrdf.repository.config.RepositoryConfigSchema.DELEGATE;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.store.StoreConfigException;
 
