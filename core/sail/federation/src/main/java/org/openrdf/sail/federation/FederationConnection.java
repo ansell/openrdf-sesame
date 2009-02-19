@@ -15,8 +15,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.CollectionCursor;
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -60,6 +60,7 @@ import org.openrdf.sail.federation.optimizers.PrepareOwnedTupleExpr;
 import org.openrdf.sail.federation.signatures.BNodeSigner;
 import org.openrdf.sail.federation.signatures.SignedConnection;
 import org.openrdf.sail.helpers.SailConnectionBase;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -91,6 +92,14 @@ abstract class FederationConnection extends SailConnectionBase {
 		for (RepositoryConnection member : members) {
 			BNodeSigner signer = new BNodeSigner(bf, member.getValueFactory());
 			this.members.add(signer.sign(member));
+		}
+
+		// Set default isolation level
+		try {
+			setTransactionIsolation(Isolation.READ_COMMITTED);
+		}
+		catch (StoreException e) {
+			throw new RuntimeException("unexpected exception", e);
 		}
 	}
 
@@ -309,13 +318,13 @@ abstract class FederationConnection extends SailConnectionBase {
 			}
 			catch (StoreException e) {
 				logger.error("Failed to execute procedure on federation members", e);
-				if (storeExc != null) {
+				if (storeExc == null) {
 					storeExc = e;
 				}
 			}
 			catch (RuntimeException e) {
 				logger.error("Failed to execute procedure on federation members", e);
-				if (runtimeExc != null) {
+				if (runtimeExc == null) {
 					runtimeExc = e;
 				}
 			}

@@ -14,8 +14,8 @@ import java.util.List;
 import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.CollectionCursor;
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -51,6 +51,7 @@ import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
 import org.openrdf.sail.memory.model.ReadMode;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -89,6 +90,15 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected MemoryStoreConnection(MemoryStore store) {
 		this.store = store;
 		this.vf = store.createValueFactory();
+
+		// Set default isolation level (serializable since we don't allow
+		// concurrent transactions yet)
+		try {
+			setTransactionIsolation(Isolation.SERIALIZABLE);
+		}
+		catch (StoreException e) {
+			throw new RuntimeException("unexpected exception", e);
+		}
 	}
 
 	/*---------*
@@ -99,8 +109,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		return vf;
 	}
 
-	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings,
-			boolean includeInferred)
+	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		logger.trace("Incoming query model:\n{}", query.toString());
@@ -166,7 +175,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
-			final int snapshot = isAutoCommit() ? store.getCurrentSnapshot() : store.getCurrentSnapshot() + 1 ;
+			final int snapshot = isAutoCommit() ? store.getCurrentSnapshot() : store.getCurrentSnapshot() + 1;
 			final ReadMode readMode = isAutoCommit() ? ReadMode.COMMITTED : ReadMode.TRANSACTION;
 
 			synchronized (vf.getURIFactory()) {
@@ -471,7 +480,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 
 		public Cursor<MemStatement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts) {
-			return store.createStatementIterator(subj, pred, obj, !includeInferred, snapshot, readMode, vf, contexts);
+			return store.createStatementIterator(subj, pred, obj, !includeInferred, snapshot, readMode, vf,
+					contexts);
 		}
 
 		public MemValueFactory getValueFactory() {
