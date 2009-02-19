@@ -16,7 +16,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -76,9 +75,9 @@ public class RepositoryConfig {
 	}
 
 	/**
-	 * Validates this configuration. A {@link StoreConfigException} is
-	 * thrown when the configuration is invalid. The exception should contain an
-	 * error message that indicates why the configuration is invalid.
+	 * Validates this configuration. A {@link StoreConfigException} is thrown
+	 * when the configuration is invalid. The exception should contain an error
+	 * message that indicates why the configuration is invalid.
 	 * 
 	 * @throws StoreConfigException
 	 *         If the configuration is invalid.
