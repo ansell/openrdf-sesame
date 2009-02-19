@@ -135,7 +135,9 @@ public class ConstantOptimizer implements QueryOptimizer {
 				naryValueOp.replaceWith(new ValueConstant(value));
 			}
 			catch (ValueExprEvaluationException e) {
-				logger.warn("Failed to evaluate NaryValueOperator with a constant argument", e);
+				// TODO: incompatible values types(?), remove the affected part of
+				// the query tree
+				logger.debug("Failed to evaluate NaryValueOperator with a constant argument", e);
 			}
 		}
 
