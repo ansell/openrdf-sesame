@@ -88,7 +88,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 				}
 			}
 			catch (ValueExprEvaluationException e) {
-				logger.warn("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+				// TODO: incompatible values types(?), remove the affected part of the query tree
+				logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
 			}
 			catch (QueryEvaluationException e) {
 				logger.error("Query evaluation exception caught", e);
@@ -125,7 +126,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 				}
 			}
 			catch (ValueExprEvaluationException e) {
-				logger.warn("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+				// TODO: incompatible values types(?), remove the affected part of the query tree
+				logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
 			}
 			catch (QueryEvaluationException e) {
 				logger.error("Query evaluation exception caught", e);
@@ -143,7 +145,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 					binaryValueOp.replaceWith(new ValueConstant(value));
 				}
 				catch (ValueExprEvaluationException e) {
-					logger.warn("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+				// TODO: incompatible values types(?), remove the affected part of the query tree
+					logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
 				}
 				catch (QueryEvaluationException e) {
 					logger.error("Query evaluation exception caught", e);
@@ -162,7 +165,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 					unaryValueOp.replaceWith(new ValueConstant(value));
 				}
 				catch (ValueExprEvaluationException e) {
-					logger.warn("Failed to evaluate UnaryValueOperator with a constant argument", e);
+				// TODO: incompatible values types(?), remove the affected part of the query tree
+					logger.debug("Failed to evaluate UnaryValueOperator with a constant argument", e);
 				}
 				catch (QueryEvaluationException e) {
 					logger.error("Query evaluation exception caught", e);
@@ -189,7 +193,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 				functionCall.replaceWith(new ValueConstant(value));
 			}
 			catch (ValueExprEvaluationException e) {
-				logger.warn("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+				// TODO: incompatible values types(?), remove the affected part of the query tree
+				logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
 			}
 			catch (QueryEvaluationException e) {
 				logger.error("Query evaluation exception caught", e);
