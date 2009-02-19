@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-sail</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.0-alpha1</version>
 	</parent>
 
 	<artifactId>sesame-sail-inferencer</artifactId>
@@ -56,9 +56,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/sail/inferencer</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/sail/inferencer</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/sail/inferencer</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/3.0-alpha1/core/sail/inferencer</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/3.0-alpha1/core/sail/inferencer</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/3.0-alpha1/core/sail/inferencer</url>
 	</scm>
 
 </project>

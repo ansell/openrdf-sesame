@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-rio</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.0-alpha1</version>
 	</parent>
 
 	<artifactId>sesame-rio-ntriples</artifactId>
@@ -25,9 +25,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/rio/ntriples</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/rio/ntriples</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/rio/ntriples</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/3.0-alpha1/core/rio/ntriples</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/3.0-alpha1/core/rio/ntriples</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/3.0-alpha1/core/rio/ntriples</url>
 	</scm>
 
 </project>
