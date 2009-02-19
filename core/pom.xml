@@ -1,0 +1,148 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>sesame-core</artifactId>
+	<version>3.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>console</module>
+		<module>http</module>
+		<module>model</module>
+		<module>store</module>
+		<module>queryalgebra</module>
+		<module>queryparser</module>
+		<module>queryresultio</module>
+		<module>repository</module>
+		<module>rio</module>
+		<module>runtime</module>
+		<module>client</module>
+		<module>sail</module>
+	</modules>
+
+	<name>OpenRDF Sesame Core</name>
+	<description>Core modules for OpenRDF Sesame</description>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<inherited>false</inherited>
+				<configuration>
+					<finalName>openrdf-sesame-${project.version}</finalName>
+					<descriptors>
+						<descriptor>src/main/assembly/onejar.xml</descriptor>
+						<descriptor>src/main/assembly/runtime.xml</descriptor>
+						<descriptor>src/main/assembly/client.xml</descriptor>
+						<descriptor>src/main/assembly/sdk.xml</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<inherited>false</inherited>
+				<executions>
+					<execution>
+						<phase>site</phase>
+						<configuration>
+							<tasks>
+								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
+									<target name="userdoc" />
+								</ant>
+								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
+									<target name="systemdoc" />
+								</ant>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>saxon</groupId>
+						<artifactId>saxon</artifactId>
+						<version>6.5.3</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+		</plugins>
+	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<aggregate>true</aggregate>
+					<source>1.5</source>
+					<groups>
+						<group>
+							<title>Repository API</title>
+							<packages>org.openrdf.repository*</packages>
+						</group>
+						<group>
+							<title>RDF Model API</title>
+							<packages>org.openrdf.model*</packages>
+						</group>
+						<group>
+							<title>Storage And Inference Layer (SAIL) API</title>
+							<packages>org.openrdf.sail*</packages>
+						</group>
+						<group>
+							<title>RDF Parsers and Writers (Rio) </title>
+							<packages>org.openrdf.rio*</packages>
+						</group>
+						<group>
+							<title>Query API and query engines</title>
+							<packages>org.openrdf.query:org.openrdf.query.impl:org.openrdf.query.algebra*:org.openrdf.query.parser*</packages>
+						</group>
+						<group>
+							<title>Query Result Parsers and Writers</title>
+							<packages>org.openrdf.query.resultio*</packages>
+						</group>
+						<group>
+							<title>OpenRDF Web Client</title>
+							<packages>org.openrdf.http.webclient*</packages>
+						</group>
+						<group>
+							<title>HTTP Protocol for Client/Server Communication</title>
+							<packages>org.openrdf.http*</packages>
+						</group>
+					</groups>
+					<links>
+						<link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+						<link>http://repository.aduna-software.org/docs/info.aduna/api/</link>
+					</links>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<reports>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core</url>
+	</scm>
+
+</project>

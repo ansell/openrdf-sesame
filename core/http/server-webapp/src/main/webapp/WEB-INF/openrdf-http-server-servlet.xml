@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+<!-- RepositoryManager -->
+	<bean id="openrdfRepositoryManager" class="org.openrdf.repository.manager.LocalRepositoryManager"
+		init-method="initialize" destroy-method="shutDown">
+		<constructor-arg>
+			<bean factory-bean="adunaAppConfig" factory-method="getDataDir" />
+		</constructor-arg>
+	</bean>
+	<bean id="adunaAppConfig" class="info.aduna.app.AppConfiguration" init-method="init"
+		destroy-method="destroy">
+		<property name="applicationId" value="OpenRDF Sesame" />
+		<property name="longName" value="OpenRDF Sesame" />
+		<property name="version" ref="adunaAppVersion" />
+	</bean>
+	<bean id="adunaAppVersion" class="info.aduna.app.AppVersion">
+		<property name="major" value="3" />
+		<property name="minor" value="0" />
+		<property name="micro" value="0" />
+		<property name="modifier" value="alpha1" />
+	</bean>
+
+<!-- Controllers -->
+	<bean class="org.openrdf.http.server.controllers.ContextController" />
+	<bean class="org.openrdf.http.server.controllers.NamespaceController" />
+	<bean class="org.openrdf.http.server.controllers.ProtocolController" />
+	<bean class="org.openrdf.http.server.controllers.RepositoryController" />
+	<bean class="org.openrdf.http.server.controllers.SizeController" />
+	<bean class="org.openrdf.http.server.controllers.StatementController" />
+	<bean class="org.openrdf.http.server.controllers.ConfigurationController" />
+	<bean class="org.openrdf.http.server.controllers.TemplateController" />
+	<bean class="org.openrdf.http.server.controllers.SchemaController" />
+	<bean class="org.openrdf.http.server.controllers.MetadataController" />
+	<bean class="org.openrdf.http.server.controllers.ConnectionController" />
+	<bean class="org.openrdf.http.server.controllers.QueryController" />
+	<bean class="org.openrdf.http.server.controllers.BNodeController" />
+
+<!-- Exceptions -->
+	<bean class="org.openrdf.http.server.ExceptionWritter" />
+
+<!-- Views -->
+	<bean id="viewNameTranslator" class="org.openrdf.http.server.ContentNegotiator" />
+
+<!-- Interceptors -->
+	<bean id="openrdfRepositoryInterceptor" class="org.openrdf.http.server.repository.RepositoryInterceptor">
+		<property name="repositoryManager" ref="openrdfRepositoryManager" />
+	</bean>
+
+<!-- Spring Processors -->
+	<bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />
+	<bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor" />
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="supportedMethods">
+			<list>
+				<value>HEAD</value>
+				<value>GET</value>
+				<value>POST</value>
+				<value>PUT</value>
+				<value>DELETE</value>
+			</list>
+		</property>
+	</bean>
+	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+		<property name="interceptors">
+			<list>
+				<ref bean="openrdfRepositoryInterceptor" />
+			</list>
+		</property>
+	</bean>
+</beans>

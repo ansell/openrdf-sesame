@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-core</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>sesame-queryalgebra</artifactId>
+	<packaging>pom</packaging>
+
+	<name>OpenRDF Sesame: Query algebra</name>
+	<description>Query algebra model and evaluation.</description>
+
+	<modules>
+		<module>model</module>
+		<module>evaluation</module>
+	</modules>
+
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/queryalgebra</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/queryalgebra</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/queryalgebra</url>
+	</scm>
+
+</project>

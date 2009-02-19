@@ -1,0 +1,32 @@
+<chapter id="chapter-codingstyle" xreflabel="Coding Style">
+	<title>Coding Style</title>
+
+	<para>
+		The following guide lines are used for the Java source code of Sesame:
+	</para>
+	<itemizedlist>
+		<listitem>Tabs are used for indentation</listitem>
+		<listitem>Code doesn't extend further than column 110</listitem>
+		<listitem>Comments do not extend further than column 80</listitem>
+		<listitem>Classes, methods, variables, etc. are as private as
+			possible (but not to the level where it gets inconvenient). So,
+			variables that are only accessed by the class they're defined in are
+			private, methods used by subclasses are protected, etc. This keeps
+			the APIs as clear and minimal as possible, making it easier to
+			restructure a class internally. Making classes, methods, etc. more
+			public is safe and easy, the reverse is hard and potentially breaks
+			backwards compatibility.</listitem>
+		<listitem>Class names start with an upper case letter (e.g.:
+			MyClassName), method- and variable names start with a lower case
+			letter (e.g. _name and getName()).</listitem>
+		<listitem>Class-, method- and variable names that consist of more than
+			one word capitalize the first letter of each word, for example:
+			MyClassName, myMethod() and _myVariable. Words that are actually
+			abbreviations of names appear as-is, e.g.: XMLUtil, RDFParser and
+			SeRQLEngine.</listitem>
+		<listitem>Names of constants (final variables) are in all-uppercase
+			letters.</listitem>
+		<listitem>All source files start with a comment containing the standard
+			BSD-header and mentions the appropriate copyright holder(s).</listitem>
+	</itemizedlist>
+</chapter>

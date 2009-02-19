@@ -1,0 +1,76 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>sesame-compliance</artifactId>
+	<packaging>pom</packaging>
+
+	<name>OpenRDF Sesame compliance tests</name>
+	<description>OpenRDF Sesame compliance tests</description>
+
+	<modules>
+		<module>model</module>
+		<module>rio</module>
+		<module>http</module>
+		<module>store</module>
+		<module>serql</module>
+		<module>sparql</module>
+	</modules>
+
+	<properties>
+		<openrdf.sesame.version>3.0.0-SNAPSHOT</openrdf.sesame.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>		
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-http-testserver</artifactId>
+				<version>${openrdf.sesame.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-rio-testsuite</artifactId>
+				<version>${openrdf.sesame.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-store-testsuite</artifactId>
+				<version>${openrdf.sesame.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-serql-testsuite</artifactId>
+				<version>${openrdf.sesame.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-sparql-testsuite</artifactId>
+				<version>${openrdf.sesame.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-queryparser-sparql-compliance</artifactId>
+				<version>${openrdf.sesame.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/compliance</url>
+	</scm>
+
+</project>

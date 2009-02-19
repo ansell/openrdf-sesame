@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="sesame2" default="help" basedir=".">
+
+	<target name="help" description="Usage information">
+		<echo message="Sesame 3 Release Builder" />
+		<echo message="========================" />
+		<echo message="The purpose of this Ant build file is to create releases for Sesame 3." />
+		<echo message="It is not intended to capture every aspect of project development. Please use Maven for development purposes." />
+		<echo message=" " />
+		<echo message="Available targets: " />
+		<echo message=" " />
+		<echo message="- clean: deletes artifacts" />
+		<echo message="- build: builds artifacts" />
+		<echo message="- package: package all of Sesame for release" />
+		<echo message="- docs:		create user and system documentation only" />
+	</target>
+
+	<target name="clean">
+		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+			<env key="MAVEN_OPTS" value="-Xmx512m"/>
+			<arg line="clean" />
+		</exec>
+
+		<exec os="Linux" executable="mvn" failonerror="true">
+			<env key="MAVEN_OPTS" value="-Xmx512m"/>
+			<arg line="clean" />
+		</exec>
+	</target>
+
+	<target name="build" depends="mvn-package,override-services" description="Creates artifacts"/>
+
+	<target name="mvn-package">
+		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+			<env key="MAVEN_OPTS" value="-Xmx512m"/>
+			<arg line="-Dmaven.test.skip=true package assembly:assembly" />
+		</exec>
+
+		<exec os="Linux" executable="mvn" failonerror="true">
+			<env key="MAVEN_OPTS" value="-Xmx512m"/>
+			<arg line="-Dmaven.test.skip=true package assembly:assembly" />
+		</exec>
+	</target>
+
+	<target name="package" depends="issuewarnings,mvn,override-services" description="Creates and packages release artifacts"/>
+
+	<target name="mvn">
+		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+			<env key="MAVEN_OPTS" value="-Xmx512m"/>
+			<arg line="clean source:jar package site assembly:assembly" />
+		</exec>
+
+		<exec os="Linux" executable="mvn" failonerror="true">
+			<env key="MAVEN_OPTS" value="-Xmx512m"/>
+			<arg line="clean source:jar package site assembly:assembly" />
+		</exec>
+	</target>
+
+	<target name="issuewarnings">
+		<echo message="WARNING: Do not forget to update the version number in:" />
+		<echo message=" - org.openrdf.console.Console" />
+		<input>Press return to continue</input>
+	</target>
+
+	<target name="docs" depends="mvn-docs" description="Create user and system documentation only"/>
+
+	<target name="mvn-docs">
+		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+			<arg line="-N clean site" />
+		</exec>
+
+		<exec os="Linux" executable="mvn" failonerror="true">
+			<arg line="-N clean site" />
+		</exec>
+	</target>
+
+	<target name="override-services">
+		<xmlproperty file="pom.xml" />
+
+		<antcall target="concat-service-file">
+			<param name="service" value="org.openrdf.query.algebra.evaluation.function.Function"/>
+		</antcall>
+		<antcall target="concat-service-file">
+			<param name="service" value="org.openrdf.query.parser.QueryParserFactory"/>
+		</antcall>
+		<antcall target="concat-service-file">
+			<param name="service" value="org.openrdf.query.resultio.BooleanQueryResultParserFactory"/>
+		</antcall>
+		<antcall target="concat-service-file">
+			<param name="service" value="org.openrdf.query.resultio.BooleanQueryResultWriterFactory"/>
+		</antcall>
+		<antcall target="concat-service-file">
+			<param name="service" value="org.openrdf.query.resultio.TupleQueryResultParserFactory"/>
+		</antcall>
+		<antcall target="concat-service-file">
+			<param name="service" value="org.openrdf.query.resultio.TupleQueryResultWriterFactory"/>
+		</antcall>
+		<antcall target="concat-service-file">
+			<param name="service" value="org.openrdf.repository.config.RepositoryFactory"/>
+		</antcall>
+		<antcall target="concat-service-file">
+			<param name="service" value="org.openrdf.rio.RDFParserFactory"/>
+		</antcall>
+		<antcall target="concat-service-file">
+			<param name="service" value="org.openrdf.rio.RDFWriterFactory"/>
+		</antcall>
+
+		<zip destfile="target/openrdf-sesame-${project.version}-client.jar" update="true">
+			<fileset dir="target/services"/>
+		</zip>
+
+		<antcall target="concat-file">
+			<param name="path" value="META-INF/org.openrdf.store.schemas"/>
+		</antcall>
+		<antcall target="concat-file">
+			<param name="path" value="META-INF/org.openrdf.repository.templates"/>
+		</antcall>
+		<antcall target="concat-service-file">
+			<param name="service" value="org.openrdf.sail.config.SailFactory"/>
+		</antcall>
+
+		<zip destfile="target/openrdf-sesame-${project.version}-runtime.jar" update="true">
+			<fileset dir="target/services"/>
+		</zip>
+
+		<zip destfile="target/openrdf-sesame-${project.version}-onejar.jar" update="true">
+			<fileset dir="target/services"/>
+		</zip>
+	</target>
+
+	<target name="concat-service-file">
+		<antcall target="concat-file">
+			<param name="path" value="META-INF/services/${service}"/>
+		</antcall>
+	</target>
+
+	<target name="concat-file">
+		<echo message="${path}"/>
+
+		<concat destfile="target/services/${path}" fixlastline="yes">
+			<fileset dir="." includes="**/src/main/resources/${path}"/>
+		</concat>
+	</target>
+
+</project>

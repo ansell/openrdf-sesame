@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-core</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>sesame-sail</artifactId>
+	<packaging>pom</packaging>
+
+	<name>OpenRDF Sesame: Sail</name>
+	<description>Sail API and implementations.</description>
+
+	<modules>
+		<module>api</module>
+		<module>inferencer</module>
+		<module>memory</module>
+		<module>nativerdf</module>
+		<module>rdbms</module>
+		<module>federation</module>
+		<module>dataset</module>
+	</modules>
+
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/sail</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/sail</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/sail</url>
+	</scm>
+
+</project>

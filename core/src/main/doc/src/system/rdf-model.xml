@@ -1,0 +1,46 @@
+<chapter id="chapter-rdfmodel" xreflabel="RDF model">
+	<title>RDF Model</title>
+
+	<figure id="figure-rdf-model-uml" float="1">
+		<title>Class diagram for the RDF model</title>
+		<mediaobject>
+			<imageobject>
+				<imagedata fileref="figures/org_openrdf_model.jpg"/>
+			</imageobject>
+		</mediaobject>
+	</figure>
+
+	<para>
+		The class diagram above shows the interfaces that are defined in
+		Sesame's RDF Model, package
+			<ulink url="../api/org/openrdf/model/package-summary.html">
+			org.openrdf.model</ulink>.
+		The RDF entities "URI", "blank node" and "literal" are organized in a
+		hierarchy reflecting their use in RDF. The interfaces Value and Resource
+		are empty place holders to make this hierachical organization possible.
+		These place holders are also used in the Statement interface to
+		reference the appropriate set of value types for the subject and object.
+	</para>
+	<para>
+		Various implementations of the RDF Model interfaces are possible. For
+		example, a Sail implementation might have its own dedicated
+		implementation that adds Sail-specific functionality. The ValueFactory
+		interface allows one to transparently create any of these objects. Every
+		Sail is able to produce a ValueFactory object that can be used for this
+		purpose.
+	</para>
+
+	<section>
+		<title>Package org.openrdf.model.impl</title>
+		<para>
+			Package
+				<ulink url="../api/org/openrdf/model/impl/package-summary.html">
+				org.openrdf.model.impl</ulink>
+			contains a default implementation of the RDF Model interfaces. These
+			classes can be used by Sail implementations that have no need for
+			their own implementation. The classes are also useful when operating
+			outside the context of a Sail object, for example when using Rio as
+			a separate library.
+		</para>
+	</section>
+</chapter>

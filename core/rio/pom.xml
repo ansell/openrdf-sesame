@@ -1,0 +1,34 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-core</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>sesame-rio</artifactId>
+	<packaging>pom</packaging>
+
+	<name>OpenRDF Sesame: Rio</name>
+	<description>Rio (RDF I/O) is an API for parsers and writers of various RDF file formats.</description>
+
+	<modules>
+		<module>api</module>
+		<module>n3</module>
+		<module>ntriples</module>
+		<module>rdfxml</module>
+		<module>trix</module>
+		<module>turtle</module>
+		<module>trig</module>
+		<module>rdfa</module>
+	</modules>
+
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/rio</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/rio</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/rio</url>
+	</scm>
+
+</project>

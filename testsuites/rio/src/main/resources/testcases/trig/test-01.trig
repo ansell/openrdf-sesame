@@ -1,0 +1,13 @@
+# Empty graphs
+
+{ }
+
+:- {}
+
+<http://example.org/bob> 
+    { 
+    }
+ 
+<http://example.org/alice> :-
+    { 
+    }
