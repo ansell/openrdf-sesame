@@ -51,6 +51,11 @@ public class PreconditionSailConnection extends SailConnectionWrapper {
 	/**
 	 * Verifies that the connection is open, throws a {@link StoreException} if
 	 * it isn't.
+	 * 
+	 * @throws ConnectionClosedException
+	 *         If {@link #isOpen()} returns <tt>false</tt>.
+	 * @throws StoreException
+	 *         If the call to {@link #isOpen()} fails.
 	 */
 	protected void verifyIsOpen()
 		throws StoreException
