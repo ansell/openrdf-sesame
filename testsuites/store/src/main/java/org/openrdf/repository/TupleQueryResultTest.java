@@ -26,7 +26,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 
 	private String emptyResultQuery;
 
-	private String singleResultQuery;
+//	private String singleResultQuery;
 
 	private String multipleResultQuery;
 
@@ -62,29 +62,26 @@ public abstract class TupleQueryResultTest extends TestCase {
 	 */
 	private void buildQueries() {
 		StringBuilder query = new StringBuilder();
-
 		query.append("SELECT * ");
 		query.append("FROM {X} P {Y} ");
 		query.append("WHERE X != X ");
-
 		emptyResultQuery = query.toString();
 
+		/*
 		query = new StringBuilder();
-
 		query.append("SELECT DISTINCT P ");
 		query.append("FROM {} dc:publisher {P} ");
 		query.append("USING NAMESPACE ");
 		query.append("   dc = <http://purl.org/dc/elements/1.1/>");
-
 		singleResultQuery = query.toString();
-
+		 */
+		
 		query = new StringBuilder();
 		query.append("SELECT DISTINCT P, D ");
 		query.append("FROM {} dc:publisher {P}; ");
 		query.append("        dc:date {D} ");
 		query.append("USING NAMESPACE ");
 		query.append("   dc = <http://purl.org/dc/elements/1.1/>");
-
 		multipleResultQuery = query.toString();
 	}
 
