@@ -49,8 +49,6 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	 */
 	private SailConnection sailConnection;
 
-	private Isolation level = Isolation.READ_COMMITTED;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -95,13 +93,13 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	public Isolation getTransactionIsolation()
 		throws StoreException
 	{
-		return level;
+		return sailConnection.getTransactionIsolation();
 	}
 
-	public void setTransactionIsolation(Isolation level)
+	public void setTransactionIsolation(Isolation isolation)
 		throws StoreException
 	{
-		this.level = level;
+		sailConnection.setTransactionIsolation(isolation);
 	}
 
 	public boolean isReadOnly()

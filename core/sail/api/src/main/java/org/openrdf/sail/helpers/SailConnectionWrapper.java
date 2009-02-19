@@ -15,6 +15,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -70,6 +71,18 @@ public class SailConnectionWrapper implements SailConnection {
 		throws StoreException
 	{
 		getDelegate().close();
+	}
+
+	public Isolation getTransactionIsolation()
+		throws StoreException
+	{
+		return getDelegate().getTransactionIsolation();
+	}
+
+	public void setTransactionIsolation(Isolation isolation)
+		throws StoreException
+	{
+		getDelegate().setTransactionIsolation(isolation);
 	}
 
 	public boolean isReadOnly()

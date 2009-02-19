@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.sail.SailConnection;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -26,6 +27,8 @@ public abstract class SailConnectionBase implements SailConnection {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	private volatile Isolation isolation;
 
 	private volatile boolean readOnly;
 
@@ -47,6 +50,18 @@ public abstract class SailConnectionBase implements SailConnection {
 		throws StoreException
 	{
 		closed = true;
+	}
+
+	public Isolation getTransactionIsolation()
+		throws StoreException
+	{
+		return isolation;
+	}
+
+	public void setTransactionIsolation(Isolation isolation)
+		throws StoreException
+	{
+		this.isolation = isolation;
 	}
 
 	public boolean isReadOnly()
