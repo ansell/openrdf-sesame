@@ -47,6 +47,7 @@ import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -81,6 +82,15 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	{
 		this.nativeStore = nativeStore;
 		sailChangedEvent = new DefaultSailChangedEvent(nativeStore);
+
+		// Set default isolation level (serializable since we don't allow
+		// concurrent transactions yet)
+		try {
+			setTransactionIsolation(Isolation.SERIALIZABLE);
+		}
+		catch (StoreException e) {
+			throw new RuntimeException("unexpected exception", e);
+		}
 	}
 
 	/*---------*
@@ -104,7 +114,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		try {
 			replaceValues(query);
 
-			NativeTripleSource tripleSource = new NativeTripleSource(nativeStore, includeInferred, !isAutoCommit());
+			NativeTripleSource tripleSource = new NativeTripleSource(nativeStore, includeInferred,
+					!isAutoCommit());
 			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, query);
 
 			QueryOptimizerList optimizerList = new QueryOptimizerList();

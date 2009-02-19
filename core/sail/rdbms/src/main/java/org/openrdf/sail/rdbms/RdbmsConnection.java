@@ -33,6 +33,7 @@ import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -63,6 +64,15 @@ public class RdbmsConnection extends SailConnectionBase {
 		this.sail = sail;
 		this.vf = sail.getValueFactory();
 		this.triples = triples;
+
+		// Set default isolation level (serializable since we don't allow
+		// concurrent transactions yet)
+		try {
+			setTransactionIsolation(Isolation.SERIALIZABLE);
+		}
+		catch (StoreException e) {
+			throw new RuntimeException("unexpected exception", e);
+		}
 	}
 
 	public RdbmsValueFactory getValueFactory() {
@@ -154,8 +164,8 @@ public class RdbmsConnection extends SailConnectionBase {
 		}
 	}
 
-	public Cursor<? extends Statement> getStatements(Resource subj, URI pred,
-			Value obj, boolean includeInferred, Resource... contexts)
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		RdbmsResource s = vf.asRdbmsResource(subj);
@@ -190,8 +200,7 @@ public class RdbmsConnection extends SailConnectionBase {
 		}
 	}
 
-	public Cursor<BindingSet> evaluate(QueryModel query,
-			BindingSet bindings, boolean includeInferred)
+	public Cursor<BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		triples.flush();
