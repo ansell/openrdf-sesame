@@ -14,6 +14,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -42,6 +43,36 @@ public interface SailConnection {
 	 * rolled back. The connection can no longer be used once it is closed.
 	 */
 	public void close()
+		throws StoreException;
+
+	/**
+	 * Retrieves this connection's current transaction isolation level.
+	 * 
+	 * @return The current transaction isolation level.
+	 * @exception StoreException
+	 *            If an access error occurs or this method is called on a closed
+	 *            connection
+	 * @see #setTransactionIsolation
+	 */
+	public Isolation getTransactionIsolation()
+		throws StoreException;
+
+	/**
+	 * Attempts to change the transaction isolation level for this connection to
+	 * the specified value.
+	 * <P>
+	 * <B>Note:</B> If this method is called during a transaction, the result is
+	 * implementation-defined.
+	 * 
+	 * @param isolation
+	 *        Any Isolation except for {@link Isolation#NONE NONE}, since that
+	 *        indicates that transactions are not supported.
+	 * @exception StoreException
+	 *            If an access error occurs, this method is called on a closed
+	 *            connection
+	 * @see #getTransactionIsolation
+	 */
+	public void setTransactionIsolation(Isolation isolation)
 		throws StoreException;
 
 	/**

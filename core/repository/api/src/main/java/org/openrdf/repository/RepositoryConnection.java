@@ -115,12 +115,11 @@ public interface RepositoryConnection {
 		throws StoreException;
 
 	/**
-	 * Retrieves this <tt>Connection</tt> object's current transaction isolation
-	 * level.
+	 * Retrieves this connection's current transaction isolation level.
 	 * 
-	 * @return the current transaction isolation level.
+	 * @return The current transaction isolation level.
 	 * @exception StoreException
-	 *            if an access error occurs or this method is called on a closed
+	 *            If an access error occurs or this method is called on a closed
 	 *            connection
 	 * @see #setTransactionIsolation
 	 */
@@ -128,21 +127,21 @@ public interface RepositoryConnection {
 		throws StoreException;
 
 	/**
-	 * Attempts to change the transaction isolation level for this
-	 * <tt>Connection</tt> object to the one given.
+	 * Attempts to change the transaction isolation level for this connection to
+	 * the specified value.
 	 * <P>
 	 * <B>Note:</B> If this method is called during a transaction, the result is
 	 * implementation-defined.
 	 * 
-	 * @param level
-	 *        Any Isolation, but <tt>NONE</tt> cannot be used because it
-	 *        specifies that transactions are not supported.
+	 * @param isolation
+	 *        Any Isolation except for {@link Isolation#NONE NONE}, since that
+	 *        indicates that transactions are not supported.
 	 * @exception StoreException
-	 *            if an access error occurs, this method is called on a closed
+	 *            If an access error occurs, this method is called on a closed
 	 *            connection
 	 * @see #getTransactionIsolation
 	 */
-	public void setTransactionIsolation(Isolation level)
+	public void setTransactionIsolation(Isolation isolation)
 		throws StoreException;
 
 	/**
