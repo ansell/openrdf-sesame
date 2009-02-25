@@ -79,6 +79,7 @@ public class SesameServer {
 				printUsage(options);
 				System.exit(1);
 			}
+
 			String portString = commandLine.getOptionValue(portOption.getOpt());
 			int port = DEFAULT_PORT;
 			if (portString != null) {
@@ -107,16 +108,18 @@ public class SesameServer {
 			}
 
 			server.start();
+
+			System.out.println("Server listening on port " + port);
+			System.out.println("data dir: " + server.getDataDir());
 		}
 		catch (ParseException e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
-
 	}
 
 	private static void printUsage(Options options) {
-		System.out.println("Sesame Server, an standalone RDF server.");
+		System.out.println("Sesame Server, a standalone RDF server.");
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.setWidth(80);
 		formatter.printHelp("server [OPTION]", options);
@@ -124,15 +127,15 @@ public class SesameServer {
 		System.out.println("For bug reports and suggestions, see http://www.openrdf.org/");
 	}
 
-	public static int DEFAULT_PORT = 8080;
+	public static final int DEFAULT_PORT = 8080;
 
-	private File dataDir;
+	private final File dataDir;
 
-	private Server jetty;
+	private final Server jetty;
 
-	private RepositoryManager manager;
+	private final RepositoryManager manager;
 
-	private SesameServlet servlet;
+	private final SesameServlet servlet;
 
 	public SesameServer()
 		throws IOException, StoreConfigException
@@ -155,10 +158,7 @@ public class SesameServer {
 	public SesameServer(int port, File dir)
 		throws IOException, StoreConfigException
 	{
-		this.dataDir = dir;
-		if (dataDir == null) {
-			dataDir = createTempDir();
-		}
+		this.dataDir = dir != null ? dir : createTempDir();
 		manager = new LocalRepositoryManager(dataDir);
 		manager.initialize();
 		jetty = new Server(port);
@@ -177,9 +177,14 @@ public class SesameServer {
 		if (name == null || name.trim().length() == 0) {
 			jetty.setSendServerVersion(false);
 			servlet.setServerName(null);
-		} else {
+		}
+		else {
 			servlet.setServerName(name);
 		}
+	}
+
+	public File getDataDir() {
+		return dataDir;
 	}
 
 	private File createTempDir()
