@@ -43,7 +43,6 @@
 	</fileSets>
 
 	<files>
-		<!--
 		<file>
 			<source>src/main/dist/bin/server.bat</source>
 			<outputDirectory>bin</outputDirectory>
@@ -57,7 +56,6 @@
 			<lineEnding>unix</lineEnding>
 			<filtered>true</filtered>
 		</file>
-		-->
 		<file>
 			<source>src/main/dist/bin/console.bat</source>
 			<outputDirectory>bin</outputDirectory>
