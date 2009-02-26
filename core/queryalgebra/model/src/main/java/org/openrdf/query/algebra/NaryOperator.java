@@ -6,7 +6,7 @@
 package org.openrdf.query.algebra;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -37,16 +37,14 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	 * Creates a new n-ary operator.
 	 */
 	public NaryOperator(Expr... args) {
-		setArgs(args);
+		setArgs(Arrays.asList(args));
 	}
 
 	/**
 	 * Creates a new n-ary operator.
 	 */
-	public NaryOperator(Collection<? extends Expr> args) {
-		for (Expr arg : args) {
-			addArg(arg);
-		}
+	public NaryOperator(List<? extends Expr> args) {
+		setArgs(args);
 	}
 
 	/*---------*
@@ -58,7 +56,7 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	 * 
 	 * @return A copy of the current argument list.
 	 */
-	public List<Expr> getArgs() {
+	public List<? extends Expr> getArgs() {
 		return new CopyOnWriteArrayList<Expr>(args);
 	}
 
@@ -86,7 +84,7 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	/**
 	 * Sets the arguments of this n-ary tuple operator.
 	 */
-	public void addArgs(Expr... args) {
+	public void addArgs(List<? extends Expr> args) {
 		assert args != null;
 		for (Expr arg : args) {
 			addArg(arg);
@@ -103,7 +101,7 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	/**
 	 * Sets the arguments of this n-ary operator.
 	 */
-	public void setArgs(Expr... args) {
+	public void setArgs(List<? extends Expr> args) {
 		this.args.clear();
 		addArgs(args);
 	}
