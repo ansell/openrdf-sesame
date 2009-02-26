@@ -5,7 +5,7 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * A call to an (external) function that operates on zero or more arguments.
@@ -40,7 +40,7 @@ public class FunctionCall extends NaryValueOperator implements ValueExpr {
 		setURI(uri);
 	}
 
-	public FunctionCall(String uri, Collection<ValueExpr> args) {
+	public FunctionCall(String uri, List<ValueExpr> args) {
 		super(args);
 		setURI(uri);
 	}

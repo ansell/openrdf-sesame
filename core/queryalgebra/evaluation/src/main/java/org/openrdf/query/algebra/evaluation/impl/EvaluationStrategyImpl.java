@@ -884,7 +884,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new EvaluationException("Unknown function '" + node.getURI() + "'");
 		}
 
-		List<ValueExpr> args = node.getArgs();
+		List<? extends ValueExpr> args = node.getArgs();
 
 		Value[] argValues = new Value[args.size()];
 

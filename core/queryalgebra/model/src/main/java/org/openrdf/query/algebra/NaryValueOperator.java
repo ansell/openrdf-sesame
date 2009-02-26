@@ -5,7 +5,7 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * An abstract superclass for value operators which have one or more
@@ -38,7 +38,7 @@ public abstract class NaryValueOperator extends NaryOperator<ValueExpr> implemen
 	 * @param args
 	 *        The operator's arguments, must not be <tt>null</tt>.
 	 */
-	public NaryValueOperator(Collection<? extends ValueExpr> args) {
+	public NaryValueOperator(List<? extends ValueExpr> args) {
 		super(args);
 	}
 

@@ -5,8 +5,8 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,7 +34,7 @@ public abstract class NaryTupleOperator extends NaryOperator<TupleExpr> implemen
 	/**
 	 * Creates a new n-ary tuple operator.
 	 */
-	public NaryTupleOperator(Collection<? extends TupleExpr> args) {
+	public NaryTupleOperator(List<? extends TupleExpr> args) {
 		super(args);
 	}
 
