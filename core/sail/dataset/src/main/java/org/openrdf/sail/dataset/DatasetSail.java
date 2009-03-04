@@ -77,7 +77,7 @@ public class DatasetSail extends SailWrapper {
 	}
 
 	/**
-	 * null dataset indicates the graph is known, but will be loaded externally.
+	 * null dataset indicates the graph is known, but will not be loaded externally.
 	 */
 	public void addGraph(URI name, String dataset) {
 		graphs.put(name, dataset);
