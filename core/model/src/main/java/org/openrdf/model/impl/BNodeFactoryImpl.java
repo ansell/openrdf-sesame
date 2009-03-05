@@ -70,6 +70,7 @@ public class BNodeFactoryImpl implements BNodeFactory {
 		return nextBNodeID.get() != 0;
 	}
 
+	@Override
 	public String toString() {
 		return getClass().getSimpleName() + " " + bnodePrefix;
 	}

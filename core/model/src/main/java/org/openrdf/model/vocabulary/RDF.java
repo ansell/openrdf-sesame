@@ -15,8 +15,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 public class RDF {
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns# */
-	public static final String NAMESPACE =
-			"http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	public static final String NAMESPACE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#type */
 	public final static URI TYPE;
@@ -65,9 +64,8 @@ public class RDF {
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#nil */
 	public final static URI NIL;
-	
-	
-	static{
+
+	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		TYPE = factory.createURI(RDF.NAMESPACE, "type");
 		PROPERTY = factory.createURI(RDF.NAMESPACE, "Property");

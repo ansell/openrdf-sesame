@@ -304,8 +304,8 @@ public interface Model extends Set<Statement>, Serializable {
 
 	/**
 	 * Gets the object of the statement(s). If contains one or more statements,
-	 * all these statements should have the same object. A
-	 * {@link ModelException} is thrown if this is not the case.
+	 * all these statements should have the same object. A {@link ModelException}
+	 * is thrown if this is not the case.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
@@ -345,8 +345,8 @@ public interface Model extends Set<Statement>, Serializable {
 		throws ModelException;
 
 	/**
-	 * Utility method that casts the return value of {@link #objectValue()} to a URI,
-	 * or throws a ModelUtilException if that value is not a URI.
+	 * Utility method that casts the return value of {@link #objectValue()} to a
+	 * URI, or throws a ModelUtilException if that value is not a URI.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.

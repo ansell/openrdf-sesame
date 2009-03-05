@@ -82,14 +82,16 @@ public class ValueFactoryImpl extends LiteralFactoryImpl implements ValueFactory
 	}
 
 	public BNode createBNode() {
-		if (bnodes == null)
+		if (bnodes == null) {
 			throw new UnsupportedOperationException();
+		}
 		return bnodes.createBNode();
 	}
 
 	public BNode createBNode(String nodeID) {
-		if (bnodes == null)
+		if (bnodes == null) {
 			throw new UnsupportedOperationException();
+		}
 		return bnodes.createBNode(nodeID);
 	}
 
@@ -109,46 +111,57 @@ public class ValueFactoryImpl extends LiteralFactoryImpl implements ValueFactory
 		return uris.createURI(namespace, localName);
 	}
 
+	@Override
 	public Literal createLiteral(boolean value) {
 		return literals.createLiteral(value);
 	}
 
+	@Override
 	public Literal createLiteral(byte value) {
 		return literals.createLiteral(value);
 	}
 
+	@Override
 	public Literal createLiteral(double value) {
 		return literals.createLiteral(value);
 	}
 
+	@Override
 	public Literal createLiteral(float value) {
 		return literals.createLiteral(value);
 	}
 
+	@Override
 	public Literal createLiteral(int value) {
 		return literals.createLiteral(value);
 	}
 
+	@Override
 	public Literal createLiteral(long value) {
 		return literals.createLiteral(value);
 	}
 
+	@Override
 	public Literal createLiteral(short value) {
 		return literals.createLiteral(value);
 	}
 
+	@Override
 	public Literal createLiteral(String label, String language) {
 		return literals.createLiteral(label, language);
 	}
 
+	@Override
 	public Literal createLiteral(String label, URI datatype) {
 		return literals.createLiteral(label, datatype);
 	}
 
+	@Override
 	public Literal createLiteral(String label) {
 		return literals.createLiteral(label);
 	}
 
+	@Override
 	public Literal createLiteral(XMLGregorianCalendar calendar) {
 		return literals.createLiteral(calendar);
 	}

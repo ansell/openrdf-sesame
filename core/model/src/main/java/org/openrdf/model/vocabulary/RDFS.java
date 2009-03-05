@@ -15,8 +15,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 public class RDFS {
 
 	/** http://www.w3.org/2000/01/rdf-schema# */
-	public static final String NAMESPACE = 
-		"http://www.w3.org/2000/01/rdf-schema#";
+	public static final String NAMESPACE = "http://www.w3.org/2000/01/rdf-schema#";
 
 	/** http://www.w3.org/2000/01/rdf-schema#Resource */
 	public final static URI RESOURCE;
@@ -25,44 +24,44 @@ public class RDFS {
 	public final static URI LITERAL;
 
 	/** http://www.w3.org/2000/01/rdf-schema#Class */
-	public final static URI CLASS ;
+	public final static URI CLASS;
 
 	/** http://www.w3.org/2000/01/rdf-schema#subClassOf */
-	public final static URI SUBCLASSOF ;
+	public final static URI SUBCLASSOF;
 
 	/** http://www.w3.org/2000/01/rdf-schema#subPropertyOf */
-	public final static URI SUBPROPERTYOF ;
+	public final static URI SUBPROPERTYOF;
 
 	/** http://www.w3.org/2000/01/rdf-schema#domain */
-	public final static URI DOMAIN ;
+	public final static URI DOMAIN;
 
 	/** http://www.w3.org/2000/01/rdf-schema#range */
-	public final static URI RANGE ;
+	public final static URI RANGE;
 
 	/** http://www.w3.org/2000/01/rdf-schema#comment */
-	public final static URI COMMENT ;
+	public final static URI COMMENT;
 
 	/** http://www.w3.org/2000/01/rdf-schema#label */
-	public final static URI LABEL ;
+	public final static URI LABEL;
 
 	/** http://www.w3.org/2000/01/rdf-schema#Datatype */
-	public final static URI DATATYPE ;
+	public final static URI DATATYPE;
 
 	/** http://www.w3.org/2000/01/rdf-schema#Container */
-	public final static URI CONTAINER ;
+	public final static URI CONTAINER;
 
 	/** http://www.w3.org/2000/01/rdf-schema#member */
-	public final static URI MEMBER ;
+	public final static URI MEMBER;
 
 	/** http://www.w3.org/2000/01/rdf-schema#isDefinedBy */
-	public final static URI ISDEFINEDBY ;
+	public final static URI ISDEFINEDBY;
 
 	/** http://www.w3.org/2000/01/rdf-schema#seeAlso */
-	public final static URI SEEALSO ;
+	public final static URI SEEALSO;
 
 	/** http://www.w3.org/2000/01/rdf-schema#ContainerMembershipProperty */
 	public final static URI CONTAINERMEMBERSHIPPROPERTY;
-	
+
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		RESOURCE = factory.createURI(RDFS.NAMESPACE, "Resource");

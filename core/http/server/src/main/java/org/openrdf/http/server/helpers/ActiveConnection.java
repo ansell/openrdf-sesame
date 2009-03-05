@@ -18,9 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.openrdf.query.Query;
 import org.openrdf.repository.RepositoryConnection;
 
-
 /**
- *
  * @author James Leigh
  */
 public class ActiveConnection {

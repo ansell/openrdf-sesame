@@ -14,7 +14,10 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public class SESAME {
 
-	/** The Sesame Schema namespace (<tt>http://www.openrdf.org/schema/sesame#</tt>). */
+	/**
+	 * The Sesame Schema namespace (
+	 * <tt>http://www.openrdf.org/schema/sesame#</tt>).
+	 */
 	public static final String NAMESPACE = "http://www.openrdf.org/schema/sesame#";
 
 	/** <tt>http://www.openrdf.org/schema/sesame#directSubClassOf</tt> */
@@ -25,7 +28,7 @@ public class SESAME {
 
 	/** <tt>http://www.openrdf.org/schema/sesame#directType</tt> */
 	public final static URI DIRECTTYPE;
-	
+
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		DIRECTSUBCLASSOF = factory.createURI(SESAME.NAMESPACE, "directSubClassOf");

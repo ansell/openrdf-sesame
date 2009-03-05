@@ -30,8 +30,9 @@ public class OpenRDFUtil {
 	 * @returns a none-null array
 	 */
 	public static Resource[] notNull(Resource... contexts) {
-		if (contexts == null)
+		if (contexts == null) {
 			return DEFAULT_CONTEXTS;
+		}
 		return contexts;
 	}
 

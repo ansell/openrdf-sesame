@@ -378,8 +378,7 @@ public class HTTPConnection {
 	{
 		String mimeType = readContentType();
 		try {
-			Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
-			BooleanQueryResultFormat format = BooleanQueryResultFormat.matchMIMEType(mimeType, booleanFormats);
+			BooleanQueryResultFormat format = BooleanQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(mimeType);
 			BooleanQueryResultParser parser = QueryResultIO.createParser(format);
 			return parser.parse(method.getResponseBodyAsStream());
 		}

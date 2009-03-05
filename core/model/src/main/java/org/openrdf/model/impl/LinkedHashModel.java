@@ -32,8 +32,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.ModelUtil;
 
 /**
  * @author James Leigh
@@ -101,6 +101,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		namespaces.remove(prefix);
 	}
 
+	@Override
 	public int size() {
 		return statements.size();
 	}
@@ -154,6 +155,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		return false;
 	}
 
+	@Override
 	public Iterator iterator() {
 		return match(null, null, null);
 	}
@@ -164,8 +166,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 
 	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
 		Iterator iter = match(subj, pred, obj, contexts);
-		if (!iter.hasNext())
+		if (!iter.hasNext()) {
 			return false;
+		}
 		while (iter.hasNext()) {
 			iter.next();
 			iter.remove();
@@ -203,8 +206,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		Iterator<Value> iter = objects().iterator();
 		if (iter.hasNext()) {
 			Value obj = iter.next();
-			if (iter.hasNext())
+			if (iter.hasNext()) {
 				throw new ModelException();
+			}
 			return obj;
 		}
 		return null;
@@ -214,10 +218,12 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		throws ModelException
 	{
 		Value obj = objectValue();
-		if (obj == null)
+		if (obj == null) {
 			return null;
-		if (obj instanceof Literal)
+		}
+		if (obj instanceof Literal) {
 			return (Literal)obj;
+		}
 		throw new ModelException();
 	}
 
@@ -225,10 +231,12 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		throws ModelException
 	{
 		Value obj = objectValue();
-		if (obj == null)
+		if (obj == null) {
 			return null;
-		if (obj instanceof Resource)
+		}
+		if (obj instanceof Resource) {
 			return (Resource)obj;
+		}
 		throw new ModelException();
 	}
 
@@ -236,10 +244,12 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		throws ModelException
 	{
 		Value obj = objectValue();
-		if (obj == null)
+		if (obj == null) {
 			return null;
-		if (obj instanceof URI)
+		}
+		if (obj instanceof URI) {
 			return (URI)obj;
+		}
 		throw new ModelException();
 	}
 
@@ -247,18 +257,22 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		throws ModelException
 	{
 		Value obj = objectValue();
-		if (obj == null)
+		if (obj == null) {
 			return null;
+		}
 		return obj.stringValue();
 	}
 
+	@Override
 	public int hashCode() {
 		return size();
 	}
 
+	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
+		}
 		if (o instanceof Model) {
 			Model model = (Model)o;
 			return ModelUtil.equals(this, model);
@@ -279,17 +293,20 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 
 			@Override
 			public boolean remove(Object o) {
-				if (o instanceof Resource || o == null)
+				if (o instanceof Resource || o == null) {
 					return LinkedHashModel.this.remove(subj, pred, obj, (Resource)o);
+				}
 				return false;
 			}
 
 			@Override
 			public boolean add(Resource ctx) {
-				if (subj == null || pred == null || obj == null)
+				if (subj == null || pred == null || obj == null) {
 					throw new UnsupportedOperationException("Incomplete statement");
-				if (contains(ctx))
+				}
+				if (contains(ctx)) {
 					return false;
+				}
 				return LinkedHashModel.this.add(subj, pred, obj, ctx);
 			}
 
@@ -328,17 +345,20 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 
 			@Override
 			public boolean remove(Object o) {
-				if (o instanceof Value)
+				if (o instanceof Value) {
 					return LinkedHashModel.this.remove(subj, pred, (Value)o, contexts);
+				}
 				return false;
 			}
 
 			@Override
 			public boolean add(Value obj) {
-				if (subj == null || pred == null)
+				if (subj == null || pred == null) {
 					throw new UnsupportedOperationException("Incomplete statement");
-				if (contains(obj))
+				}
+				if (contains(obj)) {
 					return false;
+				}
 				return LinkedHashModel.this.add(subj, pred, obj, contexts);
 			}
 
@@ -377,17 +397,20 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 
 			@Override
 			public boolean remove(Object o) {
-				if (o instanceof URI)
+				if (o instanceof URI) {
 					return LinkedHashModel.this.remove(subj, (URI)o, obj, contexts);
+				}
 				return false;
 			}
 
 			@Override
 			public boolean add(URI pred) {
-				if (subj == null || obj == null)
+				if (subj == null || obj == null) {
 					throw new UnsupportedOperationException("Incomplete statement");
-				if (contains(pred))
+				}
+				if (contains(pred)) {
 					return false;
+				}
 				return LinkedHashModel.this.add(subj, pred, obj, contexts);
 			}
 
@@ -426,17 +449,20 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 
 			@Override
 			public boolean remove(Object o) {
-				if (o instanceof Resource)
+				if (o instanceof Resource) {
 					return LinkedHashModel.this.remove((Resource)o, pred, obj, contexts);
+				}
 				return false;
 			}
 
 			@Override
 			public boolean add(Resource subj) {
-				if (pred == null || obj == null)
+				if (pred == null || obj == null) {
 					throw new UnsupportedOperationException("Incomplete statement");
-				if (contains(subj))
+				}
+				if (contains(subj)) {
 					return false;
+				}
 				return LinkedHashModel.this.add(subj, pred, obj, contexts);
 			}
 
@@ -508,8 +534,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 	boolean matches(Resource[] stContext, Resource... contexts) {
 		if (stContext != null && stContext.length > 0) {
 			for (Resource c : stContext) {
-				if (!matches(c, contexts))
+				if (!matches(c, contexts)) {
 					return false;
+				}
 			}
 		}
 		return true;
@@ -636,13 +663,16 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 			return null;
 		}
 
+		@Override
 		public int hashCode() {
 			return size();
 		}
 
+		@Override
 		public boolean equals(Object o) {
-			if (this == o)
+			if (this == o) {
 				return true;
+			}
 			if (o instanceof Model) {
 				Model model = (Model)o;
 				return model.isEmpty();
@@ -733,22 +763,25 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		public boolean contains(Object o) {
 			if (o instanceof Statement) {
 				Statement st = (Statement)o;
-				if (accept(st))
+				if (accept(st)) {
 					return LinkedHashModel.this.contains(o);
+				}
 			}
 			return false;
 		}
 
 		@Override
 		public boolean add(Statement st) {
-			if (accept(st))
+			if (accept(st)) {
 				return LinkedHashModel.this.add(st);
+			}
 			throw new IllegalArgumentException("Statement is filtered out of view: " + st);
 		}
 
 		public boolean add(Resource s, URI p, Value o, Resource... c) {
-			if (!accept(s, p, o, c))
+			if (!accept(s, p, o, c)) {
 				throw new IllegalArgumentException("Statement is filtered out of view");
+			}
 			if (s == null) {
 				s = subj;
 			}
@@ -783,8 +816,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 
 		public boolean remove(Resource s, URI p, Value o, Resource... c) {
-			if (!accept(s, p, o, c))
+			if (!accept(s, p, o, c)) {
 				return false;
+			}
 			if (s == null) {
 				s = subj;
 			}
@@ -801,8 +835,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 
 		public boolean contains(Resource s, URI p, Value o, Resource... c) {
-			if (!accept(s, p, o, c))
+			if (!accept(s, p, o, c)) {
 				return false;
+			}
 			if (s == null) {
 				s = subj;
 			}
@@ -819,8 +854,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 
 		public Model filter(Resource s, URI p, Value o, Resource... c) {
-			if (!accept(s, p, o, c))
+			if (!accept(s, p, o, c)) {
 				return emptyModel();
+			}
 			if (s == null) {
 				s = subj;
 			}
@@ -870,8 +906,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 			Iterator<Value> iter = objects().iterator();
 			if (iter.hasNext()) {
 				Value obj = iter.next();
-				if (iter.hasNext())
+				if (iter.hasNext()) {
 					throw new ModelException();
+				}
 				return obj;
 			}
 			return null;
@@ -881,10 +918,12 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 			throws ModelException
 		{
 			Value obj = objectValue();
-			if (obj == null)
+			if (obj == null) {
 				return null;
-			if (obj instanceof Literal)
+			}
+			if (obj instanceof Literal) {
 				return (Literal)obj;
+			}
 			throw new ModelException();
 		}
 
@@ -892,10 +931,12 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 			throws ModelException
 		{
 			Value obj = objectValue();
-			if (obj == null)
+			if (obj == null) {
 				return null;
-			if (obj instanceof Resource)
+			}
+			if (obj instanceof Resource) {
 				return (Resource)obj;
+			}
 			throw new ModelException();
 		}
 
@@ -903,10 +944,12 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 			throws ModelException
 		{
 			Value obj = objectValue();
-			if (obj == null)
+			if (obj == null) {
 				return null;
-			if (obj instanceof URI)
+			}
+			if (obj instanceof URI) {
 				return (URI)obj;
+			}
 			throw new ModelException();
 		}
 
@@ -914,18 +957,22 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 			throws ModelException
 		{
 			Value obj = objectValue();
-			if (obj == null)
+			if (obj == null) {
 				return null;
+			}
 			return obj.stringValue();
 		}
 
+		@Override
 		public int hashCode() {
 			return size();
 		}
 
+		@Override
 		public boolean equals(Object o) {
-			if (this == o)
+			if (this == o) {
 				return true;
+			}
 			if (o instanceof Model) {
 				Model model = (Model)o;
 				return ModelUtil.equals(this, model);
@@ -980,8 +1027,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 				public V next() {
 					if (next == null) {
 						next = findNext();
-						if (next == null)
+						if (next == null) {
 							throw new NoSuchElementException();
+						}
 					}
 					current = next;
 					next = null;
@@ -991,8 +1039,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 				}
 
 				public void remove() {
-					if (current == null)
+					if (current == null) {
 						throw new IllegalStateException();
+					}
 					removeAll(set(node(current)), iter.getOwner());
 					current = null;
 				}
@@ -1000,8 +1049,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 				private ModelStatement findNext() {
 					while (iter.hasNext()) {
 						ModelStatement st = iter.next();
-						if (accept(st))
+						if (accept(st)) {
 							return st;
+						}
 					}
 					return null;
 				}
@@ -1041,8 +1091,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		protected abstract Set<ModelStatement> set(ModelNode<V> node);
 
 		boolean removeAll(Set<ModelStatement> remove, Set<ModelStatement> owner) {
-			if (remove.isEmpty())
+			if (remove.isEmpty()) {
 				return false;
+			}
 			for (ModelStatement st : remove) {
 				ModelNode<Resource> subj = st.subj;
 				Set<ModelStatement> subjects = subj.subjects;
@@ -1119,8 +1170,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 
 		public void remove() {
-			if (last == null)
+			if (last == null) {
 				throw new IllegalStateException();
+			}
 			removeIfNotOwner(statements);
 			removeIfNotOwner(last.subj.subjects);
 			removeIfNotOwner(last.pred.predicates);
@@ -1275,8 +1327,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		Set<ModelStatement> pred = st.pred.predicates;
 		Set<ModelStatement> obj = st.obj.objects;
 		Set<ModelStatement> ctx = st.ctx.contexts;
-		if (smallest(subj, pred, obj, ctx).contains(st))
+		if (smallest(subj, pred, obj, ctx).contains(st)) {
 			return false;
+		}
 		statements.add(st);
 		subj.add(st);
 		pred.add(st);
@@ -1297,8 +1350,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 	}
 
 	private <V extends Value> ModelNode<V> asGraphNode(V value) {
-		if (values.containsKey(value))
+		if (values.containsKey(value)) {
 			return values.get(value);
+		}
 		ModelNode<V> node = new ModelNode<V>(value);
 		values.put(value, node);
 		return node;

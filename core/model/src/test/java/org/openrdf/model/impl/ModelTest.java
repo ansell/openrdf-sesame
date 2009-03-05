@@ -18,27 +18,44 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 
 /**
- * 
  * @author James Leigh
  */
 public class ModelTest extends TestCase {
+
 	private static final String NS = "http://example.org/";
+
 	private ValueFactory vf = new ValueFactoryImpl();
+
 	private URI painter = vf.createURI(NS, "Painter");
+
 	private URI paints = vf.createURI(NS, "paints");
+
 	private URI painting = vf.createURI(NS, "Painting");
+
 	private URI picasso = vf.createURI(NS, "picasso");
+
 	private URI guernica = vf.createURI(NS, "guernica");
+
 	private URI rembrandt = vf.createURI(NS, "rembrandt");
+
 	private URI nightwatch = vf.createURI(NS, "nightwatch");
+
 	private URI context1 = vf.createURI(NS, "context1");
+
 	private URI context2 = vf.createURI(NS, "context2");
+
 	private Statement stmt1 = new StatementImpl(picasso, paints, guernica, null);
+
 	private Statement stmt2 = new StatementImpl(rembrandt, paints, nightwatch, null);
+
 	private List<Statement> stmts = Arrays.asList(stmt1, stmt2);
+
 	private Statement stc1 = new StatementImpl(picasso, paints, guernica, context1);
+
 	private Statement stc2 = new StatementImpl(rembrandt, paints, nightwatch, context2);
+
 	private List<Statement> stcs = Arrays.asList(stc1, stc2);
+
 	private Model model = createModel();
 
 	public Model createModel() {

@@ -234,16 +234,18 @@ public class ModelOrganizer {
 	{
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		InputStream in = cl.getResourceAsStream(path);
-		if (in == null)
+		if (in == null) {
 			return Collections.emptyList();
+		}
 		try {
 			String line;
 			List<URI> list = new ArrayList<URI>();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 			while ((line = reader.readLine()) != null) {
 				line = line.trim();
-				if (line.startsWith("#"))
+				if (line.startsWith("#")) {
 					continue;
+				}
 				list.add(vf.createURI(line));
 			}
 			return list;

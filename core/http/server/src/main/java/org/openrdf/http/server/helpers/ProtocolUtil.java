@@ -129,12 +129,14 @@ public class ProtocolUtil {
 		scanner.useDelimiter("&");
 		while (scanner.hasNext()) {
 			final String[] nameValue = scanner.next().split("=");
-			if (nameValue.length == 0 || nameValue.length > 2)
+			if (nameValue.length == 0 || nameValue.length > 2) {
 				throw new IllegalArgumentException("bad parameter");
+			}
 			final String name = URLDecoder.decode(nameValue[0], encoding);
 			String value = null;
-			if (nameValue.length == 2)
+			if (nameValue.length == 2) {
 				value = URLDecoder.decode(nameValue[1], encoding);
+			}
 			if (!parameters.containsKey(name)) {
 				parameters.put(name, new ArrayList<String>());
 			}
@@ -154,8 +156,9 @@ public class ProtocolUtil {
 
 			@Override
 			public String getParameter(String name) {
-				if (parameters.containsKey(name))
+				if (parameters.containsKey(name)) {
 					return parameters.get(name).get(0);
+				}
 				return super.getParameter(name);
 			}
 
@@ -223,7 +226,7 @@ public class ProtocolUtil {
 
 		String mimeType = HttpServerUtil.selectPreferredMIMEType(mimeTypes.iterator(), request);
 
-		if (!hasAcceptParam){ 
+		if (!hasAcceptParam) {
 			response.setHeader("Vary", HttpServerUtil.ACCEPT_HEADER_NAME);
 		}
 
@@ -271,10 +274,12 @@ public class ProtocolUtil {
 
 			@Override
 			public String getHeader(String name) {
-				if (header.equals(name) && values.length == 0)
+				if (header.equals(name) && values.length == 0) {
 					return null;
-				if (header.equals(name))
+				}
+				if (header.equals(name)) {
 					return values[0];
+				}
 				return super.getHeader(name);
 			}
 

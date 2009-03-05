@@ -12,7 +12,7 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
- * A factory for creating  literals.
+ * A factory for creating literals.
  * 
  * @author Arjohn Kampman
  * @author James Leigh
@@ -60,8 +60,8 @@ public interface LiteralFactory {
 	public Literal createLiteral(boolean value);
 
 	/**
-	 * Creates a new <tt>xsd:byte</tt>-typed literal representing the
-	 * specified value.
+	 * Creates a new <tt>xsd:byte</tt>-typed literal representing the specified
+	 * value.
 	 * 
 	 * @param value
 	 *        The value for the literal.
@@ -70,8 +70,8 @@ public interface LiteralFactory {
 	public Literal createLiteral(byte value);
 
 	/**
-	 * Creates a new <tt>xsd:short</tt>-typed literal representing the
-	 * specified value.
+	 * Creates a new <tt>xsd:short</tt>-typed literal representing the specified
+	 * value.
 	 * 
 	 * @param value
 	 *        The value for the literal.
@@ -90,8 +90,8 @@ public interface LiteralFactory {
 	public Literal createLiteral(int value);
 
 	/**
-	 * Creates a new <tt>xsd:long</tt>-typed literal representing the
-	 * specified value.
+	 * Creates a new <tt>xsd:long</tt>-typed literal representing the specified
+	 * value.
 	 * 
 	 * @param value
 	 *        The value for the literal.
@@ -100,8 +100,8 @@ public interface LiteralFactory {
 	public Literal createLiteral(long value);
 
 	/**
-	 * Creates a new <tt>xsd:float</tt>-typed literal representing the
-	 * specified value.
+	 * Creates a new <tt>xsd:float</tt>-typed literal representing the specified
+	 * value.
 	 * 
 	 * @param value
 	 *        The value for the literal.
@@ -110,8 +110,8 @@ public interface LiteralFactory {
 	public Literal createLiteral(float value);
 
 	/**
-	 * Creates a new <tt>xsd:double</tt>-typed literal representing the
-	 * specified value.
+	 * Creates a new <tt>xsd:double</tt>-typed literal representing the specified
+	 * value.
 	 * 
 	 * @param value
 	 *        The value for the literal.

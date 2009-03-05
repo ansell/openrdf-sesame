@@ -7,10 +7,9 @@ package org.openrdf.model.util;
 
 import org.openrdf.model.Model;
 
-
 /**
- * An exception thrown by {@link Model} and {@link ModelUtil} when specific conditions are not
- * met.
+ * An exception thrown by {@link Model} and {@link ModelUtil} when specific
+ * conditions are not met.
  * 
  * @author Arjohn Kampman
  */

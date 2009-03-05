@@ -368,9 +368,9 @@ public class ModelUtil {
 	 * combination of subject, predicate and contexts must match at least one
 	 * statement. In case more than one statement matches -- for example
 	 * statements from multiple contexts -- all these statements should have the
-	 * same object. A {@link ModelException} is thrown if these conditions
-	 * are not met. See {@link Model#match(Resource, URI, Value, Resource[])} for
-	 * a description of the parameter values.
+	 * same object. A {@link ModelException} is thrown if these conditions are
+	 * not met. See {@link Model#match(Resource, URI, Value, Resource[])} for a
+	 * description of the parameter values.
 	 * 
 	 * @return The object of the matched statement(s).
 	 * @throws ModelException
@@ -554,10 +554,11 @@ public class ModelUtil {
 
 	/**
 	 * Utility method that returns the value of
-	 * {@link #getOptionalObject(Model, Resource, URI, Resource[])}'s stringValue.
+	 * {@link #getOptionalObject(Model, Resource, URI, Resource[])}'s
+	 * stringValue.
 	 * 
-	 * @return The stirngValue of the matched statement's object, or <tt>null</tt> if no
-	 *         matching statements were found.
+	 * @return The stirngValue of the matched statement's object, or
+	 *         <tt>null</tt> if no matching statements were found.
 	 * @throws ModelException
 	 *         If such an exception is thrown by
 	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])}.

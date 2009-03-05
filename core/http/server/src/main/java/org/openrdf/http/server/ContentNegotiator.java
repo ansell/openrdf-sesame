@@ -164,8 +164,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		BooleanQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 		setContentType(resp, factory.getBooleanQueryResultFormat());
 		resp.setHeader(X_QUERY_TYPE, BOOLEAN_QUERY);
-		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod()))) {
 			return;
+		}
 
 		ServletOutputStream out = resp.getOutputStream();
 		try {
@@ -203,8 +204,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 			RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 			setContentType(resp, factory.getRDFFormat());
 			resp.setHeader(X_QUERY_TYPE, GRAPH_QUERY);
-			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod()))) {
 				return;
+			}
 
 			ServletOutputStream out = resp.getOutputStream();
 			try {
@@ -243,8 +245,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
 		RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 		setContentType(resp, factory.getRDFFormat());
-		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod()))) {
 			return;
+		}
 
 		ServletOutputStream out = resp.getOutputStream();
 		try {
@@ -284,8 +287,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 			RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
 			RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 			setContentType(resp, factory.getRDFFormat());
-			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod()))) {
 				return;
+			}
 
 			ServletOutputStream out = resp.getOutputStream();
 			try {
@@ -296,7 +300,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 				Set<String> namespaces = new HashSet<String>();
 				Model first10 = new LinkedHashModel();
 
-				for (int i=0; result.hasNext() && i < SMALL; i++) {
+				for (int i = 0; result.hasNext() && i < SMALL; i++) {
 					Statement st = result.next();
 					Resource subj = st.getSubject();
 					URI pred = st.getPredicate();
@@ -371,8 +375,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 	{
 		try {
 			resp.setContentType("text/plain");
-			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod()))) {
 				return;
+			}
 
 			ServletOutputStream writer = resp.getOutputStream();
 			try {
@@ -399,8 +404,9 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 			TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 			setContentType(resp, factory.getTupleQueryResultFormat());
 			resp.setHeader(X_QUERY_TYPE, BINDINGS_QUERY);
-			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod())))
+			if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod()))) {
 				return;
+			}
 
 			ServletOutputStream out = resp.getOutputStream();
 			try {
