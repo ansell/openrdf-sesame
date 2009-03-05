@@ -5,9 +5,7 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * A natural join between two tuple expressions.

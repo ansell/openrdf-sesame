@@ -75,7 +75,7 @@ public abstract class BinaryValueOperator extends NaryValueOperator implements V
 	public void setRightArg(ValueExpr rightArg) {
 		setArg(1, rightArg);
 	}
-	
+
 	@Override
 	public BinaryValueOperator clone() {
 		return (BinaryValueOperator)super.clone();

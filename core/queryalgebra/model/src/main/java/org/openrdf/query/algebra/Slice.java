@@ -88,8 +88,7 @@ public class Slice extends UnaryTupleOperator {
 	}
 
 	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		StringBuilder sb = new StringBuilder(256);
 
 		sb.append(super.getSignature());

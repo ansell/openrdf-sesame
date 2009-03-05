@@ -48,8 +48,7 @@ public abstract class SubQueryValueOperator extends QueryModelNodeBase implement
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (subQuery == current) {
 			setSubQuery((TupleExpr)replacement);
 		}

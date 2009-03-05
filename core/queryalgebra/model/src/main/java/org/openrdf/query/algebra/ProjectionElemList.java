@@ -95,8 +95,7 @@ public class ProjectionElemList extends QueryModelNodeBase {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		int index = elements.indexOf(current);
 		if (index >= 0) {
 			elements.set(index, (ProjectionElem)replacement);

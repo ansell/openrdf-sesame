@@ -62,8 +62,7 @@ public class ProjectionElem extends QueryModelNodeBase {
 	}
 
 	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		StringBuilder sb = new StringBuilder(32);
 		sb.append(super.getSignature());
 

@@ -40,6 +40,7 @@ public class Intersection extends BinaryTupleOperator {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public Set<String> getBindingNames() {
 		Set<String> bindingNames = new LinkedHashSet<String>(16);
 		bindingNames.addAll(getLeftArg().getBindingNames());

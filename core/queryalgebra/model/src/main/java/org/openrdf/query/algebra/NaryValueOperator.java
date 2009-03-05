@@ -8,8 +8,7 @@ package org.openrdf.query.algebra;
 import java.util.List;
 
 /**
- * An abstract superclass for value operators which have one or more
- * arguments.
+ * An abstract superclass for value operators which have one or more arguments.
  */
 public abstract class NaryValueOperator extends NaryOperator<ValueExpr> implements ValueExpr {
 

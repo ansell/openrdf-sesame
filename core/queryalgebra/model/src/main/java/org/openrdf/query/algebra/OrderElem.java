@@ -72,8 +72,7 @@ public class OrderElem extends QueryModelNodeBase {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (expr == current) {
 			setExpr((ValueExpr)replacement);
 		}
@@ -83,8 +82,7 @@ public class OrderElem extends QueryModelNodeBase {
 	}
 
 	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		return super.getSignature() + " (" + (ascending ? "ASC" : "DESC") + ")";
 	}
 

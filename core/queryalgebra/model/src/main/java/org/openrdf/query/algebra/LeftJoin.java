@@ -5,7 +5,6 @@
  */
 package org.openrdf.query.algebra;
 
-
 /**
  * The LeftJoin operator, as defined in <a
  * href="http://www.w3.org/TR/rdf-sparql-query/#algLeftJoin">SPARQL Query
@@ -76,8 +75,7 @@ public class LeftJoin extends BinaryTupleOperator {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (condition == current) {
 			setCondition((ValueExpr)replacement);
 		}

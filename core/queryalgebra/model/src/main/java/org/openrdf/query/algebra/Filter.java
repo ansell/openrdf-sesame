@@ -64,8 +64,7 @@ public class Filter extends UnaryTupleOperator {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (condition == current) {
 			setCondition((ValueExpr)replacement);
 		}

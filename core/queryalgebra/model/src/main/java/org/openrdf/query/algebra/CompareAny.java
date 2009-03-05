@@ -51,8 +51,7 @@ public class CompareAny extends CompareSubQueryValueOperator {
 	}
 
 	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		return super.getSignature() + " (" + operator.getSymbol() + ")";
 	}
 

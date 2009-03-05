@@ -51,8 +51,7 @@ public class ValueConstant extends QueryModelNodeBase implements ValueExpr {
 	}
 
 	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		StringBuilder sb = new StringBuilder(64);
 
 		sb.append(super.getSignature());

@@ -70,8 +70,7 @@ public class Projection extends UnaryTupleOperator {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (projElemList == current) {
 			setProjectionElemList((ProjectionElemList)replacement);
 		}
