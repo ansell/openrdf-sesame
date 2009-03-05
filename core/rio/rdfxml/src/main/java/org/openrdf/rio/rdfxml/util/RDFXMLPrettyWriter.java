@@ -37,13 +37,12 @@ import org.openrdf.rio.rdfxml.RDFXMLWriter;
  * is broken.
  * <p>
  * The abbreviations used are <a
- * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-typed-nodes">typed
- * node elements</a>, <a
- * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-empty-property-elements">empty
- * property elements</a> and <a
- * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-node-property-elements">striped
- * syntax</a>. Note that these abbreviations require that statements are
- * written in the appropriate order.
+ * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-typed-nodes"
+ * >typed node elements</a>, <a href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-empty-property-elements"
+ * >empty property elements</a> and <a href=
+ * "http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-node-property-elements"
+ * >striped syntax</a>. Note that these abbreviations require that statements
+ * are written in the appropriate order.
  * <p>
  * Striped syntax means that when the object of a statement is the subject of
  * the next statement we can nest the descriptions in each other.
@@ -179,11 +178,13 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				String ns = new URIImpl(baseURI).getNamespace();
 				if (ns.charAt(ns.length() - 1) == '/') {
 					relativeURI = new java.net.URI(ns);
-				} else {
+				}
+				else {
 					relativeURI = null;
 				}
 			}
-		} catch (URISyntaxException e) {
+		}
+		catch (URISyntaxException e) {
 			relativeURI = null;
 		}
 	}
@@ -412,18 +413,24 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	}
 
 	private String relativize(String stringValue) {
-		if (baseURI == null)
+		if (baseURI == null) {
 			return stringValue;
-		if (stringValue.equals(baseURI))
+		}
+		if (stringValue.equals(baseURI)) {
 			return "";
-		if (stringValue.length() > baseURI.length() && '#' == stringValue.charAt(baseURI.length()))
+		}
+		if (stringValue.length() > baseURI.length() && '#' == stringValue.charAt(baseURI.length())) {
 			return stringValue.substring(baseURI.length());
-		if (relativeURI == null)
+		}
+		if (relativeURI == null) {
 			return stringValue;
+		}
 		try {
-			if (stringValue.startsWith(relativeURI.toString()))
+			if (stringValue.startsWith(relativeURI.toString())) {
 				return relativeURI.relativize(new java.net.URI(stringValue)).toString();
-		} catch (URISyntaxException e) {
+			}
+		}
+		catch (URISyntaxException e) {
 			// can't create a relative URI
 		}
 		return stringValue;

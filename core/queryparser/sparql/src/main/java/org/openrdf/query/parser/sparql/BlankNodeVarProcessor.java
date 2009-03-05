@@ -92,13 +92,16 @@ class BlankNodeVarProcessor extends ASTVisitorBase {
 			return super.visit(node, data);
 		}
 
-		private String findVarName(String bnodeID) throws VisitorException {
-			if (bnodeID == null)
+		private String findVarName(String bnodeID)
+			throws VisitorException
+		{
+			if (bnodeID == null) {
 				return null;
+			}
 			String varName = conversionMap.get(bnodeID);
-			if (varName == null && usedBNodeIDs.contains(bnodeID))
-				throw new VisitorException(
-						"BNodeID already used in another scope: " + bnodeID);
+			if (varName == null && usedBNodeIDs.contains(bnodeID)) {
+				throw new VisitorException("BNodeID already used in another scope: " + bnodeID);
+			}
 			return varName;
 		}
 

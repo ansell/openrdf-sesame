@@ -86,8 +86,8 @@ public class DataStore {
 	 * 
 	 * @param queryData
 	 *        The value to get the ID for, must not be <tt>null</tt>.
-	 * @return The ID for the specified value, or <tt>-1</tt> if no such ID
-	 *         could be found.
+	 * @return The ID for the specified value, or <tt>-1</tt> if no such ID could
+	 *         be found.
 	 * @exception IOException
 	 *            If an I/O error occurred.
 	 */

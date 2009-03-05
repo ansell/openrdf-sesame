@@ -328,8 +328,9 @@ public class XMLWriter implements Flushable {
 	}
 
 	private String getDefaultNamespace() {
-		if (defaultNamespaces.isEmpty())
+		if (defaultNamespaces.isEmpty()) {
 			return null;
+		}
 		return defaultNamespaces.get(defaultNamespaces.size() - 1);
 	}
 

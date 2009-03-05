@@ -11,9 +11,8 @@ package org.openrdf.sail.nativerdf.btree;
 public interface RecordComparator {
 
 	/**
-	 * Compares the supplied <tt>key</tt> to the value of length
-	 * <tt>length</tt>, starting at offset <tt>offset</tt> in the supplied
-	 * <tt>data</tt> array.
+	 * Compares the supplied <tt>key</tt> to the value of length <tt>length</tt>,
+	 * starting at offset <tt>offset</tt> in the supplied <tt>data</tt> array.
 	 * 
 	 * @param key
 	 *        A byte array representing the search key.

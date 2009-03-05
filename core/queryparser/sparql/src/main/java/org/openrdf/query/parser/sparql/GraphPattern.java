@@ -10,9 +10,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
@@ -120,7 +120,7 @@ class GraphPattern {
 		this.constraints = new ArrayList<ValueExpr>();
 		return constraints;
 	}
-	
+
 	/**
 	 * Removes all tuple expressions and constraints.
 	 */

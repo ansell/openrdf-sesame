@@ -22,7 +22,6 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * Converts a {@link ResultSet} into a {@link RdbmsStatement} in an iteration.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsStatementCursor extends RdbmCursorBase<RdbmsStatement> {
 
@@ -53,8 +52,9 @@ public class RdbmsStatementCursor extends RdbmCursorBase<RdbmsStatement> {
 		throws SQLException
 	{
 		Number id = ids.idOf(rs.getLong(index));
-		if (id.longValue() == ValueTable.NIL_ID)
+		if (id.longValue() == ValueTable.NIL_ID) {
 			return null;
+		}
 		String stringValue = rs.getString(index + 1);
 		return vf.getRdbmsResource(id, stringValue);
 	}

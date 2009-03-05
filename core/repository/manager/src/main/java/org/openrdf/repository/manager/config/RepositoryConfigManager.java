@@ -13,7 +13,6 @@ import org.openrdf.model.Model;
 import org.openrdf.store.StoreConfigException;
 
 /**
- *
  * @author james
  */
 public interface RepositoryConfigManager {
@@ -21,7 +20,8 @@ public interface RepositoryConfigManager {
 	/**
 	 * Gets the URL of the server or directory.
 	 * 
-	 * @throws MalformedURLException If the location cannot be represented as a URL.
+	 * @throws MalformedURLException
+	 *         If the location cannot be represented as a URL.
 	 */
 	URL getLocation()
 		throws MalformedURLException;
@@ -33,11 +33,11 @@ public interface RepositoryConfigManager {
 		throws StoreConfigException;
 
 	/**
-	 * Adds the configuration of a repository to the manager's system
-	 * repository. The system repository may already contain a configuration for
-	 * a repository with the same ID as specified by <tt>config</tt>, in which
-	 * case all previous configuration data for that repository will be cleared
-	 * before the new configuration is added.
+	 * Adds the configuration of a repository to the manager's system repository.
+	 * The system repository may already contain a configuration for a repository
+	 * with the same ID as specified by <tt>config</tt>, in which case all
+	 * previous configuration data for that repository will be cleared before the
+	 * new configuration is added.
 	 * 
 	 * @param config
 	 *        The repository configuration that should be added to or updated in

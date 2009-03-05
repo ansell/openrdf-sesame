@@ -62,8 +62,9 @@ public class RDFFormat extends FileFormat {
 			Arrays.asList("xml", "trix"), false, true);
 
 	/**
-	 * The <a href="http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/">TriG</a>
-	 * file format.
+	 * The <a
+	 * href="http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/">TriG</a> file
+	 * format.
 	 */
 	public static final RDFFormat TRIG = new RDFFormat("TriG", "application/x-trig", Charset.forName("UTF-8"),
 			"trig", true, true);

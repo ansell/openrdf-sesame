@@ -10,12 +10,11 @@ import org.openrdf.model.Statement;
 import org.openrdf.result.GraphResult;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
  * @author James Leigh
  */
 public class GraphQueryResultCursor implements Cursor<Statement> {
+
 	private GraphResult result;
 
 	public GraphQueryResultCursor(GraphResult result) {
@@ -31,8 +30,9 @@ public class GraphQueryResultCursor implements Cursor<Statement> {
 	public Statement next()
 		throws StoreException
 	{
-		if (result.hasNext())
+		if (result.hasNext()) {
 			return result.next();
+		}
 		return null;
 	}
 

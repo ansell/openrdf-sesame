@@ -13,7 +13,6 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
  * Creates an {@link RdbmsEvaluation}.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsEvaluationFactory {
 

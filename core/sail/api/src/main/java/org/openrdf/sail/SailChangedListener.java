@@ -10,7 +10,7 @@ package org.openrdf.sail;
  * Sail objects change.
  */
 public interface SailChangedListener {
-	
+
 	/**
 	 * Notifies the listener of a change to the data of a specific Sail.
 	 */

@@ -20,7 +20,6 @@ import org.openrdf.sail.rdbms.schema.ValueTypes;
  * An SQL UNION expression between two {@link FromItem}s.
  * 
  * @author James Leigh
- * 
  */
 public class UnionItem extends FromItem {
 
@@ -34,8 +33,9 @@ public class UnionItem extends FromItem {
 	public FromItem getFromItem(String alias) {
 		for (FromItem from : union) {
 			FromItem item = from.getFromItem(alias);
-			if (item != null)
+			if (item != null) {
 				return item;
+			}
 		}
 		return super.getFromItem(alias);
 	}
@@ -47,8 +47,9 @@ public class UnionItem extends FromItem {
 		}
 		List<String> selectVars = new ArrayList<String>();
 		for (ColumnVar var : vars) {
-			if (var.isHidden())
+			if (var.isHidden()) {
 				continue;
+			}
 			if (!selectVars.contains(var.getName())) {
 				selectVars.add(var.getName());
 			}
@@ -64,8 +65,9 @@ public class UnionItem extends FromItem {
 		List<ColumnVar> columns = new ArrayList<ColumnVar>();
 		Map<String, ColumnVar> selectVars = new HashMap<String, ColumnVar>();
 		for (ColumnVar var : vars) {
-			if (var.isHidden())
+			if (var.isHidden()) {
 				continue;
+			}
 			if (selectVars.containsKey(var.getName())) {
 				ColumnVar existing = selectVars.get(var.getName());
 				existing.setValue(null);
@@ -103,8 +105,9 @@ public class UnionItem extends FromItem {
 	public ColumnVar getVarForChildren(String name) {
 		for (FromItem join : union) {
 			ColumnVar var = join.getVar(name);
-			if (var != null)
+			if (var != null) {
 				return var;
+			}
 		}
 		return super.getVarForChildren(name);
 	}

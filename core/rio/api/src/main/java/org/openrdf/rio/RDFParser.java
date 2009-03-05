@@ -94,13 +94,13 @@ public interface RDFParser {
 
 	/**
 	 * Sets the datatype handling mode. There are three modes for handling
-	 * datatyped literals: <em>ignore</em>, <em>verify</em>and
-	 * <em>normalize</em>. If set to <em>ignore</em>, no special action
-	 * will be taken to handle datatyped literals. If set to <em>verify</em>,
-	 * any literals with known (XML Schema built-in) datatypes are checked to see
-	 * if their values are valid. If set to <em>normalize</em>, the literal
-	 * values are not only checked, but also normalized to their canonical
-	 * representation. The default value is <em>verify</em>.
+	 * datatyped literals: <em>ignore</em>, <em>verify</em>and <em>normalize</em>
+	 * . If set to <em>ignore</em>, no special action will be taken to handle
+	 * datatyped literals. If set to <em>verify</em>, any literals with known
+	 * (XML Schema built-in) datatypes are checked to see if their values are
+	 * valid. If set to <em>normalize</em>, the literal values are not only
+	 * checked, but also normalized to their canonical representation. The
+	 * default value is <em>verify</em>.
 	 * 
 	 * @param datatypeHandling
 	 *        A datatype handling option.

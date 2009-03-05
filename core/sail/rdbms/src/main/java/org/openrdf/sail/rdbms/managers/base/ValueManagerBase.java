@@ -52,8 +52,9 @@ public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase
 
 	public V findInCache(Object key) {
 		synchronized (cache) {
-			if (cache.containsKey(key))
+			if (cache.containsKey(key)) {
 				return cache.get(key);
+			}
 		}
 		return null;
 	}

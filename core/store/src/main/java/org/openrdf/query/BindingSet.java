@@ -37,8 +37,8 @@ public interface BindingSet extends Iterable<Binding> {
 	 * 
 	 * @param bindingName
 	 *        The name of the binding.
-	 * @return The binding with the specified name, or <tt>null</tt> if there
-	 *         is no such binding in this BindingSet.
+	 * @return The binding with the specified name, or <tt>null</tt> if there is
+	 *         no such binding in this BindingSet.
 	 */
 	public Binding getBinding(String bindingName);
 
@@ -47,8 +47,8 @@ public interface BindingSet extends Iterable<Binding> {
 	 * 
 	 * @param bindingName
 	 *        The name of the binding.
-	 * @return <tt>true</tt> if this BindingSet has a binding with the
-	 *         specified name, <tt>false</tt> otherwise.
+	 * @return <tt>true</tt> if this BindingSet has a binding with the specified
+	 *         name, <tt>false</tt> otherwise.
 	 */
 	public boolean hasBinding(String bindingName);
 

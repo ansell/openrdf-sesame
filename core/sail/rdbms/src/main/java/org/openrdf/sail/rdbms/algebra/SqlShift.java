@@ -13,7 +13,6 @@ import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
  * The SQL binary shift right (>>) expression.
  * 
  * @author James Leigh
- * 
  */
 public class SqlShift extends UnarySqlOperator {
 

@@ -88,8 +88,7 @@ public class SynchronizedSailConnection extends SailConnectionWrapper {
 	}
 
 	@Override
-	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings,
-			boolean includeInferred)
+	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		Lock conLock = getSharedConnectionLock();

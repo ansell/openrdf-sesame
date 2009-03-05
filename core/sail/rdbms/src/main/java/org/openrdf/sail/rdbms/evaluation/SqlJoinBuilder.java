@@ -12,7 +12,6 @@ import java.util.List;
  * Facilitates the building of a JOIN or FROM clause in SQL.
  * 
  * @author James Leigh
- * 
  */
 public class SqlJoinBuilder {
 
@@ -49,8 +48,9 @@ public class SqlJoinBuilder {
 	}
 
 	public String getTable() {
-		if (subquery == null)
+		if (subquery == null) {
 			return table;
+		}
 		return "( " + subquery.toString() + " )";
 	}
 
@@ -68,26 +68,30 @@ public class SqlJoinBuilder {
 	}
 
 	public SqlJoinBuilder findJoin(String alias) {
-		if (alias.equals(this.alias))
+		if (alias.equals(this.alias)) {
 			return this;
+		}
 		SqlJoinBuilder result;
 		for (SqlJoinBuilder join : joins) {
 			result = join.findJoin(alias);
-			if (result != null)
+			if (result != null) {
 				return result;
+			}
 		}
 		for (SqlJoinBuilder join : leftJoins) {
 			result = join.findJoin(alias);
-			if (result != null)
+			if (result != null) {
 				return result;
+			}
 		}
 		return null;
 	}
 
 	public SqlJoinBuilder join(String table, String alias) {
 		SqlJoinBuilder join = findJoin(alias);
-		if (join != null)
+		if (join != null) {
 			return join;
+		}
 		join = factory.createSqlJoinBuilder(table, alias);
 		joins.add(join);
 		return join;
@@ -95,8 +99,9 @@ public class SqlJoinBuilder {
 
 	public SqlJoinBuilder leftjoin(String table, String alias) {
 		SqlJoinBuilder join = findJoin(alias);
-		if (join != null)
+		if (join != null) {
 			return join;
+		}
 		join = factory.createSqlJoinBuilder(table, alias);
 		join.setLeft(true);
 		leftJoins.add(join);
@@ -105,8 +110,9 @@ public class SqlJoinBuilder {
 
 	public SqlJoinBuilder join(String alias) {
 		SqlJoinBuilder join = findJoin(alias);
-		if (join != null)
+		if (join != null) {
 			return join;
+		}
 		join = factory.createSqlJoinBuilder(null, alias);
 		joins.add(join);
 		return join;
@@ -114,8 +120,9 @@ public class SqlJoinBuilder {
 
 	public SqlJoinBuilder leftjoin(String alias) {
 		SqlJoinBuilder join = findJoin(alias);
-		if (join != null)
+		if (join != null) {
 			return join;
+		}
 		join = factory.createSqlJoinBuilder(null, alias);
 		join.setLeft(true);
 		leftJoins.add(join);
@@ -144,8 +151,9 @@ public class SqlJoinBuilder {
 	}
 
 	public CharSequence getFromClause() {
-		if (joins.isEmpty() && leftJoins.isEmpty())
+		if (joins.isEmpty() && leftJoins.isEmpty()) {
 			return getTable() + " " + alias;
+		}
 		StringBuilder from = new StringBuilder();
 		from.append(getTable()).append(" ").append(alias);
 		for (SqlJoinBuilder join : joins) {
@@ -159,8 +167,9 @@ public class SqlJoinBuilder {
 	}
 
 	protected CharSequence getJoinClause() {
-		if (joins.isEmpty() && leftJoins.isEmpty())
+		if (joins.isEmpty() && leftJoins.isEmpty()) {
 			return getTable() + " " + alias;
+		}
 		StringBuilder from = new StringBuilder();
 		from.append("(");
 		from.append(getFromClause());

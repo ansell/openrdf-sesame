@@ -5,9 +5,8 @@
  */
 package org.openrdf.query.impl;
 
-import org.openrdf.query.Binding;
-
 import org.openrdf.model.Value;
+import org.openrdf.query.Binding;
 
 /**
  * An implementation of the {@link Binding} interface.
@@ -43,8 +42,7 @@ public class BindingImpl implements Binding {
 	}
 
 	@Override
-	public boolean equals(Object o)
-	{
+	public boolean equals(Object o) {
 		if (o instanceof Binding) {
 			Binding other = (Binding)o;
 
@@ -55,14 +53,12 @@ public class BindingImpl implements Binding {
 	}
 
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		return name.hashCode() ^ value.hashCode();
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return name + "=" + value.toString();
 	}
 }

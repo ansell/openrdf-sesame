@@ -468,16 +468,21 @@ public class PrettyRDFWriter implements RDFWriter {
 	}
 
 	private String relativize(String stringValue) {
-		if (baseURI == null)
+		if (baseURI == null) {
 			return stringValue;
-		if (stringValue.equals(baseURI))
+		}
+		if (stringValue.equals(baseURI)) {
 			return "";
-		if (!stringValue.startsWith(baseURI))
+		}
+		if (!stringValue.startsWith(baseURI)) {
 			return stringValue;
-		if ('#' == stringValue.charAt(baseURI.length()))
+		}
+		if ('#' == stringValue.charAt(baseURI.length())) {
 			return stringValue.substring(baseURI.length());
-		if (relativeURI == null)
+		}
+		if (relativeURI == null) {
 			return stringValue;
+		}
 		try {
 			java.net.URI uri = new java.net.URI(stringValue);
 			return relativeURI.relativize(uri).toString();

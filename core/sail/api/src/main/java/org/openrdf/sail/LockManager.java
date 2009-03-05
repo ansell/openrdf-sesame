@@ -7,9 +7,7 @@ package org.openrdf.sail;
 
 import info.aduna.concurrent.locks.Lock;
 
-
 /**
- *
  * @author James Leigh
  */
 public interface LockManager {
@@ -38,9 +36,10 @@ public interface LockManager {
 	 * 
 	 * @return a newly acquired lock.
 	 * @throws SailLockedException
-	 *             if the directory is already locked.
+	 *         if the directory is already locked.
 	 */
-	Lock lockOrFail() throws SailLockedException;
+	Lock lockOrFail()
+		throws SailLockedException;
 
 	/**
 	 * Revokes a lock owned by another process.

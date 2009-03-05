@@ -102,8 +102,8 @@ public class TurtleParser extends RDFParserBase {
 	 * 
 	 * @param in
 	 *        The InputStream from which to read the data, must not be
-	 *        <tt>null</tt>. The InputStream is supposed to contain UTF-8
-	 *        encoded Unicode characters, as per the Turtle specification.
+	 *        <tt>null</tt>. The InputStream is supposed to contain UTF-8 encoded
+	 *        Unicode characters, as per the Turtle specification.
 	 * @param baseURI
 	 *        The URI associated with the data in the InputStream, must not be
 	 *        <tt>null</tt>.
@@ -135,8 +135,8 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Implementation of the <tt>parse(Reader, String)</tt> method defined in
-	 * the RDFParser interface.
+	 * Implementation of the <tt>parse(Reader, String)</tt> method defined in the
+	 * RDFParser interface.
 	 * 
 	 * @param reader
 	 *        The Reader from which to read the data, must not be <tt>null</tt>.
@@ -1000,9 +1000,9 @@ public class TurtleParser extends RDFParserBase {
 	/**
 	 * Consumes any white space characters (space, tab, line feed, newline) and
 	 * comments (#-style) from <tt>reader</tt>. After this method has been
-	 * called, the first character that is returned by <tt>reader</tt> is
-	 * either a non-ignorable character, or EOF. For convenience, this character
-	 * is also returned by this method.
+	 * called, the first character that is returned by <tt>reader</tt> is either
+	 * a non-ignorable character, or EOF. For convenience, this character is also
+	 * returned by this method.
 	 * 
 	 * @return The next character that will be returned by <tt>reader</tt>.
 	 */

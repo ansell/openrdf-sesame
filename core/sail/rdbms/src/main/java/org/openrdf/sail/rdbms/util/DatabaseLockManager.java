@@ -58,7 +58,8 @@ public class DatabaseLockManager implements LockManager {
 			// Both BasicDataSource and MysqlDataSource have getUrl
 			Method getUrl = ds.getClass().getMethod("getUrl");
 			return getUrl.invoke(ds).toString();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// getUrl cannot be accessed
 		}
 		return ds.toString();
@@ -76,11 +77,11 @@ public class DatabaseLockManager implements LockManager {
 				try {
 					ResultSet rs = st.executeQuery(SELECT);
 					try {
-				return rs.next();
+						return rs.next();
 					}
 					finally {
-					rs.close();
-				}
+						rs.close();
+					}
 				}
 				finally {
 					st.close();
@@ -103,10 +104,10 @@ public class DatabaseLockManager implements LockManager {
 			try {
 				Statement st = con.createStatement();
 				try {
-				st.execute(CREATE_LOCKED);
-				lock = createLock();
-				st.execute(INSERT + getProcessName() + "')");
-				return lock;
+					st.execute(CREATE_LOCKED);
+					lock = createLock();
+					st.execute(INSERT + getProcessName() + "')");
+					return lock;
 				}
 				finally {
 					st.close();
@@ -158,8 +159,8 @@ public class DatabaseLockManager implements LockManager {
 			try {
 				Statement st = con.createStatement();
 				try {
-				st.execute(DROP);
-				return true;
+					st.execute(DROP);
+					return true;
 				}
 				finally {
 					st.close();
@@ -194,13 +195,13 @@ public class DatabaseLockManager implements LockManager {
 					ResultSet rs = st.executeQuery(SELECT);
 					try {
 						if (!rs.next()) {
-					return null;
+							return null;
 						}
-				return rs.getString(1);
+						return rs.getString(1);
 					}
 					finally {
-					rs.close();
-				}
+						rs.close();
+					}
 				}
 				finally {
 					st.close();

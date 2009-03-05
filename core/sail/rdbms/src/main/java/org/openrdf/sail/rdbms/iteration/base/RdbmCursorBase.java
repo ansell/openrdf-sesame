@@ -16,7 +16,6 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
  * Base class for Iteration of a {@link ResultSet}.
  * 
  * @author James Leigh
- * 
  */
 public abstract class RdbmCursorBase<T> implements Cursor<T> {
 
@@ -50,8 +49,9 @@ public abstract class RdbmCursorBase<T> implements Cursor<T> {
 		throws RdbmsException
 	{
 		try {
-			if (rs.next())
+			if (rs.next()) {
 				return convert(rs);
+			}
 			return null;
 		}
 		catch (SQLException e) {

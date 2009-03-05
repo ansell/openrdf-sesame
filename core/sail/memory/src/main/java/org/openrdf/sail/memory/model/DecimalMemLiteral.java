@@ -51,50 +51,42 @@ public class DecimalMemLiteral extends MemLiteral {
 	 *---------*/
 
 	@Override
-	public byte byteValue()
-	{
+	public byte byteValue() {
 		return value.byteValue();
 	}
 
 	@Override
-	public short shortValue()
-	{
+	public short shortValue() {
 		return value.shortValue();
 	}
 
 	@Override
-	public int intValue()
-	{
+	public int intValue() {
 		return value.intValue();
 	}
 
 	@Override
-	public long longValue()
-	{
+	public long longValue() {
 		return value.longValue();
 	}
 
 	@Override
-	public float floatValue()
-	{
+	public float floatValue() {
 		return value.floatValue();
 	}
 
 	@Override
-	public double doubleValue()
-	{
+	public double doubleValue() {
 		return value.doubleValue();
 	}
 
 	@Override
-	public BigInteger integerValue()
-	{
+	public BigInteger integerValue() {
 		return value.toBigInteger();
 	}
 
 	@Override
-	public BigDecimal decimalValue()
-	{
+	public BigDecimal decimalValue() {
 		return value;
 	}
 }

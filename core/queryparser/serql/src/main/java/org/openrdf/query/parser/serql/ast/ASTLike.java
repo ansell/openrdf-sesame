@@ -41,8 +41,7 @@ public class ASTLike extends ASTBooleanExpr {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		String result = super.toString();
 
 		if (ignoreCase) {

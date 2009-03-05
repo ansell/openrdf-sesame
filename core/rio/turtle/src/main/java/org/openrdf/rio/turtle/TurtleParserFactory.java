@@ -8,7 +8,6 @@ package org.openrdf.rio.turtle;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFParserFactory;
-import org.openrdf.rio.turtle.TurtleParser;
 
 /**
  * An {@link RDFParserFactory} for Turtle parsers.

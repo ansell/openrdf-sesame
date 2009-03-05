@@ -10,7 +10,6 @@ package org.openrdf.sail.rdbms.schema;
  * column.
  * 
  * @author James Leigh
- * 
  */
 public class ValueTypes implements Cloneable {
 

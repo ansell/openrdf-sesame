@@ -17,16 +17,16 @@ import org.openrdf.store.StoreException;
  * SailExcetion from an RDBMS store.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsException extends StoreException {
+
 	private static Logger logger = LoggerFactory.getLogger(RdbmsException.class);
 
 	private static final long serialVersionUID = -4004800841908629772L;
 
 	private static SQLException findInterestingCause(SQLException e) {
 		if (e instanceof BatchUpdateException) {
-			BatchUpdateException b = (BatchUpdateException) e;
+			BatchUpdateException b = (BatchUpdateException)e;
 			logger.error(b.toString(), b);
 			return b.getNextException();
 		}

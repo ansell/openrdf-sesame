@@ -18,7 +18,6 @@ import org.openrdf.sail.rdbms.optimizers.SqlConstantOptimizer;
  * An abstract binary sql operator with two arguments.
  * 
  * @author James Leigh
- * 
  */
 public abstract class NarySqlOperator extends RdbmsQueryModelNodeBase implements SqlExpr {
 
@@ -74,7 +73,7 @@ public abstract class NarySqlOperator extends RdbmsQueryModelNodeBase implements
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		for (int i=0,n=getNumberOfArguments();i<n;i++) {
+		for (int i = 0, n = getNumberOfArguments(); i < n; i++) {
 			if (getArg(i) == current) {
 				setArg(i, (SqlExpr)replacement);
 				return;
@@ -97,7 +96,7 @@ public abstract class NarySqlOperator extends RdbmsQueryModelNodeBase implements
 	public NarySqlOperator clone() {
 		NarySqlOperator clone = (NarySqlOperator)super.clone();
 		clone.args = new ArrayList<SqlExpr>(getNumberOfArguments());
-		for (int i=0,n=getNumberOfArguments();i<n;i++) {
+		for (int i = 0, n = getNumberOfArguments(); i < n; i++) {
 			clone.setArg(i, getArg(i).clone());
 		}
 		return clone;
@@ -115,12 +114,15 @@ public abstract class NarySqlOperator extends RdbmsQueryModelNodeBase implements
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		final NarySqlOperator other = (NarySqlOperator)obj;
 		return args.equals(other.args);
 	}

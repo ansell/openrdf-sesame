@@ -14,7 +14,6 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * The SQL subtraction (-) expression.
  * 
  * @author James Leigh
- * 
  */
 public class SqlMathExpr extends BinarySqlOperator {
 

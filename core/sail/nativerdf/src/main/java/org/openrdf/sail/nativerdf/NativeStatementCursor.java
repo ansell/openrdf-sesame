@@ -53,35 +53,36 @@ class NativeStatementCursor implements Cursor<Statement> {
 		throws StoreException
 	{
 		try {
-		byte[] nextValue = btreeIter.next();
+			byte[] nextValue = btreeIter.next();
 
-		if (nextValue == null) {
-			return null;
-		}
+			if (nextValue == null) {
+				return null;
+			}
 
-		int subjID = ByteArrayUtil.getInt(nextValue, TripleStore.SUBJ_IDX);
-		Resource subj = (Resource)valueStore.getValue(subjID);
+			int subjID = ByteArrayUtil.getInt(nextValue, TripleStore.SUBJ_IDX);
+			Resource subj = (Resource)valueStore.getValue(subjID);
 
-		int predID = ByteArrayUtil.getInt(nextValue, TripleStore.PRED_IDX);
-		URI pred = (URI)valueStore.getValue(predID);
+			int predID = ByteArrayUtil.getInt(nextValue, TripleStore.PRED_IDX);
+			URI pred = (URI)valueStore.getValue(predID);
 
-		int objID = ByteArrayUtil.getInt(nextValue, TripleStore.OBJ_IDX);
-		Value obj = valueStore.getValue(objID);
+			int objID = ByteArrayUtil.getInt(nextValue, TripleStore.OBJ_IDX);
+			Value obj = valueStore.getValue(objID);
 
-		Resource context = null;
-		int contextID = ByteArrayUtil.getInt(nextValue, TripleStore.CONTEXT_IDX);
-		if (contextID != 0) {
-			context = (Resource)valueStore.getValue(contextID);
-		}
+			Resource context = null;
+			int contextID = ByteArrayUtil.getInt(nextValue, TripleStore.CONTEXT_IDX);
+			if (contextID != 0) {
+				context = (Resource)valueStore.getValue(contextID);
+			}
 
-		return valueStore.createStatement(subj, pred, obj, context);
+			return valueStore.createStatement(subj, pred, obj, context);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 	}
 
-	public void close() throws StoreException
+	public void close()
+		throws StoreException
 	{
 		try {
 			btreeIter.close();

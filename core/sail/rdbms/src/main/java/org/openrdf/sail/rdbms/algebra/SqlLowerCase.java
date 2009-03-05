@@ -13,7 +13,6 @@ import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
  * The SQL LOWER function.
  * 
  * @author James Leigh
- * 
  */
 public class SqlLowerCase extends UnarySqlOperator {
 

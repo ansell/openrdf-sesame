@@ -22,7 +22,6 @@ import org.openrdf.sail.rdbms.schema.NamespacesTable;
  * Manages the namespace prefixes.
  * 
  * @author James Leigh
- * 
  */
 public class NamespaceManager {
 
@@ -75,8 +74,9 @@ public class NamespaceManager {
 			for (Object[] row : table.selectAll()) {
 				String prefix = (String)row[0];
 				String namespace = (String)row[1];
-				if (namespace == null)
+				if (namespace == null) {
 					continue;
+				}
 				namespaces.add(namespace);
 				if (prefix != null) {
 					p2n.put(prefix, namespace);
@@ -109,8 +109,9 @@ public class NamespaceManager {
 
 	public NamespaceImpl findByPrefix(String prefix) {
 		String namespace = map.get(prefix);
-		if (namespace == null)
+		if (namespace == null) {
 			return null;
+		}
 		return new NamespaceImpl(prefix, namespace);
 	}
 

@@ -81,8 +81,9 @@ public class RepositoryCache {
 
 	public boolean isIllegal(Resource subj, URI pred, Value obj, Resource... contexts) {
 		if (subj instanceof URI && subjectSpace != null) {
-			if (!subjectSpace.match(subj.stringValue()))
+			if (!subjectSpace.match(subj.stringValue())) {
 				return true;
+			}
 		}
 		return false;
 	}
@@ -95,17 +96,22 @@ public class RepositoryCache {
 	public boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (isIllegal(subj, pred, obj, contexts))
+		if (isIllegal(subj, pred, obj, contexts)) {
 			return true;
+		}
 		long now = System.currentTimeMillis();
-		if (noExactMatch(now, subj, pred, obj, includeInferred, contexts))
+		if (noExactMatch(now, subj, pred, obj, includeInferred, contexts)) {
 			return true;
-		if (noExactMatch(now, null, pred, obj, true))
+		}
+		if (noExactMatch(now, null, pred, obj, true)) {
 			return true;
-		if (noExactMatch(now, null, pred, null, true))
+		}
+		if (noExactMatch(now, null, pred, null, true)) {
 			return true;
-		if (noExactMatch(now, null, null, null, true, contexts))
+		}
+		if (noExactMatch(now, null, null, null, true, contexts)) {
 			return true;
+		}
 		return false; // don't know, maybe
 	}
 
@@ -116,21 +122,27 @@ public class RepositoryCache {
 			Resource[] contexts)
 		throws StoreException
 	{
-		if (isIllegal(subj, pred, obj, contexts))
+		if (isIllegal(subj, pred, obj, contexts)) {
 			return false;
+		}
 		long now = System.currentTimeMillis();
 		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
 		CachedSize cached = cachedSizes.get(pattern);
-		if (cached != null && cached.isFresh(now))
+		if (cached != null && cached.isFresh(now)) {
 			return !cached.isAbsent(); // we have the valid cache
-		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts))
+		}
+		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts)) {
 			return false;
-		if (noExactMatchRefreshable(now, null, pred, obj, true))
+		}
+		if (noExactMatchRefreshable(now, null, pred, obj, true)) {
 			return false;
-		if (noExactMatchRefreshable(now, null, pred, null, true))
+		}
+		if (noExactMatchRefreshable(now, null, pred, null, true)) {
 			return false;
-		if (noExactMatchRefreshable(now, null, null, null, true, contexts))
+		}
+		if (noExactMatchRefreshable(now, null, null, null, true, contexts)) {
 			return false;
+		}
 		return !loadExactAbsent(now, subj, pred, obj, includeInferred, contexts);
 	}
 
@@ -140,21 +152,27 @@ public class RepositoryCache {
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		if (isIllegal(subj, pred, obj, contexts))
+		if (isIllegal(subj, pred, obj, contexts)) {
 			return 0;
+		}
 		long now = System.currentTimeMillis();
 		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
 		CachedSize cached = cachedSizes.get(pattern);
-		if (cached != null && cached.isSizeAvailable() && cached.isFresh(now))
+		if (cached != null && cached.isSizeAvailable() && cached.isFresh(now)) {
 			return cached.getSize(); // we have the valid size in the cache
-		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts))
+		}
+		if (noExactMatchRefreshable(now, subj, pred, obj, includeInferred, contexts)) {
 			return 0;
-		if (noExactMatchRefreshable(now, null, pred, obj, true))
+		}
+		if (noExactMatchRefreshable(now, null, pred, obj, true)) {
 			return 0;
-		if (noExactMatchRefreshable(now, null, pred, null, true))
+		}
+		if (noExactMatchRefreshable(now, null, pred, null, true)) {
 			return 0;
-		if (noExactMatchRefreshable(now, null, null, null, true, contexts))
+		}
+		if (noExactMatchRefreshable(now, null, null, null, true, contexts)) {
 			return 0;
+		}
 		return loadSize(now, subj, pred, obj, includeInferred, contexts);
 	}
 
@@ -169,8 +187,9 @@ public class RepositoryCache {
 	{
 		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
 		CachedSize cached = cachedSizes.get(pattern);
-		if (cached == null)
+		if (cached == null) {
 			return false; // don't know
+		}
 		return cached.isFresh(now) && cached.isAbsent();
 	}
 
@@ -254,10 +273,12 @@ public class RepositoryCache {
 	{
 		StatementPattern pattern = new StatementPattern(subj, pred, obj, includeInferred, contexts);
 		CachedSize cached = cachedSizes.get(pattern);
-		if (cached == null || !cached.isAbsent())
+		if (cached == null || !cached.isAbsent()) {
 			return false; // might have a match
-		if (cached.isFresh(now))
+		}
+		if (cached.isFresh(now)) {
 			return true; // no match
+		}
 		return loadExactAbsent(now, subj, pred, obj, includeInferred, contexts);
 	}
 

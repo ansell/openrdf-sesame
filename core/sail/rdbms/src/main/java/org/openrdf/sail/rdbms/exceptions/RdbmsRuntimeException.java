@@ -5,12 +5,10 @@
  */
 package org.openrdf.sail.rdbms.exceptions;
 
-
 /**
  * Thrown when no exception is declared.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsRuntimeException extends RuntimeException {
 

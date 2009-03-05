@@ -12,7 +12,6 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.sail.config.SailImplConfigBase;
 import org.openrdf.store.StoreConfigException;
@@ -102,8 +101,8 @@ public class NativeStoreConfig extends SailImplConfigBase {
 					setForceSync(forceSyncLit.booleanValue());
 				}
 				catch (IllegalArgumentException e) {
-					throw new StoreConfigException("Boolean value required for " + FORCE_SYNC + " property, found "
-							+ forceSyncLit);
+					throw new StoreConfigException("Boolean value required for " + FORCE_SYNC
+							+ " property, found " + forceSyncLit);
 				}
 			}
 		}

@@ -13,7 +13,6 @@ import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
  * The SQL IS CAST expression.
  * 
  * @author James Leigh
- * 
  */
 public class SqlCast extends UnarySqlOperator {
 

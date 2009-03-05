@@ -14,7 +14,6 @@ import org.openrdf.sail.rdbms.evaluation.SqlRegexBuilder;
  * operator and CROSS JOIN notation.
  * 
  * @author James Leigh
- * 
  */
 public class PgQueryBuilderFactory extends QueryBuilderFactory {
 

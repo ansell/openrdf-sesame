@@ -102,7 +102,7 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 			out.writeInt(FORMAT_VERSION);
 
 			out.writeInt(this.bindingNames.size());
-			
+
 			for (String bindingName : this.bindingNames) {
 				writeString(bindingName);
 			}

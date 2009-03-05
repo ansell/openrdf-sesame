@@ -11,7 +11,6 @@ import java.util.List;
  * Facilitates the building of a SQL query.
  * 
  * @author James Leigh
- * 
  */
 public class SqlQueryBuilder {
 
@@ -57,8 +56,9 @@ public class SqlQueryBuilder {
 	}
 
 	public SqlExprBuilder select() {
-		if (!select.isEmpty())
+		if (!select.isEmpty()) {
 			select.append(",\n ");
+		}
 		return select;
 	}
 
@@ -137,8 +137,9 @@ public class SqlQueryBuilder {
 	}
 
 	public SqlExprBuilder orderBy() {
-		if (!order.isEmpty())
+		if (!order.isEmpty()) {
 			order.append(",\n ");
+		}
 		return order;
 	}
 

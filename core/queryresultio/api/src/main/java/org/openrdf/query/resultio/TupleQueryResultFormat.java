@@ -32,7 +32,8 @@ public class TupleQueryResultFormat extends FileFormat {
 	 * SPARQL Query Results XML Format.
 	 */
 	public static final TupleQueryResultFormat SPARQL = new TupleQueryResultFormat("SPARQL/XML",
-			Arrays.asList("application/sparql-results+xml", "application/xml"), Charset.forName("UTF-8"), Arrays.asList("srx", "xml"));
+			Arrays.asList("application/sparql-results+xml", "application/xml"), Charset.forName("UTF-8"),
+			Arrays.asList("srx", "xml"));
 
 	/**
 	 * Binary RDF results table format.
@@ -86,8 +87,8 @@ public class TupleQueryResultFormat extends FileFormat {
 	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML file
 	 *        format.
 	 * @param fileExt
-	 *        The (default) file extension for the format, e.g. <tt>srx</tt>
-	 *        for SPARQL/XML files.
+	 *        The (default) file extension for the format, e.g. <tt>srx</tt> for
+	 *        SPARQL/XML files.
 	 */
 	public static TupleQueryResultFormat register(String name, String mimeType, String fileExt) {
 		TupleQueryResultFormat format = new TupleQueryResultFormat(name, mimeType, fileExt);
@@ -178,11 +179,10 @@ public class TupleQueryResultFormat extends FileFormat {
 	 *        The name of the format, e.g. "SPARQL/XML".
 	 * @param mimeType
 	 *        The MIME type of the format, e.g.
-	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML
-	 *        format.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
 	 * @param fileExt
-	 *        The (default) file extension for the format, e.g. <tt>srx</tt>
-	 *        for SPARQL/XML.
+	 *        The (default) file extension for the format, e.g. <tt>srx</tt> for
+	 *        SPARQL/XML.
 	 */
 	public TupleQueryResultFormat(String name, String mimeType, String fileExt) {
 		this(name, mimeType, null, fileExt);
@@ -195,14 +195,13 @@ public class TupleQueryResultFormat extends FileFormat {
 	 *        The name of the format, e.g. "SPARQL/XML".
 	 * @param mimeType
 	 *        The MIME type of the format, e.g.
-	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML
-	 *        format.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
 	 * @param charset
 	 *        The default character encoding of the format. Specify <tt>null</tt>
 	 *        if not applicable.
 	 * @param fileExt
-	 *        The (default) file extension for the format, e.g. <tt>srx</tt>
-	 *        for SPARQL/XML.
+	 *        The (default) file extension for the format, e.g. <tt>srx</tt> for
+	 *        SPARQL/XML.
 	 */
 	public TupleQueryResultFormat(String name, String mimeType, Charset charset, String fileExt) {
 		super(name, mimeType, charset, fileExt);
@@ -215,9 +214,9 @@ public class TupleQueryResultFormat extends FileFormat {
 	 *        The name of the format, e.g. "SPARQL/XML".
 	 * @param mimeTypes
 	 *        The MIME types of the format, e.g.
-	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML
-	 *        format. The first item in the list is interpreted as the default
-	 *        MIME type for the format.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
+	 *        The first item in the list is interpreted as the default MIME type
+	 *        for the format.
 	 * @param charset
 	 *        The default character encoding of the format. Specify <tt>null</tt>
 	 *        if not applicable.

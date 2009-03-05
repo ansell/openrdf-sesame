@@ -27,11 +27,11 @@ import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 /**
- * A manager for {@link Repository}s. Every <tt>RepositoryManager</tt> has
- * one SYSTEM repository and zero or more "user repositories". The SYSTEM
- * repository contains data that describes the configuration of the other
- * repositories (their IDs, which implementations of the Repository API to use,
- * access rights, etc.). The other repositories are instantiated based on this
+ * A manager for {@link Repository}s. Every <tt>RepositoryManager</tt> has one
+ * SYSTEM repository and zero or more "user repositories". The SYSTEM repository
+ * contains data that describes the configuration of the other repositories
+ * (their IDs, which implementations of the Repository API to use, access
+ * rights, etc.). The other repositories are instantiated based on this
  * configuration data.
  * 
  * @author Arjohn Kampman
@@ -386,7 +386,6 @@ public abstract class RepositoryManager {
 	}
 
 	/**
-	 * 
 	 * @param skipSystemRepo
 	 * @throws StoreException
 	 *         When not able to retrieve existing configurations
@@ -487,7 +486,9 @@ public abstract class RepositoryManager {
 	/**
 	 * Gets the URL of the server or directory.
 	 * 
-	 * @throws MalformedURLException If the location cannot be represented as a URL.
+	 * @throws MalformedURLException
+	 *         If the location cannot be represented as a URL.
 	 */
-	public abstract URL getLocation() throws MalformedURLException;
+	public abstract URL getLocation()
+		throws MalformedURLException;
 }

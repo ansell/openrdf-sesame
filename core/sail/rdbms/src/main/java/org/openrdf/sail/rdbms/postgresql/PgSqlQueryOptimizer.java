@@ -14,7 +14,6 @@ import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
  * Includes the {@link PgSqlRegexFlagsInliner} is the optimisation process.
  * 
  * @author James Leigh
- * 
  */
 public class PgSqlQueryOptimizer extends RdbmsQueryOptimizer {
 

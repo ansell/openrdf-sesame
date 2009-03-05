@@ -22,8 +22,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -70,9 +70,12 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	/**
 	 * Gets the URL of the server or directory.
 	 * 
-	 * @throws MalformedURLException If the location cannot be represented as a URL.
+	 * @throws MalformedURLException
+	 *         If the location cannot be represented as a URL.
 	 */
-	public URL getLocation() throws MalformedURLException {
+	public URL getLocation()
+		throws MalformedURLException
+	{
 		return null;
 	}
 
@@ -147,17 +150,18 @@ public class SystemConfigManager implements RepositoryConfigManager {
 		logger.info("Removing repository configuration for {}.", repositoryID);
 		boolean isRemoved = false;
 
-			Model model = getSystemModel();
+		Model model = getSystemModel();
 
-			// clear existing context
-			Literal id = vf.createLiteral(repositoryID);
-			for (Resource ctx : model.filter(null, REPOSITORYID, id).contexts()) {
-				clearSystemModel(ctx);
-				isRemoved = true;
-			}
+		// clear existing context
+		Literal id = vf.createLiteral(repositoryID);
+		for (Resource ctx : model.filter(null, REPOSITORYID, id).contexts()) {
+			clearSystemModel(ctx);
+			isRemoved = true;
+		}
 
-		if (!isRemoved)
+		if (!isRemoved) {
 			throw new StoreConfigException("No such repository config");
+		}
 	}
 
 	/**

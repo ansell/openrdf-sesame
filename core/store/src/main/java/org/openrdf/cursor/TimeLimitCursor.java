@@ -33,6 +33,7 @@ public abstract class TimeLimitCursor<E> extends DelegatingCursor<E> {
 		startTimer(timeLimit);
 	}
 
+	@Override
 	public E next()
 		throws StoreException
 	{
@@ -42,6 +43,7 @@ public abstract class TimeLimitCursor<E> extends DelegatingCursor<E> {
 		return next;
 	}
 
+	@Override
 	public void close()
 		throws StoreException
 	{

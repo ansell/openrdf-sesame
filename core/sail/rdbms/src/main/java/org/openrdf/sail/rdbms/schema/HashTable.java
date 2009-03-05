@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 
  * @author James Leigh
  */
 public class HashTable {
@@ -99,6 +98,7 @@ public class HashTable {
 		table.optimize();
 	}
 
+	@Override
 	public String toString() {
 		return table.toString();
 	}

@@ -118,8 +118,8 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
-	 * Implementation of the <tt>parse(Reader, String)</tt> method defined in
-	 * the RDFParser interface.
+	 * Implementation of the <tt>parse(Reader, String)</tt> method defined in the
+	 * RDFParser interface.
 	 * 
 	 * @param reader
 	 *        The Reader from which to read the data, must not be <tt>null</tt>.
@@ -509,8 +509,7 @@ public class NTriplesParser extends RDFParserBase {
 	 * information to the error.
 	 */
 	@Override
-	protected void reportWarning(String msg)
-	{
+	protected void reportWarning(String msg) {
 		reportWarning(msg, lineNo, -1);
 	}
 

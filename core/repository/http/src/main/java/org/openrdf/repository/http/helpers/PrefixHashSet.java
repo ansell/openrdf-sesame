@@ -36,20 +36,24 @@ public class PrefixHashSet {
 	}
 
 	public boolean match(String value) {
-		if (value.length() < length)
+		if (value.length() < length) {
 			return false;
+		}
 		String key = value.substring(0, length);
 		List<String> entry = index.get(key);
-		if (entry == null)
+		if (entry == null) {
 			return false;
+		}
 		String tail = value.substring(length);
 		for (String prefix : entry) {
-			if (tail.startsWith(prefix))
+			if (tail.startsWith(prefix)) {
 				return true;
+			}
 		}
 		return false;
 	}
 
+	@Override
 	public String toString() {
 		return index.toString();
 	}

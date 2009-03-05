@@ -13,7 +13,6 @@ import org.openrdf.sail.rdbms.algebra.base.ValueColumnBase;
  * Represents a variable's long label value in an SQL expression.
  * 
  * @author James Leigh
- * 
  */
 public class LongLabelColumn extends ValueColumnBase {
 

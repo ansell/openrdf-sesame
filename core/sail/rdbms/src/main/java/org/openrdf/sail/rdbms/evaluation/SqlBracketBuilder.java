@@ -9,7 +9,6 @@ package org.openrdf.sail.rdbms.evaluation;
  * Prints round brackets in an SQL query.
  * 
  * @author James Leigh
- * 
  */
 public class SqlBracketBuilder extends SqlExprBuilder {
 

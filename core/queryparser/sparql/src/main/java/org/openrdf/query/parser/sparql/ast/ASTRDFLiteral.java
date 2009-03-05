@@ -41,8 +41,7 @@ public class ASTRDFLiteral extends SimpleNode {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		String result = super.toString();
 
 		if (lang != null) {

@@ -10,7 +10,6 @@ import java.sql.Types;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
- * 
  * @author James Leigh
  */
 public class MySqlValueTable extends ValueTable {

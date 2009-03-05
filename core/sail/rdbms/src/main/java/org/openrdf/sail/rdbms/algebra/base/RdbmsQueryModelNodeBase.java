@@ -12,7 +12,6 @@ import org.openrdf.query.algebra.QueryModelVisitor;
  * An extension to {@link QueryModelNodeBase} for SQL query algebra.
  * 
  * @author James Leigh
- * 
  */
 public abstract class RdbmsQueryModelNodeBase extends QueryModelNodeBase {
 

@@ -25,7 +25,6 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * Converts a {@link ResultSet} into a {@link BindingSet} in an iteration.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsBindingCursor extends RdbmCursorBase<BindingSet> {
 
@@ -83,8 +82,9 @@ public class RdbmsBindingCursor extends RdbmCursorBase<BindingSet> {
 		throws SQLException
 	{
 		Number id = ids.idOf(rs.getLong(index));
-		if (id.longValue() == ValueTable.NIL_ID)
+		if (id.longValue() == ValueTable.NIL_ID) {
 			return null;
+		}
 		return vf.getRdbmsResource(id, rs.getString(index + 1));
 	}
 

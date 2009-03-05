@@ -13,7 +13,6 @@ import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
  * The SQL IS NULL expression.
  * 
  * @author James Leigh
- * 
  */
 public class SqlIsNull extends UnarySqlOperator {
 

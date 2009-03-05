@@ -496,9 +496,8 @@ public class MemoryStore extends InferencerSailBase {
 	 * <tt>namedContextsOnly</tt> is set to <tt>true</tt>. The returned
 	 * StatementIterator will assume the specified read mode.
 	 */
-	protected Cursor<MemStatement> createStatementIterator(
-			Resource subj, URI pred, Value obj, boolean explicitOnly, int snapshot,
-			ReadMode readMode, MemValueFactory vf, Resource... contexts)
+	protected Cursor<MemStatement> createStatementIterator(Resource subj, URI pred, Value obj,
+			boolean explicitOnly, int snapshot, ReadMode readMode, MemValueFactory vf, Resource... contexts)
 	{
 		// Perform look-ups for value-equivalents of the specified values
 		MemResource memSubj = vf.getMemResource(subj);
@@ -577,8 +576,8 @@ public class MemoryStore extends InferencerSailBase {
 			}
 		}
 
-		return new MemStatementCursor(smallestList, memSubj, memPred, memObj, explicitOnly, snapshot,
-				readMode, memContexts);
+		return new MemStatementCursor(smallestList, memSubj, memPred, memObj, explicitOnly, snapshot, readMode,
+				memContexts);
 	}
 
 	protected Statement addStatement(Resource subj, URI pred, Value obj, Resource context, boolean explicit,
@@ -612,9 +611,8 @@ public class MemoryStore extends InferencerSailBase {
 		if (!newValueCreated) {
 			// All values were already present in the graph. Possibly, the
 			// statement is already present. Check this.
-			Cursor<MemStatement> stIter = createStatementIterator(
-					memSubj, memPred, memObj, false, currentSnapshot + 1, ReadMode.RAW,
-					vf, memContext);
+			Cursor<MemStatement> stIter = createStatementIterator(memSubj, memPred, memObj, false,
+					currentSnapshot + 1, ReadMode.RAW, vf, memContext);
 
 			try {
 				MemStatement st = stIter.next();
@@ -915,8 +913,8 @@ public class MemoryStore extends InferencerSailBase {
 	protected void cleanSnapshots()
 		throws InterruptedException
 	{
-		//System.out.println("cleanSnapshots() starting...");
-		//long startTime = System.currentTimeMillis();
+		// System.out.println("cleanSnapshots() starting...");
+		// long startTime = System.currentTimeMillis();
 		MemStatementList statements = this.statements;
 
 		if (statements == null) {
@@ -971,8 +969,9 @@ public class MemoryStore extends InferencerSailBase {
 			stLock.release();
 		}
 
-		//long endTime = System.currentTimeMillis();
-		//System.out.println("cleanSnapshots() took " + (endTime - startTime) + " ms");
+		// long endTime = System.currentTimeMillis();
+		// System.out.println("cleanSnapshots() took " + (endTime - startTime) +
+		// " ms");
 	}
 
 	protected void scheduleSnapshotCleanup() {

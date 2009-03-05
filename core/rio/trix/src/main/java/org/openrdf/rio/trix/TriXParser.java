@@ -5,6 +5,15 @@
  */
 package org.openrdf.rio.trix;
 
+import static org.openrdf.rio.trix.TriXConstants.BNODE_TAG;
+import static org.openrdf.rio.trix.TriXConstants.CONTEXT_TAG;
+import static org.openrdf.rio.trix.TriXConstants.DATATYPE_ATT;
+import static org.openrdf.rio.trix.TriXConstants.LANGUAGE_ATT;
+import static org.openrdf.rio.trix.TriXConstants.PLAIN_LITERAL_TAG;
+import static org.openrdf.rio.trix.TriXConstants.TRIPLE_TAG;
+import static org.openrdf.rio.trix.TriXConstants.TYPED_LITERAL_TAG;
+import static org.openrdf.rio.trix.TriXConstants.URI_TAG;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -23,13 +32,10 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
-
-import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.helpers.RDFParserBase;
-
-import static org.openrdf.rio.trix.TriXConstants.*;
 
 /**
  * A parser that can parse RDF files that are in the <a

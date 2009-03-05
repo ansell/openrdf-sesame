@@ -51,8 +51,7 @@ public class ASTSelect extends SimpleNode {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		String result = super.toString();
 
 		if (distinct) {

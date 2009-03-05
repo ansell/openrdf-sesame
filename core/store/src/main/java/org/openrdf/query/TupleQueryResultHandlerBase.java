@@ -7,13 +7,9 @@ package org.openrdf.query;
 
 import java.util.List;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.TupleQueryResultHandlerException;
-
 /**
- * Base class for {@link TupleQueryResultHandler}s with dummy implementations
- * of all methods. This class is a useful superclass for classes that implement
+ * Base class for {@link TupleQueryResultHandler}s with dummy implementations of
+ * all methods. This class is a useful superclass for classes that implement
  * only one or two TupleQueryResultHandler methods.
  */
 public class TupleQueryResultHandlerBase implements TupleQueryResultHandler {

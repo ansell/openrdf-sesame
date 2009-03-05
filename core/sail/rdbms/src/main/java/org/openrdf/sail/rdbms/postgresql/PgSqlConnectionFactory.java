@@ -17,7 +17,6 @@ import org.openrdf.sail.rdbms.schema.ValueTableFactory;
  * not require a FROM clause.
  * 
  * @author James Leigh
- * 
  */
 public class PgSqlConnectionFactory extends RdbmsConnectionFactory {
 

@@ -19,7 +19,6 @@ import org.openrdf.sail.rdbms.managers.helpers.BatchBlockingQueue;
  * Factory class used to create or load the database tables.
  * 
  * @author James Leigh
- * 
  */
 public class ValueTableFactory {
 
@@ -140,8 +139,8 @@ public class ValueTableFactory {
 		return createValueTable(conn, queue, name, sqlType, -1);
 	}
 
-	protected ValueTable createValueTable(Connection conn, BatchBlockingQueue queue, String name,
-			int sqlType, int length)
+	protected ValueTable createValueTable(Connection conn, BatchBlockingQueue queue, String name, int sqlType,
+			int length)
 		throws SQLException
 	{
 		ValueTable table = newValueTable();

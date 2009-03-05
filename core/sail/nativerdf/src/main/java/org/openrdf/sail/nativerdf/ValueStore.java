@@ -657,14 +657,17 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 		return new NativeBNode(revision, nodeID);
 	}
 
+	@Override
 	public NativeLiteral createLiteral(String value) {
 		return new NativeLiteral(revision, value);
 	}
 
+	@Override
 	public NativeLiteral createLiteral(String value, String language) {
 		return new NativeLiteral(revision, value, language);
 	}
 
+	@Override
 	public NativeLiteral createLiteral(String value, URI datatype) {
 		return new NativeLiteral(revision, value, datatype);
 	}

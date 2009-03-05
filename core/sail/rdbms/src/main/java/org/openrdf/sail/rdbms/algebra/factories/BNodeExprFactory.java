@@ -31,7 +31,6 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * {@link StringValue} of the BNode ID.
  * 
  * @author James Leigh
- * 
  */
 public class BNodeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 
@@ -41,11 +40,13 @@ public class BNodeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOper
 		throws UnsupportedRdbmsOperatorException
 	{
 		result = null;
-		if (expr == null)
+		if (expr == null) {
 			return new SqlNull();
+		}
 		expr.visit(this);
-		if (result == null)
+		if (result == null) {
 			return new SqlNull();
+		}
 		return result;
 	}
 
@@ -96,8 +97,9 @@ public class BNodeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOper
 	}
 
 	private SqlExpr valueOf(Value value) {
-		if (value instanceof BNode)
+		if (value instanceof BNode) {
 			return str(((BNode)value).stringValue());
+		}
 		return sqlNull();
 	}
 }

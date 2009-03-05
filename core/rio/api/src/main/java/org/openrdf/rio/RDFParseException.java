@@ -118,8 +118,9 @@ public class RDFParseException extends OpenRDFException {
 
 	@Override
 	public String getMessage() {
-		if (filename == null)
+		if (filename == null) {
 			return super.getMessage();
+		}
 		return super.getMessage() + " in " + filename;
 	}
 

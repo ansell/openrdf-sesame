@@ -14,7 +14,6 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * column type.
  * 
  * @author James Leigh
- * 
  */
 public class PgSqlValueTable extends ValueTable {
 

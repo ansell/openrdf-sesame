@@ -84,8 +84,7 @@ public class ParseException extends Exception {
 	 * gets displayed.
 	 */
 	@Override
-	public String getMessage()
-	{
+	public String getMessage() {
 		if (!specialConstructor) {
 			return super.getMessage();
 		}

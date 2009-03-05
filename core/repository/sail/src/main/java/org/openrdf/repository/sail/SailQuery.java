@@ -91,9 +91,7 @@ public abstract class SailQuery extends AbstractQuery {
 
 	protected class QueryInterruptCursor extends TimeLimitCursor<BindingSet> {
 
-		public QueryInterruptCursor(Cursor<? extends BindingSet> iter,
-				long timeLimit)
-		{
+		public QueryInterruptCursor(Cursor<? extends BindingSet> iter, long timeLimit) {
 			super(iter, timeLimit);
 		}
 

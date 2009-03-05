@@ -5,7 +5,6 @@
  */
 package org.openrdf.query;
 
-
 /**
  * An exception indicating that a query could not be processed by the query
  * parser, typically due to syntax errors.

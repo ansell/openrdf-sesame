@@ -109,6 +109,7 @@ public class RdbmsStore extends SailBase {
 		this.password = password;
 	}
 
+	@Override
 	public SailMetaData getMetaData() {
 		return new RdbmsStoreMetaData(this);
 	}
@@ -275,8 +276,9 @@ public class RdbmsStore extends SailBase {
 		while (providers.hasNext()) {
 			RdbmsProvider provider = providers.next();
 			factory = provider.createRdbmsConnectionFactory(dbn, dbv);
-			if (factory != null)
+			if (factory != null) {
 				return factory;
+			}
 		}
 		return new RdbmsConnectionFactory();
 	}

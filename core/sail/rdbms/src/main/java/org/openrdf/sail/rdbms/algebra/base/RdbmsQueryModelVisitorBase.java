@@ -49,7 +49,6 @@ import org.openrdf.sail.rdbms.algebra.UnionItem;
  * meet methods.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsQueryModelVisitorBase<X extends Exception> extends QueryModelVisitorBase<X> {
 

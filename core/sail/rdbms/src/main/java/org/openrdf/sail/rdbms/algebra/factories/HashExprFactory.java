@@ -19,11 +19,9 @@ import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 
 /**
- * 
  * @author James Leigh
  */
 public class HashExprFactory extends QueryModelVisitorBase<RdbmsException> {
@@ -43,13 +41,16 @@ public class HashExprFactory extends QueryModelVisitorBase<RdbmsException> {
 		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		result = null;
-		if (expr == null)
+		if (expr == null) {
 			return new SqlNull();
+		}
 		expr.visit(this);
-		if (unsupported != null)
+		if (unsupported != null) {
 			throw unsupported(unsupported);
-		if (result == null)
+		}
+		if (result == null) {
 			return new SqlNull();
+		}
 		return result;
 	}
 

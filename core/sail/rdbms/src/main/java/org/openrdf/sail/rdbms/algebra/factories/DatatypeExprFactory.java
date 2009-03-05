@@ -37,7 +37,6 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * Creates a datatype SQL expression.
  * 
  * @author James Leigh
- * 
  */
 public class DatatypeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 
@@ -47,11 +46,13 @@ public class DatatypeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsO
 		throws UnsupportedRdbmsOperatorException
 	{
 		result = null;
-		if (expr == null)
+		if (expr == null) {
 			return new SqlNull();
+		}
 		expr.visit(this);
-		if (result == null)
+		if (result == null) {
 			return new SqlNull();
+		}
 		return result;
 	}
 
@@ -114,8 +115,9 @@ public class DatatypeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsO
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
 			URI datatype = ((Literal)value).getDatatype();
-			if (datatype != null)
+			if (datatype != null) {
 				return str(datatype.stringValue());
+			}
 		}
 		return sqlNull();
 	}

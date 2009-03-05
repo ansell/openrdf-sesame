@@ -17,8 +17,8 @@ public interface SailImplConfig {
 	public String getType();
 
 	/**
-	 * Validates this configuration. A {@link StoreConfigException} is thrown when
-	 * the configuration is invalid. The exception should contain an error
+	 * Validates this configuration. A {@link StoreConfigException} is thrown
+	 * when the configuration is invalid. The exception should contain an error
 	 * message that indicates why the configuration is invalid.
 	 * 
 	 * @throws StoreConfigException

@@ -43,7 +43,6 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 	{
 		GraphQueryModel query = getParsedQuery();
 
-
 		Cursor<? extends BindingSet> bindingsIter = evaluate(query);
 
 		// Filters out all partial and invalid matches
@@ -54,9 +53,9 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 				Value context = bindingSet.getValue("context");
 
 				return bindingSet.getValue("subject") instanceof Resource
-				&& bindingSet.getValue("predicate") instanceof URI
-				&& bindingSet.getValue("object") instanceof Value
-				&& (context == null || context instanceof Resource);
+						&& bindingSet.getValue("predicate") instanceof URI
+						&& bindingSet.getValue("object") instanceof Value
+						&& (context == null || context instanceof Resource);
 			}
 
 			@Override

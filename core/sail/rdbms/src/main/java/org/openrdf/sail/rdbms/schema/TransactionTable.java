@@ -17,7 +17,6 @@ import org.openrdf.sail.rdbms.managers.helpers.BatchBlockingQueue;
  * predicate into the database.
  * 
  * @author James Leigh
- * 
  */
 public class TransactionTable {
 

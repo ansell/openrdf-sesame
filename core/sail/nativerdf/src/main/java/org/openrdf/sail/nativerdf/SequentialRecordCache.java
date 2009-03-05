@@ -59,6 +59,7 @@ class SequentialRecordCache extends RecordCache {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public void discard()
 		throws IOException
 	{
@@ -75,12 +76,14 @@ class SequentialRecordCache extends RecordCache {
 		}
 	}
 
+	@Override
 	public void storeRecordInternal(byte[] data)
 		throws IOException
 	{
 		fileChannel.write(ByteBuffer.wrap(data), fileChannel.size());
 	}
 
+	@Override
 	public RecordIterator getRecordsInternal() {
 		return new RecordCacheIterator();
 	}

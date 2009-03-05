@@ -15,7 +15,6 @@ import org.openrdf.repository.RepositoryConnection;
  * Interceptor interface for Repository state changes.
  * 
  * @author Herko ter Horst
- * 
  */
 public interface RepositoryInterceptor extends EventListener {
 

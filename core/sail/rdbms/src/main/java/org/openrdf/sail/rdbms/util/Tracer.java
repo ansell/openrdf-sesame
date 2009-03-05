@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Tracer implements InvocationHandler {
+
 	private static Logger logger = LoggerFactory.getLogger(Tracer.class);
 
 	private static int count;
@@ -38,18 +39,20 @@ public class Tracer implements InvocationHandler {
 	public static DataSource traceDataSource(DataSource ds) {
 		try {
 			String var = getVariableName(DataSource.class);
-			File traceFile = File.createTempFile("sqltrace-" + Long.toHexString(System.currentTimeMillis()), ".java");
+			File traceFile = File.createTempFile("sqltrace-" + Long.toHexString(System.currentTimeMillis()),
+					".java");
 			PrintWriter out = new PrintWriter(traceFile);
 			logger.info("Using trace file: {}", traceFile);
-			return (DataSource) Tracer.trace(var, ds, DataSource.class, out);
-		} catch (IOException e) {
+			return (DataSource)Tracer.trace(var, ds, DataSource.class, out);
+		}
+		catch (IOException e) {
 			return ds;
 		}
 	}
 
 	private static Object trace(String var, Object delegate, Class<?> type, PrintWriter out) {
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		Class<?>[] types = new Class<?>[]{type};
+		Class<?>[] types = new Class<?>[] { type };
 		return Proxy.newProxyInstance(cl, types, new Tracer(delegate, var, out));
 	}
 
@@ -83,10 +86,12 @@ public class Tracer implements InvocationHandler {
 			}
 			Object result = method.invoke(delegate, args);
 			Class<?> type = method.getReturnType();
-			if (result != null && type.isInterface())
+			if (result != null && type.isInterface()) {
 				return Tracer.trace(returnVar, result, type, out);
+			}
 			return result;
-		} catch (InvocationTargetException exc) {
+		}
+		catch (InvocationTargetException exc) {
 			String name = method.getName();
 			String msg = exc.getCause().getMessage();
 			String line = "/* ERROR in " + var + "." + name + ": " + msg;
@@ -94,7 +99,7 @@ public class Tracer implements InvocationHandler {
 				out.println(line);
 				exc.getCause().printStackTrace(out);
 				if (exc.getCause() instanceof SQLException) {
-					SQLException se = (SQLException) exc.getCause();
+					SQLException se = (SQLException)exc.getCause();
 					SQLException next = se.getNextException();
 					if (next != null) {
 						next.printStackTrace(out);
@@ -118,8 +123,8 @@ public class Tracer implements InvocationHandler {
 		sb.append(method.getName());
 		sb.append("(");
 		if (args != null) {
-			for (int i=0;i<args.length;i++) {
-				if (i>0) {
+			for (int i = 0; i < args.length; i++) {
+				if (i > 0) {
 					sb.append(", ");
 				}
 				Object arg = args[i];
@@ -133,31 +138,35 @@ public class Tracer implements InvocationHandler {
 	private void appendArg(Object arg, StringBuilder sb) {
 		if (arg == null) {
 			sb.append("null");
-		} else if (arg instanceof String) {
-			String str = (String) arg;
+		}
+		else if (arg instanceof String) {
+			String str = (String)arg;
 			sb.append("\"");
 			str = str.replace("\\", "\\\\");
 			str = str.replace("\n", "\\n");
 			str = str.replace("\"", "\\\"");
 			sb.append(str);
 			sb.append("\"");
-		} else if (arg instanceof Long) {
+		}
+		else if (arg instanceof Long) {
 			sb.append(arg).append('l');
-		} else if (arg.getClass().isArray()) {
+		}
+		else if (arg.getClass().isArray()) {
 			sb.append("new ");
 			sb.append(arg.getClass().getComponentType().getSimpleName());
 			sb.append("[]{");
-			Object[] ar = (Object[]) arg;
-			for (int i=0;i<ar.length;i++) {
-				if (i>0) {
+			Object[] ar = (Object[])arg;
+			for (int i = 0; i < ar.length; i++) {
+				if (i > 0) {
 					sb.append(", ");
 				}
 				appendArg(ar[i], sb);
 			}
 			sb.append("}");
-		} else {
+		}
+		else {
 			sb.append(arg);
 		}
 	}
-	
+
 }

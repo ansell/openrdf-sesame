@@ -19,8 +19,8 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 /**
  * Processes the prefix declarations in a SPARQL query model.
- *
- * @author Arjohn Kampman 
+ * 
+ * @author Arjohn Kampman
  */
 class PrefixDeclProcessor {
 

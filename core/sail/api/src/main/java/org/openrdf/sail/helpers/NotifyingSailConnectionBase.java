@@ -20,7 +20,9 @@ import org.openrdf.sail.SailConnectionListener;
  * @author jeen
  * @author James Leigh
  */
-public abstract class NotifyingSailConnectionBase extends SailConnectionBase implements NotifyingSailConnection {
+public abstract class NotifyingSailConnectionBase extends SailConnectionBase implements
+		NotifyingSailConnection
+{
 
 	/*-----------*
 	 * Variables *

@@ -57,8 +57,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 	public static final String REPOSITORY_TYPE = "openrdf:SystemRepository";
 
 	/** <tt>http://www.openrdf.org/config/repository#repositoryID</tt> */
-	public final static URI REPOSITORYID = new URIImpl("http://www.openrdf.org/config/repository#repositoryID");
-;
+	public final static URI REPOSITORYID = new URIImpl("http://www.openrdf.org/config/repository#repositoryID");;
 
 	/*-----------*
 	 * Variables *
@@ -81,9 +80,10 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 			Class<?> SailRepository = Class.forName("org.openrdf.repository.sail.SailRepository");
 			Object sail = MemoryStore.getConstructor(File.class).newInstance(systemDir);
 			Object repository = SailRepository.getConstructor(Sail).newInstance(sail);
-			Repository repo = (Repository) repository;
+			Repository repo = (Repository)repository;
 			super.setDelegate(repo);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new StoreException(e);
 		}
 	}
@@ -124,8 +124,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 	}
 
 	@Override
-	public void setDelegate(Repository delegate)
-	{
+	public void setDelegate(Repository delegate) {
 		throw new UnsupportedOperationException("Setting delegate on system repository not allowed");
 	}
 
@@ -133,7 +132,6 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 	 * Update the specified RepositoryConnection with the specified set of
 	 * RepositoryConfigs. This will overwrite all existing configurations in the
 	 * Repository that have a Repository ID occurring in these RepositoryConfigs.
-	 * 
 	 * Note: this method does NOT commit the updates on the connection.
 	 * 
 	 * @param con
@@ -143,7 +141,6 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 	 *        Repository. The RepositoryConfig's ID may already occur in the
 	 *        Repository, in which case all previous configuration data for that
 	 *        Repository will be cleared before the RepositoryConfig is added.
-	 * 
 	 * @throws StoreException
 	 * @throws StoreConfigException
 	 */

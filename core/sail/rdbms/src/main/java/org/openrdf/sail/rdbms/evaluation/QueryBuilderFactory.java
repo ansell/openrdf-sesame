@@ -11,7 +11,6 @@ import org.openrdf.sail.rdbms.RdbmsValueFactory;
  * Creates the SQL query building components.
  * 
  * @author James Leigh
- * 
  */
 public class QueryBuilderFactory {
 

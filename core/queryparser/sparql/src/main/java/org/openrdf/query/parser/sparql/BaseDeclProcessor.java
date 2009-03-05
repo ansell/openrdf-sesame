@@ -24,15 +24,15 @@ class BaseDeclProcessor {
 
 	/**
 	 * Resolves relative URIs in the supplied query model using either the
-	 * specified <tt>externalBaseURI</tt> or, if this parameter is
-	 * <tt>null</tt>, the base URI specified in the query model itself.
+	 * specified <tt>externalBaseURI</tt> or, if this parameter is <tt>null</tt>,
+	 * the base URI specified in the query model itself.
 	 * 
 	 * @param qc
 	 *        The query model to resolve relative URIs in.
 	 * @param externalBaseURI
 	 *        The external base URI to use for resolving relative URIs, or
-	 *        <tt>null</tt> if the base URI that is specified in the query
-	 *        model should be used.
+	 *        <tt>null</tt> if the base URI that is specified in the query model
+	 *        should be used.
 	 * @throws IllegalArgumentException
 	 *         If an external base URI is specified that is not an absolute URI.
 	 * @throws MalformedQueryException

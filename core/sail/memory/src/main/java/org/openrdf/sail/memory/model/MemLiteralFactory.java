@@ -57,8 +57,8 @@ public class MemLiteralFactory extends LiteralFactoryImpl {
 	}
 
 	/**
-	 * Checks whether the supplied value is an instance of <tt>MemValue</tt>
-	 * and whether it has been created by this MemValueFactory.
+	 * Checks whether the supplied value is an instance of <tt>MemValue</tt> and
+	 * whether it has been created by this MemValueFactory.
 	 */
 	private boolean isOwnMemValue(Value value) {
 		return value instanceof MemValue && ((MemValue)value).getCreator() == this;
@@ -68,8 +68,8 @@ public class MemLiteralFactory extends LiteralFactoryImpl {
 	 * Gets all literals that are managed by this value factory.
 	 * <p>
 	 * <b>Warning:</b> This method is not synchronized. To iterate over the
-	 * returned set in a thread-safe way, this method should only be called
-	 * while synchronizing on this object.
+	 * returned set in a thread-safe way, this method should only be called while
+	 * synchronizing on this object.
 	 * 
 	 * @return An unmodifiable Set of MemURI objects.
 	 */
@@ -127,6 +127,7 @@ public class MemLiteralFactory extends LiteralFactoryImpl {
 		return memLiteral;
 	}
 
+	@Override
 	public synchronized Literal createLiteral(String value) {
 		Literal tempLiteral = new LiteralImpl(value);
 		MemLiteral memLiteral = literalRegistry.get(tempLiteral);
@@ -138,6 +139,7 @@ public class MemLiteralFactory extends LiteralFactoryImpl {
 		return memLiteral;
 	}
 
+	@Override
 	public synchronized Literal createLiteral(String value, String language) {
 		Literal tempLiteral = new LiteralImpl(value, language);
 		MemLiteral memLiteral = literalRegistry.get(tempLiteral);
@@ -149,6 +151,7 @@ public class MemLiteralFactory extends LiteralFactoryImpl {
 		return memLiteral;
 	}
 
+	@Override
 	public synchronized Literal createLiteral(String value, URI datatype) {
 		Literal tempLiteral = new LiteralImpl(value, datatype);
 		MemLiteral memLiteral = literalRegistry.get(tempLiteral);

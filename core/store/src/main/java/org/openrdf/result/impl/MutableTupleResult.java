@@ -237,10 +237,12 @@ public class MutableTupleResult implements TupleResult, Cloneable {
 	public BindingSet singleResult()
 		throws StoreException
 	{
-		if (bindingSets.isEmpty())
+		if (bindingSets.isEmpty()) {
 			throw new NoResultException("expected zero, but was:" + bindingSets.size());
-		if (bindingSets.size() > 1)
+		}
+		if (bindingSets.size() > 1) {
 			throw new MultipleResultException("expected zero, but was:" + bindingSets.size());
+		}
 		return this.bindingSets.get(0);
 	}
 

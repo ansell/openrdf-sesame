@@ -99,6 +99,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	 * @throws StoreException
 	 *         If the manager failed to initialize the SYSTEM repository.
 	 */
+	@Override
 	public void initialize()
 		throws StoreConfigException
 	{
@@ -111,7 +112,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 				File systemDir = getRepositoryDir(SystemRepository.ID);
 				SystemRepository systemRepos = new SystemRepository(systemDir);
 				systemRepos.initialize();
-				
+
 				systemRepos.addRepositoryConnectionListener(new ConfigChangeListener());
 				Repository systemRepository = systemRepos;
 				setRepositoryConfigManager(new SystemConfigManager(systemRepository));
@@ -119,7 +120,8 @@ public class LocalRepositoryManager extends RepositoryManager {
 				synchronized (initializedRepositories) {
 					initializedRepositories.put(SystemRepository.ID, systemRepository);
 				}
-			} else {
+			}
+			else {
 				// Sesame 3.0 directory
 				setRepositoryConfigManager(new LocalConfigManager(new File(baseDir, CONFIGURATIONS)));
 			}
@@ -139,9 +141,13 @@ public class LocalRepositoryManager extends RepositoryManager {
 	/**
 	 * Gets the base dir against which to resolve relative paths.
 	 * 
-	 * @throws MalformedURLException If the path cannot be parsed as a URL
+	 * @throws MalformedURLException
+	 *         If the path cannot be parsed as a URL
 	 */
-	public URL getLocation() throws MalformedURLException {
+	@Override
+	public URL getLocation()
+		throws MalformedURLException
+	{
 		return baseDir.toURI().toURL();
 	}
 
@@ -369,7 +375,8 @@ public class LocalRepositoryManager extends RepositoryManager {
 						if (!currently.equals(model)) {
 							addRepositoryConfig(id, model);
 						}
-					} else {
+					}
+					else {
 						addRepositoryConfig(id, model);
 					}
 				}
@@ -378,7 +385,8 @@ public class LocalRepositoryManager extends RepositoryManager {
 				for (String id : old) {
 					removeRepositoryConfig(id);
 				}
-			} catch (StoreException e) {
+			}
+			catch (StoreException e) {
 				throw new AssertionError(e);
 			}
 			catch (StoreConfigException e) {
@@ -390,8 +398,9 @@ public class LocalRepositoryManager extends RepositoryManager {
 			throws StoreConfigException
 		{
 			Set<Value> ids = config.filter(null, REPOSITORYID, null).objects();
-			if (ids.size() != 1)
+			if (ids.size() != 1) {
 				throw new StoreConfigException("Repository ID not found");
+			}
 			return ids.iterator().next().stringValue();
 		}
 	}

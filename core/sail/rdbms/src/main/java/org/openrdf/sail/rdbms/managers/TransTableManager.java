@@ -25,7 +25,6 @@ import org.openrdf.sail.rdbms.schema.ValueTypes;
  * Manages and delegates to a collection of {@link TransactionTable}s.
  * 
  * @author James Leigh
- * 
  */
 public class TransTableManager {
 
@@ -134,8 +133,9 @@ public class TransTableManager {
 				throw new AssertionError(e);
 			}
 			TransactionTable table = findTable(pred);
-			if ((table == null || table.isEmpty()) && predicate.isEmpty())
+			if ((table == null || table.isEmpty()) && predicate.isEmpty()) {
 				continue;
+			}
 			sb.append("SELECT ctx, subj, ");
 			if (predicate.isPredColumnPresent()) {
 				sb.append(" pred,");
@@ -149,8 +149,9 @@ public class TransTableManager {
 			sb.append(union);
 			predicate.blockUntilReady();
 		}
-		if (sb.length() < union.length())
+		if (sb.length() < union.length()) {
 			return getEmptyTableName();
+		}
 		sb.delete(sb.length() - union.length(), sb.length());
 		sb.append(")");
 		return sb.toString();
@@ -159,11 +160,13 @@ public class TransTableManager {
 	public String getTableName(Number pred)
 		throws SQLException
 	{
-		if (pred.equals(ValueTable.NIL_ID))
+		if (pred.equals(ValueTable.NIL_ID)) {
 			return getCombinedTableName();
+		}
 		String tableName = triples.getTableName(pred);
-		if (tableName == null)
+		if (tableName == null) {
 			return getEmptyTableName();
+		}
 		return tableName;
 	}
 
@@ -195,22 +198,25 @@ public class TransTableManager {
 	public boolean isPredColumnPresent(Number id)
 		throws SQLException
 	{
-		if (id.longValue() == ValueTable.NIL_ID)
+		if (id.longValue() == ValueTable.NIL_ID) {
 			return true;
+		}
 		return triples.getPredicateTable(id).isPredColumnPresent();
 	}
 
 	public ValueTypes getObjTypes(Number pred) {
 		TripleTable table = triples.getExistingTable(pred);
-		if (table == null)
+		if (table == null) {
 			return ValueTypes.UNKNOWN;
+		}
 		return table.getObjTypes();
 	}
 
 	public ValueTypes getSubjTypes(Number pred) {
 		TripleTable table = triples.getExistingTable(pred);
-		if (table == null)
+		if (table == null) {
 			return ValueTypes.RESOURCE;
+		}
 		return table.getSubjTypes();
 	}
 
@@ -226,8 +232,9 @@ public class TransTableManager {
 				throw new AssertionError(e);
 			}
 			TransactionTable table = findTable(pred);
-			if (table != null && !table.isEmpty() || !predicate.isEmpty())
+			if (table != null && !table.isEmpty() || !predicate.isEmpty()) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -247,8 +254,9 @@ public class TransTableManager {
 				if (predicate.isPredColumnPresent()) {
 					key = ids.idOf(-1);
 					table = tables.get(key);
-					if (table != null)
+					if (table != null) {
 						return table;
+					}
 				}
 				table = createTransactionTable(predicate);
 				tables.put(key, table);

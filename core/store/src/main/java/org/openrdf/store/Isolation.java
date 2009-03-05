@@ -34,8 +34,8 @@ public enum Isolation {
 	/**
 	 * In addition to repeatable read, successful transactions in this isolation
 	 * level will view a consistent snapshot. This isolation level will observe
-	 * either the complete effects of other change-sets and their dependency or no
-	 * effects of other change-sets.
+	 * either the complete effects of other change-sets and their dependency or
+	 * no effects of other change-sets.
 	 */
 	SNAPSHOT,
 

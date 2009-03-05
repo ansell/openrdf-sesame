@@ -17,7 +17,6 @@ import org.openrdf.sail.rdbms.model.RdbmsResource;
  * Converts a {@link ResultSet} into a {@link RdbmsResource} in an iteration.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsResourceCursor extends RdbmCursorBase<RdbmsResource> {
 

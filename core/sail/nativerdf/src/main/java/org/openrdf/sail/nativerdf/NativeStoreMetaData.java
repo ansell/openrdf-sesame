@@ -17,13 +17,13 @@ import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.sail.helpers.SailMetaDataImpl;
 import org.openrdf.sail.nativerdf.config.NativeStoreFactory;
 
-
 /**
- *
  * @author James Leigh
  */
 class NativeStoreMetaData extends SailMetaDataImpl {
+
 	private NativeStore store;
+
 	private Logger logger = LoggerFactory.getLogger(NativeStoreMetaData.class);
 
 	NativeStoreMetaData(NativeStore store) {
@@ -39,8 +39,9 @@ class NativeStoreMetaData extends SailMetaDataImpl {
 	@Override
 	public URL getLocation() {
 		File dataDir = store.getDataDir();
-		if (dataDir == null)
+		if (dataDir == null) {
 			return null;
+		}
 		try {
 			return dataDir.toURI().toURL();
 		}

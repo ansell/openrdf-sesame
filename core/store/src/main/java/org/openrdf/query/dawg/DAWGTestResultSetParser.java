@@ -89,7 +89,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 		}
 
 		Resource resultSetNode = resultSetNodes.iterator().next();
-		
+
 		try {
 			List<String> bindingNames = getBindingNames(resultSetNode);
 			tqrHandler.startQueryResult(bindingNames);

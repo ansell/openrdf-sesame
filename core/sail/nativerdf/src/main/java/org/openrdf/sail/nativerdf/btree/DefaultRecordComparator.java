@@ -6,8 +6,8 @@
 package org.openrdf.sail.nativerdf.btree;
 
 /**
- * A RecordComparator that compares values with eachother by comparing all
- * of their bytes.
+ * A RecordComparator that compares values with eachother by comparing all of
+ * their bytes.
  * 
  * @author Arjohn Kampman
  */

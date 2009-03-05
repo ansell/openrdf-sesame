@@ -41,8 +41,8 @@ import org.openrdf.query.resultio.TupleQueryResultParserBase;
 /**
  * Parser for reading tuple query results formatted as SPARQL Results Documents.
  * See <a href="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results
- * XML Format</a> for the definition of this format. The parser assumes that
- * the XML is wellformed.
+ * XML Format</a> for the definition of this format. The parser assumes that the
+ * XML is wellformed.
  */
 public class SPARQLResultsXMLParser extends TupleQueryResultParserBase {
 

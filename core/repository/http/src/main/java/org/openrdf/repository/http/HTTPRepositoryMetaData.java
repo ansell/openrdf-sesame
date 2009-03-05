@@ -68,19 +68,23 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 	{
 		String name = getName(method);
 		Class<?> type = method.getReturnType();
-		if (READ_ONLY.equals(name))
+		if (READ_ONLY.equals(name)) {
 			return repository.isReadOnly();
-		if (EMBEDDED.equals(name))
+		}
+		if (EMBEDDED.equals(name)) {
 			return false;
-		if (type.isArray())
+		}
+		if (type.isArray()) {
 			return getArrayOf(type.getComponentType(), name);
+		}
 		return getArrayOf(type, name)[0];
 	}
 
 	private String getName(Method method) {
 		for (PropertyDescriptor p : properties) {
-			if (method.equals(p.getReadMethod()))
+			if (method.equals(p.getReadMethod())) {
 				return p.getName();
+			}
 		}
 		throw new AssertionError("No such property");
 	}

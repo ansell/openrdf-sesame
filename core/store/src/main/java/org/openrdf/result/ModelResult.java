@@ -12,7 +12,6 @@ import org.openrdf.model.Statement;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.store.StoreException;
 
-
 /**
  * @author James Leigh
  */

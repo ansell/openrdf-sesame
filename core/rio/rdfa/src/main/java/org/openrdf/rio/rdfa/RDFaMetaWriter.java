@@ -73,8 +73,9 @@ public class RDFaMetaWriter {
 		for (Map.Entry<String, String> entry : namespaceTable.entrySet()) {
 			String name = entry.getKey();
 			String prefix = entry.getValue();
-			if ("".equals(prefix))
+			if ("".equals(prefix)) {
 				continue;
+			}
 
 			writer.newLine();
 			writer.indent(1);
@@ -294,15 +295,17 @@ public class RDFaMetaWriter {
 	}
 
 	private String tagName(URI pred, String defaultTag) {
-		if (NS.equals(pred.getNamespace()))
+		if (NS.equals(pred.getNamespace())) {
 			return pred.getLocalName();
+		}
 		return defaultTag;
 	}
 
 	private String tagName(Set<URI> types, String defaultTag) {
 		for (URI type : types) {
-			if (NS.equals(type.getNamespace()))
+			if (NS.equals(type.getNamespace())) {
 				return type.getLocalName();
+			}
 		}
 		return defaultTag;
 	}
@@ -311,11 +314,13 @@ public class RDFaMetaWriter {
 	 * If this Literal should be repeated in an attribute.
 	 */
 	private boolean useContentAttribute(Literal literal) {
-		if (RDF.XMLLITERAL.equals(literal.getDatatype()))
+		if (RDF.XMLLITERAL.equals(literal.getDatatype())) {
 			return false;
+		}
 		String label = literal.getLabel();
-		if (label.length() == 0)
+		if (label.length() == 0) {
 			return false;
+		}
 		char first = label.charAt(0);
 		char last = label.charAt(label.length() - 1);
 		return Character.isWhitespace(first) || Character.isWhitespace(last);

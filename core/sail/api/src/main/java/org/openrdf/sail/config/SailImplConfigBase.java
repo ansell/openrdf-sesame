@@ -12,7 +12,6 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.store.StoreConfigException;
 

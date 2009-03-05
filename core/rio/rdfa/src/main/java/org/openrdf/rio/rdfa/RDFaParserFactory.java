@@ -5,7 +5,6 @@
  */
 package org.openrdf.rio.rdfa;
 
-
 import java.io.InputStream;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;

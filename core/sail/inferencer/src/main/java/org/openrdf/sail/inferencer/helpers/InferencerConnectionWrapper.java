@@ -119,8 +119,8 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * connection.
 	 */
 	@Override
-	public Cursor<? extends Statement> getStatements(Resource subj, URI pred,
-			Value obj, boolean includeInferred, Resource... contexts)
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
 		flushUpdates();

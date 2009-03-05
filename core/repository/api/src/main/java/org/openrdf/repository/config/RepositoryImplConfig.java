@@ -17,9 +17,9 @@ public interface RepositoryImplConfig {
 	public String getType();
 
 	/**
-	 * Validates this configuration. A {@link StoreConfigException} is
-	 * thrown when the configuration is invalid. The exception should contain an
-	 * error message that indicates why the configuration is invalid.
+	 * Validates this configuration. A {@link StoreConfigException} is thrown
+	 * when the configuration is invalid. The exception should contain an error
+	 * message that indicates why the configuration is invalid.
 	 * 
 	 * @throws StoreConfigException
 	 *         If the configuration is invalid.

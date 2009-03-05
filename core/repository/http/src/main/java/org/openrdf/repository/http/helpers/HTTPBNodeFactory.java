@@ -35,12 +35,14 @@ public class HTTPBNodeFactory implements BNodeFactory {
 	}
 
 	public BNode createBNode() {
-		if (queue == null)
+		if (queue == null) {
 			throw new UnsupportedOperationException();
+		}
 		synchronized (queue) {
 			BNode bnode = queue.poll();
-			if (bnode != null)
+			if (bnode != null) {
 				return bnode;
+			}
 			try {
 				return loadBNodes();
 			}
@@ -79,8 +81,9 @@ public class HTTPBNodeFactory implements BNodeFactory {
 		BNode bnode;
 		TupleResult result = client.post(amount *= 2);
 		try {
-			if (!result.hasNext())
+			if (!result.hasNext()) {
 				throw new StoreException("No BNodes");
+			}
 			bnode = (BNode)result.next().getValue(BNODE);
 			while (result.hasNext()) {
 				queue.add((BNode)result.next().getValue(BNODE));

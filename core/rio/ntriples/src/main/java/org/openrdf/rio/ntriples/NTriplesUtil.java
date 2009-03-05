@@ -5,7 +5,6 @@
  */
 package org.openrdf.rio.ntriples;
 
-
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -19,15 +18,16 @@ import org.openrdf.model.ValueFactory;
 public class NTriplesUtil {
 
 	/**
-	 * Parses an N-Triples value, creates an object for it using the
-	 * supplied ValueFactory and returns this object.
-	 *
-	 * @param nTriplesValue The N-Triples value to parse.
-	 * @param valueFactory The ValueFactory to use for creating the
-	 * object.
+	 * Parses an N-Triples value, creates an object for it using the supplied
+	 * ValueFactory and returns this object.
+	 * 
+	 * @param nTriplesValue
+	 *        The N-Triples value to parse.
+	 * @param valueFactory
+	 *        The ValueFactory to use for creating the object.
 	 * @return An object representing the parsed value.
-	 * @throws IllegalArgumentException If the supplied value could not be
-	 * parsed correctly.
+	 * @throws IllegalArgumentException
+	 *         If the supplied value could not be parsed correctly.
 	 */
 	public static Value parseValue(String nTriplesValue, ValueFactory valueFactory)
 		throws IllegalArgumentException
@@ -47,15 +47,16 @@ public class NTriplesUtil {
 	}
 
 	/**
-	 * Parses an N-Triples resource, creates an object for it using
-	 * the supplied ValueFactory and returns this object.
-	 *
-	 * @param nTriplesResource The N-Triples resource to parse.
-	 * @param valueFactory The ValueFactory to use for creating the
-	 * object.
+	 * Parses an N-Triples resource, creates an object for it using the supplied
+	 * ValueFactory and returns this object.
+	 * 
+	 * @param nTriplesResource
+	 *        The N-Triples resource to parse.
+	 * @param valueFactory
+	 *        The ValueFactory to use for creating the object.
 	 * @return An object representing the parsed resource.
-	 * @throws IllegalArgumentException If the supplied resource could not be
-	 * parsed correctly.
+	 * @throws IllegalArgumentException
+	 *         If the supplied resource could not be parsed correctly.
 	 */
 	public static Resource parseResource(String nTriplesResource, ValueFactory valueFactory)
 		throws IllegalArgumentException
@@ -67,21 +68,21 @@ public class NTriplesUtil {
 			return parseBNode(nTriplesResource, valueFactory);
 		}
 		else {
-			throw new IllegalArgumentException(
-					"Not a legal N-Triples resource: " + nTriplesResource);
+			throw new IllegalArgumentException("Not a legal N-Triples resource: " + nTriplesResource);
 		}
 	}
 
 	/**
-	 * Parses an N-Triples URI, creates an object for it using the
-	 * supplied ValueFactory and returns this object.
-	 *
-	 * @param nTriplesURI The N-Triples URI to parse.
-	 * @param valueFactory The ValueFactory to use for creating the
-	 * object.
+	 * Parses an N-Triples URI, creates an object for it using the supplied
+	 * ValueFactory and returns this object.
+	 * 
+	 * @param nTriplesURI
+	 *        The N-Triples URI to parse.
+	 * @param valueFactory
+	 *        The ValueFactory to use for creating the object.
 	 * @return An object representing the parsed URI.
-	 * @throws IllegalArgumentException If the supplied URI could not be
-	 * parsed correctly.
+	 * @throws IllegalArgumentException
+	 *         If the supplied URI could not be parsed correctly.
 	 */
 	public static URI parseURI(String nTriplesURI, ValueFactory valueFactory)
 		throws IllegalArgumentException
@@ -97,15 +98,16 @@ public class NTriplesUtil {
 	}
 
 	/**
-	 * Parses an N-Triples bNode, creates an object for it using the
-	 * supplied ValueFactory and returns this object.
-	 *
-	 * @param nTriplesBNode The N-Triples bNode to parse.
-	 * @param valueFactory The ValueFactory to use for creating the
-	 * object.
+	 * Parses an N-Triples bNode, creates an object for it using the supplied
+	 * ValueFactory and returns this object.
+	 * 
+	 * @param nTriplesBNode
+	 *        The N-Triples bNode to parse.
+	 * @param valueFactory
+	 *        The ValueFactory to use for creating the object.
 	 * @return An object representing the parsed bNode.
-	 * @throws IllegalArgumentException If the supplied bNode could not be
-	 * parsed correctly.
+	 * @throws IllegalArgumentException
+	 *         If the supplied bNode could not be parsed correctly.
 	 */
 	public static BNode parseBNode(String nTriplesBNode, ValueFactory valueFactory)
 		throws IllegalArgumentException
@@ -119,15 +121,16 @@ public class NTriplesUtil {
 	}
 
 	/**
-	 * Parses an N-Triples literal, creates an object for it using the
-	 * supplied ValueFactory and returns this object.
-	 *
-	 * @param nTriplesLiteral The N-Triples literal to parse.
-	 * @param valueFactory The ValueFactory to use for creating the
-	 * object.
+	 * Parses an N-Triples literal, creates an object for it using the supplied
+	 * ValueFactory and returns this object.
+	 * 
+	 * @param nTriplesLiteral
+	 *        The N-Triples literal to parse.
+	 * @param valueFactory
+	 *        The ValueFactory to use for creating the object.
 	 * @return An object representing the parsed literal.
-	 * @throws IllegalArgumentException If the supplied literal could not be
-	 * parsed correctly.
+	 * @throws IllegalArgumentException
+	 *         If the supplied literal could not be parsed correctly.
 	 */
 	public static Literal parseLiteral(String nTriplesLiteral, ValueFactory valueFactory)
 		throws IllegalArgumentException
@@ -141,8 +144,7 @@ public class NTriplesUtil {
 				int startDtIdx = nTriplesLiteral.indexOf("^^", endLabelIdx);
 
 				if (startLangIdx != -1 && startDtIdx != -1) {
-					throw new IllegalArgumentException(
-							"Literals can not have both a language and a datatype");
+					throw new IllegalArgumentException("Literals can not have both a language and a datatype");
 				}
 
 				// Get label
@@ -170,12 +172,11 @@ public class NTriplesUtil {
 	}
 
 	/**
-	 * Finds the end of the label in a literal string. This method
-	 * takes into account that characters can be escaped using
-	 * backslashes.
-	 *
-	 * @return The index of the double quote ending the label, or
-	 * <tt>-1</tt> if it could not be found.
+	 * Finds the end of the label in a literal string. This method takes into
+	 * account that characters can be escaped using backslashes.
+	 * 
+	 * @return The index of the double quote ending the label, or <tt>-1</tt> if
+	 *         it could not be found.
 	 */
 	private static int findEndOfLabel(String nTriplesLiteral) {
 		// First character of literal is guaranteed to be a double
@@ -271,8 +272,9 @@ public class NTriplesUtil {
 	}
 
 	/**
-	 * Checks whether the supplied character is a letter or number
-	 * according to the N-Triples specification.
+	 * Checks whether the supplied character is a letter or number according to
+	 * the N-Triples specification.
+	 * 
 	 * @see #isLetter
 	 * @see #isNumber
 	 */
@@ -281,17 +283,17 @@ public class NTriplesUtil {
 	}
 
 	/**
-	 * Checks whether the supplied character is a letter according to
-	 * the N-Triples specification. N-Triples letters are A - Z and a - z.
+	 * Checks whether the supplied character is a letter according to the
+	 * N-Triples specification. N-Triples letters are A - Z and a - z.
 	 */
 	public static boolean isLetter(int c) {
 		return (c >= 65 && c <= 90) || // A - Z
-		       (c >= 97 && c <= 122);  // a - z
+				(c >= 97 && c <= 122); // a - z
 	}
 
 	/**
-	 * Checks whether the supplied character is a number according to
-	 * the N-Triples specification. N-Triples numbers are 0 - 9.
+	 * Checks whether the supplied character is a number according to the
+	 * N-Triples specification. N-Triples numbers are 0 - 9.
 	 */
 	public static boolean isNumber(int c) {
 		return (c >= 48 && c <= 57); // 0 - 9
@@ -299,9 +301,9 @@ public class NTriplesUtil {
 
 	/**
 	 * Escapes a Unicode string to an all-ASCII character sequence. Any special
-	 * characters are escaped using backslashes (<tt>"</tt> becomes <tt>\"</tt>,
-	 * etc.), and non-ascii/non-printable characters are escaped using Unicode
-	 * escapes (<tt>&#x5C;uxxxx</tt> and <tt>&#x5C;Uxxxxxxxx</tt>).
+	 * characters are escaped using backslashes (<tt>"</tt> becomes <tt>\"</tt>, etc.), and
+	 * non-ascii/non-printable characters are escaped using Unicode escapes (
+	 * <tt>&#x5C;uxxxx</tt> and <tt>&#x5C;Uxxxxxxxx</tt>).
 	 */
 	public static String escapeString(String label) {
 		int labelLength = label.length();
@@ -326,11 +328,8 @@ public class NTriplesUtil {
 			else if (c == '\t') {
 				sb.append("\\t");
 			}
-			else if (
-				cInt >= 0x0 && cInt <= 0x8 ||
-				cInt == 0xB || cInt == 0xC ||
-				cInt >= 0xE && cInt <= 0x1F ||
-				cInt >= 0x7F && cInt <= 0xFFFF)
+			else if (cInt >= 0x0 && cInt <= 0x8 || cInt == 0xB || cInt == 0xC || cInt >= 0xE && cInt <= 0x1F
+					|| cInt >= 0x7F && cInt <= 0xFFFF)
 			{
 				sb.append("\\u");
 				sb.append(toHexString(cInt, 4));
@@ -348,15 +347,17 @@ public class NTriplesUtil {
 	}
 
 	/**
-	 * Unescapes an escaped Unicode string. Any Unicode sequences
-	 * (<tt>&#x5C;uxxxx</tt> and <tt>&#x5C;Uxxxxxxxx</tt>) are restored to the
-	 * value indicated by the hexadecimal argument and any backslash-escapes
-	 * (<tt>\"</tt>, <tt>\\</tt>, etc.) are decoded to their original form.
-	 *
-	 * @param s An escaped Unicode string.
+	 * Unescapes an escaped Unicode string. Any Unicode sequences (
+	 * <tt>&#x5C;uxxxx</tt> and <tt>&#x5C;Uxxxxxxxx</tt>) are restored to the
+	 * value indicated by the hexadecimal argument and any backslash-escapes (<tt>\"</tt>
+	 * , <tt>\\</tt>, etc.) are decoded to their original form.
+	 * 
+	 * @param s
+	 *        An escaped Unicode string.
 	 * @return The unescaped string.
-	 * @throws IllegalArgumentException If the supplied string is not a
-	 * correctly escaped N-Triples string.
+	 * @throws IllegalArgumentException
+	 *         If the supplied string is not a correctly escaped N-Triples
+	 *         string.
 	 */
 	public static String unescapeString(String s) {
 		int backSlashIdx = s.indexOf('\\');
@@ -402,39 +403,35 @@ public class NTriplesUtil {
 			else if (c == 'u') {
 				// \\uxxxx
 				if (backSlashIdx + 5 >= sLength) {
-					throw new IllegalArgumentException(
-							"Incomplete Unicode escape sequence in: " + s);
+					throw new IllegalArgumentException("Incomplete Unicode escape sequence in: " + s);
 				}
 				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 6);
 
 				try {
 					c = (char)Integer.parseInt(xx, 16);
-					sb.append( c );
+					sb.append(c);
 
 					startIdx = backSlashIdx + 6;
 				}
 				catch (NumberFormatException e) {
-					throw new IllegalArgumentException(
-							"Illegal Unicode escape sequence '\\u" + xx + "' in: " + s);
+					throw new IllegalArgumentException("Illegal Unicode escape sequence '\\u" + xx + "' in: " + s);
 				}
 			}
 			else if (c == 'U') {
 				// \\Uxxxxxxxx
 				if (backSlashIdx + 9 >= sLength) {
-					throw new IllegalArgumentException(
-							"Incomplete Unicode escape sequence in: " + s);
+					throw new IllegalArgumentException("Incomplete Unicode escape sequence in: " + s);
 				}
 				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 10);
 
 				try {
 					c = (char)Integer.parseInt(xx, 16);
-					sb.append( c );
+					sb.append(c);
 
 					startIdx = backSlashIdx + 10;
 				}
 				catch (NumberFormatException e) {
-					throw new IllegalArgumentException(
-							"Illegal Unicode escape sequence '\\U" + xx + "' in: " + s);
+					throw new IllegalArgumentException("Illegal Unicode escape sequence '\\U" + xx + "' in: " + s);
 				}
 			}
 			else {
@@ -444,17 +441,19 @@ public class NTriplesUtil {
 			backSlashIdx = s.indexOf('\\', startIdx);
 		}
 
-		sb.append( s.substring(startIdx) );
+		sb.append(s.substring(startIdx));
 
 		return sb.toString();
 	}
 
 	/**
-	 * Converts a decimal value to a hexadecimal string represention
-	 * of the specified length.
-	 *
-	 * @param decimal A decimal value.
-	 * @param stringLength The length of the resulting string.
+	 * Converts a decimal value to a hexadecimal string represention of the
+	 * specified length.
+	 * 
+	 * @param decimal
+	 *        A decimal value.
+	 * @param stringLength
+	 *        The length of the resulting string.
 	 */
 	public static String toHexString(int decimal, int stringLength) {
 		StringBuilder sb = new StringBuilder(stringLength);

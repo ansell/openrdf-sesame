@@ -15,7 +15,6 @@ import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
  * An SQL join.
  * 
  * @author James Leigh
- * 
  */
 public class JoinItem extends FromItem {
 
@@ -52,8 +51,9 @@ public class JoinItem extends FromItem {
 	@Override
 	public ColumnVar getVarForChildren(String name) {
 		for (ColumnVar var : vars) {
-			if (var.getName().equals(name))
+			if (var.getName().equals(name)) {
 				return var;
+			}
 		}
 		return super.getVarForChildren(name);
 	}

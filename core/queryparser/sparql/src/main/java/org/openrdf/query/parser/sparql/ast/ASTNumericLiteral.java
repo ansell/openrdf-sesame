@@ -42,8 +42,7 @@ public class ASTNumericLiteral extends SimpleNode {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return super.toString() + " (value=" + value + ", datatype=" + datatype + ")";
 	}
 }
