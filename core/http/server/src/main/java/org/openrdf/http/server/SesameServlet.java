@@ -213,7 +213,7 @@ public class SesameServlet implements Servlet {
 			}
 
 			// Exceptions
-			registerPrototype(ExceptionWritter.class);
+			registerPrototype(ExceptionWriter.class);
 
 			// Views
 			registerPrototype(ContentNegotiator.BEAN_NAME, ContentNegotiator.class);
