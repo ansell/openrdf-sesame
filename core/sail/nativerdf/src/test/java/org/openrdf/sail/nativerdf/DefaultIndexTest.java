@@ -16,7 +16,9 @@ import info.aduna.io.file.FileUtil;
 
 public class DefaultIndexTest extends TestCase {
 
-	public void testDefaultIndex() throws Exception {
+	public void testDefaultIndex()
+		throws Exception
+	{
 		File dir = FileUtil.createTempDir("nativerdf");
 		TripleStore store = new TripleStore(dir, null);
 		store.close();
@@ -25,7 +27,9 @@ public class DefaultIndexTest extends TestCase {
 		FileUtil.deleteDir(dir);
 	}
 
-	public void testExistingIndex() throws Exception {
+	public void testExistingIndex()
+		throws Exception
+	{
 		File dir = FileUtil.createTempDir("nativerdf");
 		// set a non-default index
 		TripleStore store = new TripleStore(dir, "spoc,opsc");
@@ -38,16 +42,19 @@ public class DefaultIndexTest extends TestCase {
 		FileUtil.deleteDir(dir);
 	}
 
-	private String findIndex(File dir) throws Exception {
+	private String findIndex(File dir)
+		throws Exception
+	{
 		Properties properties = new Properties();
 		InputStream in = new FileInputStream(new File(dir, "triples.prop"));
 		try {
 			properties.clear();
 			properties.load(in);
-		} finally {
+		}
+		finally {
 			in.close();
 		}
-		return (String) properties.get("triple-indexes");
+		return (String)properties.get("triple-indexes");
 	}
 
 }

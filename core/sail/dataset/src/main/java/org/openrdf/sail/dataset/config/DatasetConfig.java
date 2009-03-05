@@ -7,8 +7,8 @@ package org.openrdf.sail.dataset.config;
 
 import static org.openrdf.sail.dataset.config.DatasetSchema.CLOSED;
 import static org.openrdf.sail.dataset.config.DatasetSchema.DATASET;
-import static org.openrdf.sail.dataset.config.DatasetSchema.NAME;
 import static org.openrdf.sail.dataset.config.DatasetSchema.GRAPH;
+import static org.openrdf.sail.dataset.config.DatasetSchema.NAME;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -14,7 +14,7 @@ import org.openrdf.model.impl.LiteralImpl;
  * @author Arjohn Kampman
  */
 public class MemLiteral extends LiteralImpl implements MemValue {
-	
+
 	private static final long serialVersionUID = 4288477328829845024L;
 
 	/*-----------*

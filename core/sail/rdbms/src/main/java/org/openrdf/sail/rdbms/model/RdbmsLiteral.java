@@ -19,7 +19,6 @@ import org.openrdf.model.impl.LiteralImpl;
  * Wraps a {@link LiteralImpl} providing an internal id and version.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsLiteral extends RdbmsValue implements Literal {
 

@@ -12,8 +12,8 @@ import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.store.StoreConfigException;
 
 /**
- * A {@link RepositoryFactory} that creates {@link HTTPRepository}s based on
- * RDF configuration data.
+ * A {@link RepositoryFactory} that creates {@link HTTPRepository}s based on RDF
+ * configuration data.
  * 
  * @author Arjohn Kampman
  * @author James Leigh
@@ -42,13 +42,14 @@ public class HTTPRepositoryFactory implements RepositoryFactory {
 		throws StoreConfigException
 	{
 		HTTPRepository result = null;
-		
+
 		if (config instanceof HTTPRepositoryConfig) {
 			HTTPRepositoryConfig httpConfig = (HTTPRepositoryConfig)config;
 			result = new HTTPRepository(httpConfig.getURL());
 			result.setSubjectSpace(httpConfig.getSubjectSpace());
 			result.setReadOnly(httpConfig.isReadOnly());
-//			result.setUsernameAndPassword(httpConfig.getUsername(), httpConfig.getPassword());
+			// result.setUsernameAndPassword(httpConfig.getUsername(),
+			// httpConfig.getPassword());
 		}
 		else {
 			throw new StoreConfigException("Invalid configuration class: " + config.getClass());

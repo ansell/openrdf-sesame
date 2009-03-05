@@ -210,6 +210,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 						// Prevent parser (Xerces) from closing the input stream
 						FilterInputStream wrapper = new FilterInputStream(zipIn) {
 
+							@Override
 							public void close() {
 							}
 						};
@@ -467,6 +468,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)}
 	 *             instead
 	 */
+	@Deprecated
 	public final ModelResult getStatements(Resource subj, URI pred, Value obj, boolean inf, Resource... ctx)
 		throws StoreException
 	{
@@ -478,6 +480,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	 *             {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)}
 	 *             instead
 	 */
+	@Deprecated
 	public final void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws RDFHandlerException, StoreException
@@ -489,6 +492,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)}
 	 *             instead
 	 */
+	@Deprecated
 	public final long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{

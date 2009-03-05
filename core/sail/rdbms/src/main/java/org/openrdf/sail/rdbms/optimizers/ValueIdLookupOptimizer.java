@@ -16,7 +16,6 @@ import org.openrdf.sail.rdbms.RdbmsValueFactory;
  * Iterates through the query and converting the values into RDBMS values.
  * 
  * @author James Leigh
- * 
  */
 public class ValueIdLookupOptimizer implements QueryOptimizer {
 

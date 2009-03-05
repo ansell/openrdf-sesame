@@ -26,6 +26,7 @@ public class CollectionCursor<E> extends CheckedCursor<E> {
 		this.iter = iter;
 	}
 
+	@Override
 	protected E checkedNext() {
 		if (iter.hasNext()) {
 			return iter.next();

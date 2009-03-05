@@ -12,7 +12,6 @@ import org.openrdf.query.EvaluationException;
  * evaluated on the client.
  * 
  * @author James Leigh
- * 
  */
 public class UnsupportedRdbmsOperatorException extends EvaluationException {
 

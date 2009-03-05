@@ -18,7 +18,10 @@ import org.openrdf.sail.nativerdf.NativeStore;
  */
 public class NativeStoreSchema {
 
-	/** The NativeStore schema namespace (<tt>http://www.openrdf.org/config/sail/native#</tt>). */
+	/**
+	 * The NativeStore schema namespace (
+	 * <tt>http://www.openrdf.org/config/sail/native#</tt>).
+	 */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/native#";
 
 	/** <tt>http://www.openrdf.org/config/sail/native#tripleIndexes</tt> */

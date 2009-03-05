@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail;
 
-
 /**
  * A connection to an RDF Sail object. A SailConnection is active from the
  * moment it is created until it is closed. Care should be taken to properly

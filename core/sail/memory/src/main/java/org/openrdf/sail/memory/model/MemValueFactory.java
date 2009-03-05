@@ -68,9 +68,9 @@ public class MemValueFactory extends ValueFactoryImpl {
 	 * 
 	 * @param value
 	 *        The MemValue equivalent of the supplied value, or <tt>null</tt>.
-	 * @return A previously created MemValue that is equal to <tt>value</tt>,
-	 *         or <tt>null</tt> if no such value exists or if <tt>value</tt>
-	 *         is equal to <tt>null</tt>.
+	 * @return A previously created MemValue that is equal to <tt>value</tt>, or
+	 *         <tt>null</tt> if no such value exists or if <tt>value</tt> is
+	 *         equal to <tt>null</tt>.
 	 */
 	public MemValue getMemValue(Value value) {
 		if (value instanceof Resource) {
@@ -118,7 +118,8 @@ public class MemValueFactory extends ValueFactoryImpl {
 	public MemBNode getMemBNode(BNode bnode) {
 		try {
 			return bf.getMemBNode(bnode);
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			return (MemBNode)createBNode(bnode.getID());
 		}
 	}
@@ -134,8 +135,8 @@ public class MemValueFactory extends ValueFactoryImpl {
 	 * Gets all URIs that are managed by this value factory.
 	 * <p>
 	 * <b>Warning:</b> This method is not synchronized. To iterate over the
-	 * returned set in a thread-safe way, this method should only be called
-	 * while synchronizing on this object.
+	 * returned set in a thread-safe way, this method should only be called while
+	 * synchronizing on this object.
 	 * 
 	 * @return An unmodifiable Set of MemURI objects.
 	 */
@@ -147,8 +148,8 @@ public class MemValueFactory extends ValueFactoryImpl {
 	 * Gets all bnodes that are managed by this value factory.
 	 * <p>
 	 * <b>Warning:</b> This method is not synchronized. To iterate over the
-	 * returned set in a thread-safe way, this method should only be called
-	 * while synchronizing on this object.
+	 * returned set in a thread-safe way, this method should only be called while
+	 * synchronizing on this object.
 	 * 
 	 * @return An unmodifiable Set of MemBNode objects.
 	 */
@@ -160,8 +161,8 @@ public class MemValueFactory extends ValueFactoryImpl {
 	 * Gets all literals that are managed by this value factory.
 	 * <p>
 	 * <b>Warning:</b> This method is not synchronized. To iterate over the
-	 * returned set in a thread-safe way, this method should only be called
-	 * while synchronizing on this object.
+	 * returned set in a thread-safe way, this method should only be called while
+	 * synchronizing on this object.
 	 * 
 	 * @return An unmodifiable Set of MemURI objects.
 	 */
@@ -217,7 +218,8 @@ public class MemValueFactory extends ValueFactoryImpl {
 	public MemBNode createMemBNode(BNode bnode) {
 		try {
 			return bf.createMemBNode(bnode);
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			return (MemBNode)createBNode(bnode.getID());
 		}
 	}

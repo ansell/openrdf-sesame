@@ -13,7 +13,6 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  * Vocabulary for the RDBMS configuration.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsStoreSchema {
 

@@ -236,8 +236,9 @@ public class RdbmsTripleRepository {
 			RdbmsResource[] c = vf.asRdbmsResource(ctxs);
 			flush();
 			SqlQueryBuilder query = buildSelectQuery(s, p, o, c);
-			if (query == null)
+			if (query == null) {
 				return new EmptyRdbmsStatementCursor();
+			}
 			List<?> parameters = query.findParameters(new ArrayList<Object>());
 			PreparedStatement stmt = conn.prepareStatement(query.toString());
 			try {
@@ -262,8 +263,9 @@ public class RdbmsTripleRepository {
 	{
 		flush();
 		String qry = buildContextQuery();
-		if (qry == null)
+		if (qry == null) {
 			return new EmptyRdbmsResourceCursor();
+		}
 		PreparedStatement stmt = conn.prepareStatement(qry);
 		try {
 			return new RdbmsResourceCursor(vf, stmt);
@@ -329,8 +331,9 @@ public class RdbmsTripleRepository {
 	{
 		flush();
 		SqlQueryBuilder qry = buildCountQuery(subj, pred, obj, ctxs);
-		if (qry == null)
+		if (qry == null) {
 			return 0;
+		}
 		List<?> parameters = qry.findParameters(new ArrayList<Object>());
 		PreparedStatement stmt = conn.prepareStatement(qry.toString());
 		try {
@@ -339,8 +342,9 @@ public class RdbmsTripleRepository {
 			}
 			ResultSet rs = stmt.executeQuery();
 			try {
-				if (rs.next())
+				if (rs.next()) {
 					return rs.getLong(1);
+				}
 				throw new RdbmsException("Could not determine size");
 			}
 			finally {
@@ -374,8 +378,9 @@ public class RdbmsTripleRepository {
 	private String buildContextQuery()
 		throws SQLException
 	{
-		if (statements.isEmpty())
+		if (statements.isEmpty()) {
 			return null;
+		}
 		String tableName = statements.getCombinedTableName();
 		SqlQueryBuilder query = factory.createSqlQueryBuilder();
 		query.select().column("t", "ctx");
@@ -392,7 +397,8 @@ public class RdbmsTripleRepository {
 		return query.toString();
 	}
 
-	private SqlQueryBuilder buildCountQuery(RdbmsResource subj, RdbmsURI pred, RdbmsValue obj, RdbmsResource... ctxs)
+	private SqlQueryBuilder buildCountQuery(RdbmsResource subj, RdbmsURI pred, RdbmsValue obj,
+			RdbmsResource... ctxs)
 		throws RdbmsException, SQLException
 	{
 		String tableName = statements.getTableName(vf.getInternalId(pred));

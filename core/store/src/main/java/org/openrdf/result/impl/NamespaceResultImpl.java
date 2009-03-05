@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.cursor.ConvertingCursor;
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.result.NamespaceResult;
@@ -26,6 +26,7 @@ public class NamespaceResultImpl extends ResultImpl<Namespace> implements Namesp
 		this(new ConvertingCursor<Map.Entry<String, String>, Namespace>(
 				new CollectionCursor<Map.Entry<String, String>>(namespaces.entrySet()))
 		{
+
 			@Override
 			protected Namespace convert(Entry<String, String> e)
 				throws StoreException

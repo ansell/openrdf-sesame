@@ -46,7 +46,6 @@ import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
  * operations.
  * 
  * @author James Leigh
- * 
  */
 public class SqlConstantOptimizer extends RdbmsQueryModelVisitorBase<RuntimeException> implements
 		QueryOptimizer
@@ -74,12 +73,15 @@ public class SqlConstantOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 			if (arg instanceof FalseValue) {
 				replace(node, new FalseValue());
 				return;
-			} else if (arg instanceof SqlNull) {
+			}
+			else if (arg instanceof SqlNull) {
 				replace(node, new SqlNull());
 				return;
-			} else if (arg instanceof TrueValue) {
+			}
+			else if (arg instanceof TrueValue) {
 				node.removeChildNode(arg);
-			} else if (arg instanceof SqlNot) {
+			}
+			else if (arg instanceof SqlNot) {
 				SqlNot not = (SqlNot)arg;
 				List<SqlExpr> args = Arrays.asList(node.getArgs());
 				if (args.contains(not.getArg())) {
@@ -269,24 +271,30 @@ public class SqlConstantOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 			if (arg instanceof TrueValue) {
 				replace(node, new TrueValue());
 				return;
-			} else if (arg instanceof FalseValue) {
+			}
+			else if (arg instanceof FalseValue) {
 				node.removeChildNode(arg);
-			} else if (top && arg instanceof SqlNull) {
+			}
+			else if (top && arg instanceof SqlNull) {
 				node.removeChildNode(arg);
-			} else if (sqlNull != null && arg instanceof SqlNull) {
+			}
+			else if (sqlNull != null && arg instanceof SqlNull) {
 				node.removeChildNode(arg);
-			} else if (arg instanceof SqlNull) {
-				sqlNull = (SqlNull) arg;
+			}
+			else if (arg instanceof SqlNull) {
+				sqlNull = arg;
 			}
 		}
 		if (node.getNumberOfArguments() == 0) {
 			replace(node, new FalseValue());
-		} else if (node.getNumberOfArguments() == 1) {
+		}
+		else if (node.getNumberOfArguments() == 1) {
 			replace(node, node.getArg(0));
-		} else if (sqlNull != null) {
+		}
+		else if (sqlNull != null) {
 			for (SqlExpr arg : node.getArgs()) {
 				if (arg instanceof SqlOr) {
-					SqlOr nestedOr = (SqlOr) arg;
+					SqlOr nestedOr = (SqlOr)arg;
 					for (SqlExpr nestedArg : nestedOr.getArgs()) {
 						if (nestedArg instanceof SqlNull) {
 							nestedOr.removeChildNode(nestedArg);
@@ -294,23 +302,27 @@ public class SqlConstantOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 					}
 					if (nestedOr.getNumberOfArguments() == 0) {
 						replace(nestedOr, new SqlNull());
-					} else if (nestedOr.getNumberOfArguments() == 1) {
+					}
+					else if (nestedOr.getNumberOfArguments() == 1) {
 						replace(nestedOr, nestedOr.getArg(0));
 					}
-				} else if (arg instanceof SqlAnd) {
+				}
+				else if (arg instanceof SqlAnd) {
 					// value IS NOT NULL AND value = ? OR NULL
 					// -> value = ?
 					SqlAnd and = (SqlAnd)arg;
 					// search for the value IS NOT NULL expression
 					for (SqlExpr isNotNull : and.getArgs()) {
 						SqlExpr variable = arg(arg(isNotNull, SqlNot.class), SqlIsNull.class);
-						if (variable == null)
+						if (variable == null) {
 							continue;
+						}
 						// search for the value = ? expression
 						for (SqlExpr eq : and.getArgs()) {
 							SqlExpr constant = other(eq, variable, SqlEq.class);
-							if (constant == null)
+							if (constant == null) {
 								continue;
+							}
 							if (constant instanceof SqlConstant) {
 								node.removeChildNode(sqlNull);
 								and.removeChildNode(isNotNull);
@@ -338,18 +350,22 @@ public class SqlConstantOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 	}
 
 	private boolean andAllTheWay(QueryModelNode node) {
-		if (node.getParentNode() instanceof SelectQuery)
+		if (node.getParentNode() instanceof SelectQuery) {
 			return true;
-		if (node.getParentNode() instanceof FromItem)
+		}
+		if (node.getParentNode() instanceof FromItem) {
 			return true;
-		if (node.getParentNode() instanceof SqlAnd)
+		}
+		if (node.getParentNode() instanceof SqlAnd) {
 			return andAllTheWay(node.getParentNode());
+		}
 		return false;
 	}
 
 	private SqlExpr arg(SqlExpr node, Class<? extends UnarySqlOperator> type) {
-		if (type.isInstance(node))
+		if (type.isInstance(node)) {
 			return type.cast(node).getArg();
+		}
 		return null;
 	}
 
@@ -358,10 +374,12 @@ public class SqlConstantOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 			BinarySqlOperator cast = type.cast(node);
 			SqlExpr left = cast.getLeftArg();
 			SqlExpr right = cast.getRightArg();
-			if (left.equals(compare))
+			if (left.equals(compare)) {
 				return right;
-			if (right.equals(compare))
+			}
+			if (right.equals(compare)) {
 				return left;
+			}
 		}
 		return null;
 	}

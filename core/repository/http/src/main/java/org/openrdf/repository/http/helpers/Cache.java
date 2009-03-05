@@ -5,7 +5,6 @@
  */
 package org.openrdf.repository.http.helpers;
 
-
 /**
  * @author James Leigh
  */
@@ -24,10 +23,12 @@ public class Cache {
 	}
 
 	public boolean isFresh(long now) {
-		if (expires == 0)
+		if (expires == 0) {
 			return false;
-		if (now < expires)
+		}
+		if (now < expires) {
 			return true;
+		}
 		expires = 0;
 		return false;
 	}

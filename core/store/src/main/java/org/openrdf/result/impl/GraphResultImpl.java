@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.CollectionCursor;
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Statement;
 import org.openrdf.result.GraphResult;
 import org.openrdf.store.StoreException;

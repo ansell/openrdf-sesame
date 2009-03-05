@@ -36,7 +36,6 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * Creates an SQL expression for a URI's string value.
  * 
  * @author James Leigh
- * 
  */
 public class URIExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 
@@ -52,11 +51,13 @@ public class URIExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperat
 		throws UnsupportedRdbmsOperatorException
 	{
 		result = null;
-		if (expr == null)
+		if (expr == null) {
 			return new SqlNull();
+		}
 		expr.visit(this);
-		if (result == null)
+		if (result == null) {
 			return new SqlNull();
+		}
 		return result;
 	}
 

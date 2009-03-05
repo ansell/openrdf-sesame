@@ -14,7 +14,6 @@ import org.openrdf.sail.rdbms.optimizers.SqlConstantOptimizer;
  * An SQL operator with one argument.
  * 
  * @author James Leigh
- * 
  */
 public abstract class UnarySqlOperator extends RdbmsQueryModelNodeBase implements SqlExpr {
 
@@ -72,19 +71,24 @@ public abstract class UnarySqlOperator extends RdbmsQueryModelNodeBase implement
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		final UnarySqlOperator other = (UnarySqlOperator)obj;
 		if (arg == null) {
-			if (other.arg != null)
+			if (other.arg != null) {
 				return false;
+			}
 		}
-		else if (!arg.equals(other.arg))
+		else if (!arg.equals(other.arg)) {
 			return false;
+		}
 		return true;
 	}
 

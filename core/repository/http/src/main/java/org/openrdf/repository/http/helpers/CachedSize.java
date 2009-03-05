@@ -5,12 +5,11 @@
  */
 package org.openrdf.repository.http.helpers;
 
-
 /**
- *
  * @author James Leigh
  */
 public class CachedSize extends Cache {
+
 	private long size;
 
 	public CachedSize(long size, String eTag) {
@@ -32,8 +31,9 @@ public class CachedSize extends Cache {
 	}
 
 	public Long getSize() {
-		if (size == -1)
+		if (size == -1) {
 			return null;
+		}
 		return size;
 	}
 

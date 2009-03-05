@@ -7,12 +7,11 @@ package org.openrdf.repository.http.helpers;
 
 import java.util.Map;
 
-
 /**
- *
  * @author James Leigh
  */
 public class CachedNamespaceResult extends Cache {
+
 	private Map<String, String> namespaces;
 
 	public CachedNamespaceResult(Map<String, String> namespaces, String eTag) {

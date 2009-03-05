@@ -20,7 +20,6 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * PostgreSQL syntax.
  * 
  * @author James Leigh
- * 
  */
 public class PgSqlRegexFlagsInliner extends RdbmsQueryModelVisitorBase<RuntimeException> implements
 		QueryOptimizer

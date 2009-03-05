@@ -13,7 +13,6 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * The SQL OR expression.
  * 
  * @author James Leigh
- * 
  */
 public class SqlOr extends NarySqlOperator {
 

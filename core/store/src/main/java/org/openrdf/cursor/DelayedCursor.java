@@ -41,6 +41,7 @@ public abstract class DelayedCursor<E> extends CheckedCursor<E> {
 		}
 	}
 
+	@Override
 	protected E checkedNext()
 		throws StoreException
 	{

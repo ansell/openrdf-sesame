@@ -9,7 +9,6 @@ import java.util.List;
 
 import info.aduna.collections.CastingList;
 
-
 public class ASTAnd extends ASTBooleanExpr {
 
 	public ASTAnd(int id) {
@@ -26,7 +25,7 @@ public class ASTAnd extends ASTBooleanExpr {
 	{
 		return visitor.visit(this, data);
 	}
-	
+
 	public List<ASTBooleanExpr> getOperandList() {
 		return new CastingList<ASTBooleanExpr>(children);
 	}

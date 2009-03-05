@@ -12,7 +12,6 @@ import org.openrdf.sail.rdbms.schema.TableFactory;
  * Overrides PostgreSQL specific table commands.
  * 
  * @author James Leigh
- * 
  */
 public class PgSqlTableFactory extends TableFactory {
 

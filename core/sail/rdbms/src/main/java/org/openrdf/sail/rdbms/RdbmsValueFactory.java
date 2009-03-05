@@ -46,7 +46,6 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * corresponding manager class.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsValueFactory extends LiteralFactoryImpl implements ValueFactory {
 
@@ -128,19 +127,24 @@ public class RdbmsValueFactory extends LiteralFactoryImpl implements ValueFactor
 		return resource;
 	}
 
+	@Override
 	public RdbmsLiteral createLiteral(String label) {
 		return asRdbmsLiteral(vf.createLiteral(label));
 	}
 
+	@Override
 	public RdbmsLiteral createLiteral(String label, String language) {
-		if (LiteralTable.ONLY_INSERT_LABEL)
+		if (LiteralTable.ONLY_INSERT_LABEL) {
 			return createLiteral(label);
+		}
 		return asRdbmsLiteral(vf.createLiteral(label, language));
 	}
 
+	@Override
 	public RdbmsLiteral createLiteral(String label, URI datatype) {
-		if (LiteralTable.ONLY_INSERT_LABEL)
+		if (LiteralTable.ONLY_INSERT_LABEL) {
 			return createLiteral(label);
+		}
 		return asRdbmsLiteral(vf.createLiteral(label, datatype));
 	}
 
@@ -178,25 +182,30 @@ public class RdbmsValueFactory extends LiteralFactoryImpl implements ValueFactor
 	public RdbmsResource getRdbmsResource(Number num, String stringValue) {
 		assert stringValue != null : "Null stringValue for ID: " + num;
 		Number id = ids.idOf(num);
-		if (ids.isURI(id))
+		if (ids.isURI(id)) {
 			return new RdbmsURI(id, uris.getIdVersion(), vf.createURI(stringValue));
+		}
 		return new RdbmsBNode(id, bnodes.getIdVersion(), vf.createBNode(stringValue));
 	}
 
 	public RdbmsLiteral getRdbmsLiteral(Number num, String label, String language, String datatype) {
 		Number id = ids.idOf(num);
-		if (datatype == null && language == null)
+		if (datatype == null && language == null) {
 			return new RdbmsLiteral(id, literals.getIdVersion(), vf.createLiteral(label));
-		if (datatype == null)
+		}
+		if (datatype == null) {
 			return new RdbmsLiteral(id, literals.getIdVersion(), vf.createLiteral(label, language));
+		}
 		return new RdbmsLiteral(id, literals.getIdVersion(), vf.createLiteral(label, vf.createURI(datatype)));
 	}
 
 	public RdbmsResource asRdbmsResource(Resource node) {
-		if (node == null)
+		if (node == null) {
 			return null;
-		if (node instanceof URI)
+		}
+		if (node instanceof URI) {
 			return asRdbmsURI((URI)node);
+		}
 		if (node instanceof RdbmsBNode) {
 			try {
 				bnodes.cache((RdbmsBNode)node);
@@ -210,8 +219,9 @@ public class RdbmsValueFactory extends LiteralFactoryImpl implements ValueFactor
 	}
 
 	public RdbmsURI asRdbmsURI(URI uri) {
-		if (uri == null)
+		if (uri == null) {
 			return null;
+		}
 		if (uri instanceof RdbmsURI) {
 			try {
 				uris.cache((RdbmsURI)uri);
@@ -225,10 +235,12 @@ public class RdbmsValueFactory extends LiteralFactoryImpl implements ValueFactor
 	}
 
 	public RdbmsValue asRdbmsValue(Value value) {
-		if (value == null)
+		if (value == null) {
 			return null;
-		if (value instanceof Literal)
+		}
+		if (value instanceof Literal) {
 			return asRdbmsLiteral((Literal)value);
+		}
 		return asRdbmsResource((Resource)value);
 	}
 
@@ -260,8 +272,9 @@ public class RdbmsValueFactory extends LiteralFactoryImpl implements ValueFactor
 	}
 
 	public RdbmsStatement asRdbmsStatement(Statement stmt) {
-		if (stmt instanceof RdbmsStatement)
+		if (stmt instanceof RdbmsStatement) {
 			return (RdbmsStatement)stmt;
+		}
 		Resource s = stmt.getSubject();
 		URI p = stmt.getPredicate();
 		Value o = stmt.getObject();
@@ -273,13 +286,16 @@ public class RdbmsValueFactory extends LiteralFactoryImpl implements ValueFactor
 		throws RdbmsException
 	{
 		try {
-			if (r == null)
+			if (r == null) {
 				return ValueTable.NIL_ID;
+			}
 			RdbmsValue value = asRdbmsValue(r);
-			if (value instanceof RdbmsURI)
+			if (value instanceof RdbmsURI) {
 				return uris.getInternalId((RdbmsURI)value);
-			if (value instanceof RdbmsBNode)
+			}
+			if (value instanceof RdbmsBNode) {
 				return bnodes.getInternalId((RdbmsBNode)value);
+			}
 			return literals.getInternalId((RdbmsLiteral)value);
 		}
 		catch (SQLException e) {
@@ -304,7 +320,9 @@ public class RdbmsValueFactory extends LiteralFactoryImpl implements ValueFactor
 		}
 	}
 
-	public Lock getIdReadLock() throws InterruptedException {
+	public Lock getIdReadLock()
+		throws InterruptedException
+	{
 		return lock.getReadLock();
 	}
 
@@ -312,7 +330,9 @@ public class RdbmsValueFactory extends LiteralFactoryImpl implements ValueFactor
 		return lock.tryWriteLock();
 	}
 
-	public Lock getIdWriteLock() throws InterruptedException {
+	public Lock getIdWriteLock()
+		throws InterruptedException
+	{
 		return lock.getWriteLock();
 	}
 }

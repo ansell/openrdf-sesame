@@ -5,7 +5,6 @@
  */
 package org.openrdf.query;
 
-
 /**
  * An exception indicating that the evaluation of a query has been interrupted,
  * for example because it took too long to complete.

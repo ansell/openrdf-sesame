@@ -2,9 +2,6 @@
 
 package org.openrdf.query.parser.sparql.ast;
 
-import org.openrdf.query.parser.sparql.ast.Node;
-import org.openrdf.query.parser.sparql.ast.SyntaxTreeBuilderVisitor;
-import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 /*
  * All AST nodes must implement this interface. It provides basic machinery for

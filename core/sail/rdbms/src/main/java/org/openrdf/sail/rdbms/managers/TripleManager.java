@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import org.openrdf.sail.rdbms.managers.base.ManagerBase;
 
 /**
- * 
  * @author James Leigh
  */
 public class TripleManager extends ManagerBase {

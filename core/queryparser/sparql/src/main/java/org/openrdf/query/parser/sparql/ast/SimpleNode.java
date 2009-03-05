@@ -100,8 +100,8 @@ public class SimpleNode implements Node {
 	 * 
 	 * @param type
 	 *        The type of the child node that should be returned.
-	 * @return The (first) child node of the specified type, or <tt>null</tt>
-	 *         if no such child node was found.
+	 * @return The (first) child node of the specified type, or <tt>null</tt> if
+	 *         no such child node was found.
 	 */
 	public <T extends Node> T jjtGetChild(Class<T> type) {
 		for (Node n : children) {
@@ -136,7 +136,7 @@ public class SimpleNode implements Node {
 	}
 
 	/**
-	 * Accept the visitor. 
+	 * Accept the visitor.
 	 */
 	public Object childrenAccept(SyntaxTreeBuilderVisitor visitor, Object data)
 		throws VisitorException
@@ -157,8 +157,7 @@ public class SimpleNode implements Node {
 	 */
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return SyntaxTreeBuilderTreeConstants.jjtNodeName[id];
 	}
 

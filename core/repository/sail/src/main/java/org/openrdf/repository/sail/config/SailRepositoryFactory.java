@@ -18,8 +18,8 @@ import org.openrdf.sail.config.SailRegistry;
 import org.openrdf.store.StoreConfigException;
 
 /**
- * A {@link RepositoryFactory} that creates {@link SailRepository}s based on
- * RDF configuration data.
+ * A {@link RepositoryFactory} that creates {@link SailRepository}s based on RDF
+ * configuration data.
  * 
  * @author Arjohn Kampman
  */

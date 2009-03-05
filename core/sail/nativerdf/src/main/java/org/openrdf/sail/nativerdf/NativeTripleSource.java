@@ -42,13 +42,11 @@ public class NativeTripleSource implements TripleSource {
 	 * Methods *
 	 *---------*/
 
-	public Cursor<? extends Statement> getStatements(Resource subj,
-			URI pred, Value obj, Resource... contexts)
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws EvaluationException
 	{
 		try {
-			return nativeStore.createStatementCursor(subj, pred, obj, includeInferred, readTransaction,
-					contexts);
+			return nativeStore.createStatementCursor(subj, pred, obj, includeInferred, readTransaction, contexts);
 		}
 		catch (IOException e) {
 			throw new EvaluationException("Unable to get statements", e);

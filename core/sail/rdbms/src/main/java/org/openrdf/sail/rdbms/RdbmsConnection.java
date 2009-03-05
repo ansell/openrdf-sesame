@@ -132,6 +132,7 @@ public class RdbmsConnection extends SailConnectionBase {
 		}
 	}
 
+	@Override
 	public void commit()
 		throws StoreException
 	{
@@ -185,6 +186,7 @@ public class RdbmsConnection extends SailConnectionBase {
 		triples.remove(s, p, o, c);
 	}
 
+	@Override
 	public void rollback()
 		throws StoreException
 	{
@@ -221,8 +223,9 @@ public class RdbmsConnection extends SailConnectionBase {
 		throws StoreException
 	{
 		Namespace ns = namespaces.findByPrefix(prefix);
-		if (ns == null)
+		if (ns == null) {
 			return null;
+		}
 		return ns.getName();
 	}
 

@@ -11,12 +11,11 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.rio.RDFFormat;
 
-
 /**
- *
  * @author James Leigh
  */
 public class RepositoryMetaDataWrapper implements RepositoryMetaData {
+
 	private RepositoryMetaData delegate;
 
 	public RepositoryMetaDataWrapper(RepositoryMetaData delegate) {

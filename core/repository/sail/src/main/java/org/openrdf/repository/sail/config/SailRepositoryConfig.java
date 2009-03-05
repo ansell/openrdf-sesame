@@ -11,7 +11,6 @@ import static org.openrdf.sail.config.SailConfigSchema.SAILTYPE;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
 import org.openrdf.sail.config.SailFactory;

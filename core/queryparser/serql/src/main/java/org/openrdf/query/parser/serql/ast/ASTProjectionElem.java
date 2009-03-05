@@ -35,7 +35,7 @@ public class ASTProjectionElem extends SimpleNode {
 			ASTString aliasNode = (ASTString)children.get(1);
 			return aliasNode.getValue();
 		}
-		
+
 		return null;
 	}
 }

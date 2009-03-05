@@ -13,7 +13,6 @@ import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
  * The SQL ABS expression.
  * 
  * @author James Leigh
- * 
  */
 public class SqlAbs extends UnarySqlOperator {
 

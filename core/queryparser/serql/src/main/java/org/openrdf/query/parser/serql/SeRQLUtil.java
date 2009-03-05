@@ -37,8 +37,7 @@ public class SeRQLUtil {
 	 *        An encoded SeRQL string.
 	 * @return The unencoded string.
 	 * @exception IllegalArgumentException
-	 *            If the supplied string is not a correctly encoded SeRQL
-	 *            string.
+	 *            If the supplied string is not a correctly encoded SeRQL string.
 	 */
 	public static String decodeString(String s) {
 		int backSlashIdx = s.indexOf('\\');
@@ -92,39 +91,35 @@ public class SeRQLUtil {
 			else if (c == 'u') {
 				// \\uxxxx
 				if (backSlashIdx + 5 >= sLength) {
-					throw new IllegalArgumentException(
-							"Incomplete Unicode escape sequence in: " + s);
+					throw new IllegalArgumentException("Incomplete Unicode escape sequence in: " + s);
 				}
 				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 6);
 
 				try {
 					c = (char)Integer.parseInt(xx, 16);
-					sb.append( c );
+					sb.append(c);
 
 					startIdx = backSlashIdx + 6;
 				}
 				catch (NumberFormatException e) {
-					throw new IllegalArgumentException(
-							"Illegal Unicode escape sequence '\\u" + xx + "' in: " + s);
+					throw new IllegalArgumentException("Illegal Unicode escape sequence '\\u" + xx + "' in: " + s);
 				}
 			}
 			else if (c == 'U') {
 				// \\Uxxxxxxxx
 				if (backSlashIdx + 9 >= sLength) {
-					throw new IllegalArgumentException(
-							"Incomplete Unicode escape sequence in: " + s);
+					throw new IllegalArgumentException("Incomplete Unicode escape sequence in: " + s);
 				}
 				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 10);
 
 				try {
 					c = (char)Integer.parseInt(xx, 16);
-					sb.append( c );
+					sb.append(c);
 
 					startIdx = backSlashIdx + 10;
 				}
 				catch (NumberFormatException e) {
-					throw new IllegalArgumentException(
-							"Illegal Unicode escape sequence '\\U" + xx + "' in: " + s);
+					throw new IllegalArgumentException("Illegal Unicode escape sequence '\\U" + xx + "' in: " + s);
 				}
 			}
 			else {

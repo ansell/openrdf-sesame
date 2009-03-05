@@ -11,7 +11,6 @@ import org.openrdf.model.Value;
  * Provides an internal id and version for values.
  * 
  * @author James Leigh
- * 
  */
 public abstract class RdbmsValue implements Value {
 
@@ -44,10 +43,12 @@ public abstract class RdbmsValue implements Value {
 	}
 
 	public boolean isExpired(int v) {
-		if (id == null)
+		if (id == null) {
 			return true;
-		if (version == null)
+		}
+		if (version == null) {
 			return true;
+		}
 		return version.intValue() != v;
 	}
 }

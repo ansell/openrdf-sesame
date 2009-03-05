@@ -231,8 +231,8 @@ class FileIO {
 	private void writeStatements(DataOutputStream dataOut)
 		throws IOException, StoreException
 	{
-		Cursor<MemStatement> stIter = store.createStatementIterator(
-				null, null, null, false, store.getCurrentSnapshot(), ReadMode.COMMITTED, vf);
+		Cursor<MemStatement> stIter = store.createStatementIterator(null, null, null, false,
+				store.getCurrentSnapshot(), ReadMode.COMMITTED, vf);
 
 		try {
 			MemStatement st;

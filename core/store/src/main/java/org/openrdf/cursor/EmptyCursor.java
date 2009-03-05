@@ -5,7 +5,6 @@
  */
 package org.openrdf.cursor;
 
-
 /**
  * @author James Leigh
  */

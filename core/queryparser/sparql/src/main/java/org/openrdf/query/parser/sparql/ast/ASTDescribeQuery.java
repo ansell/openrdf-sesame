@@ -18,7 +18,7 @@ public class ASTDescribeQuery extends ASTQuery {
 	{
 		return visitor.visit(this, data);
 	}
-	
+
 	public ASTDescribe getDescribe() {
 		return jjtGetChild(ASTDescribe.class);
 	}

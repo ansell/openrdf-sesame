@@ -9,7 +9,6 @@ package org.openrdf.sail.rdbms.algebra.base;
  * A constant SQL value, like a varchar or number.
  * 
  * @author James Leigh
- * 
  */
 public abstract class SqlConstant<T> extends RdbmsQueryModelNodeBase implements SqlExpr {
 
@@ -54,19 +53,24 @@ public abstract class SqlConstant<T> extends RdbmsQueryModelNodeBase implements 
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		final SqlConstant other = (SqlConstant)obj;
 		if (value == null) {
-			if (other.value != null)
+			if (other.value != null) {
 				return false;
+			}
 		}
-		else if (!value.equals(other.value))
+		else if (!value.equals(other.value)) {
 			return false;
+		}
 		return true;
 	}
 }

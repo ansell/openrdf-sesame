@@ -112,17 +112,19 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 			throw new QueryResultParseException("File does not contain a binary RDF table result");
 		}
 
-		// Check format version (parser is backward-compatible with version 1 and version 2)
+		// Check format version (parser is backward-compatible with version 1 and
+		// version 2)
 		formatVersion = this.in.readInt();
 		if (formatVersion != FORMAT_VERSION && formatVersion != 1 && formatVersion != 2) {
 			throw new QueryResultParseException("Incompatible format version: " + formatVersion);
 		}
-		
+
 		if (formatVersion == 2) {
-			// read format version 2 FLAG byte (ordered and distinct flags) and ignore them
+			// read format version 2 FLAG byte (ordered and distinct flags) and
+			// ignore them
 			this.in.readByte();
 		}
-		
+
 		// Read column headers
 		int columnCount = this.in.readInt();
 		if (columnCount < 1) {

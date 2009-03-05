@@ -44,8 +44,7 @@ public class BooleanMemLiteral extends MemLiteral {
 	 *---------*/
 
 	@Override
-	public boolean booleanValue()
-	{
+	public boolean booleanValue() {
 		return b;
 	}
 }

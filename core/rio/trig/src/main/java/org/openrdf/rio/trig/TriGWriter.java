@@ -61,8 +61,7 @@ public class TriGWriter extends TurtleWriter {
 	 *---------*/
 
 	@Override
-	public RDFFormat getRDFFormat()
-	{
+	public RDFFormat getRDFFormat() {
 		return RDFFormat.TRIG;
 	}
 

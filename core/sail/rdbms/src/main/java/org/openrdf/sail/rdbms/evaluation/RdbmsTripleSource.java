@@ -22,7 +22,6 @@ import org.openrdf.store.StoreException;
  * Proxies request to a {@link RdbmsTripleRepository}.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsTripleSource implements TripleSource {
 
@@ -39,7 +38,7 @@ public class RdbmsTripleSource implements TripleSource {
 
 	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
-		{
+	{
 		RdbmsValueFactory vf = triples.getValueFactory();
 		RdbmsResource s = vf.asRdbmsResource(subj);
 		RdbmsURI p = vf.asRdbmsURI(pred);

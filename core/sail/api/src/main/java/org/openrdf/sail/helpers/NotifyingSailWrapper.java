@@ -44,7 +44,7 @@ public class NotifyingSailWrapper extends SailWrapper implements NotifyingSail {
 
 	@Override
 	public void setDelegate(Sail baseSail) {
-		super.setDelegate((NotifyingSail)baseSail);
+		super.setDelegate(baseSail);
 	}
 
 	@Override

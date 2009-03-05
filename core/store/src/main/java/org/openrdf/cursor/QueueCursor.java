@@ -82,12 +82,12 @@ public class QueueCursor<E> implements Cursor<E> {
 	 * Indicates the method {@link #add(Object)} will not be called in the queue
 	 * anymore.
 	 */
-	public void done()
-	{
+	public void done() {
 		done = true;
 		try {
 			queue.add(afterLast);
-		} catch (IllegalStateException e) {
+		}
+		catch (IllegalStateException e) {
 			// no thread is waiting on this queue anyway
 		}
 	}
@@ -103,7 +103,8 @@ public class QueueCursor<E> implements Cursor<E> {
 			E take;
 			if (done) {
 				take = queue.poll();
-			} else {
+			}
+			else {
 				take = queue.take();
 				if (done) {
 					done(); // in case the queue was full before

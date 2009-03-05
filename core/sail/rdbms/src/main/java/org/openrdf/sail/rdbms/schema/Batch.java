@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * 
  * @author James Leigh
  */
 public class Batch {
@@ -81,15 +80,15 @@ public class Batch {
 	}
 
 	/**
-	 * 
 	 * @return <code>-1</code> if already flushed
 	 * @throws SQLException
 	 */
 	public int flush()
 		throws SQLException
 	{
-		if (insertBatch == null)
+		if (insertBatch == null) {
 			return -1;
+		}
 		try {
 			int count;
 			if (temporary == null) {

@@ -35,8 +35,8 @@ public class RDFHandlerWrapper implements RDFHandler {
 	 * Creates a new RDFHandlerWrapper that wraps the supplied RDF handler.
 	 * 
 	 * @param rdfHandler
-	 *        The wrapped RDF handler for this <tt>RDFHandlerWrapper</tt>,
-	 *        must not be <tt>null</tt>.
+	 *        The wrapped RDF handler for this <tt>RDFHandlerWrapper</tt>, must
+	 *        not be <tt>null</tt>.
 	 */
 	public RDFHandlerWrapper(RDFHandler rdfHandler) {
 		assert rdfHandler != null;

@@ -17,7 +17,10 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public class RepositoryConfigSchema {
 
-	/** The HTTPRepository schema namespace (<tt>http://www.openrdf.org/config/repository#</tt>). */
+	/**
+	 * The HTTPRepository schema namespace (
+	 * <tt>http://www.openrdf.org/config/repository#</tt>).
+	 */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/repository#";
 
 	/** <tt>http://www.openrdf.org/config/repository#RepositoryContext</tt> */

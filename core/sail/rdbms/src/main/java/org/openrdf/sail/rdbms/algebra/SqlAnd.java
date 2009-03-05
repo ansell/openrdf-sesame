@@ -13,11 +13,10 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * The SQL AND expression.
  * 
  * @author James Leigh
- * 
  */
 public class SqlAnd extends NarySqlOperator {
 
-	public SqlAnd(SqlExpr...args) {
+	public SqlAnd(SqlExpr... args) {
 		super(args);
 	}
 

@@ -32,7 +32,6 @@ import org.openrdf.sail.rdbms.algebra.base.ValueColumnBase;
  * Localises variables to use an available column in the current variable scope.
  * 
  * @author James Leigh
- * 
  */
 public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<RuntimeException> implements
 		QueryOptimizer
@@ -79,8 +78,9 @@ public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<Runtime
 		throws RuntimeException
 	{
 		ColumnVar var = replaceVar(node);
-		if (var == null)
+		if (var == null) {
 			return;
+		}
 		if (!var.getTypes().isBNodes()) {
 			node.replaceWith(new SqlNull());
 		}
@@ -91,8 +91,9 @@ public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<Runtime
 		throws RuntimeException
 	{
 		ColumnVar var = replaceVar(node);
-		if (var == null)
+		if (var == null) {
 			return;
+		}
 		if (!var.getTypes().isTyped()) {
 			node.replaceWith(new SqlNull());
 		}
@@ -103,8 +104,9 @@ public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<Runtime
 		throws RuntimeException
 	{
 		ColumnVar var = replaceVar(node);
-		if (var == null)
+		if (var == null) {
 			return;
+		}
 		if (!var.getTypes().isCalendar()) {
 			node.replaceWith(new SqlNull());
 		}
@@ -115,8 +117,9 @@ public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<Runtime
 		throws RuntimeException
 	{
 		ColumnVar var = replaceVar(node);
-		if (var == null)
+		if (var == null) {
 			return;
+		}
 		if (!var.getTypes().isLiterals()) {
 			node.replaceWith(new SqlNull());
 		}
@@ -127,8 +130,9 @@ public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<Runtime
 		throws RuntimeException
 	{
 		ColumnVar var = replaceVar(node);
-		if (var == null)
+		if (var == null) {
 			return;
+		}
 		if (!var.getTypes().isLong() || !var.getTypes().isLiterals()) {
 			node.replaceWith(new SqlNull());
 		}
@@ -139,8 +143,9 @@ public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<Runtime
 		throws RuntimeException
 	{
 		ColumnVar var = replaceVar(node);
-		if (var == null)
+		if (var == null) {
 			return;
+		}
 		if (!var.getTypes().isLanguages()) {
 			node.replaceWith(new SqlNull());
 		}
@@ -151,8 +156,9 @@ public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<Runtime
 		throws RuntimeException
 	{
 		ColumnVar var = replaceVar(node);
-		if (var == null)
+		if (var == null) {
 			return;
+		}
 		if (!var.getTypes().isNumeric()) {
 			node.replaceWith(new SqlNull());
 		}
@@ -163,8 +169,9 @@ public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<Runtime
 		throws RuntimeException
 	{
 		ColumnVar var = replaceVar(node);
-		if (var == null)
+		if (var == null) {
 			return;
+		}
 		if (!var.getTypes().isLong() || !var.getTypes().isURIs()) {
 			node.replaceWith(new SqlNull());
 		}
@@ -175,8 +182,9 @@ public class VarColumnLookupOptimizer extends RdbmsQueryModelVisitorBase<Runtime
 		throws RuntimeException
 	{
 		ColumnVar var = replaceVar(node);
-		if (var == null)
+		if (var == null) {
 			return;
+		}
 		if (!var.getTypes().isURIs()) {
 			node.replaceWith(new SqlNull());
 		}

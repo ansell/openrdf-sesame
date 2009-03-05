@@ -53,7 +53,9 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	public URL getLocation() throws MalformedURLException {
+	public URL getLocation()
+		throws MalformedURLException
+	{
 		return delegate.getLocation();
 	}
 
@@ -256,7 +258,9 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 		return result;
 	}
 
-	protected boolean isCorrectType(Model repositoryConfig) throws StoreConfigException {
+	protected boolean isCorrectType(Model repositoryConfig)
+		throws StoreConfigException
+	{
 		boolean result = false;
 
 		if (repositoryConfig != null) {

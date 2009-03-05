@@ -28,7 +28,6 @@ import org.openrdf.store.StoreException;
  * Facade to the underlying RDBMS optimizations.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsQueryOptimizer {
 
@@ -83,7 +82,9 @@ public class RdbmsQueryOptimizer {
 		return tupleExpr;
 	}
 
-	private void coreOptimizations(EvaluationStrategy strategy, QueryModel expr, BindingSet bindings) throws StoreException {
+	private void coreOptimizations(EvaluationStrategy strategy, QueryModel expr, BindingSet bindings)
+		throws StoreException
+	{
 		new BindingAssigner().optimize(expr, bindings);
 		new ConstantOptimizer(strategy).optimize(expr, bindings);
 		new CompareOptimizer().optimize(expr, bindings);

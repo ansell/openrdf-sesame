@@ -11,7 +11,6 @@ import org.openrdf.model.impl.ContextStatementImpl;
  * Rdbms typed statement.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsStatement extends ContextStatementImpl {
 

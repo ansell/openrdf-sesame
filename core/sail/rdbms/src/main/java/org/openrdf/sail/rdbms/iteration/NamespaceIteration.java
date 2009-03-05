@@ -9,9 +9,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.cursor.ConvertingCursor;
 import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.store.StoreException;
@@ -20,13 +20,11 @@ import org.openrdf.store.StoreException;
  * {@link Namespace} typed {@link Cursor}.
  * 
  * @author James Leigh
- * 
  */
-public class NamespaceIteration extends ConvertingCursor<Map.Entry<String,String>, Namespace>
-{
+public class NamespaceIteration extends ConvertingCursor<Map.Entry<String, String>, Namespace> {
 
-	public NamespaceIteration(Iterator<Map.Entry<String,String>> iter) {
-		super(new CollectionCursor<Map.Entry<String,String>>(iter));
+	public NamespaceIteration(Iterator<Map.Entry<String, String>> iter) {
+		super(new CollectionCursor<Map.Entry<String, String>>(iter));
 	}
 
 	@Override

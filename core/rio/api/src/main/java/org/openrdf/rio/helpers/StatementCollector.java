@@ -109,8 +109,7 @@ public class StatementCollector extends RDFHandlerBase {
 	}
 
 	@Override
-	public void handleStatement(Statement st)
-	{
+	public void handleStatement(Statement st) {
 		statements.add(st);
 	}
 

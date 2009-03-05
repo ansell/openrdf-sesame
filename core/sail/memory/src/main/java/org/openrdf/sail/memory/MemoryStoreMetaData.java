@@ -17,13 +17,13 @@ import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.sail.helpers.SailMetaDataImpl;
 import org.openrdf.sail.memory.config.MemoryStoreFactory;
 
-
 /**
- *
  * @author James Leigh
  */
 class MemoryStoreMetaData extends SailMetaDataImpl {
+
 	private MemoryStore store;
+
 	private Logger logger = LoggerFactory.getLogger(MemoryStoreMetaData.class);
 
 	MemoryStoreMetaData(MemoryStore store) {
@@ -39,8 +39,9 @@ class MemoryStoreMetaData extends SailMetaDataImpl {
 	@Override
 	public URL getLocation() {
 		File dataDir = store.getDataDir();
-		if (dataDir == null)
+		if (dataDir == null) {
 			return null;
+		}
 		try {
 			return dataDir.toURI().toURL();
 		}

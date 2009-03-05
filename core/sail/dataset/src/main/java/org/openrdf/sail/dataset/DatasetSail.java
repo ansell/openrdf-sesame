@@ -58,8 +58,9 @@ public class DatasetSail extends SailWrapper {
 	}
 
 	private ClassLoader getClassLoader() {
-		if (cl == null)
+		if (cl == null) {
 			return Thread.currentThread().getContextClassLoader();
+		}
 		return cl;
 	}
 
@@ -77,7 +78,8 @@ public class DatasetSail extends SailWrapper {
 	}
 
 	/**
-	 * null dataset indicates the graph is known, but will not be loaded externally.
+	 * null dataset indicates the graph is known, but will not be loaded
+	 * externally.
 	 */
 	public void addGraph(URI name, String dataset) {
 		graphs.put(name, dataset);
@@ -145,8 +147,9 @@ public class DatasetSail extends SailWrapper {
 		throws StoreException
 	{
 		try {
-			if (path == null || closed && !path.equals(graphs.get(context)))
+			if (path == null || closed && !path.equals(graphs.get(context))) {
 				return;
+			}
 			URL url = findURL(path);
 			Long since = lastModified.get(url);
 			URLConnection urlCon = url.openConnection();
@@ -167,6 +170,7 @@ public class DatasetSail extends SailWrapper {
 			throw new StoreException(e);
 		}
 	}
+
 	private String getAcceptHeader() {
 		StringBuilder sb = new StringBuilder();
 		String preferred = RDFFormat.RDFXML.getDefaultMIMEType();
@@ -185,8 +189,9 @@ public class DatasetSail extends SailWrapper {
 	private URL findURL(String path)
 		throws MalformedURLException
 	{
-		if (path.contains(":/"))
+		if (path.contains(":/")) {
 			return new URL(path);
+		}
 		return getClassLoader().getResource(path);
 	}
 

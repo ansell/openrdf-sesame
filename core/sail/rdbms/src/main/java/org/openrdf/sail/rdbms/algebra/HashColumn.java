@@ -13,7 +13,6 @@ import org.openrdf.sail.rdbms.algebra.base.ValueColumnBase;
  * Represents the Hash value of a variable.
  * 
  * @author James Leigh
- * 
  */
 public class HashColumn extends ValueColumnBase {
 

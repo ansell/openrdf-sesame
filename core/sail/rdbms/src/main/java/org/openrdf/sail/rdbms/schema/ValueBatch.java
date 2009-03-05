@@ -8,7 +8,6 @@ package org.openrdf.sail.rdbms.schema;
 import java.sql.SQLException;
 
 /**
- * 
  * @author James Leigh
  */
 public class ValueBatch extends Batch {
@@ -24,6 +23,7 @@ public class ValueBatch extends Batch {
 		this.table = table;
 	}
 
+	@Override
 	public synchronized int flush()
 		throws SQLException
 	{

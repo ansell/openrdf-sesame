@@ -11,6 +11,6 @@ public interface DelegatingRepositoryConnection extends RepositoryConnection {
 
 	public RepositoryConnection getDelegate()
 		throws StoreException;
-	
+
 	public void setDelegate(RepositoryConnection delegate);
 }

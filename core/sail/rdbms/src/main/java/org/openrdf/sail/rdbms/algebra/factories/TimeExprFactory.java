@@ -32,7 +32,6 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * Creates an SQL expression for a literal's time value.
  * 
  * @author James Leigh
- * 
  */
 public class TimeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 
@@ -42,11 +41,13 @@ public class TimeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOpera
 		throws UnsupportedRdbmsOperatorException
 	{
 		result = null;
-		if (expr == null)
+		if (expr == null) {
 			return new SqlNull();
+		}
 		expr.visit(this);
-		if (result == null)
+		if (result == null) {
 			return new SqlNull();
+		}
 		return result;
 	}
 

@@ -61,7 +61,7 @@ public class ConfigProperty {
 	public URI getRange() {
 		for (Value value : schema.filter(pred, RDFS.RANGE, null).objects()) {
 			if (value instanceof URI) {
-				return (URI) value;
+				return (URI)value;
 			}
 		}
 		return null;
@@ -69,7 +69,7 @@ public class ConfigProperty {
 
 	public Literal getDefaultLiteral() {
 		if (defaultValue instanceof Literal) {
-			return (Literal) defaultValue;
+			return (Literal)defaultValue;
 		}
 		return null;
 	}

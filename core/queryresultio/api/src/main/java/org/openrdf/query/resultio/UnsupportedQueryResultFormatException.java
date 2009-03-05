@@ -6,7 +6,8 @@
 package org.openrdf.query.resultio;
 
 /**
- * A Runtime exception indicating that a specific query result format is not supported.
+ * A Runtime exception indicating that a specific query result format is not
+ * supported.
  */
 public class UnsupportedQueryResultFormatException extends RuntimeException {
 

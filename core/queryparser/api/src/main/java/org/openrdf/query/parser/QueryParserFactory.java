@@ -21,7 +21,7 @@ public interface QueryParserFactory {
 	public QueryLanguage getQueryLanguage();
 
 	/**
-	 * Returns a QueryParser instance. 
+	 * Returns a QueryParser instance.
 	 */
 	public QueryParser getParser();
 }

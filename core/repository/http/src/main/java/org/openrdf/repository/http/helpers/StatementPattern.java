@@ -12,20 +12,23 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
-
 /**
- *
  * @author James Leigh
  */
 public class StatementPattern {
+
 	private Resource subj;
+
 	private URI pred;
+
 	private Value obj;
+
 	private boolean includeInferred;
+
 	private Resource[] contexts;
 
-	public StatementPattern(Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts) {
+	public StatementPattern(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+	{
 		this.contexts = OpenRDFUtil.notNull(contexts);
 		this.includeInferred = includeInferred;
 		this.obj = obj;
@@ -47,35 +50,46 @@ public class StatementPattern {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		StatementPattern other = (StatementPattern)obj;
-		if (!Arrays.equals(contexts, other.contexts))
+		if (!Arrays.equals(contexts, other.contexts)) {
 			return false;
-		if (includeInferred != other.includeInferred)
+		}
+		if (includeInferred != other.includeInferred) {
 			return false;
+		}
 		if (this.obj == null) {
-			if (other.obj != null)
+			if (other.obj != null) {
 				return false;
+			}
 		}
-		else if (!this.obj.equals(other.obj))
+		else if (!this.obj.equals(other.obj)) {
 			return false;
+		}
 		if (pred == null) {
-			if (other.pred != null)
+			if (other.pred != null) {
 				return false;
+			}
 		}
-		else if (!pred.equals(other.pred))
+		else if (!pred.equals(other.pred)) {
 			return false;
+		}
 		if (subj == null) {
-			if (other.subj != null)
+			if (other.subj != null) {
 				return false;
+			}
 		}
-		else if (!subj.equals(other.subj))
+		else if (!subj.equals(other.subj)) {
 			return false;
+		}
 		return true;
 	}
 

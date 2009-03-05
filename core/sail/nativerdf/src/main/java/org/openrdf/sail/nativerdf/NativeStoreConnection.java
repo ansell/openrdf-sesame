@@ -14,8 +14,8 @@ import java.util.List;
 import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.CollectionCursor;
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;

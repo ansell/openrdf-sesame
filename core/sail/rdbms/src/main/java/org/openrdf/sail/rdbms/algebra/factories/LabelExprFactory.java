@@ -34,7 +34,6 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * Creates a SQl expression of a literal label.
  * 
  * @author James Leigh
- * 
  */
 public class LabelExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 
@@ -50,11 +49,13 @@ public class LabelExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOper
 		throws UnsupportedRdbmsOperatorException
 	{
 		result = null;
-		if (expr == null)
+		if (expr == null) {
 			return new SqlNull();
+		}
 		expr.visit(this);
-		if (result == null)
+		if (result == null) {
 			return new SqlNull();
+		}
 		return result;
 	}
 

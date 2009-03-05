@@ -12,7 +12,6 @@ import org.openrdf.model.impl.URIImpl;
  * Wraps a {@link URIImpl} providing an internal id and version.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsURI extends RdbmsResource implements URI {
 
@@ -48,8 +47,9 @@ public class RdbmsURI extends RdbmsResource implements URI {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
+		}
 		return uri.equals(o);
 	}
 

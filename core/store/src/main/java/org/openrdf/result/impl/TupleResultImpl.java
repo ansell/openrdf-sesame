@@ -9,8 +9,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.CollectionCursor;
+import org.openrdf.cursor.Cursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.result.TupleResult;
 

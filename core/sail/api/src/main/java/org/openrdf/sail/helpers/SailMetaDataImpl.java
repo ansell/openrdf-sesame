@@ -50,11 +50,13 @@ public class SailMetaDataImpl implements SailMetaData {
 
 	public int getSesameMajorVersion() {
 		String version = getSesameVersion();
-		if (version == null)
+		if (version == null) {
 			return 0;
+		}
 		int idx = version.indexOf('.');
-		if (idx < 0)
+		if (idx < 0) {
 			return 0;
+		}
 		try {
 			return Integer.parseInt(version.substring(0, idx));
 		}
@@ -65,15 +67,18 @@ public class SailMetaDataImpl implements SailMetaData {
 
 	public int getSesameMinorVersion() {
 		String version = getSesameVersion();
-		if (version == null)
+		if (version == null) {
 			return 0;
+		}
 		int idx = version.indexOf('.');
-		if (idx < 0)
+		if (idx < 0) {
 			return 0;
+		}
 		int dot = version.indexOf('.', idx + 1);
 		int dash = version.indexOf('-', idx + 1);
-		if (dot < 0 && dash < 0)
+		if (dot < 0 && dash < 0) {
 			return 0;
+		}
 		int end = 0 < dot && dot < dash ? dot : dash;
 		try {
 			return Integer.parseInt(version.substring(idx + 1, end));
@@ -85,8 +90,9 @@ public class SailMetaDataImpl implements SailMetaData {
 
 	public String getSesameVersion() {
 		InputStream in = getClass().getResourceAsStream(SESAME_POM_PROPERTIES);
-		if (in == null)
+		if (in == null) {
 			return null;
+		}
 		Properties pom = new Properties();
 		try {
 			pom.load(in);

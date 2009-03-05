@@ -35,7 +35,6 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * Support method to create SQL expressions.
  * 
  * @author James Leigh
- * 
  */
 public class SqlExprSupport {
 
@@ -112,8 +111,9 @@ public class SqlExprSupport {
 				expr = or(expr, new SqlEq(compare.clone(), value));
 			}
 		}
-		if (expr == null)
+		if (expr == null) {
 			return new FalseValue();
+		}
 		return expr;
 	}
 
@@ -184,8 +184,9 @@ public class SqlExprSupport {
 	}
 
 	public static SqlExpr str(String str) {
-		if (str == null)
+		if (str == null) {
 			return sqlNull();
+		}
 		return new StringValue(str);
 	}
 

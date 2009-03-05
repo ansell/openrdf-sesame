@@ -43,8 +43,8 @@ public class DatasetImpl implements Dataset {
 	/**
 	 * Removes a graph URI from the set of default graph URIs.
 	 * 
-	 * @return <tt>true</tt> if the URI was removed from the set,
-	 *         <tt>false</tt> if the set did not contain the URI.
+	 * @return <tt>true</tt> if the URI was removed from the set, <tt>false</tt>
+	 *         if the set did not contain the URI.
 	 */
 	public boolean removeDefaultGraph(URI graphURI) {
 		return defaultGraphs.remove(graphURI);
@@ -67,8 +67,8 @@ public class DatasetImpl implements Dataset {
 	/**
 	 * Removes a graph URI from the set of named graph URIs.
 	 * 
-	 * @return <tt>true</tt> if the URI was removed from the set,
-	 *         <tt>false</tt> if the set did not contain the URI.
+	 * @return <tt>true</tt> if the URI was removed from the set, <tt>false</tt>
+	 *         if the set did not contain the URI.
 	 */
 	public boolean removeNamedGraph(URI graphURI) {
 		return namedGraphs.remove(graphURI);
@@ -84,8 +84,9 @@ public class DatasetImpl implements Dataset {
 
 	@Override
 	public String toString() {
-		if (defaultGraphs.isEmpty() && namedGraphs.isEmpty())
+		if (defaultGraphs.isEmpty() && namedGraphs.isEmpty()) {
 			return "## empty dataset ##";
+		}
 		StringBuilder sb = new StringBuilder();
 		for (URI uri : defaultGraphs) {
 			sb.append("FROM ");
@@ -103,7 +104,8 @@ public class DatasetImpl implements Dataset {
 		if (str.length() > 50) {
 			sb.append("<").append(str, 0, 19).append("..");
 			sb.append(str, str.length() - 29, str.length()).append(">\n");
-		} else {
+		}
+		else {
 			sb.append("<").append(uri).append(">\n");
 		}
 	}

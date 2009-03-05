@@ -441,6 +441,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return getDelegate().sizeMatch(subject, predicate, object, includeInferred, contexts);
 	}
 
+	@Override
 	public String toString() {
 		try {
 			return getClass().getSimpleName() + " " + getDelegate().toString();

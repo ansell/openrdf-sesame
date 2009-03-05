@@ -14,7 +14,6 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * The SQL compare expressions (>, <, >=, <=).
  * 
  * @author James Leigh
- * 
  */
 public class SqlCompare extends BinarySqlOperator {
 
@@ -73,19 +72,24 @@ public class SqlCompare extends BinarySqlOperator {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		final SqlCompare other = (SqlCompare)obj;
 		if (op == null) {
-			if (other.op != null)
+			if (other.op != null) {
 				return false;
+			}
 		}
-		else if (!op.equals(other.op))
+		else if (!op.equals(other.op)) {
 			return false;
+		}
 		return true;
 	}
 }

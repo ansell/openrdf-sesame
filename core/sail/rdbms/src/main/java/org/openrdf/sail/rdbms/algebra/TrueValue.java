@@ -12,7 +12,6 @@ import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
  * The boolean SQL expression of true.
  * 
  * @author James Leigh
- * 
  */
 public class TrueValue extends BooleanValue {
 

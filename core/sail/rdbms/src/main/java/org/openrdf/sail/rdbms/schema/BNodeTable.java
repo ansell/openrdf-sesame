@@ -11,7 +11,6 @@ import java.sql.SQLException;
  * Manages the rows in the BNode table.
  * 
  * @author James Leigh
- * 
  */
 public class BNodeTable {
 

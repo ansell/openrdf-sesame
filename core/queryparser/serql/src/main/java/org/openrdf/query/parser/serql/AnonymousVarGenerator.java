@@ -51,7 +51,7 @@ public class AnonymousVarGenerator extends ASTVisitorBase {
 			nodeElem.jjtSetParent(node);
 			node.jjtAppendChild(nodeElem);
 		}
-		
+
 		if (node.getID() == null) {
 			node.setID(createAnonymousVar());
 		}
@@ -61,14 +61,14 @@ public class AnonymousVarGenerator extends ASTVisitorBase {
 
 	private ASTNodeElem createNodeElem() {
 		ASTNodeElem nodeElem = new ASTNodeElem(SyntaxTreeBuilderTreeConstants.JJTNODEELEM);
-		
+
 		ASTVar var = createAnonymousVar();
 		var.jjtSetParent(nodeElem);
 		nodeElem.jjtAppendChild(var);
-		
+
 		return nodeElem;
 	}
-	
+
 	private ASTVar createAnonymousVar() {
 		ASTVar var = new ASTVar(SyntaxTreeBuilderTreeConstants.JJTVAR);
 		var.setName("-anon-" + anonymousVarNo++);

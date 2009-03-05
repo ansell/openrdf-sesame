@@ -70,8 +70,8 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 	}
 
 	/**
-	 * Registers a <tt>RepositoryListener</tt> that will receive notifications
-	 * of operations that are performed on this repository.
+	 * Registers a <tt>RepositoryListener</tt> that will receive notifications of
+	 * operations that are performed on this repository.
 	 */
 	public void addRepositoryListener(RepositoryListener listener) {
 		listeners.add(listener);
@@ -137,8 +137,7 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 	}
 
 	@Override
-	public void setDataDir(File dataDir)
-	{
+	public void setDataDir(File dataDir) {
 		super.setDataDir(dataDir);
 
 		if (activated) {

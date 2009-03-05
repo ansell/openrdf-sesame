@@ -5,7 +5,6 @@
  */
 package org.openrdf.rio.rdfa;
 
-
 import java.io.OutputStream;
 import java.io.Writer;
 

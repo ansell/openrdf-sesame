@@ -45,8 +45,7 @@ public class CalendarMemLiteral extends MemLiteral {
 	 *---------*/
 
 	@Override
-	public XMLGregorianCalendar calendarValue()
-	{
+	public XMLGregorianCalendar calendarValue() {
 		return calendar;
 	}
 

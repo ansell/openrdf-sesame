@@ -9,7 +9,6 @@ package org.openrdf.sail.rdbms.evaluation;
  * Facilitates the creation of a CASE expression in SQL.
  * 
  * @author James Leigh
- * 
  */
 public class SqlCaseBuilder {
 

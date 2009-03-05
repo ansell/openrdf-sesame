@@ -148,6 +148,7 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 		}
 	}
 
+	@Override
 	public void initialize()
 		throws StoreException
 	{

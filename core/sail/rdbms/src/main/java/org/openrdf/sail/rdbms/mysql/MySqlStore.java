@@ -22,7 +22,6 @@ import org.openrdf.store.StoreException;
  * A convenient way to initialise a MySql RDF store.
  * 
  * @author James Leigh
- * 
  */
 public class MySqlStore extends RdbmsStore {
 
@@ -143,7 +142,8 @@ public class MySqlStore extends RdbmsStore {
 	private String enc(String text) {
 		try {
 			return URLEncoder.encode(text, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}

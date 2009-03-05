@@ -7,7 +7,6 @@ package org.openrdf.sail;
 
 import org.openrdf.store.StoreException;
 
-
 /**
  * An interface for an RDF Storage And Inference Layer. RDF Sails can store RDF
  * statements and evaluate queries over them. Statements can be stored in named

@@ -13,7 +13,6 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * The SQL equals expression (=).
  * 
  * @author James Leigh
- * 
  */
 public class SqlEq extends BinarySqlOperator {
 

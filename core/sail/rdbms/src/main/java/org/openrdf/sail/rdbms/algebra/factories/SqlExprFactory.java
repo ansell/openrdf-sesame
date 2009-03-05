@@ -15,7 +15,6 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * algebra nodes into an SQL expression.
  * 
  * @author James Leigh
- * 
  */
 public class SqlExprFactory {
 

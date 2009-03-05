@@ -9,12 +9,11 @@ import java.net.URL;
 
 import org.openrdf.sail.SailMetaData;
 
-
 /**
- *
  * @author James Leigh
  */
 public class SailMetaDataWrapper implements SailMetaData {
+
 	private SailMetaData delegate;
 
 	public SailMetaDataWrapper(SailMetaData delegate) {

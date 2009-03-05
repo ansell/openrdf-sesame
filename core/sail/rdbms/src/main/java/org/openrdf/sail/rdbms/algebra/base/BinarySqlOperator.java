@@ -5,12 +5,10 @@
  */
 package org.openrdf.sail.rdbms.algebra.base;
 
-
 /**
  * An abstract binary sql operator with two arguments.
  * 
  * @author James Leigh
- * 
  */
 public abstract class BinarySqlOperator extends NarySqlOperator {
 

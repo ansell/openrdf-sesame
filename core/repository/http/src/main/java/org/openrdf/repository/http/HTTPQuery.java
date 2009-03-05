@@ -27,8 +27,7 @@ public abstract class HTTPQuery extends AbstractQuery {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return queryString;
 	}
 }

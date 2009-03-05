@@ -14,7 +14,6 @@ import org.openrdf.sail.rdbms.schema.ValueTableFactory;
  * Overrides PostgreSQL specific table commands.
  * 
  * @author James Leigh
- * 
  */
 public class PgSqlValueTableFactory extends ValueTableFactory {
 

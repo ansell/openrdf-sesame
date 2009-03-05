@@ -126,11 +126,13 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		throws StoreConfigException
 	{
 		ConfigTemplate template = services.get(key);
-		if (template != null)
+		if (template != null) {
 			return template;
+		}
 		URL url = loadTemplates().get(key);
-		if (url == null)
+		if (url == null) {
 			return null;
+		}
 		try {
 			return new ConfigTemplate(parse(url), getSchemas());
 		}

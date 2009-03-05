@@ -83,11 +83,11 @@ public class Federation extends SailBase implements Executor {
 	public void setDistinct(boolean distinct) {
 		this.distinct = distinct;
 	}
-	
+
 	public boolean isReadOnly() {
 		return readOnly;
 	}
-	
+
 	public void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
 	}
@@ -142,7 +142,7 @@ public class Federation extends SailBase implements Executor {
 			for (Repository member : members) {
 				connections.add(member.getConnection());
 			}
-			
+
 			if (readOnly) {
 				return new ReadOnlyConnection(this, connections);
 			}

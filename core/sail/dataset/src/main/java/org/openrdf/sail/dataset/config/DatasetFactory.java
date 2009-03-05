@@ -13,8 +13,8 @@ import org.openrdf.sail.dataset.DatasetSail;
 import org.openrdf.store.StoreConfigException;
 
 /**
- * A {@link RepositoryFactory} that creates {@link DatasetSail}s based on
- * RDF configuration data.
+ * A {@link RepositoryFactory} that creates {@link DatasetSail}s based on RDF
+ * configuration data.
  * 
  * @author Arjohn Kampman
  * @author James Leigh
@@ -43,7 +43,7 @@ public class DatasetFactory implements SailFactory {
 		throws StoreConfigException
 	{
 		if (config instanceof DatasetConfig) {
-			DatasetConfig dc = (DatasetConfig) config;
+			DatasetConfig dc = (DatasetConfig)config;
 			DatasetSail sail = new DatasetSail();
 			sail.setGraphs(dc.getGraphs());
 			sail.setClosed(dc.isClosed());

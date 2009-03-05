@@ -8,7 +8,6 @@ package org.openrdf.repository.event;
 import org.openrdf.repository.RepositoryConnection;
 
 /**
- *
  * @author Herko ter Horst
  */
 public interface NotifyingRepositoryConnection extends RepositoryConnection {

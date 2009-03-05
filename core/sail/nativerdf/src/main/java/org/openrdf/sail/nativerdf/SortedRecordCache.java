@@ -47,18 +47,21 @@ class SortedRecordCache extends RecordCache {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public void discard()
 		throws IOException
 	{
 		btree.delete();
 	}
 
+	@Override
 	public void storeRecordInternal(byte[] record)
 		throws IOException
 	{
 		btree.insert(record);
 	}
 
+	@Override
 	public RecordIterator getRecordsInternal() {
 		return btree.iterateAll();
 	}

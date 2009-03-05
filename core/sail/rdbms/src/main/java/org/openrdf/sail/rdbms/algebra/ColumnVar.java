@@ -17,7 +17,6 @@ import org.openrdf.sail.rdbms.schema.ValueTypes;
  * Represents a variable in an SQL expression.
  * 
  * @author James Leigh
- * 
  */
 public class ColumnVar implements Cloneable {
 

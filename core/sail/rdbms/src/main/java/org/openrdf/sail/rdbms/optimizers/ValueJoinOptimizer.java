@@ -39,7 +39,6 @@ import org.openrdf.sail.rdbms.schema.URITable;
  * Adds LEFT JOINs to the query for value tables.
  * 
  * @author James Leigh
- * 
  */
 public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeException> implements
 		QueryOptimizer
@@ -223,8 +222,9 @@ public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExcept
 
 	private CharSequence getDBName(ColumnVar var) {
 		String name = var.getName();
-		if (name.indexOf('-') >= 0)
+		if (name.indexOf('-') >= 0) {
 			return name.replace('-', '_');
+		}
 		return "_" + name; // might be a keyword otherwise
 	}
 
@@ -245,8 +245,9 @@ public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExcept
 	}
 
 	private boolean isJoined(String alias) {
-		if (stack.isEmpty())
+		if (stack.isEmpty()) {
 			return query.getFromItem(alias) != null;
+		}
 		return stack.get(stack.size() - 1).getFromItem(alias) != null;
 	}
 

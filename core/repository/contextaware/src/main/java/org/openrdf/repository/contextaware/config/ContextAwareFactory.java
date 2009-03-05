@@ -61,7 +61,7 @@ public class ContextAwareFactory implements RepositoryFactory {
 			repo.setRemoveContexts(config.getRemoveContexts());
 			repo.setArchiveContexts(config.getArchiveContexts());
 			repo.setQueryResultLimit(config.getQueryResultLimit());
-			
+
 			return repo;
 		}
 

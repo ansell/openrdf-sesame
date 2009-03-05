@@ -38,7 +38,6 @@ import org.openrdf.store.StoreException;
  * them on a database.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsEvaluation extends EvaluationStrategyImpl {
 
@@ -63,12 +62,12 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 	}
 
 	@Override
-	public Cursor<BindingSet> evaluate(TupleExpr expr,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(TupleExpr expr, BindingSet bindings)
 		throws StoreException
 	{
-		if (expr instanceof SelectQuery)
+		if (expr instanceof SelectQuery) {
 			return evaluate((SelectQuery)expr, bindings);
+		}
 		return super.evaluate(expr, bindings);
 	}
 

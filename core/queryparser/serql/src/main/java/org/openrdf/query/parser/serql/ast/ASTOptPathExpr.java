@@ -9,7 +9,6 @@ import java.util.List;
 
 import info.aduna.collections.CastingList;
 
-
 public class ASTOptPathExpr extends ASTPathExpr {
 
 	public ASTOptPathExpr(int id) {

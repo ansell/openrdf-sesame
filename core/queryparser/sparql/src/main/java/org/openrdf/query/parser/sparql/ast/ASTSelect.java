@@ -48,11 +48,11 @@ public class ASTSelect extends SimpleNode {
 	public void setWildcard(boolean wildcard) {
 		this.wildcard = wildcard;
 	}
-	
+
 	@Override
 	public String toString() {
 		String result = super.toString();
-		
+
 		if (distinct || wildcard) {
 			result += " (";
 			if (distinct) {
@@ -66,7 +66,7 @@ public class ASTSelect extends SimpleNode {
 			}
 			result += " )";
 		}
-		
+
 		return result;
 	}
 }

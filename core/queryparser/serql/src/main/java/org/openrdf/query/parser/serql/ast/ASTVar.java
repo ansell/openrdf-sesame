@@ -43,8 +43,7 @@ public class ASTVar extends ASTValueExpr {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		String result = super.toString() + " (" + name + ")";
 
 		if (anonymous) {

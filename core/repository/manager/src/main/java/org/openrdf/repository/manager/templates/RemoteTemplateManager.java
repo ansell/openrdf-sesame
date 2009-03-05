@@ -68,12 +68,15 @@ public class RemoteTemplateManager implements ConfigTemplateManager {
 	 *        The key identifying which service to get.
 	 * @return The service for the specified key, or <tt>null</tt> if no such
 	 *         service is avaiable.
-	 * @throws StoreConfigException 
+	 * @throws StoreConfigException
 	 */
-	public ConfigTemplate getTemplate(String key) throws StoreConfigException {
+	public ConfigTemplate getTemplate(String key)
+		throws StoreConfigException
+	{
 		Model statements = client.templates().get(key);
-		if (statements == null)
+		if (statements == null) {
 			return null;
+		}
 		return new ConfigTemplate(statements, client.schemas().get());
 	}
 
@@ -81,9 +84,11 @@ public class RemoteTemplateManager implements ConfigTemplateManager {
 	 * Gets the set of registered keys.
 	 * 
 	 * @return An unmodifiable set containing all registered keys.
-	 * @throws StoreConfigException 
+	 * @throws StoreConfigException
 	 */
-	public Set<String> getIDs() throws StoreConfigException {
+	public Set<String> getIDs()
+		throws StoreConfigException
+	{
 		return new HashSet<String>(client.templates().list());
 	}
 

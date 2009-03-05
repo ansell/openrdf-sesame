@@ -9,7 +9,6 @@ import java.util.List;
 
 import info.aduna.collections.CastingList;
 
-
 public class ASTFrom extends SimpleNode {
 
 	public ASTFrom(int id) {

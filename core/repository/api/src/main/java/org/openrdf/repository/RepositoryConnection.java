@@ -375,6 +375,7 @@ public interface RepositoryConnection {
 	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)}
 	 *             instead
 	 */
+	@Deprecated
 	public ModelResult getStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws StoreException;
@@ -428,6 +429,7 @@ public interface RepositoryConnection {
 	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)}
 	 *             instead
 	 */
+	@Deprecated
 	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws StoreException;
@@ -500,6 +502,7 @@ public interface RepositoryConnection {
 	 *             {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)}
 	 *             instead
 	 */
+	@Deprecated
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws StoreException, RDFHandlerException;
@@ -576,6 +579,7 @@ public interface RepositoryConnection {
 	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)}
 	 *             instead
 	 */
+	@Deprecated
 	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException;
 

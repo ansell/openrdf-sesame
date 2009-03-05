@@ -15,7 +15,8 @@ import org.openrdf.result.TupleResult;
 import org.openrdf.result.impl.TupleResultImpl;
 
 /**
- * A TupleQueryResultHandler that can be used to create a TupleQueryResult object.
+ * A TupleQueryResultHandler that can be used to create a TupleQueryResult
+ * object.
  */
 public class TupleQueryResultBuilder extends TupleQueryResultHandlerBase {
 
@@ -23,10 +24,10 @@ public class TupleQueryResultBuilder extends TupleQueryResultHandlerBase {
 	 * Variables *
 	 *-----------*/
 
-	private List<String>	bindingNames;
-	
+	private List<String> bindingNames;
+
 	private List<BindingSet> bindingSetList;
-	
+
 	/*---------*
 	 * Methods *
 	 *---------*/

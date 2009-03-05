@@ -31,7 +31,6 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
  * Creates a binary SQL expression for a dateTime zoned value.
  * 
  * @author James Leigh
- * 
  */
 public class ZonedExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 
@@ -48,11 +47,13 @@ public class ZonedExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOper
 		throws UnsupportedRdbmsOperatorException
 	{
 		result = null;
-		if (expr == null)
+		if (expr == null) {
 			return new SqlNull();
+		}
 		expr.visit(this);
-		if (result == null)
+		if (result == null) {
 			return new SqlNull();
+		}
 		return result;
 	}
 

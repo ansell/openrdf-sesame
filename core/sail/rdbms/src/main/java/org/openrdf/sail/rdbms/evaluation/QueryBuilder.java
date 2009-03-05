@@ -60,7 +60,6 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * Constructs an SQL query from {@link SqlExpr}s and {@link FromItem}s.
  * 
  * @author James Leigh
- * 
  */
 public class QueryBuilder {
 
@@ -603,8 +602,9 @@ public class QueryBuilder {
 
 	private String getDBName(ColumnVar var) {
 		String name = var.getName();
-		if (name.indexOf('-') >= 0)
+		if (name.indexOf('-') >= 0) {
 			return name.replace('-', '_');
+		}
 		return "_" + name; // might be a keyword otherwise
 	}
 

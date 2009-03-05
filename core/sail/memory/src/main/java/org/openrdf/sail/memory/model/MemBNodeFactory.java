@@ -46,15 +46,16 @@ public class MemBNodeFactory extends BNodeFactoryImpl {
 			return (MemBNode)bnode;
 		}
 		else {
-			if (!isInternalBNode(bnode))
+			if (!isInternalBNode(bnode)) {
 				throw new IllegalArgumentException("BNode not created from this ValueFactory");
+			}
 			return bnodeRegistry.get(bnode);
 		}
 	}
 
 	/**
-	 * Checks whether the supplied value is an instance of <tt>MemValue</tt>
-	 * and whether it has been created by this MemValueFactory.
+	 * Checks whether the supplied value is an instance of <tt>MemValue</tt> and
+	 * whether it has been created by this MemValueFactory.
 	 */
 	private boolean isOwnMemValue(Value value) {
 		return value instanceof MemValue && ((MemValue)value).getCreator() == this;
@@ -64,8 +65,8 @@ public class MemBNodeFactory extends BNodeFactoryImpl {
 	 * Gets all bnodes that are managed by this value factory.
 	 * <p>
 	 * <b>Warning:</b> This method is not synchronized. To iterate over the
-	 * returned set in a thread-safe way, this method should only be called
-	 * while synchronizing on this object.
+	 * returned set in a thread-safe way, this method should only be called while
+	 * synchronizing on this object.
 	 * 
 	 * @return An unmodifiable Set of MemBNode objects.
 	 */
@@ -77,8 +78,9 @@ public class MemBNodeFactory extends BNodeFactoryImpl {
 	 * See createMemValue() for description.
 	 */
 	public synchronized MemBNode createMemBNode(BNode bnode) {
-		if (!isInternalBNode(bnode))
+		if (!isInternalBNode(bnode)) {
 			throw new IllegalArgumentException("BNode not created from this ValueFactory");
+		}
 		MemBNode memBNode = new MemBNode(this, bnode.getID());
 
 		boolean wasNew = bnodeRegistry.add(memBNode);

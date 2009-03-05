@@ -182,9 +182,9 @@ public class RDFXMLWriter implements RDFWriter {
 		if (!namespaceTable.containsKey(name)) {
 			// Namespace not yet mapped to a prefix, try to give it the specified
 			// prefix
-			
+
 			boolean isLegalPrefix = prefix.length() == 0 || XMLUtil.isNCName(prefix);
-			
+
 			if (!isLegalPrefix || namespaceTable.containsValue(prefix)) {
 				// Specified prefix is not legal or the prefix is already in use,
 				// generate a legal unique prefix

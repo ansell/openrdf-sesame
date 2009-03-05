@@ -8,9 +8,7 @@ package org.openrdf.result;
 import org.openrdf.model.Resource;
 import org.openrdf.repository.RepositoryResult;
 
-
 /**
- *
  * @author James Leigh
  */
 public interface ContextResult extends RepositoryResult<Resource> {

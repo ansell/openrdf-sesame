@@ -12,7 +12,6 @@ import org.openrdf.sail.rdbms.algebra.ColumnVar;
  * A column in an SQL expression.
  * 
  * @author James Leigh
- * 
  */
 public abstract class ValueColumnBase extends RdbmsQueryModelNodeBase implements SqlExpr {
 
@@ -52,8 +51,9 @@ public abstract class ValueColumnBase extends RdbmsQueryModelNodeBase implements
 
 	@Override
 	public String getSignature() {
-		if (var != null)
+		if (var != null) {
 			return super.getSignature() + " " + var;
+		}
 		return super.getSignature() + " " + name;
 	}
 
@@ -72,19 +72,24 @@ public abstract class ValueColumnBase extends RdbmsQueryModelNodeBase implements
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		final ValueColumnBase other = (ValueColumnBase)obj;
 		if (name == null) {
-			if (other.name != null)
+			if (other.name != null) {
 				return false;
+			}
 		}
-		else if (!name.equals(other.name))
+		else if (!name.equals(other.name)) {
 			return false;
+		}
 		return true;
 	}
 

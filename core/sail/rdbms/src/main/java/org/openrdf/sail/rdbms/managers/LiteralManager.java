@@ -23,7 +23,6 @@ import org.openrdf.sail.rdbms.schema.LiteralTable;
  * into the database.
  * 
  * @author James Leigh
- * 
  */
 public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 

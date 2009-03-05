@@ -27,7 +27,6 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * An SQL query.
  * 
  * @author James Leigh
- * 
  */
 public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 
@@ -66,8 +65,9 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 	}
 
 	public boolean isComplex() {
-		if (offset != null || limit != null)
+		if (offset != null || limit != null) {
 			return true;
+		}
 		return isDistinct() || !order.isEmpty();
 	}
 
@@ -85,10 +85,12 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 	}
 
 	public void addOrder(SqlExpr order, boolean isAscending) {
-		if (order instanceof SqlNull)
+		if (order instanceof SqlNull) {
 			return;
-		if (order instanceof SqlConstant<?>)
+		}
+		if (order instanceof SqlConstant<?>) {
 			return;
+		}
 		this.order.add(new OrderElem(order, isAscending));
 		order.setParentNode(this);
 	}
@@ -110,8 +112,9 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 	}
 
 	public Collection<String> getBindingNames(ColumnVar var) {
-		if (bindingVars == null)
+		if (bindingVars == null) {
 			return Collections.singleton(var.getName());
+		}
 		List<String> list = new ArrayList<String>(bindingVars.size());
 		for (String name : bindingVars.keySet()) {
 			if (var.getName().equals(bindingVars.get(name))) {
@@ -234,7 +237,8 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 			ColumnVar var = proj.getVar();
 			if (bindingVars == null) {
 				vars.add(var);
-			} else {
+			}
+			else {
 				for (String name : bindingVars.keySet()) {
 					if (var.getName().equals(bindingVars.get(name))) {
 						vars.add(var.as(name));

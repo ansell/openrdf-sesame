@@ -64,7 +64,6 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * algebra nodes into an SQL expression.
  * 
  * @author James Leigh
- * 
  */
 public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> {
 
@@ -79,11 +78,13 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 	{
 		try {
 			result = null;
-			if (expr == null)
+			if (expr == null) {
 				return new SqlNull();
+			}
 			expr.visit(this);
-			if (result == null)
+			if (result == null) {
 				return new SqlNull();
+			}
 			return result;
 		}
 		catch (RuntimeException e) {
@@ -106,7 +107,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		SqlExpr[] expr = new SqlExpr[node.getNumberOfArguments()];
-		for (int i=0,n=node.getNumberOfArguments();i<n;i++) {
+		for (int i = 0, n = node.getNumberOfArguments(); i < n; i++) {
 			expr[i] = bool(node.getArg(i));
 		}
 		result = and(expr);
@@ -212,7 +213,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 		throws UnsupportedRdbmsOperatorException, RdbmsException
 	{
 		SqlExpr[] bools = new SqlExpr[node.getNumberOfArguments()];
-		for (int i=0;i<bools.length;i++) {
+		for (int i = 0; i < bools.length; i++) {
 			bools[i] = bool(node.getArg(i));
 		}
 		result = or(bools);

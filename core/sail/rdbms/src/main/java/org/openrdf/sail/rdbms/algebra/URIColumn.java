@@ -13,7 +13,6 @@ import org.openrdf.sail.rdbms.algebra.base.ValueColumnBase;
  * Represents a variable's URI value in an SQL expression.
  * 
  * @author James Leigh
- * 
  */
 public class URIColumn extends ValueColumnBase {
 

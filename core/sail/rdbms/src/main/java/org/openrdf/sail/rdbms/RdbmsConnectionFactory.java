@@ -281,8 +281,9 @@ public class RdbmsConnectionFactory {
 	{
 		try {
 			String url = nsAndTableIndexes.getMetaData().getURL();
-			if (url == null)
+			if (url == null) {
 				return null;
+			}
 			return new URL(url);
 		}
 		catch (SQLException e) {
@@ -407,8 +408,9 @@ public class RdbmsConnectionFactory {
 	{
 		DatabaseLockManager manager;
 		manager = new DatabaseLockManager(ds, user, password);
-		if (manager.isDebugEnabled())
+		if (manager.isDebugEnabled()) {
 			return manager.tryLock();
+		}
 		return manager.lockOrFail();
 	}
 
@@ -448,8 +450,9 @@ public class RdbmsConnectionFactory {
 	protected Connection getConnection()
 		throws SQLException
 	{
-		if (user == null)
+		if (user == null) {
 			return ds.getConnection();
+		}
 		return ds.getConnection(user, password);
 	}
 

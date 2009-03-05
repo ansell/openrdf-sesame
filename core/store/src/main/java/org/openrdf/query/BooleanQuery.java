@@ -16,5 +16,6 @@ public interface BooleanQuery extends Query {
 	public BooleanResult evaluate()
 		throws StoreException;
 
-	public boolean ask() throws StoreException;
+	public boolean ask()
+		throws StoreException;
 }

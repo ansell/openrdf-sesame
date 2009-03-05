@@ -18,8 +18,8 @@ import java.io.DataOutput;
  * <p>
  * The file header is 13 bytes long:
  * <ul>
- * <li>Bytes 1-4 contain the ASCII codes for the string "BRTR", which stands
- * for Binary RDF Table Result.
+ * <li>Bytes 1-4 contain the ASCII codes for the string "BRTR", which stands for
+ * Binary RDF Table Result.
  * <li>Bytes 5-8 specify the format version (an integer).
  * <li>Byte 9 specifies some flags, specifically 'distinct' and 'ordered'.
  * <li>Bytes 10-13 specify the number of columns of the query result that will

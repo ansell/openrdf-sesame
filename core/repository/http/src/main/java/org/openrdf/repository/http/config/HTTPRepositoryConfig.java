@@ -5,7 +5,8 @@
  */
 package org.openrdf.repository.http.config;
 
-import static org.openrdf.repository.http.config.HTTPRepositorySchema.*;
+import static org.openrdf.repository.http.config.HTTPRepositorySchema.PASSWORD;
+import static org.openrdf.repository.http.config.HTTPRepositorySchema.READ_ONLY;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYID;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYURL;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.SERVERURL;
