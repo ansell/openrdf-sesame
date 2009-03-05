@@ -142,7 +142,7 @@ public class SesameServlet implements Servlet {
 		delegate.service(req, res);
 	}
 
-	private class SesameServletConfig implements ServletConfig {
+	private static class SesameServletConfig implements ServletConfig {
 
 		private ServletConfig config;
 
