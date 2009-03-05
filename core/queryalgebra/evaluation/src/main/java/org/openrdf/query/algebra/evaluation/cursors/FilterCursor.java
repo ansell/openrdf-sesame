@@ -39,8 +39,7 @@ public class FilterCursor extends FilteringCursor<BindingSet> {
 	 * Constructors *
 	 *--------------*/
 
-	public FilterCursor(Filter filter, Cursor<BindingSet> iter,
-			EvaluationStrategy strategy)
+	public FilterCursor(Filter filter, Cursor<BindingSet> iter, EvaluationStrategy strategy)
 		throws EvaluationException
 	{
 		super(iter);

@@ -10,10 +10,11 @@ import org.openrdf.cursor.DelegatingCursor;
 import org.openrdf.store.StoreException;
 
 /**
- * An Iteration that limits the amount of elements that it returns from an
- * underlying Iteration to a fixed amount. This class returns the first
- * <tt>limit</tt> elements from the underlying Iteration and drops the rest.
+ * An cursor that limits the amount of elements that it returns from an
+ * underlying cursor to a fixed amount. This class returns the first
+ * <tt>limit</tt> elements from the underlying cursor and drops the rest.
  * 
+ * @author Arjohn Kampman
  * @author James Leigh
  */
 public class LimitCursor<E> extends DelegatingCursor<E> {
@@ -25,11 +26,13 @@ public class LimitCursor<E> extends DelegatingCursor<E> {
 		this.limit = limit;
 	}
 
+	@Override
 	public E next()
 		throws StoreException
 	{
-		if (--limit < 0)
+		if (--limit < 0) {
 			return null;
+		}
 		return super.next();
 	}
 }

@@ -141,8 +141,7 @@ public class QueryBindingSet implements BindingSet {
 		return new ConvertingIterator<Map.Entry<String, Value>, Binding>(entries) {
 
 			@Override
-			protected Binding convert(Map.Entry<String, Value> entry)
-			{
+			protected Binding convert(Map.Entry<String, Value> entry) {
 				return new BindingImpl(entry.getKey(), entry.getValue());
 			}
 		};
@@ -153,8 +152,7 @@ public class QueryBindingSet implements BindingSet {
 	}
 
 	@Override
-	public boolean equals(Object other)
-	{
+	public boolean equals(Object other) {
 		if (this == other) {
 			return true;
 		}
@@ -185,8 +183,7 @@ public class QueryBindingSet implements BindingSet {
 	}
 
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		int hashCode = 0;
 
 		for (Map.Entry<String, Value> entry : bindings.entrySet()) {
@@ -197,8 +194,7 @@ public class QueryBindingSet implements BindingSet {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		StringBuilder sb = new StringBuilder(32 * size());
 
 		sb.append('[');

@@ -15,8 +15,7 @@ import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 
-public class ProjectionCursor extends ConvertingCursor<BindingSet, BindingSet>
-{
+public class ProjectionCursor extends ConvertingCursor<BindingSet, BindingSet> {
 
 	/*-----------*
 	 * Constants *
@@ -30,8 +29,7 @@ public class ProjectionCursor extends ConvertingCursor<BindingSet, BindingSet>
 	 * Constructors *
 	 *--------------*/
 
-	public ProjectionCursor(Projection projection,
-			Cursor<BindingSet> iter, BindingSet parentBindings)
+	public ProjectionCursor(Projection projection, Cursor<BindingSet> iter, BindingSet parentBindings)
 		throws EvaluationException
 	{
 		super(iter);

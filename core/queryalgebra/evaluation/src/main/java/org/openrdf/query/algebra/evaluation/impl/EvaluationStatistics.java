@@ -120,8 +120,9 @@ public class EvaluationStatistics {
 		@Override
 		protected void meetNode(QueryModelNode node) {
 			if (node instanceof ExternalSet) {
-				meetExternalSet((ExternalSet) node);
-			} else {
+				meetExternalSet((ExternalSet)node);
+			}
+			else {
 				throw new IllegalArgumentException("Unhandled node type: " + node.getClass());
 			}
 		}

@@ -131,8 +131,9 @@ public class ConstantOptimizer implements QueryOptimizer {
 			super.meetNaryValueOperator(naryValueOp);
 
 			for (ValueExpr arg : naryValueOp.getArgs()) {
-				if (!isConstant(arg))
+				if (!isConstant(arg)) {
 					return;
+				}
 			}
 			try {
 				Value value = strategy.evaluate(naryValueOp, EmptyBindingSet.getInstance());

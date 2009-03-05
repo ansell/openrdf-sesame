@@ -19,9 +19,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * 
  * @author James Leigh
- * 
  */
 public class ValueComparatorTest extends TestCase {
 

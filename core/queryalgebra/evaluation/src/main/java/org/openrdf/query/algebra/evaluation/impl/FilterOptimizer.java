@@ -46,8 +46,7 @@ public class FilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(Filter filter)
-		{
+		public void meet(Filter filter) {
 			super.meet(filter);
 			filter.getArg().visit(getFilterRelocator(filter));
 		}
@@ -73,14 +72,12 @@ public class FilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		protected void meetNode(QueryModelNode node)
-		{
+		protected void meetNode(QueryModelNode node) {
 			// By default, do not visit child nodes
 		}
 
 		@Override
-		public void meet(Join join)
-		{
+		public void meet(Join join) {
 			for (TupleExpr arg : join.getArgs()) {
 				if (arg.getBindingNames().containsAll(filterVars)) {
 					// All required vars are bound by the expr
@@ -92,29 +89,25 @@ public class FilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(LeftJoin leftJoin)
-		{
+		public void meet(LeftJoin leftJoin) {
 			if (leftJoin.getLeftArg().getBindingNames().containsAll(filterVars)) {
 				leftJoin.getLeftArg().visit(this);
 			}
 		}
 
 		@Override
-		public void meet(StatementPattern sp)
-		{
+		public void meet(StatementPattern sp) {
 			relocate(filter, sp);
 		}
 
 		@Override
-		public void meet(Filter filter)
-		{
+		public void meet(Filter filter) {
 			// Filters are commutative
 			filter.getArg().visit(this);
 		}
 
 		@Override
-		public void meet(Group group)
-		{
+		public void meet(Group group) {
 			// Prefer evaluation of filters before grouping
 			group.getArg().visit(this);
 		}

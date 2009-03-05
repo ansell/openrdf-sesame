@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -27,8 +27,7 @@ public interface TripleSource {
 	 * restricted to statements matching one or more of the specified contexts.
 	 * 
 	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a
-	 *        wildcard.
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
 	 * @param pred
 	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
 	 * @param obj
@@ -37,7 +36,7 @@ public interface TripleSource {
 	 *        The context(s) to get the statements from. Note that this parameter
 	 *        is a vararg and as such is optional. If no contexts are supplied
 	 *        the method operates on the entire repository.
-	 * @return An iterator over the relevant statements.
+	 * @return A cursor over the relevant statements.
 	 * @throws StoreException
 	 *         If the triple source failed to get the statements.
 	 */

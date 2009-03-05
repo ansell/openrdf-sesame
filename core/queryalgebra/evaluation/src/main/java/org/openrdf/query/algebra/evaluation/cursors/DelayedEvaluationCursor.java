@@ -13,6 +13,7 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.store.StoreException;
 
 /**
+ * @author Arjohn Kampman
  * @author James Leigh
  */
 public class DelayedEvaluationCursor extends DelayedCursor<BindingSet> {
@@ -29,6 +30,7 @@ public class DelayedEvaluationCursor extends DelayedCursor<BindingSet> {
 		this.bindings = bindings;
 	}
 
+	@Override
 	protected Cursor<BindingSet> createCursor()
 		throws StoreException
 	{
