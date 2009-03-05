@@ -8,13 +8,13 @@ package org.openrdf.query.algebra.evaluation.cursors;
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.FilteringCursor;
 
-
 /**
  * Remove duplicates that appear next to each other.
  * 
  * @author James Leigh
  */
 public class ReducedCursor<E> extends FilteringCursor<E> {
+
 	private E last;
 
 	public ReducedCursor(Cursor<? extends E> delegate) {
@@ -27,5 +27,4 @@ public class ReducedCursor<E> extends FilteringCursor<E> {
 		last = next;
 		return accept;
 	}
-
 }

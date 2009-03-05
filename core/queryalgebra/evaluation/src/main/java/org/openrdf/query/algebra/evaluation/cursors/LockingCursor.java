@@ -12,10 +12,11 @@ import org.openrdf.cursor.DelegatingCursor;
 import org.openrdf.store.StoreException;
 
 /**
- * An Iteration that holds on to a lock until the Iteration is closed. Upon
- * closing, the underlying Iteration is closed before the lock is released. This
- * iterator closes itself as soon as all elements have been read.
+ * An cursor that holds on to a lock until the cursor is closed. Upon closing,
+ * the underlying cursor is closed before the lock is released. This cursor
+ * closes itself as soon as all elements have been read.
  * 
+ * @author Arjohn Kampman
  * @author James Leigh
  */
 public class LockingCursor<E> extends DelegatingCursor<E> {
@@ -38,5 +39,4 @@ public class LockingCursor<E> extends DelegatingCursor<E> {
 			lock.release();
 		}
 	}
-
 }

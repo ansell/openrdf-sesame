@@ -22,8 +22,7 @@ public class ExtensionCursor extends ConvertingCursor<BindingSet, BindingSet> {
 
 	private final EvaluationStrategy strategy;
 
-	public ExtensionCursor(Extension extension,
-			Cursor<BindingSet> iter, EvaluationStrategy strategy)
+	public ExtensionCursor(Extension extension, Cursor<BindingSet> iter, EvaluationStrategy strategy)
 		throws EvaluationException
 	{
 		super(iter);

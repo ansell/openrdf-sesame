@@ -25,5 +25,4 @@ public class NamedContextCursor extends FilteringCursor<Statement> {
 	protected boolean accept(Statement next) {
 		return next.getContext() != null;
 	}
-
 }

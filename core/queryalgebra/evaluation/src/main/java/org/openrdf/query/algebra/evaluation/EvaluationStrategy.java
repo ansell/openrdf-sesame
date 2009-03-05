@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -29,11 +29,10 @@ public interface EvaluationStrategy {
 	 * @param bindings
 	 *        The variables bindings to use for evaluating the expression, if
 	 *        applicable.
-	 * @return A closeable iterator over the variable binding sets that match the
-	 *         tuple expression.
+	 * @return A cursor over the variable binding sets that match the tuple
+	 *         expression.
 	 */
-	public Cursor<BindingSet> evaluate(TupleExpr expr,
-			BindingSet bindings)
+	public Cursor<BindingSet> evaluate(TupleExpr expr, BindingSet bindings)
 		throws StoreException;
 
 	/**
@@ -58,8 +57,8 @@ public interface EvaluationStrategy {
 	 * @throws ValueExprEvaluationException
 	 *         If the value expression could not be evaluated, for example when
 	 *         comparing two incompatible operands. When thrown, the result of
-	 *         the boolean expression is neither <tt>true</tt> nor
-	 *         <tt>false</tt>, but unknown.
+	 *         the boolean expression is neither <tt>true</tt> nor <tt>false</tt>
+	 *         , but unknown.
 	 */
 	public boolean isTrue(ValueExpr expr, BindingSet bindings)
 		throws ValueExprEvaluationException, StoreException;

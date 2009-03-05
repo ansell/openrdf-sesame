@@ -15,8 +15,8 @@ import org.openrdf.store.StoreException;
 
 /**
  * A query optimizer that contains a list of other query optimizers, which are
- * called consecutively when the list's {@link #optimize(QueryModel, BindingSet)}
- * method is called.
+ * called consecutively when the list's
+ * {@link #optimize(QueryModel, BindingSet)} method is called.
  * 
  * @author Arjohn Kampman
  */

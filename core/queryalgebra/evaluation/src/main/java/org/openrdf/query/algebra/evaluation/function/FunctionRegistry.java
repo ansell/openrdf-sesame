@@ -32,8 +32,7 @@ public class FunctionRegistry extends ServiceRegistry<String, Function> {
 	}
 
 	@Override
-	protected String getKey(Function function)
-	{
+	protected String getKey(Function function) {
 		return function.getURI();
 	}
 }

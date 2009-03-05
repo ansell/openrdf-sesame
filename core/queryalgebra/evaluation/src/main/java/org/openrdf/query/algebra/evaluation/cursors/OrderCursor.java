@@ -10,10 +10,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.DelayedCursor;
 import org.openrdf.cursor.EmptyCursor;
-import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.store.StoreException;
 
@@ -35,6 +35,7 @@ public class OrderCursor extends DelayedCursor<BindingSet> {
 		this.comparator = comparator;
 	}
 
+	@Override
 	protected Cursor<BindingSet> createCursor()
 		throws StoreException
 	{

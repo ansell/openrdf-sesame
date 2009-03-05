@@ -9,11 +9,11 @@ import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.FilteringCursor;
 import org.openrdf.store.StoreException;
 
-
 /**
- * An Iteration that skips the first <tt>offset</tt> elements from an
- * underlying Iteration.
- *
+ * A cursor that skips the first <tt>offset</tt> elements from an underlying
+ * cursor.
+ * 
+ * @author Arjohn Kampman
  * @author James Leigh
  */
 public class OffsetCursor<E> extends FilteringCursor<E> {
@@ -31,5 +31,4 @@ public class OffsetCursor<E> extends FilteringCursor<E> {
 	{
 		return --offset < 0;
 	}
-
 }

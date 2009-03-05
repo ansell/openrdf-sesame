@@ -19,16 +19,18 @@ import org.openrdf.query.algebra.Var;
  * StatementPattern, verify value equality in those cases.
  * 
  * @author James Leigh
- * 
  */
 public class StatementPatternCursor extends FilteringCursor<Statement> {
+
 	private Var subjVar;
+
 	private Var predVar;
+
 	private Var objVar;
+
 	private Var conVar;
 
-	public StatementPatternCursor(Cursor<? extends Statement> delegate,
-			StatementPattern sp) {
+	public StatementPatternCursor(Cursor<? extends Statement> delegate, StatementPattern sp) {
 		super(delegate);
 		subjVar = sp.getSubjectVar();
 		predVar = sp.getPredicateVar();
@@ -73,4 +75,3 @@ public class StatementPatternCursor extends FilteringCursor<Statement> {
 		return true;
 	}
 }
-

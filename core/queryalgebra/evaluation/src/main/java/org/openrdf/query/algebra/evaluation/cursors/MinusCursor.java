@@ -13,14 +13,15 @@ import org.openrdf.cursor.FilteringCursor;
 import org.openrdf.store.StoreException;
 
 /**
- * An Iteration that returns the results of an Iteration (the left argument)
- * minus the results of another Iteration (the right argument). Optionally, the
- * Iteration can be configured to filter duplicates from the returned elements.
+ * A cursor that returns the results of some cursor (the left argument) minus
+ * the results of another cursor (the right argument). Optionally, the cursor
+ * can be configured to filter duplicates from the returned elements.
  * <p>
- * Note that duplicates can also be filtered by wrapping this Iteration in a
- * {@link DistinctIteration}, but that has a bit more overhead as it adds a
- * second hash table lookup.
+ * Note that duplicates can also be filtered by wrapping this cursor in a
+ * {@link DistinctCursor}, but that has a bit more overhead as it adds a second
+ * hash table lookup.
  * 
+ * @author Arjohn Kampman
  * @author James Leigh
  */
 public class MinusCursor<E> extends FilteringCursor<E> {
@@ -42,14 +43,14 @@ public class MinusCursor<E> extends FilteringCursor<E> {
 	 *--------------*/
 
 	/**
-	 * Creates a new MinusIteration that returns the results of the left argument
+	 * Creates a new MinusCursor that returns the results of the left argument
 	 * minus the results of the right argument. By default, duplicates are
 	 * <em>not</em> filtered from the results.
 	 * 
 	 * @param leftArg
-	 *        An Iteration containing the main set of elements.
+	 *        A cursor containing the main set of elements.
 	 * @param rightArg
-	 *        An Iteration containing the set of elements that should be filtered
+	 *        A cursor containing the set of elements that should be filtered
 	 *        from the main set.
 	 */
 	public MinusCursor(Cursor<? extends E> leftArg, Cursor<? extends E> rightArg) {
@@ -57,13 +58,13 @@ public class MinusCursor<E> extends FilteringCursor<E> {
 	}
 
 	/**
-	 * Creates a new MinusIteration that returns the results of the left argument
+	 * Creates a new MinusCursor that returns the results of the left argument
 	 * minus the results of the right argument.
 	 * 
 	 * @param leftArg
-	 *        An Iteration containing the main set of elements.
+	 *        A cursor containing the main set of elements.
 	 * @param rightArg
-	 *        An Iteration containing the set of elements that should be filtered
+	 *        A cursor containing the set of elements that should be filtered
 	 *        from the main set.
 	 * @param distinct
 	 *        Flag indicating whether duplicate elements should be filtered from
@@ -83,7 +84,6 @@ public class MinusCursor<E> extends FilteringCursor<E> {
 	 * Constructors *
 	 *--------------*/
 
-	// implements LookAheadIteration.getNextElement()
 	protected boolean accept(E object)
 		throws StoreException
 	{

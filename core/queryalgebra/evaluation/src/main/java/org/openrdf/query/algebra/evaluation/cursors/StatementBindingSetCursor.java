@@ -17,18 +17,22 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
  * converts the statements to var bindings
  * 
  * @author James Leigh
- * 
  */
-public class StatementBindingSetCursor extends
-		ConvertingCursor<Statement, BindingSet> {
+public class StatementBindingSetCursor extends ConvertingCursor<Statement, BindingSet> {
+
 	private BindingSet bindings;
+
 	private Var subjVar;
+
 	private Var predVar;
+
 	private Var objVar;
+
 	private Var conVar;
 
-	public StatementBindingSetCursor(Cursor<? extends Statement> delegate,
-			StatementPattern sp, BindingSet bindings) {
+	public StatementBindingSetCursor(Cursor<? extends Statement> delegate, StatementPattern sp,
+			BindingSet bindings)
+	{
 		super(delegate);
 		this.bindings = bindings;
 		subjVar = sp.getSubjectVar();
@@ -50,8 +54,7 @@ public class StatementBindingSetCursor extends
 		if (objVar != null && !result.hasBinding(objVar.getName())) {
 			result.addBinding(objVar.getName(), st.getObject());
 		}
-		if (conVar != null && !result.hasBinding(conVar.getName())
-				&& st.getContext() != null) {
+		if (conVar != null && !result.hasBinding(conVar.getName()) && st.getContext() != null) {
 			result.addBinding(conVar.getName(), st.getContext());
 		}
 

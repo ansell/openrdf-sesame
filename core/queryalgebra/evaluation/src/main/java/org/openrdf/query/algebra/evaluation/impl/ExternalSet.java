@@ -32,6 +32,7 @@ public abstract class ExternalSet extends QueryModelNodeBase implements TupleExp
 		visitor.meetOther(this);
 	}
 
+	@Override
 	public ExternalSet clone() {
 		return (ExternalSet)super.clone();
 	}

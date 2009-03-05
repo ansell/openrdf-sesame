@@ -22,30 +22,33 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
 /**
- * 
  * @author James Leigh
- * 
  */
 public class OrderComparatorTest extends TestCase {
+
 	class EvaluationStrategyStub implements EvaluationStrategy {
-		public Cursor<BindingSet> evaluate(
-				TupleExpr expr, BindingSet bindings)
-				throws EvaluationException {
+
+		public Cursor<BindingSet> evaluate(TupleExpr expr, BindingSet bindings)
+			throws EvaluationException
+		{
 			throw new UnsupportedOperationException();
 		}
 
 		public Value evaluate(ValueExpr expr, BindingSet bindings)
-				throws ValueExprEvaluationException, EvaluationException {
+			throws ValueExprEvaluationException, EvaluationException
+		{
 			return null;
 		}
 
 		public boolean isTrue(ValueExpr expr, BindingSet bindings)
-				throws ValueExprEvaluationException, EvaluationException {
+			throws ValueExprEvaluationException, EvaluationException
+		{
 			throw new UnsupportedOperationException();
 		}
 	}
 
 	class ComparatorStub extends ValueComparator {
+
 		Iterator<Integer> iter;
 
 		public void setIterator(Iterator<Integer> iter) {
@@ -74,14 +77,18 @@ public class OrderComparatorTest extends TestCase {
 
 	private int NEG = -7349;
 
-	public void testEquals() throws Exception {
+	public void testEquals()
+		throws Exception
+	{
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(ZERO).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
 		assertTrue(sud.compare(null, null) == 0);
 	}
 
-	public void testZero() throws Exception {
+	public void testZero()
+		throws Exception
+	{
 		order.addElement(asc);
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(ZERO, POS).iterator());
@@ -89,7 +96,9 @@ public class OrderComparatorTest extends TestCase {
 		assertTrue(sud.compare(null, null) > 0);
 	}
 
-	public void testTerm() throws Exception {
+	public void testTerm()
+		throws Exception
+	{
 		order.addElement(asc);
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(POS, NEG).iterator());
@@ -97,28 +106,36 @@ public class OrderComparatorTest extends TestCase {
 		assertTrue(sud.compare(null, null) > 0);
 	}
 
-	public void testAscLessThan() throws Exception {
+	public void testAscLessThan()
+		throws Exception
+	{
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(NEG).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
 		assertTrue(sud.compare(null, null) < 0);
 	}
 
-	public void testAscGreaterThan() throws Exception {
+	public void testAscGreaterThan()
+		throws Exception
+	{
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(POS).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
 		assertTrue(sud.compare(null, null) > 0);
 	}
 
-	public void testDescLessThan() throws Exception {
+	public void testDescLessThan()
+		throws Exception
+	{
 		order.addElement(desc);
 		cmp.setIterator(Arrays.asList(NEG).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
 		assertTrue(sud.compare(null, null) > 0);
 	}
 
-	public void testDescGreaterThan() throws Exception {
+	public void testDescGreaterThan()
+		throws Exception
+	{
 		order.addElement(desc);
 		cmp.setIterator(Arrays.asList(POS).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
@@ -126,7 +143,9 @@ public class OrderComparatorTest extends TestCase {
 	}
 
 	@Override
-	protected void setUp() throws Exception {
+	protected void setUp()
+		throws Exception
+	{
 		asc.setAscending(true);
 		desc.setAscending(false);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -114,8 +114,7 @@ import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.store.StoreException;
 
 /**
- * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
- * API.
+ * Evaluates TupleExpr and ValueExpr using cursors and common tripleSource API.
  * 
  * @author James Leigh
  * @author Arjohn Kampman
@@ -831,8 +830,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				&& (farg == null || QueryEvaluationUtil.isSimpleLiteral(farg)))
 		{
 			Pattern pattern = node.compile(parg, farg);
-			if (pattern == null)
+			if (pattern == null) {
 				throw new ValueExprEvaluationException();
+			}
 			boolean result = pattern.matcher(arg.stringValue()).find();
 			return BooleanLiteralImpl.valueOf(result);
 		}
@@ -913,8 +913,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				failure = e;
 			}
 		}
-		if (failure == null)
+		if (failure == null) {
 			return BooleanLiteralImpl.TRUE;
+		}
 		throw failure;
 	}
 
@@ -937,8 +938,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				failure = e;
 			}
 		}
-		if (failure == null)
+		if (failure == null) {
 			return BooleanLiteralImpl.FALSE;
+		}
 		throw failure;
 	}
 

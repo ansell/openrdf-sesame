@@ -62,23 +62,25 @@ public class ConjunctiveConstraintSplitter implements QueryOptimizer {
 					Set<String> filterVars = new VarFinder(constraint).getVars();
 					if (right.getBindingNames().containsAll(filterVars)) {
 						node.setRightArg(new Filter(right.clone(), constraint.clone()));
-					} else {
+					}
+					else {
 						and.addArg(constraint);
 					}
 				}
 				if (and.getNumberOfArguments() > 1) {
 					node.setCondition(and);
-				} else if (and.getNumberOfArguments() == 1) {
+				}
+				else if (and.getNumberOfArguments() == 1) {
 					node.setCondition(and.getArg(0));
-				} else {
+				}
+				else {
 					node.setCondition(null);
 				}
 			}
 		}
 
 		@Override
-		public void meet(Filter filter)
-		{
+		public void meet(Filter filter) {
 			super.meet(filter);
 
 			List<ValueExpr> conjunctiveConstraints = new ArrayList<ValueExpr>(16);

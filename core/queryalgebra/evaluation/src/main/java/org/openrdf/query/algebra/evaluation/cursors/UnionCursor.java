@@ -13,13 +13,14 @@ import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.store.StoreException;
 
 /**
- * An Iteration that returns the bag union of the results of a number of
- * Iterations. 'Bag union' means that the UnionIteration does not filter
- * duplicate objects.
- *
+ * A cursor that returns the bag union of the results of a number of cursors.
+ * 'Bag union' means that the UnionCursor does not filter duplicate objects.
+ * 
+ * @author Arjohn Kampman
  * @author James Leigh
  */
 public class UnionCursor<E> implements Cursor<E> {
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -35,28 +36,28 @@ public class UnionCursor<E> implements Cursor<E> {
 	 *--------------*/
 
 	/**
-	 * Creates a new UnionIteration that returns the bag union of the results of
-	 * a number of Iterations.
+	 * Creates a new UnionCursor that returns the bag union of the results of a
+	 * number of cursors.
 	 * 
 	 * @param args
-	 *        The Iterations containing the elements to iterate over.
+	 *        The cursors containing the elements to iterate over.
 	 */
 	public UnionCursor(Cursor<? extends E>... args) {
 		this(Arrays.asList(args));
 	}
 
 	/**
-	 * Creates a new UnionIteration that returns the bag union of the results of
-	 * a number of Iterations.
+	 * Creates a new UnionCursor that returns the bag union of the results of a
+	 * number of cursors.
 	 * 
 	 * @param args
-	 *        The Iterations containing the elements to iterate over.
+	 *        The cursors containing the elements to iterate over.
 	 */
 	public UnionCursor(Iterable<? extends Cursor<? extends E>> args) {
 		this.args = args;
 		argIter = args.iterator();
 
-		// Initialize with empty iteration so that var is not null
+		// Initialize with empty cursor so that var is not null
 		currentIter = new EmptyCursor<E>();
 	}
 
@@ -69,7 +70,7 @@ public class UnionCursor<E> implements Cursor<E> {
 	{
 		E next = currentIter.next();
 		if (next == null) {
-			// Current Iteration exhausted, continue with the next one
+			// Current cursor exhausted, continue with the next one
 			currentIter.close();
 
 			if (argIter.hasNext()) {

@@ -11,12 +11,12 @@ import java.util.Set;
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.FilteringCursor;
 
-
 /**
- *
+ * @author Arjohn Kampman
  * @author James Leigh
  */
 public class DistinctCursor<E> extends FilteringCursor<E> {
+
 	private Set<E> exclude = new HashSet<E>();
 
 	public DistinctCursor(Cursor<? extends E> delegate) {
@@ -27,5 +27,4 @@ public class DistinctCursor<E> extends FilteringCursor<E> {
 	protected boolean accept(E next) {
 		return exclude.add(next);
 	}
-
 }

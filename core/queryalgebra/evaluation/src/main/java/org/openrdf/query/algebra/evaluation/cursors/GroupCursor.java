@@ -16,8 +16,8 @@ import java.util.Set;
 
 import info.aduna.lang.ObjectUtil;
 
-import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.CollectionCursor;
+import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
@@ -55,7 +55,8 @@ public class GroupCursor extends CollectionCursor<BindingSet> {
 	 * Methods *
 	 *---------*/
 
-	private static Iterator<BindingSet> createIterator(EvaluationStrategy strategy, Group group, BindingSet parentBindings)
+	private static Iterator<BindingSet> createIterator(EvaluationStrategy strategy, Group group,
+			BindingSet parentBindings)
 		throws StoreException
 	{
 		Collection<BindingSet> bindingSets;
@@ -96,11 +97,11 @@ public class GroupCursor extends CollectionCursor<BindingSet> {
 		return bindingSets.iterator();
 	}
 
-	private static Collection<Entry> buildOrderedEntries(EvaluationStrategy strategy, Group group, BindingSet parentBindings)
+	private static Collection<Entry> buildOrderedEntries(EvaluationStrategy strategy, Group group,
+			BindingSet parentBindings)
 		throws StoreException
 	{
-		Cursor<BindingSet> iter = strategy.evaluate(group.getArg(),
-				parentBindings);
+		Cursor<BindingSet> iter = strategy.evaluate(group.getArg(), parentBindings);
 
 		try {
 			List<Entry> orderedEntries = new ArrayList<Entry>();
@@ -127,11 +128,11 @@ public class GroupCursor extends CollectionCursor<BindingSet> {
 		}
 	}
 
-	private static Collection<Entry> buildUnorderedEntries(EvaluationStrategy strategy, Group group, BindingSet parentBindings)
+	private static Collection<Entry> buildUnorderedEntries(EvaluationStrategy strategy, Group group,
+			BindingSet parentBindings)
 		throws StoreException
 	{
-		Cursor<BindingSet> iter = strategy.evaluate(group.getArg(),
-				parentBindings);
+		Cursor<BindingSet> iter = strategy.evaluate(group.getArg(), parentBindings);
 
 		try {
 			Map<Key, Entry> entries = new HashMap<Key, Entry>();
@@ -157,7 +158,8 @@ public class GroupCursor extends CollectionCursor<BindingSet> {
 
 	}
 
-	private static Value processAggregate(EvaluationStrategy strategy, Set<BindingSet> bindingSets, AggregateOperator operator)
+	private static Value processAggregate(EvaluationStrategy strategy, Set<BindingSet> bindingSets,
+			AggregateOperator operator)
 		throws StoreException
 	{
 		if (operator instanceof Count) {
@@ -219,7 +221,8 @@ public class GroupCursor extends CollectionCursor<BindingSet> {
 		return null;
 	}
 
-	private static Set<Value> makeValueSet(EvaluationStrategy strategy, ValueExpr arg, Set<BindingSet> bindingSets)
+	private static Set<Value> makeValueSet(EvaluationStrategy strategy, ValueExpr arg,
+			Set<BindingSet> bindingSets)
 		throws StoreException
 	{
 		Set<Value> valueSet = new HashSet<Value>();
@@ -260,14 +263,12 @@ public class GroupCursor extends CollectionCursor<BindingSet> {
 		}
 
 		@Override
-		public int hashCode()
-		{
+		public int hashCode() {
 			return hash;
 		}
 
 		@Override
-		public boolean equals(Object other)
-		{
+		public boolean equals(Object other) {
 			if (other instanceof Key && other.hashCode() == hash) {
 				BindingSet otherSolution = ((Key)other).bindingSet;
 

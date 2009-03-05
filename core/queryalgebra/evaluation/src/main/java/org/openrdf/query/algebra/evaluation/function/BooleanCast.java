@@ -18,7 +18,8 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
 /**
- * A {@link Function} that tries to cast its argument to an <tt>xsd:boolean</tt>.
+ * A {@link Function} that tries to cast its argument to an <tt>xsd:boolean</tt>
+ * .
  * 
  * @author Arjohn Kampman
  */
