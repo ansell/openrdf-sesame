@@ -59,8 +59,7 @@ public class QueryModelTreePrinter extends QueryModelVisitorBase<RuntimeExceptio
 	}
 
 	@Override
-	protected void meetNode(QueryModelNode node)
-	{
+	protected void meetNode(QueryModelNode node) {
 		for (int i = 0; i < indentLevel; i++) {
 			buf.append(indentString);
 		}

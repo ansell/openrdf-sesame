@@ -61,10 +61,11 @@ public abstract class UnaryTupleOperator extends NaryTupleOperator {
 		setArg(0, arg);
 	}
 
+	@Override
 	public Set<String> getBindingNames() {
 		return getArg().getBindingNames();
 	}
-	
+
 	@Override
 	public UnaryTupleOperator clone() {
 		return (UnaryTupleOperator)super.clone();

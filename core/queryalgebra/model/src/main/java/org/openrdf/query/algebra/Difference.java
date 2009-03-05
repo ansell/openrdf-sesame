@@ -39,6 +39,7 @@ public class Difference extends BinaryTupleOperator {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public Set<String> getBindingNames() {
 		return getLeftArg().getBindingNames();
 	}

@@ -54,8 +54,8 @@ public abstract class UnaryValueOperator extends NaryValueOperator {
 	public void setArg(ValueExpr arg) {
 		setArg(0, arg);
 	}
-	
-		@Override
+
+	@Override
 	public UnaryValueOperator clone() {
 		return (UnaryValueOperator)super.clone();
 	}

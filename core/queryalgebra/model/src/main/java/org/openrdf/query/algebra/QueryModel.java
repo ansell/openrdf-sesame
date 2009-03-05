@@ -77,10 +77,10 @@ public class QueryModel extends UnaryTupleOperator {
 	 * debugging.
 	 */
 	@Override
-	public String toString()
-	{
-		if (defaultGraphs.isEmpty() && namedGraphs.isEmpty())
+	public String toString() {
+		if (defaultGraphs.isEmpty() && namedGraphs.isEmpty()) {
 			return getTupleExpr().toString();
+		}
 		StringBuilder sb = new StringBuilder();
 		for (URI uri : defaultGraphs) {
 			sb.append("FROM ");
@@ -99,14 +99,14 @@ public class QueryModel extends UnaryTupleOperator {
 		if (str.length() > 50) {
 			sb.append("<").append(str, 0, 19).append("..");
 			sb.append(str, str.length() - 29, str.length()).append(">\n");
-		} else {
+		}
+		else {
 			sb.append("<").append(uri).append(">\n");
 		}
 	}
 
 	@Override
-	public void setParentNode(QueryModelNode parent)
-	{
+	public void setParentNode(QueryModelNode parent) {
 		throw new UnsupportedOperationException("Not allowed to set a parent on a QueryRoot object");
 	}
 

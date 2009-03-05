@@ -180,15 +180,17 @@ public class Regex extends NaryValueOperator {
 
 	private String escape(String string, int start, int end) {
 		String substring = string.substring(start, end);
-		if (substring.matches("^[a-zA-Z]*$"))
+		if (substring.matches("^[a-zA-Z]*$")) {
 			return substring; // safe
+		}
 		return Pattern.quote(substring);
 	}
 
 	private void setCaseSensitive(boolean caseSensitive) {
 		if (caseSensitive) {
 			setFlagsArg(new ValueConstant(new LiteralImpl("s")));
-		} else {
+		}
+		else {
 			setFlagsArg(new ValueConstant(new LiteralImpl("is")));
 		}
 	}

@@ -41,6 +41,7 @@ public class Bound extends UnaryValueOperator implements ValueExpr {
 	 * 
 	 * @return The operator's argument.
 	 */
+	@Override
 	public Var getArg() {
 		return (Var)super.getArg();
 	}
@@ -51,6 +52,7 @@ public class Bound extends UnaryValueOperator implements ValueExpr {
 	 * @param arg
 	 *        The (new) argument for this operator, must not be <tt>null</tt>.
 	 */
+	@Override
 	public void setArg(ValueExpr arg) {
 		assert arg instanceof Var;
 		super.setArg(arg);

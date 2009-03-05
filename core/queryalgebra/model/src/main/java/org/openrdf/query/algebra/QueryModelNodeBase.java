@@ -76,8 +76,7 @@ public abstract class QueryModelNodeBase implements QueryModelNode {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		QueryModelTreePrinter treePrinter = new QueryModelTreePrinter();
 		this.visit(treePrinter);
 		return treePrinter.getTreeString();

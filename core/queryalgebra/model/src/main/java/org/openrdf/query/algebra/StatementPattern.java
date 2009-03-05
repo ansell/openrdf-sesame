@@ -197,10 +197,10 @@ public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 		if (contextVar != null) {
 			varCollection.add(contextVar);
 		}
-		
+
 		return varCollection;
 	}
-	
+
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{

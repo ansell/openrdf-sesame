@@ -71,8 +71,7 @@ public class GroupElem extends QueryModelNodeBase {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (operator == current) {
 			setOperator((AggregateOperator)replacement);
 		}

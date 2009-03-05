@@ -11,7 +11,6 @@ import java.util.List;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
 /**
  * A QueryModelVisitor that collects StatementPattern's from a query model.
@@ -33,15 +32,13 @@ public class StatementPatternCollector extends QueryModelVisitorBase<RuntimeExce
 	}
 
 	@Override
-	public void meet(Filter node)
-	{
+	public void meet(Filter node) {
 		// Skip boolean constraints
 		node.getArg().visit(this);
 	}
 
 	@Override
-	public void meet(StatementPattern node)
-	{
+	public void meet(StatementPattern node) {
 		stPatterns.add(node);
 	}
 }
