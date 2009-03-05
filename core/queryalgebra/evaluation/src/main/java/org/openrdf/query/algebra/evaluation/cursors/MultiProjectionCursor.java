@@ -64,7 +64,7 @@ public class MultiProjectionCursor extends DelegatingCursor<BindingSet> {
 			idx = nextProjectionIdx = 0;
 		}
 
-		ProjectionElemList nextProjection = projections.get(idx++);
+		ProjectionElemList nextProjection = projections.get(idx);
 		nextProjectionIdx++;
 
 		return ProjectionCursor.project(nextProjection, currentBindings, parentBindings);
