@@ -37,7 +37,7 @@ import org.openrdf.rio.RDFParseException;
  * @author Herko ter Horst
  * @author James Leigh
  */
-public class ExceptionWriter implements HandlerExceptionResolver, View {
+public class ExceptionWritter implements HandlerExceptionResolver, View {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
