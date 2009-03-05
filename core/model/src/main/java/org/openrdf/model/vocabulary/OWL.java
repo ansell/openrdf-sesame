@@ -137,12 +137,11 @@ public class OWL {
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
-		
+
 		CLASS = factory.createURI(OWL.NAMESPACE, "Class");
 		INDIVIDUAL = factory.createURI(OWL.NAMESPACE, "Individual");
 		EQUIVALENTCLASS = factory.createURI(OWL.NAMESPACE, "equivalentClass");
-		EQUIVALENTPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"equivalentProperty");
+		EQUIVALENTPROPERTY = factory.createURI(OWL.NAMESPACE, "equivalentProperty");
 		SAMEAS = factory.createURI(OWL.NAMESPACE, "sameAs");
 		DIFFERENTFROM = factory.createURI(OWL.NAMESPACE, "differentFrom");
 		ALLDIFFERENT = factory.createURI(OWL.NAMESPACE, "AllDifferent");
@@ -155,16 +154,13 @@ public class OWL {
 
 		INVERSEOF = factory.createURI(OWL.NAMESPACE, "inverseOf");
 
-		TRANSITIVEPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"TransitiveProperty");
+		TRANSITIVEPROPERTY = factory.createURI(OWL.NAMESPACE, "TransitiveProperty");
 
 		SYMMETRICPROPERTY = factory.createURI(OWL.NAMESPACE, "SymmetricProperty");
 
-		FUNCTIONALPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"FunctionalProperty");
+		FUNCTIONALPROPERTY = factory.createURI(OWL.NAMESPACE, "FunctionalProperty");
 
-		INVERSEFUNCTIONALPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"InverseFunctionalProperty");
+		INVERSEFUNCTIONALPROPERTY = factory.createURI(OWL.NAMESPACE, "InverseFunctionalProperty");
 
 		RESTRICTION = factory.createURI(OWL.NAMESPACE, "Restriction");
 
@@ -190,18 +186,15 @@ public class OWL {
 
 		PRIORVERSION = factory.createURI(OWL.NAMESPACE, "priorVersion");
 
-		BACKWARDCOMPATIBLEWITH = factory.createURI(OWL.NAMESPACE,
-				"backwardCompatibleWith");
+		BACKWARDCOMPATIBLEWITH = factory.createURI(OWL.NAMESPACE, "backwardCompatibleWith");
 
 		INCOMPATIBLEWITH = factory.createURI(OWL.NAMESPACE, "incompatibleWith");
 
 		DEPRECATEDCLASS = factory.createURI(OWL.NAMESPACE, "DeprecatedClass");
 
-		DEPRECATEDPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"DeprecatedProperty");
+		DEPRECATEDPROPERTY = factory.createURI(OWL.NAMESPACE, "DeprecatedProperty");
 
-		ANNOTATIONPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"AnnotationProperty");
+		ANNOTATIONPROPERTY = factory.createURI(OWL.NAMESPACE, "AnnotationProperty");
 
 		ONTOLOGYPROPERTY = factory.createURI(OWL.NAMESPACE, "OntologyProperty");
 

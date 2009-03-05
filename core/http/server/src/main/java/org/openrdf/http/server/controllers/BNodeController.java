@@ -60,8 +60,9 @@ public class BNodeController {
 		throws BadRequest
 	{
 		String amount = request.getParameter(Protocol.AMOUNT);
-		if (amount == null)
+		if (amount == null) {
 			return 1;
+		}
 		try {
 			return Integer.parseInt(amount);
 		}
@@ -71,8 +72,9 @@ public class BNodeController {
 	}
 
 	private BNode createBNode(ValueFactory vf, String nodeID, int i) {
-		if (i == 0 && nodeID != null)
+		if (i == 0 && nodeID != null) {
 			return vf.createBNode(nodeID);
+		}
 		return vf.createBNode();
 	}
 

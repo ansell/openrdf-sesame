@@ -28,8 +28,8 @@ import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.model.Model;
-import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.repository.manager.RepositoryManager;
@@ -77,8 +77,9 @@ public class TemplateController {
 		String id = getPathParam(request);
 		RepositoryManager manager = getReadOnlyManager(request);
 		ConfigTemplate template = manager.getConfigTemplateManager().getTemplate(id);
-		if (template == null)
+		if (template == null) {
 			throw new NotFound(id);
+		}
 		return template.getModel();
 	}
 
@@ -109,7 +110,9 @@ public class TemplateController {
 		return pathInfo[pathInfo.length - 1];
 	}
 
-	private Model getModel(HttpServletRequest request) throws Exception {
+	private Model getModel(HttpServletRequest request)
+		throws Exception
+	{
 		String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
 		RDFFormat rdfFormat = Rio.getParserFormatForMIMEType(mimeType);
 		if (rdfFormat == null) {

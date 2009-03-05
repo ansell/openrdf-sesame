@@ -111,7 +111,8 @@ public class Console {
 	 * Static constants *
 	 *------------------*/
 
-	private static final String VERSION = OpenRDFUtil.findVersion(Console.class, "org.openrdf.sesame", "sesame-console");
+	private static final String VERSION = OpenRDFUtil.findVersion(Console.class, "org.openrdf.sesame",
+			"sesame-console");
 
 	private static final String APP_NAME = "OpenRDF Sesame console";
 
@@ -535,7 +536,8 @@ public class Console {
 			HTTPConnectionPool pool = new HTTPConnectionPool(url);
 			try {
 				new SesameClient(pool).protocol().get();
-			} finally {
+			}
+			finally {
 				pool.shutdown();
 			}
 

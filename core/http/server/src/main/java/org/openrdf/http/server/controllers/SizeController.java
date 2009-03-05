@@ -54,8 +54,9 @@ public class SizeController {
 		Resource[] contexts = req.getContext();
 		boolean useInferencing = req.isIncludeInferred();
 
-		if (HEAD.equals(RequestMethod.valueOf(request.getMethod())))
+		if (HEAD.equals(RequestMethod.valueOf(request.getMethod()))) {
 			return new StringReader("");
+		}
 
 		long size = repositoryCon.sizeMatch(subj, pred, obj, useInferencing, contexts);
 		return new StringReader(String.valueOf(size));

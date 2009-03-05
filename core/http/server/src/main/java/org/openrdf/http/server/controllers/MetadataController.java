@@ -80,8 +80,9 @@ public class MetadataController {
 	}
 
 	private void add(Model model, URI subj, URIFactory uf, String name, LiteralFactory lf, Object o) {
-		if (o == null)
+		if (o == null) {
 			return;
+		}
 		URI pred = uf.createURI(Protocol.METADATA_NAMESPACE, name);
 		if (o instanceof String) {
 			model.add(subj, pred, lf.createLiteral((String)o));

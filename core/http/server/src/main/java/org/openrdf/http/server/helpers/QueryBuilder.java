@@ -79,8 +79,9 @@ public class QueryBuilder {
 	{
 
 		String queryStr = request.getParameter(QUERY_PARAM_NAME);
-		if (queryStr == null)
+		if (queryStr == null) {
 			throw new BadRequest("Missing parameter: " + QUERY_PARAM_NAME);
+		}
 
 		if (logger.isInfoEnabled() || logger.isDebugEnabled()) {
 			int qryCode = String.valueOf(queryStr).hashCode();
@@ -108,7 +109,7 @@ public class QueryBuilder {
 			result.setDataset(dataset);
 		}
 		if (result instanceof TupleQuery) {
-			TupleQuery tuple = (TupleQuery) result;
+			TupleQuery tuple = (TupleQuery)result;
 			tuple.setOffset(ProtocolUtil.parseIntegerParam(request, Protocol.OFFSET, 0));
 			tuple.setLimit(ProtocolUtil.parseIntegerParam(request, Protocol.LIMIT, -1));
 		}

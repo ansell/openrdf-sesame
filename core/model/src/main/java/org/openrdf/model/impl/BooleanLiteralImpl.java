@@ -49,8 +49,7 @@ public class BooleanLiteralImpl extends LiteralImpl {
 	 *---------*/
 
 	@Override
-	public boolean booleanValue()
-	{
+	public boolean booleanValue() {
 		return value;
 	}
 

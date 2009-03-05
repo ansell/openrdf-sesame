@@ -63,20 +63,17 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 	}
 
 	@Override
-	public Iterator<Statement> iterator()
-	{
+	public Iterator<Statement> iterator() {
 		return statements.iterator();
 	}
 
 	@Override
-	public int size()
-	{
+	public int size() {
 		return statements.size();
 	}
 
 	@Override
-	public boolean add(Statement st)
-	{
+	public boolean add(Statement st) {
 		return statements.add(st);
 	}
 
@@ -98,15 +95,15 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 	public Iterator<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts) {
 		return new PatternIterator(iterator(), subj, pred, obj, contexts);
 	}
-	
-	private void writeObject(ObjectOutputStream out) 
-		throws IOException 
+
+	private void writeObject(ObjectOutputStream out)
+		throws IOException
 	{
 		out.defaultWriteObject();
 	}
 
-	private void readObject(ObjectInputStream in) 
-		throws IOException, ClassNotFoundException 
+	private void readObject(ObjectInputStream in)
+		throws IOException, ClassNotFoundException
 	{
 		in.defaultReadObject();
 		setValueFactory(new ValueFactoryImpl());
@@ -137,8 +134,7 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 		}
 
 		@Override
-		protected boolean accept(Statement st)
-		{
+		protected boolean accept(Statement st) {
 			if (subj != null && !subj.equals(st.getSubject())) {
 				return false;
 			}

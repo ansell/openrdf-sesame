@@ -5,7 +5,6 @@
  */
 package org.openrdf.model;
 
-
 /**
  * A factory for creating URIs.
  * 
@@ -26,10 +25,10 @@ public interface URIFactory {
 
 	/**
 	 * Creates a new URI from the supplied namespace and local name. Calling this
-	 * method is funtionally equivalent to calling
-	 * {@link #createURI(String) createURI(namespace+localName)}, but allows the
-	 * ValueFactory to reuse supplied namespace and local name strings whenever
-	 * possible. Note that the values returned by {@link URI#getNamespace()} and
+	 * method is funtionally equivalent to calling {@link #createURI(String)
+	 * createURI(namespace+localName)}, but allows the ValueFactory to reuse
+	 * supplied namespace and local name strings whenever possible. Note that the
+	 * values returned by {@link URI#getNamespace()} and
 	 * {@link URI#getLocalName()} are not necessarily the same as the values that
 	 * are supplied to this method.
 	 * 
