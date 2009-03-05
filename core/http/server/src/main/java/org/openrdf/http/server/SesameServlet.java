@@ -213,7 +213,7 @@ public class SesameServlet implements Servlet {
 			}
 
 			// Exceptions
-			registerPrototype(ExceptionWritter.class);
+			registerPrototype(ExceptionWriter.class);
 
 			// Views
 			registerPrototype(ContentNegotiator.BEAN_NAME, ContentNegotiator.class);
@@ -228,9 +228,11 @@ public class SesameServlet implements Servlet {
 			// Spring Processors
 			registerPrototype(AutowiredAnnotationBeanPostProcessor.class);
 			registerPrototype(CommonAnnotationBeanPostProcessor.class);
+			
 			AnnotationMethodHandlerAdapter methods = new AnnotationMethodHandlerAdapter();
 			methods.setSupportedMethods(new String[] { "HEAD", "GET", "POST", "PUT", "DELETE" });
 			registerSingleton(AnnotationMethodHandlerAdapter.class, methods);
+			
 			DefaultAnnotationHandlerMapping interceptors = new DefaultAnnotationHandlerMapping();
 			interceptors.setInterceptors(new Object[] { connections });
 			interceptors.setApplicationContext(this);
