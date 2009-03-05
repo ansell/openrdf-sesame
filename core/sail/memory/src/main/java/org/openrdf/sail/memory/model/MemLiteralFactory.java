@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -170,13 +170,13 @@ public class MemLiteralFactory extends LiteralFactoryImpl {
 	}
 
 	@Override
-	protected Literal createIntegerLiteral(Number n, URI datatype) {
+	protected synchronized Literal createIntegerLiteral(Number n, URI datatype) {
 		MemLiteral newLiteral = new IntegerMemLiteral(this, BigInteger.valueOf(n.longValue()), datatype);
 		return getSharedLiteral(newLiteral);
 	}
 
 	@Override
-	protected Literal createFPLiteral(Number n, URI datatype) {
+	protected synchronized Literal createFPLiteral(Number n, URI datatype) {
 		MemLiteral newLiteral = new NumericMemLiteral(this, n, datatype);
 		return getSharedLiteral(newLiteral);
 	}
