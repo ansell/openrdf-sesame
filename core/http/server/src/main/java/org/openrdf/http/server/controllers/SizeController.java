@@ -10,6 +10,7 @@ import static org.openrdf.http.protocol.Protocol.REPO_PATH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 
+import java.io.IOException;
 import java.io.StringReader;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.helpers.RDFRequest;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
@@ -27,6 +29,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.store.StoreException;
 
 /**
  * Handles requests for the size of (set of contexts in) a repository.
@@ -40,7 +43,7 @@ public class SizeController {
 	@ModelAttribute
 	@RequestMapping(method = { GET, HEAD }, value = { REPO_PATH + "/size", CONN_PATH + "/size" })
 	public StringReader size(HttpServletRequest request)
-		throws Exception
+		throws ClientHTTPException, StoreException, IOException
 	{
 		ProtocolUtil.logRequestParameters(request);
 

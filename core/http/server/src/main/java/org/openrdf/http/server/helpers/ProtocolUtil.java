@@ -119,7 +119,7 @@ public class ProtocolUtil {
 	}
 
 	public static Map<String, List<String>> parseFormData(BufferedReader reader, String encoding)
-		throws UnsupportedEncodingException
+		throws UnsupportedEncodingException, BadRequest
 	{
 		if (encoding == null) {
 			encoding = "ISO-8859-1";
@@ -130,7 +130,7 @@ public class ProtocolUtil {
 		while (scanner.hasNext()) {
 			final String[] nameValue = scanner.next().split("=");
 			if (nameValue.length == 0 || nameValue.length > 2) {
-				throw new IllegalArgumentException("bad parameter");
+				throw new BadRequest("bad parameter");
 			}
 			final String name = URLDecoder.decode(nameValue[0], encoding);
 			String value = null;
@@ -147,7 +147,7 @@ public class ProtocolUtil {
 
 	@SuppressWarnings("unchecked")
 	public static HttpServletRequest readFormData(HttpServletRequest request)
-		throws IOException
+		throws IOException, BadRequest
 	{
 		BufferedReader reader = request.getReader();
 		String encoding = request.getCharacterEncoding();

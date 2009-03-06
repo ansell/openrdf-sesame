@@ -46,7 +46,7 @@ public class RDFRequest {
 	private HttpServletRequest request;
 
 	public RDFRequest(ValueFactory vf, HttpServletRequest req)
-		throws UnsupportedMediaType, IOException
+		throws BadRequest, UnsupportedMediaType, IOException
 	{
 		this.vf = vf;
 		this.request = req;

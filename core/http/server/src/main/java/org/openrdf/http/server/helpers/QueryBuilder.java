@@ -46,26 +46,30 @@ import org.openrdf.store.StoreException;
  */
 public class QueryBuilder {
 
-	private Logger logger = LoggerFactory.getLogger(QueryBuilder.class);
+	private final Logger logger = LoggerFactory.getLogger(QueryBuilder.class);
 
-	private HttpServletRequest request;
+	private final HttpServletRequest request;
 
-	private RepositoryConnection repositoryCon;
+	private final RepositoryConnection repositoryCon;
 
-	private ValueFactory vf;
+	private final ValueFactory vf;
 
 	public QueryBuilder(HttpServletRequest request)
-		throws IOException, UnsupportedMediaType, StoreException
+		throws BadRequest, IOException, UnsupportedMediaType, StoreException
 	{
 		this.request = request;
 		this.repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 		this.vf = repositoryCon.getValueFactory();
+
 		String contentType = request.getContentType();
+
 		if (contentType != null) {
 			String mimeType = HttpServerUtil.getMIMEType(contentType);
+
 			if (!Protocol.FORM_MIME_TYPE.equals(mimeType)) {
 				throw new UnsupportedMediaType("Unsupported MIME type: " + mimeType);
 			}
+
 			RequestMethod reqMethod = RequestMethod.valueOf(request.getMethod());
 			if (!POST.equals(reqMethod)) {
 				// Include form data in parameters (already included for POST).
@@ -77,7 +81,6 @@ public class QueryBuilder {
 	public Query prepareQuery()
 		throws BadRequest, StoreException, MalformedQueryException
 	{
-
 		String queryStr = request.getParameter(QUERY_PARAM_NAME);
 		if (queryStr == null) {
 			throw new BadRequest("Missing parameter: " + QUERY_PARAM_NAME);
@@ -191,5 +194,4 @@ public class QueryBuilder {
 			}
 		}
 	}
-
 }
