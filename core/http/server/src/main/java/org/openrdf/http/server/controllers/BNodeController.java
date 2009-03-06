@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -42,17 +42,20 @@ public class BNodeController {
 	public TupleResult post(HttpServletRequest request)
 		throws StoreException, BadRequest
 	{
+		int amount = getAmount(request);
+		String nodeID = request.getParameter(Protocol.NODE_ID);
+
 		notSafe(request);
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
 		ValueFactory vf = repositoryCon.getValueFactory();
-		int amount = getAmount(request);
-		String nodeID = request.getParameter(Protocol.NODE_ID);
+
 		List<String> columns = Arrays.asList(Protocol.BNODE);
 		List<BindingSet> bnodes = new ArrayList<BindingSet>(amount);
 		for (int i = 0; i < amount; i++) {
 			BNode bnode = createBNode(vf, nodeID, i);
 			bnodes.add(new ListBindingSet(columns, bnode));
 		}
+
 		return new TupleResultImpl(columns, bnodes);
 	}
 
@@ -60,14 +63,16 @@ public class BNodeController {
 		throws BadRequest
 	{
 		String amount = request.getParameter(Protocol.AMOUNT);
+
 		if (amount == null) {
 			return 1;
 		}
+
 		try {
 			return Integer.parseInt(amount);
 		}
 		catch (NumberFormatException e) {
-			throw new BadRequest(e.toString());
+			throw new BadRequest("Invalid amount parameter: " + amount);
 		}
 	}
 
@@ -77,5 +82,4 @@ public class BNodeController {
 		}
 		return vf.createBNode();
 	}
-
 }
