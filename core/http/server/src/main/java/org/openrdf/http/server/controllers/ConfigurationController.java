@@ -36,9 +36,8 @@ import org.openrdf.result.TupleResult;
 import org.openrdf.result.impl.TupleResultImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.RDFParserFactory;
-import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
+import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
@@ -109,14 +108,19 @@ public class ConfigurationController {
 	{
 		String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
 		RDFFormat rdfFormat = Rio.getParserFormatForMIMEType(mimeType);
-		if (rdfFormat == null) {
+
+		try {
+			RDFParser parser = Rio.createParser(rdfFormat);
+
+			Model model = new LinkedHashModel();
+			parser.setRDFHandler(new StatementCollector(model));
+
+			parser.parse(request.getInputStream(), "");
+
+			return model;
+		}
+		catch (UnsupportedRDFormatException e) {
 			throw new UnsupportedMediaType("Unsupported MIME type: " + mimeType);
 		}
-		RDFParserFactory factory = RDFParserRegistry.getInstance().get(rdfFormat);
-		RDFParser parser = factory.getParser();
-		StatementCollector statements = new StatementCollector();
-		parser.setRDFHandler(statements);
-		parser.parse(request.getInputStream(), "");
-		return new LinkedHashModel(statements.getStatements());
 	}
 }
