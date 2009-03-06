@@ -71,7 +71,7 @@ public class ConfigurationController {
 	public Model get(HttpServletRequest request)
 		throws StoreConfigException, ClientHTTPException
 	{
-		String id = getPathParam(request);
+		String id = HttpServerUtil.getLastPathSegment(request);
 		RepositoryManager manager = getReadOnlyManager(request);
 		return manager.getRepositoryConfig(id);
 	}
@@ -81,7 +81,7 @@ public class ConfigurationController {
 	public void put(HttpServletRequest request)
 		throws Exception
 	{
-		String id = getPathParam(request);
+		String id = HttpServerUtil.getLastPathSegment(request);
 		Model model = getModel(request);
 		RepositoryManager manager = getRepositoryManager(request);
 		manager.addRepositoryConfig(id, model);
@@ -92,15 +92,9 @@ public class ConfigurationController {
 	public void delete(HttpServletRequest request)
 		throws StoreConfigException, ClientHTTPException, StoreException
 	{
-		String id = getPathParam(request);
+		String id = HttpServerUtil.getLastPathSegment(request);
 		RepositoryManager manager = getRepositoryManager(request);
 		manager.removeRepositoryConfig(id);
-	}
-
-	private String getPathParam(HttpServletRequest request) {
-		String pathInfoStr = request.getPathInfo();
-		String[] pathInfo = pathInfoStr.substring(1).split("/");
-		return pathInfo[pathInfo.length - 1];
 	}
 
 	private Model getModel(HttpServletRequest request)

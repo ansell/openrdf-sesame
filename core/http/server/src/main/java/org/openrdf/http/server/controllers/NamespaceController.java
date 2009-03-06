@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import info.aduna.io.IOUtil;
+import info.aduna.webapp.util.HttpServerUtil;
 
 import org.openrdf.http.protocol.exceptions.BadRequest;
 import org.openrdf.http.protocol.exceptions.NotFound;
@@ -64,7 +65,7 @@ public class NamespaceController {
 	public StringReader get(HttpServletRequest request)
 		throws StoreException, NotFound
 	{
-		String prefix = getPrefix(request);
+		String prefix = HttpServerUtil.getLastPathSegment(request);
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 		String namespace = repositoryCon.getNamespace(prefix);
 
@@ -80,8 +81,7 @@ public class NamespaceController {
 	public void put(HttpServletRequest request)
 		throws StoreException, IOException, BadRequest
 	{
-		String prefix = getPrefix(request);
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+		String prefix = HttpServerUtil.getLastPathSegment(request);
 		String namespace = IOUtil.readString(request.getReader());
 		namespace = namespace.trim();
 
@@ -90,6 +90,7 @@ public class NamespaceController {
 		}
 		// FIXME: perform some sanity checks on the namespace string
 
+		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 		repositoryCon.setNamespace(prefix, namespace);
 	}
 
@@ -98,14 +99,8 @@ public class NamespaceController {
 	public void delete(HttpServletRequest request)
 		throws StoreException
 	{
-		String prefix = getPrefix(request);
+		String prefix = HttpServerUtil.getLastPathSegment(request);
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 		repositoryCon.removeNamespace(prefix);
-	}
-
-	private String getPrefix(HttpServletRequest request) {
-		String pathInfoStr = request.getPathInfo();
-		String[] pathInfo = pathInfoStr.substring(1).split("/");
-		return pathInfo[pathInfo.length - 1];
 	}
 }
