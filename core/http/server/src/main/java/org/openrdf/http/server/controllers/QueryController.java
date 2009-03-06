@@ -150,5 +150,4 @@ public class QueryController {
 		String[] pathInfo = pathInfoStr.substring(1).split("/");
 		return pathInfo[pathInfo.length - 1];
 	}
-
 }
