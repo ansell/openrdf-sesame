@@ -227,12 +227,12 @@
 				<artifactId>sesame-http-server</artifactId>
 				<version>${openrdf.sesame.version}</version>
 				<type>war</type>
+				<scope>runtime</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-server-spring</artifactId>
 				<version>${openrdf.sesame.version}</version>
-				<scope>runtime</scope>
 			</dependency>
 
 			<!-- Aduna Appbase -->
