@@ -67,6 +67,9 @@ public class StatementCollector extends RDFHandlerBase {
 	 */
 	public StatementCollector(Model model) {
 		this.statements = model;
+
+		// FIXME: this won't work if the model returns a clone or a read-only
+		// version of its namespaces
 		this.namespaces = model.getNamespaces();
 	}
 

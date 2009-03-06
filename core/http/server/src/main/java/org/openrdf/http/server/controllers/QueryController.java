@@ -28,6 +28,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import info.aduna.webapp.util.HttpServerUtil;
+
 import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.http.protocol.exceptions.BadRequest;
 import org.openrdf.http.protocol.exceptions.HTTPException;
@@ -59,18 +61,7 @@ public class QueryController {
 		throws StoreException, HTTPException, IOException, MalformedQueryException
 	{
 		Query query = new QueryBuilder(req).prepareQuery();
-		if (query instanceof TupleQuery) {
-			resp.setHeader(X_QUERY_TYPE, BINDINGS_QUERY);
-		}
-		else if (query instanceof GraphQuery) {
-			resp.setHeader(X_QUERY_TYPE, GRAPH_QUERY);
-		}
-		else if (query instanceof BooleanQuery) {
-			resp.setHeader(X_QUERY_TYPE, BOOLEAN_QUERY);
-		}
-		else {
-			throw new NotImplemented("Unsupported query type: " + query.getClass().getName());
-		}
+		setQueryTypeHeader(query, resp);
 	}
 
 	@RequestMapping(method = POST, value = CONN_PATH + "/queries")
@@ -78,6 +69,20 @@ public class QueryController {
 		throws StoreException, HTTPException, IOException, MalformedQueryException
 	{
 		Query query = new QueryBuilder(req).prepareQuery();
+		setQueryTypeHeader(query, resp);
+
+		// Store the query for later reference
+		String id = RepositoryInterceptor.saveQuery(req, query);
+
+		StringBuffer url = req.getRequestURL();
+		String location = url.append("/").append(id).toString();
+		resp.setStatus(HttpServletResponse.SC_CREATED);
+		resp.setHeader("Location", location);
+	}
+
+	private void setQueryTypeHeader(Query query, HttpServletResponse resp)
+		throws NotImplemented
+	{
 		if (query instanceof TupleQuery) {
 			resp.setHeader(X_QUERY_TYPE, BINDINGS_QUERY);
 		}
@@ -90,11 +95,6 @@ public class QueryController {
 		else {
 			throw new NotImplemented("Unsupported query type: " + query.getClass().getName());
 		}
-		String id = RepositoryInterceptor.saveQuery(req, query);
-		StringBuffer url = req.getRequestURL();
-		String location = url.append("/").append(id).toString();
-		resp.setStatus(HttpServletResponse.SC_CREATED);
-		resp.setHeader("Location", location);
 	}
 
 	@ModelAttribute
@@ -102,8 +102,9 @@ public class QueryController {
 	public Result<?> head(HttpServletRequest request)
 		throws StoreException, BadRequest, HTTPException, IOException
 	{
-		String id = getPathParam(request);
-		Query query = RepositoryInterceptor.getQuery(request, id);
+		String queryID = HttpServerUtil.getLastPathSegment(request);
+		Query query = RepositoryInterceptor.getQuery(request, queryID);
+
 		if (query instanceof TupleQuery) {
 			List<String> names = Collections.emptyList();
 			Set<BindingSet> bindings = Collections.emptySet();
@@ -128,8 +129,9 @@ public class QueryController {
 	public Result<?> get(HttpServletRequest request)
 		throws StoreException, BadRequest, HTTPException, IOException
 	{
-		String id = getPathParam(request);
-		Query query = RepositoryInterceptor.getQuery(request, id);
+		String queryID = HttpServerUtil.getLastPathSegment(request);
+		Query query = RepositoryInterceptor.getQuery(request, queryID);
+
 		synchronized (query) {
 			new QueryBuilder(request).prepareQuery(query);
 			return query.evaluate();
@@ -141,13 +143,7 @@ public class QueryController {
 	public void delete(HttpServletRequest request)
 		throws StoreException
 	{
-		String id = getPathParam(request);
-		RepositoryInterceptor.deleteQuery(request, id);
-	}
-
-	private String getPathParam(HttpServletRequest request) {
-		String pathInfoStr = request.getPathInfo();
-		String[] pathInfo = pathInfoStr.substring(1).split("/");
-		return pathInfo[pathInfo.length - 1];
+		String queryID = HttpServerUtil.getLastPathSegment(request);
+		RepositoryInterceptor.deleteQuery(request, queryID);
 	}
 }

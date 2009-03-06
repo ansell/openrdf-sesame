@@ -74,7 +74,7 @@ public class TemplateController {
 	public Model get(HttpServletRequest request)
 		throws StoreConfigException, ClientHTTPException
 	{
-		String id = getPathParam(request);
+		String id = HttpServerUtil.getLastPathSegment(request);
 		RepositoryManager manager = getReadOnlyManager(request);
 		ConfigTemplate template = manager.getConfigTemplateManager().getTemplate(id);
 		if (template == null) {
@@ -88,7 +88,7 @@ public class TemplateController {
 	public void put(HttpServletRequest request)
 		throws Exception
 	{
-		String id = getPathParam(request);
+		String id = HttpServerUtil.getLastPathSegment(request);
 		Model model = getModel(request);
 		RepositoryManager manager = getRepositoryManager(request);
 		manager.getConfigTemplateManager().addTemplate(id, model);
@@ -99,15 +99,9 @@ public class TemplateController {
 	public void delete(HttpServletRequest request)
 		throws StoreConfigException, ClientHTTPException, StoreException
 	{
-		String id = getPathParam(request);
+		String id = HttpServerUtil.getLastPathSegment(request);
 		RepositoryManager manager = getRepositoryManager(request);
 		manager.getConfigTemplateManager().removeTemplate(id);
-	}
-
-	private String getPathParam(HttpServletRequest request) {
-		String pathInfoStr = request.getPathInfo();
-		String[] pathInfo = pathInfoStr.substring(1).split("/");
-		return pathInfo[pathInfo.length - 1];
 	}
 
 	private Model getModel(HttpServletRequest request)

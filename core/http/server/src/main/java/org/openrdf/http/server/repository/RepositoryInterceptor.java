@@ -105,6 +105,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 
 	private static final String SELF_KEY = BASE + "self";
 
+	// FIXME: use a random identifier to prevent guessing?
 	private static AtomicInteger seq = new AtomicInteger(new Random().nextInt());
 
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);

@@ -51,8 +51,7 @@ public class MetadataController {
 	@ModelAttribute
 	@RequestMapping(method = GET, value = { REPO_PATH + "/metadata", CONN_PATH + "/metadata" })
 	public Model get(HttpServletRequest request)
-		throws StoreException, IntrospectionException, IllegalArgumentException, IllegalAccessException,
-		InvocationTargetException
+		throws StoreException, IntrospectionException, IllegalAccessException, InvocationTargetException
 	{
 		BeanInfo info = Introspector.getBeanInfo(RepositoryMetaData.class);
 		PropertyDescriptor[] properties = info.getPropertyDescriptors();
@@ -91,10 +90,7 @@ public class MetadataController {
 			model.add(subj, pred, lf.createLiteral((Boolean)o));
 		}
 		else if (o instanceof Integer) {
-			Integer i = (Integer)o;
-			if (i.intValue() != 0) {
-				model.add(subj, pred, lf.createLiteral(i));
-			}
+			model.add(subj, pred, lf.createLiteral((Integer)o));
 		}
 		else if (o instanceof URL) {
 			model.add(subj, pred, uf.createURI(((URL)o).toExternalForm()));
