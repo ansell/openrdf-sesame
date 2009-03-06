@@ -70,6 +70,13 @@ import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.store.StoreException;
 
+/**
+ * Takes care of content negotiation and rendering the "view" for all result
+ * formats that are used in the Sesame server.
+ * 
+ * @author James Leigh
+ * @author Arjohn Kampman
+ */
 class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, View {
 
 	/*-------------------------------------------*
