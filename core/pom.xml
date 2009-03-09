@@ -86,6 +86,8 @@
 				<configuration>
 					<aggregate>true</aggregate>
 					<source>1.5</source>
+					<encoding>utf8</encoding>
+					<quiet>true</quiet>
 					<groups>
 						<group>
 							<title>Repository API</title>
