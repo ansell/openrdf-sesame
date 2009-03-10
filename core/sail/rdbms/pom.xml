@@ -18,7 +18,6 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-sail-api</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-queryalgebra-evaluation</artifactId>
@@ -31,7 +30,6 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-store</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-model</artifactId>
@@ -40,6 +38,10 @@
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-concurrent</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-collections</artifactId>
 		</dependency>
 
 		<dependency>
