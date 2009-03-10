@@ -39,7 +39,7 @@
 	<bean class="org.openrdf.http.server.controllers.BNodeController" />
 
 <!-- Exceptions -->
-	<bean class="org.openrdf.http.server.ExceptionWritter" />
+	<bean class="org.openrdf.http.server.ExceptionWriter" />
 
 <!-- Views -->
 	<bean id="viewNameTranslator" class="org.openrdf.http.server.ContentNegotiator" />
