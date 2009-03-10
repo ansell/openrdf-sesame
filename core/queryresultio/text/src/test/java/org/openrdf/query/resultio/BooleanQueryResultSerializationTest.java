@@ -7,25 +7,20 @@ package org.openrdf.query.resultio;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 import junit.framework.TestCase;
-
-import org.openrdf.query.EvaluationException;
 
 public class BooleanQueryResultSerializationTest extends TestCase {
 
 	public void testTextResultFormat()
-		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException,
-		EvaluationException
+		throws Exception
 	{
 		testQueryResultFormat(BooleanQueryResultFormat.TEXT, true);
 		testQueryResultFormat(BooleanQueryResultFormat.TEXT, false);
 	}
 
 	private void testQueryResultFormat(BooleanQueryResultFormat format, boolean input)
-		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException,
-		EvaluationException
+		throws Exception
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		QueryResultIO.write(input, format, out);
