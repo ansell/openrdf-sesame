@@ -27,7 +27,6 @@ import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.store.StoreException;
 
@@ -47,10 +46,10 @@ public class SizeController {
 	{
 		ProtocolUtil.logRequestParameters(request);
 
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
+		RepositoryConnection con = RepositoryInterceptor.getReadOnlyConnection(request);
 
-		ValueFactory vf = repositoryCon.getValueFactory();
-		RDFRequest req = new RDFRequest(vf, request);
+		// Parse request parameters
+		RDFRequest req = new RDFRequest(con.getValueFactory(), request);
 		Resource subj = req.getSubject();
 		URI pred = req.getPredicate();
 		Value obj = req.getObject();
@@ -61,7 +60,7 @@ public class SizeController {
 			return new StringReader("");
 		}
 
-		long size = repositoryCon.sizeMatch(subj, pred, obj, useInferencing, contexts);
+		long size = con.sizeMatch(subj, pred, obj, useInferencing, contexts);
 		return new StringReader(String.valueOf(size));
 	}
 }

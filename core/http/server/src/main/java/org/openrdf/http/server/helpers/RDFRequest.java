@@ -41,7 +41,7 @@ import org.openrdf.model.ValueFactory;
  */
 public class RDFRequest {
 
-	private ValueFactory vf;
+	private final ValueFactory vf;
 
 	private HttpServletRequest request;
 
@@ -50,6 +50,7 @@ public class RDFRequest {
 	{
 		this.vf = vf;
 		this.request = req;
+		
 		String contentType = req.getContentType();
 		if (contentType != null) {
 			String mimeType = HttpServerUtil.getMIMEType(contentType);
