@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -25,7 +25,8 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping;
 
-import org.openrdf.OpenRDFUtil;
+import info.aduna.io.file.MavenUtil;
+
 import org.openrdf.http.server.controllers.BNodeController;
 import org.openrdf.http.server.controllers.ConfigurationController;
 import org.openrdf.http.server.controllers.ConnectionController;
@@ -50,8 +51,8 @@ import org.openrdf.repository.manager.RepositoryManager;
  */
 public class SesameServlet implements Servlet {
 
-	private static final String VERSION = OpenRDFUtil.findVersion(SesameServlet.class, "org.openrdf.sesame",
-			"sesame-http-server");
+	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-http-server",
+			"devel");
 
 	private static final String APP_NAME = "OpenRDF Sesame server";
 
@@ -228,11 +229,11 @@ public class SesameServlet implements Servlet {
 			// Spring Processors
 			registerPrototype(AutowiredAnnotationBeanPostProcessor.class);
 			registerPrototype(CommonAnnotationBeanPostProcessor.class);
-			
+
 			AnnotationMethodHandlerAdapter methods = new AnnotationMethodHandlerAdapter();
 			methods.setSupportedMethods(new String[] { "HEAD", "GET", "POST", "PUT", "DELETE" });
 			registerSingleton(AnnotationMethodHandlerAdapter.class, methods);
-			
+
 			DefaultAnnotationHandlerMapping interceptors = new DefaultAnnotationHandlerMapping();
 			interceptors.setInterceptors(new Object[] { connections });
 			interceptors.setApplicationContext(this);

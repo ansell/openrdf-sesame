@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -31,7 +31,8 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.OpenRDFUtil;
+import info.aduna.io.file.MavenUtil;
+
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
@@ -49,7 +50,8 @@ import org.openrdf.store.StoreException;
  */
 public class HTTPConnectionPool implements Cloneable {
 
-	private static final String VERSION = OpenRDFUtil.findVersion(HTTPConnectionPool.class, "org.openrdf.sesame", "sesame-http-client");
+	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-http-client",
+			"devel");
 
 	private static final String APP_NAME = "OpenRDF HTTP client";
 

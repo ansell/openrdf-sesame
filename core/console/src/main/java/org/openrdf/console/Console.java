@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -40,9 +40,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.io.file.FileUtil;
+import info.aduna.io.file.MavenUtil;
 import info.aduna.text.StringUtil;
 
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.UnauthorizedException;
@@ -111,8 +111,8 @@ public class Console {
 	 * Static constants *
 	 *------------------*/
 
-	private static final String VERSION = OpenRDFUtil.findVersion(Console.class, "org.openrdf.sesame",
-			"sesame-console");
+	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-console",
+			"devel");
 
 	private static final String APP_NAME = "OpenRDF Sesame console";
 
