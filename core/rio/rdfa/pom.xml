@@ -26,6 +26,11 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-rio-rdfxml</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-xml</artifactId>
+		</dependency>
 		
 	</dependencies>
 
