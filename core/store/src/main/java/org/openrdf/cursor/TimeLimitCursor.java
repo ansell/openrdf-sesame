@@ -72,7 +72,7 @@ public abstract class TimeLimitCursor<E> extends DelegatingCursor<E> {
 			}
 		};
 
-		timer = new Timer("TimeLimitIteration", true);
+		timer = new Timer("TimeLimitCursor", true);
 		timer.schedule(tt, timeLimit);
 	}
 
@@ -84,7 +84,7 @@ public abstract class TimeLimitCursor<E> extends DelegatingCursor<E> {
 				close();
 			}
 			catch (Exception e) {
-				logger.warn("Failed to close iteration", e);
+				logger.warn("Failed to close cursor", e);
 			}
 		}
 	}
