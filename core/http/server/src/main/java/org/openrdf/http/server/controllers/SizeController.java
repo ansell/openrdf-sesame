@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;
-import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.helpers.RDFRequest;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
@@ -44,8 +43,6 @@ public class SizeController {
 	public StringReader size(HttpServletRequest request)
 		throws ClientHTTPException, StoreException, IOException
 	{
-		ProtocolUtil.logRequestParameters(request);
-
 		RepositoryConnection con = RepositoryInterceptor.getReadOnlyConnection(request);
 
 		// Parse request parameters

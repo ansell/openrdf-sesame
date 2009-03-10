@@ -73,8 +73,6 @@ public class StatementController {
 	public ModelResult head(HttpServletRequest request)
 		throws StoreException, ClientHTTPException, IOException
 	{
-		ProtocolUtil.logRequestParameters(request);
-
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 		ValueFactory vf = repositoryCon.getValueFactory();
 
@@ -102,8 +100,6 @@ public class StatementController {
 	public ModelResult get(HttpServletRequest request)
 		throws StoreException, ClientHTTPException, IOException
 	{
-		ProtocolUtil.logRequestParameters(request);
-
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 		ValueFactory vf = repositoryCon.getValueFactory();
 
@@ -162,8 +158,6 @@ public class StatementController {
 	public void delete(HttpServletRequest request)
 		throws ClientHTTPException, StoreException, IOException
 	{
-		ProtocolUtil.logRequestParameters(request);
-
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 		ValueFactory vf = repositoryCon.getValueFactory();
 
@@ -217,8 +211,6 @@ public class StatementController {
 	private void add(HttpServletRequest request, boolean replaceCurrent)
 		throws IOException, ClientHTTPException, StoreException, RDFParseException
 	{
-		ProtocolUtil.logRequestParameters(request);
-
 		String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
 
 		RDFFormat rdfFormat = Rio.getParserFormatForMIMEType(mimeType);
