@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NotImplemented;
@@ -143,18 +143,18 @@ public class RepositoryController {
 		throws HTTPException, IOException, StoreException, MalformedQueryException
 	{
 		Query query = new QueryBuilder(request).prepareQuery();
+
 		if (query instanceof TupleQuery) {
 			List<String> names = Collections.emptyList();
-			Set<BindingSet> bindings = Collections.emptySet();
+			Cursor<BindingSet> bindings = EmptyCursor.getInstance();
 			return new TupleResultImpl(names, bindings);
 		}
 		else if (query instanceof GraphQuery) {
 			Map<String, String> namespaces = Collections.emptyMap();
-			Set<Statement> statements = Collections.emptySet();
+			Cursor<Statement> statements = EmptyCursor.getInstance();
 			return new GraphResultImpl(namespaces, statements);
 		}
 		else if (query instanceof BooleanQuery) {
-			// @ModelAttribute does not support a return type of boolean
 			return new BooleanResultImpl(new EmptyCursor<Boolean>());
 		}
 		else {
