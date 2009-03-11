@@ -48,6 +48,43 @@ import org.openrdf.model.ValueFactory;
  */
 public class ProtocolUtil {
 
+	private static final String REPOSITORIES = "/repositories/";
+
+	private static final String CONNECTIONS = "/connections/";
+
+	public static String getRepositoryID(HttpServletRequest request) {
+		String pathInfo = request.getPathInfo();
+		String path = request.getRequestURI();
+		int start = path.indexOf(REPOSITORIES);
+		if (start < 0) {
+			return null;
+		}
+		String id = path.substring(start + REPOSITORIES.length());
+		if (id.contains("/")) {
+			id = id.substring(0, id.indexOf('/'));
+		}
+		if (id.length() == 0) {
+			return null;
+		}
+		return id;
+	}
+
+	public static String getConnectionID(HttpServletRequest request) {
+		String path = request.getRequestURI();
+		int start = path.indexOf(CONNECTIONS);
+		if (start < 0) {
+			return null;
+		}
+		String id = path.substring(start + CONNECTIONS.length());
+		if (id.contains("/")) {
+			id = id.substring(0, id.indexOf('/'));
+		}
+		if (id.length() == 0) {
+			return null;
+		}
+		return id;
+	}
+
 	public static Value parseValueParam(HttpServletRequest request, String paramName, ValueFactory vf)
 		throws BadRequest
 	{
