@@ -75,10 +75,6 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 
 	private static final String LAST_MODIFIED = "Last-Modified";
 
-	private static final String REPOSITORIES = "/repositories/";
-
-	private static final String CONNECTIONS = "/connections/";
-
 	private static final String REPOSITORY_MANAGER = "repositoryManager";
 
 	private static final String REPOSITORY_KEY = "repository";
@@ -106,9 +102,9 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	private static final String SELF_KEY = BASE + "self";
 
 	// FIXME: use a random identifier to prevent guessing?
-	private static AtomicInteger seq = new AtomicInteger(new Random().nextInt());
+	private static final AtomicInteger seq = new AtomicInteger(new Random().nextInt());
 
-	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
 	public RepositoryInterceptor() {
 		executor.scheduleWithFixedDelay(this, MAX_TIME_OUT, MAX_TIME_OUT, TIME_OUT_UNITS);
@@ -121,38 +117,6 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 
 	public static RepositoryManager getReadOnlyManager(HttpServletRequest request) {
 		return (RepositoryManager)request.getAttribute(REPOSITORY_MANAGER);
-	}
-
-	public static String getRepositoryID(HttpServletRequest request) {
-		String path = request.getRequestURI();
-		int start = path.indexOf(REPOSITORIES);
-		if (start < 0) {
-			return null;
-		}
-		String id = path.substring(start + REPOSITORIES.length());
-		if (id.contains("/")) {
-			id = id.substring(0, id.indexOf('/'));
-		}
-		if (id.length() == 0) {
-			return null;
-		}
-		return id;
-	}
-
-	public static String getConnectionID(HttpServletRequest request) {
-		String path = request.getRequestURI();
-		int start = path.indexOf(CONNECTIONS);
-		if (start < 0) {
-			return null;
-		}
-		String id = path.substring(start + CONNECTIONS.length());
-		if (id.contains("/")) {
-			id = id.substring(0, id.indexOf('/'));
-		}
-		if (id.length() == 0) {
-			return null;
-		}
-		return id;
 	}
 
 	public static Repository getRepository(HttpServletRequest request) {
@@ -243,7 +207,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	 * Variables *
 	 *-----------*/
 
-	private Logger logger = LoggerFactory.getLogger(RepositoryInterceptor.class);
+	private final Logger logger = LoggerFactory.getLogger(RepositoryInterceptor.class);
 
 	private String serverName;
 
@@ -254,15 +218,15 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	private volatile long managerLastModified = System.currentTimeMillis();
 
 	/** Sequential counter for more accurate Not-Modified responses. */
-	private AtomicLong managerVersion = new AtomicLong((long)(Long.MAX_VALUE * Math.random()));
+	private final AtomicLong managerVersion = new AtomicLong((long)(Long.MAX_VALUE * Math.random()));
 
-	private Map<String, Long> repositoriesLastModified = new ConcurrentHashMap<String, Long>();
+	private final Map<String, Long> repositoriesLastModified = new ConcurrentHashMap<String, Long>();
 
-	private ConcurrentMap<String, AtomicLong> repositoriesVersion = new ConcurrentHashMap<String, AtomicLong>();
+	private final ConcurrentMap<String, AtomicLong> repositoriesVersion = new ConcurrentHashMap<String, AtomicLong>();
 
-	private Map<String, ActiveConnection> activeConnections = new ConcurrentHashMap<String, ActiveConnection>();
+	private final Map<String, ActiveConnection> activeConnections = new ConcurrentHashMap<String, ActiveConnection>();
 
-	private Map<ActiveConnection, HttpServletRequest> singleConnections = new ConcurrentHashMap<ActiveConnection, HttpServletRequest>();
+	private final Map<ActiveConnection, HttpServletRequest> singleConnections = new ConcurrentHashMap<ActiveConnection, HttpServletRequest>();
 
 	/*---------*
 	 * Methods *
@@ -303,7 +267,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 
 		request.setAttribute(REPOSITORY_MANAGER, repositoryManager);
 
-		String repositoryID = getRepositoryID(request);
+		String repositoryID = ProtocolUtil.getRepositoryID(request);
 		if (repositoryID != null) {
 			try {
 				Repository repository = repositoryManager.getRepository(repositoryID);
@@ -313,7 +277,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 				}
 
 				ActiveConnection repositoryCon;
-				String connectionID = getConnectionID(request);
+				String connectionID = ProtocolUtil.getConnectionID(request);
 				if (connectionID == null) {
 					repositoryCon = new ActiveConnection(repository.getConnection());
 					singleConnections.put(repositoryCon, request);
@@ -361,7 +325,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 			Exception exception)
 		throws ServerHTTPException
 	{
-		String id = getConnectionID(request);
+		String id = ProtocolUtil.getConnectionID(request);
 		boolean close = request.getAttribute(CONN_CLOSED_KEY) != null;
 		String newId = (String)request.getAttribute(CONN_CREATE_KEY);
 		Object attr = request.getAttribute(REPOSITORY_CONNECTION_KEY);
@@ -514,7 +478,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	private long lastModified(HttpServletRequest request) {
 		long modified = managerLastModified(request);
 
-		String id = getRepositoryID(request);
+		String id = ProtocolUtil.getRepositoryID(request);
 		if (id == null) {
 			try {
 				for (String i : repositoryManager.getRepositoryIDs()) {
@@ -561,7 +525,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	private String eTag(HttpServletRequest request) {
 		long version = managerVersion(request);
 
-		String id = getRepositoryID(request);
+		String id = ProtocolUtil.getRepositoryID(request);
 		if (id == null) {
 			try {
 				for (String i : repositoryManager.getRepositoryIDs()) {
