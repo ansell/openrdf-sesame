@@ -49,7 +49,7 @@ public class ExceptionWriter implements HandlerExceptionResolver, View {
 	public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response,
 			Object handler, Exception exception)
 	{
-		logger.debug("ExceptionWriter.resolveException() called");
+		logger.trace("ExceptionWriter.resolveException() called");
 
 		Throwable t = exception;
 
