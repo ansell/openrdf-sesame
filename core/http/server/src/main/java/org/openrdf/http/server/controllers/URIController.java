@@ -6,7 +6,7 @@
 package org.openrdf.http.server.controllers;
 
 import static java.util.Collections.singleton;
-import static org.openrdf.http.server.repository.RepositoryInterceptor.getReadOnlyManager;
+import static org.openrdf.http.server.interceptors.RepositoryInterceptor.getReadOnlyManager;
 import static org.openrdf.query.QueryLanguage.SERQL;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;

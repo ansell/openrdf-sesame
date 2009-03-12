@@ -3,9 +3,8 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.http.server.repository;
+package org.openrdf.http.server.interceptors;
 
-import static org.openrdf.http.protocol.Protocol.IF_NONE_MATCH;
 import static org.openrdf.http.protocol.Protocol.MAX_TIME_OUT;
 import static org.openrdf.http.protocol.Protocol.TIME_OUT_UNITS;
 
@@ -16,11 +15,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,25 +52,9 @@ import org.openrdf.store.StoreException;
  */
 public class RepositoryInterceptor implements HandlerInterceptor, Runnable, DisposableBean {
 
-	/*-----------*
-	 * Constants *
-	 *-----------*/
-
-	private static final String SERVER = "Server";
-
-	private static final String DATE = "Date";
-
-	private static final String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
-
-	private static final String IF_MATCH = "If-Match";
-
-	private static final String VARY = "Vary";
-
-	private static final String ETAG = "ETag";
-
-	private static final String IF_MODIFIED_SINCE = "If-Modified-Since";
-
-	private static final String LAST_MODIFIED = "Last-Modified";
+	/*---------*
+	 * Statics *
+	 *---------*/
 
 	private static final String REPOSITORY_MANAGER = "repositoryManager";
 
@@ -82,10 +63,6 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	private static final String REPOSITORY_CONNECTION_KEY = "repositoryConnection";
 
 	private static final String BASE = RepositoryInterceptor.class.getName() + "#";
-
-	private static final String REPOSITORY_MODIFIED_KEY = BASE + "repository-modified";
-
-	private static final String MANAGER_MODIFIED_KEY = BASE + "manager-modified";
 
 	private static final String CONN_CREATE_KEY = BASE + "create-connection";
 
@@ -97,21 +74,13 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 
 	private static final String QUERY_CLOSED_KEY = BASE + "close-query";
 
-	private static final String NOT_SAFE_KEY = BASE + "not-safe";
-
 	private static final String SELF_KEY = BASE + "self";
 
 	// FIXME: use a random identifier to prevent guessing?
 	private static final AtomicInteger seq = new AtomicInteger(new Random().nextInt());
 
-	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-
-	public RepositoryInterceptor() {
-		executor.scheduleWithFixedDelay(this, MAX_TIME_OUT, MAX_TIME_OUT, TIME_OUT_UNITS);
-	}
-
 	public static RepositoryManager getRepositoryManager(HttpServletRequest request) {
-		request.setAttribute(MANAGER_MODIFIED_KEY, Boolean.TRUE);
+		ConditionalRequestInterceptor.managerModified(request);
 		return (RepositoryManager)request.getAttribute(REPOSITORY_MANAGER);
 	}
 
@@ -124,18 +93,18 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	}
 
 	public static RepositoryConnection getModifyingConnection(HttpServletRequest request) {
-		request.setAttribute(REPOSITORY_MODIFIED_KEY, Boolean.TRUE);
+		ConditionalRequestInterceptor.repositoryModified(request);
 		return (RepositoryConnection)request.getAttribute(REPOSITORY_CONNECTION_KEY);
 	}
 
 	public static RepositoryConnection getRepositoryConnection(HttpServletRequest request)
 		throws StoreException
 	{
-		notSafe(request);
+		ConditionalRequestInterceptor.notSafe(request);
 		Object attr = request.getAttribute(REPOSITORY_CONNECTION_KEY);
 		RepositoryConnection con = (RepositoryConnection)attr;
 		if (con.isAutoCommit()) {
-			request.setAttribute(REPOSITORY_MODIFIED_KEY, Boolean.TRUE);
+			ConditionalRequestInterceptor.repositoryModified(request);
 		}
 		return con;
 	}
@@ -146,26 +115,25 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		Object attr = request.getAttribute(REPOSITORY_CONNECTION_KEY);
 		RepositoryConnection con = (RepositoryConnection)attr;
 		if (!con.isAutoCommit()) {
-			notSafe(request);
+			ConditionalRequestInterceptor.notSafe(request);
 		}
 		return con;
 	}
 
-	public static void notSafe(HttpServletRequest request) {
-		request.setAttribute(NOT_SAFE_KEY, Boolean.TRUE);
-	}
-
 	public static String createConnection(HttpServletRequest request) {
+		ConditionalRequestInterceptor.notSafe(request);
 		String id = Integer.toHexString(seq.getAndIncrement());
 		request.setAttribute(CONN_CREATE_KEY, id);
 		return id;
 	}
 
 	public static void closeConnection(HttpServletRequest request) {
+		ConditionalRequestInterceptor.notSafe(request);
 		request.setAttribute(CONN_CLOSED_KEY, Boolean.TRUE);
 	}
 
 	public static String saveQuery(HttpServletRequest request, Query query) {
+		ConditionalRequestInterceptor.notSafe(request);
 		String id = Integer.toHexString(seq.getAndIncrement());
 		request.setAttribute(QUERY_CREATE_KEY, id);
 		request.setAttribute(QUERY_CREATE_KEY + id, query);
@@ -184,6 +152,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	}
 
 	public static void deleteQuery(HttpServletRequest request, String id) {
+		ConditionalRequestInterceptor.notSafe(request);
 		request.setAttribute(QUERY_CLOSED_KEY, id);
 	}
 
@@ -209,39 +178,28 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 
 	private final Logger logger = LoggerFactory.getLogger(RepositoryInterceptor.class);
 
-	private String serverName;
-
-	private RepositoryManager repositoryManager;
-
-	private int maxCacheAge;
-
-	private volatile long managerLastModified = System.currentTimeMillis();
-
-	/** Sequential counter for more accurate Not-Modified responses. */
-	private final AtomicLong managerVersion = new AtomicLong((long)(Long.MAX_VALUE * Math.random()));
-
-	private final Map<String, Long> repositoriesLastModified = new ConcurrentHashMap<String, Long>();
-
-	private final ConcurrentMap<String, AtomicLong> repositoriesVersion = new ConcurrentHashMap<String, AtomicLong>();
-
 	private final Map<String, ActiveConnection> activeConnections = new ConcurrentHashMap<String, ActiveConnection>();
 
 	private final Map<ActiveConnection, HttpServletRequest> singleConnections = new ConcurrentHashMap<ActiveConnection, HttpServletRequest>();
+
+	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+	private RepositoryManager repositoryManager;
+
+	/*--------------*
+	 * Constructors *
+	 *--------------*/
+
+	public RepositoryInterceptor() {
+		executor.scheduleWithFixedDelay(this, MAX_TIME_OUT, MAX_TIME_OUT, TIME_OUT_UNITS);
+	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public void setServerName(String serverName) {
-		this.serverName = serverName;
-	}
-
-	public void setRepositoryManager(RepositoryManager repMan) {
-		repositoryManager = repMan;
-	}
-
-	public void setMaxCacheAge(int maxCacheAge) {
-		this.maxCacheAge = maxCacheAge;
+	public void setRepositoryManager(RepositoryManager repositoryManager) {
+		this.repositoryManager = repositoryManager;
 	}
 
 	public void destroy() {
@@ -253,18 +211,19 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	{
 		ProtocolUtil.logRequestParameters(request);
 
-		if (notModified(request, response)) {
-			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-			postHandle(request, response, null, null);
-			return false;
-		}
+		/*
+				if (notModified(request, response)) {
+					response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+					postHandle(request, response, null, null);
+					return false;
+				}
 
-		if (!precondition(request, response)) {
-			response.setStatus(HttpServletResponse.SC_PRECONDITION_FAILED);
-			response.setDateHeader(DATE, System.currentTimeMillis() / 1000 * 1000);
-			return false;
-		}
-
+				if (!precondition(request, response)) {
+					response.setStatus(HttpServletResponse.SC_PRECONDITION_FAILED);
+					response.setDateHeader(DATE, System.currentTimeMillis() / 1000 * 1000);
+					return false;
+				}
+		*/
 		request.setAttribute(REPOSITORY_MANAGER, repositoryManager);
 
 		String repositoryID = ProtocolUtil.getRepositoryID(request);
@@ -307,18 +266,6 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
 			ModelAndView modelAndView)
 	{
-		long now = System.currentTimeMillis() / 1000 * 1000;
-		long lastModified = lastModified(request); // update
-		String eTag = eTag(request); // update
-		response.setDateHeader(DATE, now);
-		if (serverName != null) {
-			response.setHeader(SERVER, serverName);
-		}
-		if (isSafe(request) && eTag != null && 0 < lastModified && lastModified < Long.MAX_VALUE) {
-			response.setDateHeader(LAST_MODIFIED, lastModified);
-			response.setHeader(ETAG, eTag);
-			response.setHeader("Cache-Control", getCacheControl(now, lastModified));
-		}
 	}
 
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
@@ -392,183 +339,6 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 					logger.error(exc.toString(), exc);
 				}
 			}
-		}
-	}
-
-	private boolean notModified(HttpServletRequest request, HttpServletResponse response) {
-		long since = request.getDateHeader(IF_MODIFIED_SINCE);
-		if (since != -1) {
-			response.addHeader(VARY, IF_MODIFIED_SINCE);
-			if (since >= lastModified(request)) {
-				return true;
-			}
-		}
-		String etag = request.getHeader(IF_NONE_MATCH);
-		if (etag != null) {
-			response.addHeader(VARY, IF_NONE_MATCH);
-			if (etag.equals(eTag(request))) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean precondition(HttpServletRequest request, HttpServletResponse response) {
-		String etag = request.getHeader(IF_MATCH);
-		if (etag != null) {
-			response.addHeader(VARY, IF_MATCH);
-			if (!etag.equals(eTag(request))) {
-				return false;
-			}
-		}
-		etag = request.getHeader(IF_NONE_MATCH);
-		if (etag != null) {
-			response.addHeader(VARY, IF_NONE_MATCH);
-			if (etag.equals(eTag(request))) {
-				return false;
-			}
-		}
-		long since = request.getDateHeader(IF_UNMODIFIED_SINCE);
-		if (since != -1) {
-			response.addHeader(VARY, IF_UNMODIFIED_SINCE);
-			if (since < lastModified(request)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private boolean isSafe(HttpServletRequest request) {
-		if (request.getAttribute(MANAGER_MODIFIED_KEY) != null) {
-			return false;
-		}
-		if (request.getAttribute(REPOSITORY_MODIFIED_KEY) != null) {
-			return false;
-		}
-		if (request.getAttribute(CONN_CREATE_KEY) != null) {
-			return false;
-		}
-		if (request.getAttribute(CONN_CLOSED_KEY) != null) {
-			return false;
-		}
-		if (request.getAttribute(QUERY_CREATE_KEY) != null) {
-			return false;
-		}
-		if (request.getAttribute(QUERY_CLOSED_KEY) != null) {
-			return false;
-		}
-		if (request.getAttribute(NOT_SAFE_KEY) != null) {
-			return false;
-		}
-		return true;
-	}
-
-	private String getCacheControl(long now, long lastModified) {
-		long age = (now - lastModified) / 1000;
-		if (maxCacheAge < 1 || age < 1) {
-			return "no-cache";
-		}
-		// Modifications naturally occur near each other
-		if (age < maxCacheAge) {
-			return "max-age=" + age;
-		}
-		return "max-age=" + maxCacheAge;
-	}
-
-	private long lastModified(HttpServletRequest request) {
-		long modified = managerLastModified(request);
-
-		String id = ProtocolUtil.getRepositoryID(request);
-		if (id == null) {
-			try {
-				for (String i : repositoryManager.getRepositoryIDs()) {
-					long repositoryModified = repositoryLastModified(i, request);
-					if (modified < repositoryModified) {
-						modified = repositoryModified;
-					}
-				}
-			}
-			catch (StoreConfigException e) {
-				logger.error(e.toString(), e);
-				return Long.MAX_VALUE;
-			}
-		}
-		else {
-			long repositoryModified = repositoryLastModified(id, request);
-			if (modified < repositoryModified) {
-				modified = repositoryModified;
-			}
-		}
-		return modified;
-	}
-
-	private long managerLastModified(HttpServletRequest request) {
-		if (request.getAttribute(MANAGER_MODIFIED_KEY) == null) {
-			return managerLastModified;
-		}
-		else {
-			return managerLastModified = System.currentTimeMillis() / 1000 * 1000;
-		}
-	}
-
-	private long repositoryLastModified(String id, HttpServletRequest request) {
-		if (request.getAttribute(REPOSITORY_MODIFIED_KEY) == null) {
-			if (repositoriesLastModified.containsKey(id)) {
-				return repositoriesLastModified.get(id);
-			}
-		}
-		long now = System.currentTimeMillis() / 1000 * 1000;
-		repositoriesLastModified.put(id, now);
-		return now;
-	}
-
-	private String eTag(HttpServletRequest request) {
-		long version = managerVersion(request);
-
-		String id = ProtocolUtil.getRepositoryID(request);
-		if (id == null) {
-			try {
-				for (String i : repositoryManager.getRepositoryIDs()) {
-					version += repositoryVersion(i, request);
-				}
-			}
-			catch (StoreConfigException e) {
-				logger.error(e.toString(), e);
-				return null;
-			}
-		}
-		else {
-			version += repositoryVersion(id, request);
-		}
-		return "W/\"" + Long.toHexString(version) + "\"";
-	}
-
-	private long managerVersion(HttpServletRequest request) {
-		if (request.getAttribute(MANAGER_MODIFIED_KEY) == null) {
-			return managerVersion.longValue();
-		}
-		else {
-			return managerVersion.incrementAndGet();
-		}
-	}
-
-	private long repositoryVersion(String id, HttpServletRequest request) {
-		AtomicLong seq = repositoriesVersion.get(id);
-		if (seq == null) {
-			long code = (long)(Long.MAX_VALUE * Math.random());
-			AtomicLong o = repositoriesVersion.putIfAbsent(id, new AtomicLong(code));
-			if (o == null) {
-				return code;
-			}
-			else {
-				return o.longValue();
-			}
-		}
-		if (request.getAttribute(REPOSITORY_MODIFIED_KEY) == null) {
-			return seq.longValue();
-		}
-		else {
-			return seq.incrementAndGet();
 		}
 	}
 }

@@ -5,8 +5,8 @@
  */
 package org.openrdf.http.server.controllers;
 
-import static org.openrdf.http.server.repository.RepositoryInterceptor.getReadOnlyManager;
-import static org.openrdf.http.server.repository.RepositoryInterceptor.getRepositoryManager;
+import static org.openrdf.http.server.interceptors.RepositoryInterceptor.getReadOnlyManager;
+import static org.openrdf.http.server.interceptors.RepositoryInterceptor.getRepositoryManager;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;

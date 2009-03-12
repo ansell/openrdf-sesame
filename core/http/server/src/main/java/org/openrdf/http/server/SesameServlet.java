@@ -41,7 +41,8 @@ import org.openrdf.http.server.controllers.SizeController;
 import org.openrdf.http.server.controllers.StatementController;
 import org.openrdf.http.server.controllers.TemplateController;
 import org.openrdf.http.server.controllers.URIController;
-import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.http.server.interceptors.ConditionalRequestInterceptor;
+import org.openrdf.http.server.interceptors.RepositoryInterceptor;
 import org.openrdf.repository.manager.RepositoryManager;
 
 /**
@@ -220,11 +221,15 @@ public class SesameServlet implements Servlet {
 			registerPrototype(ContentNegotiator.BEAN_NAME, ContentNegotiator.class);
 
 			// Interceptors
-			RepositoryInterceptor connections = new RepositoryInterceptor();
-			connections.setServerName(serverName);
-			connections.setRepositoryManager(staticManager);
-			connections.setMaxCacheAge(maxCacheAge);
-			registerSingleton(connections);
+			ConditionalRequestInterceptor conditionalReqInterceptor = new ConditionalRequestInterceptor();
+			conditionalReqInterceptor.setServerName(serverName);
+			conditionalReqInterceptor.setRepositoryManager(staticManager);
+			conditionalReqInterceptor.setMaxCacheAge(maxCacheAge);
+			registerSingleton(conditionalReqInterceptor);
+
+			RepositoryInterceptor repoInterceptor = new RepositoryInterceptor();
+			repoInterceptor.setRepositoryManager(staticManager);
+			registerSingleton(repoInterceptor);
 
 			// Spring Processors
 			registerPrototype(AutowiredAnnotationBeanPostProcessor.class);
@@ -235,7 +240,7 @@ public class SesameServlet implements Servlet {
 			registerSingleton(AnnotationMethodHandlerAdapter.class, methods);
 
 			DefaultAnnotationHandlerMapping interceptors = new DefaultAnnotationHandlerMapping();
-			interceptors.setInterceptors(new Object[] { connections });
+			interceptors.setInterceptors(new Object[] { conditionalReqInterceptor, repoInterceptor });
 			interceptors.setApplicationContext(this);
 			registerSingleton(interceptors);
 		}
