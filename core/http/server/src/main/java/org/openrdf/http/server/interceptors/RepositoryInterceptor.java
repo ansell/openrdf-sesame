@@ -258,7 +258,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, DisposableBean
 		ActiveConnection activeConnection = RequestAtt.getActiveConnection(request);
 
 		if (activeConnection != null) {
-			activeConnection.accessed(System.currentTimeMillis());
+			activeConnection.setLastAccessed(System.currentTimeMillis());
 			activeConnection.close(request);
 			if (id == null) {
 				singleConnections.remove(activeConnection);

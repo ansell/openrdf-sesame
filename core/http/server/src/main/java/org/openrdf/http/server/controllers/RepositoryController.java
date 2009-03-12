@@ -59,11 +59,7 @@ public class RepositoryController {
 		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
 
 		// Determine the repository's URI
-		StringBuffer requestURL = request.getRequestURL();
-		if (requestURL.charAt(requestURL.length() - 1) != '/') {
-			requestURL.append('/');
-		}
-		String namespace = requestURL.toString();
+		String namespace = request.getRequestURL().append('/').toString();
 
 		ValueFactory vf = new ValueFactoryImpl();
 		RepositoryManager repositoryManager = RequestAtt.getRepositoryManager(request);
