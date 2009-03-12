@@ -8,6 +8,7 @@ package org.openrdf.model.impl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -144,15 +145,31 @@ public class LiteralFactoryImpl implements LiteralFactory {
 
 	/**
 	 * Calls {@link ValueFactory#createLiteral(String, URI)} with the
-	 * String-value of the supplied calendar and the appropriate datatype as
-	 * parameters.
+	 * String-value of the supplied duration and the appropriate datatype as
+	 * parameters. If only one or both of the year and month field are set, then
+	 * return a {@link XMLSchema.DURATION_YEARMONTH} literal. If year and month
+	 * are not set, then return a {@link XMLSchema.DURATION_DAYTIME} literal.
+	 * Otherwise return a {@link XMLSchema.DURATION} literal.
 	 * 
 	 * @see Duration#toString()
-	 * @see Duration#getXMLSchemaType()
-	 * @see XMLDatatypeUtil#qnameToURI(javax.xml.namespace.QName)
+	 * @see Duration#isSet(DatatypeConstants.Field)
 	 */
 	public Literal createLiteral(Duration duration) {
-		return createLiteral(duration.toString(), XMLDatatypeUtil.qnameToURI(duration.getXMLSchemaType()));
+		boolean yearSet = duration.isSet(DatatypeConstants.YEARS);
+		boolean monthSet = duration.isSet(DatatypeConstants.MONTHS);
+		if (!yearSet && !monthSet) {
+			return createLiteral(duration.toString(), XMLSchema.DURATION_DAYTIME);
+		}
+
+		boolean daySet = duration.isSet(DatatypeConstants.DAYS);
+		boolean hourSet = duration.isSet(DatatypeConstants.HOURS);
+		boolean minuteSet = duration.isSet(DatatypeConstants.MINUTES);
+		boolean secondSet = duration.isSet(DatatypeConstants.SECONDS);
+		if (!daySet && !hourSet && !minuteSet && !secondSet) {
+			return createLiteral(duration.toString(), XMLSchema.DURATION_YEARMONTH);
+		}
+
+		return createLiteral(duration.toString(), XMLSchema.DURATION);
 	}
 
 	/**
