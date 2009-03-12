@@ -6,7 +6,6 @@
 package org.openrdf.http.server.controllers;
 
 import static java.util.Collections.singleton;
-import static org.openrdf.http.server.interceptors.RepositoryInterceptor.getReadOnlyManager;
 import static org.openrdf.query.QueryLanguage.SERQL;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.http.protocol.exceptions.NotFound;
+import org.openrdf.http.server.helpers.RequestAtt;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
@@ -60,7 +60,7 @@ public class URIController {
 		URI ns = new URIImpl(request.getRequestURL().append("#").toString());
 		Dataset dataset = new DatasetImpl(singleton(uri), Collections.<URI> emptySet());
 
-		RepositoryManager manager = getReadOnlyManager(request);
+		RepositoryManager manager = RequestAtt.getRepositoryManager(request);
 
 		for (String id : manager.getRepositoryIDs()) {
 			Repository repository = manager.getRepository(id);
@@ -103,7 +103,7 @@ public class URIController {
 
 		StatementCollector rdf = new StatementCollector();
 
-		RepositoryManager manager = getReadOnlyManager(request);
+		RepositoryManager manager = RequestAtt.getRepositoryManager(request);
 
 		for (String id : manager.getRepositoryIDs()) {
 			Repository repository = manager.getRepository(id);

@@ -172,11 +172,6 @@ public abstract class Protocol {
 	 */
 	public static final String TXN_MIME_TYPE = "application/x-rdftransaction";
 
-	/**
-	 * MIME type for www forms: <tt>application/x-www-form-urlencoded</tt>.
-	 */
-	public static final String FORM_MIME_TYPE = "application/x-www-form-urlencoded";
-
 	public static final String METADATA_NAMESPACE = "http://www.openrdf.org/metadata/repository#";
 
 	public static final String OFFSET = "offset";

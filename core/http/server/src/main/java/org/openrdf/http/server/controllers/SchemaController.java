@@ -5,7 +5,6 @@
  */
 package org.openrdf.http.server.controllers;
 
-import static org.openrdf.http.server.interceptors.RepositoryInterceptor.getReadOnlyManager;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.http.server.helpers.Paths;
+import org.openrdf.http.server.helpers.RequestAtt;
 import org.openrdf.model.Model;
 import org.openrdf.model.util.ModelOrganizer;
 import org.openrdf.repository.manager.RepositoryManager;
@@ -34,7 +34,7 @@ public class SchemaController {
 	public Model get(HttpServletRequest request)
 		throws StoreConfigException
 	{
-		RepositoryManager manager = getReadOnlyManager(request);
+		RepositoryManager manager = RequestAtt.getRepositoryManager(request);
 		Model schemas = manager.getConfigTemplateManager().getSchemas();
 		return new ModelOrganizer(schemas).organize();
 	}

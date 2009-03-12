@@ -5,6 +5,7 @@
  */
 package org.openrdf.http.server.helpers;
 
+import static info.aduna.net.http.MimeTypes.FORM_MIME_TYPE;
 import static org.openrdf.http.protocol.Protocol.BASEURI_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.BINDING_PREFIX;
 import static org.openrdf.http.protocol.Protocol.DEFAULT_GRAPH_PARAM_NAME;
@@ -15,7 +16,10 @@ import static org.openrdf.http.protocol.Protocol.QUERY_PARAM_NAME;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,20 +29,31 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import info.aduna.webapp.util.HttpServerUtil;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.BadRequest;
+import org.openrdf.http.protocol.exceptions.NotImplemented;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.exceptions.UnsupportedQueryLanguage;
 import org.openrdf.http.server.interceptors.RepositoryInterceptor;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.result.Result;
+import org.openrdf.result.impl.BooleanResultImpl;
+import org.openrdf.result.impl.GraphResultImpl;
+import org.openrdf.result.impl.TupleResultImpl;
 import org.openrdf.store.StoreException;
 
 /**
@@ -48,7 +63,7 @@ public class QueryBuilder {
 
 	private final Logger logger = LoggerFactory.getLogger(QueryBuilder.class);
 
-	private final HttpServletRequest request;
+	private HttpServletRequest request;
 
 	private final RepositoryConnection repositoryCon;
 
@@ -66,14 +81,14 @@ public class QueryBuilder {
 		if (contentType != null) {
 			String mimeType = HttpServerUtil.getMIMEType(contentType);
 
-			if (!Protocol.FORM_MIME_TYPE.equals(mimeType)) {
+			if (!FORM_MIME_TYPE.equals(mimeType)) {
 				throw new UnsupportedMediaType("Unsupported MIME type: " + mimeType);
 			}
 
 			RequestMethod reqMethod = RequestMethod.valueOf(request.getMethod());
 			if (!POST.equals(reqMethod)) {
 				// Include form data in parameters (already included for POST).
-				request = ProtocolUtil.readFormData(request);
+				this.request = ProtocolUtil.readFormData(request);
 			}
 		}
 	}
@@ -120,6 +135,34 @@ public class QueryBuilder {
 		return result;
 	}
 
+	public Result<?> getDummyResult()
+		throws BadRequest, StoreException, MalformedQueryException, NotImplemented
+	{
+		Query query = prepareQuery();
+		return getDummyResult(query);
+	}
+
+	public Result<?> getDummyResult(Query query)
+		throws NotImplemented
+	{
+		if (query instanceof TupleQuery) {
+			List<String> names = Collections.emptyList();
+			Cursor<BindingSet> bindings = EmptyCursor.getInstance();
+			return new TupleResultImpl(names, bindings);
+		}
+		else if (query instanceof GraphQuery) {
+			Map<String, String> namespaces = Collections.emptyMap();
+			Cursor<Statement> statements = EmptyCursor.getInstance();
+			return new GraphResultImpl(namespaces, statements);
+		}
+		else if (query instanceof BooleanQuery) {
+			return new BooleanResultImpl(new EmptyCursor<Boolean>());
+		}
+		else {
+			throw new NotImplemented("Unsupported query type: " + query.getClass().getName());
+		}
+	}
+
 	private QueryLanguage getQueryLanguage()
 		throws UnsupportedQueryLanguage
 	{
@@ -136,6 +179,7 @@ public class QueryBuilder {
 				throw new UnsupportedQueryLanguage("Unknown query language: " + queryLnStr);
 			}
 		}
+
 		return queryLn;
 	}
 
@@ -147,6 +191,7 @@ public class QueryBuilder {
 		String[] namedGraphURIs = request.getParameterValues(NAMED_GRAPH_PARAM_NAME);
 
 		DatasetImpl dataset = null;
+
 		if (defaultGraphURIs != null || namedGraphURIs != null) {
 			dataset = new DatasetImpl();
 
@@ -174,6 +219,7 @@ public class QueryBuilder {
 				}
 			}
 		}
+
 		return dataset;
 	}
 
