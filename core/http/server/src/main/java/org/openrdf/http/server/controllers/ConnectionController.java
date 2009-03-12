@@ -5,7 +5,6 @@
  */
 package org.openrdf.http.server.controllers;
 
-import static org.openrdf.http.protocol.Protocol.CONN_PATH;
 import static org.openrdf.http.server.interceptors.RepositoryInterceptor.getModifyingConnection;
 import static org.openrdf.http.server.interceptors.RepositoryInterceptor.getReadOnlyConnection;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.http.server.interceptors.ConditionalRequestInterceptor;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.store.StoreException;
@@ -31,7 +31,7 @@ import org.openrdf.store.StoreException;
 public class ConnectionController {
 
 	@ModelAttribute
-	@RequestMapping(method = POST, value = CONN_PATH + "/begin")
+	@RequestMapping(method = POST, value = Paths.CONNECTION_BEGIN)
 	public void begin(HttpServletRequest request)
 		throws StoreException
 	{
@@ -44,7 +44,7 @@ public class ConnectionController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = POST, value = CONN_PATH + "/ping")
+	@RequestMapping(method = POST, value = Paths.CONNECTION_PING)
 	public StringReader ping(HttpServletRequest request)
 		throws StoreException
 	{
@@ -53,7 +53,7 @@ public class ConnectionController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = POST, value = CONN_PATH + "/commit")
+	@RequestMapping(method = POST, value = Paths.CONNECTION_COMMIT)
 	public void commit(HttpServletRequest request)
 		throws StoreException
 	{
@@ -65,7 +65,7 @@ public class ConnectionController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = POST, value = CONN_PATH + "/rollback")
+	@RequestMapping(method = POST, value = Paths.CONNECTION_ROLLBACK)
 	public void rollback(HttpServletRequest request)
 		throws StoreException
 	{

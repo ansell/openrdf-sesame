@@ -1,12 +1,10 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.http.server.controllers;
 
-import static org.openrdf.http.protocol.Protocol.CONN_PATH;
-import static org.openrdf.http.protocol.Protocol.REPO_PATH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 
@@ -17,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.cursor.EmptyCursor;
+import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.http.server.interceptors.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.repository.RepositoryConnection;
@@ -34,13 +33,13 @@ import org.openrdf.store.StoreException;
 public class ContextController {
 
 	@ModelAttribute
-	@RequestMapping(method = HEAD, value = { REPO_PATH + "/contexts", CONN_PATH + "/contexts" })
+	@RequestMapping(method = HEAD, value = { Paths.REPOSITORY_CONTEXTS, Paths.CONNECTION_CONTEXTS })
 	public ContextResult head(HttpServletRequest request) {
 		return new ContextResultImpl(new EmptyCursor<Resource>());
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = GET, value = { REPO_PATH + "/contexts", CONN_PATH + "/contexts" })
+	@RequestMapping(method = GET, value = { Paths.REPOSITORY_CONTEXTS, Paths.CONNECTION_CONTEXTS })
 	public ContextResult get(HttpServletRequest request)
 		throws StoreException
 	{

@@ -1,12 +1,10 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.http.server.controllers;
 
-import static org.openrdf.http.protocol.Protocol.CONN_PATH;
-import static org.openrdf.http.protocol.Protocol.REPO_PATH;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
@@ -26,6 +24,7 @@ import info.aduna.webapp.util.HttpServerUtil;
 
 import org.openrdf.http.protocol.exceptions.BadRequest;
 import org.openrdf.http.protocol.exceptions.NotFound;
+import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.http.server.interceptors.RepositoryInterceptor;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.result.NamespaceResult;
@@ -43,7 +42,7 @@ import org.openrdf.store.StoreException;
 public class NamespaceController {
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = { REPO_PATH + "/namespaces", CONN_PATH + "/namespaces" })
+	@RequestMapping(method = { GET, HEAD }, value = { Paths.REPOSITORY_NAMESPACES, Paths.CONNECTION_NAMESPACES })
 	public NamespaceResult list(HttpServletRequest request)
 		throws StoreException
 	{
@@ -52,7 +51,7 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = DELETE, value = { REPO_PATH + "/namespaces", CONN_PATH + "/namespaces" })
+	@RequestMapping(method = DELETE, value = { Paths.REPOSITORY_NAMESPACES, Paths.CONNECTION_NAMESPACES })
 	public void clear(HttpServletRequest request)
 		throws StoreException
 	{
@@ -61,7 +60,9 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = { REPO_PATH + "/namespaces/*", CONN_PATH + "/namespaces/*" })
+	@RequestMapping(method = { GET, HEAD }, value = {
+			Paths.REPOSITORY_NAMESPACE_PREFIX,
+			Paths.CONNECTION_NAMESPACE_PREFIX })
 	public StringReader get(HttpServletRequest request)
 		throws StoreException, NotFound
 	{
@@ -77,7 +78,9 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = PUT, value = { REPO_PATH + "/namespaces/*", CONN_PATH + "/namespaces/*" })
+	@RequestMapping(method = PUT, value = {
+			Paths.REPOSITORY_NAMESPACE_PREFIX,
+			Paths.CONNECTION_NAMESPACE_PREFIX })
 	public void put(HttpServletRequest request)
 		throws StoreException, IOException, BadRequest
 	{
@@ -95,7 +98,9 @@ public class NamespaceController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = DELETE, value = { REPO_PATH + "/namespaces/*", CONN_PATH + "/namespaces/*" })
+	@RequestMapping(method = DELETE, value = {
+			Paths.REPOSITORY_NAMESPACE_PREFIX,
+			Paths.CONNECTION_NAMESPACE_PREFIX })
 	public void delete(HttpServletRequest request)
 		throws StoreException
 	{

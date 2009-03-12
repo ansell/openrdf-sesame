@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.model.Model;
 import org.openrdf.model.util.ModelOrganizer;
 import org.openrdf.repository.manager.RepositoryManager;
@@ -29,7 +30,7 @@ import org.openrdf.store.StoreConfigException;
 public class SchemaController {
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = "/schemas")
+	@RequestMapping(method = { GET, HEAD }, value = Paths.SCHEMAS)
 	public Model get(HttpServletRequest request)
 		throws StoreConfigException
 	{

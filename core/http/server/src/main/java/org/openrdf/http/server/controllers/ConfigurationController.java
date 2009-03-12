@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -26,6 +26,7 @@ import info.aduna.webapp.util.HttpServerUtil;
 
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
+import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.model.Model;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.LiteralImpl;
@@ -51,7 +52,7 @@ import org.openrdf.store.StoreException;
 public class ConfigurationController {
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = "/configurations")
+	@RequestMapping(method = { GET, HEAD }, value = Paths.CONFIGURATIONS)
 	public TupleResult list(HttpServletRequest request)
 		throws StoreConfigException
 	{
@@ -67,7 +68,7 @@ public class ConfigurationController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = "/configurations/*")
+	@RequestMapping(method = { GET, HEAD }, value = Paths.CONFIGURATION_ID)
 	public Model get(HttpServletRequest request)
 		throws StoreConfigException, ClientHTTPException
 	{
@@ -77,7 +78,7 @@ public class ConfigurationController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = PUT, value = "/configurations/*")
+	@RequestMapping(method = PUT, value = Paths.CONFIGURATION_ID)
 	public void put(HttpServletRequest request)
 		throws Exception
 	{
@@ -88,7 +89,7 @@ public class ConfigurationController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = DELETE, value = "/configurations/*")
+	@RequestMapping(method = DELETE, value = Paths.CONFIGURATION_ID)
 	public void delete(HttpServletRequest request)
 		throws StoreConfigException, ClientHTTPException, StoreException
 	{

@@ -7,7 +7,6 @@ package org.openrdf.http.server.controllers;
 
 import static org.openrdf.http.protocol.Protocol.BINDINGS_QUERY;
 import static org.openrdf.http.protocol.Protocol.BOOLEAN_QUERY;
-import static org.openrdf.http.protocol.Protocol.CONN_PATH;
 import static org.openrdf.http.protocol.Protocol.GRAPH_QUERY;
 import static org.openrdf.http.protocol.Protocol.X_QUERY_TYPE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
@@ -34,6 +33,7 @@ import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.http.protocol.exceptions.BadRequest;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NotImplemented;
+import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.http.server.helpers.QueryBuilder;
 import org.openrdf.http.server.interceptors.RepositoryInterceptor;
 import org.openrdf.model.Statement;
@@ -56,7 +56,7 @@ import org.openrdf.store.StoreException;
 public class QueryController {
 
 	@ModelAttribute
-	@RequestMapping(method = HEAD, value = CONN_PATH + "/queries")
+	@RequestMapping(method = HEAD, value = Paths.CONNECTION_QUERIES)
 	public void type(HttpServletRequest req, HttpServletResponse resp)
 		throws StoreException, HTTPException, IOException, MalformedQueryException
 	{
@@ -64,7 +64,7 @@ public class QueryController {
 		setQueryTypeHeader(query, resp);
 	}
 
-	@RequestMapping(method = POST, value = CONN_PATH + "/queries")
+	@RequestMapping(method = POST, value = Paths.CONNECTION_QUERIES)
 	public void prepare(HttpServletRequest req, HttpServletResponse resp)
 		throws StoreException, HTTPException, IOException, MalformedQueryException
 	{
@@ -98,7 +98,7 @@ public class QueryController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = HEAD, value = CONN_PATH + "/queries/*")
+	@RequestMapping(method = HEAD, value = Paths.CONNECTION_QUERY_ID)
 	public Result<?> head(HttpServletRequest request)
 		throws StoreException, BadRequest, HTTPException, IOException
 	{
@@ -125,7 +125,7 @@ public class QueryController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, POST }, value = CONN_PATH + "/queries/*")
+	@RequestMapping(method = { GET, POST }, value = Paths.CONNECTION_QUERY_ID)
 	public Result<?> get(HttpServletRequest request)
 		throws StoreException, BadRequest, HTTPException, IOException
 	{
@@ -139,7 +139,7 @@ public class QueryController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = DELETE, value = CONN_PATH + "/queries/*")
+	@RequestMapping(method = DELETE, value = Paths.CONNECTION_QUERY_ID)
 	public void delete(HttpServletRequest request)
 		throws StoreException
 	{

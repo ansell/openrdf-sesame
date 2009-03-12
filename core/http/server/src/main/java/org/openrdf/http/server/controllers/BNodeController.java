@@ -5,7 +5,6 @@
  */
 package org.openrdf.http.server.controllers;
 
-import static org.openrdf.http.protocol.Protocol.CONN_PATH;
 import static org.openrdf.http.server.interceptors.RepositoryInterceptor.getReadOnlyConnection;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.BadRequest;
+import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.http.server.interceptors.ConditionalRequestInterceptor;
 import org.openrdf.model.BNode;
 import org.openrdf.model.ValueFactory;
@@ -38,7 +38,7 @@ import org.openrdf.store.StoreException;
 public class BNodeController {
 
 	@ModelAttribute
-	@RequestMapping(method = POST, value = CONN_PATH + "/bnodes")
+	@RequestMapping(method = POST, value = Paths.CONNECTION_BNODES)
 	public TupleResult post(HttpServletRequest request)
 		throws StoreException, BadRequest
 	{
