@@ -1,11 +1,13 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.http.client.connections;
 
-import static org.openrdf.http.protocol.Protocol.ACCEPT_PARAM_NAME;
+import static info.aduna.net.http.EntityHeaders.CONTENT_TYPE;
+import static info.aduna.net.http.MimeTypes.FORM_MIME_TYPE;
+import static info.aduna.net.http.RequestHeaders.ACCEPT;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -107,7 +109,7 @@ public class HTTPConnection {
 	}
 
 	public void acceptString() {
-		method.addRequestHeader(ACCEPT_PARAM_NAME, "text/plain");
+		method.addRequestHeader(ACCEPT, "text/plain");
 	}
 
 	public void acceptLong() {
@@ -119,7 +121,7 @@ public class HTTPConnection {
 	{
 		if (pool.isPreferredBooleanQueryResultFormatUsed()) {
 			FileFormat format = pool.getPreferredBooleanQueryResultFormat();
-			method.addRequestHeader(ACCEPT_PARAM_NAME, format.getDefaultMIMEType());
+			method.addRequestHeader(ACCEPT, format.getDefaultMIMEType());
 			return;
 		}
 		// Specify which formats we support using Accept headers
@@ -145,7 +147,7 @@ public class HTTPConnection {
 					acceptParam += ";q=0." + qValue;
 				}
 
-				method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
+				method.addRequestHeader(ACCEPT, acceptParam);
 			}
 		}
 	}
@@ -155,7 +157,7 @@ public class HTTPConnection {
 	{
 		if (pool.isPreferredTupleQueryResultFormatUsed()) {
 			FileFormat format = pool.getPreferredTupleQueryResultFormat();
-			method.addRequestHeader(ACCEPT_PARAM_NAME, format.getDefaultMIMEType());
+			method.addRequestHeader(ACCEPT, format.getDefaultMIMEType());
 			return;
 		}
 		// Specify which formats we support using Accept headers
@@ -181,7 +183,7 @@ public class HTTPConnection {
 					acceptParam += ";q=0." + qValue;
 				}
 
-				method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
+				method.addRequestHeader(ACCEPT, acceptParam);
 			}
 		}
 	}
@@ -191,7 +193,7 @@ public class HTTPConnection {
 	{
 		if (pool.isPreferredTupleQueryResultFormatUsed()) {
 			FileFormat format = pool.getPreferredTupleQueryResultFormat();
-			method.addRequestHeader(ACCEPT_PARAM_NAME, format.getDefaultMIMEType());
+			method.addRequestHeader(ACCEPT, format.getDefaultMIMEType());
 			return;
 		}
 		acceptRDF(false);
@@ -234,7 +236,7 @@ public class HTTPConnection {
 					acceptParam += ";q=0." + qValue;
 				}
 
-				method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
+				method.addRequestHeader(ACCEPT, acceptParam);
 			}
 		}
 	}
@@ -308,7 +310,7 @@ public class HTTPConnection {
 	}
 
 	public void sendForm(List<NameValuePair> queryParams) {
-		method.setRequestHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
+		method.setRequestHeader(CONTENT_TYPE, FORM_MIME_TYPE + "; charset=utf-8");
 		((PostMethod)method).setRequestBody(queryParams.toArray(new NameValuePair[queryParams.size()]));
 	}
 
@@ -317,7 +319,8 @@ public class HTTPConnection {
 		String queryString = EncodingUtil.formUrlEncode(pairs, "UTF-8");
 		if (queryString.length() < 1024) {
 			method.setQueryString(queryString);
-		} else {
+		}
+		else {
 			sendForm(params);
 		}
 	}
@@ -378,7 +381,8 @@ public class HTTPConnection {
 	{
 		String mimeType = readContentType();
 		try {
-			BooleanQueryResultFormat format = BooleanQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(mimeType);
+			BooleanQueryResultFormat format = BooleanQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(
+					mimeType);
 			BooleanQueryResultParser parser = QueryResultIO.createParser(format);
 			return parser.parse(method.getResponseBodyAsStream());
 		}
@@ -526,7 +530,8 @@ public class HTTPConnection {
 				if ("max-age".equals(name)) {
 					try {
 						return Integer.parseInt(headerEl.getValue());
-					} catch (NumberFormatException e) {
+					}
+					catch (NumberFormatException e) {
 						logger.warn(e.toString(), e);
 						return 0;
 					}
