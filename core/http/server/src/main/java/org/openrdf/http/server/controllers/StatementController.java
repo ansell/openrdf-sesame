@@ -6,9 +6,7 @@
 package org.openrdf.http.server.controllers;
 
 import static org.openrdf.http.protocol.Protocol.BASEURI_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.CONN_PATH;
 import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.REPO_PATH;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
@@ -38,6 +36,7 @@ import org.openrdf.http.protocol.exceptions.ServerHTTPException;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.protocol.transaction.TransactionReader;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
+import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.helpers.RDFRequest;
 import org.openrdf.http.server.interceptors.RepositoryInterceptor;
@@ -69,7 +68,7 @@ public class StatementController {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@ModelAttribute
-	@RequestMapping(method = HEAD, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
+	@RequestMapping(method = HEAD, value = { Paths.REPOSITORY_STATEMENTS, Paths.CONNECTION_STATEMENTS })
 	public ModelResult head(HttpServletRequest request)
 		throws StoreException, ClientHTTPException, IOException
 	{
@@ -96,7 +95,7 @@ public class StatementController {
 	 * @return a model and view for exporting the statements.
 	 */
 	@ModelAttribute
-	@RequestMapping(method = GET, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
+	@RequestMapping(method = GET, value = { Paths.REPOSITORY_STATEMENTS, Paths.CONNECTION_STATEMENTS })
 	public ModelResult get(HttpServletRequest request)
 		throws StoreException, ClientHTTPException, IOException
 	{
@@ -123,7 +122,7 @@ public class StatementController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = POST, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
+	@RequestMapping(method = POST, value = { Paths.REPOSITORY_STATEMENTS, Paths.CONNECTION_STATEMENTS })
 	public void post(HttpServletRequest request, HttpServletResponse response)
 		throws Exception
 	{
@@ -143,7 +142,7 @@ public class StatementController {
 	 * Upload data to the repository.
 	 */
 	@ModelAttribute
-	@RequestMapping(method = PUT, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
+	@RequestMapping(method = PUT, value = { Paths.REPOSITORY_STATEMENTS, Paths.CONNECTION_STATEMENTS })
 	public void put(HttpServletRequest request)
 		throws IOException, ClientHTTPException, StoreException, RDFParseException
 	{
@@ -154,7 +153,7 @@ public class StatementController {
 	 * Delete data from the repository.
 	 */
 	@ModelAttribute
-	@RequestMapping(method = DELETE, value = { REPO_PATH + "/statements", CONN_PATH + "/statements" })
+	@RequestMapping(method = DELETE, value = { Paths.REPOSITORY_STATEMENTS, Paths.CONNECTION_STATEMENTS })
 	public void delete(HttpServletRequest request)
 		throws ClientHTTPException, StoreException, IOException
 	{

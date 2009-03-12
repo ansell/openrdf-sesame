@@ -5,8 +5,6 @@
  */
 package org.openrdf.http.server.controllers;
 
-import static org.openrdf.http.protocol.Protocol.CONN_PATH;
-import static org.openrdf.http.protocol.Protocol.REPO_PATH;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
@@ -31,6 +29,7 @@ import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NotImplemented;
+import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.http.server.helpers.QueryBuilder;
 import org.openrdf.http.server.interceptors.RepositoryInterceptor;
 import org.openrdf.model.Literal;
@@ -66,7 +65,7 @@ import org.openrdf.store.StoreException;
 public class RepositoryController {
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = "/repositories")
+	@RequestMapping(method = { GET, HEAD }, value = Paths.REPOSITORIES)
 	public TupleResult list(HttpServletRequest request)
 		throws HTTPException, StoreConfigException
 	{
@@ -98,7 +97,7 @@ public class RepositoryController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = REPO_PATH + "/connections")
+	@RequestMapping(method = { GET, HEAD }, value = Paths.CONNECTIONS)
 	public TupleResult listConnections(HttpServletRequest request)
 		throws HTTPException, StoreConfigException
 	{
@@ -118,7 +117,7 @@ public class RepositoryController {
 		return new TupleResultImpl(bindingNames, bindingSets);
 	}
 
-	@RequestMapping(method = POST, value = REPO_PATH + "/connections")
+	@RequestMapping(method = POST, value = Paths.CONNECTIONS)
 	public void post(HttpServletRequest request, HttpServletResponse response)
 		throws StoreException
 	{
@@ -130,7 +129,7 @@ public class RepositoryController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = DELETE, value = CONN_PATH)
+	@RequestMapping(method = DELETE, value = Paths.CONNECTION_ID)
 	public void delete(HttpServletRequest request)
 		throws StoreException
 	{
@@ -138,7 +137,7 @@ public class RepositoryController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = HEAD, value = { REPO_PATH, CONN_PATH })
+	@RequestMapping(method = HEAD, value = { Paths.REPOSITORY_ID, Paths.CONNECTION_ID })
 	public Result<?> head(HttpServletRequest request, HttpServletResponse response)
 		throws HTTPException, IOException, StoreException, MalformedQueryException
 	{
@@ -163,7 +162,7 @@ public class RepositoryController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, POST }, value = { REPO_PATH, CONN_PATH })
+	@RequestMapping(method = { GET, POST }, value = { Paths.REPOSITORY_ID, Paths.CONNECTION_ID })
 	public Result<?> query(HttpServletRequest request, HttpServletResponse response)
 		throws HTTPException, IOException, StoreException, MalformedQueryException
 	{

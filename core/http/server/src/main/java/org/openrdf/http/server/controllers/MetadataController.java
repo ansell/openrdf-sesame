@@ -1,12 +1,10 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.http.server.controllers;
 
-import static org.openrdf.http.protocol.Protocol.CONN_PATH;
-import static org.openrdf.http.protocol.Protocol.REPO_PATH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 
@@ -24,6 +22,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.http.protocol.Protocol;
+import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.http.server.interceptors.RepositoryInterceptor;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Model;
@@ -43,13 +42,13 @@ import org.openrdf.store.StoreException;
 public class MetadataController {
 
 	@ModelAttribute
-	@RequestMapping(method = HEAD, value = { REPO_PATH + "/metadata", CONN_PATH + "/metadata" })
+	@RequestMapping(method = HEAD, value = { Paths.REPOSITORY_METADATA, Paths.CONNECTION_METADATA })
 	public Model head(HttpServletRequest request) {
 		return new LinkedHashModel();
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = GET, value = { REPO_PATH + "/metadata", CONN_PATH + "/metadata" })
+	@RequestMapping(method = GET, value = { Paths.REPOSITORY_METADATA, Paths.CONNECTION_METADATA })
 	public Model get(HttpServletRequest request)
 		throws StoreException, IntrospectionException, IllegalAccessException, InvocationTargetException
 	{

@@ -79,12 +79,6 @@ public abstract class Protocol {
 	public static final String NAMED_GRAPH_PARAM_NAME = "named-graph-uri";
 
 	/**
-	 * Parameter name for the Accept parameter (may also be used as the name of
-	 * the Accept HTTP header).
-	 */
-	public static final String ACCEPT_PARAM_NAME = "Accept";
-
-	/**
 	 * Relative location of the protocol resource.
 	 */
 	public static final String PROTOCOL = "protocol";
@@ -115,6 +109,16 @@ public abstract class Protocol {
 	public static final String NAMESPACES = "namespaces";
 
 	/**
+	 * Relative location of the metadata resource of a repository.
+	 */
+	public static final String METADATA = "metadata";
+
+	/**
+	 * Relative location of the bnodes resource of a repository.
+	 */
+	public static final String BNODES = "bnodes";
+
+	/**
 	 * Parameter prefix for query-external variable bindings.
 	 */
 	public static final String BINDING_PREFIX = "$";
@@ -123,17 +127,17 @@ public abstract class Protocol {
 	 * Relative location of the 'size' resource of a repository.
 	 */
 	public static final String SIZE = "size";
-	
+
 	/**
 	 * Relative location of the repository configurations resource.
 	 */
 	public static final String CONFIGURATIONS = "configurations";
-	
+
 	/**
 	 * Relative location of the templates resource.
 	 */
 	public static final String TEMPLATES = "templates";
-	
+
 	/**
 	 * Relative location of the template schemas resource.
 	 */
@@ -173,17 +177,11 @@ public abstract class Protocol {
 	 */
 	public static final String FORM_MIME_TYPE = "application/x-www-form-urlencoded";
 
-	public static final String METADATA = "metadata";
-
 	public static final String METADATA_NAMESPACE = "http://www.openrdf.org/metadata/repository#";
 
 	public static final String OFFSET = "offset";
 
 	public static final String LIMIT = "limit";
-
-	public static final String REPO_PATH = "/repositories/*";
-
-	public static final String CONN_PATH = "/repositories/*/connections/*";
 
 	public static final String CONNECTIONS = "connections";
 
@@ -200,8 +198,6 @@ public abstract class Protocol {
 	public static final String PING = "ping";
 
 	public static final String BNODE = "bnode";
-
-	public static final String BNODES = "bnodes";
 
 	public static final long MIN_TIME_OUT = 60;
 

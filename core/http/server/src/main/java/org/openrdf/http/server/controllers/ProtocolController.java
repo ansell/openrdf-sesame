@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.http.protocol.Protocol;
+import org.openrdf.http.server.helpers.Paths;
 
 /**
  * Handles requests for protocol information. Currently returns the protocol
@@ -27,7 +28,7 @@ import org.openrdf.http.protocol.Protocol;
 public class ProtocolController {
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = "/protocol")
+	@RequestMapping(method = { GET, HEAD }, value = Paths.PROTOCOL)
 	public StringReader protocol() {
 		return new StringReader(Protocol.VERSION);
 	}

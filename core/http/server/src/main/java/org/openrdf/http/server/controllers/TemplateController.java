@@ -27,6 +27,7 @@ import info.aduna.webapp.util.HttpServerUtil;
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
+import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.model.Model;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.LiteralImpl;
@@ -54,7 +55,7 @@ import org.openrdf.store.StoreException;
 public class TemplateController {
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = "/templates")
+	@RequestMapping(method = { GET, HEAD }, value = Paths.TEMPLATES)
 	public TupleResult list(HttpServletRequest request)
 		throws StoreConfigException
 	{
@@ -70,7 +71,7 @@ public class TemplateController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = "/templates/*")
+	@RequestMapping(method = { GET, HEAD }, value = Paths.TEMPLATE_ID)
 	public Model get(HttpServletRequest request)
 		throws StoreConfigException, ClientHTTPException
 	{
@@ -84,7 +85,7 @@ public class TemplateController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = PUT, value = "/templates/*")
+	@RequestMapping(method = PUT, value = Paths.TEMPLATE_ID)
 	public void put(HttpServletRequest request)
 		throws Exception
 	{
@@ -95,7 +96,7 @@ public class TemplateController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = DELETE, value = "/templates/*")
+	@RequestMapping(method = DELETE, value = Paths.TEMPLATE_ID)
 	public void delete(HttpServletRequest request)
 		throws StoreConfigException, ClientHTTPException, StoreException
 	{
