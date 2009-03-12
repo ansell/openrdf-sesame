@@ -23,11 +23,11 @@ import org.openrdf.repository.RepositoryConnection;
  */
 public class ActiveConnection {
 
-	private RepositoryConnection connection;
+	private final RepositoryConnection connection;
 
-	private Map<String, Query> queries = new ConcurrentHashMap<String, Query>();
+	private final Map<String, Query> queries = new ConcurrentHashMap<String, Query>();
 
-	private Set<HttpServletRequest> activeRequests = new HashSet<HttpServletRequest>();
+	private final Set<HttpServletRequest> activeRequests = new HashSet<HttpServletRequest>();
 
 	private long lastAccessed;
 
@@ -39,8 +39,8 @@ public class ActiveConnection {
 		return connection;
 	}
 
-	public void accessed(long now) {
-		lastAccessed = now;
+	public void setLastAccessed(long lastAccessed) {
+		this.lastAccessed = lastAccessed;
 	}
 
 	public long getLastAccessed() {
@@ -89,5 +89,4 @@ public class ActiveConnection {
 	public void removeQuery(String id) {
 		queries.remove(id);
 	}
-
 }
