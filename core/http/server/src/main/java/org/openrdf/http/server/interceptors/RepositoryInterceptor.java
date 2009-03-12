@@ -34,6 +34,7 @@ import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.protocol.exceptions.ServerHTTPException;
 import org.openrdf.http.server.helpers.ActiveConnection;
 import org.openrdf.http.server.helpers.ProtocolUtil;
+import org.openrdf.http.server.helpers.RequestAtt;
 import org.openrdf.query.Query;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -50,27 +51,19 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class RepositoryInterceptor implements HandlerInterceptor, Runnable, DisposableBean {
+public class RepositoryInterceptor implements HandlerInterceptor, DisposableBean {
 
 	/*---------*
 	 * Statics *
 	 *---------*/
 
-	private static final String REPOSITORY_MANAGER = "repositoryManager";
-
-	private static final String REPOSITORY_KEY = "repository";
-
-	private static final String REPOSITORY_CONNECTION_KEY = "repositoryConnection";
-
 	private static final String BASE = RepositoryInterceptor.class.getName() + "#";
 
-	private static final String CONN_CREATE_KEY = BASE + "create-connection";
+	private static final String CON_CREATE_KEY = BASE + "create-connection";
 
-	private static final String CONN_CLOSED_KEY = BASE + "close-connection";
+	private static final String CON_CLOSED_KEY = BASE + "close-connection";
 
 	private static final String QUERY_CREATE_KEY = BASE + "create-query";
-
-	private static final String QUERY_MAP_KEY = BASE + "active-queries";
 
 	private static final String QUERY_CLOSED_KEY = BASE + "close-query";
 
@@ -81,28 +74,27 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 
 	public static RepositoryManager getRepositoryManager(HttpServletRequest request) {
 		ConditionalRequestInterceptor.managerModified(request);
-		return (RepositoryManager)request.getAttribute(REPOSITORY_MANAGER);
+		return RequestAtt.getRepositoryManager(request);
 	}
 
 	public static RepositoryManager getReadOnlyManager(HttpServletRequest request) {
-		return (RepositoryManager)request.getAttribute(REPOSITORY_MANAGER);
+		return RequestAtt.getRepositoryManager(request);
 	}
 
 	public static Repository getRepository(HttpServletRequest request) {
-		return (Repository)request.getAttribute(REPOSITORY_KEY);
+		return RequestAtt.getRepository(request);
 	}
 
 	public static RepositoryConnection getModifyingConnection(HttpServletRequest request) {
 		ConditionalRequestInterceptor.repositoryModified(request);
-		return (RepositoryConnection)request.getAttribute(REPOSITORY_CONNECTION_KEY);
+		return RequestAtt.getRepositoryConnection(request);
 	}
 
 	public static RepositoryConnection getRepositoryConnection(HttpServletRequest request)
 		throws StoreException
 	{
 		ConditionalRequestInterceptor.notSafe(request);
-		Object attr = request.getAttribute(REPOSITORY_CONNECTION_KEY);
-		RepositoryConnection con = (RepositoryConnection)attr;
+		RepositoryConnection con = RequestAtt.getRepositoryConnection(request);
 		if (con.isAutoCommit()) {
 			ConditionalRequestInterceptor.repositoryModified(request);
 		}
@@ -112,8 +104,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	public static RepositoryConnection getReadOnlyConnection(HttpServletRequest request)
 		throws StoreException
 	{
-		Object attr = request.getAttribute(REPOSITORY_CONNECTION_KEY);
-		RepositoryConnection con = (RepositoryConnection)attr;
+		RepositoryConnection con = RequestAtt.getRepositoryConnection(request);
 		if (!con.isAutoCommit()) {
 			ConditionalRequestInterceptor.notSafe(request);
 		}
@@ -123,13 +114,13 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	public static String createConnection(HttpServletRequest request) {
 		ConditionalRequestInterceptor.notSafe(request);
 		String id = Integer.toHexString(seq.getAndIncrement());
-		request.setAttribute(CONN_CREATE_KEY, id);
+		request.setAttribute(CON_CREATE_KEY, id);
 		return id;
 	}
 
 	public static void closeConnection(HttpServletRequest request) {
 		ConditionalRequestInterceptor.notSafe(request);
-		request.setAttribute(CONN_CLOSED_KEY, Boolean.TRUE);
+		request.setAttribute(CON_CLOSED_KEY, Boolean.TRUE);
 	}
 
 	public static String saveQuery(HttpServletRequest request, Query query) {
@@ -143,11 +134,14 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	public static Query getQuery(HttpServletRequest request, String id)
 		throws NotFound
 	{
-		ActiveConnection activeQueries = (ActiveConnection)request.getAttribute(QUERY_MAP_KEY);
-		Query query = activeQueries.getQuery(id);
-		if (query != null) {
-			return query;
+		ActiveConnection activeCon = RequestAtt.getActiveConnection(request);
+		if (activeCon != null) {
+			Query query = activeCon.getQuery(id);
+			if (query != null) {
+				return query;
+			}
 		}
+
 		throw new NotFound(id);
 	}
 
@@ -191,7 +185,14 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	 *--------------*/
 
 	public RepositoryInterceptor() {
-		executor.scheduleWithFixedDelay(this, MAX_TIME_OUT, MAX_TIME_OUT, TIME_OUT_UNITS);
+		Runnable gc = new Runnable() {
+
+			public void run() {
+				closeExpiredConnections();
+			}
+		};
+
+		executor.scheduleWithFixedDelay(gc, MAX_TIME_OUT, MAX_TIME_OUT, TIME_OUT_UNITS);
 	}
 
 	/*---------*
@@ -211,20 +212,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 	{
 		ProtocolUtil.logRequestParameters(request);
 
-		/*
-				if (notModified(request, response)) {
-					response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-					postHandle(request, response, null, null);
-					return false;
-				}
-
-				if (!precondition(request, response)) {
-					response.setStatus(HttpServletResponse.SC_PRECONDITION_FAILED);
-					response.setDateHeader(DATE, System.currentTimeMillis() / 1000 * 1000);
-					return false;
-				}
-		*/
-		request.setAttribute(REPOSITORY_MANAGER, repositoryManager);
+		RequestAtt.setRepositoryManager(request, repositoryManager);
 
 		String repositoryID = ProtocolUtil.getRepositoryID(request);
 		if (repositoryID != null) {
@@ -235,22 +223,23 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 					throw new NotFound("Unknown repository: " + repositoryID);
 				}
 
-				ActiveConnection repositoryCon;
+				ActiveConnection activeCon;
 				String connectionID = ProtocolUtil.getConnectionID(request);
 				if (connectionID == null) {
-					repositoryCon = new ActiveConnection(repository.getConnection());
-					singleConnections.put(repositoryCon, request);
+					activeCon = new ActiveConnection(repository.getConnection());
+					singleConnections.put(activeCon, request);
 				}
 				else {
-					repositoryCon = activeConnections.get(connectionID);
-					if (repositoryCon == null) {
+					activeCon = activeConnections.get(connectionID);
+					if (activeCon == null) {
 						throw new NotFound("Unknown connection: " + connectionID);
 					}
 				}
-				repositoryCon.open(request);
-				request.setAttribute(REPOSITORY_KEY, repository);
-				request.setAttribute(REPOSITORY_CONNECTION_KEY, repositoryCon.getConnection());
-				request.setAttribute(QUERY_MAP_KEY, repositoryCon);
+
+				activeCon.open(request);
+				RequestAtt.setRepository(request, repository);
+				RequestAtt.setRepositoryConnection(request, activeCon.getConnection());
+				RequestAtt.setActiveConnection(request, activeCon);
 				request.setAttribute(SELF_KEY, this);
 			}
 			catch (StoreConfigException e) {
@@ -260,6 +249,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 				throw new ServerHTTPException(e.getMessage(), e);
 			}
 		}
+
 		return true;
 	}
 
@@ -272,13 +262,14 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 			Exception exception)
 		throws ServerHTTPException
 	{
-		String id = ProtocolUtil.getConnectionID(request);
-		boolean close = request.getAttribute(CONN_CLOSED_KEY) != null;
-		String newId = (String)request.getAttribute(CONN_CREATE_KEY);
-		Object attr = request.getAttribute(REPOSITORY_CONNECTION_KEY);
-		RepositoryConnection repositoryCon = (RepositoryConnection)attr;
+		boolean close = request.getAttribute(CON_CLOSED_KEY) != null;
+		String newId = (String)request.getAttribute(CON_CREATE_KEY);
 		String queryId = (String)request.getAttribute(QUERY_CREATE_KEY);
-		ActiveConnection activeConnection = (ActiveConnection)request.getAttribute(QUERY_MAP_KEY);
+
+		String id = ProtocolUtil.getConnectionID(request);
+		RepositoryConnection repositoryCon = RequestAtt.getRepositoryConnection(request);
+		ActiveConnection activeConnection = RequestAtt.getActiveConnection(request);
+
 		if (activeConnection != null) {
 			activeConnection.accessed(System.currentTimeMillis());
 			activeConnection.close(request);
@@ -286,14 +277,17 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 				singleConnections.remove(activeConnection);
 			}
 		}
+
 		if (queryId != null) {
 			Query query = (Query)request.getAttribute(QUERY_CREATE_KEY + queryId);
 			activeConnection.putQuery(queryId, query);
 		}
+
 		queryId = (String)request.getAttribute(QUERY_CLOSED_KEY);
 		if (queryId != null) {
 			activeConnection.removeQuery(queryId);
 		}
+
 		if (repositoryCon != null && (close || id == null && newId == null)) {
 			try {
 				repositoryCon.close();
@@ -310,7 +304,7 @@ public class RepositoryInterceptor implements HandlerInterceptor, Runnable, Disp
 		}
 	}
 
-	public void run() {
+	private void closeExpiredConnections() {
 		long now = System.currentTimeMillis();
 		long max = Protocol.TIME_OUT_UNITS.toMillis(Protocol.MAX_TIME_OUT);
 
