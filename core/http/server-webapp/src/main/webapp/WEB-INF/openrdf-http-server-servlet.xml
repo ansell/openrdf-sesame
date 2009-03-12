@@ -45,7 +45,11 @@
 	<bean id="viewNameTranslator" class="org.openrdf.http.server.ContentNegotiator" />
 
 <!-- Interceptors -->
-	<bean id="openrdfRepositoryInterceptor" class="org.openrdf.http.server.repository.RepositoryInterceptor">
+	<bean id="conditionalReqInterceptor" class="org.openrdf.http.server.interceptors.ConditionalRequestInterceptor">
+		<property name="repositoryManager" ref="openrdfRepositoryManager" />
+	</bean>
+
+	<bean id="openrdfRepositoryInterceptor" class="org.openrdf.http.server.interceptors.RepositoryInterceptor">
 		<property name="repositoryManager" ref="openrdfRepositoryManager" />
 	</bean>
 
@@ -66,6 +70,7 @@
 	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
 		<property name="interceptors">
 			<list>
+				<ref bean="conditionalReqInterceptor" />
 				<ref bean="openrdfRepositoryInterceptor" />
 			</list>
 		</property>

@@ -32,7 +32,7 @@ import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NotImplemented;
 import org.openrdf.http.server.helpers.QueryBuilder;
-import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.http.server.interceptors.RepositoryInterceptor;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.server.helpers.RDFRequest;
-import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.http.server.interceptors.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;

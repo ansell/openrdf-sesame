@@ -6,9 +6,8 @@
 package org.openrdf.http.server.controllers;
 
 import static org.openrdf.http.protocol.Protocol.CONN_PATH;
-import static org.openrdf.http.server.repository.RepositoryInterceptor.getModifyingConnection;
-import static org.openrdf.http.server.repository.RepositoryInterceptor.getReadOnlyConnection;
-import static org.openrdf.http.server.repository.RepositoryInterceptor.notSafe;
+import static org.openrdf.http.server.interceptors.RepositoryInterceptor.getModifyingConnection;
+import static org.openrdf.http.server.interceptors.RepositoryInterceptor.getReadOnlyConnection;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.StringReader;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import org.openrdf.http.server.interceptors.ConditionalRequestInterceptor;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.store.StoreException;
 
@@ -35,7 +35,7 @@ public class ConnectionController {
 	public void begin(HttpServletRequest request)
 		throws StoreException
 	{
-		notSafe(request);
+		ConditionalRequestInterceptor.notSafe(request);
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
 		// FIXME: should this generate an error if txn has already started?
 		if (repositoryCon.isAutoCommit()) {
@@ -48,7 +48,7 @@ public class ConnectionController {
 	public StringReader ping(HttpServletRequest request)
 		throws StoreException
 	{
-		notSafe(request);
+		ConditionalRequestInterceptor.notSafe(request);
 		return new StringReader("pong");
 	}
 

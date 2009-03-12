@@ -26,7 +26,7 @@ import info.aduna.webapp.util.HttpServerUtil;
 
 import org.openrdf.http.protocol.exceptions.BadRequest;
 import org.openrdf.http.protocol.exceptions.NotFound;
-import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.http.server.interceptors.RepositoryInterceptor;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.result.NamespaceResult;
 import org.openrdf.store.StoreException;

@@ -40,7 +40,7 @@ import org.openrdf.http.protocol.transaction.TransactionReader;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.http.server.helpers.ProtocolUtil;
 import org.openrdf.http.server.helpers.RDFRequest;
-import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.http.server.interceptors.RepositoryInterceptor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;

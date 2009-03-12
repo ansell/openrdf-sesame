@@ -6,8 +6,7 @@
 package org.openrdf.http.server.controllers;
 
 import static org.openrdf.http.protocol.Protocol.CONN_PATH;
-import static org.openrdf.http.server.repository.RepositoryInterceptor.getReadOnlyConnection;
-import static org.openrdf.http.server.repository.RepositoryInterceptor.notSafe;
+import static org.openrdf.http.server.interceptors.RepositoryInterceptor.getReadOnlyConnection;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.util.ArrayList;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.BadRequest;
+import org.openrdf.http.server.interceptors.ConditionalRequestInterceptor;
 import org.openrdf.model.BNode;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
@@ -45,7 +45,7 @@ public class BNodeController {
 		int amount = getAmount(request);
 		String nodeID = request.getParameter(Protocol.NODE_ID);
 
-		notSafe(request);
+		ConditionalRequestInterceptor.notSafe(request);
 		RepositoryConnection repositoryCon = getReadOnlyConnection(request);
 		ValueFactory vf = repositoryCon.getValueFactory();
 
