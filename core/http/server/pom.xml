@@ -30,6 +30,10 @@
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-webapp-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-net</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>

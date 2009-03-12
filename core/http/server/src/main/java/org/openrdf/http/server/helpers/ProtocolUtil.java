@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.file.FileFormat;
 import info.aduna.io.file.FileFormatServiceRegistry;
+import info.aduna.net.http.RequestHeaders;
 import info.aduna.webapp.util.HttpServerUtil;
 
 import org.openrdf.http.protocol.Protocol;
@@ -250,7 +251,7 @@ public class ProtocolUtil {
 		boolean hasAcceptParam = accept != null;
 
 		if (hasAcceptParam) {
-			request = overrideHeader(HttpServerUtil.ACCEPT_HEADER_NAME, accept, request);
+			request = overrideHeader(RequestHeaders.ACCEPT, accept, request);
 		}
 
 		// Find an acceptable MIME type based on the request headers
@@ -264,7 +265,7 @@ public class ProtocolUtil {
 		String mimeType = HttpServerUtil.selectPreferredMIMEType(mimeTypes.iterator(), request);
 
 		if (!hasAcceptParam) {
-			response.setHeader("Vary", HttpServerUtil.ACCEPT_HEADER_NAME);
+			response.setHeader("Vary", RequestHeaders.ACCEPT);
 		}
 
 		if (mimeType != null) {
@@ -290,7 +291,7 @@ public class ProtocolUtil {
 			StringBuilder acceptable = new StringBuilder(64);
 
 			@SuppressWarnings("unchecked")
-			Enumeration<String> acceptHeaders = request.getHeaders(HttpServerUtil.ACCEPT_HEADER_NAME);
+			Enumeration<String> acceptHeaders = request.getHeaders(RequestHeaders.ACCEPT);
 
 			while (acceptHeaders.hasMoreElements()) {
 				acceptable.append(acceptHeaders.nextElement());
