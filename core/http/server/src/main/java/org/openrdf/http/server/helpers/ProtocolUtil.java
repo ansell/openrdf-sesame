@@ -5,6 +5,8 @@
  */
 package org.openrdf.http.server.helpers;
 
+import static info.aduna.net.http.RequestHeaders.ACCEPT;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -54,7 +56,6 @@ public class ProtocolUtil {
 	private static final String CONNECTIONS = "/connections/";
 
 	public static String getRepositoryID(HttpServletRequest request) {
-		String pathInfo = request.getPathInfo();
 		String path = request.getRequestURI();
 		int start = path.indexOf(REPOSITORIES);
 		if (start < 0) {
@@ -247,7 +248,7 @@ public class ProtocolUtil {
 		throws ClientHTTPException
 	{
 		// Accept-parameter takes precedence over request headers
-		String[] accept = request.getParameterValues(Protocol.ACCEPT_PARAM_NAME);
+		String[] accept = request.getParameterValues(ACCEPT);
 		boolean hasAcceptParam = accept != null;
 
 		if (hasAcceptParam) {
