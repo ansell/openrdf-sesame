@@ -5,8 +5,8 @@
  */
 package org.openrdf.http.server.helpers;
 
+import static info.aduna.net.http.MimeTypes.FORM_MIME_TYPE;
 import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.FORM_MIME_TYPE;
 import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.LIMIT;
 import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
@@ -50,7 +50,7 @@ public class RDFRequest {
 	{
 		this.vf = vf;
 		this.request = req;
-		
+
 		String contentType = req.getContentType();
 		if (contentType != null) {
 			String mimeType = HttpServerUtil.getMIMEType(contentType);

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.server.helpers.Paths;
-import org.openrdf.http.server.interceptors.RepositoryInterceptor;
+import org.openrdf.http.server.helpers.RequestAtt;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
@@ -55,7 +55,7 @@ public class MetadataController {
 		BeanInfo info = Introspector.getBeanInfo(RepositoryMetaData.class);
 		PropertyDescriptor[] properties = info.getPropertyDescriptors();
 
-		Repository repository = RepositoryInterceptor.getRepository(request);
+		Repository repository = RequestAtt.getRepository(request);
 		RepositoryMetaData data = repository.getMetaData();
 		URIFactory uf = repository.getURIFactory();
 		LiteralFactory lf = repository.getLiteralFactory();

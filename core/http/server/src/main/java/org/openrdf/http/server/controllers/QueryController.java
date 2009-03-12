@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -57,11 +57,12 @@ public class QueryController {
 
 	@ModelAttribute
 	@RequestMapping(method = HEAD, value = Paths.CONNECTION_QUERIES)
-	public void type(HttpServletRequest req, HttpServletResponse resp)
+	public void type(HttpServletRequest request, HttpServletResponse response)
 		throws StoreException, HTTPException, IOException, MalformedQueryException
 	{
-		Query query = new QueryBuilder(req).prepareQuery();
-		setQueryTypeHeader(query, resp);
+		// FIXME: supporting HEAD but not GET looks like a hack
+		Query query = new QueryBuilder(request).prepareQuery();
+		setQueryTypeHeader(query, response);
 	}
 
 	@RequestMapping(method = POST, value = Paths.CONNECTION_QUERIES)
@@ -74,8 +75,8 @@ public class QueryController {
 		// Store the query for later reference
 		String id = RepositoryInterceptor.saveQuery(req, query);
 
-		StringBuffer url = req.getRequestURL();
-		String location = url.append("/").append(id).toString();
+		String location = req.getRequestURL().append("/").append(id).toString();
+
 		resp.setStatus(HttpServletResponse.SC_CREATED);
 		resp.setHeader("Location", location);
 	}

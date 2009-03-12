@@ -5,7 +5,6 @@
  */
 package org.openrdf.http.server.controllers;
 
-import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -13,10 +12,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,31 +21,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.http.protocol.exceptions.HTTPException;
-import org.openrdf.http.protocol.exceptions.NotImplemented;
 import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.http.server.helpers.QueryBuilder;
-import org.openrdf.http.server.interceptors.RepositoryInterceptor;
+import org.openrdf.http.server.helpers.RequestAtt;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Query;
-import org.openrdf.query.TupleQuery;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.result.Result;
 import org.openrdf.result.TupleResult;
-import org.openrdf.result.impl.BooleanResultImpl;
-import org.openrdf.result.impl.GraphResultImpl;
 import org.openrdf.result.impl.TupleResultImpl;
 import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
@@ -80,7 +66,7 @@ public class RepositoryController {
 		String namespace = requestURL.toString();
 
 		ValueFactory vf = new ValueFactoryImpl();
-		RepositoryManager repositoryManager = RepositoryInterceptor.getReadOnlyManager(request);
+		RepositoryManager repositoryManager = RequestAtt.getRepositoryManager(request);
 		for (RepositoryInfo info : repositoryManager.getAllRepositoryInfos()) {
 			String id = info.getId();
 			URI uri = vf.createURI(namespace, id);
@@ -97,72 +83,15 @@ public class RepositoryController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, HEAD }, value = Paths.CONNECTIONS)
-	public TupleResult listConnections(HttpServletRequest request)
-		throws HTTPException, StoreConfigException
-	{
-		List<String> bindingNames = Arrays.asList("method", "url");
-		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
-
-		ValueFactory vf = new ValueFactoryImpl();
-		Collection<String> requests = RepositoryInterceptor.getActiveRequests(request);
-		for (String req : requests) {
-			String[] split = req.split(" ", 2);
-			Literal method = vf.createLiteral(split[0]);
-			Literal url = vf.createLiteral(split[1]);
-
-			bindingSets.add(new ListBindingSet(bindingNames, method, url));
-		}
-
-		return new TupleResultImpl(bindingNames, bindingSets);
-	}
-
-	@RequestMapping(method = POST, value = Paths.CONNECTIONS)
-	public void post(HttpServletRequest request, HttpServletResponse response)
-		throws StoreException
-	{
-		String id = RepositoryInterceptor.createConnection(request);
-		StringBuffer url = request.getRequestURL();
-		String location = url.append("/").append(id).toString();
-		response.setStatus(HttpServletResponse.SC_CREATED);
-		response.setHeader("Location", location);
-	}
-
-	@ModelAttribute
-	@RequestMapping(method = DELETE, value = Paths.CONNECTION_ID)
-	public void delete(HttpServletRequest request)
-		throws StoreException
-	{
-		RepositoryInterceptor.closeConnection(request);
-	}
-
-	@ModelAttribute
-	@RequestMapping(method = HEAD, value = { Paths.REPOSITORY_ID, Paths.CONNECTION_ID })
+	@RequestMapping(method = HEAD, value = { Paths.REPOSITORY_ID })
 	public Result<?> head(HttpServletRequest request, HttpServletResponse response)
 		throws HTTPException, IOException, StoreException, MalformedQueryException
 	{
-		Query query = new QueryBuilder(request).prepareQuery();
-
-		if (query instanceof TupleQuery) {
-			List<String> names = Collections.emptyList();
-			Cursor<BindingSet> bindings = EmptyCursor.getInstance();
-			return new TupleResultImpl(names, bindings);
-		}
-		else if (query instanceof GraphQuery) {
-			Map<String, String> namespaces = Collections.emptyMap();
-			Cursor<Statement> statements = EmptyCursor.getInstance();
-			return new GraphResultImpl(namespaces, statements);
-		}
-		else if (query instanceof BooleanQuery) {
-			return new BooleanResultImpl(new EmptyCursor<Boolean>());
-		}
-		else {
-			throw new NotImplemented("Unsupported query type: " + query.getClass().getName());
-		}
+		return new QueryBuilder(request).getDummyResult();
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = { GET, POST }, value = { Paths.REPOSITORY_ID, Paths.CONNECTION_ID })
+	@RequestMapping(method = { GET, POST }, value = { Paths.REPOSITORY_ID })
 	public Result<?> query(HttpServletRequest request, HttpServletResponse response)
 		throws HTTPException, IOException, StoreException, MalformedQueryException
 	{

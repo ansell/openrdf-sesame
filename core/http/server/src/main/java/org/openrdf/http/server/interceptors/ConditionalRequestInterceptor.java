@@ -174,6 +174,7 @@ public class ConditionalRequestInterceptor implements HandlerInterceptor {
 		}
 		String etag = request.getHeader(IF_NONE_MATCH);
 		if (etag != null) {
+			// FIXME: shouldn't this result in a precondition failure?
 			response.addHeader(VARY, IF_NONE_MATCH);
 			if (etag.equals(eTag(request))) {
 				return true;

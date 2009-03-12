@@ -72,19 +72,6 @@ public class RepositoryInterceptor implements HandlerInterceptor, DisposableBean
 	// FIXME: use a random identifier to prevent guessing?
 	private static final AtomicInteger seq = new AtomicInteger(new Random().nextInt());
 
-	public static RepositoryManager getRepositoryManager(HttpServletRequest request) {
-		ConditionalRequestInterceptor.managerModified(request);
-		return RequestAtt.getRepositoryManager(request);
-	}
-
-	public static RepositoryManager getReadOnlyManager(HttpServletRequest request) {
-		return RequestAtt.getRepositoryManager(request);
-	}
-
-	public static Repository getRepository(HttpServletRequest request) {
-		return RequestAtt.getRepository(request);
-	}
-
 	public static RepositoryConnection getModifyingConnection(HttpServletRequest request) {
 		ConditionalRequestInterceptor.repositoryModified(request);
 		return RequestAtt.getRepositoryConnection(request);
