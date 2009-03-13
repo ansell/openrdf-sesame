@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -50,9 +50,9 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	 * Creates a new RepositoryConfigManager that operates on the specified
 	 * system repository.
 	 * 
-	 * @param baseDir
-	 *        The base directory where data for repositories can be stored, among
-	 *        other things.
+	 * @param SYSTEM
+	 *        The repository where configuration data for repositories can be
+	 *        stored, among other things.
 	 */
 	public SystemConfigManager(Repository SYSTEM) {
 		this.SYSTEM = SYSTEM;
