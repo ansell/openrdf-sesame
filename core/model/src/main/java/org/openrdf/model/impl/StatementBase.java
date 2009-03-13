@@ -21,9 +21,9 @@ public abstract class StatementBase implements Statement {
 	 *         {@link Statement} and if their subjects, predicates and objects
 	 *         are equal.
 	 */
-	public final boolean equalsIgnoreContext(Object obj) {
-		if (obj instanceof Statement) {
-			return equalsIgnoreContext((Statement)obj);
+	public final boolean equalsIgnoreContext(Object other) {
+		if (other instanceof Statement) {
+			return equalsIgnoreContext((Statement)other);
 		}
 
 		return false;
@@ -52,9 +52,9 @@ public abstract class StatementBase implements Statement {
 	 *         contexts are equal.
 	 */
 	@Override
-	public final boolean equals(Object obj) {
-		if (obj instanceof Statement) {
-			return equals((Statement)obj);
+	public final boolean equals(Object other) {
+		if (other instanceof Statement) {
+			return equals((Statement)other);
 		}
 
 		return false;

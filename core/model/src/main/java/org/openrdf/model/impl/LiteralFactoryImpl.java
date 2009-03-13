@@ -55,7 +55,7 @@ public class LiteralFactoryImpl implements LiteralFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(long, URI)} with the supplied value and
+	 * Calls {@link #createIntegerLiteral} with the supplied value and
 	 * {@link XMLSchema#BYTE} as parameters.
 	 */
 	public Literal createLiteral(byte value) {
@@ -63,7 +63,7 @@ public class LiteralFactoryImpl implements LiteralFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(long, URI)} with the supplied value and
+	 * Calls {@link #createIntegerLiteral} with the supplied value and
 	 * {@link XMLSchema#SHORT} as parameters.
 	 */
 	public Literal createLiteral(short value) {
@@ -71,7 +71,7 @@ public class LiteralFactoryImpl implements LiteralFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(long, URI)} with the supplied value and
+	 * Calls {@link #createIntegerLiteral} with the supplied value and
 	 * {@link XMLSchema#INT} as parameters.
 	 */
 	public Literal createLiteral(int value) {
@@ -79,7 +79,7 @@ public class LiteralFactoryImpl implements LiteralFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(long, URI)} with the supplied value and
+	 * Calls {@link #createIntegerLiteral} with the supplied value and
 	 * {@link XMLSchema#LONG} as parameters.
 	 */
 	public Literal createLiteral(long value) {
@@ -87,7 +87,7 @@ public class LiteralFactoryImpl implements LiteralFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(long, URI)} with the supplied value and
+	 * Calls {@link #createIntegerLiteral} with the supplied value and
 	 * {@link XMLSchema#INTEGER} as parameters.
 	 */
 	public Literal createLiteral(BigInteger value) {
@@ -95,7 +95,7 @@ public class LiteralFactoryImpl implements LiteralFactory {
 	}
 
 	/**
-	 * Calls {@link #createNumericLiteral(Number, URI)} with the supplied value
+	 * Calls {@link #createNumericLiteral} with the supplied value
 	 * and datatype as parameters.
 	 */
 	protected Literal createIntegerLiteral(Number value, URI datatype) {
@@ -147,9 +147,9 @@ public class LiteralFactoryImpl implements LiteralFactory {
 	 * Calls {@link ValueFactory#createLiteral(String, URI)} with the
 	 * String-value of the supplied duration and the appropriate datatype as
 	 * parameters. If only one or both of the year and month field are set, then
-	 * return a {@link XMLSchema.DURATION_YEARMONTH} literal. If year and month
-	 * are not set, then return a {@link XMLSchema.DURATION_DAYTIME} literal.
-	 * Otherwise return a {@link XMLSchema.DURATION} literal.
+	 * return a {@link XMLSchema#DURATION_YEARMONTH} literal. If year and month
+	 * are not set, then return a {@link XMLSchema#DURATION_DAYTIME} literal.
+	 * Otherwise return a {@link XMLSchema#DURATION} literal.
 	 * 
 	 * @see Duration#toString()
 	 * @see Duration#isSet(DatatypeConstants.Field)

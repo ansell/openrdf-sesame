@@ -127,7 +127,7 @@ public interface LiteralFactory {
 	 *        The value for the literal.
 	 * @return An <tt>xsd:integer</tt>-typed literal for the specified value.
 	 */
-	public Literal createLiteral(BigInteger integer);
+	public Literal createLiteral(BigInteger value);
 
 	/**
 	 * Creates a new <tt>xsd:decimal</tt>-typed literal representing the
@@ -137,25 +137,25 @@ public interface LiteralFactory {
 	 *        The value for the literal.
 	 * @return An <tt>xsd:decimal</tt>-typed literal for the specified value.
 	 */
-	public Literal createLiteral(BigDecimal decimal);
+	public Literal createLiteral(BigDecimal value);
 
 	/**
 	 * Creates a new literal representing the specified duration that is typed
 	 * using the appropriate XML Schema duration datatypes.
 	 * 
-	 * @param duration
+	 * @param value
 	 *        The value for the literal.
 	 * @return An typed literal for the specified duration.
 	 */
-	public Literal createLiteral(Duration duration);
+	public Literal createLiteral(Duration value);
 
 	/**
 	 * Creates a new literal representing the specified calendar that is typed
 	 * using the appropriate XML Schema date/time datatype.
 	 * 
-	 * @param calendar
+	 * @param value
 	 *        The value for the literal.
 	 * @return An typed literal for the specified calendar.
 	 */
-	public Literal createLiteral(XMLGregorianCalendar calendar);
+	public Literal createLiteral(XMLGregorianCalendar value);
 }

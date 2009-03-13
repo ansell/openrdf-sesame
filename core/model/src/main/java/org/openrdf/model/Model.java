@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.util.ModelException;
 
 /**
@@ -93,11 +92,6 @@ public interface Model extends Set<Statement>, Serializable {
 	 *        or more contexts are specified, statements with a context matching
 	 *        one of these will match.
 	 * @return <code>true</code> if statements match the specified pattern.
-	 * @throws IllegalArgumentException
-	 *         If a <tt>null</tt>-array is specified as the value for
-	 *         <tt>contexts</tt>. See
-	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
-	 *         info.
 	 */
 	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts);
 
@@ -131,11 +125,6 @@ public interface Model extends Set<Statement>, Serializable {
 	 * @param context
 	 *        The context of the statements to remove.
 	 * @return <code>true</code> if one or more statements have been removed.
-	 * @throws IllegalArgumentException
-	 *         If a <tt>null</tt>-array is specified as the value for
-	 *         <tt>contexts</tt>. See
-	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
-	 *         info.
 	 */
 	public boolean clear(Resource... context);
 
@@ -174,11 +163,6 @@ public interface Model extends Set<Statement>, Serializable {
 	 *        If one or more contexts are specified, statements with a context
 	 *        matching one of these will be removed.
 	 * @return <code>true</code> if one or more statements have been removed.
-	 * @throws IllegalArgumentException
-	 *         If a <tt>null</tt>-array is specified as the value for
-	 *         <tt>contexts</tt>. See
-	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
-	 *         info.
 	 */
 	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts);
 
@@ -230,11 +214,6 @@ public interface Model extends Set<Statement>, Serializable {
 	 *        or more contexts are specified, statements with a context matching
 	 *        one of these will match.
 	 * @return The statements that match the specified pattern.
-	 * @throws IllegalArgumentException
-	 *         If a <tt>null</tt>-array is specified as the value for
-	 *         <tt>contexts</tt>. See
-	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
-	 *         info.
 	 */
 	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts);
 
@@ -323,9 +302,8 @@ public interface Model extends Set<Statement>, Serializable {
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
 	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
-	 *         its return value is not a Literal.
+	 *         If such an exception is thrown by {@link #objectValue()} or if its
+	 *         return value is not a Literal.
 	 */
 	public Literal objectLiteral()
 		throws ModelException;
@@ -337,9 +315,8 @@ public interface Model extends Set<Statement>, Serializable {
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
 	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
-	 *         its return value is not a Resource.
+	 *         If such an exception is thrown by {@link #objectValue()} or if its
+	 *         return value is not a Resource.
 	 */
 	public Resource objectResource()
 		throws ModelException;
@@ -351,9 +328,8 @@ public interface Model extends Set<Statement>, Serializable {
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
 	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
-	 *         its return value is not a URI.
+	 *         If such an exception is thrown by {@link #objectValue()} or if its
+	 *         return value is not a URI.
 	 */
 	public URI objectURI()
 		throws ModelException;
