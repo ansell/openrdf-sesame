@@ -459,11 +459,6 @@ public class GraphUtil {
 	 *        specified, statements will match disregarding their context. If one
 	 *        or more contexts are specified, statements with a context matching
 	 *        one of these will match.
-	 * @throws IllegalArgumentException
-	 *         If a <tt>null</tt>-array is specified as the value for
-	 *         <tt>contexts</tt>. See
-	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
-	 *         info.
 	 */
 	public static void remove(Graph graph, Resource subj, URI pred, Value obj, Resource... contexts) {
 		Iterator<Statement> statements = graph.match(subj, pred, obj, contexts);
