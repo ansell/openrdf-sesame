@@ -258,8 +258,8 @@ public class ModelUtil {
 	 * case more than one statement matches -- for example statements from
 	 * multiple contexts -- all these statements should have the same subject. A
 	 * {@link ModelException} is thrown if these conditions are not met. See
-	 * {@link Model#match(Resource, URI, Value, Resource[])} for a description of
-	 * the parameter values.
+	 * {@link Model#filter(Resource, URI, Value, Resource...)} for a description
+	 * of the parameter values.
 	 * 
 	 * @return The subject of the matched statement(s).
 	 * @throws ModelException
@@ -311,9 +311,9 @@ public class ModelUtil {
 	 * object from the specified contexts in the supplied model. If the
 	 * combination of predicate, object and contexts matches one or more
 	 * statements, all these statements should have the same subject. A
-	 * {@link RepositoryConfigException} is thrown if this is not the case. See
-	 * {@link Model#match(Resource, URI, Value, Resource[])} for a description of
-	 * the parameter values.
+	 * {@link ModelException} is thrown if this is not the case. See
+	 * {@link Model#filter(Resource, URI, Value, Resource...)} for a description
+	 * of the parameter values.
 	 * 
 	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
@@ -369,7 +369,7 @@ public class ModelUtil {
 	 * statement. In case more than one statement matches -- for example
 	 * statements from multiple contexts -- all these statements should have the
 	 * same object. A {@link ModelException} is thrown if these conditions are
-	 * not met. See {@link Model#match(Resource, URI, Value, Resource[])} for a
+	 * not met. See {@link Model#filter(Resource, URI, Value, Resource...)} for a
 	 * description of the parameter values.
 	 * 
 	 * @return The object of the matched statement(s).
@@ -482,9 +482,9 @@ public class ModelUtil {
 	 * predicate from the specified contexts in the supplied model. If the
 	 * combination of subject, predicate and contexts matches one or more
 	 * statements, all these statements should have the same object. A
-	 * {@link RepositoryConfigException} is thrown if this is not the case. See
-	 * {@link Model#match(Resource, URI, Value, Resource[])} for a description of
-	 * the parameter values.
+	 * {@link ModelException} is thrown if this is not the case. See
+	 * {@link Model#filter(Resource, URI, Value, Resource...)} for a description
+	 * of the parameter values.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.

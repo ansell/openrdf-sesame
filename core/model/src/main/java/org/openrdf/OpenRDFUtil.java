@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -23,7 +23,7 @@ public class OpenRDFUtil {
 	 * 
 	 * @param contexts
 	 *        The parameter to check.
-	 * @returns a none-null array
+	 * @return a non-null array
 	 */
 	public static Resource[] notNull(Resource... contexts) {
 		if (contexts == null) {

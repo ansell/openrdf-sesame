@@ -45,60 +45,36 @@ public class XMLDatatypeUtil {
 	 * Checks whether the supplied datatype is a primitive XML Schema datatype.
 	 */
 	public static boolean isPrimitiveDatatype(URI datatype) {
-		return
-			datatype.equals(XMLSchema.DURATION) ||
-			datatype.equals(XMLSchema.DATETIME) ||
-			datatype.equals(XMLSchema.TIME) ||
-			datatype.equals(XMLSchema.DATE) ||
-			datatype.equals(XMLSchema.GYEARMONTH) ||
-			datatype.equals(XMLSchema.GYEAR) ||
-			datatype.equals(XMLSchema.GMONTHDAY) ||
-			datatype.equals(XMLSchema.GDAY) ||
-			datatype.equals(XMLSchema.GMONTH) ||
-			datatype.equals(XMLSchema.STRING) ||
-			datatype.equals(XMLSchema.BOOLEAN) ||
-			datatype.equals(XMLSchema.BASE64BINARY) ||
-			datatype.equals(XMLSchema.HEXBINARY) ||
-			datatype.equals(XMLSchema.FLOAT) ||
-			datatype.equals(XMLSchema.DECIMAL) ||
-			datatype.equals(XMLSchema.DOUBLE) ||
-			datatype.equals(XMLSchema.ANYURI) ||
-			datatype.equals(XMLSchema.QNAME) ||
-			datatype.equals(XMLSchema.NOTATION);
+		return datatype.equals(XMLSchema.DURATION) || datatype.equals(XMLSchema.DATETIME)
+				|| datatype.equals(XMLSchema.TIME) || datatype.equals(XMLSchema.DATE)
+				|| datatype.equals(XMLSchema.GYEARMONTH) || datatype.equals(XMLSchema.GYEAR)
+				|| datatype.equals(XMLSchema.GMONTHDAY) || datatype.equals(XMLSchema.GDAY)
+				|| datatype.equals(XMLSchema.GMONTH) || datatype.equals(XMLSchema.STRING)
+				|| datatype.equals(XMLSchema.BOOLEAN) || datatype.equals(XMLSchema.BASE64BINARY)
+				|| datatype.equals(XMLSchema.HEXBINARY) || datatype.equals(XMLSchema.FLOAT)
+				|| datatype.equals(XMLSchema.DECIMAL) || datatype.equals(XMLSchema.DOUBLE)
+				|| datatype.equals(XMLSchema.ANYURI) || datatype.equals(XMLSchema.QNAME)
+				|| datatype.equals(XMLSchema.NOTATION);
 	}
 
 	/**
 	 * Checks whether the supplied datatype is a derived XML Schema datatype.
 	 */
 	public static boolean isDerivedDatatype(URI datatype) {
-		return
-			datatype.equals(XMLSchema.NORMALIZEDSTRING) ||
-			datatype.equals(XMLSchema.TOKEN) ||
-			datatype.equals(XMLSchema.LANGUAGE) ||
-			datatype.equals(XMLSchema.NMTOKEN) ||
-			datatype.equals(XMLSchema.NMTOKENS) ||
-			datatype.equals(XMLSchema.NAME) ||
-			datatype.equals(XMLSchema.NCNAME) ||
-			datatype.equals(XMLSchema.ID) ||
-			datatype.equals(XMLSchema.IDREF) ||
-			datatype.equals(XMLSchema.IDREFS) ||
-			datatype.equals(XMLSchema.ENTITY) ||
-			datatype.equals(XMLSchema.ENTITIES) ||
-			datatype.equals(XMLSchema.INTEGER) ||
-			datatype.equals(XMLSchema.LONG) ||
-			datatype.equals(XMLSchema.INT) ||
-			datatype.equals(XMLSchema.SHORT) ||
-			datatype.equals(XMLSchema.BYTE) ||
-			datatype.equals(XMLSchema.NON_POSITIVE_INTEGER) ||
-			datatype.equals(XMLSchema.NEGATIVE_INTEGER) ||
-			datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER) ||
-			datatype.equals(XMLSchema.POSITIVE_INTEGER) ||
-			datatype.equals(XMLSchema.UNSIGNED_LONG) ||
-			datatype.equals(XMLSchema.UNSIGNED_INT) ||
-			datatype.equals(XMLSchema.UNSIGNED_SHORT) ||
-			datatype.equals(XMLSchema.UNSIGNED_BYTE) ||
-			datatype.equals(XMLSchema.DURATION_DAYTIME) ||
-			datatype.equals(XMLSchema.DURATION_YEARMONTH);
+		return datatype.equals(XMLSchema.NORMALIZEDSTRING) || datatype.equals(XMLSchema.TOKEN)
+				|| datatype.equals(XMLSchema.LANGUAGE) || datatype.equals(XMLSchema.NMTOKEN)
+				|| datatype.equals(XMLSchema.NMTOKENS) || datatype.equals(XMLSchema.NAME)
+				|| datatype.equals(XMLSchema.NCNAME) || datatype.equals(XMLSchema.ID)
+				|| datatype.equals(XMLSchema.IDREF) || datatype.equals(XMLSchema.IDREFS)
+				|| datatype.equals(XMLSchema.ENTITY) || datatype.equals(XMLSchema.ENTITIES)
+				|| datatype.equals(XMLSchema.INTEGER) || datatype.equals(XMLSchema.LONG)
+				|| datatype.equals(XMLSchema.INT) || datatype.equals(XMLSchema.SHORT)
+				|| datatype.equals(XMLSchema.BYTE) || datatype.equals(XMLSchema.NON_POSITIVE_INTEGER)
+				|| datatype.equals(XMLSchema.NEGATIVE_INTEGER) || datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER)
+				|| datatype.equals(XMLSchema.POSITIVE_INTEGER) || datatype.equals(XMLSchema.UNSIGNED_LONG)
+				|| datatype.equals(XMLSchema.UNSIGNED_INT) || datatype.equals(XMLSchema.UNSIGNED_SHORT)
+				|| datatype.equals(XMLSchema.UNSIGNED_BYTE) || datatype.equals(XMLSchema.DURATION_DAYTIME)
+				|| datatype.equals(XMLSchema.DURATION_YEARMONTH);
 	}
 
 	/**
@@ -122,9 +98,7 @@ public class XMLDatatypeUtil {
 	 * built-in datatypes that is derived from xsd:decimal.
 	 */
 	public static boolean isDecimalDatatype(URI datatype) {
-		return
-			datatype.equals(XMLSchema.DECIMAL) ||
-			isIntegerDatatype(datatype);
+		return datatype.equals(XMLSchema.DECIMAL) || isIntegerDatatype(datatype);
 	}
 
 	/**
@@ -132,44 +106,34 @@ public class XMLDatatypeUtil {
 	 * built-in datatypes that is derived from xsd:integer.
 	 */
 	public static boolean isIntegerDatatype(URI datatype) {
-		return
-			datatype.equals(XMLSchema.INTEGER) ||
-			datatype.equals(XMLSchema.LONG) ||
-			datatype.equals(XMLSchema.INT) ||
-			datatype.equals(XMLSchema.SHORT) ||
-			datatype.equals(XMLSchema.BYTE) ||
-			datatype.equals(XMLSchema.NON_POSITIVE_INTEGER) ||
-			datatype.equals(XMLSchema.NEGATIVE_INTEGER) ||
-			datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER) ||
-			datatype.equals(XMLSchema.POSITIVE_INTEGER) ||
-			datatype.equals(XMLSchema.UNSIGNED_LONG) ||
-			datatype.equals(XMLSchema.UNSIGNED_INT) ||
-			datatype.equals(XMLSchema.UNSIGNED_SHORT) ||
-			datatype.equals(XMLSchema.UNSIGNED_BYTE);
+		return datatype.equals(XMLSchema.INTEGER) || datatype.equals(XMLSchema.LONG)
+				|| datatype.equals(XMLSchema.INT) || datatype.equals(XMLSchema.SHORT)
+				|| datatype.equals(XMLSchema.BYTE) || datatype.equals(XMLSchema.NON_POSITIVE_INTEGER)
+				|| datatype.equals(XMLSchema.NEGATIVE_INTEGER) || datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER)
+				|| datatype.equals(XMLSchema.POSITIVE_INTEGER) || datatype.equals(XMLSchema.UNSIGNED_LONG)
+				|| datatype.equals(XMLSchema.UNSIGNED_INT) || datatype.equals(XMLSchema.UNSIGNED_SHORT)
+				|| datatype.equals(XMLSchema.UNSIGNED_BYTE);
 	}
 
 	/**
 	 * Checks whether the supplied datatype is equal to xsd:float or xsd:double.
 	 */
 	public static boolean isFloatingPointDatatype(URI datatype) {
-		return
-			datatype.equals(XMLSchema.FLOAT) ||
-			datatype.equals(XMLSchema.DOUBLE);
+		return datatype.equals(XMLSchema.FLOAT) || datatype.equals(XMLSchema.DOUBLE);
 	}
 
 	/**
-	 * Checks whether the supplied datatype is equal to xsd:duration,
-	 * xsd:dayTimeduration, or xsd:yearMonthDuration.
-	 * 
-	 * @see http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#duration
-	 * @see http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#dayTimeDuration
-	 * @see http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#yearMonthDuration
+	 * Checks whether the supplied datatype is equal to <a
+	 * href="http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#duration"
+	 * >xsd:duration</a>, <a href=
+	 * "http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#dayTimeDuration"
+	 * >xsd:dayTimeduration</a>, or <a href=
+	 * "http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#yearMonthDuration"
+	 * >xsd:yearMonthDuration</a>.
 	 */
 	public static boolean isDurationDatatype(URI datatype) {
-		return
-			datatype.equals(XMLSchema.DURATION) ||
-			datatype.equals(XMLSchema.DURATION_DAYTIME)||
-			datatype.equals(XMLSchema.DURATION_YEARMONTH);
+		return datatype.equals(XMLSchema.DURATION) || datatype.equals(XMLSchema.DURATION_DAYTIME)
+				|| datatype.equals(XMLSchema.DURATION_YEARMONTH);
 
 	}
 
@@ -182,15 +146,10 @@ public class XMLDatatypeUtil {
 	 * @see XMLGregorianCalendar
 	 */
 	public static boolean isCalendarDatatype(URI datatype) {
-		return
-			datatype.equals(XMLSchema.DATETIME) ||
-			datatype.equals(XMLSchema.DATE)||
-			datatype.equals(XMLSchema.TIME) ||
-			datatype.equals(XMLSchema.GYEARMONTH) ||
-			datatype.equals(XMLSchema.GMONTHDAY) ||
-			datatype.equals(XMLSchema.GYEAR) ||
-			datatype.equals(XMLSchema.GMONTH) ||
-			datatype.equals(XMLSchema.GDAY);
+		return datatype.equals(XMLSchema.DATETIME) || datatype.equals(XMLSchema.DATE)
+				|| datatype.equals(XMLSchema.TIME) || datatype.equals(XMLSchema.GYEARMONTH)
+				|| datatype.equals(XMLSchema.GMONTHDAY) || datatype.equals(XMLSchema.GYEAR)
+				|| datatype.equals(XMLSchema.GMONTH) || datatype.equals(XMLSchema.GDAY);
 
 	}
 
@@ -531,9 +490,9 @@ public class XMLDatatypeUtil {
 
 	/**
 	 * Normalizes a boolean value to its canonical representation. More
-	 * specifically, the values <tt>1</tt> and <tt>0</tt> will be normalized
-	 * to the canonical values <tt>true</tt> and <tt>false</tt>,
-	 * respectively. Supplied canonical values will remain as is.
+	 * specifically, the values <tt>1</tt> and <tt>0</tt> will be normalized to
+	 * the canonical values <tt>true</tt> and <tt>false</tt>, respectively.
+	 * Supplied canonical values will remain as is.
 	 * 
 	 * @param value
 	 *        The boolean value to normalize.
@@ -560,9 +519,9 @@ public class XMLDatatypeUtil {
 
 	/**
 	 * Normalizes a decimal to its canonical representation. For example:
-	 * <tt>120</tt> becomes <tt>120.0</tt>, <tt>+.3</tt> becomes
-	 * <tt>0.3</tt>, <tt>00012.45000</tt> becomes <tt>12.45</tt> and
-	 * <tt>-.0</tt> becomes <tt>0.0</tt>.
+	 * <tt>120</tt> becomes <tt>120.0</tt>, <tt>+.3</tt> becomes <tt>0.3</tt>,
+	 * <tt>00012.45000</tt> becomes <tt>12.45</tt> and <tt>-.0</tt> becomes
+	 * <tt>0.0</tt>.
 	 * 
 	 * @param decimal
 	 *        The decimal to normalize.
@@ -674,8 +633,7 @@ public class XMLDatatypeUtil {
 
 	/**
 	 * Normalizes an integer to its canonical representation. For example:
-	 * <tt>+120</tt> becomes <tt>120</tt> and <tt>00012</tt> becomes
-	 * <tt>12</tt>.
+	 * <tt>+120</tt> becomes <tt>120</tt> and <tt>00012</tt> becomes <tt>12</tt>.
 	 * 
 	 * @param value
 	 *        The value to normalize.
@@ -899,9 +857,7 @@ public class XMLDatatypeUtil {
 	 * @throws IllegalArgumentException
 	 *         If the supplied value is not a legal floating point number.
 	 */
-	private static String normalizeFPNumber(
-		String value,
-		String minMantissa, String maxMantissa,
+	private static String normalizeFPNumber(String value, String minMantissa, String maxMantissa,
 			String minExponent, String maxExponent)
 	{
 		value = collapseWhiteSpace(value);
@@ -1058,7 +1014,6 @@ public class XMLDatatypeUtil {
 	// s = StringUtil.gsub("\n", " ", s);
 	// return s;
 	// }
-
 	/**
 	 * Replaces all contiguous sequences of #x9 (tab), #xA (line feed) and #xD
 	 * (carriage return) with a single #x20 (space) character, and removes any
@@ -1146,8 +1101,8 @@ public class XMLDatatypeUtil {
 	 * Compares two decimals to eachother.
 	 * 
 	 * @return A negative number if <tt>dec1</tt> is smaller than <tt>dec2</tt>,
-	 *         <tt>0</tt> if they are equal, or positive (&gt;0) if
-	 *         <tt>dec1</tt> is larger than <tt>dec2</tt>.
+	 *         <tt>0</tt> if they are equal, or positive (&gt;0) if <tt>dec1</tt>
+	 *         is larger than <tt>dec2</tt>.
 	 * @throws IllegalArgumentException
 	 *         If one of the supplied strings is not a legal decimal.
 	 */
@@ -1162,10 +1117,9 @@ public class XMLDatatypeUtil {
 	 * Compares two canonical decimals to eachother.
 	 * 
 	 * @return A negative number if <tt>dec1</tt> is smaller than <tt>dec2</tt>,
-	 *         <tt>0</tt> if they are equal, or positive (&gt;0) if
-	 *         <tt>dec1</tt> is larger than <tt>dec2</tt>. The result is
-	 *         undefined when one or both of the arguments is not a canonical
-	 *         decimal.
+	 *         <tt>0</tt> if they are equal, or positive (&gt;0) if <tt>dec1</tt>
+	 *         is larger than <tt>dec2</tt>. The result is undefined when one or
+	 *         both of the arguments is not a canonical decimal.
 	 * @throws IllegalArgumentException
 	 *         If one of the supplied strings is not a legal decimal.
 	 */
@@ -1223,8 +1177,8 @@ public class XMLDatatypeUtil {
 	 * Compares two integers to eachother.
 	 * 
 	 * @return A negative number if <tt>int1</tt> is smaller than <tt>int2</tt>,
-	 *         <tt>0</tt> if they are equal, or positive (&gt;0) if
-	 *         <tt>int1</tt> is larger than <tt>int2</tt>.
+	 *         <tt>0</tt> if they are equal, or positive (&gt;0) if <tt>int1</tt>
+	 *         is larger than <tt>int2</tt>.
 	 * @throws IllegalArgumentException
 	 *         If one of the supplied strings is not a legal integer.
 	 */
@@ -1239,10 +1193,9 @@ public class XMLDatatypeUtil {
 	 * Compares two canonical integers to eachother.
 	 * 
 	 * @return A negative number if <tt>int1</tt> is smaller than <tt>int2</tt>,
-	 *         <tt>0</tt> if they are equal, or positive (&gt;0) if
-	 *         <tt>int1</tt> is larger than <tt>int2</tt>. The result is
-	 *         undefined when one or both of the arguments is not a canonical
-	 *         integer.
+	 *         <tt>0</tt> if they are equal, or positive (&gt;0) if <tt>int1</tt>
+	 *         is larger than <tt>int2</tt>. The result is undefined when one or
+	 *         both of the arguments is not a canonical integer.
 	 * @throws IllegalArgumentException
 	 *         If one of the supplied strings is not a legal integer.
 	 */
@@ -1367,8 +1320,8 @@ public class XMLDatatypeUtil {
 	 * Compares two floats to eachother.
 	 * 
 	 * @return A negative number if <tt>float1</tt> is smaller than
-	 *         <tt>float2</tt>, <tt>0</tt> if they are equal, or positive
-	 *         (&gt;0) if <tt>float1</tt> is larger than <tt>float2</tt>.
+	 *         <tt>float2</tt>, <tt>0</tt> if they are equal, or positive (&gt;0)
+	 *         if <tt>float1</tt> is larger than <tt>float2</tt>.
 	 * @throws IllegalArgumentException
 	 *         If one of the supplied strings is not a legal float or if
 	 *         <tt>NaN</tt> is compared to a float other than <tt>NaN</tt>.
@@ -1384,10 +1337,10 @@ public class XMLDatatypeUtil {
 	 * Compares two canonical floats to eachother.
 	 * 
 	 * @return A negative number if <tt>float1</tt> is smaller than
-	 *         <tt>float2</tt>, <tt>0</tt> if they are equal, or positive
-	 *         (&gt;0) if <tt>float1</tt> is larger than <tt>float2</tt>.
-	 *         The result is undefined when one or both of the arguments is not a
-	 *         canonical float.
+	 *         <tt>float2</tt>, <tt>0</tt> if they are equal, or positive (&gt;0)
+	 *         if <tt>float1</tt> is larger than <tt>float2</tt>. The result is
+	 *         undefined when one or both of the arguments is not a canonical
+	 *         float.
 	 * @throws IllegalArgumentException
 	 *         If one of the supplied strings is not a legal float or if
 	 *         <tt>NaN</tt> is compared to a float other than <tt>NaN</tt>.
@@ -1418,8 +1371,8 @@ public class XMLDatatypeUtil {
 	 * 
 	 * @return A negative number if <tt>double1</tt> is smaller than
 	 *         <tt>double2</tt>, <tt>0</tt> if they are equal, or positive
-	 *         (&gt;0) if <tt>double1</tt> is larger than <tt>double2</tt>.
-	 *         The result is undefined when one or both of the arguments is not a
+	 *         (&gt;0) if <tt>double1</tt> is larger than <tt>double2</tt>. The
+	 *         result is undefined when one or both of the arguments is not a
 	 *         canonical double.
 	 * @throws IllegalArgumentException
 	 *         If one of the supplied strings is not a legal double or if
@@ -1433,8 +1386,8 @@ public class XMLDatatypeUtil {
 	 * Compares two floating point numbers to eachother.
 	 * 
 	 * @return A negative number if <tt>float1</tt> is smaller than
-	 *         <tt>float2</tt>, <tt>0</tt> if they are equal, or positive
-	 *         (&gt;0) if <tt>float1</tt> is larger than <tt>float2</tt>.
+	 *         <tt>float2</tt>, <tt>0</tt> if they are equal, or positive (&gt;0)
+	 *         if <tt>float1</tt> is larger than <tt>float2</tt>.
 	 * @throws IllegalArgumentException
 	 *         If one of the supplied strings is not a legal floating point
 	 *         number or if <tt>NaN</tt> is compared to a floating point number
@@ -1451,10 +1404,10 @@ public class XMLDatatypeUtil {
 	 * Compares two canonical floating point numbers to eachother.
 	 * 
 	 * @return A negative number if <tt>float1</tt> is smaller than
-	 *         <tt>float2</tt>, <tt>0</tt> if they are equal, or positive
-	 *         (&gt;0) if <tt>float1</tt> is larger than <tt>float2</tt>.
-	 *         The result is undefined when one or both of the arguments is not a
-	 *         canonical floating point number.
+	 *         <tt>float2</tt>, <tt>0</tt> if they are equal, or positive (&gt;0)
+	 *         if <tt>float1</tt> is larger than <tt>float2</tt>. The result is
+	 *         undefined when one or both of the arguments is not a canonical
+	 *         floating point number.
 	 * @throws IllegalArgumentException
 	 *         If one of the supplied strings is not a legal floating point
 	 *         number or if <tt>NaN</tt> is compared to a floating point number
@@ -1523,19 +1476,19 @@ public class XMLDatatypeUtil {
 	}
 
 	/**
-	 * Compares two dateTime objects. <b>Important:</b> The comparison only
-	 * works if both values have, or both values don't have specified a valid
-	 * value for the timezone.
+	 * Compares two dateTime objects. <b>Important:</b> The comparison only works
+	 * if both values have, or both values don't have specified a valid value for
+	 * the timezone.
 	 * 
 	 * @param value1
 	 *        An xsd:dateTime value.
 	 * @param value2
 	 *        An xsd:dateTime value.
-	 * @return <tt>-1</tt> if <tt>value1</tt> is before <tt>value2</tt>
-	 *         (i.e. if the dateTime object represented by value1 is before the
-	 *         dateTime object represented by value2), <tt>0</tt> if both are
-	 *         equal and <tt>1</tt> if <tt>value2</tt> is before
-	 *         <tt>value1</tt><br>.
+	 * @return <tt>-1</tt> if <tt>value1</tt> is before <tt>value2</tt> (i.e. if
+	 *         the dateTime object represented by value1 is before the dateTime
+	 *         object represented by value2), <tt>0</tt> if both are equal and
+	 *         <tt>1</tt> if <tt>value2</tt> is before <tt>value1</tt><br>
+	 *         .
 	 */
 	public static int compareDateTime(String value1, String value2) {
 		XMLDateTime dateTime1 = new XMLDateTime(value1);
