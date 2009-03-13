@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -33,7 +33,7 @@ public class GraphQueryModel extends QueryModel {
 
 	/**
 	 * Creates a new graph query. To complete this query, a tuple expression
-	 * needs to be supplied to it using {@link #setTupleExpr(TupleExpr)}.
+	 * needs to be supplied to it using {@link #setArg(TupleExpr)}.
 	 */
 	public GraphQueryModel() {
 		super();
@@ -41,7 +41,7 @@ public class GraphQueryModel extends QueryModel {
 
 	/**
 	 * Creates a new graph query. To complete this query, a tuple expression
-	 * needs to be supplied to it using {@link #setTupleExpr(TupleExpr)}.
+	 * needs to be supplied to it using {@link #setArg(TupleExpr)}.
 	 * 
 	 * @param namespaces
 	 *        A mapping of namespace prefixes to namespace names representing the

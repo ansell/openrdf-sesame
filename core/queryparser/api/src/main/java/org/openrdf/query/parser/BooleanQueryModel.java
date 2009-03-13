@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -24,7 +24,7 @@ public class BooleanQueryModel extends QueryModel {
 
 	/**
 	 * Creates a new boolean query. To complete this query, a tuple expression
-	 * needs to be supplied to it using {@link #setTupleExpr(TupleExpr)}.
+	 * needs to be supplied to it using {@link #setArg(TupleExpr)}.
 	 */
 	public BooleanQueryModel() {
 		super();

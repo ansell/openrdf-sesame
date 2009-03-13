@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -24,7 +24,7 @@ public class TupleQueryModel extends QueryModel {
 
 	/**
 	 * Creates a new tuple query. To complete this query, a tuple expression
-	 * needs to be supplied to it using {@link #setTupleExpr(TupleExpr)}.
+	 * needs to be supplied to it using {@link #setArg(TupleExpr)}.
 	 */
 	public TupleQueryModel() {
 		super();
