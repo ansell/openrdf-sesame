@@ -38,10 +38,6 @@ public class SystemConfigManager implements RepositoryConfigManager {
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
 	private final Repository SYSTEM;
 
 	private final ValueFactory vf;
@@ -51,8 +47,8 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	 *--------------*/
 
 	/**
-	 * Creates a new RepositoryManager that operates on the specfified base
-	 * directory.
+	 * Creates a new RepositoryConfigManager that operates on the specified
+	 * system repository.
 	 * 
 	 * @param baseDir
 	 *        The base directory where data for repositories can be stored, among
@@ -67,12 +63,6 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	 * Methods *
 	 *---------*/
 
-	/**
-	 * Gets the URL of the server or directory.
-	 * 
-	 * @throws MalformedURLException
-	 *         If the location cannot be represented as a URL.
-	 */
 	public URL getLocation()
 		throws MalformedURLException
 	{

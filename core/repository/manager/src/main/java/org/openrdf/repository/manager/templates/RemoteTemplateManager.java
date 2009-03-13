@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -19,7 +19,7 @@ import org.openrdf.store.StoreConfigException;
  */
 public class RemoteTemplateManager implements ConfigTemplateManager {
 
-	private SesameClient client;
+	private final SesameClient client;
 
 	public RemoteTemplateManager(SesameClient client) {
 		this.client = client;
@@ -31,45 +31,18 @@ public class RemoteTemplateManager implements ConfigTemplateManager {
 		return new URL(client.templates().getURL());
 	}
 
-	/**
-	 * Adds a service to the registry. Any service that is currently registered
-	 * for the same key (as specified by {@link #getKey(Object)}) will be
-	 * replaced with the new service.
-	 * 
-	 * @param service
-	 *        The service that should be added to the registry.
-	 * @return The previous service that was registered for the same key, or
-	 *         <tt>null</tt> if there was no such service.
-	 * @throws StoreConfigException
-	 */
 	public void addTemplate(String id, Model model)
 		throws StoreConfigException
 	{
 		client.templates().put(id, model);
 	}
 
-	/**
-	 * Removes a service from the registry.
-	 * 
-	 * @param service
-	 *        The service be removed from the registry.
-	 * @throws StoreConfigException
-	 */
 	public void removeTemplate(String id)
 		throws StoreConfigException
 	{
 		client.templates().delete(id);
 	}
 
-	/**
-	 * Gets the service for the specified key, if any.
-	 * 
-	 * @param key
-	 *        The key identifying which service to get.
-	 * @return The service for the specified key, or <tt>null</tt> if no such
-	 *         service is avaiable.
-	 * @throws StoreConfigException
-	 */
 	public ConfigTemplate getTemplate(String key)
 		throws StoreConfigException
 	{
@@ -80,12 +53,6 @@ public class RemoteTemplateManager implements ConfigTemplateManager {
 		return new ConfigTemplate(statements, client.schemas().get());
 	}
 
-	/**
-	 * Gets the set of registered keys.
-	 * 
-	 * @return An unmodifiable set containing all registered keys.
-	 * @throws StoreConfigException
-	 */
 	public Set<String> getIDs()
 		throws StoreConfigException
 	{

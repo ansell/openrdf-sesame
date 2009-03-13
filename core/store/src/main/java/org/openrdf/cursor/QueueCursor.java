@@ -79,7 +79,7 @@ public class QueueCursor<E> implements Cursor<E> {
 	}
 
 	/**
-	 * Indicates the method {@link #add(Object)} will not be called in the queue
+	 * Indicates the method {@link #put(Object)} will not be called in the queue
 	 * anymore.
 	 */
 	public void done() {

@@ -1,5 +1,5 @@
 /*
- * Copyright James Leigh (c) 2007-2008.
+ * Copyright James Leigh (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -327,15 +327,15 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, H hander,
+	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, H handler,
 			Resource... contexts)
 		throws StoreException, RDFHandlerException
 	{
 		if (contexts != null && contexts.length == 0) {
-			return super.exportMatch(subj, pred, obj, includeInferred, hander, readContexts);
+			return super.exportMatch(subj, pred, obj, includeInferred, handler, readContexts);
 		}
 		else {
-			return super.exportMatch(subj, pred, obj, includeInferred, hander, contexts);
+			return super.exportMatch(subj, pred, obj, includeInferred, handler, contexts);
 		}
 	}
 
@@ -351,10 +351,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @param obj
 	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
 	 * @return The statements matching the specified pattern. The result object
-	 *         is a {@link modelResult} object, a lazy Iterator-like object
+	 *         is a {@link ModelResult} object, a lazy Iterator-like object
 	 *         containing {@link Statement}s and optionally throwing a
-	 *         {@link StoreException} when an error when a problem occurs during
-	 *         retrieval.
+	 *         {@link StoreException} when an error occurs during retrieval.
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */

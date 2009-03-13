@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -27,48 +27,45 @@ public interface ConfigTemplateManager {
 		throws MalformedURLException;
 
 	/**
-	 * Adds a service to the registry. Any service that is currently registered
-	 * for the same key (as specified by {@link #getKey(Object)}) will be
-	 * replaced with the new service.
+	 * Adds a template to the manager. Any template that is currently registered
+	 * with the same id will be replaced with the new template.
 	 * 
-	 * @param service
-	 *        The service that should be added to the registry.
-	 * @return The previous service that was registered for the same key, or
-	 *         <tt>null</tt> if there was no such service.
-	 * @throws StoreConfigException
+	 * @param id
+	 *        The template's ID.
+	 * @param template
+	 *        The template that should be associated with the specified ID.
 	 */
-	void addTemplate(String id, Model model)
+	void addTemplate(String id, Model template)
 		throws StoreConfigException;
 
 	/**
-	 * Removes a service from the registry.
+	 * Removes a template from the manager.
 	 * 
-	 * @param service
-	 *        The service be removed from the registry.
+	 * @param id
+	 *        The template's ID.
 	 */
 	void removeTemplate(String id)
 		throws StoreConfigException;
 
 	/**
-	 * Gets the service for the specified key, if any.
+	 * Gets the template for the specified key, if any.
 	 * 
-	 * @param key
-	 *        The key identifying which service to get.
-	 * @return The service for the specified key, or <tt>null</tt> if no such
-	 *         service is available.
+	 * @param id
+	 *        The template's ID.
+	 * @return The template for the specified ID, or <tt>null</tt> if no such
+	 *         template is available.
 	 */
 	ConfigTemplate getTemplate(String id)
 		throws StoreConfigException;
 
 	/**
-	 * Gets the set of registered keys.
+	 * Gets the set of registered IDs.
 	 * 
-	 * @return An unmodifiable set containing all registered keys.
+	 * @return An unmodifiable set containing all registered IDs.
 	 */
 	Set<String> getIDs()
 		throws StoreConfigException;
 
 	Model getSchemas()
 		throws StoreConfigException;
-
 }
