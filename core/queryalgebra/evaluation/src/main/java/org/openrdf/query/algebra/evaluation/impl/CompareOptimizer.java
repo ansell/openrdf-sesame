@@ -9,7 +9,6 @@ package org.openrdf.query.algebra.evaluation.impl;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.EvaluationException;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.SameTerm;
@@ -31,10 +30,6 @@ public class CompareOptimizer implements QueryOptimizer {
 	/**
 	 * Applies generally applicable optimizations to the supplied query: variable
 	 * assignments are inlined.
-	 * 
-	 * @param query
-	 * @return optimized TupleExpr
-	 * @throws EvaluationException
 	 */
 	public void optimize(QueryModel query, BindingSet bindings) {
 		query.visit(new CompareVisitor());

@@ -38,15 +38,15 @@ public class InferencingTest extends TestCase {
 	 * Variables *
 	 *-----------*/
 
-	protected Sail sailStack;
+	protected final Sail sailStack;
 
-	protected String inputData;
+	protected final String inputData;
 
-	protected String outputData;
+	protected final String outputData;
 
-	protected boolean isPositiveTest;
+	protected final boolean isPositiveTest;
 
-	protected String name;
+	protected final String name;
 
 	/*--------------*
 	 * Constructors *
@@ -55,22 +55,22 @@ public class InferencingTest extends TestCase {
 	/**
 	 * Creates a new inferencing test. This test can either be positive or
 	 * negative. For positive tests, all triples from <tt>outputData</tt> should
-	 * be present in the triples returned by the supplied RdfSchemaRepository
-	 * after the triples from <tt>intputData</tt> have been added to it. For
-	 * negative tests, none of the triples from <tt>outputData</tt> should be
-	 * present in the returned triples.
+	 * be present in the triples returned by the supplied store after the triples
+	 * from <tt>intputData</tt> have been added to it. For negative tests, none
+	 * of the triples from <tt>outputData</tt> should be present in the returned
+	 * triples.
 	 * 
 	 * @param name
 	 *        The name of the test.
-	 * @param rss
-	 *        The RdfSchemaRepository to test.
+	 * @param sailStack
+	 *        The store to test.
 	 * @param inputData
 	 *        The URL of the (N-Triples) data containing the triples that should
-	 *        be added to the RdfSchemaRepository.
+	 *        be added to the store.
 	 * @param outputData
 	 *        The URL of the (N-Triples) data containing the triples that should
 	 *        or should not (depending on the value of <tt>isPositiveTest</tt> be
-	 *        present in the statements returned by the RdfSchemaRepository.
+	 *        present in the statements returned by the store.
 	 * @param isPositiveTest
 	 *        Flag indicating whether this is a positive or a negative
 	 *        inferencing test; <tt>true</tt> for a positive test, <tt>false</tt>

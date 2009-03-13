@@ -14,7 +14,7 @@ import org.openrdf.sail.SailConnectionListener;
 
 /**
  * This class extends {@link SailConnectionBase} adding support for
- * {@link NotifySailConnection}. implementations.
+ * {@link NotifyingSailConnection}. implementations.
  * 
  * @author Arjohn Kampman
  * @author jeen

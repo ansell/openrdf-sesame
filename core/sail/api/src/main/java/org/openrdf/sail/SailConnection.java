@@ -114,11 +114,8 @@ public interface SailConnection {
 	 * object, using the (optional) dataset and supplied bindings as input
 	 * parameters.
 	 * 
-	 * @param tupleExpr
-	 *        The tuple expression to evaluate.
-	 * @param dataset
-	 *        The dataset to use for evaluating the query, <tt>null</tt> to use
-	 *        the Sail's default dataset.
+	 * @param query
+	 *        The query to evaluate.
 	 * @param bindings
 	 *        A set of input parameters for the query evaluation. The keys
 	 *        reference variable names that should be bound to the value they map
