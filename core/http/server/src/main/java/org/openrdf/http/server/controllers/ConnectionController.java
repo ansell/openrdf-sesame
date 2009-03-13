@@ -123,15 +123,6 @@ public class ConnectionController {
 	}
 
 	@ModelAttribute
-	@RequestMapping(method = POST, value = Paths.CONNECTION_PING)
-	public StringReader ping(HttpServletRequest request)
-		throws StoreException
-	{
-		ConditionalRequestInterceptor.notSafe(request);
-		return new StringReader("pong");
-	}
-
-	@ModelAttribute
 	@RequestMapping(method = POST, value = Paths.CONNECTION_COMMIT)
 	public void commit(HttpServletRequest request)
 		throws StoreException
@@ -153,5 +144,14 @@ public class ConnectionController {
 		if (!repositoryCon.isAutoCommit()) {
 			repositoryCon.rollback();
 		}
+	}
+
+	@ModelAttribute
+	@RequestMapping(method = POST, value = Paths.CONNECTION_PING)
+	public StringReader ping(HttpServletRequest request)
+		throws StoreException
+	{
+		ConditionalRequestInterceptor.notSafe(request);
+		return new StringReader("pong");
 	}
 }
