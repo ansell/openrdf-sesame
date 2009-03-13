@@ -15,7 +15,7 @@ import org.openrdf.model.ValueFactory;
 
 /**
  * Helper class for {@link ValueFactory} implementations
- * {@link ValueFactoyr#createBNode()}.
+ * {@link ValueFactory#createBNode()}.
  * 
  * @author Arjohn Kampman
  * @author James Leigh
@@ -60,7 +60,7 @@ public class BNodeFactoryImpl implements BNodeFactory {
 	}
 
 	/**
-	 * If nodeID was created in this instance's {@link createBNode()}.
+	 * If nodeID was created in this instance's {@link #createBNode()}.
 	 */
 	public boolean isInternalBNode(BNode node) {
 		return node.getID().startsWith(bnodePrefix);

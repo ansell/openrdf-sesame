@@ -77,11 +77,6 @@ public interface Graph extends Collection<Statement>, Serializable {
 	 *        or more contexts are specified, statements with a context matching
 	 *        one of these will match.
 	 * @return The statements that match the specified pattern.
-	 * @throws IllegalArgumentException
-	 *         If a <tt>null</tt>-array is specified as the value for
-	 *         <tt>contexts</tt>. See
-	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
-	 *         info.
 	 */
 	public Iterator<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts);
 }
