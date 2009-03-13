@@ -296,7 +296,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			txn.clear();
 		}
 		client.rollback();
-		client.begin();
 		modified = false;
 		autoCommit = true;
 	}
