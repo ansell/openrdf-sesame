@@ -47,10 +47,6 @@ public class ConstantOptimizer implements QueryOptimizer {
 	/**
 	 * Applies generally applicable optimizations to the supplied query: variable
 	 * assignments are inlined.
-	 * 
-	 * @param query
-	 * @return optimized TupleExpr
-	 * @throws StoreException
 	 */
 	public void optimize(QueryModel query, BindingSet bindings)
 		throws StoreException

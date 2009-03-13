@@ -85,8 +85,8 @@ public class MemStatementCursor implements Cursor<MemStatement> {
 	 *        predicate of pattern.
 	 * @param object
 	 *        object of pattern.
-	 * @param context
-	 *        context of pattern.
+	 * @param contexts
+	 *        contexts of pattern.
 	 */
 	public MemStatementCursor(MemStatementList statementList, MemResource subject, MemURI predicate,
 			MemValue object, boolean explicitOnly, int snapshot, ReadMode readMode, MemResource... contexts)

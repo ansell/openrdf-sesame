@@ -25,8 +25,8 @@ import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
 import org.openrdf.store.StoreException;
 
 /**
- * Evaluate Join, LeftJoin and Union in parallel and only evaluate {@linked
- * OwnedTupleExpr} is the given member.
+ * Evaluates Join, LeftJoin and Union in parallel and only evaluate if
+ * {@link OwnedTupleExpr} is the given member.
  * 
  * @see ParallelJoinCursor
  * @see ParallelLeftJoinCursor
@@ -34,7 +34,7 @@ import org.openrdf.store.StoreException;
  */
 public class FederationStrategy extends EvaluationStrategyImpl {
 
-	private Executor executor;
+	private final Executor executor;
 
 	public FederationStrategy(Executor executor, TripleSource tripleSource, QueryModel query) {
 		super(tripleSource, query);
