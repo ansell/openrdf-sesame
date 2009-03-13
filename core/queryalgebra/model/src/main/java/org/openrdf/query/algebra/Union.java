@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -23,12 +23,10 @@ public class Union extends NaryTupleOperator {
 	}
 
 	/**
-	 * Creates a new union operator that operates on the two specified arguments.
+	 * Creates a new union operator that operates on the specified arguments.
 	 * 
-	 * @param leftArg
-	 *        The left argument of the union operator.
-	 * @param rightArg
-	 *        The right argument of the union operator.
+	 * @param args
+	 *        The arguments of the union operator.
 	 */
 	public Union(TupleExpr... args) {
 		super(args);

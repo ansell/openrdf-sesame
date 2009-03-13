@@ -265,14 +265,12 @@ public abstract class Protocol {
 	}
 
 	/**
-	 * Get the location of server containing the specified repository resource.
+	 * Get the base location of the server containing the specified repository
+	 * resource.
 	 * 
-	 * @param serverLocation
-	 *        the base location of a server implementing this REST protocol.
-	 * @param repositoryID
-	 *        the ID of the repository
-	 * @return the location of a specific repository resource on the specified
-	 *         server
+	 * @param repositoryLocation
+	 *        the location of a repository implementing this REST protocol.
+	 * @return the base location of a server implementing this REST protocol.
 	 */
 	public static final String getServerLocation(String repositoryLocation) {
 		// Try to parse the server URL from the repository URL

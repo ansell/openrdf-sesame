@@ -26,20 +26,10 @@ import org.openrdf.store.StoreException;
  * results. Additionally it has some utility methods to fetch all results and
  * add them to a collection.
  * <p>
- * By default, a RepositoryResult is not necessarily a (mathematical) set: it
- * may contain duplicate objects. Duplicate filtering can be {
- * {@link #enableDuplicateFilter() switched on}, but this should not be used
- * lightly as the filtering mechanism is potentially memory-intensive.
- * <p>
  * A RepositoryResult needs to be {@link #close() closed} after use to free up
  * any resources (open connections, read locks, etc.) it has on the underlying
  * repository.
  * 
- * @see RepositoryConnection#getStatements(org.openrdf.model.Resource,
- *      org.openrdf.model.URI, org.openrdf.model.Value, boolean,
- *      org.openrdf.model.Resource[])
- * @see RepositoryConnection#getNamespaces()
- * @see RepositoryConnection#getContextIDs()
  * @author jeen
  * @author Arjohn Kampman
  * @author James Leigh

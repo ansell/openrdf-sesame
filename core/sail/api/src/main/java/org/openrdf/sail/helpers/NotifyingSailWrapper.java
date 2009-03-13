@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -26,7 +26,7 @@ public class NotifyingSailWrapper extends SailWrapper implements NotifyingSail {
 
 	/**
 	 * Creates a new SailWrapper. The base Sail for the created SailWrapper can
-	 * be set later using {@link #setBaseSail}.
+	 * be set later using {@link #setDelegate}.
 	 */
 	public NotifyingSailWrapper() {
 	}

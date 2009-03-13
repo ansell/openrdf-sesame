@@ -142,11 +142,6 @@ public class RepositoryConfig {
 	 * Creates a new <tt>RepositoryConfig</tt> object and initializes it by
 	 * supplying the <tt>model</tt> and <tt>repositoryNode</tt> to its
 	 * {@link #parse(Model, Resource) parse} method.
-	 * 
-	 * @param model
-	 * @param repositoryNode
-	 * @return
-	 * @throws StoreConfigException
 	 */
 	public static RepositoryConfig create(Model model, Resource repositoryNode)
 		throws StoreConfigException

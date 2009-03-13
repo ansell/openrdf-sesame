@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -75,7 +75,7 @@ import org.openrdf.query.algebra.Var;
  * call to a method for the node's supertype. This is done recursively until
  * {@link #meetNode} is reached. This allows subclasses to easily define default
  * behaviour for visited nodes of a certain type. The default implementation of
- * {@link #meetDefault} is to visit the node's children.
+ * {@link #meetNode} is to visit the node's children.
  */
 public abstract class QueryModelVisitorBase<X extends Exception> implements QueryModelVisitor<X> {
 
@@ -459,7 +459,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 
 	/**
 	 * Method called by all <tt>meet</tt> methods with a
-	 * {@link meetNaryTupleOperator} node as argument. Forwards the call to
+	 * {@link NaryTupleOperator} node as argument. Forwards the call to
 	 * {@link #meetNode} by default.
 	 * 
 	 * @param node
@@ -488,7 +488,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	/**
 	 * Method called by all <tt>meet</tt> methods with a
 	 * {@link SubQueryValueOperator} node as argument. Forwards the call to
-	 * {@link #meetValueExpr} by default.
+	 * {@link #meetNode} by default.
 	 * 
 	 * @param node
 	 *        The node that is being visited.
@@ -502,7 +502,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	/**
 	 * Method called by all <tt>meet</tt> methods with a
 	 * {@link UnaryValueOperator} node as argument. Forwards the call to
-	 * {@link #meetValueExpr} by default.
+	 * {@link #meetNaryValueOperator} by default.
 	 * 
 	 * @param node
 	 *        The node that is being visited.
@@ -520,7 +520,6 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	 * 
 	 * @param node
 	 *        The node that is being visited.
-	 * @throws
 	 */
 	protected void meetBinaryValueOperator(BinaryValueOperator node)
 		throws X
@@ -535,7 +534,6 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	 * 
 	 * @param node
 	 *        The node that is being visited.
-	 * @throws
 	 */
 	protected void meetNaryValueOperator(NaryValueOperator node)
 		throws X

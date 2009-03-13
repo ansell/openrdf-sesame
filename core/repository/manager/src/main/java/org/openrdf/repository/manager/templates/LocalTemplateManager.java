@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -48,15 +48,16 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 
 	private static final String STORE_SCHEMAS = "META-INF/org.openrdf.store.schemas";
 
-	private File templateDir;
+	private final File templateDir;
 
-	private Logger logger = LoggerFactory.getLogger(LocalTemplateManager.class);
+	private final Logger logger = LoggerFactory.getLogger(LocalTemplateManager.class);
 
-	private Map<String, ConfigTemplate> services = new ConcurrentHashMap<String, ConfigTemplate>();
+	private final Map<String, ConfigTemplate> services = new ConcurrentHashMap<String, ConfigTemplate>();
 
 	private ClassLoader cl;
 
 	public LocalTemplateManager() {
+		this.templateDir = null;
 	}
 
 	public LocalTemplateManager(File templateDir) {
@@ -81,30 +82,12 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		return templateDir.toURI().toURL();
 	}
 
-	/**
-	 * Adds a service to the registry. Any service that is currently registered
-	 * for the same key (as specified by {@link #getKey(Object)}) will be
-	 * replaced with the new service.
-	 * 
-	 * @param service
-	 *        The service that should be added to the registry.
-	 * @return The previous service that was registered for the same key, or
-	 *         <tt>null</tt> if there was no such service.
-	 * @throws StoreConfigException
-	 */
 	public void addTemplate(String id, Model model)
 		throws StoreConfigException
 	{
 		services.put(id, new ConfigTemplate(model, getSchemas()));
 	}
 
-	/**
-	 * Removes a service from the registry.
-	 * 
-	 * @param service
-	 *        The service be removed from the registry.
-	 * @throws StoreConfigException
-	 */
 	public void removeTemplate(String id)
 		throws StoreConfigException
 	{
@@ -113,15 +96,6 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		}
 	}
 
-	/**
-	 * Gets the service for the specified key, if any.
-	 * 
-	 * @param key
-	 *        The key identifying which service to get.
-	 * @return The service for the specified key, or <tt>null</tt> if no such
-	 *         service is avaiable.
-	 * @throws StoreConfigException
-	 */
 	public ConfigTemplate getTemplate(String key)
 		throws StoreConfigException
 	{
@@ -144,12 +118,6 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		}
 	}
 
-	/**
-	 * Gets the set of registered keys.
-	 * 
-	 * @return An unmodifiable set containing all registered keys.
-	 * @throws StoreConfigException
-	 */
 	public Set<String> getIDs()
 		throws StoreConfigException
 	{
@@ -316,9 +284,9 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		}
 	}
 
-	private class Collector extends StatementCollector {
+	private static class Collector extends StatementCollector {
 
-		private URI graph;
+		private final URI graph;
 
 		public Collector(Model statements, String graph) {
 			super(statements);
@@ -332,6 +300,5 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 			Value o = st.getObject();
 			super.handleStatement(new StatementImpl(s, p, o, graph));
 		}
-
 	}
 }
