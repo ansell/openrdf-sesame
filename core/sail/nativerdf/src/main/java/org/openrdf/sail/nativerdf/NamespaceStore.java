@@ -62,18 +62,18 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 	/**
 	 * The data file for this NamespaceStore.
 	 */
-	private File file;
+	private final File file;
 
 	/**
 	 * Map storing namespace information by their prefix.
 	 */
-	private Map<String, NamespaceImpl> namespacesMap;
+	private final Map<String, NamespaceImpl> namespacesMap;
 
 	/**
 	 * Flag indicating whether the contents of this NamespaceStore are different
 	 * from what is stored on disk.
 	 */
-	private boolean contentsChanged;
+	private volatile boolean contentsChanged;
 
 	/*--------------*
 	 * Constructors *
@@ -155,8 +155,6 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 	}
 
 	public void close() {
-		namespacesMap = null;
-		file = null;
 	}
 
 	/*----------*

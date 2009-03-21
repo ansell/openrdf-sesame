@@ -16,16 +16,13 @@ import org.openrdf.model.vocabulary.XMLSchema;
  */
 public class NumericMemLiteral extends MemLiteral {
 
+	private static final long serialVersionUID = -4077489124945558638L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4077489124945558638L;
-
-	private Number number;
+	private final Number number;
 
 	/*--------------*
 	 * Constructors *
@@ -69,38 +66,32 @@ public class NumericMemLiteral extends MemLiteral {
 	 *---------*/
 
 	@Override
-	public byte byteValue()
-	{
+	public byte byteValue() {
 		return number.byteValue();
 	}
 
 	@Override
-	public short shortValue()
-	{
+	public short shortValue() {
 		return number.shortValue();
 	}
 
 	@Override
-	public int intValue()
-	{
+	public int intValue() {
 		return number.intValue();
 	}
 
 	@Override
-	public long longValue()
-	{
+	public long longValue() {
 		return number.longValue();
 	}
 
 	@Override
-	public float floatValue()
-	{
+	public float floatValue() {
 		return number.floatValue();
 	}
 
 	@Override
-	public double doubleValue()
-	{
+	public double doubleValue() {
 		return number.doubleValue();
 	}
 }

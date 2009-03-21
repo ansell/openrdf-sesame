@@ -27,7 +27,7 @@ abstract class RecordCache {
 	 * Variables *
 	 *-----------*/
 
-	private long recordCount;
+	private volatile long recordCount;
 
 	/*--------------*
 	 * Constructors *

@@ -65,7 +65,7 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 	/**
 	 * The index of the last statement that has been returned.
 	 */
-	private int statementIdx;
+	private volatile int statementIdx;
 
 	/*--------------*
 	 * Constructors *

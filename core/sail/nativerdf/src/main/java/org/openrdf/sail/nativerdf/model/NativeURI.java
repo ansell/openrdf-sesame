@@ -16,9 +16,9 @@ public class NativeURI extends URIImpl implements NativeResource {
 	 * Constants *
 	 *-----------*/
 
-	private ValueStoreRevision revision;
+	private volatile ValueStoreRevision revision;
 
-	private int internalID;
+	private volatile int internalID;
 
 	/*--------------*
 	 * Constructors *

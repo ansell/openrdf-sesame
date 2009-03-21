@@ -22,7 +22,7 @@ import org.openrdf.repository.RepositoryException;
  */
 public class RepositoryWrapper implements DelegatingRepository {
 
-	private Repository delegate;
+	private volatile Repository delegate;
 
 	/**
 	 * Creates a new <tt>RepositoryWrapper</tt>.

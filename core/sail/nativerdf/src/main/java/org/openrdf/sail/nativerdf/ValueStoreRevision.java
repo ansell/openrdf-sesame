@@ -30,7 +30,7 @@ public class ValueStoreRevision implements Serializable {
 	 * Variables *
 	 *-----------*/
 
-	transient private ValueStore valueStore;
+	transient private final ValueStore valueStore;
 
 	/*--------------*
 	 * Constructors *

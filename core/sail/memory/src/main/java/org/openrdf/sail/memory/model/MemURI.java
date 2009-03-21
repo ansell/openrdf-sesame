@@ -33,7 +33,7 @@ public class MemURI implements URI, MemResource {
 	/**
 	 * The object that created this MemURI.
 	 */
-	transient private Object creator;
+	transient private final Object creator;
 
 	/**
 	 * The MemURI's hash code, 0 if not yet initialized.
@@ -43,22 +43,22 @@ public class MemURI implements URI, MemResource {
 	/**
 	 * The list of statements for which this MemURI is the subject.
 	 */
-	transient private MemStatementList subjectStatements = null;
+	transient private volatile MemStatementList subjectStatements = null;
 
 	/**
 	 * The list of statements for which this MemURI is the predicate.
 	 */
-	transient private MemStatementList predicateStatements = null;
+	transient private volatile MemStatementList predicateStatements = null;
 
 	/**
 	 * The list of statements for which this MemURI is the object.
 	 */
-	transient private MemStatementList objectStatements = null;
+	transient private volatile MemStatementList objectStatements = null;
 
 	/**
 	 * The list of statements for which this MemURI represents the context.
 	 */
-	transient private MemStatementList contextStatements = null;
+	transient private volatile MemStatementList contextStatements = null;
 
 	/*--------------*
 	 * Constructors *

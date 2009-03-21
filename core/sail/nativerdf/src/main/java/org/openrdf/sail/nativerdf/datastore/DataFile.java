@@ -44,13 +44,13 @@ public class DataFile {
 	 * Variables *
 	 *-----------*/
 
-	private File file;
+	private final File file;
 
-	private RandomAccessFile raf;
+	private final RandomAccessFile raf;
 
-	private FileChannel fileChannel;
+	private final FileChannel fileChannel;
 
-	private boolean forceSync;
+	private final boolean forceSync;
 
 	/*--------------*
 	 * Constructors *

@@ -55,28 +55,28 @@ public class HashFile {
 	 * Variables *
 	 *-----------*/
 
-	private File file;
+	private final File file;
 
-	private RandomAccessFile raf;
+	private final RandomAccessFile raf;
 
-	private FileChannel fileChannel;
+	private final FileChannel fileChannel;
 
-	private boolean forceSync;
+	private final boolean forceSync;
 
 	// The number of (non-overflow) buckets in the hash file
-	private int bucketCount;
+	private volatile int bucketCount;
 
 	// The number of items that can be stored in a bucket
-	private int bucketSize;
+	private final int bucketSize;
 
 	// The number of items in the hash file
-	private int itemCount;
+	private volatile int itemCount;
 
 	// Load factor (fixed, for now)
-	private float loadFactor = 0.75f;
+	private final float loadFactor = 0.75f;
 
 	// recordSize = ITEM_SIZE * bucketSize + 4
-	private int recordSize;
+	private final int recordSize;
 
 	/*--------------*
 	 * Constructors *
@@ -120,7 +120,31 @@ public class HashFile {
 		}
 		else {
 			// Read bucket count, bucket size and item count from the file
-			readFileHeader();
+			ByteBuffer buf = ByteBuffer.allocate((int)HEADER_LENGTH);
+			fileChannel.read(buf, 0L);
+			buf.rewind();
+
+			if (buf.remaining() < HEADER_LENGTH) {
+				throw new IOException("File too short to be a compatible hash file");
+			}
+
+			byte[] magicNumber = new byte[MAGIC_NUMBER.length];
+			buf.get(magicNumber);
+			byte version = buf.get();
+			bucketCount = buf.getInt();
+			bucketSize = buf.getInt();
+			itemCount = buf.getInt();
+
+			if (!Arrays.equals(MAGIC_NUMBER, magicNumber)) {
+				throw new IOException("File doesn't contain compatible hash file data");
+			}
+
+			if (version > FILE_FORMAT_VERSION) {
+				throw new IOException("Unable to read hash file; it uses a newer file format");
+			}
+			else if (version != FILE_FORMAT_VERSION) {
+				throw new IOException("Unable to read hash file; invalid file format version: " + version);
+			}
 
 			recordSize = ITEM_SIZE * bucketSize + 4;
 		}
@@ -253,8 +277,6 @@ public class HashFile {
 		throws IOException
 	{
 		raf.close();
-		raf = null;
-		fileChannel = null;
 	}
 
 	/*-----------------*
@@ -294,39 +316,6 @@ public class HashFile {
 		buf.rewind();
 
 		fileChannel.write(buf, 0L);
-	}
-
-	/**
-	 * Reads the bucket count, bucket size and item count from the file header.
-	 */
-	private void readFileHeader()
-		throws IOException
-	{
-		ByteBuffer buf = ByteBuffer.allocate((int)HEADER_LENGTH);
-		fileChannel.read(buf, 0L);
-		buf.rewind();
-
-		if (buf.remaining() < HEADER_LENGTH) {
-			throw new IOException("File too short to be a compatible hash file");
-		}
-
-		byte[] magicNumber = new byte[MAGIC_NUMBER.length];
-		buf.get(magicNumber);
-		byte version = buf.get();
-		bucketCount = buf.getInt();
-		bucketSize = buf.getInt();
-		itemCount = buf.getInt();
-
-		if (!Arrays.equals(MAGIC_NUMBER, magicNumber)) {
-			throw new IOException("File doesn't contain compatible hash file data");
-		}
-
-		if (version > FILE_FORMAT_VERSION) {
-			throw new IOException("Unable to read hash file; it uses a newer file format");
-		}
-		else if (version != FILE_FORMAT_VERSION) {
-			throw new IOException("Unable to read hash file; invalid file format version: " + version);
-		}
 	}
 
 	/**

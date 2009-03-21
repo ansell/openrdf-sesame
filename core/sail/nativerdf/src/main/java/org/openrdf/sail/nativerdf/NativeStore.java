@@ -51,40 +51,40 @@ public class NativeStore extends NotifyingSailBase {
 	/**
 	 * Specifies which triple indexes this native store must use.
 	 */
-	private String tripleIndexes;
+	private volatile String tripleIndexes;
 
 	/**
 	 * Flag indicating whether updates should be synced to disk forcefully. This
 	 * may have a severe impact on write performance. By default, this feature is
 	 * disabled.
 	 */
-	private boolean forceSync = false;
+	private volatile boolean forceSync = false;
 
-	private TripleStore tripleStore;
+	private volatile TripleStore tripleStore;
 
-	private ValueStore valueStore;
+	private volatile ValueStore valueStore;
 
-	private NamespaceStore namespaceStore;
+	private volatile NamespaceStore namespaceStore;
 
 	/**
 	 * Lock manager used to synchronize read and write access to the store.
 	 */
-	private ReadWriteLockManager storeLockManager;
+	private volatile ReadWriteLockManager storeLockManager;
 
 	/**
 	 * Lock manager used to prevent concurrent transactions.
 	 */
-	private ExclusiveLockManager txnLockManager;
+	private volatile ExclusiveLockManager txnLockManager;
 
 	/**
 	 * Flag indicating whether the Sail has been initialized.
 	 */
-	private boolean initialized;
+	private volatile boolean initialized;
 
 	/**
 	 * Data directory lock.
 	 */
-	private Lock dirLock;
+	private volatile Lock dirLock;
 
 	/*--------------*
 	 * Constructors *

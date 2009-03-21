@@ -15,16 +15,13 @@ import org.openrdf.model.vocabulary.XMLSchema;
  */
 public class BooleanMemLiteral extends MemLiteral {
 
+	private static final long serialVersionUID = 8061173551677475700L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 8061173551677475700L;
-
-	private boolean b;
+	private final boolean b;
 
 	/*--------------*
 	 * Constructors *
@@ -44,8 +41,7 @@ public class BooleanMemLiteral extends MemLiteral {
 	 *---------*/
 
 	@Override
-	public boolean booleanValue()
-	{
+	public boolean booleanValue() {
 		return b;
 	}
 }
