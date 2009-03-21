@@ -27,23 +27,23 @@ public class MemStatement extends ContextStatementImpl {
 	 * Flag indicating whether or not this statement has been added explicitly or
 	 * that it has been inferred.
 	 */
-	private boolean explicit;
+	private volatile boolean explicit;
 
 	/**
 	 * Identifies the snapshot in which this statement was introduced.
 	 */
-	private int sinceSnapshot;
+	private volatile int sinceSnapshot;
 
 	/**
 	 * Identifies the snapshot in which this statement was revoked, defaults to
 	 * {@link Integer#MAX_VALUE}.
 	 */
-	private int tillSnapshot = Integer.MAX_VALUE;
+	private volatile int tillSnapshot = Integer.MAX_VALUE;
 
 	/**
 	 * Flag indicating the status of of this statement during a transaction.
 	 */
-	private TxnStatus txnStatus;
+	private volatile TxnStatus txnStatus;
 
 	/*--------------*
 	 * Constructors *

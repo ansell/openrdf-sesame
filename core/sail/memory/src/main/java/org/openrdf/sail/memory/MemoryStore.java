@@ -69,72 +69,73 @@ public class MemoryStore extends NotifyingSailBase {
 	/**
 	 * Factory/cache for MemValue objects.
 	 */
-	private MemValueFactory valueFactory;
+	private final MemValueFactory valueFactory = new MemValueFactory();
 
 	/**
 	 * List containing all available statements.
 	 */
-	private MemStatementList statements;
+	private final MemStatementList statements = new MemStatementList(256);
 
 	/**
 	 * Set of all statements that have been affected by a transaction.
 	 */
-	private IdentityHashMap<MemStatement, MemStatement> txnStatements;
+	private volatile IdentityHashMap<MemStatement, MemStatement> txnStatements;
 
 	/**
 	 * Identifies the current snapshot.
 	 */
-	private int currentSnapshot;
+	private volatile int currentSnapshot;
 
 	/**
 	 * Store for namespace prefix info.
 	 */
-	private MemNamespaceStore namespaceStore;
+	private final MemNamespaceStore namespaceStore = new MemNamespaceStore();
 
 	/**
 	 * Lock manager used to give the snapshot cleanup thread exclusive access to
 	 * the statement list.
 	 */
-	private ReadWriteLockManager statementListLockManager;
+	private final ReadWriteLockManager statementListLockManager = new ReadPrefReadWriteLockManager(
+			debugEnabled());
 
 	/**
 	 * Lock manager used to prevent concurrent transactions.
 	 */
-	private ExclusiveLockManager txnLockManager;
+	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager(debugEnabled());
 
 	/**
 	 * Flag indicating whether the Sail has been initialized.
 	 */
-	private boolean initialized = false;
+	private volatile boolean initialized = false;
 
-	private boolean persist = false;
+	private volatile boolean persist = false;
 
 	/**
 	 * The file used for data persistence, null if this is a volatile RDF store.
 	 */
-	private File dataFile;
+	private volatile File dataFile;
 
 	/**
 	 * The file used for serialising data, null if this is a volatile RDF store.
 	 */
-	private File syncFile;
+	private volatile File syncFile;
 
 	/**
 	 * The directory lock, null if this is read-only or a volatile RDF store.
 	 */
-	private Lock dirLock;
+	private volatile Lock dirLock;
 
 	/**
 	 * Flag indicating whether the contents of this repository have changed.
 	 */
-	private boolean contentsChanged;
+	private volatile boolean contentsChanged;
 
 	/**
 	 * The sync delay.
 	 * 
 	 * @see #setSyncDelay
 	 */
-	private long syncDelay = 0L;
+	private volatile long syncDelay = 0L;
 
 	/**
 	 * Semaphore used to synchronize concurrent access to {@link #sync()}.
@@ -144,12 +145,12 @@ public class MemoryStore extends NotifyingSailBase {
 	/**
 	 * The timer used to trigger file synchronization.
 	 */
-	private Timer syncTimer;
+	private volatile Timer syncTimer;
 
 	/**
 	 * The currently scheduled timer task, if any.
 	 */
-	private TimerTask syncTimerTask;
+	private volatile TimerTask syncTimerTask;
 
 	/**
 	 * Semaphore used to synchronize concurrent access to {@link #syncTimer} and
@@ -161,7 +162,7 @@ public class MemoryStore extends NotifyingSailBase {
 	 * Cleanup thread that removes deprecated statements when no other threads
 	 * are accessing this list. Seee {@link #scheduleSnapshotCleanup()}.
 	 */
-	private Thread snapshotCleanupThread;
+	private volatile Thread snapshotCleanupThread;
 
 	/**
 	 * Semaphore used to synchronize concurrent access to
@@ -268,12 +269,6 @@ public class MemoryStore extends NotifyingSailBase {
 
 		logger.debug("Initializing MemoryStore...");
 
-		statementListLockManager = new ReadPrefReadWriteLockManager(debugEnabled());
-		txnLockManager = new ExclusiveLockManager(debugEnabled());
-		namespaceStore = new MemNamespaceStore();
-
-		valueFactory = new MemValueFactory();
-		statements = new MemStatementList(256);
 		currentSnapshot = 1;
 
 		if (persist) {
@@ -367,8 +362,8 @@ public class MemoryStore extends NotifyingSailBase {
 				cancelSyncTimer();
 				sync();
 
-				valueFactory = null;
-				statements = null;
+				valueFactory.clear();
+				statements.clear();
 				dataFile = null;
 				syncFile = null;
 				initialized = false;
@@ -446,6 +441,19 @@ public class MemoryStore extends NotifyingSailBase {
 
 	protected int size() {
 		return statements.size();
+	}
+
+	protected boolean hasStatement(Resource subj, URI pred, Value obj, boolean explicitOnly, int snapshot,
+			ReadMode readMode, Resource... contexts)
+	{
+		CloseableIteration<MemStatement, RuntimeException> iter = createStatementIterator(
+				RuntimeException.class, subj, pred, obj, explicitOnly, snapshot, readMode, contexts);
+		try {
+			return iter.hasNext();
+		}
+		finally {
+			iter.close();
+		}
 	}
 
 	/**
@@ -543,6 +551,7 @@ public class MemoryStore extends NotifyingSailBase {
 	protected Statement addStatement(Resource subj, URI pred, Value obj, Resource context, boolean explicit)
 		throws SailException
 	{
+		assert txnStatements != null;
 		boolean newValueCreated = false;
 
 		// Get or create MemValues for the operands
@@ -638,6 +647,8 @@ public class MemoryStore extends NotifyingSailBase {
 		st.addToComponentLists();
 
 		txnStatements.put(st, st);
+		
+		assert hasStatement(memSubj, memPred, memObj, explicit, currentSnapshot + 1, ReadMode.TRANSACTION, memContext);
 
 		return st;
 	}
@@ -680,12 +691,15 @@ public class MemoryStore extends NotifyingSailBase {
 	{
 		cancelSyncTask();
 
+		assert txnStatements == null;
 		txnStatements = new IdentityHashMap<MemStatement, MemStatement>();
 	}
 
 	protected void commit()
 		throws SailException
 	{
+		assert txnStatements != null;
+
 		boolean statementsAdded = false;
 		boolean statementsRemoved = false;
 		boolean statementsDeprecated = false;
@@ -748,6 +762,7 @@ public class MemoryStore extends NotifyingSailBase {
 	protected void rollback()
 		throws SailException
 	{
+		assert txnStatements != null;
 		logger.debug("rolling back transaction");
 
 		boolean statementsDeprecated = false;
@@ -873,8 +888,8 @@ public class MemoryStore extends NotifyingSailBase {
 	protected void cleanSnapshots()
 		throws InterruptedException
 	{
-		//System.out.println("cleanSnapshots() starting...");
-		//long startTime = System.currentTimeMillis();
+		// System.out.println("cleanSnapshots() starting...");
+		// long startTime = System.currentTimeMillis();
 		MemStatementList statements = this.statements;
 
 		if (statements == null) {
@@ -929,8 +944,9 @@ public class MemoryStore extends NotifyingSailBase {
 			stLock.release();
 		}
 
-		//long endTime = System.currentTimeMillis();
-		//System.out.println("cleanSnapshots() took " + (endTime - startTime) + " ms");
+		// long endTime = System.currentTimeMillis();
+		// System.out.println("cleanSnapshots() took " + (endTime - startTime) +
+		// " ms");
 	}
 
 	protected void scheduleSnapshotCleanup() {

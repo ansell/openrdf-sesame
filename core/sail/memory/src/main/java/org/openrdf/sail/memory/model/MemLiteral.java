@@ -24,12 +24,12 @@ public class MemLiteral extends LiteralImpl implements MemValue {
 	/**
 	 * The object that created this MemLiteral.
 	 */
-	transient private Object creator;
+	transient private final Object creator;
 
 	/**
 	 * The list of statements for which this MemLiteral is the object.
 	 */
-	transient private MemStatementList objectStatements = null;
+	transient private volatile MemStatementList objectStatements;
 
 	/*--------------*
 	 * Constructors *

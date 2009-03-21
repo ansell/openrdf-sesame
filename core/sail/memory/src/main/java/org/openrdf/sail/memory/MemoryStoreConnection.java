@@ -73,14 +73,14 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 * The exclusive transaction lock held by this connection during
 	 * transactions.
 	 */
-	private Lock txnLock;
+	private volatile Lock txnLock;
 
 	/**
 	 * A statement list read lock held by this connection during transactions.
 	 * Keeping this lock prevents statements from being removed from the main
 	 * statement list during transactions.
 	 */
-	private Lock txnStLock;
+	private volatile Lock txnStLock;
 
 	/*--------------*
 	 * Constructors *
@@ -249,6 +249,28 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
+	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws SailException
+	{
+		Lock stLock = store.getStatementsReadLock();
+
+		try {
+			int snapshot = store.getCurrentSnapshot();
+			ReadMode readMode = ReadMode.COMMITTED;
+
+			if (transactionActive()) {
+				snapshot++;
+				readMode = ReadMode.TRANSACTION;
+			}
+
+			return store.hasStatement(subj, pred, obj, !includeInferred, snapshot, readMode, contexts);
+		}
+		finally {
+			stLock.release();
+		}
+	}
+
 	@Override
 	protected long sizeInternal(Resource... contexts)
 		throws SailException
@@ -366,6 +388,9 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			Resource... contexts)
 		throws SailException
 	{
+		assert txnStLock.isActive();
+		assert txnLock.isActive();
+
 		Statement st = null;
 
 		if (contexts.length == 0) {

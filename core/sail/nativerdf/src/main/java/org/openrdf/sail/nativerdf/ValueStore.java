@@ -67,13 +67,13 @@ public class ValueStore extends ValueFactoryBase {
 	 * Used to do the actual storage of values, once they're translated to byte
 	 * arrays.
 	 */
-	private DataStore dataStore;
+	private final DataStore dataStore;
 
 	/**
 	 * Lock manager used to prevent the removal of values over multiple method
 	 * calls. Note that values can still be added when read locks are active.
 	 */
-	private ReadWriteLockManager lockManager = new WritePrefReadWriteLockManager();
+	private final ReadWriteLockManager lockManager = new WritePrefReadWriteLockManager();
 
 	/**
 	 * An object that indicates the revision of the value store, which is used to
@@ -81,31 +81,31 @@ public class ValueStore extends ValueFactoryBase {
 	 * ValueStoreRevision object of a NativeValue needs to be equal to this
 	 * object.
 	 */
-	private ValueStoreRevision revision;
+	private volatile ValueStoreRevision revision;
 
 	/**
 	 * A simple cache containing the [VALUE_CACHE_SIZE] most-recently used values
 	 * stored by their ID.
 	 */
-	private LRUCache<Integer, NativeValue> valueCache;
+	private final LRUCache<Integer, NativeValue> valueCache;
 
 	/**
 	 * A simple cache containing the [ID_CACHE_SIZE] most-recently used value-IDs
 	 * stored by their value.
 	 */
-	private LRUCache<Value, Integer> valueIDCache;
+	private final LRUCache<Value, Integer> valueIDCache;
 
 	/**
 	 * A simple cache containing the [NAMESPACE_CACHE_SIZE] most-recently used
 	 * namespaces stored by their ID.
 	 */
-	private LRUCache<Integer, String> namespaceCache;
+	private final LRUCache<Integer, String> namespaceCache;
 
 	/**
 	 * A simple cache containing the [NAMESPACE_ID_CACHE_SIZE] most-recently used
 	 * namespace-IDs stored by their namespace.
 	 */
-	private LRUCache<String, Integer> namespaceIDCache;
+	private final LRUCache<String, Integer> namespaceIDCache;
 
 	/*--------------*
 	 * Constructors *
@@ -400,10 +400,6 @@ public class ValueStore extends ValueFactoryBase {
 		throws IOException
 	{
 		dataStore.close();
-		valueCache = null;
-		valueIDCache = null;
-		namespaceCache = null;
-		namespaceIDCache = null;
 	}
 
 	/**

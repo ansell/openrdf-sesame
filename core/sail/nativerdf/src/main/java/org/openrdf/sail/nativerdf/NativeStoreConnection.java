@@ -66,13 +66,13 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	 * Variables *
 	 *-----------*/
 
-	private DefaultSailChangedEvent sailChangedEvent;
+	private volatile DefaultSailChangedEvent sailChangedEvent;
 
 	/**
 	 * The exclusive transaction lock held by this connection during
 	 * transactions.
 	 */
-	private Lock txnLock;
+	private volatile Lock txnLock;
 
 	/*--------------*
 	 * Constructors *

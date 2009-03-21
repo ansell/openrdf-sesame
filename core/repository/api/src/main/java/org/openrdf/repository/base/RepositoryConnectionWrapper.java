@@ -49,7 +49,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		DelegatingRepositoryConnection
 {
 
-	private RepositoryConnection delegate;
+	private volatile RepositoryConnection delegate;
 
 	public RepositoryConnectionWrapper(Repository repository) {
 		super(repository);
