@@ -48,7 +48,9 @@ public class FederationStatistics extends EvaluationStatistics {
 	}
 
 	@Override
-	public double getCardinality(TupleExpr expr) {
+	public double getCardinality(TupleExpr expr)
+		throws StoreException
+	{
 		Calculator cc = new Calculator();
 		expr.visit(cc);
 		return cc.getCardinality();
@@ -63,19 +65,15 @@ public class FederationStatistics extends EvaluationStatistics {
 	protected class Calculator extends CardinalityCalculator {
 
 		@Override
-		protected double getCardinality(StatementPattern sp) {
-			try {
-				long cardinality = calculator.getCardinality(sp);
-				double result = cardinality;
-				if (Double.isNaN(result) || result < 0) {
-					return Double.MAX_VALUE;
-				}
-				return result;
+		protected double getCardinality(StatementPattern sp)
+			throws StoreException
+		{
+			long cardinality = calculator.getCardinality(sp);
+			double result = cardinality;
+			if (Double.isNaN(result) || result < 0) {
+				return Double.MAX_VALUE;
 			}
-			catch (StoreException e) {
-				logger.error(e.toString(), e);
-				return super.getCardinality();
-			}
+			return result;
 		}
 	}
 

@@ -23,6 +23,7 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
+import org.openrdf.store.StoreException;
 
 /**
  * A query optimizer that re-orders nested Joins.
@@ -47,17 +48,22 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 	 * from more to less specific.
 	 * 
 	 * @param query
+	 * @throws StoreException
 	 */
-	public void optimize(QueryModel query, BindingSet bindings) {
+	public void optimize(QueryModel query, BindingSet bindings)
+		throws StoreException
+	{
 		query.visit(new JoinVisitor());
 	}
 
-	protected class JoinVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected class JoinVisitor extends QueryModelVisitorBase<StoreException> {
 
 		Set<String> boundVars = new HashSet<String>();
 
 		@Override
-		public void meet(LeftJoin leftJoin) {
+		public void meet(LeftJoin leftJoin)
+			throws StoreException
+		{
 			leftJoin.getLeftArg().visit(this);
 
 			Set<String> origBoundVars = boundVars;
@@ -73,7 +79,9 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(Join node) {
+		public void meet(Join node)
+			throws StoreException
+		{
 			Set<String> origBoundVars = boundVars;
 			try {
 				boundVars = new HashSet<String>(boundVars);
