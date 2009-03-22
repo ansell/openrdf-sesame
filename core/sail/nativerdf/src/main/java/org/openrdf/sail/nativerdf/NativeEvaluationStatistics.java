@@ -16,6 +16,7 @@ import org.openrdf.model.Value;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
+import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman
@@ -39,7 +40,9 @@ class NativeEvaluationStatistics extends EvaluationStatistics {
 	protected class NativeCardinalityCalculator extends CardinalityCalculator {
 
 		@Override
-		protected double getCardinality(StatementPattern sp) {
+		protected double getCardinality(StatementPattern sp)
+			throws StoreException
+		{
 			Resource subj = (Resource)getConstantValue(sp.getSubjectVar());
 			URI pred = (URI)getConstantValue(sp.getPredicateVar());
 			Value obj = getConstantValue(sp.getObjectVar());

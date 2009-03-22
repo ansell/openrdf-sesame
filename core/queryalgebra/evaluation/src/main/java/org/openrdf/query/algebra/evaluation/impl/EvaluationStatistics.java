@@ -18,6 +18,7 @@ import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.store.StoreException;
 
 /**
  * Supplies various query model statistics to the query engine/optimizer.
@@ -29,7 +30,9 @@ public class EvaluationStatistics {
 
 	protected CardinalityCalculator cc;
 
-	public synchronized double getCardinality(TupleExpr expr) {
+	public synchronized double getCardinality(TupleExpr expr)
+		throws StoreException
+	{
 		if (cc == null) {
 			cc = createCardinalityCalculator();
 		}
@@ -46,7 +49,7 @@ public class EvaluationStatistics {
 	 * Inner class CardinalityCalculator *
 	 *-----------------------------------*/
 
-	protected static class CardinalityCalculator extends QueryModelVisitorBase<RuntimeException> {
+	protected static class CardinalityCalculator extends QueryModelVisitorBase<StoreException> {
 
 		protected double cardinality;
 
@@ -65,11 +68,15 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		public void meet(StatementPattern sp) {
+		public void meet(StatementPattern sp)
+			throws StoreException
+		{
 			cardinality = getCardinality(sp);
 		}
 
-		protected double getCardinality(StatementPattern sp) {
+		protected double getCardinality(StatementPattern sp)
+			throws StoreException
+		{
 			List<Var> vars = sp.getVarList();
 			int constantVarCount = countConstantVars(vars);
 			double unboundVarFactor = (double)(vars.size() - constantVarCount) / vars.size();
@@ -89,7 +96,9 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		public void meet(Join node) {
+		public void meet(Join node)
+			throws StoreException
+		{
 			double cost = 1;
 			for (TupleExpr arg : node.getArgs()) {
 				arg.visit(this);
@@ -99,7 +108,9 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		public void meet(LeftJoin node) {
+		public void meet(LeftJoin node)
+			throws StoreException
+		{
 			node.getLeftArg().visit(this);
 			double leftArgCost = this.cardinality;
 
@@ -108,7 +119,9 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		protected void meetNaryTupleOperator(NaryTupleOperator node) {
+		protected void meetNaryTupleOperator(NaryTupleOperator node)
+			throws StoreException
+		{
 			double cost = 0;
 			for (TupleExpr arg : node.getArgs()) {
 				arg.visit(this);
