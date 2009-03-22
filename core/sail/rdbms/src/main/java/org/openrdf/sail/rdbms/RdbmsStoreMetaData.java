@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.sail.helpers.SailMetaDataImpl;
 import org.openrdf.sail.rdbms.config.RdbmsStoreFactory;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -54,6 +55,11 @@ class RdbmsStoreMetaData extends SailMetaDataImpl {
 			logger.error(e.toString(), e);
 			return true;
 		}
+	}
+
+	@Override
+	public Isolation getDefaultIsolation() {
+		return Isolation.SERIALIZABLE;
 	}
 
 	@Override

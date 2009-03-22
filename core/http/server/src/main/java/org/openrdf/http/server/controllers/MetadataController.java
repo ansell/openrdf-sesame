@@ -33,6 +33,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -74,6 +75,12 @@ public class MetadataController {
 			}
 		}
 
+		for (Isolation isolation : Isolation.values()) {
+			if (data.supportsIsolation(isolation)) {
+				add(model, subj, uf, "supportsIsolation", lf, isolation);
+			}
+		}
+
 		return model;
 	}
 
@@ -99,6 +106,9 @@ public class MetadataController {
 		}
 		else if (o instanceof RDFFormat) {
 			model.add(subj, pred, uf.createURI(Protocol.METADATA_NAMESPACE, ((RDFFormat)o).getName()));
+		}
+		else if (o instanceof Isolation) {
+			model.add(subj, pred, uf.createURI(Protocol.METADATA_NAMESPACE, o.toString()));
 		}
 		else {
 			throw new AssertionError("Unsupported type: " + o.getClass());

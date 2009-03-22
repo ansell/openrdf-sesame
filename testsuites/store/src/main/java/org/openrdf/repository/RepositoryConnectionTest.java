@@ -62,6 +62,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.sail.memory.MemoryStore;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 public abstract class RepositoryConnectionTest extends TestCase {
@@ -1652,6 +1653,17 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SERQL, "SELECT o FROM {} P {o}");
 		query.setLimit(1);
 		assertEquals(1, query.evaluate().asList().size());
+	}
+
+	public void testSupportsIsolationLevel() throws Exception {
+		Isolation isolation = testCon.getTransactionIsolation();
+		RepositoryMetaData meta = testRepository.getMetaData();
+		assertEquals(isolation, meta.getDefaultIsolation());
+		for (Isolation i : Isolation.values()) {
+			if (isolation.isCompatibleWith(i)) {
+				assertTrue(meta.supportsIsolation(i));
+			}
+		}
 	}
 
 	private void testValueRoundTrip(Resource subj, URI pred, Value obj)

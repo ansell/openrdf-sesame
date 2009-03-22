@@ -9,6 +9,7 @@ import java.net.URL;
 
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.store.Isolation;
 
 /**
  * @author James Leigh
@@ -74,5 +75,9 @@ public interface RepositoryMetaData {
 	String[] getReasoners();
 
 	String[] getInferenceRules();
+
+	Isolation getDefaultIsolation();
+
+	boolean supportsIsolation(Isolation isolation);
 
 }

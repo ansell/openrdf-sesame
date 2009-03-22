@@ -82,6 +82,8 @@ public class RDFaMetaWriter {
 			writer.xmlns(name, prefix);
 		}
 
+		writer.attribute("version", "XHTML+RDFa 1.0");
+
 		writer.closeStartTag();
 		writer.newLine();
 	}

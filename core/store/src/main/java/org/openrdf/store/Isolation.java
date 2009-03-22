@@ -5,6 +5,7 @@
  */
 package org.openrdf.store;
 
+
 /**
  * A Connection object's transaction isolation level.
  * 
@@ -45,4 +46,32 @@ public enum Isolation {
 	 * completely after a successful serializable transaction.
 	 */
 	SERIALIZABLE;
+
+	public boolean isCompatibleWith(Isolation isolation) {
+		switch (isolation) {
+			case NONE:
+				if (equals(NONE)) {
+					return true;
+				}
+			case READ_UNCOMMITTED:
+				if (equals(READ_UNCOMMITTED)) {
+					return true;
+				}
+			case READ_COMMITTED:
+				if (equals(READ_COMMITTED)) {
+					return true;
+				}
+			case REPEATABLE_READ:
+				if (equals(REPEATABLE_READ)) {
+					return true;
+				}
+			case SNAPSHOT:
+				if (equals(SNAPSHOT)) {
+					return true;
+				}
+			case SERIALIZABLE:
+				return equals(SERIALIZABLE);
+		}
+		throw new AssertionError();
+	}
 }
