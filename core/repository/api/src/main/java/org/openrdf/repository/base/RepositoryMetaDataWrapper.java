@@ -10,6 +10,7 @@ import java.net.URL;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.store.Isolation;
 
 /**
  * @author James Leigh
@@ -136,5 +137,13 @@ public class RepositoryMetaDataWrapper implements RepositoryMetaData {
 
 	public boolean isReadOnly() {
 		return delegate.isReadOnly();
+	}
+
+	public Isolation getDefaultIsolation() {
+		return delegate.getDefaultIsolation();
+	}
+
+	public boolean supportsIsolation(Isolation isolation) {
+		return delegate.supportsIsolation(isolation);
 	}
 }

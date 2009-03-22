@@ -15,6 +15,7 @@ import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +28,7 @@ import org.openrdf.model.Value;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 class HTTPRepositoryMetaData implements InvocationHandler {
@@ -34,6 +36,8 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 	private static final String EMBEDDED = "embedded";
 
 	private static final String READ_ONLY = "readOnly";
+
+	private static final String SUPPORTS_ISOLATION = "supportsIsolation";
 
 	public static RepositoryMetaData create(HTTPRepository repository, Model model)
 		throws StoreException
@@ -66,21 +70,30 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 	public Object invoke(Object proxy, Method method, Object[] args)
 		throws MalformedURLException
 	{
-		String name = getName(method);
+		if (SUPPORTS_ISOLATION.equals(method.getName())) {
+			return supportsIsolation((Isolation)args[0]);
+		}
+		String property = getPropertyName(method);
 		Class<?> type = method.getReturnType();
-		if (READ_ONLY.equals(name)) {
+		if (READ_ONLY.equals(property)) {
 			return repository.isReadOnly();
 		}
-		if (EMBEDDED.equals(name)) {
+		if (EMBEDDED.equals(property)) {
 			return false;
 		}
 		if (type.isArray()) {
-			return getArrayOf(type.getComponentType(), name);
+			return getArrayOf(type.getComponentType(), property);
 		}
-		return getArrayOf(type, name)[0];
+		return getArrayOf(type, property)[0];
 	}
 
-	private String getName(Method method) {
+	private boolean supportsIsolation(Isolation isolation)
+		throws MalformedURLException
+	{
+		return Arrays.asList(getArrayOf(Isolation.class, SUPPORTS_ISOLATION)).contains(isolation);
+	}
+
+	private String getPropertyName(Method method) {
 		for (PropertyDescriptor p : properties) {
 			if (method.equals(p.getReadMethod())) {
 				return p.getName();
@@ -89,11 +102,11 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 		throw new AssertionError("No such property");
 	}
 
-	private Object[] getArrayOf(Class<?> type, String name)
+	private Object[] getArrayOf(Class<?> type, String localName)
 		throws MalformedURLException
 	{
 		URIFactory uf = repository.getURIFactory();
-		URI pred = uf.createURI(Protocol.METADATA_NAMESPACE, name);
+		URI pred = uf.createURI(Protocol.METADATA_NAMESPACE, localName);
 		if (type.isAssignableFrom(String.class)) {
 			return getString(pred);
 		}
@@ -111,6 +124,9 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 		}
 		else if (type.isAssignableFrom(RDFFormat.class)) {
 			return getRDFFormat(pred);
+		}
+		else if (type.isAssignableFrom(Isolation.class)) {
+			return getIsolation(pred);
 		}
 		else {
 			throw new AssertionError("Unsupported type: " + type);
@@ -174,6 +190,15 @@ class HTTPRepositoryMetaData implements InvocationHandler {
 			list.add(RDFFormat.valueOf(((URI)obj).getLocalName()));
 		}
 		return list.toArray(new RDFFormat[list.size()]);
+	}
+
+	private Isolation[] getIsolation(URI pred) {
+		Set<Value> objects = get(pred);
+		List<Isolation> list = new ArrayList<Isolation>(objects.size());
+		for (Value obj : objects) {
+			list.add(Isolation.valueOf(((URI)obj).getLocalName()));
+		}
+		return list.toArray(new Isolation[list.size()]);
 	}
 
 	private Set<Value> get(URI pred) {

@@ -8,6 +8,7 @@ package org.openrdf.sail.helpers;
 import java.net.URL;
 
 import org.openrdf.sail.SailMetaData;
+import org.openrdf.store.Isolation;
 
 /**
  * @author James Leigh
@@ -122,5 +123,13 @@ public class SailMetaDataWrapper implements SailMetaData {
 
 	public boolean isReadOnly() {
 		return delegate.isReadOnly();
+	}
+
+	public Isolation getDefaultIsolation() {
+		return delegate.getDefaultIsolation();
+	}
+
+	public boolean supportsIsolation(Isolation isolation) {
+		return delegate.supportsIsolation(isolation);
 	}
 }

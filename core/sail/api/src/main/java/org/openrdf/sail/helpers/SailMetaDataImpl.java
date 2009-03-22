@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.sail.SailMetaData;
+import org.openrdf.store.Isolation;
 
 /**
  * @author James Leigh
@@ -171,6 +172,14 @@ public class SailMetaDataImpl implements SailMetaData {
 
 	public boolean isReadOnly() {
 		return false;
+	}
+
+	public Isolation getDefaultIsolation() {
+		return Isolation.NONE;
+	}
+
+	public boolean supportsIsolation(Isolation isolation) {
+		return getDefaultIsolation().isCompatibleWith(isolation);
 	}
 
 }

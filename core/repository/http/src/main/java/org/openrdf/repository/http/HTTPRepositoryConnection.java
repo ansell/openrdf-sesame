@@ -120,7 +120,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	/** If connection cannot use shared repository cache. */
 	private volatile boolean modified = false;
 
-	private volatile Isolation isolation = Isolation.READ_COMMITTED;
+	private volatile Isolation isolation;
 
 	private volatile boolean readOnly = false;
 
@@ -239,6 +239,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws StoreException
 	{
 		// TODO read from remote store
+		if (isolation == null) {
+			return repository.getMetaData().getDefaultIsolation();
+		}
 		return isolation;
 	}
 

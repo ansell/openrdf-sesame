@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.sail.helpers.SailMetaDataImpl;
 import org.openrdf.sail.nativerdf.config.NativeStoreFactory;
+import org.openrdf.store.Isolation;
 
 /**
  * @author James Leigh
@@ -54,6 +55,11 @@ class NativeStoreMetaData extends SailMetaDataImpl {
 	@Override
 	public boolean isReadOnly() {
 		return !store.isWritable();
+	}
+
+	@Override
+	public Isolation getDefaultIsolation() {
+		return Isolation.SERIALIZABLE;
 	}
 
 	@Override

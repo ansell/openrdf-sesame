@@ -7,6 +7,8 @@ package org.openrdf.sail;
 
 import java.net.URL;
 
+import org.openrdf.store.Isolation;
+
 /**
  * @author James Leigh
  */
@@ -63,4 +65,8 @@ public interface SailMetaData {
 	String[] getReasoners();
 
 	String[] getInferenceRules();
+
+	Isolation getDefaultIsolation();
+
+	boolean supportsIsolation(Isolation isolation);
 }
