@@ -122,6 +122,7 @@ public class ExceptionWriter implements HandlerExceptionResolver, View {
 		}
 
 		response.setStatus(statusCode);
+		response.setContentType("text/plain");
 
 		PrintWriter writer = response.getWriter();
 		try {

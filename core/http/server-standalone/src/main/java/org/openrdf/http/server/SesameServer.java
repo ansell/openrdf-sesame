@@ -46,8 +46,9 @@ public class SesameServer {
 		Option portOption = new Option("p", "port", true, "port to listen on");
 		Option maxAgeOption = new Option("c", "maxCacheAge", true,
 				"How many seconds clients can use their cache before validating it with the server");
-		Option urlOption = new Option("u", "url", false,
-				"If the server should resolve URLs to URI descriptions");
+		Option urlOption = new Option("u", "url", true,
+				"If the server should resolve URLs to URIs and for which repository");
+		urlOption.setOptionalArg(true);
 
 		options.addOption(helpOption);
 		options.addOption(versionOption);
@@ -100,7 +101,7 @@ public class SesameServer {
 			}
 
 			if (commandLine.hasOption(urlOption.getOpt())) {
-				server.setUrlResolution(true);
+				server.setUrlResolution(commandLine.getOptionValue(urlOption.getOpt()));
 			}
 
 			if (commandLine.hasOption(nameOption.getOpt())) {
@@ -210,7 +211,7 @@ public class SesameServer {
 		servlet.setMaxCacheAge(maxCacheAge);
 	}
 
-	public void setUrlResolution(boolean urlResolution) {
+	public void setUrlResolution(String urlResolution) {
 		servlet.setUrlResolution(urlResolution);
 	}
 
