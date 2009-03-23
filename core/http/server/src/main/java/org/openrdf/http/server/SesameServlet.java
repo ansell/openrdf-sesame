@@ -73,6 +73,8 @@ public class SesameServlet implements Servlet {
 
 	private boolean urlResolution;
 
+	private String urlResolutionRepositoryId;
+
 	private String name = getDefaultServerName();
 
 	public SesameServlet(RepositoryManager manager) {
@@ -96,8 +98,9 @@ public class SesameServlet implements Servlet {
 		this.maxCacheAge = maxCacheAge;
 	}
 
-	public void setUrlResolution(boolean urlResolution) {
-		this.urlResolution = urlResolution;
+	public void setUrlResolution(String urlResolution) {
+		this.urlResolution = true;
+		this.urlResolutionRepositoryId = urlResolution;
 	}
 
 	public void destroy() {
@@ -130,11 +133,13 @@ public class SesameServlet implements Servlet {
 			SesameApplication.staticManager = manager;
 			SesameApplication.maxCacheAge = maxCacheAge;
 			SesameApplication.urlResolution = urlResolution;
+			SesameApplication.urlResolutionRepositoryId = urlResolutionRepositoryId;
 			delegate.init(new SesameServletConfig(config));
 			SesameApplication.serverName = null;
 			SesameApplication.staticManager = null;
 			SesameApplication.maxCacheAge = 0;
 			SesameApplication.urlResolution = false;
+			SesameApplication.urlResolutionRepositoryId = null;
 		}
 	}
 
@@ -192,6 +197,8 @@ public class SesameServlet implements Servlet {
 
 		static boolean urlResolution;
 
+		static String urlResolutionRepositoryId;
+
 		public SesameApplication() {
 			// RepositoryManager
 			registerSingleton(RepositoryManager.class, staticManager);
@@ -211,7 +218,7 @@ public class SesameServlet implements Servlet {
 			registerPrototype(QueryController.class);
 			registerPrototype(BNodeController.class);
 			if (urlResolution) {
-				registerPrototype(URIController.class);
+				registerSingleton(new URIController(urlResolutionRepositoryId));
 			}
 
 			// Exceptions
