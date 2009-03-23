@@ -14,6 +14,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.sail.SailMetaData;
 import org.openrdf.sail.helpers.SailMetaDataWrapper;
+import org.openrdf.store.Isolation;
 import org.openrdf.store.StoreException;
 
 /**
@@ -202,6 +203,30 @@ public class FederatedMetaData extends SailMetaDataWrapper {
 	public boolean isRDFSInferencing() {
 		for (RepositoryMetaData md : members) {
 			if (!md.isRDFSInferencing()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public Isolation getDefaultIsolation() {
+		Isolation compatible = Isolation.NONE;
+		for (Isolation isolation : Isolation.values()) {
+			for (RepositoryMetaData md : members) {
+				if (!md.getDefaultIsolation().isCompatibleWith(isolation)) {
+					return compatible;
+				}
+			}
+			compatible = isolation;
+		}
+		return compatible;
+	}
+
+	@Override
+	public boolean supportsIsolation(Isolation isolation) {
+		for (RepositoryMetaData md : members) {
+			if (!md.supportsIsolation(isolation)) {
 				return false;
 			}
 		}
