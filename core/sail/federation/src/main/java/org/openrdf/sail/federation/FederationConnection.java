@@ -93,14 +93,6 @@ abstract class FederationConnection extends SailConnectionBase {
 			BNodeSigner signer = new BNodeSigner(bf, member.getValueFactory());
 			this.members.add(signer.sign(member));
 		}
-
-		// Set default isolation level
-		try {
-			setTransactionIsolation(Isolation.READ_COMMITTED);
-		}
-		catch (StoreException e) {
-			throw new RuntimeException("unexpected exception", e);
-		}
 	}
 
 	public ValueFactory getValueFactory() {
@@ -121,6 +113,38 @@ abstract class FederationConnection extends SailConnectionBase {
 		});
 
 		super.close();
+	}
+
+	@Override
+	public Isolation getTransactionIsolation()
+		throws StoreException
+	{
+		Isolation compatible = Isolation.NONE;
+		for (Isolation isolation : Isolation.values()) {
+			for (RepositoryConnection member : members) {
+				Isolation currently = member.getTransactionIsolation();
+				if (!currently.isCompatibleWith(isolation)) {
+					return compatible;
+				}
+			}
+			compatible = isolation;
+		}
+		return compatible;
+	}
+
+	@Override
+	public void setTransactionIsolation(final Isolation isolation)
+		throws StoreException
+	{
+		super.setTransactionIsolation(isolation);
+		excute(new Procedure() {
+
+			public void run(RepositoryConnection con)
+				throws StoreException
+			{
+				con.setTransactionIsolation(isolation);
+			}
+		});
 	}
 
 	public Cursor<? extends Resource> getContextIDs()

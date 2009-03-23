@@ -14,9 +14,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -36,8 +33,6 @@ import org.openrdf.store.StoreException;
  * @author James Leigh
  */
 public class FederationStatistics extends EvaluationStatistics {
-
-	final Logger logger = LoggerFactory.getLogger(FederationStatistics.class);
 
 	PatternCalculator calculator;
 
