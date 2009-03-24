@@ -192,6 +192,7 @@ public abstract class RepositoryManager {
 		throws StoreConfigException, StoreException
 	{
 		removeRepositoryConfig(id);
+		logger.debug("Adding repository configuration for {}", id);
 		configs.addConfig(id, config);
 		return id;
 	}
@@ -215,12 +216,11 @@ public abstract class RepositoryManager {
 	public boolean removeRepositoryConfig(String repositoryID)
 		throws StoreException, StoreConfigException
 	{
-		logger.info("Removing repository configuration for {}.", repositoryID);
 		boolean isRemoved = false;
 
 		synchronized (initializedRepositories) {
-
 			if (configs.getIDs().contains(repositoryID)) {
+				logger.debug("Removing repository configuration for {}.", repositoryID);
 				configs.removeConfig(repositoryID);
 				isRemoved = true;
 			}
@@ -441,7 +441,7 @@ public abstract class RepositoryManager {
 	}
 
 	void refreshRepository(String repositoryID, Repository repository) {
-		logger.info("Refreshing repository {}...", repositoryID);
+		logger.debug("Refreshing repository {}...", repositoryID);
 		try {
 			repository.shutDown();
 		}
@@ -455,7 +455,7 @@ public abstract class RepositoryManager {
 	void cleanupIfRemoved(String repositoryID) {
 		try {
 			if (!hasRepositoryConfig(repositoryID)) {
-				logger.info("Cleaning up repository {}, its configuration has been removed", repositoryID);
+				logger.debug("Cleaning up repository {}, its configuration has been removed", repositoryID);
 
 				cleanUpRepository(repositoryID);
 			}
