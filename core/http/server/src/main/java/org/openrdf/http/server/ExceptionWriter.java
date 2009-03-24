@@ -122,7 +122,11 @@ public class ExceptionWriter implements HandlerExceptionResolver, View {
 		}
 
 		response.setStatus(statusCode);
-		response.setContentType("text/plain");
+		
+		if (response.getContentType() == null) {
+			// there seems to be a bug in spring that causes getContentType() to be ignored
+			response.setContentType(getContentType());
+		}
 
 		PrintWriter writer = response.getWriter();
 		try {
