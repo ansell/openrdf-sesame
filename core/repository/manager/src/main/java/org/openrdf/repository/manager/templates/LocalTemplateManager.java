@@ -88,18 +88,18 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 	{
 		Set<String> set = new HashSet<String>();
 		set.addAll(templates.keySet());
-		set.addAll(loadTemplates().keySet());
+		set.addAll(getTemplateURLs().keySet());
 		return set;
 	}
 
-	public ConfigTemplate getTemplate(String key)
+	public ConfigTemplate getTemplate(String templateID)
 		throws StoreConfigException
 	{
-		ConfigTemplate template = templates.get(key);
+		ConfigTemplate template = templates.get(templateID);
 		if (template != null) {
 			return template;
 		}
-		URL url = loadTemplates().get(key);
+		URL url = getTemplateURLs().get(templateID);
 		if (url == null) {
 			return null;
 		}
@@ -114,16 +114,16 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		}
 	}
 
-	public void addTemplate(String id, Model model)
+	public void addTemplate(String templateID, Model model)
 		throws StoreConfigException
 	{
-		templates.put(id, new ConfigTemplate(model, getSchemas()));
+		templates.put(templateID, new ConfigTemplate(model, getSchemas()));
 	}
 
-	public boolean removeTemplate(String id)
+	public boolean removeTemplate(String templateID)
 		throws StoreConfigException
 	{
-		ConfigTemplate template = templates.remove(id);
+		ConfigTemplate template = templates.remove(templateID);
 		return template != null;
 	}
 
@@ -138,14 +138,26 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		}
 	}
 
-	private Map<String, URL> loadTemplates()
+	private String fileNameToID(String fileName) {
+		int extIndex = fileName.lastIndexOf('.');
+
+		// ignore files that that have no extension or whose name starts with a
+		// dot
+		if (extIndex >= 1) {
+			return fileName.substring(0, extIndex);
+		}
+
+		return null;
+	}
+
+	private Map<String, URL> getTemplateURLs()
 		throws StoreConfigException
 	{
 		Map<String, URL> map = new HashMap<String, URL>();
 		try {
-			map = loadTemplates(cl, REPOSITORY_TEMPLATES, map);
+			map = getTemplateURLs(cl, REPOSITORY_TEMPLATES, map);
 			if (templateDir != null && templateDir.isDirectory()) {
-				map = loadTemplates(templateDir, map);
+				map = getTemplateURLs(templateDir, map);
 			}
 		}
 		catch (IOException e) {
@@ -154,19 +166,51 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		return map;
 	}
 
-	private Map<String, URL> loadTemplates(File dir, Map<String, URL> map)
+	private Map<String, URL> getTemplateURLs(File dir, Map<String, URL> map)
 		throws IOException, StoreConfigException
 	{
 		assert dir.isDirectory();
 
 		for (File file : dir.listFiles()) {
-			String id = file.getName();
-			int extIndex = id.lastIndexOf('.');
+			String id = fileNameToID(file.getName());
 
-			// ignore files that that have no extension or that start with a dot
-			if (extIndex >= 1) {
-				id = id.substring(0, extIndex);
+			if (id != null) {
 				map.put(id, file.toURI().toURL());
+			}
+		}
+
+		return map;
+	}
+
+	private Map<String, URL> getTemplateURLs(ClassLoader cl, String resource, Map<String, URL> map)
+		throws IOException, StoreConfigException
+	{
+		Enumeration<URL> templates = cl.getResources(resource);
+
+		while (templates.hasMoreElements()) {
+			Properties prop = new Properties();
+
+			InputStream stream = templates.nextElement().openStream();
+			try {
+				prop.load(stream);
+			}
+			finally {
+				stream.close();
+			}
+
+			Enumeration<?> names = prop.propertyNames();
+			while (names.hasMoreElements()) {
+				String name = names.nextElement().toString();
+				URL url = cl.getResource(name);
+				if (url == null) {
+					logger.warn("{} not found", name);
+					continue;
+				}
+				File file = new File(URLDecoder.decode(url.getPath(), "UTF-8"));
+				String id = fileNameToID(file.getName());
+				if (id != null) {
+					map.put(id, url);
+				}
 			}
 		}
 
@@ -224,32 +268,6 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		}
 
 		return model;
-	}
-
-	private Map<String, URL> loadTemplates(ClassLoader cl, String resource, Map<String, URL> map)
-		throws IOException, StoreConfigException
-	{
-		Enumeration<URL> templates = cl.getResources(resource);
-		while (templates.hasMoreElements()) {
-			Properties prop = new Properties();
-			prop.load(templates.nextElement().openStream());
-			Enumeration<?> names = prop.propertyNames();
-			while (names.hasMoreElements()) {
-				String name = names.nextElement().toString();
-				URL url = cl.getResource(name);
-				if (url == null) {
-					logger.warn("{} not found", name);
-					continue;
-				}
-				String id = new File(URLDecoder.decode(url.getPath(), "UTF-8")).getName();
-				if (id.indexOf('.') > 0) {
-					id = id.substring(0, id.indexOf('.'));
-				}
-				map.put(id, url);
-			}
-
-		}
-		return map;
 	}
 
 	private Model parse(URL url)
