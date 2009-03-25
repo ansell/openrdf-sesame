@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -37,25 +38,24 @@ public class LocalConfigManager implements RepositoryConfigManager {
 	 *-----------*/
 
 	/**
-	 * The base dir to resolve any relative paths against.
+	 * The directory for configuration files.
 	 */
-	private File baseDir;
+	private final File configurationsDir;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	/**
-	 * Creates a new RepositoryManager that operates on the specfified base
+	 * Creates a new LocalConfigManager that operates on the specfified
 	 * directory.
 	 * 
-	 * @param baseDir
-	 *        The base directory where data for repositories can be stored, among
-	 *        other things.
+	 * @param configurationsDir
+	 *        The directory where the configurations are/must be stored.
 	 */
-	public LocalConfigManager(File baseDir) {
-		this.baseDir = baseDir;
-		baseDir.mkdirs();
+	public LocalConfigManager(File configurationsDir) {
+		this.configurationsDir = configurationsDir;
+		configurationsDir.mkdirs();
 	}
 
 	/*---------*
@@ -65,29 +65,26 @@ public class LocalConfigManager implements RepositoryConfigManager {
 	public URL getLocation()
 		throws MalformedURLException
 	{
-		return baseDir.toURI().toURL();
+		return configurationsDir.toURI().toURL();
 	}
 
 	public Set<String> getIDs()
 		throws StoreConfigException
 	{
-		return getRdfFiles().keySet();
+		return Collections.unmodifiableSet(getConfigFiles().keySet());
 	}
 
 	public Model getConfig(String repositoryID)
 		throws StoreConfigException
 	{
-		File file = getRdfFiles().get(repositoryID);
-		if (file == null) {
-			throw new StoreConfigException("No such repository config");
-		}
+		File file = getConfigFiles().get(repositoryID);
 
-		RDFFormat format = Rio.getParserFormatForFileName(file.getName());
-		if (format == null) {
-			throw new StoreConfigException("Unsupported RDF format");
+		if (file == null) {
+			return null;
 		}
 
 		try {
+			RDFFormat format = Rio.getParserFormatForFileName(file.getName());
 			RDFParser parser = Rio.createParser(format);
 
 			Model model = new LinkedHashModel();
@@ -102,7 +99,7 @@ public class LocalConfigManager implements RepositoryConfigManager {
 				throw new StoreConfigException(e);
 			}
 			catch (RDFHandlerException e) {
-				throw new AssertionError(e);
+				throw new StoreConfigException(e);
 			}
 			finally {
 				stream.close();
@@ -119,62 +116,63 @@ public class LocalConfigManager implements RepositoryConfigManager {
 	public void addConfig(String id, Model config)
 		throws StoreConfigException
 	{
-		if (getRdfFiles().containsKey(id)) {
-			throw new StoreConfigException("Repository config already exists");
+		// Reuse existing config file (if any) and its RDF format
+		File file = getConfigFiles().get(id);
+
+		if (file == null) {
+			// Store as Turtle by default
+			file = new File(configurationsDir, id + "." + RDFFormat.TURTLE.getDefaultFileExtension());
 		}
-		File file = new File(baseDir, id + ".ttl");
+
 		saveConfig(file, config);
 	}
 
-	public void updateConfig(String id, Model config)
+	public boolean removeConfig(String repositoryID)
 		throws StoreConfigException
 	{
-		File file = getRdfFiles().get(id);
+		File file = getConfigFiles().get(repositoryID);
+
 		if (file == null) {
-			throw new StoreConfigException("Repository config does not exist");
+			return false;
 		}
-		saveConfig(file, config);
+
+		boolean removed = file.delete();
+		if (!removed) {
+			throw new StoreConfigException("Unable to remove repository configuration file '" + file.getName()
+					+ "'");
+		}
+
+		return true;
 	}
 
-	public void removeConfig(String repositoryID)
-		throws StoreConfigException
-	{
-		File file = getRdfFiles().get(repositoryID);
-		if (file == null) {
-			throw new StoreConfigException("No such repository config");
-		}
-		if (!file.delete()) {
-			throw new StoreConfigException("Could not remove config");
-		}
-	}
-
-	private Map<String, File> getRdfFiles()
-		throws StoreConfigException
-	{
+	private Map<String, File> getConfigFiles() {
 		Map<String, File> map = new HashMap<String, File>();
-		for (File file : baseDir.listFiles()) {
+
+		for (File file : configurationsDir.listFiles()) {
 			if (file.isFile()) {
 				String name = file.getName();
-				String id = name.substring(0, name.lastIndexOf('.'));
-				map.put(id, file);
+				int extIndex = name.lastIndexOf('.');
+
+				// ignore files that that have no extension or that start with a dot
+				if (extIndex >= 1) {
+					map.put(name.substring(0, extIndex), file);
+				}
 			}
 		}
+
 		return map;
 	}
 
 	private void saveConfig(File file, Model config)
 		throws StoreConfigException
 	{
-		RDFFormat format = Rio.getWriterFormatForFileName(file.getName());
-		if (format == null) {
-			throw new StoreConfigException("Unsupported RDF format");
-		}
-
 		try {
 			OutputStream out = new FileOutputStream(file);
 
 			try {
+				RDFFormat format = Rio.getWriterFormatForFileName(file.getName());
 				RDFWriter writer = Rio.createWriter(format, out);
+
 				writer.startRDF();
 				for (Map.Entry<String, String> ns : config.getNamespaces().entrySet()) {
 					writer.handleNamespace(ns.getKey(), ns.getValue());

@@ -50,10 +50,9 @@ public class TemplateClient {
 		client.put(id, instance);
 	}
 
-	public void delete(String id)
+	public boolean delete(String id)
 		throws StoreConfigException
 	{
-		client.delete(id);
+		return client.delete(id);
 	}
-
 }

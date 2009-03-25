@@ -107,6 +107,10 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	public void addConfig(String id, Model config)
 		throws StoreConfigException
 	{
+		for (Value value : config.filter(null, REPOSITORYID, null).objects()) {
+			removeConfig(value.stringValue());
+		}
+		
 		Model model = new LinkedHashModel();
 		Resource context = vf.createBNode(id);
 		model.add(context, RDF.TYPE, REPOSITORY_CONTEXT);
@@ -121,9 +125,6 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	public void updateConfig(String id, Model config)
 		throws StoreConfigException
 	{
-		for (Value value : config.filter(null, REPOSITORYID, null).objects()) {
-			removeConfig(value.stringValue());
-		}
 
 		Model model = new LinkedHashModel();
 		Resource context = vf.createBNode(id);
@@ -134,7 +135,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 		addSystemModel(model);
 	}
 
-	public void removeConfig(String repositoryID)
+	public boolean removeConfig(String repositoryID)
 		throws StoreConfigException
 	{
 		logger.info("Removing repository configuration for {}.", repositoryID);
@@ -149,9 +150,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 			isRemoved = true;
 		}
 
-		if (!isRemoved) {
-			throw new StoreConfigException("No such repository config");
-		}
+		return isRemoved;
 	}
 
 	/**

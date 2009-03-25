@@ -164,6 +164,16 @@ public abstract class RepositoryManager {
 		return configs.getIDs().contains(repositoryID);
 	}
 
+	/**
+	 * Gets the configuration for the specified repository.
+	 * 
+	 * @param repositoryID
+	 *        The identifier of the repository to get the configuration for.
+	 * @return The repository's configuration, or <tt>null</tt> if no such
+	 *         configuration is available.
+	 * @throws StoreConfigException
+	 *         If there was a problem getting the repository configuraiton.
+	 */
 	public Model getRepositoryConfig(String repositoryID)
 		throws StoreConfigException
 	{

@@ -138,22 +138,6 @@ public class StoreConfigClient {
 		}
 	}
 
-	public void post(Object instance)
-		throws StoreConfigException
-	{
-		HTTPConnection method = server.post();
-		try {
-			method.send(instance);
-			execute(method);
-		}
-		catch (IOException e) {
-			throw new StoreConfigException(e);
-		}
-		finally {
-			method.release();
-		}
-	}
-
 	public void delete()
 		throws StoreConfigException
 	{
@@ -235,12 +219,20 @@ public class StoreConfigClient {
 		}
 	}
 
-	public void delete(String id)
+	public boolean delete(String id)
 		throws StoreConfigException
 	{
 		HTTPConnection method = server.slash(id).delete();
+		
 		try {
-			execute(method);
+			method.execute();
+			return true;
+		}
+		catch (NotFound e) {
+			return false;
+		}
+		catch (HTTPException e) {
+			throw new StoreConfigException(e);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
@@ -262,12 +254,8 @@ public class StoreConfigClient {
 		catch (UnsupportedFileFormat e) {
 			throw new UnsupportedRDFormatException(e);
 		}
-		catch (Unauthorized e) {
-			throw new StoreConfigException(e);
-		}
 		catch (HTTPException e) {
 			throw new StoreConfigException(e);
 		}
 	}
-
 }

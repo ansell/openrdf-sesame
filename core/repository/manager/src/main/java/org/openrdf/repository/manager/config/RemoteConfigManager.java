@@ -21,7 +21,7 @@ public class RemoteConfigManager implements RepositoryConfigManager {
 	 * Variables *
 	 *-----------*/
 
-	private ConfigurationClient client;
+	private final ConfigurationClient client;
 
 	/*--------------*
 	 * Constructors *
@@ -67,15 +67,9 @@ public class RemoteConfigManager implements RepositoryConfigManager {
 		client.put(id, config);
 	}
 
-	public void updateConfig(String id, Model config)
+	public boolean removeConfig(String repositoryID)
 		throws StoreConfigException
 	{
-		client.put(id, config);
-	}
-
-	public void removeConfig(String repositoryID)
-		throws StoreConfigException
-	{
-		client.delete(repositoryID);
+		return client.delete(repositoryID);
 	}
 }
