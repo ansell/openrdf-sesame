@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -13,7 +13,10 @@ import org.openrdf.model.Model;
 import org.openrdf.store.StoreConfigException;
 
 /**
+ * A manager for repository configuration.
+ * 
  * @author james
+ * @author Arjohn Kampman
  */
 public interface RepositoryConfigManager {
 
@@ -23,68 +26,56 @@ public interface RepositoryConfigManager {
 	 * @throws MalformedURLException
 	 *         If the location cannot be represented as a URL.
 	 */
-	URL getLocation()
+	public URL getLocation()
 		throws MalformedURLException;
 
-	Set<String> getIDs()
-		throws StoreConfigException;
-
-	Model getConfig(String repositoryID)
-		throws StoreConfigException;
-
 	/**
-	 * Adds the configuration of a repository to the manager's system repository.
-	 * The system repository may already contain a configuration for a repository
-	 * with the same ID as specified by <tt>config</tt>, in which case all
-	 * previous configuration data for that repository will be cleared before the
-	 * new configuration is added.
+	 * Gets the identifiers of the available repository configurations.
 	 * 
-	 * @param config
-	 *        The repository configuration that should be added to or updated in
-	 *        the system repository.
+	 * @return The repository configuration identifiers.
 	 * @throws StoreConfigException
-	 *         If the manager doesn't know how to update a configuration due to
-	 *         inconsistent configuration data in the system repository. For
-	 *         example, this happens when there are multiple existing
-	 *         configurations with the concerning ID.
+	 *         If there was a problem getting the set of identifiers.
 	 */
-	void addConfig(String id, Model config)
+	public Set<String> getIDs()
 		throws StoreConfigException;
 
 	/**
-	 * Updates the configuration of a repository to the manager's system
-	 * repository. The system repository may already contain a configuration for
-	 * a repository with the same ID as specified by <tt>config</tt>, in which
-	 * case all previous configuration data for that repository will be cleared
-	 * before the new configuration is added.
+	 * Gets the configuration for the specified repository.
 	 * 
-	 * @param config
-	 *        The repository configuration that should be added to or updated in
-	 *        the system repository.
+	 * @param repositoryID
+	 *        The identifier of the repository to get the configuration for.
+	 * @return The repository's configuration, or <tt>null</tt> if no such
+	 *         configuration is available.
 	 * @throws StoreConfigException
-	 *         If the manager doesn't know how to update a configuration due to
-	 *         inconsistent configuration data in the system repository. For
-	 *         example, this happens when there are multiple existing
-	 *         configurations with the concerning ID.
+	 *         If there was a problem getting the repository configuration.
 	 */
-	void updateConfig(String id, Model config)
+	public Model getConfig(String repositoryID)
 		throws StoreConfigException;
 
 	/**
-	 * Removes the configuration for the specified repository from the manager's
-	 * system repository if such a configuration is present. Returns
-	 * <tt>true</tt> if the system repository actually contained the specified
-	 * repository configuration.
+	 * Adds the configuration of a repository. The new configuration will
+	 * overwrite any existing configurations for the same ID.
+	 * 
+	 * @param repositoryID
+	 *        The identifier for the repository.
+	 * @param config
+	 *        The repository configuration that should be added.
+	 * @throws StoreConfigException
+	 *         If there was a problem adding the configuration.
+	 */
+	public void addConfig(String repositoryID, Model config)
+		throws StoreConfigException;
+
+	/**
+	 * Removes the configuration for the specified repository.
 	 * 
 	 * @param repositoryID
 	 *        The ID of the repository whose configuration needs to be removed.
+	 * @return <tt>true</tt> if such a configuration existed and was removed,
+	 *         <tt>false</tt> otherwise.
 	 * @throws StoreConfigException
-	 *         If the manager doesn't know how to remove a configuration due to
-	 *         inconsistent configuration data in the system repository. For
-	 *         example, this happens when there are multiple existing
-	 *         configurations with the concerning ID.
+	 *         If there was a problem removing the configuration.
 	 */
-	void removeConfig(String repositoryID)
+	public boolean removeConfig(String repositoryID)
 		throws StoreConfigException;
-
 }

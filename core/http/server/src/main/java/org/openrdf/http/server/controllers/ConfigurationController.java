@@ -25,6 +25,7 @@ import info.aduna.webapp.util.HttpServerUtil;
 
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;
 import org.openrdf.http.protocol.exceptions.HTTPException;
+import org.openrdf.http.protocol.exceptions.NotFound;
 import org.openrdf.http.protocol.exceptions.ServerHTTPException;
 import org.openrdf.http.protocol.exceptions.UnsupportedMediaType;
 import org.openrdf.http.server.helpers.Paths;
@@ -52,6 +53,7 @@ import org.openrdf.store.StoreException;
  * Handles requests for repository configurations.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
 @Controller
 public class ConfigurationController {
@@ -79,7 +81,13 @@ public class ConfigurationController {
 	{
 		String id = getConfigID(request);
 		RepositoryManager manager = RequestAtt.getRepositoryManager(request);
-		return manager.getRepositoryConfig(id);
+		Model config = manager.getRepositoryConfig(id);
+
+		if (config == null) {
+			throw new NotFound("No such configuration: " + id);
+		}
+
+		return config;
 	}
 
 	@ModelAttribute
@@ -118,6 +126,10 @@ public class ConfigurationController {
 			if (configChanged) {
 				ConditionalRequestInterceptor.managerModified(request);
 			}
+		}
+
+		if (!configChanged) {
+			throw new NotFound("No such configuration: " + id);
 		}
 	}
 

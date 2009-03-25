@@ -31,16 +31,10 @@ public class RemoteTemplateManager implements ConfigTemplateManager {
 		return new URL(client.templates().getURL());
 	}
 
-	public void addTemplate(String id, Model model)
+	public Set<String> getIDs()
 		throws StoreConfigException
 	{
-		client.templates().put(id, model);
-	}
-
-	public void removeTemplate(String id)
-		throws StoreConfigException
-	{
-		client.templates().delete(id);
+		return new HashSet<String>(client.templates().list());
 	}
 
 	public ConfigTemplate getTemplate(String key)
@@ -53,10 +47,16 @@ public class RemoteTemplateManager implements ConfigTemplateManager {
 		return new ConfigTemplate(statements, client.schemas().get());
 	}
 
-	public Set<String> getIDs()
+	public void addTemplate(String id, Model model)
 		throws StoreConfigException
 	{
-		return new HashSet<String>(client.templates().list());
+		client.templates().put(id, model);
+	}
+
+	public boolean removeTemplate(String id)
+		throws StoreConfigException
+	{
+		return client.templates().delete(id);
 	}
 
 	public Model getSchemas()

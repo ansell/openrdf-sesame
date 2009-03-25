@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -12,13 +12,12 @@ import org.openrdf.http.client.helpers.StoreConfigClient;
 import org.openrdf.model.Model;
 import org.openrdf.store.StoreConfigException;
 
-
 /**
- *
  * @author James Leigh
  */
 public class ConfigurationClient {
-	private StoreConfigClient client;
+
+	private final StoreConfigClient client;
 
 	public ConfigurationClient(HTTPConnectionPool configurations) {
 		this.client = new StoreConfigClient(configurations);
@@ -50,10 +49,9 @@ public class ConfigurationClient {
 		client.put(id, model);
 	}
 
-	public void delete(String id)
+	public boolean delete(String id)
 		throws StoreConfigException
 	{
-		client.delete(id);
+		return client.delete(id);
 	}
-
 }

@@ -41,6 +41,7 @@ import org.openrdf.store.StoreConfigException;
 
 /**
  * @author James Leigh
+ * @author Arjohn Kampman
  */
 public class LocalTemplateManager implements ConfigTemplateManager {
 
@@ -52,7 +53,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 
 	private final Logger logger = LoggerFactory.getLogger(LocalTemplateManager.class);
 
-	private final Map<String, ConfigTemplate> services = new ConcurrentHashMap<String, ConfigTemplate>();
+	private final Map<String, ConfigTemplate> templates = new ConcurrentHashMap<String, ConfigTemplate>();
 
 	private ClassLoader cl;
 
@@ -82,24 +83,19 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		return templateDir.toURI().toURL();
 	}
 
-	public void addTemplate(String id, Model model)
+	public Set<String> getIDs()
 		throws StoreConfigException
 	{
-		services.put(id, new ConfigTemplate(model, getSchemas()));
-	}
-
-	public void removeTemplate(String id)
-		throws StoreConfigException
-	{
-		if (services.remove(id) == null) {
-			throw new StoreConfigException("Template does not exists or cannot be removed");
-		}
+		Set<String> set = new HashSet<String>();
+		set.addAll(templates.keySet());
+		set.addAll(loadTemplates().keySet());
+		return set;
 	}
 
 	public ConfigTemplate getTemplate(String key)
 		throws StoreConfigException
 	{
-		ConfigTemplate template = services.get(key);
+		ConfigTemplate template = templates.get(key);
 		if (template != null) {
 			return template;
 		}
@@ -118,13 +114,17 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		}
 	}
 
-	public Set<String> getIDs()
+	public void addTemplate(String id, Model model)
 		throws StoreConfigException
 	{
-		Set<String> set = new HashSet<String>();
-		set.addAll(services.keySet());
-		set.addAll(loadTemplates().keySet());
-		return set;
+		templates.put(id, new ConfigTemplate(model, getSchemas()));
+	}
+
+	public boolean removeTemplate(String id)
+		throws StoreConfigException
+	{
+		ConfigTemplate template = templates.remove(id);
+		return template != null;
 	}
 
 	public Model getSchemas()
@@ -158,13 +158,18 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 		throws IOException, StoreConfigException
 	{
 		assert dir.isDirectory();
+
 		for (File file : dir.listFiles()) {
 			String id = file.getName();
-			if (id.indexOf('.') > 0) {
-				id = id.substring(0, id.indexOf('.'));
+			int extIndex = id.lastIndexOf('.');
+
+			// ignore files that that have no extension or that start with a dot
+			if (extIndex >= 1) {
+				id = id.substring(0, extIndex);
+				map.put(id, file.toURI().toURL());
 			}
-			map.put(id, file.toURI().toURL());
 		}
+
 		return map;
 	}
 
@@ -217,6 +222,7 @@ public class LocalTemplateManager implements ConfigTemplateManager {
 				}
 			}
 		}
+
 		return model;
 	}
 

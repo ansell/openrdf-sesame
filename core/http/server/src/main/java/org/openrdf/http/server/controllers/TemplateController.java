@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -54,6 +54,7 @@ import org.openrdf.store.StoreException;
  * Handles requests for repository configuration templates.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
 @Controller
 public class TemplateController {
@@ -82,9 +83,11 @@ public class TemplateController {
 		String id = getTemplateID(request);
 		RepositoryManager manager = RequestAtt.getRepositoryManager(request);
 		ConfigTemplate template = manager.getConfigTemplateManager().getTemplate(id);
+
 		if (template == null) {
-			throw new NotFound(id);
+			throw new NotFound("No such template: " + id);
 		}
+
 		return template.getModel();
 	}
 
@@ -114,11 +117,20 @@ public class TemplateController {
 
 		RepositoryManager manager = RequestAtt.getRepositoryManager(request);
 
+		// default to true, also assume the manager changed in case of error
+		boolean configChanged = true;
+
 		try {
-			manager.getConfigTemplateManager().removeTemplate(id);
+			configChanged = manager.getConfigTemplateManager().removeTemplate(id);
 		}
 		finally {
-			ConditionalRequestInterceptor.managerModified(request);
+			if (configChanged) {
+				ConditionalRequestInterceptor.managerModified(request);
+			}
+		}
+		
+		if (!configChanged) {
+			throw new NotFound("No such template: " + id);
 		}
 	}
 
