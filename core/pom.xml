@@ -83,7 +83,9 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
 					<aggregate>true</aggregate>
+					<encoding>utf8</encoding>
 					<source>1.5</source>
+					<quiet>true</quiet>
 					<groups>
 						<group>
 							<title>Repository API</title>
