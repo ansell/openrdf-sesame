@@ -214,8 +214,6 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 				Value uri = bindingSet.getValue("uri");
 				String description = LiteralUtil.getLabel(bindingSet.getValue("title"), null);
-				boolean readable = LiteralUtil.getBooleanValue(bindingSet.getValue("readable"), false);
-				boolean writable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
 
 				if (uri instanceof URI) {
 					try {
@@ -228,8 +226,6 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 				repInfo.setId(id);
 				repInfo.setDescription(description);
-				repInfo.setReadable(readable);
-				repInfo.setWritable(writable);
 
 				result.add(repInfo);
 			}
