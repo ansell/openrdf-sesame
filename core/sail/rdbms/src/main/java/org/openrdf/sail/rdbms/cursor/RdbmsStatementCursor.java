@@ -3,14 +3,14 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail.rdbms.iteration;
+package org.openrdf.sail.rdbms.cursor;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
-import org.openrdf.sail.rdbms.iteration.base.RdbmCursorBase;
+import org.openrdf.sail.rdbms.cursor.base.RdbmCursorBase;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsStatement;
 import org.openrdf.sail.rdbms.model.RdbmsURI;

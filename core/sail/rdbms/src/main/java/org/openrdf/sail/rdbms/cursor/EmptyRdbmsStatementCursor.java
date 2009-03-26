@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail.rdbms.iteration;
+package org.openrdf.sail.rdbms.cursor;
 
 import java.sql.SQLException;
 

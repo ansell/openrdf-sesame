@@ -14,8 +14,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.sail.rdbms.cursor.NamespaceCursor;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.sail.rdbms.iteration.NamespaceCursor;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
 
 /**

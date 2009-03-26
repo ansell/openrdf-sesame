@@ -27,9 +27,9 @@ import org.openrdf.sail.rdbms.algebra.ColumnVar;
 import org.openrdf.sail.rdbms.algebra.SelectProjection;
 import org.openrdf.sail.rdbms.algebra.SelectQuery;
 import org.openrdf.sail.rdbms.algebra.SelectQuery.OrderElem;
+import org.openrdf.sail.rdbms.cursor.RdbmsBindingCursor;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
-import org.openrdf.sail.rdbms.iteration.RdbmsBindingCursor;
 import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.store.StoreException;
 
