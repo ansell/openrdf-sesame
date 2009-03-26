@@ -19,7 +19,7 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
- * Converts a {@link ResultSet} into a {@link RdbmsStatement} in an iteration.
+ * Cursor that converts a {@link ResultSet} into a {@link RdbmsStatement}.
  * 
  * @author James Leigh
  */

@@ -14,7 +14,7 @@ import org.openrdf.sail.rdbms.iteration.base.RdbmCursorBase;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 
 /**
- * Converts a {@link ResultSet} into a {@link RdbmsResource} in an iteration.
+ * Cursor that converts a {@link ResultSet} into a {@link RdbmsResource}.
  * 
  * @author James Leigh
  */

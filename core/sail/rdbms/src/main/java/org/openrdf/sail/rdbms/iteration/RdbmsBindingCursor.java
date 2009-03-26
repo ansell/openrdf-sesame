@@ -22,7 +22,7 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
 import org.openrdf.sail.rdbms.schema.ValueTable;
 
 /**
- * Converts a {@link ResultSet} into a {@link BindingSet} in an iteration.
+ * Cursor that converts a {@link ResultSet} into a {@link BindingSet}.
  * 
  * @author James Leigh
  */

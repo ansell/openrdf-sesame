@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -13,7 +13,7 @@ import org.openrdf.cursor.DelegatingCursor;
 import org.openrdf.store.StoreException;
 
 /**
- * An iteration extension that keeps a reference to the
+ * An cursor that keeps a reference to the
  * {@link TrackingSailConnection} from which it originates and signals when it
  * is closed.
  * 
@@ -32,14 +32,12 @@ class TrackingSailCursor<T> extends DelegatingCursor<T> {
 	private boolean closed = true;
 
 	/**
-	 * Creates a new memory-store specific iteration object.
+	 * Creates a new tracking sail cursor.
 	 * 
-	 * @param lock
-	 *        a query lock
 	 * @param iter
-	 *        the wrapped iteration over sail objects.
+	 *        the wrapped curosr over sail objects.
 	 * @param connection
-	 *        the connection from which this iteration originates.
+	 *        the connection from which this cursor originates.
 	 */
 	public TrackingSailCursor(Cursor<? extends T> iter, TrackingSailConnection connection) {
 		super(iter);
@@ -83,7 +81,7 @@ class TrackingSailCursor<T> extends DelegatingCursor<T> {
 		throws StoreException
 	{
 		if (creatorTrace != null) {
-			logger.warn("Forced closing of unclosed iteration that was created in:", creatorTrace);
+			logger.warn("Forced closing of unclosed cursor that was created in:", creatorTrace);
 		}
 
 		close();
