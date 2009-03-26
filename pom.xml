@@ -486,6 +486,7 @@
 				<configuration>
 					<source>1.5</source>
 					<encoding>utf8</encoding>
+					<quiet>true</quiet>
 				</configuration>
 			</plugin>
 		</plugins>
