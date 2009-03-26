@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail.rdbms.iteration.base;
+package org.openrdf.sail.rdbms.cursor.base;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
