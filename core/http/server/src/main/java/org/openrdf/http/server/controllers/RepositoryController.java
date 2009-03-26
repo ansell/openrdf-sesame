@@ -55,7 +55,7 @@ public class RepositoryController {
 	public TupleResult list(HttpServletRequest request)
 		throws HTTPException, StoreConfigException
 	{
-		List<String> bindingNames = Arrays.asList("uri", "id", "title", "readable", "writable");
+		List<String> bindingNames = Arrays.asList("uri", "id", "title");
 		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
 
 		// Determine the repository's URI
@@ -68,10 +68,8 @@ public class RepositoryController {
 			URI uri = vf.createURI(namespace, id);
 			Literal idLit = vf.createLiteral(id);
 			Literal title = vf.createLiteral(info.getDescription());
-			Literal readable = vf.createLiteral(info.isReadable());
-			Literal writable = vf.createLiteral(info.isWritable());
 
-			BindingSet bindings = new ListBindingSet(bindingNames, uri, idLit, title, readable, writable);
+			BindingSet bindings = new ListBindingSet(bindingNames, uri, idLit, title);
 			bindingSets.add(bindings);
 		}
 

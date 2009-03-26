@@ -266,9 +266,6 @@ public class LocalRepositoryManager extends RepositoryManager {
 			throw new StoreConfigException("Location of repository does not resolve to a valid URL", mue);
 		}
 
-		repInfo.setReadable(true);
-		repInfo.setWritable(true);
-
 		return repInfo;
 	}
 
