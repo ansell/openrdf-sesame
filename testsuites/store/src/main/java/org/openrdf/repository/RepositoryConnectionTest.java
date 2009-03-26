@@ -1001,7 +1001,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertFalse(testCon.hasMatch(alice, name, nameAlice, false));
 	}
 
-	public void testRemoveStatementIteration()
+	public void testRemoveModelResult()
 		throws Exception
 	{
 		testCon.begin();

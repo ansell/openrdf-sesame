@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.sail.rdbms.iteration.NamespaceIteration;
+import org.openrdf.sail.rdbms.iteration.NamespaceCursor;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
 
 /**
@@ -130,10 +130,10 @@ public class NamespaceManager {
 		}
 	}
 
-	public NamespaceIteration getNamespacesWithPrefix()
+	public NamespaceCursor getNamespacesWithPrefix()
 		throws RdbmsException
 	{
-		return new NamespaceIteration(map.entrySet().iterator());
+		return new NamespaceCursor(map.entrySet().iterator());
 	}
 
 	public void clearPrefixes()

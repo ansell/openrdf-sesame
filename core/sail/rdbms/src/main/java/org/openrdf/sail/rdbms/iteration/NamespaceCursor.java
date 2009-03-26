@@ -21,9 +21,9 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  */
-public class NamespaceIteration extends ConvertingCursor<Map.Entry<String, String>, Namespace> {
+public class NamespaceCursor extends ConvertingCursor<Map.Entry<String, String>, Namespace> {
 
-	public NamespaceIteration(Iterator<Map.Entry<String, String>> iter) {
+	public NamespaceCursor(Iterator<Map.Entry<String, String>> iter) {
 		super(new CollectionCursor<Map.Entry<String, String>>(iter));
 	}
 
@@ -33,5 +33,4 @@ public class NamespaceIteration extends ConvertingCursor<Map.Entry<String, Strin
 	{
 		return new NamespaceImpl(next.getKey(), next.getValue());
 	}
-
 }

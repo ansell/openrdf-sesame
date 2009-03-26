@@ -13,7 +13,7 @@ import org.openrdf.cursor.Cursor;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 
 /**
- * Base class for Iteration of a {@link ResultSet}.
+ * Base class for an rdbms cursor.
  * 
  * @author James Leigh
  */

@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import org.openrdf.sail.rdbms.model.RdbmsStatement;
 
 /**
- * Empty iteration that extends {@link RdbmsStatementCursor}.
+ * Empty cursor that extends {@link RdbmsStatementCursor}.
  * 
  * @author James Leigh
  */
