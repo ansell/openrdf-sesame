@@ -65,28 +65,14 @@ import org.openrdf.store.StoreException;
 @Controller
 public class StatementController {
 
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@ModelAttribute
 	@RequestMapping(method = HEAD, value = { Paths.REPOSITORY_STATEMENTS, Paths.CONNECTION_STATEMENTS })
 	public ModelResult head(HttpServletRequest request)
 		throws StoreException, ClientHTTPException, IOException
 	{
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
-		ValueFactory vf = repositoryCon.getValueFactory();
-
-		// check if the syntax of the request
-		RDFRequest req = new RDFRequest(vf, request);
-		req.getSubject();
-		req.getPredicate();
-		req.getObject();
-		req.getContext();
-		req.isIncludeInferred();
-		req.getOffset();
-		req.getLimit();
-
-		Cursor<Statement> nothing = EmptyCursor.getInstance();
-		return new ModelResultImpl(nothing);
+		return createModelResult(request, false);
 	}
 
 	/**
@@ -99,9 +85,16 @@ public class StatementController {
 	public ModelResult get(HttpServletRequest request)
 		throws StoreException, ClientHTTPException, IOException
 	{
+		return createModelResult(request, true);
+	}
+
+	private ModelResult createModelResult(HttpServletRequest request, boolean includeBody)
+		throws StoreException, ClientHTTPException, IOException
+	{
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getReadOnlyConnection(request);
 		ValueFactory vf = repositoryCon.getValueFactory();
 
+		// Parse request parameters
 		RDFRequest req = new RDFRequest(vf, request);
 		Resource subj = req.getSubject();
 		URI pred = req.getPredicate();
@@ -111,13 +104,23 @@ public class StatementController {
 		int offset = req.getOffset();
 		int limit = req.getLimit();
 
-		Cursor<Statement> cursor = repositoryCon.match(subj, pred, obj, useInferencing, contexts);
-		if (offset > 0) {
-			cursor = new OffsetCursor<Statement>(cursor, offset);
+		// Create results cursor
+		Cursor<Statement> cursor;
+
+		if (includeBody) {
+			cursor = repositoryCon.match(subj, pred, obj, useInferencing, contexts);
+
+			if (offset > 0) {
+				cursor = new OffsetCursor<Statement>(cursor, offset);
+			}
+			if (limit > -1) {
+				cursor = new LimitCursor<Statement>(cursor, limit);
+			}
 		}
-		if (limit > -1) {
-			cursor = new LimitCursor<Statement>(cursor, limit);
+		else {
+			cursor = EmptyCursor.getInstance();
 		}
+
 		return new ModelResultImpl(cursor);
 	}
 
