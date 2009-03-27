@@ -65,8 +65,8 @@ public class InferencingTest extends TestCase {
 	 * 
 	 * @param name
 	 *        The name of the test.
-	 * @param rss
-	 *        The RdfSchemaRepository to test.
+	 * @param sailStack
+	 *        The sail stack to test.
 	 * @param inputData
 	 *        The URL of the (N-Triples) data containing the triples that should
 	 *        be added to the RdfSchemaRepository.

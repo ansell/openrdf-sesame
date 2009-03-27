@@ -97,10 +97,10 @@
 			<artifactId>aduna-commons-net-http-server-embedded</artifactId>
 		</dependency>
 
-		<dependency>
+		<!--<dependency>
 			<groupId>info.aduna.appbase</groupId>
 			<artifactId>aduna-appbase-logging-file</artifactId>
-		</dependency>
+		</dependency>-->
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
