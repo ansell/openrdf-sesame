@@ -46,9 +46,6 @@ public class SesameServer {
 		Option portOption = new Option("p", "port", true, "port to listen on");
 		Option maxAgeOption = new Option("c", "maxCacheAge", true,
 				"How many seconds clients can use their cache before validating it with the server");
-		Option urlOption = new Option("u", "url", true,
-				"If the server should resolve URLs to URIs and for which repository");
-		urlOption.setOptionalArg(true);
 
 		options.addOption(helpOption);
 		options.addOption(versionOption);
@@ -56,7 +53,6 @@ public class SesameServer {
 		options.addOption(dirOption);
 		options.addOption(portOption);
 		options.addOption(maxAgeOption);
-		options.addOption(urlOption);
 
 		CommandLineParser argsParser = new PosixParser();
 
@@ -98,10 +94,6 @@ public class SesameServer {
 			String ageString = commandLine.getOptionValue(maxAgeOption.getOpt());
 			if (ageString != null) {
 				server.setMaxCacheAge(Integer.parseInt(ageString));
-			}
-
-			if (commandLine.hasOption(urlOption.getOpt())) {
-				server.setUrlResolution(commandLine.getOptionValue(urlOption.getOpt()));
 			}
 
 			if (commandLine.hasOption(nameOption.getOpt())) {
@@ -209,10 +201,6 @@ public class SesameServer {
 
 	public void setMaxCacheAge(int maxCacheAge) {
 		servlet.setMaxCacheAge(maxCacheAge);
-	}
-
-	public void setUrlResolution(String urlResolution) {
-		servlet.setUrlResolution(urlResolution);
 	}
 
 	public RepositoryManager getRepositoryManager() {
