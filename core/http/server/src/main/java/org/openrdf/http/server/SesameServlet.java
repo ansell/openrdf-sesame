@@ -40,7 +40,6 @@ import org.openrdf.http.server.controllers.SchemaController;
 import org.openrdf.http.server.controllers.SizeController;
 import org.openrdf.http.server.controllers.StatementController;
 import org.openrdf.http.server.controllers.TemplateController;
-import org.openrdf.http.server.controllers.URIController;
 import org.openrdf.http.server.interceptors.ConditionalRequestInterceptor;
 import org.openrdf.http.server.interceptors.RepositoryInterceptor;
 import org.openrdf.repository.manager.RepositoryManager;
@@ -71,10 +70,6 @@ public class SesameServlet implements Servlet {
 
 	private int maxCacheAge;
 
-	private boolean urlResolution;
-
-	private String urlResolutionRepositoryId;
-
 	private String name = getDefaultServerName();
 
 	public SesameServlet(RepositoryManager manager) {
@@ -96,11 +91,6 @@ public class SesameServlet implements Servlet {
 
 	public void setMaxCacheAge(int maxCacheAge) {
 		this.maxCacheAge = maxCacheAge;
-	}
-
-	public void setUrlResolution(String urlResolution) {
-		this.urlResolution = true;
-		this.urlResolutionRepositoryId = urlResolution;
 	}
 
 	public void destroy() {
@@ -132,14 +122,10 @@ public class SesameServlet implements Servlet {
 			SesameApplication.serverName = name;
 			SesameApplication.staticManager = manager;
 			SesameApplication.maxCacheAge = maxCacheAge;
-			SesameApplication.urlResolution = urlResolution;
-			SesameApplication.urlResolutionRepositoryId = urlResolutionRepositoryId;
 			delegate.init(new SesameServletConfig(config));
 			SesameApplication.serverName = null;
 			SesameApplication.staticManager = null;
 			SesameApplication.maxCacheAge = 0;
-			SesameApplication.urlResolution = false;
-			SesameApplication.urlResolutionRepositoryId = null;
 		}
 	}
 
@@ -195,10 +181,6 @@ public class SesameServlet implements Servlet {
 
 		static int maxCacheAge;
 
-		static boolean urlResolution;
-
-		static String urlResolutionRepositoryId;
-
 		public SesameApplication() {
 			// RepositoryManager
 			registerSingleton(RepositoryManager.class, staticManager);
@@ -217,9 +199,6 @@ public class SesameServlet implements Servlet {
 			registerPrototype(ConnectionController.class);
 			registerPrototype(QueryController.class);
 			registerPrototype(BNodeController.class);
-			if (urlResolution) {
-				registerSingleton(new URIController(urlResolutionRepositoryId));
-			}
 
 			// Exceptions
 			registerPrototype(ExceptionWriter.class);
