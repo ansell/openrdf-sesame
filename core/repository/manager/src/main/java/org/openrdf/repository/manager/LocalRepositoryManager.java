@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -69,7 +69,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	/**
 	 * The base dir to resolve any relative paths against.
 	 */
-	private File baseDir;
+	private final File baseDir;
 
 	/*--------------*
 	 * Constructors *
@@ -86,6 +86,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	public LocalRepositoryManager(File baseDir) {
 		super();
 
+		assert baseDir != null : "baseDir must not be null";
 		this.baseDir = baseDir;
 	}
 
@@ -238,10 +239,20 @@ public class LocalRepositoryManager extends RepositoryManager {
 	private RepositoryConfig parse(Model config)
 		throws StoreConfigException
 	{
-		Resource repositoryNode = config.filter(null, RDF.TYPE, REPOSITORY).subjects().iterator().next();
-		RepositoryConfig repConfig = RepositoryConfig.create(config, repositoryNode);
-		repConfig.validate();
-		return repConfig;
+		Set<Resource> repositoryNodes = config.filter(null, RDF.TYPE, REPOSITORY).subjects();
+
+		if (repositoryNodes.isEmpty()) {
+			throw new StoreConfigException("Found no resources of type " + REPOSITORY);
+		}
+		else if (repositoryNodes.size() > 1) {
+			throw new StoreConfigException("Found multiple resources of type " + REPOSITORY);
+		}
+		else {
+			Resource repositoryNode = repositoryNodes.iterator().next();
+			RepositoryConfig repConfig = RepositoryConfig.create(config, repositoryNode);
+			repConfig.validate();
+			return repConfig;
+		}
 	}
 
 	@Override
