@@ -46,11 +46,15 @@
 
 <!-- Interceptors -->
 	<bean id="conditionalReqInterceptor" class="org.openrdf.http.server.interceptors.ConditionalRequestInterceptor">
-		<property name="repositoryManager" ref="openrdfRepositoryManager" />
+		<constructor-arg>
+			<ref bean="openrdfRepositoryManager"/>
+		</constructor-arg>
 	</bean>
 
 	<bean id="openrdfRepositoryInterceptor" class="org.openrdf.http.server.interceptors.RepositoryInterceptor">
-		<property name="repositoryManager" ref="openrdfRepositoryManager" />
+		<constructor-arg>
+			<ref bean="openrdfRepositoryManager"/>
+		</constructor-arg>
 	</bean>
 
 <!-- Spring Processors -->

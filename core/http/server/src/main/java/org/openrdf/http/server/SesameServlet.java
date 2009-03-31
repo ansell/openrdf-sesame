@@ -228,14 +228,12 @@ public class SesameServlet implements Servlet {
 			registerPrototype(ContentNegotiator.BEAN_NAME, ContentNegotiator.class);
 
 			// Interceptors
-			ConditionalRequestInterceptor conditionalReqInterceptor = new ConditionalRequestInterceptor();
+			ConditionalRequestInterceptor conditionalReqInterceptor = new ConditionalRequestInterceptor(staticManager);
 			conditionalReqInterceptor.setServerName(serverName);
-			conditionalReqInterceptor.setRepositoryManager(staticManager);
 			conditionalReqInterceptor.setMaxCacheAge(maxCacheAge);
 			registerSingleton(conditionalReqInterceptor);
 
-			RepositoryInterceptor repoInterceptor = new RepositoryInterceptor();
-			repoInterceptor.setRepositoryManager(staticManager);
+			RepositoryInterceptor repoInterceptor = new RepositoryInterceptor(staticManager);
 			registerSingleton(repoInterceptor);
 
 			// Spring Processors
