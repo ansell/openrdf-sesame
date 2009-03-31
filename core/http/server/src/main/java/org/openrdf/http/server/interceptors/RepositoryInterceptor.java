@@ -8,6 +8,7 @@ package org.openrdf.http.server.interceptors;
 import static org.openrdf.http.protocol.Protocol.MAX_TIME_OUT;
 import static org.openrdf.http.protocol.Protocol.TIME_OUT_UNITS;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -165,13 +166,23 @@ public class RepositoryInterceptor implements HandlerInterceptor, DisposableBean
 
 	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
-	private RepositoryManager repositoryManager;
+	private final RepositoryManager repositoryManager;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public RepositoryInterceptor() {
+	public RepositoryInterceptor(RepositoryManager repositoryManager) {
+		this.repositoryManager = repositoryManager;
+
+		try {
+			logger.info("Starting Sesame server");
+			String managerLocation = repositoryManager.getLocation().toString();
+			logger.info("Repository manager location: {}", managerLocation);
+		}
+		catch (MalformedURLException ignore) {
+		}
+
 		Runnable gc = new Runnable() {
 
 			public void run() {
@@ -186,12 +197,9 @@ public class RepositoryInterceptor implements HandlerInterceptor, DisposableBean
 	 * Methods *
 	 *---------*/
 
-	public void setRepositoryManager(RepositoryManager repositoryManager) {
-		this.repositoryManager = repositoryManager;
-	}
-
 	public void destroy() {
 		executor.shutdown();
+		logger.info("Sesame server shutting down");
 	}
 
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)

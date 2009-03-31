@@ -89,10 +89,10 @@ public class ConditionalRequestInterceptor implements HandlerInterceptor {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+	
+	private final RepositoryManager repositoryManager;
 
 	private String serverName;
-
-	private RepositoryManager repositoryManager;
 
 	private int maxCacheAge;
 
@@ -102,7 +102,8 @@ public class ConditionalRequestInterceptor implements HandlerInterceptor {
 	 * Constructors *
 	 *--------------*/
 
-	public ConditionalRequestInterceptor() {
+	public ConditionalRequestInterceptor(RepositoryManager repositoryManager) {
+		this.repositoryManager = repositoryManager;
 	}
 
 	/*---------*
@@ -111,10 +112,6 @@ public class ConditionalRequestInterceptor implements HandlerInterceptor {
 
 	public void setServerName(String serverName) {
 		this.serverName = serverName;
-	}
-
-	public void setRepositoryManager(RepositoryManager repositoryManager) {
-		this.repositoryManager = repositoryManager;
 	}
 
 	public void setMaxCacheAge(int maxCacheAge) {
