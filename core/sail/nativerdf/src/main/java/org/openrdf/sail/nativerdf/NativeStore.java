@@ -21,6 +21,7 @@ import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.DistinctIteration;
 import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.FilterIteration;
+import info.aduna.iteration.ReducedIteration;
 import info.aduna.iteration.UnionIteration;
 
 import org.openrdf.model.Resource;
@@ -374,19 +375,7 @@ public class NativeStore extends NotifyingSailBase {
 		}
 		else {
 			// Filtering sorted duplicates
-			ctxIter = new FilterIteration<Resource, IOException>(ctxIter) {
-
-				private Resource last = null;
-
-				@Override
-				protected boolean accept(Resource ctx)
-					throws IOException
-				{
-					boolean equal = ctx.equals(last);
-					last = ctx;
-					return !equal;
-				}
-			};
+			ctxIter = new ReducedIteration<Resource, IOException>(ctxIter);
 		}
 		return ctxIter;
 	}
