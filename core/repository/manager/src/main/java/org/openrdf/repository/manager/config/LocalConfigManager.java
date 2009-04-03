@@ -85,7 +85,7 @@ public class LocalConfigManager implements RepositoryConfigManager {
 		File file = getConfigFiles().get(repositoryID);
 
 		if (file == null) {
-			return null;
+			throw new StoreConfigException("No configuration for: " + repositoryID);
 		}
 		
 		return loadConfig(file);
