@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.LinkedHashModel;
@@ -36,6 +39,8 @@ public class LocalConfigManager implements RepositoryConfigManager {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * The directory for configuration files.
@@ -82,39 +87,8 @@ public class LocalConfigManager implements RepositoryConfigManager {
 		if (file == null) {
 			return null;
 		}
-
-		try {
-			RDFFormat format = Rio.getParserFormatForFileName(file.getName());
-			RDFParser parser = Rio.createParser(format);
-
-			Model model = new LinkedHashModel();
-			parser.setRDFHandler(new StatementCollector(model));
-
-			InputStream stream = new FileInputStream(file);
-			try {
-				parser.parse(stream, file.toURI().toString());
-			}
-			catch (RDFHandlerException e) {
-				throw new AssertionError(e);
-			}
-			finally {
-				stream.close();
-			}
-
-			return model;
-		}
-		catch (UnsupportedRDFormatException e) {
-			throw new StoreConfigException("Unable to parse configuration file " + file.getName()
-					+ ", no suitable parser found");
-		}
-		catch (RDFParseException e) {
-			throw new StoreConfigException("Failed to parse configuration file " + file.getName() + ": "
-					+ e.getMessage());
-		}
-		catch (IOException e) {
-			throw new StoreConfigException("Failed to read configuration file " + file.getName() + ": "
-					+ e.getMessage(), e);
-		}
+		
+		return loadConfig(file);
 	}
 
 	public void addConfig(String id, Model config)
@@ -159,7 +133,11 @@ public class LocalConfigManager implements RepositoryConfigManager {
 
 				// ignore files that that have no extension or that start with a dot
 				if (extIndex >= 1) {
-					map.put(name.substring(0, extIndex), file);
+					File oldFile = map.put(name.substring(0, extIndex), file);
+
+					if (oldFile != null) {
+						logger.warn("Configuration file {} hides {}", name, oldFile.getName());
+					}
 				}
 			}
 		}
@@ -167,6 +145,44 @@ public class LocalConfigManager implements RepositoryConfigManager {
 		return map;
 	}
 
+	private Model loadConfig(File file)
+		throws StoreConfigException
+	{
+		try {
+			RDFFormat format = Rio.getParserFormatForFileName(file.getName());
+			RDFParser parser = Rio.createParser(format);
+
+			Model model = new LinkedHashModel();
+			parser.setRDFHandler(new StatementCollector(model));
+
+			InputStream stream = new FileInputStream(file);
+			try {
+				parser.parse(stream, file.toURI().toString());
+			}
+			catch (RDFHandlerException e) {
+				throw new AssertionError(e);
+			}
+			finally {
+				stream.close();
+			}
+
+			return model;
+		}
+		catch (UnsupportedRDFormatException e) {
+			throw new StoreConfigException("Unable to parse configuration file " + file.getName()
+					+ ", no suitable parser found");
+		}
+		catch (RDFParseException e) {
+			throw new StoreConfigException("Failed to parse configuration file " + file.getName() + ": "
+					+ e.getMessage());
+		}
+		catch (IOException e) {
+			throw new StoreConfigException("Failed to read configuration file " + file.getName() + ": "
+					+ e.getMessage(), e);
+		}
+
+	}
+	
 	private void saveConfig(File file, Model config)
 		throws StoreConfigException
 	{
