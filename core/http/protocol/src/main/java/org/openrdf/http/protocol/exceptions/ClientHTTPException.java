@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -33,7 +33,7 @@ public class ClientHTTPException extends HTTPException {
 		}
 	}
 
-	public static boolean isWithin(int statusCode) {
+	public static boolean isInRange(int statusCode) {
 		return statusCode >= 400 && statusCode <= 499;
 	}
 
@@ -49,7 +49,7 @@ public class ClientHTTPException extends HTTPException {
 
 	@Override
 	protected void setStatusCode(int statusCode) {
-		if (!isWithin(statusCode)) {
+		if (!isInRange(statusCode)) {
 			throw new IllegalArgumentException("Status code must be in the 4xx range, is: " + statusCode);
 		}
 
