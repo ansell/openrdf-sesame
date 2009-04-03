@@ -72,7 +72,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	/**
 	 * The URL of the remote server, e.g. http://localhost:8080/openrdf-sesame/
 	 */
-	private String serverURL;
+	private final String serverURL;
 
 	private String username;
 
