@@ -118,9 +118,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 				Repository systemRepository = systemRepos;
 				setRepositoryConfigManager(new SystemConfigManager(systemRepository));
 
-				synchronized (initializedRepositories) {
-					initializedRepositories.put(SystemRepository.ID, systemRepository);
-				}
+				assignSystemRepository(systemRepository);
 			}
 			else {
 				// Sesame 3.0 directory

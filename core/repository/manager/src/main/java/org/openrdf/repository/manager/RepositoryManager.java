@@ -35,8 +35,44 @@ import org.openrdf.store.StoreException;
  * configuration data.
  * 
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public abstract class RepositoryManager {
+	private class SynchronizedRepository {
+
+		private String id;
+
+		private Repository repository;
+
+		public SynchronizedRepository(String id) {
+			this.id = id;
+		}
+
+		public SynchronizedRepository(Repository repository) {
+			this.repository = repository;
+		}
+
+		public synchronized Repository getOrFail()
+			throws StoreConfigException, StoreException
+		{
+			if (repository == null) {
+				repository = createRepository(id);
+			}
+			return repository;
+		}
+
+		public synchronized Repository get() {
+			return repository;
+		}
+
+		public synchronized void shutDown()
+			throws StoreException
+		{
+			if (repository != null) {
+				repository.shutDown();
+			}
+		}
+	}
 
 	/*-----------*
 	 * Constants *
@@ -48,7 +84,7 @@ public abstract class RepositoryManager {
 	 * Variables *
 	 *-----------*/
 
-	final Map<String, Repository> initializedRepositories;
+	private Map<String, SynchronizedRepository> repositories;
 
 	private RepositoryConfigManager configManager;
 
@@ -62,7 +98,7 @@ public abstract class RepositoryManager {
 	 * Creates a new RepositoryManager.
 	 */
 	public RepositoryManager() {
-		this.initializedRepositories = new HashMap<String, Repository>();
+		this.repositories = new HashMap<String, SynchronizedRepository>();
 	}
 
 	/*---------*
@@ -226,33 +262,30 @@ public abstract class RepositoryManager {
 	public boolean removeRepositoryConfig(String repositoryID)
 		throws StoreException, StoreConfigException
 	{
-		boolean isRemoved = false;
+		Repository repository = null;
 
-		synchronized (initializedRepositories) {
+		synchronized (repositories) {
 			if (configManager.getIDs().contains(repositoryID)) {
 				logger.debug("Removing repository configuration for {}.", repositoryID);
 				configManager.removeConfig(repositoryID);
-				isRemoved = true;
-			}
-
-			if (isRemoved) {
 				logger.debug("Shutdown repository {} after removal of configuration.", repositoryID);
-				Repository repository = initializedRepositories.remove(repositoryID);
-
-				if (repository != null) {
-					repository.shutDown();
-					try {
-						cleanUpRepository(repositoryID);
-					}
-					catch (IOException e) {
-						throw new StoreException("Unable to clean up resources for removed repository "
-								+ repositoryID, e);
-					}
-				}
+			}
+			if (repositories.containsKey(repositoryID)) {
+				repository = repositories.remove(repositoryID).get();
+			}
+		}
+		if (repository != null) {
+			repository.shutDown();
+			try {
+				cleanUpRepository(repositoryID);
+			}
+			catch (IOException e) {
+				throw new StoreException("Unable to clean up resources for removed repository "
+						+ repositoryID, e);
 			}
 		}
 
-		return isRemoved;
+		return repository != null;
 	}
 
 	/**
@@ -269,20 +302,18 @@ public abstract class RepositoryManager {
 	public Repository getRepository(String id)
 		throws StoreConfigException, StoreException
 	{
-		synchronized (initializedRepositories) {
-			Repository result = initializedRepositories.get(id);
+		SynchronizedRepository result;
+		synchronized (repositories) {
+			result = repositories.get(id);
 
 			if (result == null) {
 				// First call, create and initialize the repository.
-				result = createRepository(id);
-
-				if (result != null) {
-					initializedRepositories.put(id, result);
-				}
+				result = new SynchronizedRepository(id);
+				repositories.put(id, result);
 			}
-
-			return result;
 		}
+
+		return result.getOrFail();
 	}
 
 	/**
@@ -293,8 +324,8 @@ public abstract class RepositoryManager {
 	 * @see #getRepositoryIDs()
 	 */
 	public Set<String> getInitializedRepositoryIDs() {
-		synchronized (initializedRepositories) {
-			return new HashSet<String>(initializedRepositories.keySet());
+		synchronized (repositories) {
+			return new HashSet<String>(repositories.keySet());
 		}
 	}
 
@@ -306,20 +337,41 @@ public abstract class RepositoryManager {
 	 * @see #getAllRepositories()
 	 */
 	public Collection<Repository> getInitializedRepositories() {
-		synchronized (initializedRepositories) {
-			return new ArrayList<Repository>(initializedRepositories.values());
+		synchronized (repositories) {
+			ArrayList<Repository> list = new ArrayList<Repository>(repositories.size());
+			for (SynchronizedRepository repo : repositories.values()) {
+				Repository repository = repo.get();
+				if (repository != null) {
+					list.add(repository);
+				}
+			}
+			return list;
+		}
+	}
+
+	void assignSystemRepository(Repository systemRepository) {
+		synchronized (repositories) {
+			repositories.put(SystemRepository.ID, new SynchronizedRepository(systemRepository));
 		}
 	}
 
 	Repository getInitializedRepository(String repositoryID) {
-		synchronized (initializedRepositories) {
-			return initializedRepositories.get(repositoryID);
+		synchronized (repositories) {
+			if (repositories.containsKey(repositoryID)) {
+				return repositories.get(repositoryID).get();
+			} else {
+				return null;
+			}
 		}
 	}
 
 	Repository removeInitializedRepository(String repositoryID) {
-		synchronized (initializedRepositories) {
-			return initializedRepositories.remove(repositoryID);
+		synchronized (repositories) {
+			if (repositories.containsKey(repositoryID)) {
+				return repositories.remove(repositoryID).get();
+			} else {
+				return null;
+			}
 		}
 	}
 
@@ -340,7 +392,7 @@ public abstract class RepositoryManager {
 	 * it initializes repositories that have not been initialized yet.
 	 * 
 	 * @return The Set of all Repositories defined in the SystemRepository.
-	 * @see #getInitializedRepositories()
+	 * @see #getRepositories()
 	 */
 	public Collection<Repository> getAllRepositories()
 		throws StoreConfigException, StoreException
@@ -412,15 +464,15 @@ public abstract class RepositoryManager {
 		logger.debug("Refreshing repository information in manager...");
 
 		// FIXME: uninitialized, removed repositories won't be cleaned up.
-		synchronized (initializedRepositories) {
-			Iterator<Map.Entry<String, Repository>> iter = initializedRepositories.entrySet().iterator();
+		synchronized (repositories) {
+			Iterator<Map.Entry<String, SynchronizedRepository>> iter = repositories.entrySet().iterator();
 
 			while (iter.hasNext()) {
-				Map.Entry<String, Repository> entry = iter.next();
+				Map.Entry<String, SynchronizedRepository> entry = iter.next();
 				String repositoryID = entry.getKey();
-				Repository repository = entry.getValue();
+				Repository repository = entry.getValue().get();
 
-				if (!SystemRepository.ID.equals(repositoryID)) {
+				if (repository != null && !SystemRepository.ID.equals(repositoryID)) {
 					// remove from initialized repositories
 					iter.remove();
 					// refresh single repository
@@ -436,8 +488,8 @@ public abstract class RepositoryManager {
 	 * @see #refresh()
 	 */
 	public void shutDown() {
-		synchronized (initializedRepositories) {
-			for (Repository repository : initializedRepositories.values()) {
+		synchronized (repositories) {
+			for (SynchronizedRepository repository : repositories.values()) {
 				try {
 					repository.shutDown();
 				}
@@ -446,7 +498,7 @@ public abstract class RepositoryManager {
 				}
 			}
 
-			initializedRepositories.clear();
+			repositories.clear();
 		}
 	}
 
