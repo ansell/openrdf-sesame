@@ -102,6 +102,7 @@ import org.openrdf.query.algebra.evaluation.cursors.NamedContextCursor;
 import org.openrdf.query.algebra.evaluation.cursors.OffsetCursor;
 import org.openrdf.query.algebra.evaluation.cursors.OrderCursor;
 import org.openrdf.query.algebra.evaluation.cursors.ProjectionCursor;
+import org.openrdf.query.algebra.evaluation.cursors.ReducedCursor;
 import org.openrdf.query.algebra.evaluation.cursors.StatementBindingSetCursor;
 import org.openrdf.query.algebra.evaluation.cursors.StatementPatternCursor;
 import org.openrdf.query.algebra.evaluation.cursors.UnionCursor;
@@ -362,7 +363,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public Cursor<BindingSet> evaluate(Reduced reduced, BindingSet bindings)
 		throws StoreException
 	{
-		return evaluate(reduced.getArg(), bindings);
+		return new ReducedCursor<BindingSet>(evaluate(reduced.getArg(), bindings));
 	}
 
 	public Cursor<BindingSet> evaluate(Group node, BindingSet bindings)
