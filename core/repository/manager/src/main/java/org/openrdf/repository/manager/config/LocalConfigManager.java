@@ -93,23 +93,27 @@ public class LocalConfigManager implements RepositoryConfigManager {
 			InputStream stream = new FileInputStream(file);
 			try {
 				parser.parse(stream, file.toURI().toString());
-				return model;
-			}
-			catch (RDFParseException e) {
-				throw new StoreConfigException(e);
 			}
 			catch (RDFHandlerException e) {
-				throw new StoreConfigException(e);
+				throw new AssertionError(e);
 			}
 			finally {
 				stream.close();
 			}
+
+			return model;
 		}
 		catch (UnsupportedRDFormatException e) {
-			throw new StoreConfigException(e);
+			throw new StoreConfigException("Unable to parse configuration file " + file.getName()
+					+ ", no suitable parser found");
+		}
+		catch (RDFParseException e) {
+			throw new StoreConfigException("Failed to parse configuration file " + file.getName() + ": "
+					+ e.getMessage());
 		}
 		catch (IOException e) {
-			throw new StoreConfigException(e);
+			throw new StoreConfigException("Failed to read configuration file " + file.getName() + ": "
+					+ e.getMessage(), e);
 		}
 	}
 
