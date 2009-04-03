@@ -24,6 +24,7 @@ import info.aduna.iteration.Iteration;
 import info.aduna.iteration.LimitIteration;
 import info.aduna.iteration.MinusIteration;
 import info.aduna.iteration.OffsetIteration;
+import info.aduna.iteration.ReducedIteration;
 import info.aduna.iteration.SingletonIteration;
 import info.aduna.iteration.UnionIteration;
 
@@ -437,7 +438,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		return evaluate(reduced.getArg(), bindings);
+		return new ReducedIteration<BindingSet, QueryEvaluationException>(evaluate(reduced.getArg(), bindings));
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Group node, BindingSet bindings)
