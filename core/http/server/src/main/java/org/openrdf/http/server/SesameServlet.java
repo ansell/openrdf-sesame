@@ -6,6 +6,7 @@
 package org.openrdf.http.server;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -62,11 +63,11 @@ public class SesameServlet implements Servlet {
 		return APP_NAME + "/" + VERSION;
 	}
 
-	private Logger logger = LoggerFactory.getLogger(SesameServlet.class);
+	private final Logger logger = LoggerFactory.getLogger(SesameServlet.class);
 
-	private Servlet delegate = new DispatcherServlet();
+	private final Servlet delegate = new DispatcherServlet();
 
-	private RepositoryManager manager;
+	private final RepositoryManager manager;
 
 	private int maxCacheAge;
 
@@ -81,12 +82,23 @@ public class SesameServlet implements Servlet {
 	}
 
 	public void setServerName(String name) {
-		if (name == null || name.trim().length() == 0) {
+		if (name == null) {
 			this.name = null;
 		}
 		else {
-			this.name = name.trim();
+			name = name.trim();
+
+			if (name.length() == 0) {
+				this.name = null;
+			}
+			else {
+				this.name = name;
+			}
 		}
+	}
+
+	public int getMaxCacheAge() {
+		return maxCacheAge;
 	}
 
 	public void setMaxCacheAge(int maxCacheAge) {
@@ -94,8 +106,10 @@ public class SesameServlet implements Servlet {
 	}
 
 	public void destroy() {
+		logger.info("Sesame server shutting down...");
 		delegate.destroy();
 		manager.shutDown();
+		logger.info("Sesame server shut down");
 	}
 
 	public ServletConfig getServletConfig() {
@@ -109,6 +123,13 @@ public class SesameServlet implements Servlet {
 	public void init(ServletConfig config)
 		throws ServletException
 	{
+		logger.info("Initializing Sesame server...");
+		try {
+			logger.info("Repository manager location: {}", manager.getLocation());
+		}
+		catch (MalformedURLException ignore) {
+		}
+
 		String maxCacheAgeParam = config.getInitParameter("max-cache-age");
 		if (maxCacheAge == 0 && maxCacheAgeParam != null) {
 			try {
@@ -127,6 +148,8 @@ public class SesameServlet implements Servlet {
 			SesameApplication.staticManager = null;
 			SesameApplication.maxCacheAge = 0;
 		}
+
+		logger.info("Sesame server initialized");
 	}
 
 	public void service(ServletRequest req, ServletResponse res)
@@ -207,7 +230,8 @@ public class SesameServlet implements Servlet {
 			registerPrototype(ContentNegotiator.BEAN_NAME, ContentNegotiator.class);
 
 			// Interceptors
-			ConditionalRequestInterceptor conditionalReqInterceptor = new ConditionalRequestInterceptor(staticManager);
+			ConditionalRequestInterceptor conditionalReqInterceptor = new ConditionalRequestInterceptor(
+					staticManager);
 			conditionalReqInterceptor.setServerName(serverName);
 			conditionalReqInterceptor.setMaxCacheAge(maxCacheAge);
 			registerSingleton(conditionalReqInterceptor);
