@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -50,9 +50,9 @@ public abstract class RepositoryManager {
 
 	final Map<String, Repository> initializedRepositories;
 
-	private RepositoryConfigManager configs;
+	private RepositoryConfigManager configManager;
 
-	private ConfigTemplateManager templates;
+	private ConfigTemplateManager templateManager;
 
 	/*--------------*
 	 * Constructors *
@@ -69,12 +69,12 @@ public abstract class RepositoryManager {
 	 * Methods *
 	 *---------*/
 
-	protected void setRepositoryConfigManager(RepositoryConfigManager configs) {
-		this.configs = configs;
+	protected void setRepositoryConfigManager(RepositoryConfigManager configManager) {
+		this.configManager = configManager;
 	}
 
 	protected void setConfigTemplateManager(ConfigTemplateManager templates) {
-		this.templates = templates;
+		this.templateManager = templates;
 	}
 
 	/**
@@ -149,19 +149,19 @@ public abstract class RepositoryManager {
 	public ConfigTemplateManager getConfigTemplateManager()
 		throws StoreConfigException
 	{
-		return templates;
+		return templateManager;
 	}
 
 	public Set<String> getRepositoryIDs()
 		throws StoreConfigException
 	{
-		return configs.getIDs();
+		return configManager.getIDs();
 	}
 
 	public boolean hasRepositoryConfig(String repositoryID)
 		throws StoreConfigException
 	{
-		return configs.getIDs().contains(repositoryID);
+		return configManager.getIDs().contains(repositoryID);
 	}
 
 	/**
@@ -177,7 +177,7 @@ public abstract class RepositoryManager {
 	public Model getRepositoryConfig(String repositoryID)
 		throws StoreConfigException
 	{
-		return configs.getConfig(repositoryID);
+		return configManager.getConfig(repositoryID);
 	}
 
 	/**
@@ -203,7 +203,7 @@ public abstract class RepositoryManager {
 	{
 		removeRepositoryConfig(id);
 		logger.debug("Adding repository configuration for {}", id);
-		configs.addConfig(id, config);
+		configManager.addConfig(id, config);
 		return id;
 	}
 
@@ -229,9 +229,9 @@ public abstract class RepositoryManager {
 		boolean isRemoved = false;
 
 		synchronized (initializedRepositories) {
-			if (configs.getIDs().contains(repositoryID)) {
+			if (configManager.getIDs().contains(repositoryID)) {
 				logger.debug("Removing repository configuration for {}.", repositoryID);
-				configs.removeConfig(repositoryID);
+				configManager.removeConfig(repositoryID);
 				isRemoved = true;
 			}
 
