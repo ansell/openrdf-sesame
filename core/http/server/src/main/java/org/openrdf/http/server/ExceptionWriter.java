@@ -84,7 +84,7 @@ public class ExceptionWriter implements HandlerExceptionResolver, View {
 			statusCode = httpExc.getStatusCode();
 			errMsg = httpExc.getMessage();
 
-			if (t instanceof ClientHTTPException) {
+			if (httpExc instanceof ClientHTTPException) {
 				logger.info("Client sent bad request ({}): {}", statusCode, errMsg);
 			}
 			else {
