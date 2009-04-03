@@ -87,6 +87,9 @@ public class ExceptionWriter implements HandlerExceptionResolver, View {
 			if (httpExc instanceof ClientHTTPException) {
 				logger.info("Client sent bad request ({}): {}", statusCode, errMsg);
 			}
+			else if (statusCode == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) {
+				logger.error("Internal server error", httpExc);
+			}
 			else {
 				logger.error("Error while handling request ({}): {}", statusCode, errMsg);
 			}
