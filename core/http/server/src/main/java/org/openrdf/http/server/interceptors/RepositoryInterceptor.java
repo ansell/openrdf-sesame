@@ -175,14 +175,6 @@ public class RepositoryInterceptor implements HandlerInterceptor, DisposableBean
 	public RepositoryInterceptor(RepositoryManager repositoryManager) {
 		this.repositoryManager = repositoryManager;
 
-		try {
-			logger.info("Starting Sesame server");
-			String managerLocation = repositoryManager.getLocation().toString();
-			logger.info("Repository manager location: {}", managerLocation);
-		}
-		catch (MalformedURLException ignore) {
-		}
-
 		Runnable gc = new Runnable() {
 
 			public void run() {
@@ -199,7 +191,6 @@ public class RepositoryInterceptor implements HandlerInterceptor, DisposableBean
 
 	public void destroy() {
 		executor.shutdown();
-		logger.info("Sesame server shutting down");
 	}
 
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
