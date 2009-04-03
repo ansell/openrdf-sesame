@@ -15,10 +15,10 @@ public class HTTPException extends Exception {
 	private static final long serialVersionUID = 1356463348553827230L;
 
 	public static HTTPException create(int statusCode, String msg) {
-		if (ClientHTTPException.isWithin(statusCode)) {
+		if (ClientHTTPException.isInRange(statusCode)) {
 			return ClientHTTPException.create(statusCode, msg);
 		}
-		else if (ServerHTTPException.isWithin(statusCode)) {
+		else if (ServerHTTPException.isInRange(statusCode)) {
 			return ServerHTTPException.create(statusCode, msg);
 		}
 		else {
