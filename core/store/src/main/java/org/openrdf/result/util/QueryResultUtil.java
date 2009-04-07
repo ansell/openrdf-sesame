@@ -118,6 +118,20 @@ public class QueryResultUtil {
 		return matchBindingSets(list1, list2);
 	}
 
+	public static boolean isSubset(TupleResult tqr1, TupleResult tqr2)
+		throws StoreException
+	{
+		List<BindingSet> list1 = tqr1.asList();
+		List<BindingSet> list2 = tqr2.asList();
+
+		// Compare the number of statements in both sets
+		if (list1.size() > list2.size()) {
+			return false;
+		}
+
+		return matchBindingSets(list1, list2);
+	}
+
 	public static boolean equals(GraphResult result1, GraphResult result2)
 		throws StoreException
 	{

@@ -17,20 +17,24 @@ import org.openrdf.sail.rdbms.mysql.MySqlStore;
 
 public class MySqlSPARQLQueryTest extends SPARQLQueryTest {
 
-	public static Test suite() throws Exception {
+	public static Test suite()
+		throws Exception
+	{
 		return ManifestTest.suite(new Factory() {
-			public MySqlSPARQLQueryTest createSPARQLQueryTest(String testURI,
-					String name, String queryFileURL, String resultFileURL,
-					Dataset dataSet) {
-				return new MySqlSPARQLQueryTest(testURI, name, queryFileURL,
-						resultFileURL, dataSet);
+
+			public MySqlSPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+					String resultFileURL, Dataset dataSet, boolean laxCardinality)
+			{
+				return new MySqlSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality);
 			}
 		});
 	}
 
-	protected MySqlSPARQLQueryTest(String testURI, String name,
-			String queryFileURL, String resultFileURL, Dataset dataSet) {
-		super(testURI, name, queryFileURL, resultFileURL, dataSet);
+	protected MySqlSPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
+			Dataset dataSet, boolean laxCardinality)
+	{
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
 	}
 
 	protected Repository newRepository() {

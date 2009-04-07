@@ -13,7 +13,6 @@ import org.openrdf.query.parser.sparql.SPARQLQueryTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.dataset.DatasetSail;
-import org.openrdf.sail.federation.Federation;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class FederationSparqlTest extends SPARQLQueryTest {
@@ -24,17 +23,18 @@ public class FederationSparqlTest extends SPARQLQueryTest {
 		return ManifestTest.suite(new Factory() {
 
 			public SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
-					String resultFileURL, Dataset dataSet)
+					String resultFileURL, Dataset dataSet, boolean laxCardinality)
 			{
-				return new FederationSparqlTest(testURI, name, queryFileURL, resultFileURL, dataSet);
+				return new FederationSparqlTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality);
 			}
 		});
 	}
 
 	public FederationSparqlTest(String testURI, String name, String queryFileURL, String resultFileURL,
-			Dataset dataSet)
+			Dataset dataSet, boolean laxCardinality)
 	{
-		super(testURI, name, queryFileURL, resultFileURL, dataSet);
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
 	}
 
 	@Override
