@@ -21,17 +21,17 @@ public class MemorySPARQLQueryTest extends SPARQLQueryTest {
 		return ManifestTest.suite(new Factory() {
 
 			public MemorySPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
-					String resultFileURL, Dataset dataSet)
+					String resultFileURL, Dataset dataSet, boolean laxCardinality)
 			{
-				return new MemorySPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet);
+				return new MemorySPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
 			}
 		});
 	}
 
 	protected MemorySPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
-			Dataset dataSet)
+			Dataset dataSet, boolean laxCardinality)
 	{
-		super(testURI, name, queryFileURL, resultFileURL, dataSet);
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
 	}
 
 	protected Repository newRepository() {

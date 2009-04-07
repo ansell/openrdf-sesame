@@ -17,20 +17,24 @@ import org.openrdf.sail.memory.MemoryStore;
 
 public class MemorySPARQLQueryTest extends SPARQLQueryTest {
 
-	public static Test suite() throws Exception {
+	public static Test suite()
+		throws Exception
+	{
 		return ManifestTest.suite(new Factory() {
-			public MemorySPARQLQueryTest createSPARQLQueryTest(String testURI,
-					String name, String queryFileURL, String resultFileURL,
-					Dataset dataSet) {
-				return new MemorySPARQLQueryTest(testURI, name, queryFileURL,
-						resultFileURL, dataSet);
+
+			public MemorySPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+					String resultFileURL, Dataset dataSet, boolean laxCardinality)
+			{
+				return new MemorySPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality);
 			}
 		});
 	}
 
-	protected MemorySPARQLQueryTest(String testURI, String name,
-			String queryFileURL, String resultFileURL, Dataset dataSet) {
-		super(testURI, name, queryFileURL, resultFileURL, dataSet);
+	protected MemorySPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
+			Dataset dataSet, boolean laxCardinality)
+	{
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
 	}
 
 	protected Repository newRepository() {
