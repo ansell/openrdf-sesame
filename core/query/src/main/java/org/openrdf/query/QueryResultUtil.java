@@ -113,6 +113,20 @@ public class QueryResultUtil {
 		return matchBindingSets(list1, list2);
 	}
 
+	public static boolean isSubset(TupleQueryResult tqr1, TupleQueryResult tqr2)
+		throws QueryEvaluationException
+	{
+		List<BindingSet> list1 = Iterations.asList(tqr1);
+		List<BindingSet> list2 = Iterations.asList(tqr2);
+
+		// Compare the number of statements in both sets
+		if (list1.size() > list2.size()) {
+			return false;
+		}
+
+		return matchBindingSets(list1, list2);
+	}
+
 	public static boolean equals(GraphQueryResult result1, GraphQueryResult result2)
 		throws QueryEvaluationException
 	{
@@ -227,9 +241,9 @@ public class QueryResultUtil {
 	}
 
 	/**
-	 * Check whether two {@link BindingSet}s are compatible. Two binding sets
-	 * are compatible if they have equal values for each binding name that occurs
-	 * in both binding sets.
+	 * Check whether two {@link BindingSet}s are compatible. Two binding sets are
+	 * compatible if they have equal values for each binding name that occurs in
+	 * both binding sets.
 	 */
 	public static boolean bindingSetsCompatible(BindingSet bs1, BindingSet bs2) {
 		Set<String> sharedBindings = new HashSet<String>(bs1.getBindingNames());
