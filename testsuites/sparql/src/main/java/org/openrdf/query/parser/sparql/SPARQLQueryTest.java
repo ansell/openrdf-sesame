@@ -78,6 +78,8 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 	protected final Dataset dataset;
 
+	protected final boolean laxCardinality;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -91,7 +93,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	 *--------------*/
 
 	public SPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
-			Dataset dataSet)
+			Dataset dataSet, boolean laxCardinality)
 	{
 		super(name);
 
@@ -99,6 +101,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		this.queryFileURL = queryFileURL;
 		this.resultFileURL = resultFileURL;
 		this.dataset = dataSet;
+		this.laxCardinality = laxCardinality;
 	}
 
 	/*---------*
@@ -208,7 +211,15 @@ public abstract class SPARQLQueryTest extends TestCase {
 		MutableTupleResult queryResultTable = new MutableTupleResult(queryResult);
 		MutableTupleResult expectedResultTable = new MutableTupleResult(expectedResult);
 
-		if (!QueryResultUtil.equals(expectedResultTable, queryResultTable)) {
+		boolean resultsEqual;
+		if (laxCardinality) {
+			resultsEqual = QueryResultUtil.isSubset(queryResultTable, expectedResultTable);
+		}
+		else {
+			resultsEqual = QueryResultUtil.equals(queryResultTable, expectedResultTable);
+		}
+
+		if (!resultsEqual) {
 			queryResultTable.beforeFirst();
 			expectedResultTable.beforeFirst();
 
@@ -467,7 +478,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	public interface Factory {
 
 		SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
-				String resultFileURL, Dataset dataSet);
+				String resultFileURL, Dataset dataSet, boolean laxCardinality);
 	}
 
 	public static TestSuite suite(String manifestFileURL, Factory factory)
@@ -508,12 +519,18 @@ public abstract class SPARQLQueryTest extends TestCase {
 		query.append(" qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>");
 		TupleQuery namedGraphsQuery = con.prepareTupleQuery(QueryLanguage.SERQL, query.toString());
 
+		query.setLength(0);
+		query.append("SELECT 1 ");
+		query.append(" FROM {testURI} mf:resultCardinality {mf:LaxCardinality}");
+		query.append(" USING NAMESPACE mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>");
+		TupleQuery laxCardinalityQuery = con.prepareTupleQuery(QueryLanguage.SERQL, query.toString());
+
 		logger.debug("evaluating query..");
 		TupleResult testCases = testCaseQuery.evaluate();
 		while (testCases.hasNext()) {
 			BindingSet bindingSet = testCases.next();
 
-			String testURI = bindingSet.getValue("testURI").toString();
+			URI testURI = (URI)bindingSet.getValue("testURI");
 			String testName = bindingSet.getValue("testName").toString();
 			String resultFile = bindingSet.getValue("resultFile").toString();
 			String queryFile = bindingSet.getValue("queryFile").toString();
@@ -542,8 +559,19 @@ public abstract class SPARQLQueryTest extends TestCase {
 				}
 			}
 
-			SPARQLQueryTest test = factory.createSPARQLQueryTest(testURI, testName, queryFile, resultFile,
-					dataset);
+			// Check for lax-cardinality conditions
+			boolean laxCardinality = false;
+			laxCardinalityQuery.setBinding("testURI", testURI);
+			TupleResult laxCardinalityResult = laxCardinalityQuery.evaluate();
+			try {
+				laxCardinality = laxCardinalityResult.hasNext();
+			}
+			finally {
+				laxCardinalityResult.close();
+			}
+
+			SPARQLQueryTest test = factory.createSPARQLQueryTest(testURI.toString(), testName, queryFile,
+					resultFile, dataset, laxCardinality);
 			if (test != null) {
 				suite.addTest(test);
 			}

@@ -26,11 +26,11 @@ public class PgSqlCrossJoinTest extends SPARQLQueryTest {
 		return ManifestTest.suite(new Factory() {
 
 			public PgSqlCrossJoinTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
-					String resultFileURL, Dataset dataSet)
+					String resultFileURL, Dataset dataSet, boolean laxCardinality)
 			{
 				if (!name.contains("Join scope - 1"))
 					return null;
-				return new PgSqlCrossJoinTest(testURI, name, queryFileURL, resultFileURL, dataSet);
+				return new PgSqlCrossJoinTest(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
 			}
 		});
 	}
@@ -43,9 +43,9 @@ public class PgSqlCrossJoinTest extends SPARQLQueryTest {
 	}
 
 	protected PgSqlCrossJoinTest(String testURI, String name, String queryFileURL, String resultFileURL,
-			Dataset dataSet)
+			Dataset dataSet, boolean laxCardinality)
 	{
-		super(testURI, name, queryFileURL, resultFileURL, dataSet);
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
 	}
 
 	protected Repository newRepository() {
