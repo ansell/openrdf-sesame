@@ -257,7 +257,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	public RepositoryInfo getRepositoryInfo(String id)
 		throws StoreConfigException
 	{
-		RepositoryConfig config = null;
+		RepositoryConfig config;
 		if (id.equals(SystemRepository.ID)) {
 			config = new RepositoryConfig(id, new SystemRepositoryConfig());
 		}
@@ -265,14 +265,17 @@ public class LocalRepositoryManager extends RepositoryManager {
 			config = parse(getRepositoryConfig(id));
 		}
 
-		RepositoryInfo repInfo = new RepositoryInfo();
-		repInfo.setId(id);
-		repInfo.setDescription(config.getTitle());
-		try {
-			repInfo.setLocation(getRepositoryDir(id).toURI().toURL());
-		}
-		catch (MalformedURLException mue) {
-			throw new StoreConfigException("Location of repository does not resolve to a valid URL", mue);
+		RepositoryInfo repInfo = null;
+		if (config != null) {
+			repInfo = new RepositoryInfo();
+			repInfo.setId(id);
+			repInfo.setDescription(config.getTitle());
+			try {
+				repInfo.setLocation(getRepositoryDir(id).toURI().toURL());
+			}
+			catch (MalformedURLException e) {
+				throw new StoreConfigException("Location of repository does not resolve to a valid URL", e);
+			}
 		}
 
 		return repInfo;
@@ -371,21 +374,19 @@ public class LocalRepositoryManager extends RepositoryManager {
 			// TODO The SYSTEM repository should be replaced
 			try {
 				List<String> ids = new ArrayList<String>();
+
 				for (Resource ctx : con.getContextIDs().asList()) {
 					Model model = new LinkedHashModel();
 					con.match(null, null, null, false, ctx).addTo(model);
 					String id = getConfigId(model);
 					ids.add(id);
-					if (hasRepositoryConfig(id)) {
-						Model currently = getRepositoryConfig(id);
-						if (!currently.equals(model)) {
-							addRepositoryConfig(id, model);
-						}
-					}
-					else {
+
+					Model currently = getRepositoryConfig(id);
+					if (currently == null || !currently.equals(model)) {
 						addRepositoryConfig(id, model);
 					}
 				}
+
 				Set<String> old = new HashSet<String>(getRepositoryIDs());
 				old.removeAll(ids);
 				for (String id : old) {
