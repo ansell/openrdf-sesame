@@ -38,6 +38,7 @@ import org.openrdf.store.StoreException;
  * @author James Leigh
  */
 public abstract class RepositoryManager {
+
 	private class SynchronizedRepository {
 
 		private String id;
@@ -84,7 +85,7 @@ public abstract class RepositoryManager {
 	 * Variables *
 	 *-----------*/
 
-	private Map<String, SynchronizedRepository> repositories;
+	private final Map<String, SynchronizedRepository> repositories;
 
 	private RepositoryConfigManager configManager;
 
@@ -262,30 +263,31 @@ public abstract class RepositoryManager {
 	public boolean removeRepositoryConfig(String repositoryID)
 		throws StoreException, StoreConfigException
 	{
+		boolean isRemoved = false;
 		Repository repository = null;
 
 		synchronized (repositories) {
 			if (configManager.getIDs().contains(repositoryID)) {
 				logger.debug("Removing repository configuration for {}.", repositoryID);
-				configManager.removeConfig(repositoryID);
-				logger.debug("Shutdown repository {} after removal of configuration.", repositoryID);
+				isRemoved = configManager.removeConfig(repositoryID);
 			}
 			if (repositories.containsKey(repositoryID)) {
 				repository = repositories.remove(repositoryID).get();
 			}
 		}
+
 		if (repository != null) {
+			logger.debug("Shutdown repository {} after removal of configuration.", repositoryID);
 			repository.shutDown();
 			try {
 				cleanUpRepository(repositoryID);
 			}
 			catch (IOException e) {
-				throw new StoreException("Unable to clean up resources for removed repository "
-						+ repositoryID, e);
+				throw new StoreException("Unable to clean up resources for removed repository " + repositoryID, e);
 			}
 		}
 
-		return repository != null;
+		return isRemoved;
 	}
 
 	/**
@@ -359,7 +361,8 @@ public abstract class RepositoryManager {
 		synchronized (repositories) {
 			if (repositories.containsKey(repositoryID)) {
 				return repositories.get(repositoryID).get();
-			} else {
+			}
+			else {
 				return null;
 			}
 		}
@@ -369,7 +372,8 @@ public abstract class RepositoryManager {
 		synchronized (repositories) {
 			if (repositories.containsKey(repositoryID)) {
 				return repositories.remove(repositoryID).get();
-			} else {
+			}
+			else {
 				return null;
 			}
 		}
@@ -392,7 +396,7 @@ public abstract class RepositoryManager {
 	 * it initializes repositories that have not been initialized yet.
 	 * 
 	 * @return The Set of all Repositories defined in the SystemRepository.
-	 * @see #getRepositories()
+	 * @see #getInitializedRepositories()
 	 */
 	public Collection<Repository> getAllRepositories()
 		throws StoreConfigException, StoreException
