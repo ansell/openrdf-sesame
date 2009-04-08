@@ -35,7 +35,7 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
 import info.aduna.io.IOUtil;
-import info.aduna.io.file.FileFormat;
+import info.aduna.lang.FileFormat;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.ClientHTTPException;

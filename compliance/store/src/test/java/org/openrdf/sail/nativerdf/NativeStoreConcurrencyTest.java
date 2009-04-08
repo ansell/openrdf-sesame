@@ -7,7 +7,7 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 
-import info.aduna.io.file.FileUtil;
+import info.aduna.io.FileUtil;
 
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConcurrencyTest;

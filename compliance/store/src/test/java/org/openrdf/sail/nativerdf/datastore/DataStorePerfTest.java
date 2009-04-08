@@ -9,7 +9,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import info.aduna.io.file.FileUtil;
+import info.aduna.io.FileUtil;
 
 /**
  * 
