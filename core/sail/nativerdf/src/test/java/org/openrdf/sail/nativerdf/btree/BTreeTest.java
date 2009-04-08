@@ -12,7 +12,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import info.aduna.io.file.FileUtil;
+import info.aduna.io.FileUtil;
 
 /**
  * @author Arjohn Kampman

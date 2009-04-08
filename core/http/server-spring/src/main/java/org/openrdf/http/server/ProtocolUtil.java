@@ -18,8 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.io.file.FileFormat;
-import info.aduna.io.file.FileFormatServiceRegistry;
+import info.aduna.lang.FileFormat;
+import info.aduna.lang.service.FileFormatServiceRegistry;
 import info.aduna.net.http.RequestHeaders;
 import info.aduna.webapp.util.HttpServerUtil;
 

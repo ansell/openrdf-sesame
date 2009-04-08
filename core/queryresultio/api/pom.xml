@@ -29,7 +29,7 @@
 
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-io</artifactId>
+			<artifactId>aduna-commons-lang</artifactId>
 		</dependency>
 	</dependencies>
 
