@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import info.aduna.io.file.FileUtil;
+import info.aduna.io.FileUtil;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Model;

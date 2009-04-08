@@ -12,7 +12,7 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
-import info.aduna.io.file.FileUtil;
+import info.aduna.io.FileUtil;
 
 public class DefaultIndexTest extends TestCase {
 

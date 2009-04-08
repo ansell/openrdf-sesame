@@ -34,7 +34,15 @@
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-net</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-io</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-lang</artifactId>
+		</dependency>
+		
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>

@@ -70,7 +70,7 @@ public class Rio {
 	/**
 	 * Tries to match the extension of a file name against the list of RDF
 	 * formats that can be parsed. This method calls
-	 * {@link RDFFormat#matchFileName(String, Iterable, info.aduna.io.file.FileFormat)}
+	 * {@link RDFFormat#matchFileName(String, Iterable, info.aduna.lang.FileFormat)}
 	 * with the specified MIME type, the keys of
 	 * {@link RDFParserRegistry#getInstance()} and the fallback format as
 	 * parameters.
@@ -103,7 +103,7 @@ public class Rio {
 	/**
 	 * Tries to match a MIME type against the list of RDF formats that can be
 	 * written. This method calls
-	 * {@link RDFFormat#matchMIMEType(String, Iterable, info.aduna.io.file.FileFormat)}
+	 * {@link RDFFormat#matchMIMEType(String, Iterable, info.aduna.lang.FileFormat)}
 	 * with the specified MIME type, the keys of
 	 * {@link RDFWriterRegistry#getInstance()} and the fallback format as
 	 * parameters.
@@ -136,7 +136,7 @@ public class Rio {
 	/**
 	 * Tries to match the extension of a file name against the list of RDF
 	 * formats that can be written. This method calls
-	 * {@link RDFFormat#matchFileName(String, Iterable, info.aduna.io.file.FileFormat)}
+	 * {@link RDFFormat#matchFileName(String, Iterable, info.aduna.lang.FileFormat)}
 	 * with the specified MIME type, the keys of
 	 * {@link RDFWriterRegistry#getInstance()} and the fallback format as
 	 * parameters.

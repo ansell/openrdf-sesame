@@ -10,7 +10,7 @@ import java.io.File;
 import junit.framework.TestCase;
 import edu.lehigh.swat.bench.uba.Generator;
 
-import info.aduna.io.file.FileUtil;
+import info.aduna.io.FileUtil;
 
 /**
  * 

@@ -26,7 +26,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping;
 
-import info.aduna.io.file.MavenUtil;
+import info.aduna.io.MavenUtil;
 
 import org.openrdf.http.server.controllers.BNodeController;
 import org.openrdf.http.server.controllers.ConfigurationController;
