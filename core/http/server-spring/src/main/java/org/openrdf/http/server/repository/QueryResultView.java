@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.View;
 
-import info.aduna.io.file.FileFormat;
+import info.aduna.lang.FileFormat;
 
 /**
  * Base class for rendering query results.

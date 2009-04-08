@@ -82,7 +82,7 @@ public class QueryResultIO {
 	/**
 	 * Tries to match the extension of a file name against the list of RDF
 	 * formats that can be parsed. This method calls
-	 * {@link TupleQueryResultFormat#matchFileName(String, Iterable, info.aduna.io.file.FileFormat)}
+	 * {@link TupleQueryResultFormat#matchFileName(String, Iterable, info.aduna.lang.FileFormat)}
 	 * with the specified MIME type, the keys of
 	 * {@link TupleQueryResultParserRegistry#getInstance()} and the fallback
 	 * format as parameters.
@@ -117,7 +117,7 @@ public class QueryResultIO {
 	/**
 	 * Tries to match a MIME type against the list of tuple query result formats
 	 * that can be written. This method calls
-	 * {@link TupleQueryResultFormat#matchMIMEType(String, Iterable, info.aduna.io.file.FileFormat)}
+	 * {@link TupleQueryResultFormat#matchMIMEType(String, Iterable, info.aduna.lang.FileFormat)}
 	 * with the specified MIME type, the keys of
 	 * {@link TupleQueryResultWriterRegistry#getInstance()} and the fallback
 	 * format as parameters.
@@ -152,7 +152,7 @@ public class QueryResultIO {
 	/**
 	 * Tries to match the extension of a file name against the list of RDF
 	 * formats that can be written. This method calls
-	 * {@link TupleQueryResultFormat#matchFileName(String, Iterable, info.aduna.io.file.FileFormat)}
+	 * {@link TupleQueryResultFormat#matchFileName(String, Iterable, info.aduna.lang.FileFormat)}
 	 * with the specified MIME type, the keys of
 	 * {@link TupleQueryResultWriterRegistry#getInstance()} and the fallback
 	 * format as parameters.

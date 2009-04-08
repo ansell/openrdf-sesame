@@ -11,7 +11,7 @@ import java.util.List;
 
 import junit.framework.Test;
 
-import info.aduna.io.file.FileUtil;
+import info.aduna.io.FileUtil;
 
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.serql.SeRQLQueryTestCase;

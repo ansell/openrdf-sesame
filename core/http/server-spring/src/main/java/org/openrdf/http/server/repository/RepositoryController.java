@@ -30,8 +30,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.AbstractController;
 
-import info.aduna.io.file.FileFormat;
-import info.aduna.io.file.FileFormatServiceRegistry;
+import info.aduna.lang.FileFormat;
+import info.aduna.lang.service.FileFormatServiceRegistry;
 import info.aduna.webapp.util.HttpServerUtil;
 
 import org.openrdf.http.protocol.Protocol;
