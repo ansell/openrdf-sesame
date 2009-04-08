@@ -27,7 +27,7 @@ public class RepositoryProvider {
 
 	private static class SynchronizedManager {
 
-		private String url;
+		private final String url;
 
 		private RepositoryManager manager;
 
@@ -53,7 +53,7 @@ public class RepositoryProvider {
 		}
 	}
 
-	static Map<String, SynchronizedManager> managers = new HashMap<String, SynchronizedManager>();
+	private static final Map<String, SynchronizedManager> managers = new HashMap<String, SynchronizedManager>();
 
 	static {
 		Runtime.getRuntime().addShutdownHook(new Thread("RepositoryProvider-shutdownHook") {
@@ -69,7 +69,7 @@ public class RepositoryProvider {
 	}
 
 	/**
-	 * Created a RepositoryManager, if not already created, that will be shutdown
+	 * Creates a RepositoryManager, if not already created, that will be shutdown
 	 * when the JVM exits cleanly. The parameter must be a URL of the form
 	 * http://host:port/path or file:///path.
 	 */
