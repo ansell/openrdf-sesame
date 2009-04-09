@@ -151,7 +151,7 @@ public class StatementClient {
 		try {
 			method.acceptRDF(true);
 			method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
-			if (execute(method) && method.isNotModified()) {
+			if (execute(method) && !method.isNotModified()) {
 				method.readRDF(handler);
 			}
 		}
