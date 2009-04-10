@@ -68,6 +68,7 @@ public class BackgroundTupleResult extends ResultImpl<BindingSet> implements Tup
 	{
 		try {
 			bindingNamesReady.await();
+			queue.checkException();
 			return bindingNames;
 		}
 		catch (InterruptedException e) {
@@ -98,6 +99,7 @@ public class BackgroundTupleResult extends ResultImpl<BindingSet> implements Tup
 		finally {
 			parserThread = null;
 			queue.done();
+			bindingNamesReady.countDown();
 		}
 	}
 
