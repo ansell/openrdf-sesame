@@ -93,6 +93,7 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 		finally {
 			parserThread = null;
 			queue.done();
+			namespacesReady.countDown();
 		}
 	}
 
@@ -107,6 +108,7 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 	{
 		try {
 			namespacesReady.await();
+			queue.checkException();
 			return namespaces;
 		}
 		catch (InterruptedException e) {
@@ -143,7 +145,7 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 	public void endRDF()
 		throws RDFHandlerException
 	{
-		namespacesReady.countDown();
+		// no-op
 	}
 
 }

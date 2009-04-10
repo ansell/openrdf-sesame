@@ -128,17 +128,7 @@ public class QueueCursor<E> implements Cursor<E> {
 	{
 		checkException();
 	}
-
-	private boolean isAfterLast(E take) {
-		return take == null || take == afterLast;
-	}
-
-	@SuppressWarnings("unchecked")
-	private E createAfterLast() {
-		return (E)new Object();
-	}
-
-	private void checkException()
+	public void checkException()
 		throws StoreException
 	{
 		synchronized (exceptions) {
@@ -168,4 +158,14 @@ public class QueueCursor<E> implements Cursor<E> {
 			}
 		}
 	}
+
+	private boolean isAfterLast(E take) {
+		return take == null || take == afterLast;
+	}
+
+	@SuppressWarnings("unchecked")
+	private E createAfterLast() {
+		return (E)new Object();
+	}
+
 }

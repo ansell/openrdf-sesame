@@ -96,12 +96,16 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		// Copy supplied column headers list and make it unmodifiable
 		bindingNames = new ArrayList<String>(bindingNames);
 		this.bindingNames = Collections.unmodifiableList(bindingNames);
+		int columnCount = this.bindingNames.size();
+		if (columnCount < 1) {
+			throw new TupleQueryResultHandlerException("Illegal column count specified: " + columnCount);
+		}
 
 		try {
 			out.write(MAGIC_NUMBER);
 			out.writeInt(FORMAT_VERSION);
 
-			out.writeInt(this.bindingNames.size());
+			out.writeInt(columnCount);
 
 			for (String bindingName : this.bindingNames) {
 				writeString(bindingName);
