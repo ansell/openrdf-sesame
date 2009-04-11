@@ -123,4 +123,8 @@ public class SailRepository implements Repository {
 	{
 		return new SailRepositoryConnection(this, sail.getConnection());
 	}
+
+	public String toString() {
+		return sail.toString();
+	}
 }
