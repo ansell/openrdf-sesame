@@ -237,6 +237,8 @@ public class LocalRepositoryManager extends RepositoryManager {
 	private RepositoryConfig parse(Model config)
 		throws StoreConfigException
 	{
+		if (config == null)
+			return null;
 		Set<Resource> repositoryNodes = config.filter(null, RDF.TYPE, REPOSITORY).subjects();
 
 		if (repositoryNodes.isEmpty()) {
