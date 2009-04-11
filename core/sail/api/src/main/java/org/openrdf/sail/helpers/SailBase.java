@@ -135,4 +135,11 @@ public abstract class SailBase implements Sail {
 	 */
 	protected abstract void shutDownInternal()
 		throws StoreException;
+
+	public String toString() {
+		if (getDataDir() == null) {
+			return super.toString();
+		}
+		return getDataDir().toString();
+	}
 }
