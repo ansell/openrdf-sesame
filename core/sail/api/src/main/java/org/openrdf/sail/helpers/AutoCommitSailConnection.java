@@ -142,4 +142,17 @@ public class AutoCommitSailConnection extends SailConnectionWrapper {
 			}
 		}
 	}
+
+	@Override
+	public void close()
+		throws StoreException
+	{
+		if (isAutoCommit()) {
+			super.close();
+		}
+		else {
+			rollback();
+			super.close();
+		}
+	}
 }

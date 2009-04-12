@@ -174,9 +174,17 @@ public class LocalRepositoryManager extends RepositoryManager {
 		if (repConfig != null) {
 			repConfig.validate();
 
+			boolean created = false;
 			repository = createRepositoryStack(repConfig.getRepositoryImplConfig());
-			repository.setDataDir(getRepositoryDir(id));
-			repository.initialize();
+			try {
+				repository.setDataDir(getRepositoryDir(id));
+				repository.initialize();
+				created = true;
+			} finally {
+				if (!created && repository != null) {
+					repository.shutDown();
+				}
+			}
 		}
 
 		return repository;
