@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-root-pom</artifactId>
-		<version>2</version>
+		<version>3</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -34,6 +34,9 @@
 	</modules>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
 		<openrdf.sesame.version>2.3.0-SNAPSHOT</openrdf.sesame.version>
 		<aduna.appbase.version>3.6.0</aduna.appbase.version>
 		<slf4j.version>1.5.6</slf4j.version>
@@ -502,7 +505,6 @@
 		</plugins>
 	</reporting>
 
-
 <!--
 	<pluginRepositories>
 		<pluginRepository>
@@ -522,6 +524,7 @@
 	</scm>
 
 	<repositories>
+		<!-- duplicates info from aduna-opensource-root-pom to bootstrap the discovery process -->
 		<repository>
 			<releases>
 				<enabled>true</enabled>
@@ -532,17 +535,6 @@
 			<id>aduna-opensource.releases</id>
 			<name>Aduna Open Source - Maven releases</name>
 			<url>http://repo.aduna-software.org/maven2/releases</url>
-		</repository>
-		<repository>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<id>aduna-opensource.snapshots</id>
-			<name>Aduna Open Source - Maven snapshots</name>
-			<url>http://repo.aduna-software.org/maven2/snapshots</url>
 		</repository>
 	</repositories>
 
