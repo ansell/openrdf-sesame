@@ -35,19 +35,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>edu.lehigh.swat.bench</groupId>
-			<artifactId>uba</artifactId>
-			<version>1.7</version>
-		</dependency>
-
-		<dependency>
-			<groupId>edu.lehigh.swat.bench</groupId>
-
-			<artifactId>ubt</artifactId>
-			<version>1.1</version>
-		</dependency>
-
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>compile</scope>
