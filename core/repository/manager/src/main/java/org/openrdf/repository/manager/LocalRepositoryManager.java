@@ -168,40 +168,38 @@ public class LocalRepositoryManager extends RepositoryManager {
 	protected Repository createRepository(String id)
 		throws StoreConfigException, StoreException
 	{
-		Repository repository = null;
+		Model config = getRepositoryConfig(id);
 
-		RepositoryConfig repConfig = parse(getRepositoryConfig(id));
-		if (repConfig != null) {
+		if (config != null) {
+			RepositoryConfig repConfig = parse(config);
 			repConfig.validate();
 
-			boolean created = false;
-			repository = createRepositoryStack(repConfig.getRepositoryImplConfig());
+			Repository repository = createRepositoryStack(repConfig.getRepositoryImplConfig());
 			try {
 				repository.setDataDir(getRepositoryDir(id));
 				repository.initialize();
-				created = true;
-			} finally {
-				if (!created && repository != null) {
-					repository.shutDown();
-				}
+				return repository;
+			}
+			catch (StoreException e) {
+				repository.shutDown();
+				throw e;
+			}
+			catch (RuntimeException e) {
+				repository.shutDown();
+				throw e;
 			}
 		}
 
-		return repository;
+		return null;
 	}
 
 	/**
 	 * Creates the stack of Repository objects for the repository represented by
-	 * the specified <tt>repositoryImplNode</tt>.
+	 * the supplied configuration.
 	 * 
-	 * @param con
-	 *        A connection to the repository containing the repository
-	 *        configuration.
-	 * @param repositoryImplNode
-	 *        The node representing the to-be-created repository in the
-	 *        configuration.
-	 * @return The created repository, or <tt>null</tt> if no such repository
-	 *         exists.
+	 * @param config
+	 *        The repository configuration.
+	 * @return The created repository.
 	 * @throws StoreConfigException
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
@@ -245,8 +243,6 @@ public class LocalRepositoryManager extends RepositoryManager {
 	private RepositoryConfig parse(Model config)
 		throws StoreConfigException
 	{
-		if (config == null)
-			return null;
 		Set<Resource> repositoryNodes = config.filter(null, RDF.TYPE, REPOSITORY).subjects();
 
 		if (repositoryNodes.isEmpty()) {
@@ -267,12 +263,15 @@ public class LocalRepositoryManager extends RepositoryManager {
 	public RepositoryInfo getRepositoryInfo(String id)
 		throws StoreConfigException
 	{
-		RepositoryConfig config;
+		RepositoryConfig config = null;
 		if (id.equals(SystemRepository.ID)) {
 			config = new RepositoryConfig(id, new SystemRepositoryConfig());
 		}
 		else {
-			config = parse(getRepositoryConfig(id));
+			Model model = getRepositoryConfig(id);
+			if (model != null) {
+				config = parse(model);
+			}
 		}
 
 		RepositoryInfo repInfo = null;
