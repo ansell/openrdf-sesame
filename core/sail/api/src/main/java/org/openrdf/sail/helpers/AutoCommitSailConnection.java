@@ -147,12 +147,10 @@ public class AutoCommitSailConnection extends SailConnectionWrapper {
 	public void close()
 		throws StoreException
 	{
-		if (isAutoCommit()) {
-			super.close();
-		}
-		else {
+		if (!isAutoCommit()) {
 			rollback();
-			super.close();
 		}
+
+		super.close();
 	}
 }
