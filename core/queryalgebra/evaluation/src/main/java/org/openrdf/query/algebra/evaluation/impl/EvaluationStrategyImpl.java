@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -167,6 +167,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof EmptySet) {
 			return evaluate((EmptySet)expr, bindings);
+		}
+		else if (expr instanceof ExternalSet) {
+			return evaluate((ExternalSet)expr, bindings);
 		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
@@ -611,6 +614,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws QueryEvaluationException
 	{
 		return new EmptyIteration<BindingSet, QueryEvaluationException>();
+	}
+
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(ExternalSet external, BindingSet bindings)
+		throws QueryEvaluationException
+	{
+		return external.evaluate(bindings);
 	}
 
 	public Value evaluate(ValueExpr expr, BindingSet bindings)
