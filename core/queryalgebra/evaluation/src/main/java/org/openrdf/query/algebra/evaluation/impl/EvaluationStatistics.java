@@ -1,6 +1,6 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2006-2008.
- * Copyright James Leigh (c) 2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2006-2009.
+ * Copyright James Leigh (c) 2006-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -123,7 +123,16 @@ public class EvaluationStatistics {
 
 		@Override
 		protected void meetNode(QueryModelNode node) {
-			throw new IllegalArgumentException("Unhandled node type: " + node.getClass());
+			if (node instanceof ExternalSet) {
+				meetExternalSet((ExternalSet)node);
+			}
+			else {
+				throw new IllegalArgumentException("Unhandled node type: " + node.getClass());
+			}
+		}
+
+		protected void meetExternalSet(ExternalSet node) {
+			cardinality = node.cardinality();
 		}
 	}
 }
