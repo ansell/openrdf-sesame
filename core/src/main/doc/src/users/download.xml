@@ -45,7 +45,7 @@
 		Sesame's source code is available from our Subversion (SVN) repository:
 		<ulink url="http://repo.aduna-software.org/svn/org.openrdf/sesame/"/>.
 		There is an SVN Web Viewer available as well at
-		<ulink url="http://repo.aduna-software.org/viewvc/org.openrdf/sesame/"/>.
+		<ulink url="http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/"/>.
 		Source code for each release can be found in the <filename>tags</filename>
 		directory, the development version of the code is in the
 		<filename>trunk</filename> directory.
