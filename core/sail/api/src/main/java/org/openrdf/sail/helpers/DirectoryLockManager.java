@@ -223,7 +223,12 @@ public class DirectoryLockManager implements LockManager {
 
 			public void release() {
 				active = false;
-				Runtime.getRuntime().removeShutdownHook(hook);
+				try {
+					Runtime.getRuntime().removeShutdownHook(hook);
+				}
+				catch (IllegalStateException e) {
+					// already shutting down
+				}
 				delete();
 			}
 
@@ -231,6 +236,9 @@ public class DirectoryLockManager implements LockManager {
 				try {
 					fileLock.release();
 					raf.close();
+				}
+				catch (ClosedChannelException e) {
+					// already closed by jvm
 				}
 				catch (IOException e) {
 					logger.warn(e.toString(), e);
