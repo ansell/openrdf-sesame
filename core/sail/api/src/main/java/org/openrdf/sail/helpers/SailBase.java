@@ -112,6 +112,14 @@ public abstract class SailBase implements Sail {
 		return connection;
 	}
 
+	public String toString() {
+		if (dataDir == null) {
+			return super.toString();
+		} else {
+			return dataDir.toString();
+		}
+	}
+
 	/**
 	 * returns a store-specific SailConnection object.
 	 * 

@@ -81,4 +81,8 @@ public class RepositoryWrapper implements DelegatingRepository {
 	public ValueFactory getValueFactory() {
 		return getDelegate().getValueFactory();
 	}
+
+	public String toString() {
+		return getDelegate().toString();
+	}
 }
