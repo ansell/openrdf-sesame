@@ -140,4 +140,8 @@ public class SailRepository implements Repository {
 			throw new RepositoryException(e);
 		}
 	}
+
+	public String toString() {
+		return sail.toString();
+	}
 }
