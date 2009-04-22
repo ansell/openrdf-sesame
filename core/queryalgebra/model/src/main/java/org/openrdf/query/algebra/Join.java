@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -35,6 +35,13 @@ public class Join extends BinaryTupleOperator {
 		Set<String> bindingNames = new LinkedHashSet<String>(16);
 		bindingNames.addAll(getLeftArg().getBindingNames());
 		bindingNames.addAll(getRightArg().getBindingNames());
+		return bindingNames;
+	}
+	
+	public Set<String> getAssuredBindingNames() {
+		Set<String> bindingNames = new LinkedHashSet<String>(16);
+		bindingNames.addAll(getLeftArg().getAssuredBindingNames());
+		bindingNames.addAll(getRightArg().getAssuredBindingNames());
 		return bindingNames;
 	}
 

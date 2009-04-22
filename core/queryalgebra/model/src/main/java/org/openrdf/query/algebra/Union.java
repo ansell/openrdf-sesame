@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -41,6 +41,13 @@ public class Union extends BinaryTupleOperator {
 		Set<String> bindingNames = new LinkedHashSet<String>(16);
 		bindingNames.addAll(getLeftArg().getBindingNames());
 		bindingNames.addAll(getRightArg().getBindingNames());
+		return bindingNames;
+	}
+
+	public Set<String> getAssuredBindingNames() {
+		Set<String> bindingNames = new LinkedHashSet<String>(16);
+		bindingNames.addAll(getLeftArg().getAssuredBindingNames());
+		bindingNames.retainAll(getRightArg().getAssuredBindingNames());
 		return bindingNames;
 	}
 

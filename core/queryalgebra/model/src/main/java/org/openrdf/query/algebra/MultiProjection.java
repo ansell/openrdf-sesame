@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -78,6 +78,23 @@ public class MultiProjection extends UnaryTupleOperator {
 		return bindingNames;
 	}
 
+	@Override
+	public Set<String> getAssuredBindingNames() {
+		Set<String> bindingNames = new HashSet<String>();
+
+		if (projections.size() >= 1) {
+			Set<String> assuredSourceNames = getArg().getAssuredBindingNames();
+
+			bindingNames.addAll(projections.get(0).getTargetNamesFor(assuredSourceNames));
+
+			for (int i = 1; i < projections.size(); i++) {
+				bindingNames.retainAll(projections.get(i).getTargetNamesFor(assuredSourceNames));
+			}
+		}
+
+		return bindingNames;
+	}
+
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -96,8 +113,7 @@ public class MultiProjection extends UnaryTupleOperator {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		int index = projections.indexOf(current);
 		if (index >= 0) {
 			projections.set(index, (ProjectionElemList)replacement);

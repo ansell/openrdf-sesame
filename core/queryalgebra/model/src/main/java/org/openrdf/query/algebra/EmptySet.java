@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,6 +14,10 @@ import java.util.Set;
 public class EmptySet extends QueryModelNodeBase implements TupleExpr {
 
 	public Set<String> getBindingNames() {
+		return getAssuredBindingNames();
+	}
+
+	public Set<String> getAssuredBindingNames() {
 		return Collections.emptySet();
 	}
 

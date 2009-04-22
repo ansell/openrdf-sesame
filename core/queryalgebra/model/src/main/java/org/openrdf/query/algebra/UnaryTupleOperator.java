@@ -68,6 +68,10 @@ public abstract class UnaryTupleOperator extends QueryModelNodeBase implements T
 		return getArg().getBindingNames();
 	}
 
+	public Set<String> getAssuredBindingNames() {
+		return getArg().getAssuredBindingNames();
+	}
+
 	@Override
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
 		throws X

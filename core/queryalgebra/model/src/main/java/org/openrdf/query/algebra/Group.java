@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -100,6 +100,16 @@ public class Group extends UnaryTupleOperator {
 		return bindingNames;
 	}
 
+	@Override
+	public Set<String> getAssuredBindingNames() {
+		Set<String> bindingNames = new LinkedHashSet<String>();
+
+		bindingNames.addAll(getGroupBindingNames());
+		bindingNames.retainAll(getArg().getAssuredBindingNames());
+
+		return bindingNames;
+	}
+
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -118,8 +128,7 @@ public class Group extends UnaryTupleOperator {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		int index = groupElements.indexOf(current);
 		if (index >= 0) {
 			groupElements.set(index, (GroupElem)replacement);

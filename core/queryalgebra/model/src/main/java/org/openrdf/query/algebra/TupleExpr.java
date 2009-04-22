@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -19,6 +19,14 @@ public interface TupleExpr extends QueryModelNode {
 	 * @return A set of binding names.
 	 */
 	public Set<String> getBindingNames();
+
+	/**
+	 * Gets the names of the bindings that are guaranteed to be present in the
+	 * results produced by this tuple expression.
+	 * 
+	 * @return A set of binding names.
+	 */
+	public Set<String> getAssuredBindingNames();
 
 	public TupleExpr clone();
 }

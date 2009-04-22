@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -160,6 +160,10 @@ public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 	}
 
 	public Set<String> getBindingNames() {
+		return getAssuredBindingNames();
+	}
+	
+	public Set<String> getAssuredBindingNames() {
 		Set<String> bindingNames = new HashSet<String>(8);
 
 		if (subjectVar != null) {
