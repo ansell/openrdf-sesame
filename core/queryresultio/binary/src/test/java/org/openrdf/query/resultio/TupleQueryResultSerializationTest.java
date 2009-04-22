@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -19,6 +20,7 @@ import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.result.TupleResult;
 import org.openrdf.result.impl.TupleResultImpl;
@@ -27,14 +29,21 @@ import org.openrdf.store.StoreException;
 
 public class TupleQueryResultSerializationTest extends TestCase {
 
-	public void testBinaryResultFormat()
+	public void testQueryResult()
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
 		UnsupportedQueryResultFormatException, StoreException
 	{
-		testQueryResultFormat(TupleQueryResultFormat.BINARY);
+		testQueryResult(TupleQueryResultFormat.BINARY);
 	}
 
-	private void testQueryResultFormat(TupleQueryResultFormat format)
+	public void testSingletonQueryResult()
+		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
+		UnsupportedQueryResultFormatException, StoreException
+	{
+		testSingletonQueryResult(TupleQueryResultFormat.BINARY);
+	}
+
+	private void testQueryResult(TupleQueryResultFormat format)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
 		UnsupportedQueryResultFormatException, StoreException
 	{
@@ -65,8 +74,32 @@ public class TupleQueryResultSerializationTest extends TestCase {
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2);
 
-		TupleResultImpl result = new TupleResultImpl(bindingNames, bindingSetList);
+		return new TupleResultImpl(bindingNames, bindingSetList);
+	}
 
-		return result;
+	private void testSingletonQueryResult(TupleQueryResultFormat format)
+		throws StoreException, TupleQueryResultHandlerException, UnsupportedQueryResultFormatException,
+		IOException, QueryResultParseException
+	{
+		TupleResult input = createSingletonQueryResult();
+		TupleResult expected = createSingletonQueryResult();
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		QueryResultIO.write(input, format, out);
+		input.close();
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		TupleResult output = QueryResultIO.parse(in, format);
+
+		assertTrue(QueryResultUtil.equals(expected, output));
+	}
+
+	private TupleResult createSingletonQueryResult() {
+		List<String> bindingNames = Collections.emptyList();
+
+		BindingSet solution = EmptyBindingSet.getInstance();
+		List<? extends BindingSet> bindingSets = Arrays.asList(solution);
+
+		return new TupleResultImpl(bindingNames, bindingSets);
 	}
 }
