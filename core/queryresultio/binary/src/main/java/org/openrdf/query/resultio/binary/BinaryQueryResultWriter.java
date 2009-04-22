@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -7,6 +7,7 @@ package org.openrdf.query.resultio.binary;
 
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.BNODE_RECORD_MARKER;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.DATATYPE_LITERAL_RECORD_MARKER;
+import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.EMPTY_TUPLE_RECORD_MARKER;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.ERROR_RECORD_MARKER;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.FORMAT_VERSION;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.LANG_LITERAL_RECORD_MARKER;
@@ -58,15 +59,15 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 	/**
 	 * The output stream to write the results table to.
 	 */
-	private DataOutputStream out;
+	private final DataOutputStream out;
 
-	private CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
+	private final CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
 
 	/**
 	 * Map containing the namespace IDs (Integer objects) that have been defined
 	 * in the document, stored using the concerning namespace (Strings).
 	 */
-	private Map<String, Integer> namespaceTable = new HashMap<String, Integer>(32);
+	private final Map<String, Integer> namespaceTable = new HashMap<String, Integer>(32);
 
 	private int nextNamespaceID;
 
@@ -79,6 +80,7 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 	 *--------------*/
 
 	public BinaryQueryResultWriter(OutputStream out) {
+		assert out != null : "out must not be null";
 		this.out = new DataOutputStream(out);
 	}
 
@@ -96,16 +98,12 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		// Copy supplied column headers list and make it unmodifiable
 		bindingNames = new ArrayList<String>(bindingNames);
 		this.bindingNames = Collections.unmodifiableList(bindingNames);
-		int columnCount = this.bindingNames.size();
-		if (columnCount < 1) {
-			throw new TupleQueryResultHandlerException("Illegal column count specified: " + columnCount);
-		}
 
 		try {
 			out.write(MAGIC_NUMBER);
 			out.writeInt(FORMAT_VERSION);
 
-			out.writeInt(columnCount);
+			out.writeInt(this.bindingNames.size());
 
 			for (String bindingName : this.bindingNames) {
 				writeString(bindingName);
@@ -136,30 +134,35 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		throws TupleQueryResultHandlerException
 	{
 		try {
-			for (String bindingName : bindingNames) {
-				Value value = bindingSet.getValue(bindingName);
-
-				if (value == null) {
-					writeNull();
-				}
-				else if (value.equals(previousBindings.getValue(bindingName))) {
-					writeRepeat();
-				}
-				else if (value instanceof URI) {
-					writeQName((URI)value);
-				}
-				else if (value instanceof BNode) {
-					writeBNode((BNode)value);
-				}
-				else if (value instanceof Literal) {
-					writeLiteral((Literal)value);
-				}
-				else {
-					throw new TupleQueryResultHandlerException("Unknown Value object type: " + value.getClass());
-				}
+			if (bindingNames.isEmpty()) {
+				writeEmptyTuple();
 			}
+			else {
+				for (String bindingName : bindingNames) {
+					Value value = bindingSet.getValue(bindingName);
 
-			previousBindings = bindingSet;
+					if (value == null) {
+						writeNull();
+					}
+					else if (value.equals(previousBindings.getValue(bindingName))) {
+						writeRepeat();
+					}
+					else if (value instanceof URI) {
+						writeQName((URI)value);
+					}
+					else if (value instanceof BNode) {
+						writeBNode((BNode)value);
+					}
+					else if (value instanceof Literal) {
+						writeLiteral((Literal)value);
+					}
+					else {
+						throw new TupleQueryResultHandlerException("Unknown Value object type: " + value.getClass());
+					}
+				}
+
+				previousBindings = bindingSet;
+			}
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -237,6 +240,12 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		}
 	}
 
+	private void writeEmptyTuple()
+		throws IOException
+	{
+		out.writeByte(EMPTY_TUPLE_RECORD_MARKER);
+	}
+
 	/**
 	 * Writes an error msg to the stream.
 	 * 
@@ -269,7 +278,7 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		out.writeInt(nextNamespaceID);
 		writeString(namespace);
 
-		Integer result = new Integer(nextNamespaceID);
+		Integer result = Integer.valueOf(nextNamespaceID);
 		namespaceTable.put(namespace, result);
 
 		nextNamespaceID++;

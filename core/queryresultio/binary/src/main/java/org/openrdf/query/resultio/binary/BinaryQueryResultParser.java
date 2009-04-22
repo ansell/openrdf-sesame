@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -43,6 +43,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
@@ -62,7 +63,7 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 
 	private int formatVersion;
 
-	private CharsetDecoder charsetDecoder = Charset.forName("UTF-8").newDecoder();
+	private final CharsetDecoder charsetDecoder = Charset.forName("UTF-8").newDecoder();
 
 	private String[] namespaceArray = new String[32];
 
@@ -112,22 +113,21 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 			throw new QueryResultParseException("File does not contain a binary RDF table result");
 		}
 
-		// Check format version (parser is backward-compatible with version 1 and
-		// version 2)
+		// Check format version (parser is backward-compatible with version 1, 2
+		// and 3)
 		formatVersion = this.in.readInt();
-		if (formatVersion != FORMAT_VERSION && formatVersion != 1 && formatVersion != 2) {
+		if (formatVersion > FORMAT_VERSION || formatVersion < 1) {
 			throw new QueryResultParseException("Incompatible format version: " + formatVersion);
 		}
 
 		if (formatVersion == 2) {
-			// read format version 2 FLAG byte (ordered and distinct flags) and
-			// ignore them
+			// read FLAG byte (ordered and distinct flags) and ignore it
 			this.in.readByte();
 		}
 
 		// Read column headers
 		int columnCount = this.in.readInt();
-		if (columnCount < 1) {
+		if (columnCount < 0) {
 			throw new QueryResultParseException("Illegal column count specified: " + columnCount);
 		}
 
@@ -143,14 +143,19 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 		List<Value> currentTuple = new ArrayList<Value>(columnCount);
 		List<Value> previousTuple = Collections.nCopies(columnCount, (Value)null);
 
-		int recordTypeMarker = this.in.readByte();
+		int recordTypeMarker;
 
-		while (recordTypeMarker != TABLE_END_RECORD_MARKER) {
+		while ((recordTypeMarker = this.in.readByte()) != TABLE_END_RECORD_MARKER) {
 			if (recordTypeMarker == ERROR_RECORD_MARKER) {
 				processError();
 			}
 			else if (recordTypeMarker == NAMESPACE_RECORD_MARKER) {
 				processNamespace();
+			}
+			else if (recordTypeMarker == BinaryQueryResultConstants.EMPTY_TUPLE_RECORD_MARKER) {
+				assert columnCount == 0;
+				assert currentTuple.isEmpty();
+				handler.handleSolution(EmptyBindingSet.getInstance());
 			}
 			else {
 				Value value = null;
@@ -187,8 +192,6 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 					handler.handleSolution(new ListBindingSet(columnHeaders, previousTuple));
 				}
 			}
-
-			recordTypeMarker = this.in.readByte();
 		}
 
 		handler.endQueryResult();
