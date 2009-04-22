@@ -26,6 +26,10 @@ public abstract class ExternalSet extends QueryModelNodeBase implements TupleExp
 		return Collections.emptySet();
 	}
 
+	public Set<String> getAssuredBindingNames() {
+		return Collections.emptySet();
+	}
+
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{

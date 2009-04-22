@@ -131,6 +131,11 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 		}
 		return new HashSet<String>(bindingVars.keySet());
 	}
+	
+	public Set<String> getAssuredBindingNames() {
+		// FIXME: implement this properly
+		return Collections.emptySet();
+	}
 
 	public void setBindingVars(Map<String, String> bindingVars) {
 		this.bindingVars = bindingVars;

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -65,6 +65,10 @@ public class LeftJoin extends BinaryTupleOperator {
 		return bindingNames;
 	}
 
+	public Set<String> getAssuredBindingNames() {
+		return getLeftArg().getAssuredBindingNames();
+	}
+
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -83,8 +87,7 @@ public class LeftJoin extends BinaryTupleOperator {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (condition == current) {
 			setCondition((ValueExpr)replacement);
 		}

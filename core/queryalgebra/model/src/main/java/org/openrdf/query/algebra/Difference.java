@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -39,6 +39,10 @@ public class Difference extends BinaryTupleOperator {
 
 	public Set<String> getBindingNames() {
 		return getLeftArg().getBindingNames();
+	}
+
+	public Set<String> getAssuredBindingNames() {
+		return getLeftArg().getAssuredBindingNames();
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
