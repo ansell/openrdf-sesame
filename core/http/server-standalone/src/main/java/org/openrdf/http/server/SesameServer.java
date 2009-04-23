@@ -68,14 +68,21 @@ public class SesameServer {
 			String[] otherArgs = commandLine.getArgs();
 
 			if (dirString == null || otherArgs.length > 1) {
+				System.out.println("Please specify a data directory");
 				printUsage(options);
-				System.exit(1);
+				System.exit(2);
 			}
 
 			String portString = commandLine.getOptionValue(portOption.getOpt());
 			int port = DEFAULT_PORT;
 			if (portString != null) {
-				port = Integer.parseInt(portString);
+				try {
+					port = Integer.parseInt(portString);
+				}
+				catch (NumberFormatException e) {
+					System.out.println("Invalid port number '" + portString + "'");
+					System.exit(3);
+				}
 			}
 
 			SesameServer server = new SesameServer(new File(dirString), port);
