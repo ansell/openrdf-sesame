@@ -11,7 +11,6 @@ import static info.aduna.net.http.RequestHeaders.IF_MATCH;
 import static info.aduna.net.http.RequestHeaders.IF_MODIFIED_SINCE;
 import static info.aduna.net.http.RequestHeaders.IF_UNMODIFIED_SINCE;
 import static info.aduna.net.http.ResponseHeaders.ETAG;
-import static info.aduna.net.http.ResponseHeaders.SERVER;
 import static info.aduna.net.http.ResponseHeaders.VARY;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_MODIFIED;
 import static javax.servlet.http.HttpServletResponse.SC_PRECONDITION_FAILED;
@@ -89,10 +88,8 @@ public class ConditionalRequestInterceptor implements HandlerInterceptor {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-	
-	private final RepositoryManager repositoryManager;
 
-	private String serverName;
+	private final RepositoryManager repositoryManager;
 
 	private int maxCacheAge;
 
@@ -109,10 +106,6 @@ public class ConditionalRequestInterceptor implements HandlerInterceptor {
 	/*---------*
 	 * Methods *
 	 *---------*/
-
-	public void setServerName(String serverName) {
-		this.serverName = serverName;
-	}
 
 	public void setMaxCacheAge(int maxCacheAge) {
 		this.maxCacheAge = maxCacheAge;
@@ -145,9 +138,7 @@ public class ConditionalRequestInterceptor implements HandlerInterceptor {
 		long lastModified = lastModified(request); // update
 		String eTag = eTag(request); // update
 		response.setDateHeader(DATE, now);
-		if (serverName != null) {
-			response.setHeader(SERVER, serverName);
-		}
+
 		if (isSafe(request) && eTag != null && 0 < lastModified && lastModified < Long.MAX_VALUE) {
 			response.setDateHeader(LAST_MODIFIED, lastModified);
 			response.setHeader(ETAG, eTag);

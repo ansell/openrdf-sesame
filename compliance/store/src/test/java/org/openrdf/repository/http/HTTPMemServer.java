@@ -1,11 +1,14 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.repository.http;
 
+import java.io.File;
 import java.io.IOException;
+
+import info.aduna.io.FileUtil;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.server.SesameServer;
@@ -27,23 +30,41 @@ public class HTTPMemServer {
 
 	public static String SERVER_URL = "http://localhost:" + DEFAULT_PORT;
 
-	public static String REPOSITORY_URL = Protocol.getRepositoryLocation(HTTPMemServer.SERVER_URL, TEST_REPO_ID);
+	public static String REPOSITORY_URL = Protocol.getRepositoryLocation(HTTPMemServer.SERVER_URL,
+			TEST_REPO_ID);
 
 	public static String INFERENCE_REPOSITORY_URL = Protocol.getRepositoryLocation(HTTPMemServer.SERVER_URL,
 			TEST_INFERENCE_REPO_ID);
 
-	private SesameServer server;
+	private final SesameServer server;
 
-	public HTTPMemServer() throws IOException, StoreConfigException {
-		server = new SesameServer(DEFAULT_PORT);
+	private final File dataDir;
+
+	public HTTPMemServer()
+		throws StoreConfigException, IOException
+	{
+		dataDir = FileUtil.createTempDir("sesame-test");
+		server = new SesameServer(dataDir, DEFAULT_PORT);
 	}
 
 	public void start()
 		throws Exception
 	{
 		server.start();
-
 		createTestRepositories();
+	}
+
+	public void stop()
+		throws Exception
+	{
+		server.stop();
+
+		try {
+			FileUtil.deleteDir(dataDir);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void setMaxCacheAge(int maxCacheAge) {
@@ -52,12 +73,6 @@ public class HTTPMemServer {
 
 	public RepositoryManager getRepositoryManager() {
 		return server.getRepositoryManager();
-	}
-
-	public void stop()
-		throws Exception
-	{
-		server.stop();
 	}
 
 	/**

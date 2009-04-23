@@ -52,16 +52,12 @@ import org.openrdf.repository.manager.RepositoryManager;
  */
 public class SesameServlet implements Servlet {
 
-	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-http-server",
-			"devel");
-
-	private static final String APP_NAME = "OpenRDF Sesame server";
+	public static String getServerName() {
+		return "OpenRDF Sesame server "
+				+ MavenUtil.loadVersion("org.openrdf.sesame", "sesame-http-server", "devel");
+	}
 
 	private static final String APPLICATION_CONFIG_CLASS = "contextClass";
-
-	public static String getDefaultServerName() {
-		return APP_NAME + "/" + VERSION;
-	}
 
 	private final Logger logger = LoggerFactory.getLogger(SesameServlet.class);
 
@@ -71,30 +67,8 @@ public class SesameServlet implements Servlet {
 
 	private int maxCacheAge;
 
-	private String name = getDefaultServerName();
-
 	public SesameServlet(RepositoryManager manager) {
 		this.manager = manager;
-	}
-
-	public String getServerName() {
-		return name;
-	}
-
-	public void setServerName(String name) {
-		if (name == null) {
-			this.name = null;
-		}
-		else {
-			name = name.trim();
-
-			if (name.length() == 0) {
-				this.name = null;
-			}
-			else {
-				this.name = name;
-			}
-		}
 	}
 
 	public int getMaxCacheAge() {
@@ -117,7 +91,7 @@ public class SesameServlet implements Servlet {
 	}
 
 	public String getServletInfo() {
-		return getDefaultServerName();
+		return getServerName();
 	}
 
 	public void init(ServletConfig config)
@@ -140,11 +114,9 @@ public class SesameServlet implements Servlet {
 			}
 		}
 		synchronized (SesameApplication.class) {
-			SesameApplication.serverName = name;
 			SesameApplication.staticManager = manager;
 			SesameApplication.maxCacheAge = maxCacheAge;
 			delegate.init(new SesameServletConfig(config));
-			SesameApplication.serverName = null;
 			SesameApplication.staticManager = null;
 			SesameApplication.maxCacheAge = 0;
 		}
@@ -198,8 +170,6 @@ public class SesameServlet implements Servlet {
 
 	public static class SesameApplication extends StaticWebApplicationContext {
 
-		static String serverName;
-
 		static RepositoryManager staticManager;
 
 		static int maxCacheAge;
@@ -232,7 +202,6 @@ public class SesameServlet implements Servlet {
 			// Interceptors
 			ConditionalRequestInterceptor conditionalReqInterceptor = new ConditionalRequestInterceptor(
 					staticManager);
-			conditionalReqInterceptor.setServerName(serverName);
 			conditionalReqInterceptor.setMaxCacheAge(maxCacheAge);
 			registerSingleton(conditionalReqInterceptor);
 
