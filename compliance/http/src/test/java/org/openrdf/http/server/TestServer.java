@@ -1,11 +1,14 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.http.server;
 
+import java.io.File;
 import java.io.IOException;
+
+import info.aduna.io.FileUtil;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.config.RepositoryConfig;
@@ -36,27 +39,38 @@ public class TestServer {
 			TEST_INFERENCE_REPO_ID);
 
 	private SesameServer server;
+	
+	private final File dataDir;
 
-	public TestServer() throws StoreConfigException, IOException {
-		server = new SesameServer(DEFAULT_PORT);
+	public TestServer()
+		throws StoreConfigException, IOException
+	{
+		dataDir = FileUtil.createTempDir("sesame-test");
+		server = new SesameServer(dataDir, DEFAULT_PORT);
 	}
 
 	public void start()
 		throws Exception
 	{
 		server.start();
-
 		createTestRepositories();
-	}
-
-	public void setMaxCacheAge(int maxCacheAge) {
-		server.setMaxCacheAge(maxCacheAge);
 	}
 
 	public void stop()
 		throws Exception
 	{
 		server.stop();
+
+		try {
+			FileUtil.deleteDir(dataDir);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void setMaxCacheAge(int maxCacheAge) {
+		server.setMaxCacheAge(maxCacheAge);
 	}
 
 	/**

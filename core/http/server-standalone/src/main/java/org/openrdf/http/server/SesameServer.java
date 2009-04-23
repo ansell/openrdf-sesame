@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -18,8 +18,6 @@ import org.apache.commons.cli.PosixParser;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
-
-import info.aduna.io.FileUtil;
 
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RepositoryManager;
@@ -40,8 +38,6 @@ public class SesameServer {
 
 		Option helpOption = new Option("h", "help", false, "print this help");
 		Option versionOption = new Option("v", "version", false, "print version information");
-		Option nameOption = new Option("n", "name", true, "Server name");
-		nameOption.setOptionalArg(true);
 		Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
 		Option portOption = new Option("p", "port", true, "port to listen on");
 		Option maxAgeOption = new Option("c", "maxCacheAge", true,
@@ -49,7 +45,6 @@ public class SesameServer {
 
 		options.addOption(helpOption);
 		options.addOption(versionOption);
-		options.addOption(nameOption);
 		options.addOption(dirOption);
 		options.addOption(portOption);
 		options.addOption(maxAgeOption);
@@ -65,14 +60,14 @@ public class SesameServer {
 			}
 
 			if (commandLine.hasOption(versionOption.getOpt())) {
-				System.out.println(SesameServlet.getDefaultServerName());
+				System.out.println(SesameServlet.getServerName());
 				System.exit(0);
 			}
 
-			String dir = commandLine.getOptionValue(dirOption.getOpt());
+			String dirString = commandLine.getOptionValue(dirOption.getOpt());
 			String[] otherArgs = commandLine.getArgs();
 
-			if (otherArgs.length > 1) {
+			if (dirString == null || otherArgs.length > 1) {
 				printUsage(options);
 				System.exit(1);
 			}
@@ -83,21 +78,11 @@ public class SesameServer {
 				port = Integer.parseInt(portString);
 			}
 
-			SesameServer server;
-			if (dir != null) {
-				server = new SesameServer(port, new File(dir));
-			}
-			else {
-				server = new SesameServer(port);
-			}
+			SesameServer server = new SesameServer(new File(dirString), port);
 
 			String ageString = commandLine.getOptionValue(maxAgeOption.getOpt());
 			if (ageString != null) {
 				server.setMaxCacheAge(Integer.parseInt(ageString));
-			}
-
-			if (commandLine.hasOption(nameOption.getOpt())) {
-				server.setServerName(commandLine.getOptionValue(nameOption.getOpt()));
 			}
 
 			server.start();
@@ -122,81 +107,45 @@ public class SesameServer {
 
 	public static final int DEFAULT_PORT = 8080;
 
-	private final File dataDir;
-
 	private final Server jetty;
 
-	private final RepositoryManager manager;
+	private final LocalRepositoryManager manager;
 
 	private final SesameServlet servlet;
 
-	public SesameServer()
-		throws IOException, StoreConfigException
-	{
-		this(DEFAULT_PORT, null);
-	}
-
-	public SesameServer(int port)
-		throws IOException, StoreConfigException
-	{
-		this(port, null);
-	}
-
+	/**
+	 * Creates a new Sesame server that listens to the default port number (
+	 * <tt>8080</tt>).
+	 * 
+	 * @param dataDir
+	 *        The data directory for the server.
+	 * @throws IOException
+	 * @throws StoreConfigException
+	 */
 	public SesameServer(File dataDir)
 		throws IOException, StoreConfigException
 	{
-		this(DEFAULT_PORT, dataDir);
+		this(dataDir, DEFAULT_PORT);
 	}
 
-	public SesameServer(int port, File dir)
+	public SesameServer(File dataDir, int port)
 		throws IOException, StoreConfigException
 	{
-		this.dataDir = dir != null ? dir : createTempDir();
+		assert dataDir != null : "dataDir must not be null";
+
 		manager = new LocalRepositoryManager(dataDir);
 		manager.initialize();
-		jetty = new Server(port);
+
 		servlet = new SesameServlet(manager);
-		servlet.setServerName(servlet.getServerName() + " Jetty/" + Server.getVersion());
+
+		jetty = new Server(port);
 		Context root = new Context(jetty, "/");
 		root.setMaxFormContentSize(0);
 		root.addServlet(new ServletHolder(servlet), "/*");
 	}
 
-	public String getServerName() {
-		return servlet.getServerName();
-	}
-
-	public void setServerName(String name) {
-		if (name == null || name.trim().length() == 0) {
-			jetty.setSendServerVersion(false);
-			servlet.setServerName(null);
-		}
-		else {
-			servlet.setServerName(name);
-		}
-	}
-
 	public File getDataDir() {
-		return dataDir;
-	}
-
-	private File createTempDir()
-		throws IOException
-	{
-		final File dir = FileUtil.createTempDir("sesame");
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-
-			@Override
-			public void run() {
-				try {
-					FileUtil.deleteDir(dir);
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		});
-		return dir;
+		return manager.getBaseDir();
 	}
 
 	public void setMaxCacheAge(int maxCacheAge) {
