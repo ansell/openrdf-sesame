@@ -42,22 +42,36 @@
 
 	<files>
 		<file>
-			<source>src/main/dist/bin/server.bat</source>
+			<source>src/main/dist/bin/start-server.bat</source>
 			<outputDirectory>bin</outputDirectory>
 			<lineEnding>dos</lineEnding>
 			<filtered>true</filtered>
 		</file>
 		<file>
-			<source>src/main/dist/bin/server.sh</source>
+			<source>src/main/dist/bin/stop-server.bat</source>
 			<outputDirectory>bin</outputDirectory>
-			<fileMode>755</fileMode>
-			<lineEnding>unix</lineEnding>
+			<lineEnding>dos</lineEnding>
 			<filtered>true</filtered>
 		</file>
 		<file>
 			<source>src/main/dist/bin/console.bat</source>
 			<outputDirectory>bin</outputDirectory>
 			<lineEnding>dos</lineEnding>
+			<filtered>true</filtered>
+		</file>
+
+		<file>
+			<source>src/main/dist/bin/start-server.sh</source>
+			<outputDirectory>bin</outputDirectory>
+			<fileMode>755</fileMode>
+			<lineEnding>unix</lineEnding>
+			<filtered>true</filtered>
+		</file>
+		<file>
+			<source>src/main/dist/bin/stop-server.sh</source>
+			<outputDirectory>bin</outputDirectory>
+			<fileMode>755</fileMode>
+			<lineEnding>unix</lineEnding>
 			<filtered>true</filtered>
 		</file>
 		<file>
