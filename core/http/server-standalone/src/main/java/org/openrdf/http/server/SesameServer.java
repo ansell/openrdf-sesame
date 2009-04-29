@@ -7,17 +7,18 @@ package org.openrdf.http.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RepositoryManager;
@@ -27,98 +28,35 @@ import org.openrdf.store.StoreConfigException;
  * Stand alone server for Sesame.
  * 
  * @author James Leigh
+ * @author Arjohn Kampman
  */
 public class SesameServer {
 
+	@Deprecated
 	public static void main(String[] args)
 		throws Exception
 	{
-		// Parse command line options
-		Options options = new Options();
-
-		Option helpOption = new Option("h", "help", false, "print this help");
-		Option versionOption = new Option("v", "version", false, "print version information");
-		Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
-		Option portOption = new Option("p", "port", true, "port to listen on");
-		Option maxAgeOption = new Option("c", "maxCacheAge", true,
-				"How many seconds clients can use their cache before validating it with the server");
-
-		options.addOption(helpOption);
-		options.addOption(versionOption);
-		options.addOption(dirOption);
-		options.addOption(portOption);
-		options.addOption(maxAgeOption);
-
-		CommandLineParser argsParser = new PosixParser();
-
-		try {
-			CommandLine commandLine = argsParser.parse(options, args);
-
-			if (commandLine.hasOption(helpOption.getOpt())) {
-				printUsage(options);
-				System.exit(0);
-			}
-
-			if (commandLine.hasOption(versionOption.getOpt())) {
-				System.out.println(SesameServlet.getServerName());
-				System.exit(0);
-			}
-
-			String dirString = commandLine.getOptionValue(dirOption.getOpt());
-			String[] otherArgs = commandLine.getArgs();
-
-			if (dirString == null || otherArgs.length > 1) {
-				System.out.println("Please specify a data directory");
-				printUsage(options);
-				System.exit(2);
-			}
-
-			String portString = commandLine.getOptionValue(portOption.getOpt());
-			int port = DEFAULT_PORT;
-			if (portString != null) {
-				try {
-					port = Integer.parseInt(portString);
-				}
-				catch (NumberFormatException e) {
-					System.out.println("Invalid port number '" + portString + "'");
-					System.exit(3);
-				}
-			}
-
-			SesameServer server = new SesameServer(new File(dirString), port);
-
-			String ageString = commandLine.getOptionValue(maxAgeOption.getOpt());
-			if (ageString != null) {
-				server.setMaxCacheAge(Integer.parseInt(ageString));
-			}
-
-			server.start();
-
-			System.out.println("Server listening on port " + port);
-			System.out.println("data dir: " + server.getDataDir());
-		}
-		catch (ParseException e) {
-			System.err.println(e.getMessage());
-			System.exit(1);
-		}
+		System.err.println("Class to start Sesame server has changed, please use org.openrdf.http.server.Start");
+		Start.main(args);
 	}
 
-	private static void printUsage(Options options) {
-		System.out.println("Sesame Server, a standalone RDF server.");
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.setWidth(80);
-		formatter.printHelp("server [OPTION]", options);
-		System.out.println();
-		System.out.println("For bug reports and suggestions, see http://www.openrdf.org/");
-	}
+	private static Random random = new Random(System.currentTimeMillis());
 
 	public static final int DEFAULT_PORT = 8080;
+
+	public static final String SHUTDOWN_PATH = "shutdown";
+	
+	public static final String KEY_PARAM = "key";
+
+	private final Logger logger = LoggerFactory.getLogger(SesameServer.class);
 
 	private final Server jetty;
 
 	private final LocalRepositoryManager manager;
 
 	private final SesameServlet servlet;
+
+	private String shutDownKey;
 
 	/**
 	 * Creates a new Sesame server that listens to the default port number (
@@ -144,11 +82,10 @@ public class SesameServer {
 		manager.initialize();
 
 		servlet = new SesameServlet(manager);
-
 		jetty = new Server(port);
-		Context root = new Context(jetty, "/");
-		root.setMaxFormContentSize(0);
-		root.addServlet(new ServletHolder(servlet), "/*");
+		// jetty.setGracefulShutdown(30 * 1000);
+
+		setShutdownKey(String.valueOf(random.nextLong()));
 	}
 
 	public File getDataDir() {
@@ -159,6 +96,18 @@ public class SesameServer {
 		servlet.setMaxCacheAge(maxCacheAge);
 	}
 
+	public void setShutdownKey(String shutdownKey) {
+		if (shutdownKey == null) {
+			throw new IllegalArgumentException("shutdownKey must not be null");
+		}
+
+		this.shutDownKey = shutdownKey;
+	}
+
+	public String getShutdownKey() {
+		return shutDownKey;
+	}
+
 	public RepositoryManager getRepositoryManager() {
 		return manager;
 	}
@@ -166,6 +115,11 @@ public class SesameServer {
 	public void start()
 		throws Exception
 	{
+		Context root = new Context(jetty, "/");
+		root.setMaxFormContentSize(0);
+		root.addServlet(new ServletHolder(new ShutdownHandler()), "/" + SHUTDOWN_PATH);
+		root.addServlet(new ServletHolder(servlet), "/*");
+
 		jetty.start();
 	}
 
@@ -175,4 +129,39 @@ public class SesameServer {
 		jetty.stop();
 	}
 
+	private class ShutdownHandler extends HttpServlet {
+
+		private static final long serialVersionUID = -4103337674521311088L;
+
+		@Override
+		protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException
+		{
+			String key = req.getParameter(KEY_PARAM);
+			if (getShutdownKey().equals(key)) {
+				resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+				resp.getWriter().close();
+				scheduleShutdown();
+			}
+			else {
+				resp.sendError(HttpServletResponse.SC_FORBIDDEN, "invalid shutdown key");
+			}
+		}
+
+		private void scheduleShutdown() {
+			Thread t = new Thread("Server shut down thread") {
+
+				public void run() {
+					try {
+						SesameServer.this.stop();
+					}
+					catch (Exception e) {
+						logger.error("Failed to stop server", e);
+					}
+				}
+			};
+			t.setDaemon(true);
+			t.start();
+		}
+	}
 }
