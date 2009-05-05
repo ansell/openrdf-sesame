@@ -5,8 +5,6 @@
  */
 package org.openrdf.repository.manager.util;
 
-import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -17,8 +15,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.manager.RepositoryInfo;
@@ -273,8 +269,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	private RepositoryConfig parse(Model config)
 		throws StoreConfigException
 	{
-		Resource repositoryNode = config.filter(null, RDF.TYPE, REPOSITORY).subjects().iterator().next();
-		RepositoryConfig repConfig = RepositoryConfig.create(config, repositoryNode);
+		RepositoryConfig repConfig = RepositoryConfig.create(config);
 		repConfig.validate();
 		return repConfig;
 	}
