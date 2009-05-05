@@ -5,7 +5,6 @@
  */
 package org.openrdf.repository.manager;
 
-import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
 import static org.openrdf.repository.manager.SystemRepository.REPOSITORYID;
 
 import java.io.File;
@@ -27,7 +26,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -172,7 +170,6 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 		if (config != null) {
 			RepositoryConfig repConfig = parse(config);
-			repConfig.validate();
 
 			Repository repository = createRepositoryStack(repConfig.getRepositoryImplConfig());
 			try {
@@ -243,42 +240,37 @@ public class LocalRepositoryManager extends RepositoryManager {
 	private RepositoryConfig parse(Model config)
 		throws StoreConfigException
 	{
-		Set<Resource> repositoryNodes = config.filter(null, RDF.TYPE, REPOSITORY).subjects();
-
-		if (repositoryNodes.isEmpty()) {
-			throw new StoreConfigException("Found no resources of type " + REPOSITORY);
-		}
-		else if (repositoryNodes.size() > 1) {
-			throw new StoreConfigException("Found multiple resources of type " + REPOSITORY);
-		}
-		else {
-			Resource repositoryNode = repositoryNodes.iterator().next();
-			RepositoryConfig repConfig = RepositoryConfig.create(config, repositoryNode);
-			repConfig.validate();
-			return repConfig;
-		}
+		RepositoryConfig repConfig = RepositoryConfig.create(config);
+		repConfig.validate();
+		return repConfig;
 	}
 
 	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
 		throws StoreConfigException
 	{
-		RepositoryConfig config = null;
+		RepositoryInfo repInfo = null;
+
 		if (id.equals(SystemRepository.ID)) {
-			config = new RepositoryConfig(id, new SystemRepositoryConfig());
+			repInfo = new RepositoryInfo(id, SystemRepository.TITLE);
 		}
 		else {
 			Model model = getRepositoryConfig(id);
+
 			if (model != null) {
-				config = parse(model);
+				repInfo = new RepositoryInfo(id);
+
+				try {
+					RepositoryConfig config = parse(model);
+					repInfo.setDescription(config.getTitle());
+				}
+				catch (StoreConfigException e) {
+					logger.warn("Failed to parse configuration for store {}: {})", id, e.getMessage());
+				}
 			}
 		}
 
-		RepositoryInfo repInfo = null;
-		if (config != null) {
-			repInfo = new RepositoryInfo();
-			repInfo.setId(id);
-			repInfo.setDescription(config.getTitle());
+		if (repInfo != null) {
 			try {
 				repInfo.setLocation(getRepositoryDir(id).toURI().toURL());
 			}
