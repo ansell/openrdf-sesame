@@ -9,6 +9,8 @@ import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYIMPL;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYTITLE;
 
+import java.util.Set;
+
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
@@ -135,6 +137,28 @@ public class RepositoryConfig {
 		}
 		catch (ModelException e) {
 			throw new StoreConfigException(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Creates a new <tt>RepositoryConfig</tt> object and initializes it by
+	 * supplying the <tt>model</tt> and <tt>repositoryNode</tt> to its
+	 * {@link #parse(Model, Resource) parse} method.
+	 */
+	public static RepositoryConfig create(Model model)
+		throws StoreConfigException
+	{
+		Set<Resource> repositoryNodes = model.filter(null, RDF.TYPE, REPOSITORY).subjects();
+
+		if (repositoryNodes.isEmpty()) {
+			throw new StoreConfigException("Found no resources of type " + REPOSITORY);
+		}
+		else if (repositoryNodes.size() > 1) {
+			throw new StoreConfigException("Found multiple resources of type " + REPOSITORY);
+		}
+		else {
+			Resource repositoryNode = repositoryNodes.iterator().next();
+			return create(model, repositoryNode);
 		}
 	}
 
