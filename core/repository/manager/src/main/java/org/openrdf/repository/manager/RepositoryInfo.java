@@ -14,6 +14,20 @@ public class RepositoryInfo {
 	private URL location;
 
 	private String description;
+	
+	public RepositoryInfo() {
+	}
+	
+	
+	public RepositoryInfo(String id) {
+		this();
+		setId(id);
+	}
+
+	public RepositoryInfo(String id, String description) {
+		this(id);
+		setDescription(description);
+	}
 
 	public String getId() {
 		return id;
