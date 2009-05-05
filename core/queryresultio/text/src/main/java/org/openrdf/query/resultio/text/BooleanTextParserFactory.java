@@ -20,7 +20,7 @@ public class BooleanTextParserFactory implements BooleanQueryResultParserFactory
 	/**
 	 * Returns {@link BooleanQueryResultFormat#TEXT}.
 	 */
-	public BooleanQueryResultFormat getBooleanQueryResultFormat() {
+	public BooleanQueryResultFormat getFileFormat() {
 		return BooleanQueryResultFormat.TEXT;
 	}
 

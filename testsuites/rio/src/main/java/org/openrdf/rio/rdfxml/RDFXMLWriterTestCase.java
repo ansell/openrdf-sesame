@@ -56,7 +56,7 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 
 		RepositoryConnection con2 = rep2.getConnection();
 
-		con2.add(new StringReader(writer.toString()), "foo:bar", rdfWriterFactory.getRDFFormat());
+		con2.add(new StringReader(writer.toString()), "foo:bar", rdfWriterFactory.getFileFormat());
 		long after = con2.size();
 		con2.close();
 
@@ -94,7 +94,7 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 		RepositoryConnection con2 = rep2.getConnection();
 
 		con2.add(new StringReader(writer.toString()), ciaFacts.toExternalForm(),
-				rdfWriterFactory.getRDFFormat());
+				rdfWriterFactory.getFileFormat());
 		long after = con2.size();
 		con2.close();
 

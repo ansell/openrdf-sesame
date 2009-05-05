@@ -22,7 +22,7 @@ public class TriXWriterFactory implements RDFWriterFactory {
 	/**
 	 * Returns {@link RDFFormat#TRIX}.
 	 */
-	public RDFFormat getRDFFormat() {
+	public RDFFormat getFileFormat() {
 		return RDFFormat.TRIX;
 	}
 

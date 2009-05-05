@@ -35,9 +35,4 @@ public class TupleQueryResultWriterRegistry extends
 	public TupleQueryResultWriterRegistry() {
 		super(TupleQueryResultWriterFactory.class);
 	}
-
-	@Override
-	protected TupleQueryResultFormat getKey(TupleQueryResultWriterFactory factory) {
-		return factory.getTupleQueryResultFormat();
-	}
 }

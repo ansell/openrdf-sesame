@@ -35,9 +35,4 @@ public class BooleanQueryResultParserRegistry extends
 	public BooleanQueryResultParserRegistry() {
 		super(BooleanQueryResultParserFactory.class);
 	}
-
-	@Override
-	protected BooleanQueryResultFormat getKey(BooleanQueryResultParserFactory factory) {
-		return factory.getBooleanQueryResultFormat();
-	}
 }

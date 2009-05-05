@@ -42,7 +42,7 @@ public class RDFaParserFactory implements RDFParserFactory {
 	/**
 	 * Returns the RDF format for this factory.
 	 */
-	public RDFFormat getRDFFormat() {
+	public RDFFormat getFileFormat() {
 		return RDFFormat.RDFA;
 	}
 

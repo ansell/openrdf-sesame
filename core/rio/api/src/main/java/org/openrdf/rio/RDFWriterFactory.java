@@ -8,17 +8,14 @@ package org.openrdf.rio;
 import java.io.OutputStream;
 import java.io.Writer;
 
+import info.aduna.lang.service.FileFormatService;
+
 /**
  * A RDFWriterFactory returns {@link RDFWriter}s for a specific RDF format.
  * 
  * @author Arjohn Kampman
  */
-public interface RDFWriterFactory {
-
-	/**
-	 * Returns the RDF format for this factory.
-	 */
-	public RDFFormat getRDFFormat();
+public interface RDFWriterFactory extends FileFormatService<RDFFormat> {
 
 	/**
 	 * Returns an RDFWriter instance that will write to the supplied output

@@ -22,7 +22,7 @@ public class SPARQLBooleanXMLParserFactory implements BooleanQueryResultParserFa
 	/**
 	 * Returns {@link TupleQueryResultFormat#SPARQL}.
 	 */
-	public BooleanQueryResultFormat getBooleanQueryResultFormat() {
+	public BooleanQueryResultFormat getFileFormat() {
 		return BooleanQueryResultFormat.SPARQL;
 	}
 

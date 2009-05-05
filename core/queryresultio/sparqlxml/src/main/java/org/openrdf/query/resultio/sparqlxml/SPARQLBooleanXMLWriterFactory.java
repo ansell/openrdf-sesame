@@ -22,7 +22,7 @@ public class SPARQLBooleanXMLWriterFactory implements BooleanQueryResultWriterFa
 	/**
 	 * Returns {@link BooleanQueryResultFormat#SPARQL}.
 	 */
-	public BooleanQueryResultFormat getBooleanQueryResultFormat() {
+	public BooleanQueryResultFormat getFileFormat() {
 		return BooleanQueryResultFormat.SPARQL;
 	}
 

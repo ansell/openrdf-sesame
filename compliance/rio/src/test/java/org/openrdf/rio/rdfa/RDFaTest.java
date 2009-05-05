@@ -52,7 +52,7 @@ public class RDFaTest extends TestCase {
 
 		RepositoryConnection con2 = rep2.getConnection();
 
-		con2.add(new StringReader(writer.toString()), rdf.toExternalForm(), rdfWriterFactory.getRDFFormat());
+		con2.add(new StringReader(writer.toString()), rdf.toExternalForm(), rdfWriterFactory.getFileFormat());
 		long after = con2.size();
 		con2.close();
 
