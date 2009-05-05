@@ -22,7 +22,7 @@ public class SPARQLResultsXMLWriterFactory implements TupleQueryResultWriterFact
 	/**
 	 * Returns {@link TupleQueryResultFormat#SPARQL}.
 	 */
-	public TupleQueryResultFormat getTupleQueryResultFormat() {
+	public TupleQueryResultFormat getFileFormat() {
 		return TupleQueryResultFormat.SPARQL;
 	}
 

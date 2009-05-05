@@ -35,9 +35,4 @@ public class TupleQueryResultParserRegistry extends
 	public TupleQueryResultParserRegistry() {
 		super(TupleQueryResultParserFactory.class);
 	}
-
-	@Override
-	protected TupleQueryResultFormat getKey(TupleQueryResultParserFactory factory) {
-		return factory.getTupleQueryResultFormat();
-	}
 }

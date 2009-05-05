@@ -5,18 +5,15 @@
  */
 package org.openrdf.query.resultio;
 
+import info.aduna.lang.service.FileFormatService;
+
 /**
  * A TupleQueryResultParserFactory returns {@link TupleQueryResultParser}s for a
  * specific tuple query result format.
  * 
  * @author Arjohn Kampman
  */
-public interface TupleQueryResultParserFactory {
-
-	/**
-	 * Returns the tuple query result format for this factory.
-	 */
-	public TupleQueryResultFormat getTupleQueryResultFormat();
+public interface TupleQueryResultParserFactory extends FileFormatService<TupleQueryResultFormat> {
 
 	/**
 	 * Returns a TupleQueryResultParser instance.

@@ -35,9 +35,4 @@ public class BooleanQueryResultWriterRegistry extends
 	public BooleanQueryResultWriterRegistry() {
 		super(BooleanQueryResultWriterFactory.class);
 	}
-
-	@Override
-	protected BooleanQueryResultFormat getKey(BooleanQueryResultWriterFactory factory) {
-		return factory.getBooleanQueryResultFormat();
-	}
 }

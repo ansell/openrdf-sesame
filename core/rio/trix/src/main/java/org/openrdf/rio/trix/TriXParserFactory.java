@@ -19,7 +19,7 @@ public class TriXParserFactory implements RDFParserFactory {
 	/**
 	 * Returns {@link RDFFormat#TRIX}.
 	 */
-	public RDFFormat getRDFFormat() {
+	public RDFFormat getFileFormat() {
 		return RDFFormat.TRIX;
 	}
 

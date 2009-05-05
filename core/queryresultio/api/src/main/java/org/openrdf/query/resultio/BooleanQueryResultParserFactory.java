@@ -5,18 +5,15 @@
  */
 package org.openrdf.query.resultio;
 
+import info.aduna.lang.service.FileFormatService;
+
 /**
  * Returns {@link BooleanQueryResultParser}s for a specific boolean query result
  * format.
  * 
  * @author Arjohn Kampman
  */
-public interface BooleanQueryResultParserFactory {
-
-	/**
-	 * Returns the boolean query result format for this factory.
-	 */
-	public BooleanQueryResultFormat getBooleanQueryResultFormat();
+public interface BooleanQueryResultParserFactory extends FileFormatService<BooleanQueryResultFormat> {
 
 	/**
 	 * Returns a BooleanQueryResultParser instance.

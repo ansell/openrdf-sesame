@@ -22,7 +22,7 @@ public class N3WriterFactory implements RDFWriterFactory {
 	/**
 	 * Returns {@link RDFFormat#N3}.
 	 */
-	public RDFFormat getRDFFormat() {
+	public RDFFormat getFileFormat() {
 		return RDFFormat.N3;
 	}
 

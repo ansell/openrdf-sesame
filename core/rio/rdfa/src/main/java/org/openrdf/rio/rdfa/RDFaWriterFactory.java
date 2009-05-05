@@ -22,7 +22,7 @@ public class RDFaWriterFactory implements RDFWriterFactory {
 	/**
 	 * Returns {@link RDFFormat#RDFA}.
 	 */
-	public RDFFormat getRDFFormat() {
+	public RDFFormat getFileFormat() {
 		return RDFFormat.RDFA;
 	}
 

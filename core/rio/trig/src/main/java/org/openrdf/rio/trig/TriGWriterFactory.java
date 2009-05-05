@@ -22,7 +22,7 @@ public class TriGWriterFactory implements RDFWriterFactory {
 	/**
 	 * Returns {@link RDFFormat#TRIG}.
 	 */
-	public RDFFormat getRDFFormat() {
+	public RDFFormat getFileFormat() {
 		return RDFFormat.TRIG;
 	}
 

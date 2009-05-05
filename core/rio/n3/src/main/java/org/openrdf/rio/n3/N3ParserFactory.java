@@ -20,7 +20,7 @@ public class N3ParserFactory implements RDFParserFactory {
 	/**
 	 * Returns {@link RDFFormat#N3}.
 	 */
-	public RDFFormat getRDFFormat() {
+	public RDFFormat getFileFormat() {
 		return RDFFormat.N3;
 	}
 

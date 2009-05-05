@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.lang.FileFormat;
+import info.aduna.lang.service.FileFormatService;
 import info.aduna.lang.service.FileFormatServiceRegistry;
 import info.aduna.net.http.RequestHeaders;
 import info.aduna.webapp.util.HttpServerUtil;
@@ -243,7 +244,7 @@ public class ProtocolUtil {
 		}
 	}
 
-	public static <FF extends FileFormat, S> S getAcceptableService(HttpServletRequest request,
+	public static <FF extends FileFormat, S extends FileFormatService<FF>> S getAcceptableService(HttpServletRequest request,
 			HttpServletResponse response, FileFormatServiceRegistry<FF, S> serviceRegistry)
 		throws ClientHTTPException
 	{
