@@ -9,7 +9,8 @@
 	</parent>
 
 	<artifactId>sesame-runtime-osgi</artifactId>
-
+	<packaging>bundle</packaging>
+	
 	<name>OpenRDF Sesame: Runtime - OSGi</name>
 	<description>OSGi Runtime dependencies for an OpenRDF application</description>
 
@@ -26,22 +27,20 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>  
-						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-					</archive> 
-				</configuration>
-			</plugin>  
 			<plugin>   
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<Embed-Dependency>*;groupId=org.openrdf.sesame;scope=compile|runtime</Embed-Dependency>						
-						<Embed-Transitive>true</Embed-Transitive>
+						<Export-Package>!*text-base,!*prop-base,org.openrdf.*,info.aduna.*</Export-Package>
+						<Import-Package>
+							org.slf4j.*, 
+							javax.*;resolution:=optional, 
+							org.apache.*;resolution:=optional,
+							org.springframework.*;resolution:=optional,
+							*
+						</Import-Package>						
 					</instructions>
 				</configuration>
 			</plugin>
