@@ -20,7 +20,7 @@ public class SPARQLResultsXMLParserFactory implements TupleQueryResultParserFact
 	/**
 	 * Returns {@link TupleQueryResultFormat#SPARQL}.
 	 */
-	public TupleQueryResultFormat getFileFormat() {
+	public TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.SPARQL;
 	}
 

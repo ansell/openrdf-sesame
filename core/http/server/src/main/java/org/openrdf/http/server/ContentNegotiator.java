@@ -168,7 +168,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 			TupleQueryResultWriterRegistry registry = TupleQueryResultWriterRegistry.getInstance();
 			TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 
-			setContentType(resp, factory.getFileFormat());
+			setContentType(resp, factory.getTupleQueryResultFormat());
 
 			resp.setHeader(X_QUERY_TYPE, BINDINGS_QUERY);
 
@@ -260,7 +260,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		try {
 			RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
 			RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
-			RDFFormat rdfFormat = factory.getFileFormat();
+			RDFFormat rdfFormat = factory.getRDFFormat();
 
 			setContentType(resp, rdfFormat);
 
@@ -349,7 +349,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		RDFWriterRegistry registry = RDFWriterRegistry.getInstance();
 		RDFWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 
-		setContentType(resp, factory.getFileFormat());
+		setContentType(resp, factory.getRDFFormat());
 
 		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod()))) {
 			return;
@@ -385,7 +385,7 @@ class ContentNegotiator implements RequestToViewNameTranslator, ViewResolver, Vi
 		BooleanQueryResultWriterRegistry registry = BooleanQueryResultWriterRegistry.getInstance();
 		BooleanQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(req, resp, registry);
 
-		setContentType(resp, factory.getFileFormat());
+		setContentType(resp, factory.getBooleanQueryResultFormat());
 		resp.setHeader(X_QUERY_TYPE, BOOLEAN_QUERY);
 
 		if (RequestMethod.HEAD.equals(RequestMethod.valueOf(req.getMethod()))) {

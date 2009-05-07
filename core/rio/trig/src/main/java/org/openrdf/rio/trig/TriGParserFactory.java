@@ -19,7 +19,7 @@ public class TriGParserFactory implements RDFParserFactory {
 	/**
 	 * Returns {@link RDFFormat#TRIG}.
 	 */
-	public RDFFormat getFileFormat() {
+	public RDFFormat getRDFFormat() {
 		return RDFFormat.TRIG;
 	}
 

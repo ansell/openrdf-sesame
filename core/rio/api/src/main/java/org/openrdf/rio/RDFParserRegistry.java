@@ -32,4 +32,9 @@ public class RDFParserRegistry extends FileFormatServiceRegistry<RDFFormat, RDFP
 	public RDFParserRegistry() {
 		super(RDFParserFactory.class);
 	}
+
+	@Override
+	protected RDFFormat getKey(RDFParserFactory factory) {
+		return factory.getRDFFormat();
+	}
 }

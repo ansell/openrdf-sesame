@@ -21,7 +21,7 @@ public class BinaryQueryResultWriterFactory implements TupleQueryResultWriterFac
 	/**
 	 * Returns {@link TupleQueryResultFormat#BINARY}.
 	 */
-	public TupleQueryResultFormat getFileFormat() {
+	public TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.BINARY;
 	}
 

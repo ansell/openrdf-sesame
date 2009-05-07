@@ -35,7 +35,7 @@ public class SailRepositoryMetaData extends SailMetaDataWrapper implements Repos
 		Collection<RDFParserFactory> parsers = RDFParserRegistry.getInstance().getAll();
 		List<RDFFormat> list = new ArrayList<RDFFormat>(parsers.size());
 		for (RDFParserFactory parser : parsers) {
-			list.add(parser.getFileFormat());
+			list.add(parser.getRDFFormat());
 		}
 		return list.toArray(new RDFFormat[list.size()]);
 	}
@@ -44,7 +44,7 @@ public class SailRepositoryMetaData extends SailMetaDataWrapper implements Repos
 		Collection<RDFWriterFactory> writers = RDFWriterRegistry.getInstance().getAll();
 		List<RDFFormat> list = new ArrayList<RDFFormat>(writers.size());
 		for (RDFWriterFactory writer : writers) {
-			list.add(writer.getFileFormat());
+			list.add(writer.getRDFFormat());
 		}
 		return list.toArray(new RDFFormat[list.size()]);
 	}

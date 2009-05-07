@@ -7,15 +7,18 @@ package org.openrdf.query.resultio;
 
 import java.io.OutputStream;
 
-import info.aduna.lang.service.FileFormatService;
-
 /**
  * Returns {@link TupleQueryResultWriter}s for a specific tuple query result
  * format.
  * 
  * @author Arjohn Kampman
  */
-public interface TupleQueryResultWriterFactory extends FileFormatService<TupleQueryResultFormat> {
+public interface TupleQueryResultWriterFactory {
+
+	/**
+	 * Returns the tuple query result format for this factory.
+	 */
+	public TupleQueryResultFormat getTupleQueryResultFormat();
 
 	/**
 	 * Returns a TupleQueryResultWriter instance that will write to the supplied

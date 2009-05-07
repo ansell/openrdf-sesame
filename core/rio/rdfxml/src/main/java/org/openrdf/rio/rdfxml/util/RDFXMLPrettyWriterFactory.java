@@ -22,7 +22,7 @@ public class RDFXMLPrettyWriterFactory implements RDFWriterFactory {
 	/**
 	 * Returns {@link RDFFormat#RDFXML}.
 	 */
-	public RDFFormat getFileFormat() {
+	public RDFFormat getRDFFormat() {
 		return RDFFormat.RDFXML;
 	}
 

@@ -20,7 +20,7 @@ public class BinaryQueryResultParserFactory implements TupleQueryResultParserFac
 	/**
 	 * Returns {@link TupleQueryResultFormat#BINARY}.
 	 */
-	public TupleQueryResultFormat getFileFormat() {
+	public TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.BINARY;
 	}
 
