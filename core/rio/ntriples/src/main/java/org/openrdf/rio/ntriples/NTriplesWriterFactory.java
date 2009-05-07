@@ -22,7 +22,7 @@ public class NTriplesWriterFactory implements RDFWriterFactory {
 	/**
 	 * Returns {@link RDFFormat#NTRIPLES}.
 	 */
-	public RDFFormat getFileFormat() {
+	public RDFFormat getRDFFormat() {
 		return RDFFormat.NTRIPLES;
 	}
 

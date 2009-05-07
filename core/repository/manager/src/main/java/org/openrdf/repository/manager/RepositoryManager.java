@@ -492,8 +492,6 @@ public abstract class RepositoryManager {
 	 * @see #refresh()
 	 */
 	public void shutDown() {
-		logger.info("Shutting down repository manager");
-
 		synchronized (repositories) {
 			for (SynchronizedRepository repository : repositories.values()) {
 				try {

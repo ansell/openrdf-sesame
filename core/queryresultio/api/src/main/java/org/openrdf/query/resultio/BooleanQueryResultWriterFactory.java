@@ -7,15 +7,18 @@ package org.openrdf.query.resultio;
 
 import java.io.OutputStream;
 
-import info.aduna.lang.service.FileFormatService;
-
 /**
  * Returns {@link BooleanQueryResultWriter}s for a specific boolean query result
  * format.
  * 
  * @author Arjohn Kampman
  */
-public interface BooleanQueryResultWriterFactory extends FileFormatService<BooleanQueryResultFormat> {
+public interface BooleanQueryResultWriterFactory {
+
+	/**
+	 * Returns the boolean query result format for this factory.
+	 */
+	public BooleanQueryResultFormat getBooleanQueryResultFormat();
 
 	/**
 	 * Returns a {@link BooleanQueryResultWriter} instance that will write to the

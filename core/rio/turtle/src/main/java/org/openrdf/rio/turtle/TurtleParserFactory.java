@@ -19,7 +19,7 @@ public class TurtleParserFactory implements RDFParserFactory {
 	/**
 	 * Returns {@link RDFFormat#TURTLE}.
 	 */
-	public RDFFormat getFileFormat() {
+	public RDFFormat getRDFFormat() {
 		return RDFFormat.TURTLE;
 	}
 

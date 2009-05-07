@@ -5,14 +5,17 @@
  */
 package org.openrdf.rio;
 
-import info.aduna.lang.service.FileFormatService;
-
 /**
  * A RDFParserFactory returns {@link RDFParser}s for a specific RDF format.
  * 
  * @author Arjohn Kampman
  */
-public interface RDFParserFactory extends FileFormatService<RDFFormat> {
+public interface RDFParserFactory {
+
+	/**
+	 * Returns the RDF format for this factory.
+	 */
+	public RDFFormat getRDFFormat();
 
 	/**
 	 * Returns a RDFParser instance.

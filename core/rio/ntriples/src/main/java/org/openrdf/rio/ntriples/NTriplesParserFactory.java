@@ -19,7 +19,7 @@ public class NTriplesParserFactory implements RDFParserFactory {
 	/**
 	 * Returns {@link RDFFormat#NTRIPLES}.
 	 */
-	public RDFFormat getFileFormat() {
+	public RDFFormat getRDFFormat() {
 		return RDFFormat.NTRIPLES;
 	}
 

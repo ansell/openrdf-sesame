@@ -19,7 +19,7 @@ public class RDFXMLParserFactory implements RDFParserFactory {
 	/**
 	 * Returns the RDF format for this factory.
 	 */
-	public RDFFormat getFileFormat() {
+	public RDFFormat getRDFFormat() {
 		return RDFFormat.RDFXML;
 	}
 

@@ -22,7 +22,7 @@ public class SPARQLResultsJSONWriterFactory implements TupleQueryResultWriterFac
 	/**
 	 * Returns {@link TupleQueryResultFormat#JSON}.
 	 */
-	public TupleQueryResultFormat getFileFormat() {
+	public TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.JSON;
 	}
 

@@ -22,7 +22,7 @@ public class BooleanTextWriterFactory implements BooleanQueryResultWriterFactory
 	/**
 	 * Returns {@link BooleanQueryResultFormat#TEXT}.
 	 */
-	public BooleanQueryResultFormat getFileFormat() {
+	public BooleanQueryResultFormat getBooleanQueryResultFormat() {
 		return BooleanQueryResultFormat.TEXT;
 	}
 
