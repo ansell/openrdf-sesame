@@ -30,6 +30,7 @@
 			<plugin>   
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.0.0</version>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
@@ -40,7 +41,12 @@
 							org.apache.*;resolution:=optional,
 							org.springframework.*;resolution:=optional,
 							*
-						</Import-Package>						
+						</Import-Package>
+						<!-- this gem comes from a splendid post of Stuart McCullough - felix developer -->
+						<!-- posted on the felix-users mailing list -->
+						<!-- http://www.nabble.com/forum/ViewPost.jtp?post=23404902&framed=y -->
+						<Embed-Transitive>true</Embed-Transitive>
+						<Embed-Dependency>*;scope=compile|runtime;groupId=org.openrdf.sesame;inline=META-INF/services/*</Embed-Dependency>
 					</instructions>
 				</configuration>
 			</plugin>
