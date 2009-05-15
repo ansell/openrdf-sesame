@@ -214,7 +214,7 @@ public abstract class RepositoryManager {
 	public boolean removeRepositoryConfig(String repositoryID)
 		throws RepositoryException, RepositoryConfigException
 	{
-		logger.info("Removing repository configuration for {}.", repositoryID);
+		logger.debug("Removing repository configuration for {}.", repositoryID);
 		boolean isRemoved = false;
 
 		synchronized (initializedRepositories) {
@@ -436,7 +436,7 @@ public abstract class RepositoryManager {
 	}
 
 	void refreshRepository(RepositoryConnection con, String repositoryID, Repository repository) {
-		logger.info("Refreshing repository {}...", repositoryID);
+		logger.debug("Refreshing repository {}...", repositoryID);
 		try {
 			repository.shutDown();
 		}
@@ -450,7 +450,7 @@ public abstract class RepositoryManager {
 	void cleanupIfRemoved(RepositoryConnection con, String repositoryID) {
 		try {
 			if (RepositoryConfigUtil.getContext(con, repositoryID) == null) {
-				logger.info("Cleaning up repository {}, its configuration has been removed", repositoryID);
+				logger.debug("Cleaning up repository {}, its configuration has been removed", repositoryID);
 
 				cleanUpRepository(repositoryID);
 			}

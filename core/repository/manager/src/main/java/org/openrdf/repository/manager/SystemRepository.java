@@ -72,7 +72,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 		RepositoryConnection con = getConnection();
 		try {
 			if (con.isEmpty()) {
-				logger.info("Initializing empty {} repository", ID);
+				logger.debug("Initializing empty {} repository", ID);
 
 				con.setAutoCommit(false);
 				con.setNamespace("rdf", RDF.NAMESPACE);
