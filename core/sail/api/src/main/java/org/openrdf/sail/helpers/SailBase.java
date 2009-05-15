@@ -139,7 +139,7 @@ public abstract class SailBase implements Sail {
 			// check if any active connections exist, if so, wait for a grace
 			// period for them to finish.
 			if (!activeConnections.isEmpty()) {
-				logger.info("Waiting for active connections to close before shutting down...");
+				logger.debug("Waiting for active connections to close before shutting down...");
 				try {
 					activeConnections.wait(DEFAULT_CONNECTION_TIMEOUT);
 				}

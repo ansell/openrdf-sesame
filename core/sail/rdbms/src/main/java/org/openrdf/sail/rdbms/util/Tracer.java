@@ -40,7 +40,7 @@ public class Tracer implements InvocationHandler {
 			String var = getVariableName(DataSource.class);
 			File traceFile = File.createTempFile("sqltrace-" + Long.toHexString(System.currentTimeMillis()), ".java");
 			PrintWriter out = new PrintWriter(traceFile);
-			logger.info("Using trace file: {}", traceFile);
+			logger.debug("Using trace file: {}", traceFile);
 			return (DataSource) Tracer.trace(var, ds, DataSource.class, out);
 		} catch (IOException e) {
 			return ds;
