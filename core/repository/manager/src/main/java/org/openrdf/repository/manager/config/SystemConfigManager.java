@@ -138,7 +138,7 @@ public class SystemConfigManager implements RepositoryConfigManager {
 	public boolean removeConfig(String repositoryID)
 		throws StoreConfigException
 	{
-		logger.info("Removing repository configuration for {}.", repositoryID);
+		logger.debug("Removing repository configuration for {}.", repositoryID);
 		boolean isRemoved = false;
 
 		Model model = getSystemModel();
