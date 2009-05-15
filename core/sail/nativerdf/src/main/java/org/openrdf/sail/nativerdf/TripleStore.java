@@ -209,13 +209,13 @@ class TripleStore {
 			indexSpecs = parseIndexSpecList(indexSpecStr);
 
 			if (indexSpecs.size() > 0) {
-				logger.info("No indexes specified, using existing indexes: {}", indexSpecStr);
+				logger.debug("No indexes specified, using existing indexes: {}", indexSpecStr);
 			}
 			else {
 				// Create default indexes
 				indexSpecStr = DEFAULT_INDEXES;
 				indexSpecs = parseIndexSpecList(indexSpecStr);
-				logger.info("No indexes specified or found, defaulting to indexes: {}", indexSpecStr);
+				logger.debug("No indexes specified or found, defaulting to indexes: {}", indexSpecStr);
 			}
 		}
 
