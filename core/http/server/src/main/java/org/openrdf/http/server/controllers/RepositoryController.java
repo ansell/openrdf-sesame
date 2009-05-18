@@ -10,9 +10,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,18 +23,15 @@ import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.server.helpers.Paths;
 import org.openrdf.http.server.helpers.QueryBuilder;
 import org.openrdf.http.server.helpers.RequestAtt;
-import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.impl.ListBindingSet;
+import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.result.Result;
 import org.openrdf.result.TupleResult;
-import org.openrdf.result.impl.TupleResultImpl;
+import org.openrdf.result.impl.MutableTupleResult;
 import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
@@ -55,25 +50,29 @@ public class RepositoryController {
 	public TupleResult list(HttpServletRequest request)
 		throws HTTPException, StoreConfigException
 	{
-		List<String> bindingNames = Arrays.asList("uri", "id", "title");
-		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
+		MutableTupleResult result = new MutableTupleResult(Arrays.asList("uri", "id", "title"));
 
 		// Determine the repository's URI
 		String namespace = request.getRequestURL().append('/').toString();
 
-		ValueFactory vf = new ValueFactoryImpl();
+		ValueFactory vf = ValueFactoryImpl.getInstance();
+
 		RepositoryManager repositoryManager = RequestAtt.getRepositoryManager(request);
 		for (RepositoryInfo info : repositoryManager.getAllRepositoryInfos()) {
 			String id = info.getId();
-			URI uri = vf.createURI(namespace, id);
-			Literal idLit = vf.createLiteral(id);
-			Literal title = vf.createLiteral(info.getDescription());
 
-			BindingSet bindings = new ListBindingSet(bindingNames, uri, idLit, title);
-			bindingSets.add(bindings);
+			MapBindingSet bindings = new MapBindingSet(3);
+			bindings.addBinding("uri", vf.createURI(namespace, id));
+			bindings.addBinding("id", vf.createLiteral(id));
+
+			if (info.getDescription() != null) {
+				bindings.addBinding("title", vf.createLiteral(info.getDescription()));
+			}
+
+			result.append(bindings);
 		}
 
-		return new TupleResultImpl(bindingNames, bindingSets);
+		return result;
 	}
 
 	@ModelAttribute
