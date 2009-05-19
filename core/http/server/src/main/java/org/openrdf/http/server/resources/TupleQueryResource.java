@@ -10,6 +10,7 @@ import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
 import org.restlet.Context;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.resource.Representation;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.helpers.RequestAtt;
@@ -54,5 +55,16 @@ public class TupleQueryResource extends TupleResultResource {
 		catch (StoreException e) {
 			throw new ResourceException(e);
 		}
+	}
+
+	@Override
+	public boolean allowPost() {
+		return true;
+	}
+
+	public void acceptRepresentation(Representation representation)
+		throws ResourceException
+	{
+		getResponse().setEntity(represent());
 	}
 }

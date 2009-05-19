@@ -19,7 +19,6 @@ import static org.openrdf.http.protocol.Protocol.X_QUERY_TYPE;
 import static org.openrdf.http.protocol.error.ErrorType.MALFORMED_QUERY;
 import static org.openrdf.http.protocol.error.ErrorType.UNSUPPORTED_QUERY_LANGUAGE;
 import static org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST;
-import static org.restlet.data.Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE;
 import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
 
 import org.restlet.Context;
@@ -28,8 +27,6 @@ import org.restlet.Finder;
 import org.restlet.Handler;
 import org.restlet.Restlet;
 import org.restlet.data.Form;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.resource.ResourceException;
@@ -75,16 +72,11 @@ public class QueryParser extends Filter {
 	@Override
 	protected int beforeHandle(Request request, Response response) {
 		try {
-			Form params = getParameters(request);
+			Form params = ServerUtil.getParameters(request);
 
 			if (params != null) {
 				Query query = parseQuery(params, request, response);
 				RequestAtt.setQuery(request, query);
-
-				// Process POST requests as were they GET requests
-				if (Method.POST.equals(request.getMethod())) {
-					request.setMethod(Method.GET);
-				}
 			}
 
 			return Filter.CONTINUE;
@@ -104,28 +96,6 @@ public class QueryParser extends Filter {
 				setQueryTypeHeader(query, response);
 			}
 		}
-	}
-
-	private Form getParameters(Request request)
-		throws ResourceException
-	{
-		Method reqMethod = request.getMethod();
-
-		if (Method.GET.equals(reqMethod) || Method.HEAD.equals(reqMethod)) {
-			return request.getResourceRef().getQueryAsForm();
-		}
-		else if (Method.POST.equals(reqMethod)) {
-			MediaType mediaType = request.getEntity().getMediaType();
-
-			if (MediaType.APPLICATION_WWW_FORM.equals(mediaType, true)) {
-				return request.getEntityAsForm();
-			}
-			else {
-				throw new ResourceException(CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
-			}
-		}
-
-		return null;
 	}
 
 	private Query parseQuery(Form params, Request request, Response response)
@@ -176,7 +146,8 @@ public class QueryParser extends Filter {
 	public static void parseQueryParameters(Query query, Form params, ValueFactory vf)
 		throws ResourceException
 	{
-		boolean includeInferred = ServerUtil.parseBooleanParam(params, INCLUDE_INFERRED_PARAM_NAME, true);
+		boolean includeInferred = ServerUtil.parseBooleanParam(params, INCLUDE_INFERRED_PARAM_NAME,
+				query.getIncludeInferred());
 		query.setIncludeInferred(includeInferred);
 
 		DatasetImpl dataset = parseDataset(params, vf);
@@ -185,12 +156,12 @@ public class QueryParser extends Filter {
 		}
 
 		if (query instanceof TupleQuery) {
-			TupleQuery tuple = (TupleQuery)query;
+			TupleQuery tupleQuery = (TupleQuery)query;
 
-			int offset = ServerUtil.parseIntegerParam(params, Protocol.OFFSET, 0);
-			int limit = ServerUtil.parseIntegerParam(params, Protocol.LIMIT, -1);
-			tuple.setOffset(offset);
-			tuple.setLimit(limit);
+			int offset = ServerUtil.parseIntegerParam(params, Protocol.OFFSET, tupleQuery.getOffset());
+			int limit = ServerUtil.parseIntegerParam(params, Protocol.LIMIT, tupleQuery.getLimit());
+			tupleQuery.setOffset(offset);
+			tupleQuery.setLimit(limit);
 		}
 
 		setBindings(query, params, vf);

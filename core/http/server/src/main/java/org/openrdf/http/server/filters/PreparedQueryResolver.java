@@ -8,13 +8,17 @@ package org.openrdf.http.server.filters;
 import org.restlet.Context;
 import org.restlet.Filter;
 import org.restlet.Restlet;
+import org.restlet.data.Form;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
+import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.http.server.helpers.RequestAtt;
+import org.openrdf.http.server.helpers.ServerConnection;
+import org.openrdf.http.server.helpers.ServerUtil;
 import org.openrdf.query.Query;
 
 /**
@@ -44,14 +48,26 @@ public class PreparedQueryResolver extends Filter {
 		String queryID = getQueryID(request);
 		logger.debug(QUERY_ID_PARAM + "={}", queryID);
 
-		Query query = RequestAtt.getConnection(request).getQuery(queryID);
+		ServerConnection connection = RequestAtt.getConnection(request);
+		Query query = connection.getQuery(queryID);
 
-		if (query != null) {
+		if (query == null) {
+			response.setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+			return Filter.STOP;
+		}
+
+		try {
+			// Parse request-specific parameters
+			Form params = ServerUtil.getParameters(request);
+			if (params != null) {
+				QueryParser.parseQueryParameters(query, params, connection.getValueFactory());
+			}
+
 			RequestAtt.setQuery(request, query);
 			return Filter.CONTINUE;
 		}
-		else {
-			response.setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+		catch (ResourceException e) {
+			response.setStatus(e.getStatus(), e.getMessage());
 			return Filter.STOP;
 		}
 	}
