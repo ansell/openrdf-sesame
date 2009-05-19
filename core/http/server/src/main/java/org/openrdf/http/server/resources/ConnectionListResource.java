@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.restlet.Context;
+import org.restlet.data.Reference;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
@@ -72,7 +73,10 @@ public class ConnectionListResource extends TupleResultResource {
 			// }
 			// redirectURL += connectionID;
 
-			getResponse().setLocationRef(connectionID);
+			Reference connectionRef = getRequest().getResourceRef().clone();
+			connectionRef.addSegment(connectionID);
+			getResponse().setLocationRef(connectionRef);
+
 			getResponse().setStatus(Status.SUCCESS_CREATED);
 		}
 		catch (StoreException e) {
