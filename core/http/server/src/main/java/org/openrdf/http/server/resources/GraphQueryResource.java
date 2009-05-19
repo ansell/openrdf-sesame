@@ -61,4 +61,15 @@ public class GraphQueryResource extends StatementResultResource {
 			throw new ResourceException(e);
 		}
 	}
+
+	@Override
+	public boolean allowPost() {
+		return true;
+	}
+
+	public void acceptRepresentation(Representation representation)
+		throws ResourceException
+	{
+		getResponse().setEntity(represent());
+	}
 }

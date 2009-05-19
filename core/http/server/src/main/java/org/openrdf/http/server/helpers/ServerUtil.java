@@ -6,6 +6,7 @@
 package org.openrdf.http.server.helpers;
 
 import static org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST;
+import static org.restlet.data.Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,6 +16,9 @@ import java.util.Set;
 
 import org.restlet.data.Dimension;
 import org.restlet.data.Form;
+import org.restlet.data.MediaType;
+import org.restlet.data.Method;
+import org.restlet.data.Request;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.protocol.Protocol;
@@ -39,6 +43,33 @@ public class ServerUtil {
 			Arrays.asList(Dimension.MEDIA_TYPE)));
 
 	public static final Random RANDOM = new Random(System.currentTimeMillis());
+
+	/**
+	 * Gets the parameters from the supplied request. For GET and HEAD requests,
+	 * this returns the query parameter from the request's URL. For POST
+	 * requests, this returns the parameters from the request's body.
+	 */
+	public static Form getParameters(Request request)
+		throws ResourceException
+	{
+		Method reqMethod = request.getMethod();
+
+		if (Method.GET.equals(reqMethod) || Method.HEAD.equals(reqMethod)) {
+			return request.getResourceRef().getQueryAsForm();
+		}
+		else if (Method.POST.equals(reqMethod)) {
+			MediaType mediaType = request.getEntity().getMediaType();
+
+			if (MediaType.APPLICATION_WWW_FORM.equals(mediaType, true)) {
+				return request.getEntityAsForm();
+			}
+			else {
+				throw new ResourceException(CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
+			}
+		}
+
+		return null;
+	}
 
 	public static Value parseValueParam(Form queryParams, String paramName, ValueFactory vf)
 		throws ResourceException
