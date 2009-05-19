@@ -44,6 +44,7 @@ import org.openrdf.http.server.filters.QueryTypeRouter;
 import org.openrdf.http.server.filters.RepositoryResolver;
 import org.openrdf.http.server.filters.ScopedConnectionTagger;
 import org.openrdf.http.server.helpers.ServerRepositoryManager;
+import org.openrdf.http.server.resources.BNodesResource;
 import org.openrdf.http.server.resources.BeginTxnResource;
 import org.openrdf.http.server.resources.CommitTxnResource;
 import org.openrdf.http.server.resources.ConfigurationListResource;
@@ -169,7 +170,7 @@ public class SesameApplication extends Application {
 		router.attach("/" + SIZE, SizeResource.class);
 		router.attach("/" + METADATA, MetaDataResource.class);
 		router.attach("/" + NAMESPACES, createNamespacesRouter());
-		router.attach("/" + BNODES, NamespaceResource.class);
+		router.attach("/" + BNODES, BNodesResource.class);
 		router.attach("/" + QUERIES, createQueriesRouter());
 		router.attach("/" + BEGIN, BeginTxnResource.class);
 		router.attach("/" + COMMIT, CommitTxnResource.class);
