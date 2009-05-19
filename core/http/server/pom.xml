@@ -9,9 +9,9 @@
 		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-http-server-restlet</artifactId>
+	<artifactId>sesame-http-server</artifactId>
 
-	<name>OpenRDF Sesame: HTTP server - restlet impl</name>
+	<name>OpenRDF Sesame: HTTP server - core</name>
 	<description>HTTP server implementing a REST-style protocol</description>
 
 	<repositories>
