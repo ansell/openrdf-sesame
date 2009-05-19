@@ -182,7 +182,7 @@ public class StatementClient {
 			}
 
 			public String getContentType() {
-				return Protocol.TXN_MIME_TYPE;
+				return Protocol.TXN_MIME_TYPE + "; charset=utf-8";
 			}
 
 			public boolean isRepeatable() {
