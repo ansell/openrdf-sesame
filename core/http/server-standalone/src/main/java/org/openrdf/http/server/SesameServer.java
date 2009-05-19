@@ -5,98 +5,92 @@
  */
 package org.openrdf.http.server;
 
+import static org.restlet.data.Status.CLIENT_ERROR_FORBIDDEN;
+import static org.restlet.data.Status.SUCCESS_ACCEPTED;
+
 import java.io.File;
-import java.io.IOException;
-import java.util.Random;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
+import org.restlet.Component;
+import org.restlet.Context;
+import org.restlet.Restlet;
+import org.restlet.data.Form;
+import org.restlet.data.Protocol;
+import org.restlet.data.Request;
+import org.restlet.data.Response;
+import org.restlet.data.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.store.StoreConfigException;
 
 /**
- * Stand alone server for Sesame.
- * 
- * @author James Leigh
- * @author Arjohn Kampman
+ * A Sesame server that can be started and stopped programmatically.
  */
 public class SesameServer {
 
-	@Deprecated
-	public static void main(String[] args)
-		throws Exception
-	{
-		System.err.println("Class to start Sesame server has changed, please use org.openrdf.http.server.Start");
-		Start.main(args);
-	}
-
-	private static Random random = new Random(System.currentTimeMillis());
-
+	/**
+	 * The default server port (<tt>8080</tt>).
+	 */
 	public static final int DEFAULT_PORT = 8080;
 
-	public static final String SHUTDOWN_PATH = "shutdown";
-	
-	public static final String KEY_PARAM = "key";
+	public static final String SHUTDOWN_PATH = "stop";
 
-	private final Logger logger = LoggerFactory.getLogger(SesameServer.class);
+	public static final String SHUTDOWN_KEY_PARAM = "key";
 
-	private final Server jetty;
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private final LocalRepositoryManager manager;
+	private final File dataDir;
 
-	private final SesameServlet servlet;
+	private final int port;
+
+	private Component component;
+
+	private LocalRepositoryManager manager;
 
 	private String shutDownKey;
 
 	/**
-	 * Creates a new Sesame server that listens to the default port number (
-	 * <tt>8080</tt>).
+	 * Creates a new Sesame server that will listen to {@link #DEFAULT_PORT the
+	 * default port}.
 	 * 
 	 * @param dataDir
-	 *        The data directory for the server.
-	 * @throws IOException
-	 * @throws StoreConfigException
+	 *        The directory containing the server's configuration data,
+	 *        repository data, etc.
 	 */
-	public SesameServer(File dataDir)
-		throws IOException, StoreConfigException
-	{
+	public SesameServer(File dataDir) {
 		this(dataDir, DEFAULT_PORT);
 	}
 
-	public SesameServer(File dataDir, int port)
-		throws IOException, StoreConfigException
-	{
-		assert dataDir != null : "dataDir must not be null";
-
-		manager = new LocalRepositoryManager(dataDir);
-		manager.initialize();
-
-		servlet = new SesameServlet(manager);
-		jetty = new Server(port);
-		// jetty.setGracefulShutdown(30 * 1000);
-
-		setShutdownKey(String.valueOf(random.nextLong()));
+	/**
+	 * Creates a new Sesame server.
+	 * 
+	 * @param dataDir
+	 *        The directory containing the server's configuration data,
+	 *        repository data, etc.
+	 * @param port
+	 *        The server port.
+	 */
+	public SesameServer(File dataDir, int port) {
+		this.dataDir = dataDir;
+		this.port = port;
 	}
 
+	/**
+	 * Gets the server's data directory.
+	 */
 	public File getDataDir() {
-		return manager.getBaseDir();
+		return dataDir;
 	}
 
-	public void setMaxCacheAge(int maxCacheAge) {
-		servlet.setMaxCacheAge(maxCacheAge);
+	/**
+	 * Gets the server's port number.
+	 */
+	public int getPort() {
+		return port;
 	}
 
-	public void setShutdownKey(String shutdownKey) {
+	public synchronized void setShutdownKey(String shutdownKey) {
 		if (shutdownKey == null) {
 			throw new IllegalArgumentException("shutdownKey must not be null");
 		}
@@ -104,7 +98,7 @@ public class SesameServer {
 		this.shutDownKey = shutdownKey;
 	}
 
-	public String getShutdownKey() {
+	public synchronized String getShutdownKey() {
 		return shutDownKey;
 	}
 
@@ -112,56 +106,99 @@ public class SesameServer {
 		return manager;
 	}
 
-	public void start()
+	/**
+	 * Starts the server.
+	 */
+	public synchronized void start()
 		throws Exception
 	{
-		Context root = new Context(jetty, "/");
-		root.setMaxFormContentSize(0);
-		root.addServlet(new ServletHolder(new ShutdownHandler()), "/" + SHUTDOWN_PATH);
-		root.addServlet(new ServletHolder(servlet), "/*");
+		manager = new LocalRepositoryManager(dataDir);
+		manager.initialize();
 
-		jetty.start();
+		component = new Component();
+		component.getServers().add(Protocol.HTTP, port);
+
+		Context appContext = component.getContext().createChildContext();
+		SesameApplication app = new SesameApplication(appContext, manager);
+		component.getDefaultHost().attachDefault(app);
+		if (getShutdownKey() != null) {
+			component.getDefaultHost().attach("/" + SHUTDOWN_PATH, new StopRestlet(appContext));
+		}
+
+		try {
+			component.start();
+		}
+		catch (Exception e) {
+			stop();
+			throw e;
+		}
 	}
 
-	public void stop()
+	/**
+	 * Stops the server.
+	 */
+	public synchronized void stop()
 		throws Exception
 	{
-		jetty.stop();
+		try {
+			component.stop();
+		}
+		finally {
+			manager.shutDown();
+		}
 	}
 
-	private class ShutdownHandler extends HttpServlet {
+	private void scheduleShutdown() {
+		Thread t = new Thread("Server shutdown thread") {
 
-		private static final long serialVersionUID = -4103337674521311088L;
+			@Override
+			public void run() {
+				// give the server some time to reply to the shutdown request
+				// FIXME: better to let the server shut down gracefully
+				try {
+					sleep(100L);
+				}
+				catch (InterruptedException ignore) {
+				}
+
+				try {
+					SesameServer.this.stop();
+				}
+				catch (Exception e) {
+					logger.error("Failed to stop server", e);
+				}
+			}
+		};
+		t.start();
+	}
+
+	public class StopRestlet extends Restlet {
+
+		public StopRestlet(Context context) {
+			super(context);
+		}
 
 		@Override
-		protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException
-		{
-			String key = req.getParameter(KEY_PARAM);
-			if (getShutdownKey().equals(key)) {
-				resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-				resp.getWriter().close();
-				scheduleShutdown();
+		public void handle(Request request, Response response) {
+			if (request.getMethod().getName().equalsIgnoreCase("POST")) {
+				handlePost(request, response);
 			}
 			else {
-				resp.sendError(HttpServletResponse.SC_FORBIDDEN, "invalid shutdown key");
+				response.setStatus(Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
 			}
 		}
 
-		private void scheduleShutdown() {
-			Thread t = new Thread("Server shut down thread") {
-
-				public void run() {
-					try {
-						SesameServer.this.stop();
-					}
-					catch (Exception e) {
-						logger.error("Failed to stop server", e);
-					}
-				}
-			};
-			t.setDaemon(true);
-			t.start();
+		private void handlePost(Request request, Response response) {
+			Form params = request.getEntityAsForm();
+			String key = params.getFirstValue(SHUTDOWN_KEY_PARAM);
+			if (key != null && key.equals(getShutdownKey())) {
+				response.setStatus(SUCCESS_ACCEPTED);
+				logger.info("Server shutting down");
+				scheduleShutdown();
+			}
+			else {
+				response.setStatus(CLIENT_ERROR_FORBIDDEN, "invalid shutdown key");
+			}
 		}
 	}
 }
