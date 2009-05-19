@@ -8,6 +8,7 @@ package org.openrdf.http.server.resources;
 import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
 
 import org.restlet.Context;
+import org.restlet.data.Reference;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
@@ -46,7 +47,10 @@ public class QueryListResource extends SesameResource {
 
 		String queryID = getConnection().storeQuery(query);
 
-		getResponse().setLocationRef(queryID);
+		Reference queryRef = getRequest().getResourceRef().clone();
+		queryRef.addSegment(queryID);
+		getResponse().setLocationRef(queryRef);
+
 		getResponse().setStatus(Status.SUCCESS_CREATED);
 	}
 }
