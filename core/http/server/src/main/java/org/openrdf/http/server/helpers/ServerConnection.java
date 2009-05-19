@@ -6,6 +6,7 @@
 package org.openrdf.http.server.helpers;
 
 import static org.openrdf.http.protocol.Protocol.MAX_TIME_OUT;
+import static org.openrdf.http.protocol.Protocol.TIME_OUT_UNITS;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -158,7 +159,7 @@ public class ServerConnection extends RepositoryConnectionWrapper {
 
 			if (requests.isEmpty()) {
 				this.lastAccessed = System.currentTimeMillis();
-				timeoutTimer.schedule(new TimeoutTask(), MAX_TIME_OUT);
+				timeoutTimer.schedule(new TimeoutTask(), TIME_OUT_UNITS.toMillis(MAX_TIME_OUT));
 			}
 		}
 	}
