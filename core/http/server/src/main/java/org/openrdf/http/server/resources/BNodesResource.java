@@ -47,7 +47,6 @@ public class BNodesResource extends TupleResultResource {
 		throws ResourceException
 	{
 		getResponse().setEntity(represent());
-		getResponse().setStatus(Status.SUCCESS_OK);
 	}
 
 	@Override
