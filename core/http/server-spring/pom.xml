@@ -8,9 +8,9 @@
 		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-http-server</artifactId>
+	<artifactId>sesame-http-server-spring</artifactId>
 
-	<name>OpenRDF Sesame: HTTP server - core</name>
+	<name>OpenRDF Sesame: HTTP server - Spring implementation</name>
 	<description>HTTP server implementing a REST-style protocol</description>
 
 	<dependencies>
