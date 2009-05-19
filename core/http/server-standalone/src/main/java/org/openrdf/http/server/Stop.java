@@ -76,16 +76,16 @@ public class Stop {
 				con.setRequestMethod("POST");
 
 				if (keyString != null) {
-					String form = HttpClientUtil.encodeParameter(SesameServer.KEY_PARAM, keyString);
+					String form = HttpClientUtil.encodeParameter(SesameServer.SHUTDOWN_KEY_PARAM, keyString);
 					OutputStream out = con.getOutputStream();
 					out.write(form.getBytes("ISO-8859-1"));
 				}
 
 				if (HttpClientUtil.is2xx(con.getResponseCode())) {
-					System.out.println("shut down command sent successfully");
+					System.out.println("shutdown command sent successfully");
 				}
 				else {
-					System.out.println("Shut down request failed: " + con.getResponseMessage());
+					System.out.println("Shutdown request failed: " + con.getResponseMessage());
 					System.exit(3);
 				}
 			}
@@ -94,6 +94,7 @@ public class Stop {
 			}
 			catch (IOException e) {
 				System.err.println("I/O error: " + e.getMessage());
+				e.printStackTrace();
 			}
 		}
 		catch (ParseException e) {
@@ -107,7 +108,5 @@ public class Stop {
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.setWidth(80);
 		formatter.printHelp("server [OPTION]", options);
-		System.out.println();
-		System.out.println("For bug reports and suggestions, see http://www.openrdf.org/");
 	}
 }

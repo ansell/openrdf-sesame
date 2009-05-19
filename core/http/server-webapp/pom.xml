@@ -11,7 +11,7 @@
 	<artifactId>sesame-http-server-webapp</artifactId>
 	<packaging>war</packaging>
 
-	<name>OpenRDF Sesame: HTTP server</name>
+	<name>OpenRDF Sesame: HTTP server web application</name>
 	<description>HTTP server implementing a REST-style protocol</description>
 
 	<dependencies>
@@ -23,6 +23,11 @@
 		<dependency>
 			<groupId>info.aduna.appbase</groupId>
 			<artifactId>aduna-appbase-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.noelios.restlet</groupId>
+			<artifactId>com.noelios.restlet.ext.servlet</artifactId>
 		</dependency>
 
 		<dependency>
@@ -65,38 +70,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>spring.ide</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-eclipse-plugin</artifactId>
-						<configuration>
-							<wtpversion>1.5</wtpversion>
-							<wtpContextName>openrdf-sesame</wtpContextName>
-							<additionalBuildcommands>
-								<buildCommand>
-									<name>
-										org.springframework.ide.eclipse.core.springbuilder
-									</name>
-								</buildCommand>
-							</additionalBuildcommands>
-							<additionalProjectnatures>
-								<projectnature>
-									org.springframework.ide.eclipse.core.springnature
-								</projectnature>
-							</additionalProjectnatures>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
 </project>
