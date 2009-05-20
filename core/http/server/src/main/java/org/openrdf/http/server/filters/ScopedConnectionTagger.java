@@ -12,6 +12,8 @@ import org.restlet.Filter;
 import org.restlet.Restlet;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.resource.Representation;
+import org.restlet.util.WrapperRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,14 +57,41 @@ public class ScopedConnectionTagger extends Filter {
 
 	@Override
 	protected void afterHandle(Request request, Response response) {
-		ServerConnection connection = RequestAtt.getConnection(request);
+		Representation entity = response.getEntity();
 
+		if (entity != null) {
+			entity = new ScopedConnectionRepresentation(entity, request);
+			response.setEntity(entity);
+		}
+		else {
+			closeConnection(request);
+		}
+	}
+
+	private void closeConnection(Request request) {
 		try {
+			ServerConnection connection = RequestAtt.getConnection(request);
 			connection.removeRequest(request);
 			connection.close();
 		}
 		catch (StoreException e) {
 			logger.error("Failed to close repository connection", e);
+		}
+	}
+
+	private class ScopedConnectionRepresentation extends WrapperRepresentation {
+
+		private final Request request;
+
+		public ScopedConnectionRepresentation(Representation wrappedRepresentation, Request request) {
+			super(wrappedRepresentation);
+			this.request = request;
+		}
+
+		@Override
+		public void release() {
+			super.release();
+			closeConnection(request);
 		}
 	}
 }
