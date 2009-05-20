@@ -31,6 +31,7 @@ public class LimitCursor<E> extends DelegatingCursor<E> {
 		throws StoreException
 	{
 		if (--limit < 0) {
+			close();
 			return null;
 		}
 		return super.next();
