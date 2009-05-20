@@ -8,7 +8,6 @@ package org.openrdf.http.server.helpers;
 import static org.openrdf.http.protocol.Protocol.MAX_TIME_OUT;
 import static org.openrdf.http.protocol.Protocol.TIME_OUT_UNITS;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -18,10 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.restlet.data.Request;
-import org.restlet.data.Tag;
 
 import org.openrdf.query.Query;
-import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.store.StoreException;
@@ -45,9 +42,9 @@ public class ServerConnection extends RepositoryConnectionWrapper {
 	private final String id;
 
 	/**
-	 * The time this connection was last accessed.
+	 * The set of prepared queries, stored by their ID.
 	 */
-	private volatile long lastAccessed = System.currentTimeMillis();
+	private final Map<String, Query> queries = new ConcurrentHashMap<String, Query>();
 
 	/**
 	 * The ID for the next prepared query that is {@link #storeQuery(Query)
@@ -56,22 +53,26 @@ public class ServerConnection extends RepositoryConnectionWrapper {
 	private final AtomicInteger nextQueryID = new AtomicInteger(ServerUtil.RANDOM.nextInt());
 
 	/**
-	 * The set of prepared queries, stored by their ID.
-	 */
-	private final Map<String, Query> queries = new ConcurrentHashMap<String, Query>();
-
-	/**
 	 * Stores the requests that are registered with this connection.
 	 */
 	private final Set<Request> requests = new HashSet<Request>();
+
+	/**
+	 * The time this connection was last accessed.
+	 */
+	private volatile long lastAccessed = System.currentTimeMillis();
+
+	private CacheInfo cacheInfo;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public ServerConnection(Repository repository, RepositoryConnection delegate, String id) {
+	public ServerConnection(ServerRepository repository, RepositoryConnection delegate, String id) {
 		super(repository, delegate);
 		this.id = id;
+		// Use repository's cache info while in auto-commit mode
+		this.cacheInfo = repository.getCacheInfo();
 	}
 
 	/*---------*
@@ -93,36 +94,6 @@ public class ServerConnection extends RepositoryConnectionWrapper {
 	{
 		getRepository().removeConnection(getID());
 		super.close();
-	}
-
-	public Date getLastModified() {
-		Date lastModified = null;
-
-		try {
-			if (isAutoCommit()) {
-				lastModified = getRepository().getLastModified();
-			}
-		}
-		catch (StoreException e) {
-			logger.warn("Unable to check auto-commit status", e);
-		}
-
-		return lastModified;
-	}
-
-	public Tag getEntityTag() {
-		Tag etag = null;
-
-		try {
-			if (isAutoCommit()) {
-				etag = getRepository().getEntityTag();
-			}
-		}
-		catch (StoreException e) {
-			logger.warn("Unable to check auto-commit status", e);
-		}
-
-		return etag;
 	}
 
 	public String storeQuery(Query query) {
@@ -174,22 +145,46 @@ public class ServerConnection extends RepositoryConnectionWrapper {
 		}
 	}
 
-	/**
-	 * @return Set of req.getMethod() + " " + req.getRequestURL()
-	 */
-	/*	public Collection<Request> getActiveRequests() {
-			synchronized (activeRequests) {
-				List<String> set = new ArrayList<String>(activeRequests.size());
-				for (Request req : activeRequests) {
-					set.add(req.getMethod() + " " + req.getResourceRef());
-				}
-				return set;
-			}
-		}
-	*/
-
 	public long getLastAccessed() {
 		return lastAccessed;
+	}
+
+	@Override
+	public synchronized void begin()
+		throws StoreException
+	{
+		super.begin();
+		cacheInfo = new CacheInfo(getRepository().getCacheInfo());
+	}
+
+	@Override
+	public synchronized void commit()
+		throws StoreException
+	{
+		super.commit();
+
+		CacheInfo repoCacheInfo = getRepository().getCacheInfo();
+		if (cacheInfo.getEntityTag() != repoCacheInfo.getEntityTag()) {
+			// contents have changed in this transaction
+			repoCacheInfo.processUpdate();
+		}
+		cacheInfo = repoCacheInfo;
+	}
+
+	@Override
+	public synchronized void rollback()
+		throws StoreException
+	{
+		try {
+			super.rollback();
+		}
+		finally {
+			cacheInfo = getRepository().getCacheInfo();
+		}
+	}
+
+	public synchronized CacheInfo getCacheInfo() {
+		return cacheInfo;
 	}
 
 	private class TimeoutTask extends TimerTask {

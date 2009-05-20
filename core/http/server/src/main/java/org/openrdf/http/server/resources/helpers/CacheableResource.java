@@ -6,7 +6,6 @@
 package org.openrdf.http.server.resources.helpers;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import org.restlet.Context;
@@ -14,10 +13,11 @@ import org.restlet.data.Conditions;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
-import org.restlet.data.Tag;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
+
+import org.openrdf.http.server.helpers.CacheInfo;
 
 /**
  * Resource that (optinally) allows clients to cache its representations by
@@ -36,18 +36,9 @@ public abstract class CacheableResource extends Resource {
 	}
 
 	/**
-	 * Gets the resource's last-modified date, if available.
-	 * 
-	 * @return The last-modified date, or <tt>null</tt> if not available.
+	 * Gets the resource's cache info.
 	 */
-	protected abstract Date getLastModified();
-
-	/**
-	 * Gets the resource's entity tag, if available.
-	 * 
-	 * @return The entity tag, or <tt>null</tt> if not available.
-	 */
-	protected abstract Tag getEntityTag();
+	protected abstract CacheInfo getCacheInfo();
 
 	/**
 	 * Registers the specified variants and, if possible, sets last-modified
@@ -62,18 +53,17 @@ public abstract class CacheableResource extends Resource {
 	 * dates and entity tags on these variants.
 	 */
 	protected void addCacheableVariants(Iterable<? extends Variant> variants) {
-		Date lastModified = getLastModified();
-		Tag etag = getEntityTag();
+		CacheInfo cacheInfo = getCacheInfo();
 
 		List<Variant> list = getVariants();
 
 		for (Variant variant : variants) {
 			// Note: method are moved to RepresentationInfo in restlet 2.0
 			if (variant.getModificationDate() == null) {
-				variant.setModificationDate(lastModified);
+				variant.setModificationDate(cacheInfo.getLastModified());
 			}
 			if (variant.getTag() == null) {
-				variant.setTag(etag);
+				variant.setTag(cacheInfo.getEntityTag());
 			}
 
 			list.add(variant);
@@ -104,11 +94,12 @@ public abstract class CacheableResource extends Resource {
 
 		// Set last-modified date and entity tag on the returned representation
 		if (Status.SUCCESS_OK.equals(getResponse().getStatus()) && representation != null) {
+			CacheInfo cacheInfo = getCacheInfo();
 			if (representation.getModificationDate() == null) {
-				representation.setModificationDate(getLastModified());
+				representation.setModificationDate(cacheInfo.getLastModified());
 			}
 			if (representation.getTag() == null) {
-				representation.setTag(getEntityTag());
+				representation.setTag(cacheInfo.getEntityTag());
 			}
 		}
 
