@@ -16,6 +16,7 @@ import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.resource.ResourceException;
 
+import org.openrdf.http.server.helpers.ServerConnection;
 import org.openrdf.http.server.resources.helpers.TupleResultResource;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
@@ -78,7 +79,10 @@ public class NamespaceListResource extends TupleResultResource {
 		throws ResourceException
 	{
 		try {
-			getConnection().clearNamespaces();
+			ServerConnection connection = getConnection();
+			connection.clearNamespaces();
+			connection.getCacheInfo().processUpdate();
+
 			getResponse().setStatus(SUCCESS_NO_CONTENT);
 		}
 		catch (StoreException e) {

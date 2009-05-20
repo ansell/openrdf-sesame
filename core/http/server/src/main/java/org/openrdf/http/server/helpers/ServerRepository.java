@@ -5,14 +5,10 @@
  */
 package org.openrdf.http.server.helpers;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.restlet.data.Tag;
 
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.base.RepositoryWrapper;
@@ -37,26 +33,7 @@ public class ServerRepository extends RepositoryWrapper {
 	 */
 	private final AtomicInteger nextConnectionID = new AtomicInteger(ServerUtil.RANDOM.nextInt());
 
-	/**
-	 * The date the repository was initialized.
-	 */
-	private final long initializationDate = System.currentTimeMillis();
-
-	/**
-	 * The date the repository was last modified.
-	 */
-	private volatile Date lastModified = new Date();
-
-	/**
-	 * A counter that is increased with each repository update.
-	 */
-	private final AtomicLong contentVersion = new AtomicLong(0);
-
-	/**
-	 * A tag that can be added to served entities, changed with each repository
-	 * update.
-	 */
-	private volatile Tag entityTag;
+	private final CacheInfo cacheInfo = new CacheInfo();
 
 	/*--------------*
 	 * Constructors *
@@ -115,27 +92,7 @@ public class ServerRepository extends RepositoryWrapper {
 		return connections.keySet();
 	}
 
-	public Date getLastModified() {
-		return lastModified;
-	}
-
-	public Tag getEntityTag() {
-		Tag result = entityTag;
-
-		if (result == null) {
-			entityTag = result = new Tag(getEntityTagString());
-		}
-
-		return result;
-	}
-
-	String getEntityTagString() {
-		return Long.toHexString(initializationDate) + Long.toHexString(contentVersion.get());
-	}
-
-	public void markRepositoryChanged() {
-		contentVersion.incrementAndGet();
-		lastModified = new Date();
-		entityTag = null;
+	public CacheInfo getCacheInfo() {
+		return cacheInfo;
 	}
 }

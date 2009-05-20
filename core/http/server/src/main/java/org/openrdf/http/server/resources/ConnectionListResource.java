@@ -66,13 +66,6 @@ public class ConnectionListResource extends TupleResultResource {
 		try {
 			String connectionID = getRepository().getConnection().getID();
 
-			// String redirectURL = getRequest().getResourceRef().toString(false,
-			// false);
-			// if (!redirectURL.endsWith("/")) {
-			// redirectURL += "/";
-			// }
-			// redirectURL += connectionID;
-
 			Reference connectionRef = getRequest().getResourceRef().clone();
 			connectionRef.addSegment(connectionID);
 			getResponse().setLocationRef(connectionRef);

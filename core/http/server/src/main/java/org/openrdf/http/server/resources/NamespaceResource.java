@@ -22,6 +22,7 @@ import org.restlet.resource.ResourceException;
 import org.restlet.resource.StringRepresentation;
 import org.restlet.resource.Variant;
 
+import org.openrdf.http.server.helpers.ServerConnection;
 import org.openrdf.http.server.helpers.ServerUtil;
 import org.openrdf.http.server.resources.helpers.SesameResource;
 import org.openrdf.store.StoreException;
@@ -82,7 +83,10 @@ public class NamespaceResource extends SesameResource {
 				}
 				// FIXME: perform some sanity checks on the namespace string
 
-				getConnection().setNamespace(prefix, namespace);
+				ServerConnection connection = getConnection();
+				connection.setNamespace(prefix, namespace);
+				connection.getCacheInfo().processUpdate();
+
 				getResponse().setStatus(SUCCESS_NO_CONTENT);
 			}
 			catch (IOException e) {
@@ -101,7 +105,10 @@ public class NamespaceResource extends SesameResource {
 		throws ResourceException
 	{
 		try {
-			getConnection().removeNamespace(prefix);
+			ServerConnection connection = getConnection();
+			connection.removeNamespace(prefix);
+			connection.getCacheInfo().processUpdate();
+
 			getResponse().setStatus(SUCCESS_NO_CONTENT);
 		}
 		catch (StoreException e) {

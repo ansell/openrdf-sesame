@@ -5,14 +5,12 @@
  */
 package org.openrdf.http.server.resources.helpers;
 
-import java.util.Date;
-
 import org.restlet.Context;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
-import org.restlet.data.Tag;
 
 import org.openrdf.http.server.SesameApplication;
+import org.openrdf.http.server.helpers.CacheInfo;
 import org.openrdf.http.server.helpers.RequestAtt;
 import org.openrdf.http.server.helpers.ServerConnection;
 import org.openrdf.http.server.helpers.ServerRepository;
@@ -31,29 +29,15 @@ public abstract class SesameResource extends CacheableResource {
 		super(context, request, response);
 	}
 
-	protected Date getLastModified() {
+	protected CacheInfo getCacheInfo() {
 		ServerConnection connection = getConnection();
 		if (connection != null) {
-			return connection.getLastModified();
+			return connection.getCacheInfo();
 		}
 
 		ServerRepository repository = getRepository();
 		if (repository != null) {
-			return repository.getLastModified();
-		}
-
-		return null;
-	}
-
-	protected Tag getEntityTag() {
-		ServerConnection connection = getConnection();
-		if (connection != null) {
-			return connection.getEntityTag();
-		}
-
-		ServerRepository repository = getRepository();
-		if (repository != null) {
-			return repository.getEntityTag();
+			return repository.getCacheInfo();
 		}
 
 		return null;

@@ -38,6 +38,7 @@ import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.transaction.TransactionReader;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.http.server.ErrorInfoException;
+import org.openrdf.http.server.helpers.ServerConnection;
 import org.openrdf.http.server.helpers.ServerUtil;
 import org.openrdf.http.server.representations.ModelResultRepresentation;
 import org.openrdf.http.server.resources.helpers.StatementResultResource;
@@ -48,7 +49,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.cursors.LimitCursor;
 import org.openrdf.query.algebra.evaluation.cursors.OffsetCursor;
-import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.result.ModelResult;
 import org.openrdf.result.impl.ModelResultImpl;
 import org.openrdf.rio.RDFFormat;
@@ -157,7 +157,9 @@ public class StatementsResource extends StatementResultResource {
 		throws ResourceException
 	{
 		try {
-			getConnection().removeMatch(subj, pred, obj, contexts);
+			ServerConnection connection = getConnection();
+			connection.removeMatch(subj, pred, obj, contexts);
+			connection.getCacheInfo().processUpdate();
 		}
 		catch (StoreException e) {
 			throw new ResourceException(SERVER_ERROR_INTERNAL, "Repository update error", e);
@@ -177,29 +179,31 @@ public class StatementsResource extends StatementResultResource {
 			TransactionReader reader = new TransactionReader();
 			Iterable<? extends TransactionOperation> txn = reader.parse(in);
 
-			RepositoryConnection repositoryCon = getConnection();
+			ServerConnection connection = getConnection();
 
-			boolean autoCommit = repositoryCon.isAutoCommit();
+			boolean autoCommit = connection.isAutoCommit();
 			if (autoCommit) {
-				repositoryCon.begin();
+				connection.begin();
 			}
 
 			try {
 				for (TransactionOperation op : txn) {
-					op.execute(repositoryCon);
+					op.execute(connection);
 				}
 
 				if (autoCommit) {
-					repositoryCon.commit();
+					connection.commit();
 				}
+
+				connection.getCacheInfo().processUpdate();
 
 				logger.debug("Transaction processed ");
 			}
 			finally {
-				if (autoCommit && !repositoryCon.isAutoCommit()) {
+				if (autoCommit && !connection.isAutoCommit()) {
 					// restore auto-commit by rolling back
 					logger.error("Rolling back transaction");
-					repositoryCon.rollback();
+					connection.rollback();
 				}
 			}
 		}
@@ -228,8 +232,8 @@ public class StatementsResource extends StatementResultResource {
 					+ mimeType);
 		}
 
-		RepositoryConnection repositoryCon = getConnection();
-		ValueFactory vf = repositoryCon.getValueFactory();
+		ServerConnection connection = getConnection();
+		ValueFactory vf = connection.getValueFactory();
 
 		Form params = getQuery();
 		Resource[] contexts = ServerUtil.parseContextParam(params, CONTEXT_PARAM_NAME, vf);
@@ -243,26 +247,27 @@ public class StatementsResource extends StatementResultResource {
 		try {
 			InputStream in = entity.getStream();
 
-			boolean autoCommit = repositoryCon.isAutoCommit();
+			boolean autoCommit = connection.isAutoCommit();
 			if (autoCommit) {
-				repositoryCon.begin();
+				connection.begin();
 			}
 
 			try {
 				if (replaceCurrent) {
-					repositoryCon.clear(contexts);
+					connection.clear(contexts);
 				}
-				repositoryCon.add(in, baseURI.toString(), rdfFormat, contexts);
+				connection.add(in, baseURI.toString(), rdfFormat, contexts);
 
 				if (autoCommit) {
-					repositoryCon.commit();
+					connection.commit();
 				}
-			}
 
+				connection.getCacheInfo().processUpdate();
+			}
 			finally {
-				if (autoCommit && !repositoryCon.isAutoCommit()) {
+				if (autoCommit && !connection.isAutoCommit()) {
 					// restore auto-commit by rolling back'
-					repositoryCon.rollback();
+					connection.rollback();
 				}
 			}
 		}
