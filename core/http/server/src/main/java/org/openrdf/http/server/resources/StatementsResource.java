@@ -96,7 +96,7 @@ public class StatementsResource extends StatementResultResource {
 		contexts = ServerUtil.parseContextParam(params, CONTEXT_PARAM_NAME, vf);
 		includeInferred = ServerUtil.parseBooleanParam(params, INCLUDE_INFERRED_PARAM_NAME, true);
 		offset = ServerUtil.parseIntegerParam(params, OFFSET, 0);
-		limit = ServerUtil.parseIntegerParam(params, LIMIT, 0);
+		limit = ServerUtil.parseIntegerParam(params, LIMIT, -1);
 	}
 
 	protected final Representation getRepresentation(RDFWriterFactory factory, MediaType mediaType)
