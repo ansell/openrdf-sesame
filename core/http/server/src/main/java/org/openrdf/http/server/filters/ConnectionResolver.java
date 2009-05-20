@@ -11,6 +11,8 @@ import org.restlet.Restlet;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
+import org.restlet.resource.Representation;
+import org.restlet.util.WrapperRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,10 +62,35 @@ public class ConnectionResolver extends Filter {
 
 	@Override
 	protected void afterHandle(Request request, Response response) {
-		ServerConnection connection = RequestAtt.getConnection(request);
+		Representation entity = response.getEntity();
 
-		if (connection != null) {
-			connection.removeRequest(request);
+		if (entity != null) {
+			entity = new ConnectionRepresentation(entity, request);
+			response.setEntity(entity);
+		}
+		else {
+			releaseConnection(request);
+		}
+	}
+
+	private void releaseConnection(Request request) {
+		ServerConnection connection = RequestAtt.getConnection(request);
+		connection.removeRequest(request);
+	}
+
+	private class ConnectionRepresentation extends WrapperRepresentation {
+
+		private final Request request;
+
+		public ConnectionRepresentation(Representation wrappedRepresentation, Request request) {
+			super(wrappedRepresentation);
+			this.request = request;
+		}
+
+		@Override
+		public void release() {
+			super.release();
+			releaseConnection(request);
 		}
 	}
 }
