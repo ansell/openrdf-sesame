@@ -28,6 +28,16 @@ public class ServerRepository extends RepositoryWrapper {
 	 *-----------*/
 
 	/**
+	 * The set of open connections, stored by their ID.
+	 */
+	private final Map<String, ServerConnection> connections = new ConcurrentHashMap<String, ServerConnection>();
+
+	/**
+	 * The ID for the next connection that is opened on this repository.
+	 */
+	private final AtomicInteger nextConnectionID = new AtomicInteger(ServerUtil.RANDOM.nextInt());
+
+	/**
 	 * The date the repository was initialized.
 	 */
 	private final long initializationDate = System.currentTimeMillis();
@@ -35,7 +45,7 @@ public class ServerRepository extends RepositoryWrapper {
 	/**
 	 * The date the repository was last modified.
 	 */
-	private Date lastModified = new Date();
+	private volatile Date lastModified = new Date();
 
 	/**
 	 * A counter that is increased with each repository update.
@@ -48,16 +58,6 @@ public class ServerRepository extends RepositoryWrapper {
 	 */
 	private volatile Tag entityTag;
 
-	/**
-	 * The ID for the next connection that is opened on this repository.
-	 */
-	private final AtomicInteger nextConnectionID = new AtomicInteger(ServerUtil.RANDOM.nextInt());
-
-	/**
-	 * The set of open connections, stored by their ID.
-	 */
-	private final Map<String, ServerConnection> connections = new ConcurrentHashMap<String, ServerConnection>();
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -69,28 +69,6 @@ public class ServerRepository extends RepositoryWrapper {
 	/*---------*
 	 * Methods *
 	 *---------*/
-
-	public Date getLastModified() {
-		return lastModified;
-	}
-
-	public Tag getEntityTag() {
-		Tag result = entityTag;
-
-		if (result == null) {
-			String etag = Long.toHexString(initializationDate);
-			etag += Long.toHexString(contentVersion.get());
-			entityTag = result = new Tag(etag);
-		}
-
-		return result;
-	}
-
-	public void markRepositoryChanged() {
-		contentVersion.incrementAndGet();
-		lastModified = new Date();
-		entityTag = null;
-	}
 
 	/**
 	 * Creates a {@link ServerConnection} and registers it under a new
@@ -135,5 +113,29 @@ public class ServerRepository extends RepositoryWrapper {
 	 */
 	public Set<String> getConnectionIDs() {
 		return connections.keySet();
+	}
+
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public Tag getEntityTag() {
+		Tag result = entityTag;
+
+		if (result == null) {
+			entityTag = result = new Tag(getEntityTagString());
+		}
+
+		return result;
+	}
+
+	String getEntityTagString() {
+		return Long.toHexString(initializationDate) + Long.toHexString(contentVersion.get());
+	}
+
+	public void markRepositoryChanged() {
+		contentVersion.incrementAndGet();
+		lastModified = new Date();
+		entityTag = null;
 	}
 }
