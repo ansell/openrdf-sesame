@@ -76,63 +76,58 @@ public class ModelResultRepresentation extends OutputRepresentation {
 	{
 		RDFWriter writer = rdfWriterFactory.getWriter(out);
 		try {
-			try {
-				// writer.setBaseURI(req.getRequestURL().toString());
-				writer.startRDF();
+			// writer.setBaseURI(req.getRequestURL().toString());
+			writer.startRDF();
 
-				Set<String> firstNamespaces = null;
-				List<Statement> firstStatements = new ArrayList<Statement>(SMALL);
+			Set<String> firstNamespaces = null;
+			List<Statement> firstStatements = new ArrayList<Statement>(SMALL);
 
-				// Only try to trim namespace if the RDF format supports namespaces
-				// in the first place
-				trimNamespaces = trimNamespaces && writer.getRDFFormat().supportsNamespaces();
+			// Only try to trim namespace if the RDF format supports namespaces
+			// in the first place
+			trimNamespaces = trimNamespaces && writer.getRDFFormat().supportsNamespaces();
+
+			if (trimNamespaces) {
+				// Gather the first few statements
+				for (int i = 0; result.hasNext() && i < SMALL; i++) {
+					firstStatements.add(result.next());
+				}
+
+				// Only trim namespaces if the set is small enough
+				trimNamespaces = firstStatements.size() < SMALL;
 
 				if (trimNamespaces) {
-					// Gather the first few statements
-					for (int i = 0; result.hasNext() && i < SMALL; i++) {
-						firstStatements.add(result.next());
-					}
+					// Gather the namespaces from the first few statements
+					firstNamespaces = new HashSet<String>(SMALL);
 
-					// Only trim namespaces if the set is small enough
-					trimNamespaces = firstStatements.size() < SMALL;
-
-					if (trimNamespaces) {
-						// Gather the namespaces from the first few statements
-						firstNamespaces = new HashSet<String>(SMALL);
-
-						for (Statement st : firstStatements) {
-							addNamespace(st.getSubject(), firstNamespaces);
-							addNamespace(st.getPredicate(), firstNamespaces);
-							addNamespace(st.getObject(), firstNamespaces);
-							addNamespace(st.getContext(), firstNamespaces);
-						}
+					for (Statement st : firstStatements) {
+						addNamespace(st.getSubject(), firstNamespaces);
+						addNamespace(st.getPredicate(), firstNamespaces);
+						addNamespace(st.getObject(), firstNamespaces);
+						addNamespace(st.getContext(), firstNamespaces);
 					}
 				}
-
-				// Report namespace prefixes
-				for (Map.Entry<String, String> ns : result.getNamespaces().entrySet()) {
-					String prefix = ns.getKey();
-					String namespace = ns.getValue();
-					if (trimNamespaces == false || firstNamespaces.contains(namespace)) {
-						writer.handleNamespace(prefix, namespace);
-					}
-				}
-
-				// Report statements
-				for (Statement st : firstStatements) {
-					writer.handleStatement(st);
-				}
-
-				while (result.hasNext()) {
-					Statement st = result.next();
-					writer.handleStatement(st);
-				}
-
-				writer.endRDF();
 			}
-			finally {
-				result.close();
+
+			// Report namespace prefixes
+			for (Map.Entry<String, String> ns : result.getNamespaces().entrySet()) {
+				String prefix = ns.getKey();
+				String namespace = ns.getValue();
+				if (trimNamespaces == false || firstNamespaces.contains(namespace)) {
+					writer.handleNamespace(prefix, namespace);
+				}
 			}
+
+			// Report staements
+			for (Statement st : firstStatements) {
+				writer.handleStatement(st);
+			}
+
+			while (result.hasNext()) {
+				Statement st = result.next();
+				writer.handleStatement(st);
+			}
+
+			writer.endRDF();
 		}
 		catch (StoreException e) {
 			logger.error("Query evaluation error", e);
