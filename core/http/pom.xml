@@ -18,7 +18,6 @@
 		<module>protocol</module>
 		<module>client</module>
 		<module>server</module>
-		<module>server-spring</module>
 		<module>server-webapp</module>
 		<module>server-standalone</module>
 	</modules>
