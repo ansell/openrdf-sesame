@@ -69,9 +69,9 @@ public class TestServer {
 		}
 	}
 
-	public void setMaxCacheAge(int maxCacheAge) {
-		server.setMaxCacheAge(maxCacheAge);
-	}
+//	public void setMaxCacheAge(int maxCacheAge) {
+//		server.setMaxCacheAge(maxCacheAge);
+//	}
 
 	/**
 	 * @throws StoreException

@@ -1137,7 +1137,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 
 		Statement st;
-		ModelResult statements = testCon.match(null, null, null, false);
+		ModelResult statements = testCon.match(null, name, nameBob, false);
 		try {
 			st = statements.next();
 		}
@@ -1201,7 +1201,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(bob, name, nameBob);
 
 		Statement st;
-		ModelResult statements = testCon.match(null, null, null, false);
+		ModelResult statements = testCon.match(bob, name, null, false);
 		try {
 			st = statements.next();
 		}
@@ -1655,7 +1655,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals(1, query.evaluate().asList().size());
 	}
 
-	public void testSupportsIsolationLevel() throws Exception {
+	public void testSupportsIsolationLevel()
+		throws Exception
+	{
 		Isolation isolation = testCon.getTransactionIsolation();
 		RepositoryMetaData meta = testRepository.getMetaData();
 		assertEquals(isolation, meta.getDefaultIsolation());

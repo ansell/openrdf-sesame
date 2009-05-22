@@ -21,7 +21,7 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		throws Exception
 	{
 		server = new HTTPMemServer();
-		server.setMaxCacheAge(10);
+//		server.setMaxCacheAge(10);
 		try {
 			server.start();
 			super.setUp();

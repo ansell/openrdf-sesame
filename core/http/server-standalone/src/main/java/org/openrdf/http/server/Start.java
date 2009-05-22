@@ -124,6 +124,23 @@ public class Start {
 		}
 	}
 
+	private static int getMaxCacheAge(CommandLine commandLine)
+		throws ParseException
+	{
+		String ageString = commandLine.getOptionValue(maxAgeOption.getOpt());
+
+		if (ageString == null) {
+			return 0;
+		}
+
+		try {
+			return Integer.parseInt(ageString);
+		}
+		catch (NumberFormatException e) {
+			throw new ParseException("Invalid maxCacheAge value '" + ageString + "'");
+		}
+	}
+
 	private static String getShutdownKey(CommandLine commandLine)
 		throws ParseException
 	{
@@ -141,16 +158,12 @@ public class Start {
 	{
 		File dataDir = getDataDirectory(commandLine);
 		int port = getPort(commandLine);
+		int maxCacheAge = getMaxCacheAge(commandLine);
 		String shutdownKey = getShutdownKey(commandLine);
 
 		SesameServer server = new SesameServer(dataDir, port);
+//		server.setMaxCacheAge(maxCacheAge);
 		server.setShutdownKey(shutdownKey);
-
-		// String ageString =
-		// commandLine.getOptionValue(maxAgeOption.getOpt());
-		// if (ageString != null) {
-		// server.setMaxCacheAge(Integer.parseInt(ageString));
-		// }
 
 		try {
 			server.start();
