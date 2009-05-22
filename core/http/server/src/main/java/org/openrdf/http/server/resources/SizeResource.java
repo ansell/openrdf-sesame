@@ -5,15 +5,9 @@
  */
 package org.openrdf.http.server.resources;
 
-import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
 import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
 
 import org.restlet.Context;
-import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
@@ -24,6 +18,7 @@ import org.restlet.resource.Variant;
 
 import org.openrdf.http.server.helpers.ServerConnection;
 import org.openrdf.http.server.helpers.ServerUtil;
+import org.openrdf.http.server.helpers.StatementPatternParams;
 import org.openrdf.http.server.resources.helpers.SesameResource;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -54,12 +49,13 @@ public class SizeResource extends SesameResource {
 			ServerConnection connection = getConnection();
 			ValueFactory vf = connection.getValueFactory();
 
-			Form params = getQuery();
-			Resource subj = ServerUtil.parseResourceParam(params, SUBJECT_PARAM_NAME, vf);
-			URI pred = ServerUtil.parseURIParam(params, PREDICATE_PARAM_NAME, vf);
-			Value obj = ServerUtil.parseValueParam(params, OBJECT_PARAM_NAME, vf);
-			Resource[] contexts = ServerUtil.parseContextParam(params, CONTEXT_PARAM_NAME, vf);
-			boolean includeInferred = ServerUtil.parseBooleanParam(params, INCLUDE_INFERRED_PARAM_NAME, true);
+			StatementPatternParams spParams = new StatementPatternParams(getRequest(), vf);
+
+			Resource subj = spParams.getSubject();
+			URI pred = spParams.getPredicate();
+			Value obj = spParams.getObject();
+			Resource[] contexts = spParams.getContext();
+			boolean includeInferred = spParams.isIncludeInferred();
 
 			try {
 				long size = connection.sizeMatch(subj, pred, obj, includeInferred, contexts);
