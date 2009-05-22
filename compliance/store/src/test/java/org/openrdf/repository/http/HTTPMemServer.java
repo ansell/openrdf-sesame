@@ -67,9 +67,9 @@ public class HTTPMemServer {
 		}
 	}
 
-	public void setMaxCacheAge(int maxCacheAge) {
-		server.setMaxCacheAge(maxCacheAge);
-	}
+//	public void setMaxCacheAge(int maxCacheAge) {
+//		server.setMaxCacheAge(maxCacheAge);
+//	}
 
 	public RepositoryManager getRepositoryManager() {
 		return server.getRepositoryManager();

@@ -84,6 +84,8 @@ public class SesameApplication extends Application {
 	private final ServerRepositoryManager serverRepoManager;
 
 	private final Context c;
+	
+	private int maxCacheAge;
 
 	public SesameApplication(Context parentContext, RepositoryManager manager) {
 		super(parentContext);
