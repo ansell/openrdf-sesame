@@ -7,12 +7,6 @@ package org.openrdf.http.server.resources;
 
 import static org.openrdf.http.protocol.Protocol.BASEURI_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.LIMIT;
-import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.OFFSET;
-import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
 import static org.openrdf.http.protocol.error.ErrorType.MALFORMED_DATA;
 import static org.restlet.data.Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE;
 import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
@@ -40,12 +34,12 @@ import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.http.server.ErrorInfoException;
 import org.openrdf.http.server.helpers.ServerConnection;
 import org.openrdf.http.server.helpers.ServerUtil;
+import org.openrdf.http.server.helpers.StatementPatternParams;
 import org.openrdf.http.server.representations.ModelResultRepresentation;
 import org.openrdf.http.server.resources.helpers.StatementResultResource;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.cursors.LimitCursor;
 import org.openrdf.query.algebra.evaluation.cursors.OffsetCursor;
@@ -65,20 +59,6 @@ public class StatementsResource extends StatementResultResource {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private final Resource subj;
-
-	private final URI pred;
-
-	private final Value obj;
-
-	private final Resource[] contexts;
-
-	private final boolean includeInferred;
-
-	private final int offset;
-
-	private final int limit;
-
 	public StatementsResource(Context context, Request request, Response response)
 		throws ResourceException
 	{
@@ -86,33 +66,26 @@ public class StatementsResource extends StatementResultResource {
 
 		// Allow POST, PUT and DELETE
 		this.setModifiable(true);
-
-		Form params = getQuery();
-		ValueFactory vf = getConnection().getValueFactory();
-
-		subj = ServerUtil.parseResourceParam(params, SUBJECT_PARAM_NAME, vf);
-		pred = ServerUtil.parseURIParam(params, PREDICATE_PARAM_NAME, vf);
-		obj = ServerUtil.parseValueParam(params, OBJECT_PARAM_NAME, vf);
-		contexts = ServerUtil.parseContextParam(params, CONTEXT_PARAM_NAME, vf);
-		includeInferred = ServerUtil.parseBooleanParam(params, INCLUDE_INFERRED_PARAM_NAME, true);
-		offset = ServerUtil.parseIntegerParam(params, OFFSET, 0);
-		limit = ServerUtil.parseIntegerParam(params, LIMIT, -1);
 	}
 
 	protected final Representation getRepresentation(RDFWriterFactory factory, MediaType mediaType)
 		throws ResourceException
 	{
-		try {
-			ModelResult modelResult = getConnection().match(subj, pred, obj, includeInferred, contexts);
+		ServerConnection con = getConnection();
+		StatementPatternParams p = new StatementPatternParams(getRequest(), con.getValueFactory());
 
-			if (offset > 0 || limit > -1) {
+		try {
+			ModelResult modelResult = getConnection().match(p.getSubject(), p.getPredicate(), p.getObject(),
+					p.isIncludeInferred(), p.getContext());
+
+			if (p.getOffset() > 0 || p.getLimit() > -1) {
 				Cursor<Statement> cursor = modelResult;
 
-				if (offset > 0) {
-					cursor = new OffsetCursor<Statement>(cursor, offset);
+				if (p.getOffset() > 0) {
+					cursor = new OffsetCursor<Statement>(cursor, p.getOffset());
 				}
-				if (limit > -1) {
-					cursor = new LimitCursor<Statement>(cursor, limit);
+				if (p.getLimit() > -1) {
+					cursor = new LimitCursor<Statement>(cursor, p.getLimit());
 				}
 				modelResult = new ModelResultImpl(cursor);
 			}
@@ -156,10 +129,12 @@ public class StatementsResource extends StatementResultResource {
 	public void removeRepresentations()
 		throws ResourceException
 	{
+		ServerConnection con = getConnection();
+		StatementPatternParams p = new StatementPatternParams(getRequest(), con.getValueFactory());
+
 		try {
-			ServerConnection connection = getConnection();
-			connection.removeMatch(subj, pred, obj, contexts);
-			connection.getCacheInfo().processUpdate();
+			con.removeMatch(p.getSubject(), p.getPredicate(), p.getObject(), p.getContext());
+			con.getCacheInfo().processUpdate();
 		}
 		catch (StoreException e) {
 			throw new ResourceException(SERVER_ERROR_INTERNAL, "Repository update error", e);
