@@ -95,11 +95,14 @@ public abstract class CacheableResource extends Resource {
 		// Set last-modified date and entity tag on the returned representation
 		if (Status.SUCCESS_OK.equals(getResponse().getStatus()) && representation != null) {
 			CacheInfo cacheInfo = getCacheInfo();
-			if (representation.getModificationDate() == null) {
-				representation.setModificationDate(cacheInfo.getLastModified());
-			}
-			if (representation.getTag() == null) {
-				representation.setTag(cacheInfo.getEntityTag());
+
+			if (cacheInfo != null) {
+				if (representation.getModificationDate() == null) {
+					representation.setModificationDate(cacheInfo.getLastModified());
+				}
+				if (representation.getTag() == null) {
+					representation.setTag(cacheInfo.getEntityTag());
+				}
 			}
 		}
 
