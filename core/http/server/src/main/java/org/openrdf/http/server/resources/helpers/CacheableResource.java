@@ -6,7 +6,7 @@
 package org.openrdf.http.server.resources.helpers;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 import org.restlet.Context;
 import org.restlet.data.Conditions;
@@ -52,22 +52,22 @@ public abstract class CacheableResource extends Resource {
 	 * Registers the specified variants and, if possible, sets last-modified
 	 * dates and entity tags on these variants.
 	 */
-	protected void addCacheableVariants(Iterable<? extends Variant> variants) {
+	protected void addCacheableVariants(Collection<? extends Variant> variants) {
 		CacheInfo cacheInfo = getCacheInfo();
 
-		List<Variant> list = getVariants();
-
-		for (Variant variant : variants) {
-			// Note: method are moved to RepresentationInfo in restlet 2.0
-			if (variant.getModificationDate() == null) {
-				variant.setModificationDate(cacheInfo.getLastModified());
+		if (cacheInfo != null) {
+			for (Variant variant : variants) {
+				// Note: methods are moved to RepresentationInfo in restlet 2.0
+				if (variant.getModificationDate() == null) {
+					variant.setModificationDate(cacheInfo.getLastModified());
+				}
+				if (variant.getTag() == null) {
+					variant.setTag(cacheInfo.getEntityTag());
+				}
 			}
-			if (variant.getTag() == null) {
-				variant.setTag(cacheInfo.getEntityTag());
-			}
-
-			list.add(variant);
 		}
+
+		getVariants().addAll(variants);
 	}
 
 	@Override
