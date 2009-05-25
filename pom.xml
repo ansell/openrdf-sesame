@@ -40,7 +40,6 @@
 		<openrdf.sesame.version>3.0.0-SNAPSHOT</openrdf.sesame.version>
 		<aduna.appbase.version>3.7.0-SNAPSHOT</aduna.appbase.version>
 		<slf4j.version>1.5.6</slf4j.version>
-		<spring.version>2.5.6</spring.version>
 	</properties>
 
 	<dependencyManagement>
@@ -327,19 +326,6 @@
 				<artifactId>servlet-api</artifactId>
 				<version>2.4</version>
 				<scope>provided</scope>
-			</dependency>
-
-			<!-- Spring framework -->
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-webmvc</artifactId>
-				<version>${spring.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 
 			<!-- Compliance tests -->
