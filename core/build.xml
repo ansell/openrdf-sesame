@@ -46,10 +46,8 @@
 			<arg line="-N clean site" />
 		</exec>
 	</target>
-
-	<target name="override-onejar-services">
-		<xmlproperty file="pom.xml" />
-
+	
+	<target name="create-service-files">
 		<antcall target="concat-service-file">
 			<param name="service" value="org.openrdf.query.algebra.evaluation.function.Function"/>
 		</antcall>
@@ -80,17 +78,21 @@
 		<antcall target="concat-service-file">
 			<param name="service" value="org.openrdf.sail.config.SailFactory"/>
 		</antcall>
+	</target>
 
+	<target name="override-onejar-services" depends="create-service-files">
+		<xmlproperty file="pom.xml" />
 		<zip destfile="target/openrdf-sesame-${project.version}-onejar.jar" update="true">
 			<fileset dir="target/services"/>
 		</zip>
 	</target>
 
 	<target name="concat-service-file">
+		<dirname property="antfile.dir" file="${ant.file}"/>
 		<echo message="META-INF/services/${service}"/>
 
 		<concat destfile="target/services/META-INF/services/${service}" fixlastline="yes">
-			<fileset dir="." includes="**/src/main/resources/META-INF/services/${service}"/>
+			<fileset dir="${antfile.dir}" includes="**/src/main/resources/META-INF/services/${service}"/>
 		</concat>
 	</target>
 
