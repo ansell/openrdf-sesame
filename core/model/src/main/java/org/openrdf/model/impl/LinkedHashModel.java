@@ -118,10 +118,10 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 		boolean changed = false;
 		for (Resource ctx : ctxs) {
-			ModelNode<Resource> s = asGraphNode(subj);
-			ModelNode<URI> p = asGraphNode(pred);
-			ModelNode<Value> o = asGraphNode(obj);
-			ModelNode<Resource> c = asGraphNode(ctx);
+			ModelNode<Resource> s = asNode(subj);
+			ModelNode<URI> p = asNode(pred);
+			ModelNode<Value> o = asNode(obj);
+			ModelNode<Resource> c = asNode(ctx);
 			ModelStatement st = new ModelStatement(s, p, o, c);
 			changed |= addModelStatement(st);
 		}
@@ -494,18 +494,30 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		Set<ModelStatement> p = null;
 		Set<ModelStatement> o = null;
 		if (subj != null) {
-			s = asGraphNode(subj).subjects;
+			if (!values.containsKey(subj)) {
+				return emptyModelIterator();
+			}
+			s = values.get(subj).subjects;
 		}
 		if (pred != null) {
-			p = asGraphNode(pred).predicates;
+			if (!values.containsKey(pred)) {
+				return emptyModelIterator();
+			}
+			p = values.get(pred).predicates;
 		}
 		if (obj != null) {
-			o = asGraphNode(obj).objects;
+			if (!values.containsKey(obj)) {
+				return emptyModelIterator();
+			}
+			o = values.get(obj).objects;
 		}
 		Set<ModelStatement> set;
 		contexts = OpenRDFUtil.notNull(contexts);
 		if (contexts.length == 1) {
-			Set<ModelStatement> c = asGraphNode(contexts[0]).contexts;
+			if (!values.containsKey(contexts[0])) {
+				return emptyModelIterator();
+			}
+			Set<ModelStatement> c = values.get(contexts[0]).contexts;
 			set = smallest(statements, s, p, o, c);
 		}
 		else {
@@ -566,6 +578,11 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 
 	Model emptyModel() {
 		return emptyModel;
+	}
+
+	ModelIterator emptyModelIterator() {
+		Set<ModelStatement> set = Collections.emptySet();
+		return new ModelIterator(set.iterator(), set);
 	}
 
 	class EmptyModel extends AbstractSet<Statement> implements Model {
@@ -1349,7 +1366,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		return minSet;
 	}
 
-	private <V extends Value> ModelNode<V> asGraphNode(V value) {
+	private <V extends Value> ModelNode<V> asNode(V value) {
 		if (values.containsKey(value)) {
 			return values.get(value);
 		}
