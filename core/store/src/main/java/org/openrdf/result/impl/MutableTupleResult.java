@@ -8,7 +8,6 @@ package org.openrdf.result.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -262,7 +261,7 @@ public class MutableTupleResult implements TupleResult, Cloneable {
 	public Set<BindingSet> asSet()
 		throws StoreException
 	{
-		return new HashSet<BindingSet>(this.bindingSets);
+		return new LinkedHashSet<BindingSet>(this.bindingSets);
 	}
 
 	public void clear() {
