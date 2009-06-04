@@ -63,28 +63,26 @@ public class PrepareOwnedTupleExpr extends QueryModelVisitorBase<StoreException>
 	private boolean isRemoteQueryModelSupported(RepositoryConnection owner, TupleExpr expr)
 		throws StoreException
 	{
-		if (expr instanceof TupleExpr) {
-			if (expr instanceof StatementPattern) {
-				return false;
-			}
-			if (((TupleExpr)expr).getBindingNames().size() == 0) {
-				return false;
-			}
-			if (expr instanceof ExternalSet) {
-				return false;
-			}
-			RepositoryMetaData md = owner.getRepository().getMetaData();
-			int version = metadata.getSesameMajorVersion();
-			if (version != 0 && version != md.getSesameMajorVersion()) {
-				return false;
-			}
-			if (version != 0 && metadata.getSesameMinorVersion() != md.getSesameMinorVersion()) {
-				return false;
-			}
-			for (QueryLanguage ql : md.getQueryLanguages()) {
-				if (QueryModelSerializer.LANGUAGE.equals(ql)) {
-					return true;
-				}
+		if (expr instanceof StatementPattern) {
+			return false;
+		}
+		if (((TupleExpr)expr).getBindingNames().size() == 0) {
+			return false;
+		}
+		if (expr instanceof ExternalSet) {
+			return false;
+		}
+		RepositoryMetaData md = owner.getRepository().getMetaData();
+		int version = metadata.getSesameMajorVersion();
+		if (version != 0 && version != md.getSesameMajorVersion()) {
+			return false;
+		}
+		if (version != 0 && metadata.getSesameMinorVersion() != md.getSesameMinorVersion()) {
+			return false;
+		}
+		for (QueryLanguage ql : md.getQueryLanguages()) {
+			if (QueryModelSerializer.LANGUAGE.equals(ql)) {
+				return true;
 			}
 		}
 		return false;
