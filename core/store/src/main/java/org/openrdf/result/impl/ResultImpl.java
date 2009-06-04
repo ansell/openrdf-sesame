@@ -7,7 +7,7 @@ package org.openrdf.result.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -124,7 +124,7 @@ public class ResultImpl<T> extends DelegatingCursor<T> implements Result<T> {
 	public Set<T> asSet()
 		throws StoreException
 	{
-		return addTo(new HashSet<T>());
+		return addTo(new LinkedHashSet<T>());
 	}
 
 	/**
