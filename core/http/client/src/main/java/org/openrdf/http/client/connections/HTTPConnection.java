@@ -379,35 +379,46 @@ public class HTTPConnection {
 	public boolean readBoolean()
 		throws IOException, QueryResultParseException, NoCompatibleMediaType
 	{
+		Boolean result = null;
 		String mimeType = readContentType();
 		try {
 			BooleanQueryResultFormat format = BooleanQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(
 					mimeType);
 			BooleanQueryResultParser parser = QueryResultIO.createParser(format);
-			return parser.parse(method.getResponseBodyAsStream());
+			result = parser.parse(method.getResponseBodyAsStream());
+			return result;
 		}
 		catch (UnsupportedQueryResultFormatException e) {
 			logger.warn(e.toString(), e);
 			throw new NoCompatibleMediaType("Server responded with an unsupported file format: " + mimeType);
+		} finally {
+			if (result == null) {
+				abort();
+			}
 		}
 	}
 
 	public TupleResult getTupleQueryResult()
 		throws IOException, QueryResultParseException, NoCompatibleMediaType
 	{
+		BackgroundTupleResult result = null;
 		String mimeType = readContentType();
 		try {
 			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
 			TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
 			TupleQueryResultParser parser = QueryResultIO.createParser(format, pool.getValueFactory());
 			InputStream in = method.getResponseBodyAsStream();
-			BackgroundTupleResult result = new BackgroundTupleResult(parser, in, this);
+			result = new BackgroundTupleResult(parser, in, this);
 			pool.executeTask(result);
 			return result;
 		}
 		catch (UnsupportedQueryResultFormatException e) {
 			logger.warn(e.toString(), e);
 			throw new NoCompatibleMediaType("Server responded with an unsupported file format: " + mimeType);
+		} finally {
+			if (result == null) {
+				abort();
+			}
 		}
 	}
 
@@ -444,6 +455,7 @@ public class HTTPConnection {
 	public GraphResult getGraphQueryResult()
 		throws IOException, RDFParseException, NoCompatibleMediaType
 	{
+		BackgroundGraphResult result = null;
 		String mimeType = readContentType();
 		try {
 			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
@@ -452,13 +464,17 @@ public class HTTPConnection {
 			parser.setPreserveBNodeIDs(true);
 			InputStream in = method.getResponseBodyAsStream();
 			String base = method.getURI().getURI();
-			BackgroundGraphResult result = new BackgroundGraphResult(parser, in, base, this);
+			result = new BackgroundGraphResult(parser, in, base, this);
 			pool.executeTask(result);
 			return result;
 		}
 		catch (UnsupportedRDFormatException e) {
 			logger.warn(e.toString(), e);
 			throw new NoCompatibleMediaType("Server responded with an unsupported file format: " + mimeType);
+		} finally {
+			if (result == null) {
+				abort();
+			}
 		}
 	}
 
