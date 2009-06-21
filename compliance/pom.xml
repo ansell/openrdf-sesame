@@ -23,10 +23,6 @@
 	<name>OpenRDF Sesame compliance tests</name>
 	<description>OpenRDF Sesame compliance tests</description>
 	
-	<properties>
-		<openrdf.sesame.version>2.3-pr1</openrdf.sesame.version>
-	</properties>
-
 	<dependencyManagement>
 		<dependencies>		
 			<dependency>
