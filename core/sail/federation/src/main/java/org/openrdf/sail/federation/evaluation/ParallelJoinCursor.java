@@ -31,7 +31,7 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 
 	private final TupleExpr rightArg;
 
-	private final QueueCursor<Cursor<BindingSet>> rightQueue = new QueueCursor<Cursor<BindingSet>>(1024);
+	private final QueueCursor<Cursor<BindingSet>> cursorQueue = new QueueCursor<Cursor<BindingSet>>(1024);
 
 	/*-----------*
 	 * Variables *
@@ -39,7 +39,7 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 
 	private volatile Thread evaluationThread;
 
-	private Cursor<BindingSet> rightIter;
+	private Cursor<BindingSet> currentCursor;
 
 	private volatile boolean closed;
 
@@ -63,37 +63,38 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 	public void run() {
 		evaluationThread = Thread.currentThread();
 		try {
-			BindingSet leftNext;
-			while (!closed && (leftNext = leftIter.next()) != null) {
-				rightQueue.put(strategy.evaluate(rightArg, leftNext));
+			BindingSet bindings;
+			while (!closed && (bindings = leftIter.next()) != null) {
+				Cursor<BindingSet> nextCursor = strategy.evaluate(rightArg, bindings);
+				cursorQueue.put(nextCursor);
 			}
 		}
 		catch (RuntimeException e) {
-			rightQueue.toss(e);
+			cursorQueue.toss(e);
 		}
 		catch (StoreException e) {
-			rightQueue.toss(e);
+			cursorQueue.toss(e);
 		}
 		catch (InterruptedException e) {
 			// stop
 		}
 		finally {
 			evaluationThread = null;
-			rightQueue.done();
+			cursorQueue.done();
 		}
 	}
 
 	public BindingSet next()
 		throws StoreException
 	{
-		while (rightIter != null || (rightIter = rightQueue.next()) != null) {
-			BindingSet rightNext = rightIter.next();
-			if (rightNext != null) {
-				return rightNext;
+		while (currentCursor != null || (currentCursor = cursorQueue.next()) != null) {
+			BindingSet result = currentCursor.next();
+			if (result != null) {
+				return result;
 			}
 			else {
-				rightIter.close();
-				rightIter = null;
+				currentCursor.close();
+				currentCursor = null;
 			}
 		}
 
@@ -109,9 +110,10 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 		if (t != null) {
 			t.interrupt();
 		}
-		if (rightIter != null) {
-			rightIter.close();
-			rightIter = null;
+		
+		if (currentCursor != null) {
+			currentCursor.close();
+			currentCursor = null;
 		}
 
 		leftIter.close();
@@ -121,8 +123,8 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 	public String toString() {
 		String left = leftIter.toString().replace("\n", "\n\t");
 		String right = rightArg.toString();
-		if (rightIter != null) {
-			right = rightIter.toString();
+		if (currentCursor != null) {
+			right = currentCursor.toString();
 		}
 		return "ParallelJoin\n\t" + left + "\n\t" + right.replace("\n", "\n\t");
 	}
