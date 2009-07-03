@@ -30,7 +30,7 @@ import org.openrdf.store.StoreException;
  * @author James Leigh
  * @author Arjohn Kampman
  */
-public class Federation extends SailBase implements Executor {
+public class Federation extends SailBase {
 
 	private final URIFactory uf = new URIFactoryImpl();
 
@@ -128,11 +128,7 @@ public class Federation extends SailBase implements Executor {
 		metaData.setReadOnly(readOnly);
 		return metaData;
 	}
-
-	public void execute(Runnable command) {
-		executor.execute(command);
-	}
-
+	
 	@Override
 	protected SailConnection getConnectionInternal()
 		throws StoreException
@@ -170,5 +166,9 @@ public class Federation extends SailBase implements Executor {
 				logger.error(e.getMessage(), e);
 			}
 		}
+	}
+	
+	Executor getExecutor() {
+		return executor;
 	}
 }

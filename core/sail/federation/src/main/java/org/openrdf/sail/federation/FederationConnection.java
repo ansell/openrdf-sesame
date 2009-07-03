@@ -264,7 +264,7 @@ abstract class FederationConnection extends SailConnectionBase {
 		throws StoreException
 	{
 		TripleSource tripleSource = new FederationTripleSource(includeInferred);
-		EvaluationStrategyImpl strategy = new FederationStrategy(federation, tripleSource, query);
+		EvaluationStrategyImpl strategy = new FederationStrategy(federation.getExecutor(), tripleSource, query);
 		TupleExpr qry = optimize(query, bindings, strategy);
 		return strategy.evaluate(qry, EmptyBindingSet.getInstance());
 	}
@@ -305,7 +305,7 @@ abstract class FederationConnection extends SailConnectionBase {
 		new SameTermFilterOptimizer().optimize(query, bindings);
 		new QueryModelPruner().optimize(query, bindings);
 
-		FederationStatistics statistics = new FederationStatistics(federation, members, query);
+		FederationStatistics statistics = new FederationStatistics(federation.getExecutor(), members, query);
 		new QueryJoinOptimizer(statistics).optimize(query, bindings);
 		new FilterOptimizer().optimize(query, bindings);
 
