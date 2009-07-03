@@ -58,14 +58,15 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 		throws StoreException
 	{
 		assert join.getNumberOfArguments() > 0;
-		Cursor<BindingSet> result;
-		result = evaluate(join.getArg(0), bindings);
+
+		Cursor<BindingSet> result = evaluate(join.getArg(0), bindings);
+
 		for (int i = 1, n = join.getNumberOfArguments(); i < n; i++) {
-			ParallelJoinCursor arg;
-			arg = new ParallelJoinCursor(this, result, join.getArg(i), bindings);
+			ParallelJoinCursor arg = new ParallelJoinCursor(this, result, join.getArg(i), bindings);
 			executor.execute(arg);
 			result = arg;
 		}
+
 		return result;
 	}
 
@@ -85,8 +86,7 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 
 		if (problemVars.isEmpty()) {
 			// left join is "well designed"
-			ParallelLeftJoinCursor arg;
-			arg = new ParallelLeftJoinCursor(this, leftJoin, bindings);
+			ParallelLeftJoinCursor arg = new ParallelLeftJoinCursor(this, leftJoin, bindings);
 			executor.execute(arg);
 			return arg;
 		}
