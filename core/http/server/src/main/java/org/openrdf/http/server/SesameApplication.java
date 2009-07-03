@@ -42,6 +42,7 @@ import org.openrdf.http.server.filters.PreparedQueryResolver;
 import org.openrdf.http.server.filters.QueryParser;
 import org.openrdf.http.server.filters.QueryTypeRouter;
 import org.openrdf.http.server.filters.RepositoryResolver;
+import org.openrdf.http.server.filters.RequestLogger;
 import org.openrdf.http.server.filters.ScopedConnectionTagger;
 import org.openrdf.http.server.helpers.ServerRepositoryManager;
 import org.openrdf.http.server.resources.BNodesResource;
@@ -104,6 +105,8 @@ public class SesameApplication extends Application {
 
 		// Allow Accept-parameters to override Accept-headers:
 		root = new AcceptParamFilter(c, root);
+		
+//		root = new RequestLogger(c, root);
 
 		return root;
 	}
