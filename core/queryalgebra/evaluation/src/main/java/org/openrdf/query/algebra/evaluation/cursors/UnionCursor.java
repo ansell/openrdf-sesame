@@ -58,7 +58,7 @@ public class UnionCursor<E> implements Cursor<E> {
 		argIter = args.iterator();
 
 		// Initialize with empty cursor so that var is not null
-		currentIter = new EmptyCursor<E>();
+		currentIter = EmptyCursor.getInstance();
 	}
 
 	/*--------------*
