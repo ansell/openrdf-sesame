@@ -205,7 +205,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 				if (graphs.isEmpty()) {
 					// Search zero contexts
-					return new EmptyCursor<BindingSet>();
+					return EmptyCursor.getInstance();
 				}
 				else if (contextValue != null) {
 					if (graphs.contains(contextValue)) {
@@ -214,7 +214,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					else {
 						// Statement pattern specifies a context that is not part of
 						// the dataset
-						return new EmptyCursor<BindingSet>();
+						return EmptyCursor.getInstance();
 					}
 				}
 				else {
@@ -236,7 +236,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		catch (ClassCastException e) {
 			// Invalid value type for subject, predicate and/or context
-			return new EmptyCursor<BindingSet>();
+			return EmptyCursor.getInstance();
 		}
 
 		// The same variable might have been used multiple times in this
