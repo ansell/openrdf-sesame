@@ -117,6 +117,7 @@ public class SesameServer {
 
 		component = new Component();
 		component.getServers().add(Protocol.HTTP, port);
+		component.getLogService().setEnabled(false);
 
 		Context appContext = component.getContext().createChildContext();
 		SesameApplication app = new SesameApplication(appContext, manager);
