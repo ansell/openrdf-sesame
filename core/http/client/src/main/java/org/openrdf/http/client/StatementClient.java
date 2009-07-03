@@ -100,10 +100,13 @@ public class StatementClient {
 		throws StoreException
 	{
 		final HTTPConnection method = statements.get();
+
 		if (match != null) {
 			method.ifNoneMatch(match);
 		}
+
 		method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
+
 		Callable<GraphResult> task = new Callable<GraphResult>() {
 
 			public GraphResult call()
@@ -123,8 +126,11 @@ public class StatementClient {
 				}
 			}
 		};
-		if (match == null)
+
+		if (match == null) {
 			return new FutureGraphQueryResult(statements.submitTask(task));
+		}
+
 		try {
 			return task.call();
 		}
