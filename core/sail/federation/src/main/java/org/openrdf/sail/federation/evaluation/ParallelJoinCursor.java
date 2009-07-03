@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -27,7 +27,11 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 
 	private final EvaluationStrategy strategy;
 
+	private final Cursor<BindingSet> leftIter;
+
 	private final TupleExpr rightArg;
+
+	private final QueueCursor<Cursor<BindingSet>> rightQueue = new QueueCursor<Cursor<BindingSet>>(1024);
 
 	/*-----------*
 	 * Variables *
@@ -35,13 +39,9 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 
 	private volatile Thread evaluationThread;
 
-	private Cursor<BindingSet> leftIter;
-
 	private Cursor<BindingSet> rightIter;
 
 	private volatile boolean closed;
-
-	private QueueCursor<Cursor<BindingSet>> rightQueue = new QueueCursor<Cursor<BindingSet>>(1024);
 
 	/*--------------*
 	 * Constructors *
@@ -104,8 +104,10 @@ public class ParallelJoinCursor implements Cursor<BindingSet>, Runnable {
 		throws StoreException
 	{
 		closed = true;
-		if (evaluationThread != null) {
-			evaluationThread.interrupt();
+
+		Thread t = evaluationThread;
+		if (t != null) {
+			t.interrupt();
 		}
 		if (rightIter != null) {
 			rightIter.close();
