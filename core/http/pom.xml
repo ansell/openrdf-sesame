@@ -23,7 +23,7 @@
 	</modules>
 
 	<properties>
-		<restlet.version>1.1.4</restlet.version>
+		<restlet.version>1.1.5</restlet.version>
 	</properties>
 
 	<repositories>
