@@ -474,24 +474,16 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public Cursor<BindingSet> evaluate(final Intersection intersection, final BindingSet bindings)
 		throws StoreException
 	{
-		Cursor<BindingSet> leftArg, rightArg;
-
-		leftArg = new DelayedEvaluationCursor(this, intersection.getLeftArg(), bindings);
-
-		rightArg = new DelayedEvaluationCursor(this, intersection.getRightArg(), bindings);
-
+		Cursor<BindingSet> leftArg = new DelayedEvaluationCursor(this, intersection.getLeftArg(), bindings);
+		Cursor<BindingSet> rightArg = new DelayedEvaluationCursor(this, intersection.getRightArg(), bindings);
 		return new IntersectCursor<BindingSet>(leftArg, rightArg);
 	}
 
 	public Cursor<BindingSet> evaluate(final Difference difference, final BindingSet bindings)
 		throws StoreException
 	{
-		Cursor<BindingSet> leftArg, rightArg;
-
-		leftArg = new DelayedEvaluationCursor(this, difference.getLeftArg(), bindings);
-
-		rightArg = new DelayedEvaluationCursor(this, difference.getRightArg(), bindings);
-
+		Cursor<BindingSet> leftArg = new DelayedEvaluationCursor(this, difference.getLeftArg(), bindings);
+		Cursor<BindingSet> rightArg = new DelayedEvaluationCursor(this, difference.getRightArg(), bindings);
 		return new MinusCursor<BindingSet>(leftArg, rightArg);
 	}
 
@@ -504,7 +496,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public Cursor<BindingSet> evaluate(EmptySet emptySet, BindingSet bindings)
 		throws StoreException
 	{
-		return new EmptyCursor<BindingSet>();
+		return EmptyCursor.getInstance();
 	}
 
 	public Cursor<BindingSet> evaluate(ExternalSet external, BindingSet bindings)
