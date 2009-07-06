@@ -112,7 +112,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
-		logger.trace("Incoming query model:\n{}", query.toString());
+		logger.trace("Incoming query model:\n{}", query);
 
 		// Clone the tuple expression to allow for more aggresive optimizations
 		query = query.clone();
@@ -144,7 +144,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			optimizerList.optimize(query, bindings);
 
-			logger.trace("Optimized query model:\n{}", query.toString());
+			logger.trace("Optimized query model:\n{}", query);
 
 			Cursor<BindingSet> iter;
 			iter = strategy.evaluate(query, EmptyBindingSet.getInstance());
