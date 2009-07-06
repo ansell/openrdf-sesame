@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -19,7 +19,7 @@ import org.openrdf.store.StoreException;
  */
 public abstract class DelayedCursor<E> extends CheckedCursor<E> {
 
-	private Cursor<? extends E> delegate;
+	private volatile Cursor<? extends E> delegate;
 
 	/**
 	 * Creates a new DelayedCursor.
@@ -36,9 +36,7 @@ public abstract class DelayedCursor<E> extends CheckedCursor<E> {
 		throws StoreException;
 
 	protected boolean cursorCreated() {
-		synchronized (this) {
-			return delegate != null;
-		}
+		return delegate != null;
 	}
 
 	@Override
@@ -47,9 +45,13 @@ public abstract class DelayedCursor<E> extends CheckedCursor<E> {
 	{
 		// Check without synchronization first to prevent overhead for the most
 		// common case
-		if (delegate == null && !isClosed()) {
+		if (delegate == null) {
 			synchronized (this) {
-				if (delegate == null && !isClosed()) {
+				if (isClosed()) {
+					// cursor has been closed in the mean time
+					return null;
+				}
+				else if (delegate == null) {
 					delegate = createCursor();
 				}
 			}
