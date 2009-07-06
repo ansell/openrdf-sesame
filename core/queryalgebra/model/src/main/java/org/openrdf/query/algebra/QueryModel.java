@@ -78,31 +78,26 @@ public class QueryModel extends UnaryTupleOperator {
 	 */
 	@Override
 	public String toString() {
-		if (defaultGraphs.isEmpty() && namedGraphs.isEmpty()) {
-			return getTupleExpr().toString();
-		}
-		StringBuilder sb = new StringBuilder();
-		for (URI uri : defaultGraphs) {
-			sb.append("FROM ");
-			appendURI(sb, uri);
-		}
-		for (URI uri : namedGraphs) {
-			sb.append("FROM NAMED ");
-			appendURI(sb, uri);
-		}
-		sb.append(getTupleExpr().toString());
-		return sb.toString();
-	}
+		StringBuilder sb = new StringBuilder(512);
 
-	private void appendURI(StringBuilder sb, URI uri) {
-		String str = uri.toString();
-		if (str.length() > 50) {
-			sb.append("<").append(str, 0, 19).append("..");
-			sb.append(str, str.length() - 29, str.length()).append(">\n");
+		if (!defaultGraphs.isEmpty()) {
+			for (URI uri : defaultGraphs) {
+				sb.append("FROM <");
+				sb.append(uri);
+				sb.append(">\n");
+			}
 		}
-		else {
-			sb.append("<").append(uri).append(">\n");
+
+		if (!namedGraphs.isEmpty()) {
+			for (URI uri : namedGraphs) {
+				sb.append("FROM NAMED <");
+				sb.append(uri);
+				sb.append(">\n");
+			}
 		}
+
+		sb.append(getTupleExpr());
+		return sb.toString();
 	}
 
 	@Override
