@@ -164,6 +164,9 @@ class GraphPattern {
 		if (requiredTEs.isEmpty()) {
 			result = new SingletonSet();
 		}
+		else if (requiredTEs.size() == 1) {
+			result = requiredTEs.get(0);
+		}
 		else {
 			result = new Join(requiredTEs);
 		}
