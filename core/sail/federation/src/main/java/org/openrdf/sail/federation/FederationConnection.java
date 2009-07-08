@@ -265,8 +265,8 @@ abstract class FederationConnection extends SailConnectionBase {
 	{
 		TripleSource tripleSource = new FederationTripleSource(includeInferred);
 		EvaluationStrategyImpl strategy = new FederationStrategy(federation.getExecutor(), tripleSource, query);
-		TupleExpr qry = optimize(query, bindings, strategy);
-		return strategy.evaluate(qry, EmptyBindingSet.getInstance());
+		query = optimize(query, bindings, strategy);
+		return strategy.evaluate(query, EmptyBindingSet.getInstance());
 	}
 
 	private class FederationTripleSource implements TripleSource {
@@ -289,13 +289,13 @@ abstract class FederationConnection extends SailConnectionBase {
 		}
 	}
 
-	private QueryModel optimize(QueryModel parsed, BindingSet bindings, EvaluationStrategyImpl strategy)
+	private QueryModel optimize(QueryModel query, BindingSet bindings, EvaluationStrategyImpl strategy)
 		throws StoreException
 	{
-		logger.trace("Incoming query model:\n{}", parsed.toString());
+		logger.trace("Incoming query model:\n{}", query);
 
-		// Clone the tuple expression to allow for more aggressive optimisations
-		QueryModel query = parsed.clone();
+		// Clone the tuple expression to allow for more aggressive optimizations
+		query = query.clone();
 
 		new BindingAssigner().optimize(query, bindings);
 		new ConstantOptimizer(strategy).optimize(query, bindings);
@@ -320,7 +320,7 @@ abstract class FederationConnection extends SailConnectionBase {
 
 		new PrepareOwnedTupleExpr(federation.getMetaData()).optimize(query, bindings);
 
-		logger.trace("Optimized query model:\n{}", query.toString());
+		logger.trace("Optimized query model:\n{}", query);
 		return query;
 	}
 
