@@ -27,7 +27,7 @@ import org.openrdf.store.StoreException;
  */
 public class SignedConnection extends RepositoryConnectionWrapper {
 
-	private BNodeSigner signer;
+	private final BNodeSigner signer;
 
 	public SignedConnection(RepositoryConnection delegate, BNodeSigner signer) {
 		super(delegate.getRepository(), delegate);

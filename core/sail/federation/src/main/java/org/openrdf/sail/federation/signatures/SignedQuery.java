@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -15,13 +15,21 @@ import org.openrdf.query.Query;
  */
 public abstract class SignedQuery implements Query {
 
-	private Query query;
+	private final Query query;
 
-	BNodeSigner signer;
+	private final BNodeSigner signer;
 
 	public SignedQuery(Query query, BNodeSigner signer) {
 		this.query = query;
 		this.signer = signer;
+	}
+
+	protected Query getQuery() {
+		return query;
+	}
+
+	protected BNodeSigner getSigner() {
+		return signer;
 	}
 
 	public BindingSet getBindings() {
