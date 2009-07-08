@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,23 +14,24 @@ import org.openrdf.store.StoreException;
  */
 public class SignedBooleanQuery extends SignedQuery implements BooleanQuery {
 
-	private BooleanQuery query;
-
 	public SignedBooleanQuery(BooleanQuery query, BNodeSigner signer) {
 		super(query, signer);
-		this.query = query;
+	}
+
+	@Override
+	protected BooleanQuery getQuery() {
+		return (BooleanQuery)super.getQuery();
 	}
 
 	public boolean ask()
 		throws StoreException
 	{
-		return query.ask();
+		return getQuery().ask();
 	}
 
 	public BooleanResult evaluate()
 		throws StoreException
 	{
-		return query.evaluate();
+		return getQuery().evaluate();
 	}
-
 }
