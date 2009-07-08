@@ -34,9 +34,9 @@ import org.openrdf.store.StoreException;
  */
 public class OwnedTupleExpr extends UnaryTupleOperator {
 
-	private Logger logger = LoggerFactory.getLogger(OwnedTupleExpr.class);
+	private final Logger logger = LoggerFactory.getLogger(OwnedTupleExpr.class);
 
-	private RepositoryConnection owner;
+	private final RepositoryConnection owner;
 
 	private TupleQuery query;
 
