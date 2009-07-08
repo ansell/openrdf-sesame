@@ -31,7 +31,7 @@ public class Join extends NaryTupleOperator {
 	/**
 	 * Creates a new natural join operator.
 	 */
-	public Join(List<TupleExpr> args) {
+	public Join(List<? extends TupleExpr> args) {
 		super(args);
 	}
 
