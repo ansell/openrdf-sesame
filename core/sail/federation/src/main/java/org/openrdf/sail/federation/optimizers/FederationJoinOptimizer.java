@@ -59,22 +59,25 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	}
 
 	@Override
-	public void meet(Join node)
+	public void meet(Join join)
 		throws StoreException
 	{
-		super.meet(node);
+		super.meet(join);
+
 		List<Owned<Join>> ows = new ArrayList<Owned<Join>>();
 		List<LocalJoin> vars = new ArrayList<LocalJoin>();
-		for (TupleExpr arg : node.getArgs()) {
+
+		for (TupleExpr arg : join.getArgs()) {
 			RepositoryConnection member = getSingleOwner(arg);
-			if (ows.size() > 0 && ows.get(ows.size() - 1).getOwner() == member) {
+			if (!ows.isEmpty() && ows.get(ows.size() - 1).getOwner() == member) {
 				ows.get(ows.size() - 1).getOperation().addArg(arg.clone());
 			}
 			else {
 				ows.add(new Owned<Join>(member, new Join(arg.clone())));
 			}
 		}
-		for (TupleExpr arg : node.getArgs()) {
+
+		for (TupleExpr arg : join.getArgs()) {
 			Var subj = getLocalSubject(arg);
 			LocalJoin local = findLocalJoin(subj, vars);
 			if (local != null) {
@@ -84,30 +87,33 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 				vars.add(new LocalJoin(subj, new Join(arg.clone())));
 			}
 		}
-		addOwners(node, ows, vars);
+
+		addOwners(join, ows, vars);
 	}
 
 	@Override
-	public void meet(LeftJoin node)
+	public void meet(LeftJoin leftJoin)
 		throws StoreException
 	{
-		super.meet(node);
-		Var leftSubject = getLocalSubject(node.getLeftArg());
-		Var rightSubject = getLocalSubject(node.getRightArg());
+		super.meet(leftJoin);
+
+		Var leftSubject = getLocalSubject(leftJoin.getLeftArg());
+		Var rightSubject = getLocalSubject(leftJoin.getRightArg());
 		// if local then left and right can be combined
 		boolean local = leftSubject != null && leftSubject.equals(rightSubject);
-		RepositoryConnection leftOwner = getSingleOwner(node.getLeftArg());
-		RepositoryConnection rightOwner = getSingleOwner(node.getRightArg());
-		addOwners(node, leftOwner, rightOwner, local);
+		RepositoryConnection leftOwner = getSingleOwner(leftJoin.getLeftArg());
+		RepositoryConnection rightOwner = getSingleOwner(leftJoin.getRightArg());
+		addOwners(leftJoin, leftOwner, rightOwner, local);
 	}
 
 	@Override
-	public void meet(Union node)
+	public void meet(Union union)
 		throws StoreException
 	{
-		super.meet(node);
+		super.meet(union);
+
 		List<Owned<Union>> ows = new ArrayList<Owned<Union>>();
-		for (TupleExpr arg : node.getArgs()) {
+		for (TupleExpr arg : union.getArgs()) {
 			RepositoryConnection member = getSingleOwner(arg);
 			if (ows.size() > 0 && ows.get(ows.size() - 1).getOwner() == member) {
 				ows.get(ows.size() - 1).getOperation().addArg(arg.clone());
@@ -116,7 +122,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 				ows.add(new Owned<Union>(member, new Union(arg.clone())));
 			}
 		}
-		addOwners(node, ows);
+		addOwners(union, ows);
 	}
 
 	@Override
@@ -208,14 +214,15 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		}
 
 		@Override
-		public void meet(StatementPattern node)
+		public void meet(StatementPattern sp)
 			throws StoreException
 		{
-			super.meet(node);
-			Resource subj = (Resource)node.getSubjectVar().getValue();
-			URI pred = (URI)node.getPredicateVar().getValue();
-			Value obj = node.getObjectVar().getValue();
-			Resource[] ctx = getContexts(node.getContextVar());
+			super.meet(sp);
+
+			Resource subj = (Resource)sp.getSubjectVar().getValue();
+			URI pred = (URI)sp.getPredicateVar().getValue();
+			Value obj = sp.getObjectVar().getValue();
+			Resource[] ctx = getContexts(sp.getContextVar());
 			RepositoryConnection member = getSingleOwner(subj, pred, obj, ctx);
 			if (member == null) {
 				multipleOwners();
