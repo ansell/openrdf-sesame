@@ -82,6 +82,13 @@ public class MapBindingSet implements BindingSet {
 		bindings.remove(name);
 	}
 
+	/**
+	 * Removes all bindings from the solution.
+	 */
+	public void clear() {
+		bindings.clear();
+	}
+
 	public Iterator<Binding> iterator() {
 		return bindings.values().iterator();
 	}

@@ -40,6 +40,11 @@ public interface Query {
 	 *        The name of the variable from which the binding is to be removed.
 	 */
 	public void removeBinding(String name);
+	
+	/**
+	 * Removes all previously set bindings.
+	 */
+	public void clearBindings();
 
 	/**
 	 * Retrieves the bindings that have been set on this query.

@@ -19,7 +19,7 @@ public abstract class AbstractQuery implements Query {
 	 * Variables *
 	 *-----------*/
 
-	protected MapBindingSet bindings = new MapBindingSet();
+	protected final MapBindingSet bindings = new MapBindingSet();
 
 	protected Dataset dataset = null;
 
@@ -47,6 +47,10 @@ public abstract class AbstractQuery implements Query {
 
 	public void removeBinding(String name) {
 		bindings.removeBinding(name);
+	}
+	
+	public void clearBindings() {
+		bindings.clear();
 	}
 
 	public BindingSet getBindings() {
