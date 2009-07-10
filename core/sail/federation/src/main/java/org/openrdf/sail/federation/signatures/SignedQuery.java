@@ -32,41 +32,44 @@ public abstract class SignedQuery implements Query {
 		return signer;
 	}
 
-	public BindingSet getBindings() {
-		BindingSet internal = query.getBindings();
-		return signer.sign(internal);
-	}
-
 	public void setBinding(String name, Value value) {
 		query.setBinding(name, signer.removeSignature(value));
-	}
-
-	public Dataset getDataset() {
-		return query.getDataset();
-	}
-
-	public boolean getIncludeInferred() {
-		return query.getIncludeInferred();
-	}
-
-	public int getMaxQueryTime() {
-		return query.getMaxQueryTime();
 	}
 
 	public void removeBinding(String name) {
 		query.removeBinding(name);
 	}
 
+	public void clearBindings() {
+		query.clearBindings();
+	}
+
+	public BindingSet getBindings() {
+		BindingSet internal = query.getBindings();
+		return signer.sign(internal);
+	}
+
 	public void setDataset(Dataset dataset) {
 		query.setDataset(dataset);
+	}
+
+	public Dataset getDataset() {
+		return query.getDataset();
 	}
 
 	public void setIncludeInferred(boolean includeInferred) {
 		query.setIncludeInferred(includeInferred);
 	}
 
+	public boolean getIncludeInferred() {
+		return query.getIncludeInferred();
+	}
+
 	public void setMaxQueryTime(int maxQueryTime) {
 		query.setMaxQueryTime(maxQueryTime);
 	}
 
+	public int getMaxQueryTime() {
+		return query.getMaxQueryTime();
+	}
 }
