@@ -45,7 +45,7 @@ public class ConnectionResolver extends Filter {
 	@Override
 	protected int beforeHandle(Request request, Response response) {
 		String connectionID = getConnectionID(request);
-		logger.debug(CONNECTION_ID_PARAM + "={}", connectionID);
+		logger.debug("{}={}", CONNECTION_ID_PARAM, connectionID);
 
 		ServerConnection connection = RequestAtt.getRepository(request).getConnection(connectionID);
 

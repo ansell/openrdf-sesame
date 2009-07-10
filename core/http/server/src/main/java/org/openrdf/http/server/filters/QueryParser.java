@@ -236,7 +236,7 @@ public class QueryParser extends Filter {
 			queryTypeValue = BOOLEAN_QUERY;
 		}
 		else {
-			logger.warn("Encountered unknown query type: " + query.getClass().getName());
+			logger.warn("Encountered unknown query type: {}", query.getClass().getName());
 		}
 
 		if (queryTypeValue != null) {
