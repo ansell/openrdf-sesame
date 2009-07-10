@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -22,21 +22,17 @@ import org.openrdf.http.protocol.Protocol;
  */
 public class ProtocolResource extends Resource {
 
-	/**
-	 * The (shared) entity that is returned by this resource.
-	 */
-	private static final Representation entity = createVersionEntity();
+	public ProtocolResource(Context context, Request request, Response response) {
+		super(context, request, response);
+		setNegotiateContent(false);
+		getVariants().add(createVersionEntity());
+	}
 
-	private static Representation createVersionEntity() {
+	private Representation createVersionEntity() {
 		Representation entity = new StringRepresentation(Protocol.VERSION);
 		entity.setTag(new Tag(Protocol.VERSION, false));
 		entity.setModificationDate(new Date());
 		return entity;
 	}
-
-	public ProtocolResource(Context context, Request request, Response response) {
-		super(context, request, response);
-		setNegotiateContent(false);
-		getVariants().add(entity);
-	}
 }
+	
