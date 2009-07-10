@@ -117,7 +117,7 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 		}
 		QueryModel query = createQueryModel(expr);
 		TripleSource source = new RepositoryTripleSource(expr.getOwner());
-		EvaluationStrategyImpl eval = new EvaluationStrategyImpl(source, query);
+		EvaluationStrategyImpl eval = new FederationStrategy(executor, source, query);
 		return eval.evaluate(query, bindings);
 	}
 
