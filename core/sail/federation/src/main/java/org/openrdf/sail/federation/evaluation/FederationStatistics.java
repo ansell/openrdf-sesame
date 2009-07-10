@@ -135,6 +135,7 @@ public class FederationStatistics extends EvaluationStatistics {
 			final Value obj = getConstantValue(sp.getObjectVar());
 			final Resource context = (Resource)getConstantValue(sp.getContextVar());
 			List<Value> key = Arrays.asList(subj, pred, obj, context);
+
 			if (cardinalities.containsKey(key)) {
 				for (int i = 0, n = members.size(); i < n; i++) {
 					latch.countDown(); // run down latch
@@ -143,13 +144,15 @@ public class FederationStatistics extends EvaluationStatistics {
 			else {
 				final AtomicLong cardinality = new AtomicLong(0l);
 				cardinalities.put(key, cardinality);
+
 				for (final RepositoryConnection member : members) {
 					final StoreException source = SailUtil.isDebugEnabled() ? new StoreException() : null;
 					executor.execute(new Runnable() {
 
 						public void run() {
 							try {
-								long size = member.sizeMatch(subj, pred, obj, true, context);
+								Resource[] contexts = context == null ? new Resource[0] : new Resource[] { context };
+								long size = member.sizeMatch(subj, pred, obj, true, contexts);
 								if (size > 0) {
 									cardinality.getAndAdd(size);
 								}
