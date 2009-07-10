@@ -46,7 +46,7 @@ public class PreparedQueryResolver extends Filter {
 	@Override
 	protected int beforeHandle(Request request, Response response) {
 		String queryID = getQueryID(request);
-		logger.debug(QUERY_ID_PARAM + "={}", queryID);
+		logger.debug("{}={}", QUERY_ID_PARAM, queryID);
 
 		ServerConnection connection = RequestAtt.getConnection(request);
 		Query query = connection.getQuery(queryID);

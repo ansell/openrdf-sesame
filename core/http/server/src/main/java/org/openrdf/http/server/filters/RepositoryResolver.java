@@ -47,7 +47,7 @@ public class RepositoryResolver extends Filter {
 	@Override
 	protected int beforeHandle(Request request, Response response) {
 		String repositoryID = getRepositoryID(request);
-		logger.debug(REPOSITORY_ID_PARAM + "={}", repositoryID);
+		logger.debug("{}={}", REPOSITORY_ID_PARAM, repositoryID);
 
 		ServerRepositoryManager manager = ((SesameApplication)getApplication()).getRepositoryManager();
 
