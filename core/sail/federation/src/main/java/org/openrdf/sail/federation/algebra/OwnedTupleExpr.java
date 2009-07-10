@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -38,9 +38,9 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 
 	private final RepositoryConnection owner;
 
-	private TupleQuery query;
+	private final Set<String> bindingNames;
 
-	private Set<String> bindingNames;
+	private TupleQuery preparedQuery;
 
 	public OwnedTupleExpr(RepositoryConnection owner, TupleExpr arg) {
 		super(arg);
@@ -60,31 +60,41 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 	public void prepare()
 		throws StoreException
 	{
+		assert preparedQuery == null;
+
+		TupleQueryModel model = new TupleQueryModel(getArg());
+		String encodedQuery = new QueryModelSerializer().writeQueryModel(model, "");
+
 		try {
-			assert query == null;
-			TupleQueryModel model = new TupleQueryModel(getArg());
-			String qry = new QueryModelSerializer().writeQueryModel(model, "");
-			query = owner.prepareTupleQuery(LANGUAGE, qry);
+			preparedQuery = owner.prepareTupleQuery(LANGUAGE, encodedQuery);
 		}
 		catch (MalformedQueryException e) {
-			logger.warn(e.toString(), e);
+			logger.warn("Failed to prepare owned query", e);
 		}
 	}
 
 	public Cursor<BindingSet> evaluate(Dataset dataset, BindingSet bindings)
 		throws StoreException
 	{
-		if (query == null) {
+		if (preparedQuery == null) {
 			return null;
 		}
-		synchronized (query) {
+
+		synchronized (preparedQuery) {
+			preparedQuery.clearBindings();
+
 			for (String name : bindings.getBindingNames()) {
 				if (bindingNames.contains(name)) {
-					query.setBinding(name, bindings.getValue(name));
+					preparedQuery.setBinding(name, bindings.getValue(name));
 				}
 			}
-			query.setDataset(dataset);
-			TupleResult result = query.evaluate();
+
+			preparedQuery.setDataset(dataset);
+
+//			long startTime = System.nanoTime();
+			TupleResult result = preparedQuery.evaluate();
+//			long endTime = System.nanoTime();
+//			System.out.println("Received response in " + (endTime - startTime) / 1000000);
 			return new InsertBindingSetCursor(result, bindings);
 		}
 	}
