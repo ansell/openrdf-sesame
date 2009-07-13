@@ -29,7 +29,6 @@ import org.openrdf.model.impl.BNodeFactoryImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.QueryModel;
-import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.cursors.DistinctCursor;
 import org.openrdf.query.algebra.evaluation.cursors.UnionCursor;
