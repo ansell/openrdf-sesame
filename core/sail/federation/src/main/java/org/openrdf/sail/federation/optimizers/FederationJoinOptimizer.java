@@ -7,6 +7,7 @@ package org.openrdf.sail.federation.optimizers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.openrdf.model.Resource;
@@ -64,31 +65,31 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	{
 		super.meet(join);
 
-		List<Owned<Join>> ows = new ArrayList<Owned<Join>>();
-		List<LocalJoin> vars = new ArrayList<LocalJoin>();
+		LinkedList<Owned<Join>> ownedJoins = new LinkedList<Owned<Join>>();
+		LinkedList<LocalJoin> localJoins = new LinkedList<LocalJoin>();
 
 		for (TupleExpr arg : join.getArgs()) {
 			RepositoryConnection member = getSingleOwner(arg);
-			if (!ows.isEmpty() && ows.get(ows.size() - 1).getOwner() == member) {
-				ows.get(ows.size() - 1).getOperation().addArg(arg.clone());
+			if (!ownedJoins.isEmpty() && ownedJoins.getLast().getOwner() == member) {
+				ownedJoins.getLast().getOperation().addArg(arg.clone());
 			}
 			else {
-				ows.add(new Owned<Join>(member, new Join(arg.clone())));
+				ownedJoins.add(new Owned<Join>(member, new Join(arg.clone())));
 			}
 		}
 
 		for (TupleExpr arg : join.getArgs()) {
 			Var subj = getLocalSubject(arg);
-			LocalJoin local = findLocalJoin(subj, vars);
+			LocalJoin local = findLocalJoin(subj, localJoins);
 			if (local != null) {
 				local.getJoin().addArg(arg.clone());
 			}
 			else {
-				vars.add(new LocalJoin(subj, new Join(arg.clone())));
+				localJoins.add(new LocalJoin(subj, new Join(arg.clone())));
 			}
 		}
 
-		addOwners(join, ows, vars);
+		addOwners(join, ownedJoins, localJoins);
 	}
 
 	@Override
@@ -112,17 +113,17 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	{
 		super.meet(union);
 
-		List<Owned<Union>> ows = new ArrayList<Owned<Union>>();
+		List<Owned<Union>> ownedJoins = new ArrayList<Owned<Union>>();
 		for (TupleExpr arg : union.getArgs()) {
 			RepositoryConnection member = getSingleOwner(arg);
-			if (ows.size() > 0 && ows.get(ows.size() - 1).getOwner() == member) {
-				ows.get(ows.size() - 1).getOperation().addArg(arg.clone());
+			if (ownedJoins.size() > 0 && ownedJoins.get(ownedJoins.size() - 1).getOwner() == member) {
+				ownedJoins.get(ownedJoins.size() - 1).getOperation().addArg(arg.clone());
 			}
 			else {
-				ows.add(new Owned<Union>(member, new Union(arg.clone())));
+				ownedJoins.add(new Owned<Union>(member, new Union(arg.clone())));
 			}
 		}
-		addOwners(union, ows);
+		addOwners(union, ownedJoins);
 	}
 
 	@Override
@@ -352,15 +353,17 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	 * If two basic graph patterns have the same subject and can be run on the
 	 * same member, we can change the order.
 	 */
-	private LocalJoin findLocalJoin(Var subj, List<LocalJoin> vars) {
-		if (vars.size() > 0 && vars.get(vars.size() - 1).getVar() == subj) {
-			return vars.get(vars.size() - 1);
+	private LocalJoin findLocalJoin(Var subj, LinkedList<LocalJoin> localJoins) {
+		if (!localJoins.isEmpty() && localJoins.getLast().getVar() == subj) {
+			return localJoins.getLast();
 		}
-		for (LocalJoin local : vars) {
+
+		for (LocalJoin local : localJoins) {
 			if (subj != null && subj.equals(local.getVar())) {
 				return local;
 			}
 		}
+
 		return null;
 	}
 
@@ -382,25 +385,25 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		return new LocalScanner().getLocalSubject(arg);
 	}
 
-	private void addOwners(Join node, List<Owned<Join>> ows, List<LocalJoin> vars)
+	private void addOwners(Join node, LinkedList<Owned<Join>> ownedJoins, LinkedList<LocalJoin> localJoins)
 		throws StoreException
 	{
 		boolean local = false;
-		if (vars.size() > 1 || vars.size() == 1 && vars.get(0).getVar() != null) {
-			for (LocalJoin e : vars) {
+		if (localJoins.size() > 1 || localJoins.size() == 1 && localJoins.getFirst().getVar() != null) {
+			for (LocalJoin e : localJoins) {
 				if (e.getVar() != null && e.getJoin().getNumberOfArguments() > 1) {
 					local = true;
 					break;
 				}
 			}
 		}
-		if (ows.size() == 1) {
-			RepositoryConnection o = ows.get(0).getOwner();
+		if (ownedJoins.size() == 1) {
+			RepositoryConnection o = ownedJoins.getFirst().getOwner();
 			if (o == null) {
 				// every element has multiple owners
 				if (local) {
 					Join replacement = new Join();
-					for (LocalJoin e : vars) {
+					for (LocalJoin e : localJoins) {
 						if (distinct || e.getVar() != null) {
 							Union union = new Union();
 							for (RepositoryConnection member : members) {
@@ -424,7 +427,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		}
 		else if (local) {
 			Join replacement = new Join();
-			for (LocalJoin v : vars) {
+			for (LocalJoin v : localJoins) {
 				Var var = v.getVar();
 				Join j = v.getJoin();
 				if (var == null) {
@@ -472,7 +475,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		}
 		else {
 			Join replacement = new Join();
-			for (Owned<Join> e : ows) {
+			for (Owned<Join> e : ownedJoins) {
 				RepositoryConnection o = e.getOwner();
 				Join join = e.getOperation();
 				if (o == null) {
@@ -561,9 +564,9 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		}
 	}
 
-	private void addOwners(Union node, List<Owned<Union>> ows) {
-		if (ows.size() == 1) {
-			RepositoryConnection o = ows.get(0).getOwner();
+	private void addOwners(Union node, List<Owned<Union>> ownedJoins) {
+		if (ownedJoins.size() == 1) {
+			RepositoryConnection o = ownedJoins.get(0).getOwner();
 			if (o != null) {
 				// every element is used by the same owner
 				node.replaceWith(new OwnedTupleExpr(o, node.clone()));
@@ -571,7 +574,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		}
 		else {
 			Union replacement = new Union();
-			for (Owned<Union> e : ows) {
+			for (Owned<Union> e : ownedJoins) {
 				RepositoryConnection o = e.getOwner();
 				Union union = e.getOperation();
 				if (o == null) {
