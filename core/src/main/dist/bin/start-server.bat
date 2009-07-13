@@ -1,7 +1,7 @@
 @echo off
 
 rem Set the maximum memory heap size as a JVM option
-set JAVA_OPT=-mx512m
+set JAVA_OPT=-server -mx512m
 
 rem Set the lib dir relative to the batch file's directory
 set LIB_DIR=%~dp0\..\lib
