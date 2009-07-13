@@ -30,7 +30,15 @@ import org.openrdf.query.algebra.helpers.VarNameCollector;
 public class FilterOptimizer implements QueryOptimizer {
 
 	public void optimize(QueryModel query, BindingSet bindings) {
-		query.visit(new FilterFinder(query));
+		query.visit(getFilterFinder(query));
+	}
+	
+	protected FilterFinder getFilterFinder(TupleExpr tupleExpr) {
+		return new FilterFinder(tupleExpr);
+	}
+	
+	protected FilterRelocator getFilterRelocator(Filter filter) {
+		return new FilterRelocator(filter);
 	}
 
 	/*--------------------------*
@@ -49,10 +57,6 @@ public class FilterOptimizer implements QueryOptimizer {
 		public void meet(Filter filter) {
 			super.meet(filter);
 			filter.getArg().visit(getFilterRelocator(filter));
-		}
-
-		protected FilterRelocator getFilterRelocator(Filter filter) {
-			return new FilterRelocator(filter);
 		}
 	}
 
