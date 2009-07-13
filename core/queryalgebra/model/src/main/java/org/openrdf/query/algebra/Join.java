@@ -5,7 +5,6 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.List;
 
 /**
  * A natural join between two tuple expressions.
@@ -31,7 +30,7 @@ public class Join extends NaryTupleOperator {
 	/**
 	 * Creates a new natural join operator.
 	 */
-	public Join(List<? extends TupleExpr> args) {
+	public Join(Iterable<? extends TupleExpr> args) {
 		super(args);
 	}
 
