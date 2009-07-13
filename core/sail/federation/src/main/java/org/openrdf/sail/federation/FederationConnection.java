@@ -38,7 +38,6 @@ import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
 import org.openrdf.query.algebra.evaluation.impl.ConstantOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
-import org.openrdf.query.algebra.evaluation.impl.FilterOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
@@ -53,6 +52,7 @@ import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.federation.evaluation.FederationStatistics;
 import org.openrdf.sail.federation.evaluation.FederationStrategy;
 import org.openrdf.sail.federation.optimizers.EmptyPatternOptimizer;
+import org.openrdf.sail.federation.optimizers.FederationFilterOptimizer;
 import org.openrdf.sail.federation.optimizers.FederationJoinOptimizer;
 import org.openrdf.sail.federation.optimizers.OwnedTupleExprPruner;
 import org.openrdf.sail.federation.optimizers.PrepareOwnedTupleExpr;
@@ -305,8 +305,8 @@ abstract class FederationConnection extends SailConnectionBase {
 		new QueryModelPruner().optimize(query, bindings);
 
 		FederationStatistics statistics = new FederationStatistics(federation.getExecutor(), members, query);
-		new QueryJoinOptimizer(statistics).optimize(query, bindings);
-		new FilterOptimizer().optimize(query, bindings);
+//		new QueryJoinOptimizer(statistics).optimize(query, bindings);
+//		new FilterOptimizer().optimize(query, bindings);
 
 		new EmptyPatternOptimizer(members).optimize(query, bindings);
 		boolean distinct = federation.isDistinct();
@@ -315,6 +315,7 @@ abstract class FederationConnection extends SailConnectionBase {
 		new OwnedTupleExprPruner().optimize(query, bindings);
 		new QueryModelPruner().optimize(query, bindings);
 		new QueryJoinOptimizer(statistics).optimize(query, bindings);
+		new FederationFilterOptimizer().optimize(query, bindings);
 		statistics.await(); // let statistics throw any exceptions it has
 
 		new PrepareOwnedTupleExpr(federation.getMetaData()).optimize(query, bindings);
