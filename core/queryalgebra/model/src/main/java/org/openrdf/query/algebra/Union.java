@@ -5,7 +5,6 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.List;
 
 /**
  * The UNION set operator, which return the union of the result sets of two
@@ -38,7 +37,7 @@ public class Union extends NaryTupleOperator {
 	 * @param args
 	 *        The arguments of the union operator.
 	 */
-	public Union(List<? extends TupleExpr> args) {
+	public Union(Iterable<? extends TupleExpr> args) {
 		super(args);
 	}
 

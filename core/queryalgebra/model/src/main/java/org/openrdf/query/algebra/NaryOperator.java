@@ -43,7 +43,7 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	/**
 	 * Creates a new n-ary operator.
 	 */
-	public NaryOperator(List<? extends Expr> args) {
+	public NaryOperator(Iterable<? extends Expr> args) {
 		setArgs(args);
 	}
 
@@ -84,7 +84,7 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	/**
 	 * Sets the arguments of this n-ary tuple operator.
 	 */
-	public void addArgs(List<? extends Expr> args) {
+	public void addArgs(Iterable<? extends Expr> args) {
 		assert args != null;
 		for (Expr arg : args) {
 			addArg(arg);
@@ -101,7 +101,7 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	/**
 	 * Sets the arguments of this n-ary operator.
 	 */
-	public void setArgs(List<? extends Expr> args) {
+	public void setArgs(Iterable<? extends Expr> args) {
 		this.args.clear();
 		addArgs(args);
 	}

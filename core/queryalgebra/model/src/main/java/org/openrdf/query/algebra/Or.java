@@ -25,7 +25,7 @@ public class Or extends NaryValueOperator {
 		super(args);
 	}
 
-	public Or(List<? extends ValueExpr> args) {
+	public Or(Iterable<? extends ValueExpr> args) {
 		super(args);
 	}
 

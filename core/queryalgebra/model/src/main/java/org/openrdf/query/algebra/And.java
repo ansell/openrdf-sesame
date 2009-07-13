@@ -5,7 +5,6 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.List;
 
 /**
  * A boolean AND operator operating on two boolean expressions.
@@ -25,7 +24,7 @@ public class And extends NaryValueOperator {
 		super(args);
 	}
 
-	public And(List<ValueExpr> args) {
+	public And(Iterable<ValueExpr> args) {
 		super(args);
 	}
 

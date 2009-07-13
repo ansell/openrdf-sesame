@@ -1,12 +1,11 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,7 +33,7 @@ public abstract class NaryTupleOperator extends NaryOperator<TupleExpr> implemen
 	/**
 	 * Creates a new n-ary tuple operator.
 	 */
-	public NaryTupleOperator(List<? extends TupleExpr> args) {
+	public NaryTupleOperator(Iterable<? extends TupleExpr> args) {
 		super(args);
 	}
 
