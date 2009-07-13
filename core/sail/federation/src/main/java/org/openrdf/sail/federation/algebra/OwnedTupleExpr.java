@@ -38,23 +38,17 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 
 	private final RepositoryConnection owner;
 
-	private final Set<String> bindingNames;
+	private Set<String> bindingNames;
 
 	private TupleQuery preparedQuery;
 
 	public OwnedTupleExpr(RepositoryConnection owner, TupleExpr arg) {
 		super(arg);
 		this.owner = owner;
-		this.bindingNames = arg.getBindingNames();
 	}
 
 	public RepositoryConnection getOwner() {
 		return owner;
-	}
-
-	@Override
-	public Set<String> getBindingNames() {
-		return bindingNames;
 	}
 
 	public void prepare()
@@ -67,6 +61,7 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 
 		try {
 			preparedQuery = owner.prepareTupleQuery(LANGUAGE, encodedQuery);
+			bindingNames = getBindingNames();
 		}
 		catch (MalformedQueryException e) {
 			logger.warn("Failed to prepare owned query", e);
