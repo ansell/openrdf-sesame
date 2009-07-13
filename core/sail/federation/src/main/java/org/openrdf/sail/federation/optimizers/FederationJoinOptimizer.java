@@ -7,8 +7,10 @@ package org.openrdf.sail.federation.optimizers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -65,8 +67,10 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	{
 		super.meet(join);
 
+		// FIXME: get rid of arg order dependence
 		LinkedList<Owned<Join>> ownedJoins = new LinkedList<Owned<Join>>();
-		LinkedList<LocalJoin> localJoins = new LinkedList<LocalJoin>();
+
+		Map<String, List<TupleExpr>> localExprs = new HashMap<String, List<TupleExpr>>();
 
 		for (TupleExpr arg : join.getArgs()) {
 			RepositoryConnection member = getSingleOwner(arg);
@@ -78,18 +82,19 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 			}
 		}
 
-		for (TupleExpr arg : join.getArgs()) {
-			Var subj = getLocalSubject(arg);
-			LocalJoin local = findLocalJoin(subj, localJoins);
-			if (local != null) {
-				local.getJoin().addArg(arg.clone());
+		for (TupleExpr joinArg : join.getArgs()) {
+			Var subj = getLocalSubject(joinArg);
+			String varName = subj == null ? null : subj.getName();
+
+			List<TupleExpr> localExpr = localExprs.get(varName);
+			if (localExpr == null) {
+				localExpr = new ArrayList<TupleExpr>();
+				localExprs.put(varName, localExpr);
 			}
-			else {
-				localJoins.add(new LocalJoin(subj, new Join(arg.clone())));
-			}
+			localExpr.add(joinArg);
 		}
 
-		addOwners(join, ownedJoins, localJoins);
+		addOwners(join, ownedJoins, localExprs);
 	}
 
 	@Override
@@ -159,31 +164,6 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		@Override
 		public String toString() {
 			return owner + "=" + operation;
-		}
-	}
-
-	private static class LocalJoin {
-
-		private Var var;
-
-		private Join join;
-
-		public LocalJoin(Var key, Join value) {
-			this.var = key;
-			this.join = value;
-		}
-
-		public Var getVar() {
-			return var;
-		}
-
-		public Join getJoin() {
-			return join;
-		}
-
-		@Override
-		public String toString() {
-			return var + "=" + join;
 		}
 	}
 
@@ -350,24 +330,6 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	}
 
 	/**
-	 * If two basic graph patterns have the same subject and can be run on the
-	 * same member, we can change the order.
-	 */
-	private LocalJoin findLocalJoin(Var subj, LinkedList<LocalJoin> localJoins) {
-		if (!localJoins.isEmpty() && localJoins.getLast().getVar() == subj) {
-			return localJoins.getLast();
-		}
-
-		for (LocalJoin local : localJoins) {
-			if (subj != null && subj.equals(local.getVar())) {
-				return local;
-			}
-		}
-
-		return null;
-	}
-
-	/**
 	 * If the argument can be sent to a single member.
 	 */
 	private RepositoryConnection getSingleOwner(TupleExpr arg)
@@ -385,34 +347,42 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		return new LocalScanner().getLocalSubject(arg);
 	}
 
-	private void addOwners(Join node, LinkedList<Owned<Join>> ownedJoins, LinkedList<LocalJoin> localJoins)
+	private void addOwners(Join node, LinkedList<Owned<Join>> ownedJoins,
+			Map<String, List<TupleExpr>> localJoins)
 		throws StoreException
 	{
 		boolean local = false;
-		if (localJoins.size() > 1 || localJoins.size() == 1 && localJoins.getFirst().getVar() != null) {
-			for (LocalJoin e : localJoins) {
-				if (e.getVar() != null && e.getJoin().getNumberOfArguments() > 1) {
-					local = true;
-					break;
-				}
+
+		for (Map.Entry<String, List<TupleExpr>> entry : localJoins.entrySet()) {
+			if (entry.getKey() != null && entry.getValue().size() > 1) {
+				local = true;
+				break;
 			}
 		}
+
 		if (ownedJoins.size() == 1) {
 			RepositoryConnection o = ownedJoins.getFirst().getOwner();
 			if (o == null) {
 				// every element has multiple owners
 				if (local) {
 					Join replacement = new Join();
-					for (LocalJoin e : localJoins) {
-						if (distinct || e.getVar() != null) {
+					for (Map.Entry<String, List<TupleExpr>> entry : localJoins.entrySet()) {
+						String varName = entry.getKey();
+						List<TupleExpr> localJoinArgs = entry.getValue();
+
+						if (distinct || varName != null) {
+							Join localJoin = new Join();
+							for (TupleExpr arg : localJoinArgs) {
+								localJoin.addArg(arg.clone());
+							}
 							Union union = new Union();
 							for (RepositoryConnection member : members) {
-								union.addArg(new OwnedTupleExpr(member, e.getJoin().clone()));
+								union.addArg(new OwnedTupleExpr(member, localJoin.clone()));
 							}
 							replacement.addArg(union);
 						}
 						else {
-							for (TupleExpr expr : e.getJoin().getArgs()) {
+							for (TupleExpr expr : localJoinArgs) {
 								replacement.addArg(expr);
 							}
 						}
@@ -421,25 +391,27 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 				}
 			}
 			else {
-				// every element is used by the same owner
+				// every element has by the same owner
 				node.replaceWith(new OwnedTupleExpr(o, node.clone()));
 			}
 		}
 		else if (local) {
 			Join replacement = new Join();
-			for (LocalJoin v : localJoins) {
-				Var var = v.getVar();
-				Join j = v.getJoin();
-				if (var == null) {
+
+			for (Map.Entry<String, List<TupleExpr>> entry : localJoins.entrySet()) {
+				String varName = entry.getKey();
+				List<TupleExpr> localJoinArgs = entry.getValue();
+
+				if (varName == null) {
 					// each of these arguments could be anywhere
-					for (TupleExpr expr : j.getArgs()) {
+					for (TupleExpr expr : localJoinArgs) {
 						replacement.addArg(expr);
 					}
 				}
 				else {
 					boolean multipleOwners = false;
 					RepositoryConnection owner = null;
-					for (TupleExpr expr : j.getArgs()) {
+					for (TupleExpr expr : localJoinArgs) {
 						RepositoryConnection o = getSingleOwner(expr);
 						if (owner == null) {
 							owner = o;
@@ -456,21 +428,30 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 						node.replaceWith(new EmptySet());
 						return;
 					}
-					else if (owner == null) {
-						// these arguments might exist in any member,
-						// but they will only join with the same member.
-						Union union = new Union();
-						for (RepositoryConnection member : members) {
-							union.addArg(new OwnedTupleExpr(member, j.clone()));
-						}
-						replacement.addArg(union);
-					}
 					else {
-						// there is only one member that can join all these arguments
-						addArg(replacement, new OwnedTupleExpr(owner, j));
+						Join localJoin = new Join();
+						for (TupleExpr arg : localJoinArgs) {
+							localJoin.addArg(arg.clone());
+						}
+
+						if (owner == null) {
+							// these arguments might exist in any member, but they will
+							// only join with the same member.
+							Union union = new Union();
+							for (RepositoryConnection member : members) {
+								union.addArg(new OwnedTupleExpr(member, localJoin.clone()));
+							}
+							replacement.addArg(union);
+						}
+						else {
+							// there is only one member that can join all these
+							// arguments
+							addArg(replacement, new OwnedTupleExpr(owner, localJoin));
+						}
 					}
 				}
 			}
+
 			node.replaceWith(replacement);
 		}
 		else {
