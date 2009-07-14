@@ -11,18 +11,21 @@ import static info.aduna.net.http.RequestHeaders.ACCEPT;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HeaderElement;
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -32,7 +35,11 @@ import org.apache.commons.httpclient.util.EncodingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.io.IOUtil;
 import info.aduna.lang.FileFormat;
+import info.aduna.net.http.EntityHeaders;
+import info.aduna.net.http.GeneralHeaders;
+import info.aduna.net.http.RequestHeaders;
 
 import org.openrdf.http.client.helpers.BackgroundGraphResult;
 import org.openrdf.http.client.helpers.BackgroundTupleResult;
@@ -81,11 +88,11 @@ public class HTTPConnection {
 
 	private HTTPConnectionPool pool;
 
-	private HttpMethod method;
+	private HttpMethodBase method;
 
 	private volatile boolean released;
 
-	public HTTPConnection(HTTPConnectionPool pool, HttpMethod method) {
+	public HTTPConnection(HTTPConnectionPool pool, HttpMethodBase method) {
 		this.pool = pool;
 		this.method = method;
 	}
@@ -332,11 +339,13 @@ public class HTTPConnection {
 	public void execute()
 		throws IOException, HTTPException
 	{
+		method.setRequestHeader(RequestHeaders.ACCEPT_ENCODING, "gzip");
+
 		int statusCode = pool.executeMethod(method);
 		if (statusCode >= 400) {
 			String body = method.getStatusLine().getReasonPhrase();
 			if (!"HEAD".equals(method.getName())) {
-				body = method.getResponseBodyAsString();
+				body = getResponseBodyAsString();
 			}
 			release();
 			throw HTTPException.create(statusCode, body);
@@ -345,6 +354,43 @@ public class HTTPConnection {
 
 	public boolean isNotModified() {
 		return method.getStatusCode() == 304;
+	}
+
+	public InputStream getResponseBodyAsStream()
+		throws IOException
+	{
+		InputStream stream = method.getResponseBodyAsStream();
+
+		Header[] encodingHeaders = method.getResponseHeaders(EntityHeaders.CONTENT_ENCODING);
+		for (Header encodingHeader : encodingHeaders) {
+			for (HeaderElement el : encodingHeader.getElements()) {
+				if (el.getName().equalsIgnoreCase("gzip")) {
+					stream = new GZIPInputStream(stream);
+				}
+				else {
+					throw new IOException("Server replied with unsupported content encoding: " + el.getName());
+				}
+			}
+		}
+
+		return stream;
+	}
+
+	public Reader getResponseBodyAsReader()
+		throws IOException
+	{
+		String charset = method.getResponseCharSet();
+		if (charset == null) {
+			charset = "ISO-8859-1";
+		}
+		InputStream stream = getResponseBodyAsStream();
+		return new InputStreamReader(stream, charset);
+	}
+
+	public String getResponseBodyAsString()
+		throws IOException
+	{
+		return IOUtil.readString(getResponseBodyAsReader());
 	}
 
 	public <T> T read(Class<T> type)
@@ -367,13 +413,13 @@ public class HTTPConnection {
 	{
 		if (method.getStatusCode() == HttpURLConnection.HTTP_NOT_FOUND)
 			return null;
-		return method.getResponseBodyAsString();
+		return getResponseBodyAsString();
 	}
 
 	public long readLong()
 		throws IOException, NumberFormatException
 	{
-		return Long.parseLong(method.getResponseBodyAsString());
+		return Long.parseLong(getResponseBodyAsString());
 	}
 
 	public boolean readBoolean()
@@ -385,13 +431,14 @@ public class HTTPConnection {
 			BooleanQueryResultFormat format = BooleanQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(
 					mimeType);
 			BooleanQueryResultParser parser = QueryResultIO.createParser(format);
-			result = parser.parse(method.getResponseBodyAsStream());
+			result = parser.parse(getResponseBodyAsStream());
 			return result;
 		}
 		catch (UnsupportedQueryResultFormatException e) {
 			logger.warn(e.toString(), e);
 			throw new NoCompatibleMediaType("Server responded with an unsupported file format: " + mimeType);
-		} finally {
+		}
+		finally {
 			if (result == null) {
 				abort();
 			}
@@ -407,7 +454,7 @@ public class HTTPConnection {
 			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
 			TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
 			TupleQueryResultParser parser = QueryResultIO.createParser(format, pool.getValueFactory());
-			InputStream in = method.getResponseBodyAsStream();
+			InputStream in = getResponseBodyAsStream();
 			result = new BackgroundTupleResult(parser, in, this);
 			pool.executeTask(result);
 			return result;
@@ -415,7 +462,8 @@ public class HTTPConnection {
 		catch (UnsupportedQueryResultFormatException e) {
 			logger.warn(e.toString(), e);
 			throw new NoCompatibleMediaType("Server responded with an unsupported file format: " + mimeType);
-		} finally {
+		}
+		finally {
 			if (result == null) {
 				abort();
 			}
@@ -431,7 +479,7 @@ public class HTTPConnection {
 			TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
 			TupleQueryResultParser parser = QueryResultIO.createParser(format, pool.getValueFactory());
 			parser.setTupleQueryResultHandler(handler);
-			parser.parse(method.getResponseBodyAsStream());
+			parser.parse(getResponseBodyAsStream());
 		}
 		catch (UnsupportedQueryResultFormatException e) {
 			logger.warn(e.toString(), e);
@@ -462,7 +510,7 @@ public class HTTPConnection {
 			RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
 			RDFParser parser = Rio.createParser(format, pool.getValueFactory());
 			parser.setPreserveBNodeIDs(true);
-			InputStream in = method.getResponseBodyAsStream();
+			InputStream in = getResponseBodyAsStream();
 			String base = method.getURI().getURI();
 			result = new BackgroundGraphResult(parser, in, base, this);
 			pool.executeTask(result);
@@ -471,7 +519,8 @@ public class HTTPConnection {
 		catch (UnsupportedRDFormatException e) {
 			logger.warn(e.toString(), e);
 			throw new NoCompatibleMediaType("Server responded with an unsupported file format: " + mimeType);
-		} finally {
+		}
+		finally {
 			if (result == null) {
 				abort();
 			}
@@ -488,7 +537,7 @@ public class HTTPConnection {
 			RDFParser parser = Rio.createParser(format, pool.getValueFactory());
 			parser.setPreserveBNodeIDs(true);
 			parser.setRDFHandler(handler);
-			parser.parse(method.getResponseBodyAsStream(), method.getURI().getURI());
+			parser.parse(getResponseBodyAsStream(), method.getURI().getURI());
 		}
 		catch (UnsupportedRDFormatException e) {
 			logger.warn(e.toString(), e);
@@ -500,23 +549,7 @@ public class HTTPConnection {
 		if (released)
 			return;
 		released = true;
-		try {
-			if (!"HEAD".equals(method.getName())) {
-				// Read the entire response body to enable the reuse of the
-				// connection
-				InputStream responseStream = method.getResponseBodyAsStream();
-				if (responseStream != null) {
-					while (responseStream.read() >= 0) {
-						// do nothing
-					}
-				}
-			}
-
-			method.releaseConnection();
-		}
-		catch (IOException e) {
-			logger.warn("I/O error upon releasing connection", e);
-		}
+		method.releaseConnection();
 	}
 
 	public void abort() {
@@ -536,7 +569,7 @@ public class HTTPConnection {
 	}
 
 	public int readMaxAge() {
-		Header[] headers = method.getResponseHeaders("Cache-Control");
+		Header[] headers = method.getResponseHeaders(GeneralHeaders.CACHE_CONTROL);
 
 		for (Header header : headers) {
 			HeaderElement[] headerElements = header.getElements();
