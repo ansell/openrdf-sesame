@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 public class RequestLogger extends Filter {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	private static final String START_TIME_ATT = "org.openrdf.sesame.startTime";
 
 	public RequestLogger(Context context, Restlet next) {
 		super(context, next);
@@ -30,7 +32,7 @@ public class RequestLogger extends Filter {
 
 	@Override
 	protected int beforeHandle(Request request, Response response) {
-		request.getAttributes().put("org.openrdf.sesame.startTime", System.nanoTime());
+		request.getAttributes().put(START_TIME_ATT, System.nanoTime());
 		return Filter.CONTINUE;
 	}
 
@@ -46,11 +48,11 @@ public class RequestLogger extends Filter {
 			logRequest(request);
 		}
 
-		request.getAttributes().put("org.openrdf.sesame.startTime", System.nanoTime());
+		request.getAttributes().put(START_TIME_ATT, System.nanoTime());
 	}
 
 	private void logRequest(Request request) {
-		long startTime = (Long)request.getAttributes().get("org.openrdf.sesame.startTime");
+		long startTime = (Long)request.getAttributes().get(START_TIME_ATT);
 		long duration = System.nanoTime() - startTime;
 		logger.info("{} {}?{} processed in {} ns", new Object[] {request.getMethod(), request.getResourceRef().getPath(), request.getResourceRef().getQuery(), duration});
 	}
