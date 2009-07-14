@@ -29,6 +29,8 @@ import static org.openrdf.http.server.resources.ConfigurationResource.CONFIGURAT
 import static org.openrdf.http.server.resources.NamespaceResource.NS_PREFIX_PARAM;
 import static org.openrdf.http.server.resources.TemplateResource.TEMPLATE_ID_PARAM;
 
+import com.noelios.restlet.application.Encoder;
+
 import org.restlet.Application;
 import org.restlet.Context;
 import org.restlet.Restlet;
@@ -81,6 +83,8 @@ public class SesameApplication extends Application {
 	public static String getServerVersion() {
 		return MavenUtil.loadVersion("org.openrdf.sesame", "sesame-http-server-restlet", "devel");
 	}
+	
+	private static final int COMPRESSION_THRESHOLD = 4096;
 
 	private final ServerRepositoryManager serverRepoManager;
 
@@ -105,6 +109,12 @@ public class SesameApplication extends Application {
 
 		// Allow Accept-parameters to override Accept-headers:
 		root = new AcceptParamFilter(c, root);
+		
+		// Compress returned entities
+		Encoder encoder = new Encoder(c);
+		encoder.setMinimumSize(COMPRESSION_THRESHOLD);
+		encoder.setNext(root);
+		root = encoder;
 		
 //		root = new RequestLogger(c, root);
 
