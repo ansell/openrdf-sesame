@@ -19,6 +19,7 @@ import java.util.concurrent.Future;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -261,7 +262,7 @@ public class HTTPConnectionPool implements Cloneable {
 
 	public HTTPConnection head() {
 		// Allow HEAD request to send a message body
-		HttpMethod method = new PostMethod(url) {
+		HttpMethodBase method = new PostMethod(url) {
 
 			@Override
 			public String getName() {
@@ -273,7 +274,7 @@ public class HTTPConnectionPool implements Cloneable {
 	}
 
 	public HTTPConnection get() {
-		HttpMethod method = new PostMethod(url) {
+		HttpMethodBase method = new PostMethod(url) {
 
 			@Override
 			public String getName() {
