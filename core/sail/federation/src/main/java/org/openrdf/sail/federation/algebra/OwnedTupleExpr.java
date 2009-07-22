@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.cursor.Cursor;
+import org.openrdf.model.BNode;
+import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
@@ -21,10 +23,10 @@ import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.parser.TupleQueryModel;
-import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.result.TupleResult;
 import org.openrdf.sail.federation.evaluation.InsertBindingSetCursor;
 import org.openrdf.sail.federation.query.QueryModelSerializer;
+import org.openrdf.sail.federation.signatures.SignedConnection;
 import org.openrdf.store.StoreException;
 
 /**
@@ -36,19 +38,23 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 
 	private final Logger logger = LoggerFactory.getLogger(OwnedTupleExpr.class);
 
-	private final RepositoryConnection owner;
+	private final SignedConnection owner;
 
 	private Set<String> bindingNames;
 
 	private TupleQuery preparedQuery;
 
-	public OwnedTupleExpr(RepositoryConnection owner, TupleExpr arg) {
+	public OwnedTupleExpr(SignedConnection owner, TupleExpr arg) {
 		super(arg);
 		this.owner = owner;
 	}
 
-	public RepositoryConnection getOwner() {
+	public SignedConnection getOwner() {
 		return owner;
+	}
+
+	public Value getBNode(BNode value) {
+		return owner.removeSignature(value);
 	}
 
 	public void prepare()

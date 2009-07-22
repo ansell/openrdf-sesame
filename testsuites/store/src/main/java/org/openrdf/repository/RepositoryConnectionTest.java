@@ -1668,6 +1668,40 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	public void testBNodeBinding()
+		throws Exception
+	{
+		BNode node = testCon2.getValueFactory().createBNode();
+		testCon2.add(node, name, nameAlice);
+
+		// select an arbitrary blank node
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL,
+				"select ?s where {?s ?p ?o FILTER (isBlank(?s))}");
+
+		BNode blankNode = null;
+
+		TupleResult result = query.evaluate();
+		while (result.hasNext()) {
+			BindingSet set = result.next();
+			blankNode = (BNode)set.getValue("s");
+		}
+		result.close();
+
+		if (blankNode != null) {
+			query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, "select ?s where {?s ?p ?o}");
+			query.setBinding("s", blankNode);
+
+			result = query.evaluate();
+			try {
+				// the query must have at least one result
+				assertTrue(result.hasNext());
+			}
+			finally {
+				result.close();
+			}
+		}
+	}
+
 	private void testValueRoundTrip(Resource subj, URI pred, Value obj)
 		throws Exception
 	{

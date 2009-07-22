@@ -5,12 +5,16 @@
  */
 package org.openrdf.sail.federation.optimizers;
 
+import org.openrdf.model.BNode;
+import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.ValueConstant;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ExternalSet;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
@@ -29,6 +33,8 @@ import org.openrdf.store.StoreException;
 public class PrepareOwnedTupleExpr extends QueryModelVisitorBase<StoreException> implements QueryOptimizer {
 
 	private SailMetaData metadata;
+
+	private OwnedTupleExpr owned;
 
 	public PrepareOwnedTupleExpr(SailMetaData metadata) {
 		this.metadata = metadata;
@@ -56,7 +62,31 @@ public class PrepareOwnedTupleExpr extends QueryModelVisitorBase<StoreException>
 		throws StoreException
 	{
 		if (isRemoteQueryModelSupported(node.getOwner(), node.getArg())) {
+			owned = node;
+			// continue to look for signed BNodes
+			super.meetOther(node);
 			node.prepare();
+			owned = null;
+		}
+	}
+
+	@Override
+	public void meet(ValueConstant node)
+		throws StoreException
+	{
+		Value value = node.getValue();
+		if (owned != null && value instanceof BNode) {
+			node.setValue(owned.getBNode((BNode) node.getValue()));
+		}
+	}
+
+	@Override
+	public void meet(Var node)
+		throws StoreException
+	{
+		Value value = node.getValue();
+		if (owned != null && value instanceof BNode) {
+			node.setValue(owned.getBNode((BNode) node.getValue()));
 		}
 	}
 

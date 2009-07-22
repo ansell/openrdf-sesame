@@ -33,6 +33,7 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.http.helpers.PrefixHashSet;
 import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
+import org.openrdf.sail.federation.signatures.SignedConnection;
 import org.openrdf.store.StoreException;
 
 /**
@@ -43,13 +44,13 @@ import org.openrdf.store.StoreException;
  */
 public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreException> implements QueryOptimizer {
 
-	private final Collection<? extends RepositoryConnection> members;
+	private final List<SignedConnection> members;
 
 	private final PrefixHashSet localSpace;
 
 	private final boolean distinct;
 
-	public FederationJoinOptimizer(Collection<? extends RepositoryConnection> members, boolean distinct,
+	public FederationJoinOptimizer(List<SignedConnection> members, boolean distinct,
 			PrefixHashSet localSpace)
 	{
 		this.members = members;
@@ -70,7 +71,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		super.meet(join);
 
 		// Determine the "owners" of each join argument
-		Map<TupleExpr, Set<RepositoryConnection>> exprOwnerMap = new HashMap<TupleExpr, Set<RepositoryConnection>>();
+		Map<TupleExpr, Set<SignedConnection>> exprOwnerMap = new HashMap<TupleExpr, Set<SignedConnection>>();
 
 		for (TupleExpr joinArg : join.getArgs()) {
 			exprOwnerMap.put(joinArg, getOwners(joinArg));
@@ -80,7 +81,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		for (Set<TupleExpr> joinArgs : getLocalJoins(join)) {
 			// Calculate the intersection of all owners
 			Iterator<TupleExpr> iter = joinArgs.iterator();
-			Set<RepositoryConnection> joinOwners = exprOwnerMap.remove(iter.next());
+			Set<SignedConnection> joinOwners = exprOwnerMap.remove(iter.next());
 			while (iter.hasNext()) {
 				joinOwners.retainAll(exprOwnerMap.remove(iter.next()));
 			}
@@ -92,7 +93,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		// Join any join arguments that have the same, unique owner
 		for (Set<TupleExpr> joinArgs : getColocatedJoins(exprOwnerMap)) {
 			// FIXME: handle args that are not connected
-			Set<RepositoryConnection> owners = null;
+			Set<SignedConnection> owners = null;
 			for (TupleExpr joinArg : joinArgs) {
 				owners = exprOwnerMap.remove(joinArg);
 				assert owners.size() == 1;
@@ -104,9 +105,9 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 
 		Join replacement = new Join();
 
-		for (Map.Entry<TupleExpr, Set<RepositoryConnection>> entry : exprOwnerMap.entrySet()) {
+		for (Map.Entry<TupleExpr, Set<SignedConnection>> entry : exprOwnerMap.entrySet()) {
 			TupleExpr joinArg = entry.getKey();
-			Set<RepositoryConnection> owners = entry.getValue();
+			Set<SignedConnection> owners = entry.getValue();
 
 			if (owners.isEmpty()) {
 				// No results for this expression and thus for the entire join
@@ -114,13 +115,13 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 				return;
 			}
 			else if (owners.size() == 1) {
-				RepositoryConnection owner = owners.iterator().next();
+				SignedConnection owner = owners.iterator().next();
 				replacement.addArg(new OwnedTupleExpr(owner, joinArg));
 			}
 			else if (joinArg instanceof Join || distinct) {
 				// Local join with multiple owners or distinct federation members
 				Union union = new Union();
-				for (RepositoryConnection owner : owners) {
+				for (SignedConnection owner : owners) {
 					union.addArg(new OwnedTupleExpr(owner, joinArg.clone()));
 				}
 				replacement.addArg(union);
@@ -165,11 +166,11 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	/**
 	 * Gets sets of join arguments that have the same, unique owner.
 	 */
-	private Collection<Set<TupleExpr>> getColocatedJoins(Map<TupleExpr, Set<RepositoryConnection>> exprOwnerMap)
+	private Collection<Set<TupleExpr>> getColocatedJoins(Map<TupleExpr, Set<SignedConnection>> exprOwnerMap)
 	{
 		Map<RepositoryConnection, Set<TupleExpr>> ownerExprMap = new HashMap<RepositoryConnection, Set<TupleExpr>>();
 
-		for (Map.Entry<TupleExpr, Set<RepositoryConnection>> entry : exprOwnerMap.entrySet()) {
+		for (Map.Entry<TupleExpr, Set<SignedConnection>> entry : exprOwnerMap.entrySet()) {
 			if (entry.getValue().size() == 1) {
 				RepositoryConnection owner = entry.getValue().iterator().next();
 
@@ -202,8 +203,8 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		Var rightSubject = getLocalSubject(leftJoin.getRightArg());
 		// if local then left and right can be combined
 		boolean local = leftSubject != null && leftSubject.equals(rightSubject);
-		RepositoryConnection leftOwner = getSingleOwner(leftJoin.getLeftArg());
-		RepositoryConnection rightOwner = getSingleOwner(leftJoin.getRightArg());
+		SignedConnection leftOwner = getSingleOwner(leftJoin.getLeftArg());
+		SignedConnection rightOwner = getSingleOwner(leftJoin.getRightArg());
 		addOwners(leftJoin, leftOwner, rightOwner, local);
 	}
 
@@ -215,7 +216,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 
 		List<Owned<Union>> ownedJoins = new ArrayList<Owned<Union>>();
 		for (TupleExpr arg : union.getArgs()) {
-			RepositoryConnection member = getSingleOwner(arg);
+			SignedConnection member = getSingleOwner(arg);
 			if (ownedJoins.size() > 0 && ownedJoins.get(ownedJoins.size() - 1).getOwner() == member) {
 				ownedJoins.get(ownedJoins.size() - 1).getOperation().addArg(arg.clone());
 			}
@@ -231,7 +232,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		throws StoreException
 	{
 		super.meetUnaryTupleOperator(node);
-		RepositoryConnection owner = getSingleOwner(node.getArg());
+		SignedConnection owner = getSingleOwner(node.getArg());
 		if (owner != null) {
 			node.replaceWith(new OwnedTupleExpr(owner, node.clone()));
 		}
@@ -239,16 +240,16 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 
 	private static class Owned<O> {
 
-		private RepositoryConnection owner;
+		private SignedConnection owner;
 
 		private O operation;
 
-		public Owned(RepositoryConnection owner, O operation) {
+		public Owned(SignedConnection owner, O operation) {
 			this.owner = owner;
 			this.operation = operation;
 		}
 
-		public RepositoryConnection getOwner() {
+		public SignedConnection getOwner() {
 			return owner;
 		}
 
@@ -264,17 +265,17 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 
 	private class OwnerScanner extends QueryModelVisitorBase<StoreException> {
 
-		private Set<RepositoryConnection> owners;
+		private Set<SignedConnection> owners;
 
 		/**
 		 * If the argument can be sent to a single member.
 		 */
-		public Set<RepositoryConnection> getOwners(TupleExpr arg)
+		public Set<SignedConnection> getOwners(TupleExpr arg)
 			throws StoreException
 		{
-			Set<RepositoryConnection> pre_owners = owners;
+			Set<SignedConnection> pre_owners = owners;
 			try {
-				owners = new HashSet<RepositoryConnection>();
+				owners = new HashSet<SignedConnection>();
 				arg.visit(this);
 				return owners;
 			}
@@ -303,7 +304,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 				ctx = new Resource[] { (Resource)contextVar.getValue() };
 			}
 
-			for (RepositoryConnection member : members) {
+			for (SignedConnection member : members) {
 				if (member.hasMatch(subj, pred, obj, true, ctx)) {
 					owners.add(member);
 				}
@@ -389,10 +390,10 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	/**
 	 * If the argument can be sent to a single member.
 	 */
-	private RepositoryConnection getSingleOwner(TupleExpr arg)
+	private SignedConnection getSingleOwner(TupleExpr arg)
 		throws StoreException
 	{
-		Set<RepositoryConnection> owners = getOwners(arg);
+		Set<SignedConnection> owners = getOwners(arg);
 		if (owners.size() == 1) {
 			return owners.iterator().next();
 		}
@@ -402,7 +403,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 	/**
 	 * If the argument can be sent to a single member.
 	 */
-	private Set<RepositoryConnection> getOwners(TupleExpr arg)
+	private Set<SignedConnection> getOwners(TupleExpr arg)
 		throws StoreException
 	{
 		return new OwnerScanner().getOwners(arg);
@@ -417,13 +418,13 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		return new LocalScanner().getLocalSubject(arg);
 	}
 
-	private void addOwners(LeftJoin node, RepositoryConnection leftOwner, RepositoryConnection rightOwner,
+	private void addOwners(LeftJoin node, SignedConnection leftOwner, SignedConnection rightOwner,
 			boolean local)
 	{
 		if (leftOwner == null && rightOwner == null) {
 			if (local) {
 				Union union = new Union();
-				for (RepositoryConnection member : members) {
+				for (SignedConnection member : members) {
 					union.addArg(new OwnedTupleExpr(member, node.clone()));
 				}
 				node.replaceWith(union);
@@ -439,7 +440,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 				}
 				else if (leftOwner == null) {
 					Union union = new Union();
-					for (RepositoryConnection member : members) {
+					for (SignedConnection member : members) {
 						if (rightOwner == member) {
 							union.addArg(new OwnedTupleExpr(member, node.clone()));
 						}
@@ -466,7 +467,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 
 	private void addOwners(Union node, List<Owned<Union>> ownedJoins) {
 		if (ownedJoins.size() == 1) {
-			RepositoryConnection o = ownedJoins.get(0).getOwner();
+			SignedConnection o = ownedJoins.get(0).getOwner();
 			if (o != null) {
 				// every element is used by the same owner
 				node.replaceWith(new OwnedTupleExpr(o, node.clone()));
@@ -475,7 +476,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<StoreExceptio
 		else {
 			Union replacement = new Union();
 			for (Owned<Union> e : ownedJoins) {
-				RepositoryConnection o = e.getOwner();
+				SignedConnection o = e.getOwner();
 				Union union = e.getOperation();
 				if (o == null) {
 					// multiple owners
