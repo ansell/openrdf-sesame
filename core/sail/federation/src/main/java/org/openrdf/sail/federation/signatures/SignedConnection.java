@@ -38,6 +38,10 @@ public class SignedConnection extends RepositoryConnectionWrapper {
 		return signer.isSignedBNode(subj, pred, obj, contexts);
 	}
 
+	public Resource removeSignature(Resource subj) {
+		return signer.removeSignature(subj);
+	}
+
 	@Override
 	public boolean isReadOnly()
 		throws StoreException
