@@ -48,15 +48,21 @@ public class QueryModelPruner implements QueryOptimizer {
 		@Override
 		public void meet(Join join) {
 			super.meet(join);
+
 			for (TupleExpr arg : join.getArgs()) {
-				if (arg instanceof SingletonSet) {
-					join.removeArg(arg);
-				}
-				else if (arg instanceof EmptySet) {
+				if (arg instanceof EmptySet) {
+					// Any join with an empty set always result in an empty set
 					join.replaceWith(new EmptySet());
 					return;
 				}
+
+				// singletons can be safely removed from a join, but be careful not
+				// to create an empty join
+				if (arg instanceof SingletonSet && join.getNumberOfArguments() > 1) {
+					join.removeArg(arg);
+				}
 			}
+
 			if (join.getNumberOfArguments() == 1) {
 				join.replaceWith(join.getArg(0));
 			}
@@ -108,7 +114,10 @@ public class QueryModelPruner implements QueryOptimizer {
 				}
 			}
 
-			if (union.getNumberOfArguments() == 1) {
+			if (union.getNumberOfArguments() == 0) {
+				union.replaceWith(new EmptySet());
+			}
+			else if (union.getNumberOfArguments() == 1) {
 				union.replaceWith(union.getArg(0));
 			}
 			else {
@@ -146,8 +155,11 @@ public class QueryModelPruner implements QueryOptimizer {
 			TupleExpr leftArg = intersection.getLeftArg();
 			TupleExpr rightArg = intersection.getRightArg();
 
-			if (leftArg instanceof EmptySet || rightArg instanceof EmptySet) {
+			if (leftArg instanceof EmptySet) {
 				intersection.replaceWith(leftArg);
+			}
+			else if (rightArg instanceof EmptySet) {
+				intersection.replaceWith(rightArg);
 			}
 		}
 	}
