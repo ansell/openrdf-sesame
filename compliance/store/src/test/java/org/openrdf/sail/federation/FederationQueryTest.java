@@ -166,6 +166,12 @@ public class FederationQueryTest extends TestCase {
 		assertQuery("{ {?person a:parentOf ?child} UNION {?person c:job one:teacher}}");
 	}
 
+	public void testUnionUnsatisfiable()
+		throws Exception
+	{
+		assertQuery("{ {?person a:nonExistentProperty ?child} UNION {?person a:nonExistentProperty one:teacher}}");
+	}
+
 	private void assertQuery(String qry)
 		throws Exception
 	{
