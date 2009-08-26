@@ -74,7 +74,7 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 		}
 	}
 
-	public Cursor<BindingSet> evaluate(Dataset dataset, BindingSet bindings)
+	public Cursor<BindingSet> evaluate(Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
 		if (preparedQuery == null) {
@@ -91,6 +91,8 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 			}
 
 			preparedQuery.setDataset(dataset);
+			preparedQuery.setIncludeInferred(includeInferred);
+
 
 //			long startTime = System.nanoTime();
 			TupleResult result = preparedQuery.evaluate();
