@@ -263,7 +263,7 @@ abstract class FederationConnection extends SailConnectionBase {
 		throws StoreException
 	{
 		TripleSource tripleSource = new FederationTripleSource(includeInferred);
-		EvaluationStrategyImpl strategy = new FederationStrategy(federation.getExecutor(), tripleSource, query);
+		EvaluationStrategyImpl strategy = new FederationStrategy(federation.getExecutor(), tripleSource, query, includeInferred);
 		query = optimize(query, bindings, strategy);
 		return strategy.evaluate(query, EmptyBindingSet.getInstance());
 	}

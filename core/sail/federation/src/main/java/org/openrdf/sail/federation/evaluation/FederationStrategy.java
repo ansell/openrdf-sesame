@@ -35,10 +35,13 @@ import org.openrdf.store.StoreException;
 public class FederationStrategy extends EvaluationStrategyImpl {
 
 	private final Executor executor;
+	
+	private final boolean includeInferred;
 
-	public FederationStrategy(Executor executor, TripleSource tripleSource, QueryModel query) {
+	public FederationStrategy(Executor executor, TripleSource tripleSource, QueryModel query, boolean includeInferred) {
 		super(tripleSource, query);
 		this.executor = executor;
+		this.includeInferred = includeInferred;
 	}
 
 	@Override
@@ -111,13 +114,13 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 	private Cursor<BindingSet> evaluate(OwnedTupleExpr expr, BindingSet bindings)
 		throws StoreException
 	{
-		Cursor<BindingSet> result = expr.evaluate(dataset, bindings);
+		Cursor<BindingSet> result = expr.evaluate(dataset, bindings, includeInferred);
 		if (result != null) {
 			return result;
 		}
 		QueryModel query = createQueryModel(expr);
 		TripleSource source = new RepositoryTripleSource(expr.getOwner());
-		EvaluationStrategyImpl eval = new FederationStrategy(executor, source, query);
+		EvaluationStrategyImpl eval = new FederationStrategy(executor, source, query, includeInferred);
 		return eval.evaluate(query, bindings);
 	}
 
