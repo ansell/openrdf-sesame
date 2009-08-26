@@ -117,14 +117,14 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		throws Exception
 	{
 		testCon.begin();
-		testCon.add(bob, name, nameBob);
+		testCon.add(woman, RDFS.SUBCLASSOF, person);
 
-		assertTrue(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
-		assertFalse(testCon2.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
+		assertTrue(testCon.hasMatch(woman, RDF.TYPE, RDFS.CLASS, true));
+		assertFalse(testCon2.hasMatch(woman, RDF.TYPE, RDFS.CLASS, true));
 
 		testCon.commit();
 
-		assertTrue(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
-		assertTrue(testCon2.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
+		assertTrue(testCon.hasMatch(woman, RDF.TYPE, RDFS.CLASS, true));
+		assertTrue(testCon2.hasMatch(woman, RDF.TYPE, RDFS.CLASS, true));
 	}
 }
