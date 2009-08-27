@@ -699,7 +699,7 @@ public class RDFXMLParser extends RDFParserBase {
 			// Check for rdf:datatype attribute
 			Att datatype = atts.removeAtt(RDF.NAMESPACE, "datatype");
 			if (datatype != null) {
-				URI dtURI = createURI(datatype.getValue());
+				URI dtURI = resolveURI(datatype.getValue());
 				predicate.setDatatype(dtURI);
 			}
 
