@@ -251,21 +251,23 @@ public abstract class RDFParserBase implements RDFParser {
 	protected URI resolveURI(String uriSpec)
 		throws RDFParseException
 	{
-		if (baseURI == null) {
-			reportFatalError("Unable to resolve URIs, no base URI has been set");
-		}
-
 		// Resolve relative URIs against base URI
 		ParsedURI uri = new ParsedURI(uriSpec);
 
-		if (verifyData) {
-			if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
-				reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
-						+ baseURI + "'");
+		if (uri.isRelative()) {
+			if (baseURI == null) {
+				reportFatalError("Unable to resolve URIs, no base URI has been set");
 			}
-		}
 
-		uri = baseURI.resolve(uri);
+			if (verifyData) {
+				if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
+					reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
+							+ baseURI + "'");
+				}
+			}
+
+			uri = baseURI.resolve(uri);
+		}
 
 		return createURI(uri.toString());
 	}
@@ -492,12 +494,11 @@ public abstract class RDFParserBase implements RDFParser {
 
 	/**
 	 * Reports a fatal error to the registered ParseErrorListener, if any, and
-	 * throws a <tt>ParseException</tt> afterwards. An exception is made for
-	 * the case where the supplied exception is a {@link RDFParseException}; in
-	 * that case the supplied exception is not wrapped in another ParseException
-	 * and the error message is not reported to the ParseErrorListener, assuming
-	 * that it has already been reported when the original ParseException was
-	 * thrown.
+	 * throws a <tt>ParseException</tt> afterwards. An exception is made for the
+	 * case where the supplied exception is a {@link RDFParseException}; in that
+	 * case the supplied exception is not wrapped in another ParseException and
+	 * the error message is not reported to the ParseErrorListener, assuming that
+	 * it has already been reported when the original ParseException was thrown.
 	 * <p>
 	 * This method simply calls {@link #reportFatalError(Exception,int,int)}
 	 * supplying <tt>-1</tt> for the line- and column number.
