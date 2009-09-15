@@ -340,7 +340,7 @@ catch (java.io.IOEXception e) {
 			</para>
 			<para>
 				The result of boolean queries is a simple boolean value, i.e.
-				<parameter>true</parameter> of <parameter>false</parameter>.
+				<parameter>true</parameter> or <parameter>false</parameter>.
 				This type of query can be used to check if a repository contains
 				specific information.
 			</para>
