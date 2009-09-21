@@ -134,7 +134,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<skip>true</skip>
+					<skipTests>true</skipTests>
 				</configuration>
 				<executions>
 					<execution>
@@ -144,9 +144,12 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
-							<skip>false</skip>
+							<skipTests>false</skipTests>
 							<forkMode>always</forkMode>
 							<argLine>-Xmx512M -XX:MaxPermSize=256M</argLine>
+							<excludes>
+								<exclude>**/DataStorePerfTest.java</exclude>
+							</excludes>
 						</configuration>
 					</execution>
 				</executions>
