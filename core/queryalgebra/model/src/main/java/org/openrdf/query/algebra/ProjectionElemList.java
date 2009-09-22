@@ -67,6 +67,16 @@ public class ProjectionElemList extends QueryModelNodeBase {
 		pe.setParentNode(this);
 	}
 
+	public Set<String> getSourceNames() {
+		Set<String> sourceNames = new LinkedHashSet<String>(elements.size());
+
+		for (ProjectionElem pe : elements) {
+			sourceNames.add(pe.getSourceName());
+		}
+
+		return sourceNames;
+	}
+
 	public Set<String> getTargetNames() {
 		Set<String> targetNames = new LinkedHashSet<String>(elements.size());
 
