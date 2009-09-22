@@ -84,7 +84,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 			catch (ValueExprEvaluationException e) {
 				// TODO: incompatible values types(?), remove the affected part of
 				// the query tree
-				logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+				logger.debug("Failed to optimize Or with constant argument(s)", e);
 			}
 		}
 
@@ -116,7 +116,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 			catch (ValueExprEvaluationException e) {
 				// TODO: incompatible values types(?), remove the affected part of
 				// the query tree
-				logger.debug("Failed to evaluate And with some constant arguments", e);
+				logger.debug("Failed to optimize And with constant argument(s)", e);
 			}
 		}
 
@@ -138,7 +138,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 			catch (ValueExprEvaluationException e) {
 				// TODO: incompatible values types(?), remove the affected part of
 				// the query tree
-				logger.debug("Failed to evaluate NaryValueOperator with a constant argument", e);
+				logger.debug("Failed to optimize NaryValueOperator with constant argument(s)", e);
 			}
 		}
 
@@ -163,7 +163,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 			catch (ValueExprEvaluationException e) {
 				// TODO: incompatible values types(?), remove the affected part of
 				// the query tree
-				logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+				logger.debug("Failed to optimize function call with constant argument(s)", e);
 			}
 		}
 
