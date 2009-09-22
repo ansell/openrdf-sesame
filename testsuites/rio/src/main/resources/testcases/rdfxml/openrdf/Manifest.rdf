@@ -66,5 +66,20 @@
    </test:outputDocument>
 </test:PositiveParserTest>
 
+<test:PositiveParserTest rdf:about="xmlbase/test001">
+   <test:status>APPROVED</test:status>
+   <test:description>
+      Relative datatype URI
+   </test:description>
+
+   <test:inputDocument>
+      <test:RDF-XML-Document rdf:about="xmlbase/test001.rdf" />
+   </test:inputDocument>
+
+   <test:outputDocument>
+      <test:NT-Document rdf:about="xmlbase/test001.nt" />
+   </test:outputDocument>
+</test:PositiveParserTest>
+
 </rdf:RDF>
 
