@@ -21,22 +21,22 @@ public class MemBNode extends BNodeImpl implements MemResource {
 	/**
 	 * The object that created this MemBNode.
 	 */
-	transient private Object creator;
+	transient final private Object creator;
 
 	/**
 	 * The list of statements for which this MemBNode is the subject.
 	 */
-	transient private MemStatementList subjectStatements;
+	transient private volatile MemStatementList subjectStatements;
 
 	/**
 	 * The list of statements for which this MemBNode is the object.
 	 */
-	transient private MemStatementList objectStatements;
+	transient private volatile MemStatementList objectStatements;
 
 	/**
 	 * The list of statements for which this MemBNode represents the context.
 	 */
-	transient private MemStatementList contextStatements;
+	transient private volatile MemStatementList contextStatements;
 
 	/*--------------*
 	 * Constructors *

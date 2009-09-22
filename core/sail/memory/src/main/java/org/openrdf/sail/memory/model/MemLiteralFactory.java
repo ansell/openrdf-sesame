@@ -44,6 +44,10 @@ public class MemLiteralFactory extends LiteralFactoryImpl {
 	 * Methods *
 	 *---------*/
 
+	public void clear() {
+		literalRegistry.clear();
+	}
+
 	/**
 	 * See getMemValue() for description.
 	 */

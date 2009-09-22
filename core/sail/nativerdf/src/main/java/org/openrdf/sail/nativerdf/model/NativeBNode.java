@@ -20,9 +20,9 @@ public class NativeBNode extends BNodeImpl implements NativeResource {
 	 * Variables *
 	 *-----------*/
 
-	private ValueStoreRevision revision;
+	private volatile ValueStoreRevision revision;
 
-	private int internalID;
+	private volatile int internalID;
 
 	/*--------------*
 	 * Constructors *

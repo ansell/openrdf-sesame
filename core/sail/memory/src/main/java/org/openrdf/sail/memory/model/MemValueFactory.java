@@ -29,11 +29,15 @@ public class MemValueFactory extends ValueFactoryImpl {
 	 * Variables *
 	 *-----------*/
 
-	private MemBNodeFactory bf;
+	private final MemBNodeFactory bf;
 
-	private MemURIFactory uf;
+	private final MemURIFactory uf;
 
-	private MemLiteralFactory lf;
+	private final MemLiteralFactory lf;
+
+	/*--------------*
+	 * Constructors *
+	 *--------------*/
 
 	public MemValueFactory(MemBNodeFactory bf, MemURIFactory uf, MemLiteralFactory lf) {
 		super(new MappedIllegalBNodeFactory(bf), uf, lf);

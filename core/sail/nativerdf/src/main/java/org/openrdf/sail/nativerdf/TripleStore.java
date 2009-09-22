@@ -129,33 +129,33 @@ class TripleStore {
 	/**
 	 * The directory that is used to store the index files.
 	 */
-	private File dir;
+	private final File dir;
 
 	/**
 	 * Object containing meta-data for the triple store. This includes
 	 */
-	private Properties properties;
+	private final Properties properties;
 
 	/**
 	 * The array of triple indexes that are used to store and retrieve triples.
 	 */
-	private TripleIndex[] indexes;
+	private final TripleIndex[] indexes;
 
-	private boolean forceSync;
+	private final boolean forceSync;
 
 	/**
 	 * Flag indicating whether one or more triples have been flagged as "added"
 	 * during the current transaction.
 	 */
-	private boolean txnAddedTriples = false;
+	private volatile boolean txnAddedTriples = false;
 
 	/**
 	 * Flag indicating whether one or more triples have been flagged as "removed"
 	 * during the current transaction.
 	 */
-	private boolean txnRemovedTriples = false;
+	private volatile boolean txnRemovedTriples = false;
 
-	private RecordCache updatedTriplesCache;
+	private volatile RecordCache updatedTriplesCache;
 
 	/*--------------*
 	 * Constructors *
@@ -360,7 +360,6 @@ class TripleStore {
 		for (int i = 0; i < indexes.length; i++) {
 			indexes[i].getBTree().close();
 		}
-		indexes = null;
 	}
 
 	public RecordIterator getTriples(int subj, int pred, int obj, int context)

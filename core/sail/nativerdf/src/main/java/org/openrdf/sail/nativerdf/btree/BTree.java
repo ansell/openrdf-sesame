@@ -179,13 +179,13 @@ public class BTree {
 	 * The ID of the root node, <tt>0</tt> to indicate that there is no root node
 	 * (i.e. the BTree is empty).
 	 */
-	private int rootNodeID;
+	private volatile int rootNodeID;
 
 	/**
 	 * The depth of this BTree (the cache variable), < 0 indicating it is
 	 * unknown.
 	 */
-	private int height = -1;
+	private volatile int height = -1;
 
 	/*--------------*
 	 * Constructors *

@@ -74,14 +74,14 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 * The exclusive transaction lock held by this connection during
 	 * transactions.
 	 */
-	private Lock txnLock;
+	private volatile Lock txnLock;
 
 	/**
 	 * A statement list read lock held by this connection during transactions.
 	 * Keeping this lock prevents statements from being removed from the main
 	 * statement list during transactions.
 	 */
-	private Lock txnStLock;
+	private volatile Lock txnStLock;
 
 	/*--------------*
 	 * Constructors *
@@ -344,6 +344,9 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			Resource... contexts)
 		throws StoreException
 	{
+		assert txnStLock.isActive();
+		assert txnLock.isActive();
+
 		Statement st = null;
 
 		if (contexts != null && contexts.length == 0) {
