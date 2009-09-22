@@ -18,16 +18,13 @@ import org.openrdf.model.vocabulary.XMLSchema;
  */
 public class DecimalMemLiteral extends MemLiteral {
 
+	private static final long serialVersionUID = 6760727653986046772L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6760727653986046772L;
-
-	private BigDecimal value;
+	private final BigDecimal value;
 
 	/*--------------*
 	 * Constructors *

@@ -18,7 +18,7 @@ class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
 	private static final long serialVersionUID = -8180282377977820910L;
 
-	private int capacity;
+	private final int capacity;
 
 	public LRUCache(int capacity) {
 		this(capacity, 0.75f);

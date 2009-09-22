@@ -47,7 +47,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	/**
 	 * The Sail connection wrapped by this repository connection object.
 	 */
-	private SailConnection sailConnection;
+	private final SailConnection sailConnection;
 
 	/*--------------*
 	 * Constructors *

@@ -23,16 +23,16 @@ public class DataStore {
 	 * Variables *
 	 *-----------*/
 
-	private DataFile dataFile;
+	private final DataFile dataFile;
 
-	private IDFile idFile;
+	private final IDFile idFile;
 
-	private HashFile hashFile;
+	private final HashFile hashFile;
 
 	/**
 	 * The checksum to use for calculating data hashes.
 	 */
-	private CRC32 crc32 = new CRC32();
+	private final CRC32 crc32 = new CRC32();
 
 	/*--------------*
 	 * Constructors *

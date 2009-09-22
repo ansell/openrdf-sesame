@@ -21,9 +21,9 @@ public class NativeLiteral extends LiteralImpl implements NativeValue {
 	 * Variable *
 	 *----------*/
 
-	private ValueStoreRevision revision;
+	private volatile ValueStoreRevision revision;
 
-	private int internalID;
+	private volatile int internalID;
 
 	/*--------------*
 	 * Constructors *

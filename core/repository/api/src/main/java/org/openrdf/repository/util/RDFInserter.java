@@ -33,7 +33,7 @@ public class RDFInserter extends RDFHandlerBase {
 	/**
 	 * The connection to use for the add operations.
 	 */
-	private RepositoryConnection con;
+	private final RepositoryConnection con;
 
 	/**
 	 * The contexts to add the statements to. If this variable is a non-empty
@@ -50,13 +50,13 @@ public class RDFInserter extends RDFHandlerBase {
 	 * Map that stores namespaces that are reported during the evaluation of the
 	 * query. Key is the namespace prefix, value is the namespace name.
 	 */
-	private Map<String, String> namespaceMap;
+	private final Map<String, String> namespaceMap;
 
 	/**
 	 * Map used to keep track of which blank node IDs have been mapped to which
 	 * BNode object in case preserveBNodeIDs is false.
 	 */
-	private Map<String, BNode> bNodesMap;
+	private final Map<String, BNode> bNodesMap;
 
 	/*--------------*
 	 * Constructors *

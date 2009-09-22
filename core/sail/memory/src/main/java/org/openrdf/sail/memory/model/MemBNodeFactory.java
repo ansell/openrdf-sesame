@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -37,6 +37,10 @@ public class MemBNodeFactory extends BNodeFactoryImpl {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public void clear() {
+		bnodeRegistry.clear();
+	}
 
 	/**
 	 * See getMemValue() for description.

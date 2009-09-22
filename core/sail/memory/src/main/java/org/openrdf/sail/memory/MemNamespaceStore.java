@@ -25,15 +25,7 @@ class MemNamespaceStore implements Iterable<NamespaceImpl> {
 	/**
 	 * Map storing namespace information by their prefix.
 	 */
-	private Map<String, NamespaceImpl> namespacesMap;
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public MemNamespaceStore() {
-		namespacesMap = new LinkedHashMap<String, NamespaceImpl>(16);
-	}
+	private final Map<String, NamespaceImpl> namespacesMap = new LinkedHashMap<String, NamespaceImpl>(16);
 
 	/*---------*
 	 * Methods *

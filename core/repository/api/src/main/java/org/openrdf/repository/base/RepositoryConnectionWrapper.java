@@ -53,7 +53,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		DelegatingRepositoryConnection
 {
 
-	private RepositoryConnection delegate;
+	private volatile RepositoryConnection delegate;
 
 	private ValueFactory vf;
 

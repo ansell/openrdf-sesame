@@ -17,9 +17,9 @@ public class MemStatementList {
 	 * Variables *
 	 *-----------*/
 
-	private MemStatement[] statements;
+	private volatile MemStatement[] statements;
 
-	private int size;
+	private volatile int size;
 
 	/*--------------*
 	 * Constructors *

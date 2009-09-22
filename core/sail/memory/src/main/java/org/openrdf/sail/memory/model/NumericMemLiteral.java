@@ -16,16 +16,13 @@ import org.openrdf.model.vocabulary.XMLSchema;
  */
 public class NumericMemLiteral extends MemLiteral {
 
+	private static final long serialVersionUID = -4077489124945558638L;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4077489124945558638L;
-
-	private Number number;
+	private final Number number;
 
 	/*--------------*
 	 * Constructors *

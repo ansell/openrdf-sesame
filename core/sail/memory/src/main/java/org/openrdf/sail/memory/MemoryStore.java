@@ -77,82 +77,83 @@ public class MemoryStore extends InferencerSailBase {
 	/**
 	 * Factory/cache for MemBNode objects.
 	 */
-	private MemBNodeFactory bf;
+	private final MemBNodeFactory bf = new MemBNodeFactory();
 
 	/**
 	 * Factory/cache for MemURI objects.
 	 */
-	private MemURIFactory uf;
+	private final MemURIFactory uf = new MemURIFactory();
 
 	/**
 	 * Factory/cache for MemLiteral objects.
 	 */
-	private MemLiteralFactory lf;
+	private final MemLiteralFactory lf = new MemLiteralFactory();
 
 	/**
 	 * List containing all available statements.
 	 */
-	private MemStatementList statements;
+	private final MemStatementList statements = new MemStatementList(256);
 
 	/**
 	 * Set of all statements that have been affected by a transaction.
 	 */
-	private IdentityHashMap<MemStatement, MemStatement> txnStatements;
+	private volatile IdentityHashMap<MemStatement, MemStatement> txnStatements;
 
 	/**
 	 * Identifies the current snapshot.
 	 */
-	private int currentSnapshot;
+	private volatile int currentSnapshot;
 
 	/**
 	 * Store for namespace prefix info.
 	 */
-	private MemNamespaceStore namespaceStore;
+	private final MemNamespaceStore namespaceStore = new MemNamespaceStore();
 
 	/**
 	 * Lock manager used to give the snapshot cleanup thread exclusive access to
 	 * the statement list.
 	 */
-	private ReadWriteLockManager statementListLockManager;
+	private final ReadWriteLockManager statementListLockManager = new ReadPrefReadWriteLockManager(
+			SailUtil.isDebugEnabled());
 
 	/**
 	 * Lock manager used to prevent concurrent transactions.
 	 */
-	private ExclusiveLockManager txnLockManager;
+	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager(SailUtil.isDebugEnabled());
 
 	/**
 	 * Flag indicating whether the Sail has been initialized.
 	 */
-	private boolean initialized = false;
+	private volatile boolean initialized = false;
 
-	private boolean persist = false;
+	private volatile boolean persist = false;
 
 	/**
 	 * The file used for data persistence, null if this is a volatile RDF store.
 	 */
-	private File dataFile;
+	private volatile File dataFile;
 
 	/**
 	 * The file used for serialising data, null if this is a volatile RDF store.
 	 */
-	private File syncFile;
+	private volatile File syncFile;
 
 	/**
 	 * The directory lock, null if this is read-only or a volatile RDF store.
 	 */
-	private Lock dirLock;
+	private volatile Lock dirLock;
 
 	/**
 	 * Flag indicating whether the contents of this repository have changed.
 	 */
-	private boolean contentsChanged;
+	private volatile boolean contentsChanged;
 
 	/**
 	 * The sync delay.
 	 * 
 	 * @see #setSyncDelay
 	 */
-	private long syncDelay = 0L;
+	private volatile long syncDelay = 0L;
 
 	/**
 	 * Semaphore used to synchronize concurrent access to {@link #sync()}.
@@ -162,12 +163,12 @@ public class MemoryStore extends InferencerSailBase {
 	/**
 	 * The timer used to trigger file synchronization.
 	 */
-	private Timer syncTimer;
+	private volatile Timer syncTimer;
 
 	/**
 	 * The currently scheduled timer task, if any.
 	 */
-	private TimerTask syncTimerTask;
+	private volatile TimerTask syncTimerTask;
 
 	/**
 	 * Semaphore used to synchronize concurrent access to {@link #syncTimer} and
@@ -179,7 +180,7 @@ public class MemoryStore extends InferencerSailBase {
 	 * Cleanup thread that removes deprecated statements when no other threads
 	 * are accessing this list. Seee {@link #scheduleSnapshotCleanup()}.
 	 */
-	private Thread snapshotCleanupThread;
+	private volatile Thread snapshotCleanupThread;
 
 	/**
 	 * Semaphore used to synchronize concurrent access to
@@ -291,15 +292,7 @@ public class MemoryStore extends InferencerSailBase {
 
 		logger.debug("Initializing MemoryStore...");
 
-		statementListLockManager = new ReadPrefReadWriteLockManager(SailUtil.isDebugEnabled());
-		txnLockManager = new ExclusiveLockManager(SailUtil.isDebugEnabled());
-		namespaceStore = new MemNamespaceStore();
-
-		bf = new MemBNodeFactory();
-		uf = new MemURIFactory();
-		lf = new MemLiteralFactory();
 		MemValueFactory valueFactory = createValueFactory();
-		statements = new MemStatementList(256);
 		currentSnapshot = 1;
 
 		if (persist) {
@@ -393,7 +386,10 @@ public class MemoryStore extends InferencerSailBase {
 				cancelSyncTimer();
 				sync();
 
-				statements = null;
+				statements.clear();
+				bf.clear();
+				uf.clear();
+				lf.clear();
 				dataFile = null;
 				syncFile = null;
 				initialized = false;
@@ -486,6 +482,18 @@ public class MemoryStore extends InferencerSailBase {
 
 	protected int size() {
 		return statements.size();
+	}
+
+	protected boolean hasStatement(Resource subj, URI pred, Value obj, boolean explicitOnly, int snapshot,
+			ReadMode readMode, MemValueFactory vf, Resource... contexts) throws StoreException
+	{
+		Cursor<MemStatement> cursor = createStatementIterator(subj, pred, obj, explicitOnly, snapshot, readMode, vf, contexts);
+		try {
+			return cursor.next() != null;
+		}
+		finally {
+			cursor.close();
+		}
 	}
 
 	/**
@@ -584,6 +592,7 @@ public class MemoryStore extends InferencerSailBase {
 			MemValueFactory vf)
 		throws StoreException
 	{
+		assert txnStatements != null;
 		boolean newValueCreated = false;
 
 		// Get or create MemValues for the operands
@@ -678,6 +687,8 @@ public class MemoryStore extends InferencerSailBase {
 		st.addToComponentLists();
 
 		txnStatements.put(st, st);
+		
+		assert hasStatement(memSubj, memPred, memObj, explicit, currentSnapshot + 1, ReadMode.TRANSACTION, vf, memContext);
 
 		return st;
 	}
@@ -720,12 +731,15 @@ public class MemoryStore extends InferencerSailBase {
 	{
 		cancelSyncTask();
 
+		assert txnStatements == null;
 		txnStatements = new IdentityHashMap<MemStatement, MemStatement>();
 	}
 
 	protected void commit()
 		throws StoreException
 	{
+		assert txnStatements != null;
+
 		boolean statementsAdded = false;
 		boolean statementsRemoved = false;
 		boolean statementsDeprecated = false;
@@ -788,6 +802,7 @@ public class MemoryStore extends InferencerSailBase {
 	protected void rollback()
 		throws StoreException
 	{
+		assert txnStatements != null;
 		logger.debug("rolling back transaction");
 
 		boolean statementsDeprecated = false;

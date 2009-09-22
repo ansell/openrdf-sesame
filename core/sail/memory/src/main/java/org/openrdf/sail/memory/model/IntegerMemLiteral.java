@@ -22,12 +22,9 @@ public class IntegerMemLiteral extends MemLiteral {
 	 * Variables *
 	 *-----------*/
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -8121416400439616510L;
 
-	private BigInteger value;
+	private final BigInteger value;
 
 	/*--------------*
 	 * Constructors *
