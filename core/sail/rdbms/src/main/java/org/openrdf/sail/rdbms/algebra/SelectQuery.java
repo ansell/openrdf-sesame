@@ -124,6 +124,11 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 		return list;
 	}
 
+	public Set<String> getAssuredBindingNames() {
+		// FIXME: implement this properly
+		return Collections.emptySet();
+	}
+
 	public Set<String> getBindingNames() {
 		if (bindingVars == null) {
 			Set<String> names = new HashSet<String>();

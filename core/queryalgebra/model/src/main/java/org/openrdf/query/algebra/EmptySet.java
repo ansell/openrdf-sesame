@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -16,6 +16,10 @@ public class EmptySet extends QueryModelNodeBase implements TupleExpr {
 	private static final long serialVersionUID = 4104685834098140176L;
 
 	public Set<String> getBindingNames() {
+		return Collections.emptySet();
+	}
+
+	public Set<String> getAssuredBindingNames() {
 		return Collections.emptySet();
 	}
 

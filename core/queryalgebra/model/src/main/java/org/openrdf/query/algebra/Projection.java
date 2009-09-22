@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -53,6 +53,13 @@ public class Projection extends UnaryTupleOperator {
 	@Override
 	public Set<String> getBindingNames() {
 		return projElemList.getTargetNames();
+	}
+
+	@Override
+	public Set<String> getAssuredBindingNames() {
+		// Return all target binding names for which the source binding is assured
+		// by the argument
+		return projElemList.getTargetNamesFor(getArg().getAssuredBindingNames());
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)

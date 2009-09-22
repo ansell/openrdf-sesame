@@ -1,9 +1,11 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra;
+
+import java.util.Set;
 
 /**
  * The LeftJoin operator, as defined in <a
@@ -55,6 +57,10 @@ public class LeftJoin extends BinaryTupleOperator {
 
 	public boolean hasCondition() {
 		return condition != null;
+	}
+
+	public Set<String> getAssuredBindingNames() {
+		return getLeftArg().getAssuredBindingNames();
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)

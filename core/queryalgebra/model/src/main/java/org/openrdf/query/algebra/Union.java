@@ -5,6 +5,9 @@
  */
 package org.openrdf.query.algebra;
 
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * The UNION set operator, which return the union of the result sets of two
@@ -44,6 +47,20 @@ public class Union extends NaryTupleOperator {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public Set<String> getAssuredBindingNames() {
+		Set<String> bindingNames = new LinkedHashSet<String>(16);
+
+		Iterator<? extends TupleExpr> args = getArgs().iterator();
+		if (args.hasNext()) {
+			bindingNames.addAll(args.next().getAssuredBindingNames());
+			while (args.hasNext()) {
+				bindingNames.retainAll(args.next().getAssuredBindingNames());
+			}
+		}
+
+		return bindingNames;
+	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X

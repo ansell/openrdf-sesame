@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -23,6 +23,10 @@ public abstract class ExternalSet extends QueryModelNodeBase implements TupleExp
 	private static final long serialVersionUID = 3903453394409442226L;
 
 	public Set<String> getBindingNames() {
+		return Collections.emptySet();
+	}
+
+	public Set<String> getAssuredBindingNames() {
 		return Collections.emptySet();
 	}
 

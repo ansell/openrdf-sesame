@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -98,6 +98,16 @@ public class Group extends UnaryTupleOperator {
 
 		bindingNames.addAll(getGroupBindingNames());
 		bindingNames.addAll(getAggregateBindingNames());
+
+		return bindingNames;
+	}
+
+	@Override
+	public Set<String> getAssuredBindingNames() {
+		Set<String> bindingNames = new LinkedHashSet<String>();
+
+		bindingNames.addAll(getGroupBindingNames());
+		bindingNames.retainAll(getArg().getAssuredBindingNames());
 
 		return bindingNames;
 	}
