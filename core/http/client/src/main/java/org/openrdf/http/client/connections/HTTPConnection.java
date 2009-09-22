@@ -546,10 +546,18 @@ public class HTTPConnection {
 	}
 
 	public void release() {
-		if (released)
+		if (released) {
 			return;
+		}
+
 		released = true;
-		method.releaseConnection();
+
+		if (Thread.currentThread().isInterrupted()) {
+			method.abort();
+		}
+		else {
+			method.releaseConnection();
+		}
 	}
 
 	public void abort() {
