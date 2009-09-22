@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -75,6 +75,23 @@ public class MultiProjection extends UnaryTupleOperator {
 
 		for (ProjectionElemList projElemList : projections) {
 			bindingNames.addAll(projElemList.getTargetNames());
+		}
+
+		return bindingNames;
+	}
+
+	@Override
+	public Set<String> getAssuredBindingNames() {
+		Set<String> bindingNames = new HashSet<String>();
+
+		if (projections.size() >= 1) {
+			Set<String> assuredSourceNames = getArg().getAssuredBindingNames();
+
+			bindingNames.addAll(projections.get(0).getTargetNamesFor(assuredSourceNames));
+
+			for (int i = 1; i < projections.size(); i++) {
+				bindingNames.retainAll(projections.get(i).getTargetNamesFor(assuredSourceNames));
+			}
 		}
 
 		return bindingNames;

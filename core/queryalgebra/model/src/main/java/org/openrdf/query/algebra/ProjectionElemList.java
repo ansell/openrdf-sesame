@@ -1,11 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,6 +83,18 @@ public class ProjectionElemList extends QueryModelNodeBase {
 
 		for (ProjectionElem pe : elements) {
 			targetNames.add(pe.getTargetName());
+		}
+
+		return targetNames;
+	}
+
+	public Set<String> getTargetNamesFor(Collection<String> sourceNames) {
+		Set<String> targetNames = new LinkedHashSet<String>(elements.size());
+
+		for (ProjectionElem pe : elements) {
+			if (sourceNames.contains(pe.getSourceName())) {
+				targetNames.add(pe.getTargetName());
+			}
 		}
 
 		return targetNames;

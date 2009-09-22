@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -64,6 +64,10 @@ public abstract class UnaryTupleOperator extends NaryTupleOperator {
 	@Override
 	public Set<String> getBindingNames() {
 		return getArg().getBindingNames();
+	}
+
+	public Set<String> getAssuredBindingNames() {
+		return getArg().getAssuredBindingNames();
 	}
 
 	@Override
