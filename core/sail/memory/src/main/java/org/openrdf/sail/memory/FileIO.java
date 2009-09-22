@@ -133,7 +133,7 @@ class FileIO {
 		}
 	}
 
-	private synchronized void write(File dataFile)
+	private void write(File dataFile)
 		throws IOException, StoreException
 	{
 		OutputStream out = new FileOutputStream(dataFile);
@@ -157,7 +157,7 @@ class FileIO {
 		}
 	}
 
-	public void read(File dataFile)
+	public synchronized void read(File dataFile)
 		throws IOException
 	{
 		InputStream in = new FileInputStream(dataFile);
