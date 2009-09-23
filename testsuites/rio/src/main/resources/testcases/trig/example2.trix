@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+
+<TriX xmlns="http://www.w3.org/2004/03/trix/trix-1/">
+
+<graph>
+   <uri>http://www.example.org/exampleDocument#G1</uri>
+   <triple>
+      <uri>http://www.example.org/exampleDocument#Monica</uri>
+      <uri>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</uri>
+      <uri>http://www.example.org/vocabulary#Person</uri>
+   </triple>
+   <triple>
+      <uri>http://www.example.org/exampleDocument#Monica</uri>
+      <uri>http://www.example.org/vocabulary#name</uri>
+      <plainLiteral>Monica Murphy</plainLiteral>
+   </triple>
+   <triple>
+      <uri>http://www.example.org/exampleDocument#Monica</uri>
+      <uri>http://www.example.org/vocabulary#homepage</uri>
+      <uri>http://www.monicamurphy.org</uri>
+   </triple>
+   <triple>
+      <uri>http://www.example.org/exampleDocument#Monica</uri>
+      <uri>http://www.example.org/vocabulary#email</uri>
+      <uri>mailto:monica@monicamurphy.org</uri>
+   </triple>
+   <triple>
+      <uri>http://www.example.org/exampleDocument#Monica</uri>
+      <uri>http://www.example.org/vocabulary#hasSkill</uri>
+      <uri>http://www.example.org/vocabulary#Management</uri>
+   </triple>
+   <triple>
+      <uri>http://www.example.org/exampleDocument#Monica</uri>
+      <uri>http://www.example.org/vocabulary#hasSkill</uri>
+      <uri>http://www.example.org/vocabulary#Programming</uri>
+   </triple>
+</graph>
+
+</TriX>
