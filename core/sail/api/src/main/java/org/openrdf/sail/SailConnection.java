@@ -100,8 +100,9 @@ public interface SailConnection {
 	 *        statements are returned if available
 	 * @param contexts
 	 *        The context(s) to get the data from. Note that this parameter is a
-	 *        vararg and as such is optional. If no contexts are supplied the
-	 *        method operates on the entire repository.
+	 *        vararg and as such is optional. If no contexts are specified the
+	 *        method operates on the entire repository. A <tt>null</tt> value can
+	 *        be used to match context-less statements.
 	 * @return The statements matching the specified pattern.
 	 * @throws SailException
 	 *         If the Sail object encountered an error or unexpected situation
@@ -112,9 +113,16 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
-	 * Returns the number of (explicit) statements.
+	 * Returns the number of (explicit) statements in the store, or in specific
+	 * contexts.
 	 * 
-	 * @return The number of explicit statements in this Sail.
+	 * @param contexts
+	 *        The context(s) to determine the size of. Note that this parameter
+	 *        is a vararg and as such is optional. If no contexts are specified
+	 *        the method operates on the entire repository. A <tt>null</tt> value
+	 *        can be used to match context-less statements.
+	 * @return The number of explicit statements in this store, or in the
+	 *         specified context(s).
 	 */
 	public long size(Resource... contexts)
 		throws SailException;
@@ -140,7 +148,7 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
-	 * Adds a statement to each context in the specified contexts.
+	 * Adds a statement t
 	 * 
 	 * @param subj
 	 *        The subject of the statement to add.
@@ -150,8 +158,8 @@ public interface SailConnection {
 	 *        The object of the statement to add.
 	 * @param contexts
 	 *        The context(s) to add the statement to. Note that this parameter is
-	 *        a vararg and as such is optional. If no contexts are supplied the
-	 *        method operates on the entire repository.
+	 *        a vararg and as such is optional. If no contexts are specified, a
+	 *        context-less statement will be added.
 	 * @throws SailException
 	 *         If the statement could not be added.
 	 */
@@ -175,7 +183,8 @@ public interface SailConnection {
 	 * @param contexts
 	 *        The context(s) from which to remove the statement. Note that this
 	 *        parameter is a vararg and as such is optional. If no contexts are
-	 *        supplied the method operates on the entire repository.
+	 *        specified the method operates on the entire repository. A
+	 *        <tt>null</tt> value can be used to match context-less statements.
 	 * @throws SailException
 	 *         If the statement could not be removed.
 	 */
@@ -189,7 +198,8 @@ public interface SailConnection {
 	 * @param contexts
 	 *        The context(s) from which to remove the statements. Note that this
 	 *        parameter is a vararg and as such is optional. If no contexts are
-	 *        supplied the method operates on the entire repository.
+	 *        specified the method operates on the entire repository. A
+	 *        <tt>null</tt> value can be used to match context-less statements.
 	 * @throws SailException
 	 *         If the statements could not be removed.
 	 */
