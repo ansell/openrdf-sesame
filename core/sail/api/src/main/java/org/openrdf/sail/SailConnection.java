@@ -160,7 +160,7 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
-	 * Adds a statement t
+	 * Adds a statement to the store.
 	 * 
 	 * @param subj
 	 *        The subject of the statement to add.
