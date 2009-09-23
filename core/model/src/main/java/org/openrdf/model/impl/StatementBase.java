@@ -127,7 +127,6 @@ public abstract class StatementBase implements Statement {
 		sb.append(")");
 		Resource ctx = getContext();
 		if (ctx != null) {
-			sb.append(super.toString());
 			sb.append(" [").append(ctx).append("]");
 		}
 
