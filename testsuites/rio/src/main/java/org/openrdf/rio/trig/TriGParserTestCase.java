@@ -30,8 +30,8 @@ import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
-import org.openrdf.rio.ntriples.NTriplesParser;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
@@ -165,20 +165,29 @@ public abstract class TriGParserTestCase {
 			turtleParser.setRDFHandler(inputCollector);
 
 			InputStream in = inputURL.openStream();
-			turtleParser.parse(in, base(baseURL));
-			in.close();
+			try {
+				turtleParser.parse(in, base(baseURL));
+			}
+			finally {
+				in.close();
+			}
 
 			// Parse expected output data
-			NTriplesParser ntriplesParser = new NTriplesParser();
-			ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+			RDFFormat outputFormat = Rio.getParserFormatForFileName(outputURL.toExternalForm());
+			RDFParser outputParser = Rio.createParser(outputFormat);
+			outputParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
 			Set<Statement> outputCollection = new LinkedHashSet<Statement>();
 			StatementCollector outputCollector = new StatementCollector(outputCollection);
-			ntriplesParser.setRDFHandler(outputCollector);
+			outputParser.setRDFHandler(outputCollector);
 
 			in = outputURL.openStream();
-			ntriplesParser.parse(in, base(baseURL));
-			in.close();
+			try {
+				outputParser.parse(in, base(baseURL));
+			}
+			finally {
+				in.close();
+			}
 
 			// Check equality of the two models
 			if (!ModelUtil.equals(inputCollection, outputCollection)) {
@@ -259,7 +268,8 @@ public abstract class TriGParserTestCase {
 	} // end inner class NegativeParserTest
 
 	private static URL url(String uri)
-			throws MalformedURLException {
+		throws MalformedURLException
+	{
 		if (!uri.startsWith("injar:"))
 			return new URL(uri);
 		int start = uri.indexOf(':') + 3;
@@ -268,7 +278,8 @@ public abstract class TriGParserTestCase {
 		try {
 			String jar = URLDecoder.decode(encoded, "UTF-8");
 			return new URL("jar:" + jar + '!' + uri.substring(end));
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}
@@ -282,7 +293,8 @@ public abstract class TriGParserTestCase {
 		try {
 			String encoded = URLEncoder.encode(jar, "UTF-8");
 			return "injar://" + encoded + uri.substring(end + 1);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}
