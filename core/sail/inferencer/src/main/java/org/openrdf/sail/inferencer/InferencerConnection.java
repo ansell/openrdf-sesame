@@ -85,6 +85,8 @@ public interface InferencerConnection extends NotifyingSailConnection {
 	 * 
 	 * @throws SailException
 	 *         If the updates could not be processed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void flushUpdates()
 		throws SailException;
