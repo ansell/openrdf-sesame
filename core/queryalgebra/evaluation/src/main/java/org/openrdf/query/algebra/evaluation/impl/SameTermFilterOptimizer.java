@@ -66,15 +66,23 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 				ValueExpr leftArg = sameTerm.getLeftArg();
 				ValueExpr rightArg = sameTerm.getRightArg();
 
-				// Verify that vars are bound by filterArg
+				// Verify that vars are (potentially) bound by filterArg
 				Set<String> bindingNames = filterArg.getBindingNames();
-
 				if (leftArg instanceof Var && !bindingNames.contains(((Var)leftArg).getName())
 						|| rightArg instanceof Var && !bindingNames.contains(((Var)rightArg).getName()))
 				{
 					// One or both var(s) are unbound, this expression will never
 					// return any results
 					filter.replaceWith(new EmptySet());
+					return;
+				}
+
+				Set<String> assuredBindingNames = filterArg.getAssuredBindingNames();
+				if (leftArg instanceof Var && !assuredBindingNames.contains(((Var)leftArg).getName())
+						|| rightArg instanceof Var && !assuredBindingNames.contains(((Var)rightArg).getName()))
+				{
+					// One or both var(s) are potentially unbound, inlining could
+					// invalidate the result e.g. in case of left joins
 					return;
 				}
 
