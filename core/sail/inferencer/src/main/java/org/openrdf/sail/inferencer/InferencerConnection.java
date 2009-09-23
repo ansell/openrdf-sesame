@@ -34,6 +34,8 @@ public interface InferencerConnection extends NotifyingSailConnection {
 	 *        method operates on the entire repository.
 	 * @throws SailException
 	 *         If the statement could not be added.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	// FIXME: remove boolean result value to enable batch-wise processing
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
@@ -54,6 +56,8 @@ public interface InferencerConnection extends NotifyingSailConnection {
 	 *        supplied the method operates on the entire repository.
 	 * @throws SailException
 	 *         If the statement could not be removed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	// FIXME: remove boolean result value to enable batch-wise processing
 	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
@@ -69,6 +73,8 @@ public interface InferencerConnection extends NotifyingSailConnection {
 	 *        supplied the method operates on the entire repository.
 	 * @throws SailException
 	 *         If the statements could not be removed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void clearInferred(Resource... contexts)
 		throws SailException;
