@@ -67,6 +67,8 @@ public interface SailConnection {
 	 * @throws SailException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(TupleExpr tupleExpr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
@@ -78,6 +80,8 @@ public interface SailConnection {
 	 * 
 	 * @return An iterator over the context identifiers, should not contain any
 	 *         duplicates.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public CloseableIteration<? extends Resource, SailException> getContextIDs()
 		throws SailException;
@@ -107,6 +111,8 @@ public interface SailConnection {
 	 * @throws SailException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
@@ -123,6 +129,8 @@ public interface SailConnection {
 	 *        can be used to match context-less statements.
 	 * @return The number of explicit statements in this store, or in the
 	 *         specified context(s).
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public long size(Resource... contexts)
 		throws SailException;
@@ -133,6 +141,8 @@ public interface SailConnection {
 	 * 
 	 * @throws SailException
 	 *         If the SailConnection could not be committed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void commit()
 		throws SailException;
@@ -143,6 +153,8 @@ public interface SailConnection {
 	 * 
 	 * @throws SailException
 	 *         If the SailConnection could not be rolled back.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void rollback()
 		throws SailException;
@@ -162,6 +174,8 @@ public interface SailConnection {
 	 *        context-less statement will be added.
 	 * @throws SailException
 	 *         If the statement could not be added.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException;
@@ -187,6 +201,8 @@ public interface SailConnection {
 	 *        <tt>null</tt> value can be used to match context-less statements.
 	 * @throws SailException
 	 *         If the statement could not be removed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException;
@@ -202,6 +218,8 @@ public interface SailConnection {
 	 *        <tt>null</tt> value can be used to match context-less statements.
 	 * @throws SailException
 	 *         If the statements could not be removed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void clear(Resource... contexts)
 		throws SailException;
@@ -214,6 +232,8 @@ public interface SailConnection {
 	 * @throws SailException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public CloseableIteration<? extends Namespace, SailException> getNamespaces()
 		throws SailException;
@@ -224,6 +244,8 @@ public interface SailConnection {
 	 * @param prefix
 	 *        A namespace prefix.
 	 * @return The namespace name that the specified prefix maps to.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public String getNamespace(String prefix)
 		throws SailException;
@@ -235,6 +257,8 @@ public interface SailConnection {
 	 *        The new prefix.
 	 * @param name
 	 *        The namespace name that the prefix maps to.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void setNamespace(String prefix, String name)
 		throws SailException;
@@ -248,6 +272,8 @@ public interface SailConnection {
 	 *        is to be removed.
 	 * @throws SailException
 	 *         If the namespace prefix could not be removed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void removeNamespace(String prefix)
 		throws SailException;
@@ -257,6 +283,8 @@ public interface SailConnection {
 	 * 
 	 * @throws SailException
 	 *         If the namespaces could not be removed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void clearNamespaces()
 		throws SailException;
