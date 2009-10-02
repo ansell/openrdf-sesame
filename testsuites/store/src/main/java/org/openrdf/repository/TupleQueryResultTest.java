@@ -29,7 +29,9 @@ public abstract class TupleQueryResultTest extends TestCase {
 
 	private String multipleResultQuery;
 
-	protected void setUp() throws Exception {
+	protected void setUp()
+		throws Exception
+	{
 		rep = createRepository();
 		con = rep.getConnection();
 
@@ -38,13 +40,21 @@ public abstract class TupleQueryResultTest extends TestCase {
 	}
 
 	@Override
-	protected void tearDown() throws Exception {
+	protected void tearDown()
+		throws Exception
+	{
 		con.close();
+		con = null;
+
 		rep.shutDown();
+		rep = null;
+
 		super.tearDown();
 	}
 
-	protected Repository createRepository() throws Exception {
+	protected Repository createRepository()
+		throws Exception
+	{
 		Repository repository = newRepository();
 		repository.initialize();
 		RepositoryConnection con = repository.getConnection();
@@ -54,7 +64,8 @@ public abstract class TupleQueryResultTest extends TestCase {
 		return repository;
 	}
 
-	protected abstract Repository newRepository() throws Exception;
+	protected abstract Repository newRepository()
+		throws Exception;
 
 	/*
 	 * build some simple SeRQL queries to use for testing the result set object.
@@ -154,7 +165,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 
 		try {
 			int count = 0;
-			while(result.hasNext()) {
+			while (result.hasNext()) {
 				result.next();
 				count++;
 			}
