@@ -23,43 +23,45 @@ import org.openrdf.store.StoreException;
 
 public abstract class SparqlOrderByTest extends TestCase {
 
-	private String query1 = "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\n"
-			+ "SELECT ?name\n" + "WHERE { ?x foaf:name ?name }\n"
-			+ "ORDER BY ?name\n";
+	private String query1 = "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name\n"
+			+ "WHERE { ?x foaf:name ?name }\n" + "ORDER BY ?name\n";
 
 	private String query2 = "PREFIX     :    <http://example.org/ns#>\n"
 			+ "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\n"
-			+ "PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>\n"
-			+ "SELECT ?name\n" + "WHERE { ?x foaf:name ?name ; :empId ?emp }\n"
-			+ "ORDER BY DESC(?emp)\n";
+			+ "PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>\n" + "SELECT ?name\n"
+			+ "WHERE { ?x foaf:name ?name ; :empId ?emp }\n" + "ORDER BY DESC(?emp)\n";
 
 	private String query3 = "PREFIX     :    <http://example.org/ns#>\n"
-			+ "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\n"
-			+ "SELECT ?name\n" + "WHERE { ?x foaf:name ?name ; :empId ?emp }\n"
-			+ "ORDER BY ?name DESC(?emp)\n";
+			+ "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name\n"
+			+ "WHERE { ?x foaf:name ?name ; :empId ?emp }\n" + "ORDER BY ?name DESC(?emp)\n";
 
 	private Repository repository;
 
 	private RepositoryConnection conn;
 
-	public void testQuery1() throws Exception {
+	public void testQuery1()
+		throws Exception
+	{
 		assertTrue("James Leigh".compareTo("James Leigh Hunt") < 0);
-		assertResult(query1, Arrays.asList("James Leigh", "James Leigh",
-				"James Leigh Hunt", "Megan Leigh"));
+		assertResult(query1, Arrays.asList("James Leigh", "James Leigh", "James Leigh Hunt", "Megan Leigh"));
 	}
 
-	public void testQuery2() throws Exception {
-		assertResult(query2, Arrays.asList("Megan Leigh", "James Leigh",
-				"James Leigh Hunt", "James Leigh"));
+	public void testQuery2()
+		throws Exception
+	{
+		assertResult(query2, Arrays.asList("Megan Leigh", "James Leigh", "James Leigh Hunt", "James Leigh"));
 	}
 
-	public void testQuery3() throws Exception {
-		assertResult(query3, Arrays.asList("James Leigh", "James Leigh",
-				"James Leigh Hunt", "Megan Leigh"));
+	public void testQuery3()
+		throws Exception
+	{
+		assertResult(query3, Arrays.asList("James Leigh", "James Leigh", "James Leigh Hunt", "Megan Leigh"));
 	}
 
 	@Override
-	protected void setUp() throws Exception {
+	protected void setUp()
+		throws Exception
+	{
 		repository = createRepository();
 		createEmployee("james", "James Leigh", 123);
 		createEmployee("jim", "James Leigh", 244);
@@ -68,50 +70,57 @@ public abstract class SparqlOrderByTest extends TestCase {
 		conn = repository.getConnection();
 	}
 
-	protected Repository createRepository() throws Exception {
+	protected Repository createRepository()
+		throws Exception
+	{
 		Repository repository = newRepository();
 		repository.initialize();
 		RepositoryConnection con = repository.getConnection();
 		try {
 			con.clear();
 			con.clearNamespaces();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 		return repository;
 	}
 
-	protected abstract Repository newRepository() throws Exception;
+	protected abstract Repository newRepository()
+		throws Exception;
 
 	@Override
-	protected void tearDown() throws Exception {
+	protected void tearDown()
+		throws Exception
+	{
 		conn.close();
+		conn = null;
+
 		repository.shutDown();
+		repository = null;
 	}
 
 	private void createEmployee(String id, String name, int empId)
-			throws StoreException {
+		throws StoreException
+	{
 		URIFactory uf = repository.getURIFactory();
 		LiteralFactory lf = repository.getLiteralFactory();
 		String foafName = "http://xmlns.com/foaf/0.1/name";
 		String exEmpId = "http://example.org/ns#empId";
 		RepositoryConnection conn = repository.getConnection();
-		conn.add(uf.createURI("http://example.org/ns#" + id), uf
-				.createURI(foafName), lf.createLiteral(name));
-		conn.add(uf.createURI("http://example.org/ns#" + id), uf
-				.createURI(exEmpId), lf.createLiteral(empId));
+		conn.add(uf.createURI("http://example.org/ns#" + id), uf.createURI(foafName), lf.createLiteral(name));
+		conn.add(uf.createURI("http://example.org/ns#" + id), uf.createURI(exEmpId), lf.createLiteral(empId));
 		conn.close();
 	}
 
 	private void assertResult(String queryStr, List<String> names)
-			throws StoreException, MalformedQueryException,
-			EvaluationException {
-		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL,
-				queryStr);
+		throws StoreException, MalformedQueryException, EvaluationException
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
 		TupleResult result = query.evaluate();
 		for (String name : names) {
 			Value value = result.next().getValue("name");
-			assertEquals(name, ((Literal) value).getLabel());
+			assertEquals(name, ((Literal)value).getLabel());
 		}
 		assertFalse(result.hasNext());
 		result.close();

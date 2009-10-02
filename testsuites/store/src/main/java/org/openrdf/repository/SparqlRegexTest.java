@@ -17,25 +17,21 @@ import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
 
 public abstract class SparqlRegexTest extends TestCase {
-	public String queryInline = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
-			+ "SELECT ?name ?mbox\n" + " WHERE { ?x foaf:name  ?name ;\n"
-			+ "            foaf:mbox  ?mbox .\n"
+
+	public String queryInline = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name ?mbox\n"
+			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
 			+ "         FILTER regex(str(?mbox), \"@Work.example\", \"i\") }";
 
-	public String queryBinding = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
-			+ "SELECT ?name ?mbox\n" + " WHERE { ?x foaf:name  ?name ;\n"
-			+ "            foaf:mbox  ?mbox .\n"
+	public String queryBinding = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name ?mbox\n"
+			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
 			+ "         FILTER regex(str(?mbox), ?pattern) }";
 
-	public String queryBindingFlags = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
-			+ "SELECT ?name ?mbox\n"
-			+ " WHERE { ?x foaf:name  ?name ;\n"
-			+ "            foaf:mbox  ?mbox .\n"
+	public String queryBindingFlags = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name ?mbox\n"
+			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
 			+ "         FILTER regex(str(?mbox), ?pattern, ?flags) }";
 
-	public String queryExpr = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
-			+ "SELECT ?name ?mbox\n" + " WHERE { ?x foaf:name  ?name ;\n"
-			+ "            foaf:mbox  ?mbox .\n"
+	public String queryExpr = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name ?mbox\n"
+			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
 			+ "         ?y <http://example.org/ns#pattern>  ?pattern .\n"
 			+ "         ?y <http://example.org/ns#flags>  ?flags .\n"
 			+ "         FILTER regex(str(?mbox), ?pattern, ?flags) }";
@@ -48,18 +44,20 @@ public abstract class SparqlRegexTest extends TestCase {
 
 	private Literal hunt;
 
-	public void testInline() throws Exception {
-		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL,
-				queryInline);
+	public void testInline()
+		throws Exception
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryInline);
 		TupleResult result = query.evaluate();
 		assertEquals(hunt, result.next().getValue("name"));
 		assertFalse(result.hasNext());
 		result.close();
 	}
 
-	public void testBinding() throws Exception {
-		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL,
-				queryBinding);
+	public void testBinding()
+		throws Exception
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryBinding);
 		query.setBinding("pattern", vf.createLiteral("@work.example"));
 		TupleResult result = query.evaluate();
 		assertEquals(hunt, result.next().getValue("name"));
@@ -67,9 +65,10 @@ public abstract class SparqlRegexTest extends TestCase {
 		result.close();
 	}
 
-	public void testBindingFlags() throws Exception {
-		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL,
-				queryBindingFlags);
+	public void testBindingFlags()
+		throws Exception
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryBindingFlags);
 		query.setBinding("pattern", vf.createLiteral("@Work.example"));
 		query.setBinding("flags", vf.createLiteral("i"));
 		TupleResult result = query.evaluate();
@@ -78,14 +77,15 @@ public abstract class SparqlRegexTest extends TestCase {
 		result.close();
 	}
 
-	public void testExpr() throws Exception {
+	public void testExpr()
+		throws Exception
+	{
 		URI pattern = vf.createURI("http://example.org/ns#", "pattern");
 		URI flags = vf.createURI("http://example.org/ns#", "flags");
 		BNode bnode = vf.createBNode();
 		conn.add(bnode, pattern, vf.createLiteral("@Work.example"));
 		conn.add(bnode, flags, vf.createLiteral("i"));
-		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL,
-				queryExpr);
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryExpr);
 		TupleResult result = query.evaluate();
 		assertEquals(hunt, result.next().getValue("name"));
 		assertFalse(result.hasNext());
@@ -93,7 +93,9 @@ public abstract class SparqlRegexTest extends TestCase {
 	}
 
 	@Override
-	protected void setUp() throws Exception {
+	protected void setUp()
+		throws Exception
+	{
 		repository = createRepository();
 		conn = repository.getConnection();
 		vf = conn.getValueFactory();
@@ -103,29 +105,39 @@ public abstract class SparqlRegexTest extends TestCase {
 		createUser("hunt", "James Leigh Hunt", "james@work.example");
 	}
 
-	protected Repository createRepository() throws Exception {
+	protected Repository createRepository()
+		throws Exception
+	{
 		Repository repository = newRepository();
 		repository.initialize();
 		RepositoryConnection con = repository.getConnection();
 		try {
 			con.clear();
 			con.clearNamespaces();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 		return repository;
 	}
 
-	protected abstract Repository newRepository() throws Exception;
+	protected abstract Repository newRepository()
+		throws Exception;
 
 	@Override
-	protected void tearDown() throws Exception {
+	protected void tearDown()
+		throws Exception
+	{
 		conn.close();
+		conn = null;
+
 		repository.shutDown();
+		repository = null;
 	}
 
 	private void createUser(String id, String name, String email)
-			throws StoreException {
+		throws StoreException
+	{
 		RepositoryConnection conn = repository.getConnection();
 		URI subj = vf.createURI("http://example.org/ns#", id);
 		URI foafName = vf.createURI("http://xmlns.com/foaf/0.1/", "name");
