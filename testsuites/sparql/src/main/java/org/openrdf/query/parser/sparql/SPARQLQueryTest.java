@@ -120,6 +120,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			catch (Exception exc) {
 				try {
 					dataRep.shutDown();
+					dataRep = null;
 				}
 				catch (Exception e2) {
 					logger.error(e2.toString(), e2);
@@ -152,7 +153,10 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected void tearDown()
 		throws Exception
 	{
-		dataRep.shutDown();
+		if (dataRep != null) {
+			dataRep.shutDown();
+			dataRep = null;
+		}
 	}
 
 	@Override
