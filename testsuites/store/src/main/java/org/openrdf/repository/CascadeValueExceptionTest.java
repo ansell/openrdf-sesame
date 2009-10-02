@@ -81,6 +81,9 @@ public abstract class CascadeValueExceptionTest extends TestCase {
 		throws Exception
 	{
 		conn.close();
+		conn = null;
+
 		repository.shutDown();
+		repository = null;
 	}
 }
