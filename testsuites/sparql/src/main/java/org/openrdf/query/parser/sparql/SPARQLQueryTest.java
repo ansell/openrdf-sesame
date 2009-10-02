@@ -121,6 +121,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			catch (Exception exc) {
 				try {
 					dataRep.shutDown();
+					dataRep = null;
 				}
 				catch (Exception e2) {
 					logger.error(e2.toString(), e2);
@@ -128,6 +129,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 				throw exc;
 			}
 		}
+
 		con = dataRep.getConnection();
 	}
 
@@ -154,8 +156,15 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected void tearDown()
 		throws Exception
 	{
-		con.close();
-		dataRep.shutDown();
+		if (con != null) {
+			con.close();
+			con = null;
+		}
+
+		if (dataRep != null) {
+			dataRep.shutDown();
+			dataRep = null;
+		}
 	}
 
 	@Override
