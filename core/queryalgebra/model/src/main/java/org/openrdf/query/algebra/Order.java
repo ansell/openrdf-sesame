@@ -90,8 +90,7 @@ public class Order extends UnaryTupleOperator {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		int index = elements.indexOf(current);
 		if (index >= 0) {
 			elements.set(index, (OrderElem)replacement);
@@ -100,6 +99,20 @@ public class Order extends UnaryTupleOperator {
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Order && super.equals(other)) {
+			Order o = (Order)other;
+			return elements.equals(o.getElements());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ elements.hashCode();
 	}
 
 	@Override

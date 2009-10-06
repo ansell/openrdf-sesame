@@ -29,6 +29,16 @@ public class Reduced extends UnaryTupleOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Reduced && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Reduced".hashCode();
+	}
+
+	@Override
 	public Reduced clone() {
 		return (Reduced)super.clone();
 	}

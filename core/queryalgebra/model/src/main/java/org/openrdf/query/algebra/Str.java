@@ -37,6 +37,16 @@ public class Str extends UnaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Str && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Str".hashCode();
+	}
+
+	@Override
 	public Str clone() {
 		return (Str)super.clone();
 	}

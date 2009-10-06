@@ -29,6 +29,16 @@ public class IsBNode extends UnaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof IsBNode && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "IsBNode".hashCode();
+	}
+
+	@Override
 	public IsBNode clone() {
 		return (IsBNode)super.clone();
 	}

@@ -66,8 +66,7 @@ public class Like extends UnaryValueOperator {
 	}
 
 	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		StringBuilder sb = new StringBuilder(128);
 
 		sb.append(super.getSignature());
@@ -80,6 +79,20 @@ public class Like extends UnaryValueOperator {
 		}
 
 		return sb.toString();
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Like && super.equals(other)) {
+			Like o = (Like)other;
+			return caseSensitive == o.isCaseSensitive() && opPattern.equals(o.getOpPattern());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ opPattern.hashCode();
 	}
 
 	@Override

@@ -29,6 +29,16 @@ public class Distinct extends UnaryTupleOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Distinct && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Distinct".hashCode();
+	}
+
+	@Override
 	public Distinct clone() {
 		return (Distinct)super.clone();
 	}

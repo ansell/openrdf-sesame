@@ -33,6 +33,16 @@ public class In extends CompareSubQueryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof In && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "In".hashCode();
+	}
+
+	@Override
 	public In clone() {
 		return (In)super.clone();
 	}

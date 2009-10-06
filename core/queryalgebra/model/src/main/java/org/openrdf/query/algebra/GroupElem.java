@@ -69,14 +69,27 @@ public class GroupElem extends QueryModelNodeBase {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (operator == current) {
 			setOperator((AggregateOperator)replacement);
 		}
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof GroupElem) {
+			GroupElem o = (GroupElem)other;
+			return name.equals(o.getName()) && operator.equals(o.getOperator());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return name.hashCode() ^ operator.hashCode();
 	}
 
 	@Override

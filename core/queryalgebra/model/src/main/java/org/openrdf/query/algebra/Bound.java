@@ -73,14 +73,27 @@ public class Bound extends QueryModelNodeBase implements ValueExpr {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (arg == current) {
 			setArg((Var)replacement);
 		}
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Bound) {
+			Bound o = (Bound)other;
+			return arg.equals(o.getArg());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return arg.hashCode() ^ "Bound".hashCode();
 	}
 
 	@Override

@@ -36,6 +36,16 @@ public class Datatype extends UnaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Datatype && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Datatype".hashCode();
+	}
+
+	@Override
 	public Datatype clone() {
 		return (Datatype)super.clone();
 	}

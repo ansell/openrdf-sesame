@@ -36,6 +36,16 @@ public class Lang extends UnaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Lang && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Lang".hashCode();
+	}
+
+	@Override
 	public Lang clone() {
 		return (Lang)super.clone();
 	}

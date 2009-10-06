@@ -102,8 +102,7 @@ public abstract class BinaryValueOperator extends QueryModelNodeBase implements 
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (leftArg == current) {
 			setLeftArg((ValueExpr)replacement);
 		}
@@ -113,6 +112,21 @@ public abstract class BinaryValueOperator extends QueryModelNodeBase implements 
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof BinaryValueOperator) {
+			BinaryValueOperator o = (BinaryValueOperator)other;
+			return leftArg.equals(o.getLeftArg()) && rightArg.equals(o.getRightArg());
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return leftArg.hashCode() ^ rightArg.hashCode();
 	}
 
 	@Override

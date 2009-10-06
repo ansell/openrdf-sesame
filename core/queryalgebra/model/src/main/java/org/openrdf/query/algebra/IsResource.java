@@ -29,6 +29,16 @@ public class IsResource extends UnaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof IsResource && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() & "IsResource".hashCode();
+	}
+
+	@Override
 	public IsResource clone() {
 		return (IsResource)super.clone();
 	}

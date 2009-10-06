@@ -49,9 +49,22 @@ public class CompareAll extends CompareSubQueryValueOperator {
 	}
 
 	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		return super.getSignature() + " (" + operator.getSymbol() + ")";
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof CompareAll && super.equals(other)) {
+			CompareAll o = (CompareAll)other;
+			return operator.equals(o.getOperator());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ operator.hashCode() ^ "CompareAll".hashCode();
 	}
 
 	@Override

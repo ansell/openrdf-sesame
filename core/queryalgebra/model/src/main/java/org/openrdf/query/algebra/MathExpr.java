@@ -69,9 +69,22 @@ public class MathExpr extends BinaryValueOperator {
 	}
 
 	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		return super.getSignature() + " (" + operator.getSymbol() + ")";
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof MathExpr && super.equals(other)) {
+			MathExpr o = (MathExpr)other;
+			return operator.equals(o.getOperator());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ operator.hashCode();
 	}
 
 	@Override

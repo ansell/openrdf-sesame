@@ -34,6 +34,16 @@ public class Namespace extends UnaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Namespace && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Namespace".hashCode();
+	}
+
+	@Override
 	public Namespace clone() {
 		return (Namespace)super.clone();
 	}

@@ -125,6 +125,20 @@ public class MultiProjection extends UnaryTupleOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		if (other instanceof MultiProjection && super.equals(other)) {
+			MultiProjection o = (MultiProjection)other;
+			return projections.equals(o.getProjections());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ projections.hashCode();
+	}
+
+	@Override
 	public MultiProjection clone() {
 		MultiProjection clone = (MultiProjection)super.clone();
 

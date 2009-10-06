@@ -162,7 +162,7 @@ public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 	public Set<String> getBindingNames() {
 		return getAssuredBindingNames();
 	}
-	
+
 	public Set<String> getAssuredBindingNames() {
 		Set<String> bindingNames = new HashSet<String>(8);
 
@@ -199,10 +199,10 @@ public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 		if (contextVar != null) {
 			varCollection.add(contextVar);
 		}
-		
+
 		return varCollection;
 	}
-	
+
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -259,6 +259,31 @@ public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 		}
 
 		return sb.toString();
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof StatementPattern) {
+			StatementPattern o = (StatementPattern)other;
+			return subjectVar.equals(o.getSubjectVar()) && predicateVar.equals(o.getPredicateVar())
+					&& objectVar.equals(o.getObjectVar()) && nullEquals(contextVar, o.getContextVar())
+					&& scope.equals(o.getScope());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = subjectVar.hashCode();
+		result ^= predicateVar.hashCode();
+		result ^= objectVar.hashCode();
+		if (contextVar != null) {
+			result ^= contextVar.hashCode();
+		}
+		if (scope == Scope.NAMED_CONTEXTS) {
+			result = ~result;
+		}
+		return result;
 	}
 
 	@Override

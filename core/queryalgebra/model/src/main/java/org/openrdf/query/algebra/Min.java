@@ -20,8 +20,14 @@ public class Min extends UnaryValueOperator implements AggregateOperator {
 		visitor.meet(this);
 	}
 
-	public ValueExpr cloneValueExpr() {
-		return clone();
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Min && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Min".hashCode();
 	}
 
 	@Override

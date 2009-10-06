@@ -59,6 +59,16 @@ public class Intersection extends BinaryTupleOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Intersection && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Intersection".hashCode();
+	}
+
+	@Override
 	public Intersection clone() {
 		return (Intersection)super.clone();
 	}

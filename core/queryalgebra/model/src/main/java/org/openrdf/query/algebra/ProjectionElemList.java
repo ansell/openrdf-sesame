@@ -118,6 +118,20 @@ public class ProjectionElemList extends QueryModelNodeBase {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		if (other instanceof ProjectionElemList) {
+			ProjectionElemList o = (ProjectionElemList)other;
+			return elements.equals(o.getElements());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return elements.hashCode();
+	}
+
+	@Override
 	public ProjectionElemList clone() {
 		ProjectionElemList clone = (ProjectionElemList)super.clone();
 

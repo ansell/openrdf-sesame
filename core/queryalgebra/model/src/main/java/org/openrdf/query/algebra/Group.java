@@ -140,6 +140,21 @@ public class Group extends UnaryTupleOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Group && super.equals(other)) {
+			Group o = (Group)other;
+			return o.groupBindings.equals(o.getGroupBindingNames())
+					&& o.groupElements.equals(o.getGroupElements());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ groupBindings.hashCode() ^ groupElements.hashCode();
+	}
+
+	@Override
 	public Group clone() {
 		Group clone = (Group)super.clone();
 

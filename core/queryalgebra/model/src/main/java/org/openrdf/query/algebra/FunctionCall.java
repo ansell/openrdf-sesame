@@ -106,8 +106,7 @@ public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		int index = args.indexOf(current);
 		if (index >= 0) {
 			args.set(index, (ValueExpr)replacement);
@@ -116,6 +115,20 @@ public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof FunctionCall) {
+			FunctionCall o = (FunctionCall)other;
+			return uri.equals(o.getURI()) && args.equals(o.getArgs());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return uri.hashCode() ^ args.hashCode();
 	}
 
 	@Override

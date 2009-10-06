@@ -30,6 +30,16 @@ public class BNodeGenerator extends QueryModelNodeBase implements ValueExpr {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof BNodeGenerator;
+	}
+
+	@Override
+	public int hashCode() {
+		return "BNodeGenerator".hashCode();
+	}
+
+	@Override
 	public BNodeGenerator clone() {
 		return (BNodeGenerator)super.clone();
 	}

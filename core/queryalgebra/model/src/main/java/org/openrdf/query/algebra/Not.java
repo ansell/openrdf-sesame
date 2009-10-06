@@ -32,6 +32,16 @@ public class Not extends UnaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Not && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Not".hashCode();
+	}
+
+	@Override
 	public Not clone() {
 		return (Not)super.clone();
 	}

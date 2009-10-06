@@ -34,6 +34,16 @@ public class LocalName extends UnaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof LocalName && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "LocalName".hashCode();
+	}
+
+	@Override
 	public LocalName clone() {
 		return (LocalName)super.clone();
 	}

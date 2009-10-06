@@ -62,14 +62,27 @@ public class Filter extends UnaryTupleOperator {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (condition == current) {
 			setCondition((ValueExpr)replacement);
 		}
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Filter && super.equals(other)) {
+			Filter o = (Filter)other;
+			return condition.equals(o.getCondition());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ condition.hashCode();
 	}
 
 	@Override

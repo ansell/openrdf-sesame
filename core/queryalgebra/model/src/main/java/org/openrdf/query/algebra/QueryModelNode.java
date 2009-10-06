@@ -66,6 +66,12 @@ public interface QueryModelNode extends Cloneable {
 	public void replaceWith(QueryModelNode replacement);
 
 	/**
+	 * Returns <tt>true</tt> if this query model node and its children are
+	 * recursively equal to <tt>o</tt> and its children.
+	 */
+	public boolean equals(Object o);
+
+	/**
 	 * Returns an indented print of the node tree, starting from this node.
 	 */
 	public String toString();

@@ -24,8 +24,7 @@ public class QueryRoot extends UnaryTupleOperator {
 	}
 
 	@Override
-	public void setParentNode(QueryModelNode parent)
-	{
+	public void setParentNode(QueryModelNode parent) {
 		throw new UnsupportedOperationException("Not allowed to set a parent on a QueryRoot object");
 	}
 
@@ -33,6 +32,16 @@ public class QueryRoot extends UnaryTupleOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof QueryRoot && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "QueryRoot".hashCode();
 	}
 
 	@Override

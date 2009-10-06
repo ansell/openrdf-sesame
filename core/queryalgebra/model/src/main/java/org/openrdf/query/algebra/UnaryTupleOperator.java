@@ -80,14 +80,28 @@ public abstract class UnaryTupleOperator extends QueryModelNodeBase implements T
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (arg == current) {
 			setArg((TupleExpr)replacement);
 		}
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof UnaryTupleOperator) {
+			UnaryTupleOperator o = (UnaryTupleOperator)other;
+			return arg.equals(o.getArg());
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return arg.hashCode();
 	}
 
 	@Override
