@@ -70,14 +70,28 @@ public abstract class UnaryValueOperator extends QueryModelNodeBase implements V
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (arg == current) {
 			setArg((ValueExpr)replacement);
 		}
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof UnaryValueOperator) {
+			UnaryValueOperator o = (UnaryValueOperator)other;
+			return arg.equals(o.getArg());
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return arg.hashCode();
 	}
 
 	@Override

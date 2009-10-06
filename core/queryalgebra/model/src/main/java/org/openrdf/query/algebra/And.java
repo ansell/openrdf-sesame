@@ -32,6 +32,16 @@ public class And extends BinaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof And && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "And".hashCode();
+	}
+
+	@Override
 	public And clone() {
 		return (And)super.clone();
 	}

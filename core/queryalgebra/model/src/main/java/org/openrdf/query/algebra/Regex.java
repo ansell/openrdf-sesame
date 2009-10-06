@@ -5,7 +5,6 @@
  */
 package org.openrdf.query.algebra;
 
-
 /**
  * Compares the string representation of a value expression to a pattern.
  */
@@ -71,6 +70,24 @@ public class Regex extends BinaryValueOperator {
 		if (flagsArg != null) {
 			flagsArg.visit(visitor);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Regex && super.equals(other)) {
+			Regex o = (Regex)other;
+			return o.flagsArg.equals(o.getFlagsArg());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode() ^ "Regex".hashCode();
+		if (flagsArg != null) {
+			result ^= flagsArg.hashCode();
+		}
+		return result;
 	}
 
 	@Override

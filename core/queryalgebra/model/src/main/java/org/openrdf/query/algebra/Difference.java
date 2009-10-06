@@ -52,6 +52,16 @@ public class Difference extends BinaryTupleOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Difference && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Difference".hashCode();
+	}
+
+	@Override
 	public Difference clone() {
 		return (Difference)super.clone();
 	}

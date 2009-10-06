@@ -86,8 +86,7 @@ public class Slice extends UnaryTupleOperator {
 	}
 
 	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		StringBuilder sb = new StringBuilder(256);
 
 		sb.append(super.getSignature());
@@ -103,6 +102,20 @@ public class Slice extends UnaryTupleOperator {
 		sb.append(" )");
 
 		return sb.toString();
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Slice && super.equals(other)) {
+			Slice o = (Slice)other;
+			return offset == o.getOffset() && limit == o.getLimit();
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ offset ^ limit;
 	}
 
 	@Override

@@ -32,6 +32,16 @@ public class Exists extends SubQueryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Exists && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Exists".hashCode();
+	}
+
+	@Override
 	public Exists clone() {
 		return (Exists)super.clone();
 	}

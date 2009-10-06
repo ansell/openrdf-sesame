@@ -60,8 +60,7 @@ public class ProjectionElem extends QueryModelNodeBase {
 	}
 
 	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		StringBuilder sb = new StringBuilder(32);
 		sb.append(super.getSignature());
 
@@ -74,6 +73,21 @@ public class ProjectionElem extends QueryModelNodeBase {
 		}
 
 		return sb.toString();
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof ProjectionElem) {
+			ProjectionElem o = (ProjectionElem)other;
+			return sourceName.equals(o.getSourceName()) && targetName.equals(o.getTargetName());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// Note: don't xor source and target since they will often be equal
+		return targetName.hashCode();
 	}
 
 	@Override

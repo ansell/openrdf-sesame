@@ -28,6 +28,16 @@ public class SingletonSet extends QueryModelNodeBase implements TupleExpr {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof SingletonSet;
+	}
+
+	@Override
+	public int hashCode() {
+		return "SingletonSet".hashCode();
+	}
+
+	@Override
 	public SingletonSet clone() {
 		return (SingletonSet)super.clone();
 	}

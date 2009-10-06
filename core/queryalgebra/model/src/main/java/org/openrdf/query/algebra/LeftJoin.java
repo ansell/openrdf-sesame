@@ -97,6 +97,25 @@ public class LeftJoin extends BinaryTupleOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		if (other instanceof LeftJoin && super.equals(other)) {
+			ValueExpr oCond = ((LeftJoin)other).getCondition();
+			return nullEquals(condition, oCond);
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode() ^ "LeftJoin".hashCode();
+		if (hasCondition()) {
+			result ^= getCondition().hashCode();
+		}
+		return result;
+	}
+
+	@Override
 	public LeftJoin clone() {
 		LeftJoin clone = (LeftJoin)super.clone();
 		if (hasCondition()) {

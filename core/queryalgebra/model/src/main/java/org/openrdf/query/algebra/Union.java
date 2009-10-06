@@ -58,6 +58,16 @@ public class Union extends BinaryTupleOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Union && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Union".hashCode();
+	}
+
+	@Override
 	public Union clone() {
 		return (Union)super.clone();
 	}

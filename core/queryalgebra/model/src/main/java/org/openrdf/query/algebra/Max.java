@@ -20,8 +20,14 @@ public class Max extends UnaryValueOperator implements AggregateOperator {
 		visitor.meet(this);
 	}
 
-	public ValueExpr cloneValueExpr() {
-		return clone();
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Max && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Max".hashCode();
 	}
 
 	@Override

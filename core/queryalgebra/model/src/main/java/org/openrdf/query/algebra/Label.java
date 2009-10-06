@@ -34,6 +34,16 @@ public class Label extends UnaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Label && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Label".hashCode();
+	}
+
+	@Override
 	public Label clone() {
 		return (Label)super.clone();
 	}

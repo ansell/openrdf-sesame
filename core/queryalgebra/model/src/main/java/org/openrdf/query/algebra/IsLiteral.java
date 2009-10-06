@@ -29,6 +29,16 @@ public class IsLiteral extends UnaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof IsLiteral && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "IsLiteral".hashCode();
+	}
+
+	@Override
 	public IsLiteral clone() {
 		return (IsLiteral)super.clone();
 	}

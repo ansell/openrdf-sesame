@@ -48,14 +48,28 @@ public abstract class CompareSubQueryValueOperator extends SubQueryValueOperator
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (arg == current) {
 			setArg((ValueExpr)replacement);
 		}
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof CompareSubQueryValueOperator && super.equals(other)) {
+			CompareSubQueryValueOperator o = (CompareSubQueryValueOperator)other;
+			return arg.equals(o.getArg());
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ arg.hashCode();
 	}
 
 	@Override

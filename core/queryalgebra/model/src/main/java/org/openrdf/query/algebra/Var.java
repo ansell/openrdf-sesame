@@ -77,24 +77,7 @@ public class Var extends QueryModelNodeBase implements ValueExpr {
 	}
 
 	@Override
-	public boolean equals(Object other)
-	{
-		if (other instanceof Var) {
-			return name.equals(((Var)other).name);
-		}
-
-		return false;
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return name.hashCode();
-	}
-
-	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		StringBuilder sb = new StringBuilder(64);
 
 		sb.append(super.getSignature());
@@ -112,6 +95,27 @@ public class Var extends QueryModelNodeBase implements ValueExpr {
 		sb.append(")");
 
 		return sb.toString();
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Var) {
+			Var o = (Var)other;
+			return name.equals(o.getName()) && nullEquals(value, o.getValue()) && anonymous == o.isAnonymous();
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = name.hashCode();
+		if (value != null) {
+			result ^= value.hashCode();
+		}
+		if (anonymous) {
+			result = ~result;
+		}
+		return result;
 	}
 
 	@Override

@@ -114,6 +114,20 @@ public class Extension extends UnaryTupleOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Extension && super.equals(other)) {
+			Extension o = (Extension)other;
+			return elements.equals(o.getElements());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ elements.hashCode();
+	}
+
+	@Override
 	public Extension clone() {
 		Extension clone = (Extension)super.clone();
 

@@ -29,6 +29,16 @@ public class IsURI extends UnaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof IsURI && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "IsURI".hashCode();
+	}
+
+	@Override
 	public IsURI clone() {
 		return (IsURI)super.clone();
 	}

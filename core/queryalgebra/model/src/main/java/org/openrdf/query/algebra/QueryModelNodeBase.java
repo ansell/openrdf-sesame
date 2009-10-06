@@ -73,8 +73,7 @@ public abstract class QueryModelNodeBase implements QueryModelNode {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		QueryModelTreePrinter treePrinter = new QueryModelTreePrinter();
 		this.visit(treePrinter);
 		return treePrinter.getTreeString();
@@ -88,5 +87,9 @@ public abstract class QueryModelNodeBase implements QueryModelNode {
 		catch (CloneNotSupportedException e) {
 			throw new RuntimeException("Query model nodes are required to be cloneable", e);
 		}
+	}
+
+	protected boolean nullEquals(Object o1, Object o2) {
+		return o1 == o2 || o1 != null && o1.equals(o2);
 	}
 }

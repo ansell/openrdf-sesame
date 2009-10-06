@@ -37,7 +37,7 @@ public class Join extends BinaryTupleOperator {
 		bindingNames.addAll(getRightArg().getBindingNames());
 		return bindingNames;
 	}
-	
+
 	public Set<String> getAssuredBindingNames() {
 		Set<String> bindingNames = new LinkedHashSet<String>(16);
 		bindingNames.addAll(getLeftArg().getAssuredBindingNames());
@@ -49,6 +49,16 @@ public class Join extends BinaryTupleOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Join && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Join".hashCode();
 	}
 
 	@Override

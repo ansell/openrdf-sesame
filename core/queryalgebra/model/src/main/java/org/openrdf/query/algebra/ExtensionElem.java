@@ -63,8 +63,7 @@ public class ExtensionElem extends QueryModelNodeBase {
 	}
 
 	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement)
-	{
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (expr == current) {
 			setExpr((ValueExpr)replacement);
 		}
@@ -74,9 +73,22 @@ public class ExtensionElem extends QueryModelNodeBase {
 	}
 
 	@Override
-	public String getSignature()
-	{
+	public String getSignature() {
 		return super.getSignature() + " (" + name + ")";
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof ExtensionElem) {
+			ExtensionElem o = (ExtensionElem)other;
+			return name.equals(o.getName()) && expr.equals(o.getExpr());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return name.hashCode() ^ expr.hashCode();
 	}
 
 	@Override

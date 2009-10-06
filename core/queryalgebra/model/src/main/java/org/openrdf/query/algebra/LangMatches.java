@@ -33,6 +33,16 @@ public class LangMatches extends BinaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof LangMatches && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "LangMatches".hashCode();
+	}
+
+	@Override
 	public LangMatches clone() {
 		return (LangMatches)super.clone();
 	}

@@ -85,6 +85,20 @@ public class Projection extends UnaryTupleOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Join && super.equals(other)) {
+			Projection o = (Projection)other;
+			return projElemList.equals(o.getProjectionElemList());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ projElemList.hashCode();
+	}
+
+	@Override
 	public Projection clone() {
 		Projection clone = (Projection)super.clone();
 		clone.setProjectionElemList(getProjectionElemList().clone());

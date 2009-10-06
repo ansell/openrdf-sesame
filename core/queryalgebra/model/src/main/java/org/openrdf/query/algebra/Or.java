@@ -32,6 +32,16 @@ public class Or extends BinaryValueOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof Or && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Or".hashCode();
+	}
+
+	@Override
 	public Or clone() {
 		return (Or)super.clone();
 	}

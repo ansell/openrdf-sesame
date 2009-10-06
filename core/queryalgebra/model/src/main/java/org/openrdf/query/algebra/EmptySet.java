@@ -28,6 +28,16 @@ public class EmptySet extends QueryModelNodeBase implements TupleExpr {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		return other instanceof EmptySet;
+	}
+
+	@Override
+	public int hashCode() {
+		return "EmptySet".hashCode();
+	}
+
+	@Override
 	public EmptySet clone() {
 		return (EmptySet)super.clone();
 	}

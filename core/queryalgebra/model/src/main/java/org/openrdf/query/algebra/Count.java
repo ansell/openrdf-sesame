@@ -25,8 +25,14 @@ public class Count extends UnaryValueOperator implements AggregateOperator {
 		visitor.meet(this);
 	}
 
-	public ValueExpr cloneValueExpr() {
-		return clone();
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Count && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Count".hashCode();
 	}
 
 	@Override
