@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  * Copyright James Leigh (c) 2006.
  *
  * Licensed under the Aduna BSD-style license.
@@ -112,9 +112,13 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 				}
 
 				// Build new join hierarchy
-				TupleExpr replacement = orderedJoinArgs.get(0);
-				for (int i = 1; i < orderedJoinArgs.size(); i++) {
-					replacement = new Join(replacement, orderedJoinArgs.get(i));
+				// Note: generated hierarchy is right-recursive to help the
+				// IterativeEvaluationOptimizer to factor out the left-most join
+				// argument
+				int i = orderedJoinArgs.size() - 1;
+				TupleExpr replacement = orderedJoinArgs.get(i);
+				for (i--; i >= 0; i--) {
+					replacement = new Join(orderedJoinArgs.get(i), replacement);
 				}
 
 				// Replace old join hierarchy
