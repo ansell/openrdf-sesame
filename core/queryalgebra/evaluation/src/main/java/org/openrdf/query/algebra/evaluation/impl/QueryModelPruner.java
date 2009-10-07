@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -27,7 +27,9 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
  * and/or by reducing complex parts with simpler parts.
  * 
  * @author Arjohn Kampman
+ * @deprecated Replaced by {@link QueryModelNormalizer}.
  */
+@Deprecated
 public class QueryModelPruner implements QueryOptimizer {
 
 	public QueryModelPruner() {
@@ -143,7 +145,7 @@ public class QueryModelPruner implements QueryOptimizer {
 			TupleExpr rightArg = intersection.getRightArg();
 
 			if (leftArg instanceof EmptySet || rightArg instanceof EmptySet) {
-				intersection.replaceWith(leftArg);
+				intersection.replaceWith(new EmptySet());
 			}
 		}
 	}
