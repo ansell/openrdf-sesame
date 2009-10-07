@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -38,10 +38,10 @@ import org.openrdf.query.algebra.evaluation.impl.ConstantOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.algebra.evaluation.impl.FilterOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.IterativeEvaluationOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
-import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
+import org.openrdf.query.algebra.evaluation.impl.QueryModelNormalizer;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
-import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailException;
@@ -120,18 +120,18 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 					transactionActive());
 			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset);
 
-			QueryOptimizerList optimizerList = new QueryOptimizerList();
-			optimizerList.add(new BindingAssigner());
-			optimizerList.add(new ConstantOptimizer(strategy));
-			optimizerList.add(new CompareOptimizer());
-			optimizerList.add(new ConjunctiveConstraintSplitter());
-			optimizerList.add(new DisjunctiveConstraintOptimizer());
-			optimizerList.add(new SameTermFilterOptimizer());
-			optimizerList.add(new QueryModelPruner());
-			optimizerList.add(new QueryJoinOptimizer(new NativeEvaluationStatistics(nativeStore)));
-			optimizerList.add(new FilterOptimizer());
+			new BindingAssigner().optimize(tupleExpr, dataset, bindings);
+			new ConstantOptimizer(strategy).optimize(tupleExpr, dataset, bindings);
+			new CompareOptimizer().optimize(tupleExpr, dataset, bindings);
+			new ConjunctiveConstraintSplitter().optimize(tupleExpr, dataset, bindings);
+			new DisjunctiveConstraintOptimizer().optimize(tupleExpr, dataset, bindings);
+			new SameTermFilterOptimizer().optimize(tupleExpr, dataset, bindings);
+			new QueryModelNormalizer().optimize(tupleExpr, dataset, bindings);
+			new QueryJoinOptimizer(new NativeEvaluationStatistics(nativeStore)).optimize(tupleExpr, dataset,
+					bindings);
+			new IterativeEvaluationOptimizer().optimize(tupleExpr, dataset, bindings);
+			new FilterOptimizer().optimize(tupleExpr, dataset, bindings);
 
-			optimizerList.optimize(tupleExpr, dataset, bindings);
 			logger.trace("Optimized query model:\n{}", tupleExpr.toString());
 
 			CloseableIteration<BindingSet, QueryEvaluationException> iter;
