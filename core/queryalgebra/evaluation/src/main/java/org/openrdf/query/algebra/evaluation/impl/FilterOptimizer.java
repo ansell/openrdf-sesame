@@ -17,6 +17,8 @@ import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.Union;
+import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
@@ -46,8 +48,7 @@ public class FilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(Filter filter)
-		{
+		public void meet(Filter filter) {
 			super.meet(filter);
 			filter.getArg().visit(getFilterRelocator(filter));
 		}
@@ -63,7 +64,7 @@ public class FilterOptimizer implements QueryOptimizer {
 
 	protected class FilterRelocator extends QueryModelVisitorBase<RuntimeException> {
 
-		protected final Filter filter;
+		protected Filter filter;
 
 		protected final Set<String> filterVars;
 
@@ -73,14 +74,12 @@ public class FilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		protected void meetNode(QueryModelNode node)
-		{
+		protected void meetNode(QueryModelNode node) {
 			// By default, do not visit child nodes
 		}
 
 		@Override
-		public void meet(Join join)
-		{
+		public void meet(Join join) {
 			if (join.getLeftArg().getBindingNames().containsAll(filterVars)) {
 				// All required vars are bound by the left expr
 				join.getLeftArg().visit(this);
@@ -95,37 +94,50 @@ public class FilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(LeftJoin leftJoin)
-		{
+		public void meet(LeftJoin leftJoin) {
 			if (leftJoin.getLeftArg().getBindingNames().containsAll(filterVars)) {
 				leftJoin.getLeftArg().visit(this);
+			}
+			else {
+				relocate(filter, leftJoin);
 			}
 		}
 
 		@Override
-		public void meet(StatementPattern sp)
-		{
+		public void meet(Union union) {
+			// apply the filter to both arguments
+			union.getLeftArg().visit(this);
+
+			ValueExpr conditionClone = filter.getCondition().clone();
+			filter = new Filter();
+			filter.setCondition(conditionClone);
+
+			union.getRightArg().visit(this);
+		}
+
+		@Override
+		public void meet(StatementPattern sp) {
 			relocate(filter, sp);
 		}
 
 		@Override
-		public void meet(Filter filter)
-		{
+		public void meet(Filter filter) {
 			// Filters are commutative
 			filter.getArg().visit(this);
 		}
 
 		@Override
-		public void meet(Group group)
-		{
+		public void meet(Group group) {
 			// Prefer evaluation of filters before grouping
 			group.getArg().visit(this);
 		}
 
 		protected void relocate(Filter filter, TupleExpr newFilterArg) {
 			if (filter.getArg() != newFilterArg) {
-				// Remove filter from its original location
-				filter.replaceWith(filter.getArg());
+				if (filter.getParentNode() != null) {
+					// Remove filter from its original location
+					filter.replaceWith(filter.getArg());
+				}
 
 				// Insert filter at the new location
 				newFilterArg.replaceWith(filter);
