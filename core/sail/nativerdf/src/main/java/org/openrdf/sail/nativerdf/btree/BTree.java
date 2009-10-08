@@ -59,7 +59,7 @@ public class BTree {
 	private static final byte[] OLD_MAGIC_NUMBER = new byte[] { 0, 0, 0 };
 
 	/**
-	 * The file format version number, stored as the fourth byte in ID files.
+	 * The file format version number, stored as the fourth byte in BTree files.
 	 */
 	private static final byte FILE_FORMAT_VERSION = 1;
 
