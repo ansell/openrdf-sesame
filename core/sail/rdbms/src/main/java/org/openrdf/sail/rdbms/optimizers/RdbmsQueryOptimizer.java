@@ -15,7 +15,6 @@ import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
 import org.openrdf.query.algebra.evaluation.impl.ConstantOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
-import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
@@ -27,7 +26,6 @@ import org.openrdf.sail.rdbms.schema.URITable;
  * Facade to the underlying RDBMS optimizations.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsQueryOptimizer {
 
@@ -87,14 +85,15 @@ public class RdbmsQueryOptimizer {
 		return tupleExpr;
 	}
 
-	private void coreOptimizations(EvaluationStrategy strategy, TupleExpr expr, Dataset dataset, BindingSet bindings) {
+	private void coreOptimizations(EvaluationStrategy strategy, TupleExpr expr, Dataset dataset,
+			BindingSet bindings)
+	{
 		new BindingAssigner().optimize(expr, dataset, bindings);
 		new ConstantOptimizer(strategy).optimize(expr, dataset, bindings);
 		new CompareOptimizer().optimize(expr, dataset, bindings);
 		new ConjunctiveConstraintSplitter().optimize(expr, dataset, bindings);
 		new DisjunctiveConstraintOptimizer().optimize(expr, dataset, bindings);
 		new SameTermFilterOptimizer().optimize(expr, dataset, bindings);
-		new QueryJoinOptimizer().optimize(expr, dataset, bindings);
 	}
 
 	protected void rdbmsOptimizations(TupleExpr expr, Dataset dataset, BindingSet bindings) {
