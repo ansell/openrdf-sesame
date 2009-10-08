@@ -6,6 +6,7 @@
 package org.openrdf.sail.nativerdf.btree;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.BitSet;
 
@@ -18,6 +19,25 @@ import info.aduna.io.IOUtil;
  * @author Arjohn Kampman
  */
 public class AllocatedNodesList {
+
+	/*-----------*
+	 * Constants *
+	 *-----------*/
+
+	/**
+	 * Magic number "Allocated Nodes File" to detect whether the file is actually
+	 * an allocated nodes file. The first three bytes of the file should be equal
+	 * to this magic number.
+	 */
+	private static final byte[] MAGIC_NUMBER = new byte[] { 'a', 'n', 'f' };
+
+	/**
+	 * The file format version number, stored as the fourth byte in allocated
+	 * nodes files.
+	 */
+	private static final byte FILE_FORMAT_VERSION = 1;
+
+	private static final int HEADER_LENGTH = MAGIC_NUMBER.length + 1;
 
 	/*-----------*
 	 * Variables *
@@ -104,9 +124,19 @@ public class AllocatedNodesList {
 				bitSet = allocatedNodes.get(0, bitSetLength);
 			}
 
-			// Write bit set to file
 			byte[] data = ByteArrayUtil.toByteArray(bitSet);
-			IOUtil.writeBytes(data, allocNodesFile);
+
+			// Write bit set to file
+			FileOutputStream out = new FileOutputStream(allocNodesFile);
+			try {
+				out.write(MAGIC_NUMBER);
+				out.write(FILE_FORMAT_VERSION);
+				out.write(data);
+			}
+			finally {
+				out.close();
+			}
+
 			needsSync = false;
 		}
 	}
@@ -203,6 +233,25 @@ public class AllocatedNodesList {
 		throws IOException
 	{
 		byte[] data = IOUtil.readBytes(allocNodesFile);
+
+		if (data.length >= HEADER_LENGTH && ByteArrayUtil.regionMatches(MAGIC_NUMBER, data, 0)) {
+			byte version = data[MAGIC_NUMBER.length];
+			if (version > FILE_FORMAT_VERSION) {
+				throw new IOException("Unable to read allocated nodes file; it uses a newer file format");
+			}
+			else if (version != FILE_FORMAT_VERSION) {
+				throw new IOException("Unable to read allocated nodes file; invalid file format version: "
+						+ version);
+			}
+
+			// Remove the header from the data array
+			data = ByteArrayUtil.get(data, HEADER_LENGTH);
+		}
+		else {
+			// assume header is missing (old file format)
+			scheduleSync();
+		}
+
 		allocatedNodes = ByteArrayUtil.toBitSet(data);
 	}
 
@@ -215,6 +264,8 @@ public class AllocatedNodesList {
 		if (rootNode != null) {
 			crawlAllocatedNodes(rootNode);
 		}
+
+		scheduleSync();
 	}
 
 	private void crawlAllocatedNodes(BTree.Node node)
