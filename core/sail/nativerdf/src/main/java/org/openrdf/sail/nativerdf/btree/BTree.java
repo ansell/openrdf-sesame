@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -20,6 +20,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import info.aduna.io.ByteArrayUtil;
 
@@ -46,9 +49,19 @@ public class BTree {
 	 *-----------*/
 
 	/**
-	 * The file format version number.
+	 * Magic number "BTree File" to detect whether the file is actually a BTree
+	 * file. The first three bytes of the file should be equal to this magic
+	 * number. Note: this header has only been introduced in Sesame 2.3. The old
+	 * "header" can be recognized using {@link BTree#OLD_MAGIC_NUMBER}.
 	 */
-	private static final int FILE_FORMAT_VERSION = 1;
+	private static final byte[] MAGIC_NUMBER = new byte[] { 'b', 't', 'f' };
+
+	private static final byte[] OLD_MAGIC_NUMBER = new byte[] { 0, 0, 0 };
+
+	/**
+	 * The file format version number, stored as the fourth byte in ID files.
+	 */
+	private static final byte FILE_FORMAT_VERSION = 1;
 
 	/**
 	 * The length of the header field.
@@ -70,6 +83,8 @@ public class BTree {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * The BTree file.
@@ -353,11 +368,32 @@ public class BTree {
 
 			buf.rewind();
 
-			@SuppressWarnings("unused")
-			int fileFormatVersion = buf.getInt();
+			byte[] magicNumber = new byte[MAGIC_NUMBER.length];
+			buf.get(magicNumber);
+			byte version = buf.get();
 			this.blockSize = buf.getInt();
 			this.valueSize = buf.getInt();
 			this.rootNodeID = buf.getInt();
+
+			if (Arrays.equals(MAGIC_NUMBER, magicNumber)) {
+				if (version > FILE_FORMAT_VERSION) {
+					throw new IOException("Unable to read BTree file; it uses a newer file format");
+				}
+				else if (version != FILE_FORMAT_VERSION) {
+					throw new IOException("Unable to read BTree file; invalid file format version: " + version);
+				}
+			}
+			else if (Arrays.equals(OLD_MAGIC_NUMBER, magicNumber)) {
+				if (version != 1) {
+					throw new IOException("Unable to read BTree file; invalid file format version: " + version);
+				}
+				// Write new magic number to file
+				logger.info("Updating file header for btree file '{}'", file.getAbsolutePath());
+				writeFileHeader();
+			}
+			else {
+				throw new IOException("File doesn't contain (compatible) BTree data");
+			}
 
 			// Verify that the value sizes match
 			if (this.valueSize != valueSize) {
@@ -1246,8 +1282,8 @@ public class BTree {
 		throws IOException
 	{
 		ByteBuffer buf = ByteBuffer.allocate(HEADER_LENGTH);
-		// for backwards compatibility in future versions
-		buf.putInt(FILE_FORMAT_VERSION);
+		buf.put(MAGIC_NUMBER);
+		buf.put(FILE_FORMAT_VERSION);
 		buf.putInt(blockSize);
 		buf.putInt(valueSize);
 		buf.putInt(rootNodeID);
