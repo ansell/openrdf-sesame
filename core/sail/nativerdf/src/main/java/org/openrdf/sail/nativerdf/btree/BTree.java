@@ -359,7 +359,7 @@ public class BTree {
 
 			writeFileHeader();
 
-			sync();
+			// sync();
 		}
 		else {
 			// Read parameters from file
@@ -436,7 +436,7 @@ public class BTree {
 	public boolean delete()
 		throws IOException
 	{
-		close();
+		close(false);
 
 		boolean success = allocatedNodesList.delete();
 		success &= file.delete();
@@ -451,10 +451,27 @@ public class BTree {
 	public void close()
 		throws IOException
 	{
+		close(true);
+	}
+
+	/**
+	 * Closes any opened files and release any resources used by this B-Tree. Any
+	 * pending changes are optionally synchronized to disk before closing. Once
+	 * the B-Tree has been closed, it can no longer be used.
+	 * 
+	 * @param syncChanges
+	 *        Flag indicating whether pending changes should be synchronized to
+	 *        disk.
+	 */
+	private void close(boolean syncChanges)
+		throws IOException
+	{
 		btreeLock.writeLock().lock();
 		try {
 			if (fileChannel.isOpen()) {
-				sync();
+				if (syncChanges) {
+					sync();
+				}
 
 				synchronized (nodeCache) {
 					nodeCache.clear();
