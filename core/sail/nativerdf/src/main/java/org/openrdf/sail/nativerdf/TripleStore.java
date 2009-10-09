@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -37,8 +37,6 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
  * @author Arjohn Kampman
  */
 class TripleStore {
-
-	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/*-----------*
 	 * Constants *
@@ -125,6 +123,8 @@ class TripleStore {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * The directory that is used to store the index files.
@@ -1009,9 +1009,9 @@ class TripleStore {
 
 	private class TripleIndex {
 
-		private TripleComparator tripleComparator;
+		private final TripleComparator tripleComparator;
 
-		private BTree btree;
+		private final BTree btree;
 
 		public TripleIndex(String fieldSeq)
 			throws IOException
@@ -1026,10 +1026,6 @@ class TripleStore {
 
 		public char[] getFieldSeq() {
 			return tripleComparator.getFieldSeq();
-		}
-
-		public File getFile() {
-			return btree.getFile();
 		}
 
 		public BTree getBTree() {
@@ -1099,7 +1095,7 @@ class TripleStore {
 	 */
 	private static class TripleComparator implements RecordComparator {
 
-		private char[] fieldSeq;
+		private final char[] fieldSeq;
 
 		public TripleComparator(String fieldSeq) {
 			this.fieldSeq = fieldSeq.toCharArray();
