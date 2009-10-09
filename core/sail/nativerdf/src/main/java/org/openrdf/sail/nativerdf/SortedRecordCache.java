@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -24,7 +24,7 @@ class SortedRecordCache extends RecordCache {
 	 * Constants *
 	 *-----------*/
 
-	protected final BTree btree;
+	private final BTree btree;
 
 	/*--------------*
 	 * Constructors *
@@ -47,12 +47,6 @@ class SortedRecordCache extends RecordCache {
 	 * Methods *
 	 *---------*/
 
-	public void discard()
-		throws IOException
-	{
-		btree.delete();
-	}
-
 	public void storeRecordInternal(byte[] record)
 		throws IOException
 	{
@@ -61,5 +55,11 @@ class SortedRecordCache extends RecordCache {
 
 	public RecordIterator getRecordsInternal() {
 		return btree.iterateAll();
+	}
+
+	public void discard()
+		throws IOException
+	{
+		btree.delete();
 	}
 }

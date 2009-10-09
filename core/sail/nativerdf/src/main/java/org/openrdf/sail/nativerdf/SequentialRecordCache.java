@@ -26,13 +26,13 @@ class SequentialRecordCache extends RecordCache {
 	 * Constants *
 	 *-----------*/
 
-	protected final File cacheFile;
+	private final File cacheFile;
 
-	protected final RandomAccessFile raf;
+	private final RandomAccessFile raf;
 
-	protected final FileChannel fileChannel;
+	private final FileChannel fileChannel;
 
-	protected final int recordSize;
+	private final int recordSize;
 
 	/*--------------*
 	 * Constructors *
@@ -51,8 +51,8 @@ class SequentialRecordCache extends RecordCache {
 		this.recordSize = recordSize;
 
 		this.cacheFile = File.createTempFile("txncache", ".dat", cacheDir);
-		raf = new RandomAccessFile(cacheFile, "rw");
-		fileChannel = raf.getChannel();
+		this.raf = new RandomAccessFile(cacheFile, "rw");
+		this.fileChannel = raf.getChannel();
 	}
 
 	/*---------*
@@ -75,13 +75,13 @@ class SequentialRecordCache extends RecordCache {
 		}
 	}
 
-	public void storeRecordInternal(byte[] data)
+	protected void storeRecordInternal(byte[] data)
 		throws IOException
 	{
 		fileChannel.write(ByteBuffer.wrap(data), fileChannel.size());
 	}
 
-	public RecordIterator getRecordsInternal() {
+	protected RecordIterator getRecordsInternal() {
 		return new RecordCacheIterator();
 	}
 

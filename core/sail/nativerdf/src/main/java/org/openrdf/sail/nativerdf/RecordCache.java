@@ -6,6 +6,7 @@
 package org.openrdf.sail.nativerdf;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 
@@ -18,16 +19,12 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
 abstract class RecordCache {
 
 	/*-----------*
-	 * Constants *
-	 *-----------*/
-
-	protected final long maxRecords;
-
-	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	private volatile long recordCount;
+	private final long maxRecords;
+
+	private final AtomicLong recordCount;
 
 	/*--------------*
 	 * Constructors *
@@ -43,34 +40,60 @@ abstract class RecordCache {
 		throws IOException
 	{
 		this.maxRecords = maxRecords;
-		this.recordCount = 0;
+		this.recordCount = new AtomicLong();
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public abstract void discard()
-		throws IOException;
-
-	public final boolean isValid() {
-		return recordCount < maxRecords;
+	public long getMaxRecords() {
+		return maxRecords;
 	}
 
+	/**
+	 * Gets the number of records currently stored in the cache, throwing an
+	 * {@link IllegalStateException} if the cache is no longer {@link #isValid()
+	 * valid}.
+	 * 
+	 * @return
+	 * @throws IllegalStateException
+	 *         If the cache is not/no longer {@link #isValid() valid}.
+	 */
+	public final long getRecordCount() {
+		if (isValid()) {
+			return recordCount.get();
+		}
+
+		throw new IllegalStateException();
+	}
+
+	/**
+	 * Stores a record in the cache.
+	 * 
+	 * @param data
+	 *        The record to store.
+	 */
 	public final void storeRecord(byte[] data)
 		throws IOException
 	{
 		if (isValid()) {
 			storeRecordInternal(data);
-			recordCount++;
+			recordCount.incrementAndGet();
 		}
 	}
 
-	public final void storeRecords(RecordCache other)
+	/**
+	 * Stores the records from the supplied cache into this cache.
+	 * 
+	 * @param otherCache
+	 *        The cache to copy the records from.
+	 */
+	public final void storeRecords(RecordCache otherCache)
 		throws IOException
 	{
 		if (isValid()) {
-			RecordIterator recIter = other.getRecords();
+			RecordIterator recIter = otherCache.getRecords();
 			try {
 				byte[] record;
 
@@ -84,9 +107,18 @@ abstract class RecordCache {
 		}
 	}
 
-	public abstract void storeRecordInternal(byte[] data)
+	protected abstract void storeRecordInternal(byte[] data)
 		throws IOException;
 
+	/**
+	 * Gets all records that are stored in the cache, throwing an
+	 * {@link IllegalStateException} if the cache is no longer {@link #isValid()
+	 * valid}.
+	 * 
+	 * @return An iterator over all records.
+	 * @throws IllegalStateException
+	 *         If the cache is not/no longer {@link #isValid() valid}.
+	 */
 	public final RecordIterator getRecords() {
 		if (isValid()) {
 			return getRecordsInternal();
@@ -95,13 +127,20 @@ abstract class RecordCache {
 		throw new IllegalStateException();
 	}
 
-	public abstract RecordIterator getRecordsInternal();
+	protected abstract RecordIterator getRecordsInternal();
 
-	public final long getRecordCount() {
-		if (isValid()) {
-			return recordCount;
-		}
-
-		throw new IllegalStateException();
+	/**
+	 * Checks whether the cache is still valid. Caches are valid if the number of
+	 * stored records is smaller than the {@link #getMaxRecords() maximum number
+	 * of records}.
+	 */
+	public final boolean isValid() {
+		return recordCount.get() < maxRecords;
 	}
+
+	/**
+	 * Discards the cache, deleting any allocated files.
+	 */
+	public abstract void discard()
+		throws IOException;
 }
