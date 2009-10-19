@@ -609,15 +609,15 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso, paints, guernica, context1);
 		con.commit();
 
+		// Query 1
 		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
 				"select X from {X} rdf:type {Y} rdf:type {rdfs:Class}", null);
 		TupleExpr tupleExpr = tupleQuery.getTupleExpr();
 
-		MapBindingSet bindings = new MapBindingSet(1);
-
+		MapBindingSet bindings = new MapBindingSet(2);
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> iter;
-		iter = con.evaluate(tupleExpr, null, bindings, false);
 
+		iter = con.evaluate(tupleExpr, null, bindings, false);
 		int resultCount = verifyQueryResult(iter, 1);
 		assertEquals("Wrong number of query results", 2, resultCount);
 
@@ -635,6 +635,21 @@ public abstract class RDFStoreTest extends TestCase {
 		iter = con.evaluate(tupleExpr, null, bindings, false);
 		resultCount = verifyQueryResult(iter, 1);
 		assertEquals("Wrong number of query results", 2, resultCount);
+
+		// Query 2
+		tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
+				"select X from {X} rdf:type {Y} rdf:type {rdfs:Class} where Y = Z", null);
+		tupleExpr = tupleQuery.getTupleExpr();
+		bindings.clear();
+
+		iter = con.evaluate(tupleExpr, null, bindings, false);
+		resultCount = verifyQueryResult(iter, 1);
+		assertEquals("Wrong number of query results", 0, resultCount);
+
+		bindings.addBinding("Z", painter);
+		iter = con.evaluate(tupleExpr, null, bindings, false);
+		resultCount = verifyQueryResult(iter, 1);
+		assertEquals("Wrong number of query results", 1, resultCount);
 	}
 
 	public void testMultiThreadedAccess() {
@@ -872,7 +887,9 @@ public abstract class RDFStoreTest extends TestCase {
 		}
 	}
 
-	public void testBNodeReuse() throws Exception {
+	public void testBNodeReuse()
+		throws Exception
+	{
 		con.addStatement(RDF.VALUE, RDF.VALUE, RDF.VALUE);
 		assertEquals(1, con.size());
 		BNode b1 = vf.createBNode();
