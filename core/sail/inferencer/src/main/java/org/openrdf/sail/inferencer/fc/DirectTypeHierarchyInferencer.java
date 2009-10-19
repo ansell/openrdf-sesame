@@ -216,60 +216,60 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 		{
 			super.flushUpdates();
 
-			if (!updateNeeded) {
-				return;
-			}
+			while (updateNeeded) {
+				try {
+					// Determine which statements should be added and which should be
+					// removed
+					Collection<Statement> oldStatements = new HashSet<Statement>(256);
+					Collection<Statement> newStatements = new HashSet<Statement>(256);
 
-			try {
-				// Determine which statements should be added and which should be
-				// removed
-				Collection<Statement> oldStatements = new HashSet<Statement>(256);
-				Collection<Statement> newStatements = new HashSet<Statement>(256);
+					evaluateIntoStatements(DIRECT_SUBCLASSOF_MATCHER, oldStatements);
+					evaluateIntoStatements(DIRECT_SUBPROPERTYOF_MATCHER, oldStatements);
+					evaluateIntoStatements(DIRECT_TYPE_MATCHER, oldStatements);
 
-				evaluateIntoStatements(DIRECT_SUBCLASSOF_MATCHER, oldStatements);
-				evaluateIntoStatements(DIRECT_SUBPROPERTYOF_MATCHER, oldStatements);
-				evaluateIntoStatements(DIRECT_TYPE_MATCHER, oldStatements);
+					evaluateIntoStatements(DIRECT_SUBCLASSOF_QUERY, newStatements);
+					evaluateIntoStatements(DIRECT_SUBPROPERTYOF_QUERY, newStatements);
+					evaluateIntoStatements(DIRECT_TYPE_QUERY, newStatements);
 
-				evaluateIntoStatements(DIRECT_SUBCLASSOF_QUERY, newStatements);
-				evaluateIntoStatements(DIRECT_SUBPROPERTYOF_QUERY, newStatements);
-				evaluateIntoStatements(DIRECT_TYPE_QUERY, newStatements);
+					logger.debug("existing virtual properties: {}", oldStatements.size());
+					logger.debug("new virtual properties: {}", newStatements.size());
 
-				logger.debug("existing virtual properties: {}", oldStatements.size());
-				logger.debug("new virtual properties: {}", newStatements.size());
+					// Remove the statements that should be retained from both sets
+					Collection<Statement> unchangedStatements = new HashSet<Statement>(oldStatements);
+					unchangedStatements.retainAll(newStatements);
 
-				// Remove the statements that should be retained from both sets
-				Collection<Statement> unchangedStatements = new HashSet<Statement>(oldStatements);
-				unchangedStatements.retainAll(newStatements);
+					oldStatements.removeAll(unchangedStatements);
+					newStatements.removeAll(unchangedStatements);
 
-				oldStatements.removeAll(unchangedStatements);
-				newStatements.removeAll(unchangedStatements);
+					logger.debug("virtual properties to remove: {}", oldStatements.size());
+					logger.debug("virtual properties to add: {}", newStatements.size());
 
-				logger.debug("virtual properties to remove: {}", oldStatements.size());
-				logger.debug("virtual properties to add: {}", newStatements.size());
+					Resource[] contexts = new Resource[] { null };
 
-				Resource[] contexts = new Resource[] { null };
+					for (Statement st : oldStatements) {
+						removeInferredStatement(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
+					}
 
-				for (Statement st : oldStatements) {
-					removeInferredStatement(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
+					for (Statement st : newStatements) {
+						addInferredStatement(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
+					}
+
+					updateNeeded = false;
+				}
+				catch (RDFHandlerException e) {
+					Throwable t = e.getCause();
+					if (t instanceof SailException) {
+						throw (SailException)t;
+					}
+					else {
+						throw new SailException(t);
+					}
+				}
+				catch (QueryEvaluationException e) {
+					throw new SailException(e);
 				}
 
-				for (Statement st : newStatements) {
-					addInferredStatement(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
-				}
-
-				updateNeeded = false;
-			}
-			catch (RDFHandlerException e) {
-				Throwable t = e.getCause();
-				if (t instanceof SailException) {
-					throw (SailException)t;
-				}
-				else {
-					throw new SailException(t);
-				}
-			}
-			catch (QueryEvaluationException e) {
-				throw new SailException(e);
+				super.flushUpdates();
 			}
 		}
 
