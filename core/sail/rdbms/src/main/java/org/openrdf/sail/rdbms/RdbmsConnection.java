@@ -276,9 +276,11 @@ public class RdbmsConnection extends SailConnectionBase {
 			triples.begin();
 		}
 		catch (SQLException e) {
+			unlock();
 			throw new RdbmsException(e);
 		}
 		catch (InterruptedException e) {
+			unlock();
 			throw new RdbmsException(e);
 		}
 	}
