@@ -322,9 +322,30 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 		txnStLock = store.getStatementsReadLock();
 
-		// Prevent concurrent transactions by acquiring an exclusive txn lock
-		txnLock = store.getTransactionLock();
-		store.startTransaction();
+		try {
+			// Prevent concurrent transactions by acquiring an exclusive txn lock
+			txnLock = store.getTransactionLock();
+
+			try {
+				store.startTransaction();
+			}
+			catch (SailException e) {
+				txnLock.release();
+				throw e;
+			}
+			catch (RuntimeException e) {
+				txnLock.release();
+				throw e;
+			}
+		}
+		catch (SailException e) {
+			txnStLock.release();
+			throw e;
+		}
+		catch (RuntimeException e) {
+			txnStLock.release();
+			throw e;
+		}
 	}
 
 	@Override
