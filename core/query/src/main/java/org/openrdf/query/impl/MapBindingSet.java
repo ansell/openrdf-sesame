@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -23,7 +23,7 @@ public class MapBindingSet implements BindingSet {
 	 * Variables *
 	 *-----------*/
 
-	private Map<String, Binding> bindings;
+	private final Map<String, Binding> bindings;
 
 	/*--------------*
 	 * Constructors *
@@ -35,7 +35,7 @@ public class MapBindingSet implements BindingSet {
 
 	/**
 	 * Creates a new Map-based BindingSet with the specified initial capacity.
-	 * Bindings can be added to this solution using the {@link #addBinding}
+	 * Bindings can be added to this binding set using the {@link #addBinding}
 	 * methods.
 	 * 
 	 * @param capacity
@@ -51,7 +51,7 @@ public class MapBindingSet implements BindingSet {
 	 *---------*/
 
 	/**
-	 * Adds a binding to the solution.
+	 * Adds a binding to the binding set.
 	 * 
 	 * @param name
 	 *        The binding's name.
@@ -63,23 +63,30 @@ public class MapBindingSet implements BindingSet {
 	}
 
 	/**
-	 * Adds a binding to the solution.
+	 * Adds a binding to the binding set.
 	 * 
 	 * @param binding
-	 *        The binding to add to the solution.
+	 *        The binding to add to the binding set.
 	 */
 	public void addBinding(Binding binding) {
 		bindings.put(binding.getName(), binding);
 	}
 
 	/**
-	 * Removes a binding from the solution.
+	 * Removes a binding from the binding set.
 	 * 
 	 * @param name
 	 *        The binding's name.
 	 */
 	public void removeBinding(String name) {
 		bindings.remove(name);
+	}
+
+	/**
+	 * Removes all bindings from the binding set.
+	 */
+	public void clear() {
+		bindings.clear();
 	}
 
 	public Iterator<Binding> iterator() {
@@ -132,7 +139,7 @@ public class MapBindingSet implements BindingSet {
 				otherSize++;
 			}
 
-			// All bindings have been matched, sets are equal if this solution
+			// All bindings have been matched, sets are equal if this binding set
 			// doesn't have any additional bindings.
 			return otherSize == bindings.size();
 		}
