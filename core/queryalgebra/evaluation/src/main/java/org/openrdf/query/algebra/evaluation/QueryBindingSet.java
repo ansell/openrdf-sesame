@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -31,7 +31,7 @@ public class QueryBindingSet implements BindingSet {
 	 * Variables *
 	 *-----------*/
 
-	private Map<String, Value> bindings;
+	private final Map<String, Value> bindings;
 
 	/*--------------*
 	 * Constructors *
@@ -68,8 +68,8 @@ public class QueryBindingSet implements BindingSet {
 	}
 
 	/**
-	 * Adds a new binding to the solution. The binding's name must not already be
-	 * part of this solution.
+	 * Adds a new binding to the binding set. The binding's name must not already
+	 * be part of this binding set.
 	 * 
 	 * @param binding
 	 *        The binding to add this this BindingSet.
@@ -79,11 +79,11 @@ public class QueryBindingSet implements BindingSet {
 	}
 
 	/**
-	 * Adds a new binding to the solution. The binding's name must not already be
-	 * part of this solution.
+	 * Adds a new binding to the binding set. The binding's name must not already
+	 * be part of this binding set.
 	 * 
 	 * @param name
-	 *        The binding's name, must not be bound in this solution already.
+	 *        The binding's name, must not be bound in this binding set already.
 	 * @param value
 	 *        The binding's value.
 	 */
@@ -141,8 +141,7 @@ public class QueryBindingSet implements BindingSet {
 		return new ConvertingIterator<Map.Entry<String, Value>, Binding>(entries) {
 
 			@Override
-			protected Binding convert(Map.Entry<String, Value> entry)
-			{
+			protected Binding convert(Map.Entry<String, Value> entry) {
 				return new BindingImpl(entry.getKey(), entry.getValue());
 			}
 		};
@@ -153,8 +152,7 @@ public class QueryBindingSet implements BindingSet {
 	}
 
 	@Override
-	public boolean equals(Object other)
-	{
+	public boolean equals(Object other) {
 		if (this == other) {
 			return true;
 		}
@@ -176,7 +174,7 @@ public class QueryBindingSet implements BindingSet {
 				otherSize++;
 			}
 
-			// All bindings have been matched, sets are equal if this solution
+			// All bindings have been matched, sets are equal if this binding set
 			// doesn't have any additional bindings.
 			return otherSize == bindings.size();
 		}
@@ -185,8 +183,7 @@ public class QueryBindingSet implements BindingSet {
 	}
 
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		int hashCode = 0;
 
 		for (Map.Entry<String, Value> entry : bindings.entrySet()) {
@@ -197,8 +194,7 @@ public class QueryBindingSet implements BindingSet {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		StringBuilder sb = new StringBuilder(32 * size());
 
 		sb.append('[');
