@@ -10,8 +10,8 @@
 
 	<artifactId>sesame-store-testsuite</artifactId>
 
-	<name>OpenRDF SAIL and Repository API compliance testsuite</name>
-	<description>Testsuite for SAIL and Repository API</description>
+	<name>OpenRDF SAIL and Repository API compliance test suite</name>
+	<description>Test suite for SAIL and Repository API</description>
 
 	<dependencies>
 		<dependency>

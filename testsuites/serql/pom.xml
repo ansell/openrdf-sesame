@@ -10,8 +10,8 @@
 
 	<artifactId>sesame-serql-testsuite</artifactId>
 
-	<name>OpenRDF SeRQL query parser testsuite</name>
-	<description>Tests for the SeRQL query language implementation</description>
+	<name>OpenRDF SeRQL test suite</name>
+	<description>Test suite for the SeRQL query language</description>
 
 	<dependencies>
 		<dependency>
