@@ -143,18 +143,6 @@ class TripleStore {
 
 	private final boolean forceSync;
 
-	/**
-	 * Flag indicating whether one or more triples have been flagged as "added"
-	 * during the current transaction.
-	 */
-	private volatile boolean txnAddedTriples = false;
-
-	/**
-	 * Flag indicating whether one or more triples have been flagged as "removed"
-	 * during the current transaction.
-	 */
-	private volatile boolean txnRemovedTriples = false;
-
 	private volatile RecordCache updatedTriplesCache;
 
 	/*--------------*
@@ -569,7 +557,7 @@ class TripleStore {
 	public boolean storeTriple(int subj, int pred, int obj, int context, boolean explicit)
 		throws IOException
 	{
-		boolean result = false;
+		boolean stAdded = false;
 
 		byte[] data = getData(subj, pred, obj, context, 0);
 		byte[] storedData = indexes[0].getBTree().get(data);
@@ -581,53 +569,52 @@ class TripleStore {
 				data[FLAG_IDX] |= EXPLICIT_FLAG;
 			}
 
-			result = true;
-			txnAddedTriples = true;
+			stAdded = true;
 		}
 		else {
 			// Statement already exists, only modify its flags, see txn-flags.txt
 			// for a description of the flag transformations
 			byte flags = storedData[FLAG_IDX];
-			boolean isExplicit = (flags & EXPLICIT_FLAG) != 0;
-			boolean added = (flags & ADDED_FLAG) != 0;
-			boolean removed = (flags & REMOVED_FLAG) != 0;
-			boolean toggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
+			boolean wasExplicit = (flags & EXPLICIT_FLAG) != 0;
+			boolean wasAdded = (flags & ADDED_FLAG) != 0;
+			boolean wasRemoved = (flags & REMOVED_FLAG) != 0;
+			boolean wasToggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
 
-			if (added) {
+			if (wasAdded) {
 				// Statement has been added in the current transaction and is
-				// invisible to other connections
+				// invisible to other connections, we can simply modify its flags
 				data[FLAG_IDX] |= ADDED_FLAG;
-				if (explicit || isExplicit) {
+				if (explicit || wasExplicit) {
 					data[FLAG_IDX] |= EXPLICIT_FLAG;
 				}
 			}
 			else {
 				// Committed statement, must keep explicit flag the same
-				if (isExplicit) {
+				if (wasExplicit) {
 					data[FLAG_IDX] |= EXPLICIT_FLAG;
 				}
 
 				if (explicit) {
-					if (!isExplicit) {
+					if (!wasExplicit) {
 						// Make inferred statement explicit
 						data[FLAG_IDX] |= TOGGLE_EXPLICIT_FLAG;
 					}
 				}
 				else {
-					if (removed) {
-						if (isExplicit) {
+					if (wasRemoved) {
+						if (wasExplicit) {
 							// Re-add removed explicit statement as inferred
 							data[FLAG_IDX] |= TOGGLE_EXPLICIT_FLAG;
 						}
 					}
-					else if (toggled) {
+					else if (wasToggled) {
 						data[FLAG_IDX] |= TOGGLE_EXPLICIT_FLAG;
 					}
 				}
 			}
 
-			// Statement is new when it used to be removed
-			result = removed;
+			// Statement is new if it was removed before
+			stAdded = wasRemoved;
 		}
 
 		if (storedData == null || !Arrays.equals(data, storedData)) {
@@ -638,7 +625,7 @@ class TripleStore {
 			updatedTriplesCache.storeRecord(data);
 		}
 
-		return result;
+		return stAdded;
 	}
 
 	public int removeTriples(int subj, int pred, int obj, int context)
@@ -679,7 +666,7 @@ class TripleStore {
 		byte[] data = iter.next();
 
 		if (data == null) {
-			// no discarded triples
+			// no triples to remove
 			return 0;
 		}
 
@@ -701,6 +688,7 @@ class TripleStore {
 			count = (int)removedTriplesCache.getRecordCount();
 			updatedTriplesCache.storeRecords(removedTriplesCache);
 
+			// Set the REMOVED flag by overwriting the affected records
 			for (TripleIndex index : indexes) {
 				BTree btree = index.getBTree();
 
@@ -719,50 +707,7 @@ class TripleStore {
 			removedTriplesCache.discard();
 		}
 
-		if (count > 0) {
-			txnRemovedTriples = true;
-		}
-
 		return count;
-	}
-
-	private void discardTriples(RecordIterator iter)
-		throws IOException
-	{
-		byte[] data = iter.next();
-
-		if (data == null) {
-			// no discarded triples
-			return;
-		}
-
-		// Store the values that need to be discarded in a tmp file and then
-		// iterate over this file to discard the values
-		RecordCache recordCache = new SequentialRecordCache(dir, RECORD_LENGTH);
-		try {
-			while (data != null) {
-				recordCache.storeRecord(data);
-				data = iter.next();
-			}
-			iter.close();
-
-			for (TripleIndex index : indexes) {
-				BTree btree = index.getBTree();
-
-				RecordIterator recIter = recordCache.getRecords();
-				try {
-					while ((data = recIter.next()) != null) {
-						btree.remove(data);
-					}
-				}
-				finally {
-					recIter.close();
-				}
-			}
-		}
-		finally {
-			recordCache.discard();
-		}
 	}
 
 	public void startTransaction()
@@ -778,17 +723,6 @@ class TripleStore {
 	public void commit()
 		throws IOException
 	{
-		if (txnRemovedTriples) {
-			RecordIterator iter = getTriples(-1, -1, -1, -1, REMOVED_FLAG, REMOVED_FLAG);
-			try {
-				discardTriples(iter);
-			}
-			finally {
-				txnRemovedTriples = false;
-				iter.close();
-			}
-		}
-
 		boolean validCache = updatedTriplesCache.isValid();
 
 		for (TripleIndex index : indexes) {
@@ -805,23 +739,21 @@ class TripleStore {
 			}
 
 			try {
-				byte[] data = null;
+				byte[] data;
 				while ((data = iter.next()) != null) {
 					byte flags = data[FLAG_IDX];
-					boolean added = (flags & ADDED_FLAG) != 0;
-					boolean removed = (flags & REMOVED_FLAG) != 0;
-					boolean toggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
+					boolean wasAdded = (flags & ADDED_FLAG) != 0;
+					boolean wasRemoved = (flags & REMOVED_FLAG) != 0;
+					boolean wasToggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
 
-					if (removed) {
-						// Record has been discarded earlier, do not put it back in!
-						continue;
+					if (wasRemoved) {
+						btree.remove(data);
 					}
-
-					if (added || toggled) {
-						if (toggled) {
+					else if (wasAdded || wasToggled) {
+						if (wasToggled) {
 							data[FLAG_IDX] ^= EXPLICIT_FLAG;
 						}
-						if (added) {
+						if (wasAdded) {
 							data[FLAG_IDX] ^= ADDED_FLAG;
 						}
 
@@ -850,17 +782,6 @@ class TripleStore {
 	public void rollback()
 		throws IOException
 	{
-		if (txnAddedTriples) {
-			RecordIterator iter = getTriples(-1, -1, -1, -1, ADDED_FLAG, ADDED_FLAG);
-			try {
-				discardTriples(iter);
-			}
-			finally {
-				txnAddedTriples = false;
-				iter.close();
-			}
-		}
-
 		boolean validCache = updatedTriplesCache.isValid();
 
 		byte txnFlagsMask = ~(ADDED_FLAG | REMOVED_FLAG | TOGGLE_EXPLICIT_FLAG);
@@ -882,19 +803,25 @@ class TripleStore {
 				byte[] data = null;
 				while ((data = iter.next()) != null) {
 					byte flags = data[FLAG_IDX];
-					boolean removed = (flags & REMOVED_FLAG) != 0;
-					boolean toggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
+					boolean wasAdded = (flags & ADDED_FLAG) != 0;
+					boolean wasRemoved = (flags & REMOVED_FLAG) != 0;
+					boolean wasToggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
 
-					if (removed || toggled) {
-						data[FLAG_IDX] &= txnFlagsMask;
+					if (wasAdded) {
+						btree.remove(data);
+					}
+					else {
+						if (wasRemoved || wasToggled) {
+							data[FLAG_IDX] &= txnFlagsMask;
 
-						if (validCache) {
-							// We're iterating the cache
-							btree.insert(data);
-						}
-						else {
-							// We're iterating the BTree itself
-							iter.set(data);
+							if (validCache) {
+								// We're iterating the cache
+								btree.insert(data);
+							}
+							else {
+								// We're iterating the BTree itself
+								iter.set(data);
+							}
 						}
 					}
 				}
