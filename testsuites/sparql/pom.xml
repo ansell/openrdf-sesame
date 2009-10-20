@@ -10,8 +10,8 @@
 
 	<artifactId>sesame-sparql-testsuite</artifactId>
 
-	<name>OpenRDF SPARQL query parser compliance tests</name>
-	<description>Tests for the SPARQL query language implementation</description>
+	<name>OpenRDF SPARQL compliance test suite</name>
+	<description>Test suite for the SPARQL query language</description>
 
 	<dependencies>
 		<dependency>

@@ -10,8 +10,8 @@
 
 	<artifactId>sesame-rio-testsuite</artifactId>
 
-	<name>OpenRDF Rio compliance test</name>
-	<description>Tests for Rio</description>
+	<name>OpenRDF Rio compliance test suite</name>
+	<description>Test suite for Rio</description>
 
 	<dependencies>
 		<dependency>
