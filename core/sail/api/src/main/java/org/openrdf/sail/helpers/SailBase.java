@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -32,8 +32,6 @@ public abstract class SailBase implements Sail {
 	 * Constants *
 	 *-----------*/
 
-	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
 	/**
 	 * Default connection timeout on shutdown: 20,000 milliseconds.
 	 */
@@ -60,28 +58,30 @@ public abstract class SailBase implements Sail {
 	 * Variables *
 	 *-----------*/
 
+	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 	/**
 	 * Directory to store information related to this sail in.
 	 */
-	private File dataDir;
+	private volatile File dataDir;
 
 	/**
 	 * Flag indicating whether the Sail is shutting down.
 	 */
-	private boolean shutDownInProgress = false;
+	private volatile boolean shutDownInProgress = false;
 
 	/**
 	 * Connection timeout on shutdown (in ms). Defaults to
 	 * {@link #DEFAULT_CONNECTION_TIMEOUT}.
 	 */
-	protected long connectionTimeOut = DEFAULT_CONNECTION_TIMEOUT;
+	protected volatile long connectionTimeOut = DEFAULT_CONNECTION_TIMEOUT;
 
 	/**
 	 * Map used to track active connections and where these were acquired. The
 	 * Throwable value may be null in case debugging was disable at the time the
 	 * connection was acquired.
 	 */
-	private Map<SailConnection, Throwable> activeConnections = new IdentityHashMap<SailConnection, Throwable>();
+	private final Map<SailConnection, Throwable> activeConnections = new IdentityHashMap<SailConnection, Throwable>();
 
 	/*---------*
 	 * Methods *
@@ -115,7 +115,8 @@ public abstract class SailBase implements Sail {
 	public String toString() {
 		if (dataDir == null) {
 			return super.toString();
-		} else {
+		}
+		else {
 			return dataDir.toString();
 		}
 	}
@@ -136,7 +137,7 @@ public abstract class SailBase implements Sail {
 		shutDownInProgress = true;
 
 		synchronized (activeConnections) {
-			// check if any active connections exist, if so, wait for a grace
+			// Check if any active connections exist. If so, wait for a grace
 			// period for them to finish.
 			if (!activeConnections.isEmpty()) {
 				logger.debug("Waiting for active connections to close before shutting down...");

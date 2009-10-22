@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -63,12 +63,12 @@ public abstract class SailConnectionBase implements SailConnection {
 
 	private final SailBase sailBase;
 
-	private boolean isOpen;
+	private volatile boolean isOpen;
 
-	private boolean txnActive;
+	private volatile boolean txnActive;
 
 	/**
-	 * A read-write lock manager used to handle multi-threaded access on the
+	 * A read-write lock manager used to handle concurrent access on the
 	 * connection. Every operation on the connection must first obtain a shared
 	 * (read) lock. When close() is invoked on this connection, the close()
 	 * method will first obtain an exclusive (write) lock: it will wait until
@@ -79,23 +79,19 @@ public abstract class SailConnectionBase implements SailConnection {
 			debugEnabled());
 
 	/**
-	 * A multi-read-single-write lock manager used to handle multi-threaded
-	 * access on the transaction-related methods of a connection. Every
-	 * transaction operation except commit and rollback must first obtain a
-	 * shared (read) lock. The commit and rollback themselves will first obtain
-	 * an exclusive (write) lock, which will guarantee that there will be no
-	 * updates during these operations.
+	 * An exclusive lock manager used to prevent concurrent calls to update
+	 * methods like addStatement, clear, commit, etc. within a transcation.
 	 */
-	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager(debugEnabled());
+	private final ExclusiveLockManager updateLockManager = new ExclusiveLockManager(debugEnabled());
 
 	// FIXME: use weak references here?
-	private List<SailBaseIteration> activeIterations = Collections.synchronizedList(new LinkedList<SailBaseIteration>());
+	private final List<SailBaseIteration> activeIterations = Collections.synchronizedList(new LinkedList<SailBaseIteration>());
 
 	/*
 	 * Stores a stack trace that indicates where this connection as created if
 	 * debugging is enabled.
 	 */
-	private Throwable creatorTrace;
+	private final Throwable creatorTrace;
 
 	/*--------------*
 	 * Constructors *
@@ -105,10 +101,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		this.sailBase = sailBase;
 		isOpen = true;
 		txnActive = false;
-
-		if (debugEnabled()) {
-			creatorTrace = new Throwable();
-		}
+		creatorTrace = debugEnabled() ? new Throwable() : null;
 	}
 
 	/*---------*
@@ -284,7 +277,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				if (txnActive) {
 					commitInternal();
@@ -292,7 +285,7 @@ public abstract class SailConnectionBase implements SailConnection {
 				}
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -307,7 +300,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				if (txnActive) {
 					try {
@@ -319,7 +312,7 @@ public abstract class SailConnectionBase implements SailConnection {
 				}
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -334,13 +327,13 @@ public abstract class SailConnectionBase implements SailConnection {
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				addStatementInternal(subj, pred, obj, contexts);
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -355,13 +348,13 @@ public abstract class SailConnectionBase implements SailConnection {
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				removeStatementsInternal(subj, pred, obj, contexts);
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -376,13 +369,13 @@ public abstract class SailConnectionBase implements SailConnection {
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				clearInternal(contexts);
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -423,13 +416,13 @@ public abstract class SailConnectionBase implements SailConnection {
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				setNamespaceInternal(prefix, name);
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -444,13 +437,13 @@ public abstract class SailConnectionBase implements SailConnection {
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				removeNamespaceInternal(prefix);
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -465,13 +458,13 @@ public abstract class SailConnectionBase implements SailConnection {
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				clearNamespacesInternal();
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -501,11 +494,23 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Deprecated
 	protected Lock getTransactionLock()
 		throws SailException
 	{
+		return getUpdateLock();
+	}
+
+	/**
+	 * Gets the lock that prevents concurrent calls to update methods like
+	 * addStatement, clear, commit, etc. All such methods must acquire this lock
+	 * before doing anything else.
+	 */
+	protected Lock getUpdateLock()
+		throws SailException
+	{
 		try {
-			return txnLockManager.getExclusiveLock();
+			return updateLockManager.getExclusiveLock();
 		}
 		catch (InterruptedException e) {
 			throw new SailException(e);
