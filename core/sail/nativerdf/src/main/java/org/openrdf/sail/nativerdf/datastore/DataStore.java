@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -101,15 +101,19 @@ public class DataStore {
 		// Value not in cache or cache not used, fetch from file
 		int hash = getDataHash(queryData);
 		HashFile.IDIterator iter = hashFile.getIDIterator(hash);
+		try {
+			while ((id = iter.next()) >= 0) {
+				long offset = idFile.getOffset(id);
+				byte[] data = dataFile.getData(offset);
 
-		while ((id = iter.next()) >= 0) {
-			long offset = idFile.getOffset(id);
-			byte[] data = dataFile.getData(offset);
-
-			if (Arrays.equals(queryData, data)) {
-				// Matching data found
-				break;
+				if (Arrays.equals(queryData, data)) {
+					// Matching data found
+					break;
+				}
 			}
+		}
+		finally {
+			iter.close();
 		}
 
 		return id;

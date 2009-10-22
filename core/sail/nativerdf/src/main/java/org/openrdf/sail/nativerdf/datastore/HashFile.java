@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -12,6 +12,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Class supplying access to a hash file.
@@ -77,6 +78,12 @@ public class HashFile {
 
 	// recordSize = ITEM_SIZE * bucketSize + 4
 	private final int recordSize;
+
+	/**
+	 * A read/write lock that is used to prevent structural changes to the hash
+	 * file while readers are active in order to prevent concurrency issues.
+	 */
+	private final ReentrantReadWriteLock structureLock = new ReentrantReadWriteLock();
 
 	/*--------------*
 	 * Constructors *
@@ -158,24 +165,8 @@ public class HashFile {
 		return file;
 	}
 
-	public FileChannel getFileChannel() {
-		return fileChannel;
-	}
-
-	public int getBucketCount() {
-		return bucketCount;
-	}
-
-	public int getBucketSize() {
-		return bucketSize;
-	}
-
 	public int getItemCount() {
 		return itemCount;
-	}
-
-	public int getRecordSize() {
-		return recordSize;
 	}
 
 	/**
@@ -194,15 +185,24 @@ public class HashFile {
 	public void storeID(int hash, int id)
 		throws IOException
 	{
-		// Calculate bucket offset for initial bucket
-		long bucketOffset = getBucketOffset(hash);
+		structureLock.readLock().lock();
+		try {
+			// Calculate bucket offset for initial bucket
+			long bucketOffset = getBucketOffset(hash);
+			storeID(bucketOffset, hash, id);
+		}
+		finally {
+			structureLock.readLock().unlock();
+		}
 
-		storeID(bucketOffset, hash, id);
-
-		itemCount++;
-
-		if (itemCount >= loadFactor * bucketCount * bucketSize) {
-			increaseHashTable();
+		if (++itemCount >= loadFactor * bucketCount * bucketSize) {
+			structureLock.writeLock().lock();
+			try {
+				increaseHashTable();
+			}
+			finally {
+				structureLock.writeLock().unlock();
+			}
 		}
 	}
 
@@ -250,13 +250,19 @@ public class HashFile {
 	public void clear()
 		throws IOException
 	{
-		// Truncate the file to remove any overflow buffers
-		fileChannel.truncate(HEADER_LENGTH + (long)bucketCount * recordSize);
+		structureLock.writeLock().lock();
+		try {
+			// Truncate the file to remove any overflow buffers
+			fileChannel.truncate(HEADER_LENGTH + (long)bucketCount * recordSize);
 
-		// Overwrite normal buckets with empty ones
-		writeEmptyBuckets(HEADER_LENGTH, bucketCount);
+			// Overwrite normal buckets with empty ones
+			writeEmptyBuckets(HEADER_LENGTH, bucketCount);
 
-		itemCount = 0;
+			itemCount = 0;
+		}
+		finally {
+			structureLock.writeLock().unlock();
+		}
 	}
 
 	/**
@@ -265,8 +271,14 @@ public class HashFile {
 	public void sync()
 		throws IOException
 	{
-		// Update the file header
-		writeFileHeader();
+		structureLock.readLock().lock();
+		try {
+			// Update the file header
+			writeFileHeader();
+		}
+		finally {
+			structureLock.readLock().unlock();
+		}
 
 		if (forceSync) {
 			fileChannel.force(false);
@@ -402,7 +414,7 @@ public class HashFile {
 		ByteBuffer bucket = ByteBuffer.allocate(recordSize);
 		ByteBuffer newBucket = ByteBuffer.allocate(recordSize);
 
-		// Rehash items in 'normal' buckets, half of these will move to a new
+		// Rehash items in non-overflow buckets, half of these will move to a new
 		// location, but none of them will trigger the creation of new overflow
 		// buckets. Any (now deprecated) references to overflow buckets are
 		// removed too.
@@ -578,11 +590,9 @@ public class HashFile {
 
 	public class IDIterator {
 
-		private int queryHash;
+		private final int queryHash;
 
 		private ByteBuffer bucketBuffer;
-
-		private long bucketOffset;
 
 		private int slotNo;
 
@@ -590,16 +600,29 @@ public class HashFile {
 			throws IOException
 		{
 			queryHash = hash;
+			bucketBuffer = ByteBuffer.allocate(recordSize);
 
-			bucketBuffer = ByteBuffer.allocate(getRecordSize());
+			structureLock.readLock().lock();
+			try {
+				// Read initial bucket
+				long bucketOffset = getBucketOffset(hash);
+				fileChannel.read(bucketBuffer, bucketOffset);
 
-			// Calculate offset for initial bucket
-			bucketOffset = getBucketOffset(hash);
+				slotNo = -1;
+			}
+			catch (IOException e) {
+				structureLock.readLock().unlock();
+				throw e;
+			}
+			catch (RuntimeException e) {
+				structureLock.readLock().unlock();
+				throw e;
+			}
+		}
 
-			// Read initial bucket
-			getFileChannel().read(bucketBuffer, bucketOffset);
-
-			slotNo = -1;
+		public void close() {
+			bucketBuffer = null;
+			structureLock.readLock().unlock();
 		}
 
 		/**
@@ -610,27 +633,25 @@ public class HashFile {
 			throws IOException
 		{
 			while (bucketBuffer != null) {
-				// Search through current bucket
-				slotNo++;
-				while (slotNo < getBucketSize()) {
+				// Search in current bucket
+				while (++slotNo < bucketSize) {
 					if (bucketBuffer.getInt(ITEM_SIZE * slotNo) == queryHash) {
 						return bucketBuffer.getInt(ITEM_SIZE * slotNo + 4);
 					}
-					slotNo++;
 				}
 
 				// No matching hash code in current bucket, check overflow bucket
-				int overflowID = bucketBuffer.getInt(ITEM_SIZE * getBucketSize());
+				int overflowID = bucketBuffer.getInt(ITEM_SIZE * bucketSize);
 				if (overflowID == 0) {
 					// No overflow bucket, end the search
 					bucketBuffer = null;
-					bucketOffset = 0L;
+					break;
 				}
 				else {
 					// Continue with overflow bucket
-					bucketOffset = getOverflowBucketOffset(overflowID);
 					bucketBuffer.clear();
-					getFileChannel().read(bucketBuffer, bucketOffset);
+					long bucketOffset = getOverflowBucketOffset(overflowID);
+					fileChannel.read(bucketBuffer, bucketOffset);
 					slotNo = -1;
 				}
 			}
