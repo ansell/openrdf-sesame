@@ -13,10 +13,9 @@ import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.Iterations;
-import info.aduna.iteration.IteratorIteration;
-import info.aduna.iteration.LockingIteration;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Namespace;
@@ -111,8 +110,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			tupleExpr = new QueryRoot(tupleExpr);
 		}
 
-		Lock readLock = nativeStore.getReadLock();
-
 		try {
 			replaceValues(tupleExpr);
 
@@ -134,17 +131,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 			logger.trace("Optimized query model:\n{}", tupleExpr.toString());
 
-			CloseableIteration<BindingSet, QueryEvaluationException> iter;
-			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
-			return new LockingIteration<BindingSet, QueryEvaluationException>(readLock, iter);
+			return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
 		}
 		catch (QueryEvaluationException e) {
-			readLock.release();
 			throw new SailException(e);
-		}
-		catch (RuntimeException e) {
-			readLock.release();
-			throw e;
 		}
 	}
 
@@ -170,12 +160,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	{
 		// Which resources are used as context identifiers is not stored
 		// separately. Iterate over all statements and extract their context.
-		Lock readLock = nativeStore.getReadLock();
 		try {
-			CloseableIteration<? extends Resource, IOException> contextIter;
-			contextIter = nativeStore.getContextIDs(transactionActive());
-			// releasing the read lock when the iterator is closed
-			contextIter = new LockingIteration<Resource, IOException>(readLock, contextIter);
+			CloseableIteration<? extends Resource, IOException> contextIter = nativeStore.getContextIDs(transactionActive());
 
 			return new ExceptionConvertingIteration<Resource, SailException>(contextIter) {
 
@@ -197,12 +183,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			};
 		}
 		catch (IOException e) {
-			readLock.release();
 			throw new SailException(e);
-		}
-		catch (RuntimeException e) {
-			readLock.release();
-			throw e;
 		}
 	}
 
@@ -211,12 +192,9 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
-		Lock readLock = nativeStore.getReadLock();
 		try {
-			CloseableIteration<? extends Statement, IOException> iter;
-			iter = nativeStore.createStatementIterator(subj, pred, obj, includeInferred, transactionActive(),
-					contexts);
-			iter = new LockingIteration<Statement, IOException>(readLock, iter);
+			CloseableIteration<? extends Statement, IOException> iter = nativeStore.createStatementIterator(
+					subj, pred, obj, includeInferred, transactionActive(), contexts);
 
 			return new ExceptionConvertingIteration<Statement, SailException>(iter) {
 
@@ -238,12 +216,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			};
 		}
 		catch (IOException e) {
-			readLock.release();
 			throw new SailException("Unable to get statements", e);
-		}
-		catch (RuntimeException e) {
-			readLock.release();
-			throw e;
 		}
 	}
 
@@ -252,8 +225,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
-
-		Lock readLock = nativeStore.getReadLock();
 
 		try {
 			List<Integer> contextIDs;
@@ -285,38 +256,21 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		catch (IOException e) {
 			throw new SailException(e);
 		}
-		finally {
-			readLock.release();
-		}
 	}
 
 	@Override
 	protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal()
 		throws SailException
 	{
-		Lock readLock = nativeStore.getReadLock();
-		try {
-			return new LockingIteration<NamespaceImpl, SailException>(
-					readLock,
-					new IteratorIteration<NamespaceImpl, SailException>(nativeStore.getNamespaceStore().iterator()));
-		}
-		catch (RuntimeException e) {
-			readLock.release();
-			throw e;
-		}
+		return new CloseableIteratorIteration<NamespaceImpl, SailException>(
+				nativeStore.getNamespaceStore().iterator());
 	}
 
 	@Override
 	protected String getNamespaceInternal(String prefix)
 		throws SailException
 	{
-		Lock readLock = nativeStore.getReadLock();
-		try {
-			return nativeStore.getNamespaceStore().getNamespace(prefix);
-		}
-		finally {
-			readLock.release();
-		}
+		return nativeStore.getNamespaceStore().getNamespace(prefix);
 	}
 
 	@Override
@@ -342,8 +296,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void commitInternal()
 		throws SailException
 	{
-		Lock storeReadLock = nativeStore.getReadLock();
-
 		try {
 			nativeStore.getValueStore().sync();
 			nativeStore.getTripleStore().commit();
@@ -358,9 +310,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			logger.error("Encountered an unexpected problem while trying to commit", e);
 			throw e;
 		}
-		finally {
-			storeReadLock.release();
-		}
 
 		nativeStore.notifySailChanged(sailChangedEvent);
 
@@ -372,8 +321,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void rollbackInternal()
 		throws SailException
 	{
-		Lock storeReadLock = nativeStore.getReadLock();
-
 		try {
 			nativeStore.getValueStore().sync();
 			nativeStore.getTripleStore().rollback();
@@ -387,7 +334,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 		finally {
 			txnLock.release();
-			storeReadLock.release();
 		}
 	}
 
@@ -405,13 +351,13 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				return addStatement(subj, pred, obj, false, contexts);
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -490,14 +436,14 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				int removeCount = removeStatements(subj, pred, obj, false, contexts);
 				return removeCount > 0;
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -608,13 +554,13 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				removeStatements(null, null, null, false, contexts);
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {

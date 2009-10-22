@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,8 +14,6 @@ import java.util.List;
 
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
-import info.aduna.concurrent.locks.ReadWriteLockManager;
-import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.DistinctIteration;
@@ -68,14 +66,9 @@ public class NativeStore extends NotifyingSailBase {
 	private volatile NamespaceStore namespaceStore;
 
 	/**
-	 * Lock manager used to synchronize read and write access to the store.
-	 */
-	private volatile ReadWriteLockManager storeLockManager;
-
-	/**
 	 * Lock manager used to prevent concurrent transactions.
 	 */
-	private volatile ExclusiveLockManager txnLockManager;
+	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager(debugEnabled());
 
 	/**
 	 * Flag indicating whether the Sail has been initialized.
@@ -161,9 +154,6 @@ public class NativeStore extends NotifyingSailBase {
 
 		logger.debug("Initializing NativeStore...");
 
-		storeLockManager = new WritePrefReadWriteLockManager(debugEnabled());
-		txnLockManager = new ExclusiveLockManager(debugEnabled());
-
 		// Check initialization parameters
 		File dataDir = getDataDir();
 
@@ -218,27 +208,19 @@ public class NativeStore extends NotifyingSailBase {
 		if (isInitialized()) {
 			logger.debug("Shutting down NativeStore...");
 
-			Lock txnLock = getTransactionLock();
 			try {
-				Lock writeLock = getWriteLock();
-				try {
-					tripleStore.close();
-					valueStore.close();
-					namespaceStore.close();
+				tripleStore.close();
+				valueStore.close();
+				namespaceStore.close();
 
-					initialized = false;
+				initialized = false;
 
-					logger.debug("NativeStore shut down");
-				}
-				catch (IOException e) {
-					throw new SailException(e);
-				}
-				finally {
-					writeLock.release();
-				}
+				logger.debug("NativeStore shut down");
+			}
+			catch (IOException e) {
+				throw new SailException(e);
 			}
 			finally {
-				txnLock.release();
 				dirLock.release();
 			}
 		}
@@ -278,28 +260,6 @@ public class NativeStore extends NotifyingSailBase {
 
 	protected NamespaceStore getNamespaceStore() {
 		return namespaceStore;
-	}
-
-	protected Lock getReadLock()
-		throws SailException
-	{
-		try {
-			return storeLockManager.getReadLock();
-		}
-		catch (InterruptedException e) {
-			throw new SailException(e);
-		}
-	}
-
-	protected Lock getWriteLock()
-		throws SailException
-	{
-		try {
-			return storeLockManager.getWriteLock();
-		}
-		catch (InterruptedException e) {
-			throw new SailException(e);
-		}
 	}
 
 	protected Lock getTransactionLock()

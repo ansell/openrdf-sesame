@@ -384,13 +384,13 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				return addStatementInternal(subj, pred, obj, false, contexts);
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -446,13 +446,13 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				return removeStatementsInternal(subj, pred, obj, false, contexts);
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
@@ -474,13 +474,13 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		try {
 			verifyIsOpen();
 
-			Lock txnLock = getTransactionLock();
+			Lock updateLock = getUpdateLock();
 			try {
 				autoStartTransaction();
 				removeStatementsInternal(null, null, null, false, contexts);
 			}
 			finally {
-				txnLock.release();
+				updateLock.release();
 			}
 		}
 		finally {
