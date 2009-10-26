@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -10,18 +10,32 @@ import java.io.File;
 import org.openrdf.model.ValueFactory;
 
 /**
- * An interface for an RDF Storage. RDF Sails can store RDF
- * statements and evaluate queries over them. Statements can be stored in named
- * contexts or in the null context. Contexts can be used to group sets of
- * statements that logically belong together, for example because they come from
- * the same source. Both URIs and bnodes can be used as context identifiers.
+ * An interface for an RDF Storage. RDF Sails can store RDF statements and
+ * evaluate queries over them. Statements can be stored in named contexts or in
+ * the null context. Contexts can be used to group sets of statements that
+ * logically belong together, for example because they come from the same
+ * source. Both URIs and bnodes can be used as context identifiers.
  * 
  * @author Arjohn Kampman
  */
 public interface Sail {
 
+	/**
+	 * Sets the data directory for the Sail. The Sail can use this directory for
+	 * storage of data, parameters, etc. This directory must be set before the
+	 * Sail is {@link #initialize() initialized}.
+	 * 
+	 * @throws IllegalStateException
+	 *         If this method is called when the Sail has already been
+	 *         initialized.
+	 */
 	public void setDataDir(File dataDir);
 
+	/**
+	 * Gets the Sail's data directory.
+	 * 
+	 * @see #setDataDir(File)
+	 */
 	public File getDataDir();
 
 	/**
@@ -32,6 +46,8 @@ public interface Sail {
 	 * 
 	 * @throws SailException
 	 *         If the Sail could not be initialized.
+	 * @throws IllegalStateException
+	 *         If the Sail has already been initialized.
 	 */
 	public void initialize()
 		throws SailException;
@@ -65,6 +81,8 @@ public interface Sail {
 	 * @throws SailException
 	 *         If no transaction could be started, for example because the Sail
 	 *         is not writable.
+	 * @throws IllegalStateException
+	 *         If the Sail has not been initialized or has been shut down.
 	 */
 	public SailConnection getConnection()
 		throws SailException;
