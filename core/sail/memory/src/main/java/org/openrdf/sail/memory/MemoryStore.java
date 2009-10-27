@@ -103,11 +103,6 @@ public class MemoryStore extends NotifyingSailBase {
 	 */
 	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager(debugEnabled());
 
-	/**
-	 * Flag indicating whether the Sail has been initialized.
-	 */
-	private volatile boolean initialized = false;
-
 	private volatile boolean persist = false;
 
 	/**
@@ -197,15 +192,6 @@ public class MemoryStore extends NotifyingSailBase {
 	 * Methods *
 	 *---------*/
 
-	@Override
-	public void setDataDir(File dataDir) {
-		if (isInitialized()) {
-			throw new IllegalStateException("sail has already been initialized");
-		}
-
-		super.setDataDir(dataDir);
-	}
-
 	public void setPersist(boolean persist) {
 		if (isInitialized()) {
 			throw new IllegalStateException("sail has already been initialized");
@@ -260,13 +246,9 @@ public class MemoryStore extends NotifyingSailBase {
 	 * @throws SailException
 	 *         when initialization of the store failed.
 	 */
-	public void initialize()
+	protected void initializeInternal()
 		throws SailException
 	{
-		if (isInitialized()) {
-			throw new IllegalStateException("sail has already been intialized");
-		}
-
 		logger.debug("Initializing MemoryStore...");
 
 		currentSnapshot = 1;
@@ -336,43 +318,29 @@ public class MemoryStore extends NotifyingSailBase {
 		}
 
 		contentsChanged = false;
-		initialized = true;
 
 		logger.debug("MemoryStore initialized");
-	}
-
-	/**
-	 * Checks whether the Sail has been initialized.
-	 * 
-	 * @return <tt>true</tt> if the Sail has been initialized, <tt>false</tt>
-	 *         otherwise.
-	 */
-	protected final boolean isInitialized() {
-		return initialized;
 	}
 
 	@Override
 	protected void shutDownInternal()
 		throws SailException
 	{
-		if (isInitialized()) {
-			Lock stLock = getStatementsReadLock();
+		Lock stLock = getStatementsReadLock();
 
-			try {
-				cancelSyncTimer();
-				sync();
+		try {
+			cancelSyncTimer();
+			sync();
 
-				valueFactory.clear();
-				statements.clear();
-				dataFile = null;
-				syncFile = null;
-				initialized = false;
-			}
-			finally {
-				stLock.release();
-				if (dirLock != null) {
-					dirLock.release();
-				}
+			valueFactory.clear();
+			statements.clear();
+			dataFile = null;
+			syncFile = null;
+		}
+		finally {
+			stLock.release();
+			if (dirLock != null) {
+				dirLock.release();
 			}
 		}
 	}
@@ -390,10 +358,6 @@ public class MemoryStore extends NotifyingSailBase {
 	protected NotifyingSailConnection getConnectionInternal()
 		throws SailException
 	{
-		if (!isInitialized()) {
-			throw new IllegalStateException("sail not initialized.");
-		}
-
 		return new MemoryStoreConnection(this);
 	}
 
@@ -647,8 +611,9 @@ public class MemoryStore extends NotifyingSailBase {
 		st.addToComponentLists();
 
 		txnStatements.put(st, st);
-		
-		assert hasStatement(memSubj, memPred, memObj, explicit, currentSnapshot + 1, ReadMode.TRANSACTION, memContext);
+
+		assert hasStatement(memSubj, memPred, memObj, explicit, currentSnapshot + 1, ReadMode.TRANSACTION,
+				memContext);
 
 		return st;
 	}

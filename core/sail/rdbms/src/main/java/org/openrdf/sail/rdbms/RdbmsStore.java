@@ -132,7 +132,8 @@ public class RdbmsStore extends SailBase {
 		this.sequenced = useSequence;
 	}
 
-	public void initialize()
+	@Override
+	protected void initializeInternal()
 		throws SailException
 	{
 		if (factory == null) {

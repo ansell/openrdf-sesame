@@ -347,21 +347,21 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 
-			Lock updateLock = getUpdateLock();
+			updateLock.lock();
 			try {
 				autoStartTransaction();
 				return addStatement(subj, pred, obj, false, contexts);
 			}
 			finally {
-				updateLock.release();
+				updateLock.unlock();
 			}
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
@@ -432,22 +432,22 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 
-			Lock updateLock = getUpdateLock();
+			updateLock.lock();
 			try {
 				autoStartTransaction();
 				int removeCount = removeStatements(subj, pred, obj, false, contexts);
 				return removeCount > 0;
 			}
 			finally {
-				updateLock.release();
+				updateLock.unlock();
 			}
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
@@ -550,21 +550,21 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	public void clearInferred(Resource... contexts)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 
-			Lock updateLock = getUpdateLock();
+			updateLock.lock();
 			try {
 				autoStartTransaction();
 				removeStatements(null, null, null, false, contexts);
 			}
 			finally {
-				updateLock.release();
+				updateLock.unlock();
 			}
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 

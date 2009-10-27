@@ -71,11 +71,6 @@ public class NativeStore extends NotifyingSailBase {
 	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager(debugEnabled());
 
 	/**
-	 * Flag indicating whether the Sail has been initialized.
-	 */
-	private volatile boolean initialized;
-
-	/**
 	 * Data directory lock.
 	 */
 	private volatile Lock dirLock;
@@ -88,7 +83,7 @@ public class NativeStore extends NotifyingSailBase {
 	 * Creates a new NativeStore.
 	 */
 	public NativeStore() {
-		initialized = false;
+		super();
 	}
 
 	public NativeStore(File dataDir) {
@@ -142,16 +137,13 @@ public class NativeStore extends NotifyingSailBase {
 	 * Initializes this NativeStore.
 	 * 
 	 * @exception SailException
-	 *            If this RdfRepository could not be initialized using the
+	 *            If this NativeStore could not be initialized using the
 	 *            parameters that have been set.
 	 */
-	public void initialize()
+	@Override
+	protected void initializeInternal()
 		throws SailException
 	{
-		if (isInitialized()) {
-			throw new IllegalStateException("sail has already been intialized");
-		}
-
 		logger.debug("Initializing NativeStore...");
 
 		// Check initialization parameters
@@ -187,42 +179,27 @@ public class NativeStore extends NotifyingSailBase {
 			throw new SailException(e);
 		}
 
-		initialized = true;
 		logger.debug("NativeStore initialized");
-	}
-
-	/**
-	 * Checks whether the Sail has been initialized.
-	 * 
-	 * @return <tt>true</tt> if the Sail has been initialized, <tt>false</tt>
-	 *         otherwise.
-	 */
-	protected final boolean isInitialized() {
-		return initialized;
 	}
 
 	@Override
 	protected void shutDownInternal()
 		throws SailException
 	{
-		if (isInitialized()) {
-			logger.debug("Shutting down NativeStore...");
+		logger.debug("Shutting down NativeStore...");
 
-			try {
-				tripleStore.close();
-				valueStore.close();
-				namespaceStore.close();
+		try {
+			tripleStore.close();
+			valueStore.close();
+			namespaceStore.close();
 
-				initialized = false;
-
-				logger.debug("NativeStore shut down");
-			}
-			catch (IOException e) {
-				throw new SailException(e);
-			}
-			finally {
-				dirLock.release();
-			}
+			logger.debug("NativeStore shut down");
+		}
+		catch (IOException e) {
+			throw new SailException(e);
+		}
+		finally {
+			dirLock.release();
 		}
 	}
 
@@ -234,10 +211,6 @@ public class NativeStore extends NotifyingSailBase {
 	protected NotifyingSailConnection getConnectionInternal()
 		throws SailException
 	{
-		if (!isInitialized()) {
-			throw new IllegalStateException("sail not initialized.");
-		}
-
 		try {
 			return new NativeStoreConnection(this);
 		}

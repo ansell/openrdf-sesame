@@ -8,14 +8,13 @@ package org.openrdf.sail.helpers;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.concurrent.locks.ExclusiveLockManager;
-import info.aduna.concurrent.locks.Lock;
-import info.aduna.concurrent.locks.ReadWriteLockManager;
-import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Namespace;
@@ -68,21 +67,20 @@ public abstract class SailConnectionBase implements SailConnection {
 	private volatile boolean txnActive;
 
 	/**
-	 * A read-write lock manager used to handle concurrent access on the
-	 * connection. Every operation on the connection must first obtain a shared
-	 * (read) lock. When close() is invoked on this connection, the close()
-	 * method will first obtain an exclusive (write) lock: it will wait until
-	 * active operations finish and then block any further operations on the
+	 * Lock used to give the {@link #close()} method exclusive access to a
 	 * connection.
+	 * <ul>
+	 * <li>write lock: close()
+	 * <li>read lock: all other (public) methods
+	 * </ul>
 	 */
-	private final ReadWriteLockManager connectionLockManager = new WritePrefReadWriteLockManager(
-			debugEnabled());
+	protected final ReentrantReadWriteLock connectionLock = new ReentrantReadWriteLock();
 
 	/**
-	 * An exclusive lock manager used to prevent concurrent calls to update
-	 * methods like addStatement, clear, commit, etc. within a transcation.
+	 * Lock used to prevent concurrent calls to update methods like addStatement,
+	 * clear, commit, etc. within a transaction.
 	 */
-	private final ExclusiveLockManager updateLockManager = new ExclusiveLockManager(debugEnabled());
+	protected final ReentrantLock updateLock = new ReentrantLock();
 
 	// FIXME: use weak references here?
 	private final List<SailBaseIteration> activeIterations = Collections.synchronizedList(new LinkedList<SailBaseIteration>());
@@ -127,7 +125,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	{
 		// obtain an exclusive lock so that any further operations on this
 		// connection (including those from any concurrent threads) are blocked.
-		Lock conLock = getExclusiveConnectionLock();
+		connectionLock.writeLock().lock();
 
 		try {
 			if (isOpen) {
@@ -181,7 +179,7 @@ public abstract class SailConnectionBase implements SailConnection {
 			// Release the exclusive lock. Any threads waiting to obtain a
 			// non-exclusive read lock will get one and then fail with an
 			// IllegalStateException, because the connection is no longer open.
-			conLock.release();
+			connectionLock.writeLock().unlock();
 		}
 	}
 
@@ -207,26 +205,26 @@ public abstract class SailConnectionBase implements SailConnection {
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 			return registerIteration(evaluateInternal(tupleExpr, dataset, bindings, includeInferred));
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
 	public final CloseableIteration<? extends Resource, SailException> getContextIDs()
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 			return registerIteration(getContextIDsInternal());
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
@@ -234,26 +232,26 @@ public abstract class SailConnectionBase implements SailConnection {
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 			return registerIteration(getStatementsInternal(subj, pred, obj, includeInferred, contexts));
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
 	public final long size(Resource... contexts)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 			return sizeInternal(contexts);
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
@@ -273,11 +271,11 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void commit()
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 
-			Lock updateLock = getUpdateLock();
+			updateLock.lock();
 			try {
 				if (txnActive) {
 					commitInternal();
@@ -285,22 +283,22 @@ public abstract class SailConnectionBase implements SailConnection {
 				}
 			}
 			finally {
-				updateLock.release();
+				updateLock.unlock();
 			}
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
 	public final void rollback()
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 
-			Lock updateLock = getUpdateLock();
+			updateLock.lock();
 			try {
 				if (txnActive) {
 					try {
@@ -312,209 +310,192 @@ public abstract class SailConnectionBase implements SailConnection {
 				}
 			}
 			finally {
-				updateLock.release();
+				updateLock.unlock();
 			}
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
 	public final void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 
-			Lock updateLock = getUpdateLock();
+			updateLock.lock();
 			try {
 				autoStartTransaction();
 				addStatementInternal(subj, pred, obj, contexts);
 			}
 			finally {
-				updateLock.release();
+				updateLock.unlock();
 			}
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
 	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 
-			Lock updateLock = getUpdateLock();
+			updateLock.lock();
 			try {
 				autoStartTransaction();
 				removeStatementsInternal(subj, pred, obj, contexts);
 			}
 			finally {
-				updateLock.release();
+				updateLock.unlock();
 			}
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
 	public final void clear(Resource... contexts)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 
-			Lock updateLock = getUpdateLock();
+			updateLock.lock();
 			try {
 				autoStartTransaction();
 				clearInternal(contexts);
 			}
 			finally {
-				updateLock.release();
+				updateLock.unlock();
 			}
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
 	public final CloseableIteration<? extends Namespace, SailException> getNamespaces()
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 			return registerIteration(getNamespacesInternal());
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
 	public final String getNamespace(String prefix)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 			return getNamespaceInternal(prefix);
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
 	public final void setNamespace(String prefix, String name)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 
-			Lock updateLock = getUpdateLock();
+			updateLock.lock();
 			try {
 				autoStartTransaction();
 				setNamespaceInternal(prefix, name);
 			}
 			finally {
-				updateLock.release();
+				updateLock.unlock();
 			}
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
 	public final void removeNamespace(String prefix)
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 
-			Lock updateLock = getUpdateLock();
+			updateLock.lock();
 			try {
 				autoStartTransaction();
 				removeNamespaceInternal(prefix);
 			}
 			finally {
-				updateLock.release();
+				updateLock.unlock();
 			}
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
 	}
 
 	public final void clearNamespaces()
 		throws SailException
 	{
-		Lock conLock = getSharedConnectionLock();
+		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
 
-			Lock updateLock = getUpdateLock();
+			updateLock.lock();
 			try {
 				autoStartTransaction();
 				clearNamespacesInternal();
 			}
 			finally {
-				updateLock.release();
+				updateLock.unlock();
 			}
 		}
 		finally {
-			conLock.release();
+			connectionLock.readLock().unlock();
 		}
-	}
-
-	protected Lock getSharedConnectionLock()
-		throws SailException
-	{
-		try {
-			return connectionLockManager.getReadLock();
-		}
-		catch (InterruptedException e) {
-			throw new SailException(e);
-		}
-	}
-
-	protected Lock getExclusiveConnectionLock()
-		throws SailException
-	{
-		try {
-			return connectionLockManager.getWriteLock();
-		}
-		catch (InterruptedException e) {
-			throw new SailException(e);
-		}
-	}
-
-	@Deprecated
-	protected Lock getTransactionLock()
-		throws SailException
-	{
-		return getUpdateLock();
 	}
 
 	/**
-	 * Gets the lock that prevents concurrent calls to update methods like
-	 * addStatement, clear, commit, etc. All such methods must acquire this lock
-	 * before doing anything else.
+	 * @deprecated Use {@link #connectionLock} directly instead.
 	 */
-	protected Lock getUpdateLock()
+	protected info.aduna.concurrent.locks.Lock getSharedConnectionLock()
 		throws SailException
 	{
-		try {
-			return updateLockManager.getExclusiveLock();
-		}
-		catch (InterruptedException e) {
-			throw new SailException(e);
-		}
+		return new JavaLock(connectionLock.readLock());
+	}
+
+	/**
+	 * @deprecated Use {@link #connectionLock} directly instead.
+	 */
+	protected info.aduna.concurrent.locks.Lock getExclusiveConnectionLock()
+		throws SailException
+	{
+		return new JavaLock(connectionLock.writeLock());
+	}
+
+	/**
+	 * @deprecated Use {@link #updateLock} directly instead.
+	 */
+	@Deprecated
+	protected info.aduna.concurrent.locks.Lock getTransactionLock()
+		throws SailException
+	{
+		return new JavaLock(updateLock);
 	}
 
 	/**
@@ -585,4 +566,27 @@ public abstract class SailConnectionBase implements SailConnection {
 
 	protected abstract void clearNamespacesInternal()
 		throws SailException;
+
+	private static class JavaLock implements info.aduna.concurrent.locks.Lock {
+
+		private final Lock javaLock;
+
+		private boolean isActive = true;
+
+		public JavaLock(Lock javaLock) {
+			this.javaLock = javaLock;
+			javaLock.lock();
+		}
+
+		public synchronized boolean isActive() {
+			return isActive;
+		}
+
+		public synchronized void release() {
+			if (isActive) {
+				javaLock.unlock();
+				isActive = false;
+			}
+		}
+	}
 }
