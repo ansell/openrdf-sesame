@@ -272,4 +272,10 @@
          mf:action  <syntax-042.serql> ;
          mf:result  mfx:Correct
       ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-043: IN operator with fixed value list";
+         rdfs:label "syntax-043" ;
+         mf:action  <syntax-043.serql> ;
+         mf:result  mfx:Correct
+      ]
      ).

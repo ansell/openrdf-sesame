@@ -74,6 +74,7 @@ import org.openrdf.query.parser.serql.ast.ASTGraphIntersect;
 import org.openrdf.query.parser.serql.ast.ASTGraphMinus;
 import org.openrdf.query.parser.serql.ast.ASTGraphUnion;
 import org.openrdf.query.parser.serql.ast.ASTIn;
+import org.openrdf.query.parser.serql.ast.ASTInList;
 import org.openrdf.query.parser.serql.ast.ASTIsBNode;
 import org.openrdf.query.parser.serql.ast.ASTIsLiteral;
 import org.openrdf.query.parser.serql.ast.ASTIsResource;
@@ -770,6 +771,32 @@ class QueryModelBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public ValueExpr visit(ASTInList node, Object data)
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.getValueExpr().jjtAccept(this, null);
+
+		ValueExpr result = null;
+
+		for (ASTValueExpr argExpr : node.getArgList().getElements()) {
+			ValueExpr rightArg = (ValueExpr)argExpr.jjtAccept(this, null);
+
+			if (result == null) {
+				// First argument
+				result = new SameTerm(leftArg, rightArg);
+			}
+			else {
+				SameTerm sameTerm = new SameTerm(leftArg.clone(), rightArg);
+				result = new Or(result, sameTerm);
+			}
+		}
+
+		assert result != null;
+
+		return result;
+	}
+
+	@Override
 	public Var visit(ASTVar node, Object data)
 		throws VisitorException
 	{
@@ -822,7 +849,7 @@ class QueryModelBuilder extends ASTVisitorBase {
 
 		FunctionCall functionCall = new FunctionCall(vc.getValue().toString());
 
-		for (ASTValueExpr argExpr : node.getArgList()) {
+		for (ASTValueExpr argExpr : node.getArgList().getElements()) {
 			functionCall.addArg((ValueExpr)argExpr.jjtAccept(this, null));
 		}
 

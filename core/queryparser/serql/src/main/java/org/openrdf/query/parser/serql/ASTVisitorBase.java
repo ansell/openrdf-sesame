@@ -6,6 +6,7 @@
 package org.openrdf.query.parser.serql;
 
 import org.openrdf.query.parser.serql.ast.ASTAnd;
+import org.openrdf.query.parser.serql.ast.ASTArgList;
 import org.openrdf.query.parser.serql.ast.ASTBNode;
 import org.openrdf.query.parser.serql.ast.ASTBasicPathExpr;
 import org.openrdf.query.parser.serql.ast.ASTBasicPathExprTail;
@@ -26,6 +27,7 @@ import org.openrdf.query.parser.serql.ast.ASTGraphIntersect;
 import org.openrdf.query.parser.serql.ast.ASTGraphMinus;
 import org.openrdf.query.parser.serql.ast.ASTGraphUnion;
 import org.openrdf.query.parser.serql.ast.ASTIn;
+import org.openrdf.query.parser.serql.ast.ASTInList;
 import org.openrdf.query.parser.serql.ast.ASTIsBNode;
 import org.openrdf.query.parser.serql.ast.ASTIsLiteral;
 import org.openrdf.query.parser.serql.ast.ASTIsResource;
@@ -318,6 +320,12 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 		return node.childrenAccept(this, data);
 	}
 
+	public Object visit(ASTInList node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
 	public Object visit(ASTCompOperator node, Object data)
 		throws VisitorException
 	{
@@ -361,6 +369,12 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	}
 
 	public Object visit(ASTFunctionCall node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTArgList node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);

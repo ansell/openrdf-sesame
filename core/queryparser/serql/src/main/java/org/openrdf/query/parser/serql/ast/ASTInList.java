@@ -1,18 +1,17 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.parser.serql.ast;
 
+public class ASTInList extends ASTBooleanExpr {
 
-public class ASTFunctionCall extends ASTValueExpr {
-
-	public ASTFunctionCall(int id) {
+	public ASTInList(int id) {
 		super(id);
 	}
 
-	public ASTFunctionCall(SyntaxTreeBuilder p, int id) {
+	public ASTInList(SyntaxTreeBuilder p, int id) {
 		super(p, id);
 	}
 
@@ -23,8 +22,8 @@ public class ASTFunctionCall extends ASTValueExpr {
 		return visitor.visit(this, data);
 	}
 
-	public ASTValue getURI() {
-		return (ASTValue)children.get(0);
+	public ASTValueExpr getValueExpr() {
+		return (ASTValueExpr)children.get(0);
 	}
 
 	public ASTArgList getArgList() {
