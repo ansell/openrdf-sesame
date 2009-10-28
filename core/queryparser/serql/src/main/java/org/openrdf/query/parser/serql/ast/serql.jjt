@@ -589,7 +589,12 @@ void BooleanValueOp() #void :
 	|
 		<LIKE> String() [ <IGNORE> <CASE> { jjtThis.setIgnoreCase(true); } ]   #Like(2)
 	|
-		<IN> <LPAREN> TupleQuerySet() <RPAREN>   #In(2)
+		<IN> <LPAREN> 
+		(
+			TupleQuerySet()   #In(2)
+		|	ArgList()         #InList(2)
+		)
+		<RPAREN>
 	)
 }
 
@@ -674,7 +679,7 @@ void FunctionCall():
 	URIRef() <LPAREN> [ ArgList() ] <RPAREN>
 }
 
-void ArgList() #void :
+void ArgList() :
 {}
 {
 	ValueExpr() ("," ValueExpr())*

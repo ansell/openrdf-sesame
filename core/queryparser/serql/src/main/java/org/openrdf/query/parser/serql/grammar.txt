@@ -73,6 +73,7 @@ BooleanElem      ::= "(" BooleanExpr ")"
                    | ValueExpr CompOp ("any"|"all") "(" TupleQuerySet ")"
                    | ValueExpr "like" <STRING>
                    | ValueExpr "in" "(" TupleQuerySet ")"
+                   | ValueExpr "in" "(" ArgList ")"
                    | "exists" "(" TupleQuerySet ")"
                    | "bound" "(" Var ")"
                    | "isResource" "(" Var ")"
