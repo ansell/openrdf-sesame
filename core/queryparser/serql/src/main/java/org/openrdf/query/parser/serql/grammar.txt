@@ -69,17 +69,20 @@ BooleanElem      ::= "(" BooleanExpr ")"
                    | "true"
                    | "false"
                    | "not" BooleanElem
+                   | "bound" "(" Var ")"
+                   | "sameTerm" "(" ValueExpr "," ValueExpr ")"
                    | ValueExpr CompOp ValueExpr
                    | ValueExpr CompOp ("any"|"all") "(" TupleQuerySet ")"
                    | ValueExpr "like" <STRING>
                    | ValueExpr "in" "(" TupleQuerySet ")"
                    | ValueExpr "in" "(" ArgList ")"
                    | "exists" "(" TupleQuerySet ")"
-                   | "bound" "(" Var ")"
                    | "isResource" "(" Var ")"
                    | "isURI" "(" Var ")"
                    | "isBNode" "(" Var ")"
                    | "isLiteral" "(" Var ")"
+                   | "langMatches" "(" ValueExpr "," ValueExpr ")"
+                   | "regex" "(" ValueExpr "," ValueExpr [ "," ValueExpr ] ")"
 
 CompOp           ::= "=" | "!=" | "<" | "<=" | ">" | ">="
 
@@ -90,6 +93,7 @@ ValueExpr        ::= Var
                    | "label" "(" Var ")"
                    | "namespace" "(" Var ")"
                    | "localname" "(" Var ")"
+                   | "str" "(" ValueExpr ")"
                    | FunctionCall
 
 FunctionCall     ::= Uri "(" [ArgList] ")"

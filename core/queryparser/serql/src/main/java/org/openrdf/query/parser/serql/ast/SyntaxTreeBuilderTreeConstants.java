@@ -34,33 +34,37 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTAND = 28;
   public int JJTBOOLEANCONSTANT = 29;
   public int JJTNOT = 30;
-  public int JJTISRESOURCE = 31;
-  public int JJTISLITERAL = 32;
-  public int JJTISURI = 33;
-  public int JJTISBNODE = 34;
-  public int JJTEXISTS = 35;
-  public int JJTCOMPARE = 36;
-  public int JJTCOMPAREANY = 37;
-  public int JJTCOMPAREALL = 38;
-  public int JJTLIKE = 39;
-  public int JJTIN = 40;
-  public int JJTINLIST = 41;
-  public int JJTCOMPOPERATOR = 42;
-  public int JJTVAR = 43;
-  public int JJTDATATYPE = 44;
-  public int JJTLANG = 45;
-  public int JJTLABEL = 46;
-  public int JJTNAMESPACE = 47;
-  public int JJTLOCALNAME = 48;
-  public int JJTBOUND = 49;
-  public int JJTFUNCTIONCALL = 50;
-  public int JJTARGLIST = 51;
-  public int JJTURI = 52;
-  public int JJTQNAME = 53;
-  public int JJTBNODE = 54;
-  public int JJTLITERAL = 55;
-  public int JJTSTRING = 56;
-  public int JJTNULL = 57;
+  public int JJTBOUND = 31;
+  public int JJTSAMETERM = 32;
+  public int JJTISRESOURCE = 33;
+  public int JJTISLITERAL = 34;
+  public int JJTISURI = 35;
+  public int JJTISBNODE = 36;
+  public int JJTLANGMATCHES = 37;
+  public int JJTREGEX = 38;
+  public int JJTEXISTS = 39;
+  public int JJTCOMPARE = 40;
+  public int JJTCOMPAREANY = 41;
+  public int JJTCOMPAREALL = 42;
+  public int JJTLIKE = 43;
+  public int JJTIN = 44;
+  public int JJTINLIST = 45;
+  public int JJTCOMPOPERATOR = 46;
+  public int JJTVAR = 47;
+  public int JJTDATATYPE = 48;
+  public int JJTLANG = 49;
+  public int JJTLABEL = 50;
+  public int JJTNAMESPACE = 51;
+  public int JJTLOCALNAME = 52;
+  public int JJTSTR = 53;
+  public int JJTFUNCTIONCALL = 54;
+  public int JJTARGLIST = 55;
+  public int JJTURI = 56;
+  public int JJTQNAME = 57;
+  public int JJTBNODE = 58;
+  public int JJTLITERAL = 59;
+  public int JJTSTRING = 60;
+  public int JJTNULL = 61;
 
 
   public String[] jjtNodeName = {
@@ -95,10 +99,14 @@ public interface SyntaxTreeBuilderTreeConstants
     "And",
     "BooleanConstant",
     "Not",
+    "Bound",
+    "SameTerm",
     "IsResource",
     "IsLiteral",
     "IsURI",
     "IsBNode",
+    "LangMatches",
+    "Regex",
     "Exists",
     "Compare",
     "CompareAny",
@@ -113,7 +121,7 @@ public interface SyntaxTreeBuilderTreeConstants
     "Label",
     "Namespace",
     "LocalName",
-    "Bound",
+    "Str",
     "FunctionCall",
     "ArgList",
     "URI",
@@ -124,4 +132,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "Null",
   };
 }
-/* JavaCC - OriginalChecksum=36f4cdc03c8a337b9967ef4c86f2c605 (do not edit this line) */
+/* JavaCC - OriginalChecksum=9e5b5315b33e099ea2a7dc9b387de66b (do not edit this line) */

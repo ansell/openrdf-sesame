@@ -3,4 +3,4 @@ SELECT
 FROM
   {S} P {O} 
 WHERE
-  S IN(rdf:type, "literal")
+  str(O) = "http://www.example.com"

@@ -35,6 +35,7 @@ import org.openrdf.query.algebra.IsResource;
 import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Label;
 import org.openrdf.query.algebra.Lang;
+import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.Like;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.Namespace;
@@ -43,10 +44,12 @@ import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
+import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
@@ -81,6 +84,7 @@ import org.openrdf.query.parser.serql.ast.ASTIsResource;
 import org.openrdf.query.parser.serql.ast.ASTIsURI;
 import org.openrdf.query.parser.serql.ast.ASTLabel;
 import org.openrdf.query.parser.serql.ast.ASTLang;
+import org.openrdf.query.parser.serql.ast.ASTLangMatches;
 import org.openrdf.query.parser.serql.ast.ASTLike;
 import org.openrdf.query.parser.serql.ast.ASTLimit;
 import org.openrdf.query.parser.serql.ast.ASTLiteral;
@@ -99,9 +103,12 @@ import org.openrdf.query.parser.serql.ast.ASTPathExprTail;
 import org.openrdf.query.parser.serql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.serql.ast.ASTQueryBody;
 import org.openrdf.query.parser.serql.ast.ASTQueryContainer;
+import org.openrdf.query.parser.serql.ast.ASTRegex;
 import org.openrdf.query.parser.serql.ast.ASTReifiedStat;
+import org.openrdf.query.parser.serql.ast.ASTSameTerm;
 import org.openrdf.query.parser.serql.ast.ASTSelect;
 import org.openrdf.query.parser.serql.ast.ASTSelectQuery;
+import org.openrdf.query.parser.serql.ast.ASTStr;
 import org.openrdf.query.parser.serql.ast.ASTString;
 import org.openrdf.query.parser.serql.ast.ASTTupleIntersect;
 import org.openrdf.query.parser.serql.ast.ASTTupleMinus;
@@ -711,10 +718,28 @@ class QueryModelBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public LangMatches visit(ASTLangMatches node, Object data)
+		throws VisitorException
+	{
+		ValueExpr tag = (ValueExpr)node.getLanguageTag().jjtAccept(this, null);
+		ValueExpr range = (ValueExpr)node.getLanguageRange().jjtAccept(this, null);
+		return new LangMatches(tag, range);
+	}
+
+	@Override
 	public Exists visit(ASTExists node, Object data)
 		throws VisitorException
 	{
 		return new Exists((TupleExpr)super.visit(node, data));
+	}
+
+	@Override
+	public SameTerm visit(ASTSameTerm node, Object data)
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.getLeftOperand().jjtAccept(this, null);
+		ValueExpr rightArg = (ValueExpr)node.getRightOperand().jjtAccept(this, null);
+		return new SameTerm(leftArg, rightArg);
 	}
 
 	@Override
@@ -759,6 +784,20 @@ class QueryModelBuilder extends ASTVisitorBase {
 		boolean caseSensitive = !node.ignoreCase();
 
 		return new Like(expr, pattern, caseSensitive);
+	}
+
+	@Override
+	public Regex visit(ASTRegex node, Object data)
+		throws VisitorException
+	{
+		ValueExpr text = (ValueExpr)node.getText().jjtAccept(this, null);
+		ValueExpr pattern = (ValueExpr)node.getPattern().jjtAccept(this, null);
+		ValueExpr flags = null;
+		if (node.hasFlags()) {
+			flags = (ValueExpr)node.getFlags().jjtAccept(this, null);
+		}
+
+		return new Regex(text, pattern, flags);
 	}
 
 	@Override
@@ -838,6 +877,13 @@ class QueryModelBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		return new LocalName((ValueExpr)super.visit(node, data));
+	}
+
+	@Override
+	public Str visit(ASTStr node, Object data)
+		throws VisitorException
+	{
+		return new Str((ValueExpr)super.visit(node, data));
 	}
 
 	@Override
