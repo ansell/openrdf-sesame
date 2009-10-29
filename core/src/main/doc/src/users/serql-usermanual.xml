@@ -1,5 +1,5 @@
 <chapter id="chapter-serql">
-	<title>The SeRQL query language (revision 3.0)</title>
+	<title>The SeRQL query language (revision 3.1)</title>
 
 	<section>
 		<title>Revisions</title>
@@ -33,7 +33,7 @@
 				</listitem>
 				<listitem>
 					Nested WHERE clause for optional path expressions
-					(<xref linkend="nested-where"/>).
+					(<xref linkend="section-nested-where"/>).
 				</listitem>
 				<listitem>
 					New functions namespace(), localName()
@@ -100,6 +100,14 @@
 				</listitem>
 			</itemizedlist>
 		</section>
+		<section>
+			<title>revision 3.1</title>
+			<para>
+				SeRQL revision 3.1 adds the possibility to apply the IN-operator on a
+				list of values.
+			</para>
+		</section>
+
 	</section> <!-- Revisions -->
 	<section>
 		<title>Introduction</title>
@@ -747,7 +755,7 @@ USING NAMESPACE
 		<para>
 			The following sections will explain the available Boolean
 			expressions for use in the WHERE clause.
-			<xref linkend="nested-where"/> will explain how WHERE clauses can be
+			<xref linkend="section-nested-where"/> will explain how WHERE clauses can be
 			nested inside optional path expressions.
 		</para>
 
@@ -781,6 +789,41 @@ WHERE FALSE]]></screen>
 			<para>
 				checks whether two variables are bound to unequal values.
 			</para>
+			<para>
+				Equality of literals is influenced by the literal's datatype. This
+				means that two values that represent the same value but are written
+				differently still compare equal. For example, the following comparison
+				evaluates to true:
+			</para>
+			<screen><![CDATA["123"^^xsd:positiveInteger = "123.0"^^xsd:float]]></screen>
+		</section>
+
+		<section id="section-same-term">
+			<title>SameTerm operator (R3.1)</title>
+			<para>
+				Where the equality operators described in the previous section
+				compares values taking datatypes into account, the SameTerm operator
+				requires an exact lexical match of values. Using a SameTerm operator
+				on a variable and a value is equivalent to replacing the variable with
+				the value in all path expressions. For exampe, the following query:
+			</para>
+			<screen><![CDATA[
+SELECT X, Y
+FROM {X} Y {Z}
+WHERE SameTerm(Z, "123.0"^^xsd:float)]]></screen>
+			<para>
+				Is equivalent to:
+			</para>
+			<screen><![CDATA[
+SELECT X, Y
+FROM {X} Y {"123.0"^^xsd:float}]]></screen>
+			<para>
+				But is semantically different from:
+			</para>
+			<screen><![CDATA[
+SELECT X, Y
+FROM {X} Y {Z}
+WHERE Z = "123.0"^^xsd:float]]></screen>
 		</section>
 
 		<section>
@@ -921,6 +964,27 @@ FROM {X} Prop {Y} rdfs:label {L}
 WHERE NOT L LIKE "*FooBar*" AND
       (Y = <foo:bar> OR Y = <bar:foo>) AND
       isLiteral(L)]]></screen>
+		</section>
+
+		<section id="section-in-list">
+			<title>IN operator (R3.1)</title>
+			<para>
+				The IN operator can check whether a value is contained in a list of
+				one or more other values. For example:
+			</para>
+			<screen><![CDATA[
+SELECT *
+FROM {X} Prop {Y}
+WHERE Y IN (<foo:bar>, <bar:foo>)]]></screen>
+			<para>
+				When there are multiple alternatives, this syntax is more convenient
+				than the semantic equivalent with a combination of OR and SameTerm
+				operators:
+			</para>
+			<screen><![CDATA[
+SELECT *
+FROM {X} Prop {Y}
+WHERE SameTerm(Y, <foo:bar>) OR SameTerm(Y, <bar:foo>)]]></screen>
 		</section>
 
 		<section id="nested-where">
@@ -1603,7 +1667,7 @@ USING NAMESPACE
 			carried over to the inner query when that variable is reused there.
 		</para>
 		<section id="section-in">
-			<title>The IN operator (R1.2)</title>
+			<title>IN (R1.2)</title>
 			<para>
 				The IN operator allows set membership checking where the set is
 				defined by a nested SELECT-query.
@@ -2481,29 +2545,35 @@ BooleanElem      ::= "(" BooleanExpr ")"
                    | "true"
                    | "false"
                    | "not" BooleanElem
+                   | "bound" "(" Var ")"
+                   | "sameTerm" "(" ValueExpr "," ValueExpr ")"
                    | ValueExpr CompOp ValueExpr
                    | ValueExpr CompOp ("any"|"all") "(" TupleQuerySet ")"
                    | ValueExpr "like" <STRING>
                    | ValueExpr "in" "(" TupleQuerySet ")"
+                   | ValueExpr "in" "(" ArgList ")"
                    | "exists" "(" TupleQuerySet ")"
                    | "isResource" "(" Var ")"
                    | "isURI" "(" Var ")"
                    | "isBNode" "(" Var ")"
                    | "isLiteral" "(" Var ")"
+                   | "langMatches" "(" ValueExpr "," ValueExpr ")"
+                   | "regex" "(" ValueExpr "," ValueExpr [ "," ValueExpr ] ")"
 
 CompOp           ::= "=" | "!=" | "<" | "<=" | ">" | ">="
 
 ValueExpr        ::= Var
                    | Value
-				   | "bound" "(" Var ")"
                    | "datatype" "(" Var ")"
                    | "lang" "(" Var ")"
                    | "label" "(" Var ")"
                    | "namespace" "(" Var ")"
                    | "localname" "(" Var ")"
-				   | FunctionCall
+                   | "str" "(" ValueExpr ")"
+                   | FunctionCall
 
 FunctionCall     ::= Uri "(" [ArgList] ")"
+
 ArgList          ::= ValueExpr ("," ValueExpr)*
 
 Var              ::= <NC_NAME>

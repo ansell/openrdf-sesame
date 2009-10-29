@@ -34,10 +34,14 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTAnd node, Object data) throws VisitorException;
   public Object visit(ASTBooleanConstant node, Object data) throws VisitorException;
   public Object visit(ASTNot node, Object data) throws VisitorException;
+  public Object visit(ASTBound node, Object data) throws VisitorException;
+  public Object visit(ASTSameTerm node, Object data) throws VisitorException;
   public Object visit(ASTIsResource node, Object data) throws VisitorException;
   public Object visit(ASTIsLiteral node, Object data) throws VisitorException;
   public Object visit(ASTIsURI node, Object data) throws VisitorException;
   public Object visit(ASTIsBNode node, Object data) throws VisitorException;
+  public Object visit(ASTLangMatches node, Object data) throws VisitorException;
+  public Object visit(ASTRegex node, Object data) throws VisitorException;
   public Object visit(ASTExists node, Object data) throws VisitorException;
   public Object visit(ASTCompare node, Object data) throws VisitorException;
   public Object visit(ASTCompareAny node, Object data) throws VisitorException;
@@ -52,7 +56,7 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTLabel node, Object data) throws VisitorException;
   public Object visit(ASTNamespace node, Object data) throws VisitorException;
   public Object visit(ASTLocalName node, Object data) throws VisitorException;
-  public Object visit(ASTBound node, Object data) throws VisitorException;
+  public Object visit(ASTStr node, Object data) throws VisitorException;
   public Object visit(ASTFunctionCall node, Object data) throws VisitorException;
   public Object visit(ASTArgList node, Object data) throws VisitorException;
   public Object visit(ASTURI node, Object data) throws VisitorException;
@@ -62,4 +66,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTString node, Object data) throws VisitorException;
   public Object visit(ASTNull node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=813fe647f2bde93b43b424ac3f6817c7 (do not edit this line) */
+/* JavaCC - OriginalChecksum=ef88892c9db2e5f7f2ea45c7b619bff8 (do not edit this line) */

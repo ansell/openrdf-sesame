@@ -113,13 +113,17 @@ TOKEN :
 |	<NOT: "not">
 |	<AND: "and">
 |	<OR: "or">
+|	<SAMETERM: "sameTerm">
 |	<LIKE: "like">
 |	<IGNORE: "ignore">
 |	<CASE: "case">
+|	<REGEX: "regex">
 |	<LABEL: "label">
 |	<LANG: "lang">
+|	<LANGMATCHES: "langMatches">
 |	<DATATYPE: "datatype">
 |	<LOCALNAME: "localname">
+|	<STR: "str">
 |	<BOUND: "bound">
 |	<NULL: "null">
 |	<ISRESOURCE: "isResource">
@@ -522,10 +526,13 @@ void BooleanElem() #void :
 |	BooleanConstant()
 |	Not()
 |	Bound()
+|	SameTerm()
 |	IsResource()
 |	IsLiteral()
 |	IsURI()
 |	IsBNode()
+|	LangMatches()
+|	Regex()
 |	Exists()
 |	BooleanValueOp()
 }
@@ -542,6 +549,18 @@ void Not() :
 {}
 {
 	<NOT> BooleanElem()
+}
+
+void Bound():
+{}
+{
+	<BOUND> <LPAREN> Var() <RPAREN>
+}
+
+void SameTerm():
+{}
+{
+	<SAMETERM> <LPAREN> ValueExpr() <COMMA> ValueExpr() <RPAREN>
 }
 
 void IsResource() :
@@ -566,6 +585,18 @@ void IsBNode() :
 {}
 {
 	<ISBNODE> <LPAREN> Var() <RPAREN>
+}
+
+void LangMatches() :
+{}
+{
+	<LANGMATCHES> <LPAREN> ValueExpr() <COMMA> ValueExpr() <RPAREN>
+}
+
+void Regex() :
+{}
+{
+	<REGEX> <LPAREN> ValueExpr() <COMMA> ValueExpr() [ <COMMA> ValueExpr() ] <RPAREN>
 }
 
 void Exists() :
@@ -626,6 +657,7 @@ void ValueExpr() #void :
 |	Label()
 |	Namespace()
 |	LocalName()
+|	Str()
 |	LOOKAHEAD(2) FunctionCall()
 |	Value()
 }
@@ -667,10 +699,10 @@ void LocalName():
 	<LOCALNAME> <LPAREN> Var() <RPAREN>
 }
 
-void Bound():
+void Str():
 {}
 {
-	<BOUND> <LPAREN> Var() <RPAREN>
+	<STR> <LPAREN> ValueExpr() <RPAREN>
 }
 
 void FunctionCall():

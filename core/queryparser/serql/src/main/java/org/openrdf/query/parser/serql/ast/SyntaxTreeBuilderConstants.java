@@ -73,99 +73,107 @@ public interface SyntaxTreeBuilderConstants {
   /** RegularExpression Id. */
   int OR = 35;
   /** RegularExpression Id. */
-  int LIKE = 36;
+  int SAMETERM = 36;
   /** RegularExpression Id. */
-  int IGNORE = 37;
+  int LIKE = 37;
   /** RegularExpression Id. */
-  int CASE = 38;
+  int IGNORE = 38;
   /** RegularExpression Id. */
-  int LABEL = 39;
+  int CASE = 39;
   /** RegularExpression Id. */
-  int LANG = 40;
+  int REGEX = 40;
   /** RegularExpression Id. */
-  int DATATYPE = 41;
+  int LABEL = 41;
   /** RegularExpression Id. */
-  int LOCALNAME = 42;
+  int LANG = 42;
   /** RegularExpression Id. */
-  int BOUND = 43;
+  int LANGMATCHES = 43;
   /** RegularExpression Id. */
-  int NULL = 44;
+  int DATATYPE = 44;
   /** RegularExpression Id. */
-  int ISRESOURCE = 45;
+  int LOCALNAME = 45;
   /** RegularExpression Id. */
-  int ISBNODE = 46;
+  int STR = 46;
   /** RegularExpression Id. */
-  int ISURI = 47;
+  int BOUND = 47;
   /** RegularExpression Id. */
-  int ISLITERAL = 48;
+  int NULL = 48;
   /** RegularExpression Id. */
-  int AS = 49;
+  int ISRESOURCE = 49;
   /** RegularExpression Id. */
-  int UNION = 50;
+  int ISBNODE = 50;
   /** RegularExpression Id. */
-  int MINUS = 51;
+  int ISURI = 51;
   /** RegularExpression Id. */
-  int INTERSECT = 52;
+  int ISLITERAL = 52;
   /** RegularExpression Id. */
-  int ANY = 53;
+  int AS = 53;
   /** RegularExpression Id. */
-  int ALL = 54;
+  int UNION = 54;
   /** RegularExpression Id. */
-  int IN = 55;
+  int MINUS = 55;
   /** RegularExpression Id. */
-  int EXISTS = 56;
+  int INTERSECT = 56;
   /** RegularExpression Id. */
-  int LANG_LITERAL = 57;
+  int ANY = 57;
   /** RegularExpression Id. */
-  int DATATYPED_LITERAL = 58;
+  int ALL = 58;
   /** RegularExpression Id. */
-  int STRING = 59;
+  int IN = 59;
   /** RegularExpression Id. */
-  int SAFE_CHAR = 60;
+  int EXISTS = 60;
   /** RegularExpression Id. */
-  int ESCAPED_CHAR = 61;
+  int LANG_LITERAL = 61;
   /** RegularExpression Id. */
-  int UNICODE_ESC = 62;
+  int DATATYPED_LITERAL = 62;
   /** RegularExpression Id. */
-  int LANG_TAG = 63;
+  int STRING = 63;
   /** RegularExpression Id. */
-  int URI = 64;
+  int SAFE_CHAR = 64;
   /** RegularExpression Id. */
-  int SCHEME = 65;
+  int ESCAPED_CHAR = 65;
   /** RegularExpression Id. */
-  int QNAME = 66;
+  int UNICODE_ESC = 66;
   /** RegularExpression Id. */
-  int BNODE = 67;
+  int LANG_TAG = 67;
   /** RegularExpression Id. */
-  int PREFIX_NAME = 68;
+  int URI = 68;
   /** RegularExpression Id. */
-  int POS_INTEGER = 69;
+  int SCHEME = 69;
   /** RegularExpression Id. */
-  int NEG_INTEGER = 70;
+  int QNAME = 70;
   /** RegularExpression Id. */
-  int DECIMAL = 71;
+  int BNODE = 71;
   /** RegularExpression Id. */
-  int HEX = 72;
+  int PREFIX_NAME = 72;
   /** RegularExpression Id. */
-  int ALPHA = 73;
+  int POS_INTEGER = 73;
   /** RegularExpression Id. */
-  int NUM = 74;
+  int NEG_INTEGER = 74;
   /** RegularExpression Id. */
-  int NCNAME = 75;
+  int DECIMAL = 75;
   /** RegularExpression Id. */
-  int NCNAME_CHAR = 76;
+  int HEX = 76;
   /** RegularExpression Id. */
-  int LETTER = 77;
+  int ALPHA = 77;
   /** RegularExpression Id. */
-  int BASECHAR = 78;
+  int NUM = 78;
   /** RegularExpression Id. */
-  int IDEOGRAPHIC = 79;
+  int NCNAME = 79;
   /** RegularExpression Id. */
-  int COMBINING_CHAR = 80;
+  int NCNAME_CHAR = 80;
   /** RegularExpression Id. */
-  int DIGIT = 81;
+  int LETTER = 81;
   /** RegularExpression Id. */
-  int EXTENDER = 82;
+  int BASECHAR = 82;
+  /** RegularExpression Id. */
+  int IDEOGRAPHIC = 83;
+  /** RegularExpression Id. */
+  int COMBINING_CHAR = 84;
+  /** RegularExpression Id. */
+  int DIGIT = 85;
+  /** RegularExpression Id. */
+  int EXTENDER = 86;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -208,13 +216,17 @@ public interface SyntaxTreeBuilderConstants {
     "\"not\"",
     "\"and\"",
     "\"or\"",
+    "\"sameTerm\"",
     "\"like\"",
     "\"ignore\"",
     "\"case\"",
+    "\"regex\"",
     "\"label\"",
     "\"lang\"",
+    "\"langMatches\"",
     "\"datatype\"",
     "\"localname\"",
+    "\"str\"",
     "\"bound\"",
     "\"null\"",
     "\"isResource\"",
