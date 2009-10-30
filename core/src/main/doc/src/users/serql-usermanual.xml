@@ -2513,9 +2513,11 @@ ContextID        ::= Var
                    | Uri
                    | BNode
 
-PathExprList     ::= PathExpr ("," PathExpr)*
-PathExpr          ::= BasicPathExpr
+PathExprList     ::= UnionPathExpr ("," UnionPathExpr)*
+UnionPathExpr    ::= PathExpr ("union" PathExpr)*
+PathExpr         ::= BasicPathExpr
                    | OptGraphPattern
+                   | "(" PathExprList ")"
 BasicPathExpr    ::= Node Edge Node [[";"] PathExprTail]
 OptGraphPattern  ::= "[" PathExprList ["where" BooleanExpr] "]"
 

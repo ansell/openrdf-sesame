@@ -23,50 +23,52 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTORDERBY = 17;
   public int JJTLIMIT = 18;
   public int JJTOFFSET = 19;
-  public int JJTBASICPATHEXPR = 20;
-  public int JJTOPTPATHEXPR = 21;
-  public int JJTBASICPATHEXPRTAIL = 22;
-  public int JJTOPTPATHEXPRTAIL = 23;
-  public int JJTEDGE = 24;
-  public int JJTNODE = 25;
-  public int JJTNODEELEM = 26;
-  public int JJTREIFIEDSTAT = 27;
-  public int JJTORDEREXPR = 28;
-  public int JJTOR = 29;
-  public int JJTAND = 30;
-  public int JJTBOOLEANCONSTANT = 31;
-  public int JJTNOT = 32;
-  public int JJTBOUND = 33;
-  public int JJTSAMETERM = 34;
-  public int JJTISRESOURCE = 35;
-  public int JJTISLITERAL = 36;
-  public int JJTISURI = 37;
-  public int JJTISBNODE = 38;
-  public int JJTLANGMATCHES = 39;
-  public int JJTREGEX = 40;
-  public int JJTEXISTS = 41;
-  public int JJTCOMPARE = 42;
-  public int JJTCOMPAREANY = 43;
-  public int JJTCOMPAREALL = 44;
-  public int JJTLIKE = 45;
-  public int JJTIN = 46;
-  public int JJTINLIST = 47;
-  public int JJTCOMPOPERATOR = 48;
-  public int JJTVAR = 49;
-  public int JJTDATATYPE = 50;
-  public int JJTLANG = 51;
-  public int JJTLABEL = 52;
-  public int JJTNAMESPACE = 53;
-  public int JJTLOCALNAME = 54;
-  public int JJTSTR = 55;
-  public int JJTFUNCTIONCALL = 56;
-  public int JJTARGLIST = 57;
-  public int JJTURI = 58;
-  public int JJTQNAME = 59;
-  public int JJTBNODE = 60;
-  public int JJTLITERAL = 61;
-  public int JJTSTRING = 62;
-  public int JJTNULL = 63;
+  public int JJTPATHEXPRLIST = 20;
+  public int JJTPATHEXPRUNION = 21;
+  public int JJTBASICPATHEXPR = 22;
+  public int JJTOPTPATHEXPR = 23;
+  public int JJTBASICPATHEXPRTAIL = 24;
+  public int JJTOPTPATHEXPRTAIL = 25;
+  public int JJTEDGE = 26;
+  public int JJTNODE = 27;
+  public int JJTNODEELEM = 28;
+  public int JJTREIFIEDSTAT = 29;
+  public int JJTORDEREXPR = 30;
+  public int JJTOR = 31;
+  public int JJTAND = 32;
+  public int JJTBOOLEANCONSTANT = 33;
+  public int JJTNOT = 34;
+  public int JJTBOUND = 35;
+  public int JJTSAMETERM = 36;
+  public int JJTISRESOURCE = 37;
+  public int JJTISLITERAL = 38;
+  public int JJTISURI = 39;
+  public int JJTISBNODE = 40;
+  public int JJTLANGMATCHES = 41;
+  public int JJTREGEX = 42;
+  public int JJTEXISTS = 43;
+  public int JJTCOMPARE = 44;
+  public int JJTCOMPAREANY = 45;
+  public int JJTCOMPAREALL = 46;
+  public int JJTLIKE = 47;
+  public int JJTIN = 48;
+  public int JJTINLIST = 49;
+  public int JJTCOMPOPERATOR = 50;
+  public int JJTVAR = 51;
+  public int JJTDATATYPE = 52;
+  public int JJTLANG = 53;
+  public int JJTLABEL = 54;
+  public int JJTNAMESPACE = 55;
+  public int JJTLOCALNAME = 56;
+  public int JJTSTR = 57;
+  public int JJTFUNCTIONCALL = 58;
+  public int JJTARGLIST = 59;
+  public int JJTURI = 60;
+  public int JJTQNAME = 61;
+  public int JJTBNODE = 62;
+  public int JJTLITERAL = 63;
+  public int JJTSTRING = 64;
+  public int JJTNULL = 65;
 
 
   public String[] jjtNodeName = {
@@ -90,6 +92,8 @@ public interface SyntaxTreeBuilderTreeConstants
     "OrderBy",
     "Limit",
     "Offset",
+    "PathExprList",
+    "PathExprUnion",
     "BasicPathExpr",
     "OptPathExpr",
     "BasicPathExprTail",
@@ -136,4 +140,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "Null",
   };
 }
-/* JavaCC - OriginalChecksum=a9edc2dd310b02370634747d19409718 (do not edit this line) */
+/* JavaCC - OriginalChecksum=57351b205d67e913125abf0f7b92feda (do not edit this line) */

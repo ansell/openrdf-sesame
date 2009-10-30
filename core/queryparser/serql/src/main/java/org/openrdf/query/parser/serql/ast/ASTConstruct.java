@@ -1,13 +1,10 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.parser.serql.ast;
 
-import java.util.List;
-
-import info.aduna.collections.CastingList;
 
 public class ASTConstruct extends SimpleNode {
 
@@ -56,13 +53,12 @@ public class ASTConstruct extends SimpleNode {
 		this.wildcard = wildcard;
 	}
 
-	public List<ASTPathExpr> getPathExprList() {
-		return new CastingList<ASTPathExpr>(children);
+	public ASTPathExpr getPathExpr() {
+		return (ASTPathExpr)children.get(0);
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		String result = super.toString();
 
 		if (distinct || reduced || wildcard) {

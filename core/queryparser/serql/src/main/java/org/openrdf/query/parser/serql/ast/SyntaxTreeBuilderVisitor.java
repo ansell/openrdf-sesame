@@ -23,6 +23,8 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTOrderBy node, Object data) throws VisitorException;
   public Object visit(ASTLimit node, Object data) throws VisitorException;
   public Object visit(ASTOffset node, Object data) throws VisitorException;
+  public Object visit(ASTPathExprList node, Object data) throws VisitorException;
+  public Object visit(ASTPathExprUnion node, Object data) throws VisitorException;
   public Object visit(ASTBasicPathExpr node, Object data) throws VisitorException;
   public Object visit(ASTOptPathExpr node, Object data) throws VisitorException;
   public Object visit(ASTBasicPathExprTail node, Object data) throws VisitorException;
@@ -68,4 +70,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTString node, Object data) throws VisitorException;
   public Object visit(ASTNull node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=f7848bd8d2e32748a80f2c25e9f1faeb (do not edit this line) */
+/* JavaCC - OriginalChecksum=10d665e0123e9d9d5fe36399a555e821 (do not edit this line) */

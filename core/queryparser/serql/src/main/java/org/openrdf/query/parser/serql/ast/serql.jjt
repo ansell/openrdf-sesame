@@ -431,7 +431,22 @@ void ContextID() #void :
 void PathExprList() #void :
 {}
 {
-	PathExpr() ( <COMMA> PathExpr() )*
+	(
+		UnionPathExpr() ( <COMMA> UnionPathExpr() )*
+	) #PathExprList(>1)
+}
+
+void UnionPathExpr() #void :
+{}
+{
+	(
+		PathExpr()
+		(
+			// Only when followed by an OptPathExpr or Node (and not a select or construct)
+			LOOKAHEAD( <UNION> (<LPAREN>)* (<LBRACK>|<LBRACE>) )
+			<UNION> PathExpr()
+		)*
+	) #PathExprUnion(>1)
 }
 
 void PathExpr() #void :
@@ -440,6 +455,8 @@ void PathExpr() #void :
 	BasicPathExpr()
 |
 	OptPathExpr()
+|
+	<LPAREN> PathExprList() <RPAREN>
 }
 
 void BasicPathExpr() :

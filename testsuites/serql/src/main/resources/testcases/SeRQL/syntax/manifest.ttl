@@ -320,4 +320,10 @@
          mf:action  <syntax-050.serql> ;
          mf:result  mfx:Correct
       ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-051: Path expressions union";
+         rdfs:label "syntax-051" ;
+         mf:action  <syntax-051.serql> ;
+         mf:result  mfx:Correct
+      ]
      ).
