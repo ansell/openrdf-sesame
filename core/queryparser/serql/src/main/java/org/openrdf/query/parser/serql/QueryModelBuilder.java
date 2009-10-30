@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -41,9 +41,12 @@ import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.Namespace;
 import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Or;
+import org.openrdf.query.algebra.Order;
+import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
+import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.SingletonSet;
@@ -98,6 +101,8 @@ import org.openrdf.query.parser.serql.ast.ASTOffset;
 import org.openrdf.query.parser.serql.ast.ASTOptPathExpr;
 import org.openrdf.query.parser.serql.ast.ASTOptPathExprTail;
 import org.openrdf.query.parser.serql.ast.ASTOr;
+import org.openrdf.query.parser.serql.ast.ASTOrderBy;
+import org.openrdf.query.parser.serql.ast.ASTOrderExpr;
 import org.openrdf.query.parser.serql.ast.ASTPathExpr;
 import org.openrdf.query.parser.serql.ast.ASTPathExprTail;
 import org.openrdf.query.parser.serql.ast.ASTProjectionElem;
@@ -259,6 +264,13 @@ class QueryModelBuilder extends ASTVisitorBase {
 			tupleExpr = new SingletonSet();
 		}
 
+		// Apply result ordering
+		ASTOrderBy orderByNode = node.getOrderBy();
+		if (orderByNode != null) {
+			List<OrderElem> orderElemements = (List<OrderElem>)orderByNode.jjtAccept(this, null);
+			tupleExpr = new Order(tupleExpr, orderElemements);
+		}
+
 		// Apply projection
 		tupleExpr = (TupleExpr)node.getSelectClause().jjtAccept(this, tupleExpr);
 
@@ -319,6 +331,9 @@ class QueryModelBuilder extends ASTVisitorBase {
 		if (node.isDistinct()) {
 			result = new Distinct(result);
 		}
+		else if (node.isReduced()) {
+			result = new Reduced(result);
+		}
 
 		return result;
 	}
@@ -337,16 +352,24 @@ class QueryModelBuilder extends ASTVisitorBase {
 			tupleExpr = new SingletonSet();
 		}
 
+		// Apply result ordering
+		ASTOrderBy orderByNode = node.getOrderBy();
+		if (orderByNode != null) {
+			List<OrderElem> orderElemements = (List<OrderElem>)orderByNode.jjtAccept(this, null);
+			tupleExpr = new Order(tupleExpr, orderElemements);
+		}
+
 		// Create constructor
 		ConstructorBuilder cb = new ConstructorBuilder();
 		ASTConstruct constructNode = node.getConstructClause();
 
 		if (!constructNode.isWildcard()) {
 			TupleExpr constructExpr = (TupleExpr)constructNode.jjtAccept(this, null);
-			tupleExpr = cb.buildConstructor(tupleExpr, constructExpr, constructNode.isDistinct());
+			tupleExpr = cb.buildConstructor(tupleExpr, constructExpr, constructNode.isDistinct(),
+					constructNode.isReduced());
 		}
 		else if (node.hasQueryBody()) {
-			tupleExpr = cb.buildConstructor(tupleExpr, constructNode.isDistinct());
+			tupleExpr = cb.buildConstructor(tupleExpr, constructNode.isDistinct(), constructNode.isReduced());
 		}
 		// else: "construct *" without query body, just return the SingletonSet
 
@@ -435,12 +458,35 @@ class QueryModelBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Integer visit(ASTWhere node, Object data)
+	public Object visit(ASTWhere node, Object data)
 		throws VisitorException
 	{
 		ValueExpr valueExpr = (ValueExpr)node.getCondition().jjtAccept(this, null);
 		graphPattern.addConstraint(valueExpr);
 		return null;
+	}
+
+	@Override
+	public List<OrderElem> visit(ASTOrderBy node, Object data)
+		throws VisitorException
+	{
+		List<ASTOrderExpr> orderExprList = node.getOrderExprList();
+
+		List<OrderElem> elements = new ArrayList<OrderElem>(orderExprList.size());
+
+		for (ASTOrderExpr orderExpr : orderExprList) {
+			elements.add((OrderElem)orderExpr.jjtAccept(this, null));
+		}
+
+		return elements;
+	}
+
+	@Override
+	public OrderElem visit(ASTOrderExpr node, Object data)
+		throws VisitorException
+	{
+		ValueExpr valueExpr = (ValueExpr)node.getValueExpr().jjtAccept(this, null);
+		return new OrderElem(valueExpr, node.isAscending());
 	}
 
 	@Override

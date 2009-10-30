@@ -224,11 +224,11 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		result = new Projection(result, projElemList);
 
-		if (node.isReduced()) {
-			result = new Reduced(result);
-		}
 		if (node.isDistinct()) {
 			result = new Distinct(result);
+		}
+		else if (node.isReduced()) {
+			result = new Reduced(result);
 		}
 
 		return result;

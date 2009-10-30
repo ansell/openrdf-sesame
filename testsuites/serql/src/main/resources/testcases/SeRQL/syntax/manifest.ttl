@@ -302,4 +302,22 @@
          mf:action  <syntax-047.serql> ;
          mf:result  mfx:Correct
       ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-048: Select reduced";
+         rdfs:label "syntax-048" ;
+         mf:action  <syntax-048.serql> ;
+         mf:result  mfx:Correct
+      ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-049: Construct reduced";
+         rdfs:label "syntax-049" ;
+         mf:action  <syntax-049.serql> ;
+         mf:result  mfx:Correct
+      ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-050: Order by";
+         rdfs:label "syntax-050" ;
+         mf:action  <syntax-050.serql> ;
+         mf:result  mfx:Correct
+      ]
      ).

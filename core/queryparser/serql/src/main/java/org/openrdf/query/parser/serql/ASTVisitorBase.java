@@ -49,6 +49,8 @@ import org.openrdf.query.parser.serql.ast.ASTOffset;
 import org.openrdf.query.parser.serql.ast.ASTOptPathExpr;
 import org.openrdf.query.parser.serql.ast.ASTOptPathExprTail;
 import org.openrdf.query.parser.serql.ast.ASTOr;
+import org.openrdf.query.parser.serql.ast.ASTOrderBy;
+import org.openrdf.query.parser.serql.ast.ASTOrderExpr;
 import org.openrdf.query.parser.serql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.serql.ast.ASTQName;
 import org.openrdf.query.parser.serql.ast.ASTQueryBody;
@@ -169,6 +171,18 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	}
 
 	public Object visit(ASTWhere node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTOrderBy node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTOrderExpr node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);
