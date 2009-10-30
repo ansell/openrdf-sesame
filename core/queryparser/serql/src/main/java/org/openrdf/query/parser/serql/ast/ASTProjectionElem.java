@@ -32,10 +32,16 @@ public class ASTProjectionElem extends SimpleNode {
 
 	public String getAlias() {
 		if (children.size() >= 2) {
-			ASTString aliasNode = (ASTString)children.get(1);
-			return aliasNode.getValue();
+			Node aliasNode = children.get(1);
+
+			if (aliasNode instanceof ASTString) {
+				return ((ASTString)aliasNode).getValue();
+			}
+			else if (aliasNode instanceof ASTVar) {
+				return ((ASTVar)aliasNode).getName();
+			}
 		}
-		
+
 		return null;
 	}
 }

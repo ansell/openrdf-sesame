@@ -2494,17 +2494,18 @@ SetOperator      ::= "union" ["all"]
                    | "minus"
                    | "intersect"
 
-SelectQuery      ::= "select" ["distinct"] Projection [QueryBody]
+SelectQuery      ::= "select" ["distinct"|"reduced"] Projection [QueryBody]
 Projection       ::= "*"
                    | [ ProjectionElem ("," ProjectionElem)* ]
-ProjectionElem   ::= ValueExpr ["as" <STRING>]
+ProjectionElem   ::= ValueExpr ["as" Var]
 
-ConstructQuery   ::= "construct" ["distinct"] ConstructClause [QueryBody]
+ConstructQuery   ::= "construct" ["distinct"|"reduced"] ConstructClause [QueryBody]
 ConstructClause  ::= "*"
                    | PathExprList
 
 QueryBody        ::= ("from" ["context" ContextID] PathExprList)+
                      ["where" BooleanExpr]
+                     ["order" "by" OrderExrList]
                      ["limit" <POS_INTEGER>]
                      ["offset" <POS_INTEGER>]
 
@@ -2537,6 +2538,9 @@ NodeElem         ::= Var
                    | Value
                    | ReifiedStat
 ReifiedStat      ::= "{" [NodeElem] "}" Edge "{" [NodeElem] "}"
+
+OrderExprList    ::= OrderExpr ("," OrderExpr)*
+OrderExpr        ::= ValueExpr ["asc"|"desc"]
 
 BooleanExpr      ::= OrExpr
 OrExpr           ::= AndExpr ["or" BooleanExpr]

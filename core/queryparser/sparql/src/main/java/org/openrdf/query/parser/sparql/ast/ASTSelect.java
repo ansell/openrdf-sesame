@@ -53,7 +53,7 @@ public class ASTSelect extends SimpleNode {
 	public String toString() {
 		String result = super.toString();
 		
-		if (distinct || wildcard) {
+		if (distinct || reduced || wildcard) {
 			result += " (";
 			if (distinct) {
 				result += " distinct";

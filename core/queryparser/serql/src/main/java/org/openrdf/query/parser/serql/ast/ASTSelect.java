@@ -13,6 +13,8 @@ public class ASTSelect extends SimpleNode {
 
 	private boolean distinct = false;
 
+	private boolean reduced = false;
+
 	private boolean wildcard = false;
 
 	public ASTSelect(int id) {
@@ -38,6 +40,14 @@ public class ASTSelect extends SimpleNode {
 		return distinct;
 	}
 
+	public void setReduced(boolean reduced) {
+		this.reduced = reduced;
+	}
+
+	public boolean isReduced() {
+		return reduced;
+	}
+	
 	public boolean isWildcard() {
 		return wildcard;
 	}
@@ -55,12 +65,18 @@ public class ASTSelect extends SimpleNode {
 	{
 		String result = super.toString();
 
-		if (distinct) {
-			result += " (distinct)";
-		}
-
-		if (wildcard) {
-			result += " (*)";
+		if (distinct || reduced || wildcard) {
+			result += " (";
+			if (distinct) {
+				result += " distinct";
+			}
+			if (reduced) {
+				result += " reduced";
+			}
+			if (wildcard) {
+				result += " *";
+			}
+			result += " )";
 		}
 
 		return result;

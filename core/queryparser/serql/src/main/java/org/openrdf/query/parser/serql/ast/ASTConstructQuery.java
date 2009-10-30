@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -32,6 +32,14 @@ public class ASTConstructQuery extends ASTGraphQuery {
 
 	public ASTQueryBody getQueryBody() {
 		return jjtGetChild(ASTQueryBody.class);
+	}
+
+	public boolean hasOrderBy() {
+		return getOrderBy() != null;
+	}
+
+	public ASTOrderBy getOrderBy() {
+		return jjtGetChild(ASTOrderBy.class);
 	}
 
 	public boolean hasLimit() {

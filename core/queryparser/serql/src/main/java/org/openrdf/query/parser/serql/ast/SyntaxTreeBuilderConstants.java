@@ -53,127 +53,137 @@ public interface SyntaxTreeBuilderConstants {
   /** RegularExpression Id. */
   int DISTINCT = 25;
   /** RegularExpression Id. */
-  int FROM = 26;
+  int REDUCED = 26;
   /** RegularExpression Id. */
-  int CONTEXT = 27;
+  int FROM = 27;
   /** RegularExpression Id. */
-  int WHERE = 28;
+  int CONTEXT = 28;
   /** RegularExpression Id. */
-  int LIMIT = 29;
+  int WHERE = 29;
   /** RegularExpression Id. */
-  int OFFSET = 30;
+  int ORDER = 30;
   /** RegularExpression Id. */
-  int TRUE = 31;
+  int BY = 31;
   /** RegularExpression Id. */
-  int FALSE = 32;
+  int ASC = 32;
   /** RegularExpression Id. */
-  int NOT = 33;
+  int DESC = 33;
   /** RegularExpression Id. */
-  int AND = 34;
+  int LIMIT = 34;
   /** RegularExpression Id. */
-  int OR = 35;
+  int OFFSET = 35;
   /** RegularExpression Id. */
-  int SAMETERM = 36;
+  int TRUE = 36;
   /** RegularExpression Id. */
-  int LIKE = 37;
+  int FALSE = 37;
   /** RegularExpression Id. */
-  int IGNORE = 38;
+  int NOT = 38;
   /** RegularExpression Id. */
-  int CASE = 39;
+  int AND = 39;
   /** RegularExpression Id. */
-  int REGEX = 40;
+  int OR = 40;
   /** RegularExpression Id. */
-  int LABEL = 41;
+  int SAMETERM = 41;
   /** RegularExpression Id. */
-  int LANG = 42;
+  int LIKE = 42;
   /** RegularExpression Id. */
-  int LANGMATCHES = 43;
+  int IGNORE = 43;
   /** RegularExpression Id. */
-  int DATATYPE = 44;
+  int CASE = 44;
   /** RegularExpression Id. */
-  int LOCALNAME = 45;
+  int REGEX = 45;
   /** RegularExpression Id. */
-  int STR = 46;
+  int LABEL = 46;
   /** RegularExpression Id. */
-  int BOUND = 47;
+  int LANG = 47;
   /** RegularExpression Id. */
-  int NULL = 48;
+  int LANGMATCHES = 48;
   /** RegularExpression Id. */
-  int ISRESOURCE = 49;
+  int DATATYPE = 49;
   /** RegularExpression Id. */
-  int ISBNODE = 50;
+  int LOCALNAME = 50;
   /** RegularExpression Id. */
-  int ISURI = 51;
+  int STR = 51;
   /** RegularExpression Id. */
-  int ISLITERAL = 52;
+  int BOUND = 52;
   /** RegularExpression Id. */
-  int AS = 53;
+  int NULL = 53;
   /** RegularExpression Id. */
-  int UNION = 54;
+  int ISRESOURCE = 54;
   /** RegularExpression Id. */
-  int MINUS = 55;
+  int ISBNODE = 55;
   /** RegularExpression Id. */
-  int INTERSECT = 56;
+  int ISURI = 56;
   /** RegularExpression Id. */
-  int ANY = 57;
+  int ISLITERAL = 57;
   /** RegularExpression Id. */
-  int ALL = 58;
+  int AS = 58;
   /** RegularExpression Id. */
-  int IN = 59;
+  int UNION = 59;
   /** RegularExpression Id. */
-  int EXISTS = 60;
+  int MINUS = 60;
   /** RegularExpression Id. */
-  int LANG_LITERAL = 61;
+  int INTERSECT = 61;
   /** RegularExpression Id. */
-  int DATATYPED_LITERAL = 62;
+  int ANY = 62;
   /** RegularExpression Id. */
-  int STRING = 63;
+  int ALL = 63;
   /** RegularExpression Id. */
-  int SAFE_CHAR = 64;
+  int IN = 64;
   /** RegularExpression Id. */
-  int ESCAPED_CHAR = 65;
+  int EXISTS = 65;
   /** RegularExpression Id. */
-  int UNICODE_ESC = 66;
+  int LANG_LITERAL = 66;
   /** RegularExpression Id. */
-  int LANG_TAG = 67;
+  int DATATYPED_LITERAL = 67;
   /** RegularExpression Id. */
-  int URI = 68;
+  int STRING = 68;
   /** RegularExpression Id. */
-  int SCHEME = 69;
+  int SAFE_CHAR = 69;
   /** RegularExpression Id. */
-  int QNAME = 70;
+  int ESCAPED_CHAR = 70;
   /** RegularExpression Id. */
-  int BNODE = 71;
+  int UNICODE_ESC = 71;
   /** RegularExpression Id. */
-  int PREFIX_NAME = 72;
+  int LANG_TAG = 72;
   /** RegularExpression Id. */
-  int POS_INTEGER = 73;
+  int URI = 73;
   /** RegularExpression Id. */
-  int NEG_INTEGER = 74;
+  int SCHEME = 74;
   /** RegularExpression Id. */
-  int DECIMAL = 75;
+  int QNAME = 75;
   /** RegularExpression Id. */
-  int HEX = 76;
+  int BNODE = 76;
   /** RegularExpression Id. */
-  int ALPHA = 77;
+  int PREFIX_NAME = 77;
   /** RegularExpression Id. */
-  int NUM = 78;
+  int POS_INTEGER = 78;
   /** RegularExpression Id. */
-  int NCNAME = 79;
+  int NEG_INTEGER = 79;
   /** RegularExpression Id. */
-  int NCNAME_CHAR = 80;
+  int DECIMAL = 80;
   /** RegularExpression Id. */
-  int LETTER = 81;
+  int HEX = 81;
   /** RegularExpression Id. */
-  int BASECHAR = 82;
+  int ALPHA = 82;
   /** RegularExpression Id. */
-  int IDEOGRAPHIC = 83;
+  int NUM = 83;
   /** RegularExpression Id. */
-  int COMBINING_CHAR = 84;
+  int NCNAME = 84;
   /** RegularExpression Id. */
-  int DIGIT = 85;
+  int NCNAME_CHAR = 85;
   /** RegularExpression Id. */
-  int EXTENDER = 86;
+  int LETTER = 86;
+  /** RegularExpression Id. */
+  int BASECHAR = 87;
+  /** RegularExpression Id. */
+  int IDEOGRAPHIC = 88;
+  /** RegularExpression Id. */
+  int COMBINING_CHAR = 89;
+  /** RegularExpression Id. */
+  int DIGIT = 90;
+  /** RegularExpression Id. */
+  int EXTENDER = 91;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -206,9 +216,14 @@ public interface SyntaxTreeBuilderConstants {
     "\"select\"",
     "\"construct\"",
     "\"distinct\"",
+    "\"reduced\"",
     "\"from\"",
     "\"context\"",
     "\"where\"",
+    "\"order\"",
+    "\"by\"",
+    "\"asc\"",
+    "\"desc\"",
     "\"limit\"",
     "\"offset\"",
     "\"true\"",

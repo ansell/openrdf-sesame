@@ -103,9 +103,14 @@ TOKEN :
 |	<SELECT: "select">
 |	<CONSTRUCT: "construct">
 |	<DISTINCT: "distinct">
+|	<REDUCED: "reduced">
 |	<FROM: "from">
 |	<CONTEXT: "context">
 |	<WHERE: "where">
+|	<ORDER: "order">
+|	<BY: "by">
+|	<ASC: "asc">
+|	<DESC: "desc">
 |	<LIMIT: "limit">
 |	<OFFSET: "offset">
 |	<TRUE: "true">
@@ -328,13 +333,19 @@ void GraphQuery() #void :
 void SelectQuery() :
 {}
 {
-	Select() [ QueryBody() [ Limit() ] [ Offset() ] ]
+	Select() [ QueryBody() [ OrderBy() ] [ Limit() ] [ Offset() ] ]
 }
 
 void Select() :
 {}
 {
-	<SELECT> [ <DISTINCT> {jjtThis.setDistinct(true);} ]
+	<SELECT>
+
+	[
+		<DISTINCT> {jjtThis.setDistinct(true);}
+	|
+		<REDUCED> {jjtThis.setReduced(true);}
+	]
 
 	(
 		<STAR> {jjtThis.setWildcard(true);}
@@ -346,20 +357,26 @@ void Select() :
 void ProjectionElem() :
 {}
 {
-	ValueExprOrNull() [ <AS> String() ]
+	ValueExprOrNull() [ <AS> ( String() | Var() ) ]
 }
 
 void ConstructQuery() :
 {}
 {
-	Construct() [ QueryBody() [ Limit() ] [ Offset() ] ]
+	Construct() [ QueryBody() [ OrderBy() ] [ Limit() ] [ Offset() ] ]
 }
 
 void Construct() :
 {}
 {
-	<CONSTRUCT> [ <DISTINCT> {jjtThis.setDistinct(true);} ]
-	
+	<CONSTRUCT>
+ 
+	[
+		<DISTINCT> {jjtThis.setDistinct(true);}
+	|
+		<REDUCED> {jjtThis.setReduced(true);}
+	]
+
 	(
 		<STAR> {jjtThis.setWildcard(true);}
 	|
@@ -383,6 +400,12 @@ void Where() :
 {}
 {
 	<WHERE> BooleanExpr()
+}
+
+void OrderBy() :
+{ int limit; }
+{
+	<ORDER> <BY> OrderExprList()
 }
 
 void Limit() :
@@ -495,6 +518,24 @@ void ReifiedStat() :
 	<LBRACE> [ NodeElem() ] <RBRACE>
 	Edge()
 	<LBRACE> [ NodeElem() ] <RBRACE>
+}
+
+void OrderExprList() #void :
+{}
+{
+	OrderExpr() ( <COMMA> OrderExpr() )*
+}
+
+void OrderExpr() :
+{}
+{
+	ValueExpr()
+
+	[
+		<ASC>
+	|
+		<DESC> {jjtThis.setAscending(false);}
+	]
 }
 
 void BooleanExpr() #void :
