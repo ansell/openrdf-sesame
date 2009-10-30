@@ -53,32 +53,4 @@ public class ASTQueryBody extends SimpleNode {
 
 		return null;
 	}
-
-	public boolean hasLimitClause() {
-		return getLimitClause() != null;
-	}
-
-	public ASTLimit getLimitClause() {
-		for (Node n : children) {
-			if (n instanceof ASTLimit) {
-				return (ASTLimit)n;
-			}
-		}
-
-		return null;
-	}
-
-	public boolean hasOffsetClause() {
-		return getOffsetClause() != null;
-	}
-
-	public ASTOffset getOffsetClause() {
-		for (Node n : children) {
-			if (n instanceof ASTOffset) {
-				return (ASTOffset)n;
-			}
-		}
-
-		return null;
-	}
 }
