@@ -105,6 +105,7 @@ import org.openrdf.query.parser.serql.ast.ASTOrderBy;
 import org.openrdf.query.parser.serql.ast.ASTOrderExpr;
 import org.openrdf.query.parser.serql.ast.ASTPathExpr;
 import org.openrdf.query.parser.serql.ast.ASTPathExprTail;
+import org.openrdf.query.parser.serql.ast.ASTPathExprUnion;
 import org.openrdf.query.parser.serql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.serql.ast.ASTQueryBody;
 import org.openrdf.query.parser.serql.ast.ASTQueryContainer;
@@ -122,6 +123,7 @@ import org.openrdf.query.parser.serql.ast.ASTURI;
 import org.openrdf.query.parser.serql.ast.ASTValueExpr;
 import org.openrdf.query.parser.serql.ast.ASTVar;
 import org.openrdf.query.parser.serql.ast.ASTWhere;
+import org.openrdf.query.parser.serql.ast.Node;
 import org.openrdf.query.parser.serql.ast.VisitorException;
 
 class QueryModelBuilder extends ASTVisitorBase {
@@ -142,7 +144,7 @@ class QueryModelBuilder extends ASTVisitorBase {
 	 * Variables *
 	 *-----------*/
 
-	private ValueFactory valueFactory;
+	private final ValueFactory valueFactory;
 
 	private int constantVarID = 1;
 
@@ -165,6 +167,19 @@ class QueryModelBuilder extends ASTVisitorBase {
 		var.setAnonymous(true);
 		var.setValue(value);
 		return var;
+	}
+
+	private GraphPattern parseGraphPattern(Node node)
+		throws VisitorException
+	{
+		graphPattern = new GraphPattern(graphPattern);
+		try {
+			node.jjtAccept(this, null);
+			return graphPattern;
+		}
+		finally {
+			graphPattern = graphPattern.getParent();
+		}
 	}
 
 	@Override
@@ -400,14 +415,7 @@ class QueryModelBuilder extends ASTVisitorBase {
 	{
 		assert !node.isWildcard() : "Cannot build constructor for wildcards";
 
-		graphPattern = new GraphPattern(graphPattern);
-		try {
-			super.visit(node, data);
-			return graphPattern.buildTupleExpr();
-		}
-		finally {
-			graphPattern = graphPattern.getParent();
-		}
+		return parseGraphPattern(node.getPathExpr()).buildTupleExpr();
 	}
 
 	@Override
@@ -450,9 +458,7 @@ class QueryModelBuilder extends ASTVisitorBase {
 		graphPattern.setStatementPatternScope(scope);
 		graphPattern.setContextVar(contextVar);
 
-		for (ASTPathExpr pathExprNode : node.getPathExprList()) {
-			pathExprNode.jjtAccept(this, null);
-		}
+		node.getPathExpr().jjtAccept(this, null);
 
 		return null;
 	}
@@ -501,6 +507,25 @@ class QueryModelBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		return node.getValue();
+	}
+
+	@Override
+	public Object visit(ASTPathExprUnion node, Object data)
+		throws VisitorException
+	{
+		Iterator<ASTPathExpr> args = node.getPathExprList().iterator();
+
+		// Create new sub-graph pattern for optional path expressions
+		TupleExpr unionExpr = parseGraphPattern(args.next()).buildTupleExpr();
+
+		while (args.hasNext()) {
+			TupleExpr argExpr = parseGraphPattern(args.next()).buildTupleExpr();
+			unionExpr = new Union(unionExpr, argExpr);
+		}
+
+		graphPattern.addRequiredTE(unionExpr);
+
+		return null;
 	}
 
 	@Override
