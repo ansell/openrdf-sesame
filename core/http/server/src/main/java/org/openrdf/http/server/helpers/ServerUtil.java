@@ -14,11 +14,11 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import org.restlet.Request;
 import org.restlet.data.Dimension;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
-import org.restlet.data.Request;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.protocol.Protocol;

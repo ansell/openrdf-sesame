@@ -10,11 +10,11 @@ import static org.restlet.data.MediaType.TEXT_PLAIN;
 import static org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST;
 
 import org.restlet.data.Language;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
+import org.restlet.Request;
+import org.restlet.Response;
 import org.restlet.data.Status;
-import org.restlet.resource.Representation;
-import org.restlet.resource.StringRepresentation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.service.StatusService;
 
 import org.openrdf.http.protocol.error.ErrorInfo;

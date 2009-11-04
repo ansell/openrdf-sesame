@@ -26,8 +26,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.noelios.restlet</groupId>
-			<artifactId>com.noelios.restlet.ext.servlet</artifactId>
+			<groupId>org.restlet.jee</groupId>
+			<artifactId>org.restlet.ext.servlet</artifactId>
 		</dependency>
 
 		<dependency>

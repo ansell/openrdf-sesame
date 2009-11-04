@@ -11,11 +11,9 @@ import static org.restlet.data.Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE;
 
 import java.io.IOException;
 
-import org.restlet.Context;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.ErrorInfoException;
@@ -41,15 +39,11 @@ public class TemplateResource extends StatementResultResource {
 
 	public static final String TEMPLATE_ID_PARAM = "templateID";
 
-	private final String templateID;
+	private String templateID;
 
-	public TemplateResource(Context context, Request request, Response response) {
-		super(context, request, response);
-
-		// Allow POST, PUT and DELETE
-		this.setModifiable(true);
-
-		templateID = (String)request.getAttributes().get(TEMPLATE_ID_PARAM);
+	protected void doInit() {
+		super.doInit();
+		templateID = (String)getRequest().getAttributes().get(TEMPLATE_ID_PARAM);
 	}
 
 	protected final Representation getRepresentation(RDFWriterFactory factory, MediaType mediaType)
@@ -75,13 +69,14 @@ public class TemplateResource extends StatementResultResource {
 	}
 
 	@Override
-	public void storeRepresentation(Representation entity)
+	protected Representation put(Representation entity, Variant variant)
 		throws ResourceException
 	{
 		Model model = parseContent(entity);
 
 		try {
 			getRepositoryManager().getConfigTemplateManager().addTemplate(templateID, model);
+			return null;
 		}
 		catch (StoreConfigException e) {
 			throw new ResourceException(e);
@@ -92,7 +87,7 @@ public class TemplateResource extends StatementResultResource {
 	}
 
 	@Override
-	public void removeRepresentations()
+	protected Representation delete(Variant variant)
 		throws ResourceException
 	{
 		// default to true, also assume the manager changed in case of error
@@ -113,6 +108,8 @@ public class TemplateResource extends StatementResultResource {
 		if (!configChanged) {
 			throw new ResourceException(CLIENT_ERROR_NOT_FOUND, "No such template: " + templateID);
 		}
+
+		return null;
 	}
 
 	private Model parseContent(Representation entity)

@@ -7,12 +7,9 @@ package org.openrdf.http.server.resources;
 
 import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
 
-import org.restlet.Context;
 import org.restlet.data.Reference;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
 import org.restlet.data.Status;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.helpers.RequestAtt;
@@ -24,18 +21,15 @@ import org.openrdf.query.Query;
  */
 public class QueryListResource extends SesameResource {
 
-	public QueryListResource(Context context, Request request, Response response) {
-		super(context, request, response);
-		this.setReadable(false);
+	@Override
+	protected void doInit() {
+		super.doInit();
+		setNegotiated(false);
+		setConditional(false);
 	}
 
 	@Override
-	public boolean allowPost() {
-		return true;
-	}
-
-	@Override
-	public void acceptRepresentation(Representation entity)
+	protected Representation post(Representation entity)
 		throws ResourceException
 	{
 		Query query = RequestAtt.getQuery(getRequest());
@@ -52,5 +46,6 @@ public class QueryListResource extends SesameResource {
 		getResponse().setLocationRef(queryRef);
 
 		getResponse().setStatus(Status.SUCCESS_CREATED);
+		return null;
 	}
 }

@@ -12,9 +12,9 @@ import java.net.URL;
 
 import org.restlet.Context;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.Request;
+import org.restlet.Response;
+import org.restlet.representation.Representation;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.protocol.Protocol;
@@ -36,12 +36,6 @@ import org.openrdf.store.Isolation;
  * @author Arjohn Kampman
  */
 public class MetaDataResource extends StatementResultResource {
-
-	public MetaDataResource(Context context, Request request, Response response)
-		throws ResourceException
-	{
-		super(context, request, response);
-	}
 
 	protected final Representation getRepresentation(RDFWriterFactory factory, MediaType mediaType)
 		throws ResourceException

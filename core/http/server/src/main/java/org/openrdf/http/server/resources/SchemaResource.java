@@ -5,11 +5,8 @@
  */
 package org.openrdf.http.server.resources;
 
-import org.restlet.Context;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.representations.ModelRepresentation;
@@ -23,12 +20,6 @@ import org.openrdf.store.StoreConfigException;
  * @author Arjohn Kampman
  */
 public class SchemaResource extends StatementResultResource {
-
-	public SchemaResource(Context context, Request request, Response response)
-		throws ResourceException
-	{
-		super(context, request, response);
-	}
 
 	protected final Representation getRepresentation(RDFWriterFactory factory, MediaType mediaType)
 		throws ResourceException

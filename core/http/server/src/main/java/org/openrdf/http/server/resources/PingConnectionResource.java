@@ -5,10 +5,8 @@
  */
 package org.openrdf.http.server.resources;
 
-import org.restlet.Context;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
 import org.restlet.data.Status;
+import org.restlet.representation.Representation;
 
 import org.openrdf.http.server.resources.helpers.SesameResource;
 
@@ -17,19 +15,17 @@ import org.openrdf.http.server.resources.helpers.SesameResource;
  */
 public class PingConnectionResource extends SesameResource {
 
-	public PingConnectionResource(Context context, Request request, Response response) {
-		super(context, request, response);
-		this.setReadable(false);
+	@Override
+	protected void doInit() {
+		super.doInit();
+		setNegotiated(false);
+		setConditional(false);
 	}
 
 	@Override
-	public boolean allowPost() {
-		return true;
-	}
-
-	@Override
-	public void handlePost() {
+	protected Representation post(Representation entity) {
 		// ignore, last access time has been updated by ConnectionResolver
 		getResponse().setStatus(Status.SUCCESS_NO_CONTENT);
+		return null;
 	}
 }

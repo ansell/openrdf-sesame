@@ -23,7 +23,7 @@
 	</modules>
 
 	<properties>
-		<restlet.version>1.1.6</restlet.version>
+		<restlet.version>2.0-SNAPSHOT</restlet.version>
 	</properties>
 
 	<repositories>
@@ -37,23 +37,18 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>org.restlet</groupId>
+				<groupId>org.restlet.jee</groupId>
 				<artifactId>org.restlet</artifactId>
 				<version>${restlet.version}</version>
 			</dependency>
-			<dependency>
-				<groupId>com.noelios.restlet</groupId>
-				<artifactId>com.noelios.restlet</artifactId>
+			<!--<dependency>
+				<groupId>org.restlet.jee</groupId>
+				<artifactId>org.restlet.ext.simple</artifactId>
 				<version>${restlet.version}</version>
-			</dependency>
+			</dependency>-->
 			<dependency>
-				<groupId>com.noelios.restlet</groupId>
-				<artifactId>com.noelios.restlet.ext.jetty</artifactId>
-				<version>${restlet.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.noelios.restlet</groupId>
-				<artifactId>com.noelios.restlet.ext.servlet</artifactId>
+				<groupId>org.restlet.jee</groupId>
+				<artifactId>org.restlet.ext.servlet</artifactId>
 				<version>${restlet.version}</version>
 			</dependency>
 		</dependencies>

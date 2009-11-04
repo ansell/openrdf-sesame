@@ -8,9 +8,8 @@ package org.openrdf.http.server.resources;
 import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
 import static org.restlet.data.Status.SUCCESS_NO_CONTENT;
 
-import org.restlet.Context;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
+import org.restlet.representation.Representation;
+import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.resources.helpers.SesameResource;
 import org.openrdf.store.StoreException;
@@ -20,24 +19,24 @@ import org.openrdf.store.StoreException;
  */
 public class CommitTxnResource extends SesameResource {
 
-	public CommitTxnResource(Context context, Request request, Response response) {
-		super(context, request, response);
-		this.setReadable(false);
+	@Override
+	protected void doInit() {
+		super.doInit();
+		setNegotiated(false);
+		setConditional(false);
 	}
 
 	@Override
-	public boolean allowPost() {
-		return true;
-	}
-
-	@Override
-	public void handlePost() {
+	protected Representation post(Representation entity)
+		throws ResourceException
+	{
 		try {
 			getConnection().commit();
 			getResponse().setStatus(SUCCESS_NO_CONTENT);
+			return null;
 		}
 		catch (StoreException e) {
-			getResponse().setStatus(SERVER_ERROR_INTERNAL, e);
+			throw new ResourceException(SERVER_ERROR_INTERNAL, e);
 		}
 	}
 }

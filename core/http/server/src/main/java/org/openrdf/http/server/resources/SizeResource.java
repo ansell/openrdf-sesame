@@ -7,14 +7,11 @@ package org.openrdf.http.server.resources;
 
 import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
 
-import org.restlet.Context;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
-import org.restlet.resource.StringRepresentation;
-import org.restlet.resource.Variant;
 
 import org.openrdf.http.server.helpers.ServerConnection;
 import org.openrdf.http.server.helpers.ServerUtil;
@@ -31,19 +28,16 @@ import org.openrdf.store.StoreException;
  */
 public class SizeResource extends SesameResource {
 
-	public SizeResource(Context context, Request request, Response response)
-		throws ResourceException
-	{
-		super(context, request, response);
-		setNegotiateContent(false);
-		addCacheableVariants(new Variant(MediaType.TEXT_PLAIN));
+	protected void doInit() {
+		super.doInit();
+		addCacheableMediaTypes(MediaType.TEXT_PLAIN);
 	}
 
 	@Override
-	public Representation represent(Variant variant)
+	protected Representation get(Variant variant)
 		throws ResourceException
 	{
-		getResponse().setDimensions(ServerUtil.VARY_ACCEPT);
+		setDimensions(ServerUtil.VARY_ACCEPT);
 
 		if (variant.getMediaType().equals(MediaType.TEXT_PLAIN, true)) {
 			ServerConnection connection = getConnection();

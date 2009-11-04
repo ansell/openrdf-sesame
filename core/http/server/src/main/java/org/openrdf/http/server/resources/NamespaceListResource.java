@@ -11,9 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.restlet.Context;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
+import org.restlet.representation.Representation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.helpers.ServerConnection;
@@ -32,10 +31,6 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  */
 public class NamespaceListResource extends TupleResultResource {
-
-	public NamespaceListResource(Context context, Request request, Response response) {
-		super(context, request, response);
-	}
 
 	@Override
 	public TupleResult getTupleResult()
@@ -75,7 +70,7 @@ public class NamespaceListResource extends TupleResultResource {
 	}
 
 	@Override
-	public void removeRepresentations()
+	protected Representation delete(Variant variant)
 		throws ResourceException
 	{
 		try {
@@ -84,6 +79,7 @@ public class NamespaceListResource extends TupleResultResource {
 			connection.getCacheInfo().processUpdate();
 
 			getResponse().setStatus(SUCCESS_NO_CONTENT);
+			return null;
 		}
 		catch (StoreException e) {
 			throw new ResourceException(e);

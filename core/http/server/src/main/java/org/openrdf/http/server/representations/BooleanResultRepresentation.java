@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.restlet.data.MediaType;
-import org.restlet.resource.OutputRepresentation;
+import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

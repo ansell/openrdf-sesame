@@ -7,9 +7,6 @@ package org.openrdf.http.server.resources;
 
 import java.util.Arrays;
 
-import org.restlet.Context;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.resources.helpers.TupleResultResource;
@@ -25,10 +22,6 @@ import org.openrdf.store.StoreConfigException;
  * @author Arjohn Kampman
  */
 public class RepositoryListResource extends TupleResultResource {
-
-	public RepositoryListResource(Context context, Request request, Response response) {
-		super(context, request, response);
-	}
 
 	@Override
 	public TupleResult getTupleResult()

@@ -5,7 +5,7 @@
  */
 package org.openrdf.http.server.helpers;
 
-import org.restlet.data.Request;
+import org.restlet.Request;
 
 import org.openrdf.query.Query;
 import org.openrdf.repository.Repository;
