@@ -22,6 +22,7 @@
 		<module>rdbms</module>
 		<module>federation</module>
 		<module>dataset</module>
+		<module>accesscontrol</module>
 	</modules>
 
 	<scm>
