@@ -5,10 +5,6 @@
  */
 package org.openrdf.http.server.resources.helpers;
 
-import org.restlet.Context;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-
 import org.openrdf.http.server.SesameApplication;
 import org.openrdf.http.server.helpers.CacheInfo;
 import org.openrdf.http.server.helpers.RequestAtt;
@@ -22,11 +18,8 @@ import org.openrdf.http.server.helpers.ServerRepositoryManager;
 public abstract class SesameResource extends CacheableResource {
 
 	public SesameResource() {
-		super();
-	}
-
-	public SesameResource(Context context, Request request, Response response) {
-		super(context, request, response);
+		// Currently, we don't use method annotations in Sesame
+		setAnnotated(false);
 	}
 
 	protected CacheInfo getCacheInfo() {

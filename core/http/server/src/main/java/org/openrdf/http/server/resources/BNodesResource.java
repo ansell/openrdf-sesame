@@ -9,11 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.restlet.Context;
 import org.restlet.data.Form;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.protocol.Protocol;
@@ -31,21 +29,11 @@ import org.openrdf.result.impl.TupleResultImpl;
  */
 public class BNodesResource extends TupleResultResource {
 
-	public BNodesResource(Context context, Request request, Response response) {
-		super(context, request, response);
-		setReadable(false);
-	}
-
 	@Override
-	public boolean allowPost() {
-		return true;
-	}
-
-	@Override
-	public void acceptRepresentation(Representation representation)
+	protected Representation post(Representation representation, Variant variant)
 		throws ResourceException
 	{
-		getResponse().setEntity(represent());
+		return get(variant);
 	}
 
 	@Override

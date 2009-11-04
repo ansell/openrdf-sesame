@@ -8,12 +8,10 @@ package org.openrdf.http.server.resources;
 import java.util.Arrays;
 import java.util.List;
 
-import org.restlet.Context;
 import org.restlet.data.Reference;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
 import org.restlet.data.Status;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.resources.helpers.TupleResultResource;
@@ -29,10 +27,6 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  */
 public class ConnectionListResource extends TupleResultResource {
-
-	public ConnectionListResource(Context context, Request request, Response response) {
-		super(context, request, response);
-	}
 
 	public TupleResult getTupleResult()
 		throws ResourceException
@@ -56,11 +50,7 @@ public class ConnectionListResource extends TupleResultResource {
 	}
 
 	@Override
-	public boolean allowPost() {
-		return true;
-	}
-
-	public void acceptRepresentation(Representation entity)
+	protected Representation post(Representation entity, Variant variant)
 		throws ResourceException
 	{
 		try {
@@ -71,6 +61,7 @@ public class ConnectionListResource extends TupleResultResource {
 			getResponse().setLocationRef(connectionRef);
 
 			getResponse().setStatus(Status.SUCCESS_CREATED);
+			return null;
 		}
 		catch (StoreException e) {
 			throw new ResourceException(e);

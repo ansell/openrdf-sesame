@@ -14,9 +14,9 @@ import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
 import static org.restlet.data.Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE;
 
+import org.restlet.Request;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.model.Resource;

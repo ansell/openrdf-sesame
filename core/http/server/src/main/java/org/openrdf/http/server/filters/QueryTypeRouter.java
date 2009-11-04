@@ -9,12 +9,12 @@ import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
 import static org.restlet.data.Status.SERVER_ERROR_NOT_IMPLEMENTED;
 
 import org.restlet.Context;
-import org.restlet.Filter;
-import org.restlet.Finder;
-import org.restlet.Handler;
+import org.restlet.Request;
+import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
+import org.restlet.resource.Finder;
+import org.restlet.resource.ServerResource;
+import org.restlet.routing.Filter;
 
 import org.openrdf.http.server.helpers.RequestAtt;
 import org.openrdf.http.server.resources.BooleanQueryResource;
@@ -46,7 +46,7 @@ public class QueryTypeRouter extends Filter {
 		this(context, (Restlet)null);
 	}
 
-	public QueryTypeRouter(Context context, Class<? extends Handler> nonQueryHandler) {
+	public QueryTypeRouter(Context context, Class<? extends ServerResource> nonQueryHandler) {
 		this(context, new Finder(context, nonQueryHandler));
 	}
 

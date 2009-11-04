@@ -13,14 +13,11 @@ import static org.restlet.data.Status.SUCCESS_NO_CONTENT;
 
 import java.io.IOException;
 
-import org.restlet.Context;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
-import org.restlet.resource.StringRepresentation;
-import org.restlet.resource.Variant;
 
 import org.openrdf.http.server.helpers.ServerConnection;
 import org.openrdf.http.server.helpers.ServerUtil;
@@ -34,18 +31,16 @@ public class NamespaceResource extends SesameResource {
 
 	public static final String NS_PREFIX_PARAM = "ns_prefix";
 
-	private final String prefix;
+	private String prefix;
 
-	public NamespaceResource(Context context, Request request, Response response) {
-		super(context, request, response);
-
-		prefix = (String)request.getAttributes().get(NS_PREFIX_PARAM);
-
-		addCacheableVariants(new Variant(MediaType.TEXT_PLAIN));
+	protected void doInit() {
+		super.doInit();
+		prefix = (String)getRequest().getAttributes().get(NS_PREFIX_PARAM);
+		addCacheableMediaTypes(MediaType.TEXT_PLAIN);
 	}
 
 	@Override
-	public Representation represent(Variant variant)
+	protected Representation get(Variant variant)
 		throws ResourceException
 	{
 		getResponse().setDimensions(ServerUtil.VARY_ACCEPT);
@@ -70,7 +65,7 @@ public class NamespaceResource extends SesameResource {
 	}
 
 	@Override
-	public void storeRepresentation(Representation entity)
+	protected Representation put(Representation entity, Variant variant)
 		throws ResourceException
 	{
 		if (MediaType.TEXT_PLAIN.equals(entity.getMediaType(), true)) {
@@ -88,6 +83,7 @@ public class NamespaceResource extends SesameResource {
 				connection.getCacheInfo().processUpdate();
 
 				getResponse().setStatus(SUCCESS_NO_CONTENT);
+				return null;
 			}
 			catch (IOException e) {
 				throw new ResourceException(e);
@@ -96,12 +92,13 @@ public class NamespaceResource extends SesameResource {
 				throw new ResourceException(e);
 			}
 		}
-
-		throw new ResourceException(CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
+		else {
+			throw new ResourceException(CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
+		}
 	}
 
 	@Override
-	public void removeRepresentations()
+	protected Representation delete(Variant variant)
 		throws ResourceException
 	{
 		try {
@@ -110,6 +107,7 @@ public class NamespaceResource extends SesameResource {
 			connection.getCacheInfo().processUpdate();
 
 			getResponse().setStatus(SUCCESS_NO_CONTENT);
+			return null;
 		}
 		catch (StoreException e) {
 			throw new ResourceException(e);

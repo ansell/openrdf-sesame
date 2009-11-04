@@ -7,10 +7,8 @@ package org.openrdf.http.server.resources;
 
 import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
 
-import org.restlet.Context;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.helpers.RequestAtt;
@@ -24,10 +22,6 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  */
 public class TupleQueryResource extends TupleResultResource {
-
-	public TupleQueryResource(Context context, Request request, Response response) {
-		super(context, request, response);
-	}
 
 	@Override
 	protected String getFilenamePrefix() {
@@ -58,13 +52,9 @@ public class TupleQueryResource extends TupleResultResource {
 	}
 
 	@Override
-	public boolean allowPost() {
-		return true;
-	}
-
-	public void acceptRepresentation(Representation representation)
+	protected Representation post(Representation representation, Variant variant)
 		throws ResourceException
 	{
-		getResponse().setEntity(represent());
+		return get(variant);
 	}
 }

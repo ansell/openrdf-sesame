@@ -5,15 +5,14 @@
  */
 package org.openrdf.http.server.filters;
 
-import com.noelios.restlet.http.PreferenceUtils;
-
 import org.restlet.Context;
-import org.restlet.Filter;
+import org.restlet.Request;
+import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ClientInfo;
 import org.restlet.data.Form;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
+import org.restlet.engine.http.PreferenceUtils;
+import org.restlet.routing.Filter;
 
 import info.aduna.net.http.RequestHeaders;
 

@@ -6,11 +6,11 @@
 package org.openrdf.http.server.filters;
 
 import org.restlet.Context;
-import org.restlet.Filter;
+import org.restlet.Request;
+import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
+import org.restlet.routing.Filter;
 import org.restlet.util.WrapperRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

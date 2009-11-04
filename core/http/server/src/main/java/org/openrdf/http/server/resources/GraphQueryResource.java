@@ -7,11 +7,9 @@ package org.openrdf.http.server.resources;
 
 import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
 
-import org.restlet.Context;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.helpers.RequestAtt;
@@ -27,10 +25,6 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  */
 public class GraphQueryResource extends StatementResultResource {
-
-	public GraphQueryResource(Context context, Request request, Response response) {
-		super(context, request, response);
-	}
 
 	@Override
 	protected String getFilenamePrefix() {
@@ -63,13 +57,9 @@ public class GraphQueryResource extends StatementResultResource {
 	}
 
 	@Override
-	public boolean allowPost() {
-		return true;
-	}
-
-	public void acceptRepresentation(Representation representation)
+	protected Representation post(Representation entity, Variant variant)
 		throws ResourceException
 	{
-		getResponse().setEntity(represent());
+		return get(variant);
 	}
 }

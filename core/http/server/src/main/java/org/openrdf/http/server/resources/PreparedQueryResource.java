@@ -5,9 +5,7 @@
  */
 package org.openrdf.http.server.resources;
 
-import org.restlet.Context;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
+import org.restlet.representation.Representation;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.filters.PreparedQueryResolver;
@@ -18,21 +16,19 @@ import org.openrdf.http.server.resources.helpers.SesameResource;
  */
 public class PreparedQueryResource extends SesameResource {
 
-	public PreparedQueryResource(Context context, Request request, Response response) {
-		super(context, request, response);
-		this.setReadable(false);
+	@Override
+	protected void doInit() {
+		super.doInit();
+		setNegotiated(false);
+		setConditional(false);
 	}
 
 	@Override
-	public boolean allowDelete() {
-		return true;
-	}
-
-	@Override
-	public void removeRepresentations()
+	protected Representation delete()
 		throws ResourceException
 	{
 		String id = PreparedQueryResolver.getQueryID(getRequest());
 		getConnection().removeQuery(id);
+		return null;
 	}
 }

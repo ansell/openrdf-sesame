@@ -5,34 +5,26 @@
  */
 package org.openrdf.http.server.resources;
 
-import java.util.Date;
-
-import org.restlet.Context;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.data.Tag;
-import org.restlet.resource.Representation;
-import org.restlet.resource.Resource;
-import org.restlet.resource.StringRepresentation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
+import org.restlet.resource.ServerResource;
 
 import org.openrdf.http.protocol.Protocol;
 
 /**
  * @author Arjohn Kampman
  */
-public class ProtocolResource extends Resource {
+public class ProtocolResource extends ServerResource {
 
-	public ProtocolResource(Context context, Request request, Response response) {
-		super(context, request, response);
-		setNegotiateContent(false);
-		getVariants().add(createVersionEntity());
+	@Override
+	protected void doInit() {
+		super.doInit();
+		setNegotiated(false);
+		setConditional(false);
 	}
 
-	private Representation createVersionEntity() {
-		Representation entity = new StringRepresentation(Protocol.VERSION);
-		entity.setTag(new Tag(Protocol.VERSION, false));
-		entity.setModificationDate(new Date());
-		return entity;
+	@Override
+	protected Representation get() {
+		return new StringRepresentation(Protocol.VERSION);
 	}
 }
-	

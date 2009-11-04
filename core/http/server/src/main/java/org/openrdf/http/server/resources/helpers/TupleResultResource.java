@@ -5,11 +5,8 @@
  */
 package org.openrdf.http.server.resources.helpers;
 
-import org.restlet.Context;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.representations.TupleResultRepresentation;
@@ -27,8 +24,8 @@ public abstract class TupleResultResource extends
 		FileFormatResource<TupleQueryResultFormat, TupleQueryResultWriterFactory>
 {
 
-	public TupleResultResource(Context context, Request request, Response response) {
-		super(TupleQueryResultWriterRegistry.getInstance(), context, request, response);
+	public TupleResultResource() {
+		super(TupleQueryResultWriterRegistry.getInstance());
 	}
 
 	protected final TupleQueryResultFormat getFileFormat(TupleQueryResultWriterFactory factory) {
@@ -36,8 +33,7 @@ public abstract class TupleResultResource extends
 	}
 
 	@Override
-	protected final Representation getRepresentation(TupleQueryResultWriterFactory factory,
-			MediaType mediaType)
+	protected final Representation getRepresentation(TupleQueryResultWriterFactory factory, MediaType mediaType)
 		throws ResourceException
 	{
 		TupleResult tqr = getTupleResult();

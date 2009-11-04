@@ -10,13 +10,10 @@ import static org.restlet.data.Status.CLIENT_ERROR_NOT_ACCEPTABLE;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.restlet.Context;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
-import org.restlet.resource.Variant;
 
 import info.aduna.lang.FileFormat;
 import info.aduna.lang.service.FileFormatServiceRegistry;
@@ -34,27 +31,28 @@ public abstract class FileFormatResource<FF extends FileFormat, S> extends Sesam
 
 	protected final FileFormatServiceRegistry<FF, S> registry;
 
-	public FileFormatResource(FileFormatServiceRegistry<FF, S> registry, Context context, Request request,
-			Response response)
-	{
-		super(context, request, response);
-
+	public FileFormatResource(FileFormatServiceRegistry<FF, S> registry) {
 		this.registry = registry;
-
-		// Add available file formats
-		List<Variant> variants = new ArrayList<Variant>();
-
-		for (FileFormat format : registry.getKeys()) {
-			for (String mimeType : format.getMIMETypes()) {
-				variants.add(new Variant(new MediaType(mimeType)));
-			}
-		}
-
-		addCacheableVariants(variants);
 	}
 
 	@Override
-	public final Representation represent(Variant variant)
+	protected void doInit() {
+		super.doInit();
+
+		// Add available file formats
+		List<MediaType> mediaTypes = new ArrayList<MediaType>();
+
+		for (FileFormat format : registry.getKeys()) {
+			for (String mimeType : format.getMIMETypes()) {
+				mediaTypes.add(new MediaType(mimeType));
+			}
+		}
+
+		addCacheableMediaTypes(mediaTypes);
+	}
+
+	@Override
+	protected final Representation get(Variant variant)
 		throws ResourceException
 	{
 		getResponse().setDimensions(ServerUtil.VARY_ACCEPT);

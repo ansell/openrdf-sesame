@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -22,14 +22,14 @@ import static org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST;
 import static org.restlet.data.Status.SERVER_ERROR_INTERNAL;
 
 import org.restlet.Context;
-import org.restlet.Filter;
-import org.restlet.Finder;
-import org.restlet.Handler;
+import org.restlet.Request;
+import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.Form;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
+import org.restlet.resource.Finder;
 import org.restlet.resource.ResourceException;
+import org.restlet.resource.ServerResource;
+import org.restlet.routing.Filter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +61,7 @@ public class QueryParser extends Filter {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public QueryParser(Context context, Class<? extends Handler> next) {
+	public QueryParser(Context context, Class<? extends ServerResource> next) {
 		this(context, new Finder(context, next));
 	}
 

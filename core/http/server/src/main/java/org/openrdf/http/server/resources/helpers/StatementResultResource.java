@@ -5,10 +5,6 @@
  */
 package org.openrdf.http.server.resources.helpers;
 
-import org.restlet.Context;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
@@ -20,8 +16,8 @@ import org.openrdf.rio.RDFWriterRegistry;
  */
 public abstract class StatementResultResource extends FileFormatResource<RDFFormat, RDFWriterFactory> {
 
-	public StatementResultResource(Context context, Request request, Response response) {
-		super(RDFWriterRegistry.getInstance(), context, request, response);
+	public StatementResultResource() {
+		super(RDFWriterRegistry.getInstance());
 	}
 
 	protected final RDFFormat getFileFormat(RDFWriterFactory factory) {

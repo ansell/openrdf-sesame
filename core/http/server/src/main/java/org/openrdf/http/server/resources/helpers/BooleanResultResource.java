@@ -5,11 +5,8 @@
  */
 package org.openrdf.http.server.resources.helpers;
 
-import org.restlet.Context;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
 import org.restlet.resource.ResourceException;
 
 import org.openrdf.http.server.representations.BooleanResultRepresentation;
@@ -27,8 +24,8 @@ public abstract class BooleanResultResource extends
 		FileFormatResource<BooleanQueryResultFormat, BooleanQueryResultWriterFactory>
 {
 
-	public BooleanResultResource(Context context, Request request, Response response) {
-		super(BooleanQueryResultWriterRegistry.getInstance(), context, request, response);
+	public BooleanResultResource() {
+		super(BooleanQueryResultWriterRegistry.getInstance());
 	}
 
 	protected final BooleanQueryResultFormat getFileFormat(BooleanQueryResultWriterFactory factory) {

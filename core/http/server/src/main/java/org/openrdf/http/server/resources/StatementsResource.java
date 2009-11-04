@@ -15,12 +15,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.Representation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,15 +57,6 @@ public class StatementsResource extends StatementResultResource {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public StatementsResource(Context context, Request request, Response response)
-		throws ResourceException
-	{
-		super(context, request, response);
-
-		// Allow POST, PUT and DELETE
-		this.setModifiable(true);
-	}
-
 	protected final Representation getRepresentation(RDFWriterFactory factory, MediaType mediaType)
 		throws ResourceException
 	{
@@ -105,7 +94,7 @@ public class StatementsResource extends StatementResultResource {
 	}
 
 	@Override
-	public void acceptRepresentation(Representation entity)
+	protected Representation post(Representation entity, Variant variant)
 		throws ResourceException
 	{
 		String mimeType = entity.getMediaType().getName();
@@ -116,17 +105,20 @@ public class StatementsResource extends StatementResultResource {
 		else {
 			add(entity, false);
 		}
+
+		return null;
 	}
 
 	@Override
-	public void storeRepresentation(Representation entity)
+	protected Representation put(Representation entity, Variant variant)
 		throws ResourceException
 	{
 		add(entity, true);
+		return null;
 	}
 
 	@Override
-	public void removeRepresentations()
+	protected Representation delete(Variant variant)
 		throws ResourceException
 	{
 		ServerConnection con = getConnection();
@@ -135,6 +127,7 @@ public class StatementsResource extends StatementResultResource {
 		try {
 			con.removeMatch(p.getSubject(), p.getPredicate(), p.getObject(), p.getContext());
 			con.getCacheInfo().processUpdate();
+			return null;
 		}
 		catch (StoreException e) {
 			throw new ResourceException(SERVER_ERROR_INTERNAL, "Repository update error", e);
