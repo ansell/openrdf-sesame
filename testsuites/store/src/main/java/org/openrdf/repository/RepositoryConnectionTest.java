@@ -400,7 +400,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleResult result = testCon.prepareTupleQuery(QueryLanguage.SERQL, queryBuilder.toString()).evaluate();
 
 		try {
-			assertTrue(result != null);
+			assertNotNull(result);
 			assertTrue(result.hasNext());
 
 			while (result.hasNext()) {
@@ -433,7 +433,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleResult result = testCon.prepareTupleQuery(QueryLanguage.SERQL, queryBuilder.toString()).evaluate();
 
 		try {
-			assertTrue(result != null);
+			assertNotNull(result);
 			assertTrue(result.hasNext());
 
 			while (result.hasNext()) {
@@ -470,7 +470,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleResult result = query.evaluate();
 
 		try {
-			assertTrue(result != null);
+			assertNotNull(result);
 			assertTrue(result.hasNext());
 
 			while (result.hasNext()) {
@@ -514,7 +514,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleResult result = ((TupleQuery)query).evaluate();
 
 		try {
-			assertTrue(result != null);
+			assertNotNull(result);
 			assertTrue(result.hasNext());
 
 			while (result.hasNext()) {
@@ -550,7 +550,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleResult result = query.evaluate();
 
 		try {
-			assertTrue(result != null);
+			assertNotNull(result);
 			assertTrue(result.hasNext());
 
 			while (result.hasNext()) {
@@ -584,7 +584,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		GraphResult result = testCon.prepareGraphQuery(QueryLanguage.SERQL, queryBuilder.toString()).evaluate();
 
 		try {
-			assertTrue(result != null);
+			assertNotNull(result);
 			assertTrue(result.hasNext());
 
 			while (result.hasNext()) {
@@ -593,7 +593,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 					assertTrue(nameAlice.equals(st.getObject()) || nameBob.equals(st.getObject()));
 				}
 				else {
-					assertTrue(mbox.equals(st.getPredicate()));
+					assertEquals(mbox, st.getPredicate());
 					assertTrue(mboxAlice.equals(st.getObject()) || mboxBob.equals(st.getObject()));
 				}
 			}
@@ -626,18 +626,18 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		GraphResult result = query.evaluate();
 
 		try {
-			assertTrue(result != null);
+			assertNotNull(result);
 			assertTrue(result.hasNext());
 
 			while (result.hasNext()) {
 				Statement st = result.next();
 				assertTrue(name.equals(st.getPredicate()) || mbox.equals(st.getPredicate()));
 				if (name.equals(st.getPredicate())) {
-					assertTrue("unexpected value for name: " + st.getObject(), nameBob.equals(st.getObject()));
+					assertEquals("unexpected value for name: " + st.getObject(), nameBob, st.getObject());
 				}
 				else {
-					assertTrue(mbox.equals(st.getPredicate()));
-					assertTrue("unexpected value for mbox: " + st.getObject(), mboxBob.equals(st.getObject()));
+					assertEquals(mbox, st.getPredicate());
+					assertEquals("unexpected value for mbox: " + st.getObject(), mboxBob, st.getObject());
 				}
 
 			}
@@ -762,13 +762,13 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		ModelResult result = testCon.match(null, name, null, false);
 
 		try {
-			assertTrue("Iterator should not be null", result != null);
+			assertNotNull("Iterator should not be null", result);
 			assertTrue("Iterator should not be empty", result.hasNext());
 
 			while (result.hasNext()) {
 				Statement st = result.next();
 				assertNull("Statement should not be in a context ", st.getContext());
-				assertTrue("Statement predicate should be equal to name ", st.getPredicate().equals(name));
+				assertEquals("Statement predicate should be equal to name ", name, st.getPredicate());
 			}
 		}
 		finally {
@@ -777,7 +777,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		List<Statement> list = testCon.match(null, name, null, false).asList();
 
-		assertTrue("List should not be null", list != null);
+		assertNotNull("List should not be null", list);
 		assertFalse("List should not be empty", list.isEmpty());
 	}
 
@@ -807,10 +807,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		try {
 			while (result.hasNext()) {
 				Statement st = result.next();
-				assertTrue(bob.equals(st.getSubject()));
-				assertTrue(name.equals(st.getPredicate()));
-				assertTrue(nameBob.equals(st.getObject()));
-				assertTrue(context1.equals(st.getContext()));
+				assertEquals(bob, st.getSubject());
+				assertEquals(name, st.getPredicate());
+				assertEquals(nameBob, st.getObject());
+				assertEquals(context1, st.getContext());
 			}
 		}
 		finally {
@@ -822,7 +822,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		try {
 			while (result.hasNext()) {
 				Statement st = result.next();
-				assertTrue(context1.equals(st.getContext()));
+				assertEquals(context1, st.getContext());
 			}
 		}
 		finally {
@@ -832,7 +832,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		// Check handling of getStatements with an unknown context ID
 		result = testCon.match(null, null, null, false, unknownContext);
 		try {
-			assertTrue(result != null);
+			assertNotNull(result);
 			assertFalse(result.hasNext());
 		}
 		finally {
@@ -841,7 +841,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		List<Statement> list = testCon.match(null, name, null, false, context1).asList();
 
-		assertTrue("List should not be null", list != null);
+		assertNotNull("List should not be null", list);
 		assertFalse("List should not be empty", list.isEmpty());
 	}
 
@@ -886,7 +886,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 				count++;
 				Statement st = iter.next();
 				// we should have _only_ statements from context2
-				assertTrue(context2.equals(st.getContext()));
+				assertEquals(context2, st.getContext());
 			}
 			assertEquals("there should be two statements", 2, count);
 		}
@@ -903,7 +903,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 				count++;
 				Statement st = iter.next();
 				// we should have _only_ statements from context2
-				assertTrue(context2.equals(st.getContext()));
+				assertEquals(context2, st.getContext());
 			}
 			assertEquals("there should be two statements", 2, count);
 		}
@@ -920,7 +920,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		iter = testCon.match(null, null, null, false, context1);
 		try {
-			assertTrue(iter != null);
+			assertNotNull(iter);
 			assertTrue(iter.hasNext());
 		}
 		finally {
@@ -1056,12 +1056,12 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			assertTrue("namespace for prefix 'rdfs' should exist", map.containsKey("rdfs"));
 			assertTrue("namespace for prefix 'rdf' should exist", map.containsKey("rdf"));
 
-			assertTrue("namespace name for 'example' not well-defined", map.get("example").equals(
-					"http://example.org/"));
-			assertTrue("namespace name for 'rdfs' not well-defined", map.get("rdfs").equals(
-					"http://www.w3.org/2000/01/rdf-schema#"));
-			assertTrue("namespace name for 'rdf' not well-defined", map.get("rdf").equals(
-					"http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
+			assertEquals("namespace name for 'example' not well-defined", "http://example.org/",
+					map.get("example"));
+			assertEquals("namespace name for 'rdfs' not well-defined", "http://www.w3.org/2000/01/rdf-schema#",
+					map.get("rdfs"));
+			assertEquals("namespace name for 'rdf' not well-defined",
+					"http://www.w3.org/1999/02/22-rdf-syntax-ns#", map.get("rdf"));
 		}
 		finally {
 			nsIter.close();
@@ -1125,7 +1125,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		Statement deserializedStatement = (Statement)in.readObject();
 		in.close();
 
-		assertTrue(st.equals(deserializedStatement));
+		assertEquals(st, deserializedStatement);
 
 		assertTrue(testCon.hasStatement(st, true));
 		assertTrue(testCon.hasStatement(deserializedStatement, true));
@@ -1157,7 +1157,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		BNode deserializedBNode = (BNode)in.readObject();
 		in.close();
 
-		assertTrue(bnode.equals(deserializedBNode));
+		assertEquals(bnode, deserializedBNode);
 
 		assertTrue(testCon.hasMatch(bnode, name, nameBob, true));
 		assertTrue(testCon.hasMatch(deserializedBNode, name, nameBob, true));
@@ -1189,7 +1189,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		URI deserializedURI = (URI)in.readObject();
 		in.close();
 
-		assertTrue(uri.equals(deserializedURI));
+		assertEquals(uri, deserializedURI);
 
 		assertTrue(testCon.hasMatch(bob, uri, nameBob, true));
 		assertTrue(testCon.hasMatch(bob, deserializedURI, nameBob, true));
@@ -1221,7 +1221,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		Literal deserializedLiteral = (Literal)in.readObject();
 		in.close();
 
-		assertTrue(literal.equals(deserializedLiteral));
+		assertEquals(literal, deserializedLiteral);
 
 		assertTrue(testCon.hasMatch(bob, name, literal, true));
 		assertTrue(testCon.hasMatch(bob, name, deserializedLiteral, true));
