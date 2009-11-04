@@ -46,9 +46,12 @@ public class BNodeClient {
 		throws StoreException, QueryResultParseException, NoCompatibleMediaType
 	{
 		HTTPConnection method = bnodes.post();
+
+		NameValuePair pair = new NameValuePair(AMOUNT, valueOf(amount));
+		method.sendQueryString(Arrays.asList(pair));
+
 		try {
-			NameValuePair pair = new NameValuePair(AMOUNT, valueOf(amount));
-			method.sendQueryString(Arrays.asList(pair));
+			method.acceptTupleQueryResult();
 			execute(method);
 			return method.getTupleQueryResult();
 		}
@@ -61,9 +64,12 @@ public class BNodeClient {
 		throws StoreException, QueryResultParseException, NoCompatibleMediaType
 	{
 		HTTPConnection method = bnodes.post();
+
+		NameValuePair pair = new NameValuePair(NODE_ID, nodeID);
+		method.sendQueryString(Arrays.asList(pair));
+
 		try {
-			NameValuePair pair = new NameValuePair(NODE_ID, nodeID);
-			method.sendQueryString(Arrays.asList(pair));
+			method.acceptTupleQueryResult();
 			execute(method);
 			TupleResult result = method.getTupleQueryResult();
 			try {
