@@ -46,8 +46,8 @@ import org.openrdf.rio.helpers.RDFParserBase;
  * <p>
  * To parse a document using this parser:
  * <ul>
- * <li>Create an instance of RDFXMLParser, optionally supplying it with your
- * own ValueFactory.
+ * <li>Create an instance of RDFXMLParser, optionally supplying it with your own
+ * ValueFactory.
  * <li>Set the RDFHandler.
  * <li>Optionally, set the ParseErrorListener and/or ParseLocationListener.
  * <li>Optionally, specify whether the parser should verify the data it parses
@@ -155,8 +155,8 @@ public class RDFXMLParser extends RDFParserBase {
 
 	/**
 	 * Sets the parser in a mode to parse stand-alone RDF documents. In
-	 * stand-alone RDF documents, the enclosing <tt>rdf:RDF</tt> root element
-	 * is optional if this root element contains just one element (e.g.
+	 * stand-alone RDF documents, the enclosing <tt>rdf:RDF</tt> root element is
+	 * optional if this root element contains just one element (e.g.
 	 * <tt>rdf:Description</tt>.
 	 */
 	public void setParseStandAloneDocuments(boolean standAloneDocs) {
@@ -262,18 +262,21 @@ public class RDFXMLParser extends RDFParserBase {
 		}
 		catch (SAXParseException e) {
 			Exception wrappedExc = e.getException();
+
 			if (wrappedExc == null) {
-				wrappedExc = e;
+				reportFatalError(e, e.getLineNumber(), e.getColumnNumber());
 			}
-			reportFatalError(wrappedExc, e.getLineNumber(), e.getColumnNumber());
+			else {
+				reportFatalError(wrappedExc, e.getLineNumber(), e.getColumnNumber());
+			}
 		}
 		catch (SAXException e) {
 			Exception wrappedExc = e.getException();
-			if (wrappedExc == null) {
-				wrappedExc = e;
-			}
 
-			if (wrappedExc instanceof RDFParseException) {
+			if (wrappedExc == null) {
+				reportFatalError(e);
+			}
+			else if (wrappedExc instanceof RDFParseException) {
 				throw (RDFParseException)wrappedExc;
 			}
 			else if (wrappedExc instanceof RDFHandlerException) {
@@ -298,8 +301,7 @@ public class RDFXMLParser extends RDFParserBase {
 	 *-----------------------------*/
 
 	@Override
-	protected void setBaseURI(ParsedURI baseURI)
-	{
+	protected void setBaseURI(ParsedURI baseURI) {
 		// Note: we need to override this method to allow SAXFilter to access it
 		super.setBaseURI(baseURI);
 	}
@@ -1039,8 +1041,8 @@ public class RDFXMLParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportFatalError(String)}, adding line-
-	 * and column number information to the error.
+	 * Overrides {@link RDFParserBase#reportFatalError(String)}, adding line- and
+	 * column number information to the error.
 	 */
 	protected void reportFatalError(String msg)
 		throws RDFParseException
