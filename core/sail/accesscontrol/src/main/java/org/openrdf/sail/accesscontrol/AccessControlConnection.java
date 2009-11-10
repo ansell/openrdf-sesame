@@ -59,6 +59,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 		private Session session;
 
+		private List<Var> handledSubjects = new ArrayList<Var>();
+		
+		private List<URI> permissions;
+		
 		public AccessControlQueryExpander() {
 			session = new ThreadLocal<Session>().get();
 		}
@@ -72,13 +76,15 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			QueryModelNode parent = statementPattern.getParentNode();
 
 			Var subjectVar = statementPattern.getSubjectVar();
-
-			// TODO cache?
-			Cursor<URI> permissions = getAssignedPermissions(session.getActiveRole(), ACL.VIEW);
-
-			URI permission;
-
-			/*
+			
+			if (handledSubjects.contains(subjectVar)) {
+				// we have already expanded the query for this particular subject
+				return;
+			}
+			
+			handledSubjects.add(subjectVar);
+				
+		   /*
 			 * Create this pattern:
 			 *
 			 *  ?subject ?predicate object.
@@ -96,7 +102,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			 *     )
 			 *  )
 			 */
-
 			Var statusVar = new Var("acl_status");
 			StatementPattern statusPattern = new StatementPattern(subjectVar, new Var("acl_status_pred",
 					ACL.HAS_STATUS), statusVar);
@@ -112,18 +117,22 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			// build an Or-ed set of filter conditions on the status and team.
 			Or filterConditions = new Or(); 
 			
-			/* first condition is that that neither are bound: this is the case where the subject
+			/* first condition is that neither are bound: this is the case where the subject
 			 * is not a restricted resource (and therefore has no associated team and status)
 			 * 
-			 * AND(NOT(BOUND(?status)), NOT(BOUND(?team)))
+			 * And(Not(Bound(?status)), Not(Bound(?team)))
 			 */
 			filterConditions.addArg(new And(new Not(new Bound(statusVar)), new Not(
 					new Bound(teamVar))));
 			
 
+			if (permissions == null) {
+				permissions = getAssignedPermissions(session.getActiveRole(), ACL.VIEW);
+			}
+			
 			// for each permission, we add an additional condition to the filter, checking either
 			// team, or status, or both match.
-			while ((permission = permissions.next()) != null) {
+		   for (URI permission : permissions) {
 				URI status = getStatusForPermission(permission);
 				URI team = getTeamForPermission(permission);
 
@@ -149,9 +158,8 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				// add the permission-defined condition to the set of Or-ed filter conditions.
 				filterConditions.addArg(permissionCondition);
 			}
-			permissions.close();
 
-			// set the filter conditions on the the query pattern 
+			// set the filter conditions on the query pattern 
 			expandedPattern = new Filter(expandedPattern, filterConditions);
 
 			// expand the query.
@@ -169,7 +177,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		 *        an operation identifier
 		 * @return a Cursor containing URIs of permissions.
 		 */
-		private Cursor<URI> getAssignedPermissions(URI role, URI operation) {
+		private List<URI> getAssignedPermissions(URI role, URI operation) {
 
 			List<URI> permissions = new ArrayList<URI>();
 			try {
@@ -197,7 +205,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				e.printStackTrace();
 			}
 
-			return new CollectionCursor<URI>(permissions);
+			return permissions;
 		}
 
 		private URI getMatchPattern(URI permission)
