@@ -6,7 +6,6 @@
 package org.openrdf.sail.accesscontrol;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.openrdf.cursor.CollectionCursor;
@@ -14,9 +13,19 @@ import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.algebra.And;
+import org.openrdf.query.algebra.Bound;
+import org.openrdf.query.algebra.Compare;
+import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.Not;
+import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.sail.SailConnection;
@@ -66,24 +75,88 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 			// TODO cache?
 			Cursor<URI> permissions = getAssignedPermissions(session.getActiveRole(), ACL.VIEW);
-			
+
 			URI permission;
-			while((permission = permissions.next()) != null) {
+
+			/*
+			 * Create this pattern:
+			 *
+			 *  ?subject ?predicate object.
+			 *  OPTIONAL { ?subject acl:hasStatus ?status .
+			 *             ?subject acl:hasTeam ?team .
+			 *            }
+			 *            
+			 *  or in terms of the algebra:
+			 *            
+			 *  LeftJoin(
+			 *  	SP(?subject, ?predicate, ?object), 
+			 *  	Join(
+			 *  		SP(?subject, acl:hasStatus ?status), 
+			 *       SP(?subject, acl:hasTeam ?team)
+			 *     )
+			 *  )
+			 */
+
+			Var statusVar = new Var("acl_status");
+			StatementPattern statusPattern = new StatementPattern(subjectVar, new Var("acl_status_pred",
+					ACL.HAS_STATUS), statusVar);
+
+			Var teamVar = new Var("acl_team");
+			StatementPattern teamPattern = new StatementPattern(subjectVar, new Var("acl_team_pred",
+					ACL.HAS_TEAM), teamVar);
+
+			Join teamAndStatus = new Join(statusPattern, teamPattern);
+
+			TupleExpr expandedPattern = new LeftJoin(statementPattern, teamAndStatus);
+
+			// build an Or-ed set of filter conditions on the status and team.
+			Or filterConditions = new Or(); 
+			
+			/* first condition is that that neither are bound: this is the case where the subject
+			 * is not a restricted resource (and therefore has no associated team and status)
+			 * 
+			 * AND(NOT(BOUND(?status)), NOT(BOUND(?team)))
+			 */
+			filterConditions.addArg(new And(new Not(new Bound(statusVar)), new Not(
+					new Bound(teamVar))));
+			
+
+			// for each permission, we add an additional condition to the filter, checking either
+			// team, or status, or both match.
+			while ((permission = permissions.next()) != null) {
 				URI status = getStatusForPermission(permission);
 				URI team = getTeamForPermission(permission);
+
+				Compare statusCompare = null;
+				Compare teamCompare = null;
 				
-				/* TODO add a graph pattern + filter conditions on the subject: 
-				 * 
-				 *  OPTIONAL { ?subject acl:hasStatus ?status .
-				 *             ?subject acl:hasTeam ?team .
-				 *            }
-				 *  FILTER ( (?team = T1 && ?status = shared) 
-				 *            || (?status = public) 
-				 *            || (!BOUND(?status) && !BOUND(?team))
-				 *            )
-				 */
+				ValueExpr permissionCondition = null;
+				
+				if (status != null) {
+					statusCompare = new Compare(statusVar, new Var("acl_status_val", status));
+					permissionCondition = statusCompare;
+				}
+				
+				if (team != null) {
+					teamCompare = new Compare(teamVar, new Var("acl_team_val", team));
+					permissionCondition = teamCompare;
+				}
+				
+				if (statusCompare != null && teamCompare != null) {
+					permissionCondition = new And(statusCompare, teamCompare);
+				}
+
+				// add the permission-defined condition to the set of Or-ed filter conditions.
+				filterConditions.addArg(permissionCondition);
 			}
 			permissions.close();
+
+			// set the filter conditions on the the query pattern 
+			expandedPattern = new Filter(expandedPattern, filterConditions);
+
+			// expand the query.
+			parent.replaceChildNode(statementPattern, expandedPattern);
+
 		}
 
 		/**
@@ -126,17 +199,21 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 			return new CollectionCursor<URI>(permissions);
 		}
-		
-		private URI getMatchPattern(URI permission) throws StoreException {
+
+		private URI getMatchPattern(URI permission)
+			throws StoreException
+		{
 			URI match = getObject(permission, ACL.HAS_MATCH, ACL.CONTEXT);
 			return match;
 		}
 
-		private URI getObject(URI subject, URI predicate, URI context) throws StoreException {
-			
+		private URI getObject(URI subject, URI predicate, URI context)
+			throws StoreException
+		{
+
 			URI result = null;
 			Cursor<? extends Statement> statements = getStatements(subject, predicate, null, true, context);
-			
+
 			Statement st;
 			while ((st = statements.next()) != null) {
 				if (st.getObject() instanceof URI) {
@@ -145,34 +222,32 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				}
 			}
 			statements.close();
-		
+
 			return result;
 		}
-		
-		private URI getStatusForPermission(URI permission) throws StoreException {
-			
+
+		private URI getStatusForPermission(URI permission)
+			throws StoreException
+		{
+
 			URI match = getMatchPattern(permission);
-		
 
 			URI status = getObject(match, ACL.HAS_STATUS, ACL.CONTEXT);
-			
+
 			return status;
 		}
-		
-		
-		private URI getTeamForPermission(URI permission) throws StoreException {
-			
+
+		private URI getTeamForPermission(URI permission)
+			throws StoreException
+		{
+
 			URI match = getMatchPattern(permission);
-		
 
 			URI team = getObject(match, ACL.HAS_TEAM, ACL.CONTEXT);
-			
+
 			return team;
 		}
-		
-		
-	}
-	
 
-	
+	}
+
 }
