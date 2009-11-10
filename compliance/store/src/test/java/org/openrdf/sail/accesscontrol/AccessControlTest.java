@@ -15,7 +15,7 @@ import org.openrdf.store.StoreException;
 
 /**
  *
- * @author broek072
+ * @author Jeen Broekstra
  */
 public class AccessControlTest extends RDFStoreTest {
 
