@@ -73,21 +73,18 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		{
 			super.meet(statementPattern);
 
-			QueryModelNode parent = statementPattern.getParentNode();
-
 			Var subjectVar = statementPattern.getSubjectVar();
-			
 			if (handledSubjects.contains(subjectVar)) {
 				// we have already expanded the query for this particular subject
 				return;
 			}
-			
+		
 			handledSubjects.add(subjectVar);
 				
 		   /*
 			 * Create this pattern:
 			 *
-			 *  ?subject ?predicate object.
+			 *  ?subject ?predicate ?object. (= the original statementPattern)
 			 *  OPTIONAL { ?subject acl:hasStatus ?status .
 			 *             ?subject acl:hasTeam ?team .
 			 *            }
@@ -97,8 +94,8 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			 *  LeftJoin(
 			 *  	SP(?subject, ?predicate, ?object), 
 			 *  	Join(
-			 *  		SP(?subject, acl:hasStatus ?status), 
-			 *       SP(?subject, acl:hasTeam ?team)
+			 *  		SP(?subject, acl:hasStatus, ?status), 
+			 *       SP(?subject, acl:hasTeam, ?team)
 			 *     )
 			 *  )
 			 */
@@ -127,10 +124,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			
 
 			if (permissions == null) {
-				permissions = getAssignedPermissions(session.getActiveRole(), ACL.VIEW);
+				permissions = getAssignedPermissions(session, ACL.VIEW);
 			}
 			
-			// for each permission, we add an additional condition to the filter, checking either
+			// for each permission, we add an additional condition to the filter, checking that either
 			// team, or status, or both match.
 		   for (URI permission : permissions) {
 				URI status = getStatusForPermission(permission);
@@ -163,6 +160,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			expandedPattern = new Filter(expandedPattern, filterConditions);
 
 			// expand the query.
+			QueryModelNode parent = statementPattern.getParentNode();
 			parent.replaceChildNode(statementPattern, expandedPattern);
 
 		}
@@ -177,8 +175,14 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		 *        an operation identifier
 		 * @return a Cursor containing URIs of permissions.
 		 */
-		private List<URI> getAssignedPermissions(URI role, URI operation) {
+		private List<URI> getAssignedPermissions(Session session, URI operation) {
 
+			URI role = null;
+			
+			if (session != null) {
+				role = session.getActiveRole();
+			}
+			
 			List<URI> permissions = new ArrayList<URI>();
 			try {
 

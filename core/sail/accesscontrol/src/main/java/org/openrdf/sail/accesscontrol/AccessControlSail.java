@@ -5,6 +5,7 @@
  */
 package org.openrdf.sail.accesscontrol;
 
+import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.helpers.SailWrapper;
 import org.openrdf.store.StoreException;
@@ -16,6 +17,12 @@ import org.openrdf.store.StoreException;
  */
 public class AccessControlSail extends SailWrapper {
 
+	/**
+	 * @param sail
+	 */
+	public AccessControlSail(Sail sail) {
+		super(sail);
+	}
 
 	@Override
 	public SailConnection getConnection()
