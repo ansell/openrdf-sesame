@@ -298,8 +298,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	{
 		try {
 			nativeStore.getValueStore().sync();
-			nativeStore.getTripleStore().commit();
 			nativeStore.getNamespaceStore().sync();
+			nativeStore.getTripleStore().commit();
 
 			txnLock.release();
 		}
