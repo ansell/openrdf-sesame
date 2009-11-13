@@ -34,6 +34,8 @@ public class ACL {
 	public static final URI HAS_TEAM;
 	public static final URI HAS_STATUS;
 
+	public static final URI TO_ROLE;
+	
 	
 	// operations
 	public static final URI VIEW;
@@ -58,6 +60,8 @@ public class ACL {
 		
 		HAS_TEAM = factory.createURI(NAMESPACE, "hasTeam");
 		HAS_STATUS = factory.createURI(NAMESPACE, "hasStatus");
+		
+		TO_ROLE = factory.createURI(NAMESPACE, "toRole");
 		
 		VIEW = factory.createURI(NAMESPACE, "view");
 		EDIT = factory.createURI(NAMESPACE, "edit");
