@@ -1,0 +1,46 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix acl: <http://www.openrdf.org/schema/sesame/acl/> .
+@prefix ex: <http://example.org/> .
+
+ex:prdocument1 a ex:Document ;
+	rdfs:label "private researcher document 1" ;
+	ex:editor ex:william ;
+	acl:hasTeam ex:Researcher ;
+	acl:hasStatus ex:private .
+
+ex:prdocument2 a ex:Document ;
+	rdfs:label "private researcher document 2" ;
+	ex:editor ex:bob ;
+	acl:hasTeam ex:Researcher ;
+	acl:hasStatus ex:private .
+
+ex:pmdocument1 a ex:Document ;
+	rdfs:label "private manager document 1" ;
+	ex:editor ex:william ;
+	acl:hasTeam ex:Manager ;
+	acl:hasStatus ex:private .
+
+ex:pmdocument2 a ex:Document ;
+	rdfs:label "private manager document 2" ;
+	ex:editor ex:alice ;
+	acl:hasTeam ex:Manager ;
+	acl:hasStatus ex:private .
+
+ex:pumdocument1 a ex:Document ;
+	rdfs:label "public manager document 1" ;
+	ex:editor ex:william ;
+	acl:hasTeam ex:Manager ;
+	acl:hasStatus ex:public .
+
+ex:pumdocument2 a ex:Document ;
+	rdfs:label "public manager document 2" ;
+	ex:editor ex:alice ;
+	acl:hasTeam ex:Manager ;
+	acl:hasStatus ex:public .
+
+ex:nonRestrictedDocument a ex:Document ;
+	rdfs:label "non-restricted document " ;
+	ex:editor ex:alice .
+
