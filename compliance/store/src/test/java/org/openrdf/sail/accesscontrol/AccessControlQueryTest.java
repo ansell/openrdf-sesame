@@ -7,23 +7,20 @@ package org.openrdf.sail.accesscontrol;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.accesscontrol.vocabulary.ACL;
-import org.openrdf.sail.federation.FederationQueryTest;
 import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.store.Session;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
 
 /**
  * @author Jeen Broekstra
