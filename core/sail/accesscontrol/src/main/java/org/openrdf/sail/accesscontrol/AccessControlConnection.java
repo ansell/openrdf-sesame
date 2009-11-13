@@ -12,6 +12,7 @@ import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Bound;
@@ -72,6 +73,9 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			throws StoreException
 		{
 			super.meet(statementPattern);
+
+			// keep a reference to the original parent.
+			QueryModelNode parent = statementPattern.getParentNode();
 
 			Var subjectVar = statementPattern.getSubjectVar();
 			if (handledSubjects.contains(subjectVar)) {
@@ -160,7 +164,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			expandedPattern = new Filter(expandedPattern, filterConditions);
 
 			// expand the query.
-			QueryModelNode parent = statementPattern.getParentNode();
 			parent.replaceChildNode(statementPattern, expandedPattern);
 
 		}
@@ -182,12 +185,16 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			if (session != null) {
 				role = session.getActiveRole();
 			}
+			else {
+				// DEBUG this should be removed 
+				role = new URIImpl("http://example.org/Researcher");
+			}
 			
 			List<URI> permissions = new ArrayList<URI>();
 			try {
 
 				// TODO this would probably be more efficient using a query.
-				Cursor<? extends Statement> statements = getStatements(null, ACL.HAS_ROLE, role, true,
+				Cursor<? extends Statement> statements = getStatements(null, ACL.TO_ROLE, role, true,
 						ACL.CONTEXT);
 
 				Statement st;
