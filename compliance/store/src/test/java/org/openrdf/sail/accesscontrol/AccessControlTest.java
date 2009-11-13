@@ -5,8 +5,6 @@
  */
 package org.openrdf.sail.accesscontrol;
 
-import org.openrdf.sail.NotifyingSail;
-import org.openrdf.sail.RDFNotifyingStoreTest;
 import org.openrdf.sail.RDFStoreTest;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.memory.MemoryStore;
