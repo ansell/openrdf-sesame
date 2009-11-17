@@ -58,14 +58,16 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 	protected class AccessControlQueryExpander extends QueryModelVisitorBase<StoreException> {
 
-		private Session session;
+		private URI currentUser;
+		private URI activeRole;
 
 		private List<Var> handledSubjects = new ArrayList<Var>();
 		
 		private List<URI> permissions;
 		
 		public AccessControlQueryExpander() {
-			session = new ThreadLocal<Session>().get();
+			currentUser = Session.getCurrentUser();
+			activeRole = Session.getActiveRole();
 		}
 
 		@Override
@@ -128,7 +130,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			
 
 			if (permissions == null) {
-				permissions = getAssignedPermissions(session, ACL.VIEW);
+				permissions = getAssignedPermissions(ACL.VIEW);
 			}
 			
 			// for each permission, we add an additional condition to the filter, checking that either
@@ -172,29 +174,17 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		 * Retrieve the permissions assigned to the supplied role and involving
 		 * the supplied operation.
 		 * 
-		 * @param role
-		 *        the role identifier
 		 * @param operation
 		 *        an operation identifier
 		 * @return a Cursor containing URIs of permissions.
 		 */
-		private List<URI> getAssignedPermissions(Session session, URI operation) {
+		private List<URI> getAssignedPermissions(URI operation) {
 
-			URI role = null;
-			
-			if (session != null) {
-				role = session.getActiveRole();
-			}
-			else {
-				// DEBUG this should be removed 
-				role = new URIImpl("http://example.org/Researcher");
-			}
-			
 			List<URI> permissions = new ArrayList<URI>();
 			try {
 
 				// TODO this would probably be more efficient using a query.
-				Cursor<? extends Statement> statements = getStatements(null, ACL.TO_ROLE, role, true,
+				Cursor<? extends Statement> statements = getStatements(null, ACL.TO_ROLE, activeRole, true,
 						ACL.CONTEXT);
 
 				Statement st;
