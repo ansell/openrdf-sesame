@@ -13,38 +13,38 @@ import org.openrdf.model.URI;
  */
 public class Session {
 
-	private static ThreadLocal<URI> activeRole = new ThreadLocal<URI>();
-	private static ThreadLocal<URI> currentUser = new ThreadLocal<URI>(); 
+	private URI activeRole;
+	private URI currentUser; 
 	
 	/**
 	 * Retrieve the active role of the user
 	 * @return the uri of the current user's active role
 	 */
-	public static URI getActiveRole() {
-		return activeRole.get();
+	public URI getActiveRole() {
+		return activeRole;
 	}
 	
 	/**
 	 * Sets the user's active role.
 	 * @param activeRole a uri denoting the active role of the user.
 	 */
-	public static void setActiveRole(URI activeRole) {
-		Session.activeRole.set(activeRole);
+	public void setActiveRole(URI activeRole) {
+		this.activeRole = activeRole;
 	}
 	
 	/**
 	 * Retrieve the id of the current user
 	 * @return the id of the current user, as a URI
 	 */
-	public static URI getCurrentUser() {
-		return currentUser.get();
+	public URI getCurrentUser() {
+		return currentUser;
 	}
 	
 	/**
 	 * Sets the id of the current user.
 	 * @param currentUser the id of the current user, as a URI.
 	 */
-	public static void setCurrentUser(URI currentUser) {
-		Session.currentUser.set(currentUser);
+	public void setCurrentUser(URI currentUser) {
+		this.currentUser = currentUser;
 	}
 }
