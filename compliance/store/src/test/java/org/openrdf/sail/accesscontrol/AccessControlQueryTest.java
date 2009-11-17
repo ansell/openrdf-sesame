@@ -54,15 +54,9 @@ public class AccessControlQueryTest extends TestCase {
 		throws Exception
 	{
 
-		ThreadLocal<Session> sessionContext = new ThreadLocal<Session>() {
-			protected Session initialValue() {
-				return new Session();
-			}
-		};
-
 		RepositoryConnection conn = rep.getConnection();
-		sessionContext.get().setCurrentUser(conn.getValueFactory().createURI("http://example.org/bob"));
-		sessionContext.get().setActiveRole(conn.getValueFactory().createURI("http://example.org/Researcher"));
+		Session.setCurrentUser(conn.getValueFactory().createURI("http://example.org/bob"));
+		Session.setActiveRole(conn.getValueFactory().createURI("http://example.org/Researcher"));
 
 		String simpleDocumentQuery = "SELECT DISTINCT ?X WHERE {?X a <http://example.org/Document>; ?P ?Y . } ";
 		TupleResult tr = conn.prepareTupleQuery(QueryLanguage.SPARQL, simpleDocumentQuery).evaluate();
