@@ -8,11 +8,9 @@ package org.openrdf.sail.accesscontrol;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.cursor.CollectionCursor;
 import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Bound;
@@ -33,6 +31,7 @@ import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.accesscontrol.vocabulary.ACL;
 import org.openrdf.sail.helpers.SailConnectionWrapper;
 import org.openrdf.store.Session;
+import org.openrdf.store.SessionsManager;
 import org.openrdf.store.StoreException;
 
 /**
@@ -58,16 +57,14 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 	protected class AccessControlQueryExpander extends QueryModelVisitorBase<StoreException> {
 
-		private URI currentUser;
-		private URI activeRole;
-
+		private Session session;
+		
 		private List<Var> handledSubjects = new ArrayList<Var>();
 		
 		private List<URI> permissions;
 		
 		public AccessControlQueryExpander() {
-			currentUser = Session.getCurrentUser();
-			activeRole = Session.getActiveRole();
+			session = SessionsManager.get();
 		}
 
 		@Override
@@ -130,7 +127,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			
 
 			if (permissions == null) {
-				permissions = getAssignedPermissions(ACL.VIEW);
+				URI role = session.getActiveRole();
+				if (role != null) {
+					permissions = getAssignedPermissions(role, ACL.VIEW);
+				}
 			}
 			
 			// for each permission, we add an additional condition to the filter, checking that either
@@ -178,13 +178,13 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		 *        an operation identifier
 		 * @return a Cursor containing URIs of permissions.
 		 */
-		private List<URI> getAssignedPermissions(URI operation) {
+		private List<URI> getAssignedPermissions(URI role, URI operation) {
 
 			List<URI> permissions = new ArrayList<URI>();
 			try {
 
 				// TODO this would probably be more efficient using a query.
-				Cursor<? extends Statement> statements = getStatements(null, ACL.TO_ROLE, activeRole, true,
+				Cursor<? extends Statement> statements = getStatements(null, ACL.TO_ROLE, role, true,
 						ACL.CONTEXT);
 
 				Statement st;

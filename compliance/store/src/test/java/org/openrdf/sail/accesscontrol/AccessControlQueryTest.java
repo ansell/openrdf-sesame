@@ -21,6 +21,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.accesscontrol.vocabulary.ACL;
 import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.store.Session;
+import org.openrdf.store.SessionsManager;
 
 /**
  * @author Jeen Broekstra
@@ -55,8 +56,10 @@ public class AccessControlQueryTest extends TestCase {
 	{
 
 		RepositoryConnection conn = rep.getConnection();
-		Session.setCurrentUser(conn.getValueFactory().createURI("http://example.org/bob"));
-		Session.setActiveRole(conn.getValueFactory().createURI("http://example.org/Researcher"));
+		
+		Session session = SessionsManager.get();
+		session.setCurrentUser(conn.getValueFactory().createURI("http://example.org/bob"));
+		session.setActiveRole(conn.getValueFactory().createURI("http://example.org/Researcher"));
 
 		String simpleDocumentQuery = "SELECT DISTINCT ?X WHERE {?X a <http://example.org/Document>; ?P ?Y . } ";
 		TupleResult tr = conn.prepareTupleQuery(QueryLanguage.SPARQL, simpleDocumentQuery).evaluate();
