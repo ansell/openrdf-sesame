@@ -242,6 +242,11 @@
 				<artifactId>sesame-sail-federation</artifactId>
 				<version>${openrdf.sesame.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-sail-accesscontrol</artifactId>
+				<version>${openrdf.sesame.version}</version>
+			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
