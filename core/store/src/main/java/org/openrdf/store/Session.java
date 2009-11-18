@@ -13,24 +13,7 @@ import org.openrdf.model.URI;
  */
 public class Session {
 
-	private URI activeRole;
 	private URI currentUser; 
-	
-	/**
-	 * Retrieve the active role of the user
-	 * @return the uri of the current user's active role
-	 */
-	public URI getActiveRole() {
-		return activeRole;
-	}
-	
-	/**
-	 * Sets the user's active role.
-	 * @param activeRole a uri denoting the active role of the user.
-	 */
-	public void setActiveRole(URI activeRole) {
-		this.activeRole = activeRole;
-	}
 	
 	/**
 	 * Retrieve the id of the current user

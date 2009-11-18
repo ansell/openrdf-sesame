@@ -11,6 +11,7 @@ import java.util.List;
 import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Bound;
@@ -58,11 +59,11 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	protected class AccessControlQueryExpander extends QueryModelVisitorBase<StoreException> {
 
 		private Session session;
-		
+
 		private List<Var> handledSubjects = new ArrayList<Var>();
-		
+
 		private List<URI> permissions;
-		
+
 		public AccessControlQueryExpander() {
 			session = SessionsManager.get();
 		}
@@ -81,10 +82,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				// we have already expanded the query for this particular subject
 				return;
 			}
-		
+
 			handledSubjects.add(subjectVar);
-				
-		   /*
+
+			/*
 			 * Create this pattern:
 			 *
 			 *  ?subject ?predicate ?object. (= the original statementPattern)
@@ -115,54 +116,53 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			TupleExpr expandedPattern = new LeftJoin(statementPattern, teamAndStatus);
 
 			// build an Or-ed set of filter conditions on the status and team.
-			Or filterConditions = new Or(); 
-			
+			Or filterConditions = new Or();
+
 			/* first condition is that neither are bound: this is the case where the subject
 			 * is not a restricted resource (and therefore has no associated team and status)
 			 * 
 			 * And(Not(Bound(?status)), Not(Bound(?team)))
 			 */
-			filterConditions.addArg(new And(new Not(new Bound(statusVar)), new Not(
-					new Bound(teamVar))));
-			
+			filterConditions.addArg(new And(new Not(new Bound(statusVar)), new Not(new Bound(teamVar))));
 
 			if (permissions == null) {
-				URI role = session.getActiveRole();
-				if (role != null) {
-					permissions = getAssignedPermissions(role, ACL.VIEW);
-				}
+				List<URI> roles = getRolesForUser(session.getCurrentUser());
+				permissions = getAssignedPermissions(roles, ACL.VIEW);
+
 			}
-			
-			// for each permission, we add an additional condition to the filter, checking that either
+
+			// for each permission, we add an additional condition to the filter,
+			// checking that either
 			// team, or status, or both match.
-		   for (URI permission : permissions) {
+			for (URI permission : permissions) {
 				URI status = getStatusForPermission(permission);
 				URI team = getTeamForPermission(permission);
 
 				Compare statusCompare = null;
 				Compare teamCompare = null;
-				
+
 				ValueExpr permissionCondition = null;
-				
+
 				if (status != null) {
 					statusCompare = new Compare(statusVar, new Var("acl_status_val", status));
 					permissionCondition = statusCompare;
 				}
-				
+
 				if (team != null) {
 					teamCompare = new Compare(teamVar, new Var("acl_team_val", team));
 					permissionCondition = teamCompare;
 				}
-				
+
 				if (statusCompare != null && teamCompare != null) {
 					permissionCondition = new And(statusCompare, teamCompare);
 				}
 
-				// add the permission-defined condition to the set of Or-ed filter conditions.
+				// add the permission-defined condition to the set of Or-ed filter
+				// conditions.
 				filterConditions.addArg(permissionCondition);
 			}
 
-			// set the filter conditions on the query pattern 
+			// set the filter conditions on the query pattern
 			expandedPattern = new Filter(expandedPattern, filterConditions);
 
 			// expand the query.
@@ -174,32 +174,34 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		 * Retrieve the permissions assigned to the supplied role and involving
 		 * the supplied operation.
 		 * 
+		 * @param roles
+		 *        a list of roles
 		 * @param operation
 		 *        an operation identifier
 		 * @return a Cursor containing URIs of permissions.
 		 */
-		private List<URI> getAssignedPermissions(URI role, URI operation) {
+		private List<URI> getAssignedPermissions(List<URI> roles, URI operation) {
 
 			List<URI> permissions = new ArrayList<URI>();
 			try {
+				for (URI role : roles) {
+					// TODO this would probably be more efficient using a query.
+					Cursor<? extends Statement> statements = getStatements(null, ACL.TO_ROLE, role, true,
+							ACL.CONTEXT);
 
-				// TODO this would probably be more efficient using a query.
-				Cursor<? extends Statement> statements = getStatements(null, ACL.TO_ROLE, role, true,
-						ACL.CONTEXT);
+					Statement st;
 
-				Statement st;
-
-				while ((st = statements.next()) != null) {
-					Cursor<? extends Statement> permissionStatements = getStatements(st.getSubject(),
-							ACL.HAS_PERMISSION, null, true, ACL.CONTEXT);
-					Statement permStat;
-					while ((permStat = permissionStatements.next()) != null) {
-						permissions.add((URI)permStat.getObject());
+					while ((st = statements.next()) != null) {
+						Cursor<? extends Statement> permissionStatements = getStatements(st.getSubject(),
+								ACL.HAS_PERMISSION, null, true, ACL.CONTEXT);
+						Statement permStat;
+						while ((permStat = permissionStatements.next()) != null) {
+							permissions.add((URI)permStat.getObject());
+						}
+						permissionStatements.close();
 					}
-					permissionStatements.close();
+					statements.close();
 				}
-				statements.close();
-
 			}
 			catch (StoreException e) {
 				// TODO Auto-generated catch block
@@ -233,6 +235,28 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			statements.close();
 
 			return result;
+		}
+
+		private List<URI> getRolesForUser(URI username)
+			throws StoreException
+		{
+			List<URI> roles = new ArrayList<URI>();
+
+			if (username != null) {
+				Cursor<? extends Statement> statements = getStatements(username, ACL.HAS_ROLE, null, true,
+						ACL.CONTEXT);
+
+				Statement st;
+				while ((st = statements.next()) != null) {
+					Value value = st.getObject();
+					if (value instanceof URI) {
+						roles.add((URI)value);
+					}
+				}
+				statements.close();
+			}
+
+			return roles;
 		}
 
 		private URI getStatusForPermission(URI permission)
