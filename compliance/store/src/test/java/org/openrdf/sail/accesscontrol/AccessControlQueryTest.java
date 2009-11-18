@@ -59,8 +59,7 @@ public class AccessControlQueryTest extends TestCase {
 		
 		Session session = SessionsManager.get();
 		session.setCurrentUser(conn.getValueFactory().createURI("http://example.org/bob"));
-		session.setActiveRole(conn.getValueFactory().createURI("http://example.org/Researcher"));
-
+		
 		String simpleDocumentQuery = "SELECT DISTINCT ?X WHERE {?X a <http://example.org/Document>; ?P ?Y . } ";
 		TupleResult tr = conn.prepareTupleQuery(QueryLanguage.SPARQL, simpleDocumentQuery).evaluate();
 
