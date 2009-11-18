@@ -70,6 +70,12 @@
 
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-sail-accesscontrol</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-http-server-standalone</artifactId>
 			<scope>test</scope>
 		</dependency>
