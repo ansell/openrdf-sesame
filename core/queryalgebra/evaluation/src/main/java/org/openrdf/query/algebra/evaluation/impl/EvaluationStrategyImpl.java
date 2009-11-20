@@ -8,7 +8,6 @@ package org.openrdf.query.algebra.evaluation.impl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -113,6 +112,7 @@ import org.openrdf.query.algebra.evaluation.iterator.ProjectionIterator;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
+import org.openrdf.query.algebra.helpers.VarNameCollector;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -496,14 +496,16 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws QueryEvaluationException
 	{
 		// Check whether optional join is "well designed" as defined in section
-		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge P�rez et al.
-		Set<String> boundVars = bindings.getBindingNames();
-		Set<String> leftVars = leftJoin.getLeftArg().getBindingNames();
-		Set<String> optionalVars = leftJoin.getRightArg().getBindingNames();
+		// 4.2 of "Semantics and Complexity of SPARQL", 2006, Jorge Pérez et al.
+		VarNameCollector optionalVarCollector = new VarNameCollector();
+		leftJoin.getRightArg().visit(optionalVarCollector);
+		if (leftJoin.hasCondition()) {
+			leftJoin.getCondition().visit(optionalVarCollector);
+		}
 
-		final Set<String> problemVars = new HashSet<String>(boundVars);
-		problemVars.retainAll(optionalVars);
-		problemVars.removeAll(leftVars);
+		Set<String> problemVars = optionalVarCollector.getVarNames();
+		problemVars.removeAll(leftJoin.getLeftArg().getBindingNames());
+		problemVars.retainAll(bindings.getBindingNames());
 
 		if (problemVars.isEmpty()) {
 			// left join is "well designed"
