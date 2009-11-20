@@ -186,6 +186,9 @@ public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 		return getVars(new ArrayList<Var>(4));
 	}
 
+	/**
+	 * Adds the variables of this statement pattern to the supplied collection.
+	 */
 	public <L extends Collection<Var>> L getVars(L varCollection) {
 		if (subjectVar != null) {
 			varCollection.add(subjectVar);
