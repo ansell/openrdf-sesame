@@ -52,9 +52,9 @@ public abstract class QueryModelNodeBase implements QueryModelNode {
 
 	/**
 	 * Default implementation of
-	 * {@link QueryModelNode#replaceChildNode(QueryModelNode, QueryModelNode)}
-	 * that throws an {@link IllegalArgumentException} indicating that
-	 * <tt>current</tt> is not a child node of this node.
+	 * {@link QueryModelNode#replaceWith(QueryModelNode)} that throws an
+	 * {@link IllegalArgumentException} indicating that <tt>current</tt> is not a
+	 * child node of this node.
 	 */
 	public void replaceWith(QueryModelNode replacement) {
 		if (parent == null) {
