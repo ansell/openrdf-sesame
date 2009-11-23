@@ -30,10 +30,10 @@ public class FunctionCall extends NaryValueOperator implements ValueExpr {
 	}
 
 	/**
-	 * Creates a new unary value operator.
+	 * Creates a new function calls.
 	 * 
 	 * @param args
-	 *        The operator's argument, must not be <tt>null</tt>.
+	 *        The function's arguments.
 	 */
 	public FunctionCall(String uri, ValueExpr... args) {
 		super(args);
@@ -61,6 +61,11 @@ public class FunctionCall extends NaryValueOperator implements ValueExpr {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public String getSignature() {
+		return super.getSignature() + " ( " + uri + ")";
 	}
 
 	@Override
