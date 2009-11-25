@@ -10,7 +10,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.TupleExpr;
@@ -37,7 +36,7 @@ public class CompareOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new CompareVisitor());
 	}
 
-	protected class CompareVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class CompareVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
 		public void meet(Compare compare) {

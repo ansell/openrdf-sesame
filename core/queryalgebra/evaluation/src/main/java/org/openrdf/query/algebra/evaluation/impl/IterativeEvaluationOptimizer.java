@@ -25,7 +25,7 @@ public class IterativeEvaluationOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new IEOVisitor());
 	}
 
-	protected class IEOVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class IEOVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
 		public void meet(Union union) {

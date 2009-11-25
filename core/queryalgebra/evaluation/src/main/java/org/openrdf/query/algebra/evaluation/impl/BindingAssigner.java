@@ -26,7 +26,7 @@ public class BindingAssigner implements QueryOptimizer {
 		}
 	}
 
-	protected class VarVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class VarVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		protected BindingSet bindings;
 

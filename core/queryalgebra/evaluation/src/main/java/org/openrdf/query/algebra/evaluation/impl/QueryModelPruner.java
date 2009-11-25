@@ -45,7 +45,7 @@ public class QueryModelPruner implements QueryOptimizer {
 		tupleExpr.visit(new TreeSanitizer());
 	}
 
-	protected class TreeSanitizer extends QueryModelVisitorBase<RuntimeException> {
+	protected static class TreeSanitizer extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
 		public void meet(Join join) {

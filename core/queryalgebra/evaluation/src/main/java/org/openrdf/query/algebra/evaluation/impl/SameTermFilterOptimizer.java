@@ -44,7 +44,7 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new SameTermFilterVisitor());
 	}
 
-	protected class SameTermFilterVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class SameTermFilterVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
 		public void meet(Filter filter) {
@@ -111,7 +111,7 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		}
 	}
 
-	protected class VarRenamer extends QueryModelVisitorBase<RuntimeException> {
+	protected static class VarRenamer extends QueryModelVisitorBase<RuntimeException> {
 
 		private final String oldName;
 
@@ -139,7 +139,7 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		}
 	}
 
-	protected class VarBinder extends QueryModelVisitorBase<RuntimeException> {
+	protected static class VarBinder extends QueryModelVisitorBase<RuntimeException> {
 
 		private final String varName;
 
