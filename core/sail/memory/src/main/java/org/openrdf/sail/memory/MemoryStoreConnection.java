@@ -38,6 +38,7 @@ import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.algebra.evaluation.impl.FilterOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.IterativeEvaluationOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.OrderLimitOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryModelNormalizer;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
@@ -135,6 +136,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			new QueryJoinOptimizer(new MemEvaluationStatistics()).optimize(tupleExpr, dataset, bindings);
 			new IterativeEvaluationOptimizer().optimize(tupleExpr, dataset, bindings);
 			new FilterOptimizer().optimize(tupleExpr, dataset, bindings);
+			new OrderLimitOptimizer().optimize(tupleExpr, dataset, bindings);
 
 			logger.trace("Optimized query model:\n{}", tupleExpr.toString());
 

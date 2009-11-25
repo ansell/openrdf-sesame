@@ -78,6 +78,7 @@ import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Projection;
+import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
@@ -455,7 +456,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		ValueComparator vcmp = new ValueComparator();
 		OrderComparator cmp = new OrderComparator(this, node, vcmp);
-		return new OrderIterator(evaluate(node.getArg(), bindings), cmp);
+		boolean reduced = isReduced(node);
+		int limit = getLimit(node);
+		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BinaryTupleOperator expr,
@@ -1472,5 +1475,44 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 
 		return null;
+	}
+
+	private boolean isReduced(QueryModelNode node) {
+		QueryModelNode parent = node.getParentNode();
+		if (parent instanceof Slice) {
+			return isReduced(parent);
+		}
+		return parent instanceof Distinct || parent instanceof Reduced;
+	}
+
+	/**
+	 * Returns the limit of the current variable bindings before any further
+	 * projection.
+	 */
+	private int getLimit(QueryModelNode node) {
+		int offset = 0;
+		if (node instanceof Slice) {
+			Slice slice = (Slice)node;
+			if (slice.hasOffset() && slice.hasLimit()) {
+				return slice.getOffset() + slice.getLimit();
+			}
+			else if (slice.hasLimit()) {
+				return slice.getLimit();
+			}
+			else if (slice.hasOffset()) {
+				offset = slice.getOffset();
+			}
+		}
+		QueryModelNode parent = node.getParentNode();
+		if (parent instanceof Distinct || parent instanceof Reduced || parent instanceof Slice) {
+			int limit = getLimit(parent);
+			if (offset > 0 && limit < Integer.MAX_VALUE) {
+				return offset + limit;
+			}
+			else {
+				return limit;
+			}
+		}
+		return Integer.MAX_VALUE;
 	}
 }
