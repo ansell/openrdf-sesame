@@ -30,7 +30,7 @@ public class OrderLimitOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new OrderOptimizer());
 	}
 
-	protected class OrderOptimizer extends QueryModelVisitorBase<RuntimeException> {
+	protected static class OrderOptimizer extends QueryModelVisitorBase<RuntimeException> {
 
 		private boolean variablesProjected = true;
 

@@ -29,7 +29,7 @@ public class ConjunctiveConstraintSplitter implements QueryOptimizer {
 		tupleExpr.visit(new ConstraintVisitor(tupleExpr));
 	}
 
-	protected class ConstraintVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class ConstraintVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		protected final TupleExpr tupleExpr;
 

@@ -39,7 +39,7 @@ public class FilterOptimizer implements QueryOptimizer {
 	 * Inner class FilterFinder *
 	 *--------------------------*/
 
-	protected class FilterFinder extends QueryModelVisitorBase<RuntimeException> {
+	protected static class FilterFinder extends QueryModelVisitorBase<RuntimeException> {
 
 		protected final TupleExpr tupleExpr;
 
@@ -62,7 +62,7 @@ public class FilterOptimizer implements QueryOptimizer {
 	 * Inner class FilterRelocator *
 	 *-----------------------------*/
 
-	protected class FilterRelocator extends QueryModelVisitorBase<RuntimeException> {
+	protected static class FilterRelocator extends QueryModelVisitorBase<RuntimeException> {
 
 		protected Filter filter;
 

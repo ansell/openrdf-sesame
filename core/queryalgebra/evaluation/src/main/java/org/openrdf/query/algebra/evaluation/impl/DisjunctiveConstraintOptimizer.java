@@ -33,7 +33,7 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new OrSameTermOptimizer());
 	}
 
-	protected class OrSameTermOptimizer extends QueryModelVisitorBase<RuntimeException> {
+	protected static class OrSameTermOptimizer extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
 		public void meet(Filter filter) {
