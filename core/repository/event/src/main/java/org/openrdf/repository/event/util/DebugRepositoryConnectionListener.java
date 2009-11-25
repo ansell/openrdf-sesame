@@ -6,6 +6,7 @@
 package org.openrdf.repository.event.util;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -107,7 +108,7 @@ public class DebugRepositoryConnectionListener implements RepositoryConnectionLi
 	{
 		if (printing) {
 			stream.println("ADD (" + getConnectionID(conn) + ") " + subject + ", " + predicate + ", " + object
-					+ ", " + contexts);
+					+ ", " + Arrays.toString(contexts));
 		}
 		if (dumpingStack) {
 			Thread.dumpStack();
@@ -119,7 +120,7 @@ public class DebugRepositoryConnectionListener implements RepositoryConnectionLi
 	{
 		if (printing) {
 			stream.println("REMOVE (" + getConnectionID(conn) + ") " + subject + ", " + predicate + ", "
-					+ object + ", " + contexts);
+					+ object + ", " + Arrays.toString(contexts));
 		}
 		if (dumpingStack) {
 			Thread.dumpStack();
@@ -128,7 +129,7 @@ public class DebugRepositoryConnectionListener implements RepositoryConnectionLi
 
 	public void clear(RepositoryConnection conn, Resource... contexts) {
 		if (printing) {
-			stream.println("CLEAR (" + getConnectionID(conn) + ") " + contexts);
+			stream.println("CLEAR (" + getConnectionID(conn) + ") " + Arrays.toString(contexts));
 		}
 		if (dumpingStack) {
 			Thread.dumpStack();
