@@ -86,7 +86,7 @@ public class Projection extends UnaryTupleOperator {
 
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof Join && super.equals(other)) {
+		if (other instanceof Projection && super.equals(other)) {
 			Projection o = (Projection)other;
 			return projElemList.equals(o.getProjectionElemList());
 		}
