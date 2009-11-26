@@ -129,14 +129,10 @@ public class Group extends UnaryTupleOperator {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		int index = groupElements.indexOf(current);
-		if (index >= 0) {
-			groupElements.set(index, (GroupElem)replacement);
-			replacement.setParentNode(this);
+		if (replaceNodeInList(groupElements, (GroupElem)current, (GroupElem)replacement)) {
+			return;
 		}
-		else {
-			super.replaceChildNode(current, replacement);
-		}
+		super.replaceChildNode(current, replacement);
 	}
 
 	@Override

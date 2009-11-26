@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -103,14 +103,10 @@ public class Extension extends UnaryTupleOperator {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		int index = elements.indexOf(current);
-		if (index >= 0) {
-			elements.set(index, (ExtensionElem)replacement);
-			replacement.setParentNode(this);
+		if (replaceNodeInList(elements, (ExtensionElem)current, (ExtensionElem)replacement)) {
+			return;
 		}
-		else {
-			super.replaceChildNode(current, replacement);
-		}
+		super.replaceChildNode(current, replacement);
 	}
 
 	@Override

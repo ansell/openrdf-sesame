@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -107,14 +107,10 @@ public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		int index = args.indexOf(current);
-		if (index >= 0) {
-			args.set(index, (ValueExpr)replacement);
-			replacement.setParentNode(this);
+		if (replaceNodeInList(args, (ValueExpr)current, (ValueExpr)replacement)) {
+			return;
 		}
-		else {
-			super.replaceChildNode(current, replacement);
-		}
+		super.replaceChildNode(current, replacement);
 	}
 
 	@Override

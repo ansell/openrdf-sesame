@@ -1,9 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra;
+
+import java.util.List;
+import java.util.ListIterator;
 
 import org.openrdf.query.algebra.helpers.QueryModelTreePrinter;
 
@@ -87,6 +90,19 @@ public abstract class QueryModelNodeBase implements QueryModelNode {
 		catch (CloneNotSupportedException e) {
 			throw new RuntimeException("Query model nodes are required to be cloneable", e);
 		}
+	}
+
+	protected <T extends QueryModelNode> boolean replaceNodeInList(List<T> list, T current, T replacement) {
+		ListIterator<T> iter = list.listIterator();
+		while (iter.hasNext()) {
+			if (iter.next() == current) {
+				iter.set(replacement);
+				replacement.setParentNode(this);
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	protected boolean nullEquals(Object o1, Object o2) {
