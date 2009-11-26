@@ -92,11 +92,11 @@ public abstract class QueryModelNodeBase implements QueryModelNode {
 		}
 	}
 
-	protected <T extends QueryModelNode> boolean replaceNodeInList(List<T> list, T current, T replacement) {
+	protected <T extends QueryModelNode> boolean replaceNodeInList(List<T> list, QueryModelNode current, QueryModelNode replacement) {
 		ListIterator<T> iter = list.listIterator();
 		while (iter.hasNext()) {
 			if (iter.next() == current) {
-				iter.set(replacement);
+				iter.set((T)replacement);
 				replacement.setParentNode(this);
 				return true;
 			}

@@ -114,7 +114,7 @@ public class MultiProjection extends UnaryTupleOperator {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		if (replaceNodeInList(projections, (ProjectionElemList)current, (ProjectionElemList)replacement)) {
+		if (replaceNodeInList(projections, current, replacement)) {
 			return;
 		}
 		super.replaceChildNode(current, replacement);
