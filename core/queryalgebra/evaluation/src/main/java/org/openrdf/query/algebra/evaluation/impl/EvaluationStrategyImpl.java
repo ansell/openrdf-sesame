@@ -189,10 +189,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		final Var objVar = sp.getObjectVar();
 		final Var conVar = sp.getContextVar();
 
-		Value subjValue = getVarValue(subjVar, bindings);
-		Value predValue = getVarValue(predVar, bindings);
-		Value objValue = getVarValue(objVar, bindings);
-		Value contextValue = getVarValue(conVar, bindings);
+		final Value subjValue = getVarValue(subjVar, bindings);
+		final Value predValue = getVarValue(predVar, bindings);
+		final Value objValue = getVarValue(objVar, bindings);
+		final Value contextValue = getVarValue(conVar, bindings);
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> stIter = null;
 
@@ -256,6 +256,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		// The same variable might have been used multiple times in this
 		// StatementPattern, verify value equality in those cases.
+		// TODO: skip this filter if not necessary
 		stIter = new FilterIteration<Statement, QueryEvaluationException>(stIter) {
 
 			@Override
@@ -265,7 +266,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				Value obj = st.getObject();
 				Resource context = st.getContext();
 
-				if (subjVar != null) {
+				if (subjVar != null && subjValue == null) {
 					if (subjVar.equals(predVar) && !subj.equals(pred)) {
 						return false;
 					}
@@ -277,7 +278,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					}
 				}
 
-				if (predVar != null) {
+				if (predVar != null && predValue == null) {
 					if (predVar.equals(objVar) && !pred.equals(obj)) {
 						return false;
 					}
@@ -286,7 +287,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					}
 				}
 
-				if (objVar != null) {
+				if (objVar != null && objValue == null) {
 					if (objVar.equals(conVar) && !obj.equals(context)) {
 						return false;
 					}
@@ -621,7 +622,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return new EmptyIteration<BindingSet, QueryEvaluationException>();
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(ExternalSet external, BindingSet bindings)
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(ExternalSet external,
+			BindingSet bindings)
 		throws QueryEvaluationException
 	{
 		return external.evaluate(bindings);
