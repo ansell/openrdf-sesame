@@ -76,7 +76,7 @@ public class Regex extends BinaryValueOperator {
 	public boolean equals(Object other) {
 		if (other instanceof Regex && super.equals(other)) {
 			Regex o = (Regex)other;
-			return flagsArg == o.getFlagsArg() || flagsArg != null && flagsArg.equals(o.getFlagsArg());
+			return nullEquals(flagsArg, o.getFlagsArg());
 		}
 		return false;
 	}
