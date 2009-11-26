@@ -143,8 +143,8 @@ public class Group extends UnaryTupleOperator {
 	public boolean equals(Object other) {
 		if (other instanceof Group && super.equals(other)) {
 			Group o = (Group)other;
-			return o.groupBindings.equals(o.getGroupBindingNames())
-					&& o.groupElements.equals(o.getGroupElements());
+			return groupBindings.equals(o.getGroupBindingNames())
+					&& groupElements.equals(o.getGroupElements());
 		}
 		return false;
 	}
