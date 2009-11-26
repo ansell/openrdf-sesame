@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -91,14 +91,10 @@ public class Order extends UnaryTupleOperator {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		int index = elements.indexOf(current);
-		if (index >= 0) {
-			elements.set(index, (OrderElem)replacement);
-			replacement.setParentNode(this);
+		if (replaceNodeInList(elements, (OrderElem)current, (OrderElem)replacement)) {
+			return;
 		}
-		else {
-			super.replaceChildNode(current, replacement);
-		}
+		super.replaceChildNode(current, replacement);
 	}
 
 	@Override
