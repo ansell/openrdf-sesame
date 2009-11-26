@@ -91,7 +91,7 @@ public class Order extends UnaryTupleOperator {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		if (replaceNodeInList(elements, (OrderElem)current, (OrderElem)replacement)) {
+		if (replaceNodeInList(elements, current, replacement)) {
 			return;
 		}
 		super.replaceChildNode(current, replacement);

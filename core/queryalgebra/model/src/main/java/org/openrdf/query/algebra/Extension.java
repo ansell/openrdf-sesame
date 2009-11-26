@@ -103,7 +103,7 @@ public class Extension extends UnaryTupleOperator {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		if (replaceNodeInList(elements, (ExtensionElem)current, (ExtensionElem)replacement)) {
+		if (replaceNodeInList(elements, current, replacement)) {
 			return;
 		}
 		super.replaceChildNode(current, replacement);

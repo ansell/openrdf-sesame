@@ -107,7 +107,7 @@ public class ProjectionElemList extends QueryModelNodeBase {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		if (replaceNodeInList(elements, (ProjectionElem)current, (ProjectionElem)replacement)) {
+		if (replaceNodeInList(elements, current, replacement)) {
 			return;
 		}
 		super.replaceChildNode(current, replacement);
