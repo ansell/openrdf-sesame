@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-compliance</artifactId>
-		<version>2.3.0</version>
+		<version>2.3.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-model-compliance</artifactId>
@@ -62,9 +62,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.0/compliance/model</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.0/compliance/model</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/tags/2.3.0/compliance/model</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.3/compliance/model</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.3/compliance/model</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.3/compliance/model</url>
 	</scm>
 
 </project>
