@@ -38,7 +38,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<openrdf.sesame.version>2.3.0-SNAPSHOT</openrdf.sesame.version>
-		<aduna.appbase.version>3.8.0-SNAPSHOT</aduna.appbase.version>
+		<aduna.appbase.version>3.8.0</aduna.appbase.version>
 		<slf4j.version>1.5.8</slf4j.version>
 		<spring.version>2.5.6</spring.version>
 	</properties>
@@ -252,27 +252,27 @@
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-collections</artifactId>
-				<version>2.6.0-SNAPSHOT</version>
+				<version>2.6.0</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-concurrent</artifactId>
-				<version>2.5.0-SNAPSHOT</version>
+				<version>2.5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-i18n</artifactId>
-				<version>1.2.0-SNAPSHOT</version>
+				<version>1.2.0</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-iteration</artifactId>
-				<version>2.6.0-SNAPSHOT</version>
+				<version>2.6.0</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-net-http-server-embedded</artifactId>
-				<version>2.3.0-SNAPSHOT</version>
+				<version>2.3.0</version>
 			</dependency>
 
 			<!-- Apache Commons -->
