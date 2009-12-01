@@ -31,8 +31,7 @@ public class AcceptParamFilter extends Filter {
 	@Override
 	protected int beforeHandle(Request request, Response response) {
 		Form queryParams = request.getResourceRef().getQueryAsForm();
-		// FIXME: process the Accept-parameter in a case-insensitive way
-		String[] acceptValues = queryParams.getValuesArray(RequestHeaders.ACCEPT);
+		String[] acceptValues = queryParams.getValuesArray(RequestHeaders.ACCEPT, true);
 
 		if (acceptValues.length > 0) {
 			ClientInfo clientInfo = request.getClientInfo();
