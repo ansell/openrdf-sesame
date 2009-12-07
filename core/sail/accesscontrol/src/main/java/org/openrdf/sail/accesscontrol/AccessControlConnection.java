@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.cursor.Cursor;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -40,11 +41,207 @@ import org.openrdf.store.StoreException;
  */
 public class AccessControlConnection extends SailConnectionWrapper {
 
+	private URI getObject(Resource subject, URI predicate, Resource... contexts)
+		throws StoreException
+	{
+
+		URI result = null;
+		Cursor<? extends Statement> statements = getStatements(subject, predicate, null, true, contexts);
+
+		Statement st;
+		while ((st = statements.next()) != null) {
+			if (st.getObject() instanceof URI) {
+				result = (URI)st.getObject();
+				break;
+			}
+		}
+		statements.close();
+
+		return result;
+	}
+
+	/**
+	 * Retrieve the permissions assigned to the supplied role and involving the
+	 * supplied operation.
+	 * 
+	 * @param roles
+	 *        a list of roles
+	 * @param operation
+	 *        an operation identifier
+	 * @return a Cursor containing URIs of permissions.
+	 */
+	private List<URI> getAssignedPermissions(List<URI> roles, URI operation) {
+
+		List<URI> permissions = new ArrayList<URI>();
+		try {
+			for (URI role : roles) {
+				// TODO this would probably be more efficient using a query.
+				Cursor<? extends Statement> statements = getStatements(null, ACL.TO_ROLE, role, true, ACL.CONTEXT);
+
+				Statement st;
+
+				while ((st = statements.next()) != null) {
+					Cursor<? extends Statement> permissionStatements = getStatements(st.getSubject(),
+							ACL.HAS_PERMISSION, null, true, ACL.CONTEXT);
+					Statement permStat;
+					while ((permStat = permissionStatements.next()) != null) {
+						permissions.add((URI)permStat.getObject());
+					}
+					permissionStatements.close();
+				}
+				statements.close();
+			}
+		}
+		catch (StoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return permissions;
+	}
+
+	private URI getMatchPattern(URI permission)
+		throws StoreException
+	{
+		URI match = getObject(permission, ACL.HAS_MATCH, ACL.CONTEXT);
+		return match;
+	}
+
+	private URI getTeamForPermission(URI permission)
+		throws StoreException
+	{
+
+		URI match = getMatchPattern(permission);
+
+		URI team = getObject(match, ACL.HAS_TEAM, ACL.CONTEXT);
+
+		return team;
+	}
+
+	private List<URI> getRolesForUser(URI username)
+		throws StoreException
+	{
+		List<URI> roles = new ArrayList<URI>();
+
+		if (username != null) {
+			Cursor<? extends Statement> statements = getStatements(username, ACL.HAS_ROLE, null, true,
+					ACL.CONTEXT);
+
+			Statement st;
+			while ((st = statements.next()) != null) {
+				Value value = st.getObject();
+				if (value instanceof URI) {
+					roles.add((URI)value);
+				}
+			}
+			statements.close();
+		}
+
+		return roles;
+	}
+
+	private URI getStatusForPermission(URI permission)
+		throws StoreException
+	{
+
+		URI match = getMatchPattern(permission);
+
+		URI status = getObject(match, ACL.HAS_STATUS, ACL.CONTEXT);
+
+		return status;
+	}
+
+	private boolean hasPermissionOnSubject(URI user, Resource subject, URI operation)
+		throws StoreException
+	{
+		boolean hasPermission = false;
+		
+		URI subjectStatus = getObject(subject, ACL.HAS_STATUS);
+		URI subjectTeam = getObject(subject, ACL.HAS_TEAM);
+		
+		if (subjectStatus != null || subjectTeam != null) {
+			List<URI> permissions = getAssignedPermissions(getRolesForUser(user), operation);
+			
+			for (URI permission : permissions) {
+				boolean subjectMatch = false;
+				boolean teamMatch = false;
+				
+				if (subjectStatus != null) {
+					subjectMatch = subjectStatus.equals(getStatusForPermission(permission));
+				}
+				else {
+					subjectMatch = true;
+				}
+				
+				if (subjectTeam != null) {
+					teamMatch = subjectTeam.equals(getTeamForPermission(permission));
+				}
+				else {
+					teamMatch = true;
+				}
+
+				if (teamMatch && subjectMatch) {
+					hasPermission = true;
+					break;
+				}
+			}
+		}
+		else {
+			hasPermission = true;
+		}
+		
+		return hasPermission;
+		
+	}
+
 	/**
 	 * @param delegate
 	 */
 	public AccessControlConnection(SailConnection delegate) {
 		super(delegate);
+	}
+
+	@Override
+	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		Session session = SessionsManager.get();
+
+		if (hasPermissionOnSubject(session.getCurrentUser(), subj, ACL.EDIT)) {
+			super.addStatement(subj, pred, obj, contexts);
+		}
+		else {
+			throw new StoreException("insufficient access rights on subject " + subj.stringValue());
+		}
+
+	}
+
+	@Override
+	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		Session session = SessionsManager.get();
+
+		if (subj == null) {
+			Cursor<? extends Statement> toBeRemovedStatements = this.getStatements(subj, pred, obj, false,
+					contexts);
+			Statement st;
+			while ((st = toBeRemovedStatements.next()) != null) {
+				Resource subject = st.getSubject();
+
+				if (hasPermissionOnSubject(session.getCurrentUser(), subject, ACL.EDIT)) {
+					super.removeStatements(subject, pred, obj, contexts);
+				}
+			}
+			toBeRemovedStatements.close();
+		}
+		else {
+
+			if (hasPermissionOnSubject(session.getCurrentUser(), subj, ACL.EDIT)) {
+				super.removeStatements(subj, pred, obj, contexts);
+			}
+		}
+
 	}
 
 	@Override
@@ -168,117 +365,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			// expand the query.
 			parent.replaceChildNode(statementPattern, expandedPattern);
 
-		}
-
-		/**
-		 * Retrieve the permissions assigned to the supplied role and involving
-		 * the supplied operation.
-		 * 
-		 * @param roles
-		 *        a list of roles
-		 * @param operation
-		 *        an operation identifier
-		 * @return a Cursor containing URIs of permissions.
-		 */
-		private List<URI> getAssignedPermissions(List<URI> roles, URI operation) {
-
-			List<URI> permissions = new ArrayList<URI>();
-			try {
-				for (URI role : roles) {
-					// TODO this would probably be more efficient using a query.
-					Cursor<? extends Statement> statements = getStatements(null, ACL.TO_ROLE, role, true,
-							ACL.CONTEXT);
-
-					Statement st;
-
-					while ((st = statements.next()) != null) {
-						Cursor<? extends Statement> permissionStatements = getStatements(st.getSubject(),
-								ACL.HAS_PERMISSION, null, true, ACL.CONTEXT);
-						Statement permStat;
-						while ((permStat = permissionStatements.next()) != null) {
-							permissions.add((URI)permStat.getObject());
-						}
-						permissionStatements.close();
-					}
-					statements.close();
-				}
-			}
-			catch (StoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			return permissions;
-		}
-
-		private URI getMatchPattern(URI permission)
-			throws StoreException
-		{
-			URI match = getObject(permission, ACL.HAS_MATCH, ACL.CONTEXT);
-			return match;
-		}
-
-		private URI getObject(URI subject, URI predicate, URI context)
-			throws StoreException
-		{
-
-			URI result = null;
-			Cursor<? extends Statement> statements = getStatements(subject, predicate, null, true, context);
-
-			Statement st;
-			while ((st = statements.next()) != null) {
-				if (st.getObject() instanceof URI) {
-					result = (URI)st.getObject();
-					break;
-				}
-			}
-			statements.close();
-
-			return result;
-		}
-
-		private List<URI> getRolesForUser(URI username)
-			throws StoreException
-		{
-			List<URI> roles = new ArrayList<URI>();
-
-			if (username != null) {
-				Cursor<? extends Statement> statements = getStatements(username, ACL.HAS_ROLE, null, true,
-						ACL.CONTEXT);
-
-				Statement st;
-				while ((st = statements.next()) != null) {
-					Value value = st.getObject();
-					if (value instanceof URI) {
-						roles.add((URI)value);
-					}
-				}
-				statements.close();
-			}
-
-			return roles;
-		}
-
-		private URI getStatusForPermission(URI permission)
-			throws StoreException
-		{
-
-			URI match = getMatchPattern(permission);
-
-			URI status = getObject(match, ACL.HAS_STATUS, ACL.CONTEXT);
-
-			return status;
-		}
-
-		private URI getTeamForPermission(URI permission)
-			throws StoreException
-		{
-
-			URI match = getMatchPattern(permission);
-
-			URI team = getObject(match, ACL.HAS_TEAM, ACL.CONTEXT);
-
-			return team;
 		}
 
 	}
