@@ -41,6 +41,9 @@ public class ACL {
 	public static final URI VIEW;
 	public static final URI EDIT;
 
+	// 
+	public static final URI ADMIN;
+	
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 
@@ -57,7 +60,7 @@ public class ACL {
 		
 		HAS_OPERATION = factory.createURI(NAMESPACE, "hasOperation");
 		HAS_MATCH = factory.createURI(NAMESPACE, "hasMatch");
-		
+
 		HAS_TEAM = factory.createURI(NAMESPACE, "hasTeam");
 		HAS_STATUS = factory.createURI(NAMESPACE, "hasStatus");
 		
@@ -65,6 +68,7 @@ public class ACL {
 		
 		VIEW = factory.createURI(NAMESPACE, "view");
 		EDIT = factory.createURI(NAMESPACE, "edit");
-		
+	
+		ADMIN = factory.createURI(NAMESPACE, "administrator");
 	}
 }

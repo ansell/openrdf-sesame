@@ -10,7 +10,12 @@ ex:bob a acl:User;
 ex:alice a acl:User;
          acl:hasRole ex:Manager .
 
+ex:Administrator a acl:Role .
+
 ex:Manager a acl:Role.
+
+ex:ProjectLeader a acl:Role ;
+    acl:subsumes ex:Researcher .
 
 ex:Researcher a acl:Role.
 
@@ -23,6 +28,7 @@ ex:assignment1 a acl:PermissionAssignment ;
 
 ex:permission1 a acl:Permission ;
 	acl:hasOperation acl:view;
+	acl:hasOperation acl:edit;
 	acl:hasMatch [ a acl:ObjectMatch  ;
 	               acl:hasTeam ex:Researcher ;
 		       acl:hasStatus ex:private ] .
@@ -33,6 +39,7 @@ ex:assignment2 a acl:PermissionAssignment ;
 
 ex:permission2 a acl:Permission ;
 	acl:hasOperation acl:view;
+	acl:hasOperation acl:edit;
 	acl:hasMatch [ a acl:ObjectMatch  ;
 	               acl:hasTeam ex:Manager ;
 		       acl:hasStatus ex:private ] .
@@ -45,3 +52,4 @@ ex:permission3 a acl:Permission ;
 	acl:hasOperation acl:view;
 	acl:hasMatch [ a acl:ObjectMatch  ;
 		       acl:hasStatus ex:public ] .
+

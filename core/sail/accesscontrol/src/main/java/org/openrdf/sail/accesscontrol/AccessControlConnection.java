@@ -74,8 +74,9 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 		List<URI> permissions = new ArrayList<URI>();
 		try {
+
 			for (URI role : roles) {
-				// TODO this would probably be more efficient using a query.
+				// TODO this would probably be more efficient using a SPARQL query.
 				Cursor<? extends Statement> statements = getStatements(null, ACL.TO_ROLE, role, true, ACL.CONTEXT);
 
 				Statement st;
@@ -85,7 +86,14 @@ public class AccessControlConnection extends SailConnectionWrapper {
 							ACL.HAS_PERMISSION, null, true, ACL.CONTEXT);
 					Statement permStat;
 					while ((permStat = permissionStatements.next()) != null) {
-						permissions.add((URI)permStat.getObject());
+
+						Cursor<? extends Statement> operationStatements = getStatements((URI)permStat.getObject(),
+								ACL.HAS_OPERATION, operation, true, ACL.CONTEXT);
+
+						if (operationStatements.next() != null) {
+							permissions.add((URI)permStat.getObject());
+						}
+						operationStatements.close();
 					}
 					permissionStatements.close();
 				}
@@ -156,23 +164,28 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	{
 		boolean hasPermission = false;
 		
+		// TODO this is a backdoor for testing purposes.
+		if (ACL.ADMIN.equals(user)) {
+			return true;
+		}
+
 		URI subjectStatus = getObject(subject, ACL.HAS_STATUS);
 		URI subjectTeam = getObject(subject, ACL.HAS_TEAM);
-		
+
 		if (subjectStatus != null || subjectTeam != null) {
 			List<URI> permissions = getAssignedPermissions(getRolesForUser(user), operation);
-			
+
 			for (URI permission : permissions) {
 				boolean subjectMatch = false;
 				boolean teamMatch = false;
-				
+
 				if (subjectStatus != null) {
 					subjectMatch = subjectStatus.equals(getStatusForPermission(permission));
 				}
 				else {
 					subjectMatch = true;
 				}
-				
+
 				if (subjectTeam != null) {
 					teamMatch = subjectTeam.equals(getTeamForPermission(permission));
 				}
@@ -189,9 +202,9 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		else {
 			hasPermission = true;
 		}
-		
+
 		return hasPermission;
-		
+
 	}
 
 	/**
@@ -208,7 +221,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		Session session = SessionsManager.get();
 
 		if (hasPermissionOnSubject(session.getCurrentUser(), subj, ACL.EDIT)) {
-			super.addStatement(subj, pred, obj, contexts);
+			getDelegate().addStatement(subj, pred, obj, contexts);
 		}
 		else {
 			throw new StoreException("insufficient access rights on subject " + subj.stringValue());
@@ -230,7 +243,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				Resource subject = st.getSubject();
 
 				if (hasPermissionOnSubject(session.getCurrentUser(), subject, ACL.EDIT)) {
-					super.removeStatements(subject, pred, obj, contexts);
+					getDelegate().removeStatements(subject, pred, obj, contexts);
 				}
 			}
 			toBeRemovedStatements.close();

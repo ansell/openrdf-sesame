@@ -24,6 +24,13 @@ public class AccessControlSail extends SailWrapper {
 		super(sail);
 	}
 
+	/**
+	 * 
+	 */
+	public AccessControlSail() {
+		super();
+	}
+
 	@Override
 	public SailConnection getConnection()
 		throws StoreException
