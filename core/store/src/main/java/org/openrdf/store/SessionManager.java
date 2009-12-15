@@ -8,7 +8,7 @@ package org.openrdf.store;
 /**
  * Manages thread-based {@link Session sessions}.
  */
-public class SessionsManager {
+public class SessionManager {
 
 	/**
 	 * The registry for created sessions.
