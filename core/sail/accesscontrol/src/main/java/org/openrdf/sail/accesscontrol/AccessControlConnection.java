@@ -33,7 +33,7 @@ import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.accesscontrol.vocabulary.ACL;
 import org.openrdf.sail.helpers.SailConnectionWrapper;
 import org.openrdf.store.Session;
-import org.openrdf.store.SessionsManager;
+import org.openrdf.store.SessionManager;
 import org.openrdf.store.StoreException;
 
 /**
@@ -218,7 +218,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		Session session = SessionsManager.get();
+		Session session = SessionManager.get();
 
 		if (hasPermissionOnSubject(session.getCurrentUser(), subj, ACL.EDIT)) {
 			getDelegate().addStatement(subj, pred, obj, contexts);
@@ -233,7 +233,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		Session session = SessionsManager.get();
+		Session session = SessionManager.get();
 
 		if (subj == null) {
 			Cursor<? extends Statement> toBeRemovedStatements = this.getStatements(subj, pred, obj, false,
@@ -275,7 +275,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		private List<URI> permissions;
 
 		public AccessControlQueryExpander() {
-			session = SessionsManager.get();
+			session = SessionManager.get();
 		}
 
 		@Override

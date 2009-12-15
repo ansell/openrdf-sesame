@@ -36,7 +36,7 @@ import org.openrdf.sail.accesscontrol.vocabulary.ACL;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.nativerdf.config.NativeStoreConfig;
 import org.openrdf.store.Session;
-import org.openrdf.store.SessionsManager;
+import org.openrdf.store.SessionManager;
 import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
@@ -83,7 +83,7 @@ public class AccessControlSailTest extends TestCase {
 
 		Repository rep = manager.getRepository(repositoryId);
 
-		Session session = SessionsManager.get();
+		Session session = SessionManager.get();
 		
 		// DEBUG 
 		session.setCurrentUser(ACL.ADMIN);
@@ -127,7 +127,7 @@ public class AccessControlSailTest extends TestCase {
 		RepositoryConnection conn = rep.getConnection();
 
 		try {
-			Session session = SessionsManager.get();
+			Session session = SessionManager.get();
 			session.setCurrentUser(conn.getValueFactory().createURI("http://example.org/bob"));
 
 			String simpleDocumentQuery = "SELECT DISTINCT ?X WHERE {?X a <http://example.org/Document>; ?P ?Y . } ";
@@ -160,7 +160,7 @@ public class AccessControlSailTest extends TestCase {
 	{
 		RepositoryConnection conn = rep.getConnection();
 		try {
-			Session session = SessionsManager.get();
+			Session session = SessionManager.get();
 			session.setCurrentUser(conn.getValueFactory().createURI("http://example.org/bob"));
 			
 			ValueFactory valueFactory = conn.getValueFactory();
