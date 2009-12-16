@@ -10,6 +10,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import com.ontotext.trree.owlim_ext.config.OWLIMSailConfig;
+
 import junit.framework.TestCase;
 
 import org.openrdf.model.Statement;
@@ -30,7 +32,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.trig.TriGWriterFactory;
-import org.openrdf.sail.RDFStoreTest;
 import org.openrdf.sail.accesscontrol.config.AccessControlSailConfig;
 import org.openrdf.sail.accesscontrol.vocabulary.ACL;
 import org.openrdf.sail.config.SailImplConfig;
@@ -49,6 +50,8 @@ public class AccessControlSailTest extends TestCase {
 
 	private static String policyFile = "policies.ttl";
 
+	private static String ruleFile = "rules.ttl";
+	
 	private static String resourcePath = "accesscontrol/";
 
 	private ClassLoader cl = AccessControlSailTest.class.getClassLoader();
@@ -76,7 +79,7 @@ public class AccessControlSailTest extends TestCase {
 		throws StoreException, StoreConfigException
 	{
 
-		SailImplConfig sailImplConfig = new NativeStoreConfig();
+		SailImplConfig sailImplConfig = new OWLIMSailConfig();
 		sailImplConfig = new AccessControlSailConfig(sailImplConfig);
 		RepositoryConfig repConfig = new RepositoryConfig(new SailRepositoryConfig(sailImplConfig));
 		manager.addRepositoryConfig(repositoryId, repConfig.export());
@@ -106,6 +109,8 @@ public class AccessControlSailTest extends TestCase {
 			e.printStackTrace();
 		}
 		conn.close();
+		
+		session.setCurrentUser(null);
 	}
 
 	protected void setUp()
@@ -167,11 +172,16 @@ public class AccessControlSailTest extends TestCase {
 			
 			URI pmdoc1 = conn.getValueFactory().createURI("http://example.org/pmdocument1");
 			URI prdoc1 = conn.getValueFactory().createURI("http://example.org/prdocument1");
-
+			URI subsubdoc1 = conn.getValueFactory().createURI("http://example.org/subsubdoc1");
+			
 			Statement legalStatement = valueFactory.createStatement(prdoc1, RDFS.LABEL, valueFactory.createLiteral("legal new statement"));
 			
 			conn.add(legalStatement);
 
+			Statement legalSubStatement = valueFactory.createStatement(subsubdoc1,RDFS.LABEL, valueFactory.createLiteral("legal sub stateement"));
+			
+			conn.add(legalSubStatement);
+			
 			Statement illegalStatement = valueFactory.createStatement(pmdoc1, RDFS.LABEL, valueFactory.createLiteral("illegal new statement"));
 			try {
 				conn.add(illegalStatement);
@@ -182,7 +192,6 @@ public class AccessControlSailTest extends TestCase {
 				// expected
 				System.out.println(" expected store exception thrown: " + e.getMessage());
 			}
-			
 			
 		}
 		finally {
