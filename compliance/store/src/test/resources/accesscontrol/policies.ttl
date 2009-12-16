@@ -3,6 +3,10 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix acl: <http://www.openrdf.org/schema/sesame/acl/> .
 @prefix ex: <http://example.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+ex:subItem a owl:TransitiveProperty ;	
+	   a acl:InheritanceProperty .
 
 ex:bob a acl:User;
        acl:hasRole ex:Researcher .
