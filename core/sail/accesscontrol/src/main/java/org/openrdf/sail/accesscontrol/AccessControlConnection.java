@@ -13,6 +13,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Bound;
@@ -41,23 +42,66 @@ import org.openrdf.store.StoreException;
  */
 public class AccessControlConnection extends SailConnectionWrapper {
 
-	private URI getObject(Resource subject, URI predicate, Resource... contexts)
+	private URI _inheritanceProperty;
+
+	private Resource getPropertyResourceValue(Resource subject, URI predicate, boolean inherit, Resource... contexts)
 		throws StoreException
 	{
 
-		URI result = null;
+		Resource result = null;
 		Cursor<? extends Statement> statements = getStatements(subject, predicate, null, true, contexts);
 
 		Statement st;
 		while ((st = statements.next()) != null) {
-			if (st.getObject() instanceof URI) {
-				result = (URI)st.getObject();
+			if (st.getObject() instanceof Resource) {
+				result = (Resource)st.getObject();
 				break;
 			}
 		}
 		statements.close();
 
+		// see if we should try and find a value from the supplied resource's parent.
+		if (result == null && inherit) {
+			URI inheritanceProperty = getInheritanceProperty();
+			
+			if (inheritanceProperty != null) {
+				Cursor<? extends Statement> parentStatements = getStatements(null, inheritanceProperty, subject, true);
+				
+				Statement parentStatement;
+				while ((parentStatement = parentStatements.next()) != null) {
+					result = getPropertyResourceValue(parentStatement.getSubject(), predicate, false, contexts);
+					if (result != null) {
+						break;
+					}
+				}
+				
+				parentStatements.close();
+			}
+		}
+
 		return result;
+	}
+
+	private URI getInheritanceProperty()
+		throws StoreException
+	{
+
+		if (_inheritanceProperty == null) {
+
+			Cursor<? extends Statement> statements = getStatements(null, RDF.TYPE, ACL.INHERITANCE_PROPERTY,
+					true);
+
+			Statement st;
+			while ((st = statements.next()) != null) {
+				if (st.getSubject() instanceof URI) {
+					_inheritanceProperty = (URI)st.getSubject();
+					break;
+				}
+			}
+			statements.close();
+		}
+
+		return _inheritanceProperty;
 	}
 
 	/**
@@ -108,10 +152,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		return permissions;
 	}
 
-	private URI getMatchPattern(URI permission)
+	private Resource getMatchPattern(URI permission)
 		throws StoreException
 	{
-		URI match = getObject(permission, ACL.HAS_MATCH, ACL.CONTEXT);
+		Resource match = getPropertyResourceValue(permission, ACL.HAS_MATCH, false, ACL.CONTEXT);
 		return match;
 	}
 
@@ -119,9 +163,9 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		throws StoreException
 	{
 
-		URI match = getMatchPattern(permission);
+		Resource match = getMatchPattern(permission);
 
-		URI team = getObject(match, ACL.HAS_TEAM, ACL.CONTEXT);
+		URI team = (URI)getPropertyResourceValue(match, ACL.HAS_TEAM, false, ACL.CONTEXT);
 
 		return team;
 	}
@@ -152,25 +196,47 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		throws StoreException
 	{
 
-		URI match = getMatchPattern(permission);
+		Resource match = getMatchPattern(permission);
 
-		URI status = getObject(match, ACL.HAS_STATUS, ACL.CONTEXT);
+		URI status = (URI)getPropertyResourceValue(match, ACL.HAS_STATUS, false, ACL.CONTEXT);
 
 		return status;
 	}
 
+	public boolean isEditable(Resource subject) throws StoreException {
+		
+		Session session = SessionManager.get();
+		if (session != null) {
+			URI user = session.getCurrentUser();
+			
+			return hasPermissionOnSubject(user, subject, ACL.EDIT);
+		}
+		return false;
+	}
+
+	public boolean isViewable(Resource subject) throws StoreException {
+		
+		Session session = SessionManager.get();
+		if (session != null) {
+			URI user = session.getCurrentUser();
+			
+			return hasPermissionOnSubject(user, subject, ACL.VIEW);
+		}
+		return false;
+	}
+	
 	private boolean hasPermissionOnSubject(URI user, Resource subject, URI operation)
 		throws StoreException
 	{
 		boolean hasPermission = false;
-		
+
 		// TODO this is a backdoor for testing purposes.
 		if (ACL.ADMIN.equals(user)) {
 			return true;
 		}
 
-		URI subjectStatus = getObject(subject, ACL.HAS_STATUS);
-		URI subjectTeam = getObject(subject, ACL.HAS_TEAM);
+		URI subjectStatus = (URI)getPropertyResourceValue(subject, ACL.HAS_STATUS, true);
+		URI subjectTeam = (URI)getPropertyResourceValue(subject, ACL.HAS_TEAM, true);
 
 		if (subjectStatus != null || subjectTeam != null) {
 			List<URI> permissions = getAssignedPermissions(getRolesForUser(user), operation);
@@ -218,9 +284,8 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		Session session = SessionManager.get();
 
-		if (hasPermissionOnSubject(session.getCurrentUser(), subj, ACL.EDIT)) {
+		if (isEditable(subj)) {
 			getDelegate().addStatement(subj, pred, obj, contexts);
 		}
 		else {
@@ -233,8 +298,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		Session session = SessionManager.get();
-
 		if (subj == null) {
 			Cursor<? extends Statement> toBeRemovedStatements = this.getStatements(subj, pred, obj, false,
 					contexts);
@@ -242,7 +305,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			while ((st = toBeRemovedStatements.next()) != null) {
 				Resource subject = st.getSubject();
 
-				if (hasPermissionOnSubject(session.getCurrentUser(), subject, ACL.EDIT)) {
+				if (isEditable(subject)) {
 					getDelegate().removeStatements(subject, pred, obj, contexts);
 				}
 			}
@@ -250,7 +313,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		}
 		else {
 
-			if (hasPermissionOnSubject(session.getCurrentUser(), subj, ACL.EDIT)) {
+			if (isEditable(subj)) {
 				super.removeStatements(subj, pred, obj, contexts);
 			}
 		}
@@ -302,6 +365,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			 *  OPTIONAL { ?subject acl:hasStatus ?status .
 			 *             ?subject acl:hasTeam ?team .
 			 *            }
+			 * OPTIONAL { ?parent ex:subItem ?subject .
+			 *            ?parent acl:hasStatus ?parentStatus .
+			 *            ?parent acl:hasTeam ?parentTeam.
+			 *          }
 			 *            
 			 *  or in terms of the algebra:
 			 *            
