@@ -43,6 +43,8 @@ public class ACL {
 
 	// 
 	public static final URI ADMIN;
+
+	public static final URI INHERITANCE_PROPERTY;
 	
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -70,5 +72,7 @@ public class ACL {
 		EDIT = factory.createURI(NAMESPACE, "edit");
 	
 		ADMIN = factory.createURI(NAMESPACE, "administrator");
+		INHERITANCE_PROPERTY = factory.createURI(NAMESPACE, "InheritanceProperty");
+		
 	}
 }
