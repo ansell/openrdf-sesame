@@ -88,7 +88,7 @@ public class AccessControlSailTest extends TestCase {
 		Session session = SessionManager.get();
 		
 		// DEBUG 
-		session.setCurrentUser(ACL.ADMIN);
+		session.setUsername("administrator");
 
 		RepositoryConnection conn = rep.getConnection();
 		try {
@@ -109,7 +109,7 @@ public class AccessControlSailTest extends TestCase {
 		}
 		conn.close();
 		
-		session.setCurrentUser(null);
+		session.setUsername(null);
 	}
 
 	protected void setUp()
@@ -132,7 +132,7 @@ public class AccessControlSailTest extends TestCase {
 
 		try {
 			Session session = SessionManager.get();
-			session.setCurrentUser(conn.getValueFactory().createURI("http://example.org/bob"));
+			session.setUsername("bob");
 
 			String simpleDocumentQuery = "SELECT DISTINCT ?X WHERE {?X a <http://example.org/Document>; ?P ?Y . } ";
 			TupleResult tr = conn.prepareTupleQuery(QueryLanguage.SPARQL, simpleDocumentQuery).evaluate();
@@ -166,7 +166,7 @@ public class AccessControlSailTest extends TestCase {
 		RepositoryConnection conn = rep.getConnection();
 		try {
 			Session session = SessionManager.get();
-			session.setCurrentUser(conn.getValueFactory().createURI("http://example.org/bob"));
+			session.setUsername("bob");
 			
 			ValueFactory valueFactory = conn.getValueFactory();
 			
