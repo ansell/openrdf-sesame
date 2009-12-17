@@ -12,9 +12,11 @@ ex:hasTeam a acl:AccessAttribute.
 ex:hasStatus a acl:AccessAttribute.
 
 ex:bob a acl:User;
+       acl:username "bob"^^xsd:string ;
        acl:hasRole ex:Researcher .
 
 ex:alice a acl:User;
+         acl:username "alice"^^xsd:string ;
          acl:hasRole ex:Manager .
 
 ex:Manager a acl:Role.
