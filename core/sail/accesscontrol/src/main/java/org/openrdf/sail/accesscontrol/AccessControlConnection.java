@@ -11,11 +11,13 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.openrdf.cursor.Cursor;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Bound;
@@ -47,6 +49,76 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	private URI _inheritanceProperty;
 
 	private List<URI> _accessAttributes;
+
+	private URI _currentUser;
+
+	/**
+	 * @param delegate
+	 */
+	public AccessControlConnection(SailConnection delegate) {
+		super(delegate);
+	}
+
+	public boolean isEditable(Resource subject)
+		throws StoreException
+	{
+		return hasPermissionOnSubject(getCurrentUser(), subject, ACL.EDIT);
+	}
+
+	public boolean isViewable(Resource subject)
+		throws StoreException
+	{
+		return hasPermissionOnSubject(getCurrentUser(), subject, ACL.VIEW);
+	}
+
+	@Override
+	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+
+		if (isEditable(subj)) {
+			getDelegate().addStatement(subj, pred, obj, contexts);
+		}
+		else {
+			throw new StoreException("insufficient access rights on subject " + subj.stringValue());
+		}
+
+	}
+
+	@Override
+	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws StoreException
+	{
+		if (subj == null) {
+			Cursor<? extends Statement> toBeRemovedStatements = this.getStatements(subj, pred, obj, false,
+					contexts);
+			Statement st;
+			while ((st = toBeRemovedStatements.next()) != null) {
+				Resource subject = st.getSubject();
+
+				if (isEditable(subject)) {
+					getDelegate().removeStatements(subject, pred, obj, contexts);
+				}
+			}
+			toBeRemovedStatements.close();
+		}
+		else {
+
+			if (isEditable(subj)) {
+				super.removeStatements(subj, pred, obj, contexts);
+			}
+		}
+
+	}
+
+	@Override
+	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
+		throws StoreException
+	{
+		query.visit(new AccessControlQueryExpander());
+
+		return super.evaluate(query, bindings, includeInferred);
+	}
 
 	private Resource getPropertyResourceValue(Resource subject, URI predicate, boolean inherit,
 			Resource... contexts)
@@ -200,30 +272,44 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		return roles;
 	}
 
-	public boolean isEditable(Resource subject)
+	private URI getCurrentUser()
 		throws StoreException
 	{
-
-		Session session = SessionManager.get();
-		if (session != null) {
-			URI user = session.getCurrentUser();
-
-			return hasPermissionOnSubject(user, subject, ACL.EDIT);
+		if (_currentUser == null) {
+			setCurrentUser();
 		}
-		return false;
+		return _currentUser;
 	}
 
-	public boolean isViewable(Resource subject)
+	private void setCurrentUser()
 		throws StoreException
 	{
+		if (_currentUser == null) {
+			Session session = SessionManager.get();
+			if (session != null) {
+				String username = session.getUsername();
 
-		Session session = SessionManager.get();
-		if (session != null) {
-			URI user = session.getCurrentUser();
+				if (username == null) {
+					return;
+				}
 
-			return hasPermissionOnSubject(user, subject, ACL.VIEW);
+				// backdoor for administrator user.
+				if (username.equals("administrator")) {
+					_currentUser = ACL.ADMIN;
+					return;
+				}
+
+				Literal usernameLiteral = this.getValueFactory().createLiteral(username, XMLSchema.STRING);
+				Cursor<? extends Statement> statements = getStatements(null, ACL.USERNAME, usernameLiteral, true,
+						ACL.CONTEXT);
+
+				Statement st;
+				if ((st = statements.next()) != null) {
+					_currentUser = (URI)st.getSubject();
+				}
+				statements.close();
+			}
 		}
-		return false;
 	}
 
 	private List<URI> getAccessAttributes()
@@ -315,62 +401,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 	}
 
-	/**
-	 * @param delegate
-	 */
-	public AccessControlConnection(SailConnection delegate) {
-		super(delegate);
-	}
-
-	@Override
-	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
-	{
-
-		if (isEditable(subj)) {
-			getDelegate().addStatement(subj, pred, obj, contexts);
-		}
-		else {
-			throw new StoreException("insufficient access rights on subject " + subj.stringValue());
-		}
-
-	}
-
-	@Override
-	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
-	{
-		if (subj == null) {
-			Cursor<? extends Statement> toBeRemovedStatements = this.getStatements(subj, pred, obj, false,
-					contexts);
-			Statement st;
-			while ((st = toBeRemovedStatements.next()) != null) {
-				Resource subject = st.getSubject();
-
-				if (isEditable(subject)) {
-					getDelegate().removeStatements(subject, pred, obj, contexts);
-				}
-			}
-			toBeRemovedStatements.close();
-		}
-		else {
-
-			if (isEditable(subj)) {
-				super.removeStatements(subj, pred, obj, contexts);
-			}
-		}
-
-	}
-
-	@Override
-	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
-		throws StoreException
-	{
-		query.visit(new AccessControlQueryExpander());
-
-		return super.evaluate(query, bindings, includeInferred);
-	}
-
 	protected class AccessControlQueryExpander extends QueryModelVisitorBase<StoreException> {
 
 		private Session session;
@@ -426,6 +456,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			 *  )
 			 */
 			List<URI> attributes = getAccessAttributes();
+			
+			if (attributes == null || attributes.size() == 0) {
+				return;
+			}
 
 			Join attributeJoin = new Join();
 			int i = 0;
@@ -439,7 +473,15 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				attributeJoin.addArg(attributePattern);
 			}
 
-			TupleExpr expandedPattern = new LeftJoin(statementPattern, attributeJoin);
+			
+			TupleExpr expandedPattern = null;
+			
+			if (attributeJoin.getNumberOfArguments() == 1) {
+				expandedPattern = new LeftJoin(statementPattern, attributeJoin.getArg(0));
+			}
+			else {
+				expandedPattern = new LeftJoin(statementPattern, attributeJoin);
+			}
 
 			// build an Or-ed set of filter conditions on the status and team.
 			Or filterConditions = new Or();
@@ -456,9 +498,8 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			filterConditions.addArg(and);
 
 			if (permissions == null) {
-				List<URI> roles = getRolesForUser(session.getCurrentUser());
+				List<URI> roles = getRolesForUser(getCurrentUser());
 				permissions = getAssignedPermissions(roles, ACL.VIEW);
-
 			}
 
 			// for each permission, we add an additional condition to the filter,
@@ -485,14 +526,19 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				}
 				else {
 					// add the permission-defined condition to the set of Or-ed
-					// filter
-					// conditions.
+					// filter conditions.
 					filterConditions.addArg(permissionCondition);
 				}
 			}
 
 			// set the filter conditions on the query pattern
-			expandedPattern = new Filter(expandedPattern, filterConditions);
+			if (filterConditions.getNumberOfArguments() == 1) {
+				// no second argument in the or
+				expandedPattern = new Filter(expandedPattern, filterConditions.getArg(0));
+			}
+			else {
+				expandedPattern = new Filter(expandedPattern, filterConditions);
+			}
 
 			// expand the query.
 			parent.replaceChildNode(statementPattern, expandedPattern);

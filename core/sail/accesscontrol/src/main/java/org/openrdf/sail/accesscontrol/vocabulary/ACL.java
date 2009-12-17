@@ -30,6 +30,7 @@ public class ACL {
 	public static final URI HAS_PERMISSION;
 	public static final URI HAS_OPERATION;
 	public static final URI HAS_MATCH;
+	public static final URI USERNAME;
 
 	public static final URI TO_ROLE;
 	
@@ -60,6 +61,7 @@ public class ACL {
 		
 		HAS_OPERATION = factory.createURI(NAMESPACE, "hasOperation");
 		HAS_MATCH = factory.createURI(NAMESPACE, "hasMatch");
+		USERNAME = factory.createURI(NAMESPACE, "username");
 		
 		TO_ROLE = factory.createURI(NAMESPACE, "toRole");
 		
