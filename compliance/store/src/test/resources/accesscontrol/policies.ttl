@@ -8,6 +8,9 @@
 ex:subItem a owl:TransitiveProperty ;	
 	   a acl:InheritanceProperty .
 
+ex:hasTeam a acl:AccessAttribute.
+ex:hasStatus a acl:AccessAttribute.
+
 ex:bob a acl:User;
        acl:hasRole ex:Researcher .
 
@@ -32,8 +35,8 @@ ex:permission1 a acl:Permission ;
 	acl:hasOperation acl:view;
 	acl:hasOperation acl:edit;
 	acl:hasMatch [ a acl:ObjectMatch  ;
-	               acl:hasTeam ex:Researcher ;
-		       acl:hasStatus ex:private ] .
+	               ex:hasTeam ex:Researcher ;
+		       ex:hasStatus ex:private ] .
 
 ex:assignment2 a acl:PermissionAssignment ;
 	acl:toRole ex:Manager ;
@@ -43,8 +46,8 @@ ex:permission2 a acl:Permission ;
 	acl:hasOperation acl:view;
 	acl:hasOperation acl:edit;
 	acl:hasMatch [ a acl:ObjectMatch  ;
-	               acl:hasTeam ex:Manager ;
-		       acl:hasStatus ex:private ] .
+	               ex:hasTeam ex:Manager ;
+		       ex:hasStatus ex:private ] .
 
 ex:assignment3 a acl:PermissionAssignment ;
 	acl:toRole ex:Manager ;
@@ -53,5 +56,5 @@ ex:assignment3 a acl:PermissionAssignment ;
 ex:permission3 a acl:Permission ;
 	acl:hasOperation acl:view;
 	acl:hasMatch [ a acl:ObjectMatch  ;
-		       acl:hasStatus ex:public ] .
+		       ex:hasStatus ex:public ] .
 

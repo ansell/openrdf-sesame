@@ -7,15 +7,15 @@
 ex:prdocument1 a ex:Document ;
 	rdfs:label "private researcher document 1" ;
 	ex:editor ex:william ;
-	acl:hasTeam ex:Researcher ;
-	acl:hasStatus ex:private ;
+	ex:hasTeam ex:Researcher ;
+	ex:hasStatus ex:private ;
 	ex:subItem ex:subdoc1 .
 
 ex:prdocument2 a ex:Document ;
 	rdfs:label "private researcher document 2" ;
 	ex:editor ex:bob ;
-	acl:hasTeam ex:Researcher ;
-	acl:hasStatus ex:private .
+	ex:hasTeam ex:Researcher ;
+	ex:hasStatus ex:private .
 
 ex:subdoc1 a ex:Document ;
     rdfs:label "private researcher subdocument 1" ;
@@ -29,20 +29,20 @@ ex:subsubdoc1 a ex:Document ;
 ex:pmdocument1 a ex:Document ;
 	rdfs:label "private manager document 1" ;
 	ex:editor ex:william ;
-	acl:hasTeam ex:Manager ;
-	acl:hasStatus ex:private .
+	ex:hasTeam ex:Manager ;
+	ex:hasStatus ex:private .
 
 ex:pmdocument2 a ex:Document ;
 	rdfs:label "private manager document 2" ;
 	ex:editor ex:alice ;
-	acl:hasTeam ex:Manager ;
-	acl:hasStatus ex:private .
+	ex:hasTeam ex:Manager ;
+	ex:hasStatus ex:private .
 
 ex:pumdocument1 a ex:Document ;
 	rdfs:label "public manager document 1" ;
 	ex:editor ex:william ;
-	acl:hasTeam ex:Manager ;
-	acl:hasStatus ex:public ;
+	ex:hasTeam ex:Manager ;
+	ex:hasStatus ex:public ;
 	ex:subItem ex:pubsubdoc1 .
 
 ex:pubsubdoc1 a ex:Document ;
@@ -52,8 +52,8 @@ ex:pubsubdoc1 a ex:Document ;
 ex:pumdocument2 a ex:Document ;
 	rdfs:label "public manager document 2" ;
 	ex:editor ex:alice ;
-	acl:hasTeam ex:Manager ;
-	acl:hasStatus ex:public .
+	ex:hasTeam ex:Manager ;
+	ex:hasStatus ex:public .
 
 ex:nonRestrictedDocument a ex:Document ;
 	rdfs:label "non-restricted document " ;
