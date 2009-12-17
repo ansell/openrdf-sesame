@@ -58,12 +58,28 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		super(delegate);
 	}
 
+	/**
+	 * Verifies if the supplied subject is editable by the current user.
+	 * 
+	 * @param subject
+	 *        the subject for which edit permission is to be checked.
+	 * @return true if the subject is editable by the current user, false if not.
+	 * @throws StoreException
+	 */
 	public boolean isEditable(Resource subject)
 		throws StoreException
 	{
 		return hasPermissionOnSubject(getCurrentUser(), subject, ACL.EDIT);
 	}
 
+	/**
+	 * Verifies if the supplied subject is viewable by the current user.
+	 * 
+	 * @param subject
+	 *        the subject for which view permission is to be checked.
+	 * @return true if the subject is viewable by the current user, false if not.
+	 * @throws StoreException
+	 */
 	public boolean isViewable(Resource subject)
 		throws StoreException
 	{
@@ -124,13 +140,39 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 		return super.evaluate(query, bindings, includeInferred);
 	}
-	
+
 	@Override
-	public void close() throws StoreException {
+	public void close()
+		throws StoreException
+	{
+
+		// flush locally stored acl info
 		_currentUser = null;
+		_inheritanceProperty = null;
+		_accessAttributes = null;
+
 		super.close();
 	}
 
+	/**
+	 * Retrieves the property value for supplied subject and predicate, if that
+	 * value is a resource. Optionally, it uses the acl:InheritanceProperty to
+	 * find a value for the supplied predicate on one of the subject's parents.
+	 * 
+	 * @param subject
+	 *        the subject node for which to retrieve the property value as a
+	 *        Resource.
+	 * @param predicate
+	 *        the property name for which to retrieve the value.
+	 * @param inherit
+	 *        indicates if the subject's parent(s) should be checked for a
+	 *        property value if the subject has no valid value itself.
+	 * @param contexts
+	 *        zero or more contexts in which to find the value.
+	 * @return a property value as a resource, or null if no valid property value
+	 *         was found.
+	 * @throws StoreException
+	 */
 	private Resource getPropertyResourceValue(Resource subject, URI predicate, boolean inherit,
 			Resource... contexts)
 		throws StoreException
@@ -323,6 +365,13 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		}
 	}
 
+	/***
+	 * Retrieve all instances of acl:AccessAttribute from the ACL context.
+	 * 
+	 * @return a list of URIs representing the attributes in terms of which
+	 *         object matches are defined. May be empty.
+	 * @throws StoreException
+	 */
 	private List<URI> getAccessAttributes()
 		throws StoreException
 	{
@@ -442,18 +491,14 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			handledSubjects.add(subjectVar);
 
 			// TODO handle usage of parent for retrieval of attributes.
+
 			/*
 			 * Create this pattern:
 			 *
 			 *  ?subject ?predicate ?object. (= the original statementPattern)
-			 *  OPTIONAL { { ?subject acl:hasStatus ?status .
-			 *               ?subject acl:hasTeam ?team . }
-			 *              UNION 
-			 *             { 
-			 *               ?parent ex:subItem ?subject .
-			 *               ?parent acl:hasStatus ?status .
-			 *               ?parent acl:hasTeam ?team. 
-			 *              }
+			 *  OPTIONAL { ?subject foo:accessAttr1 ?accessAttrValue1.
+			 *  			   ?subject foo:accessAttr2 ?accessAttrValue2.
+			 *             ...
 			 *            }
 			 *            
 			 *  or in terms of the algebra:
@@ -461,13 +506,14 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			 *  LeftJoin(
 			 *  	SP(?subject, ?predicate, ?object), 
 			 *  	Join(
-			 *  		SP(?subject, acl:hasStatus, ?status), 
-			 *       SP(?subject, acl:hasTeam, ?team)
+			 *  		SP(?subject, accessAttr1, ?accessAttrValue1), 
+			 *       SP(?subject, accessAttr2, ?accessAttrValue2)
+			 *       ...
 			 *     )
 			 *  )
 			 */
 			List<URI> attributes = getAccessAttributes();
-			
+
 			if (attributes == null || attributes.size() == 0) {
 				return;
 			}
@@ -484,9 +530,8 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				attributeJoin.addArg(attributePattern);
 			}
 
-			
 			TupleExpr expandedPattern = null;
-			
+
 			if (attributeJoin.getNumberOfArguments() == 1) {
 				expandedPattern = new LeftJoin(statementPattern, attributeJoin.getArg(0));
 			}
