@@ -31,9 +31,6 @@ public class ACL {
 	public static final URI HAS_OPERATION;
 	public static final URI HAS_MATCH;
 
-	public static final URI HAS_TEAM;
-	public static final URI HAS_STATUS;
-
 	public static final URI TO_ROLE;
 	
 	
@@ -45,6 +42,7 @@ public class ACL {
 	public static final URI ADMIN;
 
 	public static final URI INHERITANCE_PROPERTY;
+	public static final URI ACCESS_ATTRIBUTE;
 	
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -62,9 +60,6 @@ public class ACL {
 		
 		HAS_OPERATION = factory.createURI(NAMESPACE, "hasOperation");
 		HAS_MATCH = factory.createURI(NAMESPACE, "hasMatch");
-
-		HAS_TEAM = factory.createURI(NAMESPACE, "hasTeam");
-		HAS_STATUS = factory.createURI(NAMESPACE, "hasStatus");
 		
 		TO_ROLE = factory.createURI(NAMESPACE, "toRole");
 		
@@ -73,6 +68,7 @@ public class ACL {
 	
 		ADMIN = factory.createURI(NAMESPACE, "administrator");
 		INHERITANCE_PROPERTY = factory.createURI(NAMESPACE, "InheritanceProperty");
+		ACCESS_ATTRIBUTE = factory.createURI(NAMESPACE, "AccessAttribute");
 		
 	}
 }
