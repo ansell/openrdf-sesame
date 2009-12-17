@@ -5,7 +5,6 @@
  */
 package org.openrdf.store;
 
-import org.openrdf.model.URI;
 
 /**
  * Stores thread-based session information. Sessions are typically initialized
@@ -13,21 +12,21 @@ import org.openrdf.model.URI;
  */
 public class Session {
 
-	private URI currentUser; 
+	private String username; 
 	
 	/**
-	 * Retrieve the id of the current user
-	 * @return the id of the current user, as a URI
+	 * Retrieve the username of the current user
+	 * @return the username of the current user
 	 */
-	public URI getCurrentUser() {
-		return currentUser;
+	public String getUsername() {
+		return username;
 	}
 	
 	/**
-	 * Sets the id of the current user.
-	 * @param currentUser the id of the current user, as a URI.
+	 * Sets the username of the current user.
+	 * @param currentUser the username of the current user, as a URI.
 	 */
-	public void setCurrentUser(URI currentUser) {
-		this.currentUser = currentUser;
+	public void setUsername(String currentUser) {
+		this.username = currentUser;
 	}
 }
