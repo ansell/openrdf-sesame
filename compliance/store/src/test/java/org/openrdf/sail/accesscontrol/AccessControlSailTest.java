@@ -10,9 +10,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import com.ontotext.trree.owlim_ext.config.OWLIMSailConfig;
-
 import junit.framework.TestCase;
+
+import com.ontotext.trree.owlim_ext.config.OWLIMSailConfig;
 
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -35,7 +35,6 @@ import org.openrdf.rio.trig.TriGWriterFactory;
 import org.openrdf.sail.accesscontrol.config.AccessControlSailConfig;
 import org.openrdf.sail.accesscontrol.vocabulary.ACL;
 import org.openrdf.sail.config.SailImplConfig;
-import org.openrdf.sail.nativerdf.config.NativeStoreConfig;
 import org.openrdf.store.Session;
 import org.openrdf.store.SessionManager;
 import org.openrdf.store.StoreConfigException;
@@ -148,8 +147,9 @@ public class AccessControlSailTest extends TestCase {
 
 				for (String header : headers) {
 					Value value = bs.getValue(header);
-					assertNotSame(value, pmdoc1);
-					assertNotSame(value, pmdoc2);
+					
+					assertFalse(pmdoc1.stringValue(), value.equals(pmdoc1));
+					assertFalse(pmdoc2.stringValue(), value.equals(pmdoc2));
 					System.out.println(header + " = " + value);
 				}
 				System.out.println();
