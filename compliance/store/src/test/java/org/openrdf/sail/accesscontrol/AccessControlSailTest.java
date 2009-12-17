@@ -50,7 +50,7 @@ public class AccessControlSailTest extends TestCase {
 	private static String policyFile = "policies.ttl";
 
 	private static String ruleFile = "rules.ttl";
-	
+
 	private static String resourcePath = "accesscontrol/";
 
 	private ClassLoader cl = AccessControlSailTest.class.getClassLoader();
@@ -86,8 +86,8 @@ public class AccessControlSailTest extends TestCase {
 		Repository rep = manager.getRepository(repositoryId);
 
 		Session session = SessionManager.get();
-		
-		// DEBUG 
+
+		// DEBUG
 		session.setUsername("administrator");
 
 		RepositoryConnection conn = rep.getConnection();
@@ -108,7 +108,7 @@ public class AccessControlSailTest extends TestCase {
 			e.printStackTrace();
 		}
 		conn.close();
-		
+
 		session.setUsername(null);
 	}
 
@@ -117,7 +117,7 @@ public class AccessControlSailTest extends TestCase {
 	{
 		createNewTestingRepository();
 		rep = manager.getRepository(repositoryId);
-		
+
 		FileOutputStream os = new FileOutputStream("D:/temp/export-acl-test.trig");
 
 		RDFWriter writer = new TriGWriterFactory().getWriter(os);
@@ -147,7 +147,7 @@ public class AccessControlSailTest extends TestCase {
 
 				for (String header : headers) {
 					Value value = bs.getValue(header);
-					
+
 					assertFalse(pmdoc1.stringValue(), value.equals(pmdoc1));
 					assertFalse(pmdoc2.stringValue(), value.equals(pmdoc2));
 					System.out.println(header + " = " + value);
@@ -165,38 +165,131 @@ public class AccessControlSailTest extends TestCase {
 	{
 		RepositoryConnection conn = rep.getConnection();
 		try {
-			Session session = SessionManager.get();
-			session.setUsername("bob");
-			
 			ValueFactory valueFactory = conn.getValueFactory();
-			
-			URI pmdoc1 = conn.getValueFactory().createURI("http://example.org/pmdocument1");
-			URI prdoc1 = conn.getValueFactory().createURI("http://example.org/prdocument1");
-			URI subsubdoc1 = conn.getValueFactory().createURI("http://example.org/subsubdoc1");
-			
-			Statement legalStatement = valueFactory.createStatement(prdoc1, RDFS.LABEL, valueFactory.createLiteral("legal new statement"));
-			
-			conn.add(legalStatement);
 
-			Statement legalSubStatement = valueFactory.createStatement(subsubdoc1,RDFS.LABEL, valueFactory.createLiteral("legal sub stateement"));
-			
-			conn.add(legalSubStatement);
-			
-			Statement illegalStatement = valueFactory.createStatement(pmdoc1, RDFS.LABEL, valueFactory.createLiteral("illegal new statement"));
+			URI prdoc1 = valueFactory.createURI("http://example.org/prdocument1");
+
+			Statement legalStatement = valueFactory.createStatement(prdoc1, RDFS.LABEL,
+					valueFactory.createLiteral("legal new statement"));
+
 			try {
-				conn.add(illegalStatement);
-				
+				conn.add(legalStatement);
+
 				fail("should have thrown exception");
 			}
 			catch (StoreException e) {
 				// expected
 				System.out.println(" expected store exception thrown: " + e.getMessage());
 			}
-			
 		}
 		finally {
 			conn.close();
 		}
+
+		Session session = SessionManager.get();
+		session.setUsername("bob");
+
+		conn = rep.getConnection();
+		try {
+
+			ValueFactory valueFactory = conn.getValueFactory();
+
+			URI pmdoc1 = conn.getValueFactory().createURI("http://example.org/pmdocument1");
+			URI prdoc1 = conn.getValueFactory().createURI("http://example.org/prdocument1");
+			URI subsubdoc1 = conn.getValueFactory().createURI("http://example.org/subsubdoc1");
+
+			Statement legalStatement = valueFactory.createStatement(prdoc1, RDFS.LABEL,
+					valueFactory.createLiteral("legal new statement"));
+
+			conn.add(legalStatement);
+
+			Statement legalSubStatement = valueFactory.createStatement(subsubdoc1, RDFS.LABEL,
+					valueFactory.createLiteral("legal sub stateement"));
+
+			conn.add(legalSubStatement);
+
+			Statement illegalStatement = valueFactory.createStatement(pmdoc1, RDFS.LABEL,
+					valueFactory.createLiteral("illegal new statement"));
+			try {
+				conn.add(illegalStatement);
+
+				fail("should have thrown exception");
+			}
+			catch (StoreException e) {
+				// expected
+				System.out.println(" expected store exception thrown: " + e.getMessage());
+			}
+		}
+		finally {
+			conn.close();
+		}
+
+	}
+
+	public void testRemoveStatements()
+		throws Exception
+	{
+		RepositoryConnection conn = rep.getConnection();
+		try {
+			ValueFactory valueFactory = conn.getValueFactory();
+
+			URI prdoc1 = valueFactory.createURI("http://example.org/prdocument1");
+
+			Statement legalStatement = valueFactory.createStatement(prdoc1, RDFS.LABEL,
+					valueFactory.createLiteral("legal new statement"));
+
+			try {
+				conn.remove(legalStatement);
+
+				fail("should have thrown exception");
+			}
+			catch (StoreException e) {
+				// expected
+				System.out.println(" expected store exception thrown: " + e.getMessage());
+			}
+		}
+		finally {
+			conn.close();
+		}
+
+		Session session = SessionManager.get();
+		session.setUsername("bob");
+
+		conn = rep.getConnection();
+		try {
+
+			ValueFactory valueFactory = conn.getValueFactory();
+
+			URI pmdoc1 = conn.getValueFactory().createURI("http://example.org/pmdocument1");
+			URI prdoc1 = conn.getValueFactory().createURI("http://example.org/prdocument1");
+			URI subsubdoc1 = conn.getValueFactory().createURI("http://example.org/subsubdoc1");
+
+			Statement legalStatement = valueFactory.createStatement(prdoc1, RDFS.LABEL,
+					valueFactory.createLiteral("legal new statement"));
+
+			conn.remove(legalStatement);
+
+			Statement legalSubStatement = valueFactory.createStatement(subsubdoc1, RDFS.LABEL,
+					valueFactory.createLiteral("legal sub stateement"));
+
+			conn.remove(legalSubStatement);
+
+			Statement illegalStatement = valueFactory.createStatement(pmdoc1, RDFS.LABEL,
+					valueFactory.createLiteral("illegal new statement"));
+			try {
+				conn.remove(illegalStatement);
+
+				fail("should have thrown exception");
+			}
+			catch (StoreException e) {
+				// expected
+				System.out.println(" expected store exception thrown: " + e.getMessage());
+			}
+		}
+		finally {
+			conn.close();
+		}
+
 	}
 
 }
