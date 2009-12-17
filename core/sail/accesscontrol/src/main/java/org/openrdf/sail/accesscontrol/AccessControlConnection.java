@@ -31,7 +31,6 @@ import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.sail.SailConnection;
@@ -99,6 +98,9 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				if (isEditable(subject)) {
 					getDelegate().removeStatements(subject, pred, obj, contexts);
 				}
+				else {
+					throw new StoreException("insufficient access rights on subject " + subject.stringValue());
+				}
 			}
 			toBeRemovedStatements.close();
 		}
@@ -106,6 +108,9 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 			if (isEditable(subj)) {
 				super.removeStatements(subj, pred, obj, contexts);
+			}
+			else {
+				throw new StoreException("insufficient access rights on subject " + subj.stringValue());
 			}
 		}
 
@@ -118,6 +123,12 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		query.visit(new AccessControlQueryExpander());
 
 		return super.evaluate(query, bindings, includeInferred);
+	}
+	
+	@Override
+	public void close() throws StoreException {
+		_currentUser = null;
+		super.close();
 	}
 
 	private Resource getPropertyResourceValue(Resource subject, URI predicate, boolean inherit,
