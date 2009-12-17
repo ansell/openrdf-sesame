@@ -6,6 +6,8 @@
 package org.openrdf.sail.accesscontrol;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import org.openrdf.cursor.Cursor;
@@ -44,7 +46,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 	private URI _inheritanceProperty;
 
-	private Resource getPropertyResourceValue(Resource subject, URI predicate, boolean inherit, Resource... contexts)
+	private List<URI> _accessAttributes;
+
+	private Resource getPropertyResourceValue(Resource subject, URI predicate, boolean inherit,
+			Resource... contexts)
 		throws StoreException
 	{
 
@@ -60,13 +65,15 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		}
 		statements.close();
 
-		// see if we should try and find a value from the supplied resource's parent.
+		// see if we should try and find a value from the supplied resource's
+		// parent.
 		if (result == null && inherit) {
 			URI inheritanceProperty = getInheritanceProperty();
-			
+
 			if (inheritanceProperty != null) {
-				Cursor<? extends Statement> parentStatements = getStatements(null, inheritanceProperty, subject, true);
-				
+				Cursor<? extends Statement> parentStatements = getStatements(null, inheritanceProperty, subject,
+						true);
+
 				Statement parentStatement;
 				while ((parentStatement = parentStatements.next()) != null) {
 					result = getPropertyResourceValue(parentStatement.getSubject(), predicate, false, contexts);
@@ -74,7 +81,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 						break;
 					}
 				}
-				
+
 				parentStatements.close();
 			}
 		}
@@ -159,15 +166,16 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		return match;
 	}
 
-	private URI getTeamForPermission(URI permission)
+	private URI getAttributeValueForPermission(URI permission, URI attribute)
 		throws StoreException
 	{
 
 		Resource match = getMatchPattern(permission);
 
-		URI team = (URI)getPropertyResourceValue(match, ACL.HAS_TEAM, false, ACL.CONTEXT);
+		URI attributeValue = (URI)getPropertyResourceValue(match, attribute, false, ACL.CONTEXT);
 
-		return team;
+		return attributeValue;
+
 	}
 
 	private List<URI> getRolesForUser(URI username)
@@ -192,39 +200,54 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		return roles;
 	}
 
-	private URI getStatusForPermission(URI permission)
+	public boolean isEditable(Resource subject)
 		throws StoreException
 	{
 
-		Resource match = getMatchPattern(permission);
-
-		URI status = (URI)getPropertyResourceValue(match, ACL.HAS_STATUS, false, ACL.CONTEXT);
-
-		return status;
-	}
-
-	public boolean isEditable(Resource subject) throws StoreException {
-		
 		Session session = SessionManager.get();
 		if (session != null) {
 			URI user = session.getCurrentUser();
-			
+
 			return hasPermissionOnSubject(user, subject, ACL.EDIT);
 		}
 		return false;
 	}
 
-	public boolean isViewable(Resource subject) throws StoreException {
-		
+	public boolean isViewable(Resource subject)
+		throws StoreException
+	{
+
 		Session session = SessionManager.get();
 		if (session != null) {
 			URI user = session.getCurrentUser();
-			
+
 			return hasPermissionOnSubject(user, subject, ACL.VIEW);
 		}
 		return false;
 	}
-	
+
+	private List<URI> getAccessAttributes()
+		throws StoreException
+	{
+		if (_accessAttributes == null) {
+			_accessAttributes = new ArrayList<URI>();
+
+			Cursor<? extends Statement> statements = getStatements(null, RDF.TYPE, ACL.ACCESS_ATTRIBUTE, false,
+					ACL.CONTEXT);
+
+			Statement st;
+			while ((st = statements.next()) != null) {
+				Resource subject = st.getSubject();
+				if (subject instanceof URI) {
+					_accessAttributes.add((URI)subject);
+				}
+			}
+			statements.close();
+		}
+
+		return _accessAttributes;
+	}
+
 	private boolean hasPermissionOnSubject(URI user, Resource subject, URI operation)
 		throws StoreException
 	{
@@ -235,34 +258,53 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			return true;
 		}
 
-		URI subjectStatus = (URI)getPropertyResourceValue(subject, ACL.HAS_STATUS, true);
-		URI subjectTeam = (URI)getPropertyResourceValue(subject, ACL.HAS_TEAM, true);
+		Collection<URI> attributes = getAccessAttributes();
 
-		if (subjectStatus != null || subjectTeam != null) {
+		HashMap<URI, URI> attributeValues = new HashMap<URI, URI>();
+
+		for (URI attribute : attributes) {
+			URI attributeValue = (URI)getPropertyResourceValue(subject, attribute, true);
+			if (attributeValue != null) {
+				attributeValues.put(attribute, attributeValue);
+			}
+		}
+
+		if (attributeValues.size() > 0) {
 			List<URI> permissions = getAssignedPermissions(getRolesForUser(user), operation);
 
+			boolean[] attributeMatch = new boolean[attributes.size()];
+
+			HashMap<URI, Boolean> attributeMatches = new HashMap<URI, Boolean>(attributes.size());
+
 			for (URI permission : permissions) {
-				boolean subjectMatch = false;
-				boolean teamMatch = false;
 
-				if (subjectStatus != null) {
-					subjectMatch = subjectStatus.equals(getStatusForPermission(permission));
-				}
-				else {
-					subjectMatch = true;
-				}
+				for (URI attribute : attributeValues.keySet()) {
 
-				if (subjectTeam != null) {
-					teamMatch = subjectTeam.equals(getTeamForPermission(permission));
-				}
-				else {
-					teamMatch = true;
+					attributeMatches.put(attribute, false);
+
+					URI attributeValue = attributeValues.get(attribute);
+
+					if (attributeValue != null) {
+						URI permissionAttributeValue = getAttributeValueForPermission(permission, attribute);
+						attributeMatches.put(attribute, attributeValue.equals(permissionAttributeValue));
+					}
 				}
 
-				if (teamMatch && subjectMatch) {
+				// check if all attributes match
+				boolean allMatch = true;
+				for (URI attribute : attributeMatches.keySet()) {
+					boolean match = attributeMatches.get(attribute);
+					if (!match) {
+						allMatch = false;
+						break;
+					}
+				}
+
+				if (allMatch) {
 					hasPermission = true;
 					break;
 				}
+
 			}
 		}
 		else {
@@ -358,17 +400,20 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 			handledSubjects.add(subjectVar);
 
+			// TODO handle usage of parent for retrieval of attributes.
 			/*
 			 * Create this pattern:
 			 *
 			 *  ?subject ?predicate ?object. (= the original statementPattern)
-			 *  OPTIONAL { ?subject acl:hasStatus ?status .
-			 *             ?subject acl:hasTeam ?team .
+			 *  OPTIONAL { { ?subject acl:hasStatus ?status .
+			 *               ?subject acl:hasTeam ?team . }
+			 *              UNION 
+			 *             { 
+			 *               ?parent ex:subItem ?subject .
+			 *               ?parent acl:hasStatus ?status .
+			 *               ?parent acl:hasTeam ?team. 
+			 *              }
 			 *            }
-			 * OPTIONAL { ?parent ex:subItem ?subject .
-			 *            ?parent acl:hasStatus ?parentStatus .
-			 *            ?parent acl:hasTeam ?parentTeam.
-			 *          }
 			 *            
 			 *  or in terms of the algebra:
 			 *            
@@ -380,27 +425,35 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			 *     )
 			 *  )
 			 */
-			Var statusVar = new Var("acl_status");
-			StatementPattern statusPattern = new StatementPattern(subjectVar, new Var("acl_status_pred",
-					ACL.HAS_STATUS), statusVar);
+			List<URI> attributes = getAccessAttributes();
 
-			Var teamVar = new Var("acl_team");
-			StatementPattern teamPattern = new StatementPattern(subjectVar, new Var("acl_team_pred",
-					ACL.HAS_TEAM), teamVar);
+			Join attributeJoin = new Join();
+			int i = 0;
 
-			Join teamAndStatus = new Join(statusPattern, teamPattern);
+			List<Var> attributeVars = new ArrayList<Var>();
+			for (URI attribute : attributes) {
+				Var attributeVar = new Var("acl_attr_" + i++);
+				attributeVars.add(attributeVar);
+				StatementPattern attributePattern = new StatementPattern(subjectVar, new Var(
+						"acl_attr_pred_" + i, attribute), attributeVar);
+				attributeJoin.addArg(attributePattern);
+			}
 
-			TupleExpr expandedPattern = new LeftJoin(statementPattern, teamAndStatus);
+			TupleExpr expandedPattern = new LeftJoin(statementPattern, attributeJoin);
 
 			// build an Or-ed set of filter conditions on the status and team.
 			Or filterConditions = new Or();
 
-			/* first condition is that neither are bound: this is the case where the subject
-			 * is not a restricted resource (and therefore has no associated team and status)
+			/* first condition is that none are bound: this is the case where the subject
+			 * is not a restricted resource (and therefore has no associated attributes)
 			 * 
-			 * And(Not(Bound(?status)), Not(Bound(?team)))
+			 * And(Not(Bound(?acl_attr1)), Not(Bound(?acl_attr_1), ...)
 			 */
-			filterConditions.addArg(new And(new Not(new Bound(statusVar)), new Not(new Bound(teamVar))));
+			And and = new And();
+			for (Var attributeVar : attributeVars) {
+				and.addArg(new Not(new Bound(attributeVar)));
+			}
+			filterConditions.addArg(and);
 
 			if (permissions == null) {
 				List<URI> roles = getRolesForUser(session.getCurrentUser());
@@ -412,31 +465,30 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			// checking that either
 			// team, or status, or both match.
 			for (URI permission : permissions) {
-				URI status = getStatusForPermission(permission);
-				URI team = getTeamForPermission(permission);
 
-				Compare statusCompare = null;
-				Compare teamCompare = null;
+				And permissionCondition = new And();
 
-				ValueExpr permissionCondition = null;
+				for (int j = 0; j < attributes.size(); j++) {
+					URI attribute = attributes.get(j);
+					URI attributePermissionValue = getAttributeValueForPermission(permission, attribute);
 
-				if (status != null) {
-					statusCompare = new Compare(statusVar, new Var("acl_status_val", status));
-					permissionCondition = statusCompare;
+					Compare attributeValueCompare = null;
+					if (attributePermissionValue != null) {
+						attributeValueCompare = new Compare(attributeVars.get(j), new Var("acl_attr_val_" + j,
+								attributePermissionValue));
+						permissionCondition.addArg(attributeValueCompare);
+					}
 				}
 
-				if (team != null) {
-					teamCompare = new Compare(teamVar, new Var("acl_team_val", team));
-					permissionCondition = teamCompare;
+				if (permissionCondition.getNumberOfArguments() == 1) {
+					filterConditions.addArg(permissionCondition.getArg(0));
 				}
-
-				if (statusCompare != null && teamCompare != null) {
-					permissionCondition = new And(statusCompare, teamCompare);
+				else {
+					// add the permission-defined condition to the set of Or-ed
+					// filter
+					// conditions.
+					filterConditions.addArg(permissionCondition);
 				}
-
-				// add the permission-defined condition to the set of Or-ed filter
-				// conditions.
-				filterConditions.addArg(permissionCondition);
 			}
 
 			// set the filter conditions on the query pattern
