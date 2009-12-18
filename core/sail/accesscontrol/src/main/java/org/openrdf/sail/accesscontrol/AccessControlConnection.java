@@ -196,15 +196,61 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			URI inheritanceProperty = getInheritanceProperty();
 
 			if (inheritanceProperty != null) {
-				Cursor<? extends Statement> parentStatements = getStatements(null, inheritanceProperty, subject,
+				Cursor<? extends Statement> parentStatements = getStatements(subject, inheritanceProperty, null,
 						true);
 
 				Statement parentStatement;
 				while ((parentStatement = parentStatements.next()) != null) {
-					result = getPropertyResourceValue(parentStatement.getSubject(), predicate, false, contexts);
-					if (result != null) {
-						break;
+					Value value = parentStatement.getObject();
+					if (value instanceof Resource) {
+						result = getPropertyResourceValue((Resource)value, predicate, false, contexts);
+						if (result != null) {
+							break;
+						}
 					}
+
+				}
+
+				parentStatements.close();
+			}
+		}
+
+		return result;
+	}
+
+	private List<Resource> getPropertyResourceValues(Resource subject, URI predicate, boolean inherit,
+			Resource... contexts)
+		throws StoreException
+	{
+
+		List<Resource> result = new ArrayList<Resource>();
+		
+		Cursor<? extends Statement> statements = getStatements(subject, predicate, null, true, contexts);
+
+		Statement st;
+		while ((st = statements.next()) != null) {
+			if (st.getObject() instanceof Resource) {
+				result.add((Resource)st.getObject());
+			}
+		}
+		statements.close();
+
+		// see if we should try and find a value from the supplied resource's
+		// parent.
+		if (inherit) {
+			URI inheritanceProperty = getInheritanceProperty();
+
+			if (inheritanceProperty != null) {
+				Cursor<? extends Statement> parentStatements = getStatements(subject, inheritanceProperty, null,
+						true);
+
+				Statement parentStatement;
+				while ((parentStatement = parentStatements.next()) != null) {
+					Value value = parentStatement.getObject();
+					if (value instanceof Resource) {
+						result.addAll(getPropertyResourceValues((Resource)value, predicate, false, contexts));
+					}
+
 				}
 
 				parentStatements.close();
@@ -406,12 +452,12 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 		Collection<URI> attributes = getAccessAttributes();
 
-		HashMap<URI, URI> attributeValues = new HashMap<URI, URI>();
+		HashMap<URI, List<Resource>> attributeValues = new HashMap<URI, List<Resource>>();
 
 		for (URI attribute : attributes) {
-			URI attributeValue = (URI)getPropertyResourceValue(subject, attribute, true);
-			if (attributeValue != null) {
-				attributeValues.put(attribute, attributeValue);
+			List<Resource> attributeValueList = getPropertyResourceValues(subject, attribute, true);
+			if (attributeValueList != null && attributeValueList.size() > 0) {
+				attributeValues.put(attribute, attributeValueList);
 			}
 		}
 
@@ -428,11 +474,11 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 					attributeMatches.put(attribute, false);
 
-					URI attributeValue = attributeValues.get(attribute);
-
-					if (attributeValue != null) {
+					List<Resource> attributeValueList = attributeValues.get(attribute);
+					
+					if (attributeValueList != null) {
 						URI permissionAttributeValue = getAttributeValueForPermission(permission, attribute);
-						attributeMatches.put(attribute, attributeValue.equals(permissionAttributeValue));
+						attributeMatches.put(attribute, attributeValueList.contains(permissionAttributeValue));
 					}
 				}
 
