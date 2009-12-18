@@ -45,11 +45,9 @@ import org.openrdf.store.StoreException;
  */
 public class AccessControlSailTest extends TestCase {
 
-	private static String dataFile = "example-data.ttl";
+	private static String dataFile = "trezorix-data.trig";
 
-	private static String policyFile = "policies.ttl";
-
-	private static String ruleFile = "rules.ttl";
+	private static String policyFile = "policies-trezorix.ttl";
 
 	private static String resourcePath = "accesscontrol/";
 
@@ -92,8 +90,9 @@ public class AccessControlSailTest extends TestCase {
 
 		RepositoryConnection conn = rep.getConnection();
 		try {
-			conn.add(cl.getResource(resourcePath + policyFile), "", RDFFormat.TURTLE, ACL.CONTEXT);
-			conn.add(cl.getResource(resourcePath + dataFile), "", RDFFormat.TURTLE);
+			conn.clear();
+			conn.add(cl.getResource(resourcePath + policyFile), "", RDFFormat.forFileName(policyFile), ACL.CONTEXT);
+			conn.add(cl.getResource(resourcePath + dataFile), "", RDFFormat.forFileName(dataFile));
 		}
 		catch (RDFParseException e) {
 			// TODO Auto-generated catch block
@@ -124,6 +123,18 @@ public class AccessControlSailTest extends TestCase {
 		rep.getConnection().export(writer);
 	}
 
+	/*
+	public void testExportRNAToolsetDemo() throws Exception 
+	{
+		Repository rnaRepository = manager.getRepository("rna-toolset-rdfdemo");
+		
+		FileOutputStream os = new FileOutputStream("D:/temp/export-rna-demo.trig");
+
+		RDFWriter writer = new TriGWriterFactory().getWriter(os);
+		rnaRepository.getConnection().export(writer);
+	}
+	*/
+	
 	public void testSimpleQuery()
 		throws Exception
 	{
@@ -132,7 +143,7 @@ public class AccessControlSailTest extends TestCase {
 
 		try {
 			Session session = SessionManager.get();
-			session.setUsername("bob");
+			session.setUsername("trezorix");
 
 			String simpleDocumentQuery = "SELECT DISTINCT ?X WHERE {?X a <http://example.org/Document>; ?P ?Y . } ";
 			TupleResult tr = conn.prepareTupleQuery(QueryLanguage.SPARQL, simpleDocumentQuery).evaluate();
@@ -167,9 +178,9 @@ public class AccessControlSailTest extends TestCase {
 		try {
 			ValueFactory valueFactory = conn.getValueFactory();
 
-			URI prdoc1 = valueFactory.createURI("http://example.org/prdocument1");
+			URI trezconcept = valueFactory.createURI("http://www.rnaproject.org/data/8997fddd-9b77-40ef-856e-b83c426dafa0");
 
-			Statement legalStatement = valueFactory.createStatement(prdoc1, RDFS.LABEL,
+			Statement legalStatement = valueFactory.createStatement(trezconcept, RDFS.LABEL,
 					valueFactory.createLiteral("legal new statement"));
 
 			try {
@@ -187,38 +198,21 @@ public class AccessControlSailTest extends TestCase {
 		}
 
 		Session session = SessionManager.get();
-		session.setUsername("bob");
+		session.setUsername("trezorix");
 
 		conn = rep.getConnection();
 		try {
 
 			ValueFactory valueFactory = conn.getValueFactory();
 
-			URI pmdoc1 = conn.getValueFactory().createURI("http://example.org/pmdocument1");
-			URI prdoc1 = conn.getValueFactory().createURI("http://example.org/prdocument1");
-			URI subsubdoc1 = conn.getValueFactory().createURI("http://example.org/subsubdoc1");
-
-			Statement legalStatement = valueFactory.createStatement(prdoc1, RDFS.LABEL,
+			// this concept _should_ inherit editing permission for user trezorix.
+			URI trezconcept = valueFactory.createURI("http://www.rnaproject.org/data/8997fddd-9b77-40ef-856e-b83c426dafa0");
+			
+			Statement legalStatement = valueFactory.createStatement(trezconcept, RDFS.LABEL,
 					valueFactory.createLiteral("legal new statement"));
 
 			conn.add(legalStatement);
 
-			Statement legalSubStatement = valueFactory.createStatement(subsubdoc1, RDFS.LABEL,
-					valueFactory.createLiteral("legal sub stateement"));
-
-			conn.add(legalSubStatement);
-
-			Statement illegalStatement = valueFactory.createStatement(pmdoc1, RDFS.LABEL,
-					valueFactory.createLiteral("illegal new statement"));
-			try {
-				conn.add(illegalStatement);
-
-				fail("should have thrown exception");
-			}
-			catch (StoreException e) {
-				// expected
-				System.out.println(" expected store exception thrown: " + e.getMessage());
-			}
 		}
 		finally {
 			conn.close();
@@ -233,9 +227,9 @@ public class AccessControlSailTest extends TestCase {
 		try {
 			ValueFactory valueFactory = conn.getValueFactory();
 
-			URI prdoc1 = valueFactory.createURI("http://example.org/prdocument1");
+			URI trezconcept = valueFactory.createURI("http://www.rnaproject.org/data/8997fddd-9b77-40ef-856e-b83c426dafa0");
 
-			Statement legalStatement = valueFactory.createStatement(prdoc1, RDFS.LABEL,
+			Statement legalStatement = valueFactory.createStatement(trezconcept, RDFS.LABEL,
 					valueFactory.createLiteral("legal new statement"));
 
 			try {
@@ -253,38 +247,21 @@ public class AccessControlSailTest extends TestCase {
 		}
 
 		Session session = SessionManager.get();
-		session.setUsername("bob");
+		session.setUsername("trezorix");
 
 		conn = rep.getConnection();
 		try {
 
 			ValueFactory valueFactory = conn.getValueFactory();
 
-			URI pmdoc1 = conn.getValueFactory().createURI("http://example.org/pmdocument1");
-			URI prdoc1 = conn.getValueFactory().createURI("http://example.org/prdocument1");
-			URI subsubdoc1 = conn.getValueFactory().createURI("http://example.org/subsubdoc1");
-
-			Statement legalStatement = valueFactory.createStatement(prdoc1, RDFS.LABEL,
+			// this concept _should_ inherit editing permission for user trezorix.
+			URI trezconcept = valueFactory.createURI("http://www.rnaproject.org/data/8997fddd-9b77-40ef-856e-b83c426dafa0");
+			
+			Statement legalStatement = valueFactory.createStatement(trezconcept, RDFS.LABEL,
 					valueFactory.createLiteral("legal new statement"));
 
 			conn.remove(legalStatement);
 
-			Statement legalSubStatement = valueFactory.createStatement(subsubdoc1, RDFS.LABEL,
-					valueFactory.createLiteral("legal sub stateement"));
-
-			conn.remove(legalSubStatement);
-
-			Statement illegalStatement = valueFactory.createStatement(pmdoc1, RDFS.LABEL,
-					valueFactory.createLiteral("illegal new statement"));
-			try {
-				conn.remove(illegalStatement);
-
-				fail("should have thrown exception");
-			}
-			catch (StoreException e) {
-				// expected
-				System.out.println(" expected store exception thrown: " + e.getMessage());
-			}
 		}
 		finally {
 			conn.close();
