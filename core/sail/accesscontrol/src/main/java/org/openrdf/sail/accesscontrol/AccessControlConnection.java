@@ -224,7 +224,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	{
 
 		List<Resource> result = new ArrayList<Resource>();
-		
+
 		Cursor<? extends Statement> statements = getStatements(subject, predicate, null, true, contexts);
 
 		Statement st;
@@ -475,7 +475,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 					attributeMatches.put(attribute, false);
 
 					List<Resource> attributeValueList = attributeValues.get(attribute);
-					
+
 					if (attributeValueList != null) {
 						URI permissionAttributeValue = getAttributeValueForPermission(permission, attribute);
 						attributeMatches.put(attribute, attributeValueList.contains(permissionAttributeValue));
@@ -509,15 +509,9 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 	protected class AccessControlQueryExpander extends QueryModelVisitorBase<StoreException> {
 
-		private Session session;
-
 		private List<Var> handledSubjects = new ArrayList<Var>();
 
 		private List<URI> permissions;
-
-		public AccessControlQueryExpander() {
-			session = SessionManager.get();
-		}
 
 		@Override
 		public void meet(StatementPattern statementPattern)
