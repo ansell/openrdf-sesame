@@ -13,13 +13,7 @@ public class SessionManager {
 	/**
 	 * The registry for created sessions.
 	 */
-	private static final InheritableThreadLocal<Session> sessions = new InheritableThreadLocal<Session>() {
-
-		@Override
-		protected Session initialValue() {
-			return new Session();
-		}
-	};
+	private static final InheritableThreadLocal<Session> sessions = new InheritableThreadLocal<Session>();
 
 	/**
 	 * Gets the session that is associated with the thread that calls this
@@ -28,8 +22,35 @@ public class SessionManager {
 	 * 
 	 * @return The session for the thread that calls this method.
 	 */
+	public static Session getOrCreate() {
+		Session session = sessions.get();
+		if (session == null) {
+			session = new Session();
+			sessions.set(session);
+		}
+		return session;
+	}
+
+	/**
+	 * Gets the session that is associated with the thread that calls this
+	 * method.
+	 * 
+	 * @return The session for the thread that calls this method, or
+	 *         <tt>null</tt> if no session is associted with the calling thread.
+	 */
 	public static Session get() {
 		return sessions.get();
+	}
+
+	/**
+	 * Sets the session that is associated with the thread that calls this
+	 * method.
+	 * 
+	 * @param session
+	 *        The (new) session for the calling thread.
+	 */
+	public static void set(Session session) {
+		sessions.set(session);
 	}
 
 	/**

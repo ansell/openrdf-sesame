@@ -83,7 +83,7 @@ public class AccessControlSailTest extends TestCase {
 
 		Repository rep = manager.getRepository(repositoryId);
 
-		Session session = SessionManager.get();
+		Session session = SessionManager.getOrCreate();
 
 		// DEBUG
 		session.setUsername("administrator");
@@ -142,7 +142,7 @@ public class AccessControlSailTest extends TestCase {
 		RepositoryConnection conn = rep.getConnection();
 
 		try {
-			Session session = SessionManager.get();
+			Session session = SessionManager.getOrCreate();
 			session.setUsername("trezorix");
 
 			String simpleDocumentQuery = "SELECT DISTINCT ?X WHERE {?X a <http://example.org/Document>; ?P ?Y . } ";
@@ -197,7 +197,7 @@ public class AccessControlSailTest extends TestCase {
 			conn.close();
 		}
 
-		Session session = SessionManager.get();
+		Session session = SessionManager.getOrCreate();
 		session.setUsername("trezorix");
 
 		conn = rep.getConnection();
@@ -246,7 +246,7 @@ public class AccessControlSailTest extends TestCase {
 			conn.close();
 		}
 
-		Session session = SessionManager.get();
+		Session session = SessionManager.getOrCreate();
 		session.setUsername("trezorix");
 
 		conn = rep.getConnection();
