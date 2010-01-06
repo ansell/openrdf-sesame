@@ -816,8 +816,14 @@ class TripleStore {
 		// Create a record cache for storing updated triples with a maximum of
 		// some 10% of the number of triples
 		long maxRecords = indexes.get(0).getBTree().getValueCountEstimate() / 10L;
-		updatedTriplesCache = new SortedRecordCache(dir, RECORD_LENGTH, maxRecords,
-				new TripleComparator("spoc"));
+		if (updatedTriplesCache == null) {
+			updatedTriplesCache = new SortedRecordCache(dir, RECORD_LENGTH, maxRecords, new TripleComparator(
+					"spoc"));
+		}
+		else {
+			assert updatedTriplesCache.getRecordCount() == 0L : "updatedTripleCache should have been cleared upon commit or rollback";
+			updatedTriplesCache.setMaxRecords(maxRecords);
+		}
 	}
 
 	public void commit()
@@ -825,6 +831,7 @@ class TripleStore {
 	{
 		txnStatusFile.setTxnStatus(TxnStatus.COMMITTING);
 
+		// updatedTriplesCache will be null when recovering from a crashed commit
 		boolean validCache = updatedTriplesCache != null && updatedTriplesCache.isValid();
 
 		for (TripleIndex index : indexes) {
@@ -876,8 +883,7 @@ class TripleStore {
 		}
 
 		if (updatedTriplesCache != null) {
-			updatedTriplesCache.discard();
-			updatedTriplesCache = null;
+			updatedTriplesCache.clear();
 		}
 
 		sync();
@@ -890,6 +896,7 @@ class TripleStore {
 	{
 		txnStatusFile.setTxnStatus(TxnStatus.ROLLING_BACK);
 
+		// updatedTriplesCache will be null when recovering from a crash
 		boolean validCache = updatedTriplesCache != null && updatedTriplesCache.isValid();
 
 		byte txnFlagsMask = ~(ADDED_FLAG | REMOVED_FLAG | TOGGLE_EXPLICIT_FLAG);
@@ -940,8 +947,7 @@ class TripleStore {
 		}
 
 		if (updatedTriplesCache != null) {
-			updatedTriplesCache.discard();
-			updatedTriplesCache = null;
+			updatedTriplesCache.clear();
 		}
 
 		sync();
