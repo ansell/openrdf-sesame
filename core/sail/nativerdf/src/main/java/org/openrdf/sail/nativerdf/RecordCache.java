@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -18,11 +18,11 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
  */
 abstract class RecordCache {
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
-	private final long maxRecords;
+	private final AtomicLong maxRecords;
 
 	private final AtomicLong recordCount;
 
@@ -39,7 +39,7 @@ abstract class RecordCache {
 	public RecordCache(long maxRecords)
 		throws IOException
 	{
-		this.maxRecords = maxRecords;
+		this.maxRecords = new AtomicLong(maxRecords);
 		this.recordCount = new AtomicLong();
 	}
 
@@ -47,8 +47,12 @@ abstract class RecordCache {
 	 * Methods *
 	 *---------*/
 
-	public long getMaxRecords() {
-		return maxRecords;
+	public final long getMaxRecords() {
+		return maxRecords.get();
+	}
+
+	public final void setMaxRecords(long maxRecords) {
+		this.maxRecords.set(maxRecords);
 	}
 
 	/**
@@ -77,8 +81,14 @@ abstract class RecordCache {
 	public final void storeRecord(byte[] data)
 		throws IOException
 	{
-		if (isValid()) {
+		long spareSlots = maxRecords.get() - recordCount.get();
+
+		if (spareSlots > 0L) {
 			storeRecordInternal(data);
+			recordCount.incrementAndGet();
+		}
+		else if (spareSlots == 0L) {
+			// invalidate the cache
 			recordCount.incrementAndGet();
 		}
 	}
@@ -92,12 +102,11 @@ abstract class RecordCache {
 	public final void storeRecords(RecordCache otherCache)
 		throws IOException
 	{
-		if (isValid()) {
+		if (recordCount.get() <= maxRecords.get()) {
 			RecordIterator recIter = otherCache.getRecords();
 			try {
 				byte[] record;
-
-				while ((record = recIter.next()) != null) {
+				while ((record = recIter.next()) != null && recordCount.incrementAndGet() <= maxRecords.get()) {
 					storeRecordInternal(record);
 				}
 			}
@@ -108,6 +117,19 @@ abstract class RecordCache {
 	}
 
 	protected abstract void storeRecordInternal(byte[] data)
+		throws IOException;
+
+	/**
+	 * Clears the cache, deleting all stored records.
+	 */
+	public final void clear()
+		throws IOException
+	{
+		clearInternal();
+		recordCount.set(0L);
+	}
+
+	protected abstract void clearInternal()
 		throws IOException;
 
 	/**
@@ -131,11 +153,11 @@ abstract class RecordCache {
 
 	/**
 	 * Checks whether the cache is still valid. Caches are valid if the number of
-	 * stored records is smaller than the {@link #getMaxRecords() maximum number
-	 * of records}.
+	 * stored records is smaller than or equal to the {@link #getMaxRecords()
+	 * maximum number of records}.
 	 */
 	public final boolean isValid() {
-		return recordCount.get() < maxRecords;
+		return recordCount.get() <= maxRecords.get();
 	}
 
 	/**

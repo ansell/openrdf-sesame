@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -18,11 +18,11 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
  * 
  * @author Arjohn Kampman
  */
-class SortedRecordCache extends RecordCache {
+final class SortedRecordCache extends RecordCache {
 
-	/*-----------*
-	 * Constants *
-	 *-----------*/
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
 	private final BTree btree;
 
@@ -47,16 +47,26 @@ class SortedRecordCache extends RecordCache {
 	 * Methods *
 	 *---------*/
 
-	public void storeRecordInternal(byte[] record)
+	@Override
+	protected void storeRecordInternal(byte[] record)
 		throws IOException
 	{
 		btree.insert(record);
 	}
 
-	public RecordIterator getRecordsInternal() {
+	@Override
+	protected RecordIterator getRecordsInternal() {
 		return btree.iterateAll();
 	}
 
+	@Override
+	protected void clearInternal()
+		throws IOException
+	{
+		btree.clear();
+	}
+
+	@Override
 	public void discard()
 		throws IOException
 	{

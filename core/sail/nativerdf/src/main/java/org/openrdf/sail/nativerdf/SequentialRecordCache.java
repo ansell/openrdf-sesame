@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -20,11 +20,26 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
  * 
  * @author Arjohn Kampman
  */
-class SequentialRecordCache extends RecordCache {
+final class SequentialRecordCache extends RecordCache {
 
-	/*-----------*
-	 * Constants *
-	 *-----------*/
+	/**
+	 * Magic number "Sequential Record Cache" to detect whether the file is
+	 * actually a sequential record cache file. The first three bytes of the file
+	 * should be equal to this magic number.
+	 */
+	private static final byte[] MAGIC_NUMBER = new byte[] { 's', 'r', 'c' };
+
+	/**
+	 * The file format version number, stored as the fourth byte in sequential
+	 * record cache files.
+	 */
+	private static final byte FILE_FORMAT_VERSION = 1;
+
+	private static final int HEADER_LENGTH = MAGIC_NUMBER.length + 1;
+
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
 	private final File cacheFile;
 
@@ -53,12 +68,17 @@ class SequentialRecordCache extends RecordCache {
 		this.cacheFile = File.createTempFile("txncache", ".dat", cacheDir);
 		this.raf = new RandomAccessFile(cacheFile, "rw");
 		this.fileChannel = raf.getChannel();
+		
+		// Write file header
+		raf.write(MAGIC_NUMBER);
+		raf.write(FILE_FORMAT_VERSION);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public void discard()
 		throws IOException
 	{
@@ -75,12 +95,21 @@ class SequentialRecordCache extends RecordCache {
 		}
 	}
 
+	@Override
+	protected void clearInternal()
+		throws IOException
+	{
+		fileChannel.truncate(HEADER_LENGTH);
+	}
+
+	@Override
 	protected void storeRecordInternal(byte[] data)
 		throws IOException
 	{
 		fileChannel.write(ByteBuffer.wrap(data), fileChannel.size());
 	}
 
+	@Override
 	protected RecordIterator getRecordsInternal() {
 		return new RecordCacheIterator();
 	}
@@ -91,7 +120,7 @@ class SequentialRecordCache extends RecordCache {
 
 	protected class RecordCacheIterator implements RecordIterator {
 
-		private long position = 0L;
+		private long position = HEADER_LENGTH;
 
 		public byte[] next()
 			throws IOException
@@ -117,7 +146,7 @@ class SequentialRecordCache extends RecordCache {
 		public void set(byte[] value)
 			throws IOException
 		{
-			if (position >= recordSize && position <= fileChannel.size()) {
+			if (position >= HEADER_LENGTH + recordSize && position <= fileChannel.size()) {
 				fileChannel.write(ByteBuffer.wrap(value), position - recordSize);
 			}
 		}
