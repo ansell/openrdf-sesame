@@ -11,7 +11,7 @@ import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ClientInfo;
 import org.restlet.data.Form;
-import org.restlet.engine.http.PreferenceUtils;
+import org.restlet.engine.http.header.PreferenceUtils;
 import org.restlet.routing.Filter;
 
 import info.aduna.net.http.RequestHeaders;
