@@ -6,19 +6,18 @@
 package org.openrdf.sail.nativerdf.btree;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.BitSet;
 
 import info.aduna.io.ByteArrayUtil;
-import info.aduna.io.IOUtil;
 
 /**
  * List of allocated BTree nodes, persisted to a file on disk.
  * 
  * @author Arjohn Kampman
  */
-public class AllocatedNodesList {
+class AllocatedNodesList {
 
 	/*-----------*
 	 * Constants *
@@ -53,6 +52,8 @@ public class AllocatedNodesList {
 	 */
 	private final File allocNodesFile;
 
+	private final RandomAccessFile raf;
+
 	/**
 	 * Bit set recording which nodes have been allocated, using node IDs as
 	 * index.
@@ -72,7 +73,9 @@ public class AllocatedNodesList {
 	/**
 	 * Creates a new AllocatedNodelist for the specified BTree.
 	 */
-	public AllocatedNodesList(File allocNodesFile, BTree btree) {
+	public AllocatedNodesList(File allocNodesFile, BTree btree)
+		throws IOException
+	{
 		if (allocNodesFile == null) {
 			throw new IllegalArgumentException("allocNodesFile must not be null");
 		}
@@ -81,6 +84,7 @@ public class AllocatedNodesList {
 		}
 
 		this.allocNodesFile = allocNodesFile;
+		this.raf = new RandomAccessFile(allocNodesFile, "rw");
 		this.btree = btree;
 	}
 
@@ -95,6 +99,12 @@ public class AllocatedNodesList {
 		return allocNodesFile;
 	}
 
+	public synchronized void close()
+		throws IOException
+	{
+		close(true);
+	}
+
 	/**
 	 * Deletes the allocated nodes file.
 	 * 
@@ -103,9 +113,19 @@ public class AllocatedNodesList {
 	public synchronized boolean delete()
 		throws IOException
 	{
+		close(false);
+		return allocNodesFile.delete();
+	}
+
+	public synchronized void close(boolean syncChanges)
+		throws IOException
+	{
+		if (syncChanges) {
+			sync();
+		}
 		allocatedNodes = null;
 		needsSync = false;
-		return allocNodesFile.delete();
+		raf.close();
 	}
 
 	/**
@@ -127,15 +147,10 @@ public class AllocatedNodesList {
 			byte[] data = ByteArrayUtil.toByteArray(bitSet);
 
 			// Write bit set to file
-			FileOutputStream out = new FileOutputStream(allocNodesFile);
-			try {
-				out.write(MAGIC_NUMBER);
-				out.write(FILE_FORMAT_VERSION);
-				out.write(data);
-			}
-			finally {
-				out.close();
-			}
+			raf.setLength(0L);
+			raf.write(MAGIC_NUMBER);
+			raf.write(FILE_FORMAT_VERSION);
+			raf.write(data);
 
 			needsSync = false;
 		}
@@ -145,12 +160,7 @@ public class AllocatedNodesList {
 		throws IOException
 	{
 		if (needsSync == false) {
-			if (allocNodesFile.exists()) {
-				boolean success = allocNodesFile.delete();
-				if (!success) {
-					throw new IOException("Failed to delete " + allocateNode());
-				}
-			}
+			raf.setLength(0L);
 			needsSync = true;
 		}
 	}
@@ -220,7 +230,7 @@ public class AllocatedNodesList {
 		throws IOException
 	{
 		if (allocatedNodes == null) {
-			if (allocNodesFile.exists()) {
+			if (raf.length() > 0L) {
 				loadAllocatedNodesInfo();
 			}
 			else {
@@ -232,7 +242,9 @@ public class AllocatedNodesList {
 	private void loadAllocatedNodesInfo()
 		throws IOException
 	{
-		byte[] data = IOUtil.readBytes(allocNodesFile);
+		byte[] data = new byte[(int)raf.length()];
+		raf.seek(0L);
+		raf.readFully(data);
 
 		if (data.length >= HEADER_LENGTH && ByteArrayUtil.regionMatches(MAGIC_NUMBER, data, 0)) {
 			byte version = data[MAGIC_NUMBER.length];

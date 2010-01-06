@@ -480,6 +480,8 @@ public class BTree {
 
 				raf.close();
 			}
+
+			allocatedNodesList.close(syncChanges);
 		}
 		finally {
 			btreeLock.writeLock().unlock();
@@ -1163,8 +1165,10 @@ public class BTree {
 			}
 			fileChannel.truncate(HEADER_LENGTH);
 
-			rootNodeID = 0;
-			writeFileHeader();
+			if (rootNodeID != 0) {
+				rootNodeID = 0;
+				writeFileHeader();
+			}
 
 			allocatedNodesList.clear();
 		}
