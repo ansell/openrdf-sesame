@@ -1,25 +1,30 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
+import java.util.Arrays;
 import java.util.List;
 
 import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIterationBase;
+import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.ProjectionElemList;
 
-public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, QueryEvaluationException> {
+/**
+ * @author Arjohn Kampman
+ * @author James Leigh
+ */
+public class MultiProjectionIterator extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
-	/*-----------*
-	 * Constants *
-	 *-----------*/
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
 	private final List<ProjectionElemList> projections;
 
@@ -27,9 +32,7 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 
 	private final BindingSet parentBindings;
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	private final BindingSet[] previousBindings;
 
 	private BindingSet currentBindings;
 
@@ -45,6 +48,7 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 		this.projections = multiProjection.getProjections();
 		this.iter = iter;
 		this.parentBindings = bindings;
+		this.previousBindings = new BindingSet[projections.size()];
 
 		// initialize out-of-range to enforce a fetch of the first result upon
 		// first use
@@ -55,30 +59,36 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 	 * Methods *
 	 *---------*/
 
-	public boolean hasNext()
+	@Override
+	protected BindingSet getNextElement()
 		throws QueryEvaluationException
 	{
-		return nextProjectionIdx < projections.size() || iter.hasNext();
-	}
+		while (true) {
+			int projIdx = nextProjectionIdx;
 
-	public BindingSet next()
-		throws QueryEvaluationException
-	{
-		int idx = nextProjectionIdx;
+			if (projIdx < projections.size()) {
+				// Apply next projection in the list
+				ProjectionElemList projection = projections.get(projIdx);
+				BindingSet result = ProjectionIterator.project(projection, currentBindings, parentBindings);
 
-		if (idx >= projections.size()) {
-			currentBindings = iter.next();
-			idx = nextProjectionIdx = 0;
+				nextProjectionIdx++;
+
+				// ignore duplicates
+				if (!result.equals(previousBindings[projIdx])) {
+					previousBindings[projIdx] = result;
+					return result;
+				}
+			}
+			else if (iter.hasNext()) {
+				// Continue with the next result
+				currentBindings = iter.next();
+				nextProjectionIdx = 0;
+			}
+			else {
+				// no more results
+				return null;
+			}
 		}
-
-		ProjectionElemList nextProjection = projections.get(idx);
-		nextProjectionIdx++;
-
-		return ProjectionIterator.project(nextProjection, currentBindings, parentBindings);
-	}
-
-	public void remove() {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -88,5 +98,6 @@ public class MultiProjectionIterator extends CloseableIterationBase<BindingSet, 
 		super.handleClose();
 		iter.close();
 		nextProjectionIdx = projections.size();
+		Arrays.fill(previousBindings, null);
 	}
 }
