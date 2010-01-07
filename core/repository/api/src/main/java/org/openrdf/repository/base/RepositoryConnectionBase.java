@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import info.aduna.io.GZipUtil;
 import info.aduna.io.ZipUtil;
 import info.aduna.iteration.Iteration;
+import info.aduna.iteration.Iterations;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
@@ -409,34 +410,38 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 	}
 
-	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
+	public <E extends Exception> void add(Iteration<? extends Statement, E> statements, Resource... contexts)
 		throws RepositoryException, E
 	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
-
-		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
-
 		try {
-			while (statementIter.hasNext()) {
-				addWithoutCommit(statementIter.next(), contexts);
+			OpenRDFUtil.verifyContextNotNull(contexts);
+
+			boolean autoCommit = isAutoCommit();
+			setAutoCommit(false);
+
+			try {
+				while (statements.hasNext()) {
+					addWithoutCommit(statements.next(), contexts);
+				}
 			}
-		}
-		catch (RepositoryException e) {
-			if (autoCommit) {
-				rollback();
+			catch (RepositoryException e) {
+				if (autoCommit) {
+					rollback();
+				}
+				throw e;
 			}
-			throw e;
-		}
-		catch (RuntimeException e) {
-			if (autoCommit) {
-				rollback();
+			catch (RuntimeException e) {
+				if (autoCommit) {
+					rollback();
+				}
+				throw e;
 			}
-			throw e;
+			finally {
+				setAutoCommit(autoCommit);
+			}
 		}
 		finally {
-			setAutoCommit(autoCommit);
+			Iterations.closeCloseable(statements);
 		}
 	}
 
@@ -486,32 +491,37 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 	}
 
-	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
+	public <E extends Exception> void remove(Iteration<? extends Statement, E> statements,
 			Resource... contexts)
 		throws RepositoryException, E
 	{
-		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
-
 		try {
-			while (statementIter.hasNext()) {
-				remove(statementIter.next(), contexts);
+			boolean autoCommit = isAutoCommit();
+			setAutoCommit(false);
+
+			try {
+				while (statements.hasNext()) {
+					remove(statements.next(), contexts);
+				}
 			}
-		}
-		catch (RepositoryException e) {
-			if (autoCommit) {
-				rollback();
+			catch (RepositoryException e) {
+				if (autoCommit) {
+					rollback();
+				}
+				throw e;
 			}
-			throw e;
-		}
-		catch (RuntimeException e) {
-			if (autoCommit) {
-				rollback();
+			catch (RuntimeException e) {
+				if (autoCommit) {
+					rollback();
+				}
+				throw e;
 			}
-			throw e;
+			finally {
+				setAutoCommit(autoCommit);
+			}
 		}
 		finally {
-			setAutoCommit(autoCommit);
+			Iterations.closeCloseable(statements);
 		}
 	}
 

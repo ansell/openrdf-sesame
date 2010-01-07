@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -238,10 +238,10 @@ public interface RepositoryConnection {
 		throws RepositoryException, MalformedQueryException;
 
 	/**
-	 * Prepares <tt>true</tt>/<tt>false</tt> queries. In case the query
-	 * contains relative URIs that need to be resolved against an external base
-	 * URI, one should use
-	 * {@link #prepareBooleanQuery(QueryLanguage, String, String)} instead.
+	 * Prepares <tt>true</tt>/<tt>false</tt> queries. In case the query contains
+	 * relative URIs that need to be resolved against an external base URI, one
+	 * should use {@link #prepareBooleanQuery(QueryLanguage, String, String)}
+	 * instead.
 	 * 
 	 * @param ql
 	 *        The query language in which the query is formulated.
@@ -295,8 +295,7 @@ public interface RepositoryConnection {
 	 * of named contexts.
 	 * 
 	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a
-	 *        wildcard.
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
 	 * @param pred
 	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
 	 * @param obj
@@ -323,8 +322,7 @@ public interface RepositoryConnection {
 	 * predicate and/or object, optionally in the specified contexts.
 	 * 
 	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a
-	 *        wildcard.
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
 	 * @param pred
 	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
 	 * @param obj
@@ -546,9 +544,9 @@ public interface RepositoryConnection {
 	 *        The URL of the RDF data.
 	 * @param baseURI
 	 *        The base URI to resolve any relative URIs that are in the data
-	 *        against. This defaults to the value of {@link
-	 *        java.net.URL#toExternalForm() url.toExternalForm()} if the value is
-	 *        set to <tt>null</tt>.
+	 *        against. This defaults to the value of
+	 *        {@link java.net.URL#toExternalForm() url.toExternalForm()} if the
+	 *        value is set to <tt>null</tt>.
 	 * @param dataFormat
 	 *        The serialization format of the data.
 	 * @param contexts
@@ -576,9 +574,8 @@ public interface RepositoryConnection {
 	 *        A file containing RDF data.
 	 * @param baseURI
 	 *        The base URI to resolve any relative URIs that are in the data
-	 *        against. This defaults to the value of
-	 *        {@link java.io.File#toURI() file.toURI()} if the value is set to
-	 *        <tt>null</tt>.
+	 *        against. This defaults to the value of {@link java.io.File#toURI()
+	 *        file.toURI()} if the value is set to <tt>null</tt>.
 	 * @param dataFormat
 	 *        The serialization format of the data.
 	 * @param contexts
@@ -671,8 +668,8 @@ public interface RepositoryConnection {
 	 * Adds the supplied statements to this repository, optionally to one or more
 	 * named contexts.
 	 * 
-	 * @param statementIter
-	 *        The statements to add. In case the iterator is a
+	 * @param statements
+	 *        The statements to add. In case the iteration is a
 	 *        {@link CloseableIteration}, it will be closed before this method
 	 *        returns.
 	 * @param contexts
@@ -687,8 +684,7 @@ public interface RepositoryConnection {
 	 *         If the statements could not be added to the repository, for
 	 *         example because the repository is not writable.
 	 */
-	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
+	public <E extends Exception> void add(Iteration<? extends Statement, E> statements, Resource... contexts)
 		throws RepositoryException, E;
 
 	/**
@@ -755,8 +751,8 @@ public interface RepositoryConnection {
 	 * repository, ignoring any context information carried by the statements
 	 * themselves.
 	 * 
-	 * @param statementIter
-	 *        The statements to remove. In case the iterator is a
+	 * @param statements
+	 *        The statements to remove. In case the iteration is a
 	 *        {@link CloseableIteration}, it will be closed before this method
 	 *        returns.
 	 * @param contexts
@@ -769,7 +765,7 @@ public interface RepositoryConnection {
 	 *         If the statements could not be removed from the repository, for
 	 *         example because the repository is not writable.
 	 */
-	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
+	public <E extends Exception> void remove(Iteration<? extends Statement, E> statements,
 			Resource... contexts)
 		throws RepositoryException, E;
 
