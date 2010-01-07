@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -379,7 +379,8 @@ public class Console {
 		while (matcher.find()) {
 			if (matcher.group(1) != null) {
 				tokens.add(matcher.group(1));
-			} else {
+			}
+			else {
 				tokens.add(matcher.group());
 			}
 		}
@@ -461,13 +462,13 @@ public class Console {
 
 	private void printHelpConnect() {
 		writeln("Usage:");
-		writeln("connect default           Opens the default repository set for this console");
-		writeln("connect <dataDirectory>   Opens the repository set in the specified data dir");
-		writeln("connect <serverURL>       Connects to a Sesame server");
+		writeln("connect default                         Opens the default repository set for this console");
+		writeln("connect <dataDirectory>                 Opens the repository set in the specified data dir");
+		writeln("connect <serverURL> [user [password]]   Connects to a Sesame server with optional credentials");
 	}
 
 	private void connect(String[] tokens) {
-		if (tokens.length != 2) {
+		if (tokens.length < 2) {
 			printHelpConnect();
 			return;
 		}
@@ -481,7 +482,9 @@ public class Console {
 			try {
 				new URL(target);
 				// target is a valid URL
-				connectRemote(target);
+				String username = (tokens.length > 2) ? tokens[2] : null;
+				String password = (tokens.length > 3) ? tokens[3] : null;
+				connectRemote(target, username, password);
 			}
 			catch (MalformedURLException e) {
 				// assume target is a directory path
@@ -505,17 +508,42 @@ public class Console {
 	}
 
 	private boolean connectRemote(String url) {
+		return connectRemote(url, null, null);
+	}
+
+	private boolean connectRemote(final String url, final String user, final String pass) {
 		try {
 			// Ping server
 			HTTPClient httpClient = new HTTPClient();
 			httpClient.setServerURL(url);
+
+			if (user != null) {
+				httpClient.setUsernameAndPassword(user, (pass == null) ? "" : pass);
+			}
+
+			// Ping the server
 			httpClient.getServerProtocol();
 
 			return installNewManager(new RemoteRepositoryManager(url), url);
 		}
 		catch (UnauthorizedException e) {
-			// FIXME: handle authentication
-			writeError("Not authorized to access the server");
+			if (user != null && pass != null) {
+				writeError("Authentication for user '" + user + "' failed");
+				logger.warn("Authentication for user '" + user + "' failed", e);
+			}
+			else {
+				// Ask user for credentials
+				try {
+					writeln("Authentication required");
+					String username = readln("Username:");
+					String password = readPassword("Password:");
+					connectRemote(url, username, password);
+				}
+				catch (IOException ioe) {
+					writeError("Failed to read user credentials");
+					logger.warn("Failed to read user credentials", ioe);
+				}
+			}
 		}
 		catch (IOException e) {
 			writeError("Failed to access the server: " + e.getMessage());
@@ -627,7 +655,7 @@ public class Console {
 			finally {
 				templateStream.close();
 			}
-			
+
 			ConfigTemplate configTemplate = new ConfigTemplate(template);
 
 			Map<String, String> valueMap = new HashMap<String, String>();
@@ -893,9 +921,9 @@ public class Console {
 			}
 			else {
 				writeln("+----------");
-				for (String repID: repIDs) {
+				for (String repID : repIDs) {
 					write("|" + repID);
-					
+
 					try {
 						RepositoryInfo repInfo = manager.getRepositoryInfo(repID);
 						if (repInfo.getDescription() != null) {
@@ -1796,6 +1824,22 @@ public class Console {
 		buf.setLength(buf.length() - 1);
 
 		return buf.toString().trim();
+	}
+
+	private String readln(String message)
+		throws IOException
+	{
+		if (message != null) {
+			write(message + " ");
+		}
+		return in.readLine();
+	}
+
+	private String readPassword(String message)
+		throws IOException
+	{
+		// TODO: Proper password reader
+		return readln(message);
 	}
 
 	private void write(String s) {
