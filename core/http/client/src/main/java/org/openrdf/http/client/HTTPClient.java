@@ -331,6 +331,10 @@ public class HTTPClient {
 			else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				throw new UnauthorizedException();
 			}
+			else if (httpCode == HttpURLConnection.HTTP_NOT_FOUND) {
+				// trying to contact a non-Sesame server?
+				throw new RepositoryException("Failed to get server protocol; no such resource on this server");
+			}
 			else {
 				ErrorInfo errInfo = getErrorInfo(method);
 				throw new RepositoryException("Failed to get server protocol: " + errInfo);
