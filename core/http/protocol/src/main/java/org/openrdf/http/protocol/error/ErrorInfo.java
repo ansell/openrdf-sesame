@@ -6,24 +6,23 @@
 package org.openrdf.http.protocol.error;
 
 /**
- * 
  * @author Herko ter Horst
  * @author Arjohn Kampman
  */
 public class ErrorInfo {
 
-	private ErrorType errorType;
+	private final ErrorType errorType;
 
-	private String errMSg;
+	private final String errMSg;
 
 	public ErrorInfo(String errMsg) {
-		assert errMsg != null : "errMsg must not be null";
-		this.errMSg = errMsg;
+		this(null, errMsg);
 	}
 
 	public ErrorInfo(ErrorType errorType, String errMsg) {
-		this(errMsg);
+		assert errMsg != null : "errMsg must not be null";
 		this.errorType = errorType;
+		this.errMSg = errMsg;
 	}
 
 	public ErrorType getErrorType() {
