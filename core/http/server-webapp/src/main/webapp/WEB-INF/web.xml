@@ -1,28 +1,31 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
 	version="2.4">
 
 	<display-name>OpenRDF Sesame</display-name>
 	<description>OpenRDF Sesame</description>
 
-	<!-- Application class name -->
-	<context-param>
-		<param-name>org.restlet.application</param-name>
-		<param-value>org.openrdf.http.server.SesameApplication</param-value>
-	</context-param>
-
 	<!-- Restlet adapter -->
 	<servlet>
-		<servlet-name>RestletServlet</servlet-name>
-		<servlet-class>com.noelios.restlet.ext.servlet.ServerServlet</servlet-class>
+		<servlet-name>RestletAdapter</servlet-name>
+		<servlet-class>org.restlet.ext.servlet.ServerServlet</servlet-class>
+		
+		<init-param>
+			<param-name>org.restlet.application</param-name>
+			<param-value>org.openrdf.http.server.SesameApplication</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>org.restlet.clients</param-name>
+			<param-value>HTTP HTTPS</param-value>
+		</init-param>
 	</servlet>
 
 	<!-- Catch all requests -->
 	<servlet-mapping>
-		<servlet-name>RestletServlet</servlet-name>
+		<servlet-name>RestletAdapter</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
 
