@@ -1,20 +1,19 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2009-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.sail.accesscontrol;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.List;
 
 import junit.framework.TestCase;
 
-import com.ontotext.trree.owlim_ext.config.OWLIMSailConfig;
+import com.ontotext.trree.owlim_ext.SailImpl;
 
-import org.openrdf.model.Statement;
+import info.aduna.io.FileUtil;
+
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -23,104 +22,90 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.config.RepositoryConfig;
-import org.openrdf.repository.manager.LocalRepositoryManager;
-import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.repository.sail.config.SailRepositoryConfig;
+import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.trig.TriGWriterFactory;
-import org.openrdf.sail.accesscontrol.config.AccessControlSailConfig;
+import org.openrdf.sail.Sail;
 import org.openrdf.sail.accesscontrol.vocabulary.ACL;
-import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.store.Session;
 import org.openrdf.store.SessionManager;
-import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 /**
  * @author Jeen Broekstra
+ * @author Arjohn Kampman
  */
 public class AccessControlSailTest extends TestCase {
 
-	private static String dataFile = "trezorix-data.trig";
+	private static final String dataFile = "/accesscontrol/trezorix-data.trig";
 
-	private static String policyFile = "policies-trezorix.ttl";
+	private static final String policyFile = "/accesscontrol/policies-trezorix.ttl";
 
-	private static String resourcePath = "accesscontrol/";
+	// resource _should_ inherit editing permission for user 'trezorix'
+	private static final String CONCEPT_URI = "http://www.rnaproject.org/data/8997fddd-9b77-40ef-856e-b83c426dafa0";
 
-	private ClassLoader cl = AccessControlSailTest.class.getClassLoader();
+	private Repository repository;
 
-	private static RepositoryManager manager;
+	private File dataDir;
 
-	private static String repositoryId = "test-acl";
+	@Override
+	protected void setUp()
+		throws Exception
+	{
+		dataDir = FileUtil.createTempDir("acl");
+		repository = createRepository(dataDir);
 
-	private Repository rep;
+		uploadAclData(repository);
 
-	static {
-		File tmpDir = new File("D:/temp/acl-test/");
-		System.out.println("Using repository dir: " + tmpDir.getAbsolutePath());
-		manager = new LocalRepositoryManager(tmpDir);
+		// FileOutputStream os = new
+		// FileOutputStream("D:/temp/export-acl-test.trig");
+		// RDFWriter writer = new TriGWriterFactory().getWriter(os);
+		// repository.getConnection().export(writer);
+	}
+
+	@Override
+	protected void tearDown()
+		throws Exception
+	{
 		try {
-			manager.initialize();
+			repository.shutDown();
+			repository = null;
 		}
-		catch (StoreConfigException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		finally {
+			FileUtil.deleteDir(dataDir);
 		}
 	}
 
-	private void createNewTestingRepository()
-		throws StoreException, StoreConfigException
+	private static Repository createRepository(File dataDir)
+		throws StoreException
 	{
+		Sail sail = new SailImpl();
+		sail = new AccessControlSail(sail);
+		Repository repository = new SailRepository(sail);
+		repository.setDataDir(dataDir);
+		repository.initialize();
+		return repository;
+	}
 
-		SailImplConfig sailImplConfig = new OWLIMSailConfig();
-		sailImplConfig = new AccessControlSailConfig(sailImplConfig);
-		RepositoryConfig repConfig = new RepositoryConfig(new SailRepositoryConfig(sailImplConfig));
-		manager.addRepositoryConfig(repositoryId, repConfig.export());
-
-		Repository rep = manager.getRepository(repositoryId);
-
+	private static void uploadAclData(Repository repository)
+		throws Exception
+	{
 		Session session = SessionManager.getOrCreate();
 
 		// DEBUG
 		session.setUsername("administrator");
 
-		RepositoryConnection conn = rep.getConnection();
+		RepositoryConnection conn = repository.getConnection();
 		try {
-			conn.clear();
-			conn.add(cl.getResource(resourcePath + policyFile), "", RDFFormat.forFileName(policyFile), ACL.CONTEXT);
-			conn.add(cl.getResource(resourcePath + dataFile), "", RDFFormat.forFileName(dataFile));
+			conn.add(AccessControlSailTest.class.getResource(policyFile), "", RDFFormat.forFileName(policyFile),
+					ACL.CONTEXT);
+			conn.add(AccessControlSailTest.class.getResource(dataFile), "", RDFFormat.forFileName(dataFile));
 		}
-		catch (RDFParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		finally {
+			conn.close();
 		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (StoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		conn.close();
 
 		session.setUsername(null);
-	}
-
-	protected void setUp()
-		throws Exception
-	{
-		createNewTestingRepository();
-		rep = manager.getRepository(repositoryId);
-
-		FileOutputStream os = new FileOutputStream("D:/temp/export-acl-test.trig");
-
-		RDFWriter writer = new TriGWriterFactory().getWriter(os);
-		rep.getConnection().export(writer);
 	}
 
 	/*
@@ -134,139 +119,116 @@ public class AccessControlSailTest extends TestCase {
 		rnaRepository.getConnection().export(writer);
 	}
 	*/
-	
+
 	public void testSimpleQuery()
 		throws Exception
 	{
-
-		RepositoryConnection conn = rep.getConnection();
+		RepositoryConnection con = repository.getConnection();
 
 		try {
 			Session session = SessionManager.getOrCreate();
 			session.setUsername("trezorix");
 
 			String simpleDocumentQuery = "SELECT DISTINCT ?X WHERE {?X a <http://example.org/Document>; ?P ?Y . } ";
-			TupleResult tr = conn.prepareTupleQuery(QueryLanguage.SPARQL, simpleDocumentQuery).evaluate();
+			TupleResult tr = con.prepareTupleQuery(QueryLanguage.SPARQL, simpleDocumentQuery).evaluate();
 
-			List<String> headers = tr.getBindingNames();
+			try {
+				List<String> headers = tr.getBindingNames();
 
-			URI pmdoc1 = conn.getValueFactory().createURI("http://example.org/pmdocument1");
-			URI pmdoc2 = conn.getValueFactory().createURI("http://example.org/pmdocument2");
+				URI pmdoc1 = con.getValueFactory().createURI("http://example.org/pmdocument1");
+				URI pmdoc2 = con.getValueFactory().createURI("http://example.org/pmdocument2");
 
-			while (tr.hasNext()) {
-				BindingSet bs = tr.next();
+				while (tr.hasNext()) {
+					BindingSet bs = tr.next();
 
-				for (String header : headers) {
-					Value value = bs.getValue(header);
+					for (String header : headers) {
+						Value value = bs.getValue(header);
 
-					assertFalse(pmdoc1.stringValue(), value.equals(pmdoc1));
-					assertFalse(pmdoc2.stringValue(), value.equals(pmdoc2));
-					System.out.println(header + " = " + value);
+						assertFalse(pmdoc1.stringValue(), value.equals(pmdoc1));
+						assertFalse(pmdoc2.stringValue(), value.equals(pmdoc2));
+						// System.out.println(header + " = " + value);
+					}
+					// System.out.println();
 				}
-				System.out.println();
+			}
+			finally {
+				tr.close();
 			}
 		}
 		finally {
-			conn.close();
+			con.close();
 		}
 	}
 
-	public void testAddStatement()
+	public void testAddStatementAuthenticated()
 		throws Exception
 	{
-		RepositoryConnection conn = rep.getConnection();
+		SessionManager.getOrCreate().setUsername("trezorix");
 		try {
-			ValueFactory valueFactory = conn.getValueFactory();
-
-			URI trezconcept = valueFactory.createURI("http://www.rnaproject.org/data/8997fddd-9b77-40ef-856e-b83c426dafa0");
-
-			Statement legalStatement = valueFactory.createStatement(trezconcept, RDFS.LABEL,
-					valueFactory.createLiteral("legal new statement"));
-
-			try {
-				conn.add(legalStatement);
-
-				fail("should have thrown exception");
-			}
-			catch (StoreException e) {
-				// expected
-				System.out.println(" expected store exception thrown: " + e.getMessage());
-			}
+			addProtectedStatement();
 		}
 		finally {
-			conn.close();
+			SessionManager.remove();
 		}
-
-		Session session = SessionManager.getOrCreate();
-		session.setUsername("trezorix");
-
-		conn = rep.getConnection();
-		try {
-
-			ValueFactory valueFactory = conn.getValueFactory();
-
-			// this concept _should_ inherit editing permission for user trezorix.
-			URI trezconcept = valueFactory.createURI("http://www.rnaproject.org/data/8997fddd-9b77-40ef-856e-b83c426dafa0");
-			
-			Statement legalStatement = valueFactory.createStatement(trezconcept, RDFS.LABEL,
-					valueFactory.createLiteral("legal new statement"));
-
-			conn.add(legalStatement);
-
-		}
-		finally {
-			conn.close();
-		}
-
 	}
 
-	public void testRemoveStatements()
+	public void testAddStatementAnonymous()
 		throws Exception
 	{
-		RepositoryConnection conn = rep.getConnection();
 		try {
-			ValueFactory valueFactory = conn.getValueFactory();
-
-			URI trezconcept = valueFactory.createURI("http://www.rnaproject.org/data/8997fddd-9b77-40ef-856e-b83c426dafa0");
-
-			Statement legalStatement = valueFactory.createStatement(trezconcept, RDFS.LABEL,
-					valueFactory.createLiteral("legal new statement"));
-
-			try {
-				conn.remove(legalStatement);
-
-				fail("should have thrown exception");
-			}
-			catch (StoreException e) {
-				// expected
-				System.out.println(" expected store exception thrown: " + e.getMessage());
-			}
+			addProtectedStatement();
+			fail("Expected StoreException not thrown");
 		}
-		finally {
-			conn.close();
+		catch (StoreException e) {
 		}
-
-		Session session = SessionManager.getOrCreate();
-		session.setUsername("trezorix");
-
-		conn = rep.getConnection();
-		try {
-
-			ValueFactory valueFactory = conn.getValueFactory();
-
-			// this concept _should_ inherit editing permission for user trezorix.
-			URI trezconcept = valueFactory.createURI("http://www.rnaproject.org/data/8997fddd-9b77-40ef-856e-b83c426dafa0");
-			
-			Statement legalStatement = valueFactory.createStatement(trezconcept, RDFS.LABEL,
-					valueFactory.createLiteral("legal new statement"));
-
-			conn.remove(legalStatement);
-
-		}
-		finally {
-			conn.close();
-		}
-
 	}
 
+	private void addProtectedStatement()
+		throws StoreException
+	{
+		RepositoryConnection con = repository.getConnection();
+		try {
+			ValueFactory vf = con.getValueFactory();
+			con.add(vf.createURI(CONCEPT_URI), RDFS.LABEL, vf.createLiteral("test"));
+		}
+		finally {
+			con.close();
+		}
+	}
+
+	public void testRemoveStatementAuthenticated()
+		throws Exception
+	{
+		SessionManager.getOrCreate().setUsername("trezorix");
+		try {
+			removeProtectedStatement();
+		}
+		finally {
+			SessionManager.remove();
+		}
+	}
+
+	public void testRemoveStatementAnonymous()
+		throws Exception
+	{
+		try {
+			removeProtectedStatement();
+			fail("Expected StoreException not thrown");
+		}
+		catch (StoreException e) {
+		}
+	}
+
+	private void removeProtectedStatement()
+		throws StoreException
+	{
+		RepositoryConnection con = repository.getConnection();
+		try {
+			ValueFactory vf = con.getValueFactory();
+			con.removeMatch(vf.createURI(CONCEPT_URI), RDFS.LABEL, vf.createLiteral("test"));
+		}
+		finally {
+			con.close();
+		}
+	}
 }

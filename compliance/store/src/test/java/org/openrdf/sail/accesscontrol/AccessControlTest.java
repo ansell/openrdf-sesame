@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2009-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -10,33 +10,21 @@ import org.openrdf.sail.Sail;
 import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
  * @author Jeen Broekstra
  */
 public class AccessControlTest extends RDFStoreTest {
 
-	/**
-	 * @param name
-	 */
 	public AccessControlTest(String name) {
 		super(name);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	protected Sail createSail()
 		throws StoreException
 	{
-		Sail sail = new AccessControlSail((Sail)new MemoryStore());
+		Sail sail = new AccessControlSail(new MemoryStore());
 		sail.initialize();
-		
-		// TODO add some data?
-		
 		return sail;
 	}
-
-
-
 }
