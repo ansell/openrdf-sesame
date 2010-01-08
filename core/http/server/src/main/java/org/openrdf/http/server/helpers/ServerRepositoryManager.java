@@ -19,10 +19,10 @@ import org.openrdf.store.StoreConfigException;
 import org.openrdf.store.StoreException;
 
 /**
- * TODO: make this a subclass of {@link RepositoryManager}.
- * 
  * @author Arjohn Kampman
  */
+// TODO: rework RepositoryManager into an interface and make this an subclass of
+// RepositoryManagerWrapper
 public class ServerRepositoryManager {
 
 	private final RepositoryManager repoManager;
