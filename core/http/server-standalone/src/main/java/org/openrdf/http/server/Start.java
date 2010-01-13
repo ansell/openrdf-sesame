@@ -162,19 +162,13 @@ public class Start {
 		String shutdownKey = getShutdownKey(commandLine);
 
 		SesameServer server = new SesameServer(dataDir, port);
-//		server.setMaxCacheAge(maxCacheAge);
+		// server.setMaxCacheAge(maxCacheAge);
 		server.setShutdownKey(shutdownKey);
 
-		try {
-			server.start();
+		server.start();
 
-			System.out.println("Server listening on port " + server.getPort());
-			System.out.println("data dir: " + server.getDataDir());
-			System.out.println("Shutdown key is: " + server.getShutdownKey());
-		}
-		catch (Exception e) {
-			server.stop();
-			throw e;
-		}
+		System.out.println("Server listening on port " + server.getPort());
+		System.out.println("data dir: " + server.getDataDir());
+		System.out.println("Shutdown key is: " + server.getShutdownKey());
 	}
 }
