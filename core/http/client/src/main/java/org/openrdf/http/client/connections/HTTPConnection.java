@@ -98,7 +98,7 @@ public class HTTPConnection {
 	}
 
 	public void ifNoneMatch(String match) {
-		method.addRequestHeader(Protocol.IF_NONE_MATCH, match);
+		method.addRequestHeader(RequestHeaders.IF_NONE_MATCH, match);
 	}
 
 	public void accept(Class<?> type)
