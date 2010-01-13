@@ -19,6 +19,7 @@ import static org.openrdf.http.protocol.Protocol.QUERIES;
 import static org.openrdf.http.protocol.Protocol.REPOSITORIES;
 import static org.openrdf.http.protocol.Protocol.ROLLBACK;
 import static org.openrdf.http.protocol.Protocol.SCHEMAS;
+import static org.openrdf.http.protocol.Protocol.SESSION;
 import static org.openrdf.http.protocol.Protocol.SIZE;
 import static org.openrdf.http.protocol.Protocol.STATEMENTS;
 import static org.openrdf.http.protocol.Protocol.TEMPLATES;
@@ -29,15 +30,22 @@ import static org.openrdf.http.server.resources.ConfigurationResource.CONFIGURAT
 import static org.openrdf.http.server.resources.NamespaceResource.NS_PREFIX_PARAM;
 import static org.openrdf.http.server.resources.TemplateResource.TEMPLATE_ID_PARAM;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.restlet.Application;
 import org.restlet.Context;
 import org.restlet.Restlet;
 import org.restlet.engine.application.Encoder;
+import org.restlet.resource.Finder;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
 
+import info.aduna.app.AppConfiguration;
 import info.aduna.io.MavenUtil;
 
+import org.openrdf.http.server.auth.cas.CasAuthFilter;
+import org.openrdf.http.server.auth.cas.CasProxyCallback;
 import org.openrdf.http.server.filters.AcceptParamFilter;
 import org.openrdf.http.server.filters.ConnectionResolver;
 import org.openrdf.http.server.filters.PreparedQueryResolver;
@@ -68,6 +76,9 @@ import org.openrdf.http.server.resources.SizeResource;
 import org.openrdf.http.server.resources.StatementsResource;
 import org.openrdf.http.server.resources.TemplateListResource;
 import org.openrdf.http.server.resources.TemplateResource;
+import org.openrdf.http.server.session.SessionFilter;
+import org.openrdf.http.server.session.SessionResource;
+import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RepositoryManager;
 
 /**
@@ -82,56 +93,113 @@ public class SesameApplication extends Application {
 	public static String getServerVersion() {
 		return MavenUtil.loadVersion("org.openrdf.sesame", "sesame-http-server-restlet", "devel");
 	}
-	
-	private static final int COMPRESSION_THRESHOLD = 4096;
 
-	private final ServerRepositoryManager serverRepoManager;
-
-	private final Context c;
-	
-	private int maxCacheAge;
-
-	public SesameApplication(Context parentContext, RepositoryManager manager) {
-		super(parentContext);
-		setStatusService(new ErrorHandler());
-		this.serverRepoManager = new ServerRepositoryManager(manager);
-		this.c = getContext();
+	private static AppConfiguration getAppConfig()
+		throws IOException
+	{
+		AppConfiguration appConfig = new AppConfiguration("OpenRDF Sesame");
+		appConfig.init();
+		return appConfig;
 	}
 
-	public ServerRepositoryManager getRepositoryManager() {
+	private static final int COMPRESSION_THRESHOLD = 4096;
+
+	private final File dataDir;
+
+	private RepositoryManager repoManager;
+
+	private ServerRepositoryManager serverRepoManager;
+
+	public SesameApplication()
+		throws IOException
+	{
+		this(getAppConfig().getDataDir());
+	}
+
+	public SesameApplication(File dataDir) {
+		super();
+		this.dataDir = dataDir;
+		setStatusService(new ErrorHandler());
+	}
+
+	public SesameApplication(Context context)
+		throws IOException
+	{
+		this(context, getAppConfig().getDataDir());
+	}
+
+	public SesameApplication(Context context, File dataDir) {
+		super(context);
+		this.dataDir = dataDir;
+		setStatusService(new ErrorHandler());
+	}
+
+	public RepositoryManager getRepositoryManager() {
+		return repoManager;
+	}
+
+	public ServerRepositoryManager getServerRepositoryManager() {
 		return serverRepoManager;
 	}
 
 	@Override
-	public synchronized Restlet createRoot() {
-		Restlet root = createRootRouter();
+	public synchronized void start()
+		throws Exception
+	{
+		repoManager = new LocalRepositoryManager(dataDir);
+		repoManager.initialize();
+		serverRepoManager = new ServerRepositoryManager(repoManager);
+		super.start();
+	}
+
+	@Override
+	public synchronized void stop()
+		throws Exception
+	{
+		try {
+			super.stop();
+		}
+		finally {
+			repoManager.shutDown();
+		}
+	}
+
+	@Override
+	public synchronized Restlet createInboundRoot() {
+		Context c = getContext();
+		Restlet root = createRootRouter(c);
+
+		// Restore sessions
+		root = new SessionFilter(c, root);
 
 		// Allow Accept-parameters to override Accept-headers:
 		root = new AcceptParamFilter(c, root);
-		
+
 		// Compress returned entities
 		Encoder encoder = new Encoder(c);
 		encoder.setMinimumSize(COMPRESSION_THRESHOLD);
 		encoder.setNext(root);
 		root = encoder;
-		
-//		root = new RequestLogger(c, root);
+
+		// root = new RequestLogger(c, root);
 
 		return root;
 	}
 
-	protected Restlet createRootRouter() {
+	protected Restlet createRootRouter(Context c) {
 		Router router = new Router(c);
 		router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
 		router.attach("/" + PROTOCOL, ProtocolResource.class);
 		router.attach("/" + SCHEMAS, SchemaResource.class);
-		router.attach("/" + CONFIGURATIONS, createConfigurationsRouter());
-		router.attach("/" + TEMPLATES, createTemplatesRouter());
-		router.attach("/" + REPOSITORIES, createRepositoriesRouter());
+		router.attach("/" + CONFIGURATIONS, createConfigurationsRouter(c));
+		router.attach("/" + TEMPLATES, createTemplatesRouter(c));
+		router.attach("/" + REPOSITORIES, createRepositoriesRouter(c));
+		router.attach("/" + SESSION, createSessionPath(c));
+		router.attach("/cas-proxy-callback", CasProxyCallback.class);
 		return router;
 	}
 
-	protected Restlet createConfigurationsRouter() {
+	protected Restlet createConfigurationsRouter(Context c) {
 		Router router = new Router(c);
 		router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
 		router.attach("/{" + CONFIGURATION_ID_PARAM + "}", ConfigurationResource.class);
@@ -139,7 +207,7 @@ public class SesameApplication extends Application {
 		return router;
 	}
 
-	protected Restlet createTemplatesRouter() {
+	protected Restlet createTemplatesRouter(Context c) {
 		Router router = new Router(c);
 		router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
 		router.attach("/{" + TEMPLATE_ID_PARAM + "}", TemplateResource.class);
@@ -147,52 +215,52 @@ public class SesameApplication extends Application {
 		return router;
 	}
 
-	protected Restlet createRepositoriesRouter() {
+	protected Restlet createRepositoriesRouter(Context c) {
 		Router router = new Router(c);
 		router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
-		router.attach("/{" + REPOSITORY_ID_PARAM + "}", new RepositoryResolver(c, createRepositoryRouter()));
+		router.attach("/{" + REPOSITORY_ID_PARAM + "}", new RepositoryResolver(c, createRepositoryRouter(c)));
 		router.attach("", RepositoryListResource.class);
 		return router;
 	}
 
-	protected Restlet createRepositoryRouter() {
+	protected Restlet createRepositoryRouter(Context c) {
 		Router router = new Router(c);
 		router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
-		router.attach("/" + CONNECTIONS, createExplicitConnectionRouter());
-		router.attachDefault(new ScopedConnectionTagger(c, createImplicitConnectionRouter()));
+		router.attach("/" + CONNECTIONS, createExplicitConnectionRouter(c));
+		router.attachDefault(new ScopedConnectionTagger(c, createImplicitConnectionRouter(c)));
 		return router;
 	}
 
-	protected Restlet createExplicitConnectionRouter() {
+	protected Restlet createExplicitConnectionRouter(Context c) {
 		Router router = new Router(c);
 		router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
-		router.attach("/{" + CONNECTION_ID_PARAM + "}", new ConnectionResolver(c, createConnectionRouter()));
+		router.attach("/{" + CONNECTION_ID_PARAM + "}", new ConnectionResolver(c, createConnectionRouter(c)));
 		router.attach("", ConnectionListResource.class);
 		return router;
 	}
 
-	protected Restlet createImplicitConnectionRouter() {
+	protected Restlet createImplicitConnectionRouter(Context c) {
 		Router router = new Router(c);
 		router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
 		router.attach("/" + STATEMENTS, StatementsResource.class);
 		router.attach("/" + CONTEXTS, ContextsResource.class);
 		router.attach("/" + SIZE, SizeResource.class);
 		router.attach("/" + METADATA, MetaDataResource.class);
-		router.attach("/" + NAMESPACES, createNamespacesRouter());
+		router.attach("/" + NAMESPACES, createNamespacesRouter(c));
 		router.attach("", new QueryParser(c, new QueryTypeRouter(c)));
 		return router;
 	}
 
-	protected Restlet createConnectionRouter() {
+	protected Restlet createConnectionRouter(Context c) {
 		Router router = new Router(c);
 		router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
 		router.attach("/" + STATEMENTS, StatementsResource.class);
 		router.attach("/" + CONTEXTS, ContextsResource.class);
 		router.attach("/" + SIZE, SizeResource.class);
 		router.attach("/" + METADATA, MetaDataResource.class);
-		router.attach("/" + NAMESPACES, createNamespacesRouter());
+		router.attach("/" + NAMESPACES, createNamespacesRouter(c));
 		router.attach("/" + BNODES, BNodesResource.class);
-		router.attach("/" + QUERIES, createQueriesRouter());
+		router.attach("/" + QUERIES, createQueriesRouter(c));
 		router.attach("/" + BEGIN, BeginTxnResource.class);
 		router.attach("/" + COMMIT, CommitTxnResource.class);
 		router.attach("/" + ROLLBACK, RollbackTxnResource.class);
@@ -201,7 +269,7 @@ public class SesameApplication extends Application {
 		return router;
 	}
 
-	protected Restlet createNamespacesRouter() {
+	protected Restlet createNamespacesRouter(Context c) {
 		Router router = new Router(c);
 		router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
 		router.attach("/{" + NS_PREFIX_PARAM + "}", NamespaceResource.class);
@@ -209,12 +277,18 @@ public class SesameApplication extends Application {
 		return router;
 	}
 
-	protected Restlet createQueriesRouter() {
+	protected Restlet createQueriesRouter(Context c) {
 		Router router = new Router(c);
 		router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
 		router.attach("/{" + QUERY_ID_PARAM + "}", new PreparedQueryResolver(c, new QueryTypeRouter(c,
 				PreparedQueryResource.class)));
 		router.attach("", new QueryParser(c, QueryListResource.class));
 		return router;
+	}
+
+	protected Restlet createSessionPath(Context c) {
+		Restlet result = new Finder(c, SessionResource.class);
+		result = new CasAuthFilter(c, result);
+		return result;
 	}
 }

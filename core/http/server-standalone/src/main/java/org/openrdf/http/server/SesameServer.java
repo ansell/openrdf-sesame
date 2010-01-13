@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -15,13 +15,15 @@ import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
+import org.restlet.Server;
 import org.restlet.data.Form;
+import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.data.Status;
+import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RepositoryManager;
 
 /**
@@ -46,7 +48,7 @@ public class SesameServer {
 
 	private Component component;
 
-	private LocalRepositoryManager manager;
+	private SesameApplication sesameApplication;
 
 	private String shutDownKey;
 
@@ -103,7 +105,7 @@ public class SesameServer {
 	}
 
 	public RepositoryManager getRepositoryManager() {
-		return manager;
+		return sesameApplication.getRepositoryManager();
 	}
 
 	/**
@@ -112,26 +114,42 @@ public class SesameServer {
 	public synchronized void start()
 		throws Exception
 	{
-		manager = new LocalRepositoryManager(dataDir);
-		manager.initialize();
-
 		component = new Component();
 		component.getServers().add(Protocol.HTTP, port);
+		Server httpsServer = component.getServers().add(Protocol.HTTPS);
+		component.getClients().add(Protocol.HTTP);
+		component.getClients().add(Protocol.HTTPS);
 		component.getLogService().setEnabled(false);
 
+		Series<Parameter> httpsParameters = httpsServer.getContext().getParameters();
+		copySystemProperty("javax.net.ssl.keyStore", httpsParameters, "keystorePath");
+		copySystemProperty("javax.net.ssl.keyStorePassword", httpsParameters, "keystorePassword");
+		copySystemProperty("javax.net.ssl.keyStoreType", httpsParameters, "keystoreType");
+		httpsParameters.add("keyPassword", "changeit");
+
 		Context appContext = component.getContext().createChildContext();
-		SesameApplication app = new SesameApplication(appContext, manager);
-		component.getDefaultHost().attachDefault(app);
+		sesameApplication = new SesameApplication(appContext, dataDir);
+
+		component.getDefaultHost().attachDefault(sesameApplication);
+
 		if (getShutdownKey() != null) {
-			component.getDefaultHost().attach("/" + SHUTDOWN_PATH, new StopRestlet(appContext));
+			component.getDefaultHost().attach("/" + SHUTDOWN_PATH, new StopRestlet());
 		}
 
 		try {
 			component.start();
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 			stop();
 			throw e;
+		}
+	}
+
+	private final void copySystemProperty(String systemProp, Series<Parameter> parameters, String param) {
+		String systemPropValue = System.getProperty(systemProp);
+		if (systemPropValue != null) {
+			parameters.set(param, systemPropValue);
 		}
 	}
 
@@ -141,11 +159,8 @@ public class SesameServer {
 	public synchronized void stop()
 		throws Exception
 	{
-		try {
+		if (component != null) {
 			component.stop();
-		}
-		finally {
-			manager.shutDown();
 		}
 	}
 
@@ -175,10 +190,6 @@ public class SesameServer {
 
 	public class StopRestlet extends Restlet {
 
-		public StopRestlet(Context context) {
-			super(context);
-		}
-
 		@Override
 		public void handle(Request request, Response response) {
 			if (request.getMethod().getName().equalsIgnoreCase("POST")) {
@@ -190,7 +201,7 @@ public class SesameServer {
 		}
 
 		private void handlePost(Request request, Response response) {
-			Form params = request.getEntityAsForm();
+			Form params = new Form(request.getEntity());
 			String key = params.getFirstValue(SHUTDOWN_KEY_PARAM);
 			if (key != null && key.equals(getShutdownKey())) {
 				response.setStatus(SUCCESS_ACCEPTED);
