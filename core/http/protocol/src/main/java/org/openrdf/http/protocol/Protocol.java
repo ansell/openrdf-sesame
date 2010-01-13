@@ -39,14 +39,14 @@ public abstract class Protocol {
 	public static final String OBJECT_PARAM_NAME = "obj";
 
 	/**
-	 * Parameter name for the 'includeInferred' parameter.
-	 */
-	public static final String INCLUDE_INFERRED_PARAM_NAME = "infer";
-
-	/**
 	 * Parameter name for the context parameter.
 	 */
 	public static final String CONTEXT_PARAM_NAME = "context";
+
+	/**
+	 * Parameter name for the 'includeInferred' parameter.
+	 */
+	public static final String INCLUDE_INFERRED_PARAM_NAME = "infer";
 
 	/**
 	 * Parameter value for the NULL context.
@@ -77,6 +77,11 @@ public abstract class Protocol {
 	 * Parameter name for the named graph URI parameter.
 	 */
 	public static final String NAMED_GRAPH_PARAM_NAME = "named-graph-uri";
+
+	/**
+	 * Parameter prefix for query-external variable bindings.
+	 */
+	public static final String BINDING_PREFIX = "$";
 
 	/**
 	 * Relative location of the protocol resource.
@@ -117,11 +122,6 @@ public abstract class Protocol {
 	 * Relative location of the bnodes resource of a repository.
 	 */
 	public static final String BNODES = "bnodes";
-
-	/**
-	 * Parameter prefix for query-external variable bindings.
-	 */
-	public static final String BINDING_PREFIX = "$";
 
 	/**
 	 * Relative location of the 'size' resource of a repository.
@@ -165,8 +165,6 @@ public abstract class Protocol {
 	 */
 	public static final String BOOLEAN_QUERY = "boolean";
 
-	public static final String IF_NONE_MATCH = "If-None-Match";
-
 	/**
 	 * MIME type for transactions: <tt>application/x-rdftransaction</tt>.
 	 */
@@ -205,6 +203,11 @@ public abstract class Protocol {
 	public static final String PREFIX = "prefix";
 
 	public static final String NAMESPACE = "namespace";
+
+	/**
+	 * Relative location of the session resource.
+	 */
+	public static final String SESSION = "session";
 
 	private static String getServerDir(String serverLocation) {
 		if (!serverLocation.endsWith("/")) {
