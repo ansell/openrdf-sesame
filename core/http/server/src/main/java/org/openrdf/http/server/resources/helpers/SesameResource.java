@@ -45,7 +45,7 @@ public abstract class SesameResource extends CacheableResource {
 	 * Short-cut for <tt>getApplication().getRepositoryManager()</tt>.
 	 */
 	protected ServerRepositoryManager getRepositoryManager() {
-		return getApplication().getRepositoryManager();
+		return getApplication().getServerRepositoryManager();
 	}
 
 	/**

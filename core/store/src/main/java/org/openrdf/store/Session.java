@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2009-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -12,6 +12,8 @@ package org.openrdf.store;
 public class Session {
 
 	private volatile String username;
+	
+	private volatile String proxyGrantingTicket;
 
 	/**
 	 * Retrieve the username of the current user
@@ -30,5 +32,13 @@ public class Session {
 	 */
 	public void setUsername(String username) {
 		this.username = username;
+	}
+	
+	public String getProxyGrantingTicket() {
+		return proxyGrantingTicket;
+	}
+	
+	public void setProxyGrantingTicket(String proxyGrantingTicket) {
+		this.proxyGrantingTicket = proxyGrantingTicket;
 	}
 }
