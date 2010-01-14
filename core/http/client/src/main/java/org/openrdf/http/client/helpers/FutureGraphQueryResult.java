@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -22,7 +22,7 @@ import org.openrdf.store.StoreException;
  */
 public class FutureGraphQueryResult implements GraphResult {
 
-	private Future<GraphResult> delegate;
+	private final Future<GraphResult> delegate;
 
 	public FutureGraphQueryResult(Future<GraphResult> delegate) {
 		this.delegate = delegate;
@@ -92,10 +92,10 @@ public class FutureGraphQueryResult implements GraphResult {
 			throw new StoreException(e);
 		}
 		catch (ExecutionException e) {
-			if (e.getCause() instanceof StoreException)
+			if (e.getCause() instanceof StoreException) {
 				throw (StoreException)e.getCause();
+			}
 			throw new StoreException(e);
 		}
 	}
-
 }

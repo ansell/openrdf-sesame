@@ -15,49 +15,48 @@ import org.openrdf.store.StoreException;
  */
 public class ConnectionClient extends RepositoryClient {
 
-	private HTTPConnectionPool connection;
+	private final HTTPConnectionPool pool;
 
-	public ConnectionClient(HTTPConnectionPool connection) {
-		super(connection);
-		this.connection = connection;
+	public ConnectionClient(HTTPConnectionPool pool) {
+		super(pool);
+		this.pool = pool;
 	}
 
 	public BNodeClient bnodes() {
-		return new BNodeClient(connection.slash(Protocol.BNODES));
+		return new BNodeClient(pool.slash(Protocol.BNODES));
 	}
 
 	public void begin()
 		throws StoreException
 	{
-		new StoreClient(connection.slash(Protocol.BEGIN)).post();
+		new StoreClient(pool.slash(Protocol.BEGIN)).post();
 	}
 
 	public void ping()
 		throws StoreException
 	{
-		new StoreClient(connection.slash(Protocol.PING)).post();
+		new StoreClient(pool.slash(Protocol.PING)).post();
 	}
 
 	public void commit()
 		throws StoreException
 	{
-		new StoreClient(connection.slash(Protocol.COMMIT)).post();
+		new StoreClient(pool.slash(Protocol.COMMIT)).post();
 	}
 
 	public void rollback()
 		throws StoreException
 	{
-		new StoreClient(connection.slash(Protocol.ROLLBACK)).post();
+		new StoreClient(pool.slash(Protocol.ROLLBACK)).post();
 	}
 
 	public void close()
 		throws StoreException
 	{
-		new StoreClient(connection).delete();
+		new StoreClient(pool).delete();
 	}
 
 	public QueriesClient queries() {
-		return new QueriesClient(connection.slash(Protocol.QUERIES));
+		return new QueriesClient(pool.slash(Protocol.QUERIES));
 	}
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -84,11 +84,11 @@ import org.openrdf.rio.helpers.StatementCollector;
  */
 public class HTTPConnection {
 
-	private Logger logger = LoggerFactory.getLogger(HTTPConnection.class);
+	private final Logger logger = LoggerFactory.getLogger(HTTPConnection.class);
 
-	private HTTPConnectionPool pool;
+	private final HTTPConnectionPool pool;
 
-	private HttpMethodBase method;
+	private final HttpMethodBase method;
 
 	private volatile boolean released;
 
@@ -411,8 +411,9 @@ public class HTTPConnection {
 	public String readString()
 		throws IOException
 	{
-		if (method.getStatusCode() == HttpURLConnection.HTTP_NOT_FOUND)
+		if (method.getStatusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
 			return null;
+		}
 		return getResponseBodyAsString();
 	}
 
@@ -452,7 +453,7 @@ public class HTTPConnection {
 		String mimeType = readContentType();
 		try {
 			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
-			TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
+			TupleQueryResultFormat format = FileFormat.matchMIMEType(mimeType, tqrFormats);
 			TupleQueryResultParser parser = QueryResultIO.createParser(format, pool.getValueFactory());
 			InputStream in = getResponseBodyAsStream();
 			result = new BackgroundTupleResult(parser, in, this);
@@ -476,7 +477,7 @@ public class HTTPConnection {
 		String mimeType = readContentType();
 		try {
 			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
-			TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
+			TupleQueryResultFormat format = FileFormat.matchMIMEType(mimeType, tqrFormats);
 			TupleQueryResultParser parser = QueryResultIO.createParser(format, pool.getValueFactory());
 			parser.setTupleQueryResultHandler(handler);
 			parser.parse(getResponseBodyAsStream());
@@ -507,7 +508,7 @@ public class HTTPConnection {
 		String mimeType = readContentType();
 		try {
 			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
-			RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
+			RDFFormat format = FileFormat.matchMIMEType(mimeType, rdfFormats);
 			RDFParser parser = Rio.createParser(format, pool.getValueFactory());
 			parser.setPreserveBNodeIDs(true);
 			InputStream in = getResponseBodyAsStream();
@@ -533,7 +534,7 @@ public class HTTPConnection {
 		String mimeType = readContentType();
 		try {
 			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
-			RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
+			RDFFormat format = FileFormat.matchMIMEType(mimeType, rdfFormats);
 			RDFParser parser = Rio.createParser(format, pool.getValueFactory());
 			parser.setPreserveBNodeIDs(true);
 			parser.setRDFHandler(handler);
@@ -622,8 +623,6 @@ public class HTTPConnection {
 	 * <tt>Content-Type: application/xml;charset=UTF-8</tt>, this method will
 	 * return <tt>application/xml</tt> as the MIME type.
 	 * 
-	 * @param method
-	 *        The method to get the reponse MIME type from.
 	 * @return The response MIME type, or <tt>null</tt> if not available.
 	 */
 	private String readContentType() {
@@ -634,5 +633,4 @@ public class HTTPConnection {
 		}
 		return null;
 	}
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -24,29 +24,33 @@ import org.openrdf.store.StoreException;
 /**
  * @author James Leigh
  */
-public class BackgroundTupleResult extends ResultImpl<BindingSet> implements TupleResult, Runnable, TupleQueryResultHandler {
+public class BackgroundTupleResult extends ResultImpl<BindingSet> implements TupleResult, Runnable,
+		TupleQueryResultHandler
+{
 
 	private volatile boolean closed;
 
 	private volatile Thread parserThread;
 
-	private TupleQueryResultParser parser;
+	private final TupleQueryResultParser parser;
 
-	private InputStream in;
+	private final InputStream in;
 
-	private HTTPConnection connection;
+	private final HTTPConnection connection;
 
-	private QueueCursor<BindingSet> queue;
+	private final QueueCursor<BindingSet> queue;
 
-	private List<String> bindingNames;
+	private volatile List<String> bindingNames;
 
-	private CountDownLatch bindingNamesReady = new CountDownLatch(1);
+	private final CountDownLatch bindingNamesReady = new CountDownLatch(1);
 
 	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in, HTTPConnection connection) {
 		this(new QueueCursor<BindingSet>(10), parser, in, connection);
 	}
 
-	public BackgroundTupleResult(QueueCursor<BindingSet> queue, TupleQueryResultParser parser, InputStream in, HTTPConnection connection) {
+	public BackgroundTupleResult(QueueCursor<BindingSet> queue, TupleQueryResultParser parser, InputStream in,
+			HTTPConnection connection)
+	{
 		super(queue);
 		this.queue = queue;
 		this.parser = parser;
@@ -54,6 +58,7 @@ public class BackgroundTupleResult extends ResultImpl<BindingSet> implements Tup
 		this.connection = connection;
 	}
 
+	@Override
 	public synchronized void close()
 		throws StoreException
 	{
@@ -113,8 +118,9 @@ public class BackgroundTupleResult extends ResultImpl<BindingSet> implements Tup
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
-		if (closed)
+		if (closed) {
 			throw new TupleQueryResultHandlerException("Result closed");
+		}
 		try {
 			queue.put(bindingSet);
 		}
@@ -128,5 +134,4 @@ public class BackgroundTupleResult extends ResultImpl<BindingSet> implements Tup
 	{
 		// no-op
 	}
-
 }

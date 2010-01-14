@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -52,38 +52,39 @@ import org.openrdf.store.StoreException;
  */
 public class RepositoryClient {
 
-	private HTTPConnectionPool repository;
+	private final HTTPConnectionPool pool;
 
-	public RepositoryClient(HTTPConnectionPool repository) {
-		this.repository = repository;
+	public RepositoryClient(HTTPConnectionPool pool) {
+		this.pool = pool;
 	}
 
+	@Override
 	public String toString() {
-		return repository.getURL();
+		return pool.getURL();
 	}
 
 	public ConnectionsClient connections() {
-		return new ConnectionsClient(repository.slash(Protocol.CONNECTIONS));
+		return new ConnectionsClient(pool.slash(Protocol.CONNECTIONS));
 	}
 
 	public MetaDataClient metadata() {
-		return new MetaDataClient(repository.slash(Protocol.METADATA));
+		return new MetaDataClient(pool.slash(Protocol.METADATA));
 	}
 
 	public ContextClient contexts() {
-		return new ContextClient(repository.slash(Protocol.CONTEXTS));
+		return new ContextClient(pool.slash(Protocol.CONTEXTS));
 	}
 
 	public NamespaceClient namespaces() {
-		return new NamespaceClient(repository.slash(Protocol.NAMESPACES));
+		return new NamespaceClient(pool.slash(Protocol.NAMESPACES));
 	}
 
 	public SizeClient size() {
-		return new SizeClient(repository.slash(Protocol.SIZE));
+		return new SizeClient(pool.slash(Protocol.SIZE));
 	}
 
 	public StatementClient statements() {
-		return new StatementClient(repository.slash(Protocol.STATEMENTS));
+		return new StatementClient(pool.slash(Protocol.STATEMENTS));
 	}
 
 	/*------------------*
@@ -93,15 +94,15 @@ public class RepositoryClient {
 	public String getQueryType(QueryLanguage ql, String query)
 		throws StoreException, MalformedQueryException
 	{
-		HTTPConnection method = repository.head();
+		HTTPConnection con = pool.head();
 
 		try {
-			method.acceptBoolean();
-			method.acceptTupleQueryResult();
-			method.acceptGraphQueryResult();
-			method.sendForm(getQueryParams(ql, query, null, true));
-			execute(method);
-			return method.readQueryType();
+			con.acceptBoolean();
+			con.acceptTupleQueryResult();
+			con.acceptGraphQueryResult();
+			con.sendForm(getQueryParams(ql, query, null, true));
+			execute(con);
+			return con.readQueryType();
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -110,7 +111,7 @@ public class RepositoryClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
@@ -118,37 +119,37 @@ public class RepositoryClient {
 			boolean includeInferred, Binding... bindings)
 		throws StoreException, MalformedQueryException
 	{
-		final HTTPConnection method = repository.post();
-		method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
+		final HTTPConnection con = pool.post();
+		con.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
 		Callable<TupleResult> task = new Callable<TupleResult>() {
 
 			public TupleResult call()
 				throws Exception
 			{
 				try {
-					method.acceptTupleQueryResult();
-					execute(method);
-					return method.getTupleQueryResult();
+					con.acceptTupleQueryResult();
+					execute(con);
+					return con.getTupleQueryResult();
 				}
 				catch (NoCompatibleMediaType e) {
 					throw new UnsupportedRDFormatException(e);
 				}
 			}
 		};
-		return new FutureTupleQueryResult(repository.submitTask(task));
+		return new FutureTupleQueryResult(pool.submitTask(task));
 	}
 
 	public void sendTupleQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
 			TupleQueryResultHandler handler, Binding... bindings)
 		throws TupleQueryResultHandlerException, StoreException, MalformedQueryException
 	{
-		HTTPConnection method = repository.post();
+		HTTPConnection con = pool.post();
 
 		try {
-			method.acceptTupleQueryResult();
-			method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
-			execute(method);
-			method.readTupleQueryResult(handler);
+			con.acceptTupleQueryResult();
+			con.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
+			execute(con);
+			con.readTupleQueryResult(handler);
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -160,7 +161,7 @@ public class RepositoryClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
@@ -168,37 +169,37 @@ public class RepositoryClient {
 			boolean includeInferred, Binding... bindings)
 		throws StoreException, MalformedQueryException
 	{
-		final HTTPConnection method = repository.post();
-		method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
+		final HTTPConnection con = pool.post();
+		con.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
 		Callable<GraphResult> task = new Callable<GraphResult>() {
 
 			public GraphResult call()
 				throws Exception
 			{
 				try {
-					method.acceptGraphQueryResult();
-					execute(method);
-					return method.getGraphQueryResult();
+					con.acceptGraphQueryResult();
+					execute(con);
+					return con.getGraphQueryResult();
 				}
 				catch (NoCompatibleMediaType e) {
 					throw new UnsupportedRDFormatException(e);
 				}
 			}
 		};
-		return new FutureGraphQueryResult(repository.submitTask(task));
+		return new FutureGraphQueryResult(pool.submitTask(task));
 	}
 
 	public void sendGraphQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
 			RDFHandler handler, Binding... bindings)
 		throws RDFHandlerException, StoreException, MalformedQueryException
 	{
-		HTTPConnection method = repository.post();
+		HTTPConnection con = pool.post();
 
 		try {
-			method.acceptRDF(false);
-			method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
-			execute(method);
-			method.readRDF(handler);
+			con.acceptRDF(false);
+			con.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
+			execute(con);
+			con.readRDF(handler);
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -210,7 +211,7 @@ public class RepositoryClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
@@ -218,13 +219,13 @@ public class RepositoryClient {
 			Binding... bindings)
 		throws StoreException, MalformedQueryException
 	{
-		HTTPConnection method = repository.post();
+		HTTPConnection con = pool.post();
 
 		try {
-			method.acceptBoolean();
-			method.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
-			execute(method);
-			return method.readBoolean();
+			con.acceptBoolean();
+			con.sendForm(getQueryParams(ql, query, dataset, includeInferred, bindings));
+			execute(con);
+			return con.readBoolean();
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -236,7 +237,7 @@ public class RepositoryClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
@@ -293,5 +294,4 @@ public class RepositoryClient {
 
 		return queryParams;
 	}
-
 }

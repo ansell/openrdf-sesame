@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,19 +14,19 @@ import org.openrdf.store.StoreException;
  */
 public class ConnectionsClient {
 
-	private HTTPConnectionPool connections;
+	private final HTTPConnectionPool pool;
 
-	private StoreClient client;
+	private final StoreClient client;
 
-	public ConnectionsClient(HTTPConnectionPool connections) {
-		this.connections = connections;
-		this.client = new StoreClient(connections);
+	public ConnectionsClient(HTTPConnectionPool pool) {
+		this.pool = pool;
+		this.client = new StoreClient(pool);
 	}
 
 	public ConnectionClient post()
 		throws StoreException
 	{
 		String url = client.create();
-		return new ConnectionClient(connections.location(url));
+		return new ConnectionClient(pool.location(url));
 	}
 }

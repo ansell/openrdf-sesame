@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -24,8 +24,8 @@ import org.openrdf.store.StoreException;
  */
 public class TupleQueryClient extends QueryClient {
 
-	public TupleQueryClient(HTTPConnectionPool query) {
-		super(query);
+	public TupleQueryClient(HTTPConnectionPool pool) {
+		super(pool);
 	}
 
 	public TupleResult get()
@@ -37,10 +37,10 @@ public class TupleQueryClient extends QueryClient {
 				throws Exception
 			{
 				try {
-					HTTPConnection method = createConnection();
-					method.acceptTupleQueryResult();
-					execute(method);
-					return method.getTupleQueryResult();
+					HTTPConnection con = createConnection();
+					con.acceptTupleQueryResult();
+					execute(con);
+					return con.getTupleQueryResult();
 				}
 				catch (NoCompatibleMediaType e) {
 					throw new UnsupportedRDFormatException(e);
@@ -53,12 +53,12 @@ public class TupleQueryClient extends QueryClient {
 	public void get(TupleQueryResultHandler handler)
 		throws TupleQueryResultHandlerException, StoreException
 	{
-		HTTPConnection method = createConnection();
+		HTTPConnection con = createConnection();
 
 		try {
-			method.acceptRDF(false);
-			execute(method);
-			method.readTupleQueryResult(handler);
+			con.acceptRDF(false);
+			execute(con);
+			con.readTupleQueryResult(handler);
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -70,8 +70,7 @@ public class TupleQueryClient extends QueryClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
-
 }

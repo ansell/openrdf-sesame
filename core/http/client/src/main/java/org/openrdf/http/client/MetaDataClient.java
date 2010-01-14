@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -21,28 +21,26 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
  * @author James Leigh
  */
 public class MetaDataClient {
 
-	private HTTPConnectionPool metadata;
+	private final HTTPConnectionPool pool;
 
-	public MetaDataClient(HTTPConnectionPool metadata) {
-		this.metadata = metadata;
+	public MetaDataClient(HTTPConnectionPool pool) {
+		this.pool = pool;
 	}
 
 	public Model get()
 		throws StoreException
 	{
-		HTTPConnection method = metadata.get();
+		HTTPConnection con = pool.get();
 
 		try {
-			method.acceptRDF(false);
-			execute(method);
-			return method.readModel();
+			con.acceptRDF(false);
+			execute(con);
+			return con.readModel();
 		}
 		catch (NumberFormatException e) {
 			throw new StoreException("Server responded with invalid size value");
@@ -57,15 +55,15 @@ public class MetaDataClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
-	private void execute(HTTPConnection method)
+	private void execute(HTTPConnection con)
 		throws IOException, StoreException
 	{
 		try {
-			method.execute();
+			con.execute();
 		}
 		catch (UnsupportedQueryLanguage e) {
 			throw new UnsupportedQueryLanguageException(e);
@@ -83,5 +81,4 @@ public class MetaDataClient {
 			throw new StoreException(e);
 		}
 	}
-
 }

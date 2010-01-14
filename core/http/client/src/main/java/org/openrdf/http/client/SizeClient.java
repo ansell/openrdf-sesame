@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -33,7 +33,7 @@ import org.openrdf.store.StoreException;
  */
 public class SizeClient {
 
-	private HTTPConnectionPool size;
+	private final HTTPConnectionPool pool;
 
 	private String match;
 
@@ -41,8 +41,8 @@ public class SizeClient {
 
 	private int maxAge;
 
-	public SizeClient(HTTPConnectionPool size) {
-		this.size = size;
+	public SizeClient(HTTPConnectionPool pool) {
+		this.pool = pool;
 	}
 
 	public int getMaxAge() {
@@ -61,22 +61,22 @@ public class SizeClient {
 	 * Repository/context size *
 	 *-------------------------*/
 
-	public Long get(Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
+	public Long get(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		HTTPConnection method = size.get();
+		HTTPConnection con = pool.get();
 
 		try {
 			if (match != null) {
-				method.ifNoneMatch(match);
+				con.ifNoneMatch(match);
 			}
-			method.acceptLong();
-			method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
-			execute(method);
-			if (method.isNotModified())
+			con.acceptLong();
+			con.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
+			execute(con);
+			if (con.isNotModified()) {
 				return null;
-			return method.readLong();
+			}
+			return con.readLong();
 		}
 		catch (NumberFormatException e) {
 			throw new StoreException("Server responded with invalid size value");
@@ -85,7 +85,7 @@ public class SizeClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 

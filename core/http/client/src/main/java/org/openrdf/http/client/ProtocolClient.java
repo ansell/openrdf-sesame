@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -15,10 +15,11 @@ import org.openrdf.store.StoreException;
  * @author James Leigh
  */
 public class ProtocolClient {
-	private StoreClient client;
 
-	public ProtocolClient(HTTPConnectionPool size) {
-		this.client = new StoreClient(size);
+	private final StoreClient client;
+
+	public ProtocolClient(HTTPConnectionPool pool) {
+		this.client = new StoreClient(pool);
 	}
 
 	public String get()
@@ -26,5 +27,4 @@ public class ProtocolClient {
 	{
 		return client.get(String.class);
 	}
-
 }
