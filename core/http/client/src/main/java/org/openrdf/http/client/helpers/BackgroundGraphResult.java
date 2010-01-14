@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import org.openrdf.cursor.QueueCursor;
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.model.Statement;
 import org.openrdf.result.GraphResult;
 import org.openrdf.result.impl.ModelResultImpl;
@@ -37,7 +37,7 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 
 	private final String baseURI;
 
-	private final HTTPConnection connection;
+	private final HTTPRequest request;
 
 	private final CountDownLatch namespacesReady = new CountDownLatch(1);
 
@@ -45,19 +45,19 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 
 	private final QueueCursor<Statement> queue;
 
-	public BackgroundGraphResult(RDFParser parser, InputStream in, String baseURI, HTTPConnection connection) {
-		this(new QueueCursor<Statement>(10), parser, in, baseURI, connection);
+	public BackgroundGraphResult(RDFParser parser, InputStream in, String baseURI, HTTPRequest request) {
+		this(new QueueCursor<Statement>(10), parser, in, baseURI, request);
 	}
 
 	public BackgroundGraphResult(QueueCursor<Statement> queue, RDFParser parser, InputStream in,
-			String baseURI, HTTPConnection connection)
+			String baseURI, HTTPRequest request)
 	{
 		super(queue);
 		this.queue = queue;
 		this.parser = parser;
 		this.in = in;
 		this.baseURI = baseURI;
-		this.connection = connection;
+		this.request = request;
 	}
 
 	@Override
@@ -77,19 +77,19 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 			parser.setRDFHandler(this);
 			parser.parse(in, baseURI);
 			// release connection back into pool if all results have been read
-			connection.release();
+			request.release();
 		}
 		catch (RDFHandlerException e) {
 			// parsing was cancelled or interrupted
-			connection.abort();
+			request.abort();
 		}
 		catch (RDFParseException e) {
 			queue.toss(e);
-			connection.abort();
+			request.abort();
 		}
 		catch (IOException e) {
 			queue.toss(e);
-			connection.abort();
+			request.abort();
 		}
 		finally {
 			parserThread = null;

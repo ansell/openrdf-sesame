@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.apache.commons.httpclient.NameValuePair;
 
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.UnauthorizedException;
@@ -41,12 +41,12 @@ public class QueriesClient {
 	public QueryClient postQuery(QueryLanguage ql, String query, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
-		HTTPConnection con = pool.post();
+		HTTPRequest request = pool.post();
 		try {
-			con.sendForm(getQueryParams(ql, query, baseURI));
-			execute(con);
-			String url = con.readLocation();
-			String type = con.readQueryType();
+			request.sendForm(getQueryParams(ql, query, baseURI));
+			execute(request);
+			String url = request.readLocation();
+			String type = request.readQueryType();
 			HTTPConnectionPool location = pool.location(url);
 			if (Protocol.GRAPH_QUERY.equals(type)) {
 				return new GraphQueryClient(location);
@@ -63,72 +63,72 @@ public class QueriesClient {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public GraphQueryClient postGraphQuery(QueryLanguage ql, String query, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
-		HTTPConnection con = pool.post();
+		HTTPRequest request = pool.post();
 		try {
-			con.sendForm(getQueryParams(ql, query, baseURI));
-			execute(con);
-			String url = con.readLocation();
-			assert Protocol.GRAPH_QUERY.equals(con.readQueryType());
+			request.sendForm(getQueryParams(ql, query, baseURI));
+			execute(request);
+			String url = request.readLocation();
+			assert Protocol.GRAPH_QUERY.equals(request.readQueryType());
 			return new GraphQueryClient(pool.location(url));
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public BooleanQueryClient postBooleanQuery(QueryLanguage ql, String query, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
-		HTTPConnection con = pool.post();
+		HTTPRequest request = pool.post();
 		try {
-			con.sendForm(getQueryParams(ql, query, baseURI));
-			execute(con);
-			String url = con.readLocation();
-			assert Protocol.BOOLEAN_QUERY.equals(con.readQueryType());
+			request.sendForm(getQueryParams(ql, query, baseURI));
+			execute(request);
+			String url = request.readLocation();
+			assert Protocol.BOOLEAN_QUERY.equals(request.readQueryType());
 			return new BooleanQueryClient(pool.location(url));
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public TupleQueryClient postTupleQuery(QueryLanguage ql, String query, String baseURI)
 		throws StoreException, MalformedQueryException
 	{
-		HTTPConnection con = pool.post();
+		HTTPRequest request = pool.post();
 		try {
-			con.sendForm(getQueryParams(ql, query, baseURI));
-			execute(con);
-			String url = con.readLocation();
-			assert Protocol.BINDINGS_QUERY.equals(con.readQueryType());
+			request.sendForm(getQueryParams(ql, query, baseURI));
+			execute(request);
+			String url = request.readLocation();
+			assert Protocol.BINDINGS_QUERY.equals(request.readQueryType());
 			return new TupleQueryClient(pool.location(url));
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
-	private void execute(HTTPConnection con)
+	private void execute(HTTPRequest request)
 		throws IOException, StoreException, MalformedQueryException
 	{
 		try {
-			con.execute();
+			request.execute();
 		}
 		catch (MalformedQuery e) {
 			throw new MalformedQueryException(e);

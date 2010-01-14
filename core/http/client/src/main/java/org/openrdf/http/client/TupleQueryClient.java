@@ -8,7 +8,7 @@ package org.openrdf.http.client;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.FutureTupleQueryResult;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
@@ -37,10 +37,10 @@ public class TupleQueryClient extends QueryClient {
 				throws Exception
 			{
 				try {
-					HTTPConnection con = createConnection();
-					con.acceptTupleQueryResult();
-					execute(con);
-					return con.getTupleQueryResult();
+					HTTPRequest request = createRequest();
+					request.acceptTupleQueryResult();
+					execute(request);
+					return request.getTupleQueryResult();
 				}
 				catch (NoCompatibleMediaType e) {
 					throw new UnsupportedRDFormatException(e);
@@ -54,12 +54,12 @@ public class TupleQueryClient extends QueryClient {
 	public void get(TupleQueryResultHandler handler)
 		throws TupleQueryResultHandlerException, StoreException
 	{
-		HTTPConnection con = createConnection();
+		HTTPRequest request = createRequest();
 
 		try {
-			con.acceptTupleQueryResult();
-			execute(con);
-			con.readTupleQueryResult(handler);
+			request.acceptTupleQueryResult();
+			execute(request);
+			request.readTupleQueryResult(handler);
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -71,7 +71,7 @@ public class TupleQueryClient extends QueryClient {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 }

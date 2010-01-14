@@ -43,7 +43,7 @@ import org.openrdf.store.StoreException;
 
 /**
  * Store the url, authentication, preference, and a shared {@link HttpClient}
- * for managed {@link HTTPConnection}.
+ * for managed {@link HTTPRequest}.
  * 
  * @author Herko ter Horst
  * @author Arjohn Kampman
@@ -259,7 +259,7 @@ public final class HTTPConnectionPool implements Cloneable {
 		}
 	}
 
-	public HTTPConnection head() {
+	public HTTPRequest head() {
 		// FIXME: Allow HEAD request to send a message body?
 		HttpMethodBase method = new PostMethod(url) {
 
@@ -269,10 +269,10 @@ public final class HTTPConnectionPool implements Cloneable {
 			}
 		};
 		setDoAuthentication(method);
-		return new HTTPConnection(this, method);
+		return new HTTPRequest(this, method);
 	}
 
-	public HTTPConnection get() {
+	public HTTPRequest get() {
 		// FIXME: Allow GET request to send a message body?
 		HttpMethodBase method = new PostMethod(url) {
 
@@ -282,25 +282,25 @@ public final class HTTPConnectionPool implements Cloneable {
 			}
 		};
 		setDoAuthentication(method);
-		return new HTTPConnection(this, method);
+		return new HTTPRequest(this, method);
 	}
 
-	public HTTPConnection post() {
+	public HTTPRequest post() {
 		PostMethod method = new PostMethod(url);
 		setDoAuthentication(method);
-		return new HTTPConnection(this, method);
+		return new HTTPRequest(this, method);
 	}
 
-	public HTTPConnection put() {
+	public HTTPRequest put() {
 		PutMethod method = new PutMethod(url);
 		setDoAuthentication(method);
-		return new HTTPConnection(this, method);
+		return new HTTPRequest(this, method);
 	}
 
-	public HTTPConnection delete() {
+	public HTTPRequest delete() {
 		DeleteMethod method = new DeleteMethod(url);
 		setDoAuthentication(method);
-		return new HTTPConnection(this, method);
+		return new HTTPRequest(this, method);
 	}
 
 	public <V> Future<V> submitTask(final Callable<V> task) {
@@ -367,5 +367,4 @@ public final class HTTPConnectionPool implements Cloneable {
 			method.setDoAuthentication(false);
 		}
 	}
-
 }

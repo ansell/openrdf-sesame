@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 import org.apache.commons.httpclient.NameValuePair;
 
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.http.protocol.exceptions.HTTPException;
@@ -45,15 +45,15 @@ public class BNodeClient {
 	public TupleResult post(int amount)
 		throws StoreException, QueryResultParseException, NoCompatibleMediaType
 	{
-		HTTPConnection con = pool.post();
+		HTTPRequest request = pool.post();
 
 		NameValuePair pair = new NameValuePair(AMOUNT, valueOf(amount));
-		con.sendQueryString(Arrays.asList(pair));
+		request.sendQueryString(Arrays.asList(pair));
 
 		try {
-			con.acceptTupleQueryResult();
-			execute(con);
-			return con.getTupleQueryResult();
+			request.acceptTupleQueryResult();
+			execute(request);
+			return request.getTupleQueryResult();
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -63,15 +63,15 @@ public class BNodeClient {
 	public BNode post(String nodeID)
 		throws StoreException, QueryResultParseException, NoCompatibleMediaType
 	{
-		HTTPConnection con = pool.post();
+		HTTPRequest request = pool.post();
 
 		NameValuePair pair = new NameValuePair(NODE_ID, nodeID);
-		con.sendQueryString(Arrays.asList(pair));
+		request.sendQueryString(Arrays.asList(pair));
 
 		try {
-			con.acceptTupleQueryResult();
-			execute(con);
-			TupleResult result = con.getTupleQueryResult();
+			request.acceptTupleQueryResult();
+			execute(request);
+			TupleResult result = request.getTupleQueryResult();
 			try {
 				if (result.hasNext()) {
 					BindingSet bindings = result.next();
@@ -88,11 +88,11 @@ public class BNodeClient {
 		}
 	}
 
-	private void execute(HTTPConnection method)
+	private void execute(HTTPRequest request)
 		throws IOException, StoreException
 	{
 		try {
-			method.execute();
+			request.execute();
 		}
 		catch (UnsupportedQueryLanguage e) {
 			throw new UnsupportedQueryLanguageException(e);

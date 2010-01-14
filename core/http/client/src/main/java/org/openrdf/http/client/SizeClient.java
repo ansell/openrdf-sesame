@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.apache.commons.httpclient.NameValuePair;
 
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.exceptions.HTTPException;
@@ -64,19 +64,19 @@ public class SizeClient {
 	public Long get(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		HTTPConnection con = pool.get();
+		HTTPRequest request = pool.get();
 
 		try {
 			if (match != null) {
-				con.ifNoneMatch(match);
+				request.ifNoneMatch(match);
 			}
-			con.acceptLong();
-			con.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
-			execute(con);
-			if (con.isNotModified()) {
+			request.acceptLong();
+			request.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
+			execute(request);
+			if (request.isNotModified()) {
 				return null;
 			}
-			return con.readLong();
+			return request.readLong();
 		}
 		catch (NumberFormatException e) {
 			throw new StoreException("Server responded with invalid size value");
@@ -85,7 +85,7 @@ public class SizeClient {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
@@ -109,14 +109,14 @@ public class SizeClient {
 		return params;
 	}
 
-	private void execute(HTTPConnection method)
+	private void execute(HTTPRequest request)
 		throws IOException, StoreException
 	{
 		try {
 			reset();
-			method.execute();
-			eTag = method.readETag();
-			maxAge = method.readMaxAge();
+			request.execute();
+			eTag = request.readETag();
+			maxAge = request.readMaxAge();
 		}
 		catch (UnsupportedQueryLanguage e) {
 			throw new UnsupportedQueryLanguageException(e);

@@ -7,7 +7,7 @@ package org.openrdf.http.client;
 
 import java.io.IOException;
 
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
@@ -35,12 +35,12 @@ public class MetaDataClient {
 	public Model get()
 		throws StoreException
 	{
-		HTTPConnection con = pool.get();
+		HTTPRequest request = pool.get();
 
 		try {
-			con.acceptRDF(false);
-			execute(con);
-			return con.readModel();
+			request.acceptRDF(false);
+			execute(request);
+			return request.readModel();
 		}
 		catch (NumberFormatException e) {
 			throw new StoreException("Server responded with invalid size value");
@@ -55,15 +55,15 @@ public class MetaDataClient {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
-	private void execute(HTTPConnection con)
+	private void execute(HTTPRequest request)
 		throws IOException, StoreException
 	{
 		try {
-			con.execute();
+			request.execute();
 		}
 		catch (UnsupportedQueryLanguage e) {
 			throw new UnsupportedQueryLanguageException(e);
