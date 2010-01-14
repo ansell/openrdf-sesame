@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -49,7 +49,7 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class HTTPConnectionPool implements Cloneable {
+public final class HTTPConnectionPool implements Cloneable {
 
 	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-http-client",
 			"devel");
@@ -58,13 +58,13 @@ public class HTTPConnectionPool implements Cloneable {
 
 	private final Logger logger = LoggerFactory.getLogger(HTTPConnectionPool.class);
 
-	private ValueFactory valueFactory;
+	private final ValueFactory valueFactory;
 
-	private MultiThreadedHttpConnectionManager manager;
+	private final MultiThreadedHttpConnectionManager manager;
 
-	private HttpClient httpClient;
+	private final HttpClient httpClient;
 
-	private ExecutorService executor = Executors.newCachedThreadPool();
+	private final ExecutorService executor = Executors.newCachedThreadPool();
 
 	private String url;
 
@@ -83,16 +83,19 @@ public class HTTPConnectionPool implements Cloneable {
 	private boolean preferredRDFFormatUsed;
 
 	public HTTPConnectionPool(String url) {
-		this();
+		this(url, ValueFactoryImpl.getInstance());
+	}
+
+	public HTTPConnectionPool(String url, ValueFactory valueFactory) {
 		if (url == null) {
 			throw new IllegalArgumentException("serverURL must not be null");
 		}
+		if (valueFactory == null) {
+			throw new IllegalArgumentException("valueFactory must not be null");
+		}
 
+		this.valueFactory = valueFactory;
 		this.url = url;
-	}
-
-	public HTTPConnectionPool() {
-		valueFactory = ValueFactoryImpl.getInstance();
 
 		// Use MultiThreadedHttpConnectionManager to allow concurrent access on
 		// HttpClient
@@ -112,10 +115,6 @@ public class HTTPConnectionPool implements Cloneable {
 
 	public String getURL() {
 		return url;
-	}
-
-	public void setValueFactory(ValueFactory valueFactory) {
-		this.valueFactory = valueFactory;
 	}
 
 	public ValueFactory getValueFactory() {
@@ -261,7 +260,7 @@ public class HTTPConnectionPool implements Cloneable {
 	}
 
 	public HTTPConnection head() {
-		// Allow HEAD request to send a message body
+		// FIXME: Allow HEAD request to send a message body?
 		HttpMethodBase method = new PostMethod(url) {
 
 			@Override
@@ -274,6 +273,7 @@ public class HTTPConnectionPool implements Cloneable {
 	}
 
 	public HTTPConnection get() {
+		// FIXME: Allow GET request to send a message body?
 		HttpMethodBase method = new PostMethod(url) {
 
 			@Override
