@@ -47,7 +47,7 @@ public class QueryClient {
 
 	private int limit = -1;
 
-	public QueryClient(HTTPConnectionPool pool) {
+	protected QueryClient(HTTPConnectionPool pool) {
 		this.pool = pool;
 	}
 
