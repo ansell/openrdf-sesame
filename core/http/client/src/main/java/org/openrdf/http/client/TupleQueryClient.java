@@ -47,6 +47,7 @@ public class TupleQueryClient extends QueryClient {
 				}
 			}
 		};
+
 		return new FutureTupleQueryResult(submitTask(task));
 	}
 
@@ -56,7 +57,7 @@ public class TupleQueryClient extends QueryClient {
 		HTTPConnection con = createConnection();
 
 		try {
-			con.acceptRDF(false);
+			con.acceptTupleQueryResult();
 			execute(con);
 			con.readTupleQueryResult(handler);
 		}
