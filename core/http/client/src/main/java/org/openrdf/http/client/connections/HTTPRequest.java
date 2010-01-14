@@ -5,6 +5,7 @@
  */
 package org.openrdf.http.client.connections;
 
+import static info.aduna.net.http.EntityHeaders.CONTENT_ENCODING;
 import static info.aduna.net.http.EntityHeaders.CONTENT_TYPE;
 import static info.aduna.net.http.MimeTypes.FORM_MIME_TYPE;
 import static info.aduna.net.http.RequestHeaders.ACCEPT;
@@ -37,7 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.IOUtil;
 import info.aduna.lang.FileFormat;
-import info.aduna.net.http.EntityHeaders;
 import info.aduna.net.http.GeneralHeaders;
 import info.aduna.net.http.RequestHeaders;
 
@@ -363,17 +363,22 @@ public class HTTPRequest {
 		throws IOException
 	{
 		InputStream stream = method.getResponseBodyAsStream();
+		
+		boolean useGZip = false;
 
-		Header[] encodingHeaders = method.getResponseHeaders(EntityHeaders.CONTENT_ENCODING);
-		for (Header encodingHeader : encodingHeaders) {
+		for (Header encodingHeader : method.getResponseHeaders(CONTENT_ENCODING)) {
 			for (HeaderElement el : encodingHeader.getElements()) {
 				if (el.getName().equalsIgnoreCase("gzip")) {
-					stream = new GZIPInputStream(stream);
+					useGZip = true;
 				}
 				else {
 					throw new IOException("Server replied with unsupported content encoding: " + el.getName());
 				}
 			}
+		}
+		
+		if (useGZip) {
+			stream = new GZIPInputStream(stream);
 		}
 
 		return stream;
