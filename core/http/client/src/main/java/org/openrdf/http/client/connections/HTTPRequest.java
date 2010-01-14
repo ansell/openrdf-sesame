@@ -16,7 +16,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +25,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HeaderElement;
 import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -52,7 +52,6 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
-import org.openrdf.query.resultio.BooleanQueryResultParser;
 import org.openrdf.query.resultio.BooleanQueryResultParserRegistry;
 import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.QueryResultParseException;
@@ -82,9 +81,9 @@ import org.openrdf.rio.helpers.StatementCollector;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class HTTPConnection {
+public class HTTPRequest {
 
-	private final Logger logger = LoggerFactory.getLogger(HTTPConnection.class);
+	private final Logger logger = LoggerFactory.getLogger(HTTPRequest.class);
 
 	private final HTTPConnectionPool pool;
 
@@ -92,7 +91,7 @@ public class HTTPConnection {
 
 	private volatile boolean released;
 
-	public HTTPConnection(HTTPConnectionPool pool, HttpMethodBase method) {
+	public HTTPRequest(HTTPConnectionPool pool, HttpMethodBase method) {
 		this.pool = pool;
 		this.method = method;
 	}
@@ -342,9 +341,13 @@ public class HTTPConnection {
 		method.setRequestHeader(RequestHeaders.ACCEPT_ENCODING, "gzip");
 
 		int statusCode = pool.executeMethod(method);
+
 		if (statusCode >= 400) {
-			String body = method.getStatusLine().getReasonPhrase();
-			if (!"HEAD".equals(method.getName())) {
+			String body;
+			if ("HEAD".equals(method.getName())) {
+				body = method.getStatusLine().getReasonPhrase();
+			}
+			else {
 				body = getResponseBodyAsString();
 			}
 			release();
@@ -353,7 +356,7 @@ public class HTTPConnection {
 	}
 
 	public boolean isNotModified() {
-		return method.getStatusCode() == 304;
+		return method.getStatusCode() == HttpStatus.SC_NOT_MODIFIED;
 	}
 
 	public InputStream getResponseBodyAsStream()
@@ -411,7 +414,7 @@ public class HTTPConnection {
 	public String readString()
 		throws IOException
 	{
-		if (method.getStatusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+		if (method.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
 			return null;
 		}
 		return getResponseBodyAsString();
@@ -431,8 +434,7 @@ public class HTTPConnection {
 		try {
 			BooleanQueryResultFormat format = BooleanQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(
 					mimeType);
-			BooleanQueryResultParser parser = QueryResultIO.createParser(format);
-			result = parser.parse(getResponseBodyAsStream());
+			result = QueryResultIO.parse(getResponseBodyAsStream(), format);
 			return result;
 		}
 		catch (UnsupportedQueryResultFormatException e) {
@@ -452,8 +454,8 @@ public class HTTPConnection {
 		BackgroundTupleResult result = null;
 		String mimeType = readContentType();
 		try {
-			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
-			TupleQueryResultFormat format = FileFormat.matchMIMEType(mimeType, tqrFormats);
+			TupleQueryResultFormat format = TupleQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(
+					mimeType);
 			TupleQueryResultParser parser = QueryResultIO.createParser(format, pool.getValueFactory());
 			InputStream in = getResponseBodyAsStream();
 			result = new BackgroundTupleResult(parser, in, this);
@@ -476,11 +478,9 @@ public class HTTPConnection {
 	{
 		String mimeType = readContentType();
 		try {
-			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
-			TupleQueryResultFormat format = FileFormat.matchMIMEType(mimeType, tqrFormats);
-			TupleQueryResultParser parser = QueryResultIO.createParser(format, pool.getValueFactory());
-			parser.setTupleQueryResultHandler(handler);
-			parser.parse(getResponseBodyAsStream());
+			TupleQueryResultFormat format = TupleQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(
+					mimeType);
+			QueryResultIO.parse(getResponseBodyAsStream(), format, handler, pool.getValueFactory());
 		}
 		catch (UnsupportedQueryResultFormatException e) {
 			logger.warn(e.toString(), e);
@@ -507,8 +507,7 @@ public class HTTPConnection {
 		BackgroundGraphResult result = null;
 		String mimeType = readContentType();
 		try {
-			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
-			RDFFormat format = FileFormat.matchMIMEType(mimeType, rdfFormats);
+			RDFFormat format = RDFParserRegistry.getInstance().getFileFormatForMIMEType(mimeType);
 			RDFParser parser = Rio.createParser(format, pool.getValueFactory());
 			parser.setPreserveBNodeIDs(true);
 			InputStream in = getResponseBodyAsStream();
@@ -533,8 +532,7 @@ public class HTTPConnection {
 	{
 		String mimeType = readContentType();
 		try {
-			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
-			RDFFormat format = FileFormat.matchMIMEType(mimeType, rdfFormats);
+			RDFFormat format = RDFParserRegistry.getInstance().getFileFormatForMIMEType(mimeType);
 			RDFParser parser = Rio.createParser(format, pool.getValueFactory());
 			parser.setPreserveBNodeIDs(true);
 			parser.setRDFHandler(handler);
@@ -600,23 +598,6 @@ public class HTTPConnection {
 		return 0;
 	}
 
-	private String readHeader(String headerName) {
-		Header[] headers = method.getResponseHeaders(headerName);
-
-		for (Header header : headers) {
-			HeaderElement[] headerElements = header.getElements();
-
-			for (HeaderElement headerEl : headerElements) {
-				String name = headerEl.getName();
-				if (name != null) {
-					return name;
-				}
-			}
-		}
-
-		return null;
-	}
-
 	/**
 	 * Gets the MIME type specified in the response headers of the supplied
 	 * method, if any. For example, if the response headers contain
@@ -631,6 +612,21 @@ public class HTTPConnection {
 			logger.debug("reponse MIME type is {}", mimeType);
 			return mimeType;
 		}
+		return null;
+	}
+
+	private String readHeader(String headerName) {
+		Header[] headers = method.getResponseHeaders(headerName);
+
+		for (Header header : headers) {
+			for (HeaderElement headerEl : header.getElements()) {
+				String name = headerEl.getName();
+				if (name != null) {
+					return name;
+				}
+			}
+		}
+
 		return null;
 	}
 }

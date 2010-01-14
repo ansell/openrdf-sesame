@@ -13,7 +13,7 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.httpclient.NameValuePair;
 
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.UnauthorizedException;
@@ -91,17 +91,17 @@ public class QueryClient {
 		this.limit = limit;
 	}
 
-	protected HTTPConnection createConnection() {
+	protected HTTPRequest createRequest() {
 		return pool.post();
 	}
 
-	protected HTTPConnection execute(HTTPConnection con)
+	protected HTTPRequest execute(HTTPRequest request)
 		throws StoreException
 	{
 		try {
-			con.sendForm(getQueryParams());
+			request.sendForm(getQueryParams());
 			try {
-				con.execute();
+				request.execute();
 			}
 			catch (UnsupportedQueryLanguage e) {
 				throw new UnsupportedQueryLanguageException(e);
@@ -118,7 +118,7 @@ public class QueryClient {
 			catch (HTTPException e) {
 				throw new StoreException(e);
 			}
-			return con;
+			return request;
 		}
 		catch (IOException e) {
 			throw new StoreException(e);

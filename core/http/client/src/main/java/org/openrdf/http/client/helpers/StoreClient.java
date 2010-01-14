@@ -7,7 +7,7 @@ package org.openrdf.http.client.helpers;
 
 import java.io.IOException;
 
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.http.protocol.exceptions.HTTPException;
@@ -56,15 +56,15 @@ public class StoreClient {
 	public TupleResult list()
 		throws StoreException
 	{
-		HTTPConnection con = pool.get();
+		HTTPRequest request = pool.get();
 
 		try {
-			con.acceptTupleQueryResult();
-			execute(con);
-			if (con.isNotModified()) {
+			request.acceptTupleQueryResult();
+			execute(request);
+			if (request.isNotModified()) {
 				return null;
 			}
-			return con.getTupleQueryResult();
+			return request.getTupleQueryResult();
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -80,34 +80,34 @@ public class StoreClient {
 	public String create()
 		throws StoreException
 	{
-		HTTPConnection con = pool.post();
+		HTTPRequest request = pool.post();
 		try {
-			execute(con);
-			if (con.isNotModified()) {
+			execute(request);
+			if (request.isNotModified()) {
 				return null;
 			}
-			return con.readLocation();
+			return request.readLocation();
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public <T> T get(Class<T> type)
 		throws StoreException
 	{
-		HTTPConnection con = pool.get();
+		HTTPRequest request = pool.get();
 
 		try {
-			con.accept(type);
-			execute(con);
-			if (con.isNotModified()) {
+			request.accept(type);
+			execute(request);
+			if (request.isNotModified()) {
 				return null;
 			}
-			return con.read(type);
+			return request.read(type);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -125,82 +125,82 @@ public class StoreClient {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public void post()
 		throws StoreException
 	{
-		HTTPConnection con = pool.post();
+		HTTPRequest request = pool.post();
 		try {
-			execute(con);
+			execute(request);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public void put(Object instance)
 		throws StoreException
 	{
-		HTTPConnection con = pool.put();
+		HTTPRequest request = pool.put();
 		try {
-			con.send(instance);
-			execute(con);
+			request.send(instance);
+			execute(request);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public void post(Object instance)
 		throws StoreException
 	{
-		HTTPConnection con = pool.post();
+		HTTPRequest request = pool.post();
 		try {
-			con.send(instance);
-			execute(con);
+			request.send(instance);
+			execute(request);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public void delete()
 		throws StoreException
 	{
-		HTTPConnection con = pool.delete();
+		HTTPRequest request = pool.delete();
 		try {
-			execute(con);
+			execute(request);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public <T> T get(String id, Class<T> type)
 		throws StoreException
 	{
-		HTTPConnection con = pool.slash(id).get();
+		HTTPRequest request = pool.slash(id).get();
 
 		try {
-			con.accept(type);
+			request.accept(type);
 			try {
-				con.execute();
-				if (con.isNotModified()) {
+				request.execute();
+				if (request.isNotModified()) {
 					return null;
 				}
 			}
@@ -222,7 +222,7 @@ public class StoreClient {
 			catch (HTTPException e) {
 				throw new StoreException(e);
 			}
-			return con.read(type);
+			return request.read(type);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -240,52 +240,52 @@ public class StoreClient {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public void put(String id, Object instance)
 		throws StoreException
 	{
-		HTTPConnection con = pool.slash(id).put();
+		HTTPRequest request = pool.slash(id).put();
 		try {
-			con.send(instance);
-			execute(con);
+			request.send(instance);
+			execute(request);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public void delete(String id)
 		throws StoreException
 	{
-		HTTPConnection con = pool.slash(id).delete();
+		HTTPRequest request = pool.slash(id).delete();
 		try {
-			execute(con);
+			execute(request);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
-	private void execute(HTTPConnection con)
+	private void execute(HTTPRequest request)
 		throws IOException, StoreException
 	{
 		try {
 			if (match != null) {
-				con.ifNoneMatch(match);
+				request.ifNoneMatch(match);
 				match = null;
 			}
-			con.execute();
-			eTag = con.readETag();
-			maxAge = con.readMaxAge();
+			request.execute();
+			eTag = request.readETag();
+			maxAge = request.readMaxAge();
 		}
 		catch (UnsupportedQueryLanguage e) {
 			throw new UnsupportedQueryLanguageException(e);

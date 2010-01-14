@@ -57,24 +57,26 @@ import org.openrdf.store.StoreException;
  */
 public class HTTPRepository implements Repository {
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
-	Logger logger = LoggerFactory.getLogger(HTTPRepository.class);
+	final Logger logger = LoggerFactory.getLogger(HTTPRepository.class);
 
-	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
-	private URIFactory uf = new URIFactoryImpl();
+	private final URIFactory uf = new URIFactoryImpl();
 
-	private LiteralFactory lf = new LiteralFactoryImpl();
+	private final LiteralFactory lf = new LiteralFactoryImpl();
+	
+	private final HTTPConnectionPool pool;
 
 	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
-	private RepositoryClient client;
+	private final RepositoryClient client;
 
-	private RepositoryCache cache;
+	private final RepositoryCache cache;
 
 	private CachedNamespaceResult namespaces;
 
@@ -84,8 +86,6 @@ public class HTTPRepository implements Repository {
 
 	private RepositoryMetaData metadata;
 
-	private HTTPConnectionPool pool;
-
 	private boolean readOnly;
 
 	/*--------------*
@@ -93,15 +93,15 @@ public class HTTPRepository implements Repository {
 	 *--------------*/
 
 	public HTTPRepository(String serverURL, String repositoryID) {
-		pool = new HTTPConnectionPool(serverURL);
-		pool.setValueFactory(new ValueFactoryImpl(new BNodeFactoryImpl(), uf, lf));
+		ValueFactory vf = new ValueFactoryImpl(new BNodeFactoryImpl(), uf, lf);
+		pool = new HTTPConnectionPool(serverURL, vf);
 		client = new SesameClient(pool).repositories().slash(repositoryID);
 		cache = new RepositoryCache(client);
 	}
 
 	public HTTPRepository(String repositoryURL) {
-		pool = new HTTPConnectionPool(repositoryURL);
-		pool.setValueFactory(new ValueFactoryImpl(new BNodeFactoryImpl(), uf, lf));
+		ValueFactory vf = new ValueFactoryImpl(new BNodeFactoryImpl(), uf, lf);
+		pool = new HTTPConnectionPool(repositoryURL, vf);
 		client = new RepositoryClient(pool);
 		cache = new RepositoryCache(client);
 	}

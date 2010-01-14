@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
@@ -71,12 +71,12 @@ public class StoreConfigClient {
 	public void list(TupleQueryResultHandler handler)
 		throws TupleQueryResultHandlerException, StoreConfigException
 	{
-		HTTPConnection con = pool.get();
+		HTTPRequest request = pool.get();
 
 		try {
-			con.acceptTupleQueryResult();
-			execute(con);
-			con.readTupleQueryResult(handler);
+			request.acceptTupleQueryResult();
+			execute(request);
+			request.readTupleQueryResult(handler);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
@@ -88,19 +88,19 @@ public class StoreConfigClient {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public <T> T get(Class<T> type)
 		throws StoreConfigException
 	{
-		HTTPConnection con = pool.get();
+		HTTPRequest request = pool.get();
 
 		try {
-			con.accept(type);
-			execute(con);
-			return con.read(type);
+			request.accept(type);
+			execute(request);
+			return request.read(type);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
@@ -118,50 +118,50 @@ public class StoreConfigClient {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public void put(Object instance)
 		throws StoreConfigException
 	{
-		HTTPConnection con = pool.put();
+		HTTPRequest request = pool.put();
 		try {
-			con.send(instance);
-			execute(con);
+			request.send(instance);
+			execute(request);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public void delete()
 		throws StoreConfigException
 	{
-		HTTPConnection con = pool.delete();
+		HTTPRequest request = pool.delete();
 		try {
-			execute(con);
+			execute(request);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public <T> T get(String id, Class<T> type)
 		throws StoreConfigException
 	{
-		HTTPConnection con = pool.slash(id).get();
+		HTTPRequest request = pool.slash(id).get();
 
 		try {
-			con.accept(type);
+			request.accept(type);
 			try {
-				con.execute();
+				request.execute();
 			}
 			catch (NotFound e) {
 				return null;
@@ -181,7 +181,7 @@ public class StoreConfigClient {
 			catch (HTTPException e) {
 				throw new StoreConfigException(e);
 			}
-			return con.read(type);
+			return request.read(type);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
@@ -199,33 +199,33 @@ public class StoreConfigClient {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public void put(String id, Object instance)
 		throws StoreConfigException
 	{
-		HTTPConnection con = pool.slash(id).put();
+		HTTPRequest request = pool.slash(id).put();
 		try {
-			con.send(instance);
-			execute(con);
+			request.send(instance);
+			execute(request);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public boolean delete(String id)
 		throws StoreConfigException
 	{
-		HTTPConnection con = pool.slash(id).delete();
+		HTTPRequest request = pool.slash(id).delete();
 
 		try {
-			con.execute();
+			request.execute();
 			return true;
 		}
 		catch (NotFound e) {
@@ -238,11 +238,11 @@ public class StoreConfigClient {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
-	private void execute(HTTPConnection method)
+	private void execute(HTTPRequest method)
 		throws IOException, StoreConfigException
 	{
 		try {

@@ -25,7 +25,7 @@ import info.aduna.io.IOUtil;
 
 import org.openrdf.cursor.Cursor;
 import org.openrdf.cursor.EmptyCursor;
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.FutureGraphQueryResult;
 import org.openrdf.http.protocol.Protocol;
@@ -99,24 +99,24 @@ public class StatementClient {
 	public GraphResult get(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		final HTTPConnection con = pool.get();
+		final HTTPRequest request = pool.get();
 
 		if (match != null) {
-			con.ifNoneMatch(match);
+			request.ifNoneMatch(match);
 		}
 
-		con.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
+		request.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
 
 		Callable<GraphResult> task = new Callable<GraphResult>() {
 
 			public GraphResult call()
 				throws Exception
 			{
-				con.acceptRDF(true);
-				if (execute(con) && !con.isNotModified()) {
-					return con.getGraphQueryResult();
+				request.acceptRDF(true);
+				if (execute(request) && !request.isNotModified()) {
+					return request.getGraphQueryResult();
 				}
-				else if (con.isNotModified()) {
+				else if (request.isNotModified()) {
 					return null;
 				}
 				else {
@@ -149,16 +149,16 @@ public class StatementClient {
 			Resource... contexts)
 		throws RDFHandlerException, StoreException
 	{
-		HTTPConnection con = pool.get();
+		HTTPRequest request = pool.get();
 		if (match != null) {
-			con.ifNoneMatch(match);
+			request.ifNoneMatch(match);
 		}
 
 		try {
-			con.acceptRDF(true);
-			con.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
-			if (execute(con) && !con.isNotModified()) {
-				con.readRDF(handler);
+			request.acceptRDF(true);
+			request.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
+			if (execute(request) && !request.isNotModified()) {
+				request.readRDF(handler);
 			}
 		}
 		catch (NoCompatibleMediaType e) {
@@ -171,17 +171,17 @@ public class StatementClient {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
 	public void post(final Iterable<? extends TransactionOperation> txn)
 		throws StoreException
 	{
-		HTTPConnection con = pool.post();
+		HTTPRequest request = pool.post();
 
 		// Create a RequestEntity for the transaction data
-		con.sendEntity(new RequestEntity() {
+		request.sendEntity(new RequestEntity() {
 
 			public long getContentLength() {
 				return -1; // don't know
@@ -204,7 +204,7 @@ public class StatementClient {
 		});
 
 		try {
-			if (!execute(con)) {
+			if (!execute(request)) {
 				throw new StoreException("Not Found");
 			}
 		}
@@ -212,7 +212,7 @@ public class StatementClient {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
@@ -258,14 +258,14 @@ public class StatementClient {
 		upload(entity, baseURI, overwrite, contexts);
 	}
 
-	boolean execute(HTTPConnection con)
+	boolean execute(HTTPRequest request)
 		throws IOException, StoreException
 	{
 		try {
 			reset();
-			con.execute();
-			eTag = con.readETag();
-			maxAge = con.readMaxAge();
+			request.execute();
+			eTag = request.readETag();
+			maxAge = request.readMaxAge();
 			return true;
 		}
 		catch (NotFound e) {
@@ -292,12 +292,12 @@ public class StatementClient {
 		throws RDFParseException, StoreException
 	{
 		// Select appropriate HTTP method
-		HTTPConnection con;
+		HTTPRequest request;
 		if (overwrite) {
-			con = pool.put();
+			request = pool.put();
 		}
 		else {
-			con = pool.post();
+			request = pool.post();
 		}
 
 		// Set relevant query parameters
@@ -309,20 +309,20 @@ public class StatementClient {
 			String encodedBaseURI = Protocol.encodeValue(new URIImpl(baseURI));
 			params.add(new NameValuePair(Protocol.BASEURI_PARAM_NAME, encodedBaseURI));
 		}
-		con.sendQueryString(params);
+		request.sendQueryString(params);
 
 		// Set payload
-		con.sendEntity(reqEntity);
+		request.sendEntity(reqEntity);
 
 		// Send request
 		try {
-			executeUpload(con);
+			executeUpload(request);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 
@@ -349,14 +349,14 @@ public class StatementClient {
 		return params;
 	}
 
-	private void executeUpload(HTTPConnection con)
+	private void executeUpload(HTTPRequest request)
 		throws IOException, StoreException, RDFParseException
 	{
 		try {
 			reset();
-			con.execute();
-			eTag = con.readETag();
-			maxAge = con.readMaxAge();
+			request.execute();
+			eTag = request.readETag();
+			maxAge = request.readMaxAge();
 		}
 		catch (MalformedData e) {
 			throw new RDFParseException(e);

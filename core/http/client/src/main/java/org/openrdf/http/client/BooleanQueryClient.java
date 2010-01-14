@@ -7,7 +7,7 @@ package org.openrdf.http.client;
 
 import java.io.IOException;
 
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
 import org.openrdf.query.resultio.QueryResultParseException;
@@ -26,12 +26,12 @@ public class BooleanQueryClient extends QueryClient {
 	public boolean get()
 		throws StoreException
 	{
-		HTTPConnection con = createConnection();
+		HTTPRequest request = createRequest();
 
 		try {
-			con.acceptBoolean();
-			execute(con);
-			return con.readBoolean();
+			request.acceptBoolean();
+			execute(request);
+			return request.readBoolean();
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -43,7 +43,7 @@ public class BooleanQueryClient extends QueryClient {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 }

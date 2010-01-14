@@ -8,7 +8,7 @@ package org.openrdf.http.client;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-import org.openrdf.http.client.connections.HTTPConnection;
+import org.openrdf.http.client.connections.HTTPRequest;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
 import org.openrdf.http.client.helpers.FutureGraphQueryResult;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
@@ -37,10 +37,10 @@ public class GraphQueryClient extends QueryClient {
 				throws Exception
 			{
 				try {
-					HTTPConnection con = createConnection();
-					con.acceptGraphQueryResult();
-					execute(con);
-					return con.getGraphQueryResult();
+					HTTPRequest request = createRequest();
+					request.acceptGraphQueryResult();
+					execute(request);
+					return request.getGraphQueryResult();
 				}
 				catch (NoCompatibleMediaType e) {
 					throw new UnsupportedRDFormatException(e);
@@ -53,12 +53,12 @@ public class GraphQueryClient extends QueryClient {
 	public void get(RDFHandler handler)
 		throws RDFHandlerException, StoreException
 	{
-		HTTPConnection con = createConnection();
+		HTTPRequest request = createRequest();
 
 		try {
-			con.acceptRDF(false);
-			execute(con);
-			con.readRDF(handler);
+			request.acceptRDF(false);
+			execute(request);
+			request.readRDF(handler);
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -70,7 +70,7 @@ public class GraphQueryClient extends QueryClient {
 			throw new StoreException(e);
 		}
 		finally {
-			con.release();
+			request.release();
 		}
 	}
 }
