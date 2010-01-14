@@ -7,8 +7,11 @@ package org.openrdf.http.client.connections;
 
 import static info.aduna.net.http.EntityHeaders.CONTENT_ENCODING;
 import static info.aduna.net.http.EntityHeaders.CONTENT_TYPE;
+import static info.aduna.net.http.GeneralHeaders.CACHE_CONTROL;
 import static info.aduna.net.http.MimeTypes.FORM_MIME_TYPE;
 import static info.aduna.net.http.RequestHeaders.ACCEPT;
+import static info.aduna.net.http.RequestHeaders.ACCEPT_ENCODING;
+import static info.aduna.net.http.RequestHeaders.IF_NONE_MATCH;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,8 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.IOUtil;
 import info.aduna.lang.FileFormat;
-import info.aduna.net.http.GeneralHeaders;
-import info.aduna.net.http.RequestHeaders;
 
 import org.openrdf.http.client.helpers.BackgroundGraphResult;
 import org.openrdf.http.client.helpers.BackgroundTupleResult;
@@ -97,7 +98,7 @@ public class HTTPRequest {
 	}
 
 	public void ifNoneMatch(String match) {
-		method.addRequestHeader(RequestHeaders.IF_NONE_MATCH, match);
+		method.addRequestHeader(IF_NONE_MATCH, match);
 	}
 
 	public void accept(Class<?> type)
@@ -338,7 +339,7 @@ public class HTTPRequest {
 	public void execute()
 		throws IOException, HTTPException
 	{
-		method.setRequestHeader(RequestHeaders.ACCEPT_ENCODING, "gzip");
+		method.setRequestHeader(ACCEPT_ENCODING, "gzip");
 
 		int statusCode = pool.executeMethod(method);
 
@@ -363,7 +364,7 @@ public class HTTPRequest {
 		throws IOException
 	{
 		InputStream stream = method.getResponseBodyAsStream();
-		
+
 		boolean useGZip = false;
 
 		for (Header encodingHeader : method.getResponseHeaders(CONTENT_ENCODING)) {
@@ -376,7 +377,7 @@ public class HTTPRequest {
 				}
 			}
 		}
-		
+
 		if (useGZip) {
 			stream = new GZIPInputStream(stream);
 		}
@@ -581,7 +582,7 @@ public class HTTPRequest {
 	}
 
 	public int readMaxAge() {
-		Header[] headers = method.getResponseHeaders(GeneralHeaders.CACHE_CONTROL);
+		Header[] headers = method.getResponseHeaders(CACHE_CONTROL);
 
 		for (Header header : headers) {
 			HeaderElement[] headerElements = header.getElements();
