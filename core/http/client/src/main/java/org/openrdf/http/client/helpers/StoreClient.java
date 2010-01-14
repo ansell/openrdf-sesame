@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -24,23 +24,21 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.store.StoreException;
 
-
 /**
- *
  * @author James Leigh
  */
 public class StoreClient {
 
-	private HTTPConnectionPool server;
+	private final HTTPConnectionPool pool;
 
-	private String match;
+	private volatile String match;
 
-	private String eTag;
+	private volatile String eTag;
 
-	private int maxAge;
+	private volatile int maxAge;
 
-	public StoreClient(HTTPConnectionPool server) {
-		this.server = server;
+	public StoreClient(HTTPConnectionPool pool) {
+		this.pool = pool;
 	}
 
 	public int getMaxAge() {
@@ -58,14 +56,15 @@ public class StoreClient {
 	public TupleResult list()
 		throws StoreException
 	{
-		HTTPConnection method = server.get();
+		HTTPConnection con = pool.get();
 
 		try {
-			method.acceptTupleQueryResult();
-			execute(method);
-			if (method.isNotModified())
+			con.acceptTupleQueryResult();
+			execute(con);
+			if (con.isNotModified()) {
 				return null;
-			return method.getTupleQueryResult();
+			}
+			return con.getTupleQueryResult();
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -81,32 +80,34 @@ public class StoreClient {
 	public String create()
 		throws StoreException
 	{
-		HTTPConnection method = server.post();
+		HTTPConnection con = pool.post();
 		try {
-			execute(method);
-			if (method.isNotModified())
+			execute(con);
+			if (con.isNotModified()) {
 				return null;
-			return method.readLocation();
+			}
+			return con.readLocation();
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public <T> T get(Class<T> type)
 		throws StoreException
 	{
-		HTTPConnection method = server.get();
+		HTTPConnection con = pool.get();
 
 		try {
-			method.accept(type);
-			execute(method);
-			if (method.isNotModified())
+			con.accept(type);
+			execute(con);
+			if (con.isNotModified()) {
 				return null;
-			return method.read(type);
+			}
+			return con.read(type);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -124,83 +125,84 @@ public class StoreClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public void post()
 		throws StoreException
 	{
-		HTTPConnection method = server.post();
+		HTTPConnection con = pool.post();
 		try {
-			execute(method);
+			execute(con);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public void put(Object instance)
 		throws StoreException
 	{
-		HTTPConnection method = server.put();
+		HTTPConnection con = pool.put();
 		try {
-			method.send(instance);
-			execute(method);
+			con.send(instance);
+			execute(con);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public void post(Object instance)
 		throws StoreException
 	{
-		HTTPConnection method = server.post();
+		HTTPConnection con = pool.post();
 		try {
-			method.send(instance);
-			execute(method);
+			con.send(instance);
+			execute(con);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public void delete()
 		throws StoreException
 	{
-		HTTPConnection method = server.delete();
+		HTTPConnection con = pool.delete();
 		try {
-			execute(method);
+			execute(con);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public <T> T get(String id, Class<T> type)
 		throws StoreException
 	{
-		HTTPConnection method = server.slash(id).get();
+		HTTPConnection con = pool.slash(id).get();
 
 		try {
-			method.accept(type);
+			con.accept(type);
 			try {
-				method.execute();
-				if (method.isNotModified())
+				con.execute();
+				if (con.isNotModified()) {
 					return null;
+				}
 			}
 			catch (NotFound e) {
 				return null;
@@ -220,7 +222,7 @@ public class StoreClient {
 			catch (HTTPException e) {
 				throw new StoreException(e);
 			}
-			return method.read(type);
+			return con.read(type);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -238,52 +240,52 @@ public class StoreClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public void put(String id, Object instance)
 		throws StoreException
 	{
-		HTTPConnection method = server.slash(id).put();
+		HTTPConnection con = pool.slash(id).put();
 		try {
-			method.send(instance);
-			execute(method);
+			con.send(instance);
+			execute(con);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public void delete(String id)
 		throws StoreException
 	{
-		HTTPConnection method = server.slash(id).delete();
+		HTTPConnection con = pool.slash(id).delete();
 		try {
-			execute(method);
+			execute(con);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
-	private void execute(HTTPConnection method)
+	private void execute(HTTPConnection con)
 		throws IOException, StoreException
 	{
 		try {
 			if (match != null) {
-				method.ifNoneMatch(match);
+				con.ifNoneMatch(match);
 				match = null;
 			}
-			method.execute();
-			eTag = method.readETag();
-			maxAge = method.readMaxAge();
+			con.execute();
+			eTag = con.readETag();
+			maxAge = con.readMaxAge();
 		}
 		catch (UnsupportedQueryLanguage e) {
 			throw new UnsupportedQueryLanguageException(e);
@@ -298,5 +300,4 @@ public class StoreClient {
 			throw new StoreException(e);
 		}
 	}
-
 }

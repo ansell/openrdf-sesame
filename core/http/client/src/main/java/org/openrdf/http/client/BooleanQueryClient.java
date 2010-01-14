@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -19,19 +19,19 @@ import org.openrdf.store.StoreException;
  */
 public class BooleanQueryClient extends QueryClient {
 
-	public BooleanQueryClient(HTTPConnectionPool query) {
-		super(query);
+	public BooleanQueryClient(HTTPConnectionPool pool) {
+		super(pool);
 	}
 
 	public boolean get()
 		throws StoreException
 	{
-		HTTPConnection method = createConnection();
+		HTTPConnection con = createConnection();
 
 		try {
-			method.acceptBoolean();
-			execute(method);
-			return method.readBoolean();
+			con.acceptBoolean();
+			execute(con);
+			return con.readBoolean();
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -43,8 +43,7 @@ public class BooleanQueryClient extends QueryClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -20,7 +20,7 @@ import org.openrdf.store.StoreException;
  */
 public class FutureTupleQueryResult implements TupleResult {
 
-	private Future<TupleResult> delegate;
+	private final Future<TupleResult> delegate;
 
 	public FutureTupleQueryResult(Future<TupleResult> delegate) {
 		this.delegate = delegate;
@@ -84,8 +84,9 @@ public class FutureTupleQueryResult implements TupleResult {
 			throw new StoreException(e);
 		}
 		catch (ExecutionException e) {
-			if (e.getCause() instanceof StoreException)
+			if (e.getCause() instanceof StoreException) {
 				throw (StoreException)e.getCause();
+			}
 			throw new StoreException(e);
 		}
 	}

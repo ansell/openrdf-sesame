@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -37,10 +37,10 @@ public class GraphQueryClient extends QueryClient {
 				throws Exception
 			{
 				try {
-					HTTPConnection method = createConnection();
-					method.acceptGraphQueryResult();
-					execute(method);
-					return method.getGraphQueryResult();
+					HTTPConnection con = createConnection();
+					con.acceptGraphQueryResult();
+					execute(con);
+					return con.getGraphQueryResult();
 				}
 				catch (NoCompatibleMediaType e) {
 					throw new UnsupportedRDFormatException(e);
@@ -53,12 +53,12 @@ public class GraphQueryClient extends QueryClient {
 	public void get(RDFHandler handler)
 		throws RDFHandlerException, StoreException
 	{
-		HTTPConnection method = createConnection();
+		HTTPConnection con = createConnection();
 
 		try {
-			method.acceptRDF(false);
-			execute(method);
-			method.readRDF(handler);
+			con.acceptRDF(false);
+			execute(con);
+			con.readRDF(handler);
 		}
 		catch (NoCompatibleMediaType e) {
 			throw new UnsupportedRDFormatException(e);
@@ -70,8 +70,7 @@ public class GraphQueryClient extends QueryClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
-
 }

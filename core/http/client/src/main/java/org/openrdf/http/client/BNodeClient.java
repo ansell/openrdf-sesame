@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -36,24 +36,24 @@ import org.openrdf.store.StoreException;
  */
 public class BNodeClient {
 
-	private HTTPConnectionPool bnodes;
+	private final HTTPConnectionPool pool;
 
-	public BNodeClient(HTTPConnectionPool bnodes) {
-		this.bnodes = bnodes;
+	public BNodeClient(HTTPConnectionPool pool) {
+		this.pool = pool;
 	}
 
 	public TupleResult post(int amount)
 		throws StoreException, QueryResultParseException, NoCompatibleMediaType
 	{
-		HTTPConnection method = bnodes.post();
+		HTTPConnection con = pool.post();
 
 		NameValuePair pair = new NameValuePair(AMOUNT, valueOf(amount));
-		method.sendQueryString(Arrays.asList(pair));
+		con.sendQueryString(Arrays.asList(pair));
 
 		try {
-			method.acceptTupleQueryResult();
-			execute(method);
-			return method.getTupleQueryResult();
+			con.acceptTupleQueryResult();
+			execute(con);
+			return con.getTupleQueryResult();
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -63,15 +63,15 @@ public class BNodeClient {
 	public BNode post(String nodeID)
 		throws StoreException, QueryResultParseException, NoCompatibleMediaType
 	{
-		HTTPConnection method = bnodes.post();
+		HTTPConnection con = pool.post();
 
 		NameValuePair pair = new NameValuePair(NODE_ID, nodeID);
-		method.sendQueryString(Arrays.asList(pair));
+		con.sendQueryString(Arrays.asList(pair));
 
 		try {
-			method.acceptTupleQueryResult();
-			execute(method);
-			TupleResult result = method.getTupleQueryResult();
+			con.acceptTupleQueryResult();
+			execute(con);
+			TupleResult result = con.getTupleQueryResult();
 			try {
 				if (result.hasNext()) {
 					BindingSet bindings = result.next();
@@ -107,5 +107,4 @@ public class BNodeClient {
 			throw new StoreException(e);
 		}
 	}
-
 }

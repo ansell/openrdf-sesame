@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -35,7 +35,7 @@ import org.openrdf.store.StoreException;
  */
 public class QueryClient {
 
-	private HTTPConnectionPool query;
+	private final HTTPConnectionPool pool;
 
 	private Dataset dataset;
 
@@ -47,8 +47,8 @@ public class QueryClient {
 
 	private int limit = -1;
 
-	public QueryClient(HTTPConnectionPool query) {
-		this.query = query;
+	public QueryClient(HTTPConnectionPool pool) {
+		this.pool = pool;
 	}
 
 	public Dataset getDataset() {
@@ -92,16 +92,16 @@ public class QueryClient {
 	}
 
 	protected HTTPConnection createConnection() {
-		return query.post();
+		return pool.post();
 	}
 
-	protected HTTPConnection execute(HTTPConnection method)
+	protected HTTPConnection execute(HTTPConnection con)
 		throws StoreException
 	{
 		try {
-			method.sendForm(getQueryParams());
+			con.sendForm(getQueryParams());
 			try {
-				method.execute();
+				con.execute();
 			}
 			catch (UnsupportedQueryLanguage e) {
 				throw new UnsupportedQueryLanguageException(e);
@@ -118,7 +118,7 @@ public class QueryClient {
 			catch (HTTPException e) {
 				throw new StoreException(e);
 			}
-			return method;
+			return con;
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
@@ -126,7 +126,7 @@ public class QueryClient {
 	}
 
 	protected <T> Future<T> submitTask(Callable<T> task) {
-		return query.submitTask(task);
+		return pool.submitTask(task);
 	}
 
 	private List<NameValuePair> getQueryParams() {
@@ -159,5 +159,4 @@ public class QueryClient {
 
 		return queryParams;
 	}
-
 }

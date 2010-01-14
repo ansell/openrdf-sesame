@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -12,16 +12,15 @@ import org.openrdf.http.client.helpers.StoreConfigClient;
 import org.openrdf.model.Model;
 import org.openrdf.store.StoreConfigException;
 
-
 /**
- *
  * @author James Leigh
  */
 public class TemplateClient {
-	private StoreConfigClient client;
 
-	public TemplateClient(HTTPConnectionPool templates) {
-		this.client = new StoreConfigClient(templates);
+	private final StoreConfigClient client;
+
+	public TemplateClient(HTTPConnectionPool pool) {
+		this.client = new StoreConfigClient(pool);
 	}
 
 	public String getURL() {

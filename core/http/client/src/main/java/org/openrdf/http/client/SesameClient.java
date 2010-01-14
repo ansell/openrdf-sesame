@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -23,30 +23,29 @@ import org.openrdf.http.client.connections.HTTPConnectionPool;
  */
 public class SesameClient {
 
-	private HTTPConnectionPool server;
+	private final HTTPConnectionPool pool;
 
-	public SesameClient(HTTPConnectionPool info) {
-		this.server = info;
+	public SesameClient(HTTPConnectionPool pool) {
+		this.pool = pool;
 	}
 
 	public ProtocolClient protocol() {
-		return new ProtocolClient(server.slash(PROTOCOL));
+		return new ProtocolClient(pool.slash(PROTOCOL));
 	}
 
 	public SchemaClient schemas() {
-		return new SchemaClient(server.slash(SCHEMAS));
+		return new SchemaClient(pool.slash(SCHEMAS));
 	}
 
 	public TemplateClient templates() {
-		return new TemplateClient(server.slash(TEMPLATES));
+		return new TemplateClient(pool.slash(TEMPLATES));
 	}
 
 	public ConfigurationClient configurations() {
-		return new ConfigurationClient(server.slash(CONFIGURATIONS));
+		return new ConfigurationClient(pool.slash(CONFIGURATIONS));
 	}
 
 	public RepositoriesClient repositories() {
-		return new RepositoriesClient(server.slash(REPOSITORIES));
+		return new RepositoriesClient(pool.slash(REPOSITORIES));
 	}
-
 }

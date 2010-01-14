@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -62,7 +62,7 @@ import org.openrdf.store.StoreException;
  */
 public class StatementClient {
 
-	private HTTPConnectionPool statements;
+	private final HTTPConnectionPool pool;
 
 	private Integer limit;
 
@@ -72,8 +72,8 @@ public class StatementClient {
 
 	private int maxAge;
 
-	public StatementClient(HTTPConnectionPool statements) {
-		this.statements = statements;
+	public StatementClient(HTTPConnectionPool pool) {
+		this.pool = pool;
 	}
 
 	/*---------------------------*
@@ -99,24 +99,24 @@ public class StatementClient {
 	public GraphResult get(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws StoreException
 	{
-		final HTTPConnection method = statements.get();
+		final HTTPConnection con = pool.get();
 
 		if (match != null) {
-			method.ifNoneMatch(match);
+			con.ifNoneMatch(match);
 		}
 
-		method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
+		con.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
 
 		Callable<GraphResult> task = new Callable<GraphResult>() {
 
 			public GraphResult call()
 				throws Exception
 			{
-				method.acceptRDF(true);
-				if (execute(method) && !method.isNotModified()) {
-					return method.getGraphQueryResult();
+				con.acceptRDF(true);
+				if (execute(con) && !con.isNotModified()) {
+					return con.getGraphQueryResult();
 				}
-				else if (method.isNotModified()) {
+				else if (con.isNotModified()) {
 					return null;
 				}
 				else {
@@ -128,7 +128,7 @@ public class StatementClient {
 		};
 
 		if (match == null) {
-			return new FutureGraphQueryResult(statements.submitTask(task));
+			return new FutureGraphQueryResult(pool.submitTask(task));
 		}
 
 		try {
@@ -149,16 +149,16 @@ public class StatementClient {
 			Resource... contexts)
 		throws RDFHandlerException, StoreException
 	{
-		HTTPConnection method = statements.get();
+		HTTPConnection con = pool.get();
 		if (match != null) {
-			method.ifNoneMatch(match);
+			con.ifNoneMatch(match);
 		}
 
 		try {
-			method.acceptRDF(true);
-			method.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
-			if (execute(method) && !method.isNotModified()) {
-				method.readRDF(handler);
+			con.acceptRDF(true);
+			con.sendQueryString(getParams(subj, pred, obj, includeInferred, contexts));
+			if (execute(con) && !con.isNotModified()) {
+				con.readRDF(handler);
 			}
 		}
 		catch (NoCompatibleMediaType e) {
@@ -171,17 +171,17 @@ public class StatementClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public void post(final Iterable<? extends TransactionOperation> txn)
 		throws StoreException
 	{
-		HTTPConnection method = statements.post();
+		HTTPConnection con = pool.post();
 
 		// Create a RequestEntity for the transaction data
-		method.sendEntity(new RequestEntity() {
+		con.sendEntity(new RequestEntity() {
 
 			public long getContentLength() {
 				return -1; // don't know
@@ -204,7 +204,7 @@ public class StatementClient {
 		});
 
 		try {
-			if (!execute(method)) {
+			if (!execute(con)) {
 				throw new StoreException("Not Found");
 			}
 		}
@@ -212,7 +212,7 @@ public class StatementClient {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
@@ -258,14 +258,14 @@ public class StatementClient {
 		upload(entity, baseURI, overwrite, contexts);
 	}
 
-	boolean execute(HTTPConnection method)
+	boolean execute(HTTPConnection con)
 		throws IOException, StoreException
 	{
 		try {
 			reset();
-			method.execute();
-			eTag = method.readETag();
-			maxAge = method.readMaxAge();
+			con.execute();
+			eTag = con.readETag();
+			maxAge = con.readMaxAge();
 			return true;
 		}
 		catch (NotFound e) {
@@ -292,12 +292,12 @@ public class StatementClient {
 		throws RDFParseException, StoreException
 	{
 		// Select appropriate HTTP method
-		HTTPConnection method;
+		HTTPConnection con;
 		if (overwrite) {
-			method = statements.put();
+			con = pool.put();
 		}
 		else {
-			method = statements.post();
+			con = pool.post();
 		}
 
 		// Set relevant query parameters
@@ -309,20 +309,20 @@ public class StatementClient {
 			String encodedBaseURI = Protocol.encodeValue(new URIImpl(baseURI));
 			params.add(new NameValuePair(Protocol.BASEURI_PARAM_NAME, encodedBaseURI));
 		}
-		method.sendQueryString(params);
+		con.sendQueryString(params);
 
 		// Set payload
-		method.sendEntity(reqEntity);
+		con.sendEntity(reqEntity);
 
 		// Send request
 		try {
-			executeUpload(method);
+			executeUpload(con);
 		}
 		catch (IOException e) {
 			throw new StoreException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
@@ -349,14 +349,14 @@ public class StatementClient {
 		return params;
 	}
 
-	private void executeUpload(HTTPConnection method)
+	private void executeUpload(HTTPConnection con)
 		throws IOException, StoreException, RDFParseException
 	{
 		try {
 			reset();
-			method.execute();
-			eTag = method.readETag();
-			maxAge = method.readMaxAge();
+			con.execute();
+			eTag = con.readETag();
+			maxAge = con.readMaxAge();
 		}
 		catch (MalformedData e) {
 			throw new RDFParseException(e);
@@ -381,5 +381,4 @@ public class StatementClient {
 	private void reset() {
 		match = null;
 	}
-
 }

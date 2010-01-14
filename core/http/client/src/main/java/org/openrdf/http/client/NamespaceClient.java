@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -24,10 +24,10 @@ import org.openrdf.store.StoreException;
  */
 public class NamespaceClient {
 
-	private StoreClient client;
+	private final StoreClient client;
 
-	public NamespaceClient(HTTPConnectionPool namespaces) {
-		this.client = new StoreClient(namespaces);
+	public NamespaceClient(HTTPConnectionPool pool) {
+		this.client = new StoreClient(pool);
 	}
 
 	public int getMaxAge() {
@@ -46,8 +46,9 @@ public class NamespaceClient {
 		throws StoreException
 	{
 		TupleResult result = client.list();
-		if (result == null)
+		if (result == null) {
 			return null;
+		}
 		return new NamespaceResultImpl(new ConvertingCursor<BindingSet, Namespace>(result) {
 
 			@Override
@@ -84,5 +85,4 @@ public class NamespaceClient {
 	{
 		client.delete();
 	}
-
 }

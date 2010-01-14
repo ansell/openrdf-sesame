@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -33,18 +33,18 @@ import org.openrdf.store.StoreConfigException;
  */
 public class StoreConfigClient {
 
-	private HTTPConnectionPool server;
+	private final HTTPConnectionPool pool;
 
-	public StoreConfigClient(HTTPConnectionPool server) {
-		this.server = server;
+	public StoreConfigClient(HTTPConnectionPool pool) {
+		this.pool = pool;
 	}
 
 	public String getURL() {
-		return server.getURL();
+		return pool.getURL();
 	}
 
 	public void setUsernameAndPassword(String username, String password) {
-		server.setUsernameAndPassword(username, password);
+		pool.setUsernameAndPassword(username, password);
 	}
 
 	public List<String> list()
@@ -71,12 +71,12 @@ public class StoreConfigClient {
 	public void list(TupleQueryResultHandler handler)
 		throws TupleQueryResultHandlerException, StoreConfigException
 	{
-		HTTPConnection method = server.get();
+		HTTPConnection con = pool.get();
 
 		try {
-			method.acceptTupleQueryResult();
-			execute(method);
-			method.readTupleQueryResult(handler);
+			con.acceptTupleQueryResult();
+			execute(con);
+			con.readTupleQueryResult(handler);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
@@ -88,19 +88,19 @@ public class StoreConfigClient {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public <T> T get(Class<T> type)
 		throws StoreConfigException
 	{
-		HTTPConnection method = server.get();
+		HTTPConnection con = pool.get();
 
 		try {
-			method.accept(type);
-			execute(method);
-			return method.read(type);
+			con.accept(type);
+			execute(con);
+			return con.read(type);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
@@ -118,50 +118,50 @@ public class StoreConfigClient {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public void put(Object instance)
 		throws StoreConfigException
 	{
-		HTTPConnection method = server.put();
+		HTTPConnection con = pool.put();
 		try {
-			method.send(instance);
-			execute(method);
+			con.send(instance);
+			execute(con);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public void delete()
 		throws StoreConfigException
 	{
-		HTTPConnection method = server.delete();
+		HTTPConnection con = pool.delete();
 		try {
-			execute(method);
+			execute(con);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public <T> T get(String id, Class<T> type)
 		throws StoreConfigException
 	{
-		HTTPConnection method = server.slash(id).get();
+		HTTPConnection con = pool.slash(id).get();
 
 		try {
-			method.accept(type);
+			con.accept(type);
 			try {
-				method.execute();
+				con.execute();
 			}
 			catch (NotFound e) {
 				return null;
@@ -181,7 +181,7 @@ public class StoreConfigClient {
 			catch (HTTPException e) {
 				throw new StoreConfigException(e);
 			}
-			return method.read(type);
+			return con.read(type);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
@@ -199,33 +199,33 @@ public class StoreConfigClient {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public void put(String id, Object instance)
 		throws StoreConfigException
 	{
-		HTTPConnection method = server.slash(id).put();
+		HTTPConnection con = pool.slash(id).put();
 		try {
-			method.send(instance);
-			execute(method);
+			con.send(instance);
+			execute(con);
 		}
 		catch (IOException e) {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 
 	public boolean delete(String id)
 		throws StoreConfigException
 	{
-		HTTPConnection method = server.slash(id).delete();
-		
+		HTTPConnection con = pool.slash(id).delete();
+
 		try {
-			method.execute();
+			con.execute();
 			return true;
 		}
 		catch (NotFound e) {
@@ -238,7 +238,7 @@ public class StoreConfigClient {
 			throw new StoreConfigException(e);
 		}
 		finally {
-			method.release();
+			con.release();
 		}
 	}
 

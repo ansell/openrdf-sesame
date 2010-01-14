@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -31,19 +31,19 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 
 	private volatile Thread parserThread;
 
-	private RDFParser parser;
+	private final RDFParser parser;
 
-	private InputStream in;
+	private final InputStream in;
 
-	private String baseURI;
+	private final String baseURI;
 
-	private HTTPConnection connection;
+	private final HTTPConnection connection;
 
-	private CountDownLatch namespacesReady = new CountDownLatch(1);
+	private final CountDownLatch namespacesReady = new CountDownLatch(1);
 
-	private Map<String, String> namespaces = new ConcurrentHashMap<String, String>();
+	private final Map<String, String> namespaces = new ConcurrentHashMap<String, String>();
 
-	private QueueCursor<Statement> queue;
+	private final QueueCursor<Statement> queue;
 
 	public BackgroundGraphResult(RDFParser parser, InputStream in, String baseURI, HTTPConnection connection) {
 		this(new QueueCursor<Statement>(10), parser, in, baseURI, connection);
@@ -60,6 +60,7 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 		this.connection = connection;
 	}
 
+	@Override
 	public void close()
 		throws StoreException
 	{
@@ -103,6 +104,7 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 		// no-op
 	}
 
+	@Override
 	public Map<String, String> getNamespaces()
 		throws StoreException
 	{
@@ -132,8 +134,9 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 		throws RDFHandlerException
 	{
 		namespacesReady.countDown();
-		if (closed)
+		if (closed) {
 			throw new RDFHandlerException("Result closed");
+		}
 		try {
 			queue.put(st);
 		}
@@ -147,5 +150,4 @@ public class BackgroundGraphResult extends ModelResultImpl implements GraphResul
 	{
 		// no-op
 	}
-
 }

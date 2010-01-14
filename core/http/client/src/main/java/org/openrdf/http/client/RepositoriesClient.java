@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2002-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -17,12 +17,13 @@ import org.openrdf.store.StoreException;
  */
 public class RepositoriesClient {
 
-	private HTTPConnectionPool repositories;
-	private StoreClient client;
+	private final HTTPConnectionPool pool;
 
-	public RepositoriesClient(HTTPConnectionPool repositroies) {
-		this.repositories = repositroies;
-		this.client = new StoreClient(repositories);
+	private final StoreClient client;
+
+	public RepositoriesClient(HTTPConnectionPool pool) {
+		this.pool = pool;
+		this.client = new StoreClient(pool);
 	}
 
 	public TupleResult list()
@@ -32,7 +33,6 @@ public class RepositoriesClient {
 	}
 
 	public RepositoryClient slash(String id) {
-		return new RepositoryClient(repositories.slash(id));
+		return new RepositoryClient(pool.slash(id));
 	}
-
 }
