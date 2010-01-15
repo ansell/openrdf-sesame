@@ -42,7 +42,7 @@
 		</exec>
 	</target>
 
-	<target name="package" depends="issuewarnings,mvn,override-services" description="Creates and packages release artifacts"/>
+	<target name="package" depends="mvn,override-services" description="Creates and packages release artifacts"/>
 
 	<target name="mvn">
 		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
@@ -54,12 +54,6 @@
 			<env key="MAVEN_OPTS" value="-Xmx512m -XX:MaxPermSize=128m"/>
 			<arg line="clean source:jar package site assembly:assembly" />
 		</exec>
-	</target>
-
-	<target name="issuewarnings">
-		<echo message="WARNING: Do not forget to update the version number in:" />
-		<echo message=" - http/server-webapp/src/main/webapp/WEB-INF/openrdf-http-server-servlet.xml" />
-		<input>Press return to continue</input>
 	</target>
 
 	<target name="docs" depends="mvn-docs" description="Create user and system documentation only"/>
