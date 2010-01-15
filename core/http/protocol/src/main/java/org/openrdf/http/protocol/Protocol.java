@@ -209,6 +209,8 @@ public abstract class Protocol {
 	 */
 	public static final String SESSION = "session";
 
+	public static final String SESSION_COOKIE = "sesame_session";
+
 	private static String getServerDir(String serverLocation) {
 		if (!serverLocation.endsWith("/")) {
 			serverLocation += "/";
@@ -228,6 +230,17 @@ public abstract class Protocol {
 	}
 
 	/**
+	 * Get the location of the schemas resource on the specified server.
+	 * 
+	 * @param serverLocation
+	 *        the base location of a server implementing this REST protocol.
+	 * @return the location of the schemas resource on the specified server
+	 */
+	public static final String getSchemasLocation(String serverLocation) {
+		return getServerDir(serverLocation) + SCHEMAS;
+	}
+
+	/**
 	 * Get the location of the server configuration resource on the specified
 	 * server.
 	 * 
@@ -238,6 +251,17 @@ public abstract class Protocol {
 	 */
 	public static final String getConfigLocation(String serverLocation) {
 		return getServerDir(serverLocation) + CONFIG;
+	}
+
+	/**
+	 * Get the location of the session resource on the specified server.
+	 * 
+	 * @param serverLocation
+	 *        the base location of a server implementing this REST protocol.
+	 * @return the location of the session resource on the specified server
+	 */
+	public static final String getSessionLocation(String serverLocation) {
+		return getServerDir(serverLocation) + SESSION;
 	}
 
 	/**

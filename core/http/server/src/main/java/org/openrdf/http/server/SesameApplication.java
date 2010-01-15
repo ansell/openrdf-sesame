@@ -40,6 +40,8 @@ import org.restlet.engine.application.Encoder;
 import org.restlet.resource.Finder;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import info.aduna.app.AppConfiguration;
 import info.aduna.io.MavenUtil;
@@ -103,6 +105,8 @@ public class SesameApplication extends Application {
 	}
 
 	private static final int COMPRESSION_THRESHOLD = 4096;
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private final File dataDir;
 
@@ -288,7 +292,15 @@ public class SesameApplication extends Application {
 
 	protected Restlet createSessionPath(Context c) {
 		Restlet result = new Finder(c, SessionResource.class);
-		result = new CasAuthFilter(c, result);
+
+		String casServerURL = System.getProperty("org.openrdf.auth.cas.server");
+		if (casServerURL != null) {
+			result = new CasAuthFilter(casServerURL, c, result);
+		}
+		else {
+			logger.info("System property 'org.openrdf.auth.cas.server' not defined, skipping CAS authentication");
+		}
+
 		return result;
 	}
 }

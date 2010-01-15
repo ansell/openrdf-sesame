@@ -3,12 +3,12 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.http.server.auth.cas;
+package org.openrdf.http.protocol.cas;
 
 /**
  * @author Arjohn Kampman
  */
-class CasParseException extends Exception {
+public class CasParseException extends Exception {
 
 	private static final long serialVersionUID = -2857479184189986193L;
 

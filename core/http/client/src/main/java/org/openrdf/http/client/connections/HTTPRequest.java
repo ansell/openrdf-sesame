@@ -21,10 +21,14 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.zip.GZIPInputStream;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HeaderElement;
@@ -32,12 +36,14 @@ import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.util.EncodingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import info.aduna.io.IOUtil;
 import info.aduna.lang.FileFormat;
@@ -45,6 +51,12 @@ import info.aduna.lang.FileFormat;
 import org.openrdf.http.client.helpers.BackgroundGraphResult;
 import org.openrdf.http.client.helpers.BackgroundTupleResult;
 import org.openrdf.http.protocol.Protocol;
+import org.openrdf.http.protocol.cas.CasParseException;
+import org.openrdf.http.protocol.cas.ProxyFailure;
+import org.openrdf.http.protocol.cas.ProxyGrantingTicketRegistry;
+import org.openrdf.http.protocol.cas.ProxySuccess;
+import org.openrdf.http.protocol.cas.ServiceResponse;
+import org.openrdf.http.protocol.cas.ServiceResponseParser;
 import org.openrdf.http.protocol.exceptions.HTTPException;
 import org.openrdf.http.protocol.exceptions.NoCompatibleMediaType;
 import org.openrdf.model.Model;
@@ -74,6 +86,8 @@ import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.store.Session;
+import org.openrdf.store.SessionManager;
 
 /**
  * Serialises Java Objects over an HTTP connection.
@@ -83,6 +97,13 @@ import org.openrdf.rio.helpers.StatementCollector;
  * @author James Leigh
  */
 public class HTTPRequest {
+
+	/**
+	 * Keeps track of session cookies. The outer map binds the info to the local
+	 * session. The inner map stores the server's session URL as it's key and the
+	 * session ID as it's value.
+	 */
+	private static final WeakHashMap<Session, Map<String, String>> sessionMap = new WeakHashMap<Session, Map<String, String>>();
 
 	private final Logger logger = LoggerFactory.getLogger(HTTPRequest.class);
 
@@ -317,13 +338,20 @@ public class HTTPRequest {
 	}
 
 	public void sendForm(List<NameValuePair> queryParams) {
+		sendForm(queryParams.toArray(new NameValuePair[queryParams.size()]));
+	}
+
+	public void sendForm(NameValuePair... queryParams) {
 		method.setRequestHeader(CONTENT_TYPE, FORM_MIME_TYPE + "; charset=utf-8");
-		((PostMethod)method).setRequestBody(queryParams.toArray(new NameValuePair[queryParams.size()]));
+		((PostMethod)method).setRequestBody(queryParams);
 	}
 
 	public void sendQueryString(List<NameValuePair> params) {
-		NameValuePair[] pairs = params.toArray(new NameValuePair[params.size()]);
-		String queryString = EncodingUtil.formUrlEncode(pairs, "UTF-8");
+		sendQueryString(params.toArray(new NameValuePair[params.size()]));
+	}
+
+	public void sendQueryString(NameValuePair... params) {
+		String queryString = EncodingUtil.formUrlEncode(params, "UTF-8");
 		if (queryString.length() < 1024) {
 			method.setQueryString(queryString);
 		}
@@ -341,6 +369,8 @@ public class HTTPRequest {
 	{
 		method.setRequestHeader(ACCEPT_ENCODING, "gzip");
 
+		setSessionCookie();
+
 		int statusCode = pool.executeMethod(method);
 
 		if (statusCode >= 400) {
@@ -354,6 +384,116 @@ public class HTTPRequest {
 			release();
 			throw HTTPException.create(statusCode, body);
 		}
+	}
+
+	private void setSessionCookie() {
+		Session session = SessionManager.get();
+
+		if (session == null) {
+			// no session, no cookie
+			return;
+		}
+
+		String sessionURL = Protocol.getSessionLocation(pool.getServerURL());
+		String sessionID = null;
+
+		Map<String,String> sessionHostMap = sessionMap.get(session);
+		if (sessionHostMap != null) {
+			sessionID = sessionHostMap.get(sessionURL);
+		}
+
+		if (sessionID == null) {
+			// Try to authenticate
+			String casServer = System.getProperty("org.openrdf.auth.cas.server");
+			String pgt = ProxyGrantingTicketRegistry.getProxyGrantingTicket(session);
+
+			if (casServer != null && pgt != null) {
+				// Got a proxy granting ticket for a CAS server
+				String proxyTicket = getProxyTicket(casServer, pgt, sessionURL);
+				if (proxyTicket != null) {
+					sessionID = startRemoteSession(sessionURL, proxyTicket, session);
+					if (sessionID != null) {
+						if (sessionHostMap == null) {
+							sessionHostMap = new HashMap<String, String>();
+							sessionMap.put(session, sessionHostMap);
+						}
+						sessionHostMap.put(sessionURL, sessionID);
+					}
+				}
+			}
+		}
+
+		if (sessionID != null) {
+			method.setRequestHeader("Cookie", Protocol.SESSION_COOKIE + "=" + sessionID);
+		}
+	}
+
+	private String getProxyTicket(String casServer, String pgt, String targetServiceURL) {
+		try {
+			NameValuePair pgtParam = new NameValuePair("pgt", pgt);
+			NameValuePair serviceParam = new NameValuePair("targetService", targetServiceURL);
+
+			GetMethod proxyMethod = new GetMethod(casServer + "proxy");
+			proxyMethod.setQueryString(new NameValuePair[] { pgtParam, serviceParam });
+
+			int status = pool.httpClient.executeMethod(proxyMethod);
+
+			if (status == HttpStatus.SC_OK) {
+				// Do not use raw stream since that will ignore the response's
+				// character encoding
+				String casResponseStr = proxyMethod.getResponseBodyAsString();
+				ServiceResponse casResponse = ServiceResponseParser.parse(casResponseStr);
+				if (casResponse instanceof ProxySuccess) {
+					return ((ProxySuccess)casResponse).getProxyTicket();
+				}
+				else if (casResponse instanceof ProxyFailure) {
+					ProxyFailure pf = (ProxyFailure)casResponse;
+					logger.warn("Failed to acquire proxy ticket: {} \"{}\"", pf.getCode(), pf.getMessage());
+				}
+				else {
+					logger.warn("Unexpected response from CAS server: {}", casResponse);
+				}
+			}
+		}
+		catch (IOException e) {
+			logger.warn("Failed to acquire proxy ticket", e);
+		}
+		catch (CasParseException e) {
+			logger.warn("Failed to parse response from CAS server", e);
+		}
+		catch (SAXException e) {
+			logger.warn("Failed to parse response from CAS server", e);
+		}
+		catch (ParserConfigurationException e) {
+			logger.warn("Failed to parse response from CAS server", e);
+		}
+
+		return null;
+	}
+
+	private String startRemoteSession(String sessionURL, String proxyTicket, Session localSession) {
+		try {
+			NameValuePair ticketParam = new NameValuePair("ticket", proxyTicket);
+			GetMethod sessionMethod = new GetMethod(sessionURL);
+			sessionMethod.setQueryString(new NameValuePair[] { ticketParam });
+
+			int status = pool.httpClient.executeMethod(sessionMethod);
+
+			if (status == HttpStatus.SC_OK) {
+				for (Header header : sessionMethod.getResponseHeaders("Set-Cookie")) {
+					for (HeaderElement headerEl : header.getElements()) {
+						if (Protocol.SESSION_COOKIE.equals(headerEl.getName())) {
+							return headerEl.getValue();
+						}
+					}
+				}
+			}
+		}
+		catch (IOException e) {
+			logger.warn("Failed to start session on " + sessionURL, e);
+		}
+
+		return null;
 	}
 
 	public boolean isNotModified() {

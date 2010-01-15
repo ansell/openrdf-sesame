@@ -3,17 +3,21 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.http.server.auth.cas;
+package org.openrdf.http.protocol.cas;
 
 /**
  * @author Arjohn Kampman
  */
-class ProxySuccess implements ServiceResponse {
+public class ProxySuccess implements ServiceResponse {
 
-	final String proxyTicket;
+	private final String proxyTicket;
 
 	ProxySuccess(String proxyTicket) {
 		this.proxyTicket = proxyTicket;
+	}
+
+	public String getProxyTicket() {
+		return proxyTicket;
 	}
 
 	@Override
