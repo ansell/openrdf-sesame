@@ -23,16 +23,14 @@ import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import info.aduna.io.MavenUtil;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -51,20 +49,17 @@ import org.openrdf.store.StoreException;
  */
 public final class HTTPConnectionPool implements Cloneable {
 
-	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-http-client",
-			"devel");
-
-	private static final String APP_NAME = "OpenRDF HTTP client";
-
 	private final Logger logger = LoggerFactory.getLogger(HTTPConnectionPool.class);
 
 	private final ValueFactory valueFactory;
 
 	private final MultiThreadedHttpConnectionManager manager;
 
-	private final HttpClient httpClient;
+	final HttpClient httpClient;
 
 	private final ExecutorService executor = Executors.newCachedThreadPool();
+
+	private final String serverURL;
 
 	private String url;
 
@@ -95,7 +90,7 @@ public final class HTTPConnectionPool implements Cloneable {
 		}
 
 		this.valueFactory = valueFactory;
-		this.url = url;
+		this.url = serverURL = url;
 
 		// Use MultiThreadedHttpConnectionManager to allow concurrent access on
 		// HttpClient
@@ -107,10 +102,16 @@ public final class HTTPConnectionPool implements Cloneable {
 		// TODO 20% speed up by params.setStaleCheckingEnabled(false);
 		manager.setParams(params);
 
+		// No automatic handling of cookies, we handle sesame's session cookies
+		// manually
 		HttpClientParams clientParams = new HttpClientParams();
-		clientParams.setParameter(HttpMethodParams.USER_AGENT, APP_NAME + "/" + VERSION + " "
-				+ clientParams.getParameter(HttpMethodParams.USER_AGENT));
+		clientParams.setCookiePolicy(CookiePolicy.IGNORE_COOKIES);
+
 		httpClient = new HttpClient(clientParams, manager);
+	}
+
+	public String getServerURL() {
+		return serverURL;
 	}
 
 	public String getURL() {
@@ -212,21 +213,17 @@ public final class HTTPConnectionPool implements Cloneable {
 	 *        the password
 	 */
 	public void setUsernameAndPassword(String username, String password) {
-		if (url == null) {
-			throw new IllegalStateException("URL has not been set");
-		}
-
 		if (username != null && password != null) {
-			logger.debug("Setting username '{}' and password for server at {}.", username, url);
+			logger.debug("Setting username '{}' and password for server at {}.", username, serverURL);
 			try {
-				URL server = new URL(url);
+				URL server = new URL(serverURL);
 				authScope = new AuthScope(server.getHost(), AuthScope.ANY_PORT);
 				httpClient.getState().setCredentials(authScope,
 						new UsernamePasswordCredentials(username, password));
 				httpClient.getParams().setAuthenticationPreemptive(true);
 			}
 			catch (MalformedURLException e) {
-				logger.warn("Unable to set username and password for malformed URL {}", url);
+				logger.warn("Unable to set username and password for malformed URL {}", serverURL);
 			}
 		}
 		else {
@@ -242,13 +239,16 @@ public final class HTTPConnectionPool implements Cloneable {
 	}
 
 	public HTTPConnectionPool slash(String path) {
-		if (this.url == null) {
-			throw new IllegalStateException("URL has not been set");
+		if (path == null) {
+			throw new IllegalArgumentException("path must not be null");
 		}
 		return location(url + "/" + path);
 	}
 
 	public HTTPConnectionPool location(String url) {
+		if (url == null) {
+			throw new IllegalArgumentException("url must not be null");
+		}
 		try {
 			HTTPConnectionPool clone = (HTTPConnectionPool)clone();
 			clone.url = url;

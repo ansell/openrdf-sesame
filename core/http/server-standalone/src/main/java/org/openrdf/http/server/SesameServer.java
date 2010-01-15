@@ -46,6 +46,8 @@ public class SesameServer {
 
 	private final int port;
 
+	private final int sslPort;
+
 	private Component component;
 
 	private SesameApplication sesameApplication;
@@ -61,7 +63,7 @@ public class SesameServer {
 	 *        repository data, etc.
 	 */
 	public SesameServer(File dataDir) {
-		this(dataDir, DEFAULT_PORT);
+		this(dataDir, DEFAULT_PORT, -1);
 	}
 
 	/**
@@ -74,8 +76,22 @@ public class SesameServer {
 	 *        The server port.
 	 */
 	public SesameServer(File dataDir, int port) {
+		this(dataDir, port, -1);
+	}
+
+	/**
+	 * Creates a new Sesame server.
+	 * 
+	 * @param dataDir
+	 *        The directory containing the server's configuration data,
+	 *        repository data, etc.
+	 * @param port
+	 *        The server port.
+	 */
+	public SesameServer(File dataDir, int port, int sslPort) {
 		this.dataDir = dataDir;
 		this.port = port;
+		this.sslPort = sslPort;
 	}
 
 	/**
@@ -90,6 +106,10 @@ public class SesameServer {
 	 */
 	public int getPort() {
 		return port;
+	}
+	
+	public int getSslPort() {
+		return sslPort;
 	}
 
 	public synchronized void setShutdownKey(String shutdownKey) {
@@ -116,16 +136,17 @@ public class SesameServer {
 	{
 		component = new Component();
 		component.getServers().add(Protocol.HTTP, port);
-		Server httpsServer = component.getServers().add(Protocol.HTTPS);
+		if (sslPort > 0) {
+			Server httpsServer = component.getServers().add(Protocol.HTTPS, sslPort);
+			Series<Parameter> httpsParameters = httpsServer.getContext().getParameters();
+			copySystemProperty("javax.net.ssl.keyStore", httpsParameters, "keystorePath");
+			copySystemProperty("javax.net.ssl.keyStorePassword", httpsParameters, "keystorePassword");
+			copySystemProperty("javax.net.ssl.keyStoreType", httpsParameters, "keystoreType");
+//			httpsParameters.add("keyPassword", "changeit");
+		}
 		component.getClients().add(Protocol.HTTP);
 		component.getClients().add(Protocol.HTTPS);
 		component.getLogService().setEnabled(false);
-
-		Series<Parameter> httpsParameters = httpsServer.getContext().getParameters();
-		copySystemProperty("javax.net.ssl.keyStore", httpsParameters, "keystorePath");
-		copySystemProperty("javax.net.ssl.keyStorePassword", httpsParameters, "keystorePassword");
-		copySystemProperty("javax.net.ssl.keyStoreType", httpsParameters, "keystoreType");
-		httpsParameters.add("keyPassword", "changeit");
 
 		Context appContext = component.getContext().createChildContext();
 		sesameApplication = new SesameApplication(appContext, dataDir);

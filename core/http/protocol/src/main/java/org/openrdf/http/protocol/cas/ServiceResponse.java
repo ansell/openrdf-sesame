@@ -3,13 +3,13 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.http.server.auth.cas;
+package org.openrdf.http.protocol.cas;
 
 
 /**
  *
  * @author Arjohn Kampman
  */
-interface ServiceResponse {
+public interface ServiceResponse {
 
 }

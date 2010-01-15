@@ -5,6 +5,8 @@
  */
 package org.openrdf.http.server.session;
 
+import static org.openrdf.http.protocol.Protocol.SESSION_COOKIE;
+
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.data.Cookie;
@@ -14,8 +16,6 @@ import org.restlet.data.CookieSetting;
  * @author Arjohn Kampman
  */
 class SessionUtil {
-
-	private static final String SESSION_COOKIE = "sesame_session";
 
 	static String getSessionID(Request request) {
 		Cookie sessionCookie = request.getCookies().getFirst(SESSION_COOKIE);

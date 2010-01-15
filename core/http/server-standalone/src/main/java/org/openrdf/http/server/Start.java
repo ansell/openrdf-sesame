@@ -37,6 +37,9 @@ public class Start {
 	private static final Option portOption = new Option("p", "port", true, "port to listen on (default: "
 			+ SesameServer.DEFAULT_PORT + ")");
 
+	private static final Option sslPortOption = new Option("sp", "sslPort", true,
+			"port to listen on (default: " + SesameServer.DEFAULT_PORT + ")");
+
 	private static final Option maxAgeOption = new Option("c", "maxCacheAge", true,
 			"How many seconds clients can use their cache before validating it with the server");
 
@@ -74,6 +77,7 @@ public class Start {
 		options.addOption(versionOption);
 		options.addOption(dirOption);
 		options.addOption(portOption);
+		options.addOption(sslPortOption);
 		options.addOption(maxAgeOption);
 		options.addOption(keyOption);
 		return options;
@@ -124,6 +128,23 @@ public class Start {
 		}
 	}
 
+	private static int getSslPort(CommandLine commandLine)
+		throws ParseException
+	{
+		String sslPortString = commandLine.getOptionValue(sslPortOption.getOpt());
+
+		if (sslPortString == null) {
+			return -1;
+		}
+
+		try {
+			return Integer.parseInt(sslPortString);
+		}
+		catch (NumberFormatException e) {
+			throw new ParseException("Invalid port number '" + sslPortString + "'");
+		}
+	}
+
 	private static int getMaxCacheAge(CommandLine commandLine)
 		throws ParseException
 	{
@@ -158,16 +179,20 @@ public class Start {
 	{
 		File dataDir = getDataDirectory(commandLine);
 		int port = getPort(commandLine);
+		int sslPort = getSslPort(commandLine);
 		int maxCacheAge = getMaxCacheAge(commandLine);
 		String shutdownKey = getShutdownKey(commandLine);
 
-		SesameServer server = new SesameServer(dataDir, port);
+		SesameServer server = new SesameServer(dataDir, port, sslPort);
 		// server.setMaxCacheAge(maxCacheAge);
 		server.setShutdownKey(shutdownKey);
 
 		server.start();
 
 		System.out.println("Server listening on port " + server.getPort());
+		if (server.getSslPort() > 0) {
+			System.out.println("SSL port: " + server.getSslPort());
+		}
 		System.out.println("data dir: " + server.getDataDir());
 		System.out.println("Shutdown key is: " + server.getShutdownKey());
 	}

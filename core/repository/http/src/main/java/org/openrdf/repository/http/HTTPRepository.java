@@ -22,6 +22,7 @@ import org.openrdf.http.client.NamespaceClient;
 import org.openrdf.http.client.RepositoryClient;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.connections.HTTPConnectionPool;
+import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -101,7 +102,13 @@ public class HTTPRepository implements Repository {
 
 	public HTTPRepository(String repositoryURL) {
 		ValueFactory vf = new ValueFactoryImpl(new BNodeFactoryImpl(), uf, lf);
-		pool = new HTTPConnectionPool(repositoryURL, vf);
+		String serverURL = Protocol.getServerLocation(repositoryURL);
+		if (serverURL != null) {
+			pool = new HTTPConnectionPool(serverURL, vf).location(repositoryURL);
+		}
+		else {
+			pool = new HTTPConnectionPool(repositoryURL, vf);
+		}
 		client = new RepositoryClient(pool);
 		cache = new RepositoryCache(client);
 	}

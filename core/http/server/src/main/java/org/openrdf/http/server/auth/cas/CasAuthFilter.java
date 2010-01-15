@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -24,7 +26,14 @@ import org.restlet.routing.Filter;
 import org.restlet.security.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
+import org.openrdf.http.protocol.cas.AuthFailure;
+import org.openrdf.http.protocol.cas.AuthSuccess;
+import org.openrdf.http.protocol.cas.CasParseException;
+import org.openrdf.http.protocol.cas.ProxyGrantingTicketRegistry;
+import org.openrdf.http.protocol.cas.ServiceResponse;
+import org.openrdf.http.protocol.cas.ServiceResponseParser;
 import org.openrdf.store.Session;
 import org.openrdf.store.SessionManager;
 
@@ -34,24 +43,18 @@ import org.openrdf.store.SessionManager;
 // FIXME: make this an Authenticator subclass?
 public final class CasAuthFilter extends Filter {
 
-	private static final String CAS_SERVER_URL = "CAS_SERVER_URL";
-
 	private final Logger logger = LoggerFactory.getLogger(CasAuthFilter.class);
 
 	/**
 	 * The URL to the CAS Server login, e.g.http://localhost:8080/cas/
 	 */
-	private final String casServerUrl;
+	private final String casServerURL;
 
 	private final Map<String, String> pgtIouMap = new HashMap<String, String>();
 
-	public CasAuthFilter(Context context, Restlet next) {
+	public CasAuthFilter(String casServerURL, Context context, Restlet next) {
 		super(context, next);
-		casServerUrl = System.getProperty(CAS_SERVER_URL);
-		if (casServerUrl == null) {
-			throw new RuntimeException("System property '" + CAS_SERVER_URL
-					+ "' for CAS authentication not specified");
-		}
+		this.casServerURL = casServerURL;
 	}
 
 	@Override
@@ -88,7 +91,7 @@ public final class CasAuthFilter extends Filter {
 	private boolean validateServiceTicket(String serviceTicket, Request request, Response response)
 		throws ResourceException
 	{
-		Reference validationURL = new Reference(casServerUrl + "serviceValidate");
+		Reference validationURL = new Reference(casServerURL + "proxyValidate");
 		validationURL.addQueryParameter("service", getServiceURL(request));
 		validationURL.addQueryParameter("ticket", serviceTicket);
 		validationURL.addQueryParameter("pgtUrl", getServiceURL(request));
@@ -96,20 +99,20 @@ public final class CasAuthFilter extends Filter {
 		ClientResource serviceValidate = new ClientResource(validationURL);
 		try {
 			Representation validationResult = serviceValidate.get();
-			ServiceResponse serviceResponse = ServiceResponseParser.parse(validationResult);
+			ServiceResponse serviceResponse = ServiceResponseParser.parse(validationResult.getStream());
 
 			if (serviceResponse instanceof AuthSuccess) {
 				AuthSuccess authSuccess = (AuthSuccess)serviceResponse;
-				request.getClientInfo().setUser(new User(authSuccess.user));
-				logger.debug("Validated CAS-ticket for user '{}'", authSuccess.user);
+				request.getClientInfo().setUser(new User(authSuccess.getUser()));
+				logger.debug("Validated CAS-ticket for user '{}'", authSuccess.getUser());
 
-				if (authSuccess.proxyGrantingTicket != null) {
-					String pgtId = pgtIouMap.remove(authSuccess.proxyGrantingTicket);
+				if (authSuccess.getProxyGrantingTicket() != null) {
+					String pgtId = pgtIouMap.remove(authSuccess.getProxyGrantingTicket());
 					if (pgtId != null) {
-						SessionManager.getOrCreate().setProxyGrantingTicket(pgtId);
+						ProxyGrantingTicketRegistry.storeProxyGrantingTicket(pgtId);
 					}
 					else {
-						logger.warn("pgtIou mapping missing for validated user '{}'", authSuccess.user);
+						logger.warn("pgtIou mapping missing for validated user '{}'", authSuccess.getUser());
 					}
 				}
 
@@ -117,7 +120,7 @@ public final class CasAuthFilter extends Filter {
 			}
 			else if (serviceResponse instanceof AuthFailure) {
 				AuthFailure authFailure = (AuthFailure)serviceResponse;
-				response.setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, authFailure.message);
+				response.setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, authFailure.getMessage());
 			}
 			else {
 				logger.warn("Unexpected response from CAS server ({}): {}", serviceResponse.getClass(),
@@ -137,12 +140,20 @@ public final class CasAuthFilter extends Filter {
 			logger.warn("Failed to parse response from CAS server: {}", e.getMessage());
 			response.setStatus(Status.SERVER_ERROR_INTERNAL, "Failed to parse response from CAS server");
 		}
+		catch (SAXException e) {
+			logger.warn("Failed to parse response from CAS server: {}", e.getMessage());
+			response.setStatus(Status.SERVER_ERROR_INTERNAL, "Failed to parse response from CAS server");
+		}
+		catch (ParserConfigurationException e) {
+			logger.warn("Failed to parse response from CAS server: {}", e.getMessage());
+			response.setStatus(Status.SERVER_ERROR_INTERNAL, "Failed to parse response from CAS server");
+		}
 
 		return false;
 	}
 
 	private void redirectToCAS(Request request, Response response) {
-		Reference loginURL = new Reference(casServerUrl + "login");
+		Reference loginURL = new Reference(casServerURL + "login");
 		loginURL.addQueryParameter("service", getServiceURL(request));
 		response.redirectTemporary(loginURL);
 	}

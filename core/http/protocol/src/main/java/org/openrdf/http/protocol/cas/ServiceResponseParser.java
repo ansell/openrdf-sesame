@@ -3,47 +3,74 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.http.server.auth.cas;
+package org.openrdf.http.protocol.cas;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.restlet.ext.xml.DomRepresentation;
-import org.restlet.representation.Representation;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * @author Arjohn Kampman
  */
-class ServiceResponseParser {
+public class ServiceResponseParser {
 
-	static ServiceResponse parse(Representation xmlEntity)
-		throws IOException, CasParseException
+	public static ServiceResponse parse(InputStream xmlStream)
+		throws IOException, CasParseException, ParserConfigurationException, SAXException
 	{
-		DomRepresentation domEntity = new DomRepresentation(xmlEntity);
-		Node typeNode = domEntity.getNode("/serviceResponse/*");
-		if (typeNode instanceof Element) {
-			Element typeElement = (Element)typeNode;
-			String tagName = typeElement.getTagName();
-			if ("cas:authenticationSuccess".equals(tagName)) {
-				return parseAuthenticationSuccess(typeElement);
-			}
-			else if ("cas:authenticationFailure".equals(tagName)) {
-				return parseAuthenticationFailure(typeElement);
-			}
-			else if ("cas:proxySuccess".equals(tagName)) {
-				return parseProxySuccess(typeElement);
-			}
-			else if ("cas:proxyFailure".equals(tagName)) {
-				return parseProxyFailure(typeElement);
-			}
-			else {
-				throw new CasParseException();
-			}
+		Document document = createBuilder().parse(xmlStream);
+		return parse(document);
+	}
+
+	public static ServiceResponse parse(String xmlString)
+		throws IOException, CasParseException, ParserConfigurationException, SAXException
+	{
+		Document document = createBuilder().parse(new InputSource(new StringReader(xmlString)));
+		return parse(document);
+	}
+
+	private static DocumentBuilder createBuilder()
+		throws ParserConfigurationException
+	{
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		return factory.newDocumentBuilder();
+	}
+
+	private static ServiceResponse parse(Document document)
+		throws CasParseException
+	{
+		NodeList nodeList = document.getElementsByTagName("cas:authenticationSuccess");
+		if (nodeList.getLength() > 0) {
+			return parseAuthenticationSuccess((Element)nodeList.item(0));
 		}
+
+		nodeList = document.getElementsByTagName("cas:authenticationFailure");
+		if (nodeList.getLength() > 0) {
+			return parseAuthenticationFailure((Element)nodeList.item(0));
+		}
+
+		nodeList = document.getElementsByTagName("cas:proxySuccess");
+		if (nodeList.getLength() > 0) {
+			return parseProxySuccess((Element)nodeList.item(0));
+		}
+
+		nodeList = document.getElementsByTagName("cas:proxyFailure");
+		if (nodeList.getLength() > 0) {
+			return parseProxyFailure((Element)nodeList.item(0));
+		}
+
 		throw new CasParseException();
 	}
 
