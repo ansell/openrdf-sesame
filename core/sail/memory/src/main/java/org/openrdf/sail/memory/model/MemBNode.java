@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,12 +11,12 @@ import org.openrdf.model.impl.BNodeImpl;
  * A MemoryStore-specific extension of BNodeImpl giving it node properties.
  */
 public class MemBNode extends BNodeImpl implements MemResource {
-	
+
 	private static final long serialVersionUID = -887382892580321647L;
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
 	/**
 	 * The object that created this MemBNode.
@@ -44,9 +44,11 @@ public class MemBNode extends BNodeImpl implements MemResource {
 
 	/**
 	 * Creates a new MemBNode for a bnode ID.
-	 *
-	 * @param creator The object that is creating this MemBNode.
-	 * @param id bnode ID.
+	 * 
+	 * @param creator
+	 *        The object that is creating this MemBNode.
+	 * @param id
+	 *        bnode ID.
 	 */
 	public MemBNode(Object creator, String id) {
 		super(id);
@@ -57,9 +59,13 @@ public class MemBNode extends BNodeImpl implements MemResource {
 	 * Methods *
 	 *---------*/
 
-    public Object getCreator() {
-        return creator;
-    }
+	public Object getCreator() {
+		return creator;
+	}
+
+	public boolean hasStatements() {
+		return subjectStatements != null || objectStatements != null || contextStatements != null;
+	}
 
 	public MemStatementList getSubjectStatementList() {
 		if (subjectStatements == null) {
@@ -94,7 +100,7 @@ public class MemBNode extends BNodeImpl implements MemResource {
 			subjectStatements = null;
 		}
 	}
-	
+
 	public void cleanSnapshotsFromSubjectStatements(int currentSnapshot) {
 		if (subjectStatements != null) {
 			subjectStatements.cleanSnapshots(currentSnapshot);
