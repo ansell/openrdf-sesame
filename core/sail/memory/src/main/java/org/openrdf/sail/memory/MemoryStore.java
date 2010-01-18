@@ -516,32 +516,17 @@ public class MemoryStore extends NotifyingSailBase {
 		throws SailException
 	{
 		assert txnStatements != null;
-		boolean newValueCreated = false;
 
 		// Get or create MemValues for the operands
-		MemResource memSubj = valueFactory.getMemResource(subj);
-		if (memSubj == null) {
-			memSubj = valueFactory.createMemResource(subj);
-			newValueCreated = true;
-		}
-		MemURI memPred = valueFactory.getMemURI(pred);
-		if (memPred == null) {
-			memPred = valueFactory.createMemURI(pred);
-			newValueCreated = true;
-		}
-		MemValue memObj = valueFactory.getMemValue(obj);
-		if (memObj == null) {
-			memObj = valueFactory.createMemValue(obj);
-			newValueCreated = true;
-		}
-		MemResource memContext = valueFactory.getMemResource(context);
-		if (context != null && memContext == null) {
-			memContext = valueFactory.createMemResource(context);
-			newValueCreated = true;
-		}
+		MemResource memSubj = valueFactory.getOrCreateMemResource(subj);
+		MemURI memPred = valueFactory.getOrCreateMemURI(pred);
+		MemValue memObj = valueFactory.getOrCreateMemValue(obj);
+		MemResource memContext = (context == null) ? null : valueFactory.getOrCreateMemResource(context);
 
-		if (!newValueCreated) {
-			// All values were already present in the graph. Possibly, the
+		if (memSubj.hasStatements() && memPred.hasStatements() && memObj.hasStatements()
+				&& (memContext == null || memContext.hasStatements()))
+		{
+			// All values are used in at least one statement. Possibly, the
 			// statement is already present. Check this.
 			CloseableIteration<MemStatement, SailException> stIter = createStatementIterator(
 					SailException.class, memSubj, memPred, memObj, false, currentSnapshot + 1, ReadMode.RAW,

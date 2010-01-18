@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -36,9 +36,9 @@ import org.openrdf.model.vocabulary.XMLSchema;
  */
 public class MemValueFactory extends ValueFactoryBase {
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
 	/**
 	 * Registry containing the set of MemURI objects as used by a MemoryStore.
@@ -207,19 +207,21 @@ public class MemValueFactory extends ValueFactoryBase {
 	}
 
 	/**
-	 * Creates a MemValue for the supplied Value. The supplied value should not
-	 * already have an associated MemValue. The created MemValue is returned.
+	 * Gets or creates a MemValue for the supplied Value. If the factory already
+	 * contains a MemValue object that is equivalent to the supplied value then
+	 * this equivalent value will be returned. Otherwise a new MemValue will be
+	 * created, stored for future calls and then returned.
 	 * 
 	 * @param value
 	 *        A Resource or Literal.
-	 * @return The created MemValue.
+	 * @return The existing or created MemValue.
 	 */
-	public MemValue createMemValue(Value value) {
+	public MemValue getOrCreateMemValue(Value value) {
 		if (value instanceof Resource) {
-			return createMemResource((Resource)value);
+			return getOrCreateMemResource((Resource)value);
 		}
 		else if (value instanceof Literal) {
-			return createMemLiteral((Literal)value);
+			return getOrCreateMemLiteral((Literal)value);
 		}
 		else {
 			throw new IllegalArgumentException("value is not a Resource or Literal: " + value);
@@ -227,14 +229,14 @@ public class MemValueFactory extends ValueFactoryBase {
 	}
 
 	/**
-	 * See createMemValue() for description.
+	 * See {@link #getOrCreateMemValue(Value)} for description.
 	 */
-	public MemResource createMemResource(Resource resource) {
+	public MemResource getOrCreateMemResource(Resource resource) {
 		if (resource instanceof URI) {
-			return createMemURI((URI)resource);
+			return getOrCreateMemURI((URI)resource);
 		}
 		else if (resource instanceof BNode) {
-			return createMemBNode((BNode)resource);
+			return getOrCreateMemBNode((BNode)resource);
 		}
 		else {
 			throw new IllegalArgumentException("resource is not a URI or BNode: " + resource);
@@ -242,110 +244,106 @@ public class MemValueFactory extends ValueFactoryBase {
 	}
 
 	/**
-	 * See createMemValue() for description.
+	 * See {@link #getOrCreateMemValue(Value)} for description.
 	 */
-	public synchronized MemURI createMemURI(URI uri) {
-		// Namespace strings are relatively large objects and are shared
-		// between uris
-		String namespace = uri.getNamespace();
-		String sharedNamespace = namespaceRegistry.get(namespace);
+	public synchronized MemURI getOrCreateMemURI(URI uri) {
+		MemURI memURI = getMemURI(uri);
 
-		if (sharedNamespace == null) {
-			// New namespace, add it to the registry
-			namespaceRegistry.add(namespace);
-		}
-		else {
-			// Use the shared namespace
-			namespace = sharedNamespace;
-		}
+		if (memURI == null) {
+			// Namespace strings are relatively large objects and are shared
+			// between uris
+			String namespace = uri.getNamespace();
+			String sharedNamespace = namespaceRegistry.get(namespace);
 
-		// Create a MemURI and add it to the registry
-		MemURI memURI;
-		if (isOwnMemValue(uri) && namespace == uri.getNamespace()) {
-			// Supplied parameter is a MemURI that can be reused
-			memURI = (MemURI)uri;
-		}
-		else {
+			if (sharedNamespace == null) {
+				// New namespace, add it to the registry
+				namespaceRegistry.add(namespace);
+			}
+			else {
+				// Use the shared namespace
+				namespace = sharedNamespace;
+			}
+
+			// Create a MemURI and add it to the registry
 			memURI = new MemURI(this, namespace, uri.getLocalName());
+			boolean wasNew = uriRegistry.add(memURI);
+			assert wasNew : "Created a duplicate MemURI for URI " + uri;
 		}
-
-		boolean wasNew = uriRegistry.add(memURI);
-		assert wasNew : "Created a duplicate MemURI for URI " + uri;
 
 		return memURI;
 	}
 
 	/**
-	 * See createMemValue() for description.
+	 * See {@link #getOrCreateMemValue(Value)} for description.
 	 */
-	public synchronized MemBNode createMemBNode(BNode bnode) {
-		MemBNode memBNode = new MemBNode(this, bnode.getID());
+	public synchronized MemBNode getOrCreateMemBNode(BNode bnode) {
+		MemBNode memBNode = getMemBNode(bnode);
 
-		boolean wasNew = bnodeRegistry.add(memBNode);
-		assert wasNew : "Created a duplicate MemBNode for bnode " + bnode;
+		if (memBNode == null) {
+			memBNode = new MemBNode(this, bnode.getID());
+			boolean wasNew = bnodeRegistry.add(memBNode);
+			assert wasNew : "Created a duplicate MemBNode for bnode " + bnode;
+		}
 
 		return memBNode;
 	}
 
 	/**
-	 * See createMemValue() for description.
+	 * See {@link #getOrCreateMemValue(Value)} for description.
 	 */
-	public synchronized MemLiteral createMemLiteral(Literal literal) {
-		MemLiteral memLiteral = null;
+	public synchronized MemLiteral getOrCreateMemLiteral(Literal literal) {
+		MemLiteral memLiteral = getMemLiteral(literal);
 
-		String label = literal.getLabel();
-		URI datatype = literal.getDatatype();
-		if (datatype != null) {
-			try {
-				if (XMLDatatypeUtil.isIntegerDatatype(datatype)) {
-					memLiteral = new IntegerMemLiteral(this, label, literal.integerValue(), datatype);
+		if (memLiteral == null) {
+			String label = literal.getLabel();
+			URI datatype = literal.getDatatype();
+			
+			if (datatype != null) {
+				try {
+					if (XMLDatatypeUtil.isIntegerDatatype(datatype)) {
+						memLiteral = new IntegerMemLiteral(this, label, literal.integerValue(), datatype);
+					}
+					else if (datatype.equals(XMLSchema.DECIMAL)) {
+						memLiteral = new DecimalMemLiteral(this, label, literal.decimalValue(), datatype);
+					}
+					else if (datatype.equals(XMLSchema.FLOAT)) {
+						memLiteral = new NumericMemLiteral(this, label, literal.floatValue(), datatype);
+					}
+					else if (datatype.equals(XMLSchema.DOUBLE)) {
+						memLiteral = new NumericMemLiteral(this, label, literal.doubleValue(), datatype);
+					}
+					else if (datatype.equals(XMLSchema.BOOLEAN)) {
+						memLiteral = new BooleanMemLiteral(this, label, literal.booleanValue());
+					}
+					else if (datatype.equals(XMLSchema.DATETIME)) {
+						memLiteral = new CalendarMemLiteral(this, label, literal.calendarValue());
+					}
+					else {
+						memLiteral = new MemLiteral(this, label, datatype);
+					}
 				}
-				else if (datatype.equals(XMLSchema.DECIMAL)) {
-					memLiteral = new DecimalMemLiteral(this, label, literal.decimalValue(), datatype);
-				}
-				else if (datatype.equals(XMLSchema.FLOAT)) {
-					memLiteral = new NumericMemLiteral(this, label, literal.floatValue(), datatype);
-				}
-				else if (datatype.equals(XMLSchema.DOUBLE)) {
-					memLiteral = new NumericMemLiteral(this, label, literal.doubleValue(), datatype);
-				}
-				else if (datatype.equals(XMLSchema.BOOLEAN)) {
-					memLiteral = new BooleanMemLiteral(this, label, literal.booleanValue());
-				}
-				else if (datatype.equals(XMLSchema.DATETIME)) {
-					memLiteral = new CalendarMemLiteral(this, label, literal.calendarValue());
-				}
-				else {
-					memLiteral = new MemLiteral(this, literal.getLabel(), datatype);
+				catch (IllegalArgumentException e) {
+					// Unable to parse literal label to primitive type
+					memLiteral = new MemLiteral(this, label, datatype);
 				}
 			}
-			catch (IllegalArgumentException e) {
-				// Unable to parse literal label to primitive type
-				memLiteral = new MemLiteral(this, literal.getLabel(), datatype);
+			else if (literal.getLanguage() != null) {
+				memLiteral = new MemLiteral(this, label, literal.getLanguage());
 			}
-		}
-		else if (literal.getLanguage() != null) {
-			memLiteral = new MemLiteral(this, literal.getLabel(), literal.getLanguage());
-		}
-		else {
-			memLiteral = new MemLiteral(this, literal.getLabel());
-		}
+			else {
+				memLiteral = new MemLiteral(this, label);
+			}
 
-		boolean wasNew = literalRegistry.add(memLiteral);
-		assert wasNew : "Created a duplicate MemLiteral for literal " + literal;
+			boolean wasNew = literalRegistry.add(memLiteral);
+			assert wasNew : "Created a duplicate MemLiteral for literal " + literal;
+		}
 
 		return memLiteral;
 	}
 
 	public synchronized URI createURI(String uri) {
 		URI tempURI = new URIImpl(uri);
-		MemURI memURI = getMemURI(tempURI);
-
-		if (memURI == null) {
-			memURI = createMemURI(tempURI);
-		}
-
-		return memURI;
+		return getOrCreateMemURI(tempURI);
 	}
 
 	public synchronized URI createURI(String namespace, String localName) {
@@ -357,63 +355,33 @@ public class MemValueFactory extends ValueFactoryBase {
 				throw new IllegalArgumentException("Not a valid (absolute) URI: " + namespace + localName);
 			}
 
-			tempURI = new MemURI(this, namespace, localName);
+			tempURI = new MemURI(null, namespace, localName);
 		}
 		else {
 			tempURI = new URIImpl(namespace + localName);
 		}
 
-		MemURI memURI = uriRegistry.get(tempURI);
-
-		if (memURI == null) {
-			memURI = createMemURI(tempURI);
-		}
-
-		return memURI;
+		return getOrCreateMemURI(tempURI);
 	}
 
 	public synchronized BNode createBNode(String nodeID) {
 		BNode tempBNode = new BNodeImpl(nodeID);
-		MemBNode memBNode = getMemBNode(tempBNode);
-
-		if (memBNode == null) {
-			memBNode = createMemBNode(tempBNode);
-		}
-
-		return memBNode;
+		return getOrCreateMemBNode(tempBNode);
 	}
 
 	public synchronized Literal createLiteral(String value) {
 		Literal tempLiteral = new LiteralImpl(value);
-		MemLiteral memLiteral = literalRegistry.get(tempLiteral);
-
-		if (memLiteral == null) {
-			memLiteral = createMemLiteral(tempLiteral);
-		}
-
-		return memLiteral;
+		return getOrCreateMemLiteral(tempLiteral);
 	}
 
 	public synchronized Literal createLiteral(String value, String language) {
 		Literal tempLiteral = new LiteralImpl(value, language);
-		MemLiteral memLiteral = literalRegistry.get(tempLiteral);
-
-		if (memLiteral == null) {
-			memLiteral = createMemLiteral(tempLiteral);
-		}
-
-		return memLiteral;
+		return getOrCreateMemLiteral(tempLiteral);
 	}
 
 	public synchronized Literal createLiteral(String value, URI datatype) {
 		Literal tempLiteral = new LiteralImpl(value, datatype);
-		MemLiteral memLiteral = literalRegistry.get(tempLiteral);
-
-		if (memLiteral == null) {
-			memLiteral = createMemLiteral(tempLiteral);
-		}
-
-		return memLiteral;
+		return getOrCreateMemLiteral(tempLiteral);
 	}
 
 	@Override
