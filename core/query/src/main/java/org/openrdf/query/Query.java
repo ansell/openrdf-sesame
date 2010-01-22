@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,10 +8,10 @@ package org.openrdf.query;
 import org.openrdf.model.Value;
 
 /**
- * A query on a {@link org.openrdf.repository.Repository} that can be formulated in one of the
- * supported query languages (for example SeRQL or SPARQL). It allows one to
- * predefine bindings in the query to be able to reuse the same query with
- * different bindings.
+ * A query on a {@link org.openrdf.repository.Repository} that can be formulated
+ * in one of the supported query languages (for example SeRQL or SPARQL). It
+ * allows one to predefine bindings in the query to be able to reuse the same
+ * query with different bindings.
  * 
  * @author Arjohn Kampman
  * @author jeen
@@ -38,6 +38,11 @@ public interface Query {
 	 *        The name of the variable from which the binding is to be removed.
 	 */
 	public void removeBinding(String name);
+
+	/**
+	 * Removes all previously set bindings.
+	 */
+	public void clearBindings();
 
 	/**
 	 * Retrieves the bindings that have been set on this query.
@@ -78,7 +83,7 @@ public interface Query {
 	 *         <tt>false</tt> otherwise.
 	 */
 	public boolean getIncludeInferred();
-	
+
 	/**
 	 * Specifies the maximum time that a query is allowed to run. The query will
 	 * be interrupted when it exceeds the time limit. Any consecutive requests to

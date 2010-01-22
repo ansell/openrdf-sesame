@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -15,11 +15,11 @@ import org.openrdf.query.Query;
  */
 public abstract class AbstractQuery implements Query {
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
-	protected MapBindingSet bindings = new MapBindingSet();
+	protected final MapBindingSet bindings = new MapBindingSet();
 
 	protected Dataset dataset = null;
 
@@ -47,6 +47,10 @@ public abstract class AbstractQuery implements Query {
 
 	public void removeBinding(String name) {
 		bindings.removeBinding(name);
+	}
+
+	public void clearBindings() {
+		bindings.clear();
 	}
 
 	public BindingSet getBindings() {
