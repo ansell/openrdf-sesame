@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -25,32 +25,36 @@ abstract class DatasetQuery implements Query {
 		this.sailQuery = sailQuery;
 	}
 
-	public final BindingSet getBindings() {
-		return sailQuery.getBindings();
-	}
-
-	public final Dataset getDataset() {
-		return sailQuery.getDataset();
-	}
-
-	public final boolean getIncludeInferred() {
-		return sailQuery.getIncludeInferred();
+	public final void setBinding(String name, Value value) {
+		sailQuery.setBinding(name, value);
 	}
 
 	public final void removeBinding(String name) {
 		sailQuery.removeBinding(name);
 	}
 
-	public final void setBinding(String name, Value value) {
-		sailQuery.setBinding(name, value);
+	public final void clearBindings() {
+		sailQuery.clearBindings();
+	}
+
+	public final BindingSet getBindings() {
+		return sailQuery.getBindings();
 	}
 
 	public final void setDataset(Dataset dataset) {
 		sailQuery.setDataset(dataset);
 	}
 
+	public final Dataset getDataset() {
+		return sailQuery.getDataset();
+	}
+
 	public final void setIncludeInferred(boolean includeInferred) {
 		sailQuery.setIncludeInferred(includeInferred);
+	}
+
+	public final boolean getIncludeInferred() {
+		return sailQuery.getIncludeInferred();
 	}
 
 	public void setMaxQueryTime(int maxQueryTime) {
