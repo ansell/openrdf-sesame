@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-root-pom</artifactId>
-		<version>3</version>
+		<version>4</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -19,11 +19,17 @@
 	<url>http://www.openrdf.org/</url>
 	<inceptionYear>2001</inceptionYear>
 
+	<organization>
+		<name>Aduna</name>
+		<url>http://www.aduna-software.com/</url>
+	</organization>
+
 	<licenses>
 		<license>
-			<name>Aduna BSD-style license</name>
-			<url>http://www.aduna-software.com/documents/legal/licenses/aduna-bsd.txt</url>
+			<name>Aduna BSD license</name>
+			<url>http://repo.aduna-software.org/legal/aduna-bsd.txt</url>
 			<distribution>repo</distribution>
+			<comments>A BSD-style OSS license</comments>
 		</license>
 	</licenses>
 
@@ -522,7 +528,7 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.3</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.3</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/2.3</url>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/</url>
 	</scm>
 
 	<repositories>
