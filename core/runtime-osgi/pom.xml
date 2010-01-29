@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>2.3.1-SNAPSHOT</version>
+		<version>2.3.1</version>
 	</parent>
 
 	<artifactId>sesame-runtime-osgi</artifactId>
@@ -73,9 +73,9 @@
 	
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.3/core/runtime</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.3/core/runtime</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/runtime/</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.1/core/runtime</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.1/core/runtime</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.3.1/core/runtime?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/runtime/</url>
 	</scm>
 
 </project>
