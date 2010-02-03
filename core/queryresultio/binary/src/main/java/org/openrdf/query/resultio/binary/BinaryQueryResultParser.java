@@ -125,7 +125,7 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 		
 		// Read column headers
 		int columnCount = this.in.readInt();
-		if (columnCount < 1) {
+		if (columnCount < 0) {
 			throw new QueryResultParseException("Illegal column count specified: " + columnCount);
 		}
 
