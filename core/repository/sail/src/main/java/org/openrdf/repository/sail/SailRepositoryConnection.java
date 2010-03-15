@@ -175,6 +175,14 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
+	public boolean isEmpty()
+		throws RepositoryException
+	{
+		// The following is more efficient than "size() == 0" for Sails
+		return !hasStatement(null, null, null, false);
+	}
+
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
