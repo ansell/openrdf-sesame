@@ -7,7 +7,6 @@ package org.openrdf.sail.helpers;
 
 import java.io.File;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -168,6 +167,8 @@ public abstract class SailBase implements Sail {
 				return;
 			}
 
+			Map<SailConnection, Throwable> activeConnectionsCopy;
+
 			synchronized (activeConnections) {
 				// Check if any active connections exist. If so, wait for a grace
 				// period for them to finish.
@@ -181,32 +182,38 @@ public abstract class SailBase implements Sail {
 					}
 				}
 
-				// Forcefully close any connections that are still open
-				Iterator<Map.Entry<SailConnection, Throwable>> iter = activeConnections.entrySet().iterator();
-				while (iter.hasNext()) {
-					Map.Entry<SailConnection, Throwable> entry = iter.next();
-					SailConnection con = entry.getKey();
-					Throwable stackTrace = entry.getValue();
+				// Copy the current contents of the map so that we don't have to
+				// synchronize on activeConnections. This prevents a potential
+				// deadlock with concurrent calls to connectionClosed()
+				activeConnectionsCopy = new IdentityHashMap<SailConnection, Throwable>(activeConnections);
+			}
 
-					iter.remove();
+			// Forcefully close any connections that are still open
+			for (Map.Entry<SailConnection, Throwable> entry : activeConnectionsCopy.entrySet()) {
+				SailConnection con = entry.getKey();
+				Throwable stackTrace = entry.getValue();
 
-					if (stackTrace == null) {
-						logger.warn(
-								"Closing active connection due to shut down; consider setting the {} system property",
-								DEBUG_PROP);
-					}
-					else {
-						logger.warn("Closing active connection due to shut down, connection was acquired in",
-								stackTrace);
-					}
-
-					try {
-						con.close();
-					}
-					catch (SailException e) {
-						logger.error("Failed to close connection", e);
-					}
+				if (stackTrace == null) {
+					logger.warn(
+							"Closing active connection due to shut down; consider setting the {} system property",
+							DEBUG_PROP);
 				}
+				else {
+					logger.warn("Closing active connection due to shut down, connection was acquired in",
+							stackTrace);
+				}
+
+				try {
+					con.close();
+				}
+				catch (SailException e) {
+					logger.error("Failed to close connection", e);
+				}
+			}
+
+			// All connections should be closed now
+			synchronized (activeConnections) {
+				activeConnections.clear();
 			}
 
 			shutDownInternal();
