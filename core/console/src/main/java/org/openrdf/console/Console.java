@@ -511,23 +511,29 @@ public class Console {
 		return connectRemote(url, null, null);
 	}
 
-	private boolean connectRemote(final String url, final String user, final String pass) {
+	private boolean connectRemote(final String url, final String user, String pass) {
+		if (pass == null) {
+			pass = "";
+		}
+
 		try {
 			// Ping server
 			HTTPClient httpClient = new HTTPClient();
 			httpClient.setServerURL(url);
 
 			if (user != null) {
-				httpClient.setUsernameAndPassword(user, (pass == null) ? "" : pass);
+				httpClient.setUsernameAndPassword(user, pass);
 			}
 
 			// Ping the server
 			httpClient.getServerProtocol();
 
-			return installNewManager(new RemoteRepositoryManager(url), url);
+			RemoteRepositoryManager manager = new RemoteRepositoryManager(url);
+			manager.setUsernameAndPassword(user, pass);
+			return installNewManager(manager, url);
 		}
 		catch (UnauthorizedException e) {
-			if (user != null && pass != null) {
+			if (user != null && pass.length() > 0) {
 				writeError("Authentication for user '" + user + "' failed");
 				logger.warn("Authentication for user '" + user + "' failed", e);
 			}
