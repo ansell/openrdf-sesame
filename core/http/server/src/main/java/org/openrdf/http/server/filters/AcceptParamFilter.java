@@ -11,7 +11,7 @@ import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ClientInfo;
 import org.restlet.data.Form;
-import org.restlet.engine.http.header.PreferenceUtils;
+import org.restlet.engine.http.header.PreferenceReader;
 import org.restlet.routing.Filter;
 
 import info.aduna.net.http.RequestHeaders;
@@ -40,7 +40,7 @@ public class AcceptParamFilter extends Filter {
 			clientInfo.getAcceptedMediaTypes().clear();
 
 			for (String value : acceptValues) {
-				PreferenceUtils.parseMediaTypes(value, clientInfo);
+				PreferenceReader.addMediaTypes(value, clientInfo);
 			}
 		}
 

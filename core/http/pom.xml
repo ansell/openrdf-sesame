@@ -23,7 +23,7 @@
 	</modules>
 
 	<properties>
-		<restlet.version>2.0-SNAPSHOT</restlet.version>
+		<restlet.version>2.0-RC2</restlet.version>
 	</properties>
 
 	<repositories>
@@ -52,7 +52,7 @@
 				<version>${restlet.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.restlet.jee</groupId>
+				<groupId>org.restlet.jse</groupId>
 				<artifactId>org.restlet.ext.jetty</artifactId>
 				<version>${restlet.version}</version>
 			</dependency>
