@@ -71,10 +71,12 @@ public class CompareOptimizer implements QueryOptimizer {
 		protected boolean isResource(ValueExpr valueExpr) {
 			if (valueExpr instanceof ValueConstant) {
 				Value value = ((ValueConstant)valueExpr).getValue();
+				return value instanceof Resource;
+			}
 
-				if (value instanceof Resource) {
-					return true;
-				}
+			if (valueExpr instanceof Var) {
+				Value value = ((Var)valueExpr).getValue();
+				return value instanceof Resource;
 			}
 
 			return false;
