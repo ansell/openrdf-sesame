@@ -60,9 +60,7 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 
 				// Verify that vars are (potentially) bound by filterArg
 				Set<String> bindingNames = filterArg.getBindingNames();
-				if (leftArg instanceof Var && !bindingNames.contains(((Var)leftArg).getName())
-						|| rightArg instanceof Var && !bindingNames.contains(((Var)rightArg).getName()))
-				{
+				if (isUnboundVar(leftArg, bindingNames) || isUnboundVar(rightArg, bindingNames)) {
 					// One or both var(s) are unbound, this expression will never
 					// return any results
 					filter.replaceWith(new EmptySet());
@@ -70,24 +68,48 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 				}
 
 				Set<String> assuredBindingNames = filterArg.getAssuredBindingNames();
-				if (leftArg instanceof Var && !assuredBindingNames.contains(((Var)leftArg).getName())
-						|| rightArg instanceof Var && !assuredBindingNames.contains(((Var)rightArg).getName()))
-				{
+				if (isUnboundVar(leftArg, assuredBindingNames) || isUnboundVar(rightArg, assuredBindingNames)) {
 					// One or both var(s) are potentially unbound, inlining could
 					// invalidate the result e.g. in case of left joins
 					return;
 				}
-
-				if (leftArg instanceof Var && rightArg instanceof Var) {
-					// Rename rightArg to leftArg
+				
+				Value leftValue = getValue(leftArg);
+				Value rightValue = getValue(rightArg);
+				
+				if (leftValue != null && rightValue != null) {
+					// ConstantOptimizer should have taken care of this
+				}
+				else if (leftValue != null && rightArg instanceof Var) {
+					bindVar((Var)rightArg, leftValue, filter);
+				}
+				else if (rightValue != null && leftArg instanceof Var) {
+					bindVar((Var)leftArg, rightValue, filter);
+				}
+				else if (leftArg instanceof Var && rightArg instanceof Var) {
+					// Two unbound variables, rename rightArg to leftArg
 					renameVar((Var)rightArg, (Var)leftArg, filter);
 				}
-				else if (leftArg instanceof Var && rightArg instanceof ValueConstant) {
-					bindVar((Var)leftArg, (ValueConstant)rightArg, filter);
-				}
-				else if (rightArg instanceof Var && leftArg instanceof ValueConstant) {
-					bindVar((Var)rightArg, (ValueConstant)leftArg, filter);
-				}
+			}
+		}
+
+		private boolean isUnboundVar(ValueExpr valueExpr, Set<String> bindingNames) {
+			if (valueExpr instanceof Var) {
+				Var var = (Var)valueExpr;
+				return !var.hasValue() && !bindingNames.contains(var.getName());
+			}
+			return false;
+		}
+
+		private Value getValue(ValueExpr valueExpr) {
+			if (valueExpr instanceof ValueConstant) {
+				return ((ValueConstant)valueExpr).getValue();
+			}
+			else if (valueExpr instanceof Var) {
+				return ((Var)valueExpr).getValue();
+			}
+			else {
+				return null;
 			}
 		}
 
@@ -102,9 +124,9 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 			filter.replaceWith(extension);
 		}
 
-		private void bindVar(Var var, ValueConstant valueConstant, Filter filter) {
+		private void bindVar(Var var, Value value, Filter filter) {
 			// Set the value on all occurences of the variable
-			filter.getArg().visit(new VarBinder(var.getName(), valueConstant.getValue()));
+			filter.getArg().visit(new VarBinder(var.getName(), value));
 
 			// Get rid of the filter
 			filter.replaceWith(filter.getArg());
