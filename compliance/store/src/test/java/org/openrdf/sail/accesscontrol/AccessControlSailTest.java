@@ -64,7 +64,7 @@ public class AccessControlSailTest extends TestCase {
 
 	/** Recycle bin is a concept on which 'trezorix' has editing rights */
 	private static final String RNA_RECYCLE = RNA_NS + "5ebcb863-69ff-4be0-b05f-eb9645d4fdf2";
-	
+
 	private Repository repository;
 
 	private static Sail sail;
@@ -178,8 +178,7 @@ public class AccessControlSailTest extends TestCase {
 			Session session = SessionManager.getOrCreate();
 			session.setUsername("trezorix");
 
-			String conceptQuery = "SELECT DISTINCT ?X WHERE {?X a <" + SKOS_NS + "Concept"
-					+ "> ; ?P ?Y . } ";
+			String conceptQuery = "SELECT DISTINCT ?X WHERE {?X a <" + SKOS_NS + "Concept" + "> ; ?P ?Y . } ";
 			TupleQuery query = con.prepareTupleQuery(QueryLanguage.SPARQL, conceptQuery);
 
 			TupleResult tr = query.evaluate();
@@ -209,7 +208,7 @@ public class AccessControlSailTest extends TestCase {
 				}
 
 				assertTrue(RNA_NSR + " was not retrieved", nsrRetrieved);
-				assertTrue(RNA_ANIMALIA + "was not retrieved", animaliaRetrieved);
+				assertTrue(RNA_ANIMALIA + " was not retrieved", animaliaRetrieved);
 
 			}
 			finally {
