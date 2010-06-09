@@ -14,18 +14,23 @@ import com.ontotext.trree.owlim_ext.SailImpl;
 
 import info.aduna.io.FileUtil;
 
+import org.openrdf.cursor.Cursor;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.result.ModelResult;
 import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.Sail;
+import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.accesscontrol.vocabulary.ACL;
 import org.openrdf.store.Session;
 import org.openrdf.store.SessionManager;
@@ -41,10 +46,28 @@ public class AccessControlSailTest extends TestCase {
 
 	private static final String policyFile = "/accesscontrol/policies-trezorix.ttl";
 
-	// resource _should_ inherit editing permission for user 'trezorix'
-	private static final String CONCEPT_URI = "http://www.rnaproject.org/data/8997fddd-9b77-40ef-856e-b83c426dafa0";
+	private static final String RNA_NS = "http://www.rnaproject.org/data/";
 
+	private static final String SKOS_NS = "http://www.w3.org/2008/05/skos#";
+
+	/** NSR is a top-level concept on which user 'trezorix' has viewing rights. */
+	private static final String RNA_NSR = RNA_NS + "cf72e334-b04d-4914-acd6-1d37c42fe3aa";
+
+	/**
+	 * Animalia is a concept which inherits viewing rights from its broader
+	 * concept, NSR.
+	 */
+	private static final String RNA_ANIMALIA = RNA_NS + "8997fddd-9b77-40ef-856e-b83c426dafa0";
+
+	/** Naturalis is a concept on which 'trezorix' has no viewing rights */
+	private static final String RNA_NATURALIS = RNA_NS + "b132960c-8500-4a88-9358-c8507ac626d5";
+
+	/** Recycle bin is a concept on which 'trezorix' has editing rights */
+	private static final String RNA_RECYCLE = RNA_NS + "5ebcb863-69ff-4be0-b05f-eb9645d4fdf2";
+	
 	private Repository repository;
+
+	private static Sail sail;
 
 	private File dataDir;
 
@@ -79,7 +102,7 @@ public class AccessControlSailTest extends TestCase {
 	private static Repository createRepository(File dataDir)
 		throws StoreException
 	{
-		Sail sail = new SailImpl();
+		sail = new SailImpl();
 		sail = new AccessControlSail(sail);
 		Repository repository = new SailRepository(sail);
 		repository.setDataDir(dataDir);
@@ -109,6 +132,32 @@ public class AccessControlSailTest extends TestCase {
 	}
 
 	/*
+	public void testContentsOfAclContext() 
+	throws Exception
+	{
+		Session session = SessionManager.getOrCreate();
+
+		// DEBUG
+		session.setUsername("trezorix");
+
+		SailConnection con = sail.getConnection();
+
+		try {
+			Cursor<? extends Statement> statements = con.getStatements(null, null, null, true, ACL.CONTEXT);
+			
+			Statement st;
+			while ((st = statements.next()) != null) {
+				System.out.println("* " + st.getSubject() + " " + st.getPredicate() + " " + st.getObject());
+			}
+		}
+		finally {
+			con.close();
+		}
+
+		session.setUsername(null);
+	}
+	*/
+	/*
 	public void testExportRNAToolsetDemo() throws Exception 
 	{
 		Repository rnaRepository = manager.getRepository("rna-toolset-rdfdemo");
@@ -120,7 +169,7 @@ public class AccessControlSailTest extends TestCase {
 	}
 	*/
 
-	public void testSimpleQuery()
+	public void testQuery1()
 		throws Exception
 	{
 		RepositoryConnection con = repository.getConnection();
@@ -129,27 +178,39 @@ public class AccessControlSailTest extends TestCase {
 			Session session = SessionManager.getOrCreate();
 			session.setUsername("trezorix");
 
-			String simpleDocumentQuery = "SELECT DISTINCT ?X WHERE {?X a <http://example.org/Document>; ?P ?Y . } ";
-			TupleResult tr = con.prepareTupleQuery(QueryLanguage.SPARQL, simpleDocumentQuery).evaluate();
+			String conceptQuery = "SELECT DISTINCT ?X WHERE {?X a <" + SKOS_NS + "Concept"
+					+ "> ; ?P ?Y . } ";
+			TupleQuery query = con.prepareTupleQuery(QueryLanguage.SPARQL, conceptQuery);
+
+			TupleResult tr = query.evaluate();
 
 			try {
 				List<String> headers = tr.getBindingNames();
 
-				URI pmdoc1 = con.getValueFactory().createURI("http://example.org/pmdocument1");
-				URI pmdoc2 = con.getValueFactory().createURI("http://example.org/pmdocument2");
-
+				boolean nsrRetrieved = false;
+				boolean animaliaRetrieved = false;
 				while (tr.hasNext()) {
 					BindingSet bs = tr.next();
 
 					for (String header : headers) {
 						Value value = bs.getValue(header);
 
-						assertFalse(pmdoc1.stringValue(), value.equals(pmdoc1));
-						assertFalse(pmdoc2.stringValue(), value.equals(pmdoc2));
-						// System.out.println(header + " = " + value);
+						if (!nsrRetrieved && RNA_NSR.equals(value.stringValue())) {
+							nsrRetrieved = true;
+						}
+
+						if (!animaliaRetrieved && RNA_ANIMALIA.equals(value.stringValue())) {
+							animaliaRetrieved = true;
+						}
+
+						assertFalse(RNA_NATURALIS + " should not be retrieved",
+								RNA_NATURALIS.equals(value.stringValue()));
 					}
-					// System.out.println();
 				}
+
+				assertTrue(RNA_NSR + " was not retrieved", nsrRetrieved);
+				assertTrue(RNA_ANIMALIA + "was not retrieved", animaliaRetrieved);
+
 			}
 			finally {
 				tr.close();
@@ -189,7 +250,7 @@ public class AccessControlSailTest extends TestCase {
 		RepositoryConnection con = repository.getConnection();
 		try {
 			ValueFactory vf = con.getValueFactory();
-			con.add(vf.createURI(CONCEPT_URI), RDFS.LABEL, vf.createLiteral("test"));
+			con.add(vf.createURI(RNA_RECYCLE), RDFS.LABEL, vf.createLiteral("test"));
 		}
 		finally {
 			con.close();
@@ -225,7 +286,7 @@ public class AccessControlSailTest extends TestCase {
 		RepositoryConnection con = repository.getConnection();
 		try {
 			ValueFactory vf = con.getValueFactory();
-			con.removeMatch(vf.createURI(CONCEPT_URI), RDFS.LABEL, vf.createLiteral("test"));
+			con.removeMatch(vf.createURI(RNA_RECYCLE), RDFS.LABEL, vf.createLiteral("test"));
 		}
 		finally {
 			con.close();

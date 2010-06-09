@@ -5,7 +5,7 @@
 @prefix ex: <http://example.org/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix skos: <http://www.w3.org/2008/05/skos#> .
-@prefix rna: <http://www.rnaproject.org/data/> .      
+@prefix rna: <http://www.rnaproject.org/data/> .   
 
 skos:broader a owl:TransitiveProperty ;
 	rdfs:subPropertyOf skos:broaderTransitive ;
@@ -24,14 +24,14 @@ rna:accessAttribute a acl:AccessAttribute .
 
 
 rna:permission1 a acl:Permission ;
-    acl:hasOperation acl:edit ;
+    acl:hasOperation acl:view ;
     acl:hasMatch [ a acl:ObjectMatch ;
                    rna:accessAttribute <http://www.rnaproject.org/data/AccessAttribute/1> 
 		   ] .
 
 rna:pa1 a acl:PermissionAssignment ;
     acl:hasPermission rna:permission1 ;
-    acl:toRole <http://www.rnaproject.org/data/userNodePermissionRole/56/Edit> .
+    acl:toRole <http://www.rnaproject.org/data/userNodePermissionRole/56/View> .
 
 rna:permission127 a acl:Permission ;
     acl:hasOperation acl:edit ;
@@ -42,5 +42,4 @@ rna:permission127 a acl:Permission ;
 rna:pa127 a acl:PermissionAssignment ;
     acl:hasPermission rna:permission127 ;
     acl:toRole <http://www.rnaproject.org/data/userNodePermissionRole/56/Edit> .
-
 
