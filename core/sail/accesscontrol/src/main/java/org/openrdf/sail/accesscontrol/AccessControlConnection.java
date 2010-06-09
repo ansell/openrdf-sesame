@@ -643,8 +643,13 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			for (Var attributeVar : attributeVars) {
 				and.addArg(new Not(new Bound(attributeVar)));
 			}
-			// TODO remove AND if only one attributeVar?
-			filterConditions.addArg(and);
+			
+			if (and.getArgs().size() == 1) {
+				filterConditions.addArg(and.getArg(0));
+			}
+			else {
+				filterConditions.addArg(and);
+			}
 
 			if (permissions == null) {
 				List<URI> roles = getRolesForUser(getCurrentUser());
