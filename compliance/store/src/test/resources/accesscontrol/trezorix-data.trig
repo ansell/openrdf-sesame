@@ -1223,7 +1223,8 @@
 		skos:broader <http://www.rnaproject.org/data/9ce2155c-5283-4a02-981b-c6f7681db4e3> ;
 		rna:contentItem <http://www.rnaproject.org/data/187d6dbf-3134-41a6-8281-398a6e94151e> ;
 		skos:hasTopConcept rna:a542efbe-24af-404f-915a-aa097adc4f64 ;
-		skos:prefLabel "Felis silvestris Schreber, 1775"@eng .
+		skos:prefLabel "Felis silvestris Schreber, 1775"@eng ;
+		rna:accessAttribute <http://www.rnaproject.org/data/AccessAttribute/1>.
 
 	<http://www.rnaproject.org/data/23ce502c-8de4-41bc-a852-c3ebf909e60c> a skos:Concept ;
 		rna:contentItem <http://www.rnaproject.org/data/3fcdffdc-3641-4aa4-b2ed-8d76c93e9120> ;

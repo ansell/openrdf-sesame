@@ -31,6 +31,7 @@ import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.sail.SailConnection;
@@ -530,14 +531,21 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 			handledSubjects.add(subjectVar);
 
-			// TODO handle usage of parent for retrieval of attributes.
-
 			/*
 			 * Create this pattern:
 			 *
 			 *  ?subject ?predicate ?object. (= the original statementPattern)
-			 *  OPTIONAL { ?subject foo:accessAttr1 ?accessAttrValue1.
-			 *  			   ?subject foo:accessAttr2 ?accessAttrValue2.
+			 *  OPTIONAL { 
+			 *             { ?subject foo:accessAttr1 ?accessAttrValue1. }
+			 *             UNION
+			 *             { ?subject foo:inheritanceProp ?S1 .
+			 *               ?S1 foo:accessAttr1 ?accessAttrValue1. 
+			 *             }
+			 *             { ?subject foo:accessAttr2 ?accessAttrValue2. }
+			 *             UNION
+			 *             { ?subject foo:inheritanceProp ?S2 .
+			 *               ?S2 foo:accessAttr1 ?accessAttrValue2. 
+			 *             }
 			 *             ...
 			 *            }
 			 *            
@@ -546,37 +554,81 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			 *  LeftJoin(
 			 *  	SP(?subject, ?predicate, ?object), 
 			 *  	Join(
-			 *  		SP(?subject, accessAttr1, ?accessAttrValue1), 
-			 *       SP(?subject, accessAttr2, ?accessAttrValue2)
+			 *  		Union(
+			 *        SP(?subject, accessAttr_1, ?accessAttrValue_1),
+			 *        Join (
+			 *        	SP(?subject, inheritProp ?S_1),
+			 *          SP(?S_1, acccessAttr_1, ?accessAttrValue_1)
+			 *        )),
+			 *  		Union(
+			 *        SP(?subject, accessAttr_2, ?accessAttrValue_2),
+			 *        Join (
+			 *        	SP(?subject, inheritProp ?S_2),
+			 *          SP(?S_2, acccessAttr_2, ?accessAttrValue_2)
+			 *        )),
 			 *       ...
 			 *     )
 			 *  )
 			 */
 			List<URI> attributes = getAccessAttributes();
-
+	
 			if (attributes == null || attributes.size() == 0) {
 				return;
 			}
 
-			Join attributeJoin = new Join();
+			// join of the attribute match expressions. 
+			Join joinOfAttributePatterns = new Join();
+			
+			URI inheritanceProp = getInheritanceProperty();
+			Var inheritPredVar = new Var("acl_inherit_pred", inheritanceProp);
+
 			int i = 0;
 
 			List<Var> attributeVars = new ArrayList<Var>();
 			for (URI attribute : attributes) {
+
 				Var attributeVar = new Var("acl_attr_" + i++);
 				attributeVars.add(attributeVar);
-				StatementPattern attributePattern = new StatementPattern(subjectVar, new Var(
-						"acl_attr_pred_" + i, attribute), attributeVar);
-				attributeJoin.addArg(attributePattern);
+
+				Var attributePredVar = new Var("acl_attr_pred_" + i, attribute);
+
+				// SP(?subject, accessAttr_i, ?accessAttrValue_i)
+				StatementPattern attributePattern = new StatementPattern(subjectVar, attributePredVar,
+						attributeVar);
+
+				if (inheritanceProp != null) {
+					// create a union expression for this attribute.
+					Union union = new Union();
+					union.addArg(attributePattern);
+
+					// the join for checking if the access attribute is inherited.
+					Join inheritJoin = new Join();
+					Var inheritVar = new Var("acl_inherited_value" + i);
+					// SP (?subject, inheritProp, ?S_i)
+					StatementPattern inheritPattern = new StatementPattern(subjectVar, inheritPredVar, inheritVar);
+					inheritJoin.addArg(inheritPattern);
+					// SP (?S_i, accessAttr_i, ?accessAttrValue_i)
+					StatementPattern inheritAttrPattern = new StatementPattern(inheritVar, attributePredVar,
+							attributeVar);
+					inheritJoin.addArg(inheritAttrPattern);
+
+					union.addArg(inheritJoin);
+
+					joinOfAttributePatterns.addArg(union);
+				}
+				else {
+					// no inheritance: the attribute can be matched with a simple statement pattern
+					joinOfAttributePatterns.addArg(attributePattern);
+				}
 			}
 
 			TupleExpr expandedPattern = null;
 
-			if (attributeJoin.getNumberOfArguments() == 1) {
-				expandedPattern = new LeftJoin(statementPattern, attributeJoin.getArg(0));
+			if (joinOfAttributePatterns.getNumberOfArguments() == 1) {
+				expandedPattern = new LeftJoin(statementPattern, joinOfAttributePatterns.getArg(0));
 			}
 			else {
-				expandedPattern = new LeftJoin(statementPattern, attributeJoin);
+				expandedPattern = new LeftJoin(statementPattern, joinOfAttributePatterns);
 			}
 
 			// build an Or-ed set of filter conditions on the status and team.
@@ -591,6 +643,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			for (Var attributeVar : attributeVars) {
 				and.addArg(new Not(new Bound(attributeVar)));
 			}
+			// TODO remove AND if only one attributeVar?
 			filterConditions.addArg(and);
 
 			if (permissions == null) {
