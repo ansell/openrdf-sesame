@@ -59,7 +59,10 @@ public class AccessControlSailTest extends TestCase {
 	 */
 	private static final String RNA_ANIMALIA = RNA_NS + "8997fddd-9b77-40ef-856e-b83c426dafa0";
 
-	/** Naturalis is a concept on which 'trezorix' has no viewing rights */
+	/** Naturalis is a concept on which 'trezorix' has no viewing rights: it has inherited access
+	 * attributes that give some permissions, but trezorix is not in a role to which those 
+	 * permissions are assigned. 
+	 */
 	private static final String RNA_NATURALIS = RNA_NS + "b132960c-8500-4a88-9358-c8507ac626d5";
 
 	/** Recycle bin is a concept on which 'trezorix' has editing rights */
@@ -182,6 +185,7 @@ public class AccessControlSailTest extends TestCase {
 			TupleQuery query = con.prepareTupleQuery(QueryLanguage.SPARQL, conceptQuery);
 
 			TupleResult tr = query.evaluate();
+			System.out.println(query.toString());
 
 			try {
 				List<String> headers = tr.getBindingNames();
