@@ -36,7 +36,7 @@ ex:assignment1 a acl:PermissionAssignment ;
 ex:permission1 a acl:Permission ;
 	acl:hasOperation acl:view;
 	acl:hasOperation acl:edit;
-	acl:hasMatch [ a acl:ObjectMatch  ;
+	acl:hasMatch [ a acl:SubjectMatch  ;
 	               ex:hasTeam ex:Researcher ;
 		       ex:hasStatus ex:private ] .
 
@@ -47,7 +47,7 @@ ex:assignment2 a acl:PermissionAssignment ;
 ex:permission2 a acl:Permission ;
 	acl:hasOperation acl:view;
 	acl:hasOperation acl:edit;
-	acl:hasMatch [ a acl:ObjectMatch  ;
+	acl:hasMatch [ a acl:SubjectMatch  ;
 	               ex:hasTeam ex:Manager ;
 		       ex:hasStatus ex:private ] .
 
@@ -57,6 +57,6 @@ ex:assignment3 a acl:PermissionAssignment ;
 
 ex:permission3 a acl:Permission ;
 	acl:hasOperation acl:view;
-	acl:hasMatch [ a acl:ObjectMatch  ;
+	acl:hasMatch [ a acl:SubjectMatch  ;
 		       ex:hasStatus ex:public ] .
 

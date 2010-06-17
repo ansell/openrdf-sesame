@@ -25,7 +25,7 @@ rna:accessAttribute a acl:AccessAttribute .
 
 rna:permission1 a acl:Permission ;
     acl:hasOperation acl:view ;
-    acl:hasMatch [ a acl:ObjectMatch ;
+    acl:hasMatch [ a acl:SubjectMatch ;
                    rna:accessAttribute <http://www.rnaproject.org/data/AccessAttribute/1> 
 		   ] .
 
@@ -35,7 +35,7 @@ rna:pa1 a acl:PermissionAssignment ;
 
 rna:permission127 a acl:Permission ;
     acl:hasOperation acl:edit ;
-    acl:hasMatch [ a acl:ObjectMatch ;
+    acl:hasMatch [ a acl:SubjectMatch ;
                    rna:accessAttribute <http://www.rnaproject.org/data/AccessAttribute/127> 
 		   ] .
 

@@ -24,7 +24,7 @@ public class ACL {
 	public static final URI ROLE;
 	public static final URI PERMISSION;
 	public static final URI PERMISSION_ASSIGNMENT;
-	public static final URI OBJECT_MATCH;
+	public static final URI SUBJECT_MATCH;
 	
 	public static final URI HAS_ROLE;
 	public static final URI HAS_PERMISSION;
@@ -54,7 +54,7 @@ public class ACL {
 		ROLE = factory.createURI(NAMESPACE, "Role");
 		PERMISSION = factory.createURI(NAMESPACE, "Permission");
 		PERMISSION_ASSIGNMENT = factory.createURI(NAMESPACE, "PermissionAssignment");
-		OBJECT_MATCH = factory.createURI(NAMESPACE, "ObjectMatch");
+		SUBJECT_MATCH = factory.createURI(NAMESPACE, "SubjectMatch");
 		
 		HAS_ROLE = factory.createURI(NAMESPACE, "hasRole");
 		HAS_PERMISSION = factory.createURI(NAMESPACE, "hasPermission");
