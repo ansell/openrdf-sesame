@@ -1040,18 +1040,18 @@ public class BTree {
 				value = node.removeValueRight(valueIdx);
 			}
 			else {
-				// Replace the matching value with the smallest value from the right
+				// Replace the matching value with the largest value from the left
 				// child node
 				value = node.getValue(valueIdx);
 
-				Node rightChildNode = node.getChildNode(valueIdx + 1);
-				byte[] smallestValue = removeSmallestValueFromTree(rightChildNode);
+				Node leftChildNode = node.getChildNode(valueIdx);
+				byte[] largestValue = removeLargestValueFromTree(leftChildNode);
 
-				node.setValue(valueIdx, smallestValue);
+				node.setValue(valueIdx, largestValue);
 
-				balanceChildNode(node, rightChildNode, valueIdx + 1);
+				balanceChildNode(node, leftChildNode, valueIdx);
 
-				rightChildNode.release();
+				leftChildNode.release();
 			}
 		}
 		else if (!node.isLeaf()) {
@@ -1069,7 +1069,7 @@ public class BTree {
 	}
 
 	/**
-	 * Removes the smallest value from the tree starting at the specified node
+	 * Removes the largest value from the tree starting at the specified node
 	 * and returns the removed value.
 	 * 
 	 * @param node
@@ -1080,20 +1080,22 @@ public class BTree {
 	 * @throws IllegalArgumentException
 	 *         If the supplied node is an empty leaf node
 	 */
-	private byte[] removeSmallestValueFromTree(Node node)
+	private byte[] removeLargestValueFromTree(Node node)
 		throws IOException
 	{
+		int nodeValueCount = node.getValueCount();
+		
 		if (node.isLeaf()) {
 			if (node.isEmpty()) {
-				throw new IllegalArgumentException("Trying to remove smallest value from an empty node");
+				throw new IllegalArgumentException("Trying to remove largest value from an empty node");
 			}
-			return node.removeValueLeft(0);
+			return node.removeValueRight(nodeValueCount - 1);
 		}
 		else {
-			// Recurse into left-most child node
-			Node childNode = node.getChildNode(0);
-			byte[] value = removeSmallestValueFromTree(childNode);
-			balanceChildNode(node, childNode, 0);
+			// Recurse into right-most child node
+			Node childNode = node.getChildNode(nodeValueCount);
+			byte[] value = removeLargestValueFromTree(childNode);
+			balanceChildNode(node, childNode, nodeValueCount);
 			childNode.release();
 			return value;
 		}
