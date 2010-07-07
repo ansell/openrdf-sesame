@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -24,6 +27,7 @@ import info.aduna.io.GZipUtil;
 import info.aduna.io.ZipUtil;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
+import info.aduna.net.http.RequestHeaders;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
@@ -47,6 +51,7 @@ import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
 
@@ -213,11 +218,40 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		if (baseURI == null) {
 			baseURI = url.toExternalForm();
 		}
-		if (dataFormat == null) {
-			dataFormat = Rio.getParserFormatForFileName(url.getPath());
+
+		URLConnection con = url.openConnection();
+
+		// Set appropriate Accept headers
+		if (dataFormat != null) {
+			for (String mimeType : dataFormat.getMIMETypes()) {
+				con.addRequestProperty(RequestHeaders.ACCEPT, mimeType);
+			}
+		}
+		else {
+			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
+			List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, true, null);
+			for (String acceptParam : acceptParams) {
+				con.addRequestProperty(RequestHeaders.ACCEPT, acceptParam);
+			}
 		}
 
-		InputStream in = url.openStream();
+		InputStream in = con.getInputStream();
+
+		if (dataFormat == null) {
+			// Try to determine the data's MIME type
+			String mimeType = con.getContentType();
+			int semiColonIdx = mimeType.indexOf(';');
+			if (semiColonIdx >= 0) {
+				mimeType = mimeType.substring(0, semiColonIdx);
+			}
+			dataFormat = Rio.getParserFormatForMIMEType(mimeType);
+	
+			// Fall back to using file name extensions
+			if (dataFormat == null) {
+				dataFormat = Rio.getParserFormatForFileName(url.getPath());
+			}
+		}
+
 		try {
 			add(in, baseURI, dataFormat, contexts);
 		}
