@@ -95,7 +95,7 @@ public class DatasetRepository extends RepositoryWrapper {
 
 		// Fall back to using file name extensions
 		if (format == null) {
-			format = RDFParserRegistry.getInstance().getFileFormatForFileName(url.getFile());
+			format = RDFParserRegistry.getInstance().getFileFormatForFileName(url.getPath());
 		}
 
 		InputStream stream = urlCon.getInputStream();
