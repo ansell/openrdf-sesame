@@ -1004,35 +1004,9 @@ public class HTTPClient {
 			throw new RepositoryException("No tuple RDF parsers have been registered");
 		}
 
-		for (RDFFormat format : rdfFormats) {
-			// Determine a q-value that reflects the necessity of context
-			// support and the user specified preference
-			int qValue = 10;
-
-			if (requireContext && !format.supportsContexts()) {
-				// Prefer context-supporting formats over pure triple-formats
-				qValue -= 5;
-			}
-
-			if (preferredRDFFormat != null && !preferredRDFFormat.equals(format)) {
-				// Prefer specified format over other formats
-				qValue -= 2;
-			}
-
-			if (!format.supportsNamespaces()) {
-				// We like reusing namespace prefixes
-				qValue -= 1;
-			}
-
-			for (String mimeType : format.getMIMETypes()) {
-				String acceptParam = mimeType;
-
-				if (qValue < 10) {
-					acceptParam += ";q=0." + qValue;
-				}
-
-				method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
-			}
+		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext, preferredRDFFormat);
+		for (String acceptParam : acceptParams) {
+			method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
 		}
 
 		int httpCode = httpClient.executeMethod(method);

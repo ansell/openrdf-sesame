@@ -208,6 +208,45 @@ public class RDFFormat extends FileFormat {
 		return null;
 	}
 
+	public static List<String> getAcceptParams(Iterable<RDFFormat> rdfFormats, boolean requireContext,
+			RDFFormat preferredFormat)
+	{
+		List<String> acceptParams = new ArrayList<String>();
+
+		for (RDFFormat format : rdfFormats) {
+			// Determine a q-value that reflects the necessity of context
+			// support and the user specified preference
+			int qValue = 10;
+
+			if (requireContext && !format.supportsContexts()) {
+				// Prefer context-supporting formats over pure triple-formats
+				qValue -= 5;
+			}
+
+			if (preferredFormat != null && !preferredFormat.equals(format)) {
+				// Prefer specified format over other formats
+				qValue -= 2;
+			}
+
+			if (!format.supportsNamespaces()) {
+				// We like reusing namespace prefixes
+				qValue -= 1;
+			}
+
+			for (String mimeType : format.getMIMETypes()) {
+				String acceptParam = mimeType;
+
+				if (qValue < 10) {
+					acceptParam += ";q=0." + qValue;
+				}
+
+				acceptParams.add(acceptParam);
+			}
+		}
+
+		return acceptParams;
+	}
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
