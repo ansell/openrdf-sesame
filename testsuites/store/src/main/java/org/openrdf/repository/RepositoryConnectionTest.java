@@ -1502,6 +1502,21 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(list.contains(p2));
 	}
 
+	public void testSES713()
+		throws Exception
+	{
+		String queryString = "SELECT * { ?sub ?pred ?obj . FILTER ( 'not a number' + 1 = ?obj )}";
+
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+		TupleQueryResult tqr = query.evaluate();
+		try {
+			assertFalse("Query should not return any results", tqr.hasNext());
+		}
+		finally {
+			tqr.close();
+		}
+	}
+
 	private int getTotalStatementCount(RepositoryConnection connection)
 		throws RepositoryException
 	{
