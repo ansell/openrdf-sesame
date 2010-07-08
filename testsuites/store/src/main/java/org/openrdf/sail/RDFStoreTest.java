@@ -374,6 +374,15 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals("createURI(Sring) and createURI(String, String) should create equal URIs", 1, con.size());
 	}
 
+	public void testInvalidDateTime()
+		throws Exception
+	{
+		// SES-711
+		Literal date1 = vf.createLiteral("2004-12-20", XMLSchema.DATETIME);
+		Literal date2 = vf.createLiteral("2004-12-20", XMLSchema.DATETIME);
+		assertEquals(date1, date2);
+	}
+
 	public void testSize()
 		throws Exception
 	{

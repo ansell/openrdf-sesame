@@ -316,7 +316,7 @@ public class MemValueFactory extends ValueFactoryBase {
 						memLiteral = new BooleanMemLiteral(this, label, literal.booleanValue());
 					}
 					else if (datatype.equals(XMLSchema.DATETIME)) {
-						memLiteral = new CalendarMemLiteral(this, label, literal.calendarValue());
+						memLiteral = new CalendarMemLiteral(this, label, datatype, literal.calendarValue());
 					}
 					else {
 						memLiteral = new MemLiteral(this, label, datatype);
