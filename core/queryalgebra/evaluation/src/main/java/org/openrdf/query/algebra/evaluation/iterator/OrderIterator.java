@@ -151,7 +151,7 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 	protected void handleClose()
 		throws QueryEvaluationException
 	{
-		super.handleClose();
 		iter.close();
+		super.handleClose();
 	}
 }
