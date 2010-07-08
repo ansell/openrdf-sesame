@@ -45,10 +45,12 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
@@ -1514,6 +1516,35 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 		finally {
 			tqr.close();
+		}
+	}
+
+	public void testOrderByQueriesAreInterruptable()
+		throws Exception
+	{
+		testCon.setAutoCommit(false);
+		for (int index = 0; index < 35; index++) {
+			testCon.add(RDFS.CLASS, RDFS.COMMENT, testCon.getValueFactory().createBNode());
+		}
+		testCon.setAutoCommit(true);
+
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL,
+				"SELECT * WHERE { ?s ?p ?o . ?s1 ?p1 ?o1 . ?s2 ?p2 ?o2 . ?s3 ?p3 ?o3 } ORDER BY ?s1 ?p1 ?o1");
+		query.setMaxQueryTime(5);
+
+		long startTime = System.currentTimeMillis();
+
+		TupleQueryResult result = query.evaluate();
+		try {
+			result.hasNext();
+			fail("Query should have been interrupted");
+		}
+		catch (QueryInterruptedException e) {
+			// Expected
+			long duration = System.currentTimeMillis() - startTime;
+
+			assertTrue("Query not interrupted quickly enough, should have been ~5s, but was " + (duration / 1000)
+					+ "s", duration < 10000);
 		}
 	}
 
