@@ -1097,18 +1097,16 @@ public class Console {
 				contexts = new Resource[] { contextURI };
 			}
 
-			RDFFormat format = Rio.getParserFormatForFileName(dataPath, RDFFormat.RDFXML);
-
 			writeln("Loading data...");
 			long startTime = System.nanoTime();
 
 			RepositoryConnection con = repository.getConnection();
 			try {
 				if (dataURL != null) {
-					con.add(dataURL, baseURI, format, contexts);
+					con.add(dataURL, baseURI, null, contexts);
 				}
 				else {
-					con.add(dataFile, baseURI, format, contexts);
+					con.add(dataFile, baseURI, null, contexts);
 				}
 			}
 			finally {
