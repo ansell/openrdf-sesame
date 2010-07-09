@@ -7,6 +7,7 @@ package org.openrdf.sail.memory;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 import org.openrdf.sail.InferencingTest;
 import org.openrdf.sail.Sail;
@@ -19,6 +20,8 @@ public class MemInferencingTest extends TestCase {
 		throws SailException
 	{
 		Sail sailStack = new ForwardChainingRDFSInferencer(new MemoryStore());
-		return InferencingTest.suite(sailStack, MemInferencingTest.class.getName());
+		TestSuite suite = new TestSuite(MemInferencingTest.class.getName());
+		InferencingTest.addTests(suite, sailStack);
+		return suite;
 	}
 }

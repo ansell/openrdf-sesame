@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -20,13 +20,14 @@ import java.util.jar.JarFile;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.io.IOUtil;
 import info.aduna.io.FileUtil;
+import info.aduna.io.IOUtil;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
@@ -47,52 +48,9 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 
 	private static final boolean REMOTE = false;
 
-	private static final String HOST, MANIFEST_FILE;
-
 	private static final String SUBMANIFEST_QUERY, TESTCASE_QUERY;
 
 	static {
-		// manifest of W3C Data Access Working Group SPARQL syntax tests
-		if (REMOTE) {
-			HOST = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/";
-		}
-		else {
-			URL url = SPARQLSyntaxTest.class.getResource("/testcases-dawg/data-r2/");
-			if ("jar".equals(url.getProtocol())) {
-				try {
-					File destDir = FileUtil.createTempDir("sparql");
-					JarURLConnection con = (JarURLConnection)url.openConnection();
-					JarFile jar = con.getJarFile();
-					Enumeration<JarEntry> entries = jar.entries();
-					while (entries.hasMoreElements()) {
-						JarEntry file = entries.nextElement();
-						File f = new File(destDir + File.separator + file.getName());
-						if (file.isDirectory()) {
-							f.mkdir();
-							continue;
-						}
-						InputStream is = jar.getInputStream(file);
-						FileOutputStream fos = new FileOutputStream(f);
-						while (is.available() > 0) {
-							fos.write(is.read());
-						}
-						fos.close();
-						is.close();
-					}
-					File localFile = new File(destDir, con.getEntryName());
-					destDir.deleteOnExit();
-					HOST = localFile.toURI().toURL().toString();
-				}
-				catch (IOException e) {
-					throw new AssertionError(e);
-				}
-			} else {
-				HOST = url.toString();
-			}
-		}
-
-		MANIFEST_FILE = HOST + "manifest-syntax.ttl";
-
 		StringBuilder sb = new StringBuilder(512);
 
 		sb.append("SELECT subManifest ");
@@ -118,11 +76,11 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 	 * Variables *
 	 *-----------*/
 
-	protected String testURI;
+	protected final String testURI;
 
-	protected String queryFileURL;
+	protected final String queryFileURL;
 
-	protected boolean positiveTest;
+	protected final boolean positiveTest;
 
 	/*--------------*
 	 * Constructors *
@@ -163,7 +121,7 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 	}
 
 	protected abstract void parseQuery(String query, String queryFileURL)
-			throws MalformedQueryException;
+		throws MalformedQueryException;
 
 	public static Test suite()
 		throws Exception
@@ -172,13 +130,77 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 	}
 
 	public interface Factory {
-		SPARQLSyntaxTest createSPARQLSyntaxTest(String testURI, String testName, String testAction, boolean positiveTest);
+
+		SPARQLSyntaxTest createSPARQLSyntaxTest(String testURI, String testName, String testAction,
+				boolean positiveTest);
 	}
 
 	public static Test suite(Factory factory)
 		throws Exception
 	{
-		TestSuite suite = new TestSuite();
+		// manifest of W3C Data Access Working Group SPARQL syntax tests
+		final File tmpDir;
+		String host;
+		if (REMOTE) {
+			host = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/";
+			tmpDir = null;
+		}
+		else {
+			URL url = SPARQLSyntaxTest.class.getResource("/testcases-dawg/data-r2/");
+			if ("jar".equals(url.getProtocol())) {
+				try {
+					tmpDir = FileUtil.createTempDir("sparql");
+					JarURLConnection con = (JarURLConnection)url.openConnection();
+					JarFile jar = con.getJarFile();
+					Enumeration<JarEntry> entries = jar.entries();
+					while (entries.hasMoreElements()) {
+						JarEntry file = entries.nextElement();
+						File f = new File(tmpDir + File.separator + file.getName());
+						if (file.isDirectory()) {
+							f.mkdir();
+							continue;
+						}
+						InputStream is = jar.getInputStream(file);
+						FileOutputStream fos = new FileOutputStream(f);
+						while (is.available() > 0) {
+							fos.write(is.read());
+						}
+						fos.close();
+						is.close();
+					}
+					File localFile = new File(tmpDir, con.getEntryName());
+					host = localFile.toURI().toURL().toString();
+				}
+				catch (IOException e) {
+					throw new AssertionError(e);
+				}
+			}
+			else {
+				host = url.toString();
+				tmpDir = null;
+			}
+		}
+
+		String manifestFile = host + "manifest-syntax.ttl";
+
+		TestSuite suite = new TestSuite() {
+
+			@Override
+			public void run(TestResult result) {
+				try {
+					super.run(result);
+				}
+				finally {
+					if (tmpDir != null) {
+						try {
+							FileUtil.deleteDir(tmpDir);
+						}
+						catch (IOException e) {
+						}
+					}
+				}
+			}
+		};
 
 		// Read manifest and create declared test cases
 		Repository manifestRep = new SailRepository(new MemoryStore());
@@ -187,8 +209,8 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 		RepositoryConnection con = manifestRep.getConnection();
 
 		logger.debug("Loading manifest data");
-		URL manifest = new URL(MANIFEST_FILE);
-		ManifestTest.addTurtle(con, manifest, MANIFEST_FILE);
+		URL manifest = new URL(manifestFile);
+		ManifestTest.addTurtle(con, manifest, manifestFile);
 
 		logger.info("Searching for sub-manifests");
 		List<String> subManifestList = new ArrayList<String>();
@@ -209,7 +231,7 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 			URL subManifestURL = new URL(subManifest);
 			ManifestTest.addTurtle(con, subManifestURL, subManifest);
 
-			TestSuite subSuite = new TestSuite(subManifest.substring(HOST.length()));
+			TestSuite subSuite = new TestSuite(subManifest.substring(host.length()));
 
 			logger.info("Creating test cases for {}", subManifest);
 			TupleQueryResult tests = con.prepareTupleQuery(QueryLanguage.SERQL, TESTCASE_QUERY).evaluate();
@@ -232,7 +254,7 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 		con.close();
 		manifestRep.shutDown();
 
-		logger.info("Created test suite containing " + suite.countTestCases() + " test cases");
+		logger.info("Added {} tests to suite ", suite.countTestCases());
 		return suite;
 	}
 }

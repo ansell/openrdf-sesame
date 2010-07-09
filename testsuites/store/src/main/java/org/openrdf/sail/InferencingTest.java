@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashSet;
 
-import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -57,11 +56,11 @@ public class InferencingTest extends TestCase {
 
 	/**
 	 * Creates a new inferencing test. This test can either be positive or
-	 * negative. For positive tests, all triples from <tt>outputData</tt>
-	 * should be present in the triples returned by the supplied
-	 * RdfSchemaRepository after the triples from <tt>intputData</tt> have been
-	 * added to it. For negative tests, none of the triples from
-	 * <tt>outputData</tt> should be present in the returned triples.
+	 * negative. For positive tests, all triples from <tt>outputData</tt> should
+	 * be present in the triples returned by the supplied RdfSchemaRepository
+	 * after the triples from <tt>intputData</tt> have been added to it. For
+	 * negative tests, none of the triples from <tt>outputData</tt> should be
+	 * present in the returned triples.
 	 * 
 	 * @param name
 	 *        The name of the test.
@@ -72,12 +71,12 @@ public class InferencingTest extends TestCase {
 	 *        be added to the RdfSchemaRepository.
 	 * @param outputData
 	 *        The URL of the (N-Triples) data containing the triples that should
-	 *        or should not (depending on the value of <tt>isPositiveTest</tt>
-	 *        be present in the statements returned by the RdfSchemaRepository.
+	 *        or should not (depending on the value of <tt>isPositiveTest</tt> be
+	 *        present in the statements returned by the RdfSchemaRepository.
 	 * @param isPositiveTest
 	 *        Flag indicating whether this is a positive or a negative
-	 *        inferencing test; <tt>true</tt> for a positive test,
-	 *        <tt>false</tt> for a negative test.
+	 *        inferencing test; <tt>true</tt> for a positive test, <tt>false</tt>
+	 *        for a negative test.
 	 */
 	public InferencingTest(String name, Sail sailStack, String inputData, String outputData,
 			boolean isPositiveTest)
@@ -191,9 +190,7 @@ public class InferencingTest extends TestCase {
 	 * Static methods *
 	 *----------------*/
 
-	public static Test suite(Sail sailStack, String name) {
-		TestSuite suite = new TestSuite(name);
-
+	public static void addTests(TestSuite suite, Sail sailStack) {
 		suite.addTest(createTestCase(sailStack, "subclassof", "test001", true));
 		suite.addTest(createTestCase(sailStack, "subclassof", "test002", true));
 		suite.addTest(createTestCase(sailStack, "subclassof", "test003", true));
@@ -213,8 +210,6 @@ public class InferencingTest extends TestCase {
 		suite.addTest(createTestCase(sailStack, "type", "test005", true));
 		suite.addTest(createTestCase(sailStack, "type", "error001", false));
 		suite.addTest(createTestCase(sailStack, "type", "error002", false));
-
-		return suite;
 	}
 
 	private static TestCase createTestCase(Sail sailStack, String subdir, String testName,

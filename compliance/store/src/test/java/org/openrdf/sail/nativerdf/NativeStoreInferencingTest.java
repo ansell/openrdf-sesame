@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -10,6 +10,8 @@ import java.io.IOException;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
 
 import info.aduna.io.FileUtil;
 
@@ -20,26 +22,31 @@ import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 
 public class NativeStoreInferencingTest extends TestCase {
 
-	private static File dataDir;
-
 	public static Test suite()
 		throws SailException, IOException
 	{
-		dataDir = FileUtil.createTempDir("nativestore");
+		final File dataDir = FileUtil.createTempDir("nativestore");
 		NotifyingSail sailStack = new NativeStore(dataDir, "spoc,posc");
 		sailStack = new ForwardChainingRDFSInferencer(sailStack);
-		return InferencingTest.suite(sailStack, NativeStoreInferencingTest.class.getName());
-	}
 
-	@Override
-	protected void finalize()
-		throws Throwable
-	{
-		if (dataDir != null) {
-			FileUtil.deleteDir(dataDir);
-			dataDir = null;
-		}
+		TestSuite suite = new TestSuite(NativeStoreInferencingTest.class.getName()) {
 
-		super.finalize();
+			@Override
+			public void run(TestResult result) {
+				try {
+					super.run(result);
+				}
+				finally {
+					try {
+						FileUtil.deleteDir(dataDir);
+					}
+					catch (IOException e) {
+					}
+				}
+			}
+		};
+
+		InferencingTest.addTests(suite, sailStack);
+		return suite;
 	}
 }
