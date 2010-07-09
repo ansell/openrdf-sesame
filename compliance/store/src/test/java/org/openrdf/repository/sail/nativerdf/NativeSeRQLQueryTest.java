@@ -53,16 +53,4 @@ public class NativeSeRQLQueryTest extends SeRQLQueryTestCase {
 		dataDir = FileUtil.createTempDir("nativestore");
 		return new NativeStore(dataDir, "spoc");
 	}
-
-	@Override
-	protected void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
-	}
 }
