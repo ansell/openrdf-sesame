@@ -5,6 +5,7 @@
  */
 package org.openrdf.query.parser.serql;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,6 +25,7 @@ import junit.framework.TestSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.io.FileUtil;
 import info.aduna.io.IOUtil;
 import info.aduna.iteration.Iterations;
 
@@ -121,6 +123,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 		dataCon.close();
 		dataRep.shutDown();
+		discardRepository(dataRep);
 
 		// Create a repository with the expected result data
 		Repository expectedResultRep = new SailRepository(newSail());
@@ -135,6 +138,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 		erCon.close();
 		expectedResultRep.shutDown();
+		discardRepository(expectedResultRep);
 
 		// Compare query result to expected data
 		if (!ModelUtil.equals(actualStatements, expectedStatements)) {
@@ -229,6 +233,16 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 	protected abstract NotifyingSail newSail() throws Exception;
 
+	protected void discardRepository(Repository rep) {
+		File dataDir = rep.getDataDir();
+		if (dataDir != null && dataDir.isDirectory()) {
+			try {
+				FileUtil.deleteDir(dataDir);
+			}
+			catch (IOException e) {
+			}
+		}
+	}
 	private String readQuery()
 		throws IOException
 	{
