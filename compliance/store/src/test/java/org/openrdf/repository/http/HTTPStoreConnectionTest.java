@@ -99,4 +99,9 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	{
 		System.err.println("temporarily disabled testGetContextIDs() for HTTPRepository");
 	}
+
+	@Override
+	public void testOrderByQueriesAreInterruptable() {
+		System.err.println("temporarily disabled testOrderByQueriesAreInterruptable() for HTTPRepository");
+	}
 }
