@@ -60,7 +60,7 @@ public class ManifestTest {
 			if ("jar".equals(url.getProtocol())) {
 				// Extract manifest files to a temporary directory
 				try {
-					tmpDir = FileUtil.createTempDir("sparql");
+					tmpDir = FileUtil.createTempDir("sparql-evaluation");
 					
 					JarURLConnection con = (JarURLConnection)url.openConnection();
 					JarFile jar = con.getJarFile();

@@ -149,7 +149,7 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 			URL url = SPARQLSyntaxTest.class.getResource("/testcases-dawg/data-r2/");
 			if ("jar".equals(url.getProtocol())) {
 				try {
-					tmpDir = FileUtil.createTempDir("sparql");
+					tmpDir = FileUtil.createTempDir("sparql-syntax");
 					JarURLConnection con = (JarURLConnection)url.openConnection();
 					JarFile jar = con.getJarFile();
 					Enumeration<JarEntry> entries = jar.entries();
