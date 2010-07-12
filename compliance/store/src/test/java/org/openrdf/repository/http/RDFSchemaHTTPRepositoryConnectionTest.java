@@ -113,4 +113,9 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 	{
 		System.err.println("temporarily disabled testInferencerTransactionIsolation() for HTTPRepository");
 	}
+
+	@Override
+	public void testOrderByQueriesAreInterruptable() {
+		System.err.println("temporarily disabled testOrderByQueriesAreInterruptable() for HTTPRepository");
+	}
 }
