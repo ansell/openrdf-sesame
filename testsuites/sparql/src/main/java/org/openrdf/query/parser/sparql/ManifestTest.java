@@ -93,6 +93,7 @@ public class ManifestTest {
 							FileUtil.deleteDir(tmpDir);
 						}
 						catch (IOException e) {
+							System.err.println("Unable to clean up temporary directory '" + tmpDir + "': " + e.getMessage());
 						}
 					}
 				}

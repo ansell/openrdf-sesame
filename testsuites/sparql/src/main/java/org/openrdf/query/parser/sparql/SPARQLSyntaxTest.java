@@ -196,6 +196,7 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 							FileUtil.deleteDir(tmpDir);
 						}
 						catch (IOException e) {
+							System.err.println("Unable to clean up temporary directory '" + tmpDir + "': " + e.getMessage());
 						}
 					}
 				}
