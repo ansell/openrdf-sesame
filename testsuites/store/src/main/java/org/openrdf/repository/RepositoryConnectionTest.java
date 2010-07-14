@@ -1530,11 +1530,11 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL,
 				"SELECT * WHERE { ?s ?p ?o . ?s1 ?p1 ?o1 . ?s2 ?p2 ?o2 . ?s3 ?p3 ?o3 } ORDER BY ?s1 ?p1 ?o1");
-		query.setMaxQueryTime(5);
+		query.setMaxQueryTime(2);
 
-		long startTime = System.currentTimeMillis();
 
 		TupleQueryResult result = query.evaluate();
+		long startTime = System.currentTimeMillis();
 		try {
 			result.hasNext();
 			fail("Query should have been interrupted");
@@ -1543,8 +1543,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			// Expected
 			long duration = System.currentTimeMillis() - startTime;
 
-			assertTrue("Query not interrupted quickly enough, should have been ~5s, but was " + (duration / 1000)
-					+ "s", duration < 10000);
+			assertTrue("Query not interrupted quickly enough, should have been ~2s, but was " + (duration / 1000)
+					+ "s", duration < 5000);
 		}
 	}
 
