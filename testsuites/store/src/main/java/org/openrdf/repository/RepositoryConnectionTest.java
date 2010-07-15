@@ -1523,15 +1523,14 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		throws Exception
 	{
 		testCon.setAutoCommit(false);
-		for (int index = 0; index < 35; index++) {
+		for (int index = 0; index < 512; index++) {
 			testCon.add(RDFS.CLASS, RDFS.COMMENT, testCon.getValueFactory().createBNode());
 		}
 		testCon.setAutoCommit(true);
 
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL,
-				"SELECT * WHERE { ?s ?p ?o . ?s1 ?p1 ?o1 . ?s2 ?p2 ?o2 . ?s3 ?p3 ?o3 } ORDER BY ?s1 ?p1 ?o1");
+				"SELECT * WHERE { ?s ?p ?o . ?s1 ?p1 ?o1 . ?s2 ?p2 ?o2 . ?s3 ?p3 ?o3 } ORDER BY ?s1 ?p1 ?o1 LIMIT 1000");
 		query.setMaxQueryTime(2);
-
 
 		TupleQueryResult result = query.evaluate();
 		long startTime = System.currentTimeMillis();
