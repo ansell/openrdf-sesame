@@ -70,7 +70,7 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.2/core/sail/memory</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.2/core/sail/memory</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.3.2/core/sail/memory?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/sail/memory/</url>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.3.2/core/sail/memory/</url>
 	</scm>
 
 </project>

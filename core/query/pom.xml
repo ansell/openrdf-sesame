@@ -38,7 +38,7 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.2/core/query</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.2/core/query</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.3.2/core/query?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/query/</url>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.3.2/core/query/</url>
 	</scm>
 
 </project>

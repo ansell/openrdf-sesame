@@ -36,7 +36,7 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.2/core/rio/rdfxml</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.2/core/rio/rdfxml</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.3.2/core/rio/rdfxml?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/rio/rdfxml/</url>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.3.2/core/rio/rdfxml/</url>
 	</scm>
 
 </project>
