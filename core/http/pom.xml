@@ -23,7 +23,7 @@
 	</modules>
 
 	<properties>
-		<restlet.version>2.0-RC2</restlet.version>
+		<restlet.version>2.0-RC4</restlet.version>
 	</properties>
 
 	<repositories>
