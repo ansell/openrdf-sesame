@@ -8,15 +8,13 @@ package org.openrdf.sail.accesscontrol;
 import java.io.File;
 import java.util.List;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import com.ontotext.trree.owlim_ext.SailImpl;
 
 import info.aduna.io.FileUtil;
 
-import org.openrdf.cursor.Cursor;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDFS;
@@ -26,11 +24,9 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.result.ModelResult;
 import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.Sail;
-import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.accesscontrol.vocabulary.ACL;
 import org.openrdf.store.Session;
 import org.openrdf.store.SessionManager;
@@ -42,9 +38,9 @@ import org.openrdf.store.StoreException;
  */
 public class AccessControlSailTest extends TestCase {
 
-	private static final String dataFile = "/accesscontrol/trezorix-data.trig";
+	private static final String dataFile = "/accesscontrol/t.trig";
 
-	private static final String policyFile = "/accesscontrol/policies-trezorix.ttl";
+	private static final String policyFile = "/accesscontrol/p.ttl";
 
 	private static final String RNA_NS = "http://www.rnaproject.org/data/";
 
@@ -59,14 +55,18 @@ public class AccessControlSailTest extends TestCase {
 	 */
 	private static final String RNA_ANIMALIA = RNA_NS + "8997fddd-9b77-40ef-856e-b83c426dafa0";
 
-	/** Naturalis is a concept on which 'trezorix' has no viewing rights: it has inherited access
-	 * attributes that give some permissions, but trezorix is not in a role to which those 
-	 * permissions are assigned. 
+	/**
+	 * Naturalis is a concept on which 'trezorix' has no viewing rights: it has
+	 * inherited access attributes that give some permissions, but trezorix is
+	 * not in a role to which those permissions are assigned.
 	 */
 	private static final String RNA_NATURALIS = RNA_NS + "b132960c-8500-4a88-9358-c8507ac626d5";
 
 	/** Recycle bin is a concept on which 'trezorix' has editing rights */
 	private static final String RNA_RECYCLE = RNA_NS + "5ebcb863-69ff-4be0-b05f-eb9645d4fdf2";
+
+	/** Chordata is a concept on which Trezorix has recently reported a bug */
+	private static final String RNA_CHORDATA = RNA_NS + "3349da6b-4ee6-4a0b-a4c4-970c3a585d19";
 
 	private Repository repository;
 
@@ -171,6 +171,44 @@ public class AccessControlSailTest extends TestCase {
 		rnaRepository.getConnection().export(writer);
 	}
 	*/
+
+	public void testChordataPermissions()
+		throws Exception
+	{
+		RepositoryConnection conn = repository.getConnection();
+		try {
+			String chordataQuery = "SELECT DISTINCT * WHERE {<" + RNA_CHORDATA + "> ?P ?Y . } ";
+
+			// first test: execute the query while not logged in. We should not get
+			// a result back as we do not have viewing permission on the item.
+			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, chordataQuery);
+
+			TupleResult tr = query.evaluate();
+
+			if (tr.hasNext()) {
+				Assert.fail("query result should be empty: item is protected and current user has no viewing permission");
+			}
+			tr.close();
+
+			Session session = SessionManager.getOrCreate();
+			session.setUsername("trezorix");
+
+			// second test: execute while logged in. We should get a result back
+			// this time, as we have viewing permission by inheritance.
+			query = conn.prepareTupleQuery(QueryLanguage.SPARQL, chordataQuery);
+
+			tr = query.evaluate();
+
+			if (!tr.hasNext()) {
+				Assert.fail("query result should not be empty: current user has viewing permission by inheritance");
+			}
+			tr.close();
+
+		}
+		finally {
+			conn.close();
+		}
+	}
 
 	public void testQuery1()
 		throws Exception
