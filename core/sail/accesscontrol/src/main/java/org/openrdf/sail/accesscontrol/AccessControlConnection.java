@@ -48,9 +48,11 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 	private URI _inheritanceProperty;
 
-	private List<URI> _accessAttributes;
+	private String _cachedUsername = null;
 
-	private URI _currentUser;
+	private URI _cachedUser = null;
+
+	private List<URI> _accessAttributes;
 
 	/**
 	 * @param delegate
@@ -148,9 +150,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	{
 
 		// flush locally stored acl info
-		_currentUser = null;
 		_inheritanceProperty = null;
 		_accessAttributes = null;
+		_cachedUser = null;
+		_cachedUsername = null;
 
 		super.close();
 	}
@@ -375,42 +378,46 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	private URI getCurrentUser()
 		throws StoreException
 	{
-		if (_currentUser == null) {
-			setCurrentUser();
-		}
-		return _currentUser;
-	}
+		Session session = SessionManager.get();
+		if (session != null) {
+			String username = session.getUsername();
 
-	private void setCurrentUser()
-		throws StoreException
-	{
-		if (_currentUser == null) {
-			Session session = SessionManager.get();
-			if (session != null) {
-				String username = session.getUsername();
+			if (username == null) {
+				_cachedUser = null;
+				_cachedUsername = null;
+				return null;
+			}
+			
+			if (username.equals(_cachedUsername)) {
+				// it's still the same user associated with this thread.
+				return _cachedUser;
+			}
+			else {
+				// a different user has been associated with the thread.
+				_cachedUsername = username;
+				_cachedUser = null;
+			}
 
-				if (username == null) {
-					return;
-				}
-
-				// backdoor for administrator user.
-				if (username.equals("administrator")) {
-					_currentUser = ACL.ADMIN;
-					return;
-				}
-
+			// backdoor for administrator user.
+			if (username.equals("administrator")) {
+				_cachedUser = ACL.ADMIN;
+			}
+			else {
 				Literal usernameLiteral = this.getValueFactory().createLiteral(username, XMLSchema.STRING);
 				Cursor<? extends Statement> statements = getStatements(null, ACL.USERNAME, usernameLiteral, true,
 						ACL.CONTEXT);
 
 				Statement st;
 				if ((st = statements.next()) != null) {
-					_currentUser = (URI)st.getSubject();
+					_cachedUser = (URI)st.getSubject();
 				}
 				statements.close();
 			}
+			return _cachedUser;
 		}
+		return null;
 	}
+	
 
 	/***
 	 * Retrieve all instances of acl:AccessAttribute from the ACL context.
@@ -571,14 +578,14 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			 *  )
 			 */
 			List<URI> attributes = getAccessAttributes();
-	
+
 			if (attributes == null || attributes.size() == 0) {
 				return;
 			}
 
-			// join of the attribute match expressions. 
+			// join of the attribute match expressions.
 			Join joinOfAttributePatterns = new Join();
-			
+
 			URI inheritanceProp = getInheritanceProperty();
 			Var inheritPredVar = new Var("acl_inherit_pred", inheritanceProp);
 
@@ -617,7 +624,8 @@ public class AccessControlConnection extends SailConnectionWrapper {
 					joinOfAttributePatterns.addArg(union);
 				}
 				else {
-					// no inheritance: the attribute can be matched with a simple statement pattern
+					// no inheritance: the attribute can be matched with a simple
+					// statement pattern
 					joinOfAttributePatterns.addArg(attributePattern);
 				}
 			}
@@ -643,7 +651,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			for (Var attributeVar : attributeVars) {
 				and.addArg(new Not(new Bound(attributeVar)));
 			}
-			
+
 			if (and.getArgs().size() == 1) {
 				filterConditions.addArg(and.getArg(0));
 			}
