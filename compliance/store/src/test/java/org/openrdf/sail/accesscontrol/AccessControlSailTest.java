@@ -210,6 +210,51 @@ public class AccessControlSailTest extends TestCase {
 		}
 	}
 
+	public void testConsecutiveLogins()
+	throws Exception 
+	{
+		RepositoryConnection conn = repository.getConnection();
+
+		try {
+			Session session = SessionManager.getOrCreate();
+			session.setUsername("trezorix");
+
+			String chordataQuery = "SELECT DISTINCT * WHERE {<" + RNA_CHORDATA + "> ?P ?Y . } ";
+
+			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, chordataQuery);
+
+			TupleResult tr = query.evaluate();
+
+			if (!tr.hasNext()) {
+				Assert.fail("query result should not be empty: current user has viewing permission by inheritance");
+			}
+			tr.close();
+
+			session.setUsername(null);
+			
+			query = conn.prepareTupleQuery(QueryLanguage.SPARQL, chordataQuery);
+			tr = query.evaluate();
+			if (tr.hasNext()) {
+				Assert.fail("query result should  be empty: not logged in.");
+			}
+			tr.close();
+			
+			session.setUsername("trezorix");
+			
+			query = conn.prepareTupleQuery(QueryLanguage.SPARQL, chordataQuery);
+			tr = query.evaluate();
+			if (!tr.hasNext()) {
+				Assert.fail("query result should not be empty: current user has viewing permission by inheritance");
+			}
+			tr.close();
+			
+			SessionManager.remove();
+		}
+		finally {
+			conn.close();
+		}
+	}
+	
 	public void testQuery1()
 		throws Exception
 	{
