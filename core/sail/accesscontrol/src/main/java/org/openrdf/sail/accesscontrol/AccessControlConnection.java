@@ -135,6 +135,9 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
+		// Clone the tuple expression to allow for more aggresive optimizations
+		query = query.clone();
+
 		query.visit(new AccessControlQueryExpander());
 
 		return super.evaluate(query, bindings, includeInferred);
