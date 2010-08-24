@@ -8,7 +8,6 @@ package org.openrdf.sail.accesscontrol;
 import java.io.File;
 import java.util.List;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import com.ontotext.trree.owlim_ext.SailImpl;
@@ -172,83 +171,54 @@ public class AccessControlSailTest extends TestCase {
 	}
 	*/
 
-	public void testChordataPermissions()
+	public void testInheritanceProperty()
 		throws Exception
 	{
 		RepositoryConnection conn = repository.getConnection();
 		try {
 			String chordataQuery = "SELECT DISTINCT * WHERE {<" + RNA_CHORDATA + "> ?P ?Y . } ";
 
-			// first test: execute the query while not logged in. We should not get
-			// a result back as we do not have viewing permission on the item.
+			// first test: evaluate the query anonymously
 			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, chordataQuery);
 
 			TupleResult tr = query.evaluate();
-
-			if (tr.hasNext()) {
-				Assert.fail("query result should be empty: item is protected and current user has no viewing permission");
+			try {
+				assertFalse("query result should be empty: item is protected and current user has no viewing permission", tr.hasNext());
 			}
-			tr.close();
+			finally {
+				tr.close();
+			}
 
+			// second test: evaluate the query as an unauthorized user
 			Session session = SessionManager.getOrCreate();
-			session.setUsername("trezorix");
-
-			// second test: execute while logged in. We should get a result back
-			// this time, as we have viewing permission by inheritance.
-			query = conn.prepareTupleQuery(QueryLanguage.SPARQL, chordataQuery);
-
+			session.setUsername("no_access");
 			tr = query.evaluate();
-
-			if (!tr.hasNext()) {
-				Assert.fail("query result should not be empty: current user has viewing permission by inheritance");
+			try {
+				assertFalse("query result should be empty: item is protected and current user has no viewing permission", tr.hasNext());
 			}
-			tr.close();
-
-		}
-		finally {
-			conn.close();
-		}
-	}
-
-	public void testConsecutiveLogins()
-	throws Exception 
-	{
-		RepositoryConnection conn = repository.getConnection();
-
-		try {
-			Session session = SessionManager.getOrCreate();
+			finally {
+				tr.close();
+			}
+			
+			// third test: evaluate the query as an authorized user
 			session.setUsername("trezorix");
-
-			String chordataQuery = "SELECT DISTINCT * WHERE {<" + RNA_CHORDATA + "> ?P ?Y . } ";
-
-			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, chordataQuery);
-
-			TupleResult tr = query.evaluate();
-
-			if (!tr.hasNext()) {
-				Assert.fail("query result should not be empty: current user has viewing permission by inheritance");
-			}
-			tr.close();
-
-			session.setUsername(null);
-			
-			query = conn.prepareTupleQuery(QueryLanguage.SPARQL, chordataQuery);
 			tr = query.evaluate();
-			if (tr.hasNext()) {
-				Assert.fail("query result should  be empty: not logged in.");
+			try {
+				assertTrue("query result should not be empty: current user has viewing permission by inheritance", tr.hasNext());
 			}
-			tr.close();
-			
-			session.setUsername("trezorix");
-			
-			query = conn.prepareTupleQuery(QueryLanguage.SPARQL, chordataQuery);
-			tr = query.evaluate();
-			if (!tr.hasNext()) {
-				Assert.fail("query result should not be empty: current user has viewing permission by inheritance");
+			finally {
+				tr.close();
 			}
-			tr.close();
-			
+
+			// fourth test: evaluate the query after user has logged out
 			SessionManager.remove();
+			tr = query.evaluate();
+			try {
+				assertFalse("query result should be empty: item is protected and current user has no viewing permission", tr.hasNext());
+			}
+			finally {
+				tr.close();
+			}
 		}
 		finally {
 			conn.close();
