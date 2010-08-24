@@ -461,8 +461,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		if (attributeValues.size() > 0) {
 			List<URI> permissions = getAssignedPermissions(getRolesForUser(user), operation);
 
-			boolean[] attributeMatch = new boolean[attributes.size()];
-
 			HashMap<URI, Boolean> attributeMatches = new HashMap<URI, Boolean>(attributes.size());
 
 			for (URI permission : permissions) {
