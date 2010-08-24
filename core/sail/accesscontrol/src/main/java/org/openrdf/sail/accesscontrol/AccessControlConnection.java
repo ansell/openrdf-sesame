@@ -48,10 +48,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 	private URI _inheritanceProperty;
 
-	private String _cachedUsername = null;
-
-	private URI _cachedUser = null;
-
 	private List<URI> _accessAttributes;
 
 	/**
@@ -152,9 +148,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		// flush locally stored acl info
 		_inheritanceProperty = null;
 		_accessAttributes = null;
-		_cachedUser = null;
-		_cachedUsername = null;
-
 		super.close();
 	}
 
@@ -380,44 +373,37 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	{
 		Session session = SessionManager.get();
 		if (session != null) {
+
+			URI userId = session.getUserId();
+
+			if (userId != null) {
+				return userId;
+
+			}
+
 			String username = session.getUsername();
 
-			if (username == null) {
-				_cachedUser = null;
-				_cachedUsername = null;
-				return null;
-			}
-			
-			if (username.equals(_cachedUsername)) {
-				// it's still the same user associated with this thread.
-				return _cachedUser;
-			}
-			else {
-				// a different user has been associated with the thread.
-				_cachedUsername = username;
-				_cachedUser = null;
-			}
-
-			// backdoor for administrator user.
-			if (username.equals("administrator")) {
-				_cachedUser = ACL.ADMIN;
-			}
-			else {
-				Literal usernameLiteral = this.getValueFactory().createLiteral(username, XMLSchema.STRING);
-				Cursor<? extends Statement> statements = getStatements(null, ACL.USERNAME, usernameLiteral, true,
-						ACL.CONTEXT);
-
-				Statement st;
-				if ((st = statements.next()) != null) {
-					_cachedUser = (URI)st.getSubject();
+			if (username != null) {
+				// backdoor for administrator user.
+				if (username.equals("administrator")) {
+					session.setUserId(ACL.ADMIN);
 				}
-				statements.close();
+				else {
+					Literal usernameLiteral = this.getValueFactory().createLiteral(username, XMLSchema.STRING);
+					Cursor<? extends Statement> statements = getStatements(null, ACL.USERNAME, usernameLiteral,
+							true, ACL.CONTEXT);
+
+					Statement st;
+					if ((st = statements.next()) != null) {
+						session.setUserId((URI)st.getSubject());
+					}
+					statements.close();
+				}
+				return session.getUserId();
 			}
-			return _cachedUser;
 		}
 		return null;
 	}
-	
 
 	/***
 	 * Retrieve all instances of acl:AccessAttribute from the ACL context.
