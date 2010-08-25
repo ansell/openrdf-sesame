@@ -16,6 +16,7 @@ import info.aduna.io.FileUtil;
 
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
@@ -67,6 +68,8 @@ public class AccessControlSailTest extends TestCase {
 	/** Chordata is a concept on which Trezorix has recently reported a bug */
 	private static final String RNA_CHORDATA = RNA_NS + "3349da6b-4ee6-4a0b-a4c4-970c3a585d19";
 
+	private static final String SKOS_CONCEPT = SKOS_NS + "Concept";
+
 	private Repository repository;
 
 	private static Sail sail;
@@ -115,10 +118,8 @@ public class AccessControlSailTest extends TestCase {
 	private static void uploadAclData(Repository repository)
 		throws Exception
 	{
-		Session session = SessionManager.getOrCreate();
-
 		// DEBUG
-		session.setUsername("administrator");
+		SessionManager.getOrCreate().setUsername("administrator");
 
 		RepositoryConnection conn = repository.getConnection();
 		try {
@@ -130,7 +131,7 @@ public class AccessControlSailTest extends TestCase {
 			conn.close();
 		}
 
-		session.setUsername(null);
+		SessionManager.remove();
 	}
 
 	/*
@@ -183,7 +184,9 @@ public class AccessControlSailTest extends TestCase {
 
 			TupleResult tr = query.evaluate();
 			try {
-				assertFalse("query result should be empty: item is protected and current user has no viewing permission", tr.hasNext());
+				assertFalse(
+						"query result should be empty: item is protected and current user has no viewing permission",
+						tr.hasNext());
 			}
 			finally {
 				tr.close();
@@ -194,17 +197,21 @@ public class AccessControlSailTest extends TestCase {
 			session.setUsername("no_access");
 			tr = query.evaluate();
 			try {
-				assertFalse("query result should be empty: item is protected and current user has no viewing permission", tr.hasNext());
+				assertFalse(
+						"query result should be empty: item is protected and current user has no viewing permission",
+						tr.hasNext());
 			}
 			finally {
 				tr.close();
 			}
-			
+
 			// third test: evaluate the query as an authorized user
 			session.setUsername("trezorix");
 			tr = query.evaluate();
 			try {
-				assertTrue("query result should not be empty: current user has viewing permission by inheritance", tr.hasNext());
+				assertTrue(
+						"query result should not be empty: current user has viewing permission by inheritance",
+						tr.hasNext());
 			}
 			finally {
 				tr.close();
@@ -214,7 +221,9 @@ public class AccessControlSailTest extends TestCase {
 			SessionManager.remove();
 			tr = query.evaluate();
 			try {
-				assertFalse("query result should be empty: item is protected and current user has no viewing permission", tr.hasNext());
+				assertFalse(
+						"query result should be empty: item is protected and current user has no viewing permission",
+						tr.hasNext());
 			}
 			finally {
 				tr.close();
@@ -224,7 +233,7 @@ public class AccessControlSailTest extends TestCase {
 			conn.close();
 		}
 	}
-	
+
 	public void testQuery1()
 		throws Exception
 	{
@@ -277,7 +286,7 @@ public class AccessControlSailTest extends TestCase {
 		}
 	}
 
-	public void testAddStatementAuthenticated()
+	public void testAddStatementAuthorized()
 		throws Exception
 	{
 		SessionManager.getOrCreate().setUsername("trezorix");
@@ -289,7 +298,7 @@ public class AccessControlSailTest extends TestCase {
 		}
 	}
 
-	public void testAddStatementAnonymous()
+	public void testAddStatementNotAuthorized()
 		throws Exception
 	{
 		try {
@@ -313,19 +322,21 @@ public class AccessControlSailTest extends TestCase {
 		}
 	}
 
-	public void testRemoveStatementAuthenticated()
+	public void testRemoveStatementAuthorized()
 		throws Exception
 	{
 		SessionManager.getOrCreate().setUsername("trezorix");
+		assertTrue(hasProtectedStatement());
 		try {
 			removeProtectedStatement();
+			assertFalse(hasProtectedStatement());
 		}
 		finally {
 			SessionManager.remove();
 		}
 	}
 
-	public void testRemoveStatementAnonymous()
+	public void testRemoveStatementNotAuthorized()
 		throws Exception
 	{
 		try {
@@ -334,6 +345,10 @@ public class AccessControlSailTest extends TestCase {
 		}
 		catch (StoreException e) {
 		}
+		assertFalse(hasProtectedStatement());
+
+		SessionManager.getOrCreate().setUsername("trezorix");
+		assertTrue(hasProtectedStatement());
 	}
 
 	private void removeProtectedStatement()
@@ -342,7 +357,20 @@ public class AccessControlSailTest extends TestCase {
 		RepositoryConnection con = repository.getConnection();
 		try {
 			ValueFactory vf = con.getValueFactory();
-			con.removeMatch(vf.createURI(RNA_RECYCLE), RDFS.LABEL, vf.createLiteral("test"));
+			con.removeMatch(vf.createURI(RNA_RECYCLE), null, null);
+		}
+		finally {
+			con.close();
+		}
+	}
+
+	private boolean hasProtectedStatement()
+		throws StoreException
+	{
+		RepositoryConnection con = repository.getConnection();
+		try {
+			ValueFactory vf = con.getValueFactory();
+			return con.hasMatch(vf.createURI(RNA_RECYCLE), RDF.TYPE, vf.createURI(SKOS_CONCEPT), true);
 		}
 		finally {
 			con.close();
