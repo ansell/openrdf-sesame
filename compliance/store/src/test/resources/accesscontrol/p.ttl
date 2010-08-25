@@ -7,21 +7,21 @@
 @prefix skos: <http://www.w3.org/2008/05/skos#> .
 @prefix rna: <http://www.rnaproject.org/data/> .   
 
-skos:broader a owl:TransitiveProperty ;
-	rdfs:subPropertyOf skos:broaderTransitive ;
-    owl:inverseOf skos:narrower .
+skos:broaderTransitive a owl:TransitiveProperty .
+skos:narrowerTransitive a owl:TransitiveProperty .
+skos:broaderTransitive owl:inverseOf skos:narrowerTransitive .
 
-skos:narrower a owl:TransitiveProperty .
-
-skos:broader a acl:InheritanceProperty .
-
+skos:broader rdfs:subPropertyOf skos:broaderTransitive .
+skos:narrower rdfs:subPropertyOf skos:narrowerTransitive .
+skos:broader owl:inverseOf skos:narrower .
+    
 rna:accessAttribute a acl:AccessAttribute .
+skos:broader a acl:InheritanceProperty .
 
 <http://www.rnaproject.org/data/applicationUser/56> a acl:User ;
     acl:username "trezorix"^^xsd:string ;
     acl:hasRole <http://www.rnaproject.org/data/userNodePermissionRole/56/Edit> ;
     acl:hasRole <http://www.rnaproject.org/data/userNodePermissionRole/56/View> .
-
 
 rna:permission1 a acl:Permission ;
     acl:hasOperation acl:view ;
@@ -34,7 +34,7 @@ rna:pa1 a acl:PermissionAssignment ;
     acl:toRole <http://www.rnaproject.org/data/userNodePermissionRole/56/View> .
 
 rna:permission127 a acl:Permission ;
-    acl:hasOperation acl:edit ;
+    acl:hasOperation acl:edit, acl:view ;
     acl:hasMatch [ a acl:ObjectMatch ;
                    rna:accessAttribute <http://www.rnaproject.org/data/AccessAttribute/127> 
 		   ] .
@@ -42,5 +42,3 @@ rna:permission127 a acl:Permission ;
 rna:pa127 a acl:PermissionAssignment ;
     acl:hasPermission rna:permission127 ;
     acl:toRole <http://www.rnaproject.org/data/userNodePermissionRole/56/Edit> .
-
-

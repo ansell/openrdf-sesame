@@ -9,8 +9,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.openrdf.cursor.Cursor;
+import org.openrdf.cursor.EmptyCursor;
+import org.openrdf.cursor.FilteringCursor;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -46,9 +49,9 @@ import org.openrdf.store.StoreException;
  */
 public class AccessControlConnection extends SailConnectionWrapper {
 
-	private URI inheritanceProperty;
+	private volatile URI inheritanceProperty;
 
-	private List<URI> accessAttributes;
+	private volatile List<URI> accessAttributes;
 
 	/**
 	 * @param delegate
@@ -89,22 +92,56 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-
 		if (isEditable(subj)) {
-			getDelegate().addStatement(subj, pred, obj, contexts);
+			super.addStatement(subj, pred, obj, contexts);
 		}
 		else {
 			throw new StoreException("insufficient access rights on subject " + subj.stringValue());
 		}
+	}
 
+	@Override
+	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
+		throws StoreException
+	{
+		if (subj != null) {
+			if (isViewable(subj)) {
+				return super.getStatements(subj, pred, obj, includeInferred, contexts);
+			}
+			else {
+				return EmptyCursor.getInstance();
+			}
+		}
+		else {
+			Cursor<? extends Statement> result = super.getStatements(subj, pred, obj, includeInferred, contexts);
+			return new FilteringCursor<Statement>(result) {
+
+				@Override
+				protected boolean accept(Statement st)
+					throws StoreException
+				{
+					return isViewable(st.getSubject());
+				}
+			};
+		}
 	}
 
 	@Override
 	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws StoreException
 	{
-		if (subj == null) {
-			Cursor<? extends Statement> toBeRemovedStatements = this.getStatements(subj, pred, obj, false,
+		if (subj != null) {
+			if (isEditable(subj)) {
+				super.removeStatements(subj, pred, obj, contexts);
+			}
+			else {
+				// TODO: ignore statements that aren't viewable?
+				throw new StoreException("insufficient access rights on subject " + subj.stringValue());
+			}
+		}
+		else {
+			Cursor<? extends Statement> toBeRemovedStatements = super.getStatements(null, pred, obj, false,
 					contexts);
 			try {
 				Statement st;
@@ -112,9 +149,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 					Resource subject = st.getSubject();
 
 					if (isEditable(subject)) {
-						getDelegate().removeStatements(subject, pred, obj, contexts);
+						super.removeStatements(subject, pred, obj, contexts);
 					}
 					else {
+						// TODO: ignore statements that aren't viewable?
 						throw new StoreException("insufficient access rights on subject " + subject.stringValue());
 					}
 				}
@@ -123,15 +161,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				toBeRemovedStatements.close();
 			}
 		}
-		else {
-			if (isEditable(subj)) {
-				super.removeStatements(subj, pred, obj, contexts);
-			}
-			else {
-				throw new StoreException("insufficient access rights on subject " + subj.stringValue());
-			}
-		}
-
 	}
 
 	@Override
@@ -140,9 +169,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	{
 		// Clone the tuple expression to allow for more aggresive optimizations
 		query = query.clone();
-
 		query.visit(new AccessControlQueryExpander());
-
 		return super.evaluate(query, bindings, includeInferred);
 	}
 
@@ -180,7 +207,8 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		throws StoreException
 	{
 		Resource result = null;
-		Cursor<? extends Statement> statements = getStatements(subject, predicate, null, true, contexts);
+
+		Cursor<? extends Statement> statements = super.getStatements(subject, predicate, null, true, contexts);
 		try {
 			Statement st;
 			while ((st = statements.next()) != null) {
@@ -200,8 +228,8 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			URI inheritanceProperty = getInheritanceProperty();
 
 			if (inheritanceProperty != null) {
-				Cursor<? extends Statement> parentStatements = getStatements(subject, inheritanceProperty, null,
-						true);
+				Cursor<? extends Statement> parentStatements = super.getStatements(subject, inheritanceProperty,
+						null, true);
 				try {
 					Statement parentStatement;
 					while ((parentStatement = parentStatements.next()) != null) {
@@ -214,7 +242,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 						}
 
 					}
-
 				}
 				finally {
 					parentStatements.close();
@@ -229,10 +256,9 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			Resource... contexts)
 		throws StoreException
 	{
-
 		List<Resource> result = new ArrayList<Resource>();
 
-		Cursor<? extends Statement> statements = getStatements(subject, predicate, null, true, contexts);
+		Cursor<? extends Statement> statements = super.getStatements(subject, predicate, null, true, contexts);
 
 		try {
 			Statement st;
@@ -252,17 +278,17 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			URI inheritanceProperty = getInheritanceProperty();
 
 			if (inheritanceProperty != null) {
-				Cursor<? extends Statement> parentStatements = getStatements(subject, inheritanceProperty, null,
-						true);
+				Cursor<? extends Statement> parentStatements = super.getStatements(subject, inheritanceProperty,
+						null, true);
 
 				try {
 					Statement parentStatement;
 					while ((parentStatement = parentStatements.next()) != null) {
 						Value value = parentStatement.getObject();
 						if (value instanceof Resource) {
+							// FIXME: prevent infinite loop in case of cycles in the graph
 							result.addAll(getPropertyResourceValues((Resource)value, predicate, false, contexts));
 						}
-
 					}
 				}
 				finally {
@@ -277,9 +303,12 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	private URI getInheritanceProperty()
 		throws StoreException
 	{
+		// FIXME: attribute needs to be reset after updates to the data
+		// TODO: share this info across connections
+		// TODO: allow multiple inheritance properties?
 		if (inheritanceProperty == null) {
-			Cursor<? extends Statement> statements = getStatements(null, RDF.TYPE, ACL.INHERITANCE_PROPERTY,
-					true);
+			Cursor<? extends Statement> statements = super.getStatements(null, RDF.TYPE,
+					ACL.INHERITANCE_PROPERTY, true);
 
 			try {
 				Statement st;
@@ -308,24 +337,26 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	 *        an operation identifier
 	 * @return a Cursor containing URIs of permissions.
 	 */
-	private List<URI> getAssignedPermissions(List<URI> roles, URI operation) {
-
+	private List<URI> getAssignedPermissions(List<URI> roles, URI operation)
+		throws StoreException
+	{
 		List<URI> permissions = new ArrayList<URI>();
-		try {
 
-			for (URI role : roles) {
-				// TODO this would probably be more efficient using a SPARQL query.
-				Cursor<? extends Statement> statements = getStatements(null, ACL.TO_ROLE, role, true, ACL.CONTEXT);
+		for (URI role : roles) {
+			// TODO this would probably be more efficient using a SPARQL query.
+			Cursor<? extends Statement> statements = super.getStatements(null, ACL.TO_ROLE, role, true,
+					ACL.CONTEXT);
 
-				try {
-					Statement st;
+			try {
+				Statement st;
 
-					while ((st = statements.next()) != null) {
-						Cursor<? extends Statement> permissionStatements = getStatements(st.getSubject(),
-								ACL.HAS_PERMISSION, null, true, ACL.CONTEXT);
+				while ((st = statements.next()) != null) {
+					Cursor<? extends Statement> permissionStatements = super.getStatements(st.getSubject(),
+							ACL.HAS_PERMISSION, null, true, ACL.CONTEXT);
+					try {
 						Statement permStat;
 						while ((permStat = permissionStatements.next()) != null) {
-							Cursor<? extends Statement> operationStatements = getStatements(
+							Cursor<? extends Statement> operationStatements = super.getStatements(
 									(URI)permStat.getObject(), ACL.HAS_OPERATION, operation, true, ACL.CONTEXT);
 							try {
 								if (operationStatements.next() != null) {
@@ -336,38 +367,26 @@ public class AccessControlConnection extends SailConnectionWrapper {
 								operationStatements.close();
 							}
 						}
+					}
+					finally {
 						permissionStatements.close();
 					}
 				}
-				finally {
-					statements.close();
-				}
 			}
-		}
-		catch (StoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			finally {
+				statements.close();
+			}
 		}
 
 		return permissions;
 	}
 
-	private Resource getMatchPattern(URI permission)
-		throws StoreException
-	{
-		Resource match = getPropertyResourceValue(permission, ACL.HAS_MATCH, false, ACL.CONTEXT);
-		return match;
-	}
-
 	private URI getAttributeValueForPermission(URI permission, URI attribute)
 		throws StoreException
 	{
-		Resource match = getMatchPattern(permission);
-
+		Resource match = getPropertyResourceValue(permission, ACL.HAS_MATCH, false, ACL.CONTEXT);
 		URI attributeValue = (URI)getPropertyResourceValue(match, attribute, false, ACL.CONTEXT);
-
 		return attributeValue;
-
 	}
 
 	private List<URI> getRolesForUser(URI username)
@@ -376,7 +395,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		List<URI> roles = new ArrayList<URI>();
 
 		if (username != null) {
-			Cursor<? extends Statement> statements = getStatements(username, ACL.HAS_ROLE, null, true,
+			Cursor<? extends Statement> statements = super.getStatements(username, ACL.HAS_ROLE, null, true,
 					ACL.CONTEXT);
 
 			try {
@@ -416,8 +435,8 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				}
 				else {
 					Literal usernameLiteral = this.getValueFactory().createLiteral(username, XMLSchema.STRING);
-					Cursor<? extends Statement> statements = getStatements(null, ACL.USERNAME, usernameLiteral,
-							true, ACL.CONTEXT);
+					Cursor<? extends Statement> statements = super.getStatements(null, ACL.USERNAME,
+							usernameLiteral, true, ACL.CONTEXT);
 
 					try {
 						Statement st;
@@ -445,11 +464,13 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	private List<URI> getAccessAttributes()
 		throws StoreException
 	{
+		// FIXME: attribute needs to be reset after updates to the data
+		// TODO: share this info across connections
 		if (accessAttributes == null) {
 			accessAttributes = new ArrayList<URI>();
 
-			Cursor<? extends Statement> statements = getStatements(null, RDF.TYPE, ACL.ACCESS_ATTRIBUTE, false,
-					ACL.CONTEXT);
+			Cursor<? extends Statement> statements = super.getStatements(null, RDF.TYPE, ACL.ACCESS_ATTRIBUTE,
+					false, ACL.CONTEXT);
 
 			try {
 				Statement st;
@@ -484,35 +505,26 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 		for (URI attribute : attributes) {
 			List<Resource> attributeValueList = getPropertyResourceValues(subject, attribute, true);
-			if (attributeValueList != null && attributeValueList.size() > 0) {
+			if (!attributeValueList.isEmpty()) {
 				attributeValues.put(attribute, attributeValueList);
 			}
 		}
 
-		if (attributeValues.size() > 0) {
+		if (!attributeValues.isEmpty()) {
 			List<URI> permissions = getAssignedPermissions(getRolesForUser(user), operation);
 
-			HashMap<URI, Boolean> attributeMatches = new HashMap<URI, Boolean>(attributes.size());
-
 			for (URI permission : permissions) {
-
-				for (URI attribute : attributeValues.keySet()) {
-
-					attributeMatches.put(attribute, false);
-
-					List<Resource> attributeValueList = attributeValues.get(attribute);
-
-					if (attributeValueList != null) {
-						URI permissionAttributeValue = getAttributeValueForPermission(permission, attribute);
-						attributeMatches.put(attribute, attributeValueList.contains(permissionAttributeValue));
-					}
-				}
-
 				// check if all attributes match
 				boolean allMatch = true;
-				for (URI attribute : attributeMatches.keySet()) {
-					boolean match = attributeMatches.get(attribute);
-					if (!match) {
+
+				for (Entry<URI, List<Resource>> entry : attributeValues.entrySet()) {
+					URI attribute = entry.getKey();
+					List<Resource> attributeValueList = entry.getValue();
+
+					URI permissionAttributeValue = getAttributeValueForPermission(permission, attribute);
+					boolean isMatch = attributeValueList.contains(permissionAttributeValue);
+
+					if (!isMatch) {
 						allMatch = false;
 						break;
 					}
@@ -522,7 +534,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 					hasPermission = true;
 					break;
 				}
-
 			}
 		}
 		else {
@@ -535,7 +546,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 	protected class AccessControlQueryExpander extends QueryModelVisitorBase<StoreException> {
 
-		private List<Var> handledSubjects = new ArrayList<Var>();
+		private final List<Var> handledSubjects = new ArrayList<Var>();
 
 		private List<URI> permissions;
 
@@ -605,17 +616,16 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			Join joinOfAttributePatterns = new Join();
 
 			URI inheritanceProp = getInheritanceProperty();
-			Var inheritPredVar = new Var("acl_inherit_pred", inheritanceProp);
+			Var inheritPredVar = new Var("-acl_inherit_pred", inheritanceProp);
 
 			int i = 0;
 
 			List<Var> attributeVars = new ArrayList<Var>();
 			for (URI attribute : attributes) {
-
-				Var attributeVar = new Var("acl_attr_" + i++);
+				Var attributeVar = new Var("-acl_attr_" + i++);
 				attributeVars.add(attributeVar);
 
-				Var attributePredVar = new Var("acl_attr_pred_" + i, attribute);
+				Var attributePredVar = new Var("-acl_attr_pred_" + i, attribute);
 
 				// SP(?subject, accessAttr_i, ?accessAttrValue_i)
 				StatementPattern attributePattern = new StatementPattern(subjectVar, attributePredVar,
@@ -628,7 +638,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 					// the join for checking if the access attribute is inherited.
 					Join inheritJoin = new Join();
-					Var inheritVar = new Var("acl_inherited_value" + i);
+					Var inheritVar = new Var("-acl_inherited_value" + i);
 					// SP (?subject, inheritProp, ?S_i)
 					StatementPattern inheritPattern = new StatementPattern(subjectVar, inheritPredVar, inheritVar);
 					inheritJoin.addArg(inheritPattern);
@@ -686,7 +696,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			// checking that either
 			// team, or status, or both match.
 			for (URI permission : permissions) {
-
 				And permissionCondition = new And();
 
 				for (int j = 0; j < attributes.size(); j++) {
@@ -722,9 +731,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 			// expand the query.
 			parent.replaceChildNode(statementPattern, expandedPattern);
-
 		}
-
 	}
-
 }
