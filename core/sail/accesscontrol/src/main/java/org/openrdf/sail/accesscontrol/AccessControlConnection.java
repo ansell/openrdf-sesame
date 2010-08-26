@@ -8,6 +8,7 @@ package org.openrdf.sail.accesscontrol;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -137,6 +138,13 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			}
 			else {
 				// TODO: ignore statements that aren't viewable?
+				// Remark Jeen: I would only do that in the case where the subject
+				// was not explicitly
+				// specified in the method call. In the current case, the user
+				// explicitly tried to perform
+				// a remove on a specific subject to which he has no access rights.
+				// IMHO, that should _always_
+				// result in an error.
 				throw new StoreException("insufficient access rights on subject " + subj.stringValue());
 			}
 		}
@@ -152,8 +160,14 @@ public class AccessControlConnection extends SailConnectionWrapper {
 						super.removeStatements(subject, pred, obj, contexts);
 					}
 					else {
-						// TODO: ignore statements that aren't viewable?
-						throw new StoreException("insufficient access rights on subject " + subject.stringValue());
+						// Since the user did not explicitly specify the subject being
+						// removed, we silently
+						// ignore the statement if the subject is not viewable by the
+						// user.
+						if (isViewable(subject)) {
+							throw new StoreException("insufficient access rights on subject "
+									+ subject.stringValue());
+						}
 					}
 				}
 			}
@@ -206,6 +220,22 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			Resource... contexts)
 		throws StoreException
 	{
+		return getPropertyResourceValue(subject, predicate, inherit, new ArrayList<Resource>(), contexts);
+	}
+
+	private Resource getPropertyResourceValue(Resource subject, URI predicate, boolean inherit,
+			List<Resource> visited, Resource... contexts)
+		throws StoreException
+	{
+		if (visited == null) {
+			visited = new ArrayList<Resource>();
+		}
+
+		// loop detection
+		if (visited.contains(subject)) {
+			return null;
+		}
+
 		Resource result = null;
 
 		Cursor<? extends Statement> statements = super.getStatements(subject, predicate, null, true, contexts);
@@ -225,6 +255,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		// see if we should try and find a value from the supplied resource's
 		// parent.
 		if (result == null && inherit) {
+			visited.add(subject);
 			URI inheritanceProperty = getInheritanceProperty();
 
 			if (inheritanceProperty != null) {
@@ -235,7 +266,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 					while ((parentStatement = parentStatements.next()) != null) {
 						Value value = parentStatement.getObject();
 						if (value instanceof Resource) {
-							result = getPropertyResourceValue((Resource)value, predicate, false, contexts);
+							result = getPropertyResourceValue((Resource)value, predicate, false, visited, contexts);
 							if (result != null) {
 								break;
 							}
@@ -256,7 +287,23 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			Resource... contexts)
 		throws StoreException
 	{
+		return getPropertyResourceValues(subject, predicate, inherit, new ArrayList<Resource>(), contexts);
+	}
+
+	private List<Resource> getPropertyResourceValues(Resource subject, URI predicate, boolean inherit,
+			List<Resource> visited, Resource... contexts)
+		throws StoreException
+	{
 		List<Resource> result = new ArrayList<Resource>();
+		
+		if (visited == null) {
+			visited = new ArrayList<Resource>();
+		}
+
+		// loop detection
+		if (visited.contains(subject)) {
+			return null;
+		}
 
 		Cursor<? extends Statement> statements = super.getStatements(subject, predicate, null, true, contexts);
 
@@ -275,6 +322,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		// see if we should try and find a value from the supplied resource's
 		// parent.
 		if (inherit) {
+			visited.add(subject);
 			URI inheritanceProperty = getInheritanceProperty();
 
 			if (inheritanceProperty != null) {
@@ -286,8 +334,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 					while ((parentStatement = parentStatements.next()) != null) {
 						Value value = parentStatement.getObject();
 						if (value instanceof Resource) {
-							// FIXME: prevent infinite loop in case of cycles in the graph
-							result.addAll(getPropertyResourceValues((Resource)value, predicate, false, contexts));
+							result.addAll(getPropertyResourceValues((Resource)value, predicate, false, visited, contexts));
 						}
 					}
 				}
