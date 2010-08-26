@@ -356,9 +356,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	private URI getInheritanceProperty()
 		throws StoreException
 	{
-		// FIXME: attribute needs to be reset after updates to the data
 		// TODO: share this info across connections
-		// TODO: allow multiple inheritance properties?
 		if (inheritanceProperty == null) {
 			Cursor<? extends Statement> statements = super.getStatements(null, RDF.TYPE,
 					ACL.INHERITANCE_PROPERTY, true);
@@ -517,7 +515,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	private List<URI> getAccessAttributes()
 		throws StoreException
 	{
-		// FIXME: attribute needs to be reset after updates to the data
 		// TODO: share this info across connections
 		if (accessAttributes == null) {
 			accessAttributes = new ArrayList<URI>();
