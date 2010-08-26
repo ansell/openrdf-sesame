@@ -353,6 +353,14 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		return result;
 	}
 
+	/**
+	 * Retrieves the property defined in the ACL model as being the acl:InheritanceProperty. Note that
+	 * we currently support only a single inheritance-property as multiple properties would mean that 
+	 * we need a multiple disjunctions in every query, severely affecting performance.
+	 *  
+	 * @return
+	 * @throws StoreException
+	 */
 	private URI getInheritanceProperty()
 		throws StoreException
 	{
