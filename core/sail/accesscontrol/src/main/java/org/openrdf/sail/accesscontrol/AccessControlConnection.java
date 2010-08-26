@@ -178,6 +178,13 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	}
 
 	@Override
+	public void commit() throws StoreException
+	{
+		resetCachedData();
+		super.commit();
+	}
+	
+	@Override
 	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
 	{
@@ -192,8 +199,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		throws StoreException
 	{
 		// flush locally stored acl info
-		inheritanceProperty = null;
-		accessAttributes = null;
+		resetCachedData();
 		super.close();
 	}
 
@@ -536,6 +542,11 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		return accessAttributes;
 	}
 
+	private void resetCachedData() {
+		accessAttributes = null;
+		inheritanceProperty = null;
+	}
+	
 	private boolean hasPermissionOnSubject(URI user, Resource subject, URI operation)
 		throws StoreException
 	{
