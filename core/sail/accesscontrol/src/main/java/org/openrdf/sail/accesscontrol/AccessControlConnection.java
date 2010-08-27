@@ -8,8 +8,9 @@ package org.openrdf.sail.accesscontrol;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.openrdf.cursor.Cursor;
@@ -50,9 +51,9 @@ import org.openrdf.store.StoreException;
  */
 public class AccessControlConnection extends SailConnectionWrapper {
 
-	private volatile URI inheritanceProperty;
+	private URI inheritanceProperty;
 
-	private volatile List<URI> accessAttributes;
+	private List<URI> accessAttributes;
 
 	/**
 	 * @param delegate
@@ -139,12 +140,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			else {
 				// TODO: ignore statements that aren't viewable?
 				// Remark Jeen: I would only do that in the case where the subject
-				// was not explicitly
-				// specified in the method call. In the current case, the user
-				// explicitly tried to perform
-				// a remove on a specific subject to which he has no access rights.
-				// IMHO, that should _always_
-				// result in an error.
+				// was not explicitly specified in the method call. In the current
+				// case, the user explicitly tried to perform a remove on a specific
+				// subject to which he has no access rights. IMHO, that should
+				// _always_ result in an error.
 				throw new StoreException("insufficient access rights on subject " + subj.stringValue());
 			}
 		}
@@ -159,15 +158,11 @@ public class AccessControlConnection extends SailConnectionWrapper {
 					if (isEditable(subject)) {
 						super.removeStatements(subject, pred, obj, contexts);
 					}
-					else {
+					else if (isViewable(subject)) {
 						// Since the user did not explicitly specify the subject being
-						// removed, we silently
-						// ignore the statement if the subject is not viewable by the
-						// user.
-						if (isViewable(subject)) {
-							throw new StoreException("insufficient access rights on subject "
-									+ subject.stringValue());
-						}
+						// removed, we silently ignore the statement if the subject is
+						// not viewable by the user.
+						throw new StoreException("insufficient access rights on subject " + subject.stringValue());
 					}
 				}
 			}
@@ -177,13 +172,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		}
 	}
 
-	@Override
-	public void commit() throws StoreException
-	{
-		resetCachedData();
-		super.commit();
-	}
-	
 	@Override
 	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
 		throws StoreException
@@ -195,12 +183,32 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	}
 
 	@Override
+	public void commit()
+		throws StoreException
+	{
+		try {
+			super.commit();
+		}
+		finally {
+			resetCachedData();
+		}
+	}
+
+	@Override
 	public void close()
 		throws StoreException
 	{
-		// flush locally stored acl info
-		resetCachedData();
-		super.close();
+		try {
+			super.close();
+		}
+		finally {
+			resetCachedData();
+		}
+	}
+
+	private synchronized void resetCachedData() {
+		accessAttributes = null;
+		inheritanceProperty = null;
 	}
 
 	/**
@@ -230,13 +238,9 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	}
 
 	private Resource getPropertyResourceValue(Resource subject, URI predicate, boolean inherit,
-			List<Resource> visited, Resource... contexts)
+			final Collection<Resource> visited, Resource... contexts)
 		throws StoreException
 	{
-		if (visited == null) {
-			visited = new ArrayList<Resource>();
-		}
-
 		// loop detection
 		if (visited.contains(subject)) {
 			return null;
@@ -289,26 +293,22 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		return result;
 	}
 
-	private List<Resource> getPropertyResourceValues(Resource subject, URI predicate, boolean inherit,
+	private Set<Resource> getPropertyResourceValues(Resource subject, URI predicate, boolean inherit,
 			Resource... contexts)
 		throws StoreException
 	{
-		return getPropertyResourceValues(subject, predicate, inherit, new ArrayList<Resource>(), contexts);
+		Set<Resource> results = new HashSet<Resource>();
+		getPropertyResourceValues(results, subject, predicate, inherit, new ArrayList<Resource>(), contexts);
+		return results;
 	}
 
-	private List<Resource> getPropertyResourceValues(Resource subject, URI predicate, boolean inherit,
-			List<Resource> visited, Resource... contexts)
+	private void getPropertyResourceValues(Set<Resource> results, Resource subject, URI predicate,
+			boolean inherit, final List<Resource> visited, Resource... contexts)
 		throws StoreException
 	{
-		List<Resource> result = new ArrayList<Resource>();
-		
-		if (visited == null) {
-			visited = new ArrayList<Resource>();
-		}
-
 		// loop detection
 		if (visited.contains(subject)) {
-			return null;
+			return;
 		}
 
 		Cursor<? extends Statement> statements = super.getStatements(subject, predicate, null, true, contexts);
@@ -317,7 +317,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 			Statement st;
 			while ((st = statements.next()) != null) {
 				if (st.getObject() instanceof Resource) {
-					result.add((Resource)st.getObject());
+					results.add((Resource)st.getObject());
 				}
 			}
 		}
@@ -340,7 +340,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 					while ((parentStatement = parentStatements.next()) != null) {
 						Value value = parentStatement.getObject();
 						if (value instanceof Resource) {
-							result.addAll(getPropertyResourceValues((Resource)value, predicate, false, visited, contexts));
+							getPropertyResourceValues(results, (Resource)value, predicate, false, visited, contexts);
 						}
 					}
 				}
@@ -349,22 +349,21 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				}
 			}
 		}
-
-		return result;
 	}
 
 	/**
-	 * Retrieves the property defined in the ACL model as being the acl:InheritanceProperty. Note that
-	 * we currently support only a single inheritance-property as multiple properties would mean that 
-	 * we need a multiple disjunctions in every query, severely affecting performance.
-	 *  
+	 * Retrieves the property defined in the ACL model as being the
+	 * acl:InheritanceProperty. Note that we currently support only a single
+	 * inheritance-property as multiple properties would mean that we need a
+	 * multiple disjunctions in every query, severely affecting performance.
+	 * 
 	 * @return
 	 * @throws StoreException
 	 */
-	private URI getInheritanceProperty()
+	private synchronized URI getInheritanceProperty()
 		throws StoreException
 	{
-		// TODO: share this info across connections
+		// TODO: share this info across connections?
 		if (inheritanceProperty == null) {
 			Cursor<? extends Statement> statements = super.getStatements(null, RDF.TYPE,
 					ACL.INHERITANCE_PROPERTY, true);
@@ -520,7 +519,7 @@ public class AccessControlConnection extends SailConnectionWrapper {
 	 *         object matches are defined. May be empty.
 	 * @throws StoreException
 	 */
-	private List<URI> getAccessAttributes()
+	private synchronized List<URI> getAccessAttributes()
 		throws StoreException
 	{
 		// TODO: share this info across connections
@@ -547,11 +546,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		return accessAttributes;
 	}
 
-	private void resetCachedData() {
-		accessAttributes = null;
-		inheritanceProperty = null;
-	}
-	
 	private boolean hasPermissionOnSubject(URI user, Resource subject, URI operation)
 		throws StoreException
 	{
@@ -564,10 +558,10 @@ public class AccessControlConnection extends SailConnectionWrapper {
 
 		Collection<URI> attributes = getAccessAttributes();
 
-		HashMap<URI, List<Resource>> attributeValues = new HashMap<URI, List<Resource>>();
+		HashMap<URI, Set<Resource>> attributeValues = new HashMap<URI, Set<Resource>>();
 
 		for (URI attribute : attributes) {
-			List<Resource> attributeValueList = getPropertyResourceValues(subject, attribute, true);
+			Set<Resource> attributeValueList = getPropertyResourceValues(subject, attribute, true);
 			if (!attributeValueList.isEmpty()) {
 				attributeValues.put(attribute, attributeValueList);
 			}
@@ -580,9 +574,9 @@ public class AccessControlConnection extends SailConnectionWrapper {
 				// check if all attributes match
 				boolean allMatch = true;
 
-				for (Entry<URI, List<Resource>> entry : attributeValues.entrySet()) {
+				for (Entry<URI, Set<Resource>> entry : attributeValues.entrySet()) {
 					URI attribute = entry.getKey();
-					List<Resource> attributeValueList = entry.getValue();
+					Set<Resource> attributeValueList = entry.getValue();
 
 					URI permissionAttributeValue = getAttributeValueForPermission(permission, attribute);
 					boolean isMatch = attributeValueList.contains(permissionAttributeValue);
@@ -604,7 +598,6 @@ public class AccessControlConnection extends SailConnectionWrapper {
 		}
 
 		return hasPermission;
-
 	}
 
 	protected class AccessControlQueryExpander extends QueryModelVisitorBase<StoreException> {
