@@ -121,7 +121,7 @@
 						</group>
 					</groups>
 					<links>
-						<link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+						<link>http://download.oracle.com/javase/1.5.0/docs/api</link>
 						<link>http://repository.aduna-software.org/docs/info.aduna/api/</link>
 					</links>
 				</configuration>
