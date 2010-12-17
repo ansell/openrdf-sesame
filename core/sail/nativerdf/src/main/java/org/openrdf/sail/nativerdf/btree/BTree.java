@@ -1069,8 +1069,8 @@ public class BTree {
 	}
 
 	/**
-	 * Removes the largest value from the tree starting at the specified node
-	 * and returns the removed value.
+	 * Removes the largest value from the tree starting at the specified node and
+	 * returns the removed value.
 	 * 
 	 * @param node
 	 *        The root of the (sub) tree.
@@ -1084,7 +1084,7 @@ public class BTree {
 		throws IOException
 	{
 		int nodeValueCount = node.getValueCount();
-		
+
 		if (node.isLeaf()) {
 			if (node.isEmpty()) {
 				throw new IllegalArgumentException("Trying to remove largest value from an empty node");
@@ -1331,10 +1331,10 @@ public class BTree {
 	class Node {
 
 		/** This node's ID. */
-		private int id;
+		private final int id;
 
 		/** This node's data. */
-		private byte[] data;
+		private final byte[] data;
 
 		/** The number of values containined in this node. */
 		private int valueCount;
@@ -1346,7 +1346,7 @@ public class BTree {
 		private boolean dataChanged;
 
 		/** Registered listeners that want to be notified of changes to the node. */
-		private LinkedList<NodeListener> listeners = new LinkedList<NodeListener>();
+		private final LinkedList<NodeListener> listeners = new LinkedList<NodeListener>();
 
 		/**
 		 * Creates a new Node object with the specified ID.
@@ -1980,13 +1980,13 @@ public class BTree {
 
 	private class RangeIterator implements RecordIterator, NodeListener {
 
-		private byte[] searchKey;
+		private final byte[] searchKey;
 
-		private byte[] searchMask;
+		private final byte[] searchMask;
 
-		private byte[] minValue;
+		private final byte[] minValue;
 
-		private byte[] maxValue;
+		private final byte[] maxValue;
 
 		private boolean started;
 
@@ -1995,12 +1995,12 @@ public class BTree {
 		/**
 		 * Tracks the parent nodes of {@link #currentNode}.
 		 */
-		private LinkedList<Node> parentNodeStack = new LinkedList<Node>();
+		private final LinkedList<Node> parentNodeStack = new LinkedList<Node>();
 
 		/**
 		 * Tracks the index of child nodes in parent nodes.
 		 */
-		private LinkedList<Integer> parentIndexStack = new LinkedList<Integer>();
+		private final LinkedList<Integer> parentIndexStack = new LinkedList<Integer>();
 
 		private int currentIdx;
 
@@ -2082,11 +2082,12 @@ public class BTree {
 					break;
 				}
 				else {
+					Node childNode = currentNode.getChildNode(currentIdx);
+					// [SES-725] must change stacks after node loading has succeeded
+					childNode.register(this);
 					parentNodeStack.add(currentNode);
 					parentIndexStack.add(currentIdx);
-
-					currentNode = currentNode.getChildNode(currentIdx);
-					currentNode.register(this);
+					currentNode = childNode;
 					currentIdx = 0;
 				}
 			}
@@ -2113,11 +2114,12 @@ public class BTree {
 				}
 			}
 			else {
+				Node childNode = currentNode.getChildNode(currentIdx);
+				// [SES-725] must change stacks after node loading has succeeded
+				childNode.register(this);
 				parentNodeStack.add(currentNode);
 				parentIndexStack.add(currentIdx);
-
-				currentNode = currentNode.getChildNode(currentIdx);
-				currentNode.register(this);
+				currentNode = childNode;
 				currentIdx = 0;
 
 				return findNext(false);
