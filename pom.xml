@@ -43,9 +43,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<aduna.appbase.version>3.9.0</aduna.appbase.version>
-		<slf4j.version>1.5.10</slf4j.version>
+		<aduna.appbase.version>3.10.0</aduna.appbase.version>
 		<spring.version>2.5.6</spring.version>
+		<slf4j.version>1.6.1</slf4j.version>
+		<logback.version>0.9.26</logback.version>
 	</properties>
 
 	<dependencyManagement>
@@ -257,27 +258,27 @@
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-collections</artifactId>
-				<version>2.7.0</version>
-			</dependency>
-			<dependency>
-				<groupId>info.aduna.commons</groupId>
-				<artifactId>aduna-commons-concurrent</artifactId>
-				<version>2.6.0</version>
-			</dependency>
-			<dependency>
-				<groupId>info.aduna.commons</groupId>
-				<artifactId>aduna-commons-i18n</artifactId>
-				<version>1.3.0</version>
-			</dependency>
-			<dependency>
-				<groupId>info.aduna.commons</groupId>
-				<artifactId>aduna-commons-iteration</artifactId>
 				<version>2.8.0</version>
 			</dependency>
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
+				<artifactId>aduna-commons-concurrent</artifactId>
+				<version>2.7.0</version>
+			</dependency>
+			<dependency>
+				<groupId>info.aduna.commons</groupId>
+				<artifactId>aduna-commons-i18n</artifactId>
+				<version>1.4.0</version>
+			</dependency>
+			<dependency>
+				<groupId>info.aduna.commons</groupId>
+				<artifactId>aduna-commons-iteration</artifactId>
+				<version>2.9.0</version>
+			</dependency>
+			<dependency>
+				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-net-http-server-embedded</artifactId>
-				<version>2.4.0</version>
+				<version>2.5.0</version>
 			</dependency>
 
 			<!-- Apache Commons -->
@@ -395,10 +396,9 @@
 			<dependency>
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-classic</artifactId>
-				<version>0.9.17</version>
+				<version>${logback.version}</version>
 			</dependency>
 			
-
 			<!-- Testing: JUnit -->
 			<dependency>
 				<groupId>junit</groupId>
@@ -412,26 +412,80 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!-- FIXME: version 2.2-beta-2 causes a lot problems -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.6</version>
+				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>2.2-beta-1</version>
+					<version>2.2</version>
 				</plugin>
-
-				<!-- 2.0-beta-9 fixes an incompatibility with svn 1.5 and newer,
-				     see http://jira.codehaus.org/browse/MRELEASE-375 -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-release-plugin</artifactId>
-					<version>2.0-beta-9</version>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>2.4.1</version>
 				</plugin>
-
-				<!-- Use dependency-plugin 2.1 to reduce bogus warnings -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.3.2</version>
+				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
 					<version>2.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.5</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>2.3.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.3.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.7</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.4.3</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>2.1.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.1.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.6</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>2.1.1</version>
 				</plugin>
 
 				<plugin>   
@@ -474,6 +528,14 @@
 			</plugins>
 		</pluginManagement>
 
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+         			<artifactId>wagon-ssh</artifactId>
+         			<version>1.0-beta-7</version>
+			</extension>
+		</extensions>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -484,18 +546,6 @@
 					<encoding>utf8</encoding>
 				</configuration>
 			</plugin>
-<!--
-			<plugin>
-				<groupId>ch.elca.el4j.maven.plugins</groupId>
-				<artifactId>maven-depgraph-plugin</artifactId>
-				<configuration>
-					<outDir>target/site/images</outDir>
-					<dotFile>${pom.artifactId}.dot</dotFile>
-					<outFile>${pom.artifactId}.png</outFile>
-					<filterEmptyArtifacts>true</filterEmptyArtifacts>
-				</configuration>
-			</plugin>
--->
 		</plugins>
 	</build>
 
@@ -512,18 +562,6 @@
 			</plugin>
 		</plugins>
 	</reporting>
-
-<!--
-	<pluginRepositories>
-		<pluginRepository>
-			<id>elca-services</id>
-			<url>http://el4.elca-services.ch/el4j/maven2repository</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</pluginRepository>
-	</pluginRepositories>
--->
 
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.3</connection>
