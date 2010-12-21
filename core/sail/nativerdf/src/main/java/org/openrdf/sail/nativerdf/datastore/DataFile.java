@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -7,11 +7,11 @@ package org.openrdf.sail.nativerdf.datastore;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+
+import info.aduna.io.NioFile;
 
 /**
  * Class supplying access to a data file. A data file stores data sequentially.
@@ -44,11 +44,7 @@ public class DataFile {
 	 * Variables *
 	 *-----------*/
 
-	private final File file;
-
-	private final RandomAccessFile raf;
-
-	private final FileChannel fileChannel;
+	private final NioFile nioFile;
 
 	private final boolean forceSync;
 
@@ -65,49 +61,28 @@ public class DataFile {
 	public DataFile(File file, boolean forceSync)
 		throws IOException
 	{
-		this.file = file;
+		this.nioFile = new NioFile(file);
 		this.forceSync = forceSync;
 
-		if (!file.exists()) {
-			boolean created = file.createNewFile();
-			if (!created) {
-				throw new IOException("Failed to create file: " + file);
-			}
-		}
-
 		// Open a read/write channel to the file
-		raf = new RandomAccessFile(file, "rw");
-		fileChannel = raf.getChannel();
 
-		if (fileChannel.size() == 0L) {
+		if (nioFile.size() == 0) {
 			// Empty file, write header
-			ByteBuffer buf = ByteBuffer.allocate((int)HEADER_LENGTH);
-			buf.put(MAGIC_NUMBER);
-			buf.put(FILE_FORMAT_VERSION);
-			buf.rewind();
-
-			fileChannel.write(buf, 0L);
+			nioFile.writeBytes(MAGIC_NUMBER, 0);
+			nioFile.writeByte(FILE_FORMAT_VERSION, MAGIC_NUMBER.length);
 
 			sync();
 		}
+		else if (nioFile.size() < HEADER_LENGTH) {
+			throw new IOException("File too small to be a compatible data file");
+		}
 		else {
 			// Verify file header
-			ByteBuffer buf = ByteBuffer.allocate((int)HEADER_LENGTH);
-			fileChannel.read(buf, 0L);
-			buf.rewind();
-
-			if (buf.remaining() < HEADER_LENGTH) {
-				throw new IOException("File too short to be a compatible data file");
-			}
-
-			byte[] magicNumber = new byte[MAGIC_NUMBER.length];
-			buf.get(magicNumber);
-			byte version = buf.get();
-
-			if (!Arrays.equals(MAGIC_NUMBER, magicNumber)) {
+			if (!Arrays.equals(MAGIC_NUMBER, nioFile.readBytes(0, MAGIC_NUMBER.length))) {
 				throw new IOException("File doesn't contain compatible data records");
 			}
 
+			byte version = nioFile.readByte(MAGIC_NUMBER.length);
 			if (version > FILE_FORMAT_VERSION) {
 				throw new IOException("Unable to read data file; it uses a newer file format");
 			}
@@ -122,7 +97,7 @@ public class DataFile {
 	 *---------*/
 
 	public File getFile() {
-		return file;
+		return nioFile.getFile();
 	}
 
 	/**
@@ -138,14 +113,15 @@ public class DataFile {
 	{
 		assert data != null : "data must not be null";
 
-		long offset = fileChannel.size();
+		long offset = nioFile.size();
 
+		// TODO: two writes could be more efficient since it prevent array copies
 		ByteBuffer buf = ByteBuffer.allocate(data.length + 4);
 		buf.putInt(data.length);
 		buf.put(data);
 		buf.rewind();
 
-		fileChannel.write(buf, offset);
+		nioFile.write(buf, offset);
 
 		return offset;
 	}
@@ -165,13 +141,11 @@ public class DataFile {
 		assert offset > 0 : "offset must be larger than 0, is: " + offset;
 
 		// TODO: maybe get more data in one go is more efficient?
-		ByteBuffer buf = ByteBuffer.allocate(4);
-		fileChannel.read(buf, offset);
-		int dataLength = buf.getInt(0);
+		int dataLength = nioFile.readInt(offset);
 
 		byte[] data = new byte[dataLength];
-		buf = ByteBuffer.wrap(data);
-		fileChannel.read(buf, offset + 4L);
+		ByteBuffer buf = ByteBuffer.wrap(data);
+		nioFile.read(buf, offset + 4L);
 
 		return data;
 	}
@@ -185,7 +159,7 @@ public class DataFile {
 	public void clear()
 		throws IOException
 	{
-		fileChannel.truncate(HEADER_LENGTH);
+		nioFile.truncate(HEADER_LENGTH);
 	}
 
 	/**
@@ -195,7 +169,7 @@ public class DataFile {
 		throws IOException
 	{
 		if (forceSync) {
-			fileChannel.force(false);
+			nioFile.force(false);
 		}
 	}
 
@@ -207,7 +181,7 @@ public class DataFile {
 	public void close()
 		throws IOException
 	{
-		raf.close();
+		nioFile.close();
 	}
 
 	/**
@@ -229,7 +203,7 @@ public class DataFile {
 		public boolean hasNext()
 			throws IOException
 		{
-			return position < fileChannel.size();
+			return position < nioFile.size();
 		}
 
 		public byte[] next()

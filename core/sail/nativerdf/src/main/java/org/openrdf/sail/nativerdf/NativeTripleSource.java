@@ -6,6 +6,7 @@
 package org.openrdf.sail.nativerdf;
 
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
@@ -16,6 +17,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 
 public class NativeTripleSource implements TripleSource {
@@ -56,7 +58,10 @@ public class NativeTripleSource implements TripleSource {
 
 				@Override
 				protected QueryEvaluationException convert(Exception e) {
-					if (e instanceof IOException) {
+					if (e instanceof ClosedByInterruptException) {
+						return new QueryInterruptedException(e);
+					}
+					else if (e instanceof IOException) {
 						return new QueryEvaluationException(e);
 					}
 					else if (e instanceof RuntimeException) {

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,7 +8,6 @@ package org.openrdf.sail.nativerdf.btree;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -25,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.io.ByteArrayUtil;
+import info.aduna.io.NioFile;
 
 /**
  * Implementation of an on-disk B-Tree using the <tt>java.nio</tt> classes that
@@ -87,20 +87,9 @@ public class BTree {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
-	 * The BTree file.
+	 * The BTree file, accessed using java.nio-channels.
 	 */
-	private final File file;
-
-	/**
-	 * A RandomAccessFile used to open and close a read/write FileChannel on the
-	 * BTree file.
-	 */
-	private final RandomAccessFile raf;
-
-	/**
-	 * The file channel used to read and write data from/to the BTree file.
-	 */
-	private final FileChannel fileChannel;
+	private final NioFile nioFile;
 
 	/**
 	 * Flag indicating whether file writes should be forced to disk using
@@ -201,6 +190,11 @@ public class BTree {
 	 * unknown.
 	 */
 	private volatile int height = -1;
+
+	/**
+	 * Flag indicating whether this BTree has been closed.
+	 */
+	private volatile boolean closed = false;
 
 	/*--------------*
 	 * Constructors *
@@ -332,25 +326,15 @@ public class BTree {
 			throw new IllegalArgumentException("comparator muts not be null");
 		}
 
-		this.file = new File(dataDir, filenamePrefix + ".dat");
+		File file = new File(dataDir, filenamePrefix + ".dat");
+		this.nioFile = new NioFile(file);
 		this.comparator = comparator;
 		this.forceSync = forceSync;
-
-		if (!file.exists()) {
-			boolean created = file.createNewFile();
-			if (!created) {
-				throw new IOException("Failed to create file: " + file);
-			}
-		}
-
-		// Open a read/write channel to the file
-		raf = new RandomAccessFile(file, "rw");
-		fileChannel = raf.getChannel();
 
 		File allocFile = new File(dataDir, filenamePrefix + ".alloc");
 		allocatedNodesList = new AllocatedNodesList(allocFile, this);
 
-		if (fileChannel.size() == 0L) {
+		if (nioFile.size() == 0L) {
 			// Empty file, initialize it with the specified parameters
 			this.blockSize = blockSize;
 			this.valueSize = valueSize;
@@ -364,7 +348,7 @@ public class BTree {
 		else {
 			// Read parameters from file
 			ByteBuffer buf = ByteBuffer.allocate(HEADER_LENGTH);
-			fileChannel.read(buf, 0L);
+			nioFile.read(buf, 0L);
 
 			buf.rewind();
 
@@ -425,7 +409,7 @@ public class BTree {
 	 * Gets the file that this BTree operates on.
 	 */
 	public File getFile() {
-		return file;
+		return nioFile.getFile();
 	}
 
 	/**
@@ -439,7 +423,7 @@ public class BTree {
 		close(false);
 
 		boolean success = allocatedNodesList.delete();
-		success &= file.delete();
+		success &= nioFile.delete();
 		return success;
 	}
 
@@ -468,20 +452,27 @@ public class BTree {
 	{
 		btreeLock.writeLock().lock();
 		try {
-			if (fileChannel.isOpen()) {
-				if (syncChanges) {
-					sync();
-				}
-
-				synchronized (nodeCache) {
-					nodeCache.clear();
-					mruNodes.clear();
-				}
-
-				raf.close();
+			if (closed) {
+				return;
 			}
 
-			allocatedNodesList.close(syncChanges);
+			if (syncChanges) {
+				sync();
+			}
+
+			closed = true;
+
+			synchronized (nodeCache) {
+				nodeCache.clear();
+				mruNodes.clear();
+			}
+
+			try {
+				nioFile.close();
+			}
+			finally {
+				allocatedNodesList.close(syncChanges);
+			}
 		}
 		finally {
 			btreeLock.writeLock().unlock();
@@ -508,7 +499,7 @@ public class BTree {
 			}
 
 			if (forceSync) {
-				fileChannel.force(false);
+				nioFile.force(false);
 			}
 
 			allocatedNodesList.sync();
@@ -1165,7 +1156,7 @@ public class BTree {
 				nodeCache.clear();
 				mruNodes.clear();
 			}
-			fileChannel.truncate(HEADER_LENGTH);
+			nioFile.truncate(HEADER_LENGTH);
 
 			if (rootNodeID != 0) {
 				rootNodeID = 0;
@@ -1269,7 +1260,7 @@ public class BTree {
 				int maxNodeID = allocatedNodesList.getMaxNodeID();
 				if (node.getID() > maxNodeID) {
 					// Shrink file
-					fileChannel.truncate(nodeID2offset(maxNodeID) + nodeSize);
+					nioFile.truncate(nodeID2offset(maxNodeID) + nodeSize);
 				}
 			}
 		}
@@ -1313,7 +1304,7 @@ public class BTree {
 
 		buf.rewind();
 
-		fileChannel.write(buf, 0L);
+		nioFile.write(buf, 0L);
 	}
 
 	private long nodeID2offset(int id) {
@@ -1780,7 +1771,7 @@ public class BTree {
 			// Don't fill the spare slot in data:
 			buf.limit(nodeSize);
 
-			int bytesRead = fileChannel.read(buf, nodeID2offset(id));
+			int bytesRead = nioFile.read(buf, nodeID2offset(id));
 			assert bytesRead == nodeSize : "Read operation didn't read the entire node (" + bytesRead + " of "
 					+ nodeSize + " bytes)";
 
@@ -1795,7 +1786,7 @@ public class BTree {
 			// Don't write the spare slot in data to the file:
 			buf.limit(nodeSize);
 
-			int bytesWritten = fileChannel.write(buf, nodeID2offset(id));
+			int bytesWritten = nioFile.write(buf, nodeID2offset(id));
 			assert bytesWritten == nodeSize : "Write operation didn't write the entire node (" + bytesWritten
 					+ " of " + nodeSize + " bytes)";
 
@@ -2434,8 +2425,8 @@ public class BTree {
 		int valueCount = 0;
 
 		ByteBuffer buf = ByteBuffer.allocate(nodeSize);
-		for (long offset = blockSize; offset < fileChannel.size(); offset += blockSize) {
-			fileChannel.read(buf, offset);
+		for (long offset = blockSize; offset < nioFile.size(); offset += blockSize) {
+			nioFile.read(buf, offset);
 			buf.rewind();
 
 			int nodeID = offset2nodeID(offset);
