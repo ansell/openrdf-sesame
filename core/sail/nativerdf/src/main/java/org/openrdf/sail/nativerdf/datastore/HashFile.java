@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -7,12 +7,13 @@ package org.openrdf.sail.nativerdf.datastore;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import info.aduna.io.NioFile;
 
 /**
  * Class supplying access to a hash file.
@@ -56,11 +57,7 @@ public class HashFile {
 	 * Variables *
 	 *-----------*/
 
-	private final File file;
-
-	private final RandomAccessFile raf;
-
-	private final FileChannel fileChannel;
+	private final NioFile nioFile;
 
 	private final boolean forceSync;
 
@@ -98,21 +95,10 @@ public class HashFile {
 	public HashFile(File file, boolean forceSync)
 		throws IOException
 	{
-		this.file = file;
+		this.nioFile = new NioFile(file);
 		this.forceSync = forceSync;
 
-		if (!file.exists()) {
-			boolean created = file.createNewFile();
-			if (!created) {
-				throw new IOException("Failed to create file: " + file);
-			}
-		}
-
-		// Open a read/write channel to the file
-		raf = new RandomAccessFile(file, "rw");
-		fileChannel = raf.getChannel();
-
-		if (fileChannel.size() == 0L) {
+		if (nioFile.size() == 0L) {
 			// Empty file, insert bucket count, bucket size
 			// and item count at the start of the file
 			bucketCount = INIT_BUCKET_COUNT;
@@ -128,7 +114,7 @@ public class HashFile {
 		else {
 			// Read bucket count, bucket size and item count from the file
 			ByteBuffer buf = ByteBuffer.allocate((int)HEADER_LENGTH);
-			fileChannel.read(buf, 0L);
+			nioFile.read(buf, 0L);
 			buf.rewind();
 
 			if (buf.remaining() < HEADER_LENGTH) {
@@ -162,7 +148,7 @@ public class HashFile {
 	 *---------*/
 
 	public File getFile() {
-		return file;
+		return nioFile.getFile();
 	}
 
 	public int getItemCount() {
@@ -213,7 +199,7 @@ public class HashFile {
 		ByteBuffer bucket = ByteBuffer.allocate(recordSize);
 
 		while (!idStored) {
-			fileChannel.read(bucket, bucketOffset);
+			nioFile.read(bucket, bucketOffset);
 
 			// Find first empty slot in bucket
 			int slotID = findEmptySlotInBucket(bucket);
@@ -223,7 +209,7 @@ public class HashFile {
 				bucket.putInt(ITEM_SIZE * slotID, hash);
 				bucket.putInt(ITEM_SIZE * slotID + 4, id);
 				bucket.rewind();
-				fileChannel.write(bucket, bucketOffset);
+				nioFile.write(bucket, bucketOffset);
 				idStored = true;
 			}
 			else {
@@ -237,7 +223,7 @@ public class HashFile {
 					// Link overflow bucket to current bucket
 					bucket.putInt(ITEM_SIZE * bucketSize, overflowID);
 					bucket.rewind();
-					fileChannel.write(bucket, bucketOffset);
+					nioFile.write(bucket, bucketOffset);
 				}
 
 				// Continue searching for an empty slot in the overflow bucket
@@ -253,7 +239,7 @@ public class HashFile {
 		structureLock.writeLock().lock();
 		try {
 			// Truncate the file to remove any overflow buffers
-			fileChannel.truncate(HEADER_LENGTH + (long)bucketCount * recordSize);
+			nioFile.truncate(HEADER_LENGTH + (long)bucketCount * recordSize);
 
 			// Overwrite normal buckets with empty ones
 			writeEmptyBuckets(HEADER_LENGTH, bucketCount);
@@ -281,14 +267,14 @@ public class HashFile {
 		}
 
 		if (forceSync) {
-			fileChannel.force(false);
+			nioFile.force(false);
 		}
 	}
 
 	public void close()
 		throws IOException
 	{
-		raf.close();
+		nioFile.close();
 	}
 
 	/*-----------------*
@@ -327,7 +313,7 @@ public class HashFile {
 		buf.putInt(itemCount);
 		buf.rewind();
 
-		fileChannel.write(buf, 0L);
+		nioFile.write(buf, 0L);
 	}
 
 	/**
@@ -354,7 +340,7 @@ public class HashFile {
 	private int createOverflowBucket()
 		throws IOException
 	{
-		long offset = fileChannel.size();
+		long offset = nioFile.size();
 		writeEmptyBuckets(offset, 1);
 		return (int)((offset - HEADER_LENGTH) / recordSize) - bucketCount + 1;
 	}
@@ -365,7 +351,7 @@ public class HashFile {
 		ByteBuffer emptyBucket = ByteBuffer.allocate(recordSize);
 
 		for (int i = 0; i < bucketCount; i++) {
-			fileChannel.write(emptyBucket, fileOffset + i * (long)recordSize);
+			nioFile.write(emptyBucket, fileOffset + i * (long)recordSize);
 			emptyBucket.rewind();
 		}
 	}
@@ -394,22 +380,24 @@ public class HashFile {
 
 		long oldTableSize = HEADER_LENGTH + (long)bucketCount * recordSize;
 		long newTableSize = HEADER_LENGTH + (long)bucketCount * recordSize * 2;
-		long oldFileSize = fileChannel.size(); // includes overflow buckets
+		long oldFileSize = nioFile.size(); // includes overflow buckets
 
 		// Move any overflow buckets out of the way to a temporary file
-		File tmpFile = new File(file.getParentFile(), "rehash_" + file.getName());
+		File tmpFile = new File(getFile().getParentFile(), "rehash_" + getFile().getName());
 		RandomAccessFile tmpRaf = createEmptyFile(tmpFile);
 		FileChannel tmpChannel = tmpRaf.getChannel();
 
 		// Transfer the overflow buckets to the temp file
-		fileChannel.transferTo(oldTableSize, oldFileSize, tmpChannel);
+		// FIXME: work around java bug 6431344:
+		// "FileChannel.transferTo() doesn't work if address space runs out"
+		nioFile.transferTo(oldTableSize, oldFileSize - oldTableSize, tmpChannel);
 
 		// Increase hash table by factor 2
 		writeEmptyBuckets(oldTableSize, bucketCount);
 		bucketCount *= 2;
 
 		// Discard any remaining overflow buffers
-		fileChannel.truncate(newTableSize);
+		nioFile.truncate(newTableSize);
 
 		ByteBuffer bucket = ByteBuffer.allocate(recordSize);
 		ByteBuffer newBucket = ByteBuffer.allocate(recordSize);
@@ -423,7 +411,7 @@ public class HashFile {
 		// new and empty bucket. All items are divided between the old and the new
 		// bucket and the changes to the buckets are written to disk only once.
 		for (long bucketOffset = HEADER_LENGTH; bucketOffset < oldTableSize; bucketOffset += recordSize) {
-			fileChannel.read(bucket, bucketOffset);
+			nioFile.read(bucket, bucketOffset);
 
 			boolean bucketChanged = false;
 			long newBucketOffset = 0L;
@@ -455,7 +443,7 @@ public class HashFile {
 				// Some of the items were moved to the new bucket, write it to the
 				// file
 				newBucket.flip();
-				fileChannel.write(newBucket, newBucketOffset);
+				nioFile.write(newBucket, newBucketOffset);
 				newBucket.clear();
 			}
 
@@ -469,7 +457,7 @@ public class HashFile {
 				// Some of the items were moved to the new bucket or the overflow
 				// ID has been reset; write the bucket back to the file
 				bucket.rewind();
-				fileChannel.write(bucket, bucketOffset);
+				nioFile.write(bucket, bucketOffset);
 			}
 
 			bucket.clear();
@@ -490,12 +478,8 @@ public class HashFile {
 					int hash = bucket.getInt(ITEM_SIZE * slotNo);
 					long newBucketOffset = getBucketOffset(hash);
 
-					// Move this item to new location...
+					// Copy this item to its new location
 					storeID(newBucketOffset, hash, id);
-
-					// ...and remove it from the current bucket
-					bucket.putInt(ITEM_SIZE * slotNo, 0);
-					bucket.putInt(ITEM_SIZE * slotNo + 4, 0);
 				}
 			}
 
@@ -509,79 +493,6 @@ public class HashFile {
 		// long endTime = System.currentTimeMillis();
 		// System.out.println("Hash table rehashed in " + (endTime-startTime) + "
 		// ms");
-	}
-
-	public void dumpContents(PrintStream out)
-		throws IOException
-	{
-		out.println();
-		out.println("*** hash file contents ***");
-
-		out.println("_bucketCount=" + bucketCount);
-		out.println("_bucketSize=" + bucketSize);
-		out.println("_itemCount=" + itemCount);
-
-		ByteBuffer buf = ByteBuffer.allocate(recordSize);
-		fileChannel.position(HEADER_LENGTH);
-
-		out.println("---Buckets---");
-
-		for (int bucketNo = 1; bucketNo <= bucketCount; bucketNo++) {
-			buf.clear();
-			fileChannel.read(buf);
-
-			out.print("Bucket " + bucketNo + ": ");
-
-			for (int slotNo = 0; slotNo < bucketSize; slotNo++) {
-				int hash = buf.getInt(ITEM_SIZE * slotNo);
-				int id = buf.getInt(ITEM_SIZE * slotNo + 4);
-				if (slotNo > 0) {
-					out.print(" ");
-				}
-				out.print("[" + toHexString(hash) + "," + id + "]");
-			}
-
-			int overflowID = buf.getInt(ITEM_SIZE * bucketSize);
-			out.println("---> " + overflowID);
-		}
-
-		out.println("---Overflow Buckets---");
-
-		int bucketNo = 0;
-		while (fileChannel.position() < fileChannel.size()) {
-			buf.clear();
-			fileChannel.read(buf);
-			bucketNo++;
-
-			out.print("Bucket " + bucketNo + ": ");
-
-			for (int slotNo = 0; slotNo < bucketSize; slotNo++) {
-				int hash = buf.getInt(ITEM_SIZE * slotNo);
-				int id = buf.getInt(ITEM_SIZE * slotNo + 4);
-				if (slotNo > 0) {
-					out.print(" ");
-				}
-				out.print("[" + toHexString(hash) + "," + id + "]");
-			}
-
-			int overflowID = buf.getInt(ITEM_SIZE * bucketSize);
-			out.println("---> " + overflowID);
-		}
-
-		out.println("*** end of hash file contents ***");
-		out.println();
-	}
-
-	private String toHexString(int decimal) {
-		String hex = Integer.toHexString(decimal);
-
-		StringBuilder result = new StringBuilder(8);
-		for (int i = hex.length(); i < 8; i++) {
-			result.append("0");
-		}
-		result.append(hex);
-
-		return result.toString();
 	}
 
 	/*------------------------*
@@ -606,7 +517,7 @@ public class HashFile {
 			try {
 				// Read initial bucket
 				long bucketOffset = getBucketOffset(hash);
-				fileChannel.read(bucketBuffer, bucketOffset);
+				nioFile.read(bucketBuffer, bucketOffset);
 
 				slotNo = -1;
 			}
@@ -651,7 +562,7 @@ public class HashFile {
 					// Continue with overflow bucket
 					bucketBuffer.clear();
 					long bucketOffset = getOverflowBucketOffset(overflowID);
-					fileChannel.read(bucketBuffer, bucketOffset);
+					nioFile.read(bucketBuffer, bucketOffset);
 					slotNo = -1;
 				}
 			}
@@ -659,13 +570,4 @@ public class HashFile {
 			return -1;
 		}
 	} // End inner class IDIterator
-
-	public static void main(String[] args)
-		throws Exception
-	{
-		HashFile hashFile = new HashFile(new File(args[0]));
-		hashFile.dumpContents(System.out);
-		hashFile.close();
-	}
-
 } // End class HashFile

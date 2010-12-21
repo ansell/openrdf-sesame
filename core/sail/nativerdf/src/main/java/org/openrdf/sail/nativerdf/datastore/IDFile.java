@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -7,10 +7,9 @@ package org.openrdf.sail.nativerdf.datastore;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.Arrays;
+
+import info.aduna.io.NioFile;
 
 /**
  * Class supplying access to an ID file. An ID file maps IDs (integers &gt;= 1)
@@ -51,11 +50,7 @@ public class IDFile {
 	 * Variables *
 	 *-----------*/
 
-	private final File file;
-
-	private final RandomAccessFile raf;
-
-	private final FileChannel fileChannel;
+	private final NioFile nioFile;
 
 	private final boolean forceSync;
 
@@ -72,50 +67,27 @@ public class IDFile {
 	public IDFile(File file, boolean forceSync)
 		throws IOException
 	{
-		this.file = file;
+		this.nioFile = new NioFile(file);
 		this.forceSync = forceSync;
 
-		if (!file.exists()) {
-			boolean created = file.createNewFile();
-			if (!created) {
-				throw new IOException("Failed to create file: " + file);
-			}
-		}
-
-		// Open a read/write channel to the file
-		raf = new RandomAccessFile(file, "rw");
-		fileChannel = raf.getChannel();
-
-		if (fileChannel.size() == 0L) {
+		if (nioFile.size() == 0L) {
 			// Empty file, write header
-			ByteBuffer buf = ByteBuffer.allocate((int)HEADER_LENGTH);
-			buf.put(MAGIC_NUMBER);
-			buf.put(FILE_FORMAT_VERSION);
-			buf.put(new byte[] { 0, 0, 0, 0 });
-			buf.rewind();
-
-			fileChannel.write(buf, 0L);
+			nioFile.writeBytes(MAGIC_NUMBER, 0);
+			nioFile.writeByte(FILE_FORMAT_VERSION, 3);
+			nioFile.writeBytes(new byte[] { 0, 0, 0, 0 }, 4);
 
 			sync();
 		}
+		else if (nioFile.size() < HEADER_LENGTH) {
+			throw new IOException("File too small to be a compatible ID file");
+		}
 		else {
 			// Verify file header
-			ByteBuffer buf = ByteBuffer.allocate((int)HEADER_LENGTH);
-			fileChannel.read(buf, 0L);
-			buf.rewind();
-
-			if (buf.remaining() < HEADER_LENGTH) {
-				throw new IOException("File too short to be a compatible ID file");
-			}
-
-			byte[] magicNumber = new byte[MAGIC_NUMBER.length];
-			buf.get(magicNumber);
-			byte version = buf.get();
-
-			if (!Arrays.equals(MAGIC_NUMBER, magicNumber)) {
+			if (!Arrays.equals(MAGIC_NUMBER, nioFile.readBytes(0, MAGIC_NUMBER.length))) {
 				throw new IOException("File doesn't contain compatible ID records");
 			}
 
+			byte version = nioFile.readByte(MAGIC_NUMBER.length);
 			if (version > FILE_FORMAT_VERSION) {
 				throw new IOException("Unable to read ID file; it uses a newer file format");
 			}
@@ -131,7 +103,7 @@ public class IDFile {
 	 *---------*/
 
 	public final File getFile() {
-		return file;
+		return nioFile.getFile();
 	}
 
 	/**
@@ -145,7 +117,7 @@ public class IDFile {
 	public int getMaxID()
 		throws IOException
 	{
-		return (int)(fileChannel.size() / ITEM_SIZE) - 1;
+		return (int)(nioFile.size() / ITEM_SIZE) - 1;
 	}
 
 	/**
@@ -155,9 +127,9 @@ public class IDFile {
 	public int storeOffset(long offset)
 		throws IOException
 	{
-		int id = (int)(fileChannel.size() / ITEM_SIZE);
-		setOffset(id, offset);
-		return id;
+		long fileSize = nioFile.size();
+		nioFile.writeLong(offset, fileSize);
+		return (int)(fileSize / ITEM_SIZE);
 	}
 
 	/**
@@ -172,10 +144,7 @@ public class IDFile {
 		throws IOException
 	{
 		assert id > 0 : "id must be larger than 0, is: " + id;
-
-		ByteBuffer buf = ByteBuffer.allocate(8);
-		buf.putLong(0, offset);
-		fileChannel.write(buf, ITEM_SIZE * id);
+		nioFile.writeLong(offset, ITEM_SIZE * id);
 	}
 
 	/**
@@ -189,10 +158,7 @@ public class IDFile {
 		throws IOException
 	{
 		assert id > 0 : "id must be larger than 0, is: " + id;
-
-		ByteBuffer buf = ByteBuffer.allocate(8);
-		fileChannel.read(buf, ITEM_SIZE * id);
-		return buf.getLong(0);
+		return nioFile.readLong(ITEM_SIZE * id);
 	}
 
 	/**
@@ -204,7 +170,7 @@ public class IDFile {
 	public void clear()
 		throws IOException
 	{
-		fileChannel.truncate(HEADER_LENGTH);
+		nioFile.truncate(HEADER_LENGTH);
 	}
 
 	/**
@@ -214,7 +180,7 @@ public class IDFile {
 		throws IOException
 	{
 		if (forceSync) {
-			fileChannel.force(false);
+			nioFile.force(false);
 		}
 	}
 
@@ -226,6 +192,6 @@ public class IDFile {
 	public void close()
 		throws IOException
 	{
-		raf.close();
+		nioFile.close();
 	}
 }

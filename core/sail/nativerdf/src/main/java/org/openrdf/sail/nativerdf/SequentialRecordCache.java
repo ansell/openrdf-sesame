@@ -7,10 +7,10 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.NoSuchElementException;
+
+import info.aduna.io.NioFile;
 
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 
@@ -41,11 +41,7 @@ final class SequentialRecordCache extends RecordCache {
 	 * Attributes *
 	 *------------*/
 
-	private final File cacheFile;
-
-	private final RandomAccessFile raf;
-
-	private final FileChannel fileChannel;
+	private final NioFile nioFile;
 
 	private final int recordSize;
 
@@ -65,13 +61,12 @@ final class SequentialRecordCache extends RecordCache {
 		super(maxRecords);
 		this.recordSize = recordSize;
 
-		this.cacheFile = File.createTempFile("txncache", ".dat", cacheDir);
-		this.raf = new RandomAccessFile(cacheFile, "rw");
-		this.fileChannel = raf.getChannel();
-		
+		File cacheFile = File.createTempFile("txncache", ".dat", cacheDir);
+		nioFile = new NioFile(cacheFile);
+
 		// Write file header
-		raf.write(MAGIC_NUMBER);
-		raf.write(FILE_FORMAT_VERSION);
+		nioFile.writeBytes(MAGIC_NUMBER, 0);
+		nioFile.writeByte(FILE_FORMAT_VERSION, MAGIC_NUMBER.length);
 	}
 
 	/*---------*
@@ -82,31 +77,21 @@ final class SequentialRecordCache extends RecordCache {
 	public void discard()
 		throws IOException
 	{
-		try {
-			try {
-				fileChannel.close();
-			}
-			finally {
-				raf.close();
-			}
-		}
-		finally {
-			cacheFile.delete();
-		}
+		nioFile.delete();
 	}
 
 	@Override
 	protected void clearInternal()
 		throws IOException
 	{
-		fileChannel.truncate(HEADER_LENGTH);
+		nioFile.truncate(HEADER_LENGTH);
 	}
 
 	@Override
 	protected void storeRecordInternal(byte[] data)
 		throws IOException
 	{
-		fileChannel.write(ByteBuffer.wrap(data), fileChannel.size());
+		nioFile.writeBytes(data, nioFile.size());
 	}
 
 	@Override
@@ -125,11 +110,11 @@ final class SequentialRecordCache extends RecordCache {
 		public byte[] next()
 			throws IOException
 		{
-			if (position + recordSize <= fileChannel.size()) {
+			if (position + recordSize <= nioFile.size()) {
 				byte[] data = new byte[recordSize];
 				ByteBuffer buf = ByteBuffer.wrap(data);
 
-				int bytesRead = fileChannel.read(buf, position);
+				int bytesRead = nioFile.read(buf, position);
 
 				if (bytesRead < 0) {
 					throw new NoSuchElementException("No more elements available");
@@ -146,8 +131,8 @@ final class SequentialRecordCache extends RecordCache {
 		public void set(byte[] value)
 			throws IOException
 		{
-			if (position >= HEADER_LENGTH + recordSize && position <= fileChannel.size()) {
-				fileChannel.write(ByteBuffer.wrap(value), position - recordSize);
+			if (position >= HEADER_LENGTH + recordSize && position <= nioFile.size()) {
+				nioFile.writeBytes(value, position - recordSize);
 			}
 		}
 
