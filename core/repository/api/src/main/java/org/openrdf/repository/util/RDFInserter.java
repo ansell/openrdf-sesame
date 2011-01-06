@@ -160,7 +160,7 @@ public class RDFInserter extends RDFHandlerBase {
 		// FIXME: set namespaces directly when they are properly handled wrt
 		// rollback
 		// don't replace earlier declarations
-		if (prefix != null && prefix.trim().length() > 0 && !namespaceMap.containsKey(prefix)) {
+		if (prefix != null && !namespaceMap.containsKey(prefix)) {
 			namespaceMap.put(prefix, name);
 		}
 	}
