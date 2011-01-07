@@ -555,7 +555,30 @@
 				</configuration>
 			</plugin>
 		</plugins>
+
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+         			<artifactId>wagon-ssh-external</artifactId>
+         			<version>1.0-beta-7</version>
+			</extension>
+		</extensions>
 	</build>
+
+	<distributionManagement>
+		<repository>
+			<id>aduna-opensource.releases.deploy</id>
+			<name>Aduna Open Source - Maven releases</name>
+			<url>scpexe://repo.aduna-software.org:2222/var/local/hosts/repo.aduna-software.org/maven2/releases</url>
+			<uniqueVersion>false</uniqueVersion>
+		</repository>
+		<snapshotRepository>
+			<id>aduna-opensource.snapshots.deploy</id>
+			<name>Aduna Open Source - Maven snapshots</name>
+			<url>scpexe://repo.aduna-software.org:2222/var/local/hosts/repo.aduna-software.org/maven2/snapshots</url>
+			<uniqueVersion>false</uniqueVersion>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<reporting>
 		<plugins>
