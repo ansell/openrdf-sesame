@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf</groupId>
 		<artifactId>openrdf-root-pom</artifactId>
-		<version>3</version>
+		<version>5</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
