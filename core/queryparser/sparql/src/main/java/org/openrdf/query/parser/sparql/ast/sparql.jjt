@@ -131,6 +131,7 @@ TOKEN [IGNORE_CASE] :
 |	<NAMED: "named">
 |	<WHERE: "where">
 |	<ORDER: "order">
+|	<GROUP: "group">
 |	<BY: "by">
 |	<ASC: "asc">
 |	<DESC: "desc">
@@ -140,6 +141,7 @@ TOKEN [IGNORE_CASE] :
 |	<GRAPH: "graph">
 |	<UNION: "union">
 |	<FILTER: "filter">
+|	<HAVING: "having">
 |	<STR: "str">
 |	<LANG: "lang">
 |	<LANGMATCHES: "langmatches">
@@ -149,6 +151,14 @@ TOKEN [IGNORE_CASE] :
 |	<IS_IRI: ("isIRI"|"isURI")>
 |	<IS_BLANK: "isBlank">
 |	<IS_LITERAL: "isLiteral">
+|	<COUNT: "count">
+|	<SUM: "sum">
+|	<MIN: "min">
+|	<MAX: "max">
+|	<AVG: "avg">
+|	<SAMPLE: "sample">
+|	<GROUP_CONCAT: "group_concat">
+|	<SEPARATOR: "separator">
 |	<REGEX: "regex">
 |	<TRUE: "true">
 |	<FALSE: "false">
@@ -576,7 +586,7 @@ void GraphTerm() #void :
 	<NIL> {jjtThis.setValue(RDF.NIL.toString());} #IRI
 }
 
-void Expression() :
+void Expression() #void :
 {}
 {
 	ConditionalOrExpression()
@@ -673,7 +683,24 @@ void PrimaryExpression() #void :
 |	NumericLiteral()
 |	BooleanLiteral()
 |	Var()
+//| 	Aggregate()
 }
+
+/*
+void Aggregate() #void :
+{}
+{
+    Count() 
+    // TODO add more aggregates
+}
+
+void Count() :
+{}
+{
+    <COUNT> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ]
+       ( <STAR> {jjtThis.setWildcard(true); } | Expression() ) <RPAREN>
+}
+*/
 
 void BrackettedExpression() #void :
 {}
