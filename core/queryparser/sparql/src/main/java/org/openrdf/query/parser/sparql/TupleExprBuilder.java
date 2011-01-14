@@ -58,6 +58,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
+import org.openrdf.query.parser.sparql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.sparql.ast.ASTAnd;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
@@ -215,11 +216,32 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		TupleExpr result = (TupleExpr)data;
 
+		Extension extension = new Extension();
+
 		ProjectionElemList projElemList = new ProjectionElemList();
 
-		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-			Var projVar = (Var)node.jjtGetChild(i).jjtAccept(this, null);
-			projElemList.addElement(new ProjectionElem(projVar.getName()));
+		for (ASTProjectionElem projElemNode : node.getProjectionElemList()) {
+			ValueExpr valueExpr = (ValueExpr)projElemNode.getExpression().jjtAccept(this, null);
+
+			String alias = projElemNode.getAlias();
+			if (alias != null) {
+				// aliased projection element
+				extension.addElement(new ExtensionElem(valueExpr, alias));
+				projElemList.addElement(new ProjectionElem(alias));
+			}
+			else if (valueExpr instanceof Var) {
+				// unaliased variable
+				Var projVar = (Var)valueExpr;
+				projElemList.addElement(new ProjectionElem(projVar.getName()));
+			}
+			else {
+				throw new IllegalStateException("required alias for non-Var projection elements not found");
+			}
+		}
+
+		if (!extension.getElements().isEmpty()) {
+			extension.setArg(result);
+			result = extension;
 		}
 
 		result = new Projection(result, projElemList);

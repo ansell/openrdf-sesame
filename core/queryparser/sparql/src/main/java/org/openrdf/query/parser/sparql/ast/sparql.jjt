@@ -126,6 +126,7 @@ TOKEN [IGNORE_CASE] :
 |	<ASK: "ask">
 |	<DISTINCT: "distinct">
 |	<REDUCED: "reduced">
+|	<AS: "as">
 |	<FROM: "from">
 |	<NAMED: "named">
 |	<WHERE: "where">
@@ -282,8 +283,16 @@ void Select() :
 	(
 		<STAR> { jjtThis.setWildcard(true); }
 	|
-		( Var() )+
+		( ProjectionElem() )+
 	)
+}
+
+void ProjectionElem() :
+{}
+{
+    Var() 
+    |
+    <LPAREN> Expression() <AS> Var() <RPAREN>
 }
 
 void ConstructQuery() :
@@ -567,7 +576,7 @@ void GraphTerm() #void :
 	<NIL> {jjtThis.setValue(RDF.NIL.toString());} #IRI
 }
 
-void Expression() #void :
+void Expression() :
 {}
 {
 	ConditionalOrExpression()

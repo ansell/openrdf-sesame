@@ -485,6 +485,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 	public static TestSuite suite(String manifestFileURL, Factory factory)
 		throws Exception
 	{
+		return suite(manifestFileURL, factory, true);
+	}
+
+	public static TestSuite suite(String manifestFileURL, Factory factory, boolean approvedOnly)
+		throws Exception
+	{
 		logger.info("Building test suite for {}", manifestFileURL);
 
 		TestSuite suite = new TestSuite(factory.getClass().getName());
@@ -502,7 +508,10 @@ public abstract class SPARQLQueryTest extends TestCase {
 		// select those test cases that are mentioned in the list.
 		StringBuilder query = new StringBuilder(512);
 		query.append(" SELECT DISTINCT testURI, testName, resultFile, action, queryFile, defaultGraph ");
-		query.append(" FROM {} rdf:first {testURI} dawgt:approval {dawgt:Approved}; ");
+		query.append(" FROM {} rdf:first {testURI} ");
+		if (approvedOnly) {
+			query.append("                          dawgt:approval {dawgt:Approved}; ");
+		}
 		query.append("                             mf:name {testName}; ");
 		query.append("                             mf:result {resultFile}; ");
 		query.append("                             mf:action {action} qt:query {queryFile}; ");

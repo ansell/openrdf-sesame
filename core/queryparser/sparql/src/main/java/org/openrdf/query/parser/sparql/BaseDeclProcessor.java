@@ -9,6 +9,7 @@ import info.aduna.net.ParsedURI;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.sparql.ast.ASTBaseDecl;
+import org.openrdf.query.parser.sparql.ast.ASTExpression;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
@@ -93,5 +94,7 @@ class BaseDeclProcessor {
 
 			return super.visit(node, data);
 		}
+
+
 	}
 }

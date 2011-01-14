@@ -2,6 +2,10 @@
 
 package org.openrdf.query.parser.sparql.ast;
 
+import java.util.List;
+
+import info.aduna.collections.CastingList;
+
 public class ASTSelect extends SimpleNode {
 
 	private boolean distinct = false;
@@ -47,6 +51,10 @@ public class ASTSelect extends SimpleNode {
 
 	public void setWildcard(boolean wildcard) {
 		this.wildcard = wildcard;
+	}
+	
+	public List<ASTProjectionElem> getProjectionElemList() {
+		return new CastingList<ASTProjectionElem>(children);
 	}
 	
 	@Override
