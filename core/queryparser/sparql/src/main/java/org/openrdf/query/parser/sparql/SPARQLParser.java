@@ -108,7 +108,12 @@ public class SPARQLParser implements QueryParser {
 				if (queryStr.length() > 0) {
 					try {
 						SPARQLParser parser = new SPARQLParser();
-						parser.parseQuery(queryStr, null);
+						ParsedQuery parsedQuery = parser.parseQuery(queryStr, null);
+						
+						System.out.println("Parsed query: ");
+						System.out.println(parsedQuery.toString());
+						System.out.println();
+						
 					}
 					catch (Exception e) {
 						System.err.println(e.getMessage());
