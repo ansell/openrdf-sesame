@@ -35,29 +35,28 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTBLANKNODEPROPERTYLIST = 29;
   public int JJTCOLLECTION = 30;
   public int JJTVAR = 31;
-  public int JJTEXPRESSION = 32;
-  public int JJTOR = 33;
-  public int JJTAND = 34;
-  public int JJTCOMPARE = 35;
-  public int JJTMATH = 36;
-  public int JJTNOT = 37;
-  public int JJTNUMERICLITERAL = 38;
-  public int JJTSTR = 39;
-  public int JJTLANG = 40;
-  public int JJTLANGMATCHES = 41;
-  public int JJTDATATYPE = 42;
-  public int JJTBOUND = 43;
-  public int JJTSAMETERM = 44;
-  public int JJTISIRI = 45;
-  public int JJTISBLANK = 46;
-  public int JJTISLITERAL = 47;
-  public int JJTREGEXEXPRESSION = 48;
-  public int JJTRDFLITERAL = 49;
-  public int JJTTRUE = 50;
-  public int JJTFALSE = 51;
-  public int JJTSTRING = 52;
-  public int JJTQNAME = 53;
-  public int JJTBLANKNODE = 54;
+  public int JJTOR = 32;
+  public int JJTAND = 33;
+  public int JJTCOMPARE = 34;
+  public int JJTMATH = 35;
+  public int JJTNOT = 36;
+  public int JJTNUMERICLITERAL = 37;
+  public int JJTSTR = 38;
+  public int JJTLANG = 39;
+  public int JJTLANGMATCHES = 40;
+  public int JJTDATATYPE = 41;
+  public int JJTBOUND = 42;
+  public int JJTSAMETERM = 43;
+  public int JJTISIRI = 44;
+  public int JJTISBLANK = 45;
+  public int JJTISLITERAL = 46;
+  public int JJTREGEXEXPRESSION = 47;
+  public int JJTRDFLITERAL = 48;
+  public int JJTTRUE = 49;
+  public int JJTFALSE = 50;
+  public int JJTSTRING = 51;
+  public int JJTQNAME = 52;
+  public int JJTBLANKNODE = 53;
 
 
   public String[] jjtNodeName = {
@@ -93,7 +92,6 @@ public interface SyntaxTreeBuilderTreeConstants
     "BlankNodePropertyList",
     "Collection",
     "Var",
-    "Expression",
     "Or",
     "And",
     "Compare",
@@ -118,4 +116,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "BlankNode",
   };
 }
-/* JavaCC - OriginalChecksum=d355f09f6f70819f6e6084b3e6dda2a7 (do not edit this line) */
+/* JavaCC - OriginalChecksum=6f7ec36537db42d050fa93f12c173e86 (do not edit this line) */

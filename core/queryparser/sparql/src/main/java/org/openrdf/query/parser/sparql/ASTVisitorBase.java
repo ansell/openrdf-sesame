@@ -21,7 +21,6 @@ import org.openrdf.query.parser.sparql.ast.ASTDatasetClause;
 import org.openrdf.query.parser.sparql.ast.ASTDatatype;
 import org.openrdf.query.parser.sparql.ast.ASTDescribe;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
-import org.openrdf.query.parser.sparql.ast.ASTExpression;
 import org.openrdf.query.parser.sparql.ast.ASTFalse;
 import org.openrdf.query.parser.sparql.ast.ASTFunctionCall;
 import org.openrdf.query.parser.sparql.ast.ASTGraphGraphPattern;
@@ -383,12 +382,6 @@ abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	}
 
 	public Object visit(ASTQName node, Object data)
-		throws VisitorException
-	{
-		return node.childrenAccept(this, data);
-	}
-
-	public Object visit(ASTExpression node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);

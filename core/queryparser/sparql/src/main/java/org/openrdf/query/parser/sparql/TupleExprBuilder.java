@@ -50,16 +50,14 @@ import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
-import org.openrdf.query.parser.sparql.ast.ASTExpression;
-import org.openrdf.query.parser.sparql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.sparql.ast.ASTAnd;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
@@ -93,6 +91,7 @@ import org.openrdf.query.parser.sparql.ast.ASTOptionalGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTOr;
 import org.openrdf.query.parser.sparql.ast.ASTOrderClause;
 import org.openrdf.query.parser.sparql.ast.ASTOrderCondition;
+import org.openrdf.query.parser.sparql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.sparql.ast.ASTPropertyList;
 import org.openrdf.query.parser.sparql.ast.ASTQName;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
@@ -225,26 +224,20 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 			Node child = projElemNode.jjtGetChild(0);
 
-			if (child instanceof ASTExpression) {
+			String alias = projElemNode.getAlias();
+			if (alias != null) {
+				// aliased projection element
 				ValueExpr valueExpr = (ValueExpr)child.jjtAccept(this, null);
 
-				String alias = projElemNode.getAlias();
-				if (alias != null) {
-					// aliased projection element
-					extension.addElement(new ExtensionElem(valueExpr, alias));
-					projElemList.addElement(new ProjectionElem(alias));
-				}
-				else {
-					throw new IllegalStateException("required alias for non-Var projection elements not found");
-				}
+				extension.addElement(new ExtensionElem(valueExpr, alias));
+				projElemList.addElement(new ProjectionElem(alias));
 			}
 			else if (child instanceof ASTVar) {
 				Var projVar = (Var)child.jjtAccept(this, null);
 				projElemList.addElement(new ProjectionElem(projVar.getName()));
 			}
 			else {
-				throw new IllegalStateException(
-						"a projection element can only be a variable or an aliased expression");
+				throw new IllegalStateException("required alias for non-Var projection elements not found");
 			}
 		}
 
