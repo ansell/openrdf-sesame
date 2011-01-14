@@ -54,7 +54,8 @@ public class ASTSelect extends SimpleNode {
 	}
 	
 	public List<ASTProjectionElem> getProjectionElemList() {
-		return new CastingList<ASTProjectionElem>(children);
+		return this.jjtGetChildren(ASTProjectionElem.class);
+		//return new CastingList<ASTProjectionElem>(children);
 	}
 	
 	@Override

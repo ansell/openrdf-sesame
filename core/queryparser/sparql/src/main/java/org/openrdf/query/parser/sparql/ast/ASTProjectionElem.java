@@ -19,10 +19,6 @@ public class ASTProjectionElem extends SimpleNode {
 		return visitor.visit(this, data);
 	}
 
-	public ASTExpression getExpression() {
-		return (ASTExpression)children.get(0);
-	}
-
 	public boolean hasAlias() {
 		return getAlias() != null;
 	}

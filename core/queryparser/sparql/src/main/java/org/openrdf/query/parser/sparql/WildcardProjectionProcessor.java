@@ -11,6 +11,7 @@ import java.util.Set;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.sparql.ast.ASTDescribe;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
+import org.openrdf.query.parser.sparql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.sparql.ast.ASTQuery;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTSelect;
@@ -59,13 +60,21 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 			// Collect variable names from query
 			qc.jjtAccept(visitor, null);
 
-			// Adds ASTVar nodes to the wildcard node
+			
+			// Adds ASTVar nodes to the ASTProjectionElem nodes and to the parent
 			for (String varName : visitor.getVariableNames()) {
 				ASTVar varNode = new ASTVar(SyntaxTreeBuilderTreeConstants.JJTVAR);
+				ASTProjectionElem projectionElemNode = new ASTProjectionElem(
+						SyntaxTreeBuilderTreeConstants.JJTPROJECTIONELEM);
+
 				varNode.setName(varName);
-				wildcardNode.jjtAppendChild(varNode);
-				varNode.jjtSetParent(wildcardNode);
+				projectionElemNode.jjtAppendChild(varNode);
+				varNode.jjtSetParent(projectionElemNode);
+				
+				wildcardNode.jjtAppendChild(projectionElemNode);
+				projectionElemNode.jjtSetParent(wildcardNode);
 			}
+
 		}
 		catch (VisitorException e) {
 			throw new MalformedQueryException(e);

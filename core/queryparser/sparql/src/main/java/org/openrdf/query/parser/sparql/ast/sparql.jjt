@@ -283,7 +283,7 @@ void Select() :
 	(
 		<STAR> { jjtThis.setWildcard(true); }
 	|
-		( ProjectionElem() )+
+		( ProjectionElem() )+ 
 	)
 }
 
