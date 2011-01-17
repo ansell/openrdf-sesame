@@ -142,6 +142,8 @@ TOKEN [IGNORE_CASE] :
 |	<UNION: "union">
 |	<FILTER: "filter">
 |	<HAVING: "having">
+|	<EXISTS: "exists">
+|	<NOT_EXISTS: "not exists">
 |	<STR: "str">
 |	<LANG: "lang">
 |	<LANGMATCHES: "langmatches">
@@ -721,6 +723,8 @@ void BuiltInCall() #void :
 |	IsBlank()
 |	IsLiteral()
 |	RegexExpression()
+|	ExistsFunc()
+|	NotExistsFunc()
 }
 
 void Str() :
@@ -782,6 +786,19 @@ void RegexExpression() :
 {
 	<REGEX> <LPAREN> Expression() <COMMA> Expression() [ <COMMA> Expression() ] <RPAREN>
 }
+
+void ExistsFunc() :
+{}
+{
+    <EXISTS> GroupGraphPattern()
+}
+
+void NotExistsFunc() :
+{}
+{
+    <NOT_EXISTS> GroupGraphPattern()
+}
+
 
 void RDFLiteral() :
 { Token t; }

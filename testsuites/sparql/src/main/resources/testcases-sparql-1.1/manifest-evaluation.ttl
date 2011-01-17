@@ -7,5 +7,6 @@
     rdfs:label "SPARQL 1.1 Query Evaluation tests" ;
     mf:include (
     	<expressions/manifest.ttl>
+    	<negation/manifest.ttl>
    ).
 
