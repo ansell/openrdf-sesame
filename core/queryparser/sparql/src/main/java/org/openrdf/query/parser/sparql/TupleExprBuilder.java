@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.sun.org.apache.xerces.internal.dom.ParentNode;
+
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -25,6 +27,7 @@ import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
+import org.openrdf.query.algebra.Exists;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
@@ -71,6 +74,7 @@ import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
 import org.openrdf.query.parser.sparql.ast.ASTDatatype;
 import org.openrdf.query.parser.sparql.ast.ASTDescribe;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
+import org.openrdf.query.parser.sparql.ast.ASTExistsFunc;
 import org.openrdf.query.parser.sparql.ast.ASTFalse;
 import org.openrdf.query.parser.sparql.ast.ASTFunctionCall;
 import org.openrdf.query.parser.sparql.ast.ASTGraphGraphPattern;
@@ -84,6 +88,7 @@ import org.openrdf.query.parser.sparql.ast.ASTLangMatches;
 import org.openrdf.query.parser.sparql.ast.ASTLimit;
 import org.openrdf.query.parser.sparql.ast.ASTMath;
 import org.openrdf.query.parser.sparql.ast.ASTNot;
+import org.openrdf.query.parser.sparql.ast.ASTNotExistsFunc;
 import org.openrdf.query.parser.sparql.ast.ASTNumericLiteral;
 import org.openrdf.query.parser.sparql.ast.ASTObjectList;
 import org.openrdf.query.parser.sparql.ast.ASTOffset;
@@ -525,11 +530,19 @@ class TupleExprBuilder extends ASTVisitorBase {
 		super.visit(node, null);
 
 		// Filters are scoped to the graph pattern group and do not affect
-		// bindings
-		// external to the group
-		parentGP.addRequiredTE(graphPattern.buildTupleExpr());
-		graphPattern = parentGP;
+		// bindings external to the group
+		TupleExpr te = graphPattern.buildTupleExpr();
 
+		// TODO not sure this is the cleanest way of handling this.
+		if (data != null && data instanceof Exists) {
+			((Exists)data).setSubQuery(te);
+		}
+		else {
+			parentGP.addRequiredTE(te);
+		}
+		
+		graphPattern = parentGP;
+		
 		return null;
 	}
 
@@ -847,6 +860,25 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return new Regex(arg, pattern, flags);
 	}
 
+	@Override
+	public Exists visit(ASTExistsFunc node, Object data) 
+		throws VisitorException 
+	{
+		Exists e = new Exists();
+		
+		node.jjtGetChild(0).jjtAccept(this, e);
+		return e;
+	}
+	
+	@Override
+	public Not visit(ASTNotExistsFunc node, Object data) 
+		throws VisitorException 
+	{
+		Exists e = new Exists();
+		node.jjtGetChild(0).jjtAccept(this, e);
+		return new Not(e);
+	}
+	
 	@Override
 	public Var visit(ASTVar node, Object data)
 		throws VisitorException
