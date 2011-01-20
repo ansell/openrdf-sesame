@@ -140,6 +140,7 @@ TOKEN [IGNORE_CASE] :
 |	<OPTIONAL: "optional">
 |	<GRAPH: "graph">
 |	<UNION: "union">
+|	<MINUS_SETOPER: "minus">
 |	<FILTER: "filter">
 |	<HAVING: "having">
 |	<EXISTS: "exists">
@@ -435,6 +436,7 @@ void GraphPatternNotTriples() #void :
 	OptionalGraphPattern()
 |	GroupOrUnionGraphPattern()
 |	GraphGraphPattern()
+|	MinusGraphPattern()
 }
 
 void OptionalGraphPattern() :
@@ -455,6 +457,14 @@ void GroupOrUnionGraphPattern() #void :
 {}
 {
 	GroupGraphPattern() [ <UNION> GroupOrUnionGraphPattern() #UnionGraphPattern(2) ]
+}
+
+void MinusGraphPattern() :
+{}
+{
+    // TODO check if we should use GroupGraphPattern() instead (depends on
+    // how constraints should be scoped)
+    <MINUS_SETOPER> <LBRACE> GraphPattern() <RBRACE> 
 }
 
 void Filter() #void :

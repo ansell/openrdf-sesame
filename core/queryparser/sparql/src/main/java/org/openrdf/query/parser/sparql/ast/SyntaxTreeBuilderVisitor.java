@@ -26,6 +26,7 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTOptionalGraphPattern node, Object data) throws VisitorException;
   public Object visit(ASTGraphGraphPattern node, Object data) throws VisitorException;
   public Object visit(ASTUnionGraphPattern node, Object data) throws VisitorException;
+  public Object visit(ASTMinusGraphPattern node, Object data) throws VisitorException;
   public Object visit(ASTConstraint node, Object data) throws VisitorException;
   public Object visit(ASTFunctionCall node, Object data) throws VisitorException;
   public Object visit(ASTTriplesSameSubject node, Object data) throws VisitorException;
@@ -60,4 +61,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTQName node, Object data) throws VisitorException;
   public Object visit(ASTBlankNode node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=9b9da3557ad864da8d948b839ec456c5 (do not edit this line) */
+/* JavaCC - OriginalChecksum=381c1010c079adf5ae57011a30d669c5 (do not edit this line) */

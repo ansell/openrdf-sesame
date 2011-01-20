@@ -34,6 +34,7 @@ import org.openrdf.query.parser.sparql.ast.ASTLang;
 import org.openrdf.query.parser.sparql.ast.ASTLangMatches;
 import org.openrdf.query.parser.sparql.ast.ASTLimit;
 import org.openrdf.query.parser.sparql.ast.ASTMath;
+import org.openrdf.query.parser.sparql.ast.ASTMinusGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTNot;
 import org.openrdf.query.parser.sparql.ast.ASTNotExistsFunc;
 import org.openrdf.query.parser.sparql.ast.ASTNumericLiteral;
@@ -209,6 +210,12 @@ abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 		return node.childrenAccept(this, data);
 	}
 
+	public Object visit(ASTMinusGraphPattern node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
 	public Object visit(ASTConstraint node, Object data)
 		throws VisitorException
 	{
@@ -370,13 +377,12 @@ abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	{
 		return node.childrenAccept(this, data);
 	}
-	
+
 	public Object visit(ASTRDFLiteral node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);
 	}
-
 
 	public Object visit(ASTTrue node, Object data)
 		throws VisitorException
