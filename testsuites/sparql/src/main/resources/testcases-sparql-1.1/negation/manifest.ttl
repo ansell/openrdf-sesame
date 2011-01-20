@@ -11,6 +11,7 @@
     (
     	:sparql11-exists-01
     	:sparql11-exists-02
+    	:sparql11-minus-01
     ).
 
 :sparql11-exists-01  mf:name  "sparql11-exists-01" ;
@@ -22,4 +23,9 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-exists-02.rq> ; qt:data <data-01.ttl> ] ;
          mf:result <sparql11-exists-02.srx> .
+         
+:sparql11-minus-01 mf:name  "sparql11-minus-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-minus-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-minus-01.srx> .
          

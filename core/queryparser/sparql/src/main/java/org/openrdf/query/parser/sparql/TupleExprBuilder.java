@@ -25,6 +25,7 @@ import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Datatype;
+import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Exists;
@@ -87,6 +88,7 @@ import org.openrdf.query.parser.sparql.ast.ASTLang;
 import org.openrdf.query.parser.sparql.ast.ASTLangMatches;
 import org.openrdf.query.parser.sparql.ast.ASTLimit;
 import org.openrdf.query.parser.sparql.ast.ASTMath;
+import org.openrdf.query.parser.sparql.ast.ASTMinusGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTNot;
 import org.openrdf.query.parser.sparql.ast.ASTNotExistsFunc;
 import org.openrdf.query.parser.sparql.ast.ASTNumericLiteral;
@@ -540,9 +542,9 @@ class TupleExprBuilder extends ASTVisitorBase {
 		else {
 			parentGP.addRequiredTE(te);
 		}
-		
+
 		graphPattern = parentGP;
-		
+
 		return null;
 	}
 
@@ -620,6 +622,45 @@ class TupleExprBuilder extends ASTVisitorBase {
 		parentGP.addRequiredTE(new Union(leftArg, rightArg));
 		graphPattern = parentGP;
 
+		return null;
+	}
+
+	@Override
+	public Object visit(ASTMinusGraphPattern node, Object data)
+		throws VisitorException
+	{
+		GraphPattern parentGP = graphPattern;
+		graphPattern = new GraphPattern(parentGP);
+
+		super.visit(node, null);
+
+		TupleExpr leftArg = parentGP.buildTupleExpr();
+		TupleExpr rightArg = graphPattern.buildTupleExpr();
+
+		boolean sharedBinding = false;
+		Set<String> rightArgBindings = rightArg.getBindingNames();
+		for (String rightArgBinding: rightArgBindings) {
+			if (leftArg.getBindingNames().contains(rightArgBinding)) {
+				sharedBinding = true;
+				break;
+			}
+		}
+		
+		if (sharedBinding) {
+			// we can treat the MINUS operation exactly the same as a NOT EXISTS
+			Exists e = new Exists(rightArg);
+			Not not = new Not(e);
+			parentGP.addConstraint(not);
+		}
+		else {
+			// TODO check if this is correct in all cases (mail sent to dawg-comments)
+			// if a minus rightArg shares no variables with the leftArg, it has no 
+			// influence on the result, and therefore can be safely eliminated.
+			// Therefore, we do nothing here.
+		}
+		
+		graphPattern = parentGP;
+		
 		return null;
 	}
 
@@ -861,24 +902,24 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Exists visit(ASTExistsFunc node, Object data) 
-		throws VisitorException 
+	public Exists visit(ASTExistsFunc node, Object data)
+		throws VisitorException
 	{
 		Exists e = new Exists();
-		
+
 		node.jjtGetChild(0).jjtAccept(this, e);
 		return e;
 	}
-	
+
 	@Override
-	public Not visit(ASTNotExistsFunc node, Object data) 
-		throws VisitorException 
+	public Not visit(ASTNotExistsFunc node, Object data)
+		throws VisitorException
 	{
 		Exists e = new Exists();
 		node.jjtGetChild(0).jjtAccept(this, e);
 		return new Not(e);
 	}
-	
+
 	@Override
 	public Var visit(ASTVar node, Object data)
 		throws VisitorException
