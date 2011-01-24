@@ -766,15 +766,7 @@ public class MemoryStore extends NotifyingSailBase {
 					@Override
 					public void run() {
 						try {
-							// Acquire read lock to guarantee that the statement list
-							// doesn't change while writing
-							Lock stLock = getStatementsReadLock();
-							try {
-								sync();
-							}
-							finally {
-								stLock.release();
-							}
+							sync();
 						}
 						catch (SailException e) {
 							logger.warn("Unable to sync on timer", e);
@@ -813,18 +805,27 @@ public class MemoryStore extends NotifyingSailBase {
 	public void sync()
 		throws SailException
 	{
+		// syncSemaphore prevent concurrent file synchronizations
 		synchronized (syncSemaphore) {
-			if (persist && contentsChanged) {
-				logger.debug("syncing data to file...");
-				try {
-					new FileIO(this).write(syncFile, dataFile);
-					contentsChanged = false;
-					logger.debug("Data synced to file");
+			// Acquire read lock to guarantee that the statement list
+			// doesn't change while writing
+			Lock stLock = getStatementsReadLock();
+			try {
+				if (persist && contentsChanged) {
+					logger.debug("syncing data to file...");
+					try {
+						new FileIO(this).write(syncFile, dataFile);
+						contentsChanged = false;
+						logger.debug("Data synced to file");
+					}
+					catch (IOException e) {
+						logger.error("Failed to sync to file", e);
+						throw new SailException(e);
+					}
 				}
-				catch (IOException e) {
-					logger.error("Failed to sync to file", e);
-					throw new SailException(e);
-				}
+			}
+			finally {
+				stLock.release();
 			}
 		}
 	}
