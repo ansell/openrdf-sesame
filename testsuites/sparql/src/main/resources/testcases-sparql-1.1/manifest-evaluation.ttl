@@ -8,5 +8,6 @@
     mf:include (
     	<expressions/manifest.ttl>
     	<negation/manifest.ttl>
+    	<subquery/manifest.ttl>
    ).
 
