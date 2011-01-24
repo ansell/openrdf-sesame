@@ -20,10 +20,11 @@ public class MemorySPARQL11QueryTest extends SPARQLQueryTest {
 	{
 		return SPARQL11ManifestTest.suite(new Factory() {
 
-			public MemorySPARQL11QueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
-					String resultFileURL, Dataset dataSet, boolean laxCardinality)
+			public MemorySPARQL11QueryTest createSPARQLQueryTest(String testURI, String name,
+					String queryFileURL, String resultFileURL, Dataset dataSet, boolean laxCardinality)
 			{
-				return new MemorySPARQL11QueryTest(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
+				return new MemorySPARQL11QueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality);
 			}
 		});
 	}

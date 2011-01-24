@@ -366,13 +366,34 @@ void WhereClause() :
 void SolutionModifier() #void :
 {}
 {
-    [OrderClause()] [LimitOffsetClauses()]
+    [GroupClause()] [HavingClause()] [OrderClause()] [LimitOffsetClauses()]
+}
+
+void GroupClause() :
+{}
+{
+    <GROUP> <BY> ( GroupCondition() )+
 }
 
 void OrderClause() :
 {}
 {
 	<ORDER> <BY> ( OrderCondition() )+
+}
+
+void GroupCondition() :
+{}
+{
+	FunctionCall()
+|	BuiltInCall()
+|	<LPAREN> Expression() [ <AS> Var() ] <RPAREN> 
+|	Var()
+}
+
+void HavingClause() :
+{}
+{
+    <HAVING> Constraint()
 }
 
 void OrderCondition() :
@@ -698,15 +719,19 @@ void PrimaryExpression() #void :
 |	NumericLiteral()
 |	BooleanLiteral()
 |	Var()
-//| 	Aggregate()
+| 	Aggregate()
 }
 
-/*
 void Aggregate() #void :
 {}
 {
     Count() 
-    // TODO add more aggregates
+|   Sum()
+|   Min()
+|   Max()
+|   Avg()
+|   Sample()
+|   GroupConcat()
 }
 
 void Count() :
@@ -715,7 +740,42 @@ void Count() :
     <COUNT> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ]
        ( <STAR> {jjtThis.setWildcard(true); } | Expression() ) <RPAREN>
 }
-*/
+
+void Sum() :
+{}
+{
+    <SUM> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+}
+
+void Min() :
+{}
+{
+    <MIN> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+}
+
+void Max() :
+{}
+{
+    <MAX> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+}
+
+void Avg() :
+{}
+{
+    <AVG> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+}
+
+void Sample() :
+{}
+{
+    <SAMPLE> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+}
+
+void GroupConcat() :
+{}
+{
+    <GROUP_CONCAT> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+}
 
 void BrackettedExpression() #void :
 {}
