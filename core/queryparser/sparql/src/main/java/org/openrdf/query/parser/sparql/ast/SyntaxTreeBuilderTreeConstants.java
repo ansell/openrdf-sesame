@@ -17,49 +17,59 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTASKQUERY = 11;
   public int JJTDATASETCLAUSE = 12;
   public int JJTWHERECLAUSE = 13;
-  public int JJTORDERCLAUSE = 14;
-  public int JJTORDERCONDITION = 15;
-  public int JJTLIMIT = 16;
-  public int JJTOFFSET = 17;
-  public int JJTGRAPHPATTERNGROUP = 18;
-  public int JJTBASICGRAPHPATTERN = 19;
-  public int JJTOPTIONALGRAPHPATTERN = 20;
-  public int JJTGRAPHGRAPHPATTERN = 21;
-  public int JJTUNIONGRAPHPATTERN = 22;
-  public int JJTMINUSGRAPHPATTERN = 23;
-  public int JJTCONSTRAINT = 24;
-  public int JJTFUNCTIONCALL = 25;
-  public int JJTTRIPLESSAMESUBJECT = 26;
-  public int JJTPROPERTYLIST = 27;
-  public int JJTOBJECTLIST = 28;
-  public int JJTIRI = 29;
-  public int JJTBLANKNODEPROPERTYLIST = 30;
-  public int JJTCOLLECTION = 31;
-  public int JJTVAR = 32;
-  public int JJTOR = 33;
-  public int JJTAND = 34;
-  public int JJTCOMPARE = 35;
-  public int JJTMATH = 36;
-  public int JJTNOT = 37;
-  public int JJTNUMERICLITERAL = 38;
-  public int JJTSTR = 39;
-  public int JJTLANG = 40;
-  public int JJTLANGMATCHES = 41;
-  public int JJTDATATYPE = 42;
-  public int JJTBOUND = 43;
-  public int JJTSAMETERM = 44;
-  public int JJTISIRI = 45;
-  public int JJTISBLANK = 46;
-  public int JJTISLITERAL = 47;
-  public int JJTREGEXEXPRESSION = 48;
-  public int JJTEXISTSFUNC = 49;
-  public int JJTNOTEXISTSFUNC = 50;
-  public int JJTRDFLITERAL = 51;
-  public int JJTTRUE = 52;
-  public int JJTFALSE = 53;
-  public int JJTSTRING = 54;
-  public int JJTQNAME = 55;
-  public int JJTBLANKNODE = 56;
+  public int JJTGROUPCLAUSE = 14;
+  public int JJTORDERCLAUSE = 15;
+  public int JJTGROUPCONDITION = 16;
+  public int JJTHAVINGCLAUSE = 17;
+  public int JJTORDERCONDITION = 18;
+  public int JJTLIMIT = 19;
+  public int JJTOFFSET = 20;
+  public int JJTGRAPHPATTERNGROUP = 21;
+  public int JJTBASICGRAPHPATTERN = 22;
+  public int JJTOPTIONALGRAPHPATTERN = 23;
+  public int JJTGRAPHGRAPHPATTERN = 24;
+  public int JJTUNIONGRAPHPATTERN = 25;
+  public int JJTMINUSGRAPHPATTERN = 26;
+  public int JJTCONSTRAINT = 27;
+  public int JJTFUNCTIONCALL = 28;
+  public int JJTTRIPLESSAMESUBJECT = 29;
+  public int JJTPROPERTYLIST = 30;
+  public int JJTOBJECTLIST = 31;
+  public int JJTIRI = 32;
+  public int JJTBLANKNODEPROPERTYLIST = 33;
+  public int JJTCOLLECTION = 34;
+  public int JJTVAR = 35;
+  public int JJTOR = 36;
+  public int JJTAND = 37;
+  public int JJTCOMPARE = 38;
+  public int JJTMATH = 39;
+  public int JJTNOT = 40;
+  public int JJTNUMERICLITERAL = 41;
+  public int JJTCOUNT = 42;
+  public int JJTSUM = 43;
+  public int JJTMIN = 44;
+  public int JJTMAX = 45;
+  public int JJTAVG = 46;
+  public int JJTSAMPLE = 47;
+  public int JJTGROUPCONCAT = 48;
+  public int JJTSTR = 49;
+  public int JJTLANG = 50;
+  public int JJTLANGMATCHES = 51;
+  public int JJTDATATYPE = 52;
+  public int JJTBOUND = 53;
+  public int JJTSAMETERM = 54;
+  public int JJTISIRI = 55;
+  public int JJTISBLANK = 56;
+  public int JJTISLITERAL = 57;
+  public int JJTREGEXEXPRESSION = 58;
+  public int JJTEXISTSFUNC = 59;
+  public int JJTNOTEXISTSFUNC = 60;
+  public int JJTRDFLITERAL = 61;
+  public int JJTTRUE = 62;
+  public int JJTFALSE = 63;
+  public int JJTSTRING = 64;
+  public int JJTQNAME = 65;
+  public int JJTBLANKNODE = 66;
 
 
   public String[] jjtNodeName = {
@@ -77,7 +87,10 @@ public interface SyntaxTreeBuilderTreeConstants
     "AskQuery",
     "DatasetClause",
     "WhereClause",
+    "GroupClause",
     "OrderClause",
+    "GroupCondition",
+    "HavingClause",
     "OrderCondition",
     "Limit",
     "Offset",
@@ -102,6 +115,13 @@ public interface SyntaxTreeBuilderTreeConstants
     "Math",
     "Not",
     "NumericLiteral",
+    "Count",
+    "Sum",
+    "Min",
+    "Max",
+    "Avg",
+    "Sample",
+    "GroupConcat",
     "Str",
     "Lang",
     "LangMatches",
@@ -122,4 +142,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "BlankNode",
   };
 }
-/* JavaCC - OriginalChecksum=1968492aa7825b7cc2f5e0eb2a0bcabf (do not edit this line) */
+/* JavaCC - OriginalChecksum=fcaa7d0d7db936d18c0f5760979033ac (do not edit this line) */

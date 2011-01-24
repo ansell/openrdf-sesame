@@ -17,7 +17,10 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTAskQuery node, Object data) throws VisitorException;
   public Object visit(ASTDatasetClause node, Object data) throws VisitorException;
   public Object visit(ASTWhereClause node, Object data) throws VisitorException;
+  public Object visit(ASTGroupClause node, Object data) throws VisitorException;
   public Object visit(ASTOrderClause node, Object data) throws VisitorException;
+  public Object visit(ASTGroupCondition node, Object data) throws VisitorException;
+  public Object visit(ASTHavingClause node, Object data) throws VisitorException;
   public Object visit(ASTOrderCondition node, Object data) throws VisitorException;
   public Object visit(ASTLimit node, Object data) throws VisitorException;
   public Object visit(ASTOffset node, Object data) throws VisitorException;
@@ -42,6 +45,13 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTMath node, Object data) throws VisitorException;
   public Object visit(ASTNot node, Object data) throws VisitorException;
   public Object visit(ASTNumericLiteral node, Object data) throws VisitorException;
+  public Object visit(ASTCount node, Object data) throws VisitorException;
+  public Object visit(ASTSum node, Object data) throws VisitorException;
+  public Object visit(ASTMin node, Object data) throws VisitorException;
+  public Object visit(ASTMax node, Object data) throws VisitorException;
+  public Object visit(ASTAvg node, Object data) throws VisitorException;
+  public Object visit(ASTSample node, Object data) throws VisitorException;
+  public Object visit(ASTGroupConcat node, Object data) throws VisitorException;
   public Object visit(ASTStr node, Object data) throws VisitorException;
   public Object visit(ASTLang node, Object data) throws VisitorException;
   public Object visit(ASTLangMatches node, Object data) throws VisitorException;
@@ -61,4 +71,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTQName node, Object data) throws VisitorException;
   public Object visit(ASTBlankNode node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=381c1010c079adf5ae57011a30d669c5 (do not edit this line) */
+/* JavaCC - OriginalChecksum=c286eca2a7de74a40b1b0909d8ad6937 (do not edit this line) */

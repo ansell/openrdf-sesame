@@ -9,5 +9,6 @@
     	<expressions/manifest.ttl>
     	<negation/manifest.ttl>
     	<subquery/manifest.ttl>
+    	<aggregates/manifest.ttl>
    ).
 

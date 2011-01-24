@@ -13,19 +13,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.sun.org.apache.xerces.internal.dom.ParentNode;
-
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Compare;
+import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Datatype;
-import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Exists;
@@ -33,6 +32,8 @@ import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
+import org.openrdf.query.algebra.Group;
+import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
 import org.openrdf.query.algebra.IsURI;
@@ -72,6 +73,7 @@ import org.openrdf.query.parser.sparql.ast.ASTCompare;
 import org.openrdf.query.parser.sparql.ast.ASTConstraint;
 import org.openrdf.query.parser.sparql.ast.ASTConstruct;
 import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
+import org.openrdf.query.parser.sparql.ast.ASTCount;
 import org.openrdf.query.parser.sparql.ast.ASTDatatype;
 import org.openrdf.query.parser.sparql.ast.ASTDescribe;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
@@ -183,7 +185,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		GraphPattern parentGP = graphPattern;
-		
+
 		// Start with building the graph pattern
 		graphPattern = new GraphPattern();
 		node.getWhereClause().jjtAccept(this, null);
@@ -220,7 +222,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			parentGP.addRequiredTE(tupleExpr);
 			graphPattern = parentGP;
 		}
-		
+
 		return tupleExpr;
 	}
 
@@ -243,8 +245,18 @@ class TupleExprBuilder extends ASTVisitorBase {
 				// aliased projection element
 				ValueExpr valueExpr = (ValueExpr)child.jjtAccept(this, null);
 
-				extension.addElement(new ExtensionElem(valueExpr, alias));
 				projElemList.addElement(new ProjectionElem(alias));
+
+				if (valueExpr instanceof AggregateOperator) {
+					if (!(result instanceof Group)) {
+						Group g = new Group(result);
+						g.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
+						result = g;
+					}
+				}
+				else {
+					extension.addElement(new ExtensionElem(valueExpr, alias));
+				}
 			}
 			else if (child instanceof ASTVar) {
 				Var projVar = (Var)child.jjtAccept(this, null);
@@ -646,13 +658,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		boolean sharedBinding = false;
 		Set<String> rightArgBindings = rightArg.getBindingNames();
-		for (String rightArgBinding: rightArgBindings) {
+		for (String rightArgBinding : rightArgBindings) {
 			if (leftArg.getBindingNames().contains(rightArgBinding)) {
 				sharedBinding = true;
 				break;
 			}
 		}
-		
+
 		if (sharedBinding) {
 			// we can treat the MINUS operation exactly the same as a NOT EXISTS
 			Exists e = new Exists(rightArg);
@@ -660,14 +672,15 @@ class TupleExprBuilder extends ASTVisitorBase {
 			parentGP.addConstraint(not);
 		}
 		else {
-			// TODO check if this is correct in all cases (mail sent to dawg-comments)
-			// if a minus rightArg shares no variables with the leftArg, it has no 
+			// TODO check if this is correct in all cases (mail sent to
+			// dawg-comments)
+			// if a minus rightArg shares no variables with the leftArg, it has no
 			// influence on the result, and therefore can be safely eliminated.
 			// Therefore, we do nothing here.
 		}
-		
+
 		graphPattern = parentGP;
-		
+
 		return null;
 	}
 
@@ -1024,5 +1037,14 @@ class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		return node.getValue();
+	}
+
+	@Override
+	public Object visit(ASTCount node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+
+		return new Count(ve);
 	}
 }
