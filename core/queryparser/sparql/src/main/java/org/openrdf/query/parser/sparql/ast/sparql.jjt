@@ -278,8 +278,7 @@ void SelectQuery() :
 	Select()
 	( DatasetClause() )*
 	WhereClause()
-	[ OrderClause() ]
-	[ LimitOffsetClauses() ]
+	SolutionModifier()
 }
 
 void Select() :
@@ -314,8 +313,7 @@ void ConstructQuery() :
 	Construct()
 	( DatasetClause() )*
 	WhereClause()
-	[ OrderClause() ]
-	[ LimitOffsetClauses() ]
+	SolutionModifier()
 }
 
 void Construct() :
@@ -331,8 +329,7 @@ void DescribeQuery() :
 	Describe()
 	( DatasetClause() )*
 	[ WhereClause() ]
-	[ OrderClause() ]
-	[ LimitOffsetClauses() ]
+	SolutionModifier()
 }
 
 void Describe() :
@@ -364,6 +361,12 @@ void WhereClause() :
 {}
 {
 	 [<WHERE>] GroupGraphPattern()
+}
+
+void SolutionModifier() #void :
+{}
+{
+    [OrderClause()] [LimitOffsetClauses()]
 }
 
 void OrderClause() :
@@ -406,7 +409,7 @@ void Offset() :
 void GroupGraphPattern() #GraphPatternGroup :
 {}
 {
-	<LBRACE> GraphPattern() <RBRACE>
+	<LBRACE> (SelectQuery() | GraphPattern()) <RBRACE>
 }
 
 void GraphPattern() #void :

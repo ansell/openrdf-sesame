@@ -182,6 +182,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 	public TupleExpr visit(ASTSelectQuery node, Object data)
 		throws VisitorException
 	{
+		GraphPattern parentGP = graphPattern;
+		
 		// Start with building the graph pattern
 		graphPattern = new GraphPattern();
 		node.getWhereClause().jjtAccept(this, null);
@@ -214,6 +216,11 @@ class TupleExprBuilder extends ASTVisitorBase {
 			tupleExpr = new Slice(tupleExpr, offset, limit);
 		}
 
+		if (parentGP != null) {
+			parentGP.addRequiredTE(tupleExpr);
+			graphPattern = parentGP;
+		}
+		
 		return tupleExpr;
 	}
 
