@@ -42,6 +42,8 @@ import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MathExpr;
+import org.openrdf.query.algebra.Max;
+import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Or;
@@ -82,6 +84,8 @@ import org.openrdf.query.parser.sparql.ast.ASTFalse;
 import org.openrdf.query.parser.sparql.ast.ASTFunctionCall;
 import org.openrdf.query.parser.sparql.ast.ASTGraphGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTGraphPatternGroup;
+import org.openrdf.query.parser.sparql.ast.ASTGroupClause;
+import org.openrdf.query.parser.sparql.ast.ASTGroupCondition;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
 import org.openrdf.query.parser.sparql.ast.ASTIsIRI;
@@ -90,6 +94,8 @@ import org.openrdf.query.parser.sparql.ast.ASTLang;
 import org.openrdf.query.parser.sparql.ast.ASTLangMatches;
 import org.openrdf.query.parser.sparql.ast.ASTLimit;
 import org.openrdf.query.parser.sparql.ast.ASTMath;
+import org.openrdf.query.parser.sparql.ast.ASTMax;
+import org.openrdf.query.parser.sparql.ast.ASTMin;
 import org.openrdf.query.parser.sparql.ast.ASTMinusGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTNot;
 import org.openrdf.query.parser.sparql.ast.ASTNotExistsFunc;
@@ -248,15 +254,24 @@ class TupleExprBuilder extends ASTVisitorBase {
 				projElemList.addElement(new ProjectionElem(alias));
 
 				if (valueExpr instanceof AggregateOperator) {
-					if (!(result instanceof Group)) {
-						Group g = new Group(result);
-						g.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
-						result = g;
+					// Apply grouping
+					Group group = new Group(result);
+					// group.setGroupBindingNames(result.getBindingNames());
+
+					ASTGroupClause groupNode = ((ASTSelectQuery)node.jjtGetParent()).getGroupClause();
+					if (groupNode != null) {
+						group.setGroupBindingNames(groupNode.getBindingNames());
+						List<GroupElem> groupElements = (List<GroupElem>)groupNode.jjtAccept(this, new GroupElem(
+								alias, (AggregateOperator)valueExpr));
+						group.setGroupElements(groupElements);
 					}
+					else {
+						group.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
+					}
+					extension.setArg(group);
+					result = group;
 				}
-				else {
-					extension.addElement(new ExtensionElem(valueExpr, alias));
-				}
+				extension.addElement(new ExtensionElem(valueExpr, alias));
 			}
 			else if (child instanceof ASTVar) {
 				Var projVar = (Var)child.jjtAccept(this, null);
@@ -503,6 +518,27 @@ class TupleExprBuilder extends ASTVisitorBase {
 		tupleExpr = new Slice(tupleExpr, 0, 1);
 
 		return tupleExpr;
+	}
+
+	@Override
+	public List<GroupElem> visit(ASTGroupClause node, Object data)
+		throws VisitorException
+	{
+		int childCount = node.jjtGetNumChildren();
+		List<GroupElem> elements = new ArrayList<GroupElem>(childCount);
+
+		for (int i = 0; i < childCount; i++) {
+			elements.add((GroupElem)node.jjtGetChild(i).jjtAccept(this, data));
+		}
+
+		return elements;
+	}
+
+	@Override
+	public GroupElem visit(ASTGroupCondition node, Object data)
+		throws VisitorException
+	{
+		return ((GroupElem)data);
 	}
 
 	@Override
@@ -1046,5 +1082,23 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
 		return new Count(ve);
+	}
+
+	@Override
+	public Object visit(ASTMax node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+
+		return new Max(ve);
+	}
+
+	@Override
+	public Object visit(ASTMin node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+
+		return new Min(ve);
 	}
 }

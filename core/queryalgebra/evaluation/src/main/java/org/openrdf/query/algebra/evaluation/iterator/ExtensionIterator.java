@@ -11,8 +11,10 @@ import info.aduna.iteration.ConvertingIteration;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
+import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 
@@ -38,11 +40,14 @@ public class ExtensionIterator extends ConvertingIteration<BindingSet, BindingSe
 		QueryBindingSet targetBindings = new QueryBindingSet(sourceBindings);
 
 		for (ExtensionElem extElem : extension.getElements()) {
-			Value targetValue = strategy.evaluate(extElem.getExpr(), sourceBindings);
+			ValueExpr expr = extElem.getExpr();
+			if (!(expr instanceof AggregateOperator)) {
+				Value targetValue = strategy.evaluate(extElem.getExpr(), sourceBindings);
 
-			if (targetValue != null) {
-				// Potentially overwrites bindings from super
-				targetBindings.setBinding(extElem.getName(), targetValue);
+				if (targetValue != null) {
+					// Potentially overwrites bindings from super
+					targetBindings.setBinding(extElem.getName(), targetValue);
+				}
 			}
 		}
 

@@ -13,4 +13,5 @@ package org.openrdf.query.algebra;
 public interface AggregateOperator extends ValueExpr {
 
 	public AggregateOperator clone();
+	
 }
