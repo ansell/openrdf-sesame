@@ -33,6 +33,7 @@ import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 
 /**
  * @author David Huynh
@@ -196,42 +197,37 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 			Set<Value> values = makeValueSet(minOp.getArg(), bindingSets);
 
-			// FIXME: handle case where 'values' is empty
-			double min = Double.POSITIVE_INFINITY;
+			Value result = null;
+			
+			ValueComparator comparator = new ValueComparator();
+			
 			for (Value v : values) {
-				if (v instanceof Literal) {
-					Literal l = (Literal)v;
-					try {
-						min = Math.min(min, Double.parseDouble(l.getLabel()));
-					}
-					catch (NumberFormatException e) {
-						// ignore
-					}
+				if (result == null) {
+					result = v;
+				} else if (comparator.compare(v, result) < 0) {
+					result = v;
 				}
 			}
-
-			return new LiteralImpl(Double.toString(min), XMLSchema.DOUBLE);
+			return result;
 		}
+		
 		else if (operator instanceof Max) {
 			Max maxOp = (Max)operator;
 
 			Set<Value> values = makeValueSet(maxOp.getArg(), bindingSets);
-
-			// FIXME: handle case where 'values' is empty
-			double max = Double.NEGATIVE_INFINITY;
+			
+			Value result = null;
+			
+			ValueComparator comparator = new ValueComparator();
+			
 			for (Value v : values) {
-				if (v instanceof Literal) {
-					Literal l = (Literal)v;
-					try {
-						max = Math.max(max, Double.parseDouble(l.getLabel()));
-					}
-					catch (NumberFormatException e) {
-						// ignore
-					}
+				if (result == null) {
+					result = v;
+				} else if (comparator.compare(v, result) > 0) {
+					result = v;
 				}
 			}
-
-			return new LiteralImpl(Double.toString(max), XMLSchema.DOUBLE);
+			return result;
 		}
 
 		return null;

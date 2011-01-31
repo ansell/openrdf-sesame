@@ -13,7 +13,7 @@
       	<uri>http://example/book1</uri>
       </binding>
       <binding name="rating">
-	  <literal datatype="http://www.w3.org/2001/XMLSchema#integer">5</literal>
+	  <literal datatype="http://www.w3.org/2001/XMLSchema#integer">4</literal>
       </binding>
     </result>
         <result>
@@ -21,7 +21,7 @@
       	<uri>http://example/book2</uri>
       </binding>
       <binding name="rating">
-	  <literal datatype="http://www.w3.org/2001/XMLSchema#integer">8</literal>
+	  <literal datatype="http://www.w3.org/2001/XMLSchema#integer">3</literal>
       </binding>
     </result>
   </results>
