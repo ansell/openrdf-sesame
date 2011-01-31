@@ -17,5 +17,16 @@ class ASTGroupCondition extends SimpleNode {
   public Object jjtAccept(SyntaxTreeBuilderVisitor visitor, Object data) throws VisitorException {
     return visitor.visit(this, data);
   }
+  
+  public String getName() {
+	  // TODO does this make sense?
+	  Node child = jjtGetChild(0);
+	  if (child instanceof ASTVar) {
+		  return ((ASTVar)child).getName();
+	  }
+	  else {
+		  return child.toString();
+	  }
+  }
 }
 /* JavaCC - OriginalChecksum=3fe90d53e04abf41957a57903ffddb49 (do not edit this line) */

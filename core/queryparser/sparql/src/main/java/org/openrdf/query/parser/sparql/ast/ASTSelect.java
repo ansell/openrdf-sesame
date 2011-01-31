@@ -4,8 +4,6 @@ package org.openrdf.query.parser.sparql.ast;
 
 import java.util.List;
 
-import info.aduna.collections.CastingList;
-
 public class ASTSelect extends SimpleNode {
 
 	private boolean distinct = false;

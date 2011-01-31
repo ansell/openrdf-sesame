@@ -1,4 +1,3 @@
 PREFIX : <http://example/>
-
 SELECT (count(?X) as ?nrOfBooks)
-WHERE { ?X :price [] . }
+WHERE { ?author :writesBook ?X . }
