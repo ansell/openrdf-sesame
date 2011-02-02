@@ -6,13 +6,13 @@
 package org.openrdf.query.algebra;
 
 /**
- * The SUM operator as defined in http://www.w3.org/TR/sparql11-query/#aggregates
+ * The SAMPLE operator as defined in http://www.w3.org/TR/sparql11-query/#aggregates
  * 
  * @author Jeen Broekstra
  */
-public class Sum extends UnaryValueOperator implements AggregateOperator {
+public class Sample extends UnaryValueOperator implements AggregateOperator {
 
-	public Sum(ValueExpr arg) {
+	public Sample(ValueExpr arg) {
 		super(arg);
 	}
 
@@ -24,16 +24,16 @@ public class Sum extends UnaryValueOperator implements AggregateOperator {
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof Sum && super.equals(other);
+		return other instanceof Sample && super.equals(other);
 	}
 
 	@Override
 	public int hashCode() {
-		return super.hashCode() ^ "Sum".hashCode();
+		return super.hashCode() ^ "Sample".hashCode();
 	}
 
 	@Override
-	public Sum clone() {
-		return (Sum)super.clone();
+	public Sample clone() {
+		return (Sample)super.clone();
 	}
 }

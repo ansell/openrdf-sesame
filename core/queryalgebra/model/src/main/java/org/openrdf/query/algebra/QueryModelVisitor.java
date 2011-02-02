@@ -19,9 +19,9 @@ public interface QueryModelVisitor<X extends Exception> {
 
 	public void meet(And node)
 		throws X;
-	
+
 	public void meet(Avg node)
-	throws X;
+		throws X;
 
 	public void meet(BNodeGenerator node)
 		throws X;
@@ -68,6 +68,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Group node)
 		throws X;
 
+	public void meet(GroupConcat node)
+		throws X;
+	
 	public void meet(GroupElem node)
 		throws X;
 
@@ -170,9 +173,12 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Str node)
 		throws X;
 
+	public void meet(Sample node)
+		throws X;
+
 	public void meet(Sum node)
 		throws X;
-	
+
 	public void meet(Union node)
 		throws X;
 
