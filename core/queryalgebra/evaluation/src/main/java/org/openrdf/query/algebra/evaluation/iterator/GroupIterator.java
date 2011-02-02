@@ -239,8 +239,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 			Set<Value> values = makeValueSet(sumOp.getArg(), bindingSets);
 
-			// by default, the common datatype for all values is xsd:integer. 
-			URI commonDatatype = XMLSchema.INTEGER;
+			// by default, the result datatype is xsd:integer. 
+			URI resultDatatype = XMLSchema.INTEGER;
 
 			double sum = 0;
 			
@@ -253,15 +253,15 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 						throw new QueryEvaluationException("Not a number: " + l);
 					}
 
-					// check if the common datatype is a double, float, or decimal.
+					// check if the result datatype should be double, float, or decimal.
 					if (datatype.equals(XMLSchema.DOUBLE)) {
-						commonDatatype = XMLSchema.DOUBLE;
+						resultDatatype = XMLSchema.DOUBLE;
 					}
 					else if (datatype.equals(XMLSchema.FLOAT)) {
-						commonDatatype = XMLSchema.FLOAT;
+						resultDatatype = XMLSchema.FLOAT;
 					}
 					else if (datatype.equals(XMLSchema.DECIMAL)) {
-						commonDatatype = XMLSchema.DECIMAL;
+						resultDatatype = XMLSchema.DECIMAL;
 					}
 					
 					try { 
@@ -276,12 +276,13 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 				}
 			}
 			
-			String sumValue = String.valueOf(sum);
-			if (XMLSchema.INTEGER.equals(commonDatatype)) {
-				sumValue = String.valueOf(((int)sum));
+			String sumString = String.valueOf(sum);
+			if (XMLSchema.INTEGER.equals(resultDatatype)) {
+				sumString = String.valueOf(((int)sum));
 			}
-			return new LiteralImpl(sumValue, commonDatatype);
-		} // endif sum
+			
+			return new LiteralImpl(sumString, resultDatatype);
+		}
 		
 		return null;
 	}
