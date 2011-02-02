@@ -59,6 +59,7 @@ import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
+import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
@@ -117,6 +118,7 @@ import org.openrdf.query.parser.sparql.ast.ASTSelect;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
 import org.openrdf.query.parser.sparql.ast.ASTStr;
 import org.openrdf.query.parser.sparql.ast.ASTString;
+import org.openrdf.query.parser.sparql.ast.ASTSum;
 import org.openrdf.query.parser.sparql.ast.ASTTrue;
 import org.openrdf.query.parser.sparql.ast.ASTUnionGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTVar;
@@ -1100,5 +1102,14 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
 		return new Min(ve);
+	}
+	
+	@Override
+	public Object visit(ASTSum node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+
+		return new Sum(ve);
 	}
 }
