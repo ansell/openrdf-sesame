@@ -8,9 +8,9 @@ package org.openrdf.query.algebra;
 /**
  * @author Jeen Broekstra
  */
-public class Sum extends UnaryValueOperator implements AggregateOperator {
+public class Avg extends UnaryValueOperator implements AggregateOperator {
 
-	public Sum(ValueExpr arg) {
+	public Avg(ValueExpr arg) {
 		super(arg);
 	}
 
@@ -22,16 +22,16 @@ public class Sum extends UnaryValueOperator implements AggregateOperator {
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof Sum && super.equals(other);
+		return other instanceof Avg && super.equals(other);
 	}
 
 	@Override
 	public int hashCode() {
-		return super.hashCode() ^ "Sum".hashCode();
+		return super.hashCode() ^ "Avg".hashCode();
 	}
 
 	@Override
-	public Sum clone() {
-		return (Sum)super.clone();
+	public Avg clone() {
+		return (Avg)super.clone();
 	}
 }
