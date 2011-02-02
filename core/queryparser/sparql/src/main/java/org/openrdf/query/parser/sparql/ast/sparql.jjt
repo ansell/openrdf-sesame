@@ -774,7 +774,8 @@ void Sample() :
 void GroupConcat() :
 {}
 {
-    <GROUP_CONCAT> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+    <GROUP_CONCAT> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ]
+    Expression() [ <SEMICOLON> <SEPARATOR> <EQ> Expression() ] <RPAREN>
 }
 
 void BrackettedExpression() #void :

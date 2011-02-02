@@ -34,6 +34,7 @@ import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
+import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
@@ -88,6 +89,7 @@ import org.openrdf.query.parser.sparql.ast.ASTFunctionCall;
 import org.openrdf.query.parser.sparql.ast.ASTGraphGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTGraphPatternGroup;
 import org.openrdf.query.parser.sparql.ast.ASTGroupClause;
+import org.openrdf.query.parser.sparql.ast.ASTGroupConcat;
 import org.openrdf.query.parser.sparql.ast.ASTGroupCondition;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
@@ -1087,6 +1089,23 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		return new Count(ve);
 	}
+	
+	@Override
+	public Object visit(ASTGroupConcat node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+
+		GroupConcat gc = new GroupConcat(ve);
+
+		if (node.jjtGetNumChildren() > 1) {
+			ValueExpr separator = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, data);
+			gc.setSeparator(separator);
+		}
+		
+		return gc;
+	}
+
 
 	@Override
 	public Object visit(ASTMax node, Object data)

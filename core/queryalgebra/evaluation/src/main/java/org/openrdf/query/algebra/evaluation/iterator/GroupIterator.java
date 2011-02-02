@@ -30,12 +30,13 @@ import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Group;
+import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
+import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.ValueExpr;
-import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
@@ -43,6 +44,7 @@ import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 /**
  * @author David Huynh
  * @author Arjohn Kampman
+ * @author Jeen Broekstra
  */
 public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryEvaluationException> {
 
@@ -73,6 +75,10 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		this.group = group;
 		this.parentBindings = parentBindings;
 
+		
+		// TODO figure out if the supplied group has an order imposed
+		ordered = true;
+		
 		super.setIterator(createIterator());
 	}
 
@@ -181,7 +187,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 	}
 
-	private Value processAggregate(Set<BindingSet> bindingSets, AggregateOperator operator)
+	private Value processAggregate(Collection<BindingSet> bindingSets, AggregateOperator operator)
 		throws QueryEvaluationException
 	{
 		if (operator instanceof Count) {
@@ -190,7 +196,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			ValueExpr arg = countOp.getArg();
 
 			if (arg != null) {
-				Set<Value> values = makeValueSet(arg, bindingSets);
+				Collection<Value> values = createValueCollection(arg, bindingSets);
 				return new LiteralImpl(Integer.toString(values.size()), XMLSchema.INTEGER);
 			}
 			else {
@@ -200,73 +206,111 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		else if (operator instanceof Min) {
 			Min minOp = (Min)operator;
 
-			Set<Value> values = makeValueSet(minOp.getArg(), bindingSets);
+			Collection<Value> values = createValueCollection(minOp.getArg(), bindingSets);
 
 			Value result = null;
-			
+
 			ValueComparator comparator = new ValueComparator();
-			
+
 			for (Value v : values) {
 				if (result == null) {
 					result = v;
-				} else if (comparator.compare(v, result) < 0) {
+				}
+				else if (comparator.compare(v, result) < 0) {
 					result = v;
 				}
 			}
 			return result;
 		}
-		
+
 		else if (operator instanceof Max) {
 			Max maxOp = (Max)operator;
 
-			Set<Value> values = makeValueSet(maxOp.getArg(), bindingSets);
-			
+			Collection<Value> values = createValueCollection(maxOp.getArg(), bindingSets);
+
 			Value result = null;
-			
+
 			ValueComparator comparator = new ValueComparator();
-			
+
 			for (Value v : values) {
 				if (result == null) {
 					result = v;
-				} else if (comparator.compare(v, result) > 0) {
+				}
+				else if (comparator.compare(v, result) > 0) {
 					result = v;
 				}
 			}
 			return result;
 		}
 		else if (operator instanceof Sum) {
-			
+
 			Sum sumOp = (Sum)operator;
 
-			Set<Value> values = makeValueSet(sumOp.getArg(), bindingSets);
+			Collection<Value> values = createValueCollection(sumOp.getArg(), bindingSets);
 
 			return calculateSum(values);
 
 		}
 		else if (operator instanceof Avg) {
-			
+
 			Avg avgOp = (Avg)operator;
 
-			Set<Value> values = makeValueSet(avgOp.getArg(), bindingSets);
+			Collection<Value> values = createValueCollection(avgOp.getArg(), bindingSets);
 
 			int size = values.size();
 			if (size == 0) {
 				return new LiteralImpl("0.0", XMLSchema.DOUBLE);
 			}
-			
+
 			double sum = calculateSum(values).doubleValue();
 			double avg = sum / size;
-			
+
 			return new LiteralImpl(String.valueOf(avg), XMLSchema.DOUBLE);
 		}
-		
+		else if (operator instanceof Sample) {
+
+			Sample sampleOp = (Sample)operator;
+
+			// just get a single value and return it.
+			Value value = strategy.evaluate(sampleOp.getArg(), bindingSets.iterator().next());
+
+			return value;
+		}
+		else if (operator instanceof GroupConcat) {
+			GroupConcat groupConcatOp = (GroupConcat)operator;
+			Collection<Value> values = createValueCollection(groupConcatOp.getArg(), bindingSets);
+
+			String separator = " ";
+			ValueExpr separatorExpr = groupConcatOp.getSeparator();
+			
+			if (separatorExpr != null) {
+				Value separatorValue = strategy.evaluate(separatorExpr, parentBindings);
+				separator = separatorValue.stringValue();
+			}
+			
+			StringBuilder concatenated = new StringBuilder();
+			for (Value v : values) {
+				concatenated.append(v.stringValue());
+				concatenated.append(separator);
+			}
+			
+			if (values.size() > 0) {
+				// remove separator at the end.
+				concatenated.delete(concatenated.lastIndexOf(separator), concatenated.length());
+			}
+
+			return new LiteralImpl(concatenated.toString(), XMLSchema.STRING);
+		}
+
 		return null;
 	}
 
-	private Literal calculateSum(Set<Value> values) throws QueryEvaluationException {
+	private Literal calculateSum(Collection<Value> values)
+		throws QueryEvaluationException
+	{
 		double sum = 0;
-		
-		// by default, the result datatype is xsd:integer. 
+
+		// by default, the result datatype is xsd:integer.
 		URI resultDatatype = XMLSchema.INTEGER;
 
 		for (Value v : values) {
@@ -288,40 +332,47 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 				else if (datatype.equals(XMLSchema.DECIMAL)) {
 					resultDatatype = XMLSchema.DECIMAL;
 				}
-				
-				try { 
+
+				try {
 					sum += l.doubleValue();
 				}
 				catch (NumberFormatException e) {
 					throw new QueryEvaluationException("Not a valid number: " + l);
 				}
 			}
-			else { 
+			else {
 				throw new QueryEvaluationException("Not a number: " + v);
 			}
 		}
-		
+
 		String sumString = String.valueOf(sum);
 		if (XMLSchema.INTEGER.equals(resultDatatype)) {
 			sumString = String.valueOf(((int)sum));
 		}
-		
+
 		return new LiteralImpl(sumString, resultDatatype);
 	}
-	
-	private Set<Value> makeValueSet(ValueExpr arg, Set<BindingSet> bindingSets)
+
+	private Collection<Value> createValueCollection(ValueExpr arg, Collection<BindingSet> bindingSets)
 		throws QueryEvaluationException
 	{
-		Set<Value> valueSet = new HashSet<Value>();
+		Collection<Value> values = null;
+		
+		if (bindingSets instanceof Set) {
+			values = new HashSet<Value>();
+		}
+		else {
+			values = new ArrayList<Value>();
+		}
 
 		for (BindingSet s : bindingSets) {
 			Value value = strategy.evaluate(arg, s);
 			if (value != null) {
-				valueSet.add(value);
+				values.add(value);
 			}
 		}
 
-		return valueSet;
+		return values;
 	}
 
 	/**
@@ -347,14 +398,12 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		}
 
 		@Override
-		public int hashCode()
-		{
+		public int hashCode() {
 			return hash;
 		}
 
 		@Override
-		public boolean equals(Object other)
-		{
+		public boolean equals(Object other) {
 			if (other instanceof Key && other.hashCode() == hash) {
 				BindingSet otherSolution = ((Key)other).bindingSet;
 
@@ -374,15 +423,21 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		}
 	}
 
-	protected static class Entry {
+	private class Entry {
 
 		private BindingSet prototype;
 
-		private Set<BindingSet> bindingSets;
+		private Collection<BindingSet> bindingSets;
 
 		public Entry(BindingSet prototype) {
 			this.prototype = prototype;
-			this.bindingSets = new HashSet<BindingSet>();
+			if (ordered) {
+				this.bindingSets = new ArrayList<BindingSet>();
+			}
+			else {
+				this.bindingSets = new HashSet<BindingSet>();
+			}
+			
 		}
 
 		public BindingSet getPrototype() {
@@ -393,7 +448,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			bindingSets.add(bindingSet);
 		}
 
-		public Set<BindingSet> getSolutions() {
+		public Collection<BindingSet> getSolutions() {
 			return bindingSets;
 		}
 	}

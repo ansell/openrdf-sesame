@@ -26,6 +26,7 @@ import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
+import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.In;
 import org.openrdf.query.algebra.Intersection;
@@ -58,6 +59,7 @@ import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
+import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
@@ -85,7 +87,6 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	{
 		meetBinaryValueOperator(node);
 	}
-	
 
 	public void meet(Avg node)
 		throws X
@@ -187,6 +188,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetUnaryTupleOperator(node);
+	}
+
+	public void meet(GroupConcat node)
+		throws X
+	{
+		meetUnaryValueOperator(node);
 	}
 
 	public void meet(GroupElem node)
@@ -388,6 +395,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	}
 
 	public void meet(Str node)
+		throws X
+	{
+		meetUnaryValueOperator(node);
+	}
+
+	public void meet(Sample node)
 		throws X
 	{
 		meetUnaryValueOperator(node);
