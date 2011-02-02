@@ -167,6 +167,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Str node)
 		throws X;
 
+	public void meet(Sum node)
+		throws X;
+	
 	public void meet(Union node)
 		throws X;
 

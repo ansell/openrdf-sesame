@@ -19,7 +19,9 @@ import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.lang.ObjectUtil;
 
 import org.openrdf.model.Literal;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
@@ -30,7 +32,9 @@ import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
+import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.ValueExpr;
+import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
@@ -229,7 +233,56 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			}
 			return result;
 		}
+		else if (operator instanceof Sum) {
+			
+			Sum sumOp = (Sum)operator;
 
+			Set<Value> values = makeValueSet(sumOp.getArg(), bindingSets);
+
+			// by default, the common datatype for all values is xsd:integer. 
+			URI commonDatatype = XMLSchema.INTEGER;
+
+			double sum = 0;
+			
+			for (Value v : values) {
+				if (v instanceof Literal) {
+					Literal l = (Literal)v;
+					URI datatype = l.getDatatype();
+
+					if (datatype == null || !XMLDatatypeUtil.isNumericDatatype(datatype)) {
+						throw new QueryEvaluationException("Not a number: " + l);
+					}
+
+					// check if the common datatype is a double, float, or decimal.
+					if (datatype.equals(XMLSchema.DOUBLE)) {
+						commonDatatype = XMLSchema.DOUBLE;
+					}
+					else if (datatype.equals(XMLSchema.FLOAT)) {
+						commonDatatype = XMLSchema.FLOAT;
+					}
+					else if (datatype.equals(XMLSchema.DECIMAL)) {
+						commonDatatype = XMLSchema.DECIMAL;
+					}
+					
+					try { 
+						sum += l.doubleValue();
+					}
+					catch (NumberFormatException e) {
+						throw new QueryEvaluationException("Not a valid number: " + l);
+					}
+				}
+				else { 
+					throw new QueryEvaluationException("Not a number: " + v);
+				}
+			}
+			
+			String sumValue = String.valueOf(sum);
+			if (XMLSchema.INTEGER.equals(commonDatatype)) {
+				sumValue = String.valueOf(((int)sum));
+			}
+			return new LiteralImpl(sumValue, commonDatatype);
+		} // endif sum
+		
 		return null;
 	}
 
