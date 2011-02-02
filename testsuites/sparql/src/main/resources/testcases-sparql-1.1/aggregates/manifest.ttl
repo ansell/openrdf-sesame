@@ -14,6 +14,7 @@
     	:sparql11-max-01
     	:sparql11-min-01
     	:sparql11-sum-01
+    	:sparql11-avg-01
     ).
 
 :sparql11-count-01  mf:name  "sparql11-count-01" ;
@@ -40,4 +41,9 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-sum-01.rq> ; qt:data <data-01.ttl> ] ;
          mf:result <sparql11-sum-01.srx> .
+         
+:sparql11-avg-01  mf:name  "sparql11-avg-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-avg-01.rq> ; qt:data <data-01.ttl> ] ;
+         mf:result <sparql11-avg-01.srx> .         
          

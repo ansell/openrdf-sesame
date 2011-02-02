@@ -27,6 +27,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.AggregateOperator;
+import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupElem;
@@ -239,54 +240,75 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 			Set<Value> values = makeValueSet(sumOp.getArg(), bindingSets);
 
-			// by default, the result datatype is xsd:integer. 
-			URI resultDatatype = XMLSchema.INTEGER;
+			return calculateSum(values);
 
-			double sum = 0;
+		}
+		else if (operator instanceof Avg) {
 			
-			for (Value v : values) {
-				if (v instanceof Literal) {
-					Literal l = (Literal)v;
-					URI datatype = l.getDatatype();
+			Avg avgOp = (Avg)operator;
 
-					if (datatype == null || !XMLDatatypeUtil.isNumericDatatype(datatype)) {
-						throw new QueryEvaluationException("Not a number: " + l);
-					}
+			Set<Value> values = makeValueSet(avgOp.getArg(), bindingSets);
 
-					// check if the result datatype should be double, float, or decimal.
-					if (datatype.equals(XMLSchema.DOUBLE)) {
-						resultDatatype = XMLSchema.DOUBLE;
-					}
-					else if (datatype.equals(XMLSchema.FLOAT)) {
-						resultDatatype = XMLSchema.FLOAT;
-					}
-					else if (datatype.equals(XMLSchema.DECIMAL)) {
-						resultDatatype = XMLSchema.DECIMAL;
-					}
-					
-					try { 
-						sum += l.doubleValue();
-					}
-					catch (NumberFormatException e) {
-						throw new QueryEvaluationException("Not a valid number: " + l);
-					}
-				}
-				else { 
-					throw new QueryEvaluationException("Not a number: " + v);
-				}
+			int size = values.size();
+			if (size == 0) {
+				return new LiteralImpl("0.0", XMLSchema.DOUBLE);
 			}
 			
-			String sumString = String.valueOf(sum);
-			if (XMLSchema.INTEGER.equals(resultDatatype)) {
-				sumString = String.valueOf(((int)sum));
-			}
+			double sum = calculateSum(values).doubleValue();
+			double avg = sum / size;
 			
-			return new LiteralImpl(sumString, resultDatatype);
+			return new LiteralImpl(String.valueOf(avg), XMLSchema.DOUBLE);
 		}
 		
 		return null;
 	}
 
+	private Literal calculateSum(Set<Value> values) throws QueryEvaluationException {
+		double sum = 0;
+		
+		// by default, the result datatype is xsd:integer. 
+		URI resultDatatype = XMLSchema.INTEGER;
+
+		for (Value v : values) {
+			if (v instanceof Literal) {
+				Literal l = (Literal)v;
+				URI datatype = l.getDatatype();
+
+				if (datatype == null || !XMLDatatypeUtil.isNumericDatatype(datatype)) {
+					throw new QueryEvaluationException("Not a number: " + l);
+				}
+
+				// check if the result datatype should be double, float, or decimal.
+				if (datatype.equals(XMLSchema.DOUBLE)) {
+					resultDatatype = XMLSchema.DOUBLE;
+				}
+				else if (datatype.equals(XMLSchema.FLOAT)) {
+					resultDatatype = XMLSchema.FLOAT;
+				}
+				else if (datatype.equals(XMLSchema.DECIMAL)) {
+					resultDatatype = XMLSchema.DECIMAL;
+				}
+				
+				try { 
+					sum += l.doubleValue();
+				}
+				catch (NumberFormatException e) {
+					throw new QueryEvaluationException("Not a valid number: " + l);
+				}
+			}
+			else { 
+				throw new QueryEvaluationException("Not a number: " + v);
+			}
+		}
+		
+		String sumString = String.valueOf(sum);
+		if (XMLSchema.INTEGER.equals(resultDatatype)) {
+			sumString = String.valueOf(((int)sum));
+		}
+		
+		return new LiteralImpl(sumString, resultDatatype);
+	}
+	
 	private Set<Value> makeValueSet(ValueExpr arg, Set<BindingSet> bindingSets)
 		throws QueryEvaluationException
 	{

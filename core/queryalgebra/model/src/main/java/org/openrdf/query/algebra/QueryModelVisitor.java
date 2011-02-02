@@ -19,6 +19,9 @@ public interface QueryModelVisitor<X extends Exception> {
 
 	public void meet(And node)
 		throws X;
+	
+	public void meet(Avg node)
+	throws X;
 
 	public void meet(BNodeGenerator node)
 		throws X;
