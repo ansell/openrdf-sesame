@@ -39,6 +39,7 @@ import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 
 /**
@@ -75,10 +76,9 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		this.group = group;
 		this.parentBindings = parentBindings;
 
-		
 		// TODO figure out if the supplied group has an order imposed
 		ordered = true;
-		
+
 		super.setIterator(createIterator());
 	}
 
@@ -282,18 +282,18 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 			String separator = " ";
 			ValueExpr separatorExpr = groupConcatOp.getSeparator();
-			
+
 			if (separatorExpr != null) {
 				Value separatorValue = strategy.evaluate(separatorExpr, parentBindings);
 				separator = separatorValue.stringValue();
 			}
-			
+
 			StringBuilder concatenated = new StringBuilder();
 			for (Value v : values) {
 				concatenated.append(v.stringValue());
 				concatenated.append(separator);
 			}
-			
+
 			if (values.size() > 0) {
 				// remove separator at the end.
 				concatenated.delete(concatenated.lastIndexOf(separator), concatenated.length());
@@ -306,7 +306,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	}
 
 	private Literal calculateSum(Collection<Value> values)
-		throws QueryEvaluationException
+		throws ValueExprEvaluationException
 	{
 		double sum = 0;
 
@@ -319,7 +319,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 				URI datatype = l.getDatatype();
 
 				if (datatype == null || !XMLDatatypeUtil.isNumericDatatype(datatype)) {
-					throw new QueryEvaluationException("Not a number: " + l);
+					throw new ValueExprEvaluationException("Not a number: " + l);
 				}
 
 				// check if the result datatype should be double, float, or decimal.
@@ -327,21 +327,25 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 					resultDatatype = XMLSchema.DOUBLE;
 				}
 				else if (datatype.equals(XMLSchema.FLOAT)) {
-					resultDatatype = XMLSchema.FLOAT;
+					if (!resultDatatype.equals(XMLSchema.DOUBLE)) {
+						resultDatatype = XMLSchema.FLOAT;
+					}
 				}
 				else if (datatype.equals(XMLSchema.DECIMAL)) {
-					resultDatatype = XMLSchema.DECIMAL;
+					if (!(resultDatatype.equals(XMLSchema.FLOAT) || resultDatatype.equals(XMLSchema.DOUBLE))) {
+						resultDatatype = XMLSchema.DECIMAL;
+					}
 				}
 
 				try {
 					sum += l.doubleValue();
 				}
 				catch (NumberFormatException e) {
-					throw new QueryEvaluationException("Not a valid number: " + l);
+					throw new ValueExprEvaluationException("Not a valid number: " + l);
 				}
 			}
 			else {
-				throw new QueryEvaluationException("Not a number: " + v);
+				throw new ValueExprEvaluationException("Not a number: " + v);
 			}
 		}
 
@@ -357,7 +361,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		throws QueryEvaluationException
 	{
 		Collection<Value> values = null;
-		
+
 		if (bindingSets instanceof Set) {
 			values = new HashSet<Value>();
 		}
@@ -437,7 +441,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			else {
 				this.bindingSets = new HashSet<BindingSet>();
 			}
-			
+
 		}
 
 		public BindingSet getPrototype() {
