@@ -64,6 +64,7 @@ import org.openrdf.query.algebra.In;
 import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
+import org.openrdf.query.algebra.IsNumeric;
 import org.openrdf.query.algebra.IsResource;
 import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Join;
@@ -681,6 +682,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof IsLiteral) {
 			return evaluate((IsLiteral)expr, bindings);
 		}
+		else if (expr instanceof IsNumeric) {
+			return evaluate((IsNumeric)expr, bindings);
+		}
 		else if (expr instanceof Regex) {
 			return evaluate((Regex)expr, bindings);
 		}
@@ -930,6 +934,31 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 		return BooleanLiteralImpl.valueOf(argValue instanceof Literal);
+	}
+
+	/**
+	 * Determines whether the operand (a variable) contains a numeric datatyped
+	 * literal, i.e. a literal with datatype xsd:float, xsd:double, xsd:decimal,
+	 * or a derived datatype of xsd:decimal.
+	 * 
+	 * @return <tt>true</tt> if the operand contains a numeric datatyped literal,
+	 *         <tt>false</tt> otherwise.
+	 */
+	public Value evaluate(IsNumeric node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		Value argValue = evaluate(node.getArg(), bindings);
+
+		if (argValue instanceof Literal) {
+			Literal lit = (Literal)argValue;
+			URI datatype = lit.getDatatype();
+
+			return BooleanLiteralImpl.valueOf(datatype != null && XMLDatatypeUtil.isNumericDatatype(datatype));
+		}
+		else {
+			return BooleanLiteralImpl.FALSE;
+		}
+
 	}
 
 	/**

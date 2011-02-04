@@ -38,6 +38,7 @@ import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
+import org.openrdf.query.algebra.IsNumeric;
 import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
@@ -95,6 +96,7 @@ import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
 import org.openrdf.query.parser.sparql.ast.ASTIsIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIsLiteral;
+import org.openrdf.query.parser.sparql.ast.ASTIsNumeric;
 import org.openrdf.query.parser.sparql.ast.ASTLang;
 import org.openrdf.query.parser.sparql.ast.ASTLangMatches;
 import org.openrdf.query.parser.sparql.ast.ASTLimit;
@@ -948,6 +950,14 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new IsLiteral(arg);
+	}
+	
+	@Override
+	public IsNumeric visit(ASTIsNumeric node, Object data)
+		throws VisitorException
+	{
+		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		return new IsNumeric(arg);
 	}
 
 	@Override

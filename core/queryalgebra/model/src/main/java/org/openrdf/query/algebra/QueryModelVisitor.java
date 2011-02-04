@@ -85,6 +85,9 @@ public interface QueryModelVisitor<X extends Exception> {
 
 	public void meet(IsLiteral node)
 		throws X;
+	
+	public void meet(IsNumeric node)
+	throws X;
 
 	public void meet(IsResource node)
 		throws X;

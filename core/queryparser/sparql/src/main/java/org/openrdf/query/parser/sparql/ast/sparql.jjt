@@ -154,6 +154,7 @@ TOKEN [IGNORE_CASE] :
 |	<IS_IRI: ("isIRI"|"isURI")>
 |	<IS_BLANK: "isBlank">
 |	<IS_LITERAL: "isLiteral">
+|	<IS_NUMERIC: "isNumeric">
 |	<COUNT: "count">
 |	<SUM: "sum">
 |	<MIN: "min">
@@ -796,6 +797,7 @@ void BuiltInCall() #void :
 |	IsIRI()
 |	IsBlank()
 |	IsLiteral()
+|	IsNumeric()
 |	RegexExpression()
 |	ExistsFunc()
 |	NotExistsFunc()
@@ -855,6 +857,11 @@ void IsLiteral() :
 	<IS_LITERAL> <LPAREN> Expression() <RPAREN>
 }
 
+void IsNumeric() :
+{}
+{
+	<IS_NUMERIC> <LPAREN> Expression() <RPAREN>
+}
 void RegexExpression() :
 {}
 {
