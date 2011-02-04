@@ -61,15 +61,16 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTISIRI = 55;
   public int JJTISBLANK = 56;
   public int JJTISLITERAL = 57;
-  public int JJTREGEXEXPRESSION = 58;
-  public int JJTEXISTSFUNC = 59;
-  public int JJTNOTEXISTSFUNC = 60;
-  public int JJTRDFLITERAL = 61;
-  public int JJTTRUE = 62;
-  public int JJTFALSE = 63;
-  public int JJTSTRING = 64;
-  public int JJTQNAME = 65;
-  public int JJTBLANKNODE = 66;
+  public int JJTISNUMERIC = 58;
+  public int JJTREGEXEXPRESSION = 59;
+  public int JJTEXISTSFUNC = 60;
+  public int JJTNOTEXISTSFUNC = 61;
+  public int JJTRDFLITERAL = 62;
+  public int JJTTRUE = 63;
+  public int JJTFALSE = 64;
+  public int JJTSTRING = 65;
+  public int JJTQNAME = 66;
+  public int JJTBLANKNODE = 67;
 
 
   public String[] jjtNodeName = {
@@ -131,6 +132,7 @@ public interface SyntaxTreeBuilderTreeConstants
     "IsIRI",
     "IsBlank",
     "IsLiteral",
+    "IsNumeric",
     "RegexExpression",
     "ExistsFunc",
     "NotExistsFunc",
@@ -142,4 +144,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "BlankNode",
   };
 }
-/* JavaCC - OriginalChecksum=fcaa7d0d7db936d18c0f5760979033ac (do not edit this line) */
+/* JavaCC - OriginalChecksum=dc3da7236daf6861edb4d4ca442c511f (do not edit this line) */

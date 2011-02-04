@@ -1,0 +1,9 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix : <http://example/> .
+
+:book1 :discount "42"^^xsd:integer .
+:book2 :discount "41"^^xsd:integer .
+:book3 :discount "700.0"^^xsd:float .
+:book4 :discount "no discount"^^xsd:string .
+:book5 :discount "70" .
+:book6 :discount 50 .  

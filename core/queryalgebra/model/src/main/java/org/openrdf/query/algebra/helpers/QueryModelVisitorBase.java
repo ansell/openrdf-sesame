@@ -32,6 +32,7 @@ import org.openrdf.query.algebra.In;
 import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
+import org.openrdf.query.algebra.IsNumeric;
 import org.openrdf.query.algebra.IsResource;
 import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Join;
@@ -221,6 +222,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	}
 
 	public void meet(IsLiteral node)
+		throws X
+	{
+		meetUnaryValueOperator(node);
+	}
+
+	public void meet(IsNumeric node)
 		throws X
 	{
 		meetUnaryValueOperator(node);
