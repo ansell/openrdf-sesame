@@ -34,6 +34,7 @@ import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
+import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.ValueExpr;
@@ -74,11 +75,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	{
 		this.strategy = strategy;
 		this.group = group;
+		this.ordered = (group.getArg() instanceof Order);
 		this.parentBindings = parentBindings;
-
-		// TODO figure out if the supplied group has an order imposed
-		ordered = true;
-
 		super.setIterator(createIterator());
 	}
 
