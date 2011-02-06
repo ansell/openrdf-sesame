@@ -29,6 +29,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
@@ -81,11 +82,14 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 	protected final boolean laxCardinality;
 
+	protected final boolean checkOrder;
+	
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
 	protected Repository dataRep;
+
 
 	/*--------------*
 	 * Constructors *
@@ -94,6 +98,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 	public SPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
 			Dataset dataSet, boolean laxCardinality)
 	{
+		this(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, false);
+	}
+	
+	public SPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
+			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+	{
 		super(name);
 
 		this.testURI = testURI;
@@ -101,6 +111,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		this.resultFileURL = resultFileURL;
 		this.dataset = dataSet;
 		this.laxCardinality = laxCardinality;
+		this.checkOrder = checkOrder;
 	}
 
 	/*---------*
@@ -175,6 +186,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 				TupleQueryResult queryResult = ((TupleQuery)query).evaluate();
 
 				TupleQueryResult expectedResult = readExpectedTupleQueryResult();
+				
 				compareTupleQueryResults(queryResult, expectedResult);
 
 				// Graph queryGraph = RepositoryUtil.asGraph(queryResult);
@@ -217,6 +229,22 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 		else {
 			resultsEqual = QueryResultUtil.equals(queryResultTable, expectedResultTable);
+			
+			if (checkOrder) {
+				// also check the order in which solutions occur.
+				queryResultTable.beforeFirst();
+				expectedResultTable.beforeFirst();
+
+				while (queryResultTable.hasNext()) {
+					BindingSet bs = queryResultTable.next();
+					BindingSet expectedBs = expectedResultTable.next();
+					
+					if (! bs.equals(expectedBs)) {
+						resultsEqual = false;
+						break;
+					}
+				}
+			}
 		}
 
 		if (!resultsEqual) {
@@ -241,6 +269,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			 */
 
 			List<BindingSet> queryBindings = Iterations.asList(queryResultTable);
+			
 			List<BindingSet> expectedBindings = Iterations.asList(expectedResultTable);
 
 			List<BindingSet> missingBindings = new ArrayList<BindingSet>(expectedBindings);
@@ -255,6 +284,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			message.append(" =======================\n");
 
 			if (!missingBindings.isEmpty()) {
+
 				message.append("Missing bindings: \n");
 				for (BindingSet bs : missingBindings) {
 					message.append(bs);
@@ -277,9 +307,31 @@ public abstract class SPARQLQueryTest extends TestCase {
 				StringUtil.appendN('=', getName().length(), message);
 				message.append("========================\n");
 			}
+			
+			if (checkOrder && missingBindings.isEmpty() && unexpectedBindings.isEmpty()) {
+				message.append("Results are not in expected order.\n");
+				message.append(" =======================\n");
+				message.append("query result: \n");
+				for (BindingSet bs: queryBindings) {
+					message.append(bs);
+					message.append("\n");
+				}
+				message.append(" =======================\n");
+				message.append("expected result: \n");
+				for (BindingSet bs: expectedBindings) {
+					message.append(bs);
+					message.append("\n");
+				}
+				message.append(" =======================\n");
+
+				System.out.print(message.toString());
+			}
 
 			logger.error(message.toString());
 			fail(message.toString());
+		}
+		else {
+
 		}
 	}
 
@@ -480,6 +532,9 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 		SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 				String resultFileURL, Dataset dataSet, boolean laxCardinality);
+		
+		SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+				String resultFileURL, Dataset dataSet, boolean laxCardinality, boolean checkOrder);
 	}
 
 	public static TestSuite suite(String manifestFileURL, Factory factory)
@@ -507,13 +562,14 @@ public abstract class SPARQLQueryTest extends TestCase {
 		// Extract test case information from the manifest file. Note that we only
 		// select those test cases that are mentioned in the list.
 		StringBuilder query = new StringBuilder(512);
-		query.append(" SELECT DISTINCT testURI, testName, resultFile, action, queryFile, defaultGraph ");
+		query.append(" SELECT DISTINCT testURI, testName, resultFile, action, queryFile, defaultGraph, ordered ");
 		query.append(" FROM {} rdf:first {testURI} ");
 		if (approvedOnly) {
 			query.append("                          dawgt:approval {dawgt:Approved}; ");
 		}
 		query.append("                             mf:name {testName}; ");
 		query.append("                             mf:result {resultFile}; ");
+		query.append("                             [ mf:checkOrder {ordered} ]; ");
 		query.append("                             mf:action {action} qt:query {queryFile}; ");
 		query.append("                                               [qt:data {defaultGraph}] ");
 		query.append(" USING NAMESPACE ");
@@ -546,6 +602,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			String queryFile = bindingSet.getValue("queryFile").toString();
 			URI defaultGraphURI = (URI)bindingSet.getValue("defaultGraph");
 			Value action = bindingSet.getValue("action");
+			Value ordered = bindingSet.getValue("ordered");
 
 			logger.debug("found test case : {}", testName);
 
@@ -580,8 +637,14 @@ public abstract class SPARQLQueryTest extends TestCase {
 				laxCardinalityResult.close();
 			}
 
-			SPARQLQueryTest test = factory.createSPARQLQueryTest(testURI.toString(), testName, queryFile,
-					resultFile, dataset, laxCardinality);
+			// check if we should test for query result ordering
+			boolean checkOrder = false;
+			if (ordered != null) {
+				checkOrder = Boolean.parseBoolean(ordered.stringValue());
+			}
+			
+ 			SPARQLQueryTest test = factory.createSPARQLQueryTest(testURI.toString(), testName, queryFile,
+					resultFile, dataset, laxCardinality, checkOrder);
 			if (test != null) {
 				suite.addTest(test);
 			}
