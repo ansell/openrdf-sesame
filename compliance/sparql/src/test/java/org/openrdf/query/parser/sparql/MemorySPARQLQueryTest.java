@@ -23,7 +23,15 @@ public class MemorySPARQLQueryTest extends SPARQLQueryTest {
 			public MemorySPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 					String resultFileURL, Dataset dataSet, boolean laxCardinality)
 			{
-				return new MemorySPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
+				return createSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality, false);
+			}
+			
+			public MemorySPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+					String resultFileURL, Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+			{
+				return new MemorySPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality, checkOrder);
 			}
 		});
 	}
@@ -31,7 +39,13 @@ public class MemorySPARQLQueryTest extends SPARQLQueryTest {
 	protected MemorySPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
 			Dataset dataSet, boolean laxCardinality)
 	{
-		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
+		this(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, false);
+	}
+
+	protected MemorySPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
+			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+	{
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, checkOrder);
 	}
 
 	protected Repository newRepository() {
