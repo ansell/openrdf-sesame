@@ -1,0 +1,14 @@
+PREFIX : <http://example/>
+SELECT ?names
+WHERE {
+	{
+		SELECT (GROUP_CONCAT(?name) AS ?names)
+		WHERE {
+  			?org :affiliates ?auth .
+  			?auth :name ?name.
+		}
+		GROUP BY ?org
+		ORDER BY ASC(str(?name))
+	}
+}
+ORDER BY ASC(str(?names))
