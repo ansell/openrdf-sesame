@@ -25,15 +25,23 @@ public class PgSqlSPARQLQueryTest extends SPARQLQueryTest {
 			public PgSqlSPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 					String resultFileURL, Dataset dataSet, boolean laxCardinality)
 			{
-				return new PgSqlSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
+				return createSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality,
+						false);
+			}
+
+			public PgSqlSPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+					String resultFileURL, Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+			{
+				return new PgSqlSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality, checkOrder);
 			}
 		});
 	}
 
 	protected PgSqlSPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
-			Dataset dataSet, boolean laxCardinality)
+			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
 	{
-		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, checkOrder);
 	}
 
 	protected Repository newRepository() {

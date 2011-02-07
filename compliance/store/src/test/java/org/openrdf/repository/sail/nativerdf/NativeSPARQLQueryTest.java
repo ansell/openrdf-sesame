@@ -30,8 +30,15 @@ public class NativeSPARQLQueryTest extends SPARQLQueryTest {
 			public NativeSPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 					String resultFileURL, Dataset dataSet, boolean laxCardinality)
 			{
+				return createSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality, false);
+			}
+			
+			public NativeSPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+					String resultFileURL, Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+			{
 				return new NativeSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
-						laxCardinality);
+						laxCardinality, checkOrder);
 			}
 		});
 	}
@@ -39,9 +46,9 @@ public class NativeSPARQLQueryTest extends SPARQLQueryTest {
 	private File dataDir;
 
 	protected NativeSPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
-			Dataset dataSet, boolean laxCardinality)
+			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
 	{
-		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, checkOrder);
 	}
 
 	@Override
