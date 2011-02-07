@@ -25,16 +25,25 @@ public class MySqlSPARQLQueryTest extends SPARQLQueryTest {
 			public MySqlSPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 					String resultFileURL, Dataset dataSet, boolean laxCardinality)
 			{
-				return new MySqlSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
+				return createSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality,
+						false);
+			}
+
+			public MySqlSPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+					String resultFileURL, Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+			{
+				return new MySqlSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality, checkOrder);
 			}
 		});
 	}
 
 	protected MySqlSPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
-			Dataset dataSet, boolean laxCardinality)
+			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
 	{
-		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, checkOrder);
 	}
+
 
 	protected Repository newRepository() {
 		MySqlStore sail = new MySqlStore("sesame_test");
