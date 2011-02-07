@@ -37,13 +37,13 @@ import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.impl.DecimalLiteralImpl;
 import org.openrdf.model.impl.IntegerLiteralImpl;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.NumericLiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BinaryTupleOperator;
@@ -51,7 +51,6 @@ import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
-import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
@@ -77,8 +76,7 @@ import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Like;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
-import org.openrdf.query.algebra.Max;
-import org.openrdf.query.algebra.Min;
+import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Namespace;
 import org.openrdf.query.algebra.Not;
@@ -93,15 +91,16 @@ import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
+import org.openrdf.query.algebra.StrDt;
+import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.MathExpr.MathOp;
-import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
@@ -690,6 +689,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof IRIFunction) {
 			return evaluate((IRIFunction)expr, bindings);
 		}
+		else if (expr instanceof StrDt) {
+			return evaluate((StrDt)expr, bindings);
+		}
+		else if (expr instanceof StrLang) {
+			return evaluate((StrLang)expr, bindings);
+		}
 		else if (expr instanceof Regex) {
 			return evaluate((Regex)expr, bindings);
 		}
@@ -990,6 +995,68 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 
 		throw new ValueExprEvaluationException();
+	}
+	
+	/**
+	 * Creates a datatyped literal from the operand values.
+	 * 
+	 * @param node
+	 * @param bindings
+	 * @return
+	 * @throws ValueExprEvaluationException
+	 * @throws QueryEvaluationException
+	 */
+	public Literal evaluate(StrDt node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		Value lexicalValue = evaluate(node.getLeftArg(), bindings);
+		Value datatypeValue = evaluate(node.getRightArg(), bindings);
+
+		if (lexicalValue instanceof Literal) {
+			Literal lit = (Literal)lexicalValue;
+			
+			if (datatypeValue instanceof URI) {
+				return new LiteralImpl(lit.getLabel(), (URI)datatypeValue);
+			}
+			else {
+				throw new ValueExprEvaluationException("illegal value for operand: " + datatypeValue);		
+			}
+		}
+		else {
+			throw new ValueExprEvaluationException("illegal value for operand: " + lexicalValue);
+		}
+
+	}
+	
+	/**
+	 * Creates a language literal from the operand values.
+	 * 
+	 * @param node
+	 * @param bindings
+	 * @return
+	 * @throws ValueExprEvaluationException
+	 * @throws QueryEvaluationException
+	 */
+	public Literal evaluate(StrLang node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		Value lexicalValue = evaluate(node.getLeftArg(), bindings);
+		Value languageValue = evaluate(node.getRightArg(), bindings);
+
+		if (lexicalValue instanceof Literal) {
+			Literal lit = (Literal)lexicalValue;
+			
+			if (languageValue instanceof Literal) {
+				return new LiteralImpl(lit.getLabel(), ((Literal)languageValue).getLabel());
+			}
+			else {
+				throw new ValueExprEvaluationException("illegal value for operand: " + languageValue);		
+			}
+		}
+		else {
+			throw new ValueExprEvaluationException("illegal value for operand: " + lexicalValue);
+		}
+
 	}
 
 	/**
