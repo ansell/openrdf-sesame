@@ -18,8 +18,8 @@ import junit.framework.TestSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.io.ZipUtil;
 import info.aduna.io.FileUtil;
+import info.aduna.io.ZipUtil;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
@@ -52,8 +52,27 @@ public class SPARQL11ManifestTest {
 
 		URL url = SPARQL11ManifestTest.class.getResource("/testcases-sparql-1.1/manifest-evaluation.ttl");
 
-		manifestFile = url.toString();
-		tmpDir = null;
+		if ("jar".equals(url.getProtocol())) {
+			// Extract manifest files to a temporary directory
+			try {
+				tmpDir = FileUtil.createTempDir("sparql-1.1-evaluation");
+				
+				JarURLConnection con = (JarURLConnection)url.openConnection();
+				JarFile jar = con.getJarFile();
+				
+				ZipUtil.extract(jar, tmpDir);
+				
+				File localFile = new File(tmpDir, con.getEntryName());
+				manifestFile = localFile.toURI().toURL().toString();
+			}
+			catch (IOException e) {
+				throw new AssertionError(e);
+			}
+		}
+		else {
+			manifestFile = url.toString();
+			tmpDir = null;
+		}
 
 		TestSuite suite = new TestSuite(factory.getClass().getName()) {
 
