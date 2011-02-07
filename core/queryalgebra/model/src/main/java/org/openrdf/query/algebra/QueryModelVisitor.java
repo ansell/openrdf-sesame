@@ -70,7 +70,7 @@ public interface QueryModelVisitor<X extends Exception> {
 
 	public void meet(GroupConcat node)
 		throws X;
-	
+
 	public void meet(GroupElem node)
 		throws X;
 
@@ -85,9 +85,9 @@ public interface QueryModelVisitor<X extends Exception> {
 
 	public void meet(IsLiteral node)
 		throws X;
-	
+
 	public void meet(IsNumeric node)
-	throws X;
+		throws X;
 
 	public void meet(IsResource node)
 		throws X;
@@ -176,6 +176,12 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Str node)
 		throws X;
 
+	public void meet(StrDt node)
+		throws X;
+
+	public void meet(StrLang node)
+		throws X;
+
 	public void meet(Sample node)
 		throws X;
 
@@ -183,6 +189,9 @@ public interface QueryModelVisitor<X extends Exception> {
 		throws X;
 
 	public void meet(Union node)
+		throws X;
+
+	public void meet(IRIFunction node)
 		throws X;
 
 	public void meet(ValueConstant node)

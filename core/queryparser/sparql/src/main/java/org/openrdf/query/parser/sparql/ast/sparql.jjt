@@ -155,6 +155,13 @@ TOKEN [IGNORE_CASE] :
 |	<IS_BLANK: "isBlank">
 |	<IS_LITERAL: "isLiteral">
 |	<IS_NUMERIC: "isNumeric">
+|	<COALESCE: "coalesce">
+|	<BNODE: "bnode">
+|	<STRDT: "strdt">
+|	<STRLANG: "strlang">
+|	<IRI: "IRI"|"URI">
+|	<IF: "if">
+|	<IN: "in">
 |	<COUNT: "count">
 |	<SUM: "sum">
 |	<MIN: "min">
@@ -798,6 +805,10 @@ void BuiltInCall() #void :
 |	IsBlank()
 |	IsLiteral()
 |	IsNumeric()
+|	BNodeFunc()
+|	StrDt()
+|	StrLang()
+|	IRIFunc()
 |	RegexExpression()
 |	ExistsFunc()
 |	NotExistsFunc()
@@ -862,6 +873,32 @@ void IsNumeric() :
 {
 	<IS_NUMERIC> <LPAREN> Expression() <RPAREN>
 }
+
+void BNodeFunc() :
+{}
+{
+	<BNODE> <LPAREN> Expression() <RPAREN>
+}
+
+void IRIFunc() :
+{}
+{
+	<IRI> <LPAREN> Expression() <RPAREN>
+}
+
+void StrDt() :
+{}
+{
+	<STRDT> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void StrLang() :
+{}
+{
+	<STRLANG> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+
 void RegexExpression() :
 {}
 {

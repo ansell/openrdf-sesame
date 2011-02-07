@@ -65,8 +65,11 @@ import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Str;
+import org.openrdf.query.algebra.StrDt;
+import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.SubQueryValueOperator;
 import org.openrdf.query.algebra.Sum;
+import org.openrdf.query.algebra.IRIFunction;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.Union;
@@ -407,6 +410,18 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetUnaryValueOperator(node);
 	}
 
+	public void meet(StrDt node)
+		throws X
+	{
+		meetBinaryValueOperator(node);
+	}
+
+	public void meet(StrLang node)
+		throws X
+	{
+		meetBinaryValueOperator(node);
+	}
+
 	public void meet(Sample node)
 		throws X
 	{
@@ -414,6 +429,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	}
 
 	public void meet(Sum node)
+		throws X
+	{
+		meetUnaryValueOperator(node);
+	}
+
+	public void meet(IRIFunction node)
 		throws X
 	{
 		meetUnaryValueOperator(node);

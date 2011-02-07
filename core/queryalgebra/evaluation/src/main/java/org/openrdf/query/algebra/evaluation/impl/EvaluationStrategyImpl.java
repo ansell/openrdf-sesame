@@ -38,6 +38,7 @@ import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.impl.DecimalLiteralImpl;
 import org.openrdf.model.impl.IntegerLiteralImpl;
 import org.openrdf.model.impl.NumericLiteralImpl;
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -60,6 +61,7 @@ import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
+import org.openrdf.query.algebra.IRIFunction;
 import org.openrdf.query.algebra.In;
 import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.IsBNode;
@@ -685,6 +687,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof IsNumeric) {
 			return evaluate((IsNumeric)expr, bindings);
 		}
+		else if (expr instanceof IRIFunction) {
+			return evaluate((IRIFunction)expr, bindings);
+		}
 		else if (expr instanceof Regex) {
 			return evaluate((Regex)expr, bindings);
 		}
@@ -959,6 +964,32 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			return BooleanLiteralImpl.FALSE;
 		}
 
+	}
+
+	/**
+	 * Creates a URI from the operand value (a plain literal or a URI).
+	 * 
+	 * @param node
+	 * @param bindings
+	 * @return
+	 * @throws ValueExprEvaluationException
+	 * @throws QueryEvaluationException
+	 */
+	public URI evaluate(IRIFunction node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		Value argValue = evaluate(node.getArg(), bindings);
+
+		if (argValue instanceof Literal) {
+			Literal lit = (Literal)argValue;
+			
+			return new URIImpl(lit.getLabel());
+		}
+		else if (argValue instanceof URI) {
+			return ((URI)argValue);
+		}
+
+		throw new ValueExprEvaluationException();
 	}
 
 	/**

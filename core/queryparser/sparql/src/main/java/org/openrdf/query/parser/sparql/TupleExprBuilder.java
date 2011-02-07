@@ -36,6 +36,7 @@ import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
+import org.openrdf.query.algebra.IRIFunction;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
 import org.openrdf.query.algebra.IsNumeric;
@@ -62,6 +63,8 @@ import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
+import org.openrdf.query.algebra.StrDt;
+import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
@@ -72,6 +75,7 @@ import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.query.parser.sparql.ast.ASTAnd;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTAvg;
+import org.openrdf.query.parser.sparql.ast.ASTBNodeFunc;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNodePropertyList;
 import org.openrdf.query.parser.sparql.ast.ASTBound;
@@ -93,6 +97,7 @@ import org.openrdf.query.parser.sparql.ast.ASTGroupClause;
 import org.openrdf.query.parser.sparql.ast.ASTGroupConcat;
 import org.openrdf.query.parser.sparql.ast.ASTGroupCondition;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
+import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
 import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
 import org.openrdf.query.parser.sparql.ast.ASTIsIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIsLiteral;
@@ -123,6 +128,8 @@ import org.openrdf.query.parser.sparql.ast.ASTSameTerm;
 import org.openrdf.query.parser.sparql.ast.ASTSelect;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
 import org.openrdf.query.parser.sparql.ast.ASTStr;
+import org.openrdf.query.parser.sparql.ast.ASTStrDt;
+import org.openrdf.query.parser.sparql.ast.ASTStrLang;
 import org.openrdf.query.parser.sparql.ast.ASTString;
 import org.openrdf.query.parser.sparql.ast.ASTSum;
 import org.openrdf.query.parser.sparql.ast.ASTTrue;
@@ -896,6 +903,34 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public StrDt visit(ASTStrDt node, Object data)
+		throws VisitorException
+	{
+		// TODO stricter checking on argument value types?
+		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr datatypeExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
+		return new StrDt(literalExpr, datatypeExpr);
+	}
+
+	@Override
+	public StrLang visit(ASTStrLang node, Object data)
+		throws VisitorException
+	{
+		// TODO stricter checking on argument value types?
+		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr langTagExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
+		return new StrLang(literalExpr, langTagExpr);
+	}
+
+	@Override
+	public IRIFunction visit(ASTIRIFunc node, Object data)
+		throws VisitorException
+	{
+		ValueExpr expr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		return new IRIFunction(expr);
+	}
+
+	@Override
 	public Lang visit(ASTLang node, Object data)
 		throws VisitorException
 	{
@@ -951,13 +986,17 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new IsLiteral(arg);
 	}
-	
+
 	@Override
 	public IsNumeric visit(ASTIsNumeric node, Object data)
 		throws VisitorException
 	{
 		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new IsNumeric(arg);
+	}
+
+	public Object visit(ASTBNodeFunc node, Object data) {
+		return new BNodeGenerator();
 	}
 
 	@Override
@@ -1099,7 +1138,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		return new Count(ve);
 	}
-	
+
 	@Override
 	public Object visit(ASTGroupConcat node, Object data)
 		throws VisitorException
@@ -1112,10 +1151,9 @@ class TupleExprBuilder extends ASTVisitorBase {
 			ValueExpr separator = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, data);
 			gc.setSeparator(separator);
 		}
-		
+
 		return gc;
 	}
-
 
 	@Override
 	public Object visit(ASTMax node, Object data)
@@ -1134,7 +1172,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		return new Min(ve);
 	}
-	
+
 	@Override
 	public Object visit(ASTSum node, Object data)
 		throws VisitorException
@@ -1143,7 +1181,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		return new Sum(ve);
 	}
-	
+
 	@Override
 	public Object visit(ASTAvg node, Object data)
 		throws VisitorException
