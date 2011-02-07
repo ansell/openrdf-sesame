@@ -62,6 +62,10 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTIsBlank node, Object data) throws VisitorException;
   public Object visit(ASTIsLiteral node, Object data) throws VisitorException;
   public Object visit(ASTIsNumeric node, Object data) throws VisitorException;
+  public Object visit(ASTBNodeFunc node, Object data) throws VisitorException;
+  public Object visit(ASTIRIFunc node, Object data) throws VisitorException;
+  public Object visit(ASTStrDt node, Object data) throws VisitorException;
+  public Object visit(ASTStrLang node, Object data) throws VisitorException;
   public Object visit(ASTRegexExpression node, Object data) throws VisitorException;
   public Object visit(ASTExistsFunc node, Object data) throws VisitorException;
   public Object visit(ASTNotExistsFunc node, Object data) throws VisitorException;
@@ -72,4 +76,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTQName node, Object data) throws VisitorException;
   public Object visit(ASTBlankNode node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=15fb513c71c2db1c5cf8b493bbec25d6 (do not edit this line) */
+/* JavaCC - OriginalChecksum=570e157d40859db619c946bd1aa516f6 (do not edit this line) */
