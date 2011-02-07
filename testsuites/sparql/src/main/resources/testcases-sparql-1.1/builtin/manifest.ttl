@@ -11,6 +11,8 @@
     (
     	:sparql11-isnumeric-01
     	:sparql11-iri-01
+    	:sparql11-strdt-01
+    	:sparql11-strlang-01
     ).
 
 :sparql11-isnumeric-01  mf:name  "sparql11-isnumeric-01" ;
@@ -23,3 +25,12 @@
          mf:action [ qt:query <sparql11-iri-01.rq> ; qt:data <data-02.ttl> ] ;
          mf:result <sparql11-iri-01.srx> .
          
+:sparql11-strdt-01  mf:name  "sparql11-strdt-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-strdt-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-strdt-01.srx> .
+         
+:sparql11-strlang-01  mf:name  "sparql11-strlang-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-strlang-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-strlang-01.srx> .         

@@ -1,4 +1,8 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix : <http://example/> .
 
-:item1 :uriAsLiteral "http://example.org/" .
+:item1 :uriAsLiteral "http://example.org/" ;
+       :plainLiteral "plain text" ;
+       :languageLiteral "english text"@en ;
+       :stringTypedLiteral "typed text"^^xsd:string ;
+       :numericLiteral 42 .
