@@ -26,6 +26,7 @@ import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Datatype;
+import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Exists;
@@ -700,13 +701,18 @@ class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		GraphPattern parentGP = graphPattern;
+		
+		TupleExpr leftArg = graphPattern.buildTupleExpr();
+
 		graphPattern = new GraphPattern(parentGP);
-
-		super.visit(node, null);
-
-		TupleExpr leftArg = parentGP.buildTupleExpr();
+		node.jjtGetChild(0).jjtAccept(this, null);
 		TupleExpr rightArg = graphPattern.buildTupleExpr();
 
+		parentGP = new GraphPattern();
+		parentGP.addRequiredTE(new Difference(leftArg, rightArg));
+		graphPattern = parentGP;
+		
+/*
 		boolean sharedBinding = false;
 		Set<String> rightArgBindings = rightArg.getBindingNames();
 		for (String rightArgBinding : rightArgBindings) {
@@ -715,7 +721,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 				break;
 			}
 		}
-
+		
 		if (sharedBinding) {
 			// we can treat the MINUS operation exactly the same as a NOT EXISTS
 			Exists e = new Exists(rightArg);
@@ -729,8 +735,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 			// influence on the result, and therefore can be safely eliminated.
 			// Therefore, we do nothing here.
 		}
-
-		graphPattern = parentGP;
+		*/
+		
 
 		return null;
 	}

@@ -494,9 +494,7 @@ void GroupOrUnionGraphPattern() #void :
 void MinusGraphPattern() :
 {}
 {
-    // TODO check if we should use GroupGraphPattern() instead (depends on
-    // how constraints should be scoped)
-    <MINUS_SETOPER> <LBRACE> GraphPattern() <RBRACE> 
+    <MINUS_SETOPER> GroupGraphPattern()
 }
 
 void Filter() #void :
