@@ -805,7 +805,7 @@ public class MemoryStore extends NotifyingSailBase {
 	public void sync()
 		throws SailException
 	{
-		// syncSemaphore prevent concurrent file synchronizations
+		// syncSemaphore prevents concurrent file synchronizations
 		synchronized (syncSemaphore) {
 			// Acquire read lock to guarantee that the statement list
 			// doesn't change while writing
