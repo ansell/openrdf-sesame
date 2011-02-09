@@ -133,7 +133,8 @@ public class MemoryStore extends NotifyingSailBase {
 	private volatile long syncDelay = 0L;
 
 	/**
-	 * Semaphore used to synchronize concurrent access to {@link #sync()}.
+	 * Semaphore used to synchronize concurrent access to {@link #syncWithLock()}
+	 * .
 	 */
 	private final Object syncSemaphore = new Object();
 
@@ -326,22 +327,27 @@ public class MemoryStore extends NotifyingSailBase {
 	protected void shutDownInternal()
 		throws SailException
 	{
-		Lock stLock = getStatementsReadLock();
-
 		try {
-			cancelSyncTimer();
-			sync();
+			Lock stLock = statementListLockManager.getWriteLock();
 
-			valueFactory.clear();
-			statements.clear();
-			dataFile = null;
-			syncFile = null;
-		}
-		finally {
-			stLock.release();
-			if (dirLock != null) {
-				dirLock.release();
+			try {
+				cancelSyncTimer();
+				syncWithLock();
+
+				valueFactory.clear();
+				statements.clear();
+				dataFile = null;
+				syncFile = null;
 			}
+			finally {
+				stLock.release();
+				if (dirLock != null) {
+					dirLock.release();
+				}
+			}
+		}
+		catch (InterruptedException e) {
+			throw new SailException(e);
 		}
 	}
 
@@ -350,7 +356,7 @@ public class MemoryStore extends NotifyingSailBase {
 	 * if a read-only data file is used.
 	 */
 	public boolean isWritable() {
-		// Sail is not writable when it has a dataDir, but no directory lock
+		// Sail is not writable when it has a dataDir but no directory lock
 		return !persist || dirLock != null;
 	}
 
@@ -805,27 +811,41 @@ public class MemoryStore extends NotifyingSailBase {
 	public void sync()
 		throws SailException
 	{
+		// Acquire read lock to guarantee that the statement list
+		// doesn't change while writing
+		Lock stLock = getStatementsReadLock();
+		try {
+			syncWithLock();
+		}
+		finally {
+			stLock.release();
+		}
+	}
+
+	/**
+	 * Synchronizes the contents of this repository with the data that is stored
+	 * on disk. Data will only be written when the contents of the repository and
+	 * data in the file are out of sync. The calling code must get a read- or
+	 * write lock from {@link #statementListLockManager} before calling this
+	 * method to prevent modifications to the statements list while the
+	 * synchronization is in progress.
+	 */
+	protected void syncWithLock()
+		throws SailException
+	{
 		// syncSemaphore prevents concurrent file synchronizations
 		synchronized (syncSemaphore) {
-			// Acquire read lock to guarantee that the statement list
-			// doesn't change while writing
-			Lock stLock = getStatementsReadLock();
-			try {
-				if (persist && contentsChanged) {
-					logger.debug("syncing data to file...");
-					try {
-						new FileIO(this).write(syncFile, dataFile);
-						contentsChanged = false;
-						logger.debug("Data synced to file");
-					}
-					catch (IOException e) {
-						logger.error("Failed to sync to file", e);
-						throw new SailException(e);
-					}
+			if (persist && contentsChanged) {
+				logger.debug("syncing data to file...");
+				try {
+					new FileIO(this).write(syncFile, dataFile);
+					contentsChanged = false;
+					logger.debug("Data synced to file");
 				}
-			}
-			finally {
-				stLock.release();
+				catch (IOException e) {
+					logger.error("Failed to sync to file", e);
+					throw new SailException(e);
+				}
 			}
 		}
 	}
