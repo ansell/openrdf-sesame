@@ -330,9 +330,27 @@ public abstract class SPARQLQueryTest extends TestCase {
 			logger.error(message.toString());
 			fail(message.toString());
 		}
+		/* debugging only: print out result when test succeeds 
 		else {
+			queryResultTable.beforeFirst();
 
+			List<BindingSet> queryBindings = Iterations.asList(queryResultTable);
+			StringBuilder message = new StringBuilder(128);
+
+			message.append("\n============ ");
+			message.append(getName());
+			message.append(" =======================\n");
+
+			message.append(" =======================\n");
+			message.append("query result: \n");
+			for (BindingSet bs: queryBindings) {
+				message.append(bs);
+				message.append("\n");
+			}
+			
+			System.out.print(message.toString());
 		}
+		*/
 	}
 
 	private void compareGraphs(Set<Statement> queryResult, Set<Statement> expectedResult)

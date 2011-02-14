@@ -768,6 +768,18 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public Value evaluate(BNodeGenerator node, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
+		ValueExpr nodeIdExpr = node.getNodeIdExpr();
+		
+		if (nodeIdExpr != null) {
+			Value nodeId = evaluate(nodeIdExpr, bindings);
+			
+			if (nodeId instanceof Literal) {
+				return tripleSource.getValueFactory().createBNode(((Literal)nodeId).getLabel());
+			}
+			else {
+				throw new ValueExprEvaluationException("BNODE function argument must be a literal");
+			}
+		}
 		return tripleSource.getValueFactory().createBNode();
 	}
 

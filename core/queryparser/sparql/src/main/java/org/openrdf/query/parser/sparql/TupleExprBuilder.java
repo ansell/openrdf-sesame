@@ -1001,8 +1001,16 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return new IsNumeric(arg);
 	}
 
-	public Object visit(ASTBNodeFunc node, Object data) {
-		return new BNodeGenerator();
+	public Object visit(ASTBNodeFunc node, Object data) throws VisitorException {
+	
+		BNodeGenerator generator = new BNodeGenerator();
+		
+		if (node.jjtGetNumChildren() > 0) {
+			ValueExpr nodeIdExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+			generator.setNodeIdExpr(nodeIdExpr);
+		}
+		
+		return generator;
 	}
 
 	@Override
