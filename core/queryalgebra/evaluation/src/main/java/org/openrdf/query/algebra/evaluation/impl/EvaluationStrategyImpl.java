@@ -111,7 +111,7 @@ import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterat
 import org.openrdf.query.algebra.evaluation.iterator.ExtensionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.FilterIterator;
 import org.openrdf.query.algebra.evaluation.iterator.GroupIterator;
-import org.openrdf.query.algebra.evaluation.iterator.IncompatibleBindingSetIteration;
+import org.openrdf.query.algebra.evaluation.iterator.SPARQLMinusIteration;
 import org.openrdf.query.algebra.evaluation.iterator.JoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.LeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.MultiProjectionIterator;
@@ -612,7 +612,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 		};
 
-		return new IncompatibleBindingSetIteration<QueryEvaluationException>(leftArg, rightArg);
+		return new SPARQLMinusIteration<QueryEvaluationException>(leftArg, rightArg);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(SingletonSet singletonSet,
