@@ -13,15 +13,19 @@ import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultUtil;
 
 /**
  * An Iteration that returns the results of an Iteration (the left argument)
- * minus any results that are compatible with results of another Iteration (the right argument). 
- * This iteration effectively implements the SPARQL MINUS operator. 
+ * MINUS any results that are compatible with results of another Iteration (the
+ * right argument) or that have no shared variables. This iteration uses the
+ * formal definition of the SPARQL 1.1 MINUS operator to determine which
+ * BindingSets to return.
  * 
+ * @see http://www.w3.org/TR/sparql11-query/#sparqlAlgebra
  * @author Jeen
  */
-public class IncompatibleBindingSetIteration<X extends Exception> extends FilterIteration<BindingSet, X> {
+public class SPARQLMinusIteration<X extends Exception> extends FilterIteration<BindingSet, X> {
 
 	/*-----------*
 	 * Variables *
@@ -50,7 +54,7 @@ public class IncompatibleBindingSetIteration<X extends Exception> extends Filter
 	 *        An Iteration containing the set of elements that should be filtered
 	 *        from the main set.
 	 */
-	public IncompatibleBindingSetIteration(Iteration<BindingSet, X> leftArg, Iteration<BindingSet, X> rightArg) {
+	public SPARQLMinusIteration(Iteration<BindingSet, X> leftArg, Iteration<BindingSet, X> rightArg) {
 		this(leftArg, rightArg, false);
 	}
 
@@ -67,7 +71,7 @@ public class IncompatibleBindingSetIteration<X extends Exception> extends Filter
 	 *        Flag indicating whether duplicate elements should be filtered from
 	 *        the result.
 	 */
-	public IncompatibleBindingSetIteration(Iteration<BindingSet, X> leftArg, Iteration<BindingSet, X> rightArg,
+	public SPARQLMinusIteration(Iteration<BindingSet, X> leftArg, Iteration<BindingSet, X> rightArg,
 			boolean distinct)
 	{
 		super(leftArg);
@@ -89,39 +93,25 @@ public class IncompatibleBindingSetIteration<X extends Exception> extends Filter
 	{
 		if (!initialized) {
 			// Build set of elements-to-exclude from right argument
-			
 			excludeSet = Iterations.addAll(rightArg, new HashSet<BindingSet>());
 			initialized = true;
 		}
 
 		boolean compatible = false;
-		
-		for(BindingSet excluded: excludeSet) {
-			
-			// build set of shared variable names
-			Set<String> intersection = new HashSet<String>(excluded.getBindingNames());
-			intersection.retainAll(object.getBindingNames());
 
-			if (! intersection.isEmpty()) {
-				// check if shared bindings are compatible.
-				// two bindingset are compatible if for every shared binding, the mapped value is equal
-				boolean sharedBindingsCompatible = false;
-				for (String bindingName: intersection) {
-					if (excluded.getBinding(bindingName).equals(object.getBinding(bindingName))) {
-						// found at least one compatible shared binding, continue checking.
-						sharedBindingsCompatible = true;
-					}
-					else {
-						// found an incompatible shared binding. BindingSet as a whole is incompatible,
-						// stop checking.
-						sharedBindingsCompatible = false;
-						break;
-					}
-				}
-				
-				if (sharedBindingsCompatible) {
-					// at least one compatible bindingset has been found in the exclude set, therefore
-					// the object is compatible, therefore it should not be accepted.
+		for (BindingSet excluded : excludeSet) {
+
+			// build set of shared variable names
+			Set<String> sharedBindingNames = new HashSet<String>(excluded.getBindingNames());
+			sharedBindingNames.retainAll(object.getBindingNames());
+
+			// two bindingsets that share no variables are compatible by definition, however, the formal 
+			// definition of SPARQL MINUS indicates that such disjoint sets should be filtered out.
+			// See http://www.w3.org/TR/sparql11-query/#sparqlAlgebra
+			if (!sharedBindingNames.isEmpty()) {
+				if (QueryResultUtil.bindingSetsCompatible(excluded, object)) {
+					// at least one compatible bindingset has been found in the
+					// exclude set, therefore the object is compatible, therefore it should not be accepted.
 					compatible = true;
 					break;
 				}
