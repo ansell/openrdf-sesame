@@ -875,7 +875,7 @@ void IsNumeric() :
 void BNodeFunc() :
 {}
 {
-	<BNODE> <LPAREN> Expression() <RPAREN>
+	<BNODE> ( <NIL> | <LPAREN> Expression() <RPAREN> ) 
 }
 
 void IRIFunc() :
