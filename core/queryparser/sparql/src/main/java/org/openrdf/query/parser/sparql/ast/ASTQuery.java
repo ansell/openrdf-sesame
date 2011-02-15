@@ -32,6 +32,10 @@ public abstract class ASTQuery extends SimpleNode {
 	public ASTGroupClause getGroupClause() {
 		return jjtGetChild(ASTGroupClause.class);
 	}
+	
+	public ASTHavingClause getHavingClause() {
+		return jjtGetChild(ASTHavingClause.class);
+	}
 
 	public boolean hasLimit() {
 		return getLimit() != null;
