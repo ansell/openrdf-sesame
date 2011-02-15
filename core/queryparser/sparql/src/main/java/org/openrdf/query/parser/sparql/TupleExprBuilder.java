@@ -72,6 +72,7 @@ import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.query.parser.sparql.ast.ASTAnd;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
@@ -220,6 +221,14 @@ class TupleExprBuilder extends ASTVisitorBase {
 			tupleExpr = new Order(tupleExpr, orderElemements);
 		}
 
+		// Apply grouping
+		ASTGroupClause groupNode = node.getGroupClause();
+		if (groupNode != null) {
+			tupleExpr = new Group(tupleExpr, groupNode.getBindingNames());
+		}
+
+		// Apply group filter
+
 		// Apply projection
 		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
 
@@ -270,20 +279,17 @@ class TupleExprBuilder extends ASTVisitorBase {
 				projElemList.addElement(new ProjectionElem(alias));
 
 				if (valueExpr instanceof AggregateOperator) {
-					// Apply grouping
-					Group group = new Group(result);
-					// group.setGroupBindingNames(result.getBindingNames());
-
-					ASTGroupClause groupNode = ((ASTSelectQuery)node.jjtGetParent()).getGroupClause();
-					if (groupNode != null) {
-						group.setGroupBindingNames(groupNode.getBindingNames());
-						List<GroupElem> groupElements = (List<GroupElem>)groupNode.jjtAccept(this, new GroupElem(
-								alias, (AggregateOperator)valueExpr));
-						group.setGroupElements(groupElements);
+					// Apply implicit grouping if necessary
+					Group group = null;
+					if (result instanceof Group) {
+						group = (Group)result;
 					}
 					else {
-						group.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
+						group = new Group(result);
 					}
+
+					group.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
+
 					extension.setArg(group);
 					result = group;
 				}
@@ -701,7 +707,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		GraphPattern parentGP = graphPattern;
-		
+
 		TupleExpr leftArg = graphPattern.buildTupleExpr();
 
 		graphPattern = new GraphPattern(parentGP);
@@ -711,32 +717,6 @@ class TupleExprBuilder extends ASTVisitorBase {
 		parentGP = new GraphPattern();
 		parentGP.addRequiredTE(new Difference(leftArg, rightArg));
 		graphPattern = parentGP;
-		
-/*
-		boolean sharedBinding = false;
-		Set<String> rightArgBindings = rightArg.getBindingNames();
-		for (String rightArgBinding : rightArgBindings) {
-			if (leftArg.getBindingNames().contains(rightArgBinding)) {
-				sharedBinding = true;
-				break;
-			}
-		}
-		
-		if (sharedBinding) {
-			// we can treat the MINUS operation exactly the same as a NOT EXISTS
-			Exists e = new Exists(rightArg);
-			Not not = new Not(e);
-			parentGP.addConstraint(not);
-		}
-		else {
-			// TODO check if this is correct in all cases (mail sent to
-			// dawg-comments)
-			// if a minus rightArg shares no variables with the leftArg, it has no
-			// influence on the result, and therefore can be safely eliminated.
-			// Therefore, we do nothing here.
-		}
-		*/
-		
 
 		return null;
 	}
@@ -827,7 +807,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr valueExpr = (ValueExpr)super.visit(node, null);
 		graphPattern.addConstraint(valueExpr);
 
-		return null;
+		return valueExpr;
 	}
 
 	@Override
@@ -1001,15 +981,17 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return new IsNumeric(arg);
 	}
 
-	public Object visit(ASTBNodeFunc node, Object data) throws VisitorException {
-	
+	public Object visit(ASTBNodeFunc node, Object data)
+		throws VisitorException
+	{
+
 		BNodeGenerator generator = new BNodeGenerator();
-		
+
 		if (node.jjtGetNumChildren() > 0) {
 			ValueExpr nodeIdExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 			generator.setNodeIdExpr(nodeIdExpr);
 		}
-		
+
 		return generator;
 	}
 
