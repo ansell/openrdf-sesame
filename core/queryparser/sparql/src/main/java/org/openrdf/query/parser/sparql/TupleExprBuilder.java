@@ -98,6 +98,7 @@ import org.openrdf.query.parser.sparql.ast.ASTGraphPatternGroup;
 import org.openrdf.query.parser.sparql.ast.ASTGroupClause;
 import org.openrdf.query.parser.sparql.ast.ASTGroupConcat;
 import org.openrdf.query.parser.sparql.ast.ASTGroupCondition;
+import org.openrdf.query.parser.sparql.ast.ASTHavingClause;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
 import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
@@ -227,7 +228,47 @@ class TupleExprBuilder extends ASTVisitorBase {
 			tupleExpr = new Group(tupleExpr, groupNode.getBindingNames());
 		}
 
-		// Apply group filter
+		// Apply HAVING group filter condition
+		ASTHavingClause havingNode = node.getHavingClause();
+		if (havingNode != null) {
+			
+			// add implicit group if necessary
+			if (!(tupleExpr instanceof Group)) {
+				tupleExpr = new Group(tupleExpr);
+			}
+			
+			// TODO this may probably be done in a much cleaner fashion than currently implemented.
+			
+			// FIXME is the child of a HAVING node always a compare?
+			Compare condition = (Compare)havingNode.jjtGetChild(0).jjtAccept(this, tupleExpr);
+
+			// retrieve any aggregate operators from the condition. 
+			AggregateCollector collector = new AggregateCollector();
+			collector.meet(condition);
+
+			// replace operator occurrences with an anonymous var, and alias it to the group
+			Extension extension = new Extension();
+			for (AggregateOperator operator : collector.getOperators()) {
+				Var var = createAnonVar("-const-" + constantVarID++);
+				
+				// FIXME is the aggregate operator always the direct child of the condition?
+				condition.replaceChildNode(operator, var);
+				
+				String alias = var.getName();
+				
+				ExtensionElem pe = new ExtensionElem(operator, alias);
+				extension.addElement(pe);
+
+				GroupElem ge = new GroupElem(alias, operator);
+				
+				// FIXME quite often the aggregate in the HAVING clause will be a duplicate of an aggregate
+				// in the projection. We could perhaps optimize for that, to avoid having to evaluate twice.
+				((Group)tupleExpr).addGroupElement(ge);
+			}
+			
+			extension.setArg(tupleExpr);
+			tupleExpr = new Filter(extension, condition);
+		}
 
 		// Apply projection
 		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
@@ -285,13 +326,27 @@ class TupleExprBuilder extends ASTVisitorBase {
 						group = (Group)result;
 					}
 					else {
-						group = new Group(result);
+						if (result instanceof Filter) {
+							TupleExpr filterArg = ((Filter)result).getArg();
+							if (filterArg instanceof Group) {
+								group = (Group)filterArg;
+							}
+							else if (filterArg instanceof Extension) {
+								group = (Group)((Extension)filterArg).getArg();
+							}
+						}
+						else {
+							group = new Group(result);
+						}
 					}
 
 					group.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
 
 					extension.setArg(group);
-					result = group;
+
+					if (!(result instanceof Filter)) {
+						result = group;
+					}
 				}
 				extension.addElement(new ExtensionElem(valueExpr, alias));
 			}
@@ -1185,5 +1240,22 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
 		return new Avg(ve);
+	}
+
+	static class AggregateCollector extends QueryModelVisitorBase<VisitorException> {
+
+		private Collection<AggregateOperator> operators = new ArrayList<AggregateOperator>();
+
+		public Collection<AggregateOperator> getOperators() {
+			return operators;
+		}
+
+		@Override
+		public void meet(Sum node)
+			throws VisitorException
+		{
+			super.meet(node);
+			operators.add(node);
+		}
 	}
 }
