@@ -44,6 +44,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BinaryTupleOperator;
@@ -769,10 +770,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
 		ValueExpr nodeIdExpr = node.getNodeIdExpr();
-		
+
 		if (nodeIdExpr != null) {
 			Value nodeId = evaluate(nodeIdExpr, bindings);
-			
+
 			if (nodeId instanceof Literal) {
 				return tripleSource.getValueFactory().createBNode(((Literal)nodeId).getLabel());
 			}
@@ -1000,7 +1001,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (argValue instanceof Literal) {
 			Literal lit = (Literal)argValue;
-			
+
 			return new URIImpl(lit.getLabel());
 		}
 		else if (argValue instanceof URI) {
@@ -1009,7 +1010,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		throw new ValueExprEvaluationException();
 	}
-	
+
 	/**
 	 * Creates a datatyped literal from the operand values.
 	 * 
@@ -1027,12 +1028,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (lexicalValue instanceof Literal) {
 			Literal lit = (Literal)lexicalValue;
-			
+
 			if (datatypeValue instanceof URI) {
 				return new LiteralImpl(lit.getLabel(), (URI)datatypeValue);
 			}
 			else {
-				throw new ValueExprEvaluationException("illegal value for operand: " + datatypeValue);		
+				throw new ValueExprEvaluationException("illegal value for operand: " + datatypeValue);
 			}
 		}
 		else {
@@ -1040,7 +1041,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 
 	}
-	
+
 	/**
 	 * Creates a language literal from the operand values.
 	 * 
@@ -1058,12 +1059,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (lexicalValue instanceof Literal) {
 			Literal lit = (Literal)lexicalValue;
-			
+
 			if (languageValue instanceof Literal) {
 				return new LiteralImpl(lit.getLabel(), ((Literal)languageValue).getLabel());
 			}
 			else {
-				throw new ValueExprEvaluationException("illegal value for operand: " + languageValue);		
+				throw new ValueExprEvaluationException("illegal value for operand: " + languageValue);
 			}
 		}
 		else {
