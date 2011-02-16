@@ -93,7 +93,7 @@ public class ValueStore extends ValueFactoryBase {
 	 * A simple cache containing the [ID_CACHE_SIZE] most-recently used value-IDs
 	 * stored by their value.
 	 */
-	private final LRUCache<Value, Integer> valueIDCache;
+	private final LRUCache<NativeValue, Integer> valueIDCache;
 
 	/**
 	 * A simple cache containing the [NAMESPACE_CACHE_SIZE] most-recently used
@@ -124,7 +124,7 @@ public class ValueStore extends ValueFactoryBase {
 		dataStore = new DataStore(dataDir, FILENAME_PREFIX, forceSync);
 
 		valueCache = new LRUCache<Integer, NativeValue>(VALUE_CACHE_SIZE);
-		valueIDCache = new LRUCache<Value, Integer>(VALUE_ID_CACHE_SIZE);
+		valueIDCache = new LRUCache<NativeValue, Integer>(VALUE_ID_CACHE_SIZE);
 		namespaceCache = new LRUCache<Integer, String>(NAMESPACE_CACHE_SIZE);
 		namespaceIDCache = new LRUCache<String, Integer>(NAMESPACE_ID_CACHE_SIZE);
 
@@ -253,8 +253,10 @@ public class ValueStore extends ValueFactoryBase {
 				}
 				else {
 					// Store id in cache
+					NativeValue nv = getNativeValue(value);
+					nv.setInternalID(id, revision);
 					synchronized (valueIDCache) {
-						valueIDCache.put(value, new Integer(id));
+						valueIDCache.put(nv, new Integer(id));
 					}
 				}
 			}
@@ -324,8 +326,10 @@ public class ValueStore extends ValueFactoryBase {
 		}
 		else {
 			// Update cache
+			NativeValue nv = getNativeValue(value);
+			nv.setInternalID(id, revision);
 			synchronized (valueIDCache) {
-				valueIDCache.put(value, new Integer(id));
+				valueIDCache.put(nv, new Integer(id));
 			}
 		}
 
