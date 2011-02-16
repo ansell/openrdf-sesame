@@ -60,6 +60,7 @@ import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
+import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
@@ -231,41 +232,46 @@ class TupleExprBuilder extends ASTVisitorBase {
 		// Apply HAVING group filter condition
 		ASTHavingClause havingNode = node.getHavingClause();
 		if (havingNode != null) {
-			
+
 			// add implicit group if necessary
 			if (!(tupleExpr instanceof Group)) {
 				tupleExpr = new Group(tupleExpr);
 			}
-			
-			// TODO this may probably be done in a much cleaner fashion than currently implemented.
-			
+
 			// FIXME is the child of a HAVING node always a compare?
 			Compare condition = (Compare)havingNode.jjtGetChild(0).jjtAccept(this, tupleExpr);
 
-			// retrieve any aggregate operators from the condition. 
+			// retrieve any aggregate operators from the condition.
 			AggregateCollector collector = new AggregateCollector();
 			collector.meet(condition);
 
-			// replace operator occurrences with an anonymous var, and alias it to the group
+			// replace operator occurrences with an anonymous var, and alias it to
+			// the group
 			Extension extension = new Extension();
 			for (AggregateOperator operator : collector.getOperators()) {
 				Var var = createAnonVar("-const-" + constantVarID++);
-				
-				// FIXME is the aggregate operator always the direct child of the condition?
-				condition.replaceChildNode(operator, var);
-				
+
+				// replace occurrence of the operator in the filter condition with
+				// the variable.
+				AggregateOperatorReplacer replacer = new AggregateOperatorReplacer(operator, var);
+				replacer.meet(condition);
+
 				String alias = var.getName();
-				
+
+				// create an extension linking the operator to the variable name.
 				ExtensionElem pe = new ExtensionElem(operator, alias);
 				extension.addElement(pe);
 
+				// add the aggregate operator to the group.
 				GroupElem ge = new GroupElem(alias, operator);
-				
-				// FIXME quite often the aggregate in the HAVING clause will be a duplicate of an aggregate
-				// in the projection. We could perhaps optimize for that, to avoid having to evaluate twice.
+
+				// FIXME quite often the aggregate in the HAVING clause will be a
+				// duplicate of an aggregate in the projection. We could perhaps
+				// optimize for that, to avoid
+				// having to evaluate twice.
 				((Group)tupleExpr).addGroupElement(ge);
 			}
-			
+
 			extension.setArg(tupleExpr);
 			tupleExpr = new Filter(extension, condition);
 		}
@@ -1251,11 +1257,139 @@ class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		@Override
+		public void meet(Avg node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+
+		@Override
+		public void meet(Count node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+		
+		@Override
+		public void meet(GroupConcat node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+		
+		@Override
+		public void meet(Max node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+		
+		@Override
+		public void meet(Min node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+		
+		@Override
+		public void meet(Sample node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+		
+		@Override
 		public void meet(Sum node)
 			throws VisitorException
 		{
 			super.meet(node);
+			meetAggregate(node);
+		}
+
+		private void meetAggregate(AggregateOperator node)
+		{
 			operators.add(node);
+		}
+	}
+
+	static class AggregateOperatorReplacer extends QueryModelVisitorBase<VisitorException> {
+
+		private Var replacement;
+
+		private AggregateOperator operator;
+
+		public AggregateOperatorReplacer(AggregateOperator operator, Var replacement) {
+			this.operator = operator;
+			this.replacement = replacement;
+		}
+
+		@Override
+		public void meet(Avg node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+
+		@Override
+		public void meet(Count node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+		
+		@Override
+		public void meet(GroupConcat node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+		
+		@Override
+		public void meet(Max node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+		
+		@Override
+		public void meet(Min node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+		
+		@Override
+		public void meet(Sample node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+		
+		@Override
+		public void meet(Sum node)
+			throws VisitorException
+		{
+			super.meet(node);
+			meetAggregate(node);
+		}
+		
+		private void meetAggregate(AggregateOperator node)
+		{
+			if (node.equals(operator)) {
+				node.getParentNode().replaceChildNode(node, replacement);
+			}
 		}
 	}
 }
