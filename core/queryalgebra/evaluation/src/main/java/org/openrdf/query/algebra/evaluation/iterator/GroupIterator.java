@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
@@ -188,13 +187,15 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	private Value processAggregate(Collection<BindingSet> bindingSets, AggregateOperator operator)
 		throws QueryEvaluationException
 	{
+		
+		boolean distinct = operator.isDistinct();
 		if (operator instanceof Count) {
 			Count countOp = (Count)operator;
 
 			ValueExpr arg = countOp.getArg();
 
 			if (arg != null) {
-				Collection<Value> values = createValueCollection(arg, bindingSets);
+				Collection<Value> values = createValueCollection(arg, bindingSets, distinct);
 				return new LiteralImpl(Integer.toString(values.size()), XMLSchema.INTEGER);
 			}
 			else {
@@ -204,7 +205,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		else if (operator instanceof Min) {
 			Min minOp = (Min)operator;
 
-			Collection<Value> values = createValueCollection(minOp.getArg(), bindingSets);
+			Collection<Value> values = createValueCollection(minOp.getArg(), bindingSets, distinct);
 
 			Value result = null;
 
@@ -224,7 +225,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		else if (operator instanceof Max) {
 			Max maxOp = (Max)operator;
 
-			Collection<Value> values = createValueCollection(maxOp.getArg(), bindingSets);
+			Collection<Value> values = createValueCollection(maxOp.getArg(), bindingSets, distinct);
 
 			Value result = null;
 
@@ -244,7 +245,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 			Sum sumOp = (Sum)operator;
 
-			Collection<Value> values = createValueCollection(sumOp.getArg(), bindingSets);
+			Collection<Value> values = createValueCollection(sumOp.getArg(), bindingSets, distinct);
 
 			return calculateSum(values);
 
@@ -253,7 +254,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 			Avg avgOp = (Avg)operator;
 
-			Collection<Value> values = createValueCollection(avgOp.getArg(), bindingSets);
+			Collection<Value> values = createValueCollection(avgOp.getArg(), bindingSets, distinct);
 
 			int size = values.size();
 			if (size == 0) {
@@ -276,7 +277,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		}
 		else if (operator instanceof GroupConcat) {
 			GroupConcat groupConcatOp = (GroupConcat)operator;
-			Collection<Value> values = createValueCollection(groupConcatOp.getArg(), bindingSets);
+			Collection<Value> values = createValueCollection(groupConcatOp.getArg(), bindingSets, distinct);
 
 			String separator = " ";
 			ValueExpr separatorExpr = groupConcatOp.getSeparator();
@@ -355,12 +356,13 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		return new LiteralImpl(sumString, resultDatatype);
 	}
 
-	private Collection<Value> createValueCollection(ValueExpr arg, Collection<BindingSet> bindingSets)
+	private Collection<Value> createValueCollection(ValueExpr arg, Collection<BindingSet> bindingSets, boolean distinctValues)
 		throws QueryEvaluationException
 	{
 		Collection<Value> values = null;
 
-		if (bindingSets instanceof Set) {
+		if (distinctValues) {
+			// TODO handle ordered in combination with distinct
 			values = new HashSet<Value>();
 		}
 		else {

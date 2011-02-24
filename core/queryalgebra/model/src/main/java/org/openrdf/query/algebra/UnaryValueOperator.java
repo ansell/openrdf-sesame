@@ -24,6 +24,9 @@ public abstract class UnaryValueOperator extends QueryModelNodeBase implements V
 	 * Constructors *
 	 *--------------*/
 
+	/**
+	 * Creates a new empty unary value operator.
+	 */
 	public UnaryValueOperator() {
 	}
 
@@ -66,7 +69,9 @@ public abstract class UnaryValueOperator extends QueryModelNodeBase implements V
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
 		throws X
 	{
-		arg.visit(visitor);
+		if (arg != null) {
+			arg.visit(visitor);
+		}
 	}
 
 	@Override
@@ -83,7 +88,7 @@ public abstract class UnaryValueOperator extends QueryModelNodeBase implements V
 	public boolean equals(Object other) {
 		if (other instanceof UnaryValueOperator) {
 			UnaryValueOperator o = (UnaryValueOperator)other;
-			return arg.equals(o.getArg());
+			return (arg == null && o.getArg() == null) || (arg != null && arg.equals(o.getArg()));
 		}
 
 		return false;
@@ -97,7 +102,9 @@ public abstract class UnaryValueOperator extends QueryModelNodeBase implements V
 	@Override
 	public UnaryValueOperator clone() {
 		UnaryValueOperator clone = (UnaryValueOperator)super.clone();
-		clone.setArg(getArg().clone());
+		if (getArg() != null) {
+			clone.setArg(getArg().clone());
+		}
 		return clone;
 	}
 }

@@ -340,6 +340,9 @@ class TupleExprBuilder extends ASTVisitorBase {
 							else if (filterArg instanceof Extension) {
 								group = (Group)((Extension)filterArg).getArg();
 							}
+							else {
+								group = new Group(result);
+							}
 						}
 						else {
 							group = new Group(result);
@@ -1191,9 +1194,11 @@ class TupleExprBuilder extends ASTVisitorBase {
 	public Object visit(ASTCount node, Object data)
 		throws VisitorException
 	{
-		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
-
-		return new Count(ve);
+		ValueExpr ve = null;
+		if (node.jjtGetNumChildren() > 0) {
+			ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+		}
+		return new Count(ve, node.isDistinct());
 	}
 
 	@Override
@@ -1271,7 +1276,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(node);
 			meetAggregate(node);
 		}
-		
+
 		@Override
 		public void meet(GroupConcat node)
 			throws VisitorException
@@ -1279,7 +1284,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(node);
 			meetAggregate(node);
 		}
-		
+
 		@Override
 		public void meet(Max node)
 			throws VisitorException
@@ -1287,7 +1292,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(node);
 			meetAggregate(node);
 		}
-		
+
 		@Override
 		public void meet(Min node)
 			throws VisitorException
@@ -1295,7 +1300,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(node);
 			meetAggregate(node);
 		}
-		
+
 		@Override
 		public void meet(Sample node)
 			throws VisitorException
@@ -1303,7 +1308,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(node);
 			meetAggregate(node);
 		}
-		
+
 		@Override
 		public void meet(Sum node)
 			throws VisitorException
@@ -1312,8 +1317,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			meetAggregate(node);
 		}
 
-		private void meetAggregate(AggregateOperator node)
-		{
+		private void meetAggregate(AggregateOperator node) {
 			operators.add(node);
 		}
 	}
@@ -1344,7 +1348,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(node);
 			meetAggregate(node);
 		}
-		
+
 		@Override
 		public void meet(GroupConcat node)
 			throws VisitorException
@@ -1352,7 +1356,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(node);
 			meetAggregate(node);
 		}
-		
+
 		@Override
 		public void meet(Max node)
 			throws VisitorException
@@ -1360,7 +1364,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(node);
 			meetAggregate(node);
 		}
-		
+
 		@Override
 		public void meet(Min node)
 			throws VisitorException
@@ -1368,7 +1372,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(node);
 			meetAggregate(node);
 		}
-		
+
 		@Override
 		public void meet(Sample node)
 			throws VisitorException
@@ -1376,7 +1380,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(node);
 			meetAggregate(node);
 		}
-		
+
 		@Override
 		public void meet(Sum node)
 			throws VisitorException
@@ -1384,9 +1388,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(node);
 			meetAggregate(node);
 		}
-		
-		private void meetAggregate(AggregateOperator node)
-		{
+
+		private void meetAggregate(AggregateOperator node) {
 			if (node.equals(operator)) {
 				node.getParentNode().replaceChildNode(node, replacement);
 			}

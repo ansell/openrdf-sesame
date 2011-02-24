@@ -7,18 +7,18 @@ package org.openrdf.query.algebra;
 
 /**
  * @author David Huynh
+ * @author Jeen Broekstra
  */
-public class Count extends UnaryValueOperator implements AggregateOperator {
-
-	public Count() {
-		// FIXME: should we create a separate class for this case?
-		super(null);
-	}
+public class Count extends AggregateOperatorBase {
 
 	public Count(ValueExpr arg) {
 		super(arg);
 	}
-
+	
+	public Count(ValueExpr arg, boolean distinct) {
+		super(arg, distinct);
+	}
+	
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{

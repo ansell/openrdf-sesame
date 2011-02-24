@@ -8,10 +8,14 @@ package org.openrdf.query.algebra;
 /**
  * @author David Huynh
  */
-public class Min extends UnaryValueOperator implements AggregateOperator {
+public class Min extends  AggregateOperatorBase {
 
 	public Min(ValueExpr arg) {
 		super(arg);
+	}
+	
+	public Min(ValueExpr arg, boolean distinct) {
+		super(arg, distinct);
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)

@@ -41,6 +41,7 @@ public class SPARQLParser implements QueryParser {
 			Map<String, String> prefixes = PrefixDeclProcessor.process(qc);
 			WildcardProjectionProcessor.process(qc);
 			BlankNodeVarProcessor.process(qc);
+			//WildcardCountProcessor.process(qc);
 			TupleExpr tupleExpr = buildQueryModel(qc);
 
 			ParsedQuery query;

@@ -10,12 +10,16 @@ package org.openrdf.query.algebra;
  * 
  * @author Jeen Broekstra
  */
-public class Sum extends UnaryValueOperator implements AggregateOperator {
+public class Sum extends AggregateOperatorBase {
 
 	public Sum(ValueExpr arg) {
 		super(arg);
 	}
-
+	
+	public Sum(ValueExpr arg, boolean distinct) {
+		super(arg, distinct);
+	}
+	
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
