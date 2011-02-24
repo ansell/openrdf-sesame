@@ -22,6 +22,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.LiteralImpl;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -37,9 +38,11 @@ import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.ValueExpr;
+import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.query.algebra.evaluation.util.MathUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 
 /**
@@ -261,10 +264,11 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 				return new LiteralImpl("0.0", XMLSchema.DOUBLE);
 			}
 
-			double sum = calculateSum(values).doubleValue();
-			double avg = sum / size;
+			Literal sizeLit = new ValueFactoryImpl().createLiteral(size);
+			Literal sum = calculateSum(values);
+			Literal avg = MathUtil.compute(sum, sizeLit, MathOp.DIVIDE);
 
-			return new LiteralImpl(String.valueOf(avg), XMLSchema.DOUBLE);
+			return avg;
 		}
 		else if (operator instanceof Sample) {
 
@@ -305,55 +309,29 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	}
 
 	private Literal calculateSum(Collection<Value> values)
-		throws ValueExprEvaluationException
-	{
-		double sum = 0;
-
-		// by default, the result datatype is xsd:integer.
-		URI resultDatatype = XMLSchema.INTEGER;
-
-		for (Value v : values) {
+		throws ValueExprEvaluationException {
+		List<Literal> literals = new ArrayList<Literal>();
+		for (Value v: values) {
 			if (v instanceof Literal) {
-				Literal l = (Literal)v;
-				URI datatype = l.getDatatype();
-
-				if (datatype == null || !XMLDatatypeUtil.isNumericDatatype(datatype)) {
-					throw new ValueExprEvaluationException("Not a number: " + l);
-				}
-
-				// check if the result datatype should be double, float, or decimal.
-				if (datatype.equals(XMLSchema.DOUBLE)) {
-					resultDatatype = XMLSchema.DOUBLE;
-				}
-				else if (datatype.equals(XMLSchema.FLOAT)) {
-					if (!resultDatatype.equals(XMLSchema.DOUBLE)) {
-						resultDatatype = XMLSchema.FLOAT;
-					}
-				}
-				else if (datatype.equals(XMLSchema.DECIMAL)) {
-					if (!(resultDatatype.equals(XMLSchema.FLOAT) || resultDatatype.equals(XMLSchema.DOUBLE))) {
-						resultDatatype = XMLSchema.DECIMAL;
-					}
-				}
-
-				try {
-					sum += l.doubleValue();
-				}
-				catch (NumberFormatException e) {
-					throw new ValueExprEvaluationException("Not a valid number: " + l);
-				}
+				literals.add((Literal)v);
 			}
 			else {
-				throw new ValueExprEvaluationException("Not a number: " + v);
+				throw new ValueExprEvaluationException("not a number: " + v);
 			}
 		}
-
-		String sumString = String.valueOf(sum);
-		if (XMLSchema.INTEGER.equals(resultDatatype)) {
-			sumString = String.valueOf(((int)sum));
+		return calculateSum(literals);
+	}
+	
+	private Literal calculateSum(List<Literal> literals)
+		throws ValueExprEvaluationException
+	{
+		Literal result = literals.get(0);
+		
+		for(int i = 1; i < literals.size(); i++) {
+			result = MathUtil.compute(result, literals.get(i), MathOp.PLUS);
 		}
-
-		return new LiteralImpl(sumString, resultDatatype);
+		
+		return result;
 	}
 
 	private Collection<Value> createValueCollection(ValueExpr arg, Collection<BindingSet> bindingSets, boolean distinctValues)
