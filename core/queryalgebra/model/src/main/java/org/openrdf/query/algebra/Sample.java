@@ -10,12 +10,16 @@ package org.openrdf.query.algebra;
  * 
  * @author Jeen Broekstra
  */
-public class Sample extends UnaryValueOperator implements AggregateOperator {
+public class Sample extends AggregateOperatorBase {
 
 	public Sample(ValueExpr arg) {
 		super(arg);
 	}
 
+	public Sample(ValueExpr arg, boolean distinct) {
+		super(arg, distinct);
+	}
+	
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{

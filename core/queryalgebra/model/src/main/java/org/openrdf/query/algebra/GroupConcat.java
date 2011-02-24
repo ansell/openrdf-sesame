@@ -10,7 +10,7 @@ package org.openrdf.query.algebra;
  * 
  * @author Jeen Broekstra
  */
-public class GroupConcat extends UnaryValueOperator implements AggregateOperator {
+public class GroupConcat extends AggregateOperatorBase {
 
 	private ValueExpr separator;
 	
@@ -18,6 +18,10 @@ public class GroupConcat extends UnaryValueOperator implements AggregateOperator
 		super(arg);
 	}
 
+	public GroupConcat(ValueExpr arg, boolean distinct) {
+		super(arg, distinct);
+	}
+	
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{

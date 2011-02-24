@@ -56,11 +56,11 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 		throws MalformedQueryException
 	{
 		QueryVariableCollector visitor = new QueryVariableCollector();
+
 		try {
 			// Collect variable names from query
 			qc.jjtAccept(visitor, null);
 
-			
 			// Adds ASTVar nodes to the ASTProjectionElem nodes and to the parent
 			for (String varName : visitor.getVariableNames()) {
 				ASTVar varNode = new ASTVar(SyntaxTreeBuilderTreeConstants.JJTVAR);
@@ -70,9 +70,10 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 				varNode.setName(varName);
 				projectionElemNode.jjtAppendChild(varNode);
 				varNode.jjtSetParent(projectionElemNode);
-				
+
 				wildcardNode.jjtAppendChild(projectionElemNode);
 				projectionElemNode.jjtSetParent(wildcardNode);
+
 			}
 
 		}
@@ -103,4 +104,5 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 			return super.visit(node, data);
 		}
 	}
+
 }

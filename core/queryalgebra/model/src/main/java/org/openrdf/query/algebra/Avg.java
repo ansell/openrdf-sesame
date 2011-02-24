@@ -15,10 +15,14 @@ package org.openrdf.query.algebra;
  * 
  * @author Jeen Broekstra
  */
-public class Avg extends UnaryValueOperator implements AggregateOperator {
+public class Avg extends AggregateOperatorBase {
 
 	public Avg(ValueExpr arg) {
 		super(arg);
+	}
+	
+	public Avg(ValueExpr arg, boolean distinct) {
+		super(arg, distinct);
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
