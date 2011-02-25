@@ -9,12 +9,12 @@
   <results>
     <result>
       <binding name="avgPrice">
-      	<literal datatype="http://www.w3.org/2001/XMLSchema#double">7.0</literal>
+      	<literal datatype="http://www.w3.org/2001/XMLSchema#decimal">7</literal>
       </binding>
     </result>
     <result>
       <binding name="avgPrice">
-      	<literal datatype="http://www.w3.org/2001/XMLSchema#double">7.0</literal>
+      	<literal datatype="http://www.w3.org/2001/XMLSchema#decimal">7</literal>
       </binding>
     </result>
   </results>
