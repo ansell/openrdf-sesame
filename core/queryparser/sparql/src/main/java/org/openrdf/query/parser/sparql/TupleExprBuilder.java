@@ -79,6 +79,7 @@ import org.openrdf.query.parser.sparql.ast.ASTAnd;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTAvg;
 import org.openrdf.query.parser.sparql.ast.ASTBNodeFunc;
+import org.openrdf.query.parser.sparql.ast.ASTBind;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNodePropertyList;
 import org.openrdf.query.parser.sparql.ast.ASTBound;
@@ -122,8 +123,12 @@ import org.openrdf.query.parser.sparql.ast.ASTOptionalGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTOr;
 import org.openrdf.query.parser.sparql.ast.ASTOrderClause;
 import org.openrdf.query.parser.sparql.ast.ASTOrderCondition;
+import org.openrdf.query.parser.sparql.ast.ASTPathAlternative;
+import org.openrdf.query.parser.sparql.ast.ASTPathElt;
+import org.openrdf.query.parser.sparql.ast.ASTPathSequence;
 import org.openrdf.query.parser.sparql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.sparql.ast.ASTPropertyList;
+import org.openrdf.query.parser.sparql.ast.ASTPropertyListPath;
 import org.openrdf.query.parser.sparql.ast.ASTQName;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTRDFLiteral;
@@ -811,6 +816,114 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public Object visit(ASTPathAlternative pathAltNode, Object data)
+		throws VisitorException
+	{
+
+		GraphPattern parentGP = graphPattern;
+
+		graphPattern = new GraphPattern(parentGP);
+
+		pathAltNode.jjtGetChild(0).jjtAccept(this, data);
+		TupleExpr leftArg = graphPattern.buildTupleExpr();
+
+		if (pathAltNode.jjtGetNumChildren() > 1) {
+			graphPattern = new GraphPattern(parentGP);
+			pathAltNode.jjtGetChild(1).jjtAccept(this, data);
+			TupleExpr rightArg = graphPattern.buildTupleExpr();
+			parentGP.addRequiredTE(new Union(leftArg, rightArg));
+		}
+		else {
+			parentGP.addRequiredTE(leftArg);
+		}
+		graphPattern = parentGP;
+
+		return null;
+	}
+
+	@Override
+	public Object visit(ASTPathSequence pathSeqNode, Object data)
+		throws VisitorException
+	{
+		ValueExpr subject = (ValueExpr)data;
+		Var subjVar = valueExpr2Var(subject);
+
+		@SuppressWarnings("unchecked")
+		List<ValueExpr> objectList = (List<ValueExpr>)((ASTPropertyListPath)pathSeqNode.jjtGetParent().jjtGetParent()).getObjectList().jjtAccept(
+				this, null);
+
+		List<ASTPathElt> pathElements = pathSeqNode.getPathElements();
+
+		int pathLength = pathElements.size();
+
+		for (int i = 0; i < pathLength; i++) {
+			ASTPathElt pathElement = pathElements.get(i);
+
+			ValueExpr pred = (ValueExpr)pathElement.jjtAccept(this, data);
+			Var predVar = valueExpr2Var(pred);
+
+			if (i == pathLength - 1) { // last element in the path, connect to list of defined objects
+				for (ValueExpr object : objectList) {
+					Var objVar = valueExpr2Var(object);
+
+					if (pathElement.isInverse()) {
+						graphPattern.addRequiredSP(objVar, predVar, subjVar);
+					}
+					else {
+						graphPattern.addRequiredSP(subjVar, predVar, objVar);
+					}
+				}
+			}
+			else { // not the last element in the path, introduce an anonymous var to connect.
+				Var nextVar = createAnonVar(predVar.getName() + "-" + i);
+				if (pathElement.isInverse()) {
+					graphPattern.addRequiredSP(nextVar, predVar, subjVar);
+				}
+				else {
+					graphPattern.addRequiredSP(subjVar, predVar, nextVar);
+				}
+				// set the subject for the next element in the path.
+				// TODO check chaining behavior in combination with inverses.
+				subjVar = nextVar;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public Object visit(ASTPropertyListPath propListNode, Object data)
+		throws VisitorException
+	{
+		ValueExpr subject = (ValueExpr)data;
+		ValueExpr verbPath = (ValueExpr)propListNode.getVerb().jjtAccept(this, data);
+
+		if (verbPath instanceof Var) {
+			
+			@SuppressWarnings("unchecked")
+			List<ValueExpr> objectList = (List<ValueExpr>)propListNode.getObjectList().jjtAccept(this, null);
+
+			Var subjVar = valueExpr2Var(subject);
+
+			Var predVar = valueExpr2Var(verbPath);
+			for (ValueExpr object : objectList) {
+				Var objVar = valueExpr2Var(object);
+				graphPattern.addRequiredSP(subjVar, predVar, objVar);
+			}
+		}
+		else {
+			// path is a single IRI or a more complex path. handled by the visitor.
+
+		}
+
+		ASTPropertyListPath nextPropList = propListNode.getNextPropertyList();
+		if (nextPropList != null) {
+			nextPropList.jjtAccept(this, subject);
+		}
+
+		return null;
+	}
+
+	@Override
 	public List<ValueExpr> visit(ASTObjectList node, Object data)
 		throws VisitorException
 	{
@@ -1121,6 +1234,23 @@ class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		throw new VisitorException("QNames must be resolved before building the query model");
+	}
+
+	@Override
+	public Object visit(ASTBind node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+
+		Node aliasNode = node.jjtGetChild(1);
+		String alias = ((ASTVar)aliasNode).getName();
+
+		Extension extension = new Extension();
+		extension.addElement(new ExtensionElem(ve, alias));
+
+		graphPattern.addBindingAssignment(extension);
+
+		return extension;
 	}
 
 	@Override
