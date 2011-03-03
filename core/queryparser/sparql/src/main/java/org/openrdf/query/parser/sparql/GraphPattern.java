@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Filter;
@@ -20,7 +21,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 
 /**
- * A graph pattern consisting of (required and optional) tuple expressions and
+ * A graph pattern consisting of (required and optional) tuple expressions, binding assignments and
  * boolean constraints.
  * 
  * @author Arjohn Kampman
@@ -51,6 +52,11 @@ class GraphPattern {
 	 * The boolean constraints in this graph pattern.
 	 */
 	private List<ValueExpr> constraints = new ArrayList<ValueExpr>();
+
+	/**
+	 * The binding assignments in this graph pattern.
+	 */
+	private List<Extension> assignments = new ArrayList<Extension>();
 
 	/**
 	 * Creates a new graph pattern.
@@ -95,6 +101,10 @@ class GraphPattern {
 		return Collections.unmodifiableList(requiredTEs);
 	}
 
+	public List<Extension> getBindingAssignments() {
+		return Collections.unmodifiableList(assignments);
+	}
+	
 	public void addOptionalTE(TupleExpr te) {
 		optionalTEs.add(te);
 	}
@@ -105,6 +115,10 @@ class GraphPattern {
 
 	public void addConstraint(ValueExpr constraint) {
 		constraints.add(constraint);
+	}
+
+	public void addBindingAssignment(Extension bindingAssignment) {
+		assignments.add(bindingAssignment);
 	}
 
 	public void addConstraints(Collection<ValueExpr> constraints) {
@@ -120,7 +134,7 @@ class GraphPattern {
 		this.constraints = new ArrayList<ValueExpr>();
 		return constraints;
 	}
-	
+
 	/**
 	 * Removes all tuple expressions and constraints.
 	 */
@@ -152,6 +166,11 @@ class GraphPattern {
 
 		for (TupleExpr optTE : optionalTEs) {
 			result = new LeftJoin(result, optTE);
+		}
+		
+		for (Extension assignment : assignments) {
+			assignment.setArg(result);
+			result = assignment;
 		}
 
 		for (ValueExpr constraint : constraints) {

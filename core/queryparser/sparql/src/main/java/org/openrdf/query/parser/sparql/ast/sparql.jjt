@@ -105,7 +105,10 @@ TOKEN :
 |	<PLUS: "+">
 |	<MINUS: "-">
 |	<STAR: "*">
+|	<QUESTION: "?">
 |	<SLASH: "/">
+|       <PIPE: "|">
+|	<INVERSE: "^">
 |	<DT_PREFIX: "^^">
 |	<NIL: <LPAREN> (<WS_CHAR>)* <RPAREN>>
 |	<ANON: <LBRACK> (<WS_CHAR>)* <RBRACK>>
@@ -173,6 +176,7 @@ TOKEN [IGNORE_CASE] :
 |	<REGEX: "regex">
 |	<TRUE: "true">
 |	<FALSE: "false">
+|	<BIND: "bind">
 }
 
 TOKEN:
@@ -450,16 +454,26 @@ void GraphPattern() #void :
 void BasicGraphPattern() :
 {}
 {
-	TriplesBlock() ( Filter() [<DOT>] [TriplesBlock()] )*
+	TriplesBlock() ( FilterOrBind() [<DOT>] [TriplesBlock()] )*
 |
-	( Filter() [<DOT>] [TriplesBlock()] )+
+	( FilterOrBind() [<DOT>] [TriplesBlock()] )+
 }
+
+
+void FilterOrBind() #void :
+{}
+{
+    Filter()
+    |
+    Bind()
+}
+
 
 void TriplesBlock() #void :
 {}
 {
 	// Note: recursive rule rewriten to non-recursive rule, requires lookahead
-	TriplesSameSubject() ( LOOKAHEAD(2) <DOT> TriplesSameSubject() )* [<DOT>]
+	TriplesSameSubjectPath() ( LOOKAHEAD(2) <DOT> TriplesSameSubjectPath() )* [<DOT>]
 }
 
 void GraphPatternNotTriples() #void :
@@ -543,6 +557,103 @@ void ObjectList():
 {}
 {
 	Object() ( <COMMA> Object() )*
+}
+
+void TriplesSameSubjectPath() :
+{}
+{
+    VarOrTerm() PropertyListPath()
+    |
+    TriplesNode() [PropertyListPath()]
+}
+
+void PropertyListPath() :
+{}
+{
+    (VerbPath() | VerbSimple()) ObjectList() (LOOKAHEAD(2) <SEMICOLON> [PropertyListPath()] )*
+}
+
+void VerbPath() #void :
+{}
+{
+    Path()
+}
+
+void Path() #void :
+{}
+{
+    PathAlternative()
+}
+
+void PathAlternative() :
+{}
+{
+    PathSequence() ( <PIPE> PathSequence() )*
+}
+
+void PathSequence() :
+{}
+{
+    PathElt() ( <SLASH> PathElt() )*
+}
+
+void PathElt() :
+{}
+{
+   [<INVERSE> {jjtThis.setInverse(true); }] PathPrimary() [ PathMod() ]
+}
+
+void PathPrimary() #void :
+{}
+{
+    IRIref() 
+    |
+    <IS_A> { jjtThis.setValue(RDF.TYPE.toString()); } #IRI
+    |
+    <NOT> PathNegatedPropertySet() 
+    |
+    <LPAREN> Path() <RPAREN>
+}
+
+void PathNegatedPropertySet() #void :
+{}
+{
+    PathOneInPropertySet() 
+    |
+    <LPAREN>
+	[ PathOneInPropertySet() ( <PIPE> PathOneInPropertySet() )* ]
+    <RPAREN>
+}
+
+void PathOneInPropertySet() #void :
+{}
+{
+    IRIref() 
+    |
+    <IS_A> { jjtThis.setValue(RDF.TYPE.toString()); } #IRI
+    |
+    <INVERSE> ( IRIref() | <IS_A> { jjtThis.setValue(RDF.TYPE.toString()); } #IRI )
+}
+
+void PathMod() :
+{}
+{
+    <STAR>
+    |
+    <QUESTION>
+    |
+    <PLUS>
+    |
+    <LBRACE> ( <INTEGER> ( <COMMA> ( <RBRACE> | <INTEGER> <RBRACE> ) 
+			    | <RBRACE> ) 
+			| <COMMA> <INTEGER> <RBRACE> )
+}
+
+
+void VerbSimple() #void :
+{}
+{
+    Var()
 }
 
 void Object() #void :
@@ -896,6 +1007,11 @@ void StrLang() :
 	<STRLANG> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
 }
 
+void Bind() :
+{}
+{
+	<BIND> <LPAREN> Expression() <AS> Var() <RPAREN>
+}
 
 void RegexExpression() :
 {}

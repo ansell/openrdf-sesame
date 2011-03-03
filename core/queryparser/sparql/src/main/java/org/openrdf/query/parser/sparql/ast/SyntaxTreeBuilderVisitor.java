@@ -35,7 +35,13 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTTriplesSameSubject node, Object data) throws VisitorException;
   public Object visit(ASTPropertyList node, Object data) throws VisitorException;
   public Object visit(ASTObjectList node, Object data) throws VisitorException;
+  public Object visit(ASTTriplesSameSubjectPath node, Object data) throws VisitorException;
+  public Object visit(ASTPropertyListPath node, Object data) throws VisitorException;
+  public Object visit(ASTPathAlternative node, Object data) throws VisitorException;
+  public Object visit(ASTPathSequence node, Object data) throws VisitorException;
+  public Object visit(ASTPathElt node, Object data) throws VisitorException;
   public Object visit(ASTIRI node, Object data) throws VisitorException;
+  public Object visit(ASTPathMod node, Object data) throws VisitorException;
   public Object visit(ASTBlankNodePropertyList node, Object data) throws VisitorException;
   public Object visit(ASTCollection node, Object data) throws VisitorException;
   public Object visit(ASTVar node, Object data) throws VisitorException;
@@ -66,6 +72,7 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTIRIFunc node, Object data) throws VisitorException;
   public Object visit(ASTStrDt node, Object data) throws VisitorException;
   public Object visit(ASTStrLang node, Object data) throws VisitorException;
+  public Object visit(ASTBind node, Object data) throws VisitorException;
   public Object visit(ASTRegexExpression node, Object data) throws VisitorException;
   public Object visit(ASTExistsFunc node, Object data) throws VisitorException;
   public Object visit(ASTNotExistsFunc node, Object data) throws VisitorException;
@@ -76,4 +83,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTQName node, Object data) throws VisitorException;
   public Object visit(ASTBlankNode node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=570e157d40859db619c946bd1aa516f6 (do not edit this line) */
+/* JavaCC - OriginalChecksum=f10e967fa1746f78c7c668d484a678d0 (do not edit this line) */
