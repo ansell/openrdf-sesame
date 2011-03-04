@@ -10,14 +10,21 @@
     mf:entries
     (
     	:sparql11-alternative-01
+    	:sparql11-alternative-02
     	:sparql11-sequence-01
     	:sparql11-sequence-02
+    	:sparql11-sequence-03
     ).
 
 :sparql11-alternative-01  mf:name  "sparql11-alternative-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-alternative-01.rq> ; qt:data <data-01.ttl> ] ;
          mf:result <sparql11-alternative-01.srx> .
+         
+:sparql11-alternative-02  mf:name  "sparql11-alternative-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-alternative-02.rq> ; qt:data <data-01.ttl> ] ;
+         mf:result <sparql11-alternative-02.srx> .
          
 :sparql11-sequence-01  mf:name  "sparql11-sequence-01" ;
          rdf:type   mf:QueryEvaluationTest ;
@@ -28,3 +35,8 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-sequence-02.rq> ; qt:data <data-01.ttl> ] ;
          mf:result <sparql11-sequence-02.srx> .    
+         
+:sparql11-sequence-03  mf:name  "sparql11-sequence-03" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-sequence-03.rq> ; qt:data <data-01.ttl> ] ;
+         mf:result <sparql11-sequence-03.srx> . 
