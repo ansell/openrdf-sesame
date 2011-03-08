@@ -61,6 +61,7 @@ import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.Sample;
+import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
@@ -125,6 +126,7 @@ import org.openrdf.query.parser.sparql.ast.ASTOrderClause;
 import org.openrdf.query.parser.sparql.ast.ASTOrderCondition;
 import org.openrdf.query.parser.sparql.ast.ASTPathAlternative;
 import org.openrdf.query.parser.sparql.ast.ASTPathElt;
+import org.openrdf.query.parser.sparql.ast.ASTPathMod;
 import org.openrdf.query.parser.sparql.ast.ASTPathSequence;
 import org.openrdf.query.parser.sparql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.sparql.ast.ASTPropertyList;
@@ -856,38 +858,167 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		int pathLength = pathElements.size();
 
+		GraphPattern pathSequencePattern = new GraphPattern();
+
 		for (int i = 0; i < pathLength; i++) {
 			ASTPathElt pathElement = pathElements.get(i);
+
+			ASTPathMod pathMod = pathElement.getPathMod();
+
+			int lowerBound = Integer.MIN_VALUE;
+			int upperBound = Integer.MIN_VALUE;
+
+			if (pathMod != null) {
+				lowerBound = pathMod.getLowerBound();
+				upperBound = pathMod.getUpperBound();
+
+				if (upperBound == Integer.MIN_VALUE) {
+					upperBound = lowerBound;
+				}
+				else if (lowerBound == Integer.MIN_VALUE) {
+					lowerBound = upperBound;
+				}
+				
+				// TODO handle cases where lowerBound is zero.
+				if (lowerBound == 0) {
+					throw new VisitorException("zero-length paths not yet supported");
+				}
+				
+				// TODO handle arbitrary-length paths.
+				if (lowerBound == Integer.MAX_VALUE || upperBound == Integer.MAX_VALUE) {
+					throw new VisitorException("arbitrary-length paths not yet supported");
+				}
+			}
 
 			ValueExpr pred = (ValueExpr)pathElement.jjtAccept(this, data);
 			Var predVar = valueExpr2Var(pred);
 
-			if (i == pathLength - 1) { // last element in the path, connect to list of defined objects
+			TupleExpr te;
+			if (i == pathLength - 1) { // last element in the path, connect to list
+												// of defined objects
 				for (ValueExpr object : objectList) {
 					Var objVar = valueExpr2Var(object);
 
 					if (pathElement.isInverse()) {
-						graphPattern.addRequiredSP(objVar, predVar, subjVar);
+						te = new StatementPattern(objVar, predVar, subjVar);
+						te = handlePathModifiers(te, lowerBound, upperBound);
+
+						pathSequencePattern.addRequiredTE(te);
 					}
 					else {
-						graphPattern.addRequiredSP(subjVar, predVar, objVar);
+						te = new StatementPattern(subjVar, predVar, objVar);
+						te = handlePathModifiers(te, lowerBound, upperBound);
+
+						pathSequencePattern.addRequiredTE(te);
 					}
 				}
 			}
-			else { // not the last element in the path, introduce an anonymous var to connect.
+			else { // not the last element in the path, introduce an anonymous var
+						// to connect.
 				Var nextVar = createAnonVar(predVar.getName() + "-" + i);
 				if (pathElement.isInverse()) {
-					graphPattern.addRequiredSP(nextVar, predVar, subjVar);
+
+					te = new StatementPattern(nextVar, predVar, subjVar);
+
+					te = handlePathModifiers(te, lowerBound, upperBound);
+
+					pathSequencePattern.addRequiredTE(te);
 				}
 				else {
-					graphPattern.addRequiredSP(subjVar, predVar, nextVar);
+					te = new StatementPattern(subjVar, predVar, nextVar);
+					te = handlePathModifiers(te, lowerBound, upperBound);
+
+					pathSequencePattern.addRequiredTE(te);
 				}
+
 				// set the subject for the next element in the path.
-				// TODO check chaining behavior in combination with inverses.
 				subjVar = nextVar;
 			}
 		}
+
+		// add the created path sequence to the graph pattern.
+		for (TupleExpr te : pathSequencePattern.getRequiredTEs()) {
+			graphPattern.addRequiredTE(te);
+		}
+
 		return null;
+	}
+
+	private TupleExpr handlePathModifiers(TupleExpr te, int lowerBound, int upperBound) {
+
+		TupleExpr result = te;
+
+		if (lowerBound > Integer.MIN_VALUE) {
+
+			if (lowerBound < upperBound) {
+				// create set of unions for all path lengths between
+				// lower and upper bound.
+				Union union = createRecursiveUnion((StatementPattern)te, lowerBound, upperBound);
+				result = union;
+			}
+			else {
+				// create single path of fixed length.
+				TupleExpr path = createPath((StatementPattern)te, lowerBound);
+				result = path;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * @param te
+	 * @param nextVar
+	 * @param lowerBound
+	 * @param upperBound
+	 * @return
+	 */
+	private Union createRecursiveUnion(StatementPattern sp, int lowerBound, int upperBound) {
+
+		Union union = new Union();
+
+		if (lowerBound < upperBound) {
+
+			TupleExpr leftArg = createPath(sp, lowerBound);
+
+			union.setLeftArg(leftArg);
+
+			if (lowerBound == upperBound - 1) {
+				// stop condition: create simple pattern for the rightArg.
+				TupleExpr rightArg = createPath(sp, upperBound);
+				union.setRightArg(rightArg);
+			}
+			else {
+				// create right argument recursively
+				union.setRightArg(createRecursiveUnion(sp, lowerBound + 1, upperBound));
+			}
+		}
+
+		return union;
+	}
+
+	private TupleExpr createPath(StatementPattern sp, int length) {
+		GraphPattern gp = new GraphPattern();
+
+		Var subject = sp.getSubjectVar();
+		Var predicate = sp.getPredicateVar();
+		Var endVar = sp.getObjectVar();
+
+		Var nextVar = null;
+
+		for (int i = 0; i < length; i++) {
+			if (i < length - 1) {
+				nextVar = createAnonVar(predicate.getValue() + "-path-" + length + "-" + i);
+			}
+			else {
+				nextVar = endVar;
+			}
+			gp.addRequiredSP(subject, predicate, nextVar);
+			subject = nextVar;
+		}
+
+		return gp.buildTupleExpr();
+
 	}
 
 	@Override
@@ -898,7 +1029,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr verbPath = (ValueExpr)propListNode.getVerb().jjtAccept(this, data);
 
 		if (verbPath instanceof Var) {
-			
+
 			@SuppressWarnings("unchecked")
 			List<ValueExpr> objectList = (List<ValueExpr>)propListNode.getObjectList().jjtAccept(this, null);
 
