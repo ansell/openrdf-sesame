@@ -636,19 +636,26 @@ void PathOneInPropertySet() #void :
 }
 
 void PathMod() :
-{}
-{
-    <STAR>
-    |
-    <QUESTION>
-    |
-    <PLUS>
-    |
-    <LBRACE> ( <INTEGER> ( <COMMA> ( <RBRACE> | <INTEGER> <RBRACE> ) 
-			    | <RBRACE> ) 
-			| <COMMA> <INTEGER> <RBRACE> )
+{ Token min;
+  Token max; 
 }
-
+{
+    <STAR> { jjtThis.setLowerBound(0);
+	     jjtThis.setUpperBound(Integer.MAX_VALUE);
+    }
+    |
+    <QUESTION> { jjtThis.setLowerBound(0);
+		 jjtThis.setUpperBound(1); 
+    }
+    |
+    <PLUS> { jjtThis.setLowerBound(1);
+	     jjtThis.setUpperBound(Integer.MAX_VALUE);
+    }
+    |
+    <LBRACE> ( min = <INTEGER> {jjtThis.setLowerBound(Integer.parseInt(min.image)); } 
+		( <COMMA> ( <RBRACE> | max = <INTEGER> {jjtThis.setUpperBound(Integer.parseInt(max.image)); } <RBRACE> ) | <RBRACE> ) 
+			| <COMMA> max = <INTEGER> {jjtThis.setUpperBound(Integer.parseInt(max.image)); } <RBRACE> )
+}
 
 void VerbSimple() #void :
 {}

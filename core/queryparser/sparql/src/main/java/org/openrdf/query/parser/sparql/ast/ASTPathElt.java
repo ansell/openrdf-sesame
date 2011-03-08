@@ -27,5 +27,9 @@ public ASTPathElt(int id) {
   public boolean isInverse() {
 	  return this.inverse;
   }
+  
+  public ASTPathMod getPathMod() {
+	  return jjtGetChild(ASTPathMod.class);
+  }
 }
 /* JavaCC - OriginalChecksum=775f2a21c17018fa87a23bafe7b048dd (do not edit this line) */
