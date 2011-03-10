@@ -29,6 +29,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Bound node)
 		throws X;
 
+	public void meet(Coalesce node)
+		throws X;
+
 	public void meet(Compare node)
 		throws X;
 

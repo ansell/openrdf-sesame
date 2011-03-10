@@ -58,6 +58,7 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTAvg node, Object data) throws VisitorException;
   public Object visit(ASTSample node, Object data) throws VisitorException;
   public Object visit(ASTGroupConcat node, Object data) throws VisitorException;
+  public Object visit(ASTCoalesce node, Object data) throws VisitorException;
   public Object visit(ASTStr node, Object data) throws VisitorException;
   public Object visit(ASTLang node, Object data) throws VisitorException;
   public Object visit(ASTLangMatches node, Object data) throws VisitorException;
@@ -83,4 +84,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTQName node, Object data) throws VisitorException;
   public Object visit(ASTBlankNode node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=f10e967fa1746f78c7c668d484a678d0 (do not edit this line) */
+/* JavaCC - OriginalChecksum=224e6bc88d31f45b75edfe251cf85e92 (do not edit this line) */

@@ -928,6 +928,13 @@ void BuiltInCall() #void :
 |	RegexExpression()
 |	ExistsFunc()
 |	NotExistsFunc()
+|	Coalesce()
+}
+
+void Coalesce() : 
+{}
+{
+    <COALESCE> <LPAREN> Expression() (<COMMA> Expression())* <RPAREN>
 }
 
 void Str() :

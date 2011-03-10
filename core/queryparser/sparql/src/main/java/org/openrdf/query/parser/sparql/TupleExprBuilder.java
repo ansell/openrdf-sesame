@@ -23,6 +23,7 @@ import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.Bound;
+import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Datatype;
@@ -84,6 +85,7 @@ import org.openrdf.query.parser.sparql.ast.ASTBind;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNodePropertyList;
 import org.openrdf.query.parser.sparql.ast.ASTBound;
+import org.openrdf.query.parser.sparql.ast.ASTCoalesce;
 import org.openrdf.query.parser.sparql.ast.ASTCollection;
 import org.openrdf.query.parser.sparql.ast.ASTCompare;
 import org.openrdf.query.parser.sparql.ast.ASTConstraint;
@@ -1144,6 +1146,20 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return new Not(arg);
 	}
 
+	@Override
+	public Coalesce visit(ASTCoalesce node, Object data) throws VisitorException {
+		
+		Coalesce coalesce = new Coalesce();
+		int noOfArgs = node.jjtGetNumChildren();
+		
+		for (int i = 0; i < noOfArgs; i++) {
+			ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, data);
+			coalesce.addArgument(arg);
+		}
+		
+		return coalesce;
+	}
+	
 	@Override
 	public Compare visit(ASTCompare node, Object data)
 		throws VisitorException

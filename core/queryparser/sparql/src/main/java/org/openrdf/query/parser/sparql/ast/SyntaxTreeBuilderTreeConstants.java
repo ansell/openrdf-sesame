@@ -58,30 +58,31 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTAVG = 52;
   public int JJTSAMPLE = 53;
   public int JJTGROUPCONCAT = 54;
-  public int JJTSTR = 55;
-  public int JJTLANG = 56;
-  public int JJTLANGMATCHES = 57;
-  public int JJTDATATYPE = 58;
-  public int JJTBOUND = 59;
-  public int JJTSAMETERM = 60;
-  public int JJTISIRI = 61;
-  public int JJTISBLANK = 62;
-  public int JJTISLITERAL = 63;
-  public int JJTISNUMERIC = 64;
-  public int JJTBNODEFUNC = 65;
-  public int JJTIRIFUNC = 66;
-  public int JJTSTRDT = 67;
-  public int JJTSTRLANG = 68;
-  public int JJTBIND = 69;
-  public int JJTREGEXEXPRESSION = 70;
-  public int JJTEXISTSFUNC = 71;
-  public int JJTNOTEXISTSFUNC = 72;
-  public int JJTRDFLITERAL = 73;
-  public int JJTTRUE = 74;
-  public int JJTFALSE = 75;
-  public int JJTSTRING = 76;
-  public int JJTQNAME = 77;
-  public int JJTBLANKNODE = 78;
+  public int JJTCOALESCE = 55;
+  public int JJTSTR = 56;
+  public int JJTLANG = 57;
+  public int JJTLANGMATCHES = 58;
+  public int JJTDATATYPE = 59;
+  public int JJTBOUND = 60;
+  public int JJTSAMETERM = 61;
+  public int JJTISIRI = 62;
+  public int JJTISBLANK = 63;
+  public int JJTISLITERAL = 64;
+  public int JJTISNUMERIC = 65;
+  public int JJTBNODEFUNC = 66;
+  public int JJTIRIFUNC = 67;
+  public int JJTSTRDT = 68;
+  public int JJTSTRLANG = 69;
+  public int JJTBIND = 70;
+  public int JJTREGEXEXPRESSION = 71;
+  public int JJTEXISTSFUNC = 72;
+  public int JJTNOTEXISTSFUNC = 73;
+  public int JJTRDFLITERAL = 74;
+  public int JJTTRUE = 75;
+  public int JJTFALSE = 76;
+  public int JJTSTRING = 77;
+  public int JJTQNAME = 78;
+  public int JJTBLANKNODE = 79;
 
 
   public String[] jjtNodeName = {
@@ -140,6 +141,7 @@ public interface SyntaxTreeBuilderTreeConstants
     "Avg",
     "Sample",
     "GroupConcat",
+    "Coalesce",
     "Str",
     "Lang",
     "LangMatches",
@@ -166,4 +168,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "BlankNode",
   };
 }
-/* JavaCC - OriginalChecksum=56c21664606bcc9c53ee341183dbf950 (do not edit this line) */
+/* JavaCC - OriginalChecksum=676fd536ac534c6210d7a5ab3534ea6e (do not edit this line) */
