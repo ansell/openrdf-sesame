@@ -15,6 +15,7 @@ import org.openrdf.query.parser.sparql.ast.ASTBind;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNodePropertyList;
 import org.openrdf.query.parser.sparql.ast.ASTBound;
+import org.openrdf.query.parser.sparql.ast.ASTCoalesce;
 import org.openrdf.query.parser.sparql.ast.ASTCollection;
 import org.openrdf.query.parser.sparql.ast.ASTCompare;
 import org.openrdf.query.parser.sparql.ast.ASTConstraint;
@@ -149,6 +150,12 @@ abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	}
 
 	public Object visit(ASTBound node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTCoalesce node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);

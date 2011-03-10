@@ -11,6 +11,7 @@ import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.BinaryValueOperator;
 import org.openrdf.query.algebra.Bound;
+import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
@@ -46,6 +47,7 @@ import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.MultiProjection;
+import org.openrdf.query.algebra.NAryValueOperator;
 import org.openrdf.query.algebra.Namespace;
 import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Or;
@@ -108,6 +110,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetNode(node);
+	}
+
+	public void meet(Coalesce node)
+		throws X
+	{
+		meetNAryValueOperator(node);
 	}
 
 	public void meet(Compare node)
@@ -563,6 +571,20 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	 *        The node that is being visited.
 	 */
 	protected void meetBinaryValueOperator(BinaryValueOperator node)
+		throws X
+	{
+		meetNode(node);
+	}
+
+	/**
+	 * Method called by all <tt>meet</tt> methods with a
+	 * {@link NaryValueOperator} node as argument. Forwards the call to
+	 * {@link #meetNode} by default.
+	 * 
+	 * @param node
+	 *        The node that is being visited.
+	 */
+	protected void meetNAryValueOperator(NAryValueOperator node)
 		throws X
 	{
 		meetNode(node);

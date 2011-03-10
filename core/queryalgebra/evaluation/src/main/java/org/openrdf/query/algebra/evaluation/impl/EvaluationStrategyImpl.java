@@ -49,6 +49,7 @@ import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.Bound;
+import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
@@ -700,6 +701,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof Regex) {
 			return evaluate((Regex)expr, bindings);
+		}
+		else if (expr instanceof Coalesce) {
+			return evaluate((Coalesce)expr, bindings);
 		}
 		else if (expr instanceof Like) {
 			return evaluate((Like)expr, bindings);
@@ -1361,6 +1365,34 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value rightVal = evaluate(node.getRightArg(), bindings);
 
 		return BooleanLiteralImpl.valueOf(leftVal != null && leftVal.equals(rightVal));
+	}
+
+	public Value evaluate(Coalesce node, BindingSet bindings)
+		throws ValueExprEvaluationException
+	{
+		Value result = null;
+		
+		for (ValueExpr expr : node.getArguments()) {
+			try {
+				result = evaluate(expr, bindings);
+
+				// return first result that does not produce an error on evaluation.
+				break;
+			}
+			catch (ValueExprEvaluationException e) {
+				continue;
+			}
+			catch (QueryEvaluationException e) {
+				continue;
+			}
+		}
+		
+		if (result == null) {
+			throw new ValueExprEvaluationException("COALESCE arguments do not evaluate to a value: "
+					+ node.getSignature());
+		}
+		
+		return result;
 	}
 
 	public Value evaluate(Compare node, BindingSet bindings)
