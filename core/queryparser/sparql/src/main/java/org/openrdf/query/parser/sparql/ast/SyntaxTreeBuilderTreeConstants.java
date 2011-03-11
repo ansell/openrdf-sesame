@@ -58,31 +58,33 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTAVG = 52;
   public int JJTSAMPLE = 53;
   public int JJTGROUPCONCAT = 54;
-  public int JJTCOALESCE = 55;
-  public int JJTSTR = 56;
-  public int JJTLANG = 57;
-  public int JJTLANGMATCHES = 58;
-  public int JJTDATATYPE = 59;
-  public int JJTBOUND = 60;
-  public int JJTSAMETERM = 61;
-  public int JJTISIRI = 62;
-  public int JJTISBLANK = 63;
-  public int JJTISLITERAL = 64;
-  public int JJTISNUMERIC = 65;
-  public int JJTBNODEFUNC = 66;
-  public int JJTIRIFUNC = 67;
-  public int JJTSTRDT = 68;
-  public int JJTSTRLANG = 69;
-  public int JJTBIND = 70;
-  public int JJTREGEXEXPRESSION = 71;
-  public int JJTEXISTSFUNC = 72;
-  public int JJTNOTEXISTSFUNC = 73;
-  public int JJTRDFLITERAL = 74;
-  public int JJTTRUE = 75;
-  public int JJTFALSE = 76;
-  public int JJTSTRING = 77;
-  public int JJTQNAME = 78;
-  public int JJTBLANKNODE = 79;
+  public int JJTIN = 55;
+  public int JJTNOTIN = 56;
+  public int JJTCOALESCE = 57;
+  public int JJTSTR = 58;
+  public int JJTLANG = 59;
+  public int JJTLANGMATCHES = 60;
+  public int JJTDATATYPE = 61;
+  public int JJTBOUND = 62;
+  public int JJTSAMETERM = 63;
+  public int JJTISIRI = 64;
+  public int JJTISBLANK = 65;
+  public int JJTISLITERAL = 66;
+  public int JJTISNUMERIC = 67;
+  public int JJTBNODEFUNC = 68;
+  public int JJTIRIFUNC = 69;
+  public int JJTSTRDT = 70;
+  public int JJTSTRLANG = 71;
+  public int JJTBIND = 72;
+  public int JJTREGEXEXPRESSION = 73;
+  public int JJTEXISTSFUNC = 74;
+  public int JJTNOTEXISTSFUNC = 75;
+  public int JJTRDFLITERAL = 76;
+  public int JJTTRUE = 77;
+  public int JJTFALSE = 78;
+  public int JJTSTRING = 79;
+  public int JJTQNAME = 80;
+  public int JJTBLANKNODE = 81;
 
 
   public String[] jjtNodeName = {
@@ -141,6 +143,8 @@ public interface SyntaxTreeBuilderTreeConstants
     "Avg",
     "Sample",
     "GroupConcat",
+    "In",
+    "NotIn",
     "Coalesce",
     "Str",
     "Lang",
@@ -168,4 +172,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "BlankNode",
   };
 }
-/* JavaCC - OriginalChecksum=676fd536ac534c6210d7a5ab3534ea6e (do not edit this line) */
+/* JavaCC - OriginalChecksum=94b92c55a5d75bcff3f0ce691924dcd2 (do not edit this line) */

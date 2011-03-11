@@ -17,6 +17,10 @@
     	:sparql11-strdt-01
     	:sparql11-strlang-01
     	:sparql11-coalesce-01
+    	:sparql11-in-01
+    	:sparql11-in-02
+    	:sparql11-not-in-01
+    	:sparql11-not-in-02
     ).
 
 :sparql11-isnumeric-01  mf:name  "sparql11-isnumeric-01" ;
@@ -57,4 +61,24 @@
 :sparql11-coalesce-01  mf:name  "sparql11-coalesce-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-coalesce-01.rq> ; qt:data <data-01.ttl> ] ;
-         mf:result <sparql11-coalesce-01.srx> .              
+         mf:result <sparql11-coalesce-01.srx> .   
+         
+:sparql11-in-01  mf:name  "sparql11-in-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-in-01.rq> ; qt:data <data-01.ttl> ] ;
+         mf:result <sparql11-in-01.srx> . 
+         
+:sparql11-in-02  mf:name  "sparql11-in-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-in-02.rq> ; qt:data <data-01.ttl> ] ;
+         mf:result <sparql11-in-02.srx> . 
+                  
+:sparql11-not-in-01  mf:name  "sparql11-not-in-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-not-in-01.rq> ; qt:data <data-01.ttl> ] ;
+         mf:result <sparql11-not-in-01.srx> .    
+         
+:sparql11-not-in-02  mf:name  "sparql11-not-in-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-not-in-02.rq> ; qt:data <data-01.ttl> ] ;
+         mf:result <sparql11-not-in-02.srx> .                 

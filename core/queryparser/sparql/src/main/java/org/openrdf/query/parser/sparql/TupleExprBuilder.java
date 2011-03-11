@@ -25,6 +25,7 @@ import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
+import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.Difference;
@@ -106,6 +107,7 @@ import org.openrdf.query.parser.sparql.ast.ASTGroupCondition;
 import org.openrdf.query.parser.sparql.ast.ASTHavingClause;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
+import org.openrdf.query.parser.sparql.ast.ASTIn;
 import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
 import org.openrdf.query.parser.sparql.ast.ASTIsIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIsLiteral;
@@ -119,6 +121,7 @@ import org.openrdf.query.parser.sparql.ast.ASTMin;
 import org.openrdf.query.parser.sparql.ast.ASTMinusGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTNot;
 import org.openrdf.query.parser.sparql.ast.ASTNotExistsFunc;
+import org.openrdf.query.parser.sparql.ast.ASTNotIn;
 import org.openrdf.query.parser.sparql.ast.ASTNumericLiteral;
 import org.openrdf.query.parser.sparql.ast.ASTObjectList;
 import org.openrdf.query.parser.sparql.ast.ASTOffset;
@@ -880,12 +883,12 @@ class TupleExprBuilder extends ASTVisitorBase {
 				else if (lowerBound == Integer.MIN_VALUE) {
 					lowerBound = upperBound;
 				}
-				
+
 				// TODO handle cases where lowerBound is zero.
 				if (lowerBound == 0) {
 					throw new VisitorException("zero-length paths not yet supported");
 				}
-				
+
 				// TODO handle arbitrary-length paths.
 				if (lowerBound == Integer.MAX_VALUE || upperBound == Integer.MAX_VALUE) {
 					throw new VisitorException("arbitrary-length paths not yet supported");
@@ -1147,19 +1150,21 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Coalesce visit(ASTCoalesce node, Object data) throws VisitorException {
-		
+	public Coalesce visit(ASTCoalesce node, Object data)
+		throws VisitorException
+	{
+
 		Coalesce coalesce = new Coalesce();
 		int noOfArgs = node.jjtGetNumChildren();
-		
+
 		for (int i = 0; i < noOfArgs; i++) {
 			ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, data);
 			coalesce.addArgument(arg);
 		}
-		
+
 		return coalesce;
 	}
-	
+
 	@Override
 	public Compare visit(ASTCompare node, Object data)
 		throws VisitorException
@@ -1349,6 +1354,82 @@ class TupleExprBuilder extends ASTVisitorBase {
 		Exists e = new Exists();
 		node.jjtGetChild(0).jjtAccept(this, e);
 		return new Not(e);
+	}
+
+	public ValueExpr visit(ASTIn node, Object data)
+		throws VisitorException
+	{
+		ValueExpr result = null;
+		ValueExpr leftArg = (ValueExpr)node.jjtGetParent().jjtGetChild(0).jjtAccept(this, null);
+
+		int listItemCount = node.jjtGetNumChildren();
+
+		if (listItemCount == 1) {
+			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+
+			result = new Compare(leftArg, arg, CompareOp.EQ);
+		}
+		else {
+			// create a set of disjunctive comparisons to represent the IN
+			// operator: X IN (a, b, c) -> X = a || X = b || X = c.
+			Or or = new Or();
+			Or currentOr = or;
+			for (int i = 0; i < listItemCount - 1; i++) {
+				ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
+
+				currentOr.setLeftArg(new Compare(leftArg, arg, CompareOp.EQ));
+
+				if (i == listItemCount - 2) { // second-to-last item
+					arg = (ValueExpr)node.jjtGetChild(i + 1).jjtAccept(this, null);
+					currentOr.setRightArg(new Compare(leftArg, arg, CompareOp.EQ));
+				}
+				else {
+					currentOr = new Or();
+					or.setRightArg(currentOr);
+				}
+			}
+			result = or;
+		}
+
+		return result;
+	}
+
+	public ValueExpr visit(ASTNotIn node, Object data)
+		throws VisitorException
+	{
+		ValueExpr result = null;
+		ValueExpr leftArg = (ValueExpr)node.jjtGetParent().jjtGetChild(0).jjtAccept(this, null);
+		
+		int listItemCount = node.jjtGetNumChildren();
+
+		if (listItemCount == 1) {
+			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+
+			result = new Compare(leftArg, arg, CompareOp.NE);
+		}
+		else {
+			// create a set of conjunctive comparisons to represent the NOT IN
+			// operator: X NOT IN (a, b, c) -> X != a && X != b && X != c. 
+			And and = new And();
+			And currentAnd = and;
+			for (int i = 0; i < listItemCount - 1; i++) {
+				ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
+
+				currentAnd.setLeftArg(new Compare(leftArg, arg, CompareOp.NE));
+
+				if (i == listItemCount - 2) { // second-to-last item
+					arg = (ValueExpr)node.jjtGetChild(i + 1).jjtAccept(this, null);
+					currentAnd.setRightArg(new Compare(leftArg, arg, CompareOp.NE));
+				}
+				else {
+					currentAnd = new And();
+					and.setRightArg(currentAnd);
+				}
+			}
+			result = and;
+		}
+
+		return result;
 	}
 
 	@Override
