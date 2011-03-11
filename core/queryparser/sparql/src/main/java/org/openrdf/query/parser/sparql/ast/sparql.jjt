@@ -165,6 +165,7 @@ TOKEN [IGNORE_CASE] :
 |	<IRI: "IRI"|"URI">
 |	<IF: "if">
 |	<IN: "in">
+|	<NOT_IN: "not in">
 |	<COUNT: "count">
 |	<SUM: "sum">
 |	<MIN: "min">
@@ -781,6 +782,8 @@ void RelationalExpression() #void :
 	|	<LE> NumericExpression() {jjtThis.setOperator(CompareOp.LE);} #Compare(2)
 	|	<GE> NumericExpression() {jjtThis.setOperator(CompareOp.GE);} #Compare(2)
 	|	<GT> NumericExpression() {jjtThis.setOperator(CompareOp.GT);} #Compare(2)
+	|	In()
+	|	NotIn()
 	]
 }
 
@@ -929,6 +932,18 @@ void BuiltInCall() #void :
 |	ExistsFunc()
 |	NotExistsFunc()
 |	Coalesce()
+}
+
+void In() :
+{}
+{
+    <IN> <LPAREN> Expression() (<COMMA> Expression())* <RPAREN>
+}
+
+void NotIn() :
+{}
+{
+    <NOT_IN> <LPAREN> Expression() (<COMMA> Expression())* <RPAREN>
 }
 
 void Coalesce() : 
