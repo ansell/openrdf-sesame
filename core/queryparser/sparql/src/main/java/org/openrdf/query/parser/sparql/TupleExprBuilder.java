@@ -958,12 +958,28 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		TupleExpr result = te;
 
-		if (lowerBound > Integer.MIN_VALUE) {
-
+		if (lowerBound >= 0) {
 			if (lowerBound < upperBound) {
-				// create set of unions for all path lengths between
-				// lower and upper bound.
-				Union union = createRecursiveUnion((StatementPattern)te, lowerBound, upperBound);
+				// create set of unions for all path lengths between lower and upper bound.
+				Union union = new Union();
+				Union currentUnion = union;
+				
+				for (int length = lowerBound; length < upperBound; length++) {
+					
+					TupleExpr path = createPath((StatementPattern)te, length);
+					
+					currentUnion.setLeftArg(path);
+					if (length == upperBound - 1) {
+						path = createPath((StatementPattern)te, length + 1);
+						currentUnion.setRightArg(path);
+					}
+					else {
+						Union nextUnion = new Union();
+						currentUnion.setRightArg(nextUnion);
+						currentUnion = nextUnion;
+					}
+				}
+				
 				result = union;
 			}
 			else {
@@ -975,41 +991,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		return result;
 	}
-
-	/**
-	 * @param te
-	 * @param nextVar
-	 * @param lowerBound
-	 * @param upperBound
-	 * @return
-	 */
-	private Union createRecursiveUnion(StatementPattern sp, int lowerBound, int upperBound) {
-
-		Union union = new Union();
-
-		if (lowerBound < upperBound) {
-
-			TupleExpr leftArg = createPath(sp, lowerBound);
-
-			union.setLeftArg(leftArg);
-
-			if (lowerBound == upperBound - 1) {
-				// stop condition: create simple pattern for the rightArg.
-				TupleExpr rightArg = createPath(sp, upperBound);
-				union.setRightArg(rightArg);
-			}
-			else {
-				// create right argument recursively
-				union.setRightArg(createRecursiveUnion(sp, lowerBound + 1, upperBound));
-			}
-		}
-
-		return union;
-	}
-
+	
 	private TupleExpr createPath(StatementPattern sp, int length) {
 		GraphPattern gp = new GraphPattern();
 
+		gp.setContextVar(sp.getContextVar());
+		gp.setStatementPatternScope(gp.getStatementPatternScope());
+		
 		Var subject = sp.getSubjectVar();
 		Var predicate = sp.getPredicateVar();
 		Var endVar = sp.getObjectVar();
