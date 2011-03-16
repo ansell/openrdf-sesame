@@ -17,6 +17,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(QueryRoot node)
 		throws X;
 
+	public void meet(ZeroLengthPath node)
+		throws X;
+
 	public void meet(And node)
 		throws X;
 
