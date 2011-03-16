@@ -77,6 +77,7 @@ import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.ZeroLengthPath;
 
 /**
  * Base class for {@link QueryModelVisitor}s. This class implements all
@@ -407,6 +408,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	}
 
 	public void meet(StatementPattern node)
+		throws X
+	{
+		meetNode(node);
+	}
+
+	public void meet(ZeroLengthPath node)
 		throws X
 	{
 		meetNode(node);
