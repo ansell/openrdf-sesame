@@ -18,6 +18,7 @@ import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.ZeroLengthPath;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
 /**
@@ -65,6 +66,12 @@ public class EvaluationStatistics {
 			cardinality = 1;
 		}
 
+		@Override 
+		public void meet(ZeroLengthPath node) {
+			// TODO currently giving ridiculously high cardinality to ensure ZLPs are evaluated late in the game.
+			cardinality = 100;
+		}
+		
 		@Override
 		public void meet(StatementPattern sp) {
 			cardinality = getCardinality(sp);

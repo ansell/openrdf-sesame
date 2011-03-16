@@ -5,9 +5,6 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -21,7 +18,7 @@ import info.aduna.iteration.FilterIteration;
 import info.aduna.iteration.IntersectIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.LimitIteration;
-import info.aduna.iteration.MinusIteration;
+import info.aduna.iteration.LookAheadIteration;
 import info.aduna.iteration.OffsetIteration;
 import info.aduna.iteration.ReducedIteration;
 import info.aduna.iteration.SingletonIteration;
@@ -35,16 +32,12 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
-import org.openrdf.model.impl.DecimalLiteralImpl;
-import org.openrdf.model.impl.IntegerLiteralImpl;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.NumericLiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BinaryTupleOperator;
@@ -78,7 +71,6 @@ import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Like;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
-import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Namespace;
 import org.openrdf.query.algebra.Not;
@@ -103,6 +95,7 @@ import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.ZeroLengthPath;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
@@ -113,17 +106,18 @@ import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterat
 import org.openrdf.query.algebra.evaluation.iterator.ExtensionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.FilterIterator;
 import org.openrdf.query.algebra.evaluation.iterator.GroupIterator;
-import org.openrdf.query.algebra.evaluation.iterator.SPARQLMinusIteration;
 import org.openrdf.query.algebra.evaluation.iterator.JoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.LeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.MultiProjectionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.OrderIterator;
 import org.openrdf.query.algebra.evaluation.iterator.ProjectionIterator;
+import org.openrdf.query.algebra.evaluation.iterator.SPARQLMinusIteration;
 import org.openrdf.query.algebra.evaluation.util.MathUtil;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
+import org.openrdf.query.impl.MapBindingSet;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -182,12 +176,74 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof ExternalSet) {
 			return evaluate((ExternalSet)expr, bindings);
 		}
+		else if (expr instanceof ZeroLengthPath) {
+			return evaluate((ZeroLengthPath)expr, bindings);
+		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
 		}
 		else {
 			throw new QueryEvaluationException("Unsupported tuple expr type: " + expr.getClass());
 		}
+	}
+
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(ZeroLengthPath zlp,
+			final BindingSet bindings)
+	{
+
+		final Var subjectVar = zlp.getSubjectVar();
+		final Var objVar = zlp.getObjectVar();
+
+		Value subj = null;
+		try {
+			subj = evaluate(subjectVar, bindings);
+		}
+		catch (QueryEvaluationException e) {
+		}
+
+		Value obj = null;
+		try {
+			obj = evaluate(objVar, bindings);
+		}
+		catch (QueryEvaluationException e) {
+		}
+
+		if (subj != null && obj != null) {
+			if (!subj.equals(obj)) {
+				return new EmptyIteration<BindingSet, QueryEvaluationException>();
+			}
+		}
+
+		return new ZeroLengthPathIteration(subjectVar, objVar, subj, obj);
+	}
+
+	private class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
+
+		private MapBindingSet result;
+
+		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj) {
+			result = new MapBindingSet();
+
+			if (subj != null && obj == null) {
+				objVar.setValue(subj);
+				result.addBinding(objVar.getName(), subj);
+			}
+
+			if (obj != null && subj == null) {
+				subjectVar.setValue(obj);
+				result.addBinding(subjectVar.getName(), obj);
+			}
+		}
+
+		@Override
+		protected BindingSet getNextElement()
+			throws QueryEvaluationException
+		{
+			BindingSet next = result;
+			result = null;
+			return next;
+		}
+
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,
@@ -1371,7 +1427,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws ValueExprEvaluationException
 	{
 		Value result = null;
-		
+
 		for (ValueExpr expr : node.getArguments()) {
 			try {
 				result = evaluate(expr, bindings);
@@ -1386,12 +1442,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				continue;
 			}
 		}
-		
+
 		if (result == null) {
 			throw new ValueExprEvaluationException("COALESCE arguments do not evaluate to a value: "
 					+ node.getSignature());
 		}
-		
+
 		return result;
 	}
 

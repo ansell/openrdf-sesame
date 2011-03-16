@@ -76,6 +76,7 @@ import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.ZeroLengthPath;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.query.parser.sparql.ast.ASTAnd;
@@ -836,11 +837,11 @@ class TupleExprBuilder extends ASTVisitorBase {
 			TupleExpr leftArg = graphPattern.buildTupleExpr();
 
 			graphPattern = new GraphPattern(parentGP);
-			
+
 			pathAltNode.jjtGetChild(1).jjtAccept(this, data);
 			TupleExpr rightArg = graphPattern.buildTupleExpr();
 			parentGP.addRequiredTE(new Union(leftArg, rightArg));
-			
+
 			graphPattern = parentGP;
 		}
 		else {
@@ -869,7 +870,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		Scope scope = pathSequencePattern.getStatementPatternScope();
 		Var contextVar = pathSequencePattern.getContextVar();
-		
+
 		for (int i = 0; i < pathLength; i++) {
 			ASTPathElt pathElement = pathElements.get(i);
 
@@ -887,11 +888,6 @@ class TupleExprBuilder extends ASTVisitorBase {
 				}
 				else if (lowerBound == Integer.MIN_VALUE) {
 					lowerBound = upperBound;
-				}
-
-				// TODO handle cases where lowerBound is zero.
-				if (lowerBound == 0) {
-					throw new VisitorException("zero-length paths not yet supported");
 				}
 
 				// TODO handle arbitrary-length paths.
@@ -960,14 +956,15 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		if (lowerBound >= 0) {
 			if (lowerBound < upperBound) {
-				// create set of unions for all path lengths between lower and upper bound.
+				// create set of unions for all path lengths between lower and upper
+				// bound.
 				Union union = new Union();
 				Union currentUnion = union;
-				
+
 				for (int length = lowerBound; length < upperBound; length++) {
-					
+
 					TupleExpr path = createPath((StatementPattern)te, length);
-					
+
 					currentUnion.setLeftArg(path);
 					if (length == upperBound - 1) {
 						path = createPath((StatementPattern)te, length + 1);
@@ -979,7 +976,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 						currentUnion = nextUnion;
 					}
 				}
-				
+
 				result = union;
 			}
 			else {
@@ -991,32 +988,37 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		return result;
 	}
-	
-	private TupleExpr createPath(StatementPattern sp, int length) {
-		GraphPattern gp = new GraphPattern();
 
-		gp.setContextVar(sp.getContextVar());
-		gp.setStatementPatternScope(gp.getStatementPatternScope());
-		
+	private TupleExpr createPath(StatementPattern sp, int length) {
 		Var subject = sp.getSubjectVar();
 		Var predicate = sp.getPredicateVar();
 		Var endVar = sp.getObjectVar();
+		
+		Var contextVar = sp.getContextVar();
+		Scope scope = sp.getScope();
 
-		Var nextVar = null;
-
-		for (int i = 0; i < length; i++) {
-			if (i < length - 1) {
-				nextVar = createAnonVar(predicate.getValue() + "-path-" + length + "-" + i);
-			}
-			else {
-				nextVar = endVar;
-			}
-			gp.addRequiredSP(subject, predicate, nextVar);
-			subject = nextVar;
+		if (length == 0) {
+			return new ZeroLengthPath(scope, subject, predicate, endVar, contextVar);
 		}
+		else {
+			GraphPattern gp = new GraphPattern();
+			gp.setContextVar(contextVar);
+			gp.setStatementPatternScope(scope);
 
-		return gp.buildTupleExpr();
+			Var nextVar = null;
 
+			for (int i = 0; i < length; i++) {
+				if (i < length - 1) {
+					nextVar = createAnonVar(predicate.getValue() + "-path-" + length + "-" + i);
+				}
+				else {
+					nextVar = endVar;
+				}
+				gp.addRequiredSP(subject, predicate, nextVar);
+				subject = nextVar;
+			}
+			return gp.buildTupleExpr();
+		}
 	}
 
 	@Override
@@ -1392,7 +1394,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		ValueExpr result = null;
 		ValueExpr leftArg = (ValueExpr)node.jjtGetParent().jjtGetChild(0).jjtAccept(this, null);
-		
+
 		int listItemCount = node.jjtGetNumChildren();
 
 		if (listItemCount == 1) {
@@ -1402,7 +1404,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		}
 		else {
 			// create a set of conjunctive comparisons to represent the NOT IN
-			// operator: X NOT IN (a, b, c) -> X != a && X != b && X != c. 
+			// operator: X NOT IN (a, b, c) -> X != a && X != b && X != c.
 			And and = new And();
 			And currentAnd = and;
 			for (int i = 0; i < listItemCount - 1; i++) {
