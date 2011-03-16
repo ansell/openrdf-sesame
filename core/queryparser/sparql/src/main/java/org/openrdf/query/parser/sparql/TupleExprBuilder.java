@@ -827,23 +827,25 @@ class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 
-		GraphPattern parentGP = graphPattern;
-
-		graphPattern = new GraphPattern(parentGP);
-
-		pathAltNode.jjtGetChild(0).jjtAccept(this, data);
-		TupleExpr leftArg = graphPattern.buildTupleExpr();
-
 		if (pathAltNode.jjtGetNumChildren() > 1) {
+
+			GraphPattern parentGP = graphPattern;
+
 			graphPattern = new GraphPattern(parentGP);
+			pathAltNode.jjtGetChild(0).jjtAccept(this, data);
+			TupleExpr leftArg = graphPattern.buildTupleExpr();
+
+			graphPattern = new GraphPattern(parentGP);
+			
 			pathAltNode.jjtGetChild(1).jjtAccept(this, data);
 			TupleExpr rightArg = graphPattern.buildTupleExpr();
 			parentGP.addRequiredTE(new Union(leftArg, rightArg));
+			
+			graphPattern = parentGP;
 		}
 		else {
-			parentGP.addRequiredTE(leftArg);
+			pathAltNode.jjtGetChild(0).jjtAccept(this, data);
 		}
-		graphPattern = parentGP;
 
 		return null;
 	}
@@ -863,8 +865,11 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		int pathLength = pathElements.size();
 
-		GraphPattern pathSequencePattern = new GraphPattern();
+		GraphPattern pathSequencePattern = new GraphPattern(graphPattern);
 
+		Scope scope = pathSequencePattern.getStatementPatternScope();
+		Var contextVar = pathSequencePattern.getContextVar();
+		
 		for (int i = 0; i < pathLength; i++) {
 			ASTPathElt pathElement = pathElements.get(i);
 
@@ -905,13 +910,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 					Var objVar = valueExpr2Var(object);
 
 					if (pathElement.isInverse()) {
-						te = new StatementPattern(objVar, predVar, subjVar);
+						te = new StatementPattern(scope, objVar, predVar, subjVar, contextVar);
 						te = handlePathModifiers(te, lowerBound, upperBound);
 
 						pathSequencePattern.addRequiredTE(te);
 					}
 					else {
-						te = new StatementPattern(subjVar, predVar, objVar);
+						te = new StatementPattern(scope, subjVar, predVar, objVar, contextVar);
 						te = handlePathModifiers(te, lowerBound, upperBound);
 
 						pathSequencePattern.addRequiredTE(te);
@@ -923,14 +928,14 @@ class TupleExprBuilder extends ASTVisitorBase {
 				Var nextVar = createAnonVar(predVar.getName() + "-" + i);
 				if (pathElement.isInverse()) {
 
-					te = new StatementPattern(nextVar, predVar, subjVar);
+					te = new StatementPattern(scope, nextVar, predVar, subjVar, contextVar);
 
 					te = handlePathModifiers(te, lowerBound, upperBound);
 
 					pathSequencePattern.addRequiredTE(te);
 				}
 				else {
-					te = new StatementPattern(subjVar, predVar, nextVar);
+					te = new StatementPattern(scope, subjVar, predVar, nextVar, contextVar);
 					te = handlePathModifiers(te, lowerBound, upperBound);
 
 					pathSequencePattern.addRequiredTE(te);
