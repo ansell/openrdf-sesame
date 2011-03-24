@@ -415,7 +415,19 @@ class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		// Process construct clause
-		tupleExpr = (TupleExpr)node.getConstruct().jjtAccept(this, tupleExpr);
+		ASTConstruct constructNode = node.getConstruct();
+		if (!constructNode.isWildcard()) {
+			tupleExpr = (TupleExpr)constructNode.jjtAccept(this, tupleExpr);
+		}
+		else {
+			// create construct clause from graph pattern.
+			ConstructorBuilder cb = new ConstructorBuilder();
+
+			// SPARQL does not allow distinct or reduced right now. Leaving
+			// functionality in construct builder for
+			// possible future use.
+			tupleExpr = cb.buildConstructor(tupleExpr, false, false);
+		}
 
 		// process limit and offset clauses
 		ASTLimit limitNode = node.getLimit();
@@ -993,7 +1005,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		Var subject = sp.getSubjectVar();
 		Var predicate = sp.getPredicateVar();
 		Var endVar = sp.getObjectVar();
-		
+
 		Var contextVar = sp.getContextVar();
 		Scope scope = sp.getScope();
 
