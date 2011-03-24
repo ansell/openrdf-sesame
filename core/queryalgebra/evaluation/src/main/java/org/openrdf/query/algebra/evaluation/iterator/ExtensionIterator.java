@@ -17,6 +17,7 @@ import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
 public class ExtensionIterator extends ConvertingIteration<BindingSet, BindingSet, QueryEvaluationException> {
 
@@ -42,11 +43,17 @@ public class ExtensionIterator extends ConvertingIteration<BindingSet, BindingSe
 		for (ExtensionElem extElem : extension.getElements()) {
 			ValueExpr expr = extElem.getExpr();
 			if (!(expr instanceof AggregateOperator)) {
-				Value targetValue = strategy.evaluate(extElem.getExpr(), sourceBindings);
+				try {
+					Value targetValue = strategy.evaluate(extElem.getExpr(), sourceBindings);
 
-				if (targetValue != null) {
-					// Potentially overwrites bindings from super
-					targetBindings.setBinding(extElem.getName(), targetValue);
+					if (targetValue != null) {
+						// Potentially overwrites bindings from super
+						targetBindings.setBinding(extElem.getName(), targetValue);
+					}
+				}
+				catch (ValueExprEvaluationException e) {
+					// silently ignore type errors in extension arguments. They should not cause the 
+					// query to fail but just result in no additional binding.
 				}
 			}
 		}
