@@ -332,12 +332,15 @@ void ConstructQuery() :
 void Construct() :
 {}
 {	
-	LOOKAHEAD(2)
-        <CONSTRUCT> { jjtThis.setWildcard(true); }
-	|
-	// Note: replaced ConstructTriples ref with equivalent TriplesBlock ref
-	<CONSTRUCT> <LBRACE> [ TriplesBlock() ] <RBRACE>
+	<CONSTRUCT> [ LOOKAHEAD(2) ConstructClause() ]
 	
+}
+
+void ConstructClause() #void :
+{}
+{
+    // Note: replaced ConstructTriples ref with equivalent TriplesBlock ref
+    <LBRACE> [ TriplesBlock() ] <RBRACE>
 }
 
 void DescribeQuery() :
