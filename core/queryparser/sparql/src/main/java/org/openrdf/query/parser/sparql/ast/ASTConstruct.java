@@ -4,6 +4,8 @@ package org.openrdf.query.parser.sparql.ast;
 
 public class ASTConstruct extends SimpleNode {
 
+	private boolean wildcard = false;
+
 	public ASTConstruct(int id) {
 		super(id);
 	}
@@ -18,4 +20,14 @@ public class ASTConstruct extends SimpleNode {
 	{
 		return visitor.visit(this, data);
 	}
+
+	public boolean isWildcard() {
+		return wildcard;
+	}
+
+	public void setWildcard(boolean wildcard) {
+		this.wildcard = wildcard;
+	}
+	
+
 }
