@@ -492,7 +492,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws QueryEvaluationException
 	{
 		CloseableIteration<BindingSet, QueryEvaluationException> result;
-		result = this.evaluate(extension.getArg(), bindings);
+		try {
+			result = this.evaluate(extension.getArg(), bindings);
+		}
+		catch (ValueExprEvaluationException e) {
+			// a type error in an extension argument should be silently ignored and result in zero bindings.
+			result = new EmptyIteration<BindingSet, QueryEvaluationException>();
+		}
+		
 		result = new ExtensionIterator(extension, result, this);
 		return result;
 	}
@@ -1087,9 +1094,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value lexicalValue = evaluate(node.getLeftArg(), bindings);
 		Value datatypeValue = evaluate(node.getRightArg(), bindings);
 
-		if (lexicalValue instanceof Literal) {
+		if (QueryEvaluationUtil.isSimpleLiteral(lexicalValue)) {
 			Literal lit = (Literal)lexicalValue;
-
 			if (datatypeValue instanceof URI) {
 				return new LiteralImpl(lit.getLabel(), (URI)datatypeValue);
 			}
@@ -1118,7 +1124,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value lexicalValue = evaluate(node.getLeftArg(), bindings);
 		Value languageValue = evaluate(node.getRightArg(), bindings);
 
-		if (lexicalValue instanceof Literal) {
+		if (QueryEvaluationUtil.isSimpleLiteral(lexicalValue)) {
 			Literal lit = (Literal)lexicalValue;
 
 			if (languageValue instanceof Literal) {
