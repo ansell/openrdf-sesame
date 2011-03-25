@@ -56,6 +56,7 @@ import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.IRIFunction;
+import org.openrdf.query.algebra.If;
 import org.openrdf.query.algebra.In;
 import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.IsBNode;
@@ -804,6 +805,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof Exists) {
 			return evaluate((Exists)expr, bindings);
 		}
+		else if (expr instanceof If) {
+			return evaluate((If)expr, bindings);
+		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
 		}
@@ -1480,6 +1484,17 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throw new ValueExprEvaluationException("Both arguments must be numeric literals");
 	}
 
+	public Value evaluate(If node, BindingSet bindings) throws QueryEvaluationException {
+		Value result = null;
+		if (isTrue(node.getCondition(), bindings)) {
+			result = evaluate(node.getResult(), bindings);
+		}
+		else {
+			result = evaluate(node.getAlternative(), bindings);
+		}
+		return result;
+	}
+	
 	public Value evaluate(In node, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
