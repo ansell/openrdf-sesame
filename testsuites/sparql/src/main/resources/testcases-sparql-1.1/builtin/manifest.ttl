@@ -10,6 +10,8 @@
     mf:entries
     (
     	:sparql11-isnumeric-01
+    	:sparql11-if-01
+    	:sparql11-if-02
     	:sparql11-iri-01
     	:sparql11-uri-01
     	:sparql11-bnode-01
@@ -27,6 +29,18 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-isnumeric-01.rq> ; qt:data <data-01.ttl> ] ;
          mf:result <sparql11-isnumeric-01.srx> .
+
+
+:sparql11-if-01  mf:name  "sparql11-if-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-if-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-if-01.srx> .
+
+
+:sparql11-if-02  mf:name  "sparql11-if-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-if-02.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-if-02.srx> .
 
 :sparql11-iri-01  mf:name  "sparql11-iri-01" ;
          rdf:type   mf:QueryEvaluationTest ;

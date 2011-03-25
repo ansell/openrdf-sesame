@@ -29,6 +29,7 @@ import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
+import org.openrdf.query.algebra.If;
 import org.openrdf.query.algebra.In;
 import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.IsBNode;
@@ -210,6 +211,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	}
 
 	public void meet(GroupElem node)
+		throws X
+	{
+		meetNode(node);
+	}
+
+	public void meet(If node)
 		throws X
 	{
 		meetNode(node);

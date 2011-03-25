@@ -37,6 +37,7 @@ import org.openrdf.query.parser.sparql.ast.ASTGroupCondition;
 import org.openrdf.query.parser.sparql.ast.ASTHavingClause;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
+import org.openrdf.query.parser.sparql.ast.ASTIf;
 import org.openrdf.query.parser.sparql.ast.ASTIn;
 import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
 import org.openrdf.query.parser.sparql.ast.ASTIsIRI;
@@ -272,6 +273,12 @@ abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	}
 
 	public Object visit(ASTHavingClause node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTIf node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);

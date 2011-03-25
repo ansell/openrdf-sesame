@@ -80,6 +80,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(GroupElem node)
 		throws X;
 
+	public void meet(If node)
+		throws X;
+
 	public void meet(In node)
 		throws X;
 

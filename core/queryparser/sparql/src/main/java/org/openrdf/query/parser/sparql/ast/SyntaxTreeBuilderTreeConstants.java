@@ -58,33 +58,34 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTAVG = 52;
   public int JJTSAMPLE = 53;
   public int JJTGROUPCONCAT = 54;
-  public int JJTIN = 55;
-  public int JJTNOTIN = 56;
-  public int JJTCOALESCE = 57;
-  public int JJTSTR = 58;
-  public int JJTLANG = 59;
-  public int JJTLANGMATCHES = 60;
-  public int JJTDATATYPE = 61;
-  public int JJTBOUND = 62;
-  public int JJTSAMETERM = 63;
-  public int JJTISIRI = 64;
-  public int JJTISBLANK = 65;
-  public int JJTISLITERAL = 66;
-  public int JJTISNUMERIC = 67;
-  public int JJTBNODEFUNC = 68;
-  public int JJTIRIFUNC = 69;
-  public int JJTSTRDT = 70;
-  public int JJTSTRLANG = 71;
-  public int JJTBIND = 72;
-  public int JJTREGEXEXPRESSION = 73;
-  public int JJTEXISTSFUNC = 74;
-  public int JJTNOTEXISTSFUNC = 75;
-  public int JJTRDFLITERAL = 76;
-  public int JJTTRUE = 77;
-  public int JJTFALSE = 78;
-  public int JJTSTRING = 79;
-  public int JJTQNAME = 80;
-  public int JJTBLANKNODE = 81;
+  public int JJTIF = 55;
+  public int JJTIN = 56;
+  public int JJTNOTIN = 57;
+  public int JJTCOALESCE = 58;
+  public int JJTSTR = 59;
+  public int JJTLANG = 60;
+  public int JJTLANGMATCHES = 61;
+  public int JJTDATATYPE = 62;
+  public int JJTBOUND = 63;
+  public int JJTSAMETERM = 64;
+  public int JJTISIRI = 65;
+  public int JJTISBLANK = 66;
+  public int JJTISLITERAL = 67;
+  public int JJTISNUMERIC = 68;
+  public int JJTBNODEFUNC = 69;
+  public int JJTIRIFUNC = 70;
+  public int JJTSTRDT = 71;
+  public int JJTSTRLANG = 72;
+  public int JJTBIND = 73;
+  public int JJTREGEXEXPRESSION = 74;
+  public int JJTEXISTSFUNC = 75;
+  public int JJTNOTEXISTSFUNC = 76;
+  public int JJTRDFLITERAL = 77;
+  public int JJTTRUE = 78;
+  public int JJTFALSE = 79;
+  public int JJTSTRING = 80;
+  public int JJTQNAME = 81;
+  public int JJTBLANKNODE = 82;
 
 
   public String[] jjtNodeName = {
@@ -143,6 +144,7 @@ public interface SyntaxTreeBuilderTreeConstants
     "Avg",
     "Sample",
     "GroupConcat",
+    "If",
     "In",
     "NotIn",
     "Coalesce",
@@ -172,4 +174,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "BlankNode",
   };
 }
-/* JavaCC - OriginalChecksum=94b92c55a5d75bcff3f0ce691924dcd2 (do not edit this line) */
+/* JavaCC - OriginalChecksum=abf05efc5b9bf37515723f369e72e5c5 (do not edit this line) */

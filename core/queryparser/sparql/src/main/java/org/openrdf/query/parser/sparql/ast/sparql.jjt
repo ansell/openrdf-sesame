@@ -939,6 +939,13 @@ void BuiltInCall() #void :
 |	ExistsFunc()
 |	NotExistsFunc()
 |	Coalesce()
+|	If()
+}
+
+void If() :
+{}
+{
+    <IF> <LPAREN> Expression() <COMMA> Expression() <COMMA> Expression() <RPAREN>
 }
 
 void In() :

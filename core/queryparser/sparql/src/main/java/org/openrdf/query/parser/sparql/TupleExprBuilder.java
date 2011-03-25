@@ -40,6 +40,7 @@ import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.IRIFunction;
+import org.openrdf.query.algebra.If;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
 import org.openrdf.query.algebra.IsNumeric;
@@ -108,6 +109,7 @@ import org.openrdf.query.parser.sparql.ast.ASTGroupCondition;
 import org.openrdf.query.parser.sparql.ast.ASTHavingClause;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
+import org.openrdf.query.parser.sparql.ast.ASTIf;
 import org.openrdf.query.parser.sparql.ast.ASTIn;
 import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
 import org.openrdf.query.parser.sparql.ast.ASTIsIRI;
@@ -1361,6 +1363,24 @@ class TupleExprBuilder extends ASTVisitorBase {
 		Exists e = new Exists();
 		node.jjtGetChild(0).jjtAccept(this, e);
 		return new Not(e);
+	}
+
+	public If visit(ASTIf node, Object data)
+		throws VisitorException
+	{
+		If result = null;
+
+		if (node.jjtGetNumChildren() < 3) {
+			throw new VisitorException("IF construction missing required number of arguments");
+		}
+
+		ValueExpr condition = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr resultExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
+		ValueExpr alternative = (ValueExpr)node.jjtGetChild(2).jjtAccept(this, null);
+
+		result = new If(condition, resultExpr, alternative);
+
+		return result;
 	}
 
 	public ValueExpr visit(ASTIn node, Object data)
