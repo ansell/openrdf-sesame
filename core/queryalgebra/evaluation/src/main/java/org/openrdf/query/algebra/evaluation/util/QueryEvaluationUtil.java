@@ -29,15 +29,15 @@ public class QueryEvaluationUtil {
 	 * <li>The EBV of any literal whose type is xsd:boolean or numeric is false
 	 * if the lexical form is not valid for that datatype (e.g.
 	 * "abc"^^xsd:integer).
-	 * <li>If the argument is a typed literal with a datatype of xsd:boolean,
-	 * the EBV is the value of that argument.
+	 * <li>If the argument is a typed literal with a datatype of xsd:boolean, the
+	 * EBV is the value of that argument.
 	 * <li>If the argument is a plain literal or a typed literal with a datatype
 	 * of xsd:string, the EBV is false if the operand value has zero length;
 	 * otherwise the EBV is true.
 	 * <li>If the argument is a numeric type or a typed literal with a datatype
 	 * derived from a numeric type, the EBV is false if the operand value is NaN
 	 * or is numerically equal to zero; otherwise the EBV is true.
-	 * <li> All other arguments, including unbound arguments, produce a type
+	 * <li>All other arguments, including unbound arguments, produce a type
 	 * error.
 	 * </ul>
 	 * 
@@ -155,19 +155,19 @@ public class QueryEvaluationUtil {
 			{
 				// left and right arguments have different datatypes, try to find a
 				// more general, shared datatype
-					if (leftDatatype.equals(XMLSchema.DOUBLE) || rightDatatype.equals(XMLSchema.DOUBLE)) {
-						commonDatatype = XMLSchema.DOUBLE;
-					}
-					else if (leftDatatype.equals(XMLSchema.FLOAT) || rightDatatype.equals(XMLSchema.FLOAT)) {
-						commonDatatype = XMLSchema.FLOAT;
-					}
-					else if (leftDatatype.equals(XMLSchema.DECIMAL) || rightDatatype.equals(XMLSchema.DECIMAL)) {
-						commonDatatype = XMLSchema.DECIMAL;
-					}
-					else {
-						commonDatatype = XMLSchema.INTEGER;
-					}
+				if (leftDatatype.equals(XMLSchema.DOUBLE) || rightDatatype.equals(XMLSchema.DOUBLE)) {
+					commonDatatype = XMLSchema.DOUBLE;
 				}
+				else if (leftDatatype.equals(XMLSchema.FLOAT) || rightDatatype.equals(XMLSchema.FLOAT)) {
+					commonDatatype = XMLSchema.FLOAT;
+				}
+				else if (leftDatatype.equals(XMLSchema.DECIMAL) || rightDatatype.equals(XMLSchema.DECIMAL)) {
+					commonDatatype = XMLSchema.DECIMAL;
+				}
+				else {
+					commonDatatype = XMLSchema.INTEGER;
+				}
+			}
 
 			if (commonDatatype != null) {
 				try {
@@ -250,18 +250,24 @@ public class QueryEvaluationUtil {
 			boolean literalsEqual = leftLit.equals(rightLit);
 
 			if (!literalsEqual) {
-				if (leftDatatype != null && rightDatatype != null
-						&& XMLDatatypeUtil.isCalendarDatatype(leftDatatype)
-						&& XMLDatatypeUtil.isCalendarDatatype(rightDatatype))
+				if (leftDatatype != null && rightDatatype != null && isSupportedDatatype(leftDatatype)
+						&& isSupportedDatatype(rightDatatype))
 				{
-					// left and right arguments have different date/time datatypes,
-					// these are always unequal
+					// left and right arguments have incompatible but supported datatypes
+					
+					// we need to check that the lexical-to-value mapping for both datatypes succeeds
+					if (!XMLDatatypeUtil.isValidValue(leftLit.getLabel(), leftDatatype)) {
+						throw new ValueExprEvaluationException("not a valid value: " + leftLit);
+					}
+					if (!XMLDatatypeUtil.isValidValue(rightLit.getLabel(), rightDatatype)) {
+						throw new ValueExprEvaluationException("not a valid value: " + leftLit);
+					}
 				}
 				else if (leftDatatype != null && rightLit.getLanguage() == null || rightDatatype != null
 						&& leftLit.getLanguage() == null)
 				{
-				// For literals with unsupported datatypes we don't know if their
-				// values are equal
+					// For literals with unsupported datatypes we don't know if their
+					// values are equal
 					throw new ValueExprEvaluationException("Unable to compare literals with unsupported types");
 				}
 			}
@@ -319,5 +325,9 @@ public class QueryEvaluationUtil {
 		else {
 			return datatype.equals(XMLSchema.STRING);
 		}
+	}
+
+	private static boolean isSupportedDatatype(URI datatype) {
+		return (XMLSchema.STRING.equals(datatype) || XMLDatatypeUtil.isNumericDatatype(datatype) || XMLDatatypeUtil.isCalendarDatatype(datatype));
 	}
 }
