@@ -257,10 +257,11 @@ public class QueryEvaluationUtil {
 					
 					// we need to check that the lexical-to-value mapping for both datatypes succeeds
 					if (!XMLDatatypeUtil.isValidValue(leftLit.getLabel(), leftDatatype)) {
-						throw new ValueExprEvaluationException("not a valid value: " + leftLit);
+						throw new ValueExprEvaluationException("not a valid datatype value: " + leftLit);
 					}
+					
 					if (!XMLDatatypeUtil.isValidValue(rightLit.getLabel(), rightDatatype)) {
-						throw new ValueExprEvaluationException("not a valid value: " + leftLit);
+						throw new ValueExprEvaluationException("not a valid datatype value: " + rightLit);
 					}
 				}
 				else if (leftDatatype != null && rightLit.getLanguage() == null || rightDatatype != null
