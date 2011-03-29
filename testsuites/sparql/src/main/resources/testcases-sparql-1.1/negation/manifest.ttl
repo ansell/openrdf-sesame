@@ -20,6 +20,7 @@
     	:sparql11-minus-03
     	:sparql11-minus-05
     	:sparql11-minus-06
+    	:sparql11-minus-07
     ).
 
 :sparql11-exists-01  mf:name  "sparql11-exists-01" ;
@@ -76,3 +77,8 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-minus-06.rq> ; qt:data <data-04.ttl> ] ;
          mf:result <sparql11-minus-06.srx> .
+         
+:sparql11-minus-07 mf:name  "sparql11-minus-07" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-minus-07.rq> ; qt:data <data-04.ttl> ] ;
+         mf:result <sparql11-minus-07.srx> .
