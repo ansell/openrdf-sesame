@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>2.4.0-SNAPSHOT</version>
+		<version>2.4.0-alpha1</version>
 	</parent>
 
 	<artifactId>sesame-rio</artifactId>
@@ -25,9 +25,9 @@
 	</modules>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core/rio</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core/rio</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/rio?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/rio/</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.4.0-alpha1/core/rio</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.4.0-alpha1/core/rio</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/rio?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.4.0-alpha1/core/rio?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/rio?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/rio/</url>
 	</scm>
 
 </project>
