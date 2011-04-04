@@ -37,7 +37,7 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 
 		try {
-			return client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred,
+			return client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime,
 					getBindingsArray());
 		}
 		catch (IOException e) {
@@ -56,7 +56,7 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 	{
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 		try {
-			client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred, handler,
+			client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime, handler,
 					getBindingsArray());
 		}
 		catch (IOException e) {

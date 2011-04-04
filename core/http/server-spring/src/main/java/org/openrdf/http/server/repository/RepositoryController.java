@@ -166,8 +166,19 @@ public class RepositoryController extends AbstractController {
 			}
 		}
 
+		String baseURI = request.getParameter(Protocol.BASEURI_PARAM_NAME);
+
 		// determine if inferred triples should be included in query evaluation
 		boolean includeInferred = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
+
+		String timeout = request.getParameter(Protocol.TIMEOUT_PARAM_NAME);
+		int maxQueryTime;
+		try {
+			maxQueryTime = Integer.parseInt(timeout);
+		}
+		catch (NumberFormatException e) {
+			throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid timeout value: " + timeout);
+		}
 
 		// build a dataset, if specified
 		String[] defaultGraphURIs = request.getParameterValues(DEFAULT_GRAPH_PARAM_NAME);
@@ -205,8 +216,13 @@ public class RepositoryController extends AbstractController {
 		}
 
 		try {
-			result = repositoryCon.prepareQuery(queryLn, queryStr);
+			result = repositoryCon.prepareQuery(queryLn, queryStr, baseURI);
+
 			result.setIncludeInferred(includeInferred);
+
+			if (maxQueryTime > 0) {
+				result.setMaxQueryTime(maxQueryTime);
+			}
 
 			if (dataset != null) {
 				result.setDataset(dataset);

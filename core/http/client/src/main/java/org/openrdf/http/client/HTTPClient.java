@@ -392,9 +392,16 @@ public class HTTPClient {
 			boolean includeInferred, Binding... bindings)
 		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
 	{
+		return sendTupleQuery(ql, query, null, dataset, includeInferred, 0, bindings);
+	}
+
+	public TupleQueryResult sendTupleQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
+			boolean includeInferred, int maxQueryTime, Binding... bindings)
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+	{
 		try {
 			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
-			sendTupleQuery(ql, query, dataset, includeInferred, builder, bindings);
+			sendTupleQuery(ql, query, baseURI, dataset, includeInferred, maxQueryTime, builder, bindings);
 			return builder.getQueryResult();
 		}
 		catch (TupleQueryResultHandlerException e) {
@@ -408,7 +415,15 @@ public class HTTPClient {
 		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException
 	{
-		HttpMethod method = getQueryMethod(ql, query, dataset, includeInferred, bindings);
+		sendTupleQuery(ql, query, null, dataset, includeInferred, 0, handler, bindings);
+	}
+
+	public void sendTupleQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
+			boolean includeInferred, int maxQueryTime, TupleQueryResultHandler handler, Binding... bindings)
+		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
+		UnauthorizedException
+	{
+		HttpMethod method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
 
 		try {
 			getTupleQueryResult(method, handler);
@@ -422,9 +437,16 @@ public class HTTPClient {
 			boolean includeInferred, Binding... bindings)
 		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
 	{
+		return sendGraphQuery(ql, query, null, dataset, includeInferred, 0, bindings);
+	}
+
+	public GraphQueryResult sendGraphQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
+			boolean includeInferred, int maxQueryTime, Binding... bindings)
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+	{
 		try {
 			StatementCollector collector = new StatementCollector();
-			sendGraphQuery(ql, query, dataset, includeInferred, collector, bindings);
+			sendGraphQuery(ql, query, baseURI, dataset, includeInferred, maxQueryTime, collector, bindings);
 			return new GraphQueryResultImpl(collector.getNamespaces(), collector.getStatements());
 		}
 		catch (RDFHandlerException e) {
@@ -438,7 +460,15 @@ public class HTTPClient {
 		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException
 	{
-		HttpMethod method = getQueryMethod(ql, query, dataset, includeInferred, bindings);
+		sendGraphQuery(ql, query, null, dataset, includeInferred, 0, handler, bindings);
+	}
+
+	public void sendGraphQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
+			boolean includeInferred, int maxQueryTime, RDFHandler handler, Binding... bindings)
+		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
+		UnauthorizedException
+	{
+		HttpMethod method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
 
 		try {
 			getRDF(method, handler, false);
@@ -452,7 +482,14 @@ public class HTTPClient {
 			Binding... bindings)
 		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
 	{
-		HttpMethod method = getQueryMethod(ql, query, dataset, includeInferred, bindings);
+		return sendBooleanQuery(ql, query, null, dataset, includeInferred, 0, bindings);
+	}
+
+	public boolean sendBooleanQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
+			boolean includeInferred, int maxQueryTime, Binding... bindings)
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+	{
+		HttpMethod method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
 
 		try {
 			return getBoolean(method);
@@ -462,31 +499,37 @@ public class HTTPClient {
 		}
 	}
 
-	protected HttpMethod getQueryMethod(QueryLanguage ql, String query, Dataset dataset,
-			boolean includeInferred, Binding... bindings)
+	protected HttpMethod getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
+			boolean includeInferred, int maxQueryTime, Binding... bindings)
 	{
 		PostMethod method = new PostMethod(getRepositoryURL());
 		setDoAuthentication(method);
 
 		method.setRequestHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
-		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, dataset, includeInferred,
-				bindings);
+		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
+				includeInferred, maxQueryTime, bindings);
 
 		method.setRequestBody(queryParams.toArray(new NameValuePair[queryParams.size()]));
 
 		return method;
 	}
 
-	protected List<NameValuePair> getQueryMethodParameters(QueryLanguage ql, String query, Dataset dataset,
-			boolean includeInferred, Binding... bindings)
+	protected List<NameValuePair> getQueryMethodParameters(QueryLanguage ql, String query, String baseURI,
+			Dataset dataset, boolean includeInferred, int maxQueryTime, Binding... bindings)
 	{
 		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
 
 		queryParams.add(new NameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
 		queryParams.add(new NameValuePair(Protocol.QUERY_PARAM_NAME, query));
+		if (baseURI != null) {
+			queryParams.add(new NameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
+		}
 		queryParams.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
 				Boolean.toString(includeInferred)));
+		if (maxQueryTime > 0) {
+			queryParams.add(new NameValuePair(Protocol.TIMEOUT_PARAM_NAME, Integer.toString(maxQueryTime)));
+		}
 
 		if (dataset != null) {
 			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
