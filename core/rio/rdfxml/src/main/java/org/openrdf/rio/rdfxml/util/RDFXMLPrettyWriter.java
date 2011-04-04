@@ -173,7 +173,9 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				flushPendingStatements();
 			}
 			catch (RDFHandlerException e) {
-				throw new IOException(e);
+				IOException ioe = new IOException();
+				ioe.initCause(e);
+				throw ioe;
 			}
 
 			writer.flush();
