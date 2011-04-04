@@ -172,12 +172,14 @@ public class RepositoryController extends AbstractController {
 		boolean includeInferred = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
 
 		String timeout = request.getParameter(Protocol.TIMEOUT_PARAM_NAME);
-		int maxQueryTime;
-		try {
-			maxQueryTime = Integer.parseInt(timeout);
-		}
-		catch (NumberFormatException e) {
-			throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid timeout value: " + timeout);
+		int maxQueryTime = 0;
+		if (timeout != null) {
+			try {
+				maxQueryTime = Integer.parseInt(timeout);
+			}
+			catch (NumberFormatException e) {
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid timeout value: " + timeout);
+			}
 		}
 
 		// build a dataset, if specified
