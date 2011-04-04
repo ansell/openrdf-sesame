@@ -14,9 +14,11 @@ import org.openrdf.model.Value;
  */
 public class BindingImpl implements Binding {
 
-	private String name;
+	private static final long serialVersionUID = -8257244838478873298L;
 
-	private Value value;
+	private final String name;
+
+	private final Value value;
 
 	/**
 	 * Creates a binding object with the supplied name and value.
