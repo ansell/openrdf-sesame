@@ -17,13 +17,13 @@ import org.openrdf.query.impl.AbstractQuery;
  */
 public abstract class HTTPQuery extends AbstractQuery {
 
-	protected HTTPRepositoryConnection httpCon;
+	protected final HTTPRepositoryConnection httpCon;
 
-	protected QueryLanguage queryLanguage;
+	protected final QueryLanguage queryLanguage;
 
-	protected String queryString;
+	protected final String queryString;
 
-	protected String baseURI;
+	protected final String baseURI;
 
 	public HTTPQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
 		this.httpCon = con;
