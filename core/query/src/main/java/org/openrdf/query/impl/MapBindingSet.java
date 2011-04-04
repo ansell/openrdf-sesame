@@ -19,15 +19,9 @@ import org.openrdf.query.BindingSet;
  */
 public class MapBindingSet implements BindingSet {
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	private static final long serialVersionUID = -8857324525220429607L;
 
 	private final Map<String, Binding> bindings;
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
 
 	public MapBindingSet() {
 		this(8);
@@ -45,10 +39,6 @@ public class MapBindingSet implements BindingSet {
 		// Create bindings map, compensating for HashMap's load factor
 		bindings = new LinkedHashMap<String, Binding>(capacity * 2);
 	}
-
-	/*---------*
-	 * Methods *
-	 *---------*/
 
 	/**
 	 * Adds a binding to the binding set.
