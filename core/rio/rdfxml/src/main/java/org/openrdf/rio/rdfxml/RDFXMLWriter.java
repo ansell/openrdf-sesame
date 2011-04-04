@@ -84,7 +84,7 @@ public class RDFXMLWriter implements RDFWriter {
 
 	public void startRDF() {
 		if (writingStarted) {
-			throw new RuntimeException("Document writing has already started");
+			throw new IllegalStateException("Document writing has already started");
 		}
 		writingStarted = true;
 	}
@@ -130,7 +130,7 @@ public class RDFXMLWriter implements RDFWriter {
 		throws RDFHandlerException
 	{
 		if (!writingStarted) {
-			throw new RuntimeException("Document writing has not yet started");
+			throw new IllegalStateException("Document writing has not yet started");
 		}
 
 		try {
@@ -204,7 +204,7 @@ public class RDFXMLWriter implements RDFWriter {
 		throws RDFHandlerException
 	{
 		if (!writingStarted) {
-			throw new RuntimeException("Document writing has not yet been started");
+			throw new IllegalStateException("Document writing has not yet been started");
 		}
 
 		Resource subj = st.getSubject();
@@ -336,7 +336,7 @@ public class RDFXMLWriter implements RDFWriter {
 	}
 
 	protected void flushPendingStatements()
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		if (lastWrittenSubject != null) {
 			// The last statement still has to be closed:
@@ -383,12 +383,12 @@ public class RDFXMLWriter implements RDFWriter {
 	}
 
 	protected void writeAttribute(String namespace, String attName, String value)
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		String prefix = namespaceTable.get(namespace);
 
 		if (prefix == null || prefix.length() == 0) {
-			throw new RuntimeException("No prefix has been declared for the namespace used in this attribute: "
+			throw new RDFHandlerException("No prefix has been declared for the namespace used in this attribute: "
 					+ namespace);
 		}
 

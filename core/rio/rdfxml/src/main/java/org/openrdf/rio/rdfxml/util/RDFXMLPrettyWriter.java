@@ -169,7 +169,12 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				writeHeader();
 			}
 
-			flushPendingStatements();
+			try {
+				flushPendingStatements();
+			}
+			catch (RDFHandlerException e) {
+				throw new IOException(e);
+			}
 
 			writer.flush();
 		}
@@ -200,7 +205,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 	@Override
 	protected void flushPendingStatements()
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		if (!nodeStack.isEmpty()) {
 			popStacks(null);
@@ -214,7 +219,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * @param newSubject
 	 */
 	private void popStacks(Resource newSubject)
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		// Write start tags for the part of the stacks that are not yet
 		// written
@@ -361,7 +366,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * writeEmptySubject.
 	 */
 	private void writeNodeStartOfStartTag(Node node)
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		Value value = node.getValue();
 
@@ -388,7 +393,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * Write out the opening tag of the subject or object of a statement.
 	 */
 	private void writeNodeStartTag(Node node)
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		writeNodeStartOfStartTag(node);
 		writeEndOfStartTag();
@@ -414,7 +419,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * Write out an empty tag for the subject or object of a statement.
 	 */
 	private void writeNodeEmptyTag(Node node)
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		writeNodeStartOfStartTag(node);
 		writeEndOfEmptyTag();
@@ -424,7 +429,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * Write out an empty property element.
 	 */
 	private void writeAbbreviatedPredicate(URI pred, Value obj)
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		writeStartOfStartTag(pred.getNamespace(), pred.getLocalName());
 
