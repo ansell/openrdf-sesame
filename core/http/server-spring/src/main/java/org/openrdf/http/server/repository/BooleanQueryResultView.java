@@ -39,7 +39,7 @@ public class BooleanQueryResultView extends QueryResultView {
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public void render(Map model, HttpServletRequest request, HttpServletResponse response)
 		throws IOException
 	{
