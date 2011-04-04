@@ -156,7 +156,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		throws IOException
 	{
 		// This export format needs the RDF Schema namespace to be defined:
-		setNamespace("rdfs", RDFS.NAMESPACE, false);
+		setNamespace("rdfs", RDFS.NAMESPACE);
 
 		super.writeHeader();
 	}

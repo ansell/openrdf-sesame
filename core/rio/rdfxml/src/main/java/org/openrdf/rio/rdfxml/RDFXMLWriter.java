@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2011.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -38,7 +38,9 @@ public class RDFXMLWriter implements RDFWriter {
 
 	protected Writer writer;
 
-	protected Map<String, String> namespaceTable;
+	protected String defaultNamespace;
+
+	protected final Map<String, String> namespaceTable;
 
 	protected boolean writingStarted;
 
@@ -95,11 +97,19 @@ public class RDFXMLWriter implements RDFWriter {
 		try {
 			// This export format needs the RDF namespace to be defined, add a
 			// prefix for it if there isn't one yet.
-			setNamespace("rdf", RDF.NAMESPACE, false);
+			setNamespace("rdf", RDF.NAMESPACE);
 
 			writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
 			writeStartOfStartTag(RDF.NAMESPACE, "RDF");
+
+			if (defaultNamespace != null) {
+				writeNewLine();
+				writeIndent();
+				writer.write("xmlns=\"");
+				writer.write(XMLUtil.escapeDoubleQuotedAttValue(defaultNamespace));
+				writer.write("\"");
+			}
 
 			for (Map.Entry<String, String> entry : namespaceTable.entrySet()) {
 				String name = entry.getKey();
@@ -107,11 +117,8 @@ public class RDFXMLWriter implements RDFWriter {
 
 				writeNewLine();
 				writeIndent();
-				writer.write("xmlns");
-				if (prefix.length() > 0) {
-					writer.write(':');
-					writer.write(prefix);
-				}
+				writer.write("xmlns:");
+				writer.write(prefix);
 				writer.write("=\"");
 				writer.write(XMLUtil.escapeDoubleQuotedAttValue(name));
 				writer.write("\"");
@@ -155,49 +162,42 @@ public class RDFXMLWriter implements RDFWriter {
 	}
 
 	public void handleNamespace(String prefix, String name) {
-		setNamespace(prefix, name, false);
+		setNamespace(prefix, name);
 	}
 
-	protected void setNamespace(String prefix, String name, boolean fixedPrefix) {
+	protected void setNamespace(String prefix, String name) {
 		if (headerWritten) {
 			// Header containing namespace declarations has already been written
 			return;
 		}
 
-		if (!namespaceTable.containsKey(name)) {
-			// Namespace not yet mapped to a prefix, try to give it the specified
-			// prefix
-			
-			boolean isLegalPrefix = prefix.length() == 0 || XMLUtil.isNCName(prefix);
-			
-			if (!isLegalPrefix || namespaceTable.containsValue(prefix)) {
-				// Specified prefix is not legal or the prefix is already in use,
-				// generate a legal unique prefix
-
-				if (fixedPrefix) {
-					if (isLegalPrefix) {
-						throw new IllegalArgumentException("Prefix is already in use: " + prefix);
-					}
-					else {
-						throw new IllegalArgumentException("Prefix is not a valid XML namespace prefix: " + prefix);
-					}
-				}
-
-				if (prefix.length() == 0 || !isLegalPrefix) {
-					prefix = "ns";
-				}
-
-				int number = 1;
-
-				while (namespaceTable.containsValue(prefix + number)) {
-					number++;
-				}
-
-				prefix += number;
-			}
-
-			namespaceTable.put(name, prefix);
+		if (prefix.length() == 0) {
+			defaultNamespace = name;
+			return;
 		}
+
+		if (namespaceTable.containsKey(name)) {
+			// Namespace is already mapped to a prefix
+			return;
+		}
+
+		// Try to give the namespace the specified prefix
+		boolean isLegalPrefix = XMLUtil.isNCName(prefix);
+
+		if (!isLegalPrefix || namespaceTable.containsValue(prefix)) {
+			// Specified prefix is not legal or the prefix is already in use,
+			// generate a legal unique prefix
+			if (!isLegalPrefix) {
+				prefix = "ns";
+			}
+			int number = 1;
+			while (namespaceTable.containsValue(prefix + number)) {
+				number++;
+			}
+			prefix += number;
+		}
+
+		namespaceTable.put(name, prefix);
 	}
 
 	public void handleStatement(Statement st)
@@ -350,25 +350,26 @@ public class RDFXMLWriter implements RDFWriter {
 	protected void writeStartOfStartTag(String namespace, String localName)
 		throws IOException
 	{
-		String prefix = namespaceTable.get(namespace);
-
-		if (prefix == null) {
-			writer.write("<");
-			writer.write(localName);
-			writer.write(" xmlns=\"");
-			writer.write(XMLUtil.escapeDoubleQuotedAttValue(namespace));
-			writer.write("\"");
-		}
-		else if (prefix.length() == 0) {
-			// default namespace
+		if (namespace.equals(defaultNamespace)) {
 			writer.write("<");
 			writer.write(localName);
 		}
 		else {
-			writer.write("<");
-			writer.write(prefix);
-			writer.write(":");
-			writer.write(localName);
+			String prefix = namespaceTable.get(namespace);
+
+			if (prefix == null) {
+				writer.write("<");
+				writer.write(localName);
+				writer.write(" xmlns=\"");
+				writer.write(XMLUtil.escapeDoubleQuotedAttValue(namespace));
+				writer.write("\"");
+			}
+			else {
+				writer.write("<");
+				writer.write(prefix);
+				writer.write(":");
+				writer.write(localName);
+			}
 		}
 	}
 
@@ -385,11 +386,12 @@ public class RDFXMLWriter implements RDFWriter {
 	protected void writeAttribute(String namespace, String attName, String value)
 		throws IOException, RDFHandlerException
 	{
+		// Note: attribute cannot use the default namespace
 		String prefix = namespaceTable.get(namespace);
 
-		if (prefix == null || prefix.length() == 0) {
-			throw new RDFHandlerException("No prefix has been declared for the namespace used in this attribute: "
-					+ namespace);
+		if (prefix == null) {
+			throw new RDFHandlerException(
+					"No prefix has been declared for the namespace used in this attribute: " + namespace);
 		}
 
 		writer.write(" ");
@@ -416,17 +418,18 @@ public class RDFXMLWriter implements RDFWriter {
 	protected void writeEndTag(String namespace, String localName)
 		throws IOException
 	{
-		String prefix = namespaceTable.get(namespace);
-
-		if (prefix == null || prefix.length() == 0) {
+		if (namespace.equals(defaultNamespace)) {
 			writer.write("</");
 			writer.write(localName);
 			writer.write(">");
 		}
 		else {
 			writer.write("</");
-			writer.write(prefix);
-			writer.write(":");
+			String prefix = namespaceTable.get(namespace);
+			if (prefix != null) {
+				writer.write(prefix);
+				writer.write(":");
+			}
 			writer.write(localName);
 			writer.write(">");
 		}
