@@ -231,13 +231,6 @@ class TupleExprBuilder extends ASTVisitorBase {
 		node.getWhereClause().jjtAccept(this, null);
 		TupleExpr tupleExpr = graphPattern.buildTupleExpr();
 
-		// Apply result ordering
-		ASTOrderClause orderNode = node.getOrderClause();
-		if (orderNode != null) {
-			List<OrderElem> orderElemements = (List<OrderElem>)orderNode.jjtAccept(this, null);
-			tupleExpr = new Order(tupleExpr, orderElemements);
-		}
-
 		// Apply grouping
 		ASTGroupClause groupNode = node.getGroupClause();
 		if (groupNode != null) {
@@ -291,6 +284,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 			tupleExpr = new Filter(extension, condition);
 		}
 
+		// Apply result ordering
+		ASTOrderClause orderNode = node.getOrderClause();
+		if (orderNode != null) {
+			List<OrderElem> orderElemements = (List<OrderElem>)orderNode.jjtAccept(this, null);
+			tupleExpr = new Order(tupleExpr, orderElemements);
+		}
+		
 		// Apply projection
 		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
 
@@ -342,7 +342,16 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 				if (valueExpr instanceof AggregateOperator) {
 					// Apply implicit grouping if necessary
-					Group group = null;
+					
+					GroupFinder groupFinder = new GroupFinder();
+					result.visit(groupFinder);
+					Group group = groupFinder.getGroup();
+					
+					if (group == null) {
+						group = new Group(result);
+					}
+					
+					/*
 					if (result instanceof Group) {
 						group = (Group)result;
 					}
@@ -363,12 +372,14 @@ class TupleExprBuilder extends ASTVisitorBase {
 							group = new Group(result);
 						}
 					}
+					*/
 
 					group.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
 
 					extension.setArg(group);
 
-					if (!(result instanceof Filter)) {
+					// avoid overwriting a HAVING clause or ORDER BY clause
+					if (!(result instanceof Filter || result instanceof Projection)) {
 						result = group;
 					}
 				}
@@ -400,6 +411,20 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return result;
 	}
 
+	private class GroupFinder extends QueryModelVisitorBase<VisitorException> {
+		
+		private Group group;
+		
+		@Override
+		public void meet(Group group) {
+			this.group = group;
+		}
+		
+		public Group getGroup() {
+			return group;
+		}
+	}
+	
 	@Override
 	public TupleExpr visit(ASTConstructQuery node, Object data)
 		throws VisitorException
