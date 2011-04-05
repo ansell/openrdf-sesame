@@ -51,14 +51,14 @@
 					<execution>
 						<phase>site</phase>
 						<configuration>
-							<tasks>
+							<target>
 								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
 									<target name="userdoc" />
 								</ant>
 								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
 									<target name="systemdoc" />
 								</ant>
-							</tasks>
+							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
@@ -82,7 +82,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
-					<aggregate>true</aggregate>
 					<encoding>utf8</encoding>
 					<source>1.5</source>
 					<quiet>true</quiet>

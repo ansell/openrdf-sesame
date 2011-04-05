@@ -33,10 +33,10 @@
 					<execution>
 						<phase>process-classes</phase>
 						<configuration>
-							<tasks>
+							<target>
 								<mkdir dir="target/services/META-INF/services" />
 								<ant antfile="../build.xml" target="create-service-files" dir="${basedir}" />
-							</tasks>
+							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
