@@ -33,7 +33,7 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 	}
 
 	public TupleQueryResult evaluate()
-		throws HTTPQueryEvaluationException
+		throws QueryEvaluationException
 	{
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 

@@ -130,17 +130,12 @@ public class HTTPRepository implements Repository {
 					}
 				}
 			}
-			catch (QueryEvaluationException e) {
-				throw new RepositoryException(e);
-			}
 			finally {
-				try {
-					repositoryList.close();
-				}
-				catch (QueryEvaluationException e) {
-					throw new RepositoryException(e);
-				}
+				repositoryList.close();
 			}
+		}
+		catch (QueryEvaluationException e) {
+			throw new RepositoryException(e);
 		}
 		catch (IOException e) {
 			throw new RepositoryException(e);

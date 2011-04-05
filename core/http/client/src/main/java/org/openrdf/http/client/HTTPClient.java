@@ -63,6 +63,7 @@ import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
@@ -350,7 +351,7 @@ public class HTTPClient {
 	 *-----------------*/
 
 	public TupleQueryResult getRepositoryList()
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, RepositoryException, UnauthorizedException, QueryInterruptedException
 	{
 		try {
 			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
@@ -364,7 +365,8 @@ public class HTTPClient {
 	}
 
 	public void getRepositoryList(TupleQueryResultHandler handler)
-		throws IOException, TupleQueryResultHandlerException, RepositoryException, UnauthorizedException
+		throws IOException, TupleQueryResultHandlerException, RepositoryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		checkServerURL();
 
@@ -390,14 +392,16 @@ public class HTTPClient {
 
 	public TupleQueryResult sendTupleQuery(QueryLanguage ql, String query, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		return sendTupleQuery(ql, query, null, dataset, includeInferred, 0, bindings);
 	}
 
 	public TupleQueryResult sendTupleQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		try {
 			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
@@ -413,7 +417,7 @@ public class HTTPClient {
 	public void sendTupleQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
 			TupleQueryResultHandler handler, Binding... bindings)
 		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
-		UnauthorizedException
+		UnauthorizedException, QueryInterruptedException
 	{
 		sendTupleQuery(ql, query, null, dataset, includeInferred, 0, handler, bindings);
 	}
@@ -421,7 +425,7 @@ public class HTTPClient {
 	public void sendTupleQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, TupleQueryResultHandler handler, Binding... bindings)
 		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
-		UnauthorizedException
+		UnauthorizedException, QueryInterruptedException
 	{
 		HttpMethod method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
 
@@ -435,14 +439,16 @@ public class HTTPClient {
 
 	public GraphQueryResult sendGraphQuery(QueryLanguage ql, String query, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		return sendGraphQuery(ql, query, null, dataset, includeInferred, 0, bindings);
 	}
 
 	public GraphQueryResult sendGraphQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		try {
 			StatementCollector collector = new StatementCollector();
@@ -458,7 +464,7 @@ public class HTTPClient {
 	public void sendGraphQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
 			RDFHandler handler, Binding... bindings)
 		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
-		UnauthorizedException
+		UnauthorizedException, QueryInterruptedException
 	{
 		sendGraphQuery(ql, query, null, dataset, includeInferred, 0, handler, bindings);
 	}
@@ -466,7 +472,7 @@ public class HTTPClient {
 	public void sendGraphQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, RDFHandler handler, Binding... bindings)
 		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
-		UnauthorizedException
+		UnauthorizedException, QueryInterruptedException
 	{
 		HttpMethod method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
 
@@ -480,14 +486,16 @@ public class HTTPClient {
 
 	public boolean sendBooleanQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
 			Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		return sendBooleanQuery(ql, query, null, dataset, includeInferred, 0, bindings);
 	}
 
 	public boolean sendBooleanQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		HttpMethod method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
 
@@ -555,7 +563,8 @@ public class HTTPClient {
 
 	public void getStatements(Resource subj, URI pred, Value obj, boolean includeInferred, RDFHandler handler,
 			Resource... contexts)
-		throws IOException, RDFHandlerException, RepositoryException, UnauthorizedException
+		throws IOException, RDFHandlerException, RepositoryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		checkRepositoryURL();
 
@@ -748,7 +757,7 @@ public class HTTPClient {
 	 *-------------*/
 
 	public TupleQueryResult getContextIDs()
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, RepositoryException, UnauthorizedException, QueryInterruptedException
 	{
 		try {
 			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
@@ -762,7 +771,8 @@ public class HTTPClient {
 	}
 
 	public void getContextIDs(TupleQueryResultHandler handler)
-		throws IOException, TupleQueryResultHandlerException, RepositoryException, UnauthorizedException
+		throws IOException, TupleQueryResultHandlerException, RepositoryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		checkRepositoryURL();
 
@@ -786,7 +796,7 @@ public class HTTPClient {
 	 *---------------------------*/
 
 	public TupleQueryResult getNamespaces()
-		throws IOException, RepositoryException, UnauthorizedException
+		throws IOException, RepositoryException, UnauthorizedException, QueryInterruptedException
 	{
 		try {
 			TupleQueryResultBuilder builder = new TupleQueryResultBuilder();
@@ -800,7 +810,8 @@ public class HTTPClient {
 	}
 
 	public void getNamespaces(TupleQueryResultHandler handler)
-		throws IOException, TupleQueryResultHandlerException, RepositoryException, UnauthorizedException
+		throws IOException, TupleQueryResultHandlerException, RepositoryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		checkRepositoryURL();
 
@@ -973,7 +984,7 @@ public class HTTPClient {
 
 	protected void getTupleQueryResult(HttpMethod method, TupleQueryResultHandler handler)
 		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
-		UnauthorizedException
+		UnauthorizedException, QueryInterruptedException
 	{
 		// Specify which formats we support using Accept headers
 		Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
@@ -1021,6 +1032,9 @@ public class HTTPClient {
 		else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 			throw new UnauthorizedException();
 		}
+		else if (httpCode == HttpURLConnection.HTTP_UNAVAILABLE) {
+			throw new QueryInterruptedException();
+		}
 		else {
 			ErrorInfo errInfo = getErrorInfo(method);
 
@@ -1039,7 +1053,7 @@ public class HTTPClient {
 
 	protected void getRDF(HttpMethod method, RDFHandler handler, boolean requireContext)
 		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
-		UnauthorizedException
+		UnauthorizedException, QueryInterruptedException
 	{
 		// Specify which formats we support using Accept headers
 		Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
@@ -1073,6 +1087,9 @@ public class HTTPClient {
 		else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 			throw new UnauthorizedException();
 		}
+		else if (httpCode == HttpURLConnection.HTTP_UNAVAILABLE) {
+			throw new QueryInterruptedException();
+		}
 		else {
 			ErrorInfo errInfo = getErrorInfo(method);
 
@@ -1090,7 +1107,8 @@ public class HTTPClient {
 	}
 
 	protected boolean getBoolean(HttpMethod method)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		// Specify which formats we support using Accept headers
 		Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
@@ -1136,6 +1154,9 @@ public class HTTPClient {
 		}
 		else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 			throw new UnauthorizedException();
+		}
+		else if (httpCode == HttpURLConnection.HTTP_UNAVAILABLE) {
+			throw new QueryInterruptedException();
 		}
 		else {
 			ErrorInfo errInfo = getErrorInfo(method);
