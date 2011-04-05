@@ -20,6 +20,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
+import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.Bound;
@@ -290,7 +291,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			List<OrderElem> orderElemements = (List<OrderElem>)orderNode.jjtAccept(this, null);
 			tupleExpr = new Order(tupleExpr, orderElemements);
 		}
-		
+
 		// Apply projection
 		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
 
@@ -342,15 +343,15 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 				if (valueExpr instanceof AggregateOperator) {
 					// Apply implicit grouping if necessary
-					
+
 					GroupFinder groupFinder = new GroupFinder();
 					result.visit(groupFinder);
 					Group group = groupFinder.getGroup();
-					
+
 					if (group == null) {
 						group = new Group(result);
 					}
-					
+
 					/*
 					if (result instanceof Group) {
 						group = (Group)result;
@@ -412,19 +413,19 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	private class GroupFinder extends QueryModelVisitorBase<VisitorException> {
-		
+
 		private Group group;
-		
+
 		@Override
 		public void meet(Group group) {
 			this.group = group;
 		}
-		
+
 		public Group getGroup() {
 			return group;
 		}
 	}
-	
+
 	@Override
 	public TupleExpr visit(ASTConstructQuery node, Object data)
 		throws VisitorException
@@ -929,10 +930,11 @@ class TupleExprBuilder extends ASTVisitorBase {
 					lowerBound = upperBound;
 				}
 
+
 				// TODO handle arbitrary-length paths.
-				if (lowerBound == Integer.MAX_VALUE || upperBound == Integer.MAX_VALUE) {
-					throw new VisitorException("arbitrary-length paths not yet supported");
-				}
+//				if (upperBound == Integer.MAX_VALUE) {
+//					throw new VisitorException("arbitrary-length paths not yet supported");
+//				}
 			}
 
 			ValueExpr pred = (ValueExpr)pathElement.jjtAccept(this, data);
@@ -995,28 +997,46 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		if (lowerBound >= 0) {
 			if (lowerBound < upperBound) {
-				// create set of unions for all path lengths between lower and upper
-				// bound.
-				Union union = new Union();
-				Union currentUnion = union;
+				if (upperBound < Integer.MAX_VALUE) {
+					// upperbound is fixed-length
 
-				for (int length = lowerBound; length < upperBound; length++) {
+					// create set of unions for all path lengths between lower and
+					// upper bound.
+					Union union = new Union();
+					Union currentUnion = union;
 
-					TupleExpr path = createPath((StatementPattern)te, length);
+					for (int length = lowerBound; length < upperBound; length++) {
 
-					currentUnion.setLeftArg(path);
-					if (length == upperBound - 1) {
-						path = createPath((StatementPattern)te, length + 1);
-						currentUnion.setRightArg(path);
+						TupleExpr path = createPath((StatementPattern)te, length);
+
+						currentUnion.setLeftArg(path);
+						if (length == upperBound - 1) {
+							path = createPath((StatementPattern)te, length + 1);
+							currentUnion.setRightArg(path);
+						}
+						else {
+							Union nextUnion = new Union();
+							currentUnion.setRightArg(nextUnion);
+							currentUnion = nextUnion;
+						}
 					}
-					else {
-						Union nextUnion = new Union();
-						currentUnion.setRightArg(nextUnion);
-						currentUnion = nextUnion;
-					}
+
+					result = union;
 				}
+				else {
+					// upperbound is abitrary-length
 
-				result = union;
+					StatementPattern sp = (StatementPattern)te;
+
+					Var subject = sp.getSubjectVar();
+					Var predicate = sp.getPredicateVar();
+					Var endVar = sp.getObjectVar();
+
+					Var contextVar = sp.getContextVar();
+					Scope scope = sp.getScope();
+
+					result = new ArbitraryLengthPath(scope, subject, predicate, endVar, contextVar, lowerBound);
+				}
 			}
 			else {
 				// create single path of fixed length.

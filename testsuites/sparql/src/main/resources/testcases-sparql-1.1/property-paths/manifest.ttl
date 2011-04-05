@@ -18,6 +18,8 @@
     	:sparql11-sequence-05
     	:sparql11-sequence-06
     	:sparql11-sequence-07
+# commented out because currently causes infinite regression.
+#    	:sparql11-wildcard-star-01
     ).
 
 :sparql11-alternative-01  mf:name  "sparql11-alternative-01" ;
@@ -63,4 +65,9 @@
  :sparql11-sequence-07  mf:name  "sparql11-sequence-07" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-sequence-07.rq> ; qt:data <data-02.ttl> ] ;
-         mf:result <sparql11-sequence-07.srx> .          
+         mf:result <sparql11-sequence-07.srx> .  
+         
+:sparql11-wildcard-01  mf:name  "sparql11-wildcard-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-wildcard-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-wildcard-01.srx> .         
