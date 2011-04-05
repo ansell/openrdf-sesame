@@ -1028,7 +1028,7 @@ FROM {X} Prop {Y}
 WHERE SameTerm(Y, <foo:bar>) OR SameTerm(Y, <bar:foo>)]]></screen>
 		</section>
 
-		<section id="nested-where">
+		<section id="section-nested-where">
 			<title>Nested WHERE clauses (R1.2)</title>
 			<para>
 				In order to be able to express boolean constraints on variables in
