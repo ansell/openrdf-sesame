@@ -8,6 +8,7 @@ package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.List;
 
+import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Join;
@@ -69,7 +70,13 @@ public class EvaluationStatistics {
 		@Override 
 		public void meet(ZeroLengthPath node) {
 			// TODO currently giving ridiculously high cardinality to ensure ZLPs are evaluated late in the game.
-			cardinality = 100;
+			cardinality = 100000;
+		}
+		
+		@Override 
+		public void meet(ArbitraryLengthPath node) {
+			// TODO currently giving ridiculously high cardinality to ensure ALPS are evaluated late in the game.
+			cardinality = 100000;
 		}
 		
 		@Override

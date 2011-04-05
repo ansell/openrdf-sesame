@@ -39,6 +39,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.And;
+import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.Bound;
@@ -180,12 +181,129 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof ZeroLengthPath) {
 			return evaluate((ZeroLengthPath)expr, bindings);
 		}
+		else if (expr instanceof ArbitraryLengthPath) {
+			return evaluate((ArbitraryLengthPath)expr, bindings);
+		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
 		}
 		else {
 			throw new QueryEvaluationException("Unsupported tuple expr type: " + expr.getClass());
 		}
+	}
+
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(ArbitraryLengthPath alp,
+			final BindingSet bindings)
+		throws QueryEvaluationException
+	{
+		final Scope scope = alp.getScope();
+		final Var subjectVar = alp.getSubjectVar();
+		final Var predVar = alp.getPredicateVar();
+		final Var objVar = alp.getObjectVar();
+		final Var contextVar = alp.getContextVar();
+		final int minLength = alp.getMinLength();
+
+		StatementPattern sp = new StatementPattern(scope, subjectVar, predVar, objVar, contextVar);
+
+		return new PathIteration(sp, minLength, bindings);
+	}
+
+	private class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
+
+
+		private int currentLength;
+
+		private StatementPattern pattern;
+
+		private CloseableIteration<BindingSet, QueryEvaluationException> currentIter;
+
+		private BindingSet bindings;
+
+		private boolean currentIterNotEmpty;
+		
+		public PathIteration(StatementPattern sp, int minLength, BindingSet bindings)
+			throws QueryEvaluationException {
+			this.currentLength = minLength;
+			this.pattern = sp;
+			this.bindings = bindings;
+			
+			createIteration();
+		}
+
+		@Override
+		protected BindingSet getNextElement()
+			throws QueryEvaluationException
+		{
+			if (currentIter.hasNext()) {
+				currentIterNotEmpty = true;
+				return currentIter.next();
+			}
+			else {
+				if (currentIterNotEmpty) {
+					currentLength++;
+					createIteration();
+					currentIterNotEmpty = false;
+					
+					if (currentIter.hasNext()) {
+						currentIterNotEmpty = true;
+						return currentIter.next();
+					}
+				}
+			}
+			
+			return null;
+		}
+
+		private void createIteration()
+			throws QueryEvaluationException
+		{
+			if (currentLength == 0) {
+				ZeroLengthPath zlp = new ZeroLengthPath(pattern.getScope(), pattern.getSubjectVar(),
+						pattern.getPredicateVar(), pattern.getObjectVar(), pattern.getContextVar());
+				currentIter = evaluate(zlp, bindings);
+			}
+			else if (currentLength == 1) {
+				currentIter = evaluate(pattern, bindings);
+			}
+			else {
+				// length greater than zero, create join.
+				int numberOfJoins = currentLength - 1;
+				Join join = createMultiJoin(pattern, numberOfJoins);
+				
+				currentIter = evaluate(join, bindings);
+			}
+		}
+
+		private Join createMultiJoin(StatementPattern sp, int numberOfJoins) {
+
+			Join join = new Join();
+			Join currentJoin = join;
+
+			for (int i = 0; i < numberOfJoins; i++) {
+				Var joinVar = createAnonVar("path-join-" + numberOfJoins + "-" + i);
+
+				currentJoin.setLeftArg(new StatementPattern(pattern.getScope(), pattern.getSubjectVar(),
+						pattern.getPredicateVar(), joinVar, pattern.getContextVar()));
+
+				if (i == numberOfJoins - 1) {
+					currentJoin.setRightArg(new StatementPattern(pattern.getScope(), joinVar,
+							pattern.getPredicateVar(), pattern.getObjectVar(), pattern.getContextVar()));
+				}
+				else {
+					Join newJoin = new Join();
+					currentJoin.setRightArg(newJoin);
+					currentJoin = newJoin;
+				}
+			}
+			
+			return join;
+		}
+	}
+
+	private Var createAnonVar(String varName) {
+		Var var = new Var(varName);
+		var.setAnonymous(true);
+		return var;
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(ZeroLengthPath zlp,
@@ -497,10 +615,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			result = this.evaluate(extension.getArg(), bindings);
 		}
 		catch (ValueExprEvaluationException e) {
-			// a type error in an extension argument should be silently ignored and result in zero bindings.
+			// a type error in an extension argument should be silently ignored and
+			// result in zero bindings.
 			result = new EmptyIteration<BindingSet, QueryEvaluationException>();
 		}
-		
+
 		result = new ExtensionIterator(extension, result, this);
 		return result;
 	}
@@ -1484,7 +1603,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throw new ValueExprEvaluationException("Both arguments must be numeric literals");
 	}
 
-	public Value evaluate(If node, BindingSet bindings) throws QueryEvaluationException {
+	public Value evaluate(If node, BindingSet bindings)
+		throws QueryEvaluationException
+	{
 		Value result = null;
 		if (isTrue(node.getCondition(), bindings)) {
 			result = evaluate(node.getResult(), bindings);
@@ -1494,7 +1615,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		return result;
 	}
-	
+
 	public Value evaluate(In node, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
