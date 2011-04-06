@@ -20,14 +20,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -123,25 +120,11 @@ public class Console {
 
 	private static final String TEMPLATES_DIR = "templates";
 
-	public static final Map<String, Level> LOG_LEVELS;
-
-	static {
-		Map<String, Level> logLevels = new LinkedHashMap<String, Level>();
-		logLevels.put("none", Level.OFF);
-		logLevels.put("error", Level.SEVERE);
-		logLevels.put("warning", Level.WARNING);
-		logLevels.put("info", Level.INFO);
-		logLevels.put("debug", Level.FINE);
-		LOG_LEVELS = Collections.unmodifiableMap(logLevels);
-	}
-
 	/*-----------*
 	 * Constants *
 	 *-----------*/
 
 	private final AppConfiguration appConfig = new AppConfiguration(APP_NAME, APP_NAME, VERSION);
-
-	private final java.util.logging.Logger jdkRootLogger = java.util.logging.Logger.getLogger("");
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -261,9 +244,6 @@ public class Console {
 	public Console()
 		throws IOException
 	{
-		// Set log level to WARNING by default
-		jdkRootLogger.setLevel(Level.WARNING);
-
 		appConfig.init();
 
 		in = new BufferedReader(new InputStreamReader(System.in));
@@ -1644,7 +1624,6 @@ public class Console {
 	}
 
 	private void showParameters() {
-		setLog(null);
 		setWidth(null);
 		setShowPrefix(null);
 		setQueryPrefix(null);
@@ -1653,10 +1632,7 @@ public class Console {
 	private void setParameter(String key, String value) {
 		key = key.toLowerCase(Locale.ENGLISH);
 
-		if ("log".equals(key)) {
-			setLog(value);
-		}
-		else if ("width".equals(key)) {
+		if ("width".equals(key)) {
 			setWidth(value);
 		}
 		else if ("showprefix".equals(key)) {
@@ -1686,32 +1662,6 @@ public class Console {
 			}
 			catch (NumberFormatException e) {
 				writeError("Width must be a positive number");
-			}
-		}
-	}
-
-	private void setLog(String value) {
-		if (value == null) {
-			Level currentLevel = jdkRootLogger.getLevel();
-			String levelString = currentLevel.getName();
-
-			for (Map.Entry<String, Level> entry : LOG_LEVELS.entrySet()) {
-				if (entry.getValue().equals(currentLevel)) {
-					levelString = entry.getKey();
-					break;
-				}
-			}
-
-			writeln("log: " + levelString);
-		}
-		else {
-			Level logLevel = LOG_LEVELS.get(value.toLowerCase());
-
-			if (logLevel != null) {
-				jdkRootLogger.setLevel(logLevel);
-			}
-			else {
-				writeError("unknown logging level: " + value);
 			}
 		}
 	}
