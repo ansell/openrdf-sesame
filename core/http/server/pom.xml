@@ -68,7 +68,6 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
 					<warName>openrdf-sesame</warName>
-					<dependentWarExcludes>WEB-INF/web.xml,images/productgroup.png,images/logo.png,favicon.*</dependentWarExcludes>
 					<archiveClasses>true</archiveClasses>
 				</configuration>
 			</plugin>
