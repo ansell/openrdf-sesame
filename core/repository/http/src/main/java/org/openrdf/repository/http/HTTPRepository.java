@@ -42,7 +42,7 @@ public class HTTPRepository implements Repository {
 	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
-	private HTTPClient httpClient;
+	private final HTTPClient httpClient;
 
 	private File dataDir;
 
@@ -95,6 +95,7 @@ public class HTTPRepository implements Repository {
 		throws RepositoryException
 	{
 		initialized = false;
+		httpClient.shutDown();
 	}
 
 	public ValueFactory getValueFactory() {
