@@ -45,6 +45,7 @@ import info.aduna.io.IOUtil;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.text.StringUtil;
 
+import org.openrdf.Sesame;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.Graph;
@@ -114,7 +115,7 @@ public class Console {
 	 * Static constants *
 	 *------------------*/
 
-	private static final AppVersion VERSION = new AppVersion(2, 3, 3);
+	private static final AppVersion VERSION = AppVersion.parse(Sesame.getVersion());
 
 	private static final String APP_NAME = "OpenRDF Sesame console";
 
