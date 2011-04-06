@@ -96,6 +96,7 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
 					<warName>openrdf-workbench</warName>
+					<archiveClasses>true</archiveClasses>
 				</configuration>
 			</plugin>
 			<plugin>
