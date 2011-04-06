@@ -25,6 +25,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.openrdf.Sesame;
 import org.openrdf.workbench.base.BaseServlet;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 import org.openrdf.workbench.util.BasicServletConfig;
@@ -32,19 +33,42 @@ import org.openrdf.workbench.util.TupleResultBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.app.AppConfiguration;
+import info.aduna.app.AppVersion;
+
 public class WorkbenchGateway extends BaseServlet {
+
 	private static final String COOKIE_AGE_PARAM = "cookie-max-age";
+
 	private static final String DEFAULT_SERVER_PARAM = "default-server";
+
 	private static final String ACCEPTED_SERVER_PARAM = "accepted-server-prefixes";
+
 	private static final String CHANGE_SERVER_PARAM = "change-server-path";
+
 	private static final String SERVER_COOKIE = "workbench-server";
+
 	private static final String TRANSFORMATIONS_PARAM = "transformations";
-	private Logger logger = LoggerFactory.getLogger(WorkbenchGateway.class);
-	private Map<String, WorkbenchServlet> servlets = new ConcurrentHashMap<String, WorkbenchServlet>();
+
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
+	private final Map<String, WorkbenchServlet> servlets = new ConcurrentHashMap<String, WorkbenchServlet>();
+
+	private static final AppVersion VERSION = AppVersion.parse(Sesame.getVersion());
+
+	private final AppConfiguration appConfig = new AppConfiguration("OpenRDF Workbench", "OpenRDF Workbench", VERSION);
 
 	@Override
-	public void init(ServletConfig config) throws ServletException {
+	public void init(ServletConfig config)
+		throws ServletException
+	{
 		super.init(config);
+		try {
+			appConfig.init();
+		}
+		catch (IOException e) {
+			throw new ServletException(e);
+		}
 		if (getDefaultServerPath() == null)
 			throw new MissingInitParameterException(DEFAULT_SERVER_PARAM);
 		if (config.getInitParameter(TRANSFORMATIONS_PARAM) == null)
@@ -80,20 +104,22 @@ public class WorkbenchGateway extends BaseServlet {
 
 	@Override
 	public void service(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+		throws ServletException, IOException
+	{
 		String change = getChangeServerPath();
 		if (change != null && change.equals(req.getPathInfo())) {
 			changeServer(req, resp);
-		} else {
+		}
+		else {
 			WorkbenchServlet servlet = findWorkbenchServlet(req, resp);
 			if (servlet == null) {
 				String uri = req.getRequestURI();
 				if (req.getPathInfo() != null) {
-					uri = uri.substring(0, uri.length()
-							- req.getPathInfo().length());
+					uri = uri.substring(0, uri.length() - req.getPathInfo().length());
 				}
 				resp.sendRedirect(uri + getChangeServerPath());
-			} else {
+			}
+			else {
 				servlet.service(req, resp);
 			}
 		}
@@ -106,7 +132,9 @@ public class WorkbenchGateway extends BaseServlet {
 		}
 	}
 
-	private File asLocalFile(URL rdf) throws UnsupportedEncodingException {
+	private File asLocalFile(URL rdf)
+		throws UnsupportedEncodingException
+	{
 		return new File(URLDecoder.decode(rdf.getFile(), "UTF-8"));
 	}
 
@@ -118,29 +146,33 @@ public class WorkbenchGateway extends BaseServlet {
 			try {
 				Integer.parseInt(reader.readLine());
 				return true;
-			} finally {
+			}
+			finally {
 				reader.close();
 			}
-		} catch (MalformedURLException e) {
+		}
+		catch (MalformedURLException e) {
 			logger.warn(e.toString(), e);
 			return false;
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			logger.warn(e.toString(), e);
 			return false;
 		}
 	}
 
 	private void changeServer(HttpServletRequest req, HttpServletResponse resp)
-			throws IOException {
+		throws IOException
+	{
 		String server = req.getParameter(SERVER_COOKIE);
 		if (server == null) {
 			resp.setContentType("application/xml");
-			TupleResultBuilder builder = new TupleResultBuilder(resp
-					.getWriter());
+			TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
 			builder.transform(getTransformationUrl(req), "server.xsl");
 			builder.start();
 			builder.end();
-		} else if (isValidServer(server)) {
+		}
+		else if (isValidServer(server)) {
 			Cookie cookie = new Cookie(SERVER_COOKIE, server);
 			initCookie(cookie, req);
 			resp.addCookie(cookie);
@@ -148,10 +180,10 @@ public class WorkbenchGateway extends BaseServlet {
 			uri = uri.substring(0, uri.length() - req.getPathInfo().length());
 			resetCache();
 			resp.sendRedirect(uri);
-		} else {
+		}
+		else {
 			resp.setContentType("application/xml");
-			TupleResultBuilder builder = new TupleResultBuilder(resp
-					.getWriter());
+			TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
 			builder.transform(getTransformationUrl(req), "server.xsl");
 			builder.start("error-message");
 			builder.result("Invalid Server URL");
@@ -167,9 +199,7 @@ public class WorkbenchGateway extends BaseServlet {
 			if (server.startsWith(prefix))
 				return true;
 		}
-		logger
-				.warn("server URL {} does not have a prefix {}", server,
-						prefixes);
+		logger.warn("server URL {} does not have a prefix {}", server, prefixes);
 		return false;
 	}
 
@@ -184,8 +214,9 @@ public class WorkbenchGateway extends BaseServlet {
 		return getDefaultServer(req);
 	}
 
-	private WorkbenchServlet findWorkbenchServlet(HttpServletRequest req,
-			HttpServletResponse resp) throws ServletException, IOException {
+	private WorkbenchServlet findWorkbenchServlet(HttpServletRequest req, HttpServletResponse resp)
+		throws ServletException, IOException
+	{
 		String server = findServer(req, resp);
 		if (servlets.containsKey(server))
 			return servlets.get(server);
@@ -200,7 +231,8 @@ public class WorkbenchGateway extends BaseServlet {
 				servlets.put(server, servlet);
 				return servlet;
 			}
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
@@ -216,8 +248,7 @@ public class WorkbenchGateway extends BaseServlet {
 		return server;
 	}
 
-	private String getServerCookie(HttpServletRequest req,
-			HttpServletResponse resp) {
+	private String getServerCookie(HttpServletRequest req, HttpServletResponse resp) {
 		Cookie[] cookies = req.getCookies();
 		if (cookies == null)
 			return null;
@@ -254,7 +285,8 @@ public class WorkbenchGateway extends BaseServlet {
 	private void initCookie(Cookie cookie, HttpServletRequest req) {
 		if (req.getContextPath() != null) {
 			cookie.setPath(req.getContextPath());
-		} else {
+		}
+		else {
 			cookie.setPath("/");
 		}
 		String age = getMaxAgeOfCookie();
@@ -267,10 +299,12 @@ public class WorkbenchGateway extends BaseServlet {
 		try {
 			URL url = new URL(server);
 			return asLocalFile(url).isDirectory();
-		} catch (MalformedURLException e) {
+		}
+		catch (MalformedURLException e) {
 			logger.warn(e.toString(), e);
 			return false;
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			logger.warn(e.toString(), e);
 			return false;
 		}
@@ -281,7 +315,8 @@ public class WorkbenchGateway extends BaseServlet {
 			return false;
 		if (server.startsWith("http")) {
 			return canConnect(server);
-		} else if (server.startsWith("file:")) {
+		}
+		else if (server.startsWith("file:")) {
 			return isDirectory(server);
 		}
 		return true;
