@@ -500,14 +500,19 @@ public class Console {
 		try {
 			// Ping server
 			HTTPClient httpClient = new HTTPClient();
-			httpClient.setServerURL(url);
+			try {
+				httpClient.setServerURL(url);
 
-			if (user != null) {
-				httpClient.setUsernameAndPassword(user, pass);
+				if (user != null) {
+					httpClient.setUsernameAndPassword(user, pass);
+				}
+
+				// Ping the server
+				httpClient.getServerProtocol();
 			}
-
-			// Ping the server
-			httpClient.getServerProtocol();
+			finally {
+				httpClient.shutDown();
+			}
 
 			RemoteRepositoryManager manager = new RemoteRepositoryManager(url);
 			manager.setUsernameAndPassword(user, pass);

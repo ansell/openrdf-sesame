@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2011.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HeaderElement;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.NameValuePair;
@@ -116,7 +115,9 @@ public class HTTPClient {
 
 	private String repositoryURL;
 
-	private HttpClient httpClient;
+	private final MultiThreadedHttpConnectionManager manager;
+	
+	private final HttpClient httpClient;
 
 	private AuthScope authScope;
 
@@ -135,7 +136,7 @@ public class HTTPClient {
 
 		// Use MultiThreadedHttpConnectionManager to allow concurrent access on
 		// HttpClient
-		HttpConnectionManager manager = new MultiThreadedHttpConnectionManager();
+		manager = new MultiThreadedHttpConnectionManager();
 
 		// Allow 20 concurrent connections to the same host (default is 2)
 		HttpConnectionManagerParams params = new HttpConnectionManagerParams();
@@ -148,6 +149,10 @@ public class HTTPClient {
 	/*-----------------*
 	 * Get/set methods *
 	 *-----------------*/
+	
+	public void shutDown() {
+		manager.shutdown();
+	}
 
 	protected final HttpClient getHttpClient() {
 		return httpClient;

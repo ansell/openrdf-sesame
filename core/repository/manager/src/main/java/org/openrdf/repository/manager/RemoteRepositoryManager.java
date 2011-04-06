@@ -123,9 +123,12 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * Gets the URL of the remote server, e.g.
 	 * "http://localhost:8080/openrdf-sesame/".
 	 * 
-	 * @throws MalformedURLException If serverURL cannot be parsed
+	 * @throws MalformedURLException
+	 *         If serverURL cannot be parsed
 	 */
-	public URL getLocation() throws MalformedURLException {
+	public URL getLocation()
+		throws MalformedURLException
+	{
 		return new URL(serverURL);
 	}
 
@@ -186,38 +189,42 @@ public class RemoteRepositoryManager extends RepositoryManager {
 			HTTPClient httpClient = new HTTPClient();
 			httpClient.setServerURL(serverURL);
 			httpClient.setUsernameAndPassword(username, password);
+			try {
+				TupleQueryResult responseFromServer = httpClient.getRepositoryList();
+				while (responseFromServer.hasNext()) {
+					BindingSet bindingSet = responseFromServer.next();
+					RepositoryInfo repInfo = new RepositoryInfo();
 
-			TupleQueryResult responseFromServer = httpClient.getRepositoryList();
-			while (responseFromServer.hasNext()) {
-				BindingSet bindingSet = responseFromServer.next();
-				RepositoryInfo repInfo = new RepositoryInfo();
+					String id = LiteralUtil.getLabel(bindingSet.getValue("id"), null);
 
-				String id = LiteralUtil.getLabel(bindingSet.getValue("id"), null);
-
-				if (skipSystemRepo && id.equals(SystemRepository.ID)) {
-					continue;
-				}
-
-				Value uri = bindingSet.getValue("uri");
-				String description = LiteralUtil.getLabel(bindingSet.getValue("title"), null);
-				boolean readable = LiteralUtil.getBooleanValue(bindingSet.getValue("readable"), false);
-				boolean writable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
-
-				if (uri instanceof URI) {
-					try {
-						repInfo.setLocation(new URL(uri.toString()));
+					if (skipSystemRepo && id.equals(SystemRepository.ID)) {
+						continue;
 					}
-					catch (MalformedURLException e) {
-						logger.warn("Server reported malformed repository URL: {}", uri);
+
+					Value uri = bindingSet.getValue("uri");
+					String description = LiteralUtil.getLabel(bindingSet.getValue("title"), null);
+					boolean readable = LiteralUtil.getBooleanValue(bindingSet.getValue("readable"), false);
+					boolean writable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
+
+					if (uri instanceof URI) {
+						try {
+							repInfo.setLocation(new URL(uri.toString()));
+						}
+						catch (MalformedURLException e) {
+							logger.warn("Server reported malformed repository URL: {}", uri);
+						}
 					}
+
+					repInfo.setId(id);
+					repInfo.setDescription(description);
+					repInfo.setReadable(readable);
+					repInfo.setWritable(writable);
+
+					result.add(repInfo);
 				}
-
-				repInfo.setId(id);
-				repInfo.setDescription(description);
-				repInfo.setReadable(readable);
-				repInfo.setWritable(writable);
-
-				result.add(repInfo);
+			}
+			finally {
+				httpClient.shutDown();
 			}
 		}
 		catch (IOException ioe) {
