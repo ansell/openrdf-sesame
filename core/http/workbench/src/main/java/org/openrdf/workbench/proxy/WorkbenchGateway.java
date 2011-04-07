@@ -25,16 +25,12 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.openrdf.Sesame;
 import org.openrdf.workbench.base.BaseServlet;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 import org.openrdf.workbench.util.BasicServletConfig;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import info.aduna.app.AppConfiguration;
-import info.aduna.app.AppVersion;
 
 public class WorkbenchGateway extends BaseServlet {
 
@@ -54,21 +50,11 @@ public class WorkbenchGateway extends BaseServlet {
 
 	private final Map<String, WorkbenchServlet> servlets = new ConcurrentHashMap<String, WorkbenchServlet>();
 
-	private static final AppVersion VERSION = AppVersion.parse(Sesame.getVersion());
-
-	private final AppConfiguration appConfig = new AppConfiguration("OpenRDF Workbench", "OpenRDF Workbench", VERSION);
-
 	@Override
 	public void init(ServletConfig config)
 		throws ServletException
 	{
 		super.init(config);
-		try {
-			appConfig.init();
-		}
-		catch (IOException e) {
-			throw new ServletException(e);
-		}
 		if (getDefaultServerPath() == null)
 			throw new MissingInitParameterException(DEFAULT_SERVER_PARAM);
 		if (config.getInitParameter(TRANSFORMATIONS_PARAM) == null)
