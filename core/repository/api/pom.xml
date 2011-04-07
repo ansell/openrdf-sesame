@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-repository</artifactId>
-		<version>2.3.3-SNAPSHOT</version>
+		<version>2.3.3</version>
 	</parent>
 
 	<artifactId>sesame-repository-api</artifactId>
@@ -47,9 +47,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.3/core/repository/api</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.3/core/repository/api</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/repository/api/</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.3/core/repository/api</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.3.3/core/repository/api</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.3.3/core/repository/api?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/repository/api/</url>
 	</scm>
 
 </project>
