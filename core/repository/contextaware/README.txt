@@ -1,4 +1,4 @@
-This software is copyright Aduna (http://www.aduna-software.com/) and James Leigh © 2008.
+This software is copyright Aduna (http://www.aduna-software.com/) and James Leigh © 2008-2011.
 Licensed under the Aduna BSD-style license.
 
 For the full text of the license, see the file LICENSE.txt.

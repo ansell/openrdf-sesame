@@ -33,12 +33,12 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 	}
 
 	public TupleQueryResult evaluate()
-		throws HTTPQueryEvaluationException
+		throws QueryEvaluationException
 	{
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 
 		try {
-			return client.sendTupleQuery(queryLanguage, queryString, dataset, includeInferred,
+			return client.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime,
 					getBindingsArray());
 		}
 		catch (IOException e) {
@@ -57,7 +57,7 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 	{
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 		try {
-			client.sendTupleQuery(queryLanguage, queryString, dataset, includeInferred, handler,
+			client.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime, handler,
 					getBindingsArray());
 		}
 		catch (IOException e) {

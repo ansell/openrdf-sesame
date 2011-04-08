@@ -5,12 +5,14 @@
  */
 package org.openrdf.query;
 
+import java.io.Serializable;
+
 import org.openrdf.model.Value;
 
 /**
  * A named value binding.
  */
-public interface Binding {
+public interface Binding extends Serializable {
 
 	/**
 	 * Gets the name of the binding (e.g. the variable name).

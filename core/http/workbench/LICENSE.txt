@@ -1,4 +1,4 @@
-Copyright Aduna (http://www.aduna-software.com/) ï¿½ 2001-2008
+Copyright Aduna (http://www.aduna-software.com/) © 2001-2011
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,

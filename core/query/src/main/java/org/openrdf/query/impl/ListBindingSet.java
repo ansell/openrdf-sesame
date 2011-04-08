@@ -22,17 +22,11 @@ import org.openrdf.query.BindingSet;
  */
 public class ListBindingSet implements BindingSet {
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	private static final long serialVersionUID = -2907809218835403743L;
 
-	private List<String> bindingNames;
+	private final List<String> bindingNames;
 
-	private List<? extends Value> values;
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
+	private final List<? extends Value> values;
 
 	/**
 	 * Creates a new List-based BindingSet containing the supplied bindings.
@@ -68,10 +62,6 @@ public class ListBindingSet implements BindingSet {
 		this.bindingNames = bindingNames;
 		this.values = values;
 	}
-
-	/*---------*
-	 * Methods *
-	 *---------*/
 
 	public Set<String> getBindingNames() {
 		return new LinkedHashSet<String>(bindingNames);

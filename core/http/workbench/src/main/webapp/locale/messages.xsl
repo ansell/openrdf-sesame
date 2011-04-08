@@ -84,7 +84,7 @@
 
 	<!-- General labels -->
 	<variable name="copyright.label">
-		Copyright © Aduna 1997-2008
+		Copyright © Aduna 1997-2011
 	</variable>
 	<variable name="aduna.label">Aduna - Semantic Power</variable>
 	<variable name="true.label">Yes</variable>

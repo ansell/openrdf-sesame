@@ -34,6 +34,7 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
@@ -199,6 +200,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			getRepository().getHTTPClient().getStatements(subj, pred, obj, includeInferred, handler, contexts);
 		}
 		catch (IOException e) {
+			throw new RepositoryException(e);
+		}
+		catch (QueryInterruptedException e) {
 			throw new RepositoryException(e);
 		}
 	}

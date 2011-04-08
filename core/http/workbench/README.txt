@@ -1,4 +1,4 @@
-This software is copyright Aduna (http://www.aduna-software.com/) ï¿½ 2001-2008.
+This software is copyright Aduna (http://www.aduna-software.com/) © 2001-2011.
 Licensed under the Aduna BSD-style license.
 
 For the full text of the license, see the file LICENSE.txt.

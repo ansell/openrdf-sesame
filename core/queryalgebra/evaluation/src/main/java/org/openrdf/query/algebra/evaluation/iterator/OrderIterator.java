@@ -11,7 +11,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 
 import info.aduna.collections.iterators.EmptyIterator;
 import info.aduna.iteration.CloseableIteration;
@@ -92,8 +91,8 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 
 					if (size > limit) {
 						// Discard binding set that is currently sorted last
-						Entry<BindingSet, Collection<BindingSet>> lastEntry = map.lastEntry();
-						Collection<BindingSet> lastResults = lastEntry.getValue();
+						BindingSet lastKey = map.lastKey();
+						Collection<BindingSet> lastResults = map.get(lastKey);
 
 						assert !lastResults.isEmpty();
 
@@ -111,7 +110,7 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 						size--;
 
 						if (lastResults.isEmpty()) {
-							map.remove(lastEntry.getKey());
+							map.remove(lastKey);
 						}
 					}
 				}

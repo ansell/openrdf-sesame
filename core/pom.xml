@@ -50,14 +50,14 @@
 					<execution>
 						<phase>site</phase>
 						<configuration>
-							<tasks>
+							<target>
 								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
 									<target name="userdoc" />
 								</ant>
 								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
 									<target name="systemdoc" />
 								</ant>
-							</tasks>
+							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
@@ -81,7 +81,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
-					<aggregate>true</aggregate>
 					<encoding>utf8</encoding>
 					<source>1.5</source>
 					<quiet>true</quiet>
@@ -149,7 +148,10 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/</url>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/</url>
+
+
+
 	</scm>
 
 </project>

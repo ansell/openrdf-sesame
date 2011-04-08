@@ -44,7 +44,10 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core/queryparser/sparql</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core/queryparser/sparql</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/queryparser/sparql?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/queryparser/sparql/</url>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/queryparser/sparql?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/queryparser/sparql/</url>
+
+
+
 	</scm>
 
 </project>
