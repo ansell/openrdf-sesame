@@ -68,7 +68,10 @@ public class OrderIteratorTest extends TestCase {
 	}
 
 	class BindingSetSize implements BindingSet {
-		private int size;
+
+		private static final long serialVersionUID = -7968068342865378845L;
+
+		private final int size;
 
 		public BindingSetSize(int size) {
 			super();

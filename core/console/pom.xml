@@ -57,12 +57,6 @@
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
-			<scope>runtime</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
 			<scope>runtime</scope>
 			<optional>true</optional>
@@ -92,7 +86,10 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core/console</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core/console</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/console?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/console/</url>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/console?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/console/</url>
+
+
+
 	</scm>
 
 </project>

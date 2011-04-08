@@ -21,9 +21,7 @@ import org.openrdf.query.BindingSet;
  */
 public class EmptyBindingSet implements BindingSet {
 
-	/*-----------*
-	 * Constants *
-	 *-----------*/
+	private static final long serialVersionUID = -6010968140688315954L;
 
 	private static final EmptyBindingSet singleton = new EmptyBindingSet();
 
@@ -31,15 +29,7 @@ public class EmptyBindingSet implements BindingSet {
 		return singleton;
 	}
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
 	private EmptyBindingIterator iter = new EmptyBindingIterator();
-
-	/*---------*
-	 * Methods *
-	 *---------*/
 
 	public Iterator<Binding> iterator() {
 		return iter;

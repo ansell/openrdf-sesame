@@ -5,6 +5,7 @@
  */
 package org.openrdf.query;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -16,7 +17,7 @@ import org.openrdf.model.Value;
  * which typically corresponds to the names of the variables used in the
  * projection of the orginal query.
  */
-public interface BindingSet extends Iterable<Binding> {
+public interface BindingSet extends Iterable<Binding>, Serializable {
 
 	/**
 	 * Creates an iterator over the bindings in this BindingSet. This only

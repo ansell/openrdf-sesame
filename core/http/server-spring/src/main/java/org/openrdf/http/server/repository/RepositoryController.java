@@ -7,6 +7,7 @@ package org.openrdf.http.server.repository;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import static javax.servlet.http.HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE;
 import static org.openrdf.http.protocol.Protocol.BINDING_PREFIX;
 import static org.openrdf.http.protocol.Protocol.DEFAULT_GRAPH_PARAM_NAME;
@@ -39,12 +40,15 @@ import org.openrdf.http.protocol.error.ErrorInfo;
 import org.openrdf.http.protocol.error.ErrorType;
 import org.openrdf.http.server.ClientHTTPException;
 import org.openrdf.http.server.ProtocolUtil;
+import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.UnsupportedQueryLanguageException;
@@ -106,30 +110,40 @@ public class RepositoryController extends AbstractController {
 			Object queryResult;
 			FileFormatServiceRegistry<? extends FileFormat, ?> registry;
 
-			if (query instanceof TupleQuery) {
-				TupleQuery tQuery = (TupleQuery)query;
-
-				queryResult = tQuery.evaluate();
-				registry = TupleQueryResultWriterRegistry.getInstance();
-				view = TupleQueryResultView.getInstance();
+			try {
+				if (query instanceof TupleQuery) {
+					TupleQuery tQuery = (TupleQuery)query;
+	
+					queryResult = tQuery.evaluate();
+					registry = TupleQueryResultWriterRegistry.getInstance();
+					view = TupleQueryResultView.getInstance();
+				}
+				else if (query instanceof GraphQuery) {
+					GraphQuery gQuery = (GraphQuery)query;
+	
+					queryResult = gQuery.evaluate();
+					registry = RDFWriterRegistry.getInstance();
+					view = GraphQueryResultView.getInstance();
+				}
+				else if (query instanceof BooleanQuery) {
+					BooleanQuery bQuery = (BooleanQuery)query;
+	
+					queryResult = bQuery.evaluate();
+					registry = BooleanQueryResultWriterRegistry.getInstance();
+					view = BooleanQueryResultView.getInstance();
+				}
+				else {
+					throw new ClientHTTPException(SC_BAD_REQUEST, "Unsupported query type: "
+							+ query.getClass().getName());
+				}
 			}
-			else if (query instanceof GraphQuery) {
-				GraphQuery gQuery = (GraphQuery)query;
-
-				queryResult = gQuery.evaluate();
-				registry = RDFWriterRegistry.getInstance();
-				view = GraphQueryResultView.getInstance();
+			catch (QueryInterruptedException e) {
+				logger.info("Query interrupted", e);
+				throw new ServerHTTPException(SC_SERVICE_UNAVAILABLE, "Query evaluation took too long");
 			}
-			else if (query instanceof BooleanQuery) {
-				BooleanQuery bQuery = (BooleanQuery)query;
-
-				queryResult = bQuery.evaluate();
-				registry = BooleanQueryResultWriterRegistry.getInstance();
-				view = BooleanQueryResultView.getInstance();
-			}
-			else {
-				throw new ClientHTTPException(SC_BAD_REQUEST, "Unsupported query type: "
-						+ query.getClass().getName());
+			catch (QueryEvaluationException e) {
+				logger.info("Query evaluation error", e);
+				throw new ServerHTTPException("Query evaluation error: " + e.getMessage());
 			}
 
 			Object factory = ProtocolUtil.getAcceptableService(request, response, registry);
@@ -166,8 +180,21 @@ public class RepositoryController extends AbstractController {
 			}
 		}
 
+		String baseURI = request.getParameter(Protocol.BASEURI_PARAM_NAME);
+
 		// determine if inferred triples should be included in query evaluation
 		boolean includeInferred = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
+
+		String timeout = request.getParameter(Protocol.TIMEOUT_PARAM_NAME);
+		int maxQueryTime = 0;
+		if (timeout != null) {
+			try {
+				maxQueryTime = Integer.parseInt(timeout);
+			}
+			catch (NumberFormatException e) {
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid timeout value: " + timeout);
+			}
+		}
 
 		// build a dataset, if specified
 		String[] defaultGraphURIs = request.getParameterValues(DEFAULT_GRAPH_PARAM_NAME);
@@ -205,8 +232,13 @@ public class RepositoryController extends AbstractController {
 		}
 
 		try {
-			result = repositoryCon.prepareQuery(queryLn, queryStr);
+			result = repositoryCon.prepareQuery(queryLn, queryStr, baseURI);
+
 			result.setIncludeInferred(includeInferred);
+
+			if (maxQueryTime > 0) {
+				result.setMaxQueryTime(maxQueryTime);
+			}
 
 			if (dataset != null) {
 				result.setDataset(dataset);

@@ -5,6 +5,7 @@
  */
 package org.openrdf.rio;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -15,7 +16,11 @@ import junit.framework.TestCase;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.StatementImpl;
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.OWL;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -119,4 +124,14 @@ public abstract class RDFWriterTest extends TestCase {
 		Statement parsedSt = statements.iterator().next();
 		assertEquals("Written and parsed statements are not equal", st, parsedSt);
 	}
+	
+   public void testDefaultNamespace() throws Exception {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
+		rdfWriter.handleNamespace("", RDF.NAMESPACE);
+		rdfWriter.handleNamespace("rdf", RDF.NAMESPACE);
+		rdfWriter.startRDF();
+		rdfWriter.handleStatement(new StatementImpl(new URIImpl(RDF.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY));
+		rdfWriter.endRDF();
+  } 
 }

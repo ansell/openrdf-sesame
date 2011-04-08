@@ -58,7 +58,7 @@ public abstract class QueryResultView implements View {
 		response.setContentType(mimeType);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	protected void setContentDisposition(Map model, HttpServletResponse response, FileFormat fileFormat)
 		throws IOException
 	{

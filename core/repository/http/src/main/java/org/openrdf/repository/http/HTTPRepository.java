@@ -42,7 +42,7 @@ public class HTTPRepository implements Repository {
 	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
-	private HTTPClient httpClient;
+	private final HTTPClient httpClient;
 
 	private File dataDir;
 
@@ -95,6 +95,7 @@ public class HTTPRepository implements Repository {
 		throws RepositoryException
 	{
 		initialized = false;
+		httpClient.shutDown();
 	}
 
 	public ValueFactory getValueFactory() {
@@ -130,17 +131,12 @@ public class HTTPRepository implements Repository {
 					}
 				}
 			}
-			catch (QueryEvaluationException e) {
-				throw new RepositoryException(e);
-			}
 			finally {
-				try {
-					repositoryList.close();
-				}
-				catch (QueryEvaluationException e) {
-					throw new RepositoryException(e);
-				}
+				repositoryList.close();
 			}
+		}
+		catch (QueryEvaluationException e) {
+			throw new RepositoryException(e);
 		}
 		catch (IOException e) {
 			throw new RepositoryException(e);

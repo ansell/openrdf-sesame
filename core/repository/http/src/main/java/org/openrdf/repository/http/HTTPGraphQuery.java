@@ -11,6 +11,7 @@ import org.openrdf.http.client.HTTPClient;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFHandler;
@@ -32,12 +33,12 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 	}
 
 	public GraphQueryResult evaluate()
-		throws HTTPQueryEvaluationException
+		throws QueryEvaluationException
 	{
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 
 		try {
-			return client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred,
+			return client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime,
 					getBindingsArray());
 		}
 		catch (IOException e) {
@@ -52,11 +53,11 @@ public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 	}
 
 	public void evaluate(RDFHandler handler)
-		throws HTTPQueryEvaluationException, RDFHandlerException
+		throws QueryEvaluationException, RDFHandlerException
 	{
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
 		try {
-			client.sendGraphQuery(queryLanguage, queryString, dataset, includeInferred, handler,
+			client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime, handler,
 					getBindingsArray());
 		}
 		catch (IOException e) {

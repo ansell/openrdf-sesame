@@ -33,10 +33,10 @@
 					<execution>
 						<phase>process-classes</phase>
 						<configuration>
-							<tasks>
+							<target>
 								<mkdir dir="target/services/META-INF/services" />
 								<ant antfile="../build.xml" target="create-service-files" dir="${basedir}" />
-							</tasks>
+							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
@@ -75,7 +75,10 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core/runtime</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core/runtime</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/runtime?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.3/core/runtime/</url>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/runtime?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/runtime/</url>
+
+
+
 	</scm>
 
 </project>

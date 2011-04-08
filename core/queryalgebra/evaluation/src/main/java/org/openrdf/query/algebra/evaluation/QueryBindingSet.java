@@ -27,15 +27,9 @@ import org.openrdf.query.impl.MapBindingSet;
  */
 public class QueryBindingSet implements BindingSet {
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	private static final long serialVersionUID = -2010715346095527301L;
 
 	private final Map<String, Value> bindings;
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
 
 	public QueryBindingSet() {
 		this(8);
@@ -51,10 +45,6 @@ public class QueryBindingSet implements BindingSet {
 		this(bindingSet.size());
 		addAll(bindingSet);
 	}
-
-	/*---------*
-	 * Methods *
-	 *---------*/
 
 	public void addAll(BindingSet bindingSet) {
 		if (bindingSet instanceof QueryBindingSet) {
