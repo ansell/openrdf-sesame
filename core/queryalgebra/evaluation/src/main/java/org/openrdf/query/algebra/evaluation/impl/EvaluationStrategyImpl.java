@@ -279,10 +279,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Join join = new Join();
 			Join currentJoin = join;
 
+			Var subjectJoinVar = pattern.getSubjectVar();
+			
 			for (int i = 0; i < numberOfJoins; i++) {
 				Var joinVar = createAnonVar("path-join-" + numberOfJoins + "-" + i);
 
-				currentJoin.setLeftArg(new StatementPattern(pattern.getScope(), pattern.getSubjectVar(),
+				currentJoin.setLeftArg(new StatementPattern(pattern.getScope(), subjectJoinVar,
 						pattern.getPredicateVar(), joinVar, pattern.getContextVar()));
 
 				if (i == numberOfJoins - 1) {
@@ -294,6 +296,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					currentJoin.setRightArg(newJoin);
 					currentJoin = newJoin;
 				}
+				subjectJoinVar = joinVar;
 			}
 			
 			return join;

@@ -13,7 +13,7 @@
 		  <uri>http://example/alice</uri>
 		</binding>
 		<binding name="name">
-		  <literal>Alice</literal>
+		  <literal>Bob</literal>
 		</binding>
 	 </result>
 	 <result>
@@ -21,76 +21,28 @@
 		  <uri>http://example/alice</uri>
 		</binding>
 		<binding name="name">
-		  <literal>Bob</literal>
-		</binding>
-	 </result>
-	 <result>
-		<binding name="person">
-		  <uri>http://example/bob</uri>
-		</binding>
-		<binding name="name">
-		  <literal>Bob</literal>
-		</binding>
-	 </result>
-	 <result>
-		<binding name="person">
-		  <uri>http://example/bob</uri>
-		</binding>
-		<binding name="name">
 		  <literal>John</literal>
 		</binding>
 	 </result>
-	 <result>
+	 	 <result>
 		<binding name="person">
-		  <uri>http://example/bob</uri>
+		  <uri>http://example/alice</uri>
 		</binding>
 		<binding name="name">
 		  <literal>Bill</literal>
 		</binding>
 	 </result>
-	 <result>
+	 	 <result>
 		<binding name="person">
-		  <uri>http://example/john</uri>
-		</binding>
-		<binding name="name">
-		  <literal>John</literal>
-		</binding>
-	 </result>
-	 <result>
-		<binding name="person">
-		  <uri>http://example/john</uri>
-		</binding>
-		<binding name="name">
-		  <literal>Bill</literal>
-		</binding>
-	 </result>
-	 <result>
-		<binding name="person">
-		  <uri>http://example/bill</uri>
-		</binding>
-		<binding name="name">
-		  <literal>Bill</literal>
-		</binding>
-	 </result>
-	 <result>
-		<binding name="person">
-		  <uri>http://example/bill</uri>
+		  <uri>http://example/alice</uri>
 		</binding>
 		<binding name="name">
 		  <literal>Sarah</literal>
 		</binding>
 	 </result>
-	 <result>
+	 	 <result>
 		<binding name="person">
-		  <uri>http://example/sarah</uri>
-		</binding>
-		<binding name="name">
-		  <literal>Sarah</literal>
-		</binding>
-	 </result>
-	 <result>
-		<binding name="person">
-		  <uri>http://example/sarah</uri>
+		  <uri>http://example/alice</uri>
 		</binding>
 		<binding name="name">
 		  <literal>Sam</literal>
@@ -98,7 +50,79 @@
 	 </result>
 	 <result>
 		<binding name="person">
-		  <uri>http://example/sam</uri>
+		  <uri>http://example/bob</uri>
+		</binding>
+		<binding name="name">
+		  <literal>John</literal>
+		</binding>
+	 </result>
+	 <result>
+		<binding name="person">
+		  <uri>http://example/bob</uri>
+		</binding>
+		<binding name="name">
+		  <literal>Bill</literal>
+		</binding>
+	 </result>
+	 <result>
+		<binding name="person">
+		  <uri>http://example/bob</uri>
+		</binding>
+		<binding name="name">
+		  <literal>Sarah</literal>
+		</binding>
+	 </result>
+	 	 <result>
+		<binding name="person">
+		  <uri>http://example/bob</uri>
+		</binding>
+		<binding name="name">
+		  <literal>Sam</literal>
+		</binding>
+	 </result>
+	 <result>
+		<binding name="person">
+		  <uri>http://example/john</uri>
+		</binding>
+		<binding name="name">
+		  <literal>Bill</literal>
+		</binding>
+	 </result>
+	 <result>
+		<binding name="person">
+		  <uri>http://example/john</uri>
+		</binding>
+		<binding name="name">
+		  <literal>Sarah</literal>
+		</binding>
+	 </result>
+	 	 <result>
+		<binding name="person">
+		  <uri>http://example/john</uri>
+		</binding>
+		<binding name="name">
+		  <literal>Sam</literal>
+		</binding>
+	 </result>
+	 <result>
+		<binding name="person">
+		  <uri>http://example/bill</uri>
+		</binding>
+		<binding name="name">
+		  <literal>Sarah</literal>
+		</binding>
+	 </result>
+	 <result>
+		<binding name="person">
+		  <uri>http://example/bill</uri>
+		</binding>
+		<binding name="name">
+		  <literal>Sam</literal>
+		</binding>
+	 </result>
+	 <result>
+		<binding name="person">
+		  <uri>http://example/sarah</uri>
 		</binding>
 		<binding name="name">
 		  <literal>Sam</literal>

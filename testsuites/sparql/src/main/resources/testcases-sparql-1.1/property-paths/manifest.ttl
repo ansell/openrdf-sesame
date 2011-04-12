@@ -18,8 +18,7 @@
     	:sparql11-sequence-05
     	:sparql11-sequence-06
     	:sparql11-sequence-07
-# commented out because currently causes infinite regression.
-#    	:sparql11-wildcard-star-01
+	   	:sparql11-wildcard-01
     ).
 
 :sparql11-alternative-01  mf:name  "sparql11-alternative-01" ;
