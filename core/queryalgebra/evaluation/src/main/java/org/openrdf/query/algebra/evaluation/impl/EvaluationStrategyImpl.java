@@ -336,23 +336,21 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 		}
 
-		return new ZeroLengthPathIteration(subjectVar, objVar, subj, obj);
+		return new ZeroLengthPathIteration(subjectVar, objVar, subj, obj, bindings);
 	}
 
 	private class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
-		private MapBindingSet result;
+		private QueryBindingSet result;
 
-		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj) {
-			result = new MapBindingSet();
+		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj, BindingSet bindings) {
+			result = new QueryBindingSet(bindings);
 
 			if (subj != null && obj == null) {
-				objVar.setValue(subj);
 				result.addBinding(objVar.getName(), subj);
 			}
 
 			if (obj != null && subj == null) {
-				subjectVar.setValue(obj);
 				result.addBinding(subjectVar.getName(), obj);
 			}
 		}
