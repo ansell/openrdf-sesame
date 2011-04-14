@@ -34,7 +34,7 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 
 	private Var contextVar;
 
-	private int minLength;
+	private long minLength;
 
 	/*--------------*
 	 * Constructors *
@@ -47,7 +47,7 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 	 * Creates a arbitrary-length path that matches a subject-, predicate- and object
 	 * variable against statements from all contexts.
 	 */
-	public ArbitraryLengthPath(Var subject, Var predicate, Var object, int minLength) {
+	public ArbitraryLengthPath(Var subject, Var predicate, Var object, long minLength) {
 		this(Scope.DEFAULT_CONTEXTS, subject, predicate, object, minLength);
 	}
 
@@ -55,7 +55,7 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 	 * Creates a arbitrary-length path that matches a subject-, predicate- and object
 	 * variable against statements from the specified context scope.
 	 */
-	public ArbitraryLengthPath(Scope scope, Var subject, Var predicate, Var object, int minLength) {
+	public ArbitraryLengthPath(Scope scope, Var subject, Var predicate, Var object, long minLength) {
 		this(scope, subject, predicate, object, null, minLength);
 	}
 
@@ -63,7 +63,7 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 	 * Creates a arbitrary-length path that matches a subject-, predicate-, object-
 	 * and context variable against statements from all contexts.
 	 */
-	public ArbitraryLengthPath(Var subject, Var predicate, Var object, Var context, int minLength) {
+	public ArbitraryLengthPath(Var subject, Var predicate, Var object, Var context, long minLength) {
 		this(Scope.DEFAULT_CONTEXTS, subject, predicate, object, context, minLength);
 	}
 
@@ -71,7 +71,7 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 	 * Creates a arbitrary-length path that matches a subject-, predicate-, object-
 	 * and context variable against statements from the specified context scope.
 	 */
-	public ArbitraryLengthPath(Scope scope, Var subjVar, Var predVar, Var objVar, Var conVar, int minLength) {
+	public ArbitraryLengthPath(Scope scope, Var subjVar, Var predVar, Var objVar, Var conVar, long minLength) {
 		setScope(scope);
 		setSubjectVar(subjVar);
 		setPredicateVar(predVar);
@@ -129,11 +129,11 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 		objectVar = object;
 	}
 
-	public void setMinLength(int minLength) {
+	public void setMinLength(long minLength) {
 		this.minLength = minLength;
 	}
 	
-	public int getMinLength() {
+	public long getMinLength() {
 		return minLength;
 	}
 	

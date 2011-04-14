@@ -297,18 +297,18 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		// Process limit and offset clauses
 		ASTLimit limitNode = node.getLimit();
-		int limit = -1;
+		long limit = -1L;
 		if (limitNode != null) {
-			limit = (Integer)limitNode.jjtAccept(this, null);
+			limit = (Long)limitNode.jjtAccept(this, null);
 		}
 
 		ASTOffset offsetNode = node.getOffset();
-		int offset = -1;
+		long offset = -1L;
 		if (offsetNode != null) {
-			offset = (Integer)offsetNode.jjtAccept(this, null);
+			offset = (Long)offsetNode.jjtAccept(this, null);
 		}
 
-		if (offset >= 1 || limit >= 0) {
+		if (offset >= 1L || limit >= 0L) {
 			tupleExpr = new Slice(tupleExpr, offset, limit);
 		}
 
@@ -703,14 +703,14 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Integer visit(ASTLimit node, Object data)
+	public Long visit(ASTLimit node, Object data)
 		throws VisitorException
 	{
 		return node.getValue();
 	}
 
 	@Override
-	public Integer visit(ASTOffset node, Object data)
+	public Long visit(ASTOffset node, Object data)
 		throws VisitorException
 	{
 		return node.getValue();
@@ -916,8 +916,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 			ASTPathMod pathMod = pathElement.getPathMod();
 
-			int lowerBound = Integer.MIN_VALUE;
-			int upperBound = Integer.MIN_VALUE;
+			long lowerBound = Long.MIN_VALUE;
+			long upperBound = Long.MIN_VALUE;
 
 			if (pathMod != null) {
 				lowerBound = pathMod.getLowerBound();
@@ -991,11 +991,11 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return null;
 	}
 
-	private TupleExpr handlePathModifiers(TupleExpr te, int lowerBound, int upperBound) {
+	private TupleExpr handlePathModifiers(TupleExpr te, long lowerBound, long upperBound) {
 
 		TupleExpr result = te;
 
-		if (lowerBound >= 0) {
+		if (lowerBound >= 0L) {
 			if (lowerBound < upperBound) {
 				if (upperBound < Integer.MAX_VALUE) {
 					// upperbound is fixed-length
@@ -1005,7 +1005,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 					Union union = new Union();
 					Union currentUnion = union;
 
-					for (int length = lowerBound; length < upperBound; length++) {
+					for (long length = lowerBound; length < upperBound; length++) {
 
 						TupleExpr path = createPath((StatementPattern)te, length);
 
@@ -1048,7 +1048,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return result;
 	}
 
-	private TupleExpr createPath(StatementPattern sp, int length) {
+	private TupleExpr createPath(StatementPattern sp, long length) {
 		Var subject = sp.getSubjectVar();
 		Var predicate = sp.getPredicateVar();
 		Var endVar = sp.getObjectVar();
@@ -1056,7 +1056,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		Var contextVar = sp.getContextVar();
 		Scope scope = sp.getScope();
 
-		if (length == 0) {
+		if (length == 0L) {
 			return new ZeroLengthPath(scope, subject, predicate, endVar, contextVar);
 		}
 		else {
@@ -1066,7 +1066,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 			Var nextVar = null;
 
-			for (int i = 0; i < length; i++) {
+			for (long i = 0L; i < length; i++) {
 				if (i < length - 1) {
 					nextVar = createAnonVar(predicate.getValue() + "-path-" + length + "-" + i);
 				}

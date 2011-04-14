@@ -201,7 +201,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		final Var predVar = alp.getPredicateVar();
 		final Var objVar = alp.getObjectVar();
 		final Var contextVar = alp.getContextVar();
-		final int minLength = alp.getMinLength();
+		final long minLength = alp.getMinLength();
 
 		StatementPattern sp = new StatementPattern(scope, subjectVar, predVar, objVar, contextVar);
 
@@ -211,7 +211,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	private class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
 
-		private int currentLength;
+		private long currentLength;
 
 		private StatementPattern pattern;
 
@@ -221,7 +221,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		private boolean currentIterNotEmpty;
 		
-		public PathIteration(StatementPattern sp, int minLength, BindingSet bindings)
+		public PathIteration(StatementPattern sp, long minLength, BindingSet bindings)
 			throws QueryEvaluationException {
 			this.currentLength = minLength;
 			this.pattern = sp;
@@ -257,7 +257,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		private void createIteration()
 			throws QueryEvaluationException
 		{
-			if (currentLength == 0) {
+			if (currentLength == 0L) {
 				ZeroLengthPath zlp = new ZeroLengthPath(pattern.getScope(), pattern.getSubjectVar(),
 						pattern.getPredicateVar(), pattern.getObjectVar(), pattern.getContextVar());
 				currentIter = evaluate(zlp, bindings);
@@ -267,27 +267,27 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 			else {
 				// length greater than zero, create join.
-				int numberOfJoins = currentLength - 1;
+				long numberOfJoins = currentLength - 1;
 				Join join = createMultiJoin(pattern, numberOfJoins);
 				
 				currentIter = evaluate(join, bindings);
 			}
 		}
 
-		private Join createMultiJoin(StatementPattern sp, int numberOfJoins) {
+		private Join createMultiJoin(StatementPattern sp, long numberOfJoins) {
 
 			Join join = new Join();
 			Join currentJoin = join;
 
 			Var subjectJoinVar = pattern.getSubjectVar();
 			
-			for (int i = 0; i < numberOfJoins; i++) {
+			for (long i = 0L; i < numberOfJoins; i++) {
 				Var joinVar = createAnonVar("path-join-" + numberOfJoins + "-" + i);
 
 				currentJoin.setLeftArg(new StatementPattern(pattern.getScope(), subjectJoinVar,
 						pattern.getPredicateVar(), joinVar, pattern.getContextVar()));
 
-				if (i == numberOfJoins - 1) {
+				if (i == numberOfJoins - 1L) {
 					currentJoin.setRightArg(new StatementPattern(pattern.getScope(), joinVar,
 							pattern.getPredicateVar(), pattern.getObjectVar(), pattern.getContextVar()));
 				}
@@ -652,7 +652,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		ValueComparator vcmp = new ValueComparator();
 		OrderComparator cmp = new OrderComparator(this, node, vcmp);
 		boolean reduced = isReduced(node);
-		int limit = getLimit(node);
+		long limit = getLimit(node);
 		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced);
 	}
 
@@ -1749,8 +1749,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * Returns the limit of the current variable bindings before any further
 	 * projection.
 	 */
-	private int getLimit(QueryModelNode node) {
-		int offset = 0;
+	private long getLimit(QueryModelNode node) {
+		long offset = 0;
 		if (node instanceof Slice) {
 			Slice slice = (Slice)node;
 			if (slice.hasOffset() && slice.hasLimit()) {
@@ -1765,14 +1765,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		QueryModelNode parent = node.getParentNode();
 		if (parent instanceof Distinct || parent instanceof Reduced || parent instanceof Slice) {
-			int limit = getLimit(parent);
-			if (offset > 0 && limit < Integer.MAX_VALUE) {
+			long limit = getLimit(parent);
+			if (offset > 0L && limit < Long.MAX_VALUE) {
 				return offset + limit;
 			}
 			else {
 				return limit;
 			}
 		}
-		return Integer.MAX_VALUE;
+		return Long.MAX_VALUE;
 	}
 }

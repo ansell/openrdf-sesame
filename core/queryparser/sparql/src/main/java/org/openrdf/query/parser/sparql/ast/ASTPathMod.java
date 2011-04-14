@@ -4,9 +4,9 @@ package org.openrdf.query.parser.sparql.ast;
 
 public class ASTPathMod extends SimpleNode {
 
-	private int lowerBound = Integer.MIN_VALUE;
+	private long lowerBound = Long.MIN_VALUE;
 
-	private int upperBound = Integer.MIN_VALUE;
+	private long upperBound = Long.MIN_VALUE;
 
 	public ASTPathMod(int id) {
 		super(id);
@@ -23,19 +23,19 @@ public class ASTPathMod extends SimpleNode {
 		return visitor.visit(this, data);
 	}
 
-	public void setLowerBound(int lowerBound) {
+	public void setLowerBound(long lowerBound) {
 		this.lowerBound = lowerBound;
 	}
 
-	public int getLowerBound() {
+	public long getLowerBound() {
 		return lowerBound;
 	}
 
-	public void setUpperBound(int upperBound) {
+	public void setUpperBound(long upperBound) {
 		this.upperBound = upperBound;
 	}
 
-	public int getUpperBound() {
+	public long getUpperBound() {
 		return upperBound;
 	}
 

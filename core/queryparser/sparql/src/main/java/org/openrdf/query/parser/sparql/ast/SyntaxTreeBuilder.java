@@ -30,7 +30,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
 	 * Trims <tt>n</tt> character from the start and end of the supplied string.
 	 */
         private static String _trimString(String s, int n) {
-                if (s.length() >= 2) {
+                if (s.length() >= 2 * n) {
                         s = s.substring(n, s.length() - n);
                 }
                 return s;
@@ -1081,7 +1081,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       t = jj_consume_token(INTEGER);
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
-          jjtn000.setValue(Integer.parseInt(t.image));
+          jjtn000.setValue(Long.parseLong(t.image));
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -1099,7 +1099,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       t = jj_consume_token(INTEGER);
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
-          jjtn000.setValue(Integer.parseInt(t.image));
+          jjtn000.setValue(Long.parseLong(t.image));
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -2290,7 +2290,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
              jjtree.closeNodeScope(jjtn000, true);
              jjtc000 = false;
              jjtn000.setLowerBound(0);
-             jjtn000.setUpperBound(Integer.MAX_VALUE);
+             jjtn000.setUpperBound(Long.MAX_VALUE);
         break;
       case QUESTION:
         jj_consume_token(QUESTION);
@@ -2304,14 +2304,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
              jjtree.closeNodeScope(jjtn000, true);
              jjtc000 = false;
              jjtn000.setLowerBound(1);
-             jjtn000.setUpperBound(Integer.MAX_VALUE);
+             jjtn000.setUpperBound(Long.MAX_VALUE);
         break;
       case LBRACE:
         jj_consume_token(LBRACE);
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case INTEGER:
           min = jj_consume_token(INTEGER);
-                                jjtn000.setLowerBound(Integer.parseInt(min.image));
+                                jjtn000.setLowerBound(Long.parseLong(min.image));
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case COMMA:
             jj_consume_token(COMMA);
@@ -2321,7 +2321,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
               break;
             case INTEGER:
               max = jj_consume_token(INTEGER);
-                                                        jjtn000.setUpperBound(Integer.parseInt(max.image));
+                                                        jjtn000.setUpperBound(Long.parseLong(max.image));
               jj_consume_token(RBRACE);
               break;
             default:
@@ -2342,7 +2342,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         case COMMA:
           jj_consume_token(COMMA);
           max = jj_consume_token(INTEGER);
-                                                   jjtn000.setUpperBound(Integer.parseInt(max.image));
+                                                   jjtn000.setUpperBound(Long.parseLong(max.image));
           jj_consume_token(RBRACE);
           break;
         default:

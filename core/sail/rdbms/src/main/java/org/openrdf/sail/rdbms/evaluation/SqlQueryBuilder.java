@@ -29,9 +29,9 @@ public class SqlQueryBuilder {
 
 	private SqlQueryBuilder union;
 
-	private Integer offset;
+	private Long offset;
 
-	private Integer limit;
+	private Long limit;
 
 	public SqlQueryBuilder(QueryBuilderFactory factory) {
 		super();
@@ -142,14 +142,14 @@ public class SqlQueryBuilder {
 		return order;
 	}
 
-	public void offset(Integer offset) {
+	public void offset(Long offset) {
 		this.offset = offset;
 		if (limit == null) {
-			limit = Integer.MAX_VALUE;
+			limit = Long.MAX_VALUE;
 		}
 	}
 
-	public void limit(Integer limit) {
+	public void limit(Long limit) {
 		this.limit = limit;
 	}
 }

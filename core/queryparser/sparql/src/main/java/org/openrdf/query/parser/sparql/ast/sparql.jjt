@@ -437,14 +437,14 @@ void Limit() :
 { Token t; }
 {
 	<LIMIT> t = <INTEGER>
-	{ jjtThis.setValue(Integer.parseInt(t.image)); }
+	{ jjtThis.setValue(Long.parseLong(t.image)); }
 }
 
 void Offset() :
 { Token t; }
 {
 	<OFFSET> t = <INTEGER>
-	{ jjtThis.setValue(Integer.parseInt(t.image)); }
+	{ jjtThis.setValue(Long.parseLong(t.image)); }
 }
 
 void GroupGraphPattern() #GraphPatternGroup :
@@ -649,7 +649,7 @@ void PathMod() :
 }
 {
     <STAR> { jjtThis.setLowerBound(0);
-	     jjtThis.setUpperBound(Integer.MAX_VALUE);
+	     jjtThis.setUpperBound(Long.MAX_VALUE);
     }
     |
     <QUESTION> { jjtThis.setLowerBound(0);
@@ -657,12 +657,12 @@ void PathMod() :
     }
     |
     <PLUS> { jjtThis.setLowerBound(1);
-	     jjtThis.setUpperBound(Integer.MAX_VALUE);
+	     jjtThis.setUpperBound(Long.MAX_VALUE);
     }
     |
-    <LBRACE> ( min = <INTEGER> {jjtThis.setLowerBound(Integer.parseInt(min.image)); } 
-		( <COMMA> ( <RBRACE> | max = <INTEGER> {jjtThis.setUpperBound(Integer.parseInt(max.image)); } <RBRACE> ) | <RBRACE> ) 
-			| <COMMA> max = <INTEGER> {jjtThis.setUpperBound(Integer.parseInt(max.image)); } <RBRACE> )
+    <LBRACE> ( min = <INTEGER> {jjtThis.setLowerBound(Long.parseLong(min.image)); } 
+		( <COMMA> ( <RBRACE> | max = <INTEGER> {jjtThis.setUpperBound(Long.parseLong(max.image)); } <RBRACE> ) | <RBRACE> ) 
+			| <COMMA> max = <INTEGER> {jjtThis.setUpperBound(Long.parseLong(max.image)); } <RBRACE> )
 }
 
 void VerbSimple() #void :
