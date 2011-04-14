@@ -53,9 +53,9 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 
 	private List<OrderElem> order = new ArrayList<OrderElem>();
 
-	private Integer offset;
+	private Long offset;
 
-	private Integer limit;
+	private Long limit;
 
 	public boolean isDistinct() {
 		return distinct;
@@ -93,19 +93,19 @@ public class SelectQuery extends RdbmsQueryModelNodeBase implements TupleExpr {
 		order.setParentNode(this);
 	}
 
-	public Integer getOffset() {
+	public Long getOffset() {
 		return offset;
 	}
 
-	public void setOffset(Integer offset) {
+	public void setOffset(Long offset) {
 		this.offset = offset;
 	}
 
-	public Integer getLimit() {
+	public Long getLimit() {
 		return limit;
 	}
 
-	public void setLimit(Integer limit) {
+	public void setLimit(Long limit) {
 		this.limit = limit;
 	}
 

@@ -105,11 +105,11 @@ public class QueryBuilder {
 		return query.findParameters(new ArrayList<Object>());
 	}
 
-	public void limit(Integer limit) {
+	public void limit(Long limit) {
 		query.limit(limit);
 	}
 
-	public void offset(Integer offset) {
+	public void offset(Long offset) {
 		query.offset(offset);
 	}
 

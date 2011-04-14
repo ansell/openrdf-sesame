@@ -20,9 +20,9 @@ public class Slice extends UnaryTupleOperator {
 	 * Variables *
 	 *-----------*/
 
-	private int offset;
+	private long offset;
 
-	private int limit;
+	private long limit;
 
 	/*--------------*
 	 * Constructors *
@@ -35,21 +35,21 @@ public class Slice extends UnaryTupleOperator {
 		this(arg, 0, -1);
 	}
 
-	public Slice(TupleExpr arg, int offset, int limit) {
+	public Slice(TupleExpr arg, long offset2, long limit2) {
 		super(arg);
-		setOffset(offset);
-		setLimit(limit);
+		setOffset(offset2);
+		setLimit(limit2);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public int getOffset() {
+	public long getOffset() {
 		return offset;
 	}
 
-	public void setOffset(int offset) {
+	public void setOffset(long offset) {
 		this.offset = offset;
 	}
 
@@ -59,14 +59,14 @@ public class Slice extends UnaryTupleOperator {
 	 * @return <tt>true</tt> when <tt>offset &gt; 0</tt>
 	 */
 	public boolean hasOffset() {
-		return offset > 0;
+		return offset > 0L;
 	}
 
-	public int getLimit() {
+	public long getLimit() {
 		return limit;
 	}
 
-	public void setLimit(int limit) {
+	public void setLimit(long limit) {
 		this.limit = limit;
 	}
 
@@ -76,7 +76,7 @@ public class Slice extends UnaryTupleOperator {
 	 * @return <tt>true</tt> when <tt>offset &gt;= 0</tt>
 	 */
 	public boolean hasLimit() {
-		return limit >= 0;
+		return limit >= 0L;
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
@@ -115,7 +115,8 @@ public class Slice extends UnaryTupleOperator {
 
 	@Override
 	public int hashCode() {
-		return super.hashCode() ^ offset ^ limit;
+		// casting long to int is not safe, but shouldn't matter for hashcode, should it?
+		return super.hashCode() ^ (int)offset ^ (int)limit;
 	}
 
 	@Override

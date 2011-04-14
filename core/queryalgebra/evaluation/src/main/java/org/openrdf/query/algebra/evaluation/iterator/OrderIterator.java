@@ -37,7 +37,7 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 
 	private final Comparator<BindingSet> comparator;
 
-	private final int limit;
+	private final long limit;
 
 	private final boolean distinct;
 
@@ -52,7 +52,7 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 	}
 
 	public OrderIterator(CloseableIteration<BindingSet, QueryEvaluationException> iter,
-			Comparator<BindingSet> comparator, int limit, boolean distinct)
+			Comparator<BindingSet> comparator, long limit, boolean distinct)
 	{
 		this.iter = iter;
 		this.comparator = comparator;

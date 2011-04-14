@@ -4,7 +4,7 @@ package org.openrdf.query.parser.sparql.ast;
 
 public class ASTLimit extends SimpleNode {
 
-	private int value;
+	private long value;
 
 	public ASTLimit(int id) {
 		super(id);
@@ -21,11 +21,11 @@ public class ASTLimit extends SimpleNode {
 		return visitor.visit(this, data);
 	}
 
-	public int getValue() {
+	public long getValue() {
 		return value;
 	}
 
-	public void setValue(int value) {
+	public void setValue(long value) {
 		this.value = value;
 	}
 
