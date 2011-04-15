@@ -17,21 +17,21 @@ public class SqlQueryBuilder {
 
 	private QueryBuilderFactory factory;
 
-	private boolean distinct;
+	protected boolean distinct;
 
-	private SqlExprBuilder select;
+	protected SqlExprBuilder select;
 
-	private SqlJoinBuilder from;
+	protected SqlJoinBuilder from;
 
-	private StringBuilder group = new StringBuilder();
+	protected StringBuilder group = new StringBuilder();
 
-	private SqlExprBuilder order;
+	protected SqlExprBuilder order;
 
-	private SqlQueryBuilder union;
+	protected SqlQueryBuilder union;
 
-	private Long offset;
+	protected Long offset;
 
-	private Long limit;
+	protected Long limit;
 
 	public SqlQueryBuilder(QueryBuilderFactory factory) {
 		super();
