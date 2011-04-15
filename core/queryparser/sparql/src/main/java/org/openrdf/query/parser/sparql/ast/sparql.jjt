@@ -633,14 +633,14 @@ void PathNegatedPropertySet() #void :
     <RPAREN>
 }
 
-void PathOneInPropertySet() #void :
+void PathOneInPropertySet() :
 {}
 {
     IRIref() 
     |
     <IS_A> { jjtThis.setValue(RDF.TYPE.toString()); } #IRI
     |
-    <INVERSE> ( IRIref() | <IS_A> { jjtThis.setValue(RDF.TYPE.toString()); } #IRI )
+    <INVERSE> {jjtThis.setInverse(true); } ( IRIref() | <IS_A> { jjtThis.setValue(RDF.TYPE.toString()); } #IRI )
 }
 
 void PathMod() :

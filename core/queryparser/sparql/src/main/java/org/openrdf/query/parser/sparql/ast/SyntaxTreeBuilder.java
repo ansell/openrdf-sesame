@@ -2220,29 +2220,11 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   }
 
   final public void PathOneInPropertySet() throws ParseException {
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case Q_IRI_REF:
-    case PNAME_NS:
-    case PNAME_LN:
-      IRIref();
-      break;
-    case IS_A:
-      jj_consume_token(IS_A);
-             ASTIRI jjtn001 = new ASTIRI(JJTIRI);
-             boolean jjtc001 = true;
-             jjtree.openNodeScope(jjtn001);
-      try {
-             jjtree.closeNodeScope(jjtn001, true);
-             jjtc001 = false;
-             jjtn001.setValue(RDF.TYPE.toString());
-      } finally {
-             if (jjtc001) {
-               jjtree.closeNodeScope(jjtn001, true);
-             }
-      }
-      break;
-    case INVERSE:
-      jj_consume_token(INVERSE);
+ /*@bgen(jjtree) PathOneInPropertySet */
+  ASTPathOneInPropertySet jjtn000 = new ASTPathOneInPropertySet(JJTPATHONEINPROPERTYSET);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+    try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case Q_IRI_REF:
       case PNAME_NS:
@@ -2251,29 +2233,72 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         break;
       case IS_A:
         jj_consume_token(IS_A);
-                                    ASTIRI jjtn002 = new ASTIRI(JJTIRI);
-                                    boolean jjtc002 = true;
-                                    jjtree.openNodeScope(jjtn002);
+             ASTIRI jjtn001 = new ASTIRI(JJTIRI);
+             boolean jjtc001 = true;
+             jjtree.openNodeScope(jjtn001);
         try {
-                                    jjtree.closeNodeScope(jjtn002, true);
-                                    jjtc002 = false;
-                                    jjtn002.setValue(RDF.TYPE.toString());
+             jjtree.closeNodeScope(jjtn001, true);
+             jjtc001 = false;
+             jjtn001.setValue(RDF.TYPE.toString());
         } finally {
-                                    if (jjtc002) {
-                                      jjtree.closeNodeScope(jjtn002, true);
-                                    }
+             if (jjtc001) {
+               jjtree.closeNodeScope(jjtn001, true);
+             }
+        }
+        break;
+      case INVERSE:
+        jj_consume_token(INVERSE);
+               jjtn000.setInverse(true);
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case Q_IRI_REF:
+        case PNAME_NS:
+        case PNAME_LN:
+          IRIref();
+          break;
+        case IS_A:
+          jj_consume_token(IS_A);
+                                                                 ASTIRI jjtn002 = new ASTIRI(JJTIRI);
+                                                                 boolean jjtc002 = true;
+                                                                 jjtree.openNodeScope(jjtn002);
+          try {
+                                                                 jjtree.closeNodeScope(jjtn002, true);
+                                                                 jjtc002 = false;
+                                                                 jjtn002.setValue(RDF.TYPE.toString());
+          } finally {
+                                                                 if (jjtc002) {
+                                                                   jjtree.closeNodeScope(jjtn002, true);
+                                                                 }
+          }
+          break;
+        default:
+          jj_la1[67] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
         }
         break;
       default:
-        jj_la1[67] = jj_gen;
+        jj_la1[68] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-      break;
-    default:
-      jj_la1[68] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        {if (true) throw (RuntimeException)jjte000;}
+      }
+      if (jjte000 instanceof ParseException) {
+        {if (true) throw (ParseException)jjte000;}
+      }
+      {if (true) throw (Error)jjte000;}
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+      }
     }
   }
 
