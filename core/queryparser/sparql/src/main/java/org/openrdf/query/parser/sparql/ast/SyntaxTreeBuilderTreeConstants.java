@@ -41,51 +41,52 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTPATHSEQUENCE = 35;
   public int JJTPATHELT = 36;
   public int JJTIRI = 37;
-  public int JJTPATHMOD = 38;
-  public int JJTBLANKNODEPROPERTYLIST = 39;
-  public int JJTCOLLECTION = 40;
-  public int JJTVAR = 41;
-  public int JJTOR = 42;
-  public int JJTAND = 43;
-  public int JJTCOMPARE = 44;
-  public int JJTMATH = 45;
-  public int JJTNOT = 46;
-  public int JJTNUMERICLITERAL = 47;
-  public int JJTCOUNT = 48;
-  public int JJTSUM = 49;
-  public int JJTMIN = 50;
-  public int JJTMAX = 51;
-  public int JJTAVG = 52;
-  public int JJTSAMPLE = 53;
-  public int JJTGROUPCONCAT = 54;
-  public int JJTIF = 55;
-  public int JJTIN = 56;
-  public int JJTNOTIN = 57;
-  public int JJTCOALESCE = 58;
-  public int JJTSTR = 59;
-  public int JJTLANG = 60;
-  public int JJTLANGMATCHES = 61;
-  public int JJTDATATYPE = 62;
-  public int JJTBOUND = 63;
-  public int JJTSAMETERM = 64;
-  public int JJTISIRI = 65;
-  public int JJTISBLANK = 66;
-  public int JJTISLITERAL = 67;
-  public int JJTISNUMERIC = 68;
-  public int JJTBNODEFUNC = 69;
-  public int JJTIRIFUNC = 70;
-  public int JJTSTRDT = 71;
-  public int JJTSTRLANG = 72;
-  public int JJTBIND = 73;
-  public int JJTREGEXEXPRESSION = 74;
-  public int JJTEXISTSFUNC = 75;
-  public int JJTNOTEXISTSFUNC = 76;
-  public int JJTRDFLITERAL = 77;
-  public int JJTTRUE = 78;
-  public int JJTFALSE = 79;
-  public int JJTSTRING = 80;
-  public int JJTQNAME = 81;
-  public int JJTBLANKNODE = 82;
+  public int JJTPATHONEINPROPERTYSET = 38;
+  public int JJTPATHMOD = 39;
+  public int JJTBLANKNODEPROPERTYLIST = 40;
+  public int JJTCOLLECTION = 41;
+  public int JJTVAR = 42;
+  public int JJTOR = 43;
+  public int JJTAND = 44;
+  public int JJTCOMPARE = 45;
+  public int JJTMATH = 46;
+  public int JJTNOT = 47;
+  public int JJTNUMERICLITERAL = 48;
+  public int JJTCOUNT = 49;
+  public int JJTSUM = 50;
+  public int JJTMIN = 51;
+  public int JJTMAX = 52;
+  public int JJTAVG = 53;
+  public int JJTSAMPLE = 54;
+  public int JJTGROUPCONCAT = 55;
+  public int JJTIF = 56;
+  public int JJTIN = 57;
+  public int JJTNOTIN = 58;
+  public int JJTCOALESCE = 59;
+  public int JJTSTR = 60;
+  public int JJTLANG = 61;
+  public int JJTLANGMATCHES = 62;
+  public int JJTDATATYPE = 63;
+  public int JJTBOUND = 64;
+  public int JJTSAMETERM = 65;
+  public int JJTISIRI = 66;
+  public int JJTISBLANK = 67;
+  public int JJTISLITERAL = 68;
+  public int JJTISNUMERIC = 69;
+  public int JJTBNODEFUNC = 70;
+  public int JJTIRIFUNC = 71;
+  public int JJTSTRDT = 72;
+  public int JJTSTRLANG = 73;
+  public int JJTBIND = 74;
+  public int JJTREGEXEXPRESSION = 75;
+  public int JJTEXISTSFUNC = 76;
+  public int JJTNOTEXISTSFUNC = 77;
+  public int JJTRDFLITERAL = 78;
+  public int JJTTRUE = 79;
+  public int JJTFALSE = 80;
+  public int JJTSTRING = 81;
+  public int JJTQNAME = 82;
+  public int JJTBLANKNODE = 83;
 
 
   public String[] jjtNodeName = {
@@ -127,6 +128,7 @@ public interface SyntaxTreeBuilderTreeConstants
     "PathSequence",
     "PathElt",
     "IRI",
+    "PathOneInPropertySet",
     "PathMod",
     "BlankNodePropertyList",
     "Collection",
@@ -174,4 +176,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "BlankNode",
   };
 }
-/* JavaCC - OriginalChecksum=abf05efc5b9bf37515723f369e72e5c5 (do not edit this line) */
+/* JavaCC - OriginalChecksum=fbb46cbc5290cd97d99c287dd43afa12 (do not edit this line) */

@@ -63,6 +63,7 @@ import org.openrdf.query.parser.sparql.ast.ASTOrderCondition;
 import org.openrdf.query.parser.sparql.ast.ASTPathAlternative;
 import org.openrdf.query.parser.sparql.ast.ASTPathElt;
 import org.openrdf.query.parser.sparql.ast.ASTPathMod;
+import org.openrdf.query.parser.sparql.ast.ASTPathOneInPropertySet;
 import org.openrdf.query.parser.sparql.ast.ASTPathSequence;
 import org.openrdf.query.parser.sparql.ast.ASTPrefixDecl;
 import org.openrdf.query.parser.sparql.ast.ASTProjectionElem;
@@ -98,501 +99,378 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  */
 abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 
-	public Object visit(ASTAnd node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTAnd node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTAskQuery node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTAskQuery node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTAvg node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTAvg node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTBaseDecl node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTBaseDecl node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTBasicGraphPattern node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTBind node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTBind node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTBlankNode node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTBlankNode node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTBlankNodePropertyList node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTBNodeFunc node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTBNodeFunc node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTBound node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTBound node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTCoalesce node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTCoalesce node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTCollection node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTCompare node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTCompare node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTConstraint node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTConstruct node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTConstruct node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTConstructQuery node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTCount node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTCount node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTDatasetClause node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTDatatype node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTDatatype node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTDescribe node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTDescribe node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTDescribeQuery node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTExistsFunc node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTFalse node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTFalse node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTFunctionCall node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTGraphGraphPattern node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTGraphPatternGroup node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTGroupClause node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTGroupConcat node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTGroupCondition node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTHavingClause node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTIf node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTIf node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTIn node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTIn node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTIRI node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTIRI node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTIRIFunc node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTIRIFunc node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTIsBlank node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTIsBlank node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTIsIRI node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTIsIRI node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTIsLiteral node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTIsLiteral node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTIsNumeric node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTIsNumeric node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTLang node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTLang node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTLangMatches node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTLimit node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTLimit node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTMath node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTMath node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTMax node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTMax node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTMin node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTMin node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTMinusGraphPattern node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTNot node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTNot node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTNotExistsFunc node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTNotIn node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTNotIn node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTNumericLiteral node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTObjectList node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTOffset node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTOffset node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTOptionalGraphPattern node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTOr node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTOr node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTOrderClause node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTOrderCondition node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTPathAlternative node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTPathElt node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTPathElt node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTPathMod node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTPathMod node, Object data) throws VisitorException {
+		return node.childrenAccept(this, data);
+	}
+	
+	public Object visit(ASTPathOneInPropertySet node, Object data)
+	throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTPathSequence node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTPrefixDecl node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTProjectionElem node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTPropertyList node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTPropertyListPath node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTQName node, Object data)
-		throws VisitorException
-	{
+
+	public Object visit(ASTQName node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTQueryContainer node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTRDFLiteral node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTRegexExpression node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTSameTerm node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTSameTerm node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTSample node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTSample node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTSelect node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTSelect node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTSelectQuery node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTStr node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTStr node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTStrDt node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTStrDt node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTString node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTString node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTStrLang node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTStrLang node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTSum node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTSum node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTTriplesSameSubject node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTTriplesSameSubjectPath node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTTrue node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTTrue node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTUnionGraphPattern node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(ASTVar node, Object data)
-		throws VisitorException
-	{
+	public Object visit(ASTVar node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
 	public Object visit(ASTWhereClause node, Object data)
-		throws VisitorException
-	{
+			throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 
-	public Object visit(SimpleNode node, Object data)
-		throws VisitorException
-	{
+	public Object visit(SimpleNode node, Object data) throws VisitorException {
 		return node.childrenAccept(this, data);
 	}
 

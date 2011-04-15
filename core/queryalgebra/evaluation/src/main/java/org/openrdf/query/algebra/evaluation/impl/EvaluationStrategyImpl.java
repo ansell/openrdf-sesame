@@ -45,6 +45,7 @@ import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
+import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
 import org.openrdf.query.algebra.Datatype;
@@ -266,11 +267,15 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				currentIter = evaluate(pattern, bindings);
 			}
 			else {
-				// length greater than zero, create join.
+				// length greater than zero, create join with filter for cycle-detection.
 				long numberOfJoins = currentLength - 1;
 				Join join = createMultiJoin(pattern, numberOfJoins);
 				
-				currentIter = evaluate(join, bindings);
+				// if the outcome of the join has the start of the path equal to the end, we are in a loop.
+				Compare loopCheck = new Compare(pattern.getSubjectVar(), pattern.getObjectVar(), CompareOp.NE);
+				Filter filter = new Filter(join, loopCheck);
+				
+				currentIter = evaluate(filter, bindings);
 			}
 		}
 
@@ -278,7 +283,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			Join join = new Join();
 			Join currentJoin = join;
-
+		
 			Var subjectJoinVar = pattern.getSubjectVar();
 			
 			for (long i = 0L; i < numberOfJoins; i++) {
