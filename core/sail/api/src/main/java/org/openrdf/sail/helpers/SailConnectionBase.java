@@ -397,6 +397,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final String getNamespace(String prefix)
 		throws SailException
 	{
+		if (prefix == null) {
+			throw new NullPointerException("prefix must not be null");
+		}
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -410,6 +413,12 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void setNamespace(String prefix, String name)
 		throws SailException
 	{
+		if (prefix == null) {
+			throw new NullPointerException("prefix must not be null");
+		}
+		if (name == null) {
+			throw new NullPointerException("name must not be null");
+		}
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -431,6 +440,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void removeNamespace(String prefix)
 		throws SailException
 	{
+		if (prefix == null) {
+			throw new NullPointerException("prefix must not be null");
+		}
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
