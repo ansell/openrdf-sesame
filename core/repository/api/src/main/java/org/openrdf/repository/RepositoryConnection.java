@@ -60,16 +60,20 @@ import org.openrdf.rio.UnsupportedRDFormatException;
  * // Ex 2: this method retrieves all statements that appear in the repository (regardless of context).
  * RepositoryConnection.getStatements(null, null, null, true);
  * 
- * // Ex 3: this method retrieves all statements that have no associated context in the repository.
+ * // Ex 3: this method retrieves all statements that have no associated context in
+ * // the repository.
  * // Observe that this is not equivalent to the previous method call.
  * RepositoryConnection.getStatements(null, null, null, true, (Resource)null);
  * 
- * // Ex 4: this method adds a statement to the store. If the statement object itself has 
- * // a context (i.e. statement.getContext() != null) the statement is added to that context. Otherwise,
+ * // Ex 4: this method adds a statement to the store. If the statement object
+ * // itself has
+ * // a context (i.e. statement.getContext() != null) the statement is added to
+ * // that context. Otherwise,
  * // it is added without any associated context.
  * RepositoryConnection.add(statement);
  * 
- * // Ex 5: this method adds a statement to context1 in the store. It completely ignores any
+ * // Ex 5: this method adds a statement to context1 in the store. It completely
+ * // ignores any
  * // context the statement itself has.
  * RepositoryConnection.add(statement, context1);
  * </pre>
@@ -799,11 +803,14 @@ public interface RepositoryConnection {
 	 * Gets the namespace that is associated with the specified prefix, if any.
 	 * 
 	 * @param prefix
-	 *        A namespace prefix.
+	 *        A namespace prefix, or an empty string in case of the default
+	 *        namespace.
 	 * @return The namespace name that is associated with the specified prefix,
 	 *         or <tt>null</tt> if there is no such namespace.
 	 * @throws RepositoryException
 	 *         If the namespace could not be read from the repository.
+	 * @throws NullPointerException
+	 *         In case <tt>prefix</tt> is <tt>null</tt>.
 	 */
 	public String getNamespace(String prefix)
 		throws RepositoryException;
@@ -812,12 +819,15 @@ public interface RepositoryConnection {
 	 * Sets the prefix for a namespace.
 	 * 
 	 * @param prefix
-	 *        The new prefix.
+	 *        The new prefix, or an empty string in case of the default
+	 *        namespace.
 	 * @param name
 	 *        The namespace name that the prefix maps to.
 	 * @throws RepositoryException
 	 *         If the namespace could not be set in the repository, for example
 	 *         because the repository is not writable.
+	 * @throws NullPointerException
+	 *         In case <tt>prefix</tt> or <tt>name</tt> is <tt>null</tt>.
 	 */
 	public void setNamespace(String prefix, String name)
 		throws RepositoryException;
@@ -827,10 +837,12 @@ public interface RepositoryConnection {
 	 * prefix and a namespace name.
 	 * 
 	 * @param prefix
-	 *        The namespace prefix of which the assocation with a namespace name
-	 *        is to be removed.
+	 *        The namespace prefix, or an empty string in case of the default
+	 *        namespace.
 	 * @throws RepositoryException
 	 *         If the namespace prefix could not be removed.
+	 * @throws NullPointerException
+	 *         In case <tt>prefix</tt> is <tt>null</tt>.
 	 */
 	public void removeNamespace(String prefix)
 		throws RepositoryException;
