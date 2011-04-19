@@ -447,15 +447,15 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		// process limit and offset clauses
 		ASTLimit limitNode = node.getLimit();
-		int limit = -1;
+		long limit = -1L;
 		if (limitNode != null) {
-			limit = (Integer) limitNode.jjtAccept(this, null);
+			limit = (Long) limitNode.jjtAccept(this, null);
 		}
 
 		ASTOffset offsetNode = node.getOffset();
-		int offset = -1;
+		long offset = -1;
 		if (offsetNode != null) {
-			offset = (Integer) offsetNode.jjtAccept(this, null);
+			offset = (Long) offsetNode.jjtAccept(this, null);
 		}
 
 		if (offset >= 1 || limit >= 0) {
@@ -570,15 +570,15 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 			// Process limit and offset clauses
 			ASTLimit limitNode = node.getLimit();
-			int limit = -1;
+			long limit = -1;
 			if (limitNode != null) {
-				limit = (Integer) limitNode.jjtAccept(this, null);
+				limit = (Long) limitNode.jjtAccept(this, null);
 			}
 
 			ASTOffset offsetNode = node.getOffset();
-			int offset = -1;
+			long offset = -1;
 			if (offsetNode != null) {
-				offset = (Integer) offsetNode.jjtAccept(this, null);
+				offset = (Long) offsetNode.jjtAccept(this, null);
 			}
 
 			if (offset >= 1 || limit >= 0) {
@@ -907,9 +907,9 @@ class TupleExprBuilder extends ASTVisitorBase {
 				lowerBound = pathMod.getLowerBound();
 				upperBound = pathMod.getUpperBound();
 
-				if (upperBound == Integer.MIN_VALUE) {
+				if (upperBound == Long.MIN_VALUE) {
 					upperBound = lowerBound;
-				} else if (lowerBound == Integer.MIN_VALUE) {
+				} else if (lowerBound == Long.MIN_VALUE) {
 					lowerBound = upperBound;
 				}
 
@@ -984,7 +984,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		if (lowerBound >= 0L) {
 			if (lowerBound < upperBound) {
-				if (upperBound < Integer.MAX_VALUE) {
+				if (upperBound < Long.MAX_VALUE) {
 					// upperbound is fixed-length
 
 					// create set of unions for all path lengths between lower
