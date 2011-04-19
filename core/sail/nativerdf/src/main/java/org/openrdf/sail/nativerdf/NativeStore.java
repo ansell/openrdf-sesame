@@ -176,6 +176,23 @@ public class NativeStore extends NotifyingSailBase {
 			tripleStore = new TripleStore(dataDir, tripleIndexes, forceSync);
 		}
 		catch (IOException e) {
+			// NativeStore initialization failed, release any allocated files
+			if (valueStore != null) {
+				try {
+					valueStore.close();
+				}
+				catch (IOException e1) {
+					logger.warn("Failed to close value store after native store initialization failure", e);
+				}
+				valueStore = null;
+			}
+			if (namespaceStore != null) {
+				namespaceStore.close();
+				namespaceStore = null;
+			}
+			
+			dirLock.release();
+			
 			throw new SailException(e);
 		}
 
