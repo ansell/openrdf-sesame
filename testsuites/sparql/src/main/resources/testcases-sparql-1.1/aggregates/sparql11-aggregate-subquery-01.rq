@@ -1,14 +1,14 @@
 PREFIX : <http://example/>
-SELECT ?names
+SELECT ?totalPrice
 WHERE {
 	{
-		SELECT (GROUP_CONCAT(?name) AS ?names)
+		SELECT (SUM(?price) AS ?totalPrice)
 		WHERE {
   			?org :affiliates ?auth .
-  			?auth :name ?name.
+  			?auth :writesBook ?book .
+  			?book :price ?price.
 		}
 		GROUP BY ?org
-		ORDER BY ASC(str(?name))
 	}
 }
-ORDER BY DESC(str(?names))
+ORDER BY DESC(?totalPrice)

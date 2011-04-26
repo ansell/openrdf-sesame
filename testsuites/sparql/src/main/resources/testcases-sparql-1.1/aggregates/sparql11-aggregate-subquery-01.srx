@@ -4,17 +4,17 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema#"
     xmlns="http://www.w3.org/2005/sparql-results#" >
   <head>
-    <variable name="names"/>
+    <variable name="totalPrice"/>
   </head>
   <results>
       <result>
-      <binding name="names">
-      	<literal datatype="http://www.w3.org/2001/XMLSchema#string">Ringo</literal>
+      <binding name="totalPrice">
+      	<literal datatype="http://www.w3.org/2001/XMLSchema#integer">21</literal>
       </binding>
     </result>
     <result>
-      <binding name="names">
-      	<literal datatype="http://www.w3.org/2001/XMLSchema#string">John Paul</literal>
+      <binding name="totalPrice">
+      	<literal datatype="http://www.w3.org/2001/XMLSchema#integer">7</literal>
       </binding>
     </result>
   </results>
