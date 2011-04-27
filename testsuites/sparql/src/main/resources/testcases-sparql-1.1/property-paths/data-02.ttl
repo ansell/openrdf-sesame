@@ -5,6 +5,7 @@
 :alice  rdf:type   foaf:Person .
 :alice  foaf:name  "Alice" .
 :alice  foaf:knows :bob .
+:alice  :secretRelationOf :john .
 
 :bob    rdf:type   foaf:Person .
 :bob    foaf:name "Bob" .

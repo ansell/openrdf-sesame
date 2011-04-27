@@ -18,12 +18,17 @@
     	:sparql11-sequence-05
     	:sparql11-sequence-06
     	:sparql11-sequence-07
+    	:sparql11-negated-01
+    	:sparql11-negated-02
+    	:sparql11-negated-03
 	   	:sparql11-wildcard-01
 	   	:sparql11-wildcard-02
 	   	:sparql11-wildcard-cycles-01
 	   	:sparql11-wildcard-cycles-02
     ).
+         
 
+         
 :sparql11-alternative-01  mf:name  "sparql11-alternative-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-alternative-01.rq> ; qt:data <data-01.ttl> ] ;
@@ -68,7 +73,22 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-sequence-07.rq> ; qt:data <data-02.ttl> ] ;
          mf:result <sparql11-sequence-07.srx> .  
-         
+
+ :sparql11-negated-01  mf:name  "sparql11-negated-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-negated-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-negated-01.srx> .  
+
+ :sparql11-negated-02  mf:name  "sparql11-negated-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-negated-02.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-negated-02.srx> .
+           
+ :sparql11-negated-03  mf:name  "sparql11-negated-03" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-negated-03.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-negated-03.srx> .
+                                     
 :sparql11-wildcard-01  mf:name  "sparql11-wildcard-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-wildcard-01.rq> ; qt:data <data-02.ttl> ] ;

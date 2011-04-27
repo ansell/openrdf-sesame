@@ -2,6 +2,8 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package org.openrdf.query.parser.sparql.ast;
 
+import javax.swing.text.DefaultEditorKit.PasteAction;
+
 public
 class ASTPathElt extends SimpleNode {
   private boolean inverse;
@@ -26,6 +28,10 @@ public ASTPathElt(int id) {
   
   public boolean isInverse() {
 	  return this.inverse;
+  }
+  
+  public boolean isNegatedPropertySet() {
+	  return jjtGetChild(0) instanceof ASTPathOneInPropertySet;
   }
   
   public ASTPathMod getPathMod() {
