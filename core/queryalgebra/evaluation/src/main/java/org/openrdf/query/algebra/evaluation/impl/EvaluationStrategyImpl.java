@@ -120,7 +120,6 @@ import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
-import org.openrdf.query.impl.MapBindingSet;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -211,7 +210,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 	private class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
-
 		private long currentLength;
 
 		private StatementPattern pattern;
@@ -221,13 +219,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		private BindingSet bindings;
 
 		private boolean currentIterNotEmpty;
-		
+
 		public PathIteration(StatementPattern sp, long minLength, BindingSet bindings)
-			throws QueryEvaluationException {
+			throws QueryEvaluationException
+		{
 			this.currentLength = minLength;
 			this.pattern = sp;
 			this.bindings = bindings;
-			
+
 			createIteration();
 		}
 
@@ -244,14 +243,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					currentLength++;
 					createIteration();
 					currentIterNotEmpty = false;
-					
+
 					if (currentIter.hasNext()) {
 						currentIterNotEmpty = true;
 						return currentIter.next();
 					}
 				}
 			}
-			
+
 			return null;
 		}
 
@@ -267,14 +266,16 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				currentIter = evaluate(pattern, bindings);
 			}
 			else {
-				// length greater than zero, create join with filter for cycle-detection.
+				// length greater than zero, create join with filter for
+				// cycle-detection.
 				long numberOfJoins = currentLength - 1;
 				Join join = createMultiJoin(pattern, numberOfJoins);
-				
-				// if the outcome of the join has the start of the path equal to the end, we are in a loop.
+
+				// if the outcome of the join has the start of the path equal to the
+				// end, we are in a loop.
 				Compare loopCheck = new Compare(pattern.getSubjectVar(), pattern.getObjectVar(), CompareOp.NE);
 				Filter filter = new Filter(join, loopCheck);
-				
+
 				currentIter = evaluate(filter, bindings);
 			}
 		}
@@ -283,9 +284,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			Join join = new Join();
 			Join currentJoin = join;
-		
+
 			Var subjectJoinVar = pattern.getSubjectVar();
-			
+
 			for (long i = 0L; i < numberOfJoins; i++) {
 				Var joinVar = createAnonVar("path-join-" + numberOfJoins + "-" + i);
 
@@ -303,7 +304,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				}
 				subjectJoinVar = joinVar;
 			}
-			
+
 			return join;
 		}
 	}

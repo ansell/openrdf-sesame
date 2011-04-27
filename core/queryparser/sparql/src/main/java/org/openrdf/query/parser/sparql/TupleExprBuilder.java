@@ -65,7 +65,6 @@ import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.Sample;
-import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
@@ -370,7 +369,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 					extension.setArg(group);
 
-					// avoid overwriting a HAVING clause, ORDER BY clause or subselect
+					// avoid overwriting a HAVING clause, ORDER BY clause or
+					// subselect
 					if (!(result instanceof Filter || result instanceof Order || result instanceof Projection)) {
 						result = group;
 					}
@@ -869,10 +869,15 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Object visit(ASTPathOneInPropertySet node, Object data)
+	public PropertySetElem visit(ASTPathOneInPropertySet node, Object data)
 			throws VisitorException {
 
-		return null;
+		PropertySetElem result = new PropertySetElem();
+		result.setInverse(node.isInverse());
+		ValueConstant predicate = (ValueConstant) node.jjtGetChild(0).jjtAccept(this, data);
+		result.setPredicate(predicate);
+		
+		return result;
 	}
 
 	@Override
@@ -912,60 +917,86 @@ class TupleExprBuilder extends ASTVisitorBase {
 				} else if (lowerBound == Long.MIN_VALUE) {
 					lowerBound = upperBound;
 				}
-
-				// TODO handle arbitrary-length paths.
-				// if (upperBound == Integer.MAX_VALUE) {
-				// throw new
-				// VisitorException("arbitrary-length paths not yet supported");
-				// }
 			}
 
-			ValueExpr pred = (ValueExpr) pathElement.jjtAccept(this, data);
-			Var predVar = valueExpr2Var(pred);
+			if (pathElement.isNegatedPropertySet()) {
 
-			TupleExpr te;
-			if (i == pathLength - 1) { // last element in the path, connect to
-										// list
-										// of defined objects
-				for (ValueExpr object : objectList) {
-					Var objVar = valueExpr2Var(object);
+				// create a temporary negated property set object and set the correct subject and object vars to continue
+				// the path sequence.
+				
+				NegatedPropertySet nps = new NegatedPropertySet();
+				nps.setScope(scope);
+				nps.setSubjectVar(subjVar);
+				nps.setContextVar(contextVar);
+				
+				for (Node child: pathElement.jjtGetChildren()) {
+					nps.addPropertySetElem((PropertySetElem)child.jjtAccept(this, data));
+				}
+				
+				if (i == pathLength - 1) {
+					nps.setObjectList(objectList);
+				}
+				else {
+					// not last element in path.
+					Var nextVar = createAnonVar(subjVar.getName() + "-property-set-" + i);
 
+					List<ValueExpr> nextVarList = new ArrayList<ValueExpr>();
+					nextVarList.add(nextVar);
+					nps.setObjectList(nextVarList);
+					
+					subjVar = nextVar;
+				}
+				
+				// convert the NegatedPropertySet to a proper TupleExpr
+				pathSequencePattern.addRequiredTE(createTupleExprForNegatedPropertySet(nps, i));
+				
+			} else {
+
+				ValueExpr pred = (ValueExpr) pathElement.jjtAccept(this, data);
+				Var predVar = valueExpr2Var(pred);
+
+				TupleExpr te;
+				if (i == pathLength - 1) { 
+					// last element in the path, connect to list of defined objects
+					for (ValueExpr object : objectList) {
+						Var objVar = valueExpr2Var(object);
+
+						if (pathElement.isInverse()) {
+							te = new StatementPattern(scope, objVar, predVar,
+									subjVar, contextVar);
+							te = handlePathModifiers(te, lowerBound, upperBound);
+
+							pathSequencePattern.addRequiredTE(te);
+						} else {
+							te = new StatementPattern(scope, subjVar, predVar,
+									objVar, contextVar);
+							te = handlePathModifiers(te, lowerBound, upperBound);
+
+							pathSequencePattern.addRequiredTE(te);
+						}
+					}
+				} else { 
+					// not the last element in the path, introduce an anonymous var to connect.
+					Var nextVar = createAnonVar(predVar.getName() + "-" + i);
 					if (pathElement.isInverse()) {
-						te = new StatementPattern(scope, objVar, predVar,
+
+						te = new StatementPattern(scope, nextVar, predVar,
 								subjVar, contextVar);
+
 						te = handlePathModifiers(te, lowerBound, upperBound);
 
 						pathSequencePattern.addRequiredTE(te);
 					} else {
 						te = new StatementPattern(scope, subjVar, predVar,
-								objVar, contextVar);
+								nextVar, contextVar);
 						te = handlePathModifiers(te, lowerBound, upperBound);
 
 						pathSequencePattern.addRequiredTE(te);
 					}
+
+					// set the subject for the next element in the path.
+					subjVar = nextVar;
 				}
-			} else { // not the last element in the path, introduce an anonymous
-						// var
-						// to connect.
-				Var nextVar = createAnonVar(predVar.getName() + "-" + i);
-				if (pathElement.isInverse()) {
-
-					te = new StatementPattern(scope, nextVar, predVar, subjVar,
-							contextVar);
-
-					te = handlePathModifiers(te, lowerBound, upperBound);
-
-					pathSequencePattern.addRequiredTE(te);
-				} else {
-					te = new StatementPattern(scope, subjVar, predVar, nextVar,
-							contextVar);
-					te = handlePathModifiers(te, lowerBound, upperBound);
-
-					pathSequencePattern.addRequiredTE(te);
-				}
-
-				// set the subject for the next element in the path.
-				subjVar = nextVar;
 			}
 		}
 
@@ -977,6 +1008,92 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return null;
 	}
 
+	private TupleExpr createTupleExprForNegatedPropertySet(NegatedPropertySet nps, int index) {
+		Var subjVar = nps.getSubjectVar();
+
+		Var predVar = createAnonVar("nps-" + subjVar.getName() + "-" + index);
+		Var predVarInverse = createAnonVar("nps-inverse-" + subjVar.getName() + "-" + index);
+
+		ValueExpr filterCondition = null;
+		ValueExpr filterConditionInverse = null;
+
+		// build (inverted) filter conditions for each negated path element.
+		for (PropertySetElem elem : nps.getPropertySetElems()) {
+			ValueConstant predicate = elem.getPredicate();
+
+
+			if (elem.isInverse()) {
+				Compare compare = new Compare(predVarInverse, predicate, CompareOp.NE);
+				if (filterConditionInverse == null) {
+					filterConditionInverse = compare;
+				}
+				else {
+					filterConditionInverse = new And(compare, filterConditionInverse);
+				}
+			}
+			else {
+				Compare compare = new Compare(predVar, predicate, CompareOp.NE);
+				if (filterCondition == null) {
+					filterCondition = compare;
+				}
+				else {
+					filterCondition = new And(compare, filterCondition);
+				}
+			}
+		}
+
+		TupleExpr patternMatch = null;
+
+		// build a regular statement pattern (or a join of several patterns if the object list has more than 
+		// one item)
+		if (filterCondition != null) {
+			for (ValueExpr objVar : nps.getObjectList()) {
+				if (patternMatch == null) {
+					patternMatch = new StatementPattern(nps.getScope(), subjVar, predVar, (Var)objVar,
+							nps.getContextVar());
+				}
+				else {
+					patternMatch = new Join(new StatementPattern(nps.getScope(), subjVar, predVar, (Var)objVar,
+							nps.getContextVar()), patternMatch);
+				}
+			}
+		}
+
+		TupleExpr patternMatchInverse = null;
+
+		// build a inverse statement pattern (or a join of several patterns if the object list has more than 
+		// one item):
+		if (filterConditionInverse != null) {
+			for (ValueExpr objVar : nps.getObjectList()) {
+				if (patternMatchInverse == null) {
+					patternMatchInverse = new StatementPattern(nps.getScope(), (Var)objVar, predVarInverse, subjVar,
+							nps.getContextVar());
+				}
+				else {
+					patternMatchInverse = new Join(new StatementPattern(nps.getScope(), (Var)objVar, predVarInverse,
+							subjVar, nps.getContextVar()), patternMatchInverse);
+				}
+			}
+		}
+
+		TupleExpr completeMatch = null;
+
+		if (patternMatch != null) {
+			completeMatch = new Filter(patternMatch, filterCondition);
+		}
+
+		if (patternMatchInverse != null) {
+			if (completeMatch == null) {
+				completeMatch = new Filter(patternMatchInverse, filterConditionInverse);
+			}
+			else {
+				completeMatch = new Union(new Filter(patternMatchInverse, filterConditionInverse), completeMatch);
+			}
+		}
+
+		return completeMatch;
+	}
+	
 	private TupleExpr handlePathModifiers(TupleExpr te, long lowerBound,
 			long upperBound) {
 
