@@ -1012,7 +1012,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		Var subjVar = nps.getSubjectVar();
 
 		Var predVar = createAnonVar("nps-" + subjVar.getName() + "-" + index);
-		Var predVarInverse = createAnonVar("nps-inverse-" + subjVar.getName() + "-" + index);
+//		Var predVarInverse = createAnonVar("nps-inverse-" + subjVar.getName() + "-" + index);
 
 		ValueExpr filterCondition = null;
 		ValueExpr filterConditionInverse = null;
@@ -1023,7 +1023,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 
 			if (elem.isInverse()) {
-				Compare compare = new Compare(predVarInverse, predicate, CompareOp.NE);
+				Compare compare = new Compare(predVar, predicate, CompareOp.NE);
 				if (filterConditionInverse == null) {
 					filterConditionInverse = compare;
 				}
@@ -1066,11 +1066,11 @@ class TupleExprBuilder extends ASTVisitorBase {
 		if (filterConditionInverse != null) {
 			for (ValueExpr objVar : nps.getObjectList()) {
 				if (patternMatchInverse == null) {
-					patternMatchInverse = new StatementPattern(nps.getScope(), (Var)objVar, predVarInverse, subjVar,
+					patternMatchInverse = new StatementPattern(nps.getScope(), (Var)objVar, predVar, subjVar,
 							nps.getContextVar());
 				}
 				else {
-					patternMatchInverse = new Join(new StatementPattern(nps.getScope(), (Var)objVar, predVarInverse,
+					patternMatchInverse = new Join(new StatementPattern(nps.getScope(), (Var)objVar, predVar,
 							subjVar, nps.getContextVar()), patternMatchInverse);
 				}
 			}
