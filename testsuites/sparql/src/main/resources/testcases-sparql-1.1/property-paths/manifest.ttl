@@ -21,6 +21,7 @@
     	:sparql11-negated-01
     	:sparql11-negated-02
     	:sparql11-negated-03
+    	:sparql11-negated-04
 	   	:sparql11-wildcard-01
 	   	:sparql11-wildcard-02
 	   	:sparql11-wildcard-cycles-01
@@ -88,7 +89,12 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-negated-03.rq> ; qt:data <data-02.ttl> ] ;
          mf:result <sparql11-negated-03.srx> .
-                                     
+           
+ :sparql11-negated-04  mf:name  "sparql11-negated-04" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-negated-04.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-negated-04.srx> .
+                                              
 :sparql11-wildcard-01  mf:name  "sparql11-wildcard-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-wildcard-01.rq> ; qt:data <data-02.ttl> ] ;
