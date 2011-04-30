@@ -34,6 +34,10 @@ public ASTPathElt(int id) {
 	  return jjtGetChild(0) instanceof ASTPathOneInPropertySet;
   }
   
+  public boolean isNestedPath() {
+	  return jjtGetChild(0) instanceof ASTPathAlternative;
+  }
+  
   public ASTPathMod getPathMod() {
 	  return jjtGetChild(ASTPathMod.class);
   }

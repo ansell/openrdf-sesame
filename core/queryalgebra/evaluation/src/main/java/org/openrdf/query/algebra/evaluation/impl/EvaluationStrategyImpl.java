@@ -119,6 +119,7 @@ import org.openrdf.query.algebra.evaluation.util.MathUtil;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
+import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
 
 /**
@@ -198,21 +199,17 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		final Scope scope = alp.getScope();
 		final Var subjectVar = alp.getSubjectVar();
-		final Var predVar = alp.getPredicateVar();
+		final TupleExpr pathExpression = alp.getPathExpression();
 		final Var objVar = alp.getObjectVar();
 		final Var contextVar = alp.getContextVar();
 		final long minLength = alp.getMinLength();
 
-		StatementPattern sp = new StatementPattern(scope, subjectVar, predVar, objVar, contextVar);
-
-		return new PathIteration(sp, minLength, bindings);
+		return new PathIteration(scope, subjectVar, pathExpression, objVar, contextVar, minLength, bindings);
 	}
 
 	private class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
 		private long currentLength;
-
-		private StatementPattern pattern;
 
 		private CloseableIteration<BindingSet, QueryEvaluationException> currentIter;
 
@@ -220,11 +217,27 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		private boolean currentIterNotEmpty;
 
-		public PathIteration(StatementPattern sp, long minLength, BindingSet bindings)
+		private Scope scope;
+
+		private Var subjVar;
+
+		private TupleExpr pathExpression;
+
+		private Var endVar;
+
+		private Var contextVar;
+
+		public PathIteration(Scope scope, Var subjVar, TupleExpr pathExpression, Var endVar, Var contextVar,
+				long minLength, BindingSet bindings)
 			throws QueryEvaluationException
 		{
+			this.scope = scope;
+			this.subjVar = subjVar;
+			this.pathExpression = pathExpression;
+			this.endVar = endVar;
+			this.contextVar = contextVar;
+
 			this.currentLength = minLength;
-			this.pattern = sp;
 			this.bindings = bindings;
 
 			createIteration();
@@ -258,44 +271,60 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throws QueryEvaluationException
 		{
 			if (currentLength == 0L) {
-				ZeroLengthPath zlp = new ZeroLengthPath(pattern.getScope(), pattern.getSubjectVar(),
-						pattern.getPredicateVar(), pattern.getObjectVar(), pattern.getContextVar());
+				ZeroLengthPath zlp = new ZeroLengthPath(scope, subjVar, endVar, contextVar);
 				currentIter = evaluate(zlp, bindings);
 			}
 			else if (currentLength == 1) {
-				currentIter = evaluate(pattern, bindings);
+				currentIter = evaluate(pathExpression, bindings);
 			}
 			else {
 				// length greater than zero, create join with filter for
 				// cycle-detection.
 				long numberOfJoins = currentLength - 1;
-				Join join = createMultiJoin(pattern, numberOfJoins);
+				Join join = createMultiJoin(scope, subjVar, pathExpression, endVar, contextVar, numberOfJoins);
 
 				// if the outcome of the join has the start of the path equal to the
 				// end, we are in a loop.
-				Compare loopCheck = new Compare(pattern.getSubjectVar(), pattern.getObjectVar(), CompareOp.NE);
+				Compare loopCheck = new Compare(subjVar, endVar, CompareOp.NE);
 				Filter filter = new Filter(join, loopCheck);
 
 				currentIter = evaluate(filter, bindings);
 			}
 		}
 
-		private Join createMultiJoin(StatementPattern sp, long numberOfJoins) {
+		private Join createMultiJoin(Scope scope, Var subjVar, TupleExpr pathExpression, Var endVar,
+				Var contextVar, long numberOfJoins)
+			throws QueryEvaluationException
+		{
 
 			Join join = new Join();
 			Join currentJoin = join;
 
-			Var subjectJoinVar = pattern.getSubjectVar();
+			Var subjectJoinVar = subjVar;
 
+			// we only need to replace unvalued anonymous vars in the path expression if it is not
+			// a statement pattern.
+			boolean replaceAnonVars = !(pathExpression instanceof StatementPattern);
+			
 			for (long i = 0L; i < numberOfJoins; i++) {
 				Var joinVar = createAnonVar("path-join-" + numberOfJoins + "-" + i);
 
-				currentJoin.setLeftArg(new StatementPattern(pattern.getScope(), subjectJoinVar,
-						pattern.getPredicateVar(), joinVar, pattern.getContextVar()));
+				TupleExpr clone = pathExpression.clone();
+				VarReplacer replacer = new VarReplacer(endVar, joinVar, i, replaceAnonVars);
+				clone.visit(replacer);
+
+				replacer = new VarReplacer(subjVar, subjectJoinVar, i, false);
+				clone.visit(replacer);
+
+				currentJoin.setLeftArg(clone);
 
 				if (i == numberOfJoins - 1L) {
-					currentJoin.setRightArg(new StatementPattern(pattern.getScope(), joinVar,
-							pattern.getPredicateVar(), pattern.getObjectVar(), pattern.getContextVar()));
+
+					clone = pathExpression.clone();
+					replacer = new VarReplacer(subjVar, joinVar, i + 1, replaceAnonVars);
+					clone.visit(replacer);
+
+					currentJoin.setRightArg(clone);
 				}
 				else {
 					Join newJoin = new Join();
@@ -306,6 +335,42 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 
 			return join;
+		}
+	}
+
+	private class VarReplacer extends QueryModelVisitorBase<QueryEvaluationException> {
+
+		private Var toBeReplaced;
+
+		private Var replacement;
+
+		private long index;
+
+		private boolean replaceAnons;
+
+		public VarReplacer(Var toBeReplaced, Var replacement, long index, boolean replaceAnons) {
+			this.toBeReplaced = toBeReplaced;
+			this.replacement = replacement;
+			this.index = index;
+			this.replaceAnons = replaceAnons;
+		}
+
+		@Override
+		public void meet(Var var) {
+			if (toBeReplaced.equals(var)
+					|| (toBeReplaced.isAnonymous() && var.isAnonymous() && (toBeReplaced.hasValue() && toBeReplaced.getValue().equals(
+							var.getValue()))))
+			{
+				QueryModelNode parent = var.getParentNode();
+				parent.replaceChildNode(var, replacement);
+				replacement.setParentNode(parent);
+			}
+			else if (replaceAnons && var.isAnonymous() && !var.hasValue()) {
+				Var replacementVar = createAnonVar("anon-replace-" + var.getName() + index);
+				QueryModelNode parent = var.getParentNode();
+				parent.replaceChildNode(var, replacementVar);
+				replacementVar.setParentNode(parent);
+			}
 		}
 	}
 
