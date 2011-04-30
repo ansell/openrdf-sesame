@@ -28,7 +28,7 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 
 	private Var subjectVar;
 
-	private Var predicateVar;
+	private TupleExpr pathExpression;
 
 	private Var objectVar;
 
@@ -47,34 +47,34 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 	 * Creates a arbitrary-length path that matches a subject-, predicate- and object
 	 * variable against statements from all contexts.
 	 */
-	public ArbitraryLengthPath(Var subject, Var predicate, Var object, long minLength) {
-		this(Scope.DEFAULT_CONTEXTS, subject, predicate, object, minLength);
+	public ArbitraryLengthPath(Var subject, TupleExpr pathExpression, Var object, long minLength) {
+		this(Scope.DEFAULT_CONTEXTS, subject, pathExpression, object, minLength);
 	}
 
 	/**
 	 * Creates a arbitrary-length path that matches a subject-, predicate- and object
 	 * variable against statements from the specified context scope.
 	 */
-	public ArbitraryLengthPath(Scope scope, Var subject, Var predicate, Var object, long minLength) {
-		this(scope, subject, predicate, object, null, minLength);
+	public ArbitraryLengthPath(Scope scope, Var subject,TupleExpr pathExpression, Var object, long minLength) {
+		this(scope, subject, pathExpression, object, null, minLength);
 	}
 
 	/**
 	 * Creates a arbitrary-length path that matches a subject-, predicate-, object-
 	 * and context variable against statements from all contexts.
 	 */
-	public ArbitraryLengthPath(Var subject, Var predicate, Var object, Var context, long minLength) {
-		this(Scope.DEFAULT_CONTEXTS, subject, predicate, object, context, minLength);
+	public ArbitraryLengthPath(Var subject, TupleExpr pathExpression, Var object, Var context, long minLength) {
+		this(Scope.DEFAULT_CONTEXTS, subject, pathExpression, object, context, minLength);
 	}
 
 	/**
 	 * Creates a arbitrary-length path that matches a subject-, predicate-, object-
 	 * and context variable against statements from the specified context scope.
 	 */
-	public ArbitraryLengthPath(Scope scope, Var subjVar, Var predVar, Var objVar, Var conVar, long minLength) {
+	public ArbitraryLengthPath(Scope scope, Var subjVar,TupleExpr pathExpression, Var objVar, Var conVar, long minLength) {
 		setScope(scope);
 		setSubjectVar(subjVar);
-		setPredicateVar(predVar);
+		setPathExpression(pathExpression);
 		setObjectVar(objVar);
 		setContextVar(conVar);
 		setMinLength(minLength);
@@ -109,14 +109,13 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 		subjectVar = subject;
 	}
 
-	public Var getPredicateVar() {
-		return predicateVar;
+	public TupleExpr getPathExpression() {
+		return pathExpression;
 	}
 
-	public void setPredicateVar(Var predicate) {
-		assert predicate != null : "predicate must not be null";
-		predicate.setParentNode(this);
-		predicateVar = predicate;
+	public void setPathExpression(TupleExpr pathExpression) {
+		pathExpression.setParentNode(this);
+		this.pathExpression = pathExpression;
 	}
 
 	public Var getObjectVar() {
@@ -161,8 +160,8 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 		if (subjectVar != null) {
 			bindingNames.add(subjectVar.getName());
 		}
-		if (predicateVar != null) {
-			bindingNames.add(predicateVar.getName());
+		if (pathExpression != null) {
+			bindingNames.addAll(pathExpression.getAssuredBindingNames());
 		}
 		if (objectVar != null) {
 			bindingNames.add(objectVar.getName());
@@ -172,30 +171,6 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 		}
 
 		return bindingNames;
-	}
-
-	public List<Var> getVarList() {
-		return getVars(new ArrayList<Var>(4));
-	}
-
-	/**
-	 * Adds the variables of this statement pattern to the supplied collection.
-	 */
-	public <L extends Collection<Var>> L getVars(L varCollection) {
-		if (subjectVar != null) {
-			varCollection.add(subjectVar);
-		}
-		if (predicateVar != null) {
-			varCollection.add(predicateVar);
-		}
-		if (objectVar != null) {
-			varCollection.add(objectVar);
-		}
-		if (contextVar != null) {
-			varCollection.add(contextVar);
-		}
-
-		return varCollection;
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
@@ -211,8 +186,8 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 		if (subjectVar != null) {
 			subjectVar.visit(visitor);
 		}
-		if (predicateVar != null) {
-			predicateVar.visit(visitor);
+		if (pathExpression != null) {
+			pathExpression.visit(visitor);
 		}
 		if (objectVar != null) {
 			objectVar.visit(visitor);
@@ -229,8 +204,8 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 		if (subjectVar == current) {
 			setSubjectVar((Var)replacement);
 		}
-		else if (predicateVar == current) {
-			setPredicateVar((Var)replacement);
+		else if (pathExpression == current) {
+			setPathExpression((TupleExpr)replacement);
 		}
 		else if (objectVar == current) {
 			setObjectVar((Var)replacement);
@@ -260,7 +235,7 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 	public boolean equals(Object other) {
 		if (other instanceof ArbitraryLengthPath) {
 			ArbitraryLengthPath o = (ArbitraryLengthPath)other;
-			return subjectVar.equals(o.getSubjectVar()) && predicateVar.equals(o.getPredicateVar())
+			return subjectVar.equals(o.getSubjectVar()) && pathExpression.equals(o.getPathExpression())
 					&& objectVar.equals(o.getObjectVar()) && nullEquals(contextVar, o.getContextVar())
 					&& scope.equals(o.getScope());
 		}
@@ -270,7 +245,7 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 	@Override
 	public int hashCode() {
 		int result = subjectVar.hashCode();
-		result ^= predicateVar.hashCode();
+		result ^= pathExpression.hashCode();
 		result ^= objectVar.hashCode();
 		if (contextVar != null) {
 			result ^= contextVar.hashCode();
@@ -285,7 +260,7 @@ public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr
 	public ArbitraryLengthPath clone() {
 		ArbitraryLengthPath clone = (ArbitraryLengthPath)super.clone();
 		clone.setSubjectVar(getSubjectVar().clone());
-		clone.setPredicateVar(getPredicateVar().clone());
+		clone.setPathExpression(getPathExpression().clone());
 		clone.setObjectVar(getObjectVar().clone());
 
 		if (getContextVar() != null) {

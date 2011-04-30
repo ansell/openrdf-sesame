@@ -15,8 +15,8 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 
 /**
  * A tuple expression that matches a path of length zero against an RDF graph.
- * They can can be targeted at one of three context scopes: all
- * contexts, null context only, or named contexts only.
+ * They can can be targeted at one of three context scopes: all contexts, null
+ * context only, or named contexts only.
  */
 public class ZeroLengthPath extends QueryModelNodeBase implements TupleExpr {
 
@@ -27,8 +27,6 @@ public class ZeroLengthPath extends QueryModelNodeBase implements TupleExpr {
 	private Scope scope;
 
 	private Var subjectVar;
-
-	private Var predicateVar;
 
 	private Var objectVar;
 
@@ -45,34 +43,33 @@ public class ZeroLengthPath extends QueryModelNodeBase implements TupleExpr {
 	 * Creates a zero-length path that matches a subject-, predicate- and object
 	 * variable against statements from all contexts.
 	 */
-	public ZeroLengthPath(Var subject, Var predicate, Var object) {
-		this(Scope.DEFAULT_CONTEXTS, subject, predicate, object);
+	public ZeroLengthPath(Var subject, Var object) {
+		this(Scope.DEFAULT_CONTEXTS, subject, object);
 	}
 
 	/**
 	 * Creates a zero-length path that matches a subject-, predicate- and object
 	 * variable against statements from the specified context scope.
 	 */
-	public ZeroLengthPath(Scope scope, Var subject, Var predicate, Var object) {
-		this(scope, subject, predicate, object, null);
+	public ZeroLengthPath(Scope scope, Var subject, Var object) {
+		this(scope, subject, object, null);
 	}
 
 	/**
 	 * Creates a zero-length path that matches a subject-, predicate-, object-
 	 * and context variable against statements from all contexts.
 	 */
-	public ZeroLengthPath(Var subject, Var predicate, Var object, Var context) {
-		this(Scope.DEFAULT_CONTEXTS, subject, predicate, object, context);
+	public ZeroLengthPath(Var subject, Var object, Var context) {
+		this(Scope.DEFAULT_CONTEXTS, subject, object, context);
 	}
 
 	/**
 	 * Creates a zero-length path that matches a subject-, predicate-, object-
 	 * and context variable against statements from the specified context scope.
 	 */
-	public ZeroLengthPath(Scope scope, Var subjVar, Var predVar, Var objVar, Var conVar) {
+	public ZeroLengthPath(Scope scope, Var subjVar, Var objVar, Var conVar) {
 		setScope(scope);
 		setSubjectVar(subjVar);
-		setPredicateVar(predVar);
 		setObjectVar(objVar);
 		setContextVar(conVar);
 	}
@@ -104,16 +101,6 @@ public class ZeroLengthPath extends QueryModelNodeBase implements TupleExpr {
 		assert subject != null : "subject must not be null";
 		subject.setParentNode(this);
 		subjectVar = subject;
-	}
-
-	public Var getPredicateVar() {
-		return predicateVar;
-	}
-
-	public void setPredicateVar(Var predicate) {
-		assert predicate != null : "predicate must not be null";
-		predicate.setParentNode(this);
-		predicateVar = predicate;
 	}
 
 	public Var getObjectVar() {
@@ -150,9 +137,6 @@ public class ZeroLengthPath extends QueryModelNodeBase implements TupleExpr {
 		if (subjectVar != null) {
 			bindingNames.add(subjectVar.getName());
 		}
-		if (predicateVar != null) {
-			bindingNames.add(predicateVar.getName());
-		}
 		if (objectVar != null) {
 			bindingNames.add(objectVar.getName());
 		}
@@ -173,9 +157,6 @@ public class ZeroLengthPath extends QueryModelNodeBase implements TupleExpr {
 	public <L extends Collection<Var>> L getVars(L varCollection) {
 		if (subjectVar != null) {
 			varCollection.add(subjectVar);
-		}
-		if (predicateVar != null) {
-			varCollection.add(predicateVar);
 		}
 		if (objectVar != null) {
 			varCollection.add(objectVar);
@@ -200,9 +181,6 @@ public class ZeroLengthPath extends QueryModelNodeBase implements TupleExpr {
 		if (subjectVar != null) {
 			subjectVar.visit(visitor);
 		}
-		if (predicateVar != null) {
-			predicateVar.visit(visitor);
-		}
 		if (objectVar != null) {
 			objectVar.visit(visitor);
 		}
@@ -217,9 +195,6 @@ public class ZeroLengthPath extends QueryModelNodeBase implements TupleExpr {
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
 		if (subjectVar == current) {
 			setSubjectVar((Var)replacement);
-		}
-		else if (predicateVar == current) {
-			setPredicateVar((Var)replacement);
 		}
 		else if (objectVar == current) {
 			setObjectVar((Var)replacement);
@@ -249,7 +224,7 @@ public class ZeroLengthPath extends QueryModelNodeBase implements TupleExpr {
 	public boolean equals(Object other) {
 		if (other instanceof ZeroLengthPath) {
 			ZeroLengthPath o = (ZeroLengthPath)other;
-			return subjectVar.equals(o.getSubjectVar()) && predicateVar.equals(o.getPredicateVar())
+			return subjectVar.equals(o.getSubjectVar()) 
 					&& objectVar.equals(o.getObjectVar()) && nullEquals(contextVar, o.getContextVar())
 					&& scope.equals(o.getScope());
 		}
@@ -259,7 +234,6 @@ public class ZeroLengthPath extends QueryModelNodeBase implements TupleExpr {
 	@Override
 	public int hashCode() {
 		int result = subjectVar.hashCode();
-		result ^= predicateVar.hashCode();
 		result ^= objectVar.hashCode();
 		if (contextVar != null) {
 			result ^= contextVar.hashCode();
@@ -274,7 +248,6 @@ public class ZeroLengthPath extends QueryModelNodeBase implements TupleExpr {
 	public ZeroLengthPath clone() {
 		ZeroLengthPath clone = (ZeroLengthPath)super.clone();
 		clone.setSubjectVar(getSubjectVar().clone());
-		clone.setPredicateVar(getPredicateVar().clone());
 		clone.setObjectVar(getObjectVar().clone());
 
 		if (getContextVar() != null) {

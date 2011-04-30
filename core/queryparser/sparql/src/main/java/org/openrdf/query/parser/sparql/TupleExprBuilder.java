@@ -61,6 +61,7 @@ import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
+import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
@@ -187,14 +188,16 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	private Var valueExpr2Var(ValueExpr valueExpr) {
 		if (valueExpr instanceof Var) {
-			return (Var) valueExpr;
-		} else if (valueExpr instanceof ValueConstant) {
-			return createConstVar(((ValueConstant) valueExpr).getValue());
-		} else if (valueExpr == null) {
+			return (Var)valueExpr;
+		}
+		else if (valueExpr instanceof ValueConstant) {
+			return createConstVar(((ValueConstant)valueExpr).getValue());
+		}
+		else if (valueExpr == null) {
 			throw new IllegalArgumentException("valueExpr is null");
-		} else {
-			throw new IllegalArgumentException("valueExpr is a: "
-					+ valueExpr.getClass());
+		}
+		else {
+			throw new IllegalArgumentException("valueExpr is a: " + valueExpr.getClass());
 		}
 	}
 
@@ -212,15 +215,17 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public TupleExpr visit(ASTQueryContainer node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		// Skip the prolog, any information it contains should already have been
 		// processed
-		return (TupleExpr) node.getQuery().jjtAccept(this, null);
+		return (TupleExpr)node.getQuery().jjtAccept(this, null);
 	}
 
 	@Override
 	public TupleExpr visit(ASTSelectQuery node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		GraphPattern parentGP = graphPattern;
 
 		// Start with building the graph pattern
@@ -244,8 +249,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			}
 
 			// FIXME is the child of a HAVING node always a compare?
-			Compare condition = (Compare) havingNode.jjtGetChild(0).jjtAccept(
-					this, tupleExpr);
+			Compare condition = (Compare)havingNode.jjtGetChild(0).jjtAccept(this, tupleExpr);
 
 			// retrieve any aggregate operators from the condition.
 			AggregateCollector collector = new AggregateCollector();
@@ -261,8 +265,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 				// replace occurrence of the operator in the filter condition
 				// with
 				// the variable.
-				AggregateOperatorReplacer replacer = new AggregateOperatorReplacer(
-						operator, var);
+				AggregateOperatorReplacer replacer = new AggregateOperatorReplacer(operator, var);
 				replacer.meet(condition);
 
 				String alias = var.getName();
@@ -280,7 +283,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 				// duplicate of an aggregate in the projection. We could perhaps
 				// optimize for that, to avoid
 				// having to evaluate twice.
-				((Group) tupleExpr).addGroupElement(ge);
+				((Group)tupleExpr).addGroupElement(ge);
 			}
 
 			extension.setArg(tupleExpr);
@@ -290,25 +293,24 @@ class TupleExprBuilder extends ASTVisitorBase {
 		// Apply result ordering
 		ASTOrderClause orderNode = node.getOrderClause();
 		if (orderNode != null) {
-			List<OrderElem> orderElemements = (List<OrderElem>) orderNode
-					.jjtAccept(this, null);
+			List<OrderElem> orderElemements = (List<OrderElem>)orderNode.jjtAccept(this, null);
 			tupleExpr = new Order(tupleExpr, orderElemements);
 		}
 
 		// Apply projection
-		tupleExpr = (TupleExpr) node.getSelect().jjtAccept(this, tupleExpr);
+		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
 
 		// Process limit and offset clauses
 		ASTLimit limitNode = node.getLimit();
 		long limit = -1L;
 		if (limitNode != null) {
-			limit = (Long) limitNode.jjtAccept(this, null);
+			limit = (Long)limitNode.jjtAccept(this, null);
 		}
 
 		ASTOffset offsetNode = node.getOffset();
 		long offset = -1L;
 		if (offsetNode != null) {
-			offset = (Long) offsetNode.jjtAccept(this, null);
+			offset = (Long)offsetNode.jjtAccept(this, null);
 		}
 
 		if (offset >= 1L || limit >= 0L) {
@@ -324,8 +326,10 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public TupleExpr visit(ASTSelect node, Object data) throws VisitorException {
-		TupleExpr result = (TupleExpr) data;
+	public TupleExpr visit(ASTSelect node, Object data)
+		throws VisitorException
+	{
+		TupleExpr result = (TupleExpr)data;
 
 		Extension extension = new Extension();
 
@@ -338,7 +342,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			String alias = projElemNode.getAlias();
 			if (alias != null) {
 				// aliased projection element
-				ValueExpr valueExpr = (ValueExpr) child.jjtAccept(this, null);
+				ValueExpr valueExpr = (ValueExpr)child.jjtAccept(this, null);
 
 				projElemList.addElement(new ProjectionElem(alias));
 
@@ -364,8 +368,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 					 * } }
 					 */
 
-					group.addGroupElement(new GroupElem(alias,
-							(AggregateOperator) valueExpr));
+					group.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
 
 					extension.setArg(group);
 
@@ -376,12 +379,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 					}
 				}
 				extension.addElement(new ExtensionElem(valueExpr, alias));
-			} else if (child instanceof ASTVar) {
-				Var projVar = (Var) child.jjtAccept(this, null);
+			}
+			else if (child instanceof ASTVar) {
+				Var projVar = (Var)child.jjtAccept(this, null);
 				projElemList.addElement(new ProjectionElem(projVar.getName()));
-			} else {
-				throw new IllegalStateException(
-						"required alias for non-Var projection elements not found");
+			}
+			else {
+				throw new IllegalStateException("required alias for non-Var projection elements not found");
 			}
 		}
 
@@ -394,7 +398,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		if (node.isDistinct()) {
 			result = new Distinct(result);
-		} else if (node.isReduced()) {
+		}
+		else if (node.isReduced()) {
 			result = new Reduced(result);
 		}
 
@@ -417,7 +422,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public TupleExpr visit(ASTConstructQuery node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		// Start with building the graph pattern
 		graphPattern = new GraphPattern();
 		node.getWhereClause().jjtAccept(this, null);
@@ -426,16 +432,16 @@ class TupleExprBuilder extends ASTVisitorBase {
 		// Apply result ordering
 		ASTOrderClause orderNode = node.getOrderClause();
 		if (orderNode != null) {
-			List<OrderElem> orderElemements = (List<OrderElem>) orderNode
-					.jjtAccept(this, null);
+			List<OrderElem> orderElemements = (List<OrderElem>)orderNode.jjtAccept(this, null);
 			tupleExpr = new Order(tupleExpr, orderElemements);
 		}
 
 		// Process construct clause
 		ASTConstruct constructNode = node.getConstruct();
 		if (!constructNode.isWildcard()) {
-			tupleExpr = (TupleExpr) constructNode.jjtAccept(this, tupleExpr);
-		} else {
+			tupleExpr = (TupleExpr)constructNode.jjtAccept(this, tupleExpr);
+		}
+		else {
 			// create construct clause from graph pattern.
 			ConstructorBuilder cb = new ConstructorBuilder();
 
@@ -449,13 +455,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ASTLimit limitNode = node.getLimit();
 		long limit = -1L;
 		if (limitNode != null) {
-			limit = (Long) limitNode.jjtAccept(this, null);
+			limit = (Long)limitNode.jjtAccept(this, null);
 		}
 
 		ASTOffset offsetNode = node.getOffset();
 		long offset = -1;
 		if (offsetNode != null) {
-			offset = (Long) offsetNode.jjtAccept(this, null);
+			offset = (Long)offsetNode.jjtAccept(this, null);
 		}
 
 		if (offset >= 1 || limit >= 0) {
@@ -467,8 +473,9 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public TupleExpr visit(ASTConstruct node, Object data)
-			throws VisitorException {
-		TupleExpr result = (TupleExpr) data;
+		throws VisitorException
+	{
+		TupleExpr result = (TupleExpr)data;
 
 		// Collect construct triples
 		graphPattern = new GraphPattern();
@@ -476,8 +483,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		TupleExpr constructExpr = graphPattern.buildTupleExpr();
 
 		// Retrieve all StatementPattern's from the construct expression
-		List<StatementPattern> statementPatterns = StatementPatternCollector
-				.process(constructExpr);
+		List<StatementPattern> statementPatterns = StatementPatternCollector.process(constructExpr);
 
 		Set<Var> constructVars = getConstructVars(statementPatterns);
 
@@ -490,12 +496,12 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 				if (var.hasValue()) {
 					valueExpr = new ValueConstant(var.getValue());
-				} else {
+				}
+				else {
 					valueExpr = new BNodeGenerator();
 				}
 
-				extElemMap
-						.put(var, new ExtensionElem(valueExpr, var.getName()));
+				extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
 			}
 		}
 
@@ -509,21 +515,20 @@ class TupleExprBuilder extends ASTVisitorBase {
 		for (StatementPattern sp : statementPatterns) {
 			ProjectionElemList projElemList = new ProjectionElemList();
 
-			projElemList.addElement(new ProjectionElem(sp.getSubjectVar()
-					.getName(), "subject"));
-			projElemList.addElement(new ProjectionElem(sp.getPredicateVar()
-					.getName(), "predicate"));
-			projElemList.addElement(new ProjectionElem(sp.getObjectVar()
-					.getName(), "object"));
+			projElemList.addElement(new ProjectionElem(sp.getSubjectVar().getName(), "subject"));
+			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
+			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
 
 			projList.add(projElemList);
 		}
 
 		if (projList.size() == 1) {
 			result = new Projection(result, projList.get(0));
-		} else if (projList.size() > 1) {
+		}
+		else if (projList.size() > 1) {
 			result = new MultiProjection(result, projList);
-		} else {
+		}
+		else {
 			// Empty constructor
 			result = new EmptySet();
 		}
@@ -536,8 +541,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 	 * method accumulates all subject, predicate and object variables from the
 	 * supplied statement patterns, but ignores any context variables.
 	 */
-	private Set<Var> getConstructVars(
-			Collection<StatementPattern> statementPatterns) {
+	private Set<Var> getConstructVars(Collection<StatementPattern> statementPatterns) {
 		Set<Var> vars = new LinkedHashSet<Var>(statementPatterns.size() * 2);
 
 		for (StatementPattern sp : statementPatterns) {
@@ -551,7 +555,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public TupleExpr visit(ASTDescribeQuery node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		TupleExpr tupleExpr = null;
 
 		if (node.getWhereClause() != null) {
@@ -563,8 +568,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			// Apply result ordering
 			ASTOrderClause orderNode = node.getOrderClause();
 			if (orderNode != null) {
-				List<OrderElem> orderElemements = (List<OrderElem>) orderNode
-						.jjtAccept(this, null);
+				List<OrderElem> orderElemements = (List<OrderElem>)orderNode.jjtAccept(this, null);
 				tupleExpr = new Order(tupleExpr, orderElemements);
 			}
 
@@ -572,13 +576,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 			ASTLimit limitNode = node.getLimit();
 			long limit = -1;
 			if (limitNode != null) {
-				limit = (Long) limitNode.jjtAccept(this, null);
+				limit = (Long)limitNode.jjtAccept(this, null);
 			}
 
 			ASTOffset offsetNode = node.getOffset();
 			long offset = -1;
 			if (offsetNode != null) {
-				offset = (Long) offsetNode.jjtAccept(this, null);
+				offset = (Long)offsetNode.jjtAccept(this, null);
 			}
 
 			if (offset >= 1 || limit >= 0) {
@@ -587,13 +591,14 @@ class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		// Process describe clause last
-		return (TupleExpr) node.getDescribe().jjtAccept(this, tupleExpr);
+		return (TupleExpr)node.getDescribe().jjtAccept(this, tupleExpr);
 	}
 
 	@Override
 	public TupleExpr visit(ASTDescribe node, Object data)
-			throws VisitorException {
-		TupleExpr result = (TupleExpr) data;
+		throws VisitorException
+	{
+		TupleExpr result = (TupleExpr)data;
 
 		// Create a graph query that produces the statements that have the
 		// requests resources as subject or object
@@ -604,16 +609,15 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		if (result == null) {
 			result = sp;
-		} else {
+		}
+		else {
 			result = new Join(result, sp);
 		}
 
-		List<SameTerm> sameTerms = new ArrayList<SameTerm>(
-				2 * node.jjtGetNumChildren());
+		List<SameTerm> sameTerms = new ArrayList<SameTerm>(2 * node.jjtGetNumChildren());
 
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-			ValueExpr resource = (ValueExpr) node.jjtGetChild(i).jjtAccept(
-					this, null);
+			ValueExpr resource = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
 
 			sameTerms.add(new SameTerm(subjVar.clone(), resource));
 			sameTerms.add(new SameTerm(objVar.clone(), resource));
@@ -627,10 +631,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 		result = new Filter(result, constraint);
 
 		ProjectionElemList projElemList = new ProjectionElemList();
-		projElemList
-				.addElement(new ProjectionElem(subjVar.getName(), "subject"));
-		projElemList.addElement(new ProjectionElem(predVar.getName(),
-				"predicate"));
+		projElemList.addElement(new ProjectionElem(subjVar.getName(), "subject"));
+		projElemList.addElement(new ProjectionElem(predVar.getName(), "predicate"));
 		projElemList.addElement(new ProjectionElem(objVar.getName(), "object"));
 		result = new Projection(result, projElemList);
 
@@ -639,7 +641,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public TupleExpr visit(ASTAskQuery node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		graphPattern = new GraphPattern();
 
 		super.visit(node, null);
@@ -652,12 +655,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public List<GroupElem> visit(ASTGroupClause node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		int childCount = node.jjtGetNumChildren();
 		List<GroupElem> elements = new ArrayList<GroupElem>(childCount);
 
 		for (int i = 0; i < childCount; i++) {
-			elements.add((GroupElem) node.jjtGetChild(i).jjtAccept(this, data));
+			elements.add((GroupElem)node.jjtGetChild(i).jjtAccept(this, data));
 		}
 
 		return elements;
@@ -665,18 +669,20 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public GroupElem visit(ASTGroupCondition node, Object data)
-			throws VisitorException {
-		return ((GroupElem) data);
+		throws VisitorException
+	{
+		return ((GroupElem)data);
 	}
 
 	@Override
 	public List<OrderElem> visit(ASTOrderClause node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		int childCount = node.jjtGetNumChildren();
 		List<OrderElem> elements = new ArrayList<OrderElem>(childCount);
 
 		for (int i = 0; i < childCount; i++) {
-			elements.add((OrderElem) node.jjtGetChild(i).jjtAccept(this, null));
+			elements.add((OrderElem)node.jjtGetChild(i).jjtAccept(this, null));
 		}
 
 		return elements;
@@ -684,25 +690,30 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public OrderElem visit(ASTOrderCondition node, Object data)
-			throws VisitorException {
-		ValueExpr valueExpr = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-				null);
+		throws VisitorException
+	{
+		ValueExpr valueExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new OrderElem(valueExpr, node.isAscending());
 	}
 
 	@Override
-	public Long visit(ASTLimit node, Object data) throws VisitorException {
+	public Long visit(ASTLimit node, Object data)
+		throws VisitorException
+	{
 		return node.getValue();
 	}
 
 	@Override
-	public Long visit(ASTOffset node, Object data) throws VisitorException {
+	public Long visit(ASTOffset node, Object data)
+		throws VisitorException
+	{
 		return node.getValue();
 	}
 
 	@Override
 	public Object visit(ASTGraphPatternGroup node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		GraphPattern parentGP = graphPattern;
 		graphPattern = new GraphPattern(parentGP);
 
@@ -714,8 +725,9 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		// TODO not sure this is the cleanest way of handling this.
 		if (data != null && data instanceof Exists) {
-			((Exists) data).setSubQuery(te);
-		} else {
+			((Exists)data).setSubQuery(te);
+		}
+		else {
 			parentGP.addRequiredTE(te);
 		}
 
@@ -726,7 +738,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public Object visit(ASTOptionalGraphPattern node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		GraphPattern parentGP = graphPattern;
 		graphPattern = new GraphPattern(parentGP);
 
@@ -742,7 +755,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		if (constraints.isEmpty()) {
 			leftJoin = new LeftJoin(leftArg, rightArg);
-		} else {
+		}
+		else {
 			ValueExpr constraint = constraints.get(0);
 			for (int i = 1; i < constraints.size(); i++) {
 				constraint = new And(constraint, constraints.get(i));
@@ -761,12 +775,12 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public Object visit(ASTGraphGraphPattern node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		Var oldContext = graphPattern.getContextVar();
 		Scope oldScope = graphPattern.getStatementPatternScope();
 
-		ValueExpr newContext = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-				null);
+		ValueExpr newContext = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 
 		graphPattern.setContextVar(valueExpr2Var(newContext));
 		graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
@@ -781,7 +795,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public Object visit(ASTUnionGraphPattern node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		GraphPattern parentGP = graphPattern;
 
 		graphPattern = new GraphPattern(parentGP);
@@ -800,7 +815,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public Object visit(ASTMinusGraphPattern node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		GraphPattern parentGP = graphPattern;
 
 		TupleExpr leftArg = graphPattern.buildTupleExpr();
@@ -818,13 +834,12 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public Object visit(ASTPropertyList propListNode, Object data)
-			throws VisitorException {
-		ValueExpr subject = (ValueExpr) data;
-		ValueExpr predicate = (ValueExpr) propListNode.getVerb().jjtAccept(
-				this, null);
+		throws VisitorException
+	{
+		ValueExpr subject = (ValueExpr)data;
+		ValueExpr predicate = (ValueExpr)propListNode.getVerb().jjtAccept(this, null);
 		@SuppressWarnings("unchecked")
-		List<ValueExpr> objectList = (List<ValueExpr>) propListNode
-				.getObjectList().jjtAccept(this, null);
+		List<ValueExpr> objectList = (List<ValueExpr>)propListNode.getObjectList().jjtAccept(this, null);
 
 		Var subjVar = valueExpr2Var(subject);
 		Var predVar = valueExpr2Var(predicate);
@@ -844,7 +859,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public Object visit(ASTPathAlternative pathAltNode, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 
 		if (pathAltNode.jjtGetNumChildren() > 1) {
 
@@ -861,7 +877,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 			parentGP.addRequiredTE(new Union(leftArg, rightArg));
 
 			graphPattern = parentGP;
-		} else {
+		}
+		else {
 			pathAltNode.jjtGetChild(0).jjtAccept(this, data);
 		}
 
@@ -870,26 +887,38 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public PropertySetElem visit(ASTPathOneInPropertySet node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 
 		PropertySetElem result = new PropertySetElem();
 		result.setInverse(node.isInverse());
-		ValueConstant predicate = (ValueConstant) node.jjtGetChild(0).jjtAccept(this, data);
+		ValueConstant predicate = (ValueConstant)node.jjtGetChild(0).jjtAccept(this, data);
 		result.setPredicate(predicate);
-		
+
 		return result;
+	}
+
+	private ASTObjectList getObjectList(Node node) {
+		if (node == null) {
+			return null;
+		}
+		if (node instanceof ASTPropertyListPath) {
+			return ((ASTPropertyListPath)node).getObjectList();
+		}
+		else {
+			return getObjectList(node.jjtGetParent());
+		}
 	}
 
 	@Override
 	public Object visit(ASTPathSequence pathSeqNode, Object data)
-			throws VisitorException {
-		ValueExpr subject = (ValueExpr) data;
+		throws VisitorException
+	{
+		ValueExpr subject = (ValueExpr)data;
 		Var subjVar = valueExpr2Var(subject);
 
 		@SuppressWarnings("unchecked")
-		List<ValueExpr> objectList = (List<ValueExpr>) ((ASTPropertyListPath) pathSeqNode
-				.jjtGetParent().jjtGetParent()).getObjectList().jjtAccept(this,
-				null);
+		List<ValueExpr> objectList = (List<ValueExpr>)getObjectList(pathSeqNode).jjtAccept(this, null);
 
 		List<ASTPathElt> pathElements = pathSeqNode.getPathElements();
 
@@ -914,25 +943,27 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 				if (upperBound == Long.MIN_VALUE) {
 					upperBound = lowerBound;
-				} else if (lowerBound == Long.MIN_VALUE) {
+				}
+				else if (lowerBound == Long.MIN_VALUE) {
 					lowerBound = upperBound;
 				}
 			}
 
 			if (pathElement.isNegatedPropertySet()) {
 
-				// create a temporary negated property set object and set the correct subject and object vars to continue
+				// create a temporary negated property set object and set the
+				// correct subject and object vars to continue
 				// the path sequence.
-				
+
 				NegatedPropertySet nps = new NegatedPropertySet();
 				nps.setScope(scope);
 				nps.setSubjectVar(subjVar);
 				nps.setContextVar(contextVar);
-				
-				for (Node child: pathElement.jjtGetChildren()) {
+
+				for (Node child : pathElement.jjtGetChildren()) {
 					nps.addPropertySetElem((PropertySetElem)child.jjtAccept(this, data));
 				}
-				
+
 				if (i == pathLength - 1) {
 					nps.setObjectList(objectList);
 				}
@@ -943,53 +974,70 @@ class TupleExprBuilder extends ASTVisitorBase {
 					List<ValueExpr> nextVarList = new ArrayList<ValueExpr>();
 					nextVarList.add(nextVar);
 					nps.setObjectList(nextVarList);
-					
+
 					subjVar = nextVar;
 				}
-				
+
 				// convert the NegatedPropertySet to a proper TupleExpr
 				pathSequencePattern.addRequiredTE(createTupleExprForNegatedPropertySet(nps, i));
-				
-			} else {
 
-				ValueExpr pred = (ValueExpr) pathElement.jjtAccept(this, data);
+			}
+			else if (pathElement.isNestedPath()) {
+				GraphPattern parentGP = graphPattern;
+
+				graphPattern = new GraphPattern();
+				pathElement.jjtGetChild(0).jjtAccept(this, data);
+
+				TupleExpr te = graphPattern.buildTupleExpr();
+
+				for (ValueExpr object : objectList) {
+					Var objVar = valueExpr2Var(object);
+					te = handlePathModifiers(scope, subjVar, te, objVar, contextVar, lowerBound, upperBound);
+					pathSequencePattern.addRequiredTE(te);
+				}
+
+				graphPattern = parentGP;
+			}
+			else {
+
+				ValueExpr pred = (ValueExpr)pathElement.jjtAccept(this, data);
 				Var predVar = valueExpr2Var(pred);
 
 				TupleExpr te;
-				if (i == pathLength - 1) { 
+				if (i == pathLength - 1) {
 					// last element in the path, connect to list of defined objects
 					for (ValueExpr object : objectList) {
 						Var objVar = valueExpr2Var(object);
 
 						if (pathElement.isInverse()) {
-							te = new StatementPattern(scope, objVar, predVar,
-									subjVar, contextVar);
-							te = handlePathModifiers(te, lowerBound, upperBound);
+							te = new StatementPattern(scope, objVar, predVar, subjVar, contextVar);
+							te = handlePathModifiers(scope, objVar, te, subjVar, contextVar, lowerBound, upperBound);
 
 							pathSequencePattern.addRequiredTE(te);
-						} else {
-							te = new StatementPattern(scope, subjVar, predVar,
-									objVar, contextVar);
-							te = handlePathModifiers(te, lowerBound, upperBound);
+						}
+						else {
+							te = new StatementPattern(scope, subjVar, predVar, objVar, contextVar);
+							te = handlePathModifiers(scope, subjVar, te, objVar, contextVar, lowerBound, upperBound);
 
 							pathSequencePattern.addRequiredTE(te);
 						}
 					}
-				} else { 
-					// not the last element in the path, introduce an anonymous var to connect.
+				}
+				else {
+					// not the last element in the path, introduce an anonymous var
+					// to connect.
 					Var nextVar = createAnonVar(predVar.getName() + "-" + i);
 					if (pathElement.isInverse()) {
 
-						te = new StatementPattern(scope, nextVar, predVar,
-								subjVar, contextVar);
+						te = new StatementPattern(scope, nextVar, predVar, subjVar, contextVar);
 
-						te = handlePathModifiers(te, lowerBound, upperBound);
+						te = handlePathModifiers(scope, nextVar, te, subjVar, contextVar, lowerBound, upperBound);
 
 						pathSequencePattern.addRequiredTE(te);
-					} else {
-						te = new StatementPattern(scope, subjVar, predVar,
-								nextVar, contextVar);
-						te = handlePathModifiers(te, lowerBound, upperBound);
+					}
+					else {
+						te = new StatementPattern(scope, subjVar, predVar, nextVar, contextVar);
+						te = handlePathModifiers(scope, subjVar, te, nextVar, contextVar, lowerBound, upperBound);
 
 						pathSequencePattern.addRequiredTE(te);
 					}
@@ -1012,7 +1060,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 		Var subjVar = nps.getSubjectVar();
 
 		Var predVar = createAnonVar("nps-" + subjVar.getName() + "-" + index);
-//		Var predVarInverse = createAnonVar("nps-inverse-" + subjVar.getName() + "-" + index);
+		// Var predVarInverse = createAnonVar("nps-inverse-" + subjVar.getName() +
+		// "-" + index);
 
 		ValueExpr filterCondition = null;
 		ValueExpr filterConditionInverse = null;
@@ -1020,7 +1069,6 @@ class TupleExprBuilder extends ASTVisitorBase {
 		// build (inverted) filter conditions for each negated path element.
 		for (PropertySetElem elem : nps.getPropertySetElems()) {
 			ValueConstant predicate = elem.getPredicate();
-
 
 			if (elem.isInverse()) {
 				Compare compare = new Compare(predVar, predicate, CompareOp.NE);
@@ -1044,7 +1092,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		TupleExpr patternMatch = null;
 
-		// build a regular statement pattern (or a join of several patterns if the object list has more than 
+		// build a regular statement pattern (or a join of several patterns if the
+		// object list has more than
 		// one item)
 		if (filterCondition != null) {
 			for (ValueExpr objVar : nps.getObjectList()) {
@@ -1061,7 +1110,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		TupleExpr patternMatchInverse = null;
 
-		// build a inverse statement pattern (or a join of several patterns if the object list has more than 
+		// build a inverse statement pattern (or a join of several patterns if the
+		// object list has more than
 		// one item):
 		if (filterConditionInverse != null) {
 			for (ValueExpr objVar : nps.getObjectList()) {
@@ -1093,33 +1143,36 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		return completeMatch;
 	}
-	
-	private TupleExpr handlePathModifiers(TupleExpr te, long lowerBound,
-			long upperBound) {
+
+	private TupleExpr handlePathModifiers(Scope scope, Var subjVar, TupleExpr te, Var endVar, Var contextVar,
+			long lowerBound, long upperBound)
+		throws VisitorException
+	{
 
 		TupleExpr result = te;
 
 		if (lowerBound >= 0L) {
+
 			if (lowerBound < upperBound) {
+
 				if (upperBound < Long.MAX_VALUE) {
 					// upperbound is fixed-length
 
 					// create set of unions for all path lengths between lower
-					// and
-					// upper bound.
+					// and upper bound.
 					Union union = new Union();
 					Union currentUnion = union;
 
 					for (long length = lowerBound; length < upperBound; length++) {
 
-						TupleExpr path = createPath((StatementPattern) te,
-								length);
+						TupleExpr path = createPath(scope, subjVar, te, endVar, contextVar, length);
 
 						currentUnion.setLeftArg(path);
 						if (length == upperBound - 1) {
-							path = createPath((StatementPattern) te, length + 1);
+							path = createPath(scope, subjVar, te, endVar, contextVar, length + 1);
 							currentUnion.setRightArg(path);
-						} else {
+						}
+						else {
 							Union nextUnion = new Union();
 							currentUnion.setRightArg(nextUnion);
 							currentUnion = nextUnion;
@@ -1127,24 +1180,16 @@ class TupleExprBuilder extends ASTVisitorBase {
 					}
 
 					result = union;
-				} else {
+				}
+				else {
 					// upperbound is abitrary-length
 
-					StatementPattern sp = (StatementPattern) te;
-
-					Var subject = sp.getSubjectVar();
-					Var predicate = sp.getPredicateVar();
-					Var endVar = sp.getObjectVar();
-
-					Var contextVar = sp.getContextVar();
-					Scope scope = sp.getScope();
-
-					result = new ArbitraryLengthPath(scope, subject, predicate,
-							endVar, contextVar, lowerBound);
+					result = new ArbitraryLengthPath(scope, subjVar, te, endVar, contextVar, lowerBound);
 				}
-			} else {
+			}
+			else {
 				// create single path of fixed length.
-				TupleExpr path = createPath((StatementPattern) te, lowerBound);
+				TupleExpr path = createPath(scope, subjVar, te, endVar, contextVar, lowerBound);
 				result = path;
 			}
 		}
@@ -1152,50 +1197,101 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return result;
 	}
 
-	private TupleExpr createPath(StatementPattern sp, long length) {
-		Var subject = sp.getSubjectVar();
-		Var predicate = sp.getPredicateVar();
-		Var endVar = sp.getObjectVar();
+	private TupleExpr createPath(Scope scope, Var subjVar, TupleExpr pathExpression, Var endVar,
+			Var contextVar, long length)
+		throws VisitorException
+	{
+		if (pathExpression instanceof StatementPattern) {
+			Var predVar = ((StatementPattern)pathExpression).getPredicateVar();
 
-		Var contextVar = sp.getContextVar();
-		Scope scope = sp.getScope();
-
-		if (length == 0L) {
-			return new ZeroLengthPath(scope, subject, predicate, endVar,
-					contextVar);
-		} else {
-			GraphPattern gp = new GraphPattern();
-			gp.setContextVar(contextVar);
-			gp.setStatementPatternScope(scope);
-
-			Var nextVar = null;
-
-			for (long i = 0L; i < length; i++) {
-				if (i < length - 1) {
-					nextVar = createAnonVar(predicate.getValue() + "-path-"
-							+ length + "-" + i);
-				} else {
-					nextVar = endVar;
-				}
-				gp.addRequiredSP(subject, predicate, nextVar);
-				subject = nextVar;
+			if (length == 0L) {
+				return new ZeroLengthPath(scope, subjVar, endVar, contextVar);
 			}
-			return gp.buildTupleExpr();
+			else {
+				GraphPattern gp = new GraphPattern();
+				gp.setContextVar(contextVar);
+				gp.setStatementPatternScope(scope);
+
+				Var nextVar = null;
+
+				for (long i = 0L; i < length; i++) {
+					if (i < length - 1) {
+						nextVar = createAnonVar(predVar.getValue() + "-path-" + length + "-" + i);
+					}
+					else {
+						nextVar = endVar;
+					}
+					gp.addRequiredSP(subjVar, predVar, nextVar);
+					subjVar = nextVar;
+				}
+				return gp.buildTupleExpr();
+			}
+		}
+		else {
+			if (length == 0L) {
+				return new ZeroLengthPath(scope, subjVar, endVar, contextVar);
+			}
+			else {
+				GraphPattern gp = new GraphPattern();
+				gp.setContextVar(contextVar);
+				gp.setStatementPatternScope(scope);
+
+				Var nextVar = null;
+				for (long i = 0L; i < length; i++) {
+					if (i < length - 1L) {
+						nextVar = createAnonVar(subjVar.getName() + "-expression-path-" + length + "-" + i);
+					}
+					else {
+						nextVar = endVar;
+					}
+
+					// create a clone of the path expression.
+					TupleExpr clone = pathExpression.clone();
+
+					VarReplacer replacer = new VarReplacer(endVar, nextVar);
+					clone.visit(replacer);
+
+					gp.addRequiredTE(clone);
+
+					subjVar = nextVar;
+				}
+				return gp.buildTupleExpr();
+			}
+		}
+	}
+
+	private class VarReplacer extends QueryModelVisitorBase<VisitorException> {
+
+		private Var toBeReplaced;
+
+		private Var replacement;
+
+		public VarReplacer(Var toBeReplaced, Var replacement) {
+			this.toBeReplaced = toBeReplaced;
+			this.replacement = replacement;
+		}
+
+		@Override
+		public void meet(Var var) {
+			if (toBeReplaced.equals(var)) {
+				QueryModelNode parent = var.getParentNode();
+				parent.replaceChildNode(var, replacement);
+				replacement.setParentNode(parent);
+			}
 		}
 	}
 
 	@Override
 	public Object visit(ASTPropertyListPath propListNode, Object data)
-			throws VisitorException {
-		ValueExpr subject = (ValueExpr) data;
-		ValueExpr verbPath = (ValueExpr) propListNode.getVerb().jjtAccept(this,
-				data);
+		throws VisitorException
+	{
+		ValueExpr subject = (ValueExpr)data;
+		ValueExpr verbPath = (ValueExpr)propListNode.getVerb().jjtAccept(this, data);
 
 		if (verbPath instanceof Var) {
 
 			@SuppressWarnings("unchecked")
-			List<ValueExpr> objectList = (List<ValueExpr>) propListNode
-					.getObjectList().jjtAccept(this, null);
+			List<ValueExpr> objectList = (List<ValueExpr>)propListNode.getObjectList().jjtAccept(this, null);
 
 			Var subjVar = valueExpr2Var(subject);
 
@@ -1204,7 +1300,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 				Var objVar = valueExpr2Var(object);
 				graphPattern.addRequiredSP(subjVar, predVar, objVar);
 			}
-		} else {
+		}
+		else {
 			// path is a single IRI or a more complex path. handled by the
 			// visitor.
 
@@ -1220,12 +1317,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public List<ValueExpr> visit(ASTObjectList node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		int childCount = node.jjtGetNumChildren();
 		List<ValueExpr> result = new ArrayList<ValueExpr>(childCount);
 
 		for (int i = 0; i < childCount; i++) {
-			result.add((ValueExpr) node.jjtGetChild(i).jjtAccept(this, null));
+			result.add((ValueExpr)node.jjtGetChild(i).jjtAccept(this, null));
 		}
 
 		return result;
@@ -1233,14 +1331,17 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public Var visit(ASTBlankNodePropertyList node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		Var bnodeVar = createAnonVar(node.getVarName());
 		super.visit(node, bnodeVar);
 		return bnodeVar;
 	}
 
 	@Override
-	public Var visit(ASTCollection node, Object data) throws VisitorException {
+	public Var visit(ASTCollection node, Object data)
+		throws VisitorException
+	{
 		String listVarName = node.getVarName();
 		Var rootListVar = createAnonVar(listVarName);
 
@@ -1248,22 +1349,20 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		int childCount = node.jjtGetNumChildren();
 		for (int i = 0; i < childCount; i++) {
-			ValueExpr childValue = (ValueExpr) node.jjtGetChild(i).jjtAccept(
-					this, null);
+			ValueExpr childValue = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
 
 			Var childVar = valueExpr2Var(childValue);
-			graphPattern.addRequiredSP(listVar, createConstVar(RDF.FIRST),
-					childVar);
+			graphPattern.addRequiredSP(listVar, createConstVar(RDF.FIRST), childVar);
 
 			Var nextListVar;
 			if (i == childCount - 1) {
 				nextListVar = createConstVar(RDF.NIL);
-			} else {
+			}
+			else {
 				nextListVar = createAnonVar(listVarName + "-" + (i + 1));
 			}
 
-			graphPattern.addRequiredSP(listVar, createConstVar(RDF.REST),
-					nextListVar);
+			graphPattern.addRequiredSP(listVar, createConstVar(RDF.REST), nextListVar);
 			listVar = nextListVar;
 		}
 
@@ -1272,47 +1371,50 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public Object visit(ASTConstraint node, Object data)
-			throws VisitorException {
-		ValueExpr valueExpr = (ValueExpr) super.visit(node, null);
+		throws VisitorException
+	{
+		ValueExpr valueExpr = (ValueExpr)super.visit(node, null);
 		graphPattern.addConstraint(valueExpr);
 
 		return valueExpr;
 	}
 
 	@Override
-	public Or visit(ASTOr node, Object data) throws VisitorException {
-		ValueExpr leftArg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-				null);
-		ValueExpr rightArg = (ValueExpr) node.jjtGetChild(1).jjtAccept(this,
-				null);
+	public Or visit(ASTOr node, Object data)
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new Or(leftArg, rightArg);
 	}
 
 	@Override
-	public Object visit(ASTAnd node, Object data) throws VisitorException {
-		ValueExpr leftArg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-				null);
-		ValueExpr rightArg = (ValueExpr) node.jjtGetChild(1).jjtAccept(this,
-				null);
+	public Object visit(ASTAnd node, Object data)
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new And(leftArg, rightArg);
 	}
 
 	@Override
-	public Not visit(ASTNot node, Object data) throws VisitorException {
-		ValueExpr arg = (ValueExpr) super.visit(node, null);
+	public Not visit(ASTNot node, Object data)
+		throws VisitorException
+	{
+		ValueExpr arg = (ValueExpr)super.visit(node, null);
 		return new Not(arg);
 	}
 
 	@Override
 	public Coalesce visit(ASTCoalesce node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 
 		Coalesce coalesce = new Coalesce();
 		int noOfArgs = node.jjtGetNumChildren();
 
 		for (int i = 0; i < noOfArgs; i++) {
-			ValueExpr arg = (ValueExpr) node.jjtGetChild(i).jjtAccept(this,
-					data);
+			ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, data);
 			coalesce.addArgument(arg);
 		}
 
@@ -1320,145 +1422,158 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Compare visit(ASTCompare node, Object data) throws VisitorException {
-		ValueExpr leftArg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-				null);
-		ValueExpr rightArg = (ValueExpr) node.jjtGetChild(1).jjtAccept(this,
-				null);
+	public Compare visit(ASTCompare node, Object data)
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new Compare(leftArg, rightArg, node.getOperator());
 	}
 
 	@Override
 	public SameTerm visit(ASTSameTerm node, Object data)
-			throws VisitorException {
-		ValueExpr leftArg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-				null);
-		ValueExpr rightArg = (ValueExpr) node.jjtGetChild(1).jjtAccept(this,
-				null);
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new SameTerm(leftArg, rightArg);
 	}
 
 	@Override
-	public MathExpr visit(ASTMath node, Object data) throws VisitorException {
-		ValueExpr leftArg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-				null);
-		ValueExpr rightArg = (ValueExpr) node.jjtGetChild(1).jjtAccept(this,
-				null);
+	public MathExpr visit(ASTMath node, Object data)
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new MathExpr(leftArg, rightArg, node.getOperator());
 	}
 
 	@Override
 	public Object visit(ASTFunctionCall node, Object data)
-			throws VisitorException {
-		ValueConstant uriNode = (ValueConstant) node.jjtGetChild(0).jjtAccept(
-				this, null);
-		URI functionURI = (URI) uriNode.getValue();
+		throws VisitorException
+	{
+		ValueConstant uriNode = (ValueConstant)node.jjtGetChild(0).jjtAccept(this, null);
+		URI functionURI = (URI)uriNode.getValue();
 
 		FunctionCall functionCall = new FunctionCall(functionURI.toString());
 
 		for (int i = 1; i < node.jjtGetNumChildren(); i++) {
 			Node argNode = node.jjtGetChild(i);
-			functionCall.addArg((ValueExpr) argNode.jjtAccept(this, null));
+			functionCall.addArg((ValueExpr)argNode.jjtAccept(this, null));
 		}
 
 		return functionCall;
 	}
 
 	@Override
-	public Object visit(ASTStr node, Object data) throws VisitorException {
-		ValueExpr arg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, null);
+	public Object visit(ASTStr node, Object data)
+		throws VisitorException
+	{
+		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new Str(arg);
 	}
 
 	@Override
-	public StrDt visit(ASTStrDt node, Object data) throws VisitorException {
+	public StrDt visit(ASTStrDt node, Object data)
+		throws VisitorException
+	{
 		// TODO stricter checking on argument value types?
-		ValueExpr literalExpr = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-				null);
-		ValueExpr datatypeExpr = (ValueExpr) node.jjtGetChild(1).jjtAccept(
-				this, null);
+		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr datatypeExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new StrDt(literalExpr, datatypeExpr);
 	}
 
 	@Override
-	public StrLang visit(ASTStrLang node, Object data) throws VisitorException {
+	public StrLang visit(ASTStrLang node, Object data)
+		throws VisitorException
+	{
 		// TODO stricter checking on argument value types?
-		ValueExpr literalExpr = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-				null);
-		ValueExpr langTagExpr = (ValueExpr) node.jjtGetChild(1).jjtAccept(this,
-				null);
+		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr langTagExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new StrLang(literalExpr, langTagExpr);
 	}
 
 	@Override
 	public IRIFunction visit(ASTIRIFunc node, Object data)
-			throws VisitorException {
-		ValueExpr expr = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, null);
+		throws VisitorException
+	{
+		ValueExpr expr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new IRIFunction(expr);
 	}
 
 	@Override
-	public Lang visit(ASTLang node, Object data) throws VisitorException {
-		ValueExpr arg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, null);
+	public Lang visit(ASTLang node, Object data)
+		throws VisitorException
+	{
+		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new Lang(arg);
 	}
 
 	@Override
 	public Datatype visit(ASTDatatype node, Object data)
-			throws VisitorException {
-		ValueExpr arg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, null);
+		throws VisitorException
+	{
+		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new Datatype(arg);
 	}
 
 	@Override
 	public Object visit(ASTLangMatches node, Object data)
-			throws VisitorException {
-		ValueExpr leftArg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-				null);
-		ValueExpr rightArg = (ValueExpr) node.jjtGetChild(1).jjtAccept(this,
-				null);
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new LangMatches(leftArg, rightArg);
 	}
 
 	@Override
-	public ValueExpr visit(ASTBound node, Object data) throws VisitorException {
-		Var var = (Var) node.getArg().jjtAccept(this, null);
+	public ValueExpr visit(ASTBound node, Object data)
+		throws VisitorException
+	{
+		Var var = (Var)node.getArg().jjtAccept(this, null);
 		return new Bound(var);
 	}
 
 	@Override
-	public IsURI visit(ASTIsIRI node, Object data) throws VisitorException {
-		ValueExpr arg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, null);
+	public IsURI visit(ASTIsIRI node, Object data)
+		throws VisitorException
+	{
+		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new IsURI(arg);
 	}
 
 	@Override
-	public IsBNode visit(ASTIsBlank node, Object data) throws VisitorException {
-		ValueExpr arg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, null);
+	public IsBNode visit(ASTIsBlank node, Object data)
+		throws VisitorException
+	{
+		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new IsBNode(arg);
 	}
 
 	@Override
 	public IsLiteral visit(ASTIsLiteral node, Object data)
-			throws VisitorException {
-		ValueExpr arg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, null);
+		throws VisitorException
+	{
+		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new IsLiteral(arg);
 	}
 
 	@Override
 	public IsNumeric visit(ASTIsNumeric node, Object data)
-			throws VisitorException {
-		ValueExpr arg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, null);
+		throws VisitorException
+	{
+		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		return new IsNumeric(arg);
 	}
 
-	public Object visit(ASTBNodeFunc node, Object data) throws VisitorException {
+	public Object visit(ASTBNodeFunc node, Object data)
+		throws VisitorException
+	{
 
 		BNodeGenerator generator = new BNodeGenerator();
 
 		if (node.jjtGetNumChildren() > 0) {
-			ValueExpr nodeIdExpr = (ValueExpr) node.jjtGetChild(0).jjtAccept(
-					this, null);
+			ValueExpr nodeIdExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 			generator.setNodeIdExpr(nodeIdExpr);
 		}
 
@@ -1467,20 +1582,21 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public Object visit(ASTRegexExpression node, Object data)
-			throws VisitorException {
-		ValueExpr arg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, null);
-		ValueExpr pattern = (ValueExpr) node.jjtGetChild(1).jjtAccept(this,
-				null);
+		throws VisitorException
+	{
+		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr pattern = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		ValueExpr flags = null;
 		if (node.jjtGetNumChildren() > 2) {
-			flags = (ValueExpr) node.jjtGetChild(2).jjtAccept(this, null);
+			flags = (ValueExpr)node.jjtGetChild(2).jjtAccept(this, null);
 		}
 		return new Regex(arg, pattern, flags);
 	}
 
 	@Override
 	public Exists visit(ASTExistsFunc node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		Exists e = new Exists();
 
 		node.jjtGetChild(0).jjtAccept(this, e);
@@ -1489,61 +1605,59 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public Not visit(ASTNotExistsFunc node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		Exists e = new Exists();
 		node.jjtGetChild(0).jjtAccept(this, e);
 		return new Not(e);
 	}
 
-	public If visit(ASTIf node, Object data) throws VisitorException {
+	public If visit(ASTIf node, Object data)
+		throws VisitorException
+	{
 		If result = null;
 
 		if (node.jjtGetNumChildren() < 3) {
-			throw new VisitorException(
-					"IF construction missing required number of arguments");
+			throw new VisitorException("IF construction missing required number of arguments");
 		}
 
-		ValueExpr condition = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-				null);
-		ValueExpr resultExpr = (ValueExpr) node.jjtGetChild(1).jjtAccept(this,
-				null);
-		ValueExpr alternative = (ValueExpr) node.jjtGetChild(2).jjtAccept(this,
-				null);
+		ValueExpr condition = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr resultExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
+		ValueExpr alternative = (ValueExpr)node.jjtGetChild(2).jjtAccept(this, null);
 
 		result = new If(condition, resultExpr, alternative);
 
 		return result;
 	}
 
-	public ValueExpr visit(ASTIn node, Object data) throws VisitorException {
+	public ValueExpr visit(ASTIn node, Object data)
+		throws VisitorException
+	{
 		ValueExpr result = null;
-		ValueExpr leftArg = (ValueExpr) node.jjtGetParent().jjtGetChild(0)
-				.jjtAccept(this, null);
+		ValueExpr leftArg = (ValueExpr)node.jjtGetParent().jjtGetChild(0).jjtAccept(this, null);
 
 		int listItemCount = node.jjtGetNumChildren();
 
 		if (listItemCount == 1) {
-			ValueExpr arg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-					null);
+			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 
 			result = new Compare(leftArg, arg, CompareOp.EQ);
-		} else {
+		}
+		else {
 			// create a set of disjunctive comparisons to represent the IN
 			// operator: X IN (a, b, c) -> X = a || X = b || X = c.
 			Or or = new Or();
 			Or currentOr = or;
 			for (int i = 0; i < listItemCount - 1; i++) {
-				ValueExpr arg = (ValueExpr) node.jjtGetChild(i).jjtAccept(this,
-						null);
+				ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
 
 				currentOr.setLeftArg(new Compare(leftArg, arg, CompareOp.EQ));
 
 				if (i == listItemCount - 2) { // second-to-last item
-					arg = (ValueExpr) node.jjtGetChild(i + 1).jjtAccept(this,
-							null);
-					currentOr.setRightArg(new Compare(leftArg, arg,
-							CompareOp.EQ));
-				} else {
+					arg = (ValueExpr)node.jjtGetChild(i + 1).jjtAccept(this, null);
+					currentOr.setRightArg(new Compare(leftArg, arg, CompareOp.EQ));
+				}
+				else {
 					currentOr = new Or();
 					or.setRightArg(currentOr);
 				}
@@ -1554,35 +1668,34 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return result;
 	}
 
-	public ValueExpr visit(ASTNotIn node, Object data) throws VisitorException {
+	public ValueExpr visit(ASTNotIn node, Object data)
+		throws VisitorException
+	{
 		ValueExpr result = null;
-		ValueExpr leftArg = (ValueExpr) node.jjtGetParent().jjtGetChild(0)
-				.jjtAccept(this, null);
+		ValueExpr leftArg = (ValueExpr)node.jjtGetParent().jjtGetChild(0).jjtAccept(this, null);
 
 		int listItemCount = node.jjtGetNumChildren();
 
 		if (listItemCount == 1) {
-			ValueExpr arg = (ValueExpr) node.jjtGetChild(0).jjtAccept(this,
-					null);
+			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 
 			result = new Compare(leftArg, arg, CompareOp.NE);
-		} else {
+		}
+		else {
 			// create a set of conjunctive comparisons to represent the NOT IN
 			// operator: X NOT IN (a, b, c) -> X != a && X != b && X != c.
 			And and = new And();
 			And currentAnd = and;
 			for (int i = 0; i < listItemCount - 1; i++) {
-				ValueExpr arg = (ValueExpr) node.jjtGetChild(i).jjtAccept(this,
-						null);
+				ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
 
 				currentAnd.setLeftArg(new Compare(leftArg, arg, CompareOp.NE));
 
 				if (i == listItemCount - 2) { // second-to-last item
-					arg = (ValueExpr) node.jjtGetChild(i + 1).jjtAccept(this,
-							null);
-					currentAnd.setRightArg(new Compare(leftArg, arg,
-							CompareOp.NE));
-				} else {
+					arg = (ValueExpr)node.jjtGetChild(i + 1).jjtAccept(this, null);
+					currentAnd.setRightArg(new Compare(leftArg, arg, CompareOp.NE));
+				}
+				else {
 					currentAnd = new And();
 					and.setRightArg(currentAnd);
 				}
@@ -1594,7 +1707,9 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Var visit(ASTVar node, Object data) throws VisitorException {
+	public Var visit(ASTVar node, Object data)
+		throws VisitorException
+	{
 		Var var = new Var(node.getName());
 		var.setAnonymous(node.isAnonymous());
 		return var;
@@ -1602,11 +1717,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public ValueConstant visit(ASTIRI node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		URI uri;
 		try {
 			uri = valueFactory.createURI(node.getValue());
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			// invalid URI
 			throw new VisitorException(e.getMessage());
 		}
@@ -1615,17 +1732,20 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Object visit(ASTQName node, Object data) throws VisitorException {
-		throw new VisitorException(
-				"QNames must be resolved before building the query model");
+	public Object visit(ASTQName node, Object data)
+		throws VisitorException
+	{
+		throw new VisitorException("QNames must be resolved before building the query model");
 	}
 
 	@Override
-	public Object visit(ASTBind node, Object data) throws VisitorException {
-		ValueExpr ve = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, data);
+	public Object visit(ASTBind node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
 		Node aliasNode = node.jjtGetChild(1);
-		String alias = ((ASTVar) aliasNode).getName();
+		String alias = ((ASTVar)aliasNode).getName();
 
 		Extension extension = new Extension();
 		extension.addElement(new ExtensionElem(ve, alias));
@@ -1636,15 +1756,18 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Object visit(ASTBlankNode node, Object data) throws VisitorException {
+	public Object visit(ASTBlankNode node, Object data)
+		throws VisitorException
+	{
 		throw new VisitorException(
 				"Blank nodes must be replaced with variables before building the query model");
 	}
 
 	@Override
 	public ValueConstant visit(ASTRDFLiteral node, Object data)
-			throws VisitorException {
-		String label = (String) node.getLabel().jjtAccept(this, null);
+		throws VisitorException
+	{
+		String label = (String)node.getLabel().jjtAccept(this, null);
 		String lang = node.getLang();
 		ASTIRI datatypeNode = node.getDatatype();
 
@@ -1653,14 +1776,17 @@ class TupleExprBuilder extends ASTVisitorBase {
 			URI datatype;
 			try {
 				datatype = valueFactory.createURI(datatypeNode.getValue());
-			} catch (IllegalArgumentException e) {
+			}
+			catch (IllegalArgumentException e) {
 				// invalid URI
 				throw new VisitorException(e.getMessage());
 			}
 			literal = valueFactory.createLiteral(label, datatype);
-		} else if (lang != null) {
+		}
+		else if (lang != null) {
 			literal = valueFactory.createLiteral(label, lang);
-		} else {
+		}
+		else {
 			literal = valueFactory.createLiteral(label);
 		}
 
@@ -1669,48 +1795,54 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public ValueConstant visit(ASTNumericLiteral node, Object data)
-			throws VisitorException {
-		Literal literal = valueFactory.createLiteral(node.getValue(),
-				node.getDatatype());
+		throws VisitorException
+	{
+		Literal literal = valueFactory.createLiteral(node.getValue(), node.getDatatype());
 		return new ValueConstant(literal);
 	}
 
 	@Override
 	public ValueConstant visit(ASTTrue node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		return new ValueConstant(valueFactory.createLiteral(true));
 	}
 
 	@Override
 	public ValueConstant visit(ASTFalse node, Object data)
-			throws VisitorException {
+		throws VisitorException
+	{
 		return new ValueConstant(valueFactory.createLiteral(false));
 	}
 
 	@Override
-	public String visit(ASTString node, Object data) throws VisitorException {
+	public String visit(ASTString node, Object data)
+		throws VisitorException
+	{
 		return node.getValue();
 	}
 
 	@Override
-	public Object visit(ASTCount node, Object data) throws VisitorException {
+	public Object visit(ASTCount node, Object data)
+		throws VisitorException
+	{
 		ValueExpr ve = null;
 		if (node.jjtGetNumChildren() > 0) {
-			ve = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, data);
+			ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 		}
 		return new Count(ve, node.isDistinct());
 	}
 
 	@Override
 	public Object visit(ASTGroupConcat node, Object data)
-			throws VisitorException {
-		ValueExpr ve = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, data);
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
 		GroupConcat gc = new GroupConcat(ve);
 
 		if (node.jjtGetNumChildren() > 1) {
-			ValueExpr separator = (ValueExpr) node.jjtGetChild(1).jjtAccept(
-					this, data);
+			ValueExpr separator = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, data);
 			gc.setSeparator(separator);
 		}
 
@@ -1718,35 +1850,42 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Object visit(ASTMax node, Object data) throws VisitorException {
-		ValueExpr ve = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, data);
+	public Object visit(ASTMax node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
 		return new Max(ve);
 	}
 
 	@Override
-	public Object visit(ASTMin node, Object data) throws VisitorException {
-		ValueExpr ve = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, data);
+	public Object visit(ASTMin node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
 		return new Min(ve);
 	}
 
 	@Override
-	public Object visit(ASTSum node, Object data) throws VisitorException {
-		ValueExpr ve = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, data);
+	public Object visit(ASTSum node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
 		return new Sum(ve);
 	}
 
 	@Override
-	public Object visit(ASTAvg node, Object data) throws VisitorException {
-		ValueExpr ve = (ValueExpr) node.jjtGetChild(0).jjtAccept(this, data);
+	public Object visit(ASTAvg node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
 		return new Avg(ve);
 	}
 
-	static class AggregateCollector extends
-			QueryModelVisitorBase<VisitorException> {
+	static class AggregateCollector extends QueryModelVisitorBase<VisitorException> {
 
 		private Collection<AggregateOperator> operators = new ArrayList<AggregateOperator>();
 
@@ -1755,43 +1894,57 @@ class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		@Override
-		public void meet(Avg node) throws VisitorException {
+		public void meet(Avg node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(Count node) throws VisitorException {
+		public void meet(Count node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(GroupConcat node) throws VisitorException {
+		public void meet(GroupConcat node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(Max node) throws VisitorException {
+		public void meet(Max node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(Min node) throws VisitorException {
+		public void meet(Min node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(Sample node) throws VisitorException {
+		public void meet(Sample node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(Sum node) throws VisitorException {
+		public void meet(Sum node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
@@ -1801,57 +1954,69 @@ class TupleExprBuilder extends ASTVisitorBase {
 		}
 	}
 
-	static class AggregateOperatorReplacer extends
-			QueryModelVisitorBase<VisitorException> {
+	static class AggregateOperatorReplacer extends QueryModelVisitorBase<VisitorException> {
 
 		private Var replacement;
 
 		private AggregateOperator operator;
 
-		public AggregateOperatorReplacer(AggregateOperator operator,
-				Var replacement) {
+		public AggregateOperatorReplacer(AggregateOperator operator, Var replacement) {
 			this.operator = operator;
 			this.replacement = replacement;
 		}
 
 		@Override
-		public void meet(Avg node) throws VisitorException {
+		public void meet(Avg node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(Count node) throws VisitorException {
+		public void meet(Count node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(GroupConcat node) throws VisitorException {
+		public void meet(GroupConcat node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(Max node) throws VisitorException {
+		public void meet(Max node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(Min node) throws VisitorException {
+		public void meet(Min node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(Sample node) throws VisitorException {
+		public void meet(Sample node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
 
 		@Override
-		public void meet(Sum node) throws VisitorException {
+		public void meet(Sum node)
+			throws VisitorException
+		{
 			super.meet(node);
 			meetAggregate(node);
 		}
