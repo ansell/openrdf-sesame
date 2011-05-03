@@ -34,8 +34,22 @@ class LRUCache<K, V> extends LinkedHashMap<K, V> {
 	}
 
 	@Override
-	protected boolean removeEldestEntry(Map.Entry<K, V> eldest)
-	{
+	protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
 		return size() > capacity;
+	}
+
+	@Override
+	public synchronized V get(Object key) {
+		return super.get(key);
+	}
+
+	@Override
+	public synchronized V put(K key, V value) {
+		return super.put(key, value);
+	}
+
+	@Override
+	public synchronized void clear() {
+		super.clear();
 	}
 }
