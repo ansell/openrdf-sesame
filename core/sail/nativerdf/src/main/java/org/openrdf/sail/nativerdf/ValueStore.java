@@ -41,15 +41,27 @@ public class ValueStore extends ValueFactoryBase {
 	 * Constants *
 	 *-----------*/
 
+	/**
+	 * The default value cache size: 512.
+	 */
+	public static final int VALUE_CACHE_SIZE = 512;
+
+	/**
+	 * The default value id cache size: 128.
+	 */
+	public static final int VALUE_ID_CACHE_SIZE = 128;
+
+	/**
+	 * The default namespace cache size: 64.
+	 */
+	public static final int NAMESPACE_CACHE_SIZE = 64;
+
+	/**
+	 * The default namespace id cache size: 32.
+	 */
+	public static final int NAMESPACE_ID_CACHE_SIZE = 32;
+
 	private static final String FILENAME_PREFIX = "values";
-
-	private static final int VALUE_CACHE_SIZE = 512;
-
-	private static final int VALUE_ID_CACHE_SIZE = 128;
-
-	private static final int NAMESPACE_CACHE_SIZE = 64;
-
-	private static final int NAMESPACE_ID_CACHE_SIZE = 32;
 
 	private static final byte VALUE_TYPE_MASK = 0x3; // 0000 0011
 
@@ -120,13 +132,21 @@ public class ValueStore extends ValueFactoryBase {
 	public ValueStore(File dataDir, boolean forceSync)
 		throws IOException
 	{
+		this(dataDir, forceSync, VALUE_CACHE_SIZE, VALUE_ID_CACHE_SIZE, NAMESPACE_CACHE_SIZE,
+				NAMESPACE_ID_CACHE_SIZE);
+	}
+
+	public ValueStore(File dataDir, boolean forceSync, int valueCacheSize, int valueIDCacheSize,
+			int namespaceCacheSize, int namespaceIDCacheSize)
+		throws IOException
+	{
 		super();
 		dataStore = new DataStore(dataDir, FILENAME_PREFIX, forceSync);
 
-		valueCache = new LRUCache<Integer, NativeValue>(VALUE_CACHE_SIZE);
-		valueIDCache = new LRUCache<NativeValue, Integer>(VALUE_ID_CACHE_SIZE);
-		namespaceCache = new LRUCache<Integer, String>(NAMESPACE_CACHE_SIZE);
-		namespaceIDCache = new LRUCache<String, Integer>(NAMESPACE_ID_CACHE_SIZE);
+		valueCache = new LRUCache<Integer, NativeValue>(valueCacheSize);
+		valueIDCache = new LRUCache<NativeValue, Integer>(valueIDCacheSize);
+		namespaceCache = new LRUCache<Integer, String>(namespaceCacheSize);
+		namespaceIDCache = new LRUCache<String, Integer>(namespaceIDCacheSize);
 
 		setNewRevision();
 	}
