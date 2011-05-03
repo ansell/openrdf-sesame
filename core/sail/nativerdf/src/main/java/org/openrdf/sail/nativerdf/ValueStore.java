@@ -320,17 +320,14 @@ public class ValueStore extends ValueFactoryBase {
 
 		int id = dataStore.storeData(valueData);
 
-		if (isOwnValue) {
-			// Store id in value for fast access in any consecutive calls
-			((NativeValue)value).setInternalID(id, revision);
-		}
-		else {
-			// Update cache
-			NativeValue nv = getNativeValue(value);
-			nv.setInternalID(id, revision);
-			synchronized (valueIDCache) {
-				valueIDCache.put(nv, new Integer(id));
-			}
+		NativeValue nv = isOwnValue ? (NativeValue)value : getNativeValue(value);
+
+		// Store id in value for fast access in any consecutive calls
+		nv.setInternalID(id, revision);
+
+		// Update cache
+		synchronized (valueIDCache) {
+			valueIDCache.put(nv, new Integer(id));
 		}
 
 		return id;
