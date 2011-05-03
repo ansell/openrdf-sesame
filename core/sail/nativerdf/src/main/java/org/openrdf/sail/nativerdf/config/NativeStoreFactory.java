@@ -49,6 +49,7 @@ public class NativeStoreFactory implements SailFactory {
 		if (config instanceof NativeStoreConfig) {
 			NativeStoreConfig nativeConfig = (NativeStoreConfig)config;
 			nativeStore.setTripleIndexes(nativeConfig.getTripleIndexes());
+			nativeStore.setForceSync(nativeConfig.getForceSync());
 		}
 
 		return nativeStore;
