@@ -5,6 +5,8 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -281,19 +283,50 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				// length greater than zero, create join with filter for
 				// cycle-detection.
 				long numberOfJoins = currentLength - 1;
-				Join join = createMultiJoin(scope, subjVar, pathExpression, endVar, contextVar, numberOfJoins);
 
-				// if the outcome of the join has the start of the path equal to the
-				// end, we are in a loop.
-				Compare loopCheck = new Compare(subjVar, endVar, CompareOp.NE);
+				List<Var> vars = new ArrayList<Var>((int)numberOfJoins);
+
+				Join join = createMultiJoin(scope, subjVar, pathExpression, endVar, contextVar, numberOfJoins,
+						vars);
+
+				vars.add(subjVar);
+				vars.add(endVar);
+
+				ValueExpr loopCheck = createPairwiseDistinctExpr(vars);
+
 				Filter filter = new Filter(join, loopCheck);
 
 				currentIter = evaluate(filter, bindings);
 			}
 		}
 
+		private ValueExpr createPairwiseDistinctExpr(List<Var> variables) {
+			ValueExpr pairwiseDistinct = null;
+
+			int numberOfVars = variables.size();
+
+			for (int i = 0; i < numberOfVars; i++) {
+				Var var1 = variables.get(i);
+				for (int j = i + 1; j < numberOfVars; j++) {
+					Var var2 = variables.get(j);
+
+					Compare compare = new Compare(var1, var2, CompareOp.NE);
+					if (pairwiseDistinct == null) {
+						pairwiseDistinct = compare;
+					}
+					else {
+						And and = new And();
+						and.setLeftArg(pairwiseDistinct);
+						and.setRightArg(compare);
+						pairwiseDistinct = and;
+					}
+				}
+			}
+			return pairwiseDistinct;
+		}
+
 		private Join createMultiJoin(Scope scope, Var subjVar, TupleExpr pathExpression, Var endVar,
-				Var contextVar, long numberOfJoins)
+				Var contextVar, long numberOfJoins, Collection<Var> intermediateVars)
 			throws QueryEvaluationException
 		{
 
@@ -302,12 +335,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			Var subjectJoinVar = subjVar;
 
-			// we only need to replace unvalued anonymous vars in the path expression if it is not
+			// we only need to replace unvalued anonymous vars in the path
+			// expression if it is not
 			// a statement pattern.
 			boolean replaceAnonVars = !(pathExpression instanceof StatementPattern);
-			
+
 			for (long i = 0L; i < numberOfJoins; i++) {
 				Var joinVar = createAnonVar("path-join-" + numberOfJoins + "-" + i);
+				intermediateVars.add(joinVar);
 
 				TupleExpr clone = pathExpression.clone();
 				VarReplacer replacer = new VarReplacer(endVar, joinVar, i, replaceAnonVars);
@@ -382,6 +417,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(ZeroLengthPath zlp,
 			final BindingSet bindings)
+		throws QueryEvaluationException
 	{
 
 		final Var subjectVar = zlp.getSubjectVar();
@@ -413,6 +449,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	private class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
 		private QueryBindingSet result;
+
+		private CloseableIteration<BindingSet, QueryEvaluationException> iter;
 
 		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj, BindingSet bindings) {
 			result = new QueryBindingSet(bindings);
