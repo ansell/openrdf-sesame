@@ -815,6 +815,44 @@ public abstract class RDFStoreTest extends TestCase {
 		assertNull(con.getNamespace("rdf"));
 	}
 
+	public void testNullNamespaceDisallowed()
+		throws Exception
+	{
+		try {
+			con.setNamespace("foo", null);
+			fail("Expected NullPointerException");
+		}
+		catch (NullPointerException e) {
+			// expected
+		}
+	}
+
+	public void testNullPrefixDisallowed()
+		throws Exception
+	{
+		try {
+			con.setNamespace(null, "foo");
+			fail("Expected NullPointerException");
+		}
+		catch (NullPointerException e) {
+			// expected
+		}
+		try {
+			con.getNamespace(null);
+			fail("Expected NullPointerException");
+		}
+		catch (NullPointerException e) {
+			// expected
+		}
+		try {
+			con.removeNamespace(null);
+			fail("Expected NullPointerException");
+		}
+		catch (NullPointerException e) {
+			// expected
+		}
+	}
+
 	public void testGetContextIDs()
 		throws Exception
 	{

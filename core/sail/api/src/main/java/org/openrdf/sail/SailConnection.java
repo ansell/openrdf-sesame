@@ -239,11 +239,18 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
-	 * Gets the namespace that is mapped to the specified prefix.
+	 * Gets the namespace that is associated with the specified prefix, if any.
 	 * 
 	 * @param prefix
-	 *        A namespace prefix.
-	 * @return The namespace name that the specified prefix maps to.
+	 *        A namespace prefix, or an empty string in case of the default
+	 *        namespace.
+	 * @return The namespace name that is associated with the specified prefix,
+	 *         or <tt>null</tt> if there is no such namespace.
+	 * @throws SailException
+	 *         If the Sail object encountered an error or unexpected situation
+	 *         internally.
+	 * @throws NullPointerException
+	 *         In case <tt>prefix</tt> is <tt>null</tt>.
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
@@ -251,12 +258,17 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
-	 * Sets the prefix of a namespace.
-	 * 
+	 * Sets the prefix for a namespace.
 	 * @param prefix
-	 *        The new prefix.
+	 *        The new prefix, or an empty string in case of the default
+	 *        namespace.
 	 * @param name
 	 *        The namespace name that the prefix maps to.
+	 * @throws SailException
+	 *         If the Sail object encountered an error or unexpected situation
+	 *         internally.
+	 * @throws NullPointerException
+	 *         In case <tt>prefix</tt> or <tt>name</tt> is <tt>null</tt>.
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
@@ -268,10 +280,13 @@ public interface SailConnection {
 	 * prefix and a namespace name.
 	 * 
 	 * @param prefix
-	 *        The namespace prefix of which the assocation with a namespace name
-	 *        is to be removed.
+	 *        The namespace prefix, or an empty string in case of the default
+	 *        namespace.
 	 * @throws SailException
-	 *         If the namespace prefix could not be removed.
+	 *         If the Sail object encountered an error or unexpected situation
+	 *         internally.
+	 * @throws NullPointerException
+	 *         In case <tt>prefix</tt> is <tt>null</tt>.
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
@@ -282,7 +297,8 @@ public interface SailConnection {
 	 * Removes all namespace declarations from the repository.
 	 * 
 	 * @throws SailException
-	 *         If the namespaces could not be removed.
+	 *         If the Sail object encountered an error or unexpected situation
+	 *         internally.
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
