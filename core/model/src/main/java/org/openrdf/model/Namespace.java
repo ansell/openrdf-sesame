@@ -15,15 +15,17 @@ public interface Namespace extends Serializable {
 
 	/**
 	 * Gets the name of the current namespace (i.e. it's URI).
-	 *
+	 * 
 	 * @return name of namespace
 	 */
 	public String getName();
 
 	/**
-	 * Gets the prefix of the current namespace.
-	 *
-	 * @return prefix of namespace
+	 * Gets the prefix of the current namespace. The default namespace is
+	 * represented by an empty prefix string.
+	 * 
+	 * @return prefix of namespace, or an empty string in case of the default
+	 *         namespace.
 	 */
 	public String getPrefix();
 }

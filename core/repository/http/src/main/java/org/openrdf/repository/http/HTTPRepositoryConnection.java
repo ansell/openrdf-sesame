@@ -301,6 +301,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void removeNamespace(String prefix)
 		throws RepositoryException
 	{
+		if (prefix == null) {
+			throw new NullPointerException("prefix must not be null");
+		}
 		txn.add(new RemoveNamespaceOperation(prefix));
 		autoCommit();
 	}
@@ -315,6 +318,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void setNamespace(String prefix, String name)
 		throws RepositoryException
 	{
+		if (prefix == null) {
+			throw new NullPointerException("prefix must not be null");
+		}
+		if (name == null) {
+			throw new NullPointerException("name must not be null");
+		}
 		txn.add(new SetNamespaceOperation(prefix, name));
 		autoCommit();
 	}
@@ -356,6 +365,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public String getNamespace(String prefix)
 		throws RepositoryException
 	{
+		if (prefix == null) {
+			throw new NullPointerException("prefix must not be null");
+		}
 		try {
 			return getRepository().getHTTPClient().getNamespace(prefix);
 		}
