@@ -18,9 +18,7 @@ import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.lang.ObjectUtil;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -32,13 +30,13 @@ import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
+import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.ValueExpr;
-import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -105,10 +103,13 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			QueryBindingSet sol = new QueryBindingSet(parentBindings);
 
 			for (String name : group.getGroupBindingNames()) {
-				Value value = entry.getPrototype().getValue(name);
-				if (value != null) {
-					// Potentially overwrites bindings from super
-					sol.setBinding(name, value);
+				BindingSet prototype = entry.getPrototype();
+				if (prototype != null) {
+					Value value = prototype.getValue(name);
+					if (value != null) {
+						// Potentially overwrites bindings from super
+						sol.setBinding(name, value);
+					}
 				}
 			}
 
@@ -135,6 +136,12 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		try {
 			List<Entry> orderedEntries = new ArrayList<Entry>();
 			Map<Key, Entry> entries = new HashMap<Key, Entry>();
+
+			if (!iter.hasNext()) {
+				// no solutions, still need to process any aggregates to produce a
+				// zero-result.
+				orderedEntries.add(new Entry(null));
+			}
 
 			while (iter.hasNext()) {
 				BindingSet bindingSet = iter.next();
@@ -166,6 +173,12 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		try {
 			Map<Key, Entry> entries = new HashMap<Key, Entry>();
 
+			if (!iter.hasNext()) {
+				// no solutions, still need to process aggregates to produce a
+				// zero-result.
+				entries.put(new Key(null), new Entry(null));
+			}
+
 			while (iter.hasNext()) {
 				BindingSet sol = iter.next();
 				Key key = new Key(sol);
@@ -190,7 +203,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	private Value processAggregate(Collection<BindingSet> bindingSets, AggregateOperator operator)
 		throws QueryEvaluationException
 	{
-		
+
 		boolean distinct = operator.isDistinct();
 		if (operator instanceof Count) {
 			Count countOp = (Count)operator;
@@ -309,9 +322,10 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	}
 
 	private Literal calculateSum(Collection<Value> values)
-		throws ValueExprEvaluationException {
+		throws ValueExprEvaluationException
+	{
 		List<Literal> literals = new ArrayList<Literal>();
-		for (Value v: values) {
+		for (Value v : values) {
 			if (v instanceof Literal) {
 				literals.add((Literal)v);
 			}
@@ -321,20 +335,21 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		}
 		return calculateSum(literals);
 	}
-	
+
 	private Literal calculateSum(List<Literal> literals)
 		throws ValueExprEvaluationException
 	{
 		Literal result = literals.get(0);
-		
-		for(int i = 1; i < literals.size(); i++) {
+
+		for (int i = 1; i < literals.size(); i++) {
 			result = MathUtil.compute(result, literals.get(i), MathOp.PLUS);
 		}
-		
+
 		return result;
 	}
 
-	private Collection<Value> createValueCollection(ValueExpr arg, Collection<BindingSet> bindingSets, boolean distinctValues)
+	private Collection<Value> createValueCollection(ValueExpr arg, Collection<BindingSet> bindingSets,
+			boolean distinctValues)
 		throws QueryEvaluationException
 	{
 		Collection<Value> values = null;
