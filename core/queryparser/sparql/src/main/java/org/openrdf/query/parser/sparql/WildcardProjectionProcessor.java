@@ -17,6 +17,7 @@ import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTSelect;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
 import org.openrdf.query.parser.sparql.ast.ASTVar;
+import org.openrdf.query.parser.sparql.ast.ASTWhereClause;
 import org.openrdf.query.parser.sparql.ast.Node;
 import org.openrdf.query.parser.sparql.ast.SyntaxTreeBuilderTreeConstants;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
@@ -34,32 +35,34 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 	{
 		ASTQuery queryNode = qc.getQuery();
 
-		if (queryNode instanceof ASTSelectQuery) {
-			ASTSelect selectNode = ((ASTSelectQuery)queryNode).getSelect();
-
-			if (selectNode.isWildcard()) {
-				addQueryVars(qc, selectNode);
-				selectNode.setWildcard(false);
+		SelectClauseCollector collector = new SelectClauseCollector();
+		try {
+			queryNode.jjtAccept(collector, null);
+			
+			Set<ASTSelect> selectClauses = collector.getSelectClauses();
+	
+			for (ASTSelect selectClause : selectClauses) {
+				if (selectClause.isWildcard()) {
+					ASTSelectQuery q = (ASTSelectQuery) selectClause.jjtGetParent();
+					
+					addQueryVars(q.getWhereClause(), selectClause);
+				}
 			}
-		}
-		else if (queryNode instanceof ASTDescribeQuery) {
-			ASTDescribe describeNode = ((ASTDescribeQuery)queryNode).getDescribe();
-
-			if (describeNode.isWildcard()) {
-				addQueryVars(qc, describeNode);
-				describeNode.setWildcard(false);
-			}
+			
+		} catch (VisitorException e) {
+			throw new MalformedQueryException(e);
 		}
 	}
 
-	private static void addQueryVars(ASTQueryContainer qc, Node wildcardNode)
+	
+	private static void addQueryVars(ASTWhereClause queryBody, Node wildcardNode)
 		throws MalformedQueryException
 	{
 		QueryVariableCollector visitor = new QueryVariableCollector();
 
 		try {
 			// Collect variable names from query
-			qc.jjtAccept(visitor, null);
+			queryBody.jjtAccept(visitor, null);
 
 			// Adds ASTVar nodes to the ASTProjectionElem nodes and to the parent
 			for (String varName : visitor.getVariableNames()) {
@@ -104,5 +107,25 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 			return super.visit(node, data);
 		}
 	}
+	
+	/*------------------------------------*
+	 * Inner class SelectClauseCollector  *
+	 *------------------------------------*/
 
+	private static class SelectClauseCollector extends ASTVisitorBase {
+
+		private Set<ASTSelect> selectClauses = new LinkedHashSet<ASTSelect>();
+
+		public Set<ASTSelect> getSelectClauses() {
+			return selectClauses;
+		}
+
+		@Override
+		public Object visit(ASTSelect node, Object data)
+			throws VisitorException
+		{
+			selectClauses.add(node);
+			return super.visit(node, data);
+		}
+	}
 }
