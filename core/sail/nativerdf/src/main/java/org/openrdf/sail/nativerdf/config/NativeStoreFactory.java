@@ -48,7 +48,22 @@ public class NativeStoreFactory implements SailFactory {
 
 		if (config instanceof NativeStoreConfig) {
 			NativeStoreConfig nativeConfig = (NativeStoreConfig)config;
+
 			nativeStore.setTripleIndexes(nativeConfig.getTripleIndexes());
+			nativeStore.setForceSync(nativeConfig.getForceSync());
+
+			if (nativeConfig.getValueCacheSize() >= 0) {
+				nativeStore.setValueCacheSize(nativeConfig.getValueCacheSize());
+			}
+			if (nativeConfig.getValueIDCacheSize() >= 0) {
+				nativeStore.setValueIDCacheSize(nativeConfig.getValueIDCacheSize());
+			}
+			if (nativeConfig.getNamespaceCacheSize() >= 0) {
+				nativeStore.setNamespaceCacheSize(nativeConfig.getNamespaceCacheSize());
+			}
+			if (nativeConfig.getNamespaceIDCacheSize() >= 0) {
+				nativeStore.setNamespaceIDCacheSize(nativeConfig.getNamespaceIDCacheSize());
+			}
 		}
 
 		return nativeStore;

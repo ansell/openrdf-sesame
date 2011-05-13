@@ -59,6 +59,14 @@ public class NativeStore extends NotifyingSailBase {
 	 */
 	private volatile boolean forceSync = false;
 
+	private volatile int valueCacheSize = ValueStore.VALUE_CACHE_SIZE;
+
+	private volatile int valueIDCacheSize = ValueStore.VALUE_ID_CACHE_SIZE;
+
+	private volatile int namespaceCacheSize = ValueStore.NAMESPACE_CACHE_SIZE;
+
+	private volatile int namespaceIDCacheSize = ValueStore.NAMESPACE_ID_CACHE_SIZE;
+
 	private volatile TripleStore tripleStore;
 
 	private volatile ValueStore valueStore;
@@ -133,6 +141,22 @@ public class NativeStore extends NotifyingSailBase {
 		return forceSync;
 	}
 
+	public void setValueCacheSize(int valueCacheSize) {
+		this.valueCacheSize = valueCacheSize;
+	}
+
+	public void setValueIDCacheSize(int valueIDCacheSize) {
+		this.valueIDCacheSize = valueIDCacheSize;
+	}
+
+	public void setNamespaceCacheSize(int namespaceCacheSize) {
+		this.namespaceCacheSize = namespaceCacheSize;
+	}
+
+	public void setNamespaceIDCacheSize(int namespaceIDCacheSize) {
+		this.namespaceIDCacheSize = namespaceIDCacheSize;
+	}
+
 	/**
 	 * Initializes this NativeStore.
 	 * 
@@ -172,7 +196,8 @@ public class NativeStore extends NotifyingSailBase {
 
 		try {
 			namespaceStore = new NamespaceStore(dataDir);
-			valueStore = new ValueStore(dataDir, forceSync);
+			valueStore = new ValueStore(dataDir, forceSync, valueCacheSize, valueIDCacheSize,
+					namespaceCacheSize, namespaceIDCacheSize);
 			tripleStore = new TripleStore(dataDir, tripleIndexes, forceSync);
 		}
 		catch (IOException e) {
@@ -190,9 +215,9 @@ public class NativeStore extends NotifyingSailBase {
 				namespaceStore.close();
 				namespaceStore = null;
 			}
-			
+
 			dirLock.release();
-			
+
 			throw new SailException(e);
 		}
 
