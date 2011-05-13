@@ -372,9 +372,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 					extension.setArg(group);
 
-					// avoid overwriting a HAVING clause, ORDER BY clause or
-					// subselect
-					if (!(result instanceof Filter || result instanceof Order || result instanceof Projection)) {
+					// avoid overwriting a HAVING clause, ORDER BY clause
+					if (!(result instanceof Filter || result instanceof Order)) {
 						result = group;
 					}
 				}
