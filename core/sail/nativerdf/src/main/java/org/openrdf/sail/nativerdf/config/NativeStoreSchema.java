@@ -27,9 +27,25 @@ public class NativeStoreSchema {
 	/** <tt>http://www.openrdf.org/config/sail/native#forceSync</tt> */
 	public final static URI FORCE_SYNC;
 
+	/** <tt>http://www.openrdf.org/config/sail/native#valueCacheSize</tt> */
+	public final static URI VALUE_CACHE_SIZE;
+
+	/** <tt>http://www.openrdf.org/config/sail/native#valueIDCacheSize</tt> */
+	public final static URI VALUE_ID_CACHE_SIZE;
+
+	/** <tt>http://www.openrdf.org/config/sail/native#namespaceCacheSize</tt> */
+	public final static URI NAMESPACE_CACHE_SIZE;
+
+	/** <tt>http://www.openrdf.org/config/sail/native#namespaceIDCacheSize</tt> */
+	public final static URI NAMESPACE_ID_CACHE_SIZE;
+
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		TRIPLE_INDEXES = factory.createURI(NAMESPACE, "tripleIndexes");
 		FORCE_SYNC = factory.createURI(NAMESPACE, "forceSync");
+		VALUE_CACHE_SIZE = factory.createURI(NAMESPACE, "valueCacheSize");
+		VALUE_ID_CACHE_SIZE = factory.createURI(NAMESPACE, "valueIDCacheSize");
+		NAMESPACE_CACHE_SIZE = factory.createURI(NAMESPACE, "namespaceCacheSize");
+		NAMESPACE_ID_CACHE_SIZE = factory.createURI(NAMESPACE, "namespaceIDCacheSize");
 	}
 }

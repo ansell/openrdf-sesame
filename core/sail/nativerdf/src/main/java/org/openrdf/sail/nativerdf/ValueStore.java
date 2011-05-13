@@ -41,15 +41,27 @@ public class ValueStore extends ValueFactoryBase {
 	 * Constants *
 	 *-----------*/
 
+	/**
+	 * The default value cache size: 512.
+	 */
+	public static final int VALUE_CACHE_SIZE = 512;
+
+	/**
+	 * The default value id cache size: 128.
+	 */
+	public static final int VALUE_ID_CACHE_SIZE = 128;
+
+	/**
+	 * The default namespace cache size: 64.
+	 */
+	public static final int NAMESPACE_CACHE_SIZE = 64;
+
+	/**
+	 * The default namespace id cache size: 32.
+	 */
+	public static final int NAMESPACE_ID_CACHE_SIZE = 32;
+
 	private static final String FILENAME_PREFIX = "values";
-
-	private static final int VALUE_CACHE_SIZE = 512;
-
-	private static final int VALUE_ID_CACHE_SIZE = 128;
-
-	private static final int NAMESPACE_CACHE_SIZE = 64;
-
-	private static final int NAMESPACE_ID_CACHE_SIZE = 32;
 
 	private static final byte VALUE_TYPE_MASK = 0x3; // 0000 0011
 
@@ -120,13 +132,21 @@ public class ValueStore extends ValueFactoryBase {
 	public ValueStore(File dataDir, boolean forceSync)
 		throws IOException
 	{
+		this(dataDir, forceSync, VALUE_CACHE_SIZE, VALUE_ID_CACHE_SIZE, NAMESPACE_CACHE_SIZE,
+				NAMESPACE_ID_CACHE_SIZE);
+	}
+
+	public ValueStore(File dataDir, boolean forceSync, int valueCacheSize, int valueIDCacheSize,
+			int namespaceCacheSize, int namespaceIDCacheSize)
+		throws IOException
+	{
 		super();
 		dataStore = new DataStore(dataDir, FILENAME_PREFIX, forceSync);
 
-		valueCache = new LRUCache<Integer, NativeValue>(VALUE_CACHE_SIZE);
-		valueIDCache = new LRUCache<NativeValue, Integer>(VALUE_ID_CACHE_SIZE);
-		namespaceCache = new LRUCache<Integer, String>(NAMESPACE_CACHE_SIZE);
-		namespaceIDCache = new LRUCache<String, Integer>(NAMESPACE_ID_CACHE_SIZE);
+		valueCache = new LRUCache<Integer, NativeValue>(valueCacheSize);
+		valueIDCache = new LRUCache<NativeValue, Integer>(valueIDCacheSize);
+		namespaceCache = new LRUCache<Integer, String>(namespaceCacheSize);
+		namespaceIDCache = new LRUCache<String, Integer>(namespaceIDCacheSize);
 
 		setNewRevision();
 	}
@@ -170,13 +190,9 @@ public class ValueStore extends ValueFactoryBase {
 	public NativeValue getValue(int id)
 		throws IOException
 	{
-		NativeValue resultValue = null;
-
 		// Check value cache
 		Integer cacheID = new Integer(id);
-		synchronized (valueCache) {
-			resultValue = valueCache.get(cacheID);
-		}
+		NativeValue resultValue = valueCache.get(cacheID);
 
 		if (resultValue == null) {
 			// Value not in cache, fetch it from file
@@ -186,9 +202,7 @@ public class ValueStore extends ValueFactoryBase {
 				resultValue = data2value(id, data);
 
 				// Store value in cache
-				synchronized (valueCache) {
-					valueCache.put(cacheID, resultValue);
-				}
+				valueCache.put(cacheID, resultValue);
 			}
 		}
 
@@ -224,10 +238,7 @@ public class ValueStore extends ValueFactoryBase {
 		}
 
 		// Check cache
-		Integer cachedID = null;
-		synchronized (valueIDCache) {
-			cachedID = valueIDCache.get(value);
-		}
+		Integer cachedID = valueIDCache.get(value);
 
 		if (cachedID != null) {
 			int id = cachedID.intValue();
@@ -255,9 +266,7 @@ public class ValueStore extends ValueFactoryBase {
 					// Store id in cache
 					NativeValue nv = getNativeValue(value);
 					nv.setInternalID(id, revision);
-					synchronized (valueIDCache) {
-						valueIDCache.put(nv, new Integer(id));
-					}
+					valueIDCache.put(nv, new Integer(id));
 				}
 			}
 
@@ -298,10 +307,7 @@ public class ValueStore extends ValueFactoryBase {
 		}
 
 		// ID not stored in value itself, try the ID cache
-		Integer cachedID = null;
-		synchronized (valueIDCache) {
-			cachedID = valueIDCache.get(value);
-		}
+		Integer cachedID = valueIDCache.get(value);
 
 		if (cachedID != null) {
 			int id = cachedID.intValue();
@@ -320,18 +326,13 @@ public class ValueStore extends ValueFactoryBase {
 
 		int id = dataStore.storeData(valueData);
 
-		if (isOwnValue) {
-			// Store id in value for fast access in any consecutive calls
-			((NativeValue)value).setInternalID(id, revision);
-		}
-		else {
-			// Update cache
-			NativeValue nv = getNativeValue(value);
-			nv.setInternalID(id, revision);
-			synchronized (valueIDCache) {
-				valueIDCache.put(nv, new Integer(id));
-			}
-		}
+		NativeValue nv = isOwnValue ? (NativeValue)value : getNativeValue(value);
+
+		// Store id in value for fast access in any consecutive calls
+		nv.setInternalID(id, revision);
+
+		// Update cache
+		valueIDCache.put(nv, new Integer(id));
 
 		return id;
 	}
@@ -350,21 +351,10 @@ public class ValueStore extends ValueFactoryBase {
 			try {
 				dataStore.clear();
 
-				synchronized (valueCache) {
-					valueCache.clear();
-				}
-
-				synchronized (valueIDCache) {
-					valueIDCache.clear();
-				}
-
-				synchronized (namespaceCache) {
-					namespaceCache.clear();
-				}
-
-				synchronized (namespaceIDCache) {
-					namespaceIDCache.clear();
-				}
+				valueCache.clear();
+				valueIDCache.clear();
+				namespaceCache.clear();
+				namespaceIDCache.clear();
 
 				initBNodeParams();
 
@@ -584,29 +574,23 @@ public class ValueStore extends ValueFactoryBase {
 	private int getNamespaceID(String namespace, boolean create)
 		throws IOException
 	{
-		int id;
-
-		Integer cacheID = null;
-		synchronized (namespaceIDCache) {
-			cacheID = namespaceIDCache.get(namespace);
+		Integer cacheID = namespaceIDCache.get(namespace);
+		if (cacheID != null) {
+			return cacheID.intValue();
 		}
 
-		if (cacheID != null) {
-			id = cacheID.intValue();
+		byte[] namespaceData = namespace.getBytes("UTF-8");
+
+		int id;
+		if (create) {
+			id = dataStore.storeData(namespaceData);
 		}
 		else {
-			byte[] namespaceData = namespace.getBytes("UTF-8");
+			id = dataStore.getID(namespaceData);
+		}
 
-			if (create) {
-				id = dataStore.storeData(namespaceData);
-			}
-			else {
-				id = dataStore.getID(namespaceData);
-			}
-
-			if (id != -1) {
-				namespaceIDCache.put(namespace, new Integer(id));
-			}
+		if (id != -1) {
+			namespaceIDCache.put(namespace, new Integer(id));
 		}
 
 		return id;
@@ -616,19 +600,13 @@ public class ValueStore extends ValueFactoryBase {
 		throws IOException
 	{
 		Integer cacheID = new Integer(id);
-		String namespace = null;
-
-		synchronized (namespaceCache) {
-			namespace = namespaceCache.get(cacheID);
-		}
+		String namespace = namespaceCache.get(cacheID);
 
 		if (namespace == null) {
 			byte[] namespaceData = dataStore.getData(id);
 			namespace = new String(namespaceData, "UTF-8");
 
-			synchronized (namespaceCache) {
-				namespaceCache.put(cacheID, namespace);
-			}
+			namespaceCache.put(cacheID, namespace);
 		}
 
 		return namespace;
