@@ -9,8 +9,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.parser.sparql.ast.ASTDescribe;
-import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
 import org.openrdf.query.parser.sparql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.sparql.ast.ASTQuery;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
@@ -46,6 +44,7 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 					ASTSelectQuery q = (ASTSelectQuery) selectClause.jjtGetParent();
 					
 					addQueryVars(q.getWhereClause(), selectClause);
+					selectClause.setWildcard(false);
 				}
 			}
 			
