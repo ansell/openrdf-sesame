@@ -17,7 +17,7 @@
 	<target name="package" depends="issuewarnings,mvn,override-onejar-services" description="Create release artifacts"/>
 
 	<target name="mvn">
-		<exec os="Windows XP, Windows Vista" executable="mvn.bat" failonerror="true">
+		<exec os="Windows XP, Windows Vista, Windows 7" executable="mvn.bat" failonerror="true">
 			<env key="MAVEN_OPTS" value="-Xmx512m -XX:MaxPermSize=128m"/>
 			<arg line="clean source:jar package site assembly:assembly" />
 		</exec>
