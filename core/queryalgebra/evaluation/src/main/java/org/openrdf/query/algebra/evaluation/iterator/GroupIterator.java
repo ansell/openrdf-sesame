@@ -42,6 +42,7 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.util.MathUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
+import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
  * @author David Huynh
@@ -176,7 +177,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			if (!iter.hasNext()) {
 				// no solutions, still need to process aggregates to produce a
 				// zero-result.
-				entries.put(new Key(null), new Entry(null));
+				entries.put(new Key(new EmptyBindingSet()), new Entry(null));
 			}
 
 			while (iter.hasNext()) {
