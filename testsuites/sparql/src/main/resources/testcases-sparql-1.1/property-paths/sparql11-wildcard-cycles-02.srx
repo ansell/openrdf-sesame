@@ -16,7 +16,6 @@
 		  <literal>Alice</literal>
 		</binding>
 	 </result>
-  
   	 <result>
 		<binding name="person">
 		  <uri>http://example/alice</uri>

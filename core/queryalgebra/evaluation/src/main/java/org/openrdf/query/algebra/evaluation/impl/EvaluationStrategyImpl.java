@@ -289,10 +289,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				Join join = createMultiJoin(scope, subjVar, pathExpression, endVar, contextVar, numberOfJoins,
 						vars);
 
-				vars.add(subjVar);
-				vars.add(endVar);
-
-				ValueExpr loopCheck = createPairwiseDistinctExpr(vars);
+				ValueExpr loopCheck = createPairwiseDistinctExpr(subjVar, endVar, vars);
 
 				Filter filter = new Filter(join, loopCheck);
 
@@ -300,16 +297,27 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 		}
 
-		private ValueExpr createPairwiseDistinctExpr(List<Var> variables) {
+		private ValueExpr createPairwiseDistinctExpr(Var beginVar, Var endVar, List<Var> variables) {
 			ValueExpr pairwiseDistinct = null;
 
+			variables.add(beginVar);
+			variables.add(endVar);
+			
 			int numberOfVars = variables.size();
-
+			
+			// all intermediate vars should be pairwise distinct,
+			// begin and end var should be pairwise distinct from all intermediates, but not each other.
 			for (int i = 0; i < numberOfVars; i++) {
 				Var var1 = variables.get(i);
 				for (int j = i + 1; j < numberOfVars; j++) {
 					Var var2 = variables.get(j);
 
+					if (var1.equals(beginVar) || var1.equals(endVar)) {
+						if (var2.equals(endVar) || var2.equals(beginVar)) {
+							continue;
+						}
+					}
+					
 					Compare compare = new Compare(var1, var2, CompareOp.NE);
 					if (pairwiseDistinct == null) {
 						pairwiseDistinct = compare;
@@ -322,6 +330,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					}
 				}
 			}
+			
+			
 			return pairwiseDistinct;
 		}
 
@@ -336,8 +346,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Var subjectJoinVar = subjVar;
 
 			// we only need to replace unvalued anonymous vars in the path
-			// expression if it is not
-			// a statement pattern.
+			// expression if it is not a statement pattern.
 			boolean replaceAnonVars = !(pathExpression instanceof StatementPattern);
 
 			for (long i = 0L; i < numberOfJoins; i++) {
