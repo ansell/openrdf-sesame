@@ -81,7 +81,7 @@
 
 	<target name="override-onejar-services" depends="create-service-files">
 		<xmlproperty file="pom.xml" />
-		<zip destfile="target/openrdf-sesame-${project.version}-onejar.jar" update="true">
+		<zip destfile="target/openrdf-sesame-${project.parent.version}-onejar.jar" update="true">
 			<fileset dir="target/services"/>
 		</zip>
 	</target>
