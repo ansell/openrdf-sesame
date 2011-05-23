@@ -46,8 +46,8 @@ public class RDFFormat extends FileFormat {
 	/**
 	 * The Turtle file format.
 	 */
-	public static final RDFFormat TURTLE = new RDFFormat("Turtle", "application/x-turtle",
-			Charset.forName("UTF-8"), "ttl", true, false);
+	public static final RDFFormat TURTLE = new RDFFormat("Turtle", Arrays.asList("text/turtle",
+			"application/x-turtle"), Charset.forName("UTF-8"), Arrays.asList("ttl"), true, false);
 
 	/**
 	 * The N3/Notation3 file format.
