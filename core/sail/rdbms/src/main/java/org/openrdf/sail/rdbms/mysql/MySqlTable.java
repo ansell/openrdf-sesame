@@ -20,7 +20,7 @@ public class MySqlTable extends RdbmsTable {
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE TABLE ").append(getName());
 		sb.append(" (\n").append(columns).append(")");
-		sb.append(" type = InnoDB");
+		sb.append(" ENGINE = InnoDB");
 		return sb.toString();
 	}
 
