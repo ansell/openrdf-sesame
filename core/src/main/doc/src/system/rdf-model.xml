@@ -13,7 +13,7 @@
 	<para>
 		The class diagram above shows the interfaces that are defined in
 		Sesame's RDF Model, package
-			<ulink url="../api/org/openrdf/model/package-summary.html">
+			<ulink url="../apidocs/org/openrdf/model/package-summary.html">
 			org.openrdf.model</ulink>.
 		The RDF entities "URI", "blank node" and "literal" are organized in a
 		hierarchy reflecting their use in RDF. The interfaces Value and Resource
@@ -34,7 +34,7 @@
 		<title>Package org.openrdf.model.impl</title>
 		<para>
 			Package
-				<ulink url="../api/org/openrdf/model/impl/package-summary.html">
+				<ulink url="../apidocs/org/openrdf/model/impl/package-summary.html">
 				org.openrdf.model.impl</ulink>
 			contains a default implementation of the RDF Model interfaces. These
 			classes can be used by Sail implementations that have no need for
