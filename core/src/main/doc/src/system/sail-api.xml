@@ -12,7 +12,7 @@
 
 	<para>
 		The class diagram above shows the main Sail interfaces from package
-			<ulink url="../api/org/openrdf/sesame/sail/package-summary.html">
+			<ulink url="../apidocs/org/openrdf/sail/package-summary.html">
 			org.openrdf.sesame.sail</ulink>.
 		The Sail API defines a set of interfaces for RDF stores and inferencers.
 		The main interface is Sail, which defines methods to initialize, query,
