@@ -1129,6 +1129,11 @@ class TripleStore {
 
 			return score;
 		}
+		
+		@Override
+		public String toString() {
+			return new String(getFieldSeq());
+		}
 	}
 
 	/*------------------------------*
