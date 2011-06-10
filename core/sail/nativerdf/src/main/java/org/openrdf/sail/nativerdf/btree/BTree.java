@@ -187,7 +187,8 @@ public class BTree {
 
 	/**
 	 * The depth of this BTree (the cache variable), < 0 indicating it is
-	 * unknown.
+	 * unknown, 0 for an empty BTree, 1 for a BTree with just a root node, and so
+	 * on.
 	 */
 	private volatile int height = -1;
 
@@ -831,6 +832,7 @@ public class BTree {
 				rootNode = createNewNode();
 				rootNodeID = rootNode.getID();
 				writeFileHeader();
+				height = 1;
 			}
 
 			InsertResult insertResult = insertInTree(value, 0, rootNode);
