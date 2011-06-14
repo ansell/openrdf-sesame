@@ -13,6 +13,9 @@ import org.openrdf.query.MalformedQueryException;
  */
 public interface QueryParser {
 
+	public ParsedUpdate parseUpdate(String updateStr, String baseURI)
+		throws MalformedQueryException;
+
 	public ParsedQuery parseQuery(String queryStr, String baseURI)
 		throws MalformedQueryException;
 }

@@ -11,25 +11,81 @@ import java.util.Map;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.IncompatibleOperationException;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
+import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParser;
+import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
 import org.openrdf.query.parser.sparql.ast.ASTQuery;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
+import org.openrdf.query.parser.sparql.ast.ASTUpdate;
+import org.openrdf.query.parser.sparql.ast.Node;
 import org.openrdf.query.parser.sparql.ast.ParseException;
 import org.openrdf.query.parser.sparql.ast.SyntaxTreeBuilder;
 import org.openrdf.query.parser.sparql.ast.TokenMgrError;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 public class SPARQLParser implements QueryParser {
+
+	public ParsedUpdate parseUpdate(String updateStr, String baseURI)
+		throws MalformedQueryException
+	{
+		try {
+			ASTQueryContainer qc = SyntaxTreeBuilder.parseQuery(updateStr);
+			StringEscapesProcessor.process(qc);
+			BaseDeclProcessor.process(qc, baseURI);
+			Map<String, String> prefixes = PrefixDeclProcessor.process(qc);
+			WildcardProjectionProcessor.process(qc);
+			BlankNodeVarProcessor.process(qc);
+
+			if (!qc.containsQuery()) {
+
+				// handle update operation
+
+
+				ParsedUpdate update;
+
+				ASTUpdate updateNode = qc.getUpdate();
+				
+
+				TupleExpr tupleExpr = buildQueryModel(updateNode.jjtGetChild(0));
+
+				update = new ParsedUpdate(tupleExpr);
+
+				/*
+				// Handle dataset declaration
+				Dataset dataset = DatasetDeclProcessor.process(qc);
+				if (dataset != null) {
+					update.setDataset(dataset);
+				}
+				*/
+
+				return update;
+			}
+			else {
+				throw new IncompatibleOperationException("supplied operation string is not an update");
+
+			}
+		}
+		catch (ParseException e) {
+			throw new MalformedQueryException(e.getMessage(), e);
+		}
+		catch (TokenMgrError e) {
+			throw new MalformedQueryException(e.getMessage(), e);
+		}
+
+	}
 
 	public ParsedQuery parseQuery(String queryStr, String baseURI)
 		throws MalformedQueryException
@@ -41,34 +97,44 @@ public class SPARQLParser implements QueryParser {
 			Map<String, String> prefixes = PrefixDeclProcessor.process(qc);
 			WildcardProjectionProcessor.process(qc);
 			BlankNodeVarProcessor.process(qc);
-			TupleExpr tupleExpr = buildQueryModel(qc);
 
-			ParsedQuery query;
+			if (qc.containsQuery()) {
 
-			ASTQuery queryNode = qc.getQuery();
-			if (queryNode instanceof ASTSelectQuery) {
-				query = new ParsedTupleQuery(tupleExpr);
-			}
-			else if (queryNode instanceof ASTConstructQuery) {
-				query = new ParsedGraphQuery(tupleExpr, prefixes);
-			}
-			else if (queryNode instanceof ASTAskQuery) {
-				query = new ParsedBooleanQuery(tupleExpr);
-			}
-			else if (queryNode instanceof ASTDescribeQuery) {
-				query = new ParsedGraphQuery(tupleExpr, prefixes);
+				// handle query operation
+
+				TupleExpr tupleExpr = buildQueryModel(qc);
+
+				ParsedQuery query;
+
+				ASTQuery queryNode = qc.getQuery();
+				if (queryNode instanceof ASTSelectQuery) {
+					query = new ParsedTupleQuery(tupleExpr);
+				}
+				else if (queryNode instanceof ASTConstructQuery) {
+					query = new ParsedGraphQuery(tupleExpr, prefixes);
+				}
+				else if (queryNode instanceof ASTAskQuery) {
+					query = new ParsedBooleanQuery(tupleExpr);
+				}
+				else if (queryNode instanceof ASTDescribeQuery) {
+					query = new ParsedGraphQuery(tupleExpr, prefixes);
+				}
+				else {
+					throw new RuntimeException("Unexpected query type: " + queryNode.getClass());
+				}
+
+				// Handle dataset declaration
+				Dataset dataset = DatasetDeclProcessor.process(qc);
+				if (dataset != null) {
+					query.setDataset(dataset);
+				}
+
+				return query;
 			}
 			else {
-				throw new RuntimeException("Unexpected query type: " + queryNode.getClass());
-			}
+				throw new IncompatibleOperationException("supplied operation string is not a query");
 
-			// Handle dataset declaration
-			Dataset dataset = DatasetDeclProcessor.process(qc);
-			if (dataset != null) {
-				query.setDataset(dataset);
 			}
-
-			return query;
 		}
 		catch (ParseException e) {
 			throw new MalformedQueryException(e.getMessage(), e);
@@ -78,7 +144,7 @@ public class SPARQLParser implements QueryParser {
 		}
 	}
 
-	private TupleExpr buildQueryModel(ASTQueryContainer qc)
+	private TupleExpr buildQueryModel(Node qc)
 		throws MalformedQueryException
 	{
 		TupleExprBuilder tupleExprBuilder = new TupleExprBuilder(new ValueFactoryImpl());
@@ -107,13 +173,12 @@ public class SPARQLParser implements QueryParser {
 				String queryStr = buf.toString().trim();
 				if (queryStr.length() > 0) {
 					try {
-						SPARQLParser parser = new SPARQLParser();
-						ParsedQuery parsedQuery = parser.parseQuery(queryStr, null);
-						
+						ParsedOperation parsedQuery = QueryParserUtil.parseOperation(QueryLanguage.SPARQL, queryStr, null);
+
 						System.out.println("Parsed query: ");
 						System.out.println(parsedQuery.toString());
 						System.out.println();
-						
+
 					}
 					catch (Exception e) {
 						System.err.println(e.getMessage());

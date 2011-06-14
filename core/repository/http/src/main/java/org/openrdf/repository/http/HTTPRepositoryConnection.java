@@ -32,12 +32,15 @@ import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.Operation;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.Update;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
@@ -125,6 +128,13 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		finally {
 			super.finalize();
 		}
+	}
+
+	/**
+	 * Unsupported method, throws an {@link UnsupportedOperationException}.
+	 */
+	public Operation prepareOperation(QueryLanguage ql, String operation, String baseURI) {
+		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -382,5 +392,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected <E> RepositoryResult<E> createRepositoryResult(Iterable<? extends E> elements) {
 		return new RepositoryResult<E>(new CloseableIteratorIteration<E, RepositoryException>(
 				elements.iterator()));
+	}
+
+	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
+		throws RepositoryException, MalformedQueryException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

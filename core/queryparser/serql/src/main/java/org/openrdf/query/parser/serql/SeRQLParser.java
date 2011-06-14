@@ -15,6 +15,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParser;
 import org.openrdf.query.parser.serql.ast.ASTGraphQuery;
 import org.openrdf.query.parser.serql.ast.ASTQuery;
@@ -24,6 +25,8 @@ import org.openrdf.query.parser.serql.ast.ParseException;
 import org.openrdf.query.parser.serql.ast.SyntaxTreeBuilder;
 import org.openrdf.query.parser.serql.ast.TokenMgrError;
 import org.openrdf.query.parser.serql.ast.VisitorException;
+
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class SeRQLParser implements QueryParser {
 
@@ -99,5 +102,12 @@ public class SeRQLParser implements QueryParser {
 				buf.setLength(0);
 			}
 		}
+	}
+
+	public ParsedUpdate parseUpdate(String updateStr, String baseURI)
+		throws MalformedQueryException
+	{
+		// SeRQL does not implement update operations.
+		throw new NotImplementedException();
 	}
 }

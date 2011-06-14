@@ -38,9 +38,11 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.Operation;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
+import org.openrdf.query.Update;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -104,6 +106,12 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		isOpen = false;
 	}
 
+	public Operation prepareOperation(QueryLanguage ql, String operation)
+		throws MalformedQueryException, RepositoryException
+	{
+		return prepareOperation(ql, operation, null);
+	}
+
 	public Query prepareQuery(QueryLanguage ql, String query)
 		throws MalformedQueryException, RepositoryException
 	{
@@ -126,6 +134,12 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws MalformedQueryException, RepositoryException
 	{
 		return prepareBooleanQuery(ql, query, null);
+	}
+
+	public Update prepareUpdate(QueryLanguage ql, String update)
+		throws MalformedQueryException, RepositoryException
+	{
+		return prepareUpdate(ql, update, null);
 	}
 
 	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -245,7 +259,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 				mimeType = mimeType.substring(0, semiColonIdx);
 			}
 			dataFormat = Rio.getParserFormatForMIMEType(mimeType);
-	
+
 			// Fall back to using file name extensions
 			if (dataFormat == null) {
 				dataFormat = Rio.getParserFormatForFileName(url.getPath());

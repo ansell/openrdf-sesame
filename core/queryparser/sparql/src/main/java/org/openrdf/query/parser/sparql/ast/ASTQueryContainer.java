@@ -29,7 +29,20 @@ public class ASTQueryContainer extends SimpleNode {
 		return super.jjtGetChildren(ASTPrefixDecl.class);
 	}
 
+	public boolean containsQuery() {
+		return (getQuery() != null);
+	}
+	
 	public ASTQuery getQuery() {
 		return super.jjtGetChild(ASTQuery.class);
 	}
+	
+	public ASTUpdate getUpdate() {
+		return super.jjtGetChild(ASTUpdate.class);
+	}
+	
+	public ASTOperation getOperation() {
+		return super.jjtGetChild(ASTOperation.class);
+	}
+	
 }

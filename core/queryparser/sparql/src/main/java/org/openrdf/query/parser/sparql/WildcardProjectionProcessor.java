@@ -8,6 +8,8 @@ package org.openrdf.query.parser.sparql;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import com.sun.org.apache.xpath.internal.operations.Quo;
+
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.sparql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.sparql.ast.ASTQuery;
@@ -33,27 +35,29 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 	{
 		ASTQuery queryNode = qc.getQuery();
 
-		SelectClauseCollector collector = new SelectClauseCollector();
-		try {
-			queryNode.jjtAccept(collector, null);
-			
-			Set<ASTSelect> selectClauses = collector.getSelectClauses();
-	
-			for (ASTSelect selectClause : selectClauses) {
-				if (selectClause.isWildcard()) {
-					ASTSelectQuery q = (ASTSelectQuery) selectClause.jjtGetParent();
-					
-					addQueryVars(q.getWhereClause(), selectClause);
-					selectClause.setWildcard(false);
+		if (queryNode != null) {
+			SelectClauseCollector collector = new SelectClauseCollector();
+			try {
+				queryNode.jjtAccept(collector, null);
+
+				Set<ASTSelect> selectClauses = collector.getSelectClauses();
+
+				for (ASTSelect selectClause : selectClauses) {
+					if (selectClause.isWildcard()) {
+						ASTSelectQuery q = (ASTSelectQuery)selectClause.jjtGetParent();
+
+						addQueryVars(q.getWhereClause(), selectClause);
+						selectClause.setWildcard(false);
+					}
 				}
+
 			}
-			
-		} catch (VisitorException e) {
-			throw new MalformedQueryException(e);
+			catch (VisitorException e) {
+				throw new MalformedQueryException(e);
+			}
 		}
 	}
 
-	
 	private static void addQueryVars(ASTWhereClause queryBody, Node wildcardNode)
 		throws MalformedQueryException
 	{
@@ -106,7 +110,7 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 			return super.visit(node, data);
 		}
 	}
-	
+
 	/*------------------------------------*
 	 * Inner class SelectClauseCollector  *
 	 *------------------------------------*/

@@ -21,9 +21,11 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.Operation;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
+import org.openrdf.query.Update;
 import org.openrdf.repository.DelegatingRepositoryConnection;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -314,6 +316,12 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return getDelegate().isOpen();
 	}
 
+	public Operation prepareOperation(QueryLanguage ql, String operation, String baseURI)
+		throws MalformedQueryException, RepositoryException
+	{
+		return getDelegate().prepareOperation(ql, operation, baseURI);
+	}
+
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, RepositoryException
 	{
@@ -336,6 +344,12 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		throws MalformedQueryException, RepositoryException
 	{
 		return getDelegate().prepareBooleanQuery(ql, query, baseURI);
+	}
+
+	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
+		throws MalformedQueryException, RepositoryException
+	{
+		return getDelegate().prepareUpdate(ql, update, baseURI);
 	}
 
 	@Override
