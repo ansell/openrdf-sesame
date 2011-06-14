@@ -23,10 +23,12 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.Operation;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.UnsupportedQueryLanguageException;
+import org.openrdf.query.Update;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -54,10 +56,12 @@ import org.openrdf.rio.UnsupportedRDFormatException;
  * Examples:
  * 
  * <pre>
- * // Ex 1: this method retrieves all statements that appear in either context1 or context2, or both.
+ * // Ex 1: this method retrieves all statements that appear in either context1 or
+ * // context2, or both.
  * RepositoryConnection.getStatements(null, null, null, true, context1, context2);
  * 
- * // Ex 2: this method retrieves all statements that appear in the repository (regardless of context).
+ * // Ex 2: this method retrieves all statements that appear in the repository
+ * // (regardless of context).
  * RepositoryConnection.getStatements(null, null, null, true);
  * 
  * // Ex 3: this method retrieves all statements that have no associated context in
@@ -113,6 +117,50 @@ public interface RepositoryConnection {
 	 */
 	public void close()
 		throws RepositoryException;
+
+	/**
+	 * Prepares an operation for execution on this repository (optional
+	 * operation).
+	 * 
+	 * @param ql
+	 *        The query language in which the operation is formulated.
+	 * @param operation
+	 *        The operation query string.
+	 * @return An operation ready to be executed on this repository.
+	 * @throws MalformedQueryException
+	 *         If the supplied operation is malformed.
+	 * @throws UnsupportedQueryLanguageException
+	 *         If the supplied query language is not supported.
+	 * @throws UnsupportedOperationException
+	 *         If the <tt>prepareOperation</tt> method is not supported by this
+	 *         repository.
+	 */
+	public Operation prepareOperation(QueryLanguage ql, String operation)
+		throws RepositoryException, MalformedQueryException;
+
+	/**
+	 * Prepares an operation for execution on this repository (optional
+	 * operation).
+	 * 
+	 * @param ql
+	 *        The query language in which the operation is formulated.
+	 * @param operation
+	 *        The operation query string.
+	 * @param baseURI
+	 *        The base URI to resolve any relative URIs that are in the operation
+	 *        against, can be <tt>null</tt> if the operation does not contain any
+	 *        relative URIs.
+	 * @return An operation ready to be executed on this repository.
+	 * @throws MalformedQueryException
+	 *         If the supplied operation is malformed.
+	 * @throws UnsupportedQueryLanguageException
+	 *         If the supplied query language is not supported.
+	 * @throws UnsupportedOperationException
+	 *         If the <tt>prepareOperation</tt> method is not supported by this
+	 *         repository.
+	 */
+	public Operation prepareOperation(QueryLanguage ql, String operation, String baseURI)
+		throws RepositoryException, MalformedQueryException;
 
 	/**
 	 * Prepares a query for evaluation on this repository (optional operation).
@@ -280,6 +328,36 @@ public interface RepositoryConnection {
 	 *         If the supplied query language is not supported.
 	 */
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query, String baseURI)
+		throws RepositoryException, MalformedQueryException;
+
+	/**
+	 * Prepares an Update operation.
+	 * 
+	 * @param ql
+	 *        The query language in which the update operation is formulated.
+	 * @param update
+	 *        The update operation string.
+	 * @throws MalformedQueryException
+	 *         If the supplied update operation string is malformed.
+	 */
+	public Update prepareUpdate(QueryLanguage ql, String update)
+		throws RepositoryException, MalformedQueryException;
+
+	/**
+	 * Prepares an Update operation.
+	 * 
+	 * @param ql
+	 *        The query language in which the update operation is formulated.
+	 * @param update
+	 *        The update operation string.
+	 * @param baseURI
+	 *        The base URI to resolve any relative URIs that are in the update
+	 *        against, can be <tt>null</tt> if the update does not contain any
+	 *        relative URIs.
+	 * @throws MalformedQueryException
+	 *         If the supplied update operation string is malformed.
+	 */
+	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 		throws RepositoryException, MalformedQueryException;
 
 	/**

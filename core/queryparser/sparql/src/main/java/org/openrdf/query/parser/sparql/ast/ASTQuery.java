@@ -7,7 +7,7 @@ package org.openrdf.query.parser.sparql.ast;
 
 import java.util.List;
 
-public abstract class ASTQuery extends SimpleNode {
+public abstract class ASTQuery extends ASTOperation {
 
 	public ASTQuery(int id) {
 		super(id);

@@ -87,6 +87,17 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTSTRING = 81;
   public int JJTQNAME = 82;
   public int JJTBLANKNODE = 83;
+  public int JJTLOAD = 84;
+  public int JJTCLEAR = 85;
+  public int JJTDROP = 86;
+  public int JJTADD = 87;
+  public int JJTMOVE = 88;
+  public int JJTCOPY = 89;
+  public int JJTCREATE = 90;
+  public int JJTINSERTDATA = 91;
+  public int JJTDELETEDATA = 92;
+  public int JJTDELETEWHERE = 93;
+  public int JJTMODIFY = 94;
 
 
   public String[] jjtNodeName = {
@@ -174,6 +185,17 @@ public interface SyntaxTreeBuilderTreeConstants
     "String",
     "QName",
     "BlankNode",
+    "Load",
+    "Clear",
+    "Drop",
+    "Add",
+    "Move",
+    "Copy",
+    "Create",
+    "InsertData",
+    "DeleteData",
+    "DeleteWhere",
+    "Modify",
   };
 }
-/* JavaCC - OriginalChecksum=fbb46cbc5290cd97d99c287dd43afa12 (do not edit this line) */
+/* JavaCC - OriginalChecksum=9a34c74d806e2218888d6383cc2eeb1a (do not edit this line) */

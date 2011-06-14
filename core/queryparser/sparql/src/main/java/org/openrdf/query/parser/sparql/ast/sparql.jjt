@@ -180,6 +180,27 @@ TOKEN [IGNORE_CASE] :
 |	<BIND: "bind">
 }
 
+TOKEN [IGNORE_CASE] :	// SPARQL 1.1 Update-specific tokens
+{
+	<LOAD: "load">
+|	<CLEAR: "clear">
+|	<DROP: "drop">
+|	<ADD: "add">
+|	<MOVE: "move">
+|	<COPY: "copy">
+|	<CREATE: "create">
+|	<INSERT: "insert">
+|	<DATA: "data">
+|	<DELETE: "delete">
+|	<WITH: "with">
+|	<SILENT: "silent">
+|	<DEFAULT_GRAPH: "default">
+|	<ALL: "all">
+|	<INTO: "into">
+|	<TO: "to">
+|	<USING: "using">
+}
+
 TOKEN:
 {
 	<Q_IRI_REF: "<" (~["<", ">", "\"", "{", "}", "|", "^", "`", "\\", "\u0000"-"\u0020"])* ">">
@@ -247,7 +268,7 @@ TOKEN:
 ASTQueryContainer QueryContainer():
 {}
 {
-	Prolog() Query() <EOF>
+	Prolog() (Query() | Update()) <EOF>
 	{ return jjtThis; }
 }
 
@@ -275,6 +296,7 @@ void PrefixDecl() :
 		jjtThis.setPrefix(prefixStr);
 	}
 }
+
 
 void Query() #void :
 {}
@@ -482,6 +504,13 @@ void TriplesBlock() #void :
 {
 	// Note: recursive rule rewriten to non-recursive rule, requires lookahead
 	TriplesSameSubjectPath() ( LOOKAHEAD(2) <DOT> TriplesSameSubjectPath() )* [<DOT>]
+}
+
+void TriplesTemplate() #void :
+{}
+{
+	// Note: recursive rule rewriten to non-recursive rule, requires lookahead
+	TriplesSameSubject() ( LOOKAHEAD(2) <DOT> TriplesSameSubject() )* [<DOT>]
 }
 
 void GraphPatternNotTriples() #void :
@@ -1185,4 +1214,149 @@ void IRI() :
 { Token t; }
 {
 	t = <Q_IRI_REF> {jjtThis.setValue(_trimString(t.image, 1));}
+}
+
+/// SPARQL 1.1 Update productions
+
+void GraphRefAll() #void :
+{}
+{
+	GraphRef() 
+|	<DEFAULT_GRAPH>
+|	<NAMED> 
+|	<ALL>
+}
+
+void GraphOrDefault() #void :
+{}
+{
+	<DEFAULT_GRAPH>
+|	[<GRAPH>] IRIref()
+}
+
+void GraphRef() #void :
+{}
+{ 
+	<GRAPH> IRIref() 
+}
+
+void QuadData() #void :
+{}
+{
+    <LBRACE> Quads() <RBRACE> 
+}
+
+void Quads() #void :
+{}
+{
+    [TriplesTemplate()] ( QuadsNotTriples() [<DOT>] [TriplesTemplate()] )*
+}
+
+void QuadsNotTriples() #void :
+{}
+{
+    <GRAPH> VarOrIRIref() <LBRACE> [TriplesTemplate()] <RBRACE>
+}
+
+void Update() #void :
+{}
+{
+	Load()
+|	Clear()
+|	Drop()
+|	Add()
+|	Move()
+|	Copy()
+|	Create()
+|	LOOKAHEAD(2) InsertData()
+|	LOOKAHEAD(2) DeleteData() 
+|	LOOKAHEAD(2) DeleteWhere()
+|	Modify()
+}
+
+void Load() :
+{}
+{
+    <LOAD> [<SILENT> {jjtThis.setSilent(true);} ] IRIref() [<INTO> GraphRef() ]
+}
+
+
+void Clear() :
+{}
+{
+	<CLEAR> [<SILENT> {jjtThis.setSilent(true);} ] GraphRefAll()
+}
+
+void Drop() :
+{}
+{
+	<DROP> [<SILENT> {jjtThis.setSilent(true);} ] GraphRefAll()
+}
+
+void Add() :
+{}
+{
+	<ADD> [<SILENT> {jjtThis.setSilent(true);} ] GraphOrDefault() <TO> GraphOrDefault()
+}
+
+void Move() :
+{}
+{
+	<MOVE> [<SILENT> {jjtThis.setSilent(true);} ] GraphOrDefault() <TO> GraphOrDefault()
+}
+
+void Copy() :
+{}
+{
+	<COPY> [<SILENT> {jjtThis.setSilent(true);} ] GraphOrDefault() <TO> GraphOrDefault()
+}
+
+void Create() :
+{}
+{
+	<CREATE> [<SILENT> {jjtThis.setSilent(true);} ] GraphRef()
+}
+
+void InsertData() :
+{}
+{
+    <INSERT> <DATA> QuadData()
+}
+
+void DeleteData() :
+{}
+{
+    <DELETE> <DATA> QuadData()
+}
+
+void DeleteWhere() :
+{}
+{
+    <DELETE> <WHERE> QuadData()
+}
+
+void DeleteClause() #void:
+{}
+{
+    <DELETE> QuadData()
+}
+
+void InsertClause() #void:
+{}
+{
+    <INSERT> QuadData()
+}
+
+void UsingClause() #void:
+{}
+{
+    <USING> ( IRIref() | <NAMED> IRIref() )
+}
+
+void Modify() :
+{}
+{
+    [<WITH> IRIref()] 
+    ( DeleteClause() [InsertClause()] | InsertClause() ) (UsingClause())* 
+    <WHERE> GroupGraphPattern()
 }

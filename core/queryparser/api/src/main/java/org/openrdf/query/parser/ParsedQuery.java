@@ -13,17 +13,11 @@ import org.openrdf.query.algebra.TupleExpr;
  * 
  * @author Arjohn Kampman
  */
-public abstract class ParsedQuery {
+public abstract class ParsedQuery extends ParsedOperation {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-
-	/**
-	 * A tuple expression representing the actual query, formulated in OpenRDF
-	 * Query Algebra objects.
-	 */
-	private TupleExpr tupleExpr;
 
 	/**
 	 * The dataset that was specified in the query, if any.
@@ -39,6 +33,7 @@ public abstract class ParsedQuery {
 	 * needs to be supplied to it using {@link #setTupleExpr(TupleExpr)}.
 	 */
 	public ParsedQuery() {
+		super();
 	}
 
 	/**
@@ -66,20 +61,6 @@ public abstract class ParsedQuery {
 	 * Methods *
 	 *---------*/
 
-	/**
-	 * Gets the tuple expression underlying this query.
-	 */
-	public void setTupleExpr(TupleExpr tupleExpr) {
-		assert tupleExpr != null : "tupleExpr must not be null";
-		this.tupleExpr = tupleExpr;
-	}
-
-	/**
-	 * Gets the tuple expression underlying this query.
-	 */
-	public TupleExpr getTupleExpr() {
-		return tupleExpr;
-	}
 
 	public Dataset getDataset() {
 		return dataset;
@@ -89,13 +70,4 @@ public abstract class ParsedQuery {
 		this.dataset = dataset;
 	}
 
-	/**
-	 * Returns a string representation of the query that can be used for
-	 * debugging.
-	 */
-	@Override
-	public String toString()
-	{
-		return tupleExpr.toString();
-	}
 }

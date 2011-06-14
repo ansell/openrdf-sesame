@@ -14,7 +14,9 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.Operation;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
@@ -351,5 +353,19 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 			CloseableIteration<? extends E, SailException> sailIter)
 	{
 		return new RepositoryResult<E>(new SailCloseableIteration<E>(sailIter));
+	}
+
+	public Operation prepareOperation(QueryLanguage ql, String operation, String baseURI)
+		throws RepositoryException, MalformedQueryException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
+		throws RepositoryException, MalformedQueryException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

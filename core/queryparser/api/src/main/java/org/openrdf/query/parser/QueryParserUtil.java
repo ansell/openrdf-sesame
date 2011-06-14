@@ -5,6 +5,7 @@
  */
 package org.openrdf.query.parser;
 
+import org.openrdf.query.IncompatibleOperationException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.UnsupportedQueryLanguageException;
@@ -25,6 +26,37 @@ public class QueryParserUtil {
 		}
 
 		throw new UnsupportedQueryLanguageException("No factory available for query language " + ql);
+	}
+
+	/**
+	 * Parses the supplied operation into a query model.
+	 * 
+	 * @param ql
+	 *        The language in which the operation is formulated.
+	 * @param operation
+	 *        The operation.
+	 * @param baseURI
+	 *        The base URI to resolve any relative URIs that are in the operation
+	 *        against, can be <tt>null</tt> if the operation does not contain any
+	 *        relative URIs.
+	 * @return The model for the parsed operation.
+	 * @throws MalformedQueryException
+	 *         If the supplied operation was malformed.
+	 * @throws UnsupportedQueryLanguageException
+	 *         If the specified query language is not supported.
+	 */
+	public static ParsedOperation parseOperation(QueryLanguage ql, String operation, String baseURI)
+		throws MalformedQueryException
+	{
+		QueryParser parser = createParser(ql);
+		ParsedOperation parsedOperation = null;
+		try {
+			parsedOperation = parser.parseQuery(operation, baseURI);
+		}
+		catch (IncompatibleOperationException e) {
+			parsedOperation = parser.parseUpdate(operation, baseURI);
+		}
+		return parsedOperation;
 	}
 
 	/**
@@ -69,7 +101,7 @@ public class QueryParserUtil {
 	public static ParsedTupleQuery parseTupleQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, UnsupportedQueryLanguageException
 	{
-		ParsedQuery q = parseQuery(ql, query, baseURI);
+		ParsedOperation q = parseQuery(ql, query, baseURI);
 
 		if (q instanceof ParsedTupleQuery) {
 			return (ParsedTupleQuery)q;
@@ -96,7 +128,7 @@ public class QueryParserUtil {
 	public static ParsedGraphQuery parseGraphQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, UnsupportedQueryLanguageException
 	{
-		ParsedQuery q = parseQuery(ql, query, baseURI);
+		ParsedOperation q = parseQuery(ql, query, baseURI);
 
 		if (q instanceof ParsedGraphQuery) {
 			return (ParsedGraphQuery)q;
@@ -123,7 +155,7 @@ public class QueryParserUtil {
 	public static ParsedBooleanQuery parseBooleanQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, UnsupportedQueryLanguageException
 	{
-		ParsedQuery q = parseQuery(ql, query, baseURI);
+		ParsedOperation q = parseQuery(ql, query, baseURI);
 
 		if (q instanceof ParsedBooleanQuery) {
 			return (ParsedBooleanQuery)q;
