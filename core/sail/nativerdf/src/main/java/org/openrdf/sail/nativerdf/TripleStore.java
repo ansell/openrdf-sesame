@@ -889,6 +889,31 @@ class TripleStore {
 		sync();
 
 		txnStatusFile.setTxnStatus(TxnStatus.NONE);
+		// checkAllCommitted();
+	}
+
+	private void checkAllCommitted()
+		throws IOException
+	{
+		for (TripleIndex index : indexes) {
+			System.out.println("Checking " + index + " index");
+			BTree btree = index.getBTree();
+			RecordIterator iter = btree.iterateAll();
+			try {
+				for (byte[] data = iter.next(); data != null; data = iter.next()) {
+					byte flags = data[FLAG_IDX];
+					boolean wasAdded = (flags & ADDED_FLAG) != 0;
+					boolean wasRemoved = (flags & REMOVED_FLAG) != 0;
+					boolean wasToggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
+					if (wasAdded || wasRemoved || wasToggled) {
+						System.out.println("unexpected triple: " + ByteArrayUtil.toHexString(data));
+					}
+				}
+			}
+			finally {
+				iter.close();
+			}
+		}
 	}
 
 	public void rollback()
@@ -1129,7 +1154,7 @@ class TripleStore {
 
 			return score;
 		}
-		
+
 		@Override
 		public String toString() {
 			return new String(getFieldSeq());
