@@ -363,28 +363,28 @@ public class BTree {
 
 			if (Arrays.equals(MAGIC_NUMBER, magicNumber)) {
 				if (version > FILE_FORMAT_VERSION) {
-					throw new IOException("Unable to read BTree file; it uses a newer file format");
+					throw new IOException("Unable to read BTree file " + file + "; it uses a newer file format");
 				}
 				else if (version != FILE_FORMAT_VERSION) {
-					throw new IOException("Unable to read BTree file; invalid file format version: " + version);
+					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: " + version);
 				}
 			}
 			else if (Arrays.equals(OLD_MAGIC_NUMBER, magicNumber)) {
 				if (version != 1) {
-					throw new IOException("Unable to read BTree file; invalid file format version: " + version);
+					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: " + version);
 				}
 				// Write new magic number to file
 				logger.info("Updating file header for btree file '{}'", file.getAbsolutePath());
 				writeFileHeader();
 			}
 			else {
-				throw new IOException("File doesn't contain (compatible) BTree data");
+				throw new IOException("File doesn't contain (compatible) BTree data: " + file);
 			}
 
 			// Verify that the value sizes match
 			if (this.valueSize != valueSize) {
 				throw new IOException("Specified value size (" + valueSize
-						+ ") is different from what is stored on disk (" + this.valueSize + ")");
+						+ ") is different from what is stored on disk (" + this.valueSize + ") in " + file);
 			}
 		}
 
@@ -1081,7 +1081,7 @@ public class BTree {
 
 		if (node.isLeaf()) {
 			if (node.isEmpty()) {
-				throw new IllegalArgumentException("Trying to remove largest value from an empty node");
+				throw new IllegalArgumentException("Trying to remove largest value from an empty node in " + getFile());
 			}
 			return node.removeValueRight(nodeValueCount - 1);
 		}
@@ -1202,7 +1202,7 @@ public class BTree {
 		throws IOException
 	{
 		if (id <= 0) {
-			throw new IllegalArgumentException("id must be larger than 0, is: " + id);
+			throw new IllegalArgumentException("id must be larger than 0, is: " + id + " in " + getFile());
 		}
 
 		// Check node cache
@@ -1347,7 +1347,7 @@ public class BTree {
 		 */
 		public Node(int id) {
 			if (id <= 0) {
-				throw new IllegalArgumentException("id must be larger than 0, is: " + id);
+				throw new IllegalArgumentException("id must be larger than 0, is: " + id + " in " + getFile());
 			}
 
 			this.id = id;
