@@ -17,5 +17,27 @@ class ASTModify extends ASTUpdate {
   public Object jjtAccept(SyntaxTreeBuilderVisitor visitor, Object data) throws VisitorException {
     return visitor.visit(this, data);
   }
+  
+  public ASTInsertClause getInsertClause() {
+	  return jjtGetChild(ASTInsertClause.class);
+  }
+  
+  public ASTDeleteClause getDeleteClause() {
+	  return jjtGetChild(ASTDeleteClause.class);
+  }
+  
+  public ASTIRI getWithClause() {
+	  if (jjtGetChild(0) instanceof ASTIRI) {
+		  return (ASTIRI)jjtGetChild(0);
+	  }
+	  else {
+		  return null;
+	  }
+  }
+  
+  public ASTGraphPatternGroup getWhereClause() {
+	  return jjtGetChild(ASTGraphPatternGroup.class);
+  }
+  
 }
 /* JavaCC - OriginalChecksum=9460d42e4f84afaf785d4073d7125899 (do not edit this line) */

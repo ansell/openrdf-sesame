@@ -316,12 +316,6 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return getDelegate().isOpen();
 	}
 
-	public Operation prepareOperation(QueryLanguage ql, String operation, String baseURI)
-		throws MalformedQueryException, RepositoryException
-	{
-		return getDelegate().prepareOperation(ql, operation, baseURI);
-	}
-
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, RepositoryException
 	{

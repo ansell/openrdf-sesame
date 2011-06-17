@@ -133,13 +133,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	/**
 	 * Unsupported method, throws an {@link UnsupportedOperationException}.
 	 */
-	public Operation prepareOperation(QueryLanguage ql, String operation, String baseURI) {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Unsupported method, throws an {@link UnsupportedOperationException}.
-	 */
 	public Query prepareQuery(QueryLanguage ql, String queryString, String baseURI) {
 		throw new UnsupportedOperationException();
 	}

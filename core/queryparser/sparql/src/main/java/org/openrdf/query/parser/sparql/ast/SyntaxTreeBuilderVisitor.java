@@ -97,6 +97,8 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTInsertData node, Object data) throws VisitorException;
   public Object visit(ASTDeleteData node, Object data) throws VisitorException;
   public Object visit(ASTDeleteWhere node, Object data) throws VisitorException;
+  public Object visit(ASTDeleteClause node, Object data) throws VisitorException;
+  public Object visit(ASTInsertClause node, Object data) throws VisitorException;
   public Object visit(ASTModify node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=053a24375bb7155c19c88197ac16f73f (do not edit this line) */
+/* JavaCC - OriginalChecksum=0f329422a3d989e3bfc925ac2e574c95 (do not edit this line) */

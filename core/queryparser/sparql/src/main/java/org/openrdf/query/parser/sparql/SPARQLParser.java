@@ -15,17 +15,33 @@ import org.openrdf.query.IncompatibleOperationException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
+import org.openrdf.query.parser.ParsedModify;
 import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParser;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.query.parser.sparql.ast.ASTAdd;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
+import org.openrdf.query.parser.sparql.ast.ASTClear;
 import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
+import org.openrdf.query.parser.sparql.ast.ASTCopy;
+import org.openrdf.query.parser.sparql.ast.ASTCreate;
+import org.openrdf.query.parser.sparql.ast.ASTDeleteClause;
+import org.openrdf.query.parser.sparql.ast.ASTDeleteData;
+import org.openrdf.query.parser.sparql.ast.ASTDeleteWhere;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
+import org.openrdf.query.parser.sparql.ast.ASTDrop;
+import org.openrdf.query.parser.sparql.ast.ASTIRI;
+import org.openrdf.query.parser.sparql.ast.ASTInsertClause;
+import org.openrdf.query.parser.sparql.ast.ASTInsertData;
+import org.openrdf.query.parser.sparql.ast.ASTLoad;
+import org.openrdf.query.parser.sparql.ast.ASTModify;
+import org.openrdf.query.parser.sparql.ast.ASTMove;
 import org.openrdf.query.parser.sparql.ast.ASTQuery;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
@@ -49,19 +65,42 @@ public class SPARQLParser implements QueryParser {
 			WildcardProjectionProcessor.process(qc);
 			BlankNodeVarProcessor.process(qc);
 
-			if (!qc.containsQuery()) {
+			if (!qc.containsQuery()) { // handle update operation
 
-				// handle update operation
-
-
-				ParsedUpdate update;
+				ParsedUpdate update = null;
 
 				ASTUpdate updateNode = qc.getUpdate();
-				
 
-				TupleExpr tupleExpr = buildQueryModel(updateNode.jjtGetChild(0));
+				if (updateNode instanceof ASTModify) {
 
-				update = new ParsedUpdate(tupleExpr);
+					ASTModify modifyNode = (ASTModify)updateNode;
+
+					TupleExprBuilder tupleExprBuilder = new TupleExprBuilder(new ValueFactoryImpl());
+
+					ASTIRI withNode = modifyNode.getWithClause();
+					ValueConstant with = null;
+					if (withNode != null) {
+						with = (ValueConstant)withNode.jjtAccept(tupleExprBuilder, null);
+					}
+					
+					ASTDeleteClause deleteNode = modifyNode.getDeleteClause();
+					TupleExpr delete = null;
+					if (deleteNode != null) {
+						delete = (TupleExpr)deleteNode.jjtAccept(tupleExprBuilder, null);
+					}
+
+					ASTInsertClause insertNode = modifyNode.getInsertClause();
+					TupleExpr insert = null;
+					if (insertNode != null) {
+						insert = (TupleExpr)insertNode.jjtAccept(tupleExprBuilder, null);
+					}
+
+					TupleExpr where = (TupleExpr)modifyNode.getWhereClause().jjtAccept(tupleExprBuilder, null);
+
+					update = new ParsedModify(with, delete, insert, where);
+				}
+
+				// TODO add other update types.
 
 				/*
 				// Handle dataset declaration
@@ -74,14 +113,16 @@ public class SPARQLParser implements QueryParser {
 				return update;
 			}
 			else {
-				throw new IncompatibleOperationException("supplied operation string is not an update");
-
+				throw new IncompatibleOperationException("supplied string is not an update operation");
 			}
 		}
 		catch (ParseException e) {
 			throw new MalformedQueryException(e.getMessage(), e);
 		}
 		catch (TokenMgrError e) {
+			throw new MalformedQueryException(e.getMessage(), e);
+		}
+		catch (VisitorException e) {
 			throw new MalformedQueryException(e.getMessage(), e);
 		}
 
@@ -132,8 +173,7 @@ public class SPARQLParser implements QueryParser {
 				return query;
 			}
 			else {
-				throw new IncompatibleOperationException("supplied operation string is not a query");
-
+				throw new IncompatibleOperationException("supplied string is not a query operation");
 			}
 		}
 		catch (ParseException e) {
@@ -173,7 +213,8 @@ public class SPARQLParser implements QueryParser {
 				String queryStr = buf.toString().trim();
 				if (queryStr.length() > 0) {
 					try {
-						ParsedOperation parsedQuery = QueryParserUtil.parseOperation(QueryLanguage.SPARQL, queryStr, null);
+						ParsedOperation parsedQuery = QueryParserUtil.parseOperation(QueryLanguage.SPARQL,
+								queryStr, null);
 
 						System.out.println("Parsed query: ");
 						System.out.println(parsedQuery.toString());

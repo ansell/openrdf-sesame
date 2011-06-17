@@ -119,50 +119,6 @@ public interface RepositoryConnection {
 		throws RepositoryException;
 
 	/**
-	 * Prepares an operation for execution on this repository (optional
-	 * operation).
-	 * 
-	 * @param ql
-	 *        The query language in which the operation is formulated.
-	 * @param operation
-	 *        The operation query string.
-	 * @return An operation ready to be executed on this repository.
-	 * @throws MalformedQueryException
-	 *         If the supplied operation is malformed.
-	 * @throws UnsupportedQueryLanguageException
-	 *         If the supplied query language is not supported.
-	 * @throws UnsupportedOperationException
-	 *         If the <tt>prepareOperation</tt> method is not supported by this
-	 *         repository.
-	 */
-	public Operation prepareOperation(QueryLanguage ql, String operation)
-		throws RepositoryException, MalformedQueryException;
-
-	/**
-	 * Prepares an operation for execution on this repository (optional
-	 * operation).
-	 * 
-	 * @param ql
-	 *        The query language in which the operation is formulated.
-	 * @param operation
-	 *        The operation query string.
-	 * @param baseURI
-	 *        The base URI to resolve any relative URIs that are in the operation
-	 *        against, can be <tt>null</tt> if the operation does not contain any
-	 *        relative URIs.
-	 * @return An operation ready to be executed on this repository.
-	 * @throws MalformedQueryException
-	 *         If the supplied operation is malformed.
-	 * @throws UnsupportedQueryLanguageException
-	 *         If the supplied query language is not supported.
-	 * @throws UnsupportedOperationException
-	 *         If the <tt>prepareOperation</tt> method is not supported by this
-	 *         repository.
-	 */
-	public Operation prepareOperation(QueryLanguage ql, String operation, String baseURI)
-		throws RepositoryException, MalformedQueryException;
-
-	/**
 	 * Prepares a query for evaluation on this repository (optional operation).
 	 * In case the query contains relative URIs that need to be resolved against
 	 * an external base URI, one should use

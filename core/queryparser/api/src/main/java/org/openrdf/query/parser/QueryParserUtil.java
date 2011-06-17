@@ -59,6 +59,31 @@ public class QueryParserUtil {
 		return parsedOperation;
 	}
 
+	
+	/**
+	 * Parses the supplied update operation into a query model.
+	 * 
+	 * @param ql
+	 *        The language in which the update operation is formulated.
+	 * @param update
+	 *        The update operation.
+	 * @param baseURI
+	 *        The base URI to resolve any relative URIs that are in the operation
+	 *        against, can be <tt>null</tt> if the update operation does not contain any
+	 *        relative URIs.
+	 * @return The model for the parsed update operation.
+	 * @throws MalformedQueryException
+	 *         If the supplied update operation was malformed.
+	 * @throws UnsupportedQueryLanguageException
+	 *         If the specified query language is not supported.
+	 */
+	public static ParsedUpdate parseUpdate(QueryLanguage ql, String update, String baseURI)
+		throws MalformedQueryException, UnsupportedQueryLanguageException
+	{
+		QueryParser parser = createParser(ql);
+		return parser.parseUpdate(update, baseURI);
+	}
+
 	/**
 	 * Parses the supplied query into a query model.
 	 * 

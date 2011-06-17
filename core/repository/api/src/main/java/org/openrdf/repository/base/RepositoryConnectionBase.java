@@ -106,12 +106,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		isOpen = false;
 	}
 
-	public Operation prepareOperation(QueryLanguage ql, String operation)
-		throws MalformedQueryException, RepositoryException
-	{
-		return prepareOperation(ql, operation, null);
-	}
-
 	public Query prepareQuery(QueryLanguage ql, String query)
 		throws MalformedQueryException, RepositoryException
 	{

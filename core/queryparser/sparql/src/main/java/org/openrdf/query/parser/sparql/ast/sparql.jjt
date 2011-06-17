@@ -1335,13 +1335,13 @@ void DeleteWhere() :
     <DELETE> <WHERE> QuadData()
 }
 
-void DeleteClause() #void:
+void DeleteClause() :
 {}
 {
     <DELETE> QuadData()
 }
 
-void InsertClause() #void:
+void InsertClause() :
 {}
 {
     <INSERT> QuadData()

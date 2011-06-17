@@ -17,10 +17,13 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Operation;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
+import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -149,6 +152,14 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	{
 		ParsedBooleanQuery parsedQuery = QueryParserUtil.parseBooleanQuery(ql, queryString, baseURI);
 		return new SailBooleanQuery(parsedQuery, this);
+	}
+
+	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
+		throws RepositoryException, MalformedQueryException
+	{
+		ParsedUpdate parsedUpdate = QueryParserUtil.parseUpdate(ql, update, baseURI);
+
+		return new SailUpdate(parsedUpdate, this);
 	}
 
 	public RepositoryResult<Resource> getContextIDs()
@@ -355,17 +366,4 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return new RepositoryResult<E>(new SailCloseableIteration<E>(sailIter));
 	}
 
-	public Operation prepareOperation(QueryLanguage ql, String operation, String baseURI)
-		throws RepositoryException, MalformedQueryException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
-		throws RepositoryException, MalformedQueryException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
