@@ -732,7 +732,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		graphPattern = parentGP;
 
-		return null;
+		return te;
 	}
 
 	@Override

@@ -97,7 +97,9 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTINSERTDATA = 91;
   public int JJTDELETEDATA = 92;
   public int JJTDELETEWHERE = 93;
-  public int JJTMODIFY = 94;
+  public int JJTDELETECLAUSE = 94;
+  public int JJTINSERTCLAUSE = 95;
+  public int JJTMODIFY = 96;
 
 
   public String[] jjtNodeName = {
@@ -195,7 +197,9 @@ public interface SyntaxTreeBuilderTreeConstants
     "InsertData",
     "DeleteData",
     "DeleteWhere",
+    "DeleteClause",
+    "InsertClause",
     "Modify",
   };
 }
-/* JavaCC - OriginalChecksum=9a34c74d806e2218888d6383cc2eeb1a (do not edit this line) */
+/* JavaCC - OriginalChecksum=40f82ae9dafe457d19cc18c73b651b0c (do not edit this line) */

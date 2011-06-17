@@ -15,7 +15,7 @@ import org.openrdf.query.algebra.TupleExpr;
  * 
  * @author Jeen Broekstra
  */
-public class ParsedUpdate extends ParsedOperation {
+public abstract class ParsedUpdate extends ParsedOperation {
 
 	/*-----------*
 	 * Variables *
@@ -45,32 +45,6 @@ public class ParsedUpdate extends ParsedOperation {
 	 */
 	public ParsedUpdate(Map<String, String> namespaces) {
 		super();
-		this.namespaces = namespaces;
-	}
-
-	/**
-	 * Creates a new update for the supplied tuple expression.
-	 * 
-	 * @param tupleExpr
-	 *        A tuple expression representing the update, formulated in Sail Query
-	 *        Model objects.
-	 */
-	public ParsedUpdate(TupleExpr tupleExpr) {
-		super(tupleExpr);
-	}
-
-	/**
-	 * Creates a new update.
-	 * 
-	 * @param tupleExpr
-	 *        A tuple expression representing the update, formulated in Sail Query
-	 *        Model objects.
-	 * @param namespaces
-	 *        A mapping of namespace prefixes to namespace names representing the
-	 *        namespaces that are used in the update.
-	 */
-	public ParsedUpdate(TupleExpr tupleExpr, Map<String, String> namespaces) {
-		this(tupleExpr);
 		this.namespaces = namespaces;
 	}
 
