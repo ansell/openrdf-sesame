@@ -16,6 +16,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
@@ -164,5 +165,12 @@ public class SailConnectionWrapper implements SailConnection {
 		throws SailException
 	{
 		wrappedCon.clearNamespaces();
+	}
+
+	public void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred)
+		throws SailException
+	{
+		wrappedCon.executeUpdate(updateExpr, dataset, bindings, includeInferred);
 	}
 }

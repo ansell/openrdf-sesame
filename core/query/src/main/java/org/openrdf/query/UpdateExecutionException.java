@@ -19,4 +19,28 @@ public class UpdateExecutionException extends OpenRDFException {
 	 */
 	private static final long serialVersionUID = 7969399526232927434L;
 
+	public UpdateExecutionException() {
+		super();
+	}
+
+	/**
+	 * Creates a new UpdateExecutionException.
+	 * 
+	 * @param msg
+	 *        An error message.
+	 */
+	public UpdateExecutionException(String msg) {
+		super(msg);
+	}
+
+	/**
+	 * Creates a new {@link UpdateExecutionException} wrapping another exception.
+	 * 
+	 * @param cause
+	 *        the cause of the exception
+	 */
+	public UpdateExecutionException(Throwable cause) {
+		super(cause);
+	}
+
 }

@@ -25,7 +25,9 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
@@ -209,6 +211,27 @@ public abstract class SailConnectionBase implements SailConnection {
 		try {
 			verifyIsOpen();
 			return registerIteration(evaluateInternal(tupleExpr, dataset, bindings, includeInferred));
+		}
+		finally {
+			connectionLock.readLock().unlock();
+		}
+	}
+
+	public final void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
+	{
+		connectionLock.readLock().lock();
+		try {
+			verifyIsOpen();
+
+			updateLock.lock();
+			try {
+				autoStartTransaction();
+				executeInternal(updateExpr, dataset, bindings, includeInferred);
+			}
+			finally {
+				updateLock.unlock();
+			}
 		}
 		finally {
 			connectionLock.readLock().unlock();
@@ -535,6 +558,64 @@ public abstract class SailConnectionBase implements SailConnection {
 	protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException;
+
+	protected void executeInternal(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
+	{
+		/* TODO this method should really be defined abstract, but for backward-compatibility 
+		 * purposes with third-party SAIL implementation we provide a default implementation for 
+		 * now.
+		 */
+		logger.trace("Incoming update expression:\n{}", updateExpr);
+
+		if (updateExpr instanceof Modify) {
+			Modify modify = (Modify)updateExpr;
+
+			if (modify.getDeleteExpr() != null) {
+				CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeRemoved = evaluateInternal(
+						modify.getDeleteExpr(), dataset, bindings, includeInferred);
+
+				try {
+					while (toBeRemoved.hasNext()) {
+						BindingSet binding = toBeRemoved.next();
+
+						Resource subj = (Resource)binding.getValue("subject");
+						URI pred = (URI)binding.getValue("predicate");
+						Value obj = binding.getValue("object");
+
+						// TODO contexts?
+						removeStatementsInternal(subj, pred, obj);
+					}
+					toBeRemoved.close();
+				}
+				catch (QueryEvaluationException e) {
+					throw new SailException(e);
+				}
+			}
+			if (modify.getInsertExpr() != null) {
+				CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeInserted = evaluateInternal(
+						modify.getInsertExpr(), dataset, bindings, includeInferred);
+
+				try {
+					while (toBeInserted.hasNext()) {
+						BindingSet binding = toBeInserted.next();
+
+						Resource subj = (Resource)binding.getValue("subject");
+						URI pred = (URI)binding.getValue("predicate");
+						Value obj = binding.getValue("object");
+
+						// TODO contexts?
+						addStatementInternal(subj, pred, obj);
+					}
+					toBeInserted.close();
+				}
+				catch (QueryEvaluationException e) {
+					throw new SailException(e);
+				}
+			}
+		}
+
+	}
 
 	protected abstract CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
 		throws SailException;

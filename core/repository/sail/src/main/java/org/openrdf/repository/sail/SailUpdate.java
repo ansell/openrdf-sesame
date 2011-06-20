@@ -9,8 +9,9 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.impl.AbstractOperation;
-import org.openrdf.query.parser.ParsedModify;
 import org.openrdf.query.parser.ParsedUpdate;
+import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailException;
 
 /**
  * @author Jeen Broekstra
@@ -42,7 +43,6 @@ public class SailUpdate extends AbstractOperation implements Update {
 	 * 
 	 * @return The active dataset, or <tt>null</tt> if there is no dataset.
 	 */
-	/*
 	public Dataset getActiveDataset() {
 		if (dataset != null) {
 			return dataset;
@@ -51,7 +51,6 @@ public class SailUpdate extends AbstractOperation implements Update {
 		// No external dataset specified, use update operation's own dataset (if any)
 		return parsedUpdate.getDataset();
 	}
-	*/
 
 	@Override
 	public String toString() {
@@ -62,8 +61,14 @@ public class SailUpdate extends AbstractOperation implements Update {
 		throws UpdateExecutionException
 	{
 		
-		if (parsedUpdate instanceof ParsedModify) {
-			// TODO
+		SailConnection conn = getConnection().getSailConnection();
+		
+		try {
+			conn.executeUpdate(parsedUpdate.getUpdateExpr(), getActiveDataset(), getBindings(), true);
+			conn.commit();
+		}
+		catch (SailException e) {
+			throw new UpdateExecutionException(e);
 		}
 	}
 

@@ -18,11 +18,7 @@ public abstract class ParsedQuery extends ParsedOperation {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-
-	/**
-	 * The dataset that was specified in the query, if any.
-	 */
-	private Dataset dataset;
+	
 	private TupleExpr tupleExpr;
 
 	/*--------------*
@@ -76,14 +72,6 @@ public abstract class ParsedQuery extends ParsedOperation {
 	 */
 	public TupleExpr getTupleExpr() {
 		return tupleExpr;
-	}
-	
-	public Dataset getDataset() {
-		return dataset;
-	}
-
-	public void setDataset(Dataset dataset) {
-		this.dataset = dataset;
 	}
 	
 	@Override

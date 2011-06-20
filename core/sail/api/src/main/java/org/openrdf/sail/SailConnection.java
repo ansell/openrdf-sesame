@@ -16,6 +16,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UpdateExpr;
 
 /**
  * A connection to an RDF Sail object. A SailConnection is active from the
@@ -72,6 +73,10 @@ public interface SailConnection {
 	 */
 	public CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(TupleExpr tupleExpr,
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException;
+
+	public void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred)
 		throws SailException;
 
 	/**
@@ -259,6 +264,7 @@ public interface SailConnection {
 
 	/**
 	 * Sets the prefix for a namespace.
+	 * 
 	 * @param prefix
 	 *        The new prefix, or an empty string in case of the default
 	 *        namespace.

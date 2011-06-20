@@ -66,10 +66,13 @@ import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
+import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.serql.SeRQLUtil;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
@@ -1302,7 +1305,9 @@ public class Console {
 	private void evaluateQuery(QueryLanguage ql, String queryString) {
 		try {
 			queryString = addQueryPrefixes(ql, queryString);
-			ParsedQuery query = QueryParserUtil.parseQuery(ql, queryString, null);
+
+			ParsedOperation query = QueryParserUtil.parseOperation(ql, queryString, null);
+
 			if (query instanceof ParsedTupleQuery) {
 				evaluateTupleQuery(ql, queryString);
 			}
@@ -1311,6 +1316,9 @@ public class Console {
 			}
 			else if (query instanceof ParsedBooleanQuery) {
 				evaluateBooleanQuery(ql, queryString);
+			}
+			else if (query instanceof ParsedUpdate) {
+				executeUpdate(ql, queryString);
 			}
 			else {
 				writeError("Unexpected query type");
@@ -1333,6 +1341,10 @@ public class Console {
 		catch (RepositoryException e) {
 			writeError("Failed to evaluate query: " + e.getMessage());
 			logger.error("Failed to evaluate query", e);
+		}
+		catch (UpdateExecutionException e) {
+			writeError("Failed to execute update: " + e.getMessage());
+			logger.error("Failed to execute update", e);
 		}
 	}
 
@@ -1553,6 +1565,30 @@ public class Console {
 
 			long endTime = System.nanoTime();
 			writeln("Query evaluated in " + (endTime - startTime) / 1000000 + " ms");
+		}
+		finally {
+			con.close();
+		}
+	}
+
+	private void executeUpdate(QueryLanguage ql, String queryString)
+		throws RepositoryException, UpdateExecutionException, MalformedQueryException
+	{
+		if (repository == null) {
+			writeError("please open a repository first");
+			return;
+		}
+
+		RepositoryConnection con = repository.getConnection();
+
+		try {
+			writeln("Executing update...");
+			long startTime = System.nanoTime();
+
+			con.prepareUpdate(ql, queryString).execute();
+
+			long endTime = System.nanoTime();
+			writeln("Update executed in " + (endTime - startTime) / 1000000 + " ms");
 		}
 		finally {
 			con.close();
