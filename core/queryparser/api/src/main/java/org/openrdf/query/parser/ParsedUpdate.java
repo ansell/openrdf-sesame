@@ -8,14 +8,14 @@ package org.openrdf.query.parser;
 import java.util.Collections;
 import java.util.Map;
 
-import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UpdateExpr;
 
 /**
- * Abstract superclass for all update operation formulated in the OpenRDF query algebra.
+ * A parsed update formulated in the OpenRDF query algebra.
  * 
  * @author Jeen Broekstra
  */
-public abstract class ParsedUpdate extends ParsedOperation {
+public class ParsedUpdate extends ParsedOperation {
 
 	/*-----------*
 	 * Variables *
@@ -23,21 +23,23 @@ public abstract class ParsedUpdate extends ParsedOperation {
 
 	private Map<String, String> namespaces;
 
+	private UpdateExpr updateExpr;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	/**
-	 * Creates a new update. To complete this update, a tuple expression
-	 * needs to be supplied to it using {@link #setTupleExpr(TupleExpr)}.
+	 * Creates a new update. To complete this update, an update expression needs
+	 * to be supplied to it using {@link #setUpdateExpr(UpdateExpr)}.
 	 */
 	public ParsedUpdate() {
 		super();
 	}
 
 	/**
-	 * Creates a new update. To complete this query, a tuple expression
-	 * needs to be supplied to it using {@link #setTupleExpr(TupleExpr)}.
+	 * Creates a new update. To complete this update, an update expression needs
+	 * to be supplied to it using {@link #setUpdateExpr(UpdateExpr)}.
 	 * 
 	 * @param namespaces
 	 *        A mapping of namespace prefixes to namespace names representing the
@@ -59,5 +61,25 @@ public abstract class ParsedUpdate extends ParsedOperation {
 		else {
 			return Collections.emptyMap();
 		}
+	}
+
+	/**
+	 * @param updateExpr
+	 *        The updateExpr to set.
+	 */
+	public void setUpdateExpr(UpdateExpr updateExpr) {
+		this.updateExpr = updateExpr;
+	}
+
+	/**
+	 * @return Returns the updateExpr.
+	 */
+	public UpdateExpr getUpdateExpr() {
+		return updateExpr;
+	}
+	
+	@Override
+	public String toString() {
+		return updateExpr.toString();
 	}
 }

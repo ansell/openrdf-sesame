@@ -170,7 +170,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 	private ValueFactory valueFactory;
 
-	private GraphPattern graphPattern = new GraphPattern();
+	GraphPattern graphPattern = new GraphPattern();
 
 	private int constantVarID = 1;
 

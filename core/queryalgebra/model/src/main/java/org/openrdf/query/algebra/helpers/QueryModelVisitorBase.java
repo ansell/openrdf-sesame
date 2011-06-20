@@ -77,6 +77,7 @@ import org.openrdf.query.algebra.IRIFunction;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.Union;
+import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
@@ -467,6 +468,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetUnaryValueOperator(node);
+	}
+
+	public void meet(UpdateExpr node)
+		throws X
+	{
+		meetNode(node);
 	}
 
 	public void meet(Union node)

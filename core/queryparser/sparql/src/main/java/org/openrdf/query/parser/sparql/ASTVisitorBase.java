@@ -99,6 +99,7 @@ import org.openrdf.query.parser.sparql.ast.ASTTriplesSameSubject;
 import org.openrdf.query.parser.sparql.ast.ASTTriplesSameSubjectPath;
 import org.openrdf.query.parser.sparql.ast.ASTTrue;
 import org.openrdf.query.parser.sparql.ast.ASTUnionGraphPattern;
+import org.openrdf.query.parser.sparql.ast.ASTUpdate;
 import org.openrdf.query.parser.sparql.ast.ASTVar;
 import org.openrdf.query.parser.sparql.ast.ASTWhereClause;
 import org.openrdf.query.parser.sparql.ast.SimpleNode;
@@ -670,6 +671,13 @@ abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 		return node.childrenAccept(this, data);
 	}
 
+
+	public Object visit(ASTUpdate node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+	
 	public Object visit(ASTUnionGraphPattern node, Object data)
 		throws VisitorException
 	{

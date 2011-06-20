@@ -203,6 +203,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Union node)
 		throws X;
 
+	public void meet(UpdateExpr node)
+		throws X;
+
 	public void meet(IRIFunction node)
 		throws X;
 
