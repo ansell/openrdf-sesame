@@ -25,6 +25,7 @@ import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.algebra.ValueConstant;
@@ -105,19 +106,34 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		TupleExpr result = (TupleExpr)data;
 
 		// Collect construct triples
+		GraphPattern parentGP = graphPattern;
+		
 		graphPattern = new GraphPattern();
-		super.visit(node, null);
+		if (node.jjtGetNumChildren() > 1) {
+			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+			
+			Var contextVar = valueExpr2Var(contextNode);
+			graphPattern.setContextVar(contextVar);
+			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
+
+			node.jjtGetChild(1).jjtAccept(this, data);
+		}
+		else {
+			node.jjtGetChild(0).jjtAccept(this, data);
+		}
 		TupleExpr deleteExpr = graphPattern.buildTupleExpr();
+		
+		graphPattern = parentGP;
 
 		// Retrieve all StatementPatterns from the delete expression
 		List<StatementPattern> statementPatterns = StatementPatternCollector.process(deleteExpr);
 
-		Set<Var> constructVars = getConstructVars(statementPatterns);
+		Set<Var> projectionVars = getProjectionVars(statementPatterns);
 
 		// Create BNodeGenerators for all anonymous variables
 		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
 
-		for (Var var : constructVars) {
+		for (Var var : projectionVars) {
 			if (var.isAnonymous() && !extElemMap.containsKey(var)) {
 				ValueExpr valueExpr;
 
@@ -136,7 +152,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			result = new Extension(result, extElemMap.values());
 		}
 
-		// Create a Projection for each StatementPattern in the constructor
+		// Create a Projection for each StatementPattern in the clause
 		List<ProjectionElemList> projList = new ArrayList<ProjectionElemList>();
 
 		for (StatementPattern sp : statementPatterns) {
@@ -145,7 +161,10 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			projElemList.addElement(new ProjectionElem(sp.getSubjectVar().getName(), "subject"));
 			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
 			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
-
+			if (sp.getContextVar() != null) {
+				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));
+			}
+			
 			projList.add(projElemList);
 		}
 
@@ -170,19 +189,34 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		TupleExpr result = (TupleExpr)data;
 
 		// Collect construct triples
+		GraphPattern parentGP = graphPattern;
 		graphPattern = new GraphPattern();
-		super.visit(node, null);
+		if (node.jjtGetNumChildren() > 1) {
+			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+			
+			Var contextVar = valueExpr2Var(contextNode);
+			graphPattern.setContextVar(contextVar);
+			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
+
+			node.jjtGetChild(1).jjtAccept(this, data);
+		}
+		else {
+			node.jjtGetChild(0).jjtAccept(this, data);
+		}
+		
 		TupleExpr insertExpr = graphPattern.buildTupleExpr();
+		
+		graphPattern = parentGP;
 
 		// Retrieve all StatementPatterns from the insert expression
 		List<StatementPattern> statementPatterns = StatementPatternCollector.process(insertExpr);
 
-		Set<Var> constructVars = getConstructVars(statementPatterns);
+		Set<Var> projectionVars = getProjectionVars(statementPatterns);
 
 		// Create BNodeGenerators for all anonymous variables
 		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
 
-		for (Var var : constructVars) {
+		for (Var var : projectionVars) {
 			if (var.isAnonymous() && !extElemMap.containsKey(var)) {
 				ValueExpr valueExpr;
 
@@ -201,7 +235,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			result = new Extension(result, extElemMap.values());
 		}
 
-		// Create a Projection for each StatementPattern in the constructor
+		// Create a Projection for each StatementPattern in the clause
 		List<ProjectionElemList> projList = new ArrayList<ProjectionElemList>();
 
 		for (StatementPattern sp : statementPatterns) {
@@ -211,6 +245,10 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
 			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
 
+			if (sp.getContextVar() != null) {
+				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));
+			}
+			
 			projList.add(projElemList);
 		}
 
@@ -228,21 +266,14 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		return new Reduced(result);
 	}
 
-	/**
-	 * Gets the set of variables that are relevant for the constructor. This
-	 * method accumulates all subject, predicate and object variables from the
-	 * supplied statement patterns, but ignores any context variables.
-	 */
-	private Set<Var> getConstructVars(Collection<StatementPattern> statementPatterns) {
-		
-		// TODO inherit this method from TupleExprBuilder()?
-		
+	private Set<Var> getProjectionVars(Collection<StatementPattern> statementPatterns) {
 		Set<Var> vars = new LinkedHashSet<Var>(statementPatterns.size() * 2);
 
 		for (StatementPattern sp : statementPatterns) {
 			vars.add(sp.getSubjectVar());
 			vars.add(sp.getPredicateVar());
 			vars.add(sp.getObjectVar());
+			vars.add(sp.getContextVar());
 		}
 
 		return vars;
