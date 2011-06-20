@@ -186,7 +186,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 	 * Methods *
 	 *---------*/
 
-	private Var valueExpr2Var(ValueExpr valueExpr) {
+	protected Var valueExpr2Var(ValueExpr valueExpr) {
 		if (valueExpr instanceof Var) {
 			return (Var)valueExpr;
 		}
@@ -517,7 +517,10 @@ class TupleExprBuilder extends ASTVisitorBase {
 			projElemList.addElement(new ProjectionElem(sp.getSubjectVar().getName(), "subject"));
 			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
 			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
-
+			if (sp.getContextVar() != null) {
+				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));	
+			}
+			
 			projList.add(projElemList);
 		}
 

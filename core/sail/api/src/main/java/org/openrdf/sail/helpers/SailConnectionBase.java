@@ -582,9 +582,9 @@ public abstract class SailConnectionBase implements SailConnection {
 						Resource subj = (Resource)binding.getValue("subject");
 						URI pred = (URI)binding.getValue("predicate");
 						Value obj = binding.getValue("object");
+						Resource context = (Resource)binding.getValue("context");
 
-						// TODO contexts?
-						removeStatementsInternal(subj, pred, obj);
+						removeStatementsInternal(subj, pred, obj, context);
 					}
 					toBeRemoved.close();
 				}
@@ -603,9 +603,9 @@ public abstract class SailConnectionBase implements SailConnection {
 						Resource subj = (Resource)binding.getValue("subject");
 						URI pred = (URI)binding.getValue("predicate");
 						Value obj = binding.getValue("object");
+						Resource context = (Resource)binding.getValue("context");
 
-						// TODO contexts?
-						addStatementInternal(subj, pred, obj);
+						addStatementInternal(subj, pred, obj, context);
 					}
 					toBeInserted.close();
 				}
