@@ -60,13 +60,11 @@ public class SPARQLParser implements QueryParser {
 				
 				update.setUpdateExpr((UpdateExpr)updateNode.jjtAccept(updateExprBuilder, null));
 				
-				/*
 				// Handle dataset declaration
 				Dataset dataset = DatasetDeclProcessor.process(qc);
 				if (dataset != null) {
 					update.setDataset(dataset);
 				}
-				*/
 
 				return update;
 			}

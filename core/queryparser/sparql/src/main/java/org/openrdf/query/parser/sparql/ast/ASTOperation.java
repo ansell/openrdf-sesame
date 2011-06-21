@@ -5,6 +5,8 @@
  */
 package org.openrdf.query.parser.sparql.ast;
 
+import java.util.List;
+
 /**
  * @author jeen
  */
@@ -25,4 +27,9 @@ public abstract class ASTOperation extends SimpleNode {
 		super(p, id);
 	}
 
+	public List<ASTDatasetClause> getDatasetClauseList() {
+		return jjtGetChildren(ASTDatasetClause.class);
+	}
+	
+	
 }

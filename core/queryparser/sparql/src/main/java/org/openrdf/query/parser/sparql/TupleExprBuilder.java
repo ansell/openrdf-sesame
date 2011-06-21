@@ -518,9 +518,9 @@ class TupleExprBuilder extends ASTVisitorBase {
 			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
 			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
 			if (sp.getContextVar() != null) {
-				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));	
+				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));
 			}
-			
+
 			projList.add(projElemList);
 		}
 

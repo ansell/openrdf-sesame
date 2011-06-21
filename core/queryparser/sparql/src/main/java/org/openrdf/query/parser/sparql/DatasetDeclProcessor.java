@@ -39,7 +39,7 @@ public class DatasetDeclProcessor {
 	{
 		DatasetImpl dataset = null;
 
-		List<ASTDatasetClause> datasetClauses = qc.getQuery().getDatasetClauseList();
+		List<ASTDatasetClause> datasetClauses = qc.getOperation().getDatasetClauseList();
 
 		if (!datasetClauses.isEmpty()) {
 			dataset = new DatasetImpl();
