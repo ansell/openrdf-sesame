@@ -1347,10 +1347,10 @@ void InsertClause() :
     <INSERT> QuadData()
 }
 
-void UsingClause() #void:
+void UsingClause() #DatasetClause :
 {}
 {
-    <USING> ( IRIref() | <NAMED> IRIref() )
+    <USING> [<NAMED> {jjtThis.setNamed(true);}] IRIref()
 }
 
 void Modify() :
