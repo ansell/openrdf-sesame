@@ -19,6 +19,7 @@ import info.aduna.lang.ObjectUtil;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
+import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -355,9 +356,11 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		Literal result = new LiteralImpl("0", XMLSchema.INTEGER);
 			
 		for (Literal nextLiteral: literals) {
-			// TODO check if the literal is numeric, if not, skip it. This is strictly speaking not spec-compliant,
+			// check if the literal is numeric, if not, skip it. This is strictly speaking not spec-compliant,
 			// but a whole lot more useful.
-			result = MathUtil.compute(result, nextLiteral, MathOp.PLUS);
+			if (nextLiteral.getDatatype() != null && XMLDatatypeUtil.isNumericDatatype(nextLiteral.getDatatype())) {
+				result = MathUtil.compute(result, nextLiteral, MathOp.PLUS);
+			}
 		}
 
 		return result;
