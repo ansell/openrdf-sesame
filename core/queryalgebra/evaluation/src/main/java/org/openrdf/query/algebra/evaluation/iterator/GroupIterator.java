@@ -27,6 +27,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.Count;
+import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
@@ -34,13 +35,16 @@ import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.Order;
+import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.ValueExpr;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.util.MathUtil;
+import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.impl.EmptyBindingSet;
 
@@ -103,14 +107,22 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		for (Entry entry : entries) {
 			QueryBindingSet sol = new QueryBindingSet(parentBindings);
 
-			for (String name : group.getGroupBindingNames()) {
+			for (QueryModelNode groupCondition : group.getGroupConditions()) {
 				BindingSet prototype = entry.getPrototype();
-				if (prototype != null) {
+
+				if (groupCondition instanceof Var) {
+					String name = ((Var)groupCondition).getName();
 					Value value = prototype.getValue(name);
-					if (value != null) {
-						// Potentially overwrites bindings from super
-						sol.setBinding(name, value);
+					if (prototype != null) {
+						if (value != null) {
+							// Potentially overwrites bindings from super
+							sol.setBinding(name, value);
+						}
 					}
+				}
+				else {
+					Extension e = (Extension)groupCondition;
+					strategy.evaluate(e, sol);
 				}
 			}
 
@@ -177,7 +189,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			if (!iter.hasNext()) {
 				// no solutions, still need to process aggregates to produce a
 				// zero-result.
-				entries.put(new Key(new EmptyBindingSet()), new Entry(null));
+				entries.put(new Key(new EmptyBindingSet()), new Entry(new EmptyBindingSet()));
 			}
 
 			while (iter.hasNext()) {
@@ -340,10 +352,12 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	private Literal calculateSum(List<Literal> literals)
 		throws ValueExprEvaluationException
 	{
-		Literal result = literals.get(0);
-
-		for (int i = 1; i < literals.size(); i++) {
-			result = MathUtil.compute(result, literals.get(i), MathOp.PLUS);
+		Literal result = new LiteralImpl("0", XMLSchema.INTEGER);
+			
+		for (Literal nextLiteral: literals) {
+			// TODO check if the literal is numeric, if not, skip it. This is strictly speaking not spec-compliant,
+			// but a whole lot more useful.
+			result = MathUtil.compute(result, nextLiteral, MathOp.PLUS);
 		}
 
 		return result;
