@@ -88,4 +88,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTQName node, Object data) throws VisitorException;
   public Object visit(ASTBlankNode node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=04f8d6e6e9171a8999e9d902500bca56 (do not edit this line) */
+/* JavaCC - OriginalChecksum=c67ab2b9b342707ed7542b96b0a54782 (do not edit this line) */
