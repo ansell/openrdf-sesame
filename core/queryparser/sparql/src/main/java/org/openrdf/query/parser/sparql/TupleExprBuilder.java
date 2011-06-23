@@ -17,6 +17,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
@@ -1656,7 +1657,10 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		int listItemCount = node.jjtGetNumChildren();
 
-		if (listItemCount == 1) {
+		if (listItemCount == 0) {
+			result = new ValueConstant(BooleanLiteralImpl.FALSE);
+		}
+		else if (listItemCount == 1) {
 			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 
 			result = new Compare(leftArg, arg, CompareOp.EQ);
@@ -1694,7 +1698,10 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		int listItemCount = node.jjtGetNumChildren();
 
-		if (listItemCount == 1) {
+		if (listItemCount == 0) {
+			result = new ValueConstant(BooleanLiteralImpl.TRUE);
+		}
+		else if (listItemCount == 1) {
 			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 
 			result = new Compare(leftArg, arg, CompareOp.NE);
