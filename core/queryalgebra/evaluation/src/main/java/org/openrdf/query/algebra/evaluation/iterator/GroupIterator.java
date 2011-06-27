@@ -28,7 +28,6 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.Count;
-import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
@@ -36,16 +35,13 @@ import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.Order;
-import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.ValueExpr;
-import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.util.MathUtil;
-import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.impl.EmptyBindingSet;
 
@@ -108,22 +104,14 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		for (Entry entry : entries) {
 			QueryBindingSet sol = new QueryBindingSet(parentBindings);
 
-			for (QueryModelNode groupCondition : group.getGroupConditions()) {
+			for (String name : group.getGroupBindingNames()) {
 				BindingSet prototype = entry.getPrototype();
-
-				if (groupCondition instanceof Var) {
-					String name = ((Var)groupCondition).getName();
+				if (prototype != null) {
 					Value value = prototype.getValue(name);
-					if (prototype != null) {
-						if (value != null) {
-							// Potentially overwrites bindings from super
-							sol.setBinding(name, value);
-						}
+					if (value != null) {
+						// Potentially overwrites bindings from super
+						sol.setBinding(name, value);
 					}
-				}
-				else {
-					Extension e = (Extension)groupCondition;
-					strategy.evaluate(e, sol);
 				}
 			}
 

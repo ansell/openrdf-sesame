@@ -236,27 +236,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		// Apply grouping
 		ASTGroupClause groupNode = node.getGroupClause();
-		
 		if (groupNode != null) {
-			List<QueryModelNode> groupConditions = new ArrayList<QueryModelNode>();
-			
-			for (ASTGroupCondition condition: groupNode.getGroupConditions()) {
-				if (condition.jjtGetNumChildren() > 1)  {
-					Extension e = new Extension();
-					ValueExpr expr = (ValueExpr)condition.jjtGetChild(0).jjtAccept(this, data);
-					String name = ((Var)condition.jjtGetChild(1).jjtAccept(this, data)).getName();
-					
-					e.addElement(new ExtensionElem(expr, name));
-					e.setArg(tupleExpr);
-					groupConditions.add(e);
-				}
-				else {
-					Var v = (Var)condition.jjtGetChild(0).jjtAccept(this, data);
-					groupConditions.add(v);
-				}
-			}
-			
-			tupleExpr = new Group(tupleExpr, groupConditions);
+			tupleExpr = new Group(tupleExpr, groupNode.getBindingNames());
 		}
 
 		// Apply HAVING group filter condition

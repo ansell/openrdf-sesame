@@ -6,7 +6,6 @@
 package org.openrdf.query.algebra;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -29,8 +28,8 @@ public class Group extends UnaryTupleOperator {
 	 * Variables *
 	 *-----------*/
 
-	private List<QueryModelNode> groupConditions = new ArrayList<QueryModelNode>();
-	
+	private Set<String> groupBindings = new LinkedHashSet<String>();
+
 	private List<GroupElem> groupElements = new ArrayList<GroupElem>();
 
 	/*--------------*
@@ -41,13 +40,13 @@ public class Group extends UnaryTupleOperator {
 		super(arg);
 	}
 
-	public Group(TupleExpr arg, Iterable<QueryModelNode> groupConditions) {
+	public Group(TupleExpr arg, Iterable<String> groupBindingNames) {
 		this(arg);
-		setGroupConditions(groupConditions);
+		setGroupBindingNames(groupBindingNames);
 	}
 
-	public Group(TupleExpr arg, Iterable<QueryModelNode> groupConditions, Iterable<GroupElem> groupElements) {
-		this(arg, groupConditions);
+	public Group(TupleExpr arg, Iterable<String> groupBindingNames, Iterable<GroupElem> groupElements) {
+		this(arg, groupBindingNames);
 		setGroupElements(groupElements);
 	}
 
@@ -55,19 +54,19 @@ public class Group extends UnaryTupleOperator {
 	 * Methods *
 	 *---------*/
 
-	public List<QueryModelNode> getGroupConditions() {
-		return Collections.unmodifiableList(groupConditions);
+	public Set<String> getGroupBindingNames() {
+		return Collections.unmodifiableSet(groupBindings);
 	}
-	
-	public void setGroupConditions(Iterable<QueryModelNode> groupConditions) {
-		this.groupConditions.clear();
-		Iterators.addAll(groupConditions.iterator(), this.groupConditions);
+
+	public void addGroupBindingName(String bindingName) {
+		groupBindings.add(bindingName);
 	}
-	
-	public void addGroupCondition(QueryModelNode groupCondition) {
-		groupConditions.add(groupCondition);
+
+	public void setGroupBindingNames(Iterable<String> bindingNames) {
+		groupBindings.clear();
+		Iterators.addAll(bindingNames.iterator(), groupBindings);
 	}
-	
+
 	public List<GroupElem> getGroupElements() {
 		return Collections.unmodifiableList(groupElements);
 	}
@@ -99,26 +98,6 @@ public class Group extends UnaryTupleOperator {
 		bindingNames.addAll(getAggregateBindingNames());
 
 		return bindingNames;
-	}
-
-	/**
-	 * @return
-	 */
-	public Collection<? extends String> getGroupBindingNames() {
-		
-		List<String> groupConditionBindingNames = new ArrayList<String>();
-		
-		for (QueryModelNode groupCondition: getGroupConditions()) {
-			if (groupCondition instanceof Var) {
-				groupConditionBindingNames.add(((Var)groupCondition).getName());
-			}
-			else {
-				groupConditionBindingNames.addAll(((Extension)groupCondition).getBindingNames());
-			}
-		}
-		
-		return groupConditionBindingNames;
-	
 	}
 
 	@Override
@@ -160,7 +139,7 @@ public class Group extends UnaryTupleOperator {
 	public boolean equals(Object other) {
 		if (other instanceof Group && super.equals(other)) {
 			Group o = (Group)other;
-			return groupConditions.equals(o.getGroupConditions())
+			return groupBindings.equals(o.getGroupBindingNames())
 					&& groupElements.equals(o.getGroupElements());
 		}
 		return false;
@@ -168,19 +147,15 @@ public class Group extends UnaryTupleOperator {
 
 	@Override
 	public int hashCode() {
-		return super.hashCode() ^ groupConditions.hashCode() ^ groupElements.hashCode();
+		return super.hashCode() ^ groupBindings.hashCode() ^ groupElements.hashCode();
 	}
 
 	@Override
 	public Group clone() {
 		Group clone = (Group)super.clone();
 
+		clone.groupBindings = new LinkedHashSet<String>(getGroupBindingNames());
 
-		clone.groupConditions = new ArrayList<QueryModelNode>(getGroupConditions().size());
-		for (QueryModelNode groupCondition : getGroupConditions()) {
-			clone.addGroupCondition(groupCondition.clone());
-		}
-		
 		clone.groupElements = new ArrayList<GroupElem>(getGroupElements().size());
 		for (GroupElem ge : getGroupElements()) {
 			clone.addGroupElement(ge.clone());
