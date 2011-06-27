@@ -70,12 +70,12 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 	{
 
 		ASTGraphPatternGroup whereClause = node.getWhereClause();
-		
+
 		TupleExpr expr = null;
 		if (whereClause != null) {
 			expr = (TupleExpr)whereClause.jjtAccept(this, data);
 		}
-		
+
 		ValueConstant with = null;
 		ASTIRI withNode = node.getWithClause();
 		if (withNode != null) {
@@ -93,12 +93,12 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		if (insertNode != null) {
 			insert = (TupleExpr)insertNode.jjtAccept(this, expr);
 		}
-		
+
 		Modify modifyExpr = new Modify(with, delete, insert);
 
 		return modifyExpr;
 	}
-	
+
 	@Override
 	public TupleExpr visit(ASTDeleteClause node, Object data)
 		throws VisitorException
@@ -107,11 +107,11 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		// Collect construct triples
 		GraphPattern parentGP = graphPattern;
-		
+
 		graphPattern = new GraphPattern();
 		if (node.jjtGetNumChildren() > 1) {
 			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
-			
+
 			Var contextVar = valueExpr2Var(contextNode);
 			graphPattern.setContextVar(contextVar);
 			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
@@ -122,7 +122,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			node.jjtGetChild(0).jjtAccept(this, data);
 		}
 		TupleExpr deleteExpr = graphPattern.buildTupleExpr();
-		
+
 		graphPattern = parentGP;
 
 		// Retrieve all StatementPatterns from the delete expression
@@ -164,7 +164,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			if (sp.getContextVar() != null) {
 				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));
 			}
-			
+
 			projList.add(projElemList);
 		}
 
@@ -193,7 +193,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		graphPattern = new GraphPattern();
 		if (node.jjtGetNumChildren() > 1) {
 			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
-			
+
 			Var contextVar = valueExpr2Var(contextNode);
 			graphPattern.setContextVar(contextVar);
 			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
@@ -203,9 +203,9 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		else {
 			node.jjtGetChild(0).jjtAccept(this, data);
 		}
-		
+
 		TupleExpr insertExpr = graphPattern.buildTupleExpr();
-		
+
 		graphPattern = parentGP;
 
 		// Retrieve all StatementPatterns from the insert expression
@@ -248,7 +248,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			if (sp.getContextVar() != null) {
 				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));
 			}
-			
+
 			projList.add(projElemList);
 		}
 
@@ -273,7 +273,9 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			vars.add(sp.getSubjectVar());
 			vars.add(sp.getPredicateVar());
 			vars.add(sp.getObjectVar());
-			vars.add(sp.getContextVar());
+			if (sp.getContextVar() != null) {
+				vars.add(sp.getContextVar());
+			}
 		}
 
 		return vars;
