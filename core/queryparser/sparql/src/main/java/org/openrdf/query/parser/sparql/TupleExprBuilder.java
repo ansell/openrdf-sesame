@@ -667,36 +667,39 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		Group group = (Group)data;
 		TupleExpr arg = group.getArg();
-		
-		Extension e = null;
-		if (arg instanceof Extension) {
-			e = (Extension)arg;
-		}
-		else {
-			e = new Extension();
-		}
-		
-		String name = null;
-		if (node.jjtGetNumChildren() > 1) {
-			ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
-			
-			
-			Var v = (Var)node.jjtGetChild(1).jjtAccept(this, data);
-			name = v.getName();
-			ExtensionElem elem = new ExtensionElem(ve, name);
-			e.addElement(elem);
-		}
-		else {
-			Var v = (Var)node.jjtGetChild(0).jjtAccept(this, data);
 
-			name = v.getName();
+		Extension extension = null;
+		if (arg instanceof Extension) {
+			extension = (Extension)arg;
 		}
-		
-		if (e.getElements().size() > 0 && ! (arg instanceof Extension)) {
-			e.setArg(arg);
-			group.setArg(e);
+		else {
+			extension = new Extension();
 		}
-		
+
+		String name = null;
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+		if (ve instanceof Var) {
+			name = ((Var)ve).getName();
+		}
+		else {
+			if (node.jjtGetNumChildren() > 1) {
+				Var v = (Var)node.jjtGetChild(1).jjtAccept(this, data);
+				name = v.getName();
+			}
+			else {
+				// create an alias on the spot
+				name = createConstVar(null).getName();
+			}
+			
+			ExtensionElem elem = new ExtensionElem(ve, name);
+			extension.addElement(elem);
+		}
+
+		if (extension.getElements().size() > 0 && !(arg instanceof Extension)) {
+			extension.setArg(arg);
+			group.setArg(extension);
+		}
+
 		return name;
 	}
 
