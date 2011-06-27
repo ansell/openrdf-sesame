@@ -9,6 +9,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.parser.sparql.ast.ASTDescribe;
+import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
 import org.openrdf.query.parser.sparql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.sparql.ast.ASTQuery;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
@@ -25,6 +27,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  * appropriate variable nodes to them.
  * 
  * @author arjohn
+ * @author Jeen Broekstra
  */
 class WildcardProjectionProcessor extends ASTVisitorBase {
 
@@ -33,6 +36,7 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 	{
 		ASTQuery queryNode = qc.getQuery();
 
+		// scan for (possibly nested) select clauses
 		SelectClauseCollector collector = new SelectClauseCollector();
 		try {
 			queryNode.jjtAccept(collector, null);
@@ -50,6 +54,17 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 			
 		} catch (VisitorException e) {
 			throw new MalformedQueryException(e);
+		}
+		
+		// check for possible wildcard in DESCRIBE query
+		if (queryNode instanceof ASTDescribeQuery) {
+			ASTDescribeQuery describeQuery = (ASTDescribeQuery)queryNode;
+			ASTDescribe describeClause = describeQuery.getDescribe();
+			
+			if (describeClause.isWildcard()) {
+				addQueryVars(describeQuery.getWhereClause(), describeClause);
+				describeClause.setWildcard(false);
+			}
 		}
 	}
 
@@ -106,6 +121,7 @@ class WildcardProjectionProcessor extends ASTVisitorBase {
 			return super.visit(node, data);
 		}
 	}
+	
 	
 	/*------------------------------------*
 	 * Inner class SelectClauseCollector  *
