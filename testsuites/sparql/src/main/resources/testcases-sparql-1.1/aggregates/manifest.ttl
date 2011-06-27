@@ -25,6 +25,8 @@
     	:sparql11-aggregate-subquery-02
     	:sparql11-aggregate-group-01
     	:sparql11-aggregate-group-02
+# test case for issue SES-772. commented because not yet fixed
+#    	:sparql11-aggregate-expression-01
     ).
 
 
@@ -37,6 +39,11 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-aggregate-group-02.rq> ; qt:data <data-05.ttl> ] ;
          mf:result <sparql11-aggregate-group-02.srx> .   
+
+:sparql11-aggregate-expression-01  mf:name  "sparql11-aggregate-expression-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-aggregate-expression-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-aggregate-expression-01.srx> .
                
 :sparql11-count-01  mf:name  "sparql11-count-01" ;
          rdf:type   mf:QueryEvaluationTest ;
