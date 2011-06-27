@@ -237,7 +237,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 		// Apply grouping
 		ASTGroupClause groupNode = node.getGroupClause();
 		if (groupNode != null) {
-			tupleExpr = new Group(tupleExpr, groupNode.getBindingNames());
+
+			tupleExpr = (TupleExpr)groupNode.jjtAccept(this, tupleExpr);
 		}
 
 		// Apply HAVING group filter condition
@@ -257,8 +258,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 			collector.meet(condition);
 
 			// replace operator occurrences with an anonymous var, and alias it
-			// to
-			// the group
+			// to the group
 			Extension extension = new Extension();
 			for (AggregateOperator operator : collector.getOperators()) {
 				Var var = createAnonVar("-const-" + constantVarID++);
@@ -357,17 +357,6 @@ class TupleExprBuilder extends ASTVisitorBase {
 					if (group == null) {
 						group = new Group(result);
 					}
-
-					/*
-					 * if (result instanceof Group) { group = (Group)result; }
-					 * else { if (result instanceof Filter) { TupleExpr
-					 * filterArg = ((Filter)result).getArg(); if (filterArg
-					 * instanceof Group) { group = (Group)filterArg; } else if
-					 * (filterArg instanceof Extension) { group =
-					 * (Group)((Extension)filterArg).getArg(); } else { group =
-					 * new Group(result); } } else { group = new Group(result);
-					 * } }
-					 */
 
 					group.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
 
@@ -654,24 +643,61 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public List<GroupElem> visit(ASTGroupClause node, Object data)
+	public Group visit(ASTGroupClause node, Object data)
 		throws VisitorException
 	{
+		TupleExpr tupleExpr = (TupleExpr)data;
+		Group g = new Group(tupleExpr);
 		int childCount = node.jjtGetNumChildren();
-		List<GroupElem> elements = new ArrayList<GroupElem>(childCount);
 
+		List<String> groupBindingNames = new ArrayList<String>();
 		for (int i = 0; i < childCount; i++) {
-			elements.add((GroupElem)node.jjtGetChild(i).jjtAccept(this, data));
+			String name = (String)node.jjtGetChild(i).jjtAccept(this, g);
+			groupBindingNames.add(name);
 		}
 
-		return elements;
+		g.setGroupBindingNames(groupBindingNames);
+
+		return g;
 	}
 
 	@Override
-	public GroupElem visit(ASTGroupCondition node, Object data)
+	public String visit(ASTGroupCondition node, Object data)
 		throws VisitorException
 	{
-		return ((GroupElem)data);
+		Group group = (Group)data;
+		TupleExpr arg = group.getArg();
+		
+		Extension e = null;
+		if (arg instanceof Extension) {
+			e = (Extension)arg;
+		}
+		else {
+			e = new Extension();
+		}
+		
+		String name = null;
+		if (node.jjtGetNumChildren() > 1) {
+			ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+			
+			
+			Var v = (Var)node.jjtGetChild(1).jjtAccept(this, data);
+			name = v.getName();
+			ExtensionElem elem = new ExtensionElem(ve, name);
+			e.addElement(elem);
+		}
+		else {
+			Var v = (Var)node.jjtGetChild(0).jjtAccept(this, data);
+
+			name = v.getName();
+		}
+		
+		if (e.getElements().size() > 0 && ! (arg instanceof Extension)) {
+			e.setArg(arg);
+			group.setArg(e);
+		}
+		
+		return name;
 	}
 
 	@Override
