@@ -24,6 +24,7 @@
     	:sparql11-aggregate-subquery-01
     	:sparql11-aggregate-subquery-02
     	:sparql11-aggregate-group-01
+    	:sparql11-aggregate-group-02
     ).
 
 
@@ -31,7 +32,12 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-aggregate-group-01.rq> ; qt:data <data-05.ttl> ] ;
          mf:result <sparql11-aggregate-group-01.srx> .
-         
+
+:sparql11-aggregate-group-02  mf:name  "sparql11-aggregate-group-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-aggregate-group-02.rq> ; qt:data <data-05.ttl> ] ;
+         mf:result <sparql11-aggregate-group-02.srx> .   
+               
 :sparql11-count-01  mf:name  "sparql11-count-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-count-01.rq> ; qt:data <data-01.ttl> ] ;
