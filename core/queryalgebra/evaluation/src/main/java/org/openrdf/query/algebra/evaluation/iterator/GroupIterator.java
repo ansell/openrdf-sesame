@@ -5,13 +5,14 @@
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
@@ -20,24 +21,23 @@ import info.aduna.lang.ObjectUtil;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.AggregateOperator;
+import org.openrdf.query.algebra.AggregateOperatorBase;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
-import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
-import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.ValueExpr;
+import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -49,6 +49,7 @@ import org.openrdf.query.impl.EmptyBindingSet;
  * @author David Huynh
  * @author Arjohn Kampman
  * @author Jeen Broekstra
+ * @author James Leigh
  */
 public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryEvaluationException> {
 
@@ -56,17 +57,13 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	 * Constants *
 	 *-----------*/
 
+	private final ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
+
 	private final EvaluationStrategy strategy;
 
 	private final BindingSet parentBindings;
 
 	private final Group group;
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	private boolean ordered = false;
 
 	/*--------------*
 	 * Constructors *
@@ -77,7 +74,6 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	{
 		this.strategy = strategy;
 		this.group = group;
-		this.ordered = (group.getArg() instanceof Order);
 		this.parentBindings = parentBindings;
 		super.setIterator(createIterator());
 	}
@@ -89,17 +85,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	private Iterator<BindingSet> createIterator()
 		throws QueryEvaluationException
 	{
-		Collection<BindingSet> bindingSets;
-		Collection<Entry> entries;
-
-		if (ordered) {
-			bindingSets = new ArrayList<BindingSet>();
-			entries = buildOrderedEntries();
-		}
-		else {
-			bindingSets = new HashSet<BindingSet>();
-			entries = buildUnorderedEntries();
-		}
+		Collection<Entry> entries = buildEntries();
+		Collection<BindingSet> bindingSets = new LinkedList<BindingSet>();
 
 		for (Entry entry : entries) {
 			QueryBindingSet sol = new QueryBindingSet(parentBindings);
@@ -115,13 +102,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 				}
 			}
 
-			for (GroupElem ge : group.getGroupElements()) {
-				Value value = processAggregate(entry.getSolutions(), ge.getOperator());
-				if (value != null) {
-					// Potentially overwrites bindings from super
-					sol.setBinding(ge.getName(), value);
-				}
-			}
+			entry.bindSolution(sol);
 
 			bindingSets.add(sol);
 		}
@@ -129,51 +110,14 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		return bindingSets.iterator();
 	}
 
-	private Collection<Entry> buildOrderedEntries()
+	private Collection<Entry> buildEntries()
 		throws QueryEvaluationException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> iter = strategy.evaluate(group.getArg(),
-				parentBindings);
+		CloseableIteration<BindingSet, QueryEvaluationException> iter;
+		iter = strategy.evaluate(group.getArg(), parentBindings);
 
 		try {
-			List<Entry> orderedEntries = new ArrayList<Entry>();
-			Map<Key, Entry> entries = new HashMap<Key, Entry>();
-
-			if (!iter.hasNext()) {
-				// no solutions, still need to process any aggregates to produce a
-				// zero-result.
-				orderedEntries.add(new Entry(null));
-			}
-
-			while (iter.hasNext()) {
-				BindingSet bindingSet = iter.next();
-				Key key = new Key(bindingSet);
-				Entry entry = entries.get(key);
-
-				if (entry == null) {
-					entry = new Entry(bindingSet);
-					entries.put(key, entry);
-					orderedEntries.add(entry);
-				}
-
-				entry.addSolution(bindingSet);
-			}
-
-			return orderedEntries;
-		}
-		finally {
-			iter.close();
-		}
-	}
-
-	private Collection<Entry> buildUnorderedEntries()
-		throws QueryEvaluationException
-	{
-		CloseableIteration<BindingSet, QueryEvaluationException> iter = strategy.evaluate(group.getArg(),
-				parentBindings);
-
-		try {
-			Map<Key, Entry> entries = new HashMap<Key, Entry>();
+			Map<Key, Entry> entries = new LinkedHashMap<Key, Entry>();
 
 			if (!iter.hasNext()) {
 				// no solutions, still need to process aggregates to produce a
@@ -182,7 +126,13 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			}
 
 			while (iter.hasNext()) {
-				BindingSet sol = iter.next();
+				BindingSet sol;
+				try {
+					sol = iter.next();
+				}
+				catch (NoSuchElementException e) {
+					break; // closed
+				}
 				Key key = new Key(sol);
 				Entry entry = entries.get(key);
 
@@ -200,182 +150,6 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			iter.close();
 		}
 
-	}
-
-	private Value processAggregate(Collection<BindingSet> bindingSets, AggregateOperator operator)
-		throws QueryEvaluationException
-	{
-
-		boolean distinct = operator.isDistinct();
-		if (operator instanceof Count) {
-			Count countOp = (Count)operator;
-
-			ValueExpr arg = countOp.getArg();
-
-			if (arg != null) {
-				Collection<Value> values = createValueCollection(arg, bindingSets, distinct);
-				return new LiteralImpl(Integer.toString(values.size()), XMLSchema.INTEGER);
-			}
-			else {
-				return new LiteralImpl(Integer.toString(bindingSets.size()), XMLSchema.INTEGER);
-			}
-		}
-		else if (operator instanceof Min) {
-			Min minOp = (Min)operator;
-
-			Collection<Value> values = createValueCollection(minOp.getArg(), bindingSets, distinct);
-
-			Value result = null;
-
-			ValueComparator comparator = new ValueComparator();
-
-			for (Value v : values) {
-				if (result == null) {
-					result = v;
-				}
-				else if (comparator.compare(v, result) < 0) {
-					result = v;
-				}
-			}
-			return result;
-		}
-
-		else if (operator instanceof Max) {
-			Max maxOp = (Max)operator;
-
-			Collection<Value> values = createValueCollection(maxOp.getArg(), bindingSets, distinct);
-
-			Value result = null;
-
-			ValueComparator comparator = new ValueComparator();
-
-			for (Value v : values) {
-				if (result == null) {
-					result = v;
-				}
-				else if (comparator.compare(v, result) > 0) {
-					result = v;
-				}
-			}
-			return result;
-		}
-		else if (operator instanceof Sum) {
-
-			Sum sumOp = (Sum)operator;
-
-			Collection<Value> values = createValueCollection(sumOp.getArg(), bindingSets, distinct);
-
-			return calculateSum(values);
-
-		}
-		else if (operator instanceof Avg) {
-
-			Avg avgOp = (Avg)operator;
-
-			Collection<Value> values = createValueCollection(avgOp.getArg(), bindingSets, distinct);
-
-			int size = values.size();
-			if (size == 0) {
-				return new LiteralImpl("0.0", XMLSchema.DOUBLE);
-			}
-
-			Literal sizeLit = new ValueFactoryImpl().createLiteral(size);
-			Literal sum = calculateSum(values);
-			Literal avg = MathUtil.compute(sum, sizeLit, MathOp.DIVIDE);
-
-			return avg;
-		}
-		else if (operator instanceof Sample) {
-
-			Sample sampleOp = (Sample)operator;
-
-			// just get a single value and return it.
-			Value value = strategy.evaluate(sampleOp.getArg(), bindingSets.iterator().next());
-
-			return value;
-		}
-		else if (operator instanceof GroupConcat) {
-			GroupConcat groupConcatOp = (GroupConcat)operator;
-			Collection<Value> values = createValueCollection(groupConcatOp.getArg(), bindingSets, distinct);
-
-			String separator = " ";
-			ValueExpr separatorExpr = groupConcatOp.getSeparator();
-
-			if (separatorExpr != null) {
-				Value separatorValue = strategy.evaluate(separatorExpr, parentBindings);
-				separator = separatorValue.stringValue();
-			}
-
-			StringBuilder concatenated = new StringBuilder();
-			for (Value v : values) {
-				concatenated.append(v.stringValue());
-				concatenated.append(separator);
-			}
-
-			if (values.size() > 0) {
-				// remove separator at the end.
-				concatenated.delete(concatenated.lastIndexOf(separator), concatenated.length());
-			}
-
-			return new LiteralImpl(concatenated.toString(), XMLSchema.STRING);
-		}
-
-		return null;
-	}
-
-	private Literal calculateSum(Collection<Value> values)
-		throws ValueExprEvaluationException
-	{
-		List<Literal> literals = new ArrayList<Literal>();
-		for (Value v : values) {
-			if (v instanceof Literal) {
-				literals.add((Literal)v);
-			}
-			else {
-				throw new ValueExprEvaluationException("not a number: " + v);
-			}
-		}
-		return calculateSum(literals);
-	}
-
-	private Literal calculateSum(List<Literal> literals)
-		throws ValueExprEvaluationException
-	{
-		Literal result = new LiteralImpl("0", XMLSchema.INTEGER);
-			
-		for (Literal nextLiteral: literals) {
-			// check if the literal is numeric, if not, skip it. This is strictly speaking not spec-compliant,
-			// but a whole lot more useful.
-			if (nextLiteral.getDatatype() != null && XMLDatatypeUtil.isNumericDatatype(nextLiteral.getDatatype())) {
-				result = MathUtil.compute(result, nextLiteral, MathOp.PLUS);
-			}
-		}
-
-		return result;
-	}
-
-	private Collection<Value> createValueCollection(ValueExpr arg, Collection<BindingSet> bindingSets,
-			boolean distinctValues)
-		throws QueryEvaluationException
-	{
-		Collection<Value> values = null;
-
-		if (distinctValues) {
-			// TODO handle ordered in combination with distinct
-			values = new HashSet<Value>();
-		}
-		else {
-			values = new ArrayList<Value>();
-		}
-
-		for (BindingSet s : bindingSets) {
-			Value value = strategy.evaluate(arg, s);
-			if (value != null) {
-				values.add(value);
-			}
-		}
-
-		return values;
 	}
 
 	/**
@@ -430,29 +204,338 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 		private BindingSet prototype;
 
-		private Collection<BindingSet> bindingSets;
+		private Map<String, Aggregate> aggregates;
 
-		public Entry(BindingSet prototype) {
+		public Entry(BindingSet prototype)
+			throws ValueExprEvaluationException, QueryEvaluationException
+		{
 			this.prototype = prototype;
-			if (ordered) {
-				this.bindingSets = new ArrayList<BindingSet>();
+			this.aggregates = new LinkedHashMap<String, Aggregate>();
+			for (GroupElem ge : group.getGroupElements()) {
+				Aggregate create = create(ge.getOperator());
+				if (create != null) {
+					aggregates.put(ge.getName(), create);
+				}
 			}
-			else {
-				this.bindingSets = new HashSet<BindingSet>();
-			}
-
 		}
 
 		public BindingSet getPrototype() {
 			return prototype;
 		}
 
-		public void addSolution(BindingSet bindingSet) {
-			bindingSets.add(bindingSet);
+		public void addSolution(BindingSet bindingSet)
+			throws QueryEvaluationException
+		{
+			for (Aggregate aggregate : aggregates.values()) {
+				aggregate.processAggregate(bindingSet);
+			}
 		}
 
-		public Collection<BindingSet> getSolutions() {
-			return bindingSets;
+		public void bindSolution(QueryBindingSet sol)
+			throws QueryEvaluationException
+		{
+			for (String name : aggregates.keySet()) {
+				Value value = aggregates.get(name).getValue();
+				if (value != null) {
+					// Potentially overwrites bindings from super
+					sol.setBinding(name, value);
+				}
+			}
+		}
+
+		private Aggregate create(AggregateOperator operator)
+			throws ValueExprEvaluationException, QueryEvaluationException
+		{
+			if (operator instanceof Count) {
+				return new CountAggregate((Count)operator);
+			}
+			else if (operator instanceof Min) {
+				return new MinAggregate((Min)operator);
+			}
+			else if (operator instanceof Max) {
+				return new MaxAggregate((Max)operator);
+			}
+			else if (operator instanceof Sum) {
+				return new SumAggregate((Sum)operator);
+			}
+			else if (operator instanceof Avg) {
+				return new AvgAggregate((Avg)operator);
+			}
+			else if (operator instanceof Sample) {
+				return new SampleAggregate((Sample)operator);
+			}
+			else if (operator instanceof GroupConcat) {
+				return new ConcatAggregate((GroupConcat)operator);
+			}
+			return null;
+		}
+	}
+
+	private abstract class Aggregate {
+
+		private final Set<Value> distinct;
+
+		private final ValueExpr arg;
+
+		public Aggregate(AggregateOperatorBase operator) {
+			this.arg = operator.getArg();
+			if (operator.isDistinct()) {
+				distinct = new HashSet<Value>();
+			}
+			else {
+				distinct = null;
+			}
+		}
+
+		public abstract Value getValue()
+			throws ValueExprEvaluationException;
+
+		public abstract void processAggregate(BindingSet bindingSet)
+			throws QueryEvaluationException;
+
+		protected boolean distinct(Value value) {
+			return distinct == null || distinct.add(value);
+		}
+
+		protected ValueExpr getArg() {
+			return arg;
+		}
+
+		protected Value evaluate(BindingSet s)
+			throws ValueExprEvaluationException, QueryEvaluationException
+		{
+			return strategy.evaluate(getArg(), s);
+		}
+	}
+
+	private class CountAggregate extends Aggregate {
+
+		private long count = 0;
+
+		public CountAggregate(Count operator) {
+			super(operator);
+		}
+
+		@Override
+		public void processAggregate(BindingSet s)
+			throws QueryEvaluationException
+		{
+			if (getArg() != null) {
+				Value value = evaluate(s);
+				if (value != null && distinct(value)) {
+					count++;
+				}
+			}
+			else {
+				count++;
+			}
+		}
+
+		@Override
+		public Value getValue() {
+			return vf.createLiteral(Long.toString(count), XMLSchema.INTEGER);
+		}
+	}
+
+	private class MinAggregate extends Aggregate {
+
+		private final ValueComparator comparator = new ValueComparator();
+
+		private Value min = null;
+
+		public MinAggregate(Min operator) {
+			super(operator);
+		}
+
+		@Override
+		public void processAggregate(BindingSet s)
+			throws QueryEvaluationException
+		{
+			Value v = evaluate(s);
+			if (distinct(v)) {
+				if (min == null) {
+					min = v;
+				}
+				else if (comparator.compare(v, min) < 0) {
+					min = v;
+				}
+			}
+		}
+
+		@Override
+		public Value getValue() {
+			return min;
+		}
+	}
+
+	private class MaxAggregate extends Aggregate {
+
+		private final ValueComparator comparator = new ValueComparator();
+
+		private Value max = null;
+
+		public MaxAggregate(Max operator) {
+			super(operator);
+		}
+
+		@Override
+		public void processAggregate(BindingSet s)
+			throws QueryEvaluationException
+		{
+			Value v = evaluate(s);
+			if (distinct(v)) {
+				if (max == null) {
+					max = v;
+				}
+				else if (comparator.compare(v, max) > 0) {
+					max = v;
+				}
+			}
+		}
+
+		@Override
+		public Value getValue() {
+			return max;
+		}
+	}
+
+	private class SumAggregate extends Aggregate {
+
+		private Literal sum = vf.createLiteral("0", XMLSchema.INTEGER);
+
+		public SumAggregate(Sum operator) {
+			super(operator);
+		}
+
+		@Override
+		public void processAggregate(BindingSet s)
+			throws QueryEvaluationException
+		{
+			Value v = evaluate(s);
+			if (distinct(v)) {
+				if (v instanceof Literal) {
+					Literal nextLiteral = (Literal)v;
+					// check if the literal is numeric, if not, skip it. This is
+					// strictly speaking not spec-compliant, but a whole lot more useful.
+					if (nextLiteral.getDatatype() != null
+							&& XMLDatatypeUtil.isNumericDatatype(nextLiteral.getDatatype()))
+					{
+						sum = MathUtil.compute(sum, nextLiteral, MathOp.PLUS);
+					}
+				}
+				else {
+					throw new ValueExprEvaluationException("not a number: " + v);
+				}
+			}
+		}
+
+		@Override
+		public Value getValue() {
+			return sum;
+		}
+	}
+
+	private class AvgAggregate extends Aggregate {
+
+		private long count = 0;
+
+		private Literal sum = vf.createLiteral("0", XMLSchema.INTEGER);
+
+		public AvgAggregate(Avg operator) {
+			super(operator);
+		}
+
+		@Override
+		public void processAggregate(BindingSet s)
+			throws QueryEvaluationException
+		{
+			Value v = evaluate(s);
+			if (distinct(v)) {
+				if (v instanceof Literal) {
+					Literal nextLiteral = (Literal)v;
+					// check if the literal is numeric, if not, skip it. This is
+					// strictly speaking not spec-compliant, but a whole lot more
+					// useful.
+					if (nextLiteral.getDatatype() != null
+							&& XMLDatatypeUtil.isNumericDatatype(nextLiteral.getDatatype()))
+					{
+						sum = MathUtil.compute(sum, nextLiteral, MathOp.PLUS);
+					}
+					count++;
+				}
+				else {
+					throw new ValueExprEvaluationException("not a number: " + v);
+				}
+			}
+		}
+
+		@Override
+		public Value getValue()
+			throws ValueExprEvaluationException
+		{
+			if (count == 0)
+				return vf.createLiteral(0.0d);
+			Literal sizeLit = vf.createLiteral(count);
+			return MathUtil.compute(sum, sizeLit, MathOp.DIVIDE);
+		}
+	}
+
+	private class SampleAggregate extends Aggregate {
+
+		private Value sample = null;
+
+		public SampleAggregate(Sample operator) {
+			super(operator);
+		}
+
+		@Override
+		public void processAggregate(BindingSet s)
+			throws QueryEvaluationException
+		{
+			if (sample == null) {
+				sample = evaluate(s);
+			}
+		}
+
+		@Override
+		public Value getValue() {
+			return sample;
+		}
+	}
+
+	private class ConcatAggregate extends Aggregate {
+
+		private StringBuilder concatenated = new StringBuilder();
+
+		private String separator = " ";
+
+		public ConcatAggregate(GroupConcat groupConcatOp)
+			throws ValueExprEvaluationException, QueryEvaluationException
+		{
+			super(groupConcatOp);
+			ValueExpr separatorExpr = groupConcatOp.getSeparator();
+			if (separatorExpr != null) {
+				Value separatorValue = strategy.evaluate(separatorExpr, parentBindings);
+				separator = separatorValue.stringValue();
+			}
+		}
+
+		@Override
+		public void processAggregate(BindingSet s)
+			throws QueryEvaluationException
+		{
+			Value v = evaluate(s);
+			concatenated.append(v.stringValue());
+			concatenated.append(separator);
+		}
+
+		@Override
+		public Value getValue() {
+			if (concatenated.length() == 0)
+				return vf.createLiteral("");
+			// remove separator at the end.
+			int len = concatenated.length() - separator.length();
+			return vf.createLiteral(concatenated.substring(0, len));
 		}
 	}
 }
