@@ -10,10 +10,5 @@
 				<uri>http://example.org/prop</uri>
 			</binding>
 		</result>
-		<result>
-			<binding name="p">
-				<uri>http://example.org/prop2</uri>
-			</binding>
-		</result>
 	</results>
 </sparql>
