@@ -35,8 +35,21 @@
     	:sparql11-nested-02
     	:sparql11-nested-03
     	:sparql11-nested-04
+    	:sparql11-nested-05
+    	:sparql11-nested-06
     ).
 
+         
+:sparql11-nested-05  mf:name  "sparql11-nested-05" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-nested-05.rq> ; qt:data <data-08.ttl> ] ;
+         mf:result <sparql11-nested-05.srx> .
+ 
+ :sparql11-nested-06  mf:name  "sparql11-nested-06" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-nested-06.rq> ; qt:data <data-08.ttl> ] ;
+         mf:result <sparql11-nested-06.srx> .
+                 
 :sparql11-wildcard-06  mf:name  "sparql11-wildcard-06" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-wildcard-06.rq> ; qt:data <data-07.ttl> ] ;
@@ -169,4 +182,5 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-nested-04.rq> ; qt:data <data-04.ttl> ] ;
          mf:result <sparql11-nested-04.srx> .
+
                     

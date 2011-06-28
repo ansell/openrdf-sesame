@@ -690,7 +690,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 				// create an alias on the spot
 				name = createConstVar(null).getName();
 			}
-			
+
 			ExtensionElem elem = new ExtensionElem(ve, name);
 			extension.addElement(elem);
 		}
@@ -1015,14 +1015,35 @@ class TupleExprBuilder extends ASTVisitorBase {
 				GraphPattern parentGP = graphPattern;
 
 				graphPattern = new GraphPattern();
-				pathElement.jjtGetChild(0).jjtAccept(this, data);
 
-				TupleExpr te = graphPattern.buildTupleExpr();
+				if (i == pathLength - 1) {
+					// last element in the path
+					pathElement.jjtGetChild(0).jjtAccept(this, data);
 
-				for (ValueExpr object : objectList) {
-					Var objVar = valueExpr2Var(object);
-					te = handlePathModifiers(scope, subjVar, te, objVar, contextVar, lowerBound, upperBound);
+					TupleExpr te = graphPattern.buildTupleExpr();
+
+					for (ValueExpr object : objectList) {
+						Var objVar = valueExpr2Var(object);
+						te = handlePathModifiers(scope, subjVar, te, objVar, contextVar, lowerBound, upperBound);
+						pathSequencePattern.addRequiredTE(te);
+					}
+				}
+				else {
+					// not the last element in the path, introduce an anonymous var
+					// to connect.
+					Var nextVar = createAnonVar(subjVar.getName() + "-nested-" + i);
+
+					pathElement.jjtGetChild(0).jjtAccept(this, data);
+
+					TupleExpr te = graphPattern.buildTupleExpr();
+
+					// replace all object list occurrences with the intermediate var.
+
+					te = replaceVarOccurrence(te, objectList, nextVar);
+					te = handlePathModifiers(scope, subjVar, te, nextVar, contextVar, lowerBound, upperBound);
 					pathSequencePattern.addRequiredTE(te);
+
+					subjVar = nextVar;
 				}
 
 				graphPattern = parentGP;
@@ -1171,6 +1192,17 @@ class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		return completeMatch;
+	}
+
+	private TupleExpr replaceVarOccurrence(TupleExpr te, List<ValueExpr> objectList, Var replacementVar)
+		throws VisitorException
+	{
+		for (ValueExpr objExpr : objectList) {
+			Var objVar = valueExpr2Var(objExpr);
+			VarReplacer replacer = new VarReplacer(objVar, replacementVar);
+			te.visit(replacer);
+		}
+		return te;
 	}
 
 	private TupleExpr handlePathModifiers(Scope scope, Var subjVar, TupleExpr te, Var endVar, Var contextVar,
