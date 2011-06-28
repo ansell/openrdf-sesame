@@ -10,14 +10,11 @@ package org.openrdf.query.algebra;
  */
 public class Modify extends QueryModelNodeBase implements UpdateExpr {
 
-	private ValueConstant with;
-
 	private TupleExpr deleteExpr;
 
 	private TupleExpr insertExpr;
 
-	public Modify(ValueConstant with, TupleExpr deleteExpr, TupleExpr insertExpr) {
-		setWith(with);
+	public Modify(TupleExpr deleteExpr, TupleExpr insertExpr) {
 		setDeleteExpr(deleteExpr);
 		setInsertExpr(insertExpr);
 	}
@@ -32,23 +29,18 @@ public class Modify extends QueryModelNodeBase implements UpdateExpr {
 	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
 		throws X
 	{
-		if (with != null) {
-			with.visit(visitor);
-		}
 		if (deleteExpr != null) {
 			deleteExpr.visit(visitor);
 		}
 		if (insertExpr != null) {
 			insertExpr.visit(visitor);
 		}
+		super.visitChildren(visitor);
 	}
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		if (with == current) {
-			setWith((ValueConstant)replacement);
-		}
-		else if (deleteExpr == current) {
+		if (deleteExpr == current) {
 			setDeleteExpr((TupleExpr)replacement);
 		}
 		else if (insertExpr == current) {
@@ -62,26 +54,10 @@ public class Modify extends QueryModelNodeBase implements UpdateExpr {
 	@Override
 	public Modify clone() {
 
-		ValueConstant withClone = with != null ? with.clone() : null;
 		TupleExpr deleteClone = deleteExpr != null ? deleteExpr.clone() : null;
 		TupleExpr insertClone = insertExpr != null ? insertExpr.clone() : null;
 
-		return new Modify(withClone, deleteClone, insertClone);
-	}
-
-	/**
-	 * @param with
-	 *        The with to set.
-	 */
-	public void setWith(ValueConstant with) {
-		this.with = with;
-	}
-
-	/**
-	 * @return Returns the with.
-	 */
-	public ValueConstant getWith() {
-		return with;
+		return new Modify(deleteClone, insertClone);
 	}
 
 	/**

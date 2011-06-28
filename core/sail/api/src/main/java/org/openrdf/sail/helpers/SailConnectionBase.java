@@ -584,7 +584,12 @@ public abstract class SailConnectionBase implements SailConnection {
 						Value obj = binding.getValue("object");
 						Resource context = (Resource)binding.getValue("context");
 
-						removeStatementsInternal(subj, pred, obj, context);
+						if (context == null) {
+							removeStatementsInternal(subj, pred, obj);
+						}
+						else {
+							removeStatementsInternal(subj, pred, obj, context);
+						}
 					}
 					toBeRemoved.close();
 				}
@@ -605,7 +610,12 @@ public abstract class SailConnectionBase implements SailConnection {
 						Value obj = binding.getValue("object");
 						Resource context = (Resource)binding.getValue("context");
 
-						addStatementInternal(subj, pred, obj, context);
+						if (context == null) {
+							addStatementInternal(subj, pred, obj);
+						}
+						else {
+							addStatementInternal(subj, pred, obj, context);
+						}
 					}
 					toBeInserted.close();
 				}

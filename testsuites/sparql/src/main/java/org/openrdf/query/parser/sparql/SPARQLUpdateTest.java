@@ -42,6 +42,10 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	private URI bob;
 
 	private URI alice;
+
+	private URI graph1;
+
+	private URI graph2;
 	
 	protected static final String EX_NS = "http://example.org/";
 	
@@ -60,6 +64,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		bob = f.createURI(EX_NS, "bob");
 		alice = f.createURI(EX_NS, "alice");
 
+		graph1 = f.createURI(EX_NS, "graph1");
+		graph2 = f.createURI(EX_NS, "graph2");
 	}
 
 	/**
@@ -78,6 +84,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		super.tearDown();
 	}
 	
+	/* test methods */ 
+	
 	@Test
 	public void testInsertWhere() throws Exception 
 	{
@@ -91,11 +99,112 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 
 		operation.execute();
-				
+		
 		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 	}
+	
+	@Test
+	public void testInsertWhereGraph() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT {GRAPH ?g {?x rdfs:label ?y . }} WHERE {GRAPH ?g {?x foaf:name ?y }}");
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
+		operation.execute();
+			
+		String message = "labels should have been inserted in corresponding named graphs only.";
+		assertTrue(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true, graph1));
+		assertFalse(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true, graph2));
+		assertTrue(message, con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true, graph2));
+		assertFalse(message, con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true, graph1));
+	}
+
+	@Test
+	public void testInsertWhereUsing() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT {?x rdfs:label ?y . } USING ex:graph1 WHERE {?x foaf:name ?y }");
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.execute();
+				
+		String message = "label should have been inserted in default graph, for ex:bob only";
+		assertTrue(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+		assertFalse(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true, graph1));
+		assertFalse(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true, graph2));
+		assertFalse(message, con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true, graph2));
+		assertFalse(message, con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true, graph1));
+	}
+	
+	@Test
+	public void testInsertWhereWith() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("WITH ex:graph1 INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.execute();
+				
+		String message = "label should have been inserted in graph1 only, for ex:bob only";
+		assertTrue(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true, graph1));
+		assertFalse(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true, graph2));
+		assertFalse(message, con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true, graph2));
+		assertFalse(message, con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true, graph1));
+	}
+	
+	@Test
+	public void testDeleteWhere() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("DELETE {?x foaf:name ?y } WHERE {?x foaf:name ?y }");
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+		operation.execute();
+
+		String msg = "foaf:name properties should have been deleted";
+		assertFalse(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertFalse(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+	}
+	
+	@Test
+	public void testDeleteTransformedWhere() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y }");
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+		operation.execute();
+
+		String msg = "foaf:name properties should have been deleted";
+		assertFalse(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertFalse(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+		
+		msg = "ex:containsPerson properties should not have been deleted";
+		assertTrue(msg, con.hasStatement(graph1, f.createURI(EX_NS, "containsPerson"), bob, true));
+		assertTrue(msg, con.hasStatement(graph2, f.createURI(EX_NS, "containsPerson"), alice, true));
+
+	}
+	
+	/* protected methods */
+		
 	protected void loadDataset() throws RDFParseException, RepositoryException, IOException {
 		InputStream dataset = SPARQLUpdateTest.class.getResourceAsStream("/testdata-update/dataset-update.trig");
 		try {
