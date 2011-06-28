@@ -6,8 +6,11 @@
 @prefix ex: <http://example.org/> .
 
 {
-    ex:graph1 dc:publisher "Bob" .
-    ex:graph2 dc:publisher "Alice" .
+    ex:graph1 dc:publisher "Bob" ;
+	      ex:containsPerson ex:bob .
+
+    ex:graph2 dc:publisher "Alice" ;
+	      ex:containsPerson ex:alice .
 }
 
 ex:graph1 {

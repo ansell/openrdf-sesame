@@ -18,8 +18,12 @@ public class FOAF {
 
 	public final static URI PERSON;
 
+	public final static URI NAME;
+	
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		PERSON = factory.createURI(FOAF.NAMESPACE, "Person");
+		
+		NAME = factory.createURI(FOAF.NAMESPACE, "name");
 	}
 }

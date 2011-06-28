@@ -11,8 +11,9 @@ import org.openrdf.sail.memory.MemoryStore;
 
 
 /**
- *
- * @author jeen
+ * Test SPARQL 1.1 Update functionality on an in-memory store.
+ * 
+ * @author Jeen Broekstra
  */
 public class MemorySPARQLUpdateTest extends SPARQLUpdateTest {
 

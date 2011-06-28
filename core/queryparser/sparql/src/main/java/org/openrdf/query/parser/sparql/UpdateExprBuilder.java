@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jws.soap.SOAPBinding.ParameterStyle;
+
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.EmptySet;
@@ -68,18 +70,23 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 	public Modify visit(ASTModify node, Object data)
 		throws VisitorException
 	{
+		
+		ValueConstant with = null;
+		ASTIRI withNode = node.getWithClause();
+		if (withNode != null) {
+			with = (ValueConstant)withNode.jjtAccept(this, data);
+		}
+
+		if (with != null) {
+			graphPattern.setContextVar(valueExpr2Var(with));
+			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
+		}
 
 		ASTGraphPatternGroup whereClause = node.getWhereClause();
 
 		TupleExpr expr = null;
 		if (whereClause != null) {
 			expr = (TupleExpr)whereClause.jjtAccept(this, data);
-		}
-
-		ValueConstant with = null;
-		ASTIRI withNode = node.getWithClause();
-		if (withNode != null) {
-			with = (ValueConstant)withNode.jjtAccept(this, expr);
 		}
 
 		TupleExpr delete = null;
@@ -94,7 +101,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			insert = (TupleExpr)insertNode.jjtAccept(this, expr);
 		}
 
-		Modify modifyExpr = new Modify(with, delete, insert);
+		Modify modifyExpr = new Modify(delete, insert);
 
 		return modifyExpr;
 	}
@@ -109,6 +116,11 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		GraphPattern parentGP = graphPattern;
 
 		graphPattern = new GraphPattern();
+		
+		// inherit scope & context
+		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
+		graphPattern.setContextVar(parentGP.getContextVar());
+		
 		if (node.jjtGetNumChildren() > 1) {
 			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
@@ -130,7 +142,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		Set<Var> projectionVars = getProjectionVars(statementPatterns);
 
-		// Create BNodeGenerators for all anonymous variables
+		// Create extensions with valueconstants for all anonymous vars with values.
 		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
 
 		for (Var var : projectionVars) {
@@ -139,12 +151,8 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 				if (var.hasValue()) {
 					valueExpr = new ValueConstant(var.getValue());
+					extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
 				}
-				else {
-					valueExpr = new BNodeGenerator();
-				}
-
-				extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
 			}
 		}
 
@@ -191,6 +199,11 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		// Collect construct triples
 		GraphPattern parentGP = graphPattern;
 		graphPattern = new GraphPattern();
+		
+		// inherit scope & context
+		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
+		graphPattern.setContextVar(parentGP.getContextVar());
+		
 		if (node.jjtGetNumChildren() > 1) {
 			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
