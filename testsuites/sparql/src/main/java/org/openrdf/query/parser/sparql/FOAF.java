@@ -20,10 +20,15 @@ public class FOAF {
 
 	public final static URI NAME;
 	
+	public final static URI KNOWS;
+	
+	
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		PERSON = factory.createURI(FOAF.NAMESPACE, "Person");
 		
 		NAME = factory.createURI(FOAF.NAMESPACE, "name");
+		
+		KNOWS = factory.createURI(FOAF.NAMESPACE, "knows");
 	}
 }

@@ -26,8 +26,12 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Modify;
+import org.openrdf.query.algebra.QueryModelNode;
+import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UpdateExpr;
+import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
@@ -217,7 +221,8 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
-	public final void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+	public final void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred)
 		throws SailException
 	{
 		connectionLock.readLock().lock();
@@ -559,7 +564,9 @@ public abstract class SailConnectionBase implements SailConnection {
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException;
 
-	protected void executeInternal(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+
+	protected void executeInternal(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred)
 		throws SailException
 	{
 		/* TODO this method should really be defined abstract, but for backward-compatibility 
@@ -571,7 +578,10 @@ public abstract class SailConnectionBase implements SailConnection {
 		if (updateExpr instanceof Modify) {
 			Modify modify = (Modify)updateExpr;
 
+			//TupleExpr whereClause = modify.getWhereExpr();
+
 			if (modify.getDeleteExpr() != null) {
+
 				CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeRemoved = evaluateInternal(
 						modify.getDeleteExpr(), dataset, bindings, includeInferred);
 
@@ -597,6 +607,7 @@ public abstract class SailConnectionBase implements SailConnection {
 					throw new SailException(e);
 				}
 			}
+
 			if (modify.getInsertExpr() != null) {
 				CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeInserted = evaluateInternal(
 						modify.getInsertExpr(), dataset, bindings, includeInferred);
@@ -624,7 +635,6 @@ public abstract class SailConnectionBase implements SailConnection {
 				}
 			}
 		}
-
 	}
 
 	protected abstract CloseableIteration<? extends Resource, SailException> getContextIDsInternal()

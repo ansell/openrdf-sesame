@@ -26,6 +26,7 @@ import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.Reduced;
+import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
@@ -35,9 +36,11 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.query.parser.sparql.ast.ASTDeleteClause;
+import org.openrdf.query.parser.sparql.ast.ASTDeleteData;
 import org.openrdf.query.parser.sparql.ast.ASTGraphPatternGroup;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTInsertClause;
+import org.openrdf.query.parser.sparql.ast.ASTInsertData;
 import org.openrdf.query.parser.sparql.ast.ASTModify;
 import org.openrdf.query.parser.sparql.ast.ASTUpdate;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
@@ -63,14 +66,202 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		if (node instanceof ASTModify) {
 			return this.visit((ASTModify)node, data);
 		}
+		else if (node instanceof ASTInsertData) {
+			return this.visit((ASTInsertData)node, data);
+		}
 
 		return null;
 	}
 
+	@Override
+	public Modify visit(ASTInsertData node, Object data)
+		throws VisitorException
+	{
+
+		TupleExpr result = new SingletonSet();
+
+		// Collect construct triples
+		GraphPattern parentGP = graphPattern;
+		graphPattern = new GraphPattern();
+
+		// inherit scope & context
+		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
+		graphPattern.setContextVar(parentGP.getContextVar());
+
+		if (node.jjtGetNumChildren() > 1) {
+			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+
+			Var contextVar = valueExpr2Var(contextNode);
+			graphPattern.setContextVar(contextVar);
+			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
+
+			node.jjtGetChild(1).jjtAccept(this, data);
+		}
+		else {
+			node.jjtGetChild(0).jjtAccept(this, data);
+		}
+
+		TupleExpr insertExpr = graphPattern.buildTupleExpr();
+
+		graphPattern = parentGP;
+
+		// Retrieve all StatementPatterns from the insert expression
+		List<StatementPattern> statementPatterns = StatementPatternCollector.process(insertExpr);
+
+		Set<Var> projectionVars = getProjectionVars(statementPatterns);
+
+		// Create BNodeGenerators for all anonymous variables
+		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
+
+		for (Var var : projectionVars) {
+			if (var.isAnonymous() && !extElemMap.containsKey(var)) {
+				ValueExpr valueExpr;
+
+				if (var.hasValue()) {
+					valueExpr = new ValueConstant(var.getValue());
+				}
+				else {
+					valueExpr = new BNodeGenerator();
+				}
+
+				extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
+			}
+		}
+
+		if (!extElemMap.isEmpty()) {
+			result = new Extension(result, extElemMap.values());
+		}
+
+		// Create a Projection for each StatementPattern in the clause
+		List<ProjectionElemList> projList = new ArrayList<ProjectionElemList>();
+
+		for (StatementPattern sp : statementPatterns) {
+			ProjectionElemList projElemList = new ProjectionElemList();
+
+			projElemList.addElement(new ProjectionElem(sp.getSubjectVar().getName(), "subject"));
+			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
+			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
+
+			if (sp.getContextVar() != null) {
+				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));
+			}
+
+			projList.add(projElemList);
+		}
+
+		if (projList.size() == 1) {
+			result = new Projection(result, projList.get(0));
+		}
+		else if (projList.size() > 1) {
+			result = new MultiProjection(result, projList);
+		}
+		else {
+			// Empty constructor
+			result = new EmptySet();
+		}
+
+		result = new Reduced(result);
+
+		return new Modify(null, result);
+	}
+
+	@Override
+	public Modify visit(ASTDeleteData node, Object data)
+		throws VisitorException
+	{
+
+		TupleExpr result = new SingletonSet();
+
+		// Collect construct triples
+		GraphPattern parentGP = graphPattern;
+		graphPattern = new GraphPattern();
+
+		// inherit scope & context
+		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
+		graphPattern.setContextVar(parentGP.getContextVar());
+
+		if (node.jjtGetNumChildren() > 1) {
+			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+
+			Var contextVar = valueExpr2Var(contextNode);
+			graphPattern.setContextVar(contextVar);
+			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
+
+			node.jjtGetChild(1).jjtAccept(this, data);
+		}
+		else {
+			node.jjtGetChild(0).jjtAccept(this, data);
+		}
+
+		TupleExpr insertExpr = graphPattern.buildTupleExpr();
+
+		graphPattern = parentGP;
+
+		// Retrieve all StatementPatterns from the insert expression
+		List<StatementPattern> statementPatterns = StatementPatternCollector.process(insertExpr);
+
+		Set<Var> projectionVars = getProjectionVars(statementPatterns);
+
+		// Create BNodeGenerators for all anonymous variables
+		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
+
+		for (Var var : projectionVars) {
+			if (var.isAnonymous() && !extElemMap.containsKey(var)) {
+				ValueExpr valueExpr;
+
+				if (var.hasValue()) {
+					valueExpr = new ValueConstant(var.getValue());
+				}
+				else {
+					valueExpr = new BNodeGenerator();
+				}
+
+				extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
+			}
+		}
+
+		if (!extElemMap.isEmpty()) {
+			result = new Extension(result, extElemMap.values());
+		}
+
+		// Create a Projection for each StatementPattern in the clause
+		List<ProjectionElemList> projList = new ArrayList<ProjectionElemList>();
+
+		for (StatementPattern sp : statementPatterns) {
+			ProjectionElemList projElemList = new ProjectionElemList();
+
+			projElemList.addElement(new ProjectionElem(sp.getSubjectVar().getName(), "subject"));
+			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
+			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
+
+			if (sp.getContextVar() != null) {
+				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));
+			}
+
+			projList.add(projElemList);
+		}
+
+		if (projList.size() == 1) {
+			result = new Projection(result, projList.get(0));
+		}
+		else if (projList.size() > 1) {
+			result = new MultiProjection(result, projList);
+		}
+		else {
+			// Empty constructor
+			result = new EmptySet();
+		}
+
+		result = new Reduced(result);
+
+		return new Modify(result, null);
+	}
+
+	@Override
 	public Modify visit(ASTModify node, Object data)
 		throws VisitorException
 	{
-		
+
 		ValueConstant with = null;
 		ASTIRI withNode = node.getWithClause();
 		if (withNode != null) {
@@ -116,11 +307,11 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		GraphPattern parentGP = graphPattern;
 
 		graphPattern = new GraphPattern();
-		
+
 		// inherit scope & context
 		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
 		graphPattern.setContextVar(parentGP.getContextVar());
-		
+
 		if (node.jjtGetNumChildren() > 1) {
 			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
@@ -142,7 +333,8 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		Set<Var> projectionVars = getProjectionVars(statementPatterns);
 
-		// Create extensions with valueconstants for all anonymous vars with values.
+		// Create extensions with valueconstants for all anonymous vars with
+		// values.
 		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
 
 		for (Var var : projectionVars) {
@@ -199,11 +391,11 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		// Collect construct triples
 		GraphPattern parentGP = graphPattern;
 		graphPattern = new GraphPattern();
-		
+
 		// inherit scope & context
 		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
 		graphPattern.setContextVar(parentGP.getContextVar());
-		
+
 		if (node.jjtGetNumChildren() > 1) {
 			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
