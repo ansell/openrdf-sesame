@@ -14,9 +14,16 @@ public class Modify extends QueryModelNodeBase implements UpdateExpr {
 
 	private TupleExpr insertExpr;
 
+	private TupleExpr whereExpr;
+	
 	public Modify(TupleExpr deleteExpr, TupleExpr insertExpr) {
+		this(deleteExpr, insertExpr, null);
+	}
+	
+	public Modify(TupleExpr deleteExpr, TupleExpr insertExpr, TupleExpr whereExpr) {
 		setDeleteExpr(deleteExpr);
 		setInsertExpr(insertExpr);
+		setWhereExpr(whereExpr);
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
@@ -56,8 +63,8 @@ public class Modify extends QueryModelNodeBase implements UpdateExpr {
 
 		TupleExpr deleteClone = deleteExpr != null ? deleteExpr.clone() : null;
 		TupleExpr insertClone = insertExpr != null ? insertExpr.clone() : null;
-
-		return new Modify(deleteClone, insertClone);
+		TupleExpr whereClone = whereExpr != null ? whereExpr.clone() : null;
+		return new Modify(deleteClone, insertClone, whereClone);
 	}
 
 	/**
@@ -88,6 +95,20 @@ public class Modify extends QueryModelNodeBase implements UpdateExpr {
 	 */
 	public TupleExpr getInsertExpr() {
 		return insertExpr;
+	}
+
+	/**
+	 * @param whereExpr The whereExpr to set.
+	 */
+	public void setWhereExpr(TupleExpr whereExpr) {
+		this.whereExpr = whereExpr;
+	}
+
+	/**
+	 * @return Returns the whereExpr.
+	 */
+	public TupleExpr getWhereExpr() {
+		return whereExpr;
 	}
 
 }
