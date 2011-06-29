@@ -264,8 +264,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 				Var var = createAnonVar("-const-" + constantVarID++);
 
 				// replace occurrence of the operator in the filter condition
-				// with
-				// the variable.
+				// with the variable.
 				AggregateOperatorReplacer replacer = new AggregateOperatorReplacer(operator, var);
 				replacer.meet(condition);
 
@@ -349,21 +348,21 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 				if (valueExpr instanceof AggregateOperator) {
 					// Apply implicit grouping if necessary
-
 					GroupFinder groupFinder = new GroupFinder();
 					result.visit(groupFinder);
 					Group group = groupFinder.getGroup();
 
+					boolean existingGroup = true;
 					if (group == null) {
 						group = new Group(result);
+						existingGroup = false;
 					}
 
 					group.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
 
 					extension.setArg(group);
 
-					// avoid overwriting a HAVING clause, ORDER BY clause
-					if (!(result instanceof Filter || result instanceof Order)) {
+					if (!existingGroup) {
 						result = group;
 					}
 				}
@@ -399,6 +398,11 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		private Group group;
 
+		@Override 
+		public void meet(Projection projection) {
+			// stop tree traversal on finding a projection: we do not wish to find the group in a sub-select.
+		}
+		
 		@Override
 		public void meet(Group group) {
 			this.group = group;
