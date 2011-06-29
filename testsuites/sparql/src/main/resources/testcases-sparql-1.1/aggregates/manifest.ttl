@@ -13,6 +13,7 @@
     	:sparql11-count-01
     	:sparql11-count-02
     	:sparql11-count-03
+    	:sparql11-count-04
     	:sparql11-order-01
     	:sparql11-max-01
     	:sparql11-min-01
@@ -30,6 +31,11 @@
     ).
 
 
+:sparql11-count-04  mf:name  "sparql11-count-04" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-count-04.rq> ; qt:data <data-07.ttl> ] ;
+         mf:result <sparql11-count-04.srx> .
+         
 :sparql11-aggregate-group-01  mf:name  "sparql11-aggregate-group-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-aggregate-group-01.rq> ; qt:data <data-05.ttl> ] ;
