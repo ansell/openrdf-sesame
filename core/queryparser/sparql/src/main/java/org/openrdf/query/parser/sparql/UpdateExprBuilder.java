@@ -17,9 +17,11 @@ import javax.jws.soap.SOAPBinding.ParameterStyle;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.BNodeGenerator;
+import org.openrdf.query.algebra.DeleteData;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
+import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Projection;
@@ -74,7 +76,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 	}
 
 	@Override
-	public Modify visit(ASTInsertData node, Object data)
+	public InsertData visit(ASTInsertData node, Object data)
 		throws VisitorException
 	{
 
@@ -162,11 +164,11 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		result = new Reduced(result);
 
-		return new Modify(null, result);
+		return new InsertData(result);
 	}
 
 	@Override
-	public Modify visit(ASTDeleteData node, Object data)
+	public DeleteData visit(ASTDeleteData node, Object data)
 		throws VisitorException
 	{
 
@@ -254,7 +256,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		result = new Reduced(result);
 
-		return new Modify(result, null);
+		return new DeleteData(result);
 	}
 
 	@Override
@@ -275,24 +277,24 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		ASTGraphPatternGroup whereClause = node.getWhereClause();
 
-		TupleExpr expr = null;
+		TupleExpr where = null;
 		if (whereClause != null) {
-			expr = (TupleExpr)whereClause.jjtAccept(this, data);
+			where = (TupleExpr)whereClause.jjtAccept(this, data);
 		}
 
 		TupleExpr delete = null;
 		ASTDeleteClause deleteNode = node.getDeleteClause();
 		if (deleteNode != null) {
-			delete = (TupleExpr)deleteNode.jjtAccept(this, expr);
+			delete = (TupleExpr)deleteNode.jjtAccept(this, data);
 		}
 
 		TupleExpr insert = null;
 		ASTInsertClause insertNode = node.getInsertClause();
 		if (insertNode != null) {
-			insert = (TupleExpr)insertNode.jjtAccept(this, expr);
+			insert = (TupleExpr)insertNode.jjtAccept(this, data);
 		}
 
-		Modify modifyExpr = new Modify(delete, insert);
+		Modify modifyExpr = new Modify(delete, insert, where);
 
 		return modifyExpr;
 	}
@@ -327,6 +329,10 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		TupleExpr deleteExpr = graphPattern.buildTupleExpr();
 
 		graphPattern = parentGP;
+		
+		return deleteExpr;
+		
+		/*
 
 		// Retrieve all StatementPatterns from the delete expression
 		List<StatementPattern> statementPatterns = StatementPatternCollector.process(deleteExpr);
@@ -380,6 +386,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		}
 
 		return new Reduced(result);
+		*/
 	}
 
 	@Override
@@ -413,6 +420,9 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		graphPattern = parentGP;
 
+		return insertExpr;
+		
+		/*
 		// Retrieve all StatementPatterns from the insert expression
 		List<StatementPattern> statementPatterns = StatementPatternCollector.process(insertExpr);
 
@@ -468,7 +478,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			result = new EmptySet();
 		}
 
-		return new Reduced(result);
+*/
 	}
 
 	private Set<Var> getProjectionVars(Collection<StatementPattern> statementPatterns) {
