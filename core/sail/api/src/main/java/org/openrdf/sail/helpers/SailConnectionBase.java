@@ -22,16 +22,19 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.BNodeImpl;
+import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.DeleteData;
+import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.Modify;
-import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.SingletonSet;
+import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UpdateExpr;
-import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
@@ -564,7 +567,6 @@ public abstract class SailConnectionBase implements SailConnection {
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException;
 
-
 	protected void executeInternal(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
 			boolean includeInferred)
 		throws SailException
@@ -576,65 +578,209 @@ public abstract class SailConnectionBase implements SailConnection {
 		logger.trace("Incoming update expression:\n{}", updateExpr);
 
 		if (updateExpr instanceof Modify) {
-			Modify modify = (Modify)updateExpr;
+			executeModify((Modify)updateExpr, dataset, bindings, includeInferred);
+		}
+		else if (updateExpr instanceof InsertData) {
+			executeInsertData((InsertData)updateExpr, dataset, bindings, includeInferred);
+		}
+		else if (updateExpr instanceof DeleteData) {
+			executeDeleteData((DeleteData)updateExpr, dataset, bindings, includeInferred);
+		}
+	}
 
-			//TupleExpr whereClause = modify.getWhereExpr();
+	/**
+	 * @param updateExpr
+	 * @param dataset
+	 * @param bindings
+	 * @param includeInferred
+	 * @throws SailException 
+	 */
+	protected void executeInsertData(InsertData insertDataExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred) throws SailException
+	{
+		TupleExpr insertExpr = insertDataExpr.getInsertExpr();
 
-			if (modify.getDeleteExpr() != null) {
-
-				CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeRemoved = evaluateInternal(
-						modify.getDeleteExpr(), dataset, bindings, includeInferred);
-
-				try {
-					while (toBeRemoved.hasNext()) {
-						BindingSet binding = toBeRemoved.next();
-
-						Resource subj = (Resource)binding.getValue("subject");
-						URI pred = (URI)binding.getValue("predicate");
-						Value obj = binding.getValue("object");
-						Resource context = (Resource)binding.getValue("context");
-
-						if (context == null) {
-							removeStatementsInternal(subj, pred, obj);
-						}
-						else {
-							removeStatementsInternal(subj, pred, obj, context);
-						}
-					}
-					toBeRemoved.close();
+		CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeInserted = evaluateInternal(
+				insertExpr, dataset, bindings, includeInferred);
+		
+		try {
+			while (toBeInserted.hasNext()) {
+				BindingSet bs = toBeInserted.next();
+				
+				Resource subject = (Resource)bs.getValue("subject");
+				URI predicate = (URI)bs.getValue("predicate");
+				Value object = bs.getValue("object");
+				Resource context = (Resource)bs.getValue("context");
+				
+				if (context == null) {
+					addStatementInternal(subject, predicate, object);
 				}
-				catch (QueryEvaluationException e) {
-					throw new SailException(e);
-				}
-			}
-
-			if (modify.getInsertExpr() != null) {
-				CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeInserted = evaluateInternal(
-						modify.getInsertExpr(), dataset, bindings, includeInferred);
-
-				try {
-					while (toBeInserted.hasNext()) {
-						BindingSet binding = toBeInserted.next();
-
-						Resource subj = (Resource)binding.getValue("subject");
-						URI pred = (URI)binding.getValue("predicate");
-						Value obj = binding.getValue("object");
-						Resource context = (Resource)binding.getValue("context");
-
-						if (context == null) {
-							addStatementInternal(subj, pred, obj);
-						}
-						else {
-							addStatementInternal(subj, pred, obj, context);
-						}
-					}
-					toBeInserted.close();
-				}
-				catch (QueryEvaluationException e) {
-					throw new SailException(e);
+				else {
+					addStatementInternal(subject, predicate, object, context);
 				}
 			}
 		}
+		catch (QueryEvaluationException e) {
+			throw new SailException(e);
+		}
+	}
+
+	/**
+	 * @param updateExpr
+	 * @param dataset
+	 * @param bindings
+	 * @param includeInferred
+	 * @throws SailException 
+	 */
+	protected void executeDeleteData(DeleteData deleteDataExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred) throws SailException
+	{
+		TupleExpr deleteExpr = deleteDataExpr.getDeleteExpr();
+
+		CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeDeleted = evaluateInternal(
+				deleteExpr, dataset, bindings, includeInferred);
+		
+		try {
+			while (toBeDeleted.hasNext()) {
+				BindingSet bs = toBeDeleted.next();
+				
+				Resource subject = (Resource)bs.getValue("subject");
+				URI predicate = (URI)bs.getValue("predicate");
+				Value object = bs.getValue("object");
+				Resource context = (Resource)bs.getValue("context");
+				
+				if (context == null) {
+					removeStatementsInternal(subject, predicate, object);
+				}
+				else {
+					removeStatementsInternal(subject, predicate, object, context);
+				}
+			}
+		}
+		catch (QueryEvaluationException e) {
+			throw new SailException(e);
+		}
+	}
+
+	protected void executeModify(Modify modify, Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
+	{
+		TupleExpr deleteClause = modify.getDeleteExpr();
+		TupleExpr insertClause = modify.getInsertExpr();
+		TupleExpr whereClause = modify.getWhereExpr();
+
+		CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings = evaluateInternal(
+				whereClause, dataset, bindings, includeInferred);
+
+		try {
+			while (sourceBindings.hasNext()) {
+				BindingSet sourceBinding = sourceBindings.next();
+
+				if (deleteClause != null) {
+					List<StatementPattern> deletePatterns = StatementPatternCollector.process(deleteClause);
+
+					for (StatementPattern deletePattern : deletePatterns) {
+						Statement toBeDeleted = createStatementFromPattern(deletePattern, sourceBinding, false);
+
+						if (toBeDeleted.getContext() == null) {
+							removeStatementsInternal(toBeDeleted.getSubject(), toBeDeleted.getPredicate(),
+									toBeDeleted.getObject());
+						}
+						else {
+							removeStatementsInternal(toBeDeleted.getSubject(), toBeDeleted.getPredicate(),
+									toBeDeleted.getObject(), toBeDeleted.getContext());
+						}
+					}
+				}
+
+				if (insertClause != null) {
+					List<StatementPattern> insertPatterns = StatementPatternCollector.process(insertClause);
+
+					for (StatementPattern insertPattern : insertPatterns) {
+						Statement toBeInserted = createStatementFromPattern(insertPattern, sourceBinding, true);
+
+						if (toBeInserted.getContext() == null) {
+							addStatementInternal(toBeInserted.getSubject(), toBeInserted.getPredicate(),
+									toBeInserted.getObject());
+						}
+						else {
+							addStatementInternal(toBeInserted.getSubject(), toBeInserted.getPredicate(),
+									toBeInserted.getObject(), toBeInserted.getContext());
+						}
+					}
+				}
+			}
+		}
+		catch (QueryEvaluationException e) {
+			throw new SailException(e);
+		}
+	}
+
+	/**
+	 * @param deletePattern
+	 * @param sourceBinding
+	 * @return
+	 * @throws SailException
+	 */
+	private Statement createStatementFromPattern(StatementPattern deletePattern, BindingSet sourceBinding,
+			boolean forceBindAll)
+		throws SailException
+	{
+
+		Resource subject = null;
+		URI predicate = null;
+		Value object = null;
+		Resource context = null;
+
+		ValueFactory f = sailBase.getValueFactory();
+
+		if (deletePattern.getSubjectVar().hasValue()) {
+			subject = (Resource)deletePattern.getSubjectVar().getValue();
+		}
+		else {
+			subject = (Resource)sourceBinding.getValue(deletePattern.getSubjectVar().getName());
+			if (forceBindAll && subject == null) {
+				subject = f.createBNode();
+			}
+		}
+
+		if (deletePattern.getPredicateVar().hasValue()) {
+			predicate = (URI)deletePattern.getPredicateVar().getValue();
+		}
+		else {
+			predicate = (URI)sourceBinding.getValue(deletePattern.getPredicateVar().getName());
+			if (forceBindAll && predicate == null) {
+				throw new SailException("cannot instantiate predicate binding for statement pattern");
+			}
+		}
+
+		if (deletePattern.getObjectVar().hasValue()) {
+			object = deletePattern.getObjectVar().getValue();
+		}
+		else {
+			object = sourceBinding.getValue(deletePattern.getObjectVar().getName());
+			if (forceBindAll && object == null) {
+				object = f.createBNode();
+			}
+		}
+
+		if (deletePattern.getContextVar() != null) {
+			if (deletePattern.getContextVar().hasValue()) {
+				context = (Resource)deletePattern.getContextVar().getValue();
+			}
+			else {
+				context = (Resource)sourceBinding.getValue(deletePattern.getContextVar().getName());
+			}
+		}
+
+		Statement st = null;
+		if (context != null) {
+			st = f.createStatement(subject, predicate, object, context);
+		}
+		else {
+			st = f.createStatement(subject, predicate, object);
+		}
+		return st;
 	}
 
 	protected abstract CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
