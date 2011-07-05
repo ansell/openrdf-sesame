@@ -1218,12 +1218,12 @@ void IRI() :
 
 /// SPARQL 1.1 Update productions
 
-void GraphRefAll() #void :
+void GraphRefAll() :
 {}
 {
 	GraphRef() 
-|	<DEFAULT_GRAPH>
-|	<NAMED> 
+|	<DEFAULT_GRAPH> {jjtThis.setDefault(true); }
+|	<NAMED> 	{jjtThis.setNamed(true); }
 |	<ALL>
 }
 

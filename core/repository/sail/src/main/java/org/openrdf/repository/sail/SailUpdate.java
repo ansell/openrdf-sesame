@@ -5,11 +5,18 @@
  */
 package org.openrdf.repository.sail;
 
+import java.net.URL;
+
+import org.openrdf.model.Resource;
+import org.openrdf.model.Value;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
+import org.openrdf.query.algebra.Load;
+import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.impl.AbstractOperation;
 import org.openrdf.query.parser.ParsedUpdate;
+import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
@@ -34,11 +41,11 @@ public class SailUpdate extends AbstractOperation implements Update {
 	protected SailRepositoryConnection getConnection() {
 		return con;
 	}
-	
+
 	/**
-	 * Gets the "active" dataset for this update. The active dataset is either the
-	 * dataset that has been specified using {@link #setDataset(Dataset)} or the
-	 * dataset that has been specified in the update, where the former takes
+	 * Gets the "active" dataset for this update. The active dataset is either
+	 * the dataset that has been specified using {@link #setDataset(Dataset)} or
+	 * the dataset that has been specified in the update, where the former takes
 	 * precedence over the latter.
 	 * 
 	 * @return The active dataset, or <tt>null</tt> if there is no dataset.
@@ -48,7 +55,8 @@ public class SailUpdate extends AbstractOperation implements Update {
 			return dataset;
 		}
 
-		// No external dataset specified, use update operation's own dataset (if any)
+		// No external dataset specified, use update operation's own dataset (if
+		// any)
 		return parsedUpdate.getDataset();
 	}
 
@@ -60,15 +68,52 @@ public class SailUpdate extends AbstractOperation implements Update {
 	public void execute()
 		throws UpdateExecutionException
 	{
-		
-		SailConnection conn = getConnection().getSailConnection();
-		
-		try {
-			conn.executeUpdate(parsedUpdate.getUpdateExpr(), getActiveDataset(), getBindings(), true);
-			conn.commit();
+
+		UpdateExpr updateExpr = parsedUpdate.getUpdateExpr();
+
+		// LOAD is handled at the Repository API level because it requires access
+		// to the Rio parser.
+		if (updateExpr instanceof Load) {
+
+			Load load = (Load)updateExpr;
+
+			Value source = load.getSource().getValue();
+			Value graph = load.getGraph() != null ? load.getGraph().getValue() : null;
+
+			SailRepositoryConnection conn = getConnection();
+			try {
+				URL sourceURL = new URL(source.stringValue());
+
+				// TODO make serialization format user-configurable?
+				// We could add a non-standard extra argument to LOAD operations
+				// that allows setting the format.
+				RDFFormat format = RDFFormat.forFileName(source.stringValue());
+
+				if (graph == null) {
+					conn.add(sourceURL, source.stringValue(), format);
+				}
+				else {
+					conn.add(sourceURL, source.stringValue(), format, (Resource)graph);
+				}
+			}
+			catch (Exception e) {
+				if (!load.isSilent()) {
+					throw new UpdateExecutionException(e);
+				}
+			}
 		}
-		catch (SailException e) {
-			throw new UpdateExecutionException(e);
+		else {
+			// pass update operation to the SAIL.
+
+			SailConnection conn = getConnection().getSailConnection();
+
+			try {
+				conn.executeUpdate(updateExpr, getActiveDataset(), getBindings(), true);
+				conn.commit();
+			}
+			catch (SailException e) {
+				throw new UpdateExecutionException(e);
+			}
 		}
 	}
 

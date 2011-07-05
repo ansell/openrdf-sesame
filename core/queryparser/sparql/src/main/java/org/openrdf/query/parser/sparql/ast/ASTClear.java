@@ -28,5 +28,7 @@ public class ASTClear extends ASTUpdate {
 	public boolean isSilent() {
 		return this.silent;
 	}
+
+
 }
 /* JavaCC - OriginalChecksum=cd9ce1974166f9f0e8c17e5e0339d89c (do not edit this line) */

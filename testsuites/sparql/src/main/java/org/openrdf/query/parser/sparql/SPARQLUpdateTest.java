@@ -14,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
@@ -318,6 +319,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertFalse(msg, con.hasStatement(alice, FOAF.KNOWS, bob, true, graph1));
 	}
 	
+	@Test
 	public void testDeleteDataFromWrongGraph() throws Exception
 	{
 		StringBuilder update = new StringBuilder();
@@ -336,6 +338,55 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(msg, con.hasStatement(alice, FOAF.KNOWS, bob, true, graph1));
 	}
 
+	@Test
+	public void testLoad() throws Exception {
+		String update = "LOAD <http://www.daml.org/2001/01/gedcom/royal92.daml>";
+		
+		String ns = "http://www.daml.org/2001/01/gedcom/gedcom#";
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
+		
+		operation.execute();
+		assertTrue(con.hasStatement(null, RDF.TYPE, f.createURI(ns, "Family"), true));
+	}
+	
+	@Test
+	public void testLoadIntoGraph() throws Exception {
+		String ns = "http://www.daml.org/2001/01/gedcom/gedcom#";
+
+		String update = "LOAD <http://www.daml.org/2001/01/gedcom/royal92.daml> INTO GRAPH <" + ns +"> " ;
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
+		
+		operation.execute();
+		assertFalse(con.hasStatement((Resource)null, RDF.TYPE, f.createURI(ns, "Family"), true, (Resource)null));
+		assertTrue(con.hasStatement((Resource)null, RDF.TYPE, f.createURI(ns, "Family"), true, f.createURI(ns)));
+	}
+	
+	@Test
+	public void testClearAll() throws Exception {
+		String update = "CLEAR ALL";
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
+		
+		operation.execute();
+		assertFalse(con.hasStatement(null, null, null, false));
+
+	}
+	
+	@Test
+	public void testClearNamed() throws Exception {
+		String update = "CLEAR NAMED";
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
+		
+		operation.execute();
+		assertFalse(con.hasStatement(null, null, null, false, graph1));
+		assertFalse(con.hasStatement(null, null, null, false, graph2));
+		assertTrue(con.hasStatement(null, null, null, false));
+
+	}
+	
 	/* protected methods */
 		
 	protected void loadDataset() throws RDFParseException, RepositoryException, IOException {
