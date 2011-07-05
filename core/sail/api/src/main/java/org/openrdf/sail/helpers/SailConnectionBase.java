@@ -28,12 +28,16 @@ import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.Clear;
 import org.openrdf.query.algebra.DeleteData;
 import org.openrdf.query.algebra.InsertData;
+import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UpdateExpr;
+import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
@@ -585,6 +589,52 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 		else if (updateExpr instanceof DeleteData) {
 			executeDeleteData((DeleteData)updateExpr, dataset, bindings, includeInferred);
+		}
+		else if (updateExpr instanceof Clear) {
+			executeClear((Clear)updateExpr, dataset, bindings, includeInferred);
+		}
+		else if (updateExpr instanceof Load) {
+			throw new SailException("load operations can not be handled directly by the SAIL");
+		}
+	}
+
+	
+	/**
+	 * @param updateExpr
+	 * @param dataset
+	 * @param bindings
+	 * @param includeInferred
+	 * @throws SailException 
+	 */
+	protected void executeClear(Clear clearExpr, Dataset dataset, BindingSet bindings, boolean includeInferred) throws SailException 
+	{
+		try {
+			ValueConstant graph = clearExpr.getGraph();
+			
+			if (graph != null) {
+				Resource context = (Resource)graph.getValue();
+				clearInternal(context);
+			}
+			else {
+				Scope scope = clearExpr.getScope();
+				if (Scope.NAMED_CONTEXTS.equals(scope)) {
+					CloseableIteration<? extends Resource, SailException> contextIDs = getContextIDsInternal();
+					while (contextIDs.hasNext()) {
+						clearInternal(contextIDs.next());
+					}
+				}
+				else if (Scope.DEFAULT_CONTEXTS.equals(scope)) {
+					clearInternal((Resource)null);
+				}
+				else {
+					clearInternal();
+				}
+			}
+		}
+		catch (SailException e) {
+			if (!clearExpr.isSilent()) {
+				throw e;
+			}
 		}
 	}
 

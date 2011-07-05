@@ -17,11 +17,13 @@ import javax.jws.soap.SOAPBinding.ParameterStyle;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.BNodeGenerator;
+import org.openrdf.query.algebra.Clear;
 import org.openrdf.query.algebra.DeleteData;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.InsertData;
+import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Projection;
@@ -37,12 +39,15 @@ import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
+import org.openrdf.query.parser.sparql.ast.ASTClear;
 import org.openrdf.query.parser.sparql.ast.ASTDeleteClause;
 import org.openrdf.query.parser.sparql.ast.ASTDeleteData;
 import org.openrdf.query.parser.sparql.ast.ASTGraphPatternGroup;
+import org.openrdf.query.parser.sparql.ast.ASTGraphRefAll;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTInsertClause;
 import org.openrdf.query.parser.sparql.ast.ASTInsertData;
+import org.openrdf.query.parser.sparql.ast.ASTLoad;
 import org.openrdf.query.parser.sparql.ast.ASTModify;
 import org.openrdf.query.parser.sparql.ast.ASTUpdate;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
@@ -260,6 +265,49 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 	}
 
 	@Override
+	public Load visit(ASTLoad node, Object data)
+		throws VisitorException
+	{
+
+		ValueConstant source = (ValueConstant)node.jjtGetChild(0).jjtAccept(this, data);
+	
+		Load load = new Load(source);
+		load.setSilent(node.isSilent());
+		if (node.jjtGetNumChildren() > 1) {
+			ValueConstant graph = (ValueConstant)node.jjtGetChild(1).jjtAccept(this, data);
+			load.setGraph(graph);
+		}
+		
+		return load;
+	}
+
+	@Override
+	public Clear visit(ASTClear node, Object data)
+		throws VisitorException
+	{
+		Clear clear = new Clear();
+		clear.setSilent(node.isSilent());
+		
+		ASTGraphRefAll graphRef = node.jjtGetChild(ASTGraphRefAll.class);
+		
+		if (graphRef.jjtGetNumChildren() > 0) {
+			ValueConstant graph = (ValueConstant)graphRef.jjtGetChild(0).jjtAccept(this, data);
+			clear.setGraph(graph);
+		}
+		else {
+			if (graphRef.isDefault()) {
+				clear.setScope(Scope.DEFAULT_CONTEXTS);
+			}
+			else if (graphRef.isNamed()) {
+				clear.setScope(Scope.NAMED_CONTEXTS);
+			}
+		}
+		
+		return clear;
+	}
+	
+
+	@Override
 	public Modify visit(ASTModify node, Object data)
 		throws VisitorException
 	{
@@ -329,9 +377,9 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		TupleExpr deleteExpr = graphPattern.buildTupleExpr();
 
 		graphPattern = parentGP;
-		
+
 		return deleteExpr;
-		
+
 		/*
 
 		// Retrieve all StatementPatterns from the delete expression
@@ -421,7 +469,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		graphPattern = parentGP;
 
 		return insertExpr;
-		
+
 		/*
 		// Retrieve all StatementPatterns from the insert expression
 		List<StatementPattern> statementPatterns = StatementPatternCollector.process(insertExpr);
@@ -478,7 +526,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			result = new EmptySet();
 		}
 
-*/
+		*/
 	}
 
 	private Set<Var> getProjectionVars(Collection<StatementPattern> statementPatterns) {

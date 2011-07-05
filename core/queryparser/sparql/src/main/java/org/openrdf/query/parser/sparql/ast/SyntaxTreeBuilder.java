@@ -4888,23 +4888,53 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
 
 /// SPARQL 1.1 Update productions
   final public void GraphRefAll() throws ParseException {
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case GRAPH:
-      GraphRef();
-      break;
-    case DEFAULT_GRAPH:
-      jj_consume_token(DEFAULT_GRAPH);
-      break;
-    case NAMED:
-      jj_consume_token(NAMED);
-      break;
-    case ALL:
-      jj_consume_token(ALL);
-      break;
-    default:
-      jj_la1[124] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
+ /*@bgen(jjtree) GraphRefAll */
+  ASTGraphRefAll jjtn000 = new ASTGraphRefAll(JJTGRAPHREFALL);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+    try {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case GRAPH:
+        GraphRef();
+        break;
+      case DEFAULT_GRAPH:
+        jj_consume_token(DEFAULT_GRAPH);
+                          jjtree.closeNodeScope(jjtn000, true);
+                          jjtc000 = false;
+                         jjtn000.setDefault(true);
+        break;
+      case NAMED:
+        jj_consume_token(NAMED);
+                          jjtree.closeNodeScope(jjtn000, true);
+                          jjtc000 = false;
+                         jjtn000.setNamed(true);
+        break;
+      case ALL:
+        jj_consume_token(ALL);
+        break;
+      default:
+        jj_la1[124] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            {if (true) throw (RuntimeException)jjte000;}
+          }
+          if (jjte000 instanceof ParseException) {
+            {if (true) throw (ParseException)jjte000;}
+          }
+          {if (true) throw (Error)jjte000;}
+    } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
     }
   }
 
