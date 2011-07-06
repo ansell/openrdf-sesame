@@ -116,7 +116,7 @@ public class HTTPClient {
 	private String repositoryURL;
 
 	private final MultiThreadedHttpConnectionManager manager;
-	
+
 	private final HttpClient httpClient;
 
 	private AuthScope authScope;
@@ -149,7 +149,7 @@ public class HTTPClient {
 	/*-----------------*
 	 * Get/set methods *
 	 *-----------------*/
-	
+
 	public void shutDown() {
 		manager.shutdown();
 	}
@@ -442,6 +442,35 @@ public class HTTPClient {
 		}
 	}
 
+	public void sendUpdate(QueryLanguage ql, String update, String baseURI, Dataset dataset,
+			boolean includeInferred, Binding... bindings)
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+		QueryInterruptedException
+	{
+		HttpMethod method = getUpdateMethod(ql, update, baseURI, dataset, includeInferred, bindings);
+
+		try {
+			int httpCode = httpClient.executeMethod(method);
+
+			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+				throw new UnauthorizedException();
+			}
+			else if (!HttpClientUtil.is2xx(httpCode)) {
+				ErrorInfo errInfo = ErrorInfo.parse(method.getResponseBodyAsString());
+
+				if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
+					throw new MalformedQueryException(errInfo.getErrorMessage());
+				}
+				else {
+					throw new RepositoryException("Failed to execute update: " + errInfo);
+				}
+			}
+		}
+		finally {
+			releaseConnection(method);
+		}
+	}
+
 	public GraphQueryResult sendGraphQuery(QueryLanguage ql, String query, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
 		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
@@ -528,6 +557,22 @@ public class HTTPClient {
 		return method;
 	}
 
+	protected HttpMethod getUpdateMethod(QueryLanguage ql, String update, String baseURI, Dataset dataset,
+			boolean includeInferred, Binding... bindings)
+	{
+		PostMethod method = new PostMethod(Protocol.getStatementsLocation(getRepositoryURL()));
+		setDoAuthentication(method);
+
+		method.setRequestHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
+
+		List<NameValuePair> queryParams = getUpdateMethodParameters(ql, update, baseURI, dataset,
+				includeInferred, bindings);
+
+		method.setRequestBody(queryParams.toArray(new NameValuePair[queryParams.size()]));
+
+		return method;
+	}
+
 	protected List<NameValuePair> getQueryMethodParameters(QueryLanguage ql, String query, String baseURI,
 			Dataset dataset, boolean includeInferred, int maxQueryTime, Binding... bindings)
 	{
@@ -543,6 +588,37 @@ public class HTTPClient {
 		if (maxQueryTime > 0) {
 			queryParams.add(new NameValuePair(Protocol.TIMEOUT_PARAM_NAME, Integer.toString(maxQueryTime)));
 		}
+
+		if (dataset != null) {
+			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
+				queryParams.add(new NameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME, defaultGraphURI.toString()));
+			}
+			for (URI namedGraphURI : dataset.getNamedGraphs()) {
+				queryParams.add(new NameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, namedGraphURI.toString()));
+			}
+		}
+
+		for (int i = 0; i < bindings.length; i++) {
+			String paramName = Protocol.BINDING_PREFIX + bindings[i].getName();
+			String paramValue = Protocol.encodeValue(bindings[i].getValue());
+			queryParams.add(new NameValuePair(paramName, paramValue));
+		}
+
+		return queryParams;
+	}
+
+	protected List<NameValuePair> getUpdateMethodParameters(QueryLanguage ql, String update, String baseURI,
+			Dataset dataset, boolean includeInferred, Binding... bindings)
+	{
+		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
+
+		queryParams.add(new NameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
+		queryParams.add(new NameValuePair(Protocol.UPDATE_PARAM_NAME, update));
+		if (baseURI != null) {
+			queryParams.add(new NameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
+		}
+		queryParams.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
+				Boolean.toString(includeInferred)));
 
 		if (dataset != null) {
 			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
