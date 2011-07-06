@@ -1227,7 +1227,7 @@ void GraphRefAll() :
 |	<ALL>
 }
 
-void GraphOrDefault() #void :
+void GraphOrDefault() :
 {}
 {
 	<DEFAULT_GRAPH>

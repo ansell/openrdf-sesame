@@ -28,11 +28,15 @@ import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.Add;
 import org.openrdf.query.algebra.Clear;
+import org.openrdf.query.algebra.Copy;
+import org.openrdf.query.algebra.Create;
 import org.openrdf.query.algebra.DeleteData;
 import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.Modify;
+import org.openrdf.query.algebra.Move;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
@@ -576,7 +580,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		throws SailException
 	{
 		/* TODO this method should really be defined abstract, but for backward-compatibility 
-		 * purposes with third-party SAIL implementation we provide a default implementation for 
+		 * purposes with third-party SAIL implementations we provide a default implementation for 
 		 * now.
 		 */
 		logger.trace("Incoming update expression:\n{}", updateExpr);
@@ -593,24 +597,136 @@ public abstract class SailConnectionBase implements SailConnection {
 		else if (updateExpr instanceof Clear) {
 			executeClear((Clear)updateExpr, dataset, bindings, includeInferred);
 		}
+		else if (updateExpr instanceof Create) {
+			// do nothing
+		}
+		else if (updateExpr instanceof Copy) {
+			executeCopy((Copy)updateExpr, dataset, bindings, includeInferred);
+		}
+		else if (updateExpr instanceof Add) {
+			executeAdd((Add)updateExpr, dataset, bindings, includeInferred);
+		}
+		else if (updateExpr instanceof Move) {
+			executeMove((Move)updateExpr, dataset, bindings, includeInferred);
+		}
 		else if (updateExpr instanceof Load) {
 			throw new SailException("load operations can not be handled directly by the SAIL");
 		}
 	}
 
+	/**
+	 * @param updateExpr
+	 * @param dataset
+	 * @param bindings
+	 * @param includeInferred
+	 * @throws SailException
+	 */
+	protected void executeCopy(Copy copy, Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
+	{
+		ValueConstant sourceGraph = copy.getSourceGraph();
+		ValueConstant destinationGraph = copy.getDestinationGraph();
+
+		Resource source = sourceGraph != null ? (Resource)sourceGraph.getValue() : null;
+		Resource destination = destinationGraph != null ? (Resource)destinationGraph.getValue() : null;
+
+		if (source == null && destination == null || (source != null && source.equals(destination))) {
+			// source and destination are the same, copy is a null-operation.
+			return;
+		}
+
+		// clear destination
+		clearInternal((Resource)destination);
+
+		// get all statements from source and add them to destination
+		CloseableIteration<? extends Statement, SailException> statements = getStatementsInternal(null, null,
+				null, includeInferred, (Resource)source);
+		while (statements.hasNext()) {
+			Statement st = statements.next();
+			addStatementInternal(st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
+		}
+		statements.close();
+	}
+
+	/**
+	 * @param updateExpr
+	 * @param dataset
+	 * @param bindings
+	 * @param includeInferred
+	 * @throws SailException
+	 */
+	protected void executeAdd(Add add, Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
+	{
+		ValueConstant sourceGraph = add.getSourceGraph();
+		ValueConstant destinationGraph = add.getDestinationGraph();
+
+		Resource source = sourceGraph != null ? (Resource)sourceGraph.getValue() : null;
+		Resource destination = destinationGraph != null ? (Resource)destinationGraph.getValue() : null;
+
+		if (source == null && destination == null || (source != null && source.equals(destination))) {
+			// source and destination are the same, copy is a null-operation.
+			return;
+		}
+
+		// get all statements from source and add them to destination
+		CloseableIteration<? extends Statement, SailException> statements = getStatementsInternal(null, null,
+				null, includeInferred, (Resource)source);
+		while (statements.hasNext()) {
+			Statement st = statements.next();
+			addStatementInternal(st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
+		}
+		statements.close();
+	}
 	
 	/**
 	 * @param updateExpr
 	 * @param dataset
 	 * @param bindings
 	 * @param includeInferred
-	 * @throws SailException 
+	 * @throws SailException
 	 */
-	protected void executeClear(Clear clearExpr, Dataset dataset, BindingSet bindings, boolean includeInferred) throws SailException 
+	protected void executeMove(Move move, Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
+	{
+		ValueConstant sourceGraph = move.getSourceGraph();
+		ValueConstant destinationGraph = move.getDestinationGraph();
+
+		Resource source = sourceGraph != null ? (Resource)sourceGraph.getValue() : null;
+		Resource destination = destinationGraph != null ? (Resource)destinationGraph.getValue() : null;
+
+		if (source == null && destination == null || (source != null && source.equals(destination))) {
+			// source and destination are the same, move is a null-operation.
+			return;
+		}
+
+		// clear destination
+		clearInternal((Resource)destination);
+
+		// remove all statements from source and add them to destination
+		CloseableIteration<? extends Statement, SailException> statements = getStatementsInternal(null, null,
+				null, includeInferred, (Resource)source);
+		while (statements.hasNext()) {
+			Statement st = statements.next();
+			addStatementInternal(st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
+			removeStatementsInternal(st.getSubject(), st.getPredicate(), st.getObject(), (Resource)source);
+		}
+		statements.close();
+	}
+
+	/**
+	 * @param updateExpr
+	 * @param dataset
+	 * @param bindings
+	 * @param includeInferred
+	 * @throws SailException
+	 */
+	protected void executeClear(Clear clearExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
 	{
 		try {
 			ValueConstant graph = clearExpr.getGraph();
-			
+
 			if (graph != null) {
 				Resource context = (Resource)graph.getValue();
 				clearInternal(context);
@@ -643,25 +759,26 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * @param dataset
 	 * @param bindings
 	 * @param includeInferred
-	 * @throws SailException 
+	 * @throws SailException
 	 */
 	protected void executeInsertData(InsertData insertDataExpr, Dataset dataset, BindingSet bindings,
-			boolean includeInferred) throws SailException
+			boolean includeInferred)
+		throws SailException
 	{
 		TupleExpr insertExpr = insertDataExpr.getInsertExpr();
 
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeInserted = evaluateInternal(
 				insertExpr, dataset, bindings, includeInferred);
-		
+
 		try {
 			while (toBeInserted.hasNext()) {
 				BindingSet bs = toBeInserted.next();
-				
+
 				Resource subject = (Resource)bs.getValue("subject");
 				URI predicate = (URI)bs.getValue("predicate");
 				Value object = bs.getValue("object");
 				Resource context = (Resource)bs.getValue("context");
-				
+
 				if (context == null) {
 					addStatementInternal(subject, predicate, object);
 				}
@@ -680,25 +797,26 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * @param dataset
 	 * @param bindings
 	 * @param includeInferred
-	 * @throws SailException 
+	 * @throws SailException
 	 */
 	protected void executeDeleteData(DeleteData deleteDataExpr, Dataset dataset, BindingSet bindings,
-			boolean includeInferred) throws SailException
+			boolean includeInferred)
+		throws SailException
 	{
 		TupleExpr deleteExpr = deleteDataExpr.getDeleteExpr();
 
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeDeleted = evaluateInternal(
 				deleteExpr, dataset, bindings, includeInferred);
-		
+
 		try {
 			while (toBeDeleted.hasNext()) {
 				BindingSet bs = toBeDeleted.next();
-				
+
 				Resource subject = (Resource)bs.getValue("subject");
 				URI predicate = (URI)bs.getValue("predicate");
 				Value object = bs.getValue("object");
 				Resource context = (Resource)bs.getValue("context");
-				
+
 				if (context == null) {
 					removeStatementsInternal(subject, predicate, object);
 				}

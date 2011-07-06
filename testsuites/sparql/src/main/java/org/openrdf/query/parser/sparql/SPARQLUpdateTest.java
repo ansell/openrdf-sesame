@@ -47,9 +47,9 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	private URI graph1;
 
 	private URI graph2;
-	
+
 	protected static final String EX_NS = "http://example.org/";
-	
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -61,7 +61,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		con = rep.getConnection();
 		f = rep.getValueFactory();
 		loadDataset();
-		
+
 		bob = f.createURI(EX_NS, "bob");
 		alice = f.createURI(EX_NS, "alice");
 
@@ -84,80 +84,82 @@ public abstract class SPARQLUpdateTest extends TestCase {
 
 		super.tearDown();
 	}
-	
-	/* test methods */ 
-	
+
+	/* test methods */
+
 	@Test
-	public void testInsertWhere() throws Exception 
+	public void testInsertWhere()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 
 		operation.execute();
-		
+
 		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 	}
-	
+
 	@Test
-	public void testDeleteInsertWhere() throws Exception 
+	public void testDeleteInsertWhere()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE { ?x foaf:name ?y } INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 
 		operation.execute();
-		
+
 		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-		
+
 		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 
 	}
-	
+
 	@Test
-	public void testInsertTransformedWhere() throws Exception 
+	public void testInsertTransformedWhere()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {?x rdfs:label [] . } WHERE {?y ex:containsPerson ?x.  }");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, null, true));
 		assertFalse(con.hasStatement(alice, RDFS.LABEL, null, true));
 
 		operation.execute();
-		
+
 		assertTrue(con.hasStatement(bob, RDFS.LABEL, null, true));
 		assertTrue(con.hasStatement(alice, RDFS.LABEL, null, true));
 	}
-	
-		
-	
+
 	@Test
-	public void testInsertWhereGraph() throws Exception 
+	public void testInsertWhereGraph()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {GRAPH ?g {?x rdfs:label ?y . }} WHERE {GRAPH ?g {?x foaf:name ?y }}");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		operation.execute();
-			
+
 		String message = "labels should have been inserted in corresponding named graphs only.";
 		assertTrue(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true, graph1));
 		assertFalse(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true, graph2));
@@ -166,16 +168,17 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	}
 
 	@Test
-	public void testInsertWhereUsing() throws Exception 
+	public void testInsertWhereUsing()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {?x rdfs:label ?y . } USING ex:graph1 WHERE {?x foaf:name ?y }");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		operation.execute();
-				
+
 		String message = "label should have been inserted in default graph, for ex:bob only";
 		assertTrue(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertFalse(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true, graph1));
@@ -183,32 +186,34 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertFalse(message, con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true, graph2));
 		assertFalse(message, con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true, graph1));
 	}
-	
+
 	@Test
-	public void testInsertWhereWith() throws Exception 
+	public void testInsertWhereWith()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("WITH ex:graph1 INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		operation.execute();
-				
+
 		String message = "label should have been inserted in graph1 only, for ex:bob only";
 		assertTrue(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true, graph1));
 		assertFalse(message, con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true, graph2));
 		assertFalse(message, con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true, graph2));
 		assertFalse(message, con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true, graph1));
 	}
-	
+
 	@Test
-	public void testDeleteWhere() throws Exception 
+	public void testDeleteWhere()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE {?x foaf:name ?y } WHERE {?x foaf:name ?y }");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
@@ -221,14 +226,15 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertFalse(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 
 	}
-	
+
 	@Test
-	public void testDeleteTransformedWhere() throws Exception 
+	public void testDeleteTransformedWhere()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y }");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
@@ -239,14 +245,15 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		String msg = "foaf:name properties should have been deleted";
 		assertFalse(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 		assertFalse(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-		
+
 		msg = "ex:containsPerson properties should not have been deleted";
 		assertTrue(msg, con.hasStatement(graph1, f.createURI(EX_NS, "containsPerson"), bob, true));
 		assertTrue(msg, con.hasStatement(graph2, f.createURI(EX_NS, "containsPerson"), alice, true));
 	}
-	
+
 	@Test
-	public void testInsertData() throws Exception
+	public void testInsertData()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
@@ -255,7 +262,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		URI book1 = f.createURI(EX_NS, "book1");
-		
+
 		assertFalse(con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true));
 		assertFalse(con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true));
 
@@ -265,9 +272,10 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true));
 		assertTrue(msg, con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true));
 	}
-	
+
 	@Test
-	public void testInsertDataInGraph() throws Exception
+	public void testInsertDataInGraph()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
@@ -276,7 +284,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		URI book1 = f.createURI(EX_NS, "book1");
-		
+
 		assertFalse(con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true, graph1));
 		assertFalse(con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true, graph1));
 
@@ -286,9 +294,10 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true, graph1));
 		assertTrue(msg, con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true, graph1));
 	}
-	
+
 	@Test
-	public void testDeleteData() throws Exception
+	public void testDeleteData()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
@@ -302,9 +311,10 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		String msg = "statement should have been deleted.";
 		assertFalse(msg, con.hasStatement(alice, FOAF.KNOWS, bob, true));
 	}
-	
+
 	@Test
-	public void testDeleteDataFromGraph() throws Exception
+	public void testDeleteDataFromGraph()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
@@ -318,13 +328,14 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		String msg = "statement should have been deleted from graph1";
 		assertFalse(msg, con.hasStatement(alice, FOAF.KNOWS, bob, true, graph1));
 	}
-	
+
 	@Test
-	public void testDeleteDataFromWrongGraph() throws Exception
+	public void testDeleteDataFromWrongGraph()
+		throws Exception
 	{
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
-		
+
 		// statement does not exist in graph2.
 		update.append("DELETE DATA { GRAPH ex:graph2 {ex:alice foaf:knows ex:bob. } } ");
 
@@ -339,57 +350,376 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	}
 
 	@Test
-	public void testLoad() throws Exception {
-		String update = "LOAD <http://www.daml.org/2001/01/gedcom/royal92.daml>";
-		
-		String ns = "http://www.daml.org/2001/01/gedcom/gedcom#";
-		
-		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
-		
-		operation.execute();
-		assertTrue(con.hasStatement(null, RDF.TYPE, f.createURI(ns, "Family"), true));
-	}
-	
-	@Test
-	public void testLoadIntoGraph() throws Exception {
-		String ns = "http://www.daml.org/2001/01/gedcom/gedcom#";
+	public void testCreateGraph()
+		throws Exception
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("CREATE GRAPH <" + graph1.stringValue() + "> ");
 
-		String update = "LOAD <http://www.daml.org/2001/01/gedcom/royal92.daml> INTO GRAPH <" + ns +"> " ;
-		
-		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
-		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
 		operation.execute();
-		assertFalse(con.hasStatement((Resource)null, RDF.TYPE, f.createURI(ns, "Family"), true, (Resource)null));
-		assertTrue(con.hasStatement((Resource)null, RDF.TYPE, f.createURI(ns, "Family"), true, f.createURI(ns)));
+		assertTrue(con.hasStatement(null, null, null, false, graph1));
+		assertTrue(con.hasStatement(null, null, null, false, graph2));
+		assertTrue(con.hasStatement(null, null, null, false));
 	}
 	
 	@Test
-	public void testClearAll() throws Exception {
+	public void testCopyToDefault() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("COPY GRAPH <" + graph1.stringValue() + "> TO DEFAULT");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		operation.execute();
+		assertFalse(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertFalse(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, (Resource)null));
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
+	}
+
+	
+	@Test
+	public void testCopyToExistingNamed() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("COPY GRAPH ex:graph1 TO ex:graph2");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.execute();
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph2));
+		assertFalse(con.hasStatement(alice, FOAF.NAME, null, false, graph2));
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
+	}
+	
+	@Test
+	public void testCopyToNewNamed() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("COPY GRAPH ex:graph1 TO ex:graph3");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.execute();
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, f.createURI(EX_NS, "graph3")));
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
+	}
+	
+	@Test
+	public void testCopyFromDefault() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("COPY DEFAULT TO ex:graph3");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		operation.execute();
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
+
+	}
+	
+	@Test
+	public void testCopyFromDefaultToDefault() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("COPY DEFAULT TO DEFAULT");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		operation.execute();
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+	}
+
+	@Test
+	public void testAddToDefault() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("ADD GRAPH <" + graph1.stringValue() + "> TO DEFAULT");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		operation.execute();
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, (Resource)null));
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
+	}
+
+	
+	@Test
+	public void testAddToExistingNamed() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("ADD GRAPH ex:graph1 TO ex:graph2");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.execute();
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph2));
+		assertTrue(con.hasStatement(alice, FOAF.NAME, null, false, graph2));
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
+	}
+	
+	@Test
+	public void testAddToNewNamed() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("ADD GRAPH ex:graph1 TO ex:graph3");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.execute();
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, f.createURI(EX_NS, "graph3")));
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
+	}
+	
+	@Test
+	public void testAddFromDefault() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("ADD DEFAULT TO ex:graph3");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		operation.execute();
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
+
+	}
+	
+	@Test
+	public void testAddFromDefaultToDefault() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("ADD DEFAULT TO DEFAULT");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		operation.execute();
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+	}
+
+	@Test
+	public void testMoveToDefault() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("MOVE GRAPH <" + graph1.stringValue() + "> TO DEFAULT");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		operation.execute();
+		assertFalse(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertFalse(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, (Resource)null));
+		assertFalse(con.hasStatement(null, null, null, false, graph1));
+	}
+
+	
+	@Test
+	public void testMoveToNewNamed() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("MOVE GRAPH ex:graph1 TO ex:graph3");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.execute();
+		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, f.createURI(EX_NS, "graph3")));
+		assertFalse(con.hasStatement(null, null, null, false, graph1));
+	}
+	
+	@Test
+	public void testMoveFromDefault() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("MOVE DEFAULT TO ex:graph3");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		operation.execute();
+		assertFalse(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertFalse(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
+
+	}
+	
+	@Test
+	public void testMoveFromDefaultToDefault() throws Exception 
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("MOVE DEFAULT TO DEFAULT");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		operation.execute();
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+	}
+
+	@Test
+	public void testClearAll()
+		throws Exception
+	{
 		String update = "CLEAR ALL";
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
-		
+
 		operation.execute();
 		assertFalse(con.hasStatement(null, null, null, false));
 
 	}
-	
+
 	@Test
-	public void testClearNamed() throws Exception {
+	public void testClearGraph()
+		throws Exception
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("CLEAR GRAPH <" + graph1.stringValue() + "> ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.execute();
+		assertFalse(con.hasStatement(null, null, null, false, graph1));
+		assertTrue(con.hasStatement(null, null, null, false, graph2));
+		assertTrue(con.hasStatement(null, null, null, false));
+	}
+
+	@Test
+	public void testClearNamed()
+		throws Exception
+	{
 		String update = "CLEAR NAMED";
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
-		
+
 		operation.execute();
 		assertFalse(con.hasStatement(null, null, null, false, graph1));
 		assertFalse(con.hasStatement(null, null, null, false, graph2));
 		assertTrue(con.hasStatement(null, null, null, false));
 
 	}
-	
+
+	@Test
+	public void testDropAll()
+		throws Exception
+	{
+		String update = "DROP ALL";
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
+
+		operation.execute();
+		assertFalse(con.hasStatement(null, null, null, false));
+
+	}
+
+	@Test
+	public void testDropGraph()
+		throws Exception
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("DROP GRAPH <" + graph1.stringValue() + "> ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.execute();
+		assertFalse(con.hasStatement(null, null, null, false, graph1));
+		assertTrue(con.hasStatement(null, null, null, false, graph2));
+		assertTrue(con.hasStatement(null, null, null, false));
+	}
+
+	@Test
+	public void testDropNamed()
+		throws Exception
+	{
+		String update = "DROP NAMED";
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
+
+		operation.execute();
+		assertFalse(con.hasStatement(null, null, null, false, graph1));
+		assertFalse(con.hasStatement(null, null, null, false, graph2));
+		assertTrue(con.hasStatement(null, null, null, false));
+	}
+
+	@Test
+	public void testLoad()
+		throws Exception
+	{
+		String update = "LOAD <http://www.daml.org/2001/01/gedcom/royal92.daml>";
+
+		String ns = "http://www.daml.org/2001/01/gedcom/gedcom#";
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
+
+		operation.execute();
+		assertTrue(con.hasStatement(null, RDF.TYPE, f.createURI(ns, "Family"), true));
+	}
+
+	@Test
+	public void testLoadIntoGraph()
+		throws Exception
+	{
+		String ns = "http://www.daml.org/2001/01/gedcom/gedcom#";
+
+		String update = "LOAD <http://www.daml.org/2001/01/gedcom/royal92.daml> INTO GRAPH <" + ns + "> ";
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
+
+		operation.execute();
+		assertFalse(con.hasStatement((Resource)null, RDF.TYPE, f.createURI(ns, "Family"), true, (Resource)null));
+		assertTrue(con.hasStatement((Resource)null, RDF.TYPE, f.createURI(ns, "Family"), true, f.createURI(ns)));
+	}
+
 	/* protected methods */
-		
-	protected void loadDataset() throws RDFParseException, RepositoryException, IOException {
+
+	protected void loadDataset()
+		throws RDFParseException, RepositoryException, IOException
+	{
 		InputStream dataset = SPARQLUpdateTest.class.getResourceAsStream("/testdata-update/dataset-update.trig");
 		try {
 			con.add(dataset, "", RDFFormat.TRIG);
@@ -398,7 +728,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 			dataset.close();
 		}
 	}
-	
+
 	/**
 	 * Get a set of useful namespace prefix declarations.
 	 * 
@@ -412,10 +742,10 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		declarations.append("PREFIX foaf: <" + FOAF.NAMESPACE + "> \n");
 		declarations.append("PREFIX ex: <" + EX_NS + "> \n");
 		declarations.append("\n");
-		
+
 		return declarations.toString();
 	}
-	
+
 	/**
 	 * Creates, initializes and clears a repository.
 	 * 
