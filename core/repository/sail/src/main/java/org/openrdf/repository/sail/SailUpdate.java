@@ -84,16 +84,11 @@ public class SailUpdate extends AbstractOperation implements Update {
 			try {
 				URL sourceURL = new URL(source.stringValue());
 
-				// TODO make serialization format user-configurable?
-				// We could add a non-standard extra argument to LOAD operations
-				// that allows setting the format.
-				RDFFormat format = RDFFormat.forFileName(source.stringValue());
-
 				if (graph == null) {
-					conn.add(sourceURL, source.stringValue(), format);
+					conn.add(sourceURL, source.stringValue(), null);
 				}
 				else {
-					conn.add(sourceURL, source.stringValue(), format, (Resource)graph);
+					conn.add(sourceURL, source.stringValue(), null, (Resource)graph);
 				}
 			}
 			catch (Exception e) {
