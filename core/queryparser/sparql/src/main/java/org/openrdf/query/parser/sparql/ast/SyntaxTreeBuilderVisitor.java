@@ -88,6 +88,7 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTQName node, Object data) throws VisitorException;
   public Object visit(ASTBlankNode node, Object data) throws VisitorException;
   public Object visit(ASTGraphRefAll node, Object data) throws VisitorException;
+  public Object visit(ASTGraphOrDefault node, Object data) throws VisitorException;
   public Object visit(ASTLoad node, Object data) throws VisitorException;
   public Object visit(ASTClear node, Object data) throws VisitorException;
   public Object visit(ASTDrop node, Object data) throws VisitorException;
@@ -102,4 +103,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTInsertClause node, Object data) throws VisitorException;
   public Object visit(ASTModify node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=b5b2b3d3ee8bf45e9a4263f0be4c1eec (do not edit this line) */
+/* JavaCC - OriginalChecksum=4b9d839e889a5fa09d2e688b153dba5d (do not edit this line) */

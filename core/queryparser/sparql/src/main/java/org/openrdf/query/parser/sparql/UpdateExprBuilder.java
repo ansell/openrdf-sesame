@@ -16,8 +16,11 @@ import java.util.Set;
 import javax.jws.soap.SOAPBinding.ParameterStyle;
 
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.algebra.Add;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.Clear;
+import org.openrdf.query.algebra.Copy;
+import org.openrdf.query.algebra.Create;
 import org.openrdf.query.algebra.DeleteData;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
@@ -25,6 +28,7 @@ import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.Modify;
+import org.openrdf.query.algebra.Move;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
@@ -39,9 +43,14 @@ import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
+import org.openrdf.query.parser.sparql.ast.ASTAdd;
 import org.openrdf.query.parser.sparql.ast.ASTClear;
+import org.openrdf.query.parser.sparql.ast.ASTCopy;
+import org.openrdf.query.parser.sparql.ast.ASTCreate;
 import org.openrdf.query.parser.sparql.ast.ASTDeleteClause;
 import org.openrdf.query.parser.sparql.ast.ASTDeleteData;
+import org.openrdf.query.parser.sparql.ast.ASTDrop;
+import org.openrdf.query.parser.sparql.ast.ASTGraphOrDefault;
 import org.openrdf.query.parser.sparql.ast.ASTGraphPatternGroup;
 import org.openrdf.query.parser.sparql.ast.ASTGraphRefAll;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
@@ -49,6 +58,7 @@ import org.openrdf.query.parser.sparql.ast.ASTInsertClause;
 import org.openrdf.query.parser.sparql.ast.ASTInsertData;
 import org.openrdf.query.parser.sparql.ast.ASTLoad;
 import org.openrdf.query.parser.sparql.ast.ASTModify;
+import org.openrdf.query.parser.sparql.ast.ASTMove;
 import org.openrdf.query.parser.sparql.ast.ASTUpdate;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
 
@@ -270,14 +280,14 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 	{
 
 		ValueConstant source = (ValueConstant)node.jjtGetChild(0).jjtAccept(this, data);
-	
+
 		Load load = new Load(source);
 		load.setSilent(node.isSilent());
 		if (node.jjtGetNumChildren() > 1) {
 			ValueConstant graph = (ValueConstant)node.jjtGetChild(1).jjtAccept(this, data);
 			load.setGraph(graph);
 		}
-		
+
 		return load;
 	}
 
@@ -287,9 +297,9 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 	{
 		Clear clear = new Clear();
 		clear.setSilent(node.isSilent());
-		
+
 		ASTGraphRefAll graphRef = node.jjtGetChild(ASTGraphRefAll.class);
-		
+
 		if (graphRef.jjtGetNumChildren() > 0) {
 			ValueConstant graph = (ValueConstant)graphRef.jjtGetChild(0).jjtAccept(this, data);
 			clear.setGraph(graph);
@@ -302,10 +312,110 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 				clear.setScope(Scope.NAMED_CONTEXTS);
 			}
 		}
-		
 		return clear;
 	}
-	
+
+	@Override
+	public Clear visit(ASTDrop node, Object data)
+		throws VisitorException
+	{
+		// implementing drop as a synonym of clear, in Sesame this is really the
+		// same thing, as empty
+		// graphs are not recorded.
+
+		Clear clear = new Clear();
+		clear.setSilent(node.isSilent());
+
+		ASTGraphRefAll graphRef = node.jjtGetChild(ASTGraphRefAll.class);
+
+		if (graphRef.jjtGetNumChildren() > 0) {
+			ValueConstant graph = (ValueConstant)graphRef.jjtGetChild(0).jjtAccept(this, data);
+			clear.setGraph(graph);
+		}
+		else {
+			if (graphRef.isDefault()) {
+				clear.setScope(Scope.DEFAULT_CONTEXTS);
+			}
+			else if (graphRef.isNamed()) {
+				clear.setScope(Scope.NAMED_CONTEXTS);
+			}
+		}
+		return clear;
+	}
+
+	@Override
+	public Create visit(ASTCreate node, Object data)
+		throws VisitorException
+	{
+		ValueConstant graph = (ValueConstant)node.jjtGetChild(0).jjtAccept(this, data);
+
+		Create create = new Create(graph);
+		create.setSilent(node.isSilent());
+		return create;
+	}
+
+	@Override
+	public Copy visit(ASTCopy node, Object data)
+		throws VisitorException
+	{
+		Copy copy = new Copy();
+		copy.setSilent(node.isSilent());
+
+		ASTGraphOrDefault sourceNode = (ASTGraphOrDefault)node.jjtGetChild(0);
+		if (sourceNode.jjtGetNumChildren() > 0) {
+			ValueConstant sourceGraph = (ValueConstant)sourceNode.jjtGetChild(0).jjtAccept(this, data);
+			copy.setSourceGraph(sourceGraph);
+		}
+
+		ASTGraphOrDefault destinationNode = (ASTGraphOrDefault)node.jjtGetChild(1);
+		if (destinationNode.jjtGetNumChildren() > 0) {
+			ValueConstant destinationGraph = (ValueConstant)destinationNode.jjtGetChild(0).jjtAccept(this, data);
+			copy.setDestinationGraph(destinationGraph);
+		}
+		return copy;
+	}
+
+	@Override
+	public Move visit(ASTMove node, Object data)
+		throws VisitorException
+	{
+		Move move = new Move();
+		move.setSilent(node.isSilent());
+
+		ASTGraphOrDefault sourceNode = (ASTGraphOrDefault)node.jjtGetChild(0);
+		if (sourceNode.jjtGetNumChildren() > 0) {
+			ValueConstant sourceGraph = (ValueConstant)sourceNode.jjtGetChild(0).jjtAccept(this, data);
+			move.setSourceGraph(sourceGraph);
+		}
+
+		ASTGraphOrDefault destinationNode = (ASTGraphOrDefault)node.jjtGetChild(1);
+		if (destinationNode.jjtGetNumChildren() > 0) {
+			ValueConstant destinationGraph = (ValueConstant)destinationNode.jjtGetChild(0).jjtAccept(this, data);
+			move.setDestinationGraph(destinationGraph);
+		}
+		return move;
+	}
+
+	@Override
+	public Add visit(ASTAdd node, Object data)
+		throws VisitorException
+	{
+		Add add = new Add();
+		add.setSilent(node.isSilent());
+
+		ASTGraphOrDefault sourceNode = (ASTGraphOrDefault)node.jjtGetChild(0);
+		if (sourceNode.jjtGetNumChildren() > 0) {
+			ValueConstant sourceGraph = (ValueConstant)sourceNode.jjtGetChild(0).jjtAccept(this, data);
+			add.setSourceGraph(sourceGraph);
+		}
+
+		ASTGraphOrDefault destinationNode = (ASTGraphOrDefault)node.jjtGetChild(1);
+		if (destinationNode.jjtGetNumChildren() > 0) {
+			ValueConstant destinationGraph = (ValueConstant)destinationNode.jjtGetChild(0).jjtAccept(this, data);
+			add.setDestinationGraph(destinationGraph);
+		}
+		return add;
+	}
 
 	@Override
 	public Modify visit(ASTModify node, Object data)

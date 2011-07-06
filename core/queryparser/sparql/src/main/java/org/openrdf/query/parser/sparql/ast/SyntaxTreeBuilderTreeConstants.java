@@ -88,19 +88,20 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTQNAME = 82;
   public int JJTBLANKNODE = 83;
   public int JJTGRAPHREFALL = 84;
-  public int JJTLOAD = 85;
-  public int JJTCLEAR = 86;
-  public int JJTDROP = 87;
-  public int JJTADD = 88;
-  public int JJTMOVE = 89;
-  public int JJTCOPY = 90;
-  public int JJTCREATE = 91;
-  public int JJTINSERTDATA = 92;
-  public int JJTDELETEDATA = 93;
-  public int JJTDELETEWHERE = 94;
-  public int JJTDELETECLAUSE = 95;
-  public int JJTINSERTCLAUSE = 96;
-  public int JJTMODIFY = 97;
+  public int JJTGRAPHORDEFAULT = 85;
+  public int JJTLOAD = 86;
+  public int JJTCLEAR = 87;
+  public int JJTDROP = 88;
+  public int JJTADD = 89;
+  public int JJTMOVE = 90;
+  public int JJTCOPY = 91;
+  public int JJTCREATE = 92;
+  public int JJTINSERTDATA = 93;
+  public int JJTDELETEDATA = 94;
+  public int JJTDELETEWHERE = 95;
+  public int JJTDELETECLAUSE = 96;
+  public int JJTINSERTCLAUSE = 97;
+  public int JJTMODIFY = 98;
 
 
   public String[] jjtNodeName = {
@@ -189,6 +190,7 @@ public interface SyntaxTreeBuilderTreeConstants
     "QName",
     "BlankNode",
     "GraphRefAll",
+    "GraphOrDefault",
     "Load",
     "Clear",
     "Drop",
@@ -204,4 +206,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "Modify",
   };
 }
-/* JavaCC - OriginalChecksum=e6d4924d9b0a0a17d5513805eef33bb2 (do not edit this line) */
+/* JavaCC - OriginalChecksum=2e99d50a9ba22e37e9d5d6fc2491704a (do not edit this line) */

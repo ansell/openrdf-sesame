@@ -4939,28 +4939,52 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   }
 
   final public void GraphOrDefault() throws ParseException {
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case DEFAULT_GRAPH:
-      jj_consume_token(DEFAULT_GRAPH);
-      break;
-    case GRAPH:
-    case Q_IRI_REF:
-    case PNAME_NS:
-    case PNAME_LN:
+ /*@bgen(jjtree) GraphOrDefault */
+  ASTGraphOrDefault jjtn000 = new ASTGraphOrDefault(JJTGRAPHORDEFAULT);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+    try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case DEFAULT_GRAPH:
+        jj_consume_token(DEFAULT_GRAPH);
+        break;
       case GRAPH:
-        jj_consume_token(GRAPH);
+      case Q_IRI_REF:
+      case PNAME_NS:
+      case PNAME_LN:
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case GRAPH:
+          jj_consume_token(GRAPH);
+          break;
+        default:
+          jj_la1[125] = jj_gen;
+          ;
+        }
+        IRIref();
         break;
       default:
-        jj_la1[125] = jj_gen;
-        ;
+        jj_la1[126] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
       }
-      IRIref();
-      break;
-    default:
-      jj_la1[126] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
+    } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            {if (true) throw (RuntimeException)jjte000;}
+          }
+          if (jjte000 instanceof ParseException) {
+            {if (true) throw (ParseException)jjte000;}
+          }
+          {if (true) throw (Error)jjte000;}
+    } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
     }
   }
 

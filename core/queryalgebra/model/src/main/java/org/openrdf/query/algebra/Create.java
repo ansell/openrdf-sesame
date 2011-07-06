@@ -5,24 +5,21 @@
  */
 package org.openrdf.query.algebra;
 
-import org.openrdf.query.algebra.StatementPattern.Scope;
 
 /**
  * @author jeen
  */
-public class Clear extends QueryModelNodeBase implements UpdateExpr {
+public class Create extends QueryModelNodeBase implements UpdateExpr {
 
 	private ValueConstant graph;
 
 	private boolean silent;
 	
-	private Scope scope;
-	
-	public Clear() {
+	public Create() {
 		super();
 	}
 	
-	public Clear(ValueConstant graph) {
+	public Create(ValueConstant graph) {
 		super();
 		setGraph(graph);
 	}
@@ -54,8 +51,9 @@ public class Clear extends QueryModelNodeBase implements UpdateExpr {
 	}
 
 	@Override
-	public Clear clone() {
-		Clear clone = new Clear();
+	public Create clone() {
+		Create clone = new Create();
+		clone.setSilent(isSilent());
 		if (getGraph() != null) {
 			clone.setGraph(getGraph().clone());
 		}
@@ -89,20 +87,6 @@ public class Clear extends QueryModelNodeBase implements UpdateExpr {
 	 */
 	public boolean isSilent() {
 		return silent;
-	}
-
-	/**
-	 * @param scope The scope to set.
-	 */
-	public void setScope(Scope scope) {
-		this.scope = scope;
-	}
-
-	/**
-	 * @return Returns the scope.
-	 */
-	public Scope getScope() {
-		return scope;
 	}
 
 }
