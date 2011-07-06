@@ -17,7 +17,7 @@ public abstract class Protocol {
 	/**
 	 * Protocol version.
 	 */
-	public static final String VERSION = "5";
+	public static final String VERSION = "6";
 
 	/**
 	 * Parameter name for the 'subject' parameter of a statement query.
@@ -49,6 +49,11 @@ public abstract class Protocol {
 	 */
 	public static final String NULL_PARAM_VALUE = "null";
 
+	/**
+	 * Parameter name for the update parameter.
+	 */
+	public static final String UPDATE_PARAM_NAME = "update";
+	
 	/**
 	 * Parameter name for the base-URI parameter.
 	 */

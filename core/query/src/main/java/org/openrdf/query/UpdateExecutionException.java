@@ -43,4 +43,16 @@ public class UpdateExecutionException extends OpenRDFException {
 		super(cause);
 	}
 
+	/**
+	 * Creates a new {@link UpdateExecutionException} wrapping another exception.
+	 * 
+	 * @param msg
+	 *        and error message.
+	 * @param cause
+	 *        the cause of the exception
+	 */
+	public UpdateExecutionException(String msg, Throwable cause) {
+		super(msg, cause);
+	}
+
 }

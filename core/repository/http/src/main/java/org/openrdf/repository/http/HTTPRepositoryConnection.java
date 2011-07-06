@@ -390,7 +390,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 		throws RepositoryException, MalformedQueryException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new HTTPUpdate(this, ql, update, baseURI);
 	}
 }

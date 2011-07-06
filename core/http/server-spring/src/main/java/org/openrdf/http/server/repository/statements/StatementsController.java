@@ -46,6 +46,10 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -94,6 +98,10 @@ public class StatementsController extends AbstractController {
 				logger.info("POST transaction to repository");
 				result = getTransactionResultResult(repository, repositoryCon, request, response);
 			}
+			else if (request.getParameterMap().containsKey(Protocol.UPDATE_PARAM_NAME)) {
+				logger.info("POST SPARQL update request to repository");
+				result = getSparqlUpdateResult(repository, repositoryCon, request, response);
+			}
 			else {
 				logger.info("POST data to repository");
 				result = getAddDataResult(repository, repositoryCon, request, response, false);
@@ -113,6 +121,42 @@ public class StatementsController extends AbstractController {
 		}
 
 		return result;
+	}
+
+	/**
+	 * @param repository
+	 * @param repositoryCon
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws ServerHTTPException
+	 * @throws ClientHTTPException
+	 */
+	private ModelAndView getSparqlUpdateResult(Repository repository, RepositoryConnection repositoryCon,
+			HttpServletRequest request, HttpServletResponse response) throws ServerHTTPException, ClientHTTPException
+	{
+		ProtocolUtil.logRequestParameters(request);
+
+		String sparqlUpdateString = request.getParameterValues(Protocol.UPDATE_PARAM_NAME)[0];
+
+		try {
+			
+			Update update = repositoryCon.prepareUpdate(QueryLanguage.SPARQL, sparqlUpdateString);
+			
+			update.execute();
+			
+			return new ModelAndView(EmptySuccessView.getInstance());
+		}
+		catch (UpdateExecutionException e) {
+			throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+		}
+		catch (RepositoryException e) {
+			throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+		}
+		catch (MalformedQueryException e) {
+			ErrorInfo errInfo = new ErrorInfo(ErrorType.MALFORMED_QUERY, e.getMessage());
+			throw new ClientHTTPException(SC_BAD_REQUEST, errInfo.toString());
+		}
 	}
 
 	/**
