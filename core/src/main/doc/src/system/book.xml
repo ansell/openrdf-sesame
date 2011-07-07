@@ -15,14 +15,14 @@
 ]>
 
 <book>
-	<title>System documentation for Sesame 2.x (DRAFT)</title>
+	<title>System documentation for Sesame 2.x </title>
 
 	<bookinfo>
 		<releaseinfo>
 			Draft
 		</releaseinfo>
 		<copyright>
-			<year>2002-2010</year>
+			<year>2002-2011</year>
 			<holder>Aduna B.V.</holder>
 		</copyright>
 	</bookinfo>

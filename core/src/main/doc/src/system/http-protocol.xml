@@ -1,8 +1,8 @@
 <chapter id="chapter-http-protocol">
-	<title>HTTP communication protocol for Sesame 2.0</title>
+	<title>HTTP communication protocol for Sesame 2</title>
 	<para>
 		The following is a description of the HTTP-based communication protocol
-		for Sesame 2.0. Design consideration for the protocol included the rules
+		for Sesame 2. Design consideration for the protocol included the rules
 		for the REST architectural style. In brief, this means that URLs are
 		used to represent resources and that standard HTTP methods (GET, PUT,
 		etc.) are used to access these resources. Client properties such as the
@@ -18,6 +18,16 @@
 		More information about HTTP in general and HTTP headers in particular
 		can be found in <ulink url="http://www.ietf.org/rfc/rfc2616.txt">RFC
 			2616 - Hypertext Transfer Protocol -- HTTP/1.1</ulink>.
+	</para>
+	<para>
+	    The Sesame 2 HTTP communication protocol is a fully compliant
+	    superset of the <ulink
+		url="http://www.w3.org/TR/rdf-sparql-protocol/">SPARQL Protocol
+		for RDF</ulink> W3C Recommendation. The current version of the
+	    protocol additionally supports communication for SPARQL 1.1 Update
+	    operations, as described in the <ulink
+		url="http://www.w3.org/TR/sparql11-protocol/">SPARQL 1.1
+		Protocol for RDF</ulink> W3C Working Draft.
 	</para>
 
 	<section>
@@ -54,7 +64,7 @@
 		<para>
 			The version of the protocol that the server uses to communicate over
 			HTTP is available at: &lt;SESAME_URL&gt;/protocol. The version
-			described by this chapter is "4".
+			described by this chapter is "6".
 		</para>
 		<para>
 			Supported methods on this URL are:
@@ -197,8 +207,9 @@ Content-Type: application/sparql-results+xml;charset=UTF-8
 				specific value outside the actual query using this option. The
 				value should be an N-Triples encoded RDF value.
 			 </listitem>
+			 <listitem>'$&lt;timeout&gt;' (optional): specifies a maximum query execution time, in whole seconds. The value should be an integer. A setting of 0 or a negative number indicates unlimited query time (the default).
+			 </listitem>
 		</itemizedlist>
-		  
 
 		<para>
 			Request headers:
@@ -308,12 +319,18 @@ true]]></screen>
 				DELETE: Deletes statements from the repository.
 			</listitem>
 			<listitem>
-				POST: Performs updates on the data in the repository. The data
-				supplied with this request is expected to contain either an RDF
-				document or a special purpose transaction document. In case of
-				the former, the statements found in the RDF document will be
-				added to the repository. In case of the latter, the updates
-				specified in the transaction document will be executed.
+				POST: Performs updates on the data in the
+				repository. The data supplied with this request
+				is expected to contain either an RDF document,
+				a SPARQL 1.1 Update string, or a special
+				purpose transaction document. If an RDF
+				document is supplied, the statements found in
+				the RDF document will be added to the
+				repository. If a SPARQL 1.1 Update string is
+				supplied, the update operation will be parsed
+				and executed. If a transaction document is
+				supplied, the updates specified in the
+				transaction document will be executed.
 			</listitem>
 		</itemizedlist>
 
@@ -335,6 +352,13 @@ true]]></screen>
 				'obj' (optional): Restricts a GET or DELETE operation to
 				statements with the specified N-Triples encoded value as
 				object.
+			    </listitem>
+			    <listitem>
+				'update' (optional): Only relevant for POST
+				operations. Specifies the SPARQL 1.1 Update
+				string to be executed. The value is expected to
+				be a syntactically valid SPARQL 1.1 Update
+				string.
 			</listitem>
 			<listitem>
 				'context' (optional): If specified, restricts the operation to
@@ -480,6 +504,20 @@ Host: localhost
 Content-Type: application/x-turtle;charset=UTF-8
 
 [TURTLE ENCODED RDF DATA]]]></screen>
+				<para>Response:</para>
+				<screen><![CDATA[
+HTTP/1.1 204 NO CONTENT]]></screen>
+			</section>
+
+			<section>
+				<title>Perform update described in a SPARQL 1.1 Update string</title>
+				<para>Request:</para>
+				<screen><![CDATA[
+POST /openrdf-sesame/repositories/mem-rdf/statements HTTP/1.1
+Host: localhost
+Content-Type: application/x-www-form-urlencoded
+
+update=INSERT%20{?s%20?p%20?o}%20WHERE%20{?s%20?p%20?o}]]></screen>
 				<para>Response:</para>
 				<screen><![CDATA[
 HTTP/1.1 204 NO CONTENT]]></screen>

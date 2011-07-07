@@ -29,17 +29,37 @@
 			require.
 		</para>
 		<para>
-			An alternative to picking libraries by hand is to use maven. <ulink
-			href="http://maven.apache.org/">Apache Maven</ulink> is a software
-			management tool that helps you by offering things like library
-			version management and dependency management (which is very useful
-			because it means that once you decide you need a particular Sesame
-			library, maven automatically downloads all the libraries that your
-			library of choice requires in turn), and giving you a handy-dandy
-			build environment. For details on how to start using maven, we
-			advise you to take a look at the Apache Maven website at
-			<ulink url="http://maven.apache.org/"/>.
+			An alternative to picking libraries by hand is to use
+			maven. <ulink href="http://maven.apache.org/">Apache
+			    Maven</ulink> is a software management tool that
+			helps you by offering things like library version
+			management and dependency management (which is very
+			useful because it means that once you decide you need a
+			particular Sesame library, maven automatically
+			downloads all the libraries that your library of choice
+			requires in turn), and giving you a handy-dandy build
+			environment. For details on how to start using maven,
+			we advise you to take a look at the Apache Maven
+			website at <ulink url="http://maven.apache.org/"/>. If
+			you are familiar with Maven, here are a few pointers to
+			help set up your maven project.
 		</para>
+	    <para>
+		The groupId for all Sesame core artifacts is
+		<filename>org.openrdf.sesame</filename>.  For many projects you
+		will need only a part of the Sesame framework. For example, if
+		you require functionality for quick in-memory storage and
+		querying of RDF, you will only need to include dependencies on
+		the SAIL repository module (artifactId
+		<filename>sesame-repository-sail</filename>) and the in-memory
+		storage backend module (artifactId
+		<filename>sesame-sail-memory</filename>).
+	    </para>
+	    <para>
+		To include a maven dependency in your project that
+		automatically gets you the entire Sesame core framework, use
+		artifactId <filename>sesame-runtime</filename>. 
+	    </para>
 	</section>
 
 	<section>
@@ -56,18 +76,22 @@
 			you, as a user of the Sesame framework, to plug in your own favorite
 			logging implementation at deployment time. SLF4J supports the most
 			popular logging implementations such as Java Logging, Apache Commons
-			Logging, log4j, etc. See the SLF4J website for more info.
+			Logging, Logback, log4j, etc. See the SLF4J website for more info.
 		</para>
 		<para>
-			What you need to do is to determine/decide which logging implementation
-			you (are going to) use and include the appropriate SLF4J-bridge jar-file
-			in your classpath. For example, if you decide to use
-			<ulink url="http://logging.apache.org/log4j/">Apache log4j 1.2</ulink>,
-			you need to include the SLF4J-to-log4j bridge in your classpath. The
-			SLF4J release packages include bridges to various logging implementations;
-			just download the SLF4J release package (Sesame currently uses 1.5.0) and
-			include the appropriate bridge in your classpath;
-			<filename>slf4j-log4j12-1.5.0.jar</filename>, for example. That's all!
+			What you need to do is to determine/decide which
+			logging implementation you (are going to) use and
+			include the appropriate SLF4J-bridge jar-file in your
+			classpath. For example, if you decide to use <ulink
+			    url="http://logging.apache.org/log4j/">Apache
+			    log4j</ulink>, you need to include the
+			SLF4J-to-log4j bridge in your classpath. The SLF4J
+			release packages include bridges to various logging
+			implementations; just download the SLF4J release
+			package and include the appropriate bridge in your
+			classpath (or, when using Maven, set the appropriate
+			dependency); <filename>slf4j-logj12-1.6.1.jar</filename>,
+			for example. That's all!
 		</para>
 	</section>
 </chapter>
