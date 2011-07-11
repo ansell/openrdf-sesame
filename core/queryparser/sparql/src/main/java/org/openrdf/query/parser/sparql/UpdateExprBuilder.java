@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.jws.soap.SOAPBinding.ParameterStyle;
-
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.Add;
 import org.openrdf.query.algebra.BNodeGenerator;
@@ -49,6 +47,7 @@ import org.openrdf.query.parser.sparql.ast.ASTCopy;
 import org.openrdf.query.parser.sparql.ast.ASTCreate;
 import org.openrdf.query.parser.sparql.ast.ASTDeleteClause;
 import org.openrdf.query.parser.sparql.ast.ASTDeleteData;
+import org.openrdf.query.parser.sparql.ast.ASTDeleteWhere;
 import org.openrdf.query.parser.sparql.ast.ASTDrop;
 import org.openrdf.query.parser.sparql.ast.ASTGraphOrDefault;
 import org.openrdf.query.parser.sparql.ast.ASTGraphPatternGroup;
@@ -272,6 +271,40 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		result = new Reduced(result);
 
 		return new DeleteData(result);
+	}
+
+	@Override
+	public Modify visit(ASTDeleteWhere node, Object data)
+		throws VisitorException
+	{
+		// Collect construct triples
+		GraphPattern parentGP = graphPattern;
+		graphPattern = new GraphPattern();
+
+		// inherit scope & context
+		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
+		graphPattern.setContextVar(parentGP.getContextVar());
+
+		if (node.jjtGetNumChildren() > 1) {
+			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+
+			Var contextVar = valueExpr2Var(contextNode);
+			graphPattern.setContextVar(contextVar);
+			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
+
+			node.jjtGetChild(1).jjtAccept(this, data);
+		}
+		else {
+			node.jjtGetChild(0).jjtAccept(this, data);
+		}
+
+		TupleExpr whereExpr = graphPattern.buildTupleExpr();
+		graphPattern = parentGP;
+		
+		TupleExpr deleteExpr = whereExpr.clone();
+		Modify modify = new Modify(deleteExpr, null, whereExpr);
+		
+		return modify;
 	}
 
 	@Override
