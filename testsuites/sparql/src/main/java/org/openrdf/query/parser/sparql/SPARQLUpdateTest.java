@@ -207,6 +207,30 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	}
 
 	@Test
+	public void testDeleteWhereShortcut()
+		throws Exception
+	{
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("DELETE WHERE {?x foaf:name ?y }");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+		operation.execute();
+
+		String msg = "foaf:name properties should have been deleted";
+		assertFalse(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertFalse(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+		
+		msg = "foaf:knows properties should not have been deleted";
+		assertTrue(msg, con.hasStatement(bob, FOAF.KNOWS, null, true));
+		assertTrue(msg, con.hasStatement(alice, FOAF.KNOWS, null, true));
+	}
+	
+	@Test
 	public void testDeleteWhere()
 		throws Exception
 	{
