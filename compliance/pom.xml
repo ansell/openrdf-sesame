@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame</artifactId>
-		<version>2.4.1</version>
+		<version>2.4.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-compliance</artifactId>
@@ -34,25 +34,25 @@
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-testsuite</artifactId>
-				<version>2.4.1</version>
+				<version>2.4.2-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-store-testsuite</artifactId>
-				<version>2.4.1</version>
+				<version>2.4.2-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-serql-testsuite</artifactId>
-				<version>2.4.1</version>
+				<version>2.4.2-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sparql-testsuite</artifactId>
-				<version>2.4.1</version>
+				<version>2.4.2-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
@@ -64,9 +64,9 @@
 	</dependencyManagement>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.4.1/compliance</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.4.1/compliance</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/compliance?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.4.1/compliance?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/compliance?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/compliance/</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/compliance</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/compliance</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/compliance?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/compliance/</url>
 
 
 
