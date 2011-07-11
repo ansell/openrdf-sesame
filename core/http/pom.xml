@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>2.4.1-SNAPSHOT</version>
+		<version>2.4.1</version>
 	</parent>
 
 	<artifactId>sesame-http</artifactId>
@@ -23,9 +23,9 @@
 	</modules>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core/http</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.4/core/http</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/http?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/http/</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.4.1/core/http</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.4.1/core/http</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/http?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.4.1/core/http?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/http?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.4/core/http/</url>
 
 
 
