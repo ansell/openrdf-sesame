@@ -2199,17 +2199,24 @@ public class BTree {
 		private boolean popStacks()
 			throws IOException
 		{
-			if (parentNodeStack.isEmpty()) {
+			if (currentNode == null) {
+				// There's nothing to pop
+				return false;
+			}
+
+			currentNode.deregister(this);
+			currentNode.release();
+
+			if (!parentNodeStack.isEmpty()) {
+				currentNode = parentNodeStack.removeLast();
+				currentIdx = parentIndexStack.removeLast();
+				return true;
+			}
+			else {
 				currentNode = null;
 				currentIdx = 0;
 				return false;
 			}
-			
-			currentNode.deregister(this);
-			currentNode.release();
-			currentNode = parentNodeStack.removeLast();
-			currentIdx = parentIndexStack.removeLast();
-			return true;
 		}
 
 		public boolean valueAdded(Node node, int addedIndex) {
