@@ -13,6 +13,8 @@ import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -33,6 +35,8 @@ import org.openrdf.rio.RDFParseException;
  * @author Jeen Broekstra
  */
 public abstract class SPARQLUpdateTest extends TestCase {
+
+	static final Logger logger = LoggerFactory.getLogger(SPARQLUpdateTest.class);
 
 	private Repository rep;
 
@@ -57,9 +61,12 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void setUp()
 		throws Exception
 	{
+		logger.debug("setting up test");
+
 		rep = createRepository();
 		con = rep.getConnection();
 		f = rep.getValueFactory();
+
 		loadDataset();
 
 		bob = f.createURI(EX_NS, "bob");
@@ -67,6 +74,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 
 		graph1 = f.createURI(EX_NS, "graph1");
 		graph2 = f.createURI(EX_NS, "graph2");
+
+		logger.debug("setup complete.");
 	}
 
 	/**
@@ -76,6 +85,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void tearDown()
 		throws Exception
 	{
+		logger.debug("tearing down...");
 		con.close();
 		con = null;
 
@@ -83,14 +93,17 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		rep = null;
 
 		super.tearDown();
+		logger.debug("tearDown complete.");
 	}
 
 	/* test methods */
+
 
 	@Test
 	public void testInsertWhere()
 		throws Exception
 	{
+		logger.debug("executing test InsertWhere");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
@@ -110,6 +123,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testDeleteInsertWhere()
 		throws Exception
 	{
+		logger.debug("executing test DeleteInsertWhere");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE { ?x foaf:name ?y } INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
@@ -133,6 +147,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testInsertTransformedWhere()
 		throws Exception
 	{
+		logger.debug("executing test InsertTransformedWhere");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {?x rdfs:label [] . } WHERE {?y ex:containsPerson ?x.  }");
@@ -152,6 +168,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testInsertWhereGraph()
 		throws Exception
 	{
+		logger.debug("executing testInsertWhereGraph");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {GRAPH ?g {?x rdfs:label ?y . }} WHERE {GRAPH ?g {?x foaf:name ?y }}");
@@ -171,6 +188,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testInsertWhereUsing()
 		throws Exception
 	{
+
+		logger.debug("executing testInsertWhereUsing");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {?x rdfs:label ?y . } USING ex:graph1 WHERE {?x foaf:name ?y }");
@@ -191,6 +210,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testInsertWhereWith()
 		throws Exception
 	{
+		logger.debug("executing testInsertWhereWith");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("WITH ex:graph1 INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
@@ -210,6 +231,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testDeleteWhereShortcut()
 		throws Exception
 	{
+		logger.debug("executing testDeleteWhereShortcut");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE WHERE {?x foaf:name ?y }");
@@ -224,16 +247,18 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		String msg = "foaf:name properties should have been deleted";
 		assertFalse(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 		assertFalse(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-		
+
 		msg = "foaf:knows properties should not have been deleted";
 		assertTrue(msg, con.hasStatement(bob, FOAF.KNOWS, null, true));
 		assertTrue(msg, con.hasStatement(alice, FOAF.KNOWS, null, true));
 	}
-	
+
 	@Test
 	public void testDeleteWhere()
 		throws Exception
 	{
+		logger.debug("executing testDeleteWhere");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE {?x foaf:name ?y } WHERE {?x foaf:name ?y }");
@@ -255,6 +280,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testDeleteTransformedWhere()
 		throws Exception
 	{
+		logger.debug("executing testDeleteTransformedWhere");
+		
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y }");
@@ -273,12 +300,14 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		msg = "ex:containsPerson properties should not have been deleted";
 		assertTrue(msg, con.hasStatement(graph1, f.createURI(EX_NS, "containsPerson"), bob, true));
 		assertTrue(msg, con.hasStatement(graph2, f.createURI(EX_NS, "containsPerson"), alice, true));
+		
 	}
-
 	@Test
 	public void testInsertData()
 		throws Exception
 	{
+		logger.debug("executing testInsertData");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT DATA { ex:book1 dc:title \"book 1\" ; dc:creator \"Ringo\" . } ");
@@ -301,6 +330,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testInsertDataInGraph()
 		throws Exception
 	{
+		logger.debug("executing testInsertDataInGraph");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT DATA { GRAPH ex:graph1 { ex:book1 dc:title \"book 1\" ; dc:creator \"Ringo\" . } } ");
@@ -323,6 +354,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testDeleteData()
 		throws Exception
 	{
+		logger.debug("executing testDeleteData");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE DATA { ex:alice foaf:knows ex:bob. } ");
@@ -340,6 +372,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testDeleteDataFromGraph()
 		throws Exception
 	{
+		logger.debug("executing testDeleteDataFromGraph");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE DATA { GRAPH ex:graph1 {ex:alice foaf:knows ex:bob. } } ");
@@ -357,6 +391,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testDeleteDataFromWrongGraph()
 		throws Exception
 	{
+		logger.debug("executing testDeleteDataFromWrongGraph");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 
@@ -373,10 +409,14 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(msg, con.hasStatement(alice, FOAF.KNOWS, bob, true, graph1));
 	}
 
+
+
 	@Test
 	public void testCreateGraph()
 		throws Exception
 	{
+		logger.debug("executing testCreateGraph");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("CREATE GRAPH <" + graph1.stringValue() + "> ");
@@ -388,10 +428,12 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(con.hasStatement(null, null, null, false, graph2));
 		assertTrue(con.hasStatement(null, null, null, false));
 	}
-	
+
 	@Test
-	public void testCopyToDefault() throws Exception 
+	public void testCopyToDefault()
+		throws Exception
 	{
+		logger.debug("executing testCopyToDefault");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("COPY GRAPH <" + graph1.stringValue() + "> TO DEFAULT");
@@ -407,10 +449,12 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
 	}
 
-	
 	@Test
-	public void testCopyToExistingNamed() throws Exception 
+	public void testCopyToExistingNamed()
+		throws Exception
 	{
+		logger.debug("executing testCopyToExistingNamed");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("COPY GRAPH ex:graph1 TO ex:graph2");
@@ -422,10 +466,13 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertFalse(con.hasStatement(alice, FOAF.NAME, null, false, graph2));
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
 	}
-	
+
 	@Test
-	public void testCopyToNewNamed() throws Exception 
+	public void testCopyToNewNamed()
+		throws Exception
 	{
+		logger.debug("executing testCopyToNewNamed");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("COPY GRAPH ex:graph1 TO ex:graph3");
@@ -436,10 +483,13 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, f.createURI(EX_NS, "graph3")));
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
 	}
-	
+
 	@Test
-	public void testCopyFromDefault() throws Exception 
+	public void testCopyFromDefault()
+		throws Exception
 	{
+		logger.debug("executing testCopyFromDefault");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("COPY DEFAULT TO ex:graph3");
@@ -455,10 +505,13 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
 
 	}
-	
+
 	@Test
-	public void testCopyFromDefaultToDefault() throws Exception 
+	public void testCopyFromDefaultToDefault()
+		throws Exception
 	{
+		logger.debug("executing testCopyFromDefaultToDefault");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("COPY DEFAULT TO DEFAULT");
@@ -473,8 +526,11 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	}
 
 	@Test
-	public void testAddToDefault() throws Exception 
+	public void testAddToDefault()
+		throws Exception
 	{
+		logger.debug("executing testAddToDefault");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("ADD GRAPH <" + graph1.stringValue() + "> TO DEFAULT");
@@ -490,10 +546,12 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
 	}
 
-	
 	@Test
-	public void testAddToExistingNamed() throws Exception 
+	public void testAddToExistingNamed()
+		throws Exception
 	{
+		logger.debug("executing testAddToExistingNamed");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("ADD GRAPH ex:graph1 TO ex:graph2");
@@ -505,10 +563,13 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(con.hasStatement(alice, FOAF.NAME, null, false, graph2));
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
 	}
-	
+
 	@Test
-	public void testAddToNewNamed() throws Exception 
+	public void testAddToNewNamed()
+		throws Exception
 	{
+		logger.debug("executing testAddToNewNamed");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("ADD GRAPH ex:graph1 TO ex:graph3");
@@ -519,10 +580,13 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, f.createURI(EX_NS, "graph3")));
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
 	}
-	
+
 	@Test
-	public void testAddFromDefault() throws Exception 
+	public void testAddFromDefault()
+		throws Exception
 	{
+		logger.debug("executing testAddFromDefault");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("ADD DEFAULT TO ex:graph3");
@@ -538,10 +602,13 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
 
 	}
-	
+
 	@Test
-	public void testAddFromDefaultToDefault() throws Exception 
+	public void testAddFromDefaultToDefault()
+		throws Exception
 	{
+		logger.debug("executing testAddFromDefaultToDefault");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("ADD DEFAULT TO DEFAULT");
@@ -556,8 +623,11 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	}
 
 	@Test
-	public void testMoveToDefault() throws Exception 
+	public void testMoveToDefault()
+		throws Exception
 	{
+		logger.debug("executing testMoveToDefault");
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("MOVE GRAPH <" + graph1.stringValue() + "> TO DEFAULT");
@@ -573,10 +643,11 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertFalse(con.hasStatement(null, null, null, false, graph1));
 	}
 
-	
 	@Test
-	public void testMoveToNewNamed() throws Exception 
+	public void testMoveToNewNamed()
+		throws Exception
 	{
+		logger.debug("executing testMoveToNewNamed");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("MOVE GRAPH ex:graph1 TO ex:graph3");
@@ -587,10 +658,12 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, f.createURI(EX_NS, "graph3")));
 		assertFalse(con.hasStatement(null, null, null, false, graph1));
 	}
-	
+
 	@Test
-	public void testMoveFromDefault() throws Exception 
+	public void testMoveFromDefault()
+		throws Exception
 	{
+		logger.debug("executing testMoveFromDefault");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("MOVE DEFAULT TO ex:graph3");
@@ -606,10 +679,12 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
 
 	}
-	
+
 	@Test
-	public void testMoveFromDefaultToDefault() throws Exception 
+	public void testMoveFromDefaultToDefault()
+		throws Exception
 	{
+		logger.debug("executing testMoveFromDefaultToDefault");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("MOVE DEFAULT TO DEFAULT");
@@ -627,6 +702,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testClearAll()
 		throws Exception
 	{
+		logger.debug("executing testClearAll");
 		String update = "CLEAR ALL";
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
@@ -640,6 +716,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testClearGraph()
 		throws Exception
 	{
+		logger.debug("executing testClearGraph");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("CLEAR GRAPH <" + graph1.stringValue() + "> ");
@@ -656,6 +733,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testClearNamed()
 		throws Exception
 	{
+		logger.debug("executing testClearNamed");
 		String update = "CLEAR NAMED";
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
@@ -671,6 +749,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testDropAll()
 		throws Exception
 	{
+		logger.debug("executing testDropAll");
 		String update = "DROP ALL";
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
@@ -684,6 +763,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testDropGraph()
 		throws Exception
 	{
+		logger.debug("executing testDropGraph");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DROP GRAPH <" + graph1.stringValue() + "> ");
@@ -700,6 +780,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	public void testDropNamed()
 		throws Exception
 	{
+		logger.debug("executing testDropNamed");
+
 		String update = "DROP NAMED";
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
@@ -746,6 +828,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	protected void loadDataset()
 		throws RDFParseException, RepositoryException, IOException
 	{
+		logger.debug("loading dataset...");
 		InputStream dataset = SPARQLUpdateTest.class.getResourceAsStream("/testdata-update/dataset-update.trig");
 		try {
 			con.add(dataset, "", RDFFormat.TRIG);
@@ -753,6 +836,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		finally {
 			dataset.close();
 		}
+		logger.debug("dataset loaded.");
 	}
 
 	/**
