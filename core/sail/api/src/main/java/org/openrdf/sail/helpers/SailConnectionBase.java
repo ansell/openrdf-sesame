@@ -42,6 +42,7 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.algebra.ValueConstant;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
@@ -678,7 +679,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 		statements.close();
 	}
-	
+
 	/**
 	 * @param updateExpr
 	 * @param dataset
@@ -848,15 +849,21 @@ public abstract class SailConnectionBase implements SailConnection {
 					List<StatementPattern> deletePatterns = StatementPatternCollector.process(deleteClause);
 
 					for (StatementPattern deletePattern : deletePatterns) {
-						Statement toBeDeleted = createStatementFromPattern(deletePattern, sourceBinding, false);
 
-						if (toBeDeleted.getContext() == null) {
-							removeStatementsInternal(toBeDeleted.getSubject(), toBeDeleted.getPredicate(),
-									toBeDeleted.getObject());
+						Resource subject = (Resource)getValueForVar(deletePattern.getSubjectVar(), sourceBinding);
+						URI predicate = (URI)getValueForVar(deletePattern.getPredicateVar(), sourceBinding);
+						Value object = getValueForVar(deletePattern.getObjectVar(), sourceBinding);
+						
+						Resource context = null;
+						if (deletePattern.getContextVar() != null) {
+							context = (Resource)getValueForVar(deletePattern.getContextVar(), sourceBinding);
+						}
+
+						if (context == null) {
+							removeStatementsInternal(subject, predicate, object);
 						}
 						else {
-							removeStatementsInternal(toBeDeleted.getSubject(), toBeDeleted.getPredicate(),
-									toBeDeleted.getObject(), toBeDeleted.getContext());
+							removeStatementsInternal(subject, predicate, object, context);
 						}
 					}
 				}
@@ -865,7 +872,7 @@ public abstract class SailConnectionBase implements SailConnection {
 					List<StatementPattern> insertPatterns = StatementPatternCollector.process(insertClause);
 
 					for (StatementPattern insertPattern : insertPatterns) {
-						Statement toBeInserted = createStatementFromPattern(insertPattern, sourceBinding, true);
+						Statement toBeInserted = createStatementFromPattern(insertPattern, sourceBinding);
 
 						if (toBeInserted.getContext() == null) {
 							addStatementInternal(toBeInserted.getSubject(), toBeInserted.getPredicate(),
@@ -884,14 +891,26 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	private Value getValueForVar(Var var, BindingSet bindings)
+		throws SailException
+	{
+		Value value = null;
+		if (var.hasValue()) {
+			value = var.getValue();
+		}
+		else  {
+			value = bindings.getValue(var.getName());
+		}
+		return value;
+	}
+
 	/**
-	 * @param deletePattern
+	 * @param pattern
 	 * @param sourceBinding
 	 * @return
 	 * @throws SailException
 	 */
-	private Statement createStatementFromPattern(StatementPattern deletePattern, BindingSet sourceBinding,
-			boolean forceBindAll)
+	private Statement createStatementFromPattern(StatementPattern pattern, BindingSet sourceBinding)
 		throws SailException
 	{
 
@@ -902,42 +921,44 @@ public abstract class SailConnectionBase implements SailConnection {
 
 		ValueFactory f = sailBase.getValueFactory();
 
-		if (deletePattern.getSubjectVar().hasValue()) {
-			subject = (Resource)deletePattern.getSubjectVar().getValue();
+		if (pattern.getSubjectVar().hasValue()) {
+			subject = (Resource)pattern.getSubjectVar().getValue();
 		}
 		else {
-			subject = (Resource)sourceBinding.getValue(deletePattern.getSubjectVar().getName());
-			if (forceBindAll && subject == null) {
+			subject = (Resource)sourceBinding.getValue(pattern.getSubjectVar().getName());
+			
+			if (subject == null) {
 				subject = f.createBNode();
 			}
 		}
 
-		if (deletePattern.getPredicateVar().hasValue()) {
-			predicate = (URI)deletePattern.getPredicateVar().getValue();
+		if (pattern.getPredicateVar().hasValue()) {
+			predicate = (URI)pattern.getPredicateVar().getValue();
 		}
 		else {
-			predicate = (URI)sourceBinding.getValue(deletePattern.getPredicateVar().getName());
-			if (forceBindAll && predicate == null) {
-				throw new SailException("cannot instantiate predicate binding for statement pattern");
+			predicate = (URI)sourceBinding.getValue(pattern.getPredicateVar().getName());
+			if (predicate == null) {
+				throw new SailException("could not instiantiate StatementPattern predicate.");
 			}
 		}
 
-		if (deletePattern.getObjectVar().hasValue()) {
-			object = deletePattern.getObjectVar().getValue();
+		if (pattern.getObjectVar().hasValue()) {
+			object = pattern.getObjectVar().getValue();
 		}
 		else {
-			object = sourceBinding.getValue(deletePattern.getObjectVar().getName());
-			if (forceBindAll && object == null) {
+			object = sourceBinding.getValue(pattern.getObjectVar().getName());
+			
+			if (object == null) {
 				object = f.createBNode();
 			}
 		}
 
-		if (deletePattern.getContextVar() != null) {
-			if (deletePattern.getContextVar().hasValue()) {
-				context = (Resource)deletePattern.getContextVar().getValue();
+		if (pattern.getContextVar() != null) {
+			if (pattern.getContextVar().hasValue()) {
+				context = (Resource)pattern.getContextVar().getValue();
 			}
 			else {
-				context = (Resource)sourceBinding.getValue(deletePattern.getContextVar().getName());
+				context = (Resource)sourceBinding.getValue(pattern.getContextVar().getName());
 			}
 		}
 
