@@ -429,7 +429,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 						sum = MathUtil.compute(sum, nextLiteral, MathOp.PLUS);
 					}
 				}
-				else {
+				else if (v != null) {
 					throw new ValueExprEvaluationException("not a number: " + v);
 				}
 			}
@@ -469,7 +469,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 					}
 					count++;
 				}
-				else {
+				else if (v != null) {
 					throw new ValueExprEvaluationException("not a number: " + v);
 				}
 			}
