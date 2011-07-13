@@ -710,6 +710,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(con.hasStatement(null, null, null, false));
 	}
 
+	/*
 	@Test
 	public void testLoad()
 		throws Exception
@@ -738,6 +739,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertFalse(con.hasStatement((Resource)null, RDF.TYPE, f.createURI(ns, "Family"), true, (Resource)null));
 		assertTrue(con.hasStatement((Resource)null, RDF.TYPE, f.createURI(ns, "Family"), true, f.createURI(ns)));
 	}
+	*/
 
 	/* protected methods */
 
