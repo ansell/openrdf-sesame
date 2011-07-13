@@ -302,9 +302,14 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		}
 
 		protected Value evaluate(BindingSet s)
-			throws ValueExprEvaluationException, QueryEvaluationException
+			throws QueryEvaluationException
 		{
-			return strategy.evaluate(getArg(), s);
+			try {
+				return strategy.evaluate(getArg(), s);
+			}
+			catch (ValueExprEvaluationException e) {
+				return null; // treat missing or invalid expressions as null
+			}
 		}
 	}
 
@@ -416,7 +421,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 				if (v instanceof Literal) {
 					Literal nextLiteral = (Literal)v;
 					// check if the literal is numeric, if not, skip it. This is
-					// strictly speaking not spec-compliant, but a whole lot more useful.
+					// strictly speaking not spec-compliant, but a whole lot more
+					// useful.
 					if (nextLiteral.getDatatype() != null
 							&& XMLDatatypeUtil.isNumericDatatype(nextLiteral.getDatatype()))
 					{
@@ -525,8 +531,10 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			throws QueryEvaluationException
 		{
 			Value v = evaluate(s);
-			concatenated.append(v.stringValue());
-			concatenated.append(separator);
+			if (v != null) {
+				concatenated.append(v.stringValue());
+				concatenated.append(separator);
+			}
 		}
 
 		@Override
