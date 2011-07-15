@@ -123,6 +123,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
+import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -254,7 +255,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				return currentIter.next();
 			}
 			else {
-				if (currentIterNotEmpty) {
+				if (currentIterNotEmpty || currentLength == 0L) {
 					currentLength++;
 					createIteration();
 					currentIterNotEmpty = false;

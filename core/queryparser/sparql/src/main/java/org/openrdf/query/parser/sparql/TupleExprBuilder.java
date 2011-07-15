@@ -17,6 +17,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
@@ -236,7 +237,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 		// Apply grouping
 		ASTGroupClause groupNode = node.getGroupClause();
 		if (groupNode != null) {
-			tupleExpr = new Group(tupleExpr, groupNode.getBindingNames());
+
+			tupleExpr = (TupleExpr)groupNode.jjtAccept(this, tupleExpr);
 		}
 
 		// Apply HAVING group filter condition
@@ -256,15 +258,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 			collector.meet(condition);
 
 			// replace operator occurrences with an anonymous var, and alias it
-			// to
-			// the group
+			// to the group
 			Extension extension = new Extension();
 			for (AggregateOperator operator : collector.getOperators()) {
 				Var var = createAnonVar("-const-" + constantVarID++);
 
 				// replace occurrence of the operator in the filter condition
-				// with
-				// the variable.
+				// with the variable.
 				AggregateOperatorReplacer replacer = new AggregateOperatorReplacer(operator, var);
 				replacer.meet(condition);
 
@@ -348,32 +348,21 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 				if (valueExpr instanceof AggregateOperator) {
 					// Apply implicit grouping if necessary
-
 					GroupFinder groupFinder = new GroupFinder();
 					result.visit(groupFinder);
 					Group group = groupFinder.getGroup();
 
+					boolean existingGroup = true;
 					if (group == null) {
 						group = new Group(result);
+						existingGroup = false;
 					}
-
-					/*
-					 * if (result instanceof Group) { group = (Group)result; }
-					 * else { if (result instanceof Filter) { TupleExpr
-					 * filterArg = ((Filter)result).getArg(); if (filterArg
-					 * instanceof Group) { group = (Group)filterArg; } else if
-					 * (filterArg instanceof Extension) { group =
-					 * (Group)((Extension)filterArg).getArg(); } else { group =
-					 * new Group(result); } } else { group = new Group(result);
-					 * } }
-					 */
 
 					group.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
 
 					extension.setArg(group);
 
-					// avoid overwriting a HAVING clause, ORDER BY clause
-					if (!(result instanceof Filter || result instanceof Order)) {
+					if (!existingGroup) {
 						result = group;
 					}
 				}
@@ -409,6 +398,11 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		private Group group;
 
+		@Override 
+		public void meet(Projection projection) {
+			// stop tree traversal on finding a projection: we do not wish to find the group in a sub-select.
+		}
+		
 		@Override
 		public void meet(Group group) {
 			this.group = group;
@@ -656,24 +650,64 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public List<GroupElem> visit(ASTGroupClause node, Object data)
+	public Group visit(ASTGroupClause node, Object data)
 		throws VisitorException
 	{
+		TupleExpr tupleExpr = (TupleExpr)data;
+		Group g = new Group(tupleExpr);
 		int childCount = node.jjtGetNumChildren();
-		List<GroupElem> elements = new ArrayList<GroupElem>(childCount);
 
+		List<String> groupBindingNames = new ArrayList<String>();
 		for (int i = 0; i < childCount; i++) {
-			elements.add((GroupElem)node.jjtGetChild(i).jjtAccept(this, data));
+			String name = (String)node.jjtGetChild(i).jjtAccept(this, g);
+			groupBindingNames.add(name);
 		}
 
-		return elements;
+		g.setGroupBindingNames(groupBindingNames);
+
+		return g;
 	}
 
 	@Override
-	public GroupElem visit(ASTGroupCondition node, Object data)
+	public String visit(ASTGroupCondition node, Object data)
 		throws VisitorException
 	{
-		return ((GroupElem)data);
+		Group group = (Group)data;
+		TupleExpr arg = group.getArg();
+
+		Extension extension = null;
+		if (arg instanceof Extension) {
+			extension = (Extension)arg;
+		}
+		else {
+			extension = new Extension();
+		}
+
+		String name = null;
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+		if (ve instanceof Var) {
+			name = ((Var)ve).getName();
+		}
+		else {
+			if (node.jjtGetNumChildren() > 1) {
+				Var v = (Var)node.jjtGetChild(1).jjtAccept(this, data);
+				name = v.getName();
+			}
+			else {
+				// create an alias on the spot
+				name = createConstVar(null).getName();
+			}
+
+			ExtensionElem elem = new ExtensionElem(ve, name);
+			extension.addElement(elem);
+		}
+
+		if (extension.getElements().size() > 0 && !(arg instanceof Extension)) {
+			extension.setArg(arg);
+			group.setArg(extension);
+		}
+
+		return name;
 	}
 
 	@Override
@@ -988,14 +1022,35 @@ class TupleExprBuilder extends ASTVisitorBase {
 				GraphPattern parentGP = graphPattern;
 
 				graphPattern = new GraphPattern();
-				pathElement.jjtGetChild(0).jjtAccept(this, data);
 
-				TupleExpr te = graphPattern.buildTupleExpr();
+				if (i == pathLength - 1) {
+					// last element in the path
+					pathElement.jjtGetChild(0).jjtAccept(this, data);
 
-				for (ValueExpr object : objectList) {
-					Var objVar = valueExpr2Var(object);
-					te = handlePathModifiers(scope, subjVar, te, objVar, contextVar, lowerBound, upperBound);
+					TupleExpr te = graphPattern.buildTupleExpr();
+
+					for (ValueExpr object : objectList) {
+						Var objVar = valueExpr2Var(object);
+						te = handlePathModifiers(scope, subjVar, te, objVar, contextVar, lowerBound, upperBound);
+						pathSequencePattern.addRequiredTE(te);
+					}
+				}
+				else {
+					// not the last element in the path, introduce an anonymous var
+					// to connect.
+					Var nextVar = createAnonVar(subjVar.getName() + "-nested-" + i);
+
+					pathElement.jjtGetChild(0).jjtAccept(this, data);
+
+					TupleExpr te = graphPattern.buildTupleExpr();
+
+					// replace all object list occurrences with the intermediate var.
+
+					te = replaceVarOccurrence(te, objectList, nextVar);
+					te = handlePathModifiers(scope, subjVar, te, nextVar, contextVar, lowerBound, upperBound);
 					pathSequencePattern.addRequiredTE(te);
+
+					subjVar = nextVar;
 				}
 
 				graphPattern = parentGP;
@@ -1144,6 +1199,17 @@ class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		return completeMatch;
+	}
+
+	private TupleExpr replaceVarOccurrence(TupleExpr te, List<ValueExpr> objectList, Var replacementVar)
+		throws VisitorException
+	{
+		for (ValueExpr objExpr : objectList) {
+			Var objVar = valueExpr2Var(objExpr);
+			VarReplacer replacer = new VarReplacer(objVar, replacementVar);
+			te.visit(replacer);
+		}
+		return te;
 	}
 
 	private TupleExpr handlePathModifiers(Scope scope, Var subjVar, TupleExpr te, Var endVar, Var contextVar,
@@ -1640,7 +1706,10 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		int listItemCount = node.jjtGetNumChildren();
 
-		if (listItemCount == 1) {
+		if (listItemCount == 0) {
+			result = new ValueConstant(BooleanLiteralImpl.FALSE);
+		}
+		else if (listItemCount == 1) {
 			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 
 			result = new Compare(leftArg, arg, CompareOp.EQ);
@@ -1678,7 +1747,10 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		int listItemCount = node.jjtGetNumChildren();
 
-		if (listItemCount == 1) {
+		if (listItemCount == 0) {
+			result = new ValueConstant(BooleanLiteralImpl.TRUE);
+		}
+		else if (listItemCount == 1) {
 			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 
 			result = new Compare(leftArg, arg, CompareOp.NE);

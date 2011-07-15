@@ -980,13 +980,13 @@ void If() :
 void In() :
 {}
 {
-    <IN> <LPAREN> Expression() (<COMMA> Expression())* <RPAREN>
+    <IN> ArgList()
 }
 
 void NotIn() :
 {}
 {
-    <NOT_IN> <LPAREN> Expression() (<COMMA> Expression())* <RPAREN>
+    <NOT_IN> ArgList()
 }
 
 void Coalesce() : 

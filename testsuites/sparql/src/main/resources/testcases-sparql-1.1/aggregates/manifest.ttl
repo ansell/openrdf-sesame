@@ -13,16 +13,44 @@
     	:sparql11-count-01
     	:sparql11-count-02
     	:sparql11-count-03
+    	:sparql11-count-04
     	:sparql11-order-01
     	:sparql11-max-01
     	:sparql11-min-01
     	:sparql11-sum-01
+    	:sparql11-sum-02
+    	:sparql11-sum-03
     	:sparql11-having-01
     	:sparql11-avg-01
     	:sparql11-aggregate-subquery-01
     	:sparql11-aggregate-subquery-02
+    	:sparql11-aggregate-group-01
+    	:sparql11-aggregate-group-02
+# test case for issue SES-772. commented because not yet fixed
+#    	:sparql11-aggregate-expression-01
     ).
 
+
+:sparql11-count-04  mf:name  "sparql11-count-04" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-count-04.rq> ; qt:data <data-07.ttl> ] ;
+         mf:result <sparql11-count-04.srx> .
+         
+:sparql11-aggregate-group-01  mf:name  "sparql11-aggregate-group-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-aggregate-group-01.rq> ; qt:data <data-05.ttl> ] ;
+         mf:result <sparql11-aggregate-group-01.srx> .
+
+:sparql11-aggregate-group-02  mf:name  "sparql11-aggregate-group-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-aggregate-group-02.rq> ; qt:data <data-05.ttl> ] ;
+         mf:result <sparql11-aggregate-group-02.srx> .   
+
+:sparql11-aggregate-expression-01  mf:name  "sparql11-aggregate-expression-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-aggregate-expression-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-aggregate-expression-01.srx> .
+               
 :sparql11-count-01  mf:name  "sparql11-count-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-count-01.rq> ; qt:data <data-01.ttl> ] ;
@@ -58,6 +86,16 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-sum-01.rq> ; qt:data <data-01.ttl> ] ;
          mf:result <sparql11-sum-01.srx> .
+             
+:sparql11-sum-02  mf:name  "sparql11-sum-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-sum-02.rq> ; qt:data <data-04.ttl> ] ;
+         mf:result <sparql11-sum-02.srx> .
+         
+:sparql11-sum-03  mf:name  "sparql11-sum-03" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-sum-03.rq> ; qt:data <data-06.ttl> ] ;
+         mf:result <sparql11-sum-03.srx> .     
          
 :sparql11-having-01  mf:name  "sparql11-having-01" ;
          rdf:type   mf:QueryEvaluationTest ;

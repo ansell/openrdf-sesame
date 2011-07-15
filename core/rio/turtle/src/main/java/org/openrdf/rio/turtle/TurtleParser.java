@@ -102,8 +102,8 @@ public class TurtleParser extends RDFParserBase {
 	 * 
 	 * @param in
 	 *        The InputStream from which to read the data, must not be
-	 *        <tt>null</tt>. The InputStream is supposed to contain UTF-8
-	 *        encoded Unicode characters, as per the Turtle specification.
+	 *        <tt>null</tt>. The InputStream is supposed to contain UTF-8 encoded
+	 *        Unicode characters, as per the Turtle specification.
 	 * @param baseURI
 	 *        The URI associated with the data in the InputStream, must not be
 	 *        <tt>null</tt>.
@@ -135,8 +135,8 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Implementation of the <tt>parse(Reader, String)</tt> method defined in
-	 * the RDFParser interface.
+	 * Implementation of the <tt>parse(Reader, String)</tt> method defined in the
+	 * RDFParser interface.
 	 * 
 	 * @param reader
 	 *        The Reader from which to read the data, must not be <tt>null</tt>.
@@ -1000,19 +1000,19 @@ public class TurtleParser extends RDFParserBase {
 	/**
 	 * Consumes any white space characters (space, tab, line feed, newline) and
 	 * comments (#-style) from <tt>reader</tt>. After this method has been
-	 * called, the first character that is returned by <tt>reader</tt> is
-	 * either a non-ignorable character, or EOF. For convenience, this character
-	 * is also returned by this method.
+	 * called, the first character that is returned by <tt>reader</tt> is either
+	 * a non-ignorable character, or EOF. For convenience, this character is also
+	 * returned by this method.
 	 * 
 	 * @return The next character that will be returned by <tt>reader</tt>.
 	 */
 	protected int skipWSC()
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		int c = read();
 		while (TurtleUtil.isWhitespace(c) || c == '#') {
 			if (c == '#') {
-				skipLine();
+				processComment();
 			}
 
 			c = read();
@@ -1024,13 +1024,16 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Consumes characters from reader until the first EOL has been read.
+	 * Consumes characters from reader until the first EOL has been read. This
+	 * line of text is then passed to the {@link #rdfHandler} as a comment.
 	 */
-	protected void skipLine()
-		throws IOException
+	protected void processComment()
+		throws IOException, RDFHandlerException
 	{
+		StringBuilder comment = new StringBuilder(64);
 		int c = read();
 		while (c != -1 && c != 0xD && c != 0xA) {
+			comment.append((char)c);
 			c = read();
 		}
 
@@ -1043,7 +1046,7 @@ public class TurtleParser extends RDFParserBase {
 				unread(c);
 			}
 		}
-
+		rdfHandler.handleComment(comment.toString());
 		reportLocation();
 	}
 
