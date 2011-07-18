@@ -53,203 +53,355 @@
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-model</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-api</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-ntriples</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-n3</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-rdfxml</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-trix</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-turtle</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-rio-trig</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-query</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryalgebra-model</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryalgebra-evaluation</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryparser-api</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryparser-serql</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryparser-sparql</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-api</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-binary</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-sparqljson</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-sparqlxml</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-text</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-api</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-manager</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-http</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-sail</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-event</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-dataset</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-contextaware</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-protocol</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-client</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-api</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-inferencer</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-memory</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-nativerdf</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sail-rdbms</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-runtime</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-console</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-server</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 				<type>war</type>
 				<scope>runtime</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-server-spring</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-http-workbench</artifactId>
+<<<<<<< .working
 				<version>2.5.0-SNAPSHOT</version>
+=======
+				<version>2.4.3-SNAPSHOT</version>
+>>>>>>> .merge-right.r11097
 				<type>war</type>
 				<scope>runtime</scope>
 			</dependency>
