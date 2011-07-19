@@ -346,24 +346,45 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 				projElemList.addElement(new ProjectionElem(alias));
 
-				if (valueExpr instanceof AggregateOperator) {
-					// Apply implicit grouping if necessary
-					GroupFinder groupFinder = new GroupFinder();
-					result.visit(groupFinder);
-					Group group = groupFinder.getGroup();
+				AggregateCollector collector = new AggregateCollector();
+				valueExpr.visit(collector);
 
-					boolean existingGroup = true;
-					if (group == null) {
-						group = new Group(result);
-						existingGroup = false;
-					}
+				if (collector.getOperators().size() > 0) {
+					for (AggregateOperator operator: collector.getOperators()) {
+						// Apply implicit grouping if necessary
+						GroupFinder groupFinder = new GroupFinder();
+						result.visit(groupFinder);
+						Group group = groupFinder.getGroup();
 
-					group.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
+						boolean existingGroup = true;
+						if (group == null) {
+							group = new Group(result);
+							existingGroup = false;
+						}
 
-					extension.setArg(group);
 
-					if (!existingGroup) {
-						result = group;
+						if (operator.equals(valueExpr)) {
+							group.addGroupElement(new GroupElem(alias, operator));
+							extension.setArg(group);
+						}
+						else {
+							
+							ValueExpr expr = (ValueExpr)operator.getParentNode();
+							
+							Extension anonymousExtension = new Extension();
+							Var anonVar = createConstVar(null);
+							expr.replaceChildNode(operator, anonVar);
+							anonymousExtension.addElement(new ExtensionElem(operator, anonVar.getName()));
+							
+							anonymousExtension.setArg(result);
+							result = anonymousExtension;
+							group.addGroupElement(new GroupElem(anonVar.getName(), operator));
+
+						}
+
+						if (!existingGroup) {
+							result = group;
+						}
 					}
 				}
 				extension.addElement(new ExtensionElem(valueExpr, alias));
@@ -398,11 +419,12 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		private Group group;
 
-		@Override 
+		@Override
 		public void meet(Projection projection) {
-			// stop tree traversal on finding a projection: we do not wish to find the group in a sub-select.
+			// stop tree traversal on finding a projection: we do not wish to find
+			// the group in a sub-select.
 		}
-		
+
 		@Override
 		public void meet(Group group) {
 			this.group = group;

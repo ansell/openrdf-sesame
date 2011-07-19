@@ -27,7 +27,7 @@
     	:sparql11-aggregate-group-01
     	:sparql11-aggregate-group-02
 # test case for issue SES-772. commented because not yet fixed
-#    	:sparql11-aggregate-expression-01
+    	:sparql11-aggregate-expression-01
     ).
 
 
