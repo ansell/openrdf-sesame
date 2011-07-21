@@ -18,6 +18,7 @@ import static org.openrdf.rio.binary.BinaryRDFConstants.NULL_VALUE;
 import static org.openrdf.rio.binary.BinaryRDFConstants.PLAIN_LITERAL_VALUE;
 import static org.openrdf.rio.binary.BinaryRDFConstants.STATEMENT;
 import static org.openrdf.rio.binary.BinaryRDFConstants.URI_VALUE;
+import static org.openrdf.rio.binary.BinaryRDFConstants.VALUE_REF;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -25,6 +26,12 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharsetEncoder;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -40,23 +47,35 @@ import org.openrdf.rio.RDFWriter;
  */
 public class BinaryRDFWriter implements RDFWriter {
 
-	/**
-	 * The output stream to write the results table to.
-	 */
+	private final CharsetEncoder charsetEncoder = CHARSET.newEncoder();
+
+	private final BlockingQueue<Statement> statementQueue;
+
+	private final Map<Value, AtomicInteger> valueFreq;
+
+	private final Map<Value, Integer> valueIdentifiers;
+
+	private final AtomicInteger maxValueId = new AtomicInteger(-1);
+
 	private final DataOutputStream out;
 
-	private CharsetEncoder charsetEncoder = CHARSET.newEncoder();
-	
 	private boolean writingStarted = false;
 
 	public BinaryRDFWriter(OutputStream out) {
+		this(out, 100);
+	}
+
+	public BinaryRDFWriter(OutputStream out, int bufferSize) {
 		this.out = new DataOutputStream(out);
+		this.statementQueue = new ArrayBlockingQueue<Statement>(bufferSize);
+		this.valueFreq = new HashMap<Value, AtomicInteger>(3 * bufferSize);
+		this.valueIdentifiers = new LinkedHashMap<Value, Integer>(bufferSize);
 	}
 
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.BINARY;
 	}
-	
+
 	public void startRDF()
 		throws RDFHandlerException
 	{
@@ -71,12 +90,15 @@ public class BinaryRDFWriter implements RDFWriter {
 			}
 		}
 	}
-	
+
 	public void endRDF()
 		throws RDFHandlerException
 	{
 		startRDF();
 		try {
+			while (!statementQueue.isEmpty()) {
+				writeStatement();
+			}
 			out.writeByte(END_OF_DATA);
 			out.flush();
 			writingStarted = false;
@@ -100,22 +122,6 @@ public class BinaryRDFWriter implements RDFWriter {
 		}
 	}
 
-	public void handleStatement(Statement st)
-		throws RDFHandlerException
-	{
-		startRDF();
-		try {
-			out.writeByte(STATEMENT);
-			writeValue(st.getSubject());
-			writeValue(st.getPredicate());
-			writeValue(st.getObject());
-			writeValue(st.getContext());
-		}
-		catch (IOException e) {
-			throw new RDFHandlerException(e);
-		}
-	}
-
 	public void handleComment(String comment)
 		throws RDFHandlerException
 	{
@@ -129,13 +135,137 @@ public class BinaryRDFWriter implements RDFWriter {
 		}
 	}
 
-	private void writeValue(Value value)
+	public void handleStatement(Statement st)
+		throws RDFHandlerException
+	{
+		statementQueue.add(st);
+		incValueFreq(st.getSubject());
+		incValueFreq(st.getPredicate());
+		incValueFreq(st.getObject());
+		incValueFreq(st.getContext());
+
+		if (statementQueue.remainingCapacity() > 0) {
+			// postpone statement writing until queue is filled
+			return;
+		}
+
+		// Process the first statement from the queue
+		startRDF();
+		try {
+			writeStatement();
+		}
+		catch (IOException e) {
+			throw new RDFHandlerException(e);
+		}
+	}
+
+	/** Writes the first statement from the statement queue */
+	private void writeStatement()
+		throws RDFHandlerException, IOException
+	{
+		Statement st = statementQueue.remove();
+		int subjId = getValueId(st.getSubject());
+		int predId = getValueId(st.getPredicate());
+		int objId = getValueId(st.getObject());
+		int contextId = getValueId(st.getContext());
+
+		decValueFreq(st.getSubject());
+		decValueFreq(st.getPredicate());
+		decValueFreq(st.getObject());
+		decValueFreq(st.getContext());
+
+		out.writeByte(STATEMENT);
+		writeValueOrId(st.getSubject(), subjId);
+		writeValueOrId(st.getPredicate(), predId);
+		writeValueOrId(st.getObject(), objId);
+		writeValueOrId(st.getContext(), contextId);
+	}
+
+	private void incValueFreq(Value v) {
+		if (v != null) {
+			AtomicInteger freq = valueFreq.get(v);
+			if (freq != null) {
+				freq.incrementAndGet();
+			}
+			else {
+				valueFreq.put(v, new AtomicInteger(1));
+			}
+		}
+	}
+
+	private void decValueFreq(Value v) {
+		if (v != null) {
+			AtomicInteger freq = valueFreq.get(v);
+			if (freq != null) {
+				int newFreq = freq.decrementAndGet();
+				if (newFreq == 0) {
+					valueFreq.remove(v);
+				}
+			}
+		}
+	}
+
+	private int getValueId(Value v)
+		throws IOException, RDFHandlerException
+	{
+		if (v == null) {
+			return -1;
+		}
+		Integer id = valueIdentifiers.get(v);
+		if (id == null) {
+			// Assign an id if valueFreq >= 2
+			AtomicInteger freq = valueFreq.get(v);
+			if (freq != null && freq.get() >= 2) {
+				id = assignValueId(v);
+			}
+		}
+		if (id != null) {
+			return id.intValue();
+		}
+		return -1;
+	}
+
+	private Integer assignValueId(Value v)
+		throws IOException, RDFHandlerException
+	{
+		// Check if a previous value can be overwritten
+		Integer id = null;
+		for (Value key : valueIdentifiers.keySet()) {
+			if (!valueFreq.containsKey(key)) {
+				id = valueIdentifiers.remove(key);
+				break;
+			}
+		}
+		if (id == null) {
+			// no previous value could be overwritten
+			id = maxValueId.incrementAndGet();
+		}
+		out.writeByte(BinaryRDFConstants.VALUE_DECL);
+		out.writeInt(id);
+		writeValue(v);
+		valueIdentifiers.put(v, id);
+		return id;
+	}
+
+	private void writeValueOrId(Value value, int id)
 		throws RDFHandlerException, IOException
 	{
 		if (value == null) {
 			out.writeByte(NULL_VALUE);
 		}
-		else if (value instanceof URI) {
+		else if (id >= 0) {
+			out.writeByte(VALUE_REF);
+			out.writeInt(id);
+		}
+		else {
+			writeValue(value);
+		}
+	}
+
+	private void writeValue(Value value)
+		throws RDFHandlerException, IOException
+	{
+		if (value instanceof URI) {
 			writeURI((URI)value);
 		}
 		else if (value instanceof BNode) {
