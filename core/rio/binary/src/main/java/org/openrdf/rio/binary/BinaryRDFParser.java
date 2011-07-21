@@ -18,6 +18,8 @@ import static org.openrdf.rio.binary.BinaryRDFConstants.NULL_VALUE;
 import static org.openrdf.rio.binary.BinaryRDFConstants.PLAIN_LITERAL_VALUE;
 import static org.openrdf.rio.binary.BinaryRDFConstants.STATEMENT;
 import static org.openrdf.rio.binary.BinaryRDFConstants.URI_VALUE;
+import static org.openrdf.rio.binary.BinaryRDFConstants.VALUE_DECL;
+import static org.openrdf.rio.binary.BinaryRDFConstants.VALUE_REF;
 
 import java.io.DataInputStream;
 import java.io.EOFException;
@@ -48,6 +50,8 @@ import org.openrdf.rio.helpers.RDFParserBase;
 public class BinaryRDFParser extends RDFParserBase {
 
 	private final CharsetDecoder charsetDecoder = CHARSET.newDecoder();
+
+	private Value[] declaredValues = new Value[16];
 
 	private DataInputStream in;
 
@@ -94,13 +98,16 @@ public class BinaryRDFParser extends RDFParserBase {
 				case END_OF_DATA:
 					break loop;
 				case STATEMENT:
-					parseStatement();
+					readStatement();
+					break;
+				case VALUE_DECL:
+					readValueDecl();
 					break;
 				case NAMESPACE_DECL:
-					parseNamespaceDecl();
+					readNamespaceDecl();
 					break;
 				case COMMENT:
-					parseComment();
+					readComment();
 					break;
 				default:
 					reportFatalError("Invalid record type: " + recordType);
@@ -110,7 +117,7 @@ public class BinaryRDFParser extends RDFParserBase {
 		rdfHandler.endRDF();
 	}
 
-	private void parseNamespaceDecl()
+	private void readNamespaceDecl()
 		throws IOException, RDFHandlerException
 	{
 		String prefix = readString();
@@ -118,17 +125,33 @@ public class BinaryRDFParser extends RDFParserBase {
 		rdfHandler.handleNamespace(prefix, namespace);
 	}
 
-	private void parseComment()
+	private void readComment()
 		throws IOException, RDFHandlerException
 	{
 		String comment = readString();
 		rdfHandler.handleComment(comment);
 	}
 
-	private void parseStatement()
+	private void readValueDecl()
+		throws IOException, RDFParseException
+	{
+		int id = in.readInt();
+		Value v = readValue();
+
+		if (id >= declaredValues.length) {
+			// grow array
+			Value[] newArray = new Value[2 * declaredValues.length];
+			System.arraycopy(declaredValues, 0, newArray, 0, declaredValues.length);
+			declaredValues = newArray;
+		}
+
+		declaredValues[id] = v;
+	}
+
+	private void readStatement()
 		throws RDFParseException, IOException, RDFHandlerException
 	{
-		Value v = parseValue();
+		Value v = readValue();
 		Resource subj = null;
 		if (v instanceof Resource) {
 			subj = (Resource)v;
@@ -137,7 +160,7 @@ public class BinaryRDFParser extends RDFParserBase {
 			reportFatalError("Invalid subject type: " + v);
 		}
 
-		v = parseValue();
+		v = readValue();
 		URI pred = null;
 		if (v instanceof URI) {
 			pred = (URI)v;
@@ -146,12 +169,12 @@ public class BinaryRDFParser extends RDFParserBase {
 			reportFatalError("Invalid predicate type: " + v);
 		}
 
-		Value obj = parseValue();
+		Value obj = readValue();
 		if (obj == null) {
 			reportFatalError("Invalid object type: null");
 		}
 
-		v = parseValue();
+		v = readValue();
 		Resource context = null;
 		if (v == null || v instanceof Resource) {
 			context = (Resource)v;
@@ -164,51 +187,60 @@ public class BinaryRDFParser extends RDFParserBase {
 		rdfHandler.handleStatement(st);
 	}
 
-	private Value parseValue()
+	private Value readValue()
 		throws RDFParseException, IOException
 	{
 		byte valueType = in.readByte();
 		switch (valueType) {
 			case NULL_VALUE:
 				return null;
+			case VALUE_REF:
+				return readValueRef();
 			case URI_VALUE:
-				return parseURI();
+				return readURI();
 			case BNODE_VALUE:
-				return parseBNode();
+				return readBNode();
 			case PLAIN_LITERAL_VALUE:
-				return parsePlainLiteral();
+				return readPlainLiteral();
 			case LANG_LITERAL_VALUE:
-				return parseLangLiteral();
+				return readLangLiteral();
 			case DATATYPE_LITERAL_VALUE:
-				return parseDatatypeLiteral();
+				return readDatatypeLiteral();
 			default:
 				reportFatalError("Unknown value type: " + valueType);
 				return null;
 		}
 	}
 
-	private URI parseURI()
+	private Value readValueRef()
+		throws IOException, RDFParseException
+	{
+		int id = in.readInt();
+		return declaredValues[id];
+	}
+
+	private URI readURI()
 		throws IOException, RDFParseException
 	{
 		String uri = readString();
 		return createURI(uri);
 	}
 
-	private BNode parseBNode()
+	private BNode readBNode()
 		throws IOException, RDFParseException
 	{
 		String bnodeID = readString();
 		return createBNode(bnodeID);
 	}
 
-	private Literal parsePlainLiteral()
+	private Literal readPlainLiteral()
 		throws IOException, RDFParseException
 	{
 		String label = readString();
 		return createLiteral(label, null, null);
 	}
 
-	private Literal parseLangLiteral()
+	private Literal readLangLiteral()
 		throws IOException, RDFParseException
 	{
 		String label = readString();
@@ -216,7 +248,7 @@ public class BinaryRDFParser extends RDFParserBase {
 		return createLiteral(label, language, null);
 	}
 
-	private Literal parseDatatypeLiteral()
+	private Literal readDatatypeLiteral()
 		throws IOException, RDFParseException
 	{
 		String label = readString();
