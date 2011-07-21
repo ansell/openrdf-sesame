@@ -28,6 +28,7 @@ import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
+import org.openrdf.query.algebra.Concat;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.Difference;
@@ -93,6 +94,7 @@ import org.openrdf.query.parser.sparql.ast.ASTBound;
 import org.openrdf.query.parser.sparql.ast.ASTCoalesce;
 import org.openrdf.query.parser.sparql.ast.ASTCollection;
 import org.openrdf.query.parser.sparql.ast.ASTCompare;
+import org.openrdf.query.parser.sparql.ast.ASTConcat;
 import org.openrdf.query.parser.sparql.ast.ASTConstraint;
 import org.openrdf.query.parser.sparql.ast.ASTConstruct;
 import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
@@ -1515,6 +1517,21 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new Compare(leftArg, rightArg, node.getOperator());
+	}
+	
+	@Override
+	public Concat visit(ASTConcat node, Object data)
+		throws VisitorException
+	{
+		Concat concat = new Concat();
+		int noOfArgs = node.jjtGetNumChildren();
+
+		for (int i = 0; i < noOfArgs; i++) {
+			ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, data);
+			concat.addArgument(arg);
+		}
+
+		return concat;
 	}
 
 	@Override

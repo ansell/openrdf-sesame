@@ -47,6 +47,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(CompareAny node)
 		throws X;
 
+	public void meet(Concat node)
+		throws X;
+
 	public void meet(Count node)
 		throws X;
 

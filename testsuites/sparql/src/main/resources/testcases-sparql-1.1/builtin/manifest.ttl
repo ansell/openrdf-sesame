@@ -25,7 +25,38 @@
     	:sparql11-not-in-01
     	:sparql11-not-in-02
     	:sparql11-not-in-03
+    	:sparql11-concat-01
+    	:sparql11-concat-02
+    	:sparql11-concat-03
+    	:sparql11-concat-04
+    	:sparql11-concat-05
     ).
+
+                           
+:sparql11-concat-01  mf:name  "sparql11-concat-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-concat-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-concat-01.srx> . 
+
+:sparql11-concat-02  mf:name  "sparql11-concat-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-concat-02.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-concat-02.srx> . 
+
+:sparql11-concat-03  mf:name  "sparql11-concat-03" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-concat-03.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-concat-03.srx> . 
+
+:sparql11-concat-04  mf:name  "sparql11-concat-04" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-concat-04.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-concat-04.srx> . 
+
+:sparql11-concat-05  mf:name  "sparql11-concat-05" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-concat-05.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-concat-05.srx> .                            
 
 :sparql11-isnumeric-01  mf:name  "sparql11-isnumeric-01" ;
          rdf:type   mf:QueryEvaluationTest ;
