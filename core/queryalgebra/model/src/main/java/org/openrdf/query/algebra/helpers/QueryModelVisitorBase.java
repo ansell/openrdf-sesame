@@ -17,6 +17,7 @@ import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
 import org.openrdf.query.algebra.CompareSubQueryValueOperator;
+import org.openrdf.query.algebra.Concat;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.Difference;
@@ -30,6 +31,7 @@ import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
+import org.openrdf.query.algebra.IRIFunction;
 import org.openrdf.query.algebra.If;
 import org.openrdf.query.algebra.In;
 import org.openrdf.query.algebra.Intersection;
@@ -73,7 +75,6 @@ import org.openrdf.query.algebra.StrDt;
 import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.SubQueryValueOperator;
 import org.openrdf.query.algebra.Sum;
-import org.openrdf.query.algebra.IRIFunction;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.Union;
@@ -143,6 +144,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetCompareSubQueryValueOperator(node);
+	}
+
+	public void meet(Concat node)
+		throws X
+	{
+		meetNAryValueOperator(node);
 	}
 
 	public void meet(Count node)

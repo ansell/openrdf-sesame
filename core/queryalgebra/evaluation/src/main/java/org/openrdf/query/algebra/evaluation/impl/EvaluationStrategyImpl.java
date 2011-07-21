@@ -50,6 +50,7 @@ import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
+import org.openrdf.query.algebra.Concat;
 import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
@@ -303,11 +304,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			variables.add(beginVar);
 			variables.add(endVar);
-			
+
 			int numberOfVars = variables.size();
-			
+
 			// all intermediate vars should be pairwise distinct,
-			// begin and end var should be pairwise distinct from all intermediates, but not each other.
+			// begin and end var should be pairwise distinct from all
+			// intermediates, but not each other.
 			for (int i = 0; i < numberOfVars; i++) {
 				Var var1 = variables.get(i);
 				for (int j = i + 1; j < numberOfVars; j++) {
@@ -318,7 +320,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 							continue;
 						}
 					}
-					
+
 					Compare compare = new Compare(var1, var2, CompareOp.NE);
 					if (pairwiseDistinct == null) {
 						pairwiseDistinct = compare;
@@ -331,8 +333,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					}
 				}
 			}
-			
-			
+
 			return pairwiseDistinct;
 		}
 
@@ -1040,6 +1041,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof CompareAll) {
 			return evaluate((CompareAll)expr, bindings);
+		}
+		else if (expr instanceof Concat) {
+			return evaluate((Concat)expr, bindings);
 		}
 		else if (expr instanceof Exists) {
 			return evaluate((Exists)expr, bindings);
@@ -1796,6 +1800,68 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 
 		return BooleanLiteralImpl.valueOf(result);
+	}
+
+	public Value evaluate(Concat node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		StringBuilder concatBuilder = new StringBuilder();
+		String languageTag = null;
+		
+		boolean useLanguageTag = true;
+		boolean useDatatype = true;
+		
+		for (ValueExpr expr : node.getArguments()) {
+			Value arg = evaluate(expr, bindings);
+			
+			if (arg instanceof Literal) {
+				Literal lit = (Literal)arg;
+
+				// verify that every literal argument has the same language tag. If not, the operator result should
+				// not use a language tag.
+				if (useLanguageTag && lit.getLanguage() != null) {
+					if (languageTag == null) {
+						languageTag = lit.getLanguage();
+					}
+					else if (!languageTag.equals(lit.getLanguage())){
+						languageTag = null;
+						useLanguageTag = false;
+					}
+				}
+				else {
+					useLanguageTag = false;
+				}
+				
+				// check datatype: concat only expects plain, language-tagged or string-typed literals. If all
+				// arguments are of type xsd:string, the result also should be, otherwise the result will not
+				// have a datatype.
+				if (lit.getDatatype() == null) {
+					useDatatype = false;
+				}
+				else if (!lit.getDatatype().equals(XMLSchema.STRING)) {
+					throw new ValueExprEvaluationException("unexpected data type for concat operand: " + arg);	
+				}
+				
+				concatBuilder.append(lit.getLabel());
+			}
+			else {
+				throw new ValueExprEvaluationException("unexpected argument type for concat operator: " + arg);
+			}
+		}
+
+		Literal result = null;
+		
+		if (useDatatype) {
+			result = new LiteralImpl(concatBuilder.toString(), XMLSchema.STRING);
+		}
+		else if (useLanguageTag) {
+			result = new LiteralImpl(concatBuilder.toString(), languageTag);
+		}
+		else {
+			result = new LiteralImpl(concatBuilder.toString());
+		}
+		
+		return result;
 	}
 
 	public Value evaluate(CompareAll node, BindingSet bindings)
