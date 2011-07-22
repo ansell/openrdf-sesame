@@ -5,7 +5,6 @@
  */
 package org.openrdf.rio.binary;
 
-import java.nio.charset.Charset;
 
 class BinaryRDFConstants {
 
@@ -48,6 +47,4 @@ class BinaryRDFConstants {
 	static final int DATATYPE_LITERAL_VALUE = 5;
 
 	static final int VALUE_REF = 6;
-
-	static final Charset CHARSET = Charset.forName("UTF-8");
 }

@@ -6,7 +6,6 @@
 package org.openrdf.rio.binary;
 
 import static org.openrdf.rio.binary.BinaryRDFConstants.BNODE_VALUE;
-import static org.openrdf.rio.binary.BinaryRDFConstants.CHARSET;
 import static org.openrdf.rio.binary.BinaryRDFConstants.COMMENT;
 import static org.openrdf.rio.binary.BinaryRDFConstants.DATATYPE_LITERAL_VALUE;
 import static org.openrdf.rio.binary.BinaryRDFConstants.END_OF_DATA;
@@ -23,9 +22,6 @@ import static org.openrdf.rio.binary.BinaryRDFConstants.VALUE_REF;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharsetEncoder;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,8 +42,6 @@ import org.openrdf.rio.RDFWriter;
  * @author Arjohn Kampman
  */
 public class BinaryRDFWriter implements RDFWriter {
-
-	private final CharsetEncoder charsetEncoder = CHARSET.newEncoder();
 
 	private final BlockingQueue<Statement> statementQueue;
 
@@ -319,8 +313,7 @@ public class BinaryRDFWriter implements RDFWriter {
 	private void writeString(String s)
 		throws IOException
 	{
-		ByteBuffer byteBuf = charsetEncoder.encode(CharBuffer.wrap(s));
-		out.writeInt(byteBuf.remaining());
-		out.write(byteBuf.array(), 0, byteBuf.remaining());
+		out.writeInt(s.length());
+		out.writeChars(s);
 	}
 }

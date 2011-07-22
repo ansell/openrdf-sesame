@@ -6,7 +6,6 @@
 package org.openrdf.rio.binary;
 
 import static org.openrdf.rio.binary.BinaryRDFConstants.BNODE_VALUE;
-import static org.openrdf.rio.binary.BinaryRDFConstants.CHARSET;
 import static org.openrdf.rio.binary.BinaryRDFConstants.COMMENT;
 import static org.openrdf.rio.binary.BinaryRDFConstants.DATATYPE_LITERAL_VALUE;
 import static org.openrdf.rio.binary.BinaryRDFConstants.END_OF_DATA;
@@ -22,13 +21,9 @@ import static org.openrdf.rio.binary.BinaryRDFConstants.VALUE_DECL;
 import static org.openrdf.rio.binary.BinaryRDFConstants.VALUE_REF;
 
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
 
 import info.aduna.io.IOUtil;
@@ -48,8 +43,6 @@ import org.openrdf.rio.helpers.RDFParserBase;
  * @author Arjohn Kampman
  */
 public class BinaryRDFParser extends RDFParserBase {
-
-	private final CharsetDecoder charsetDecoder = CHARSET.newDecoder();
 
 	private Value[] declaredValues = new Value[16];
 
@@ -261,16 +254,10 @@ public class BinaryRDFParser extends RDFParserBase {
 		throws IOException
 	{
 		int stringLength = in.readInt();
-		byte[] encodedString = IOUtil.readBytes(in, stringLength);
-
-		if (encodedString.length != stringLength) {
-			throw new EOFException("Attempted to read " + stringLength + " bytes but no more than "
-					+ encodedString.length + " were available");
+		char[] cArray = new char[stringLength];
+		for (int i = 0; i < stringLength; i++) {
+			cArray[i] = in.readChar();
 		}
-
-		ByteBuffer byteBuf = ByteBuffer.wrap(encodedString);
-		CharBuffer charBuf = charsetDecoder.decode(byteBuf);
-
-		return charBuf.toString();
+		return new String(cArray);
 	}
 }
