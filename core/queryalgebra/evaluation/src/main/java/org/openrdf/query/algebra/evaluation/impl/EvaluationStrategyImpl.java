@@ -34,8 +34,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -95,6 +93,7 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.StrDt;
 import org.openrdf.query.algebra.StrLang;
+import org.openrdf.query.algebra.StrLen;
 import org.openrdf.query.algebra.Substring;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
@@ -964,6 +963,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof Substring) {
 			return evaluate((Substring)expr, bindings);
 		}
+		else if (expr instanceof StrLen) {
+			return evaluate((StrLen)expr, bindings);
+		}
 		else if (expr instanceof Label) {
 			return evaluate((Label)expr, bindings);
 		}
@@ -1137,6 +1139,32 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
+	public Value evaluate(StrLen node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		Value argValue = evaluate(node.getArg(), bindings);
+
+		if (argValue instanceof Literal) {
+			Literal literal = (Literal)argValue;
+
+			// strlen function accepts only plain literals (optionally
+			// language-tagged) or string-typed literals.
+			if (literal.getLanguage() != null || QueryEvaluationUtil.isStringLiteral(literal)) {
+				
+				// TODO we jump through some hoops here to get an xsd:integer literal. Shouldn't
+				// createLiteral(int) return an xsd:integer rather than an xsd:int?
+				Integer length = literal.getLabel().length();
+				return tripleSource.getValueFactory().createLiteral(length.toString(), XMLSchema.INTEGER);
+			}
+			else {
+				throw new ValueExprEvaluationException("unexpected input value for strlen function: " + argValue);
+			}
+		}
+		else {
+			throw new ValueExprEvaluationException("unexpected input value for strlen function: " + argValue);
+		}
+	}
+
 	public Value evaluate(Substring node, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
@@ -1198,13 +1226,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					lexicalValue = lexicalValue.substring(startIndex, endIndex);
 
 					if (language != null) {
-						return new LiteralImpl(lexicalValue, language);
+						return tripleSource.getValueFactory().createLiteral(lexicalValue, language);
 					}
 					else if (XMLSchema.STRING.equals(literal.getDatatype())) {
-						return new LiteralImpl(lexicalValue, XMLSchema.STRING);
+						return tripleSource.getValueFactory().createLiteral(lexicalValue, XMLSchema.STRING);
 					}
 					else {
-						return new LiteralImpl(lexicalValue);
+						return tripleSource.getValueFactory().createLiteral(lexicalValue);
 					}
 				}
 				catch (IndexOutOfBoundsException e) {
@@ -1403,8 +1431,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (argValue instanceof Literal) {
 			Literal lit = (Literal)argValue;
-
-			return new URIImpl(lit.getLabel());
+			return tripleSource.getValueFactory().createURI(lit.getLabel());
 		}
 		else if (argValue instanceof URI) {
 			return ((URI)argValue);
@@ -1431,7 +1458,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (QueryEvaluationUtil.isSimpleLiteral(lexicalValue)) {
 			Literal lit = (Literal)lexicalValue;
 			if (datatypeValue instanceof URI) {
-				return new LiteralImpl(lit.getLabel(), (URI)datatypeValue);
+				return tripleSource.getValueFactory().createLiteral(lit.getLabel(), (URI)datatypeValue);
 			}
 			else {
 				throw new ValueExprEvaluationException("illegal value for operand: " + datatypeValue);
@@ -1462,7 +1489,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Literal lit = (Literal)lexicalValue;
 
 			if (languageValue instanceof Literal) {
-				return new LiteralImpl(lit.getLabel(), ((Literal)languageValue).getLabel());
+				return tripleSource.getValueFactory().createLiteral(lit.getLabel(),
+						((Literal)languageValue).getLabel());
 			}
 			else {
 				throw new ValueExprEvaluationException("illegal value for operand: " + languageValue);
@@ -1942,13 +1970,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Literal result = null;
 
 		if (useDatatype) {
-			result = new LiteralImpl(concatBuilder.toString(), XMLSchema.STRING);
+			result = tripleSource.getValueFactory().createLiteral(concatBuilder.toString(), XMLSchema.STRING);
 		}
 		else if (useLanguageTag) {
-			result = new LiteralImpl(concatBuilder.toString(), languageTag);
+			result = tripleSource.getValueFactory().createLiteral(concatBuilder.toString(), languageTag);
 		}
 		else {
-			result = new LiteralImpl(concatBuilder.toString());
+			result = tripleSource.getValueFactory().createLiteral(concatBuilder.toString());
 		}
 
 		return result;
