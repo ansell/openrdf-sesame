@@ -74,6 +74,7 @@ import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.StrDt;
 import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.SubQueryValueOperator;
+import org.openrdf.query.algebra.Substring;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.UnaryValueOperator;
@@ -446,6 +447,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetUnaryValueOperator(node);
 	}
 
+	public void meet(Substring node)
+		throws X
+	{
+		meetUnaryValueOperator(node);
+	}
+	
 	public void meet(StrDt node)
 		throws X
 	{

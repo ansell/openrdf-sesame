@@ -41,6 +41,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Compare node)
 		throws X;
 
+	public void meet(Substring node)
+		throws X;
+
 	public void meet(CompareAll node)
 		throws X;
 

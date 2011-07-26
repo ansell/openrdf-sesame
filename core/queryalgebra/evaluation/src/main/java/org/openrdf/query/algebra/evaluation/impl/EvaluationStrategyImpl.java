@@ -95,6 +95,7 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.StrDt;
 import org.openrdf.query.algebra.StrLang;
+import org.openrdf.query.algebra.Substring;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
@@ -961,6 +962,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof Str) {
 			return evaluate((Str)expr, bindings);
 		}
+		else if (expr instanceof Substring) {
+			return evaluate((Substring)expr, bindings);
+		}
 		else if (expr instanceof Label) {
 			return evaluate((Label)expr, bindings);
 		}
@@ -1131,6 +1135,90 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else {
 			throw new ValueExprEvaluationException();
+		}
+	}
+
+	public Value evaluate(Substring node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		Value argValue = evaluate(node.getArg(), bindings);
+
+		if (argValue instanceof Literal) {
+			Literal literal = (Literal)argValue;
+
+			String language = literal.getLanguage();
+
+			// substr function accepts only plain literals (optionally
+			// language-tagged) or string-typed literals.
+			if (language != null
+					|| (literal.getDatatype() == null || XMLSchema.STRING.equals(literal.getDatatype())))
+			{
+				String lexicalValue = literal.getLabel();
+
+				// determine start index from optional expression.
+				int startIndex = 0;
+				if (node.getStartIndex() != null) {
+					Value startIndexValue = evaluate(node.getStartIndex(), bindings);
+					if (startIndexValue instanceof Literal) {
+						try {
+							startIndex = ((Literal)startIndexValue).intValue();
+						}
+						catch (NumberFormatException e) {
+							throw new ValueExprEvaluationException(
+									"illegal start index value (expected int value): " + startIndexValue);
+						}
+					}
+					else {
+						throw new ValueExprEvaluationException(
+								"illegal start index value (expected literal value): " + startIndexValue);
+					}
+				}
+
+				// optionally convert supplied length expression to an end index for
+				// the substring.
+				int endIndex = lexicalValue.length();
+				if (node.getLength() != null) {
+					Value lengthValue = evaluate(node.getLength(), bindings);
+					if (lengthValue instanceof Literal) {
+						try {
+							int length = ((Literal)lengthValue).intValue();
+							endIndex = startIndex + length;
+						}
+						catch (NumberFormatException e) {
+							throw new ValueExprEvaluationException("illegal length value (expected int value): "
+									+ lengthValue);
+						}
+					}
+					else {
+						throw new ValueExprEvaluationException("illegal length value (expected literal value): "
+								+ lengthValue);
+					}
+				}
+
+				try {
+					lexicalValue = lexicalValue.substring(startIndex, endIndex);
+
+					if (language != null) {
+						return new LiteralImpl(lexicalValue, language);
+					}
+					else if (XMLSchema.STRING.equals(literal.getDatatype())) {
+						return new LiteralImpl(lexicalValue, XMLSchema.STRING);
+					}
+					else {
+						return new LiteralImpl(lexicalValue);
+					}
+				}
+				catch (IndexOutOfBoundsException e) {
+					throw new QueryEvaluationException("could not determine substring", e);
+				}
+			}
+			else {
+				throw new ValueExprEvaluationException("unexpected input value for function substring: "
+						+ argValue);
+			}
+		}
+		else {
+			throw new ValueExprEvaluationException("unexpected input value for function substring: " + argValue);
 		}
 	}
 
@@ -1807,23 +1895,24 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		StringBuilder concatBuilder = new StringBuilder();
 		String languageTag = null;
-		
+
 		boolean useLanguageTag = true;
 		boolean useDatatype = true;
-		
+
 		for (ValueExpr expr : node.getArguments()) {
 			Value arg = evaluate(expr, bindings);
-			
+
 			if (arg instanceof Literal) {
 				Literal lit = (Literal)arg;
 
-				// verify that every literal argument has the same language tag. If not, the operator result should
+				// verify that every literal argument has the same language tag. If
+				// not, the operator result should
 				// not use a language tag.
 				if (useLanguageTag && lit.getLanguage() != null) {
 					if (languageTag == null) {
 						languageTag = lit.getLanguage();
 					}
-					else if (!languageTag.equals(lit.getLanguage())){
+					else if (!languageTag.equals(lit.getLanguage())) {
 						languageTag = null;
 						useLanguageTag = false;
 					}
@@ -1831,17 +1920,19 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				else {
 					useLanguageTag = false;
 				}
-				
-				// check datatype: concat only expects plain, language-tagged or string-typed literals. If all
-				// arguments are of type xsd:string, the result also should be, otherwise the result will not
+
+				// check datatype: concat only expects plain, language-tagged or
+				// string-typed literals. If all
+				// arguments are of type xsd:string, the result also should be,
+				// otherwise the result will not
 				// have a datatype.
 				if (lit.getDatatype() == null) {
 					useDatatype = false;
 				}
 				else if (!lit.getDatatype().equals(XMLSchema.STRING)) {
-					throw new ValueExprEvaluationException("unexpected data type for concat operand: " + arg);	
+					throw new ValueExprEvaluationException("unexpected data type for concat operand: " + arg);
 				}
-				
+
 				concatBuilder.append(lit.getLabel());
 			}
 			else {
@@ -1850,7 +1941,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 
 		Literal result = null;
-		
+
 		if (useDatatype) {
 			result = new LiteralImpl(concatBuilder.toString(), XMLSchema.STRING);
 		}
@@ -1860,7 +1951,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else {
 			result = new LiteralImpl(concatBuilder.toString());
 		}
-		
+
 		return result;
 	}
 
