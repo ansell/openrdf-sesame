@@ -62,7 +62,15 @@ public class Substring extends UnaryValueOperator {
 
 	@Override
 	public Substring clone() {
-		return (Substring)super.clone();
+		Substring clone = (Substring)super.clone();
+		
+		if (getStartIndex() != null) {
+			clone.setStartIndex(getStartIndex().clone());
+		}
+		if (getLength() != null) {
+			clone.setLength(getLength().clone());
+		}
+		return clone;
 	}
 
 	/**

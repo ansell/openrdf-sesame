@@ -47,6 +47,7 @@ import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Like;
 import org.openrdf.query.algebra.LocalName;
+import org.openrdf.query.algebra.LowerCase;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
@@ -74,12 +75,14 @@ import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.StrDt;
 import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.StrLen;
+import org.openrdf.query.algebra.StrStarts;
 import org.openrdf.query.algebra.SubQueryValueOperator;
 import org.openrdf.query.algebra.Substring;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.Union;
+import org.openrdf.query.algebra.UpperCase;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
@@ -454,6 +457,18 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetUnaryValueOperator(node);
 	}
 
+	public void meet(LowerCase node)
+		throws X
+	{
+		meetUnaryValueOperator(node);
+	}
+
+	public void meet(UpperCase node)
+		throws X
+	{
+		meetUnaryValueOperator(node);
+	}
+
 	public void meet(StrDt node)
 		throws X
 	{
@@ -470,6 +485,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetUnaryValueOperator(node);
+	}
+
+	public void meet(StrStarts node)
+		throws X
+	{
+		meetBinaryValueOperator(node);
 	}
 
 	public void meet(Sample node)

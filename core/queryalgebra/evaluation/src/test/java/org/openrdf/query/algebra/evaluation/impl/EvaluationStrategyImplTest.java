@@ -5,9 +5,9 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import static org.junit.Assert.*;
-
-import java.math.BigInteger;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,10 +22,12 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.StrLen;
+import org.openrdf.query.algebra.StrStarts;
 import org.openrdf.query.algebra.Substring;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.evaluation.TripleSource;
@@ -64,6 +66,156 @@ public class EvaluationStrategyImplTest {
 	{
 	}
 
+	/**
+	 * Test method for
+	 * {@link org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl#evaluate(org.openrdf.query.algebra.StrStarts, org.openrdf.query.BindingSet)}
+	 * .
+	 */
+	@Test
+	public void testEvaluateStrStarts1() {
+		
+		ValueConstant leftExpr = new ValueConstant(valueFactory.createLiteral("foobar"));
+		ValueConstant rightExpr = new ValueConstant(valueFactory.createLiteral("foo"));
+
+		StrStarts strLen = new StrStarts(leftExpr, rightExpr);
+		
+		try {
+			Value result = evaluationStrategy.evaluate(strLen, new EmptyBindingSet());
+			assertTrue(result instanceof Literal);
+
+			Literal lit = (Literal)result;
+			assertEquals(BooleanLiteralImpl.TRUE, lit);
+		}
+		catch (QueryEvaluationException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Test method for
+	 * {@link org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl#evaluate(org.openrdf.query.algebra.StrStarts, org.openrdf.query.BindingSet)}
+	 * .
+	 */
+	@Test
+	public void testEvaluateStrStarts2() {
+		
+		ValueConstant leftExpr = new ValueConstant(valueFactory.createLiteral("foobar"));
+		ValueConstant rightExpr = new ValueConstant(valueFactory.createLiteral("foo", "en"));
+
+		StrStarts strLen = new StrStarts(leftExpr, rightExpr);
+		
+		try {
+			evaluationStrategy.evaluate(strLen, new EmptyBindingSet());
+			fail("evaluation completed succesfully, type error expected");
+		}
+		catch (ValueExprEvaluationException e) {
+			// do nothing, type error is expected.
+		}
+		catch (QueryEvaluationException e) {
+			fail("unexpected exception type : " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Test method for
+	 * {@link org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl#evaluate(org.openrdf.query.algebra.StrStarts, org.openrdf.query.BindingSet)}
+	 * .
+	 */
+	@Test
+	public void testEvaluateStrStarts3() {
+		
+		ValueConstant leftExpr = new ValueConstant(valueFactory.createLiteral("foobar", "nl"));
+		ValueConstant rightExpr = new ValueConstant(valueFactory.createLiteral("foo", "en"));
+
+		StrStarts strLen = new StrStarts(leftExpr, rightExpr);
+		
+		try {
+			evaluationStrategy.evaluate(strLen, new EmptyBindingSet());
+			fail("evaluation completed succesfully, type error expected");
+		}
+		catch (ValueExprEvaluationException e) {
+			// do nothing, type error is expected.
+		}
+		catch (QueryEvaluationException e) {
+			fail("unexpected exception type : " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Test method for
+	 * {@link org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl#evaluate(org.openrdf.query.algebra.StrStarts, org.openrdf.query.BindingSet)}
+	 * .
+	 */
+	@Test
+	public void testEvaluateStrStarts4() {
+		
+		ValueConstant leftExpr = new ValueConstant(valueFactory.createLiteral("foobar"));
+		ValueConstant rightExpr = new ValueConstant(valueFactory.createLiteral("foo", XMLSchema.STRING));
+
+		StrStarts strLen = new StrStarts(leftExpr, rightExpr);
+		
+		try {
+			Value result = evaluationStrategy.evaluate(strLen, new EmptyBindingSet());
+			assertTrue(result instanceof Literal);
+
+			Literal lit = (Literal)result;
+			assertEquals(BooleanLiteralImpl.TRUE, lit);
+		}
+		catch (QueryEvaluationException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Test method for
+	 * {@link org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl#evaluate(org.openrdf.query.algebra.StrStarts, org.openrdf.query.BindingSet)}
+	 * .
+	 */
+	@Test
+	public void testEvaluateStrStarts5() {
+		
+		ValueConstant leftExpr = new ValueConstant(valueFactory.createLiteral("foobar", "en"));
+		ValueConstant rightExpr = new ValueConstant(valueFactory.createLiteral("foo"));
+
+		StrStarts strLen = new StrStarts(leftExpr, rightExpr);
+		
+		try {
+			Value result = evaluationStrategy.evaluate(strLen, new EmptyBindingSet());
+			assertTrue(result instanceof Literal);
+
+			Literal lit = (Literal)result;
+			assertEquals(BooleanLiteralImpl.TRUE, lit);
+		}
+		catch (QueryEvaluationException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Test method for
+	 * {@link org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl#evaluate(org.openrdf.query.algebra.StrStarts, org.openrdf.query.BindingSet)}
+	 * .
+	 */
+	@Test
+	public void testEvaluateStrStarts6() {
+		
+		ValueConstant leftExpr = new ValueConstant(valueFactory.createLiteral("foobar", "en"));
+		ValueConstant rightExpr = new ValueConstant(valueFactory.createLiteral("foo", XMLSchema.STRING));
+
+		StrStarts strLen = new StrStarts(leftExpr, rightExpr);
+		
+		try {
+			Value result = evaluationStrategy.evaluate(strLen, new EmptyBindingSet());
+			assertTrue(result instanceof Literal);
+
+			Literal lit = (Literal)result;
+			assertEquals(BooleanLiteralImpl.TRUE, lit);
+		}
+		catch (QueryEvaluationException e) {
+			fail(e.getMessage());
+		}
+	}
+	
 	/**
 	 * Test method for
 	 * {@link org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl#evaluate(org.openrdf.query.algebra.StrLen, org.openrdf.query.BindingSet)}
