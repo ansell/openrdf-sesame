@@ -7,6 +7,8 @@ package org.openrdf.query.algebra.evaluation.impl;
 
 import static org.junit.Assert.*;
 
+import java.math.BigInteger;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +23,9 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.StrLen;
 import org.openrdf.query.algebra.Substring;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.evaluation.TripleSource;
@@ -29,8 +33,8 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
- * Unit tests on {@link EvaluationStrategyImpl} methods, specifically on input validation behavior for various
- * functions and operators in the query algebra.
+ * Unit tests on {@link EvaluationStrategyImpl} methods, specifically on input
+ * validation behavior for various functions and operators in the query algebra.
  * 
  * @author Jeen Broekstra
  */
@@ -58,6 +62,60 @@ public class EvaluationStrategyImplTest {
 	public void tearDown()
 		throws Exception
 	{
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl#evaluate(org.openrdf.query.algebra.StrLen, org.openrdf.query.BindingSet)}
+	 * .
+	 */
+	@Test
+	public void testEvaluateStrLen1() {
+		
+		String testString = "test string";
+		ValueConstant stringExpr = new ValueConstant(valueFactory.createLiteral(testString));
+		
+		StrLen strLen = new StrLen(stringExpr);
+		
+		try {
+			Value result = evaluationStrategy.evaluate(strLen, new EmptyBindingSet());
+			assertTrue(result instanceof Literal);
+
+			Literal lit = (Literal)result;
+			assertTrue(lit.getLanguage() == null);
+			assertTrue(XMLSchema.INTEGER.equals(lit.getDatatype()));
+
+			int intVal = lit.intValue();
+			assertEquals(testString.length(), intVal);
+		}
+		catch (QueryEvaluationException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Test method for
+	 * {@link org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl#evaluate(org.openrdf.query.algebra.StrLen, org.openrdf.query.BindingSet)}
+	 * .
+	 */
+	@Test
+	public void testEvaluateStrLen2() {
+		
+		ValueConstant invalidStringExpr = new ValueConstant(valueFactory.createLiteral(10));
+		
+		StrLen strLen = new StrLen(invalidStringExpr);
+		
+		try {
+			evaluationStrategy.evaluate(strLen, new EmptyBindingSet());
+			fail("evaluation completed succesfully, type error expected");
+		}
+		catch (ValueExprEvaluationException e) {
+			// do nothing, type error is expected: an integer is not valid input for
+			// strlen.
+		}
+		catch (QueryEvaluationException e) {
+			fail("unexpected exception type : " + e.getMessage());
+		}
 	}
 
 	/**
@@ -102,7 +160,8 @@ public class EvaluationStrategyImplTest {
 			fail("evaluation completed succesfully, type error expected");
 		}
 		catch (ValueExprEvaluationException e) {
-			// do nothing, type error is expected: a uri is not valid input for substring.
+			// do nothing, type error is expected: a uri is not valid input for
+			// substring.
 		}
 		catch (QueryEvaluationException e) {
 			fail("unexpected exception type : " + e.getMessage());
@@ -133,7 +192,7 @@ public class EvaluationStrategyImplTest {
 			// QueryEvaluationException
 		}
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl#evaluate(org.openrdf.query.algebra.Substring, org.openrdf.query.BindingSet)}

@@ -33,6 +33,8 @@
     	:sparql11-substr-01
     	:sparql11-substr-02
     	:sparql11-substr-03
+    	:sparql11-strlen-01
+    	:sparql11-strlen-02
     ).
 
                            
@@ -51,6 +53,17 @@
          mf:action [ qt:query <sparql11-concat-03.rq> ; qt:data <data-02.ttl> ] ;
          mf:result <sparql11-concat-03.srx> . 
 
+
+:sparql11-strlen-01  mf:name  "sparql11-strlen-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-strlen-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-strlen-01.srx> . 
+         
+:sparql11-strlen-02  mf:name  "sparql11-strlen-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-strlen-02.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-strlen-02.srx> . 
+         
 :sparql11-substr-01  mf:name  "sparql11-substr-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-substr-01.rq> ; qt:data <data-02.ttl> ] ;

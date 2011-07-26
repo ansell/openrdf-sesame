@@ -75,6 +75,7 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.StrDt;
 import org.openrdf.query.algebra.StrLang;
+import org.openrdf.query.algebra.StrLen;
 import org.openrdf.query.algebra.Substring;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
@@ -156,6 +157,7 @@ import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
 import org.openrdf.query.parser.sparql.ast.ASTStr;
 import org.openrdf.query.parser.sparql.ast.ASTStrDt;
 import org.openrdf.query.parser.sparql.ast.ASTStrLang;
+import org.openrdf.query.parser.sparql.ast.ASTStrLen;
 import org.openrdf.query.parser.sparql.ast.ASTString;
 import org.openrdf.query.parser.sparql.ast.ASTSubstr;
 import org.openrdf.query.parser.sparql.ast.ASTSum;
@@ -1534,7 +1536,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 				substring.setLength(length);
 			}
 		}
-		
+
 		return substring;
 	}
 
@@ -1604,6 +1606,16 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		ValueExpr datatypeExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new StrDt(literalExpr, datatypeExpr);
+	}
+
+	@Override
+	public StrLen visit(ASTStrLen node, Object data)
+		throws VisitorException
+	{
+		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		StrLen strLen = new StrLen(literalExpr);
+		
+		return strLen;
 	}
 
 	@Override
