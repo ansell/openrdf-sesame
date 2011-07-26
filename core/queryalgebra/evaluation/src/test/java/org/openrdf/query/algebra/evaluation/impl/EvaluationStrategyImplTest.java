@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.EmptyIteration;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -28,7 +29,8 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
- * Unit tests on {@link EvaluationStrategyImpl} methods.
+ * Unit tests on {@link EvaluationStrategyImpl} methods, specifically on input validation behavior for various
+ * functions and operators in the query algebra.
  * 
  * @author Jeen Broekstra
  */
@@ -97,9 +99,10 @@ public class EvaluationStrategyImplTest {
 		Substring substring = new Substring(invalidStringExpr, startIndexExpr);
 		try {
 			evaluationStrategy.evaluate(substring, new EmptyBindingSet());
+			fail("evaluation completed succesfully, type error expected");
 		}
 		catch (ValueExprEvaluationException e) {
-			// do nothing, expected: a uri is not valid input for substring.
+			// do nothing, type error is expected: a uri is not valid input for substring.
 		}
 		catch (QueryEvaluationException e) {
 			fail("unexpected exception type : " + e.getMessage());
@@ -115,10 +118,37 @@ public class EvaluationStrategyImplTest {
 	public void testEvaluateSubstring3() {
 		ValueConstant stringExpr = new ValueConstant(valueFactory.createLiteral("test string"));
 		ValueConstant invalidStartIndexExpr = new ValueConstant(valueFactory.createLiteral(11));
+		ValueConstant endIndexExpr = new ValueConstant(valueFactory.createLiteral(6));
 
-		Substring substring = new Substring(stringExpr, invalidStartIndexExpr);
+		Substring substring = new Substring(stringExpr, invalidStartIndexExpr, endIndexExpr);
 		try {
 			evaluationStrategy.evaluate(substring, new EmptyBindingSet());
+			fail("evaluation completed succesfully, QueryEvaluationException expected");
+		}
+		catch (ValueExprEvaluationException e) {
+			fail("unexpected exception type : " + e.getMessage());
+		}
+		catch (QueryEvaluationException e) {
+			// do nothing, expected: index out of bounds should result in
+			// QueryEvaluationException
+		}
+	}
+	
+	/**
+	 * Test method for
+	 * {@link org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl#evaluate(org.openrdf.query.algebra.Substring, org.openrdf.query.BindingSet)}
+	 * .
+	 */
+	@Test
+	public void testEvaluateSubstring4() {
+		ValueConstant stringExpr = new ValueConstant(valueFactory.createLiteral("test string"));
+		ValueConstant startIndexExpr = new ValueConstant(valueFactory.createLiteral(2));
+		ValueConstant invalidEndIndexExpr = new ValueConstant(valueFactory.createLiteral(100));
+
+		Substring substring = new Substring(stringExpr, startIndexExpr, invalidEndIndexExpr);
+		try {
+			evaluationStrategy.evaluate(substring, new EmptyBindingSet());
+			fail("evaluation completed succesfully, QueryEvaluationException expected");
 		}
 		catch (ValueExprEvaluationException e) {
 			fail("unexpected exception type : " + e.getMessage());
@@ -141,13 +171,11 @@ public class EvaluationStrategyImplTest {
 				URI pred, Value obj, Resource... contexts)
 			throws QueryEvaluationException
 		{
-			// TODO Auto-generated method stub
-			return null;
+			return new EmptyIteration<Statement, QueryEvaluationException>();
 		}
 
 		public ValueFactory getValueFactory() {
-			// TODO Auto-generated method stub
-			return null;
+			return new ValueFactoryImpl();
 		}
 
 	}
