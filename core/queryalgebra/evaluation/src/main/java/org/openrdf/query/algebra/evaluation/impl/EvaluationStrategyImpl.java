@@ -93,6 +93,7 @@ import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.StrDt;
+import org.openrdf.query.algebra.StrEnds;
 import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.StrLen;
 import org.openrdf.query.algebra.StrStarts;
@@ -1068,6 +1069,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof StrStarts) {
 			return evaluate((StrStarts)expr, bindings);
 		}
+		else if (expr instanceof StrEnds) {
+			return evaluate((StrEnds)expr, bindings);
+		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
 		}
@@ -1885,13 +1889,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (leftVal instanceof Literal && rightVal instanceof Literal) {
 			Literal leftLit = (Literal)leftVal;
 			Literal rightLit = (Literal)rightVal;
-			
+
 			if (leftLit.getLanguage() != null) {
 				if (rightLit.getLanguage() == null || rightLit.getLanguage().equals(leftLit.getLanguage())) {
-					
+
 					String leftLexVal = leftLit.getLabel();
 					String rightLexVal = rightLit.getLabel();
-					
+
 					return BooleanLiteralImpl.valueOf(leftLexVal.startsWith(rightLexVal));
 				}
 				else {
@@ -1902,7 +1906,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				if (QueryEvaluationUtil.isStringLiteral(rightLit)) {
 					String leftLexVal = leftLit.getLabel();
 					String rightLexVal = rightLit.getLabel();
-					
+
 					return BooleanLiteralImpl.valueOf(leftLexVal.startsWith(rightLexVal));
 				}
 				else {
@@ -1915,6 +1919,48 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else {
 			throw new ValueExprEvaluationException("STRSTARTS function expects literal operands");
+		}
+	}
+
+	public Value evaluate(StrEnds node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		Value leftVal = evaluate(node.getLeftArg(), bindings);
+		Value rightVal = evaluate(node.getRightArg(), bindings);
+
+		if (leftVal instanceof Literal && rightVal instanceof Literal) {
+			Literal leftLit = (Literal)leftVal;
+			Literal rightLit = (Literal)rightVal;
+
+			if (leftLit.getLanguage() != null) {
+				if (rightLit.getLanguage() == null || rightLit.getLanguage().equals(leftLit.getLanguage())) {
+
+					String leftLexVal = leftLit.getLabel();
+					String rightLexVal = rightLit.getLabel();
+
+					return BooleanLiteralImpl.valueOf(leftLexVal.endsWith(rightLexVal));
+				}
+				else {
+					throw new ValueExprEvaluationException("incompatible operands for STRENDS function");
+				}
+			}
+			else if (QueryEvaluationUtil.isStringLiteral(leftLit)) {
+				if (QueryEvaluationUtil.isStringLiteral(rightLit)) {
+					String leftLexVal = leftLit.getLabel();
+					String rightLexVal = rightLit.getLabel();
+
+					return BooleanLiteralImpl.valueOf(leftLexVal.endsWith(rightLexVal));
+				}
+				else {
+					throw new ValueExprEvaluationException("incompatible operands for STRENDS function");
+				}
+			}
+			else {
+				throw new ValueExprEvaluationException("incompatible operands for STRENDS function");
+			}
+		}
+		else {
+			throw new ValueExprEvaluationException("STRENDS function expects literal operands");
 		}
 	}
 

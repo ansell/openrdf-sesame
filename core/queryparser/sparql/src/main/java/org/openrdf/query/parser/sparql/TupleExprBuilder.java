@@ -74,6 +74,7 @@ import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.StrDt;
+import org.openrdf.query.algebra.StrEnds;
 import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.StrLen;
 import org.openrdf.query.algebra.StrStarts;
@@ -159,6 +160,7 @@ import org.openrdf.query.parser.sparql.ast.ASTSelect;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
 import org.openrdf.query.parser.sparql.ast.ASTStr;
 import org.openrdf.query.parser.sparql.ast.ASTStrDt;
+import org.openrdf.query.parser.sparql.ast.ASTStrEnds;
 import org.openrdf.query.parser.sparql.ast.ASTStrLang;
 import org.openrdf.query.parser.sparql.ast.ASTStrLen;
 import org.openrdf.query.parser.sparql.ast.ASTStrStarts;
@@ -1612,7 +1614,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr datatypeExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new StrDt(literalExpr, datatypeExpr);
 	}
-	
+
 	@Override
 	public StrStarts visit(ASTStrStarts node, Object data)
 		throws VisitorException
@@ -1623,35 +1625,43 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public StrEnds visit(ASTStrEnds node, Object data)
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
+		return new StrEnds(leftArg, rightArg);
+	}
+
+	@Override
 	public StrLen visit(ASTStrLen node, Object data)
 		throws VisitorException
 	{
 		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		StrLen strLen = new StrLen(literalExpr);
-		
+
 		return strLen;
 	}
-	
+
 	@Override
 	public UpperCase visit(ASTUpperCase node, Object data)
 		throws VisitorException
 	{
 		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		UpperCase upperCase = new UpperCase(literalExpr);
-		
+
 		return upperCase;
 	}
-	
+
 	@Override
 	public LowerCase visit(ASTLowerCase node, Object data)
 		throws VisitorException
 	{
 		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		LowerCase lowerCase = new LowerCase(literalExpr);
-		
+
 		return lowerCase;
 	}
-
 
 	@Override
 	public StrLang visit(ASTStrLang node, Object data)
