@@ -38,13 +38,19 @@
     	:sparql11-ucase-01
     	:sparql11-lcase-01
     	:sparql11-strstarts-01
+    	:sparql11-strends-01
     ).
     
 :sparql11-strstarts-01  mf:name  "sparql11-strstarts-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-strstarts-01.rq> ; qt:data <data-02.ttl> ] ;
-         mf:result <sparql11-strstarts-01.srx> . 
-                           
+         mf:result <sparql11-strstarts-01.srx> .
+          
+:sparql11-strends-01  mf:name  "sparql11-strends-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-strends-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-strends-01.srx> . 
+                                    
 :sparql11-concat-01  mf:name  "sparql11-concat-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-concat-01.rq> ; qt:data <data-02.ttl> ] ;

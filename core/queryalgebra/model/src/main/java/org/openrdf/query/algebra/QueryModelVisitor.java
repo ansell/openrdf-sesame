@@ -205,9 +205,12 @@ public interface QueryModelVisitor<X extends Exception> {
 
 	public void meet(StrLen node)
 		throws X;
-	
+
 	public void meet(StrStarts node)
-	throws X;
+		throws X;
+
+	public void meet(StrEnds node)
+		throws X;
 
 	public void meet(Sample node)
 		throws X;
