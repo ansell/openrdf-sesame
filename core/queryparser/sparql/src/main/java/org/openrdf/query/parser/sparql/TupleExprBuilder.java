@@ -52,6 +52,7 @@ import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.Like;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
@@ -74,6 +75,7 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.StrDt;
 import org.openrdf.query.algebra.StrLang;
+import org.openrdf.query.algebra.Substring;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
@@ -155,6 +157,7 @@ import org.openrdf.query.parser.sparql.ast.ASTStr;
 import org.openrdf.query.parser.sparql.ast.ASTStrDt;
 import org.openrdf.query.parser.sparql.ast.ASTStrLang;
 import org.openrdf.query.parser.sparql.ast.ASTString;
+import org.openrdf.query.parser.sparql.ast.ASTSubstr;
 import org.openrdf.query.parser.sparql.ast.ASTSum;
 import org.openrdf.query.parser.sparql.ast.ASTTrue;
 import org.openrdf.query.parser.sparql.ast.ASTUnionGraphPattern;
@@ -352,7 +355,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 				valueExpr.visit(collector);
 
 				if (collector.getOperators().size() > 0) {
-					for (AggregateOperator operator: collector.getOperators()) {
+					for (AggregateOperator operator : collector.getOperators()) {
 						// Apply implicit grouping if necessary
 						GroupFinder groupFinder = new GroupFinder();
 						result.visit(groupFinder);
@@ -364,20 +367,19 @@ class TupleExprBuilder extends ASTVisitorBase {
 							existingGroup = false;
 						}
 
-
 						if (operator.equals(valueExpr)) {
 							group.addGroupElement(new GroupElem(alias, operator));
 							extension.setArg(group);
 						}
 						else {
-							
+
 							ValueExpr expr = (ValueExpr)operator.getParentNode();
-							
+
 							Extension anonymousExtension = new Extension();
 							Var anonVar = createConstVar(null);
 							expr.replaceChildNode(operator, anonVar);
 							anonymousExtension.addElement(new ExtensionElem(operator, anonVar.getName()));
-							
+
 							anonymousExtension.setArg(result);
 							result = anonymousExtension;
 							group.addGroupElement(new GroupElem(anonVar.getName(), operator));
@@ -1518,7 +1520,24 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new Compare(leftArg, rightArg, node.getOperator());
 	}
-	
+
+	public Substring visit(ASTSubstr node, Object data)
+		throws VisitorException
+	{
+		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		Substring substring = new Substring(arg);
+		if (node.jjtGetNumChildren() > 1) {
+			ValueExpr startIndex = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
+			substring.setStartIndex(startIndex);
+			if (node.jjtGetNumChildren() > 2) {
+				ValueExpr length = (ValueExpr)node.jjtGetChild(2).jjtAccept(this, null);
+				substring.setLength(length);
+			}
+		}
+		
+		return substring;
+	}
+
 	@Override
 	public Concat visit(ASTConcat node, Object data)
 		throws VisitorException
