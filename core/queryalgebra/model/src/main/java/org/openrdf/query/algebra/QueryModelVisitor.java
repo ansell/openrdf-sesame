@@ -131,6 +131,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(LocalName node)
 		throws X;
 
+	public void meet(LowerCase node)
+		throws X;
+
 	public void meet(MathExpr node)
 		throws X;
 
@@ -202,6 +205,9 @@ public interface QueryModelVisitor<X extends Exception> {
 
 	public void meet(StrLen node)
 		throws X;
+	
+	public void meet(StrStarts node)
+	throws X;
 
 	public void meet(Sample node)
 		throws X;
@@ -210,6 +216,9 @@ public interface QueryModelVisitor<X extends Exception> {
 		throws X;
 
 	public void meet(Union node)
+		throws X;
+
+	public void meet(UpperCase node)
 		throws X;
 
 	public void meet(IRIFunction node)

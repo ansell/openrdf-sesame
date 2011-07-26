@@ -52,7 +52,7 @@ import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.Like;
+import org.openrdf.query.algebra.LowerCase;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
@@ -76,10 +76,12 @@ import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.StrDt;
 import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.StrLen;
+import org.openrdf.query.algebra.StrStarts;
 import org.openrdf.query.algebra.Substring;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
+import org.openrdf.query.algebra.UpperCase;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -125,6 +127,7 @@ import org.openrdf.query.parser.sparql.ast.ASTIsNumeric;
 import org.openrdf.query.parser.sparql.ast.ASTLang;
 import org.openrdf.query.parser.sparql.ast.ASTLangMatches;
 import org.openrdf.query.parser.sparql.ast.ASTLimit;
+import org.openrdf.query.parser.sparql.ast.ASTLowerCase;
 import org.openrdf.query.parser.sparql.ast.ASTMath;
 import org.openrdf.query.parser.sparql.ast.ASTMax;
 import org.openrdf.query.parser.sparql.ast.ASTMin;
@@ -158,11 +161,13 @@ import org.openrdf.query.parser.sparql.ast.ASTStr;
 import org.openrdf.query.parser.sparql.ast.ASTStrDt;
 import org.openrdf.query.parser.sparql.ast.ASTStrLang;
 import org.openrdf.query.parser.sparql.ast.ASTStrLen;
+import org.openrdf.query.parser.sparql.ast.ASTStrStarts;
 import org.openrdf.query.parser.sparql.ast.ASTString;
 import org.openrdf.query.parser.sparql.ast.ASTSubstr;
 import org.openrdf.query.parser.sparql.ast.ASTSum;
 import org.openrdf.query.parser.sparql.ast.ASTTrue;
 import org.openrdf.query.parser.sparql.ast.ASTUnionGraphPattern;
+import org.openrdf.query.parser.sparql.ast.ASTUpperCase;
 import org.openrdf.query.parser.sparql.ast.ASTVar;
 import org.openrdf.query.parser.sparql.ast.Node;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
@@ -1607,6 +1612,15 @@ class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr datatypeExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new StrDt(literalExpr, datatypeExpr);
 	}
+	
+	@Override
+	public StrStarts visit(ASTStrStarts node, Object data)
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
+		return new StrStarts(leftArg, rightArg);
+	}
 
 	@Override
 	public StrLen visit(ASTStrLen node, Object data)
@@ -1617,6 +1631,27 @@ class TupleExprBuilder extends ASTVisitorBase {
 		
 		return strLen;
 	}
+	
+	@Override
+	public UpperCase visit(ASTUpperCase node, Object data)
+		throws VisitorException
+	{
+		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		UpperCase upperCase = new UpperCase(literalExpr);
+		
+		return upperCase;
+	}
+	
+	@Override
+	public LowerCase visit(ASTLowerCase node, Object data)
+		throws VisitorException
+	{
+		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		LowerCase lowerCase = new LowerCase(literalExpr);
+		
+		return lowerCase;
+	}
+
 
 	@Override
 	public StrLang visit(ASTStrLang node, Object data)
