@@ -3,11 +3,12 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.function.builtin;
+package org.openrdf.query.algebra.evaluation.function.string;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
@@ -22,7 +23,7 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 public class UpperCase implements Function {
 
 	public String getURI() {
-		return "UCASE";
+		return FN.UPPER_CASE.toString();
 	}
 
 	public Literal evaluate(ValueFactory valueFactory, Value... args)

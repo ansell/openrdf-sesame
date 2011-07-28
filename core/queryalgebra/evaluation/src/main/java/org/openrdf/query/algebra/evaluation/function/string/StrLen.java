@@ -3,11 +3,12 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.function.builtin;
+package org.openrdf.query.algebra.evaluation.function.string;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
@@ -23,7 +24,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 public class StrLen implements Function {
 
 	public String getURI() {
-		return "STRLEN";
+		return FN.STRING_LENGTH.toString();
 	}
 
 	public Literal evaluate(ValueFactory valueFactory, Value... args)

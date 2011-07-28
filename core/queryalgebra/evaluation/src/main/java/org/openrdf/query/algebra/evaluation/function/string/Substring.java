@@ -3,11 +3,12 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.function.builtin;
+package org.openrdf.query.algebra.evaluation.function.string;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
@@ -15,21 +16,21 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 /**
  * The SPARQL built-in {@link Function} SUBSTR, as defined in <a
  * href="http://www.w3.org/TR/sparql11-query/#func-substr">SPARQL Query Language
- * for RDF</a>
+ * for RDF</a>.
  * 
  * @author Jeen Broekstra
  */
 public class Substring implements Function {
 
 	public String getURI() {
-		return "SUBSTR";
+		return FN.SUBSTRING.toString();
 	}
 
 	public Literal evaluate(ValueFactory valueFactory, Value... args)
 		throws ValueExprEvaluationException
 	{
 		if (args.length != 1) {
-			throw new ValueExprEvaluationException("STRLEN requires 1 argument, got " + args.length);
+			throw new ValueExprEvaluationException("SUBSTR requires 1 argument, got " + args.length);
 		}
 
 		Value argValue = args[0];

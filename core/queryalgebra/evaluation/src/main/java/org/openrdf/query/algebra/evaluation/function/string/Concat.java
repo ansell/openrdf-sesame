@@ -3,11 +3,12 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.function.builtin;
+package org.openrdf.query.algebra.evaluation.function.string;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
@@ -22,15 +23,14 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 public class Concat implements Function {
 
 	public String getURI() {
-		return "CONCAT";
+		return FN.CONCAT.toString();
 	}
 
 	public Literal evaluate(ValueFactory valueFactory, Value... args)
 		throws ValueExprEvaluationException
 	{
 		if (args.length == 0) {
-			throw new ValueExprEvaluationException("CONCAT requires at least 1 argument, got "
-					+ args.length);
+			throw new ValueExprEvaluationException("CONCAT requires at least 1 argument, got " + args.length);
 		}
 
 		StringBuilder concatBuilder = new StringBuilder();
@@ -59,7 +59,8 @@ public class Concat implements Function {
 				}
 
 				// check datatype: concat only expects plain, language-tagged or
-				// string-typed literals. If all arguments are of type xsd:string, the result also should be,
+				// string-typed literals. If all arguments are of type xsd:string,
+				// the result also should be,
 				// otherwise the result will not have a datatype.
 				if (lit.getDatatype() == null) {
 					useDatatype = false;

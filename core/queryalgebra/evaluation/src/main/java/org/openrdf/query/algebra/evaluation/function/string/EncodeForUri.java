@@ -3,13 +3,14 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.function.builtin;
+package org.openrdf.query.algebra.evaluation.function.string;
 
 import info.aduna.net.UriUtil;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.FN;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
@@ -24,7 +25,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 public class EncodeForUri implements Function {
 
 	public String getURI() {
-		return "ENCODE_FOR_URI";
+		return FN.ENCODE_FOR_URI.toString();
 	}
 
 	public Literal evaluate(ValueFactory valueFactory, Value... args)
