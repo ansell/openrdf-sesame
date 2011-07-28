@@ -28,7 +28,6 @@ import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
-import org.openrdf.query.algebra.Concat;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.Difference;
@@ -73,9 +72,7 @@ import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
-import org.openrdf.query.algebra.StrDt;
 import org.openrdf.query.algebra.StrEnds;
-import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.StrLen;
 import org.openrdf.query.algebra.StrStarts;
 import org.openrdf.query.algebra.Substring;
@@ -108,6 +105,7 @@ import org.openrdf.query.parser.sparql.ast.ASTCount;
 import org.openrdf.query.parser.sparql.ast.ASTDatatype;
 import org.openrdf.query.parser.sparql.ast.ASTDescribe;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
+import org.openrdf.query.parser.sparql.ast.ASTEncodeForURI;
 import org.openrdf.query.parser.sparql.ast.ASTExistsFunc;
 import org.openrdf.query.parser.sparql.ast.ASTFalse;
 import org.openrdf.query.parser.sparql.ast.ASTFunctionCall;
@@ -172,6 +170,7 @@ import org.openrdf.query.parser.sparql.ast.ASTUnionGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTUpperCase;
 import org.openrdf.query.parser.sparql.ast.ASTVar;
 import org.openrdf.query.parser.sparql.ast.Node;
+import org.openrdf.query.parser.sparql.ast.SimpleNode;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 /**
@@ -226,6 +225,19 @@ class TupleExprBuilder extends ASTVisitorBase {
 		Var var = new Var(varName);
 		var.setAnonymous(true);
 		return var;
+	}
+
+	private FunctionCall createFunctionCall(String uri, SimpleNode node)
+		throws VisitorException
+	{
+		FunctionCall functionCall = new FunctionCall(uri);
+
+		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+			Node argNode = node.jjtGetChild(i);
+			functionCall.addArg((ValueExpr)argNode.jjtAccept(this, null));
+		}
+
+		return functionCall;
 	}
 
 	@Override
@@ -1548,18 +1560,10 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Concat visit(ASTConcat node, Object data)
+	public FunctionCall visit(ASTConcat node, Object data)
 		throws VisitorException
 	{
-		Concat concat = new Concat();
-		int noOfArgs = node.jjtGetNumChildren();
-
-		for (int i = 0; i < noOfArgs; i++) {
-			ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, data);
-			concat.addArgument(arg);
-		}
-
-		return concat;
+		return createFunctionCall("CONCAT", node);
 	}
 
 	@Override
@@ -1598,6 +1602,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public FunctionCall visit(ASTEncodeForURI node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("ENCODE_FOR_URI", node);
+	}
+
+	@Override
 	public Object visit(ASTStr node, Object data)
 		throws VisitorException
 	{
@@ -1606,13 +1617,10 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public StrDt visit(ASTStrDt node, Object data)
+	public FunctionCall visit(ASTStrDt node, Object data)
 		throws VisitorException
 	{
-		// TODO stricter checking on argument value types?
-		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		ValueExpr datatypeExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
-		return new StrDt(literalExpr, datatypeExpr);
+		return createFunctionCall("STRDT", node);
 	}
 
 	@Override
@@ -1664,13 +1672,10 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public StrLang visit(ASTStrLang node, Object data)
+	public FunctionCall visit(ASTStrLang node, Object data)
 		throws VisitorException
 	{
-		// TODO stricter checking on argument value types?
-		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		ValueExpr langTagExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
-		return new StrLang(literalExpr, langTagExpr);
+		return createFunctionCall("STRLANG", node);
 	}
 
 	@Override

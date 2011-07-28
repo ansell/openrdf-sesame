@@ -48,7 +48,6 @@ import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
-import org.openrdf.query.algebra.Concat;
 import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
@@ -92,9 +91,7 @@ import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
-import org.openrdf.query.algebra.StrDt;
 import org.openrdf.query.algebra.StrEnds;
-import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.StrLen;
 import org.openrdf.query.algebra.StrStarts;
 import org.openrdf.query.algebra.Substring;
@@ -1006,12 +1003,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof IRIFunction) {
 			return evaluate((IRIFunction)expr, bindings);
 		}
-		else if (expr instanceof StrDt) {
-			return evaluate((StrDt)expr, bindings);
-		}
-		else if (expr instanceof StrLang) {
-			return evaluate((StrLang)expr, bindings);
-		}
 		else if (expr instanceof Regex) {
 			return evaluate((Regex)expr, bindings);
 		}
@@ -1050,9 +1041,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof CompareAll) {
 			return evaluate((CompareAll)expr, bindings);
-		}
-		else if (expr instanceof Concat) {
-			return evaluate((Concat)expr, bindings);
 		}
 		else if (expr instanceof Exists) {
 			return evaluate((Exists)expr, bindings);
@@ -1527,68 +1515,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 
 		throw new ValueExprEvaluationException();
-	}
-
-	/**
-	 * Creates a datatyped literal from the operand values.
-	 * 
-	 * @param node
-	 * @param bindings
-	 * @return
-	 * @throws ValueExprEvaluationException
-	 * @throws QueryEvaluationException
-	 */
-	public Literal evaluate(StrDt node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
-	{
-		Value lexicalValue = evaluate(node.getLeftArg(), bindings);
-		Value datatypeValue = evaluate(node.getRightArg(), bindings);
-
-		if (QueryEvaluationUtil.isSimpleLiteral(lexicalValue)) {
-			Literal lit = (Literal)lexicalValue;
-			if (datatypeValue instanceof URI) {
-				return tripleSource.getValueFactory().createLiteral(lit.getLabel(), (URI)datatypeValue);
-			}
-			else {
-				throw new ValueExprEvaluationException("illegal value for operand: " + datatypeValue);
-			}
-		}
-		else {
-			throw new ValueExprEvaluationException("illegal value for operand: " + lexicalValue);
-		}
-
-	}
-
-	/**
-	 * Creates a language literal from the operand values.
-	 * 
-	 * @param node
-	 * @param bindings
-	 * @return
-	 * @throws ValueExprEvaluationException
-	 * @throws QueryEvaluationException
-	 */
-	public Literal evaluate(StrLang node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
-	{
-		Value lexicalValue = evaluate(node.getLeftArg(), bindings);
-		Value languageValue = evaluate(node.getRightArg(), bindings);
-
-		if (QueryEvaluationUtil.isSimpleLiteral(lexicalValue)) {
-			Literal lit = (Literal)lexicalValue;
-
-			if (languageValue instanceof Literal) {
-				return tripleSource.getValueFactory().createLiteral(lit.getLabel(),
-						((Literal)languageValue).getLabel());
-			}
-			else {
-				throw new ValueExprEvaluationException("illegal value for operand: " + languageValue);
-			}
-		}
-		else {
-			throw new ValueExprEvaluationException("illegal value for operand: " + lexicalValue);
-		}
-
 	}
 
 	/**
@@ -2088,71 +2014,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 
 		return BooleanLiteralImpl.valueOf(result);
-	}
-
-	public Value evaluate(Concat node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
-	{
-		StringBuilder concatBuilder = new StringBuilder();
-		String languageTag = null;
-
-		boolean useLanguageTag = true;
-		boolean useDatatype = true;
-
-		for (ValueExpr expr : node.getArguments()) {
-			Value arg = evaluate(expr, bindings);
-
-			if (arg instanceof Literal) {
-				Literal lit = (Literal)arg;
-
-				// verify that every literal argument has the same language tag. If
-				// not, the operator result should
-				// not use a language tag.
-				if (useLanguageTag && lit.getLanguage() != null) {
-					if (languageTag == null) {
-						languageTag = lit.getLanguage();
-					}
-					else if (!languageTag.equals(lit.getLanguage())) {
-						languageTag = null;
-						useLanguageTag = false;
-					}
-				}
-				else {
-					useLanguageTag = false;
-				}
-
-				// check datatype: concat only expects plain, language-tagged or
-				// string-typed literals. If all
-				// arguments are of type xsd:string, the result also should be,
-				// otherwise the result will not
-				// have a datatype.
-				if (lit.getDatatype() == null) {
-					useDatatype = false;
-				}
-				else if (!lit.getDatatype().equals(XMLSchema.STRING)) {
-					throw new ValueExprEvaluationException("unexpected data type for concat operand: " + arg);
-				}
-
-				concatBuilder.append(lit.getLabel());
-			}
-			else {
-				throw new ValueExprEvaluationException("unexpected argument type for concat operator: " + arg);
-			}
-		}
-
-		Literal result = null;
-
-		if (useDatatype) {
-			result = tripleSource.getValueFactory().createLiteral(concatBuilder.toString(), XMLSchema.STRING);
-		}
-		else if (useLanguageTag) {
-			result = tripleSource.getValueFactory().createLiteral(concatBuilder.toString(), languageTag);
-		}
-		else {
-			result = tripleSource.getValueFactory().createLiteral(concatBuilder.toString());
-		}
-
-		return result;
 	}
 
 	public Value evaluate(CompareAll node, BindingSet bindings)

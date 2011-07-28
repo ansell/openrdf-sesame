@@ -50,9 +50,6 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(CompareAny node)
 		throws X;
 
-	public void meet(Concat node)
-		throws X;
-
 	public void meet(Count node)
 		throws X;
 
@@ -195,12 +192,6 @@ public interface QueryModelVisitor<X extends Exception> {
 		throws X;
 
 	public void meet(Str node)
-		throws X;
-
-	public void meet(StrDt node)
-		throws X;
-
-	public void meet(StrLang node)
 		throws X;
 
 	public void meet(StrLen node)
