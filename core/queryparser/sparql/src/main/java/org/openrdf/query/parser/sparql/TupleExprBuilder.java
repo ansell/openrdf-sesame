@@ -18,6 +18,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;
+import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
@@ -1540,14 +1541,14 @@ class TupleExprBuilder extends ASTVisitorBase {
 	public FunctionCall visit(ASTSubstr node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("SUBSTR", node);
+		return createFunctionCall(FN.SUBSTRING.toString(), node);
 	}
 
 	@Override
 	public FunctionCall visit(ASTConcat node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("CONCAT", node);
+		return createFunctionCall(FN.CONCAT.toString(), node);
 	}
 
 	@Override
@@ -1589,7 +1590,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 	public FunctionCall visit(ASTEncodeForURI node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("ENCODE_FOR_URI", node);
+		return createFunctionCall(FN.ENCODE_FOR_URI.toString(), node);
 	}
 
 	@Override
@@ -1611,35 +1612,35 @@ class TupleExprBuilder extends ASTVisitorBase {
 	public FunctionCall visit(ASTStrStarts node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("STRSTARTS", node);
+		return createFunctionCall(FN.STARTS_WITH.toString(), node);
 	}
 
 	@Override
 	public FunctionCall visit(ASTStrEnds node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("STRENDS", node);
+		return createFunctionCall(FN.ENDS_WITH.toString(), node);
 	}
 
 	@Override
 	public FunctionCall visit(ASTStrLen node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("STRLEN", node);
+		return createFunctionCall(FN.STRING_LENGTH.toString(), node);
 	}
 
 	@Override
 	public FunctionCall visit(ASTUpperCase node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("UCASE", node);
+		return createFunctionCall(FN.UPPER_CASE.toString(), node);
 	}
 
 	@Override
 	public FunctionCall visit(ASTLowerCase node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("LCASE", node);
+		return createFunctionCall(FN.LOWER_CASE.toString(), node);
 	}
 
 	@Override
