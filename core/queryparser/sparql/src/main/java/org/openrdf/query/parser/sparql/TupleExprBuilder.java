@@ -51,7 +51,6 @@ import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.LowerCase;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
@@ -72,14 +71,9 @@ import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
-import org.openrdf.query.algebra.StrEnds;
-import org.openrdf.query.algebra.StrLen;
-import org.openrdf.query.algebra.StrStarts;
-import org.openrdf.query.algebra.Substring;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
-import org.openrdf.query.algebra.UpperCase;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -1542,21 +1536,11 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return new Compare(leftArg, rightArg, node.getOperator());
 	}
 
-	public Substring visit(ASTSubstr node, Object data)
+	@Override
+	public FunctionCall visit(ASTSubstr node, Object data)
 		throws VisitorException
 	{
-		ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		Substring substring = new Substring(arg);
-		if (node.jjtGetNumChildren() > 1) {
-			ValueExpr startIndex = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
-			substring.setStartIndex(startIndex);
-			if (node.jjtGetNumChildren() > 2) {
-				ValueExpr length = (ValueExpr)node.jjtGetChild(2).jjtAccept(this, null);
-				substring.setLength(length);
-			}
-		}
-
-		return substring;
+		return createFunctionCall("SUBSTR", node);
 	}
 
 	@Override
@@ -1624,51 +1608,38 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public StrStarts visit(ASTStrStarts node, Object data)
+	public FunctionCall visit(ASTStrStarts node, Object data)
 		throws VisitorException
 	{
-		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
-		return new StrStarts(leftArg, rightArg);
+		return createFunctionCall("STRSTARTS", node);
 	}
 
 	@Override
-	public StrEnds visit(ASTStrEnds node, Object data)
+	public FunctionCall visit(ASTStrEnds node, Object data)
 		throws VisitorException
 	{
-		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
-		return new StrEnds(leftArg, rightArg);
+		return createFunctionCall("STRENDS", node);
 	}
 
 	@Override
-	public StrLen visit(ASTStrLen node, Object data)
+	public FunctionCall visit(ASTStrLen node, Object data)
 		throws VisitorException
 	{
-		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		StrLen strLen = new StrLen(literalExpr);
-
-		return strLen;
+		return createFunctionCall("STRLEN", node);
 	}
 
 	@Override
-	public UpperCase visit(ASTUpperCase node, Object data)
+	public FunctionCall visit(ASTUpperCase node, Object data)
 		throws VisitorException
 	{
-		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		UpperCase upperCase = new UpperCase(literalExpr);
-
-		return upperCase;
+		return createFunctionCall("UCASE", node);
 	}
 
 	@Override
-	public LowerCase visit(ASTLowerCase node, Object data)
+	public FunctionCall visit(ASTLowerCase node, Object data)
 		throws VisitorException
 	{
-		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		LowerCase lowerCase = new LowerCase(literalExpr);
-
-		return lowerCase;
+		return createFunctionCall("LCASE", node);
 	}
 
 	@Override
