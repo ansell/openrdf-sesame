@@ -73,7 +73,6 @@ import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Like;
 import org.openrdf.query.algebra.LocalName;
-import org.openrdf.query.algebra.LowerCase;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Namespace;
@@ -91,14 +90,9 @@ import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
-import org.openrdf.query.algebra.StrEnds;
-import org.openrdf.query.algebra.StrLen;
-import org.openrdf.query.algebra.StrStarts;
-import org.openrdf.query.algebra.Substring;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
-import org.openrdf.query.algebra.UpperCase;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -460,8 +454,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	private class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
 		private QueryBindingSet result;
-
-		private CloseableIteration<BindingSet, QueryEvaluationException> iter;
 
 		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj, BindingSet bindings) {
 			result = new QueryBindingSet(bindings);
@@ -961,12 +953,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof Str) {
 			return evaluate((Str)expr, bindings);
 		}
-		else if (expr instanceof Substring) {
-			return evaluate((Substring)expr, bindings);
-		}
-		else if (expr instanceof StrLen) {
-			return evaluate((StrLen)expr, bindings);
-		}
 		else if (expr instanceof Label) {
 			return evaluate((Label)expr, bindings);
 		}
@@ -1048,18 +1034,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof If) {
 			return evaluate((If)expr, bindings);
 		}
-		else if (expr instanceof UpperCase) {
-			return evaluate((UpperCase)expr, bindings);
-		}
-		else if (expr instanceof LowerCase) {
-			return evaluate((LowerCase)expr, bindings);
-		}
-		else if (expr instanceof StrStarts) {
-			return evaluate((StrStarts)expr, bindings);
-		}
-		else if (expr instanceof StrEnds) {
-			return evaluate((StrEnds)expr, bindings);
-		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
 		}
@@ -1140,189 +1114,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else {
 			throw new ValueExprEvaluationException();
-		}
-	}
-
-	public Value evaluate(StrLen node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
-	{
-		Value argValue = evaluate(node.getArg(), bindings);
-
-		if (argValue instanceof Literal) {
-			Literal literal = (Literal)argValue;
-
-			// strlen function accepts only plain literals (optionally
-			// language-tagged) or string-typed literals.
-			if (literal.getLanguage() != null || QueryEvaluationUtil.isStringLiteral(literal)) {
-
-				// TODO we jump through some hoops here to get an xsd:integer
-				// literal. Shouldn't
-				// createLiteral(int) return an xsd:integer rather than an xsd:int?
-				Integer length = literal.getLabel().length();
-				return tripleSource.getValueFactory().createLiteral(length.toString(), XMLSchema.INTEGER);
-			}
-			else {
-				throw new ValueExprEvaluationException("unexpected input value for strlen function: " + argValue);
-			}
-		}
-		else {
-			throw new ValueExprEvaluationException("unexpected input value for strlen function: " + argValue);
-		}
-	}
-
-	public Value evaluate(Substring node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
-	{
-		Value argValue = evaluate(node.getArg(), bindings);
-
-		if (argValue instanceof Literal) {
-			Literal literal = (Literal)argValue;
-
-			String language = literal.getLanguage();
-
-			// substr function accepts only plain literals (optionally
-			// language-tagged) or string-typed literals.
-			if (language != null
-					|| (literal.getDatatype() == null || XMLSchema.STRING.equals(literal.getDatatype())))
-			{
-				String lexicalValue = literal.getLabel();
-
-				// determine start index from optional expression.
-				int startIndex = 0;
-				if (node.getStartIndex() != null) {
-					Value startIndexValue = evaluate(node.getStartIndex(), bindings);
-					if (startIndexValue instanceof Literal) {
-						try {
-							startIndex = ((Literal)startIndexValue).intValue();
-						}
-						catch (NumberFormatException e) {
-							throw new ValueExprEvaluationException(
-									"illegal start index value (expected int value): " + startIndexValue);
-						}
-					}
-					else {
-						throw new ValueExprEvaluationException(
-								"illegal start index value (expected literal value): " + startIndexValue);
-					}
-				}
-
-				// optionally convert supplied length expression to an end index for
-				// the substring.
-				int endIndex = lexicalValue.length();
-				if (node.getLength() != null) {
-					Value lengthValue = evaluate(node.getLength(), bindings);
-					if (lengthValue instanceof Literal) {
-						try {
-							int length = ((Literal)lengthValue).intValue();
-							endIndex = startIndex + length;
-						}
-						catch (NumberFormatException e) {
-							throw new ValueExprEvaluationException("illegal length value (expected int value): "
-									+ lengthValue);
-						}
-					}
-					else {
-						throw new ValueExprEvaluationException("illegal length value (expected literal value): "
-								+ lengthValue);
-					}
-				}
-
-				try {
-					lexicalValue = lexicalValue.substring(startIndex, endIndex);
-
-					if (language != null) {
-						return tripleSource.getValueFactory().createLiteral(lexicalValue, language);
-					}
-					else if (XMLSchema.STRING.equals(literal.getDatatype())) {
-						return tripleSource.getValueFactory().createLiteral(lexicalValue, XMLSchema.STRING);
-					}
-					else {
-						return tripleSource.getValueFactory().createLiteral(lexicalValue);
-					}
-				}
-				catch (IndexOutOfBoundsException e) {
-					throw new QueryEvaluationException("could not determine substring", e);
-				}
-			}
-			else {
-				throw new ValueExprEvaluationException("unexpected input value for function substring: "
-						+ argValue);
-			}
-		}
-		else {
-			throw new ValueExprEvaluationException("unexpected input value for function substring: " + argValue);
-		}
-	}
-
-	public Value evaluate(UpperCase node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
-	{
-		Value argValue = evaluate(node.getArg(), bindings);
-
-		if (argValue instanceof Literal) {
-			Literal literal = (Literal)argValue;
-
-			String language = literal.getLanguage();
-
-			// UpperCase function accepts only plain literals (optionally
-			// language-tagged) or string-typed literals.
-			if (language != null
-					|| (literal.getDatatype() == null || XMLSchema.STRING.equals(literal.getDatatype())))
-			{
-				String lexicalValue = literal.getLabel().toUpperCase();
-
-				if (language != null) {
-					return tripleSource.getValueFactory().createLiteral(lexicalValue, language);
-				}
-				else if (XMLSchema.STRING.equals(literal.getDatatype())) {
-					return tripleSource.getValueFactory().createLiteral(lexicalValue, XMLSchema.STRING);
-				}
-				else {
-					return tripleSource.getValueFactory().createLiteral(lexicalValue);
-				}
-			}
-			else {
-				throw new ValueExprEvaluationException("unexpected input value for function: " + argValue);
-			}
-		}
-		else {
-			throw new ValueExprEvaluationException("unexpected input value for function: " + argValue);
-		}
-	}
-
-	public Value evaluate(LowerCase node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
-	{
-		Value argValue = evaluate(node.getArg(), bindings);
-
-		if (argValue instanceof Literal) {
-			Literal literal = (Literal)argValue;
-
-			String language = literal.getLanguage();
-
-			// LowerCase function accepts only plain literals (optionally
-			// language-tagged) or string-typed literals.
-			if (language != null
-					|| (literal.getDatatype() == null || XMLSchema.STRING.equals(literal.getDatatype())))
-			{
-				String lexicalValue = literal.getLabel().toLowerCase();
-
-				if (language != null) {
-					return tripleSource.getValueFactory().createLiteral(lexicalValue, language);
-				}
-				else if (XMLSchema.STRING.equals(literal.getDatatype())) {
-					return tripleSource.getValueFactory().createLiteral(lexicalValue, XMLSchema.STRING);
-				}
-				else {
-					return tripleSource.getValueFactory().createLiteral(lexicalValue);
-				}
-			}
-			else {
-				throw new ValueExprEvaluationException("unexpected input value for function: " + argValue);
-			}
-		}
-		else {
-			throw new ValueExprEvaluationException("unexpected input value for function: " + argValue);
 		}
 	}
 
@@ -1804,90 +1595,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value rightVal = evaluate(node.getRightArg(), bindings);
 
 		return BooleanLiteralImpl.valueOf(leftVal != null && leftVal.equals(rightVal));
-	}
-
-	public Value evaluate(StrStarts node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
-	{
-		Value leftVal = evaluate(node.getLeftArg(), bindings);
-		Value rightVal = evaluate(node.getRightArg(), bindings);
-
-		if (leftVal instanceof Literal && rightVal instanceof Literal) {
-			Literal leftLit = (Literal)leftVal;
-			Literal rightLit = (Literal)rightVal;
-
-			if (leftLit.getLanguage() != null) {
-				if (rightLit.getLanguage() == null || rightLit.getLanguage().equals(leftLit.getLanguage())) {
-
-					String leftLexVal = leftLit.getLabel();
-					String rightLexVal = rightLit.getLabel();
-
-					return BooleanLiteralImpl.valueOf(leftLexVal.startsWith(rightLexVal));
-				}
-				else {
-					throw new ValueExprEvaluationException("incompatible operands for STRSTARTS function");
-				}
-			}
-			else if (QueryEvaluationUtil.isStringLiteral(leftLit)) {
-				if (QueryEvaluationUtil.isStringLiteral(rightLit)) {
-					String leftLexVal = leftLit.getLabel();
-					String rightLexVal = rightLit.getLabel();
-
-					return BooleanLiteralImpl.valueOf(leftLexVal.startsWith(rightLexVal));
-				}
-				else {
-					throw new ValueExprEvaluationException("incompatible operands for STRSTARTS function");
-				}
-			}
-			else {
-				throw new ValueExprEvaluationException("incompatible operands for STRSTARTS function");
-			}
-		}
-		else {
-			throw new ValueExprEvaluationException("STRSTARTS function expects literal operands");
-		}
-	}
-
-	public Value evaluate(StrEnds node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
-	{
-		Value leftVal = evaluate(node.getLeftArg(), bindings);
-		Value rightVal = evaluate(node.getRightArg(), bindings);
-
-		if (leftVal instanceof Literal && rightVal instanceof Literal) {
-			Literal leftLit = (Literal)leftVal;
-			Literal rightLit = (Literal)rightVal;
-
-			if (leftLit.getLanguage() != null) {
-				if (rightLit.getLanguage() == null || rightLit.getLanguage().equals(leftLit.getLanguage())) {
-
-					String leftLexVal = leftLit.getLabel();
-					String rightLexVal = rightLit.getLabel();
-
-					return BooleanLiteralImpl.valueOf(leftLexVal.endsWith(rightLexVal));
-				}
-				else {
-					throw new ValueExprEvaluationException("incompatible operands for STRENDS function");
-				}
-			}
-			else if (QueryEvaluationUtil.isStringLiteral(leftLit)) {
-				if (QueryEvaluationUtil.isStringLiteral(rightLit)) {
-					String leftLexVal = leftLit.getLabel();
-					String rightLexVal = rightLit.getLabel();
-
-					return BooleanLiteralImpl.valueOf(leftLexVal.endsWith(rightLexVal));
-				}
-				else {
-					throw new ValueExprEvaluationException("incompatible operands for STRENDS function");
-				}
-			}
-			else {
-				throw new ValueExprEvaluationException("incompatible operands for STRENDS function");
-			}
-		}
-		else {
-			throw new ValueExprEvaluationException("STRENDS function expects literal operands");
-		}
 	}
 
 	public Value evaluate(Coalesce node, BindingSet bindings)

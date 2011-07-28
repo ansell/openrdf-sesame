@@ -7,5 +7,11 @@ org.openrdf.query.algebra.evaluation.function.BooleanCast
 org.openrdf.query.algebra.evaluation.function.DateTimeCast
 org.openrdf.query.algebra.evaluation.function.builtin.Concat
 org.openrdf.query.algebra.evaluation.function.builtin.EncodeForUri
+org.openrdf.query.algebra.evaluation.function.builtin.LowerCase
 org.openrdf.query.algebra.evaluation.function.builtin.StrDt
+org.openrdf.query.algebra.evaluation.function.builtin.StrEnds
 org.openrdf.query.algebra.evaluation.function.builtin.StrLang
+org.openrdf.query.algebra.evaluation.function.builtin.StrLen
+org.openrdf.query.algebra.evaluation.function.builtin.StrStarts
+org.openrdf.query.algebra.evaluation.function.builtin.Substring
+org.openrdf.query.algebra.evaluation.function.builtin.UpperCase
