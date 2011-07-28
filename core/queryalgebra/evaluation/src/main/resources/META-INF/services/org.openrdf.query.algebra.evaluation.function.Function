@@ -5,3 +5,7 @@ org.openrdf.query.algebra.evaluation.function.DecimalCast
 org.openrdf.query.algebra.evaluation.function.IntegerCast
 org.openrdf.query.algebra.evaluation.function.BooleanCast
 org.openrdf.query.algebra.evaluation.function.DateTimeCast
+org.openrdf.query.algebra.evaluation.function.builtin.Concat
+org.openrdf.query.algebra.evaluation.function.builtin.EncodeForUri
+org.openrdf.query.algebra.evaluation.function.builtin.StrDt
+org.openrdf.query.algebra.evaluation.function.builtin.StrLang

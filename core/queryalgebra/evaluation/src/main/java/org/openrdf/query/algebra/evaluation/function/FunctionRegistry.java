@@ -15,7 +15,7 @@ public class FunctionRegistry extends ServiceRegistry<String, Function> {
 	private static FunctionRegistry defaultRegistry;
 
 	/**
-	 * Gets the default QueryParserRegistry.
+	 * Gets the default FunctionRegistry.
 	 * 
 	 * @return The default registry.
 	 */
