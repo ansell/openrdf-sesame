@@ -5,6 +5,11 @@ org.openrdf.query.algebra.evaluation.function.DecimalCast
 org.openrdf.query.algebra.evaluation.function.IntegerCast
 org.openrdf.query.algebra.evaluation.function.BooleanCast
 org.openrdf.query.algebra.evaluation.function.DateTimeCast
+org.openrdf.query.algebra.evaluation.function.numeric.Abs
+org.openrdf.query.algebra.evaluation.function.numeric.Ceil
+org.openrdf.query.algebra.evaluation.function.numeric.Floor
+org.openrdf.query.algebra.evaluation.function.numeric.Rand
+org.openrdf.query.algebra.evaluation.function.numeric.Round
 org.openrdf.query.algebra.evaluation.function.rdfterm.StrDt
 org.openrdf.query.algebra.evaluation.function.rdfterm.StrLang
 org.openrdf.query.algebra.evaluation.function.string.Concat

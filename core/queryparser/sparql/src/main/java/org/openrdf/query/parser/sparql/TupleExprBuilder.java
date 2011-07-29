@@ -81,6 +81,7 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
+import org.openrdf.query.parser.sparql.ast.ASTAbs;
 import org.openrdf.query.parser.sparql.ast.ASTAnd;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTAvg;
@@ -89,6 +90,7 @@ import org.openrdf.query.parser.sparql.ast.ASTBind;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNodePropertyList;
 import org.openrdf.query.parser.sparql.ast.ASTBound;
+import org.openrdf.query.parser.sparql.ast.ASTCeil;
 import org.openrdf.query.parser.sparql.ast.ASTCoalesce;
 import org.openrdf.query.parser.sparql.ast.ASTCollection;
 import org.openrdf.query.parser.sparql.ast.ASTCompare;
@@ -103,6 +105,7 @@ import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
 import org.openrdf.query.parser.sparql.ast.ASTEncodeForURI;
 import org.openrdf.query.parser.sparql.ast.ASTExistsFunc;
 import org.openrdf.query.parser.sparql.ast.ASTFalse;
+import org.openrdf.query.parser.sparql.ast.ASTFloor;
 import org.openrdf.query.parser.sparql.ast.ASTFunctionCall;
 import org.openrdf.query.parser.sparql.ast.ASTGraphGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTGraphPatternGroup;
@@ -147,7 +150,9 @@ import org.openrdf.query.parser.sparql.ast.ASTPropertyListPath;
 import org.openrdf.query.parser.sparql.ast.ASTQName;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTRDFLiteral;
+import org.openrdf.query.parser.sparql.ast.ASTRand;
 import org.openrdf.query.parser.sparql.ast.ASTRegexExpression;
+import org.openrdf.query.parser.sparql.ast.ASTRound;
 import org.openrdf.query.parser.sparql.ast.ASTSameTerm;
 import org.openrdf.query.parser.sparql.ast.ASTSelect;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
@@ -1549,6 +1554,41 @@ class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		return createFunctionCall(FN.CONCAT.toString(), node);
+	}
+
+	@Override
+	public FunctionCall visit(ASTAbs node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.NUMERIC_ABS.toString(), node);
+	}
+
+	@Override
+	public FunctionCall visit(ASTCeil node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.NUMERIC_CEIL.toString(), node);
+	}
+
+	@Override
+	public FunctionCall visit(ASTFloor node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.NUMERIC_FLOOR.toString(), node);
+	}
+
+	@Override
+	public FunctionCall visit(ASTRound node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.NUMERIC_ROUND.toString(), node);
+	}
+	
+	@Override
+	public FunctionCall visit(ASTRand node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("RAND", node);
 	}
 
 	@Override
