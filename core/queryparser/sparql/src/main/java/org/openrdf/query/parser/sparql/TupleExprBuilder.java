@@ -227,12 +227,18 @@ class TupleExprBuilder extends ASTVisitorBase {
 		return var;
 	}
 
-	private FunctionCall createFunctionCall(String uri, SimpleNode node)
+	private FunctionCall createFunctionCall(String uri, SimpleNode node, int minArgs, int maxArgs)
 		throws VisitorException
 	{
 		FunctionCall functionCall = new FunctionCall(uri);
 
-		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+		int noOfArguments = node.jjtGetNumChildren();
+		
+		if (noOfArguments > maxArgs || noOfArguments < minArgs) {
+			throw new VisitorException("unexpected number of arguments (" + noOfArguments + ") for function " + uri);
+		}
+		
+		for (int i = 0; i < noOfArguments; i++) {
 			Node argNode = node.jjtGetChild(i);
 			functionCall.addArg((ValueExpr)argNode.jjtAccept(this, null));
 		}
@@ -1546,49 +1552,49 @@ class TupleExprBuilder extends ASTVisitorBase {
 	public FunctionCall visit(ASTSubstr node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.SUBSTRING.toString(), node);
+		return createFunctionCall(FN.SUBSTRING.toString(), node, 2, 3);
 	}
 
 	@Override
 	public FunctionCall visit(ASTConcat node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.CONCAT.toString(), node);
+		return createFunctionCall(FN.CONCAT.toString(), node, 1, Integer.MAX_VALUE);
 	}
 
 	@Override
 	public FunctionCall visit(ASTAbs node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.NUMERIC_ABS.toString(), node);
+		return createFunctionCall(FN.NUMERIC_ABS.toString(), node, 1, 1);
 	}
 
 	@Override
 	public FunctionCall visit(ASTCeil node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.NUMERIC_CEIL.toString(), node);
+		return createFunctionCall(FN.NUMERIC_CEIL.toString(), node, 1, 1);
 	}
 
 	@Override
 	public FunctionCall visit(ASTFloor node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.NUMERIC_FLOOR.toString(), node);
+		return createFunctionCall(FN.NUMERIC_FLOOR.toString(), node, 1, 1);
 	}
 
 	@Override
 	public FunctionCall visit(ASTRound node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.NUMERIC_ROUND.toString(), node);
+		return createFunctionCall(FN.NUMERIC_ROUND.toString(), node, 1, 1);
 	}
 	
 	@Override
 	public FunctionCall visit(ASTRand node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("RAND", node);
+		return createFunctionCall("RAND", node, 0, 0);
 	}
 
 	@Override
@@ -1630,7 +1636,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 	public FunctionCall visit(ASTEncodeForURI node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.ENCODE_FOR_URI.toString(), node);
+		return createFunctionCall(FN.ENCODE_FOR_URI.toString(), node, 1, 1);
 	}
 
 	@Override
@@ -1645,49 +1651,49 @@ class TupleExprBuilder extends ASTVisitorBase {
 	public FunctionCall visit(ASTStrDt node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("STRDT", node);
+		return createFunctionCall("STRDT", node, 2, 2);
 	}
 
 	@Override
 	public FunctionCall visit(ASTStrStarts node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.STARTS_WITH.toString(), node);
+		return createFunctionCall(FN.STARTS_WITH.toString(), node, 2, 2);
 	}
 
 	@Override
 	public FunctionCall visit(ASTStrEnds node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.ENDS_WITH.toString(), node);
+		return createFunctionCall(FN.ENDS_WITH.toString(), node, 2, 2);
 	}
 
 	@Override
 	public FunctionCall visit(ASTStrLen node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.STRING_LENGTH.toString(), node);
+		return createFunctionCall(FN.STRING_LENGTH.toString(), node, 1, 1);
 	}
 
 	@Override
 	public FunctionCall visit(ASTUpperCase node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.UPPER_CASE.toString(), node);
+		return createFunctionCall(FN.UPPER_CASE.toString(), node, 1, 1);
 	}
 
 	@Override
 	public FunctionCall visit(ASTLowerCase node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.LOWER_CASE.toString(), node);
+		return createFunctionCall(FN.LOWER_CASE.toString(), node, 1, 1);
 	}
 
 	@Override
 	public FunctionCall visit(ASTStrLang node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("STRLANG", node);
+		return createFunctionCall("STRLANG", node, 2, 2);
 	}
 
 	@Override
