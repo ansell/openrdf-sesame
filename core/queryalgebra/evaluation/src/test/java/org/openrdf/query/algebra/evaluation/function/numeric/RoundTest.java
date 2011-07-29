@@ -92,7 +92,8 @@ public class RoundTest {
 			
 			BigDecimal roundValue = rounded.decimalValue();
 			
-			Assert.assertEquals(new BigDecimal(1234568), roundValue);
+			// TODO not 100% sure the scaling/precision is correct.
+			Assert.assertEquals(new BigDecimal(1234568.0).setScale(1), roundValue);
 		}
 		catch (ValueExprEvaluationException e) {
 			e.printStackTrace();
