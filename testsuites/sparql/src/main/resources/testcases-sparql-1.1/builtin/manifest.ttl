@@ -40,6 +40,11 @@
     	:sparql11-strstarts-01
     	:sparql11-strends-01
     	:sparql11-encodeforuri-01
+    	:sparql11-abs-01
+    	:sparql11-round-01
+    	:sparql11-round-02
+    	:sparql11-ceil-01
+    	:sparql11-floor-01
     ).
     
 :sparql11-strstarts-01  mf:name  "sparql11-strstarts-01" ;
@@ -52,7 +57,31 @@
          mf:action [ qt:query <sparql11-strends-01.rq> ; qt:data <data-02.ttl> ] ;
          mf:result <sparql11-strends-01.srx> . 
 
-    
+:sparql11-abs-01  mf:name  "sparql11-abs-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-abs-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-abs-01.srx> . 
+         
+:sparql11-round-01  mf:name  "sparql11-round-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-round-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-round-01.srx> . 
+
+:sparql11-round-02  mf:name  "sparql11-round-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-round-02.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-round-02.srx> . 
+
+ :sparql11-ceil-01  mf:name  "sparql11-ceil-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-ceil-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-ceil-01.srx> . 
+         
+:sparql11-floor-01  mf:name  "sparql11-floor-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-floor-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-floor-01.srx> . 
+            
 :sparql11-encodeforuri-01  mf:name  "sparql11-encodeforuri-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-encodeforuri-01.rq> ; qt:data <data-02.ttl> ] ;

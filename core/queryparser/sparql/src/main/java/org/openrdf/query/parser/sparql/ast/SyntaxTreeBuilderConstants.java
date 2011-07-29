@@ -207,91 +207,101 @@ public interface SyntaxTreeBuilderConstants {
   /** RegularExpression Id. */
   int ENCODE_FOR_URI = 98;
   /** RegularExpression Id. */
-  int Q_IRI_REF = 99;
+  int RAND = 99;
   /** RegularExpression Id. */
-  int PNAME_NS = 100;
+  int ABS = 100;
   /** RegularExpression Id. */
-  int PNAME_LN = 101;
+  int CEIL = 101;
   /** RegularExpression Id. */
-  int BLANK_NODE_LABEL = 102;
+  int FLOOR = 102;
   /** RegularExpression Id. */
-  int VAR1 = 103;
+  int ROUND = 103;
   /** RegularExpression Id. */
-  int VAR2 = 104;
+  int Q_IRI_REF = 104;
   /** RegularExpression Id. */
-  int LANGTAG = 105;
+  int PNAME_NS = 105;
   /** RegularExpression Id. */
-  int INTEGER = 106;
+  int PNAME_LN = 106;
   /** RegularExpression Id. */
-  int INTEGER_POSITIVE = 107;
+  int BLANK_NODE_LABEL = 107;
   /** RegularExpression Id. */
-  int INTEGER_NEGATIVE = 108;
+  int VAR1 = 108;
   /** RegularExpression Id. */
-  int DECIMAL = 109;
+  int VAR2 = 109;
   /** RegularExpression Id. */
-  int DECIMAL1 = 110;
+  int LANGTAG = 110;
   /** RegularExpression Id. */
-  int DECIMAL2 = 111;
+  int INTEGER = 111;
   /** RegularExpression Id. */
-  int DECIMAL_POSITIVE = 112;
+  int INTEGER_POSITIVE = 112;
   /** RegularExpression Id. */
-  int DECIMAL_NEGATIVE = 113;
+  int INTEGER_NEGATIVE = 113;
   /** RegularExpression Id. */
-  int DOUBLE = 114;
+  int DECIMAL = 114;
   /** RegularExpression Id. */
-  int DOUBLE1 = 115;
+  int DECIMAL1 = 115;
   /** RegularExpression Id. */
-  int DOUBLE2 = 116;
+  int DECIMAL2 = 116;
   /** RegularExpression Id. */
-  int DOUBLE3 = 117;
+  int DECIMAL_POSITIVE = 117;
   /** RegularExpression Id. */
-  int EXPONENT = 118;
+  int DECIMAL_NEGATIVE = 118;
   /** RegularExpression Id. */
-  int DOUBLE_POSITIVE = 119;
+  int DOUBLE = 119;
   /** RegularExpression Id. */
-  int DOUBLE_NEGATIVE = 120;
+  int DOUBLE1 = 120;
   /** RegularExpression Id. */
-  int STRING_LITERAL1 = 121;
+  int DOUBLE2 = 121;
   /** RegularExpression Id. */
-  int STRING_LITERAL2 = 122;
+  int DOUBLE3 = 122;
   /** RegularExpression Id. */
-  int STRING_LITERAL_LONG1 = 123;
+  int EXPONENT = 123;
   /** RegularExpression Id. */
-  int STRING_LITERAL_LONG2 = 124;
+  int DOUBLE_POSITIVE = 124;
   /** RegularExpression Id. */
-  int SAFE_CHAR1 = 125;
+  int DOUBLE_NEGATIVE = 125;
   /** RegularExpression Id. */
-  int SAFE_CHAR2 = 126;
+  int STRING_LITERAL1 = 126;
   /** RegularExpression Id. */
-  int SAFE_CHAR_LONG1 = 127;
+  int STRING_LITERAL2 = 127;
   /** RegularExpression Id. */
-  int SAFE_CHAR_LONG2 = 128;
+  int STRING_LITERAL_LONG1 = 128;
   /** RegularExpression Id. */
-  int ECHAR = 129;
+  int STRING_LITERAL_LONG2 = 129;
   /** RegularExpression Id. */
-  int HEX = 130;
+  int SAFE_CHAR1 = 130;
   /** RegularExpression Id. */
-  int ALPHA = 131;
+  int SAFE_CHAR2 = 131;
   /** RegularExpression Id. */
-  int NUM = 132;
+  int SAFE_CHAR_LONG1 = 132;
   /** RegularExpression Id. */
-  int PN_CHARS_BASE = 133;
+  int SAFE_CHAR_LONG2 = 133;
   /** RegularExpression Id. */
-  int PN_CHARS_U = 134;
+  int ECHAR = 134;
   /** RegularExpression Id. */
-  int PN_START_CHAR = 135;
+  int HEX = 135;
   /** RegularExpression Id. */
-  int VAR_CHAR = 136;
+  int ALPHA = 136;
   /** RegularExpression Id. */
-  int PN_END_CHAR = 137;
+  int NUM = 137;
   /** RegularExpression Id. */
-  int PN_CHAR = 138;
+  int PN_CHARS_BASE = 138;
   /** RegularExpression Id. */
-  int PN_PREFIX = 139;
+  int PN_CHARS_U = 139;
   /** RegularExpression Id. */
-  int PN_LOCAL = 140;
+  int PN_START_CHAR = 140;
   /** RegularExpression Id. */
-  int VARNAME = 141;
+  int VAR_CHAR = 141;
+  /** RegularExpression Id. */
+  int PN_END_CHAR = 142;
+  /** RegularExpression Id. */
+  int PN_CHAR = 143;
+  /** RegularExpression Id. */
+  int PN_PREFIX = 144;
+  /** RegularExpression Id. */
+  int PN_LOCAL = 145;
+  /** RegularExpression Id. */
+  int VARNAME = 146;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -397,6 +407,11 @@ public interface SyntaxTreeBuilderConstants {
     "\"concat\"",
     "\"contains\"",
     "\"encode_for_URI\"",
+    "\"rand\"",
+    "\"abs\"",
+    "\"ceil\"",
+    "\"floor\"",
+    "\"round\"",
     "<Q_IRI_REF>",
     "<PNAME_NS>",
     "<PNAME_LN>",

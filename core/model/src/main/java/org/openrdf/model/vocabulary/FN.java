@@ -39,6 +39,18 @@ public class FN {
 	/** fn:lower-case */
 	public static final URI LOWER_CASE;
 	
+	/** fn:numeric-abs */
+	public static final URI NUMERIC_ABS;
+	
+	/** fn:numeric-ceil */
+	public static final URI NUMERIC_CEIL;
+	
+	/** fn:numeric-floor */
+	public static final URI NUMERIC_FLOOR;
+	
+	/** fn:numeric-round */
+	public static final URI NUMERIC_ROUND;
+	
 	/** fn:starts-with */
 	public static final URI STARTS_WITH;
 	
@@ -50,6 +62,7 @@ public class FN {
 	
 	/** fn:upper-case */
 	public static final URI UPPER_CASE;
+
 
 	static {
 		ValueFactory f = new ValueFactoryImpl();
@@ -63,6 +76,14 @@ public class FN {
 		ENDS_WITH = f.createURI(NAMESPACE, "ends-with");
 		
 		LOWER_CASE = f.createURI(NAMESPACE, "lower-case");
+		
+		NUMERIC_ABS = f.createURI(NAMESPACE, "numeric-abs");
+		
+		NUMERIC_CEIL = f.createURI(NAMESPACE, "numeric-ceil");
+
+		NUMERIC_FLOOR = f.createURI(NAMESPACE, "numeric-floor");
+		
+		NUMERIC_ROUND = f.createURI(NAMESPACE, "numeric-round");
 		
 		STARTS_WITH = f.createURI(NAMESPACE, "starts-with");
 		

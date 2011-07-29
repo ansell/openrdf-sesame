@@ -187,6 +187,11 @@ TOKEN [IGNORE_CASE] :
 |	<CONCAT: "concat">
 |	<CONTAINS: "contains">
 |	<ENCODE_FOR_URI: "encode_for_URI">
+|	<RAND: "rand">
+|	<ABS: "abs">
+|	<CEIL: "ceil">
+|	<FLOOR: "floor">
+|	<ROUND: "round">
 }
 
 TOKEN:
@@ -937,7 +942,7 @@ void BuiltInCall() #void :
 |	Coalesce()
 |	If()
 |	StringFunction()
-//|	NumericFunction()
+|	NumericFunction()
 |	RDFTermFunction()
 //|	DateTimeFunction()
 //|	HashFunction()
@@ -958,7 +963,6 @@ void StringFunction() #void :
 |	LangMatches()
 |	RegexExpression()
 }
-/*
 void NumericFunction() #void :
 {}
 {
@@ -968,7 +972,7 @@ void NumericFunction() #void :
 |	Floor()
 |	Round()
 }
-*/
+
 void RDFTermFunction() #void :
 {}
 {
@@ -1011,6 +1015,37 @@ void HashFunction() #void :
 |	SHA512()
 }
 */
+
+
+void Rand() :
+{}
+{
+    <RAND> <NIL>
+}
+
+void Abs() :
+{}
+{
+    <ABS> <LPAREN> Expression() <RPAREN>
+}
+
+void Ceil() :
+{}
+{
+    <CEIL> <LPAREN> Expression() <RPAREN>
+}
+
+void Floor() :
+{}
+{
+    <FLOOR> <LPAREN> Expression() <RPAREN>
+}
+
+void Round() :
+{}
+{
+    <ROUND> <LPAREN> Expression() <RPAREN>
+}
 
 void Substr() :
 {}

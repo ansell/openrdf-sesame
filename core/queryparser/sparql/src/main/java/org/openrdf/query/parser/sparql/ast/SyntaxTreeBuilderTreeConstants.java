@@ -59,43 +59,48 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTAVG = 53;
   public int JJTSAMPLE = 54;
   public int JJTGROUPCONCAT = 55;
-  public int JJTSUBSTR = 56;
-  public int JJTSTRLEN = 57;
-  public int JJTUPPERCASE = 58;
-  public int JJTLOWERCASE = 59;
-  public int JJTSTRSTARTS = 60;
-  public int JJTSTRENDS = 61;
-  public int JJTCONCAT = 62;
-  public int JJTCONTAINS = 63;
-  public int JJTENCODEFORURI = 64;
-  public int JJTIF = 65;
-  public int JJTIN = 66;
-  public int JJTNOTIN = 67;
-  public int JJTCOALESCE = 68;
-  public int JJTSTR = 69;
-  public int JJTLANG = 70;
-  public int JJTLANGMATCHES = 71;
-  public int JJTDATATYPE = 72;
-  public int JJTBOUND = 73;
-  public int JJTSAMETERM = 74;
-  public int JJTISIRI = 75;
-  public int JJTISBLANK = 76;
-  public int JJTISLITERAL = 77;
-  public int JJTISNUMERIC = 78;
-  public int JJTBNODEFUNC = 79;
-  public int JJTIRIFUNC = 80;
-  public int JJTSTRDT = 81;
-  public int JJTSTRLANG = 82;
-  public int JJTBIND = 83;
-  public int JJTREGEXEXPRESSION = 84;
-  public int JJTEXISTSFUNC = 85;
-  public int JJTNOTEXISTSFUNC = 86;
-  public int JJTRDFLITERAL = 87;
-  public int JJTTRUE = 88;
-  public int JJTFALSE = 89;
-  public int JJTSTRING = 90;
-  public int JJTQNAME = 91;
-  public int JJTBLANKNODE = 92;
+  public int JJTRAND = 56;
+  public int JJTABS = 57;
+  public int JJTCEIL = 58;
+  public int JJTFLOOR = 59;
+  public int JJTROUND = 60;
+  public int JJTSUBSTR = 61;
+  public int JJTSTRLEN = 62;
+  public int JJTUPPERCASE = 63;
+  public int JJTLOWERCASE = 64;
+  public int JJTSTRSTARTS = 65;
+  public int JJTSTRENDS = 66;
+  public int JJTCONCAT = 67;
+  public int JJTCONTAINS = 68;
+  public int JJTENCODEFORURI = 69;
+  public int JJTIF = 70;
+  public int JJTIN = 71;
+  public int JJTNOTIN = 72;
+  public int JJTCOALESCE = 73;
+  public int JJTSTR = 74;
+  public int JJTLANG = 75;
+  public int JJTLANGMATCHES = 76;
+  public int JJTDATATYPE = 77;
+  public int JJTBOUND = 78;
+  public int JJTSAMETERM = 79;
+  public int JJTISIRI = 80;
+  public int JJTISBLANK = 81;
+  public int JJTISLITERAL = 82;
+  public int JJTISNUMERIC = 83;
+  public int JJTBNODEFUNC = 84;
+  public int JJTIRIFUNC = 85;
+  public int JJTSTRDT = 86;
+  public int JJTSTRLANG = 87;
+  public int JJTBIND = 88;
+  public int JJTREGEXEXPRESSION = 89;
+  public int JJTEXISTSFUNC = 90;
+  public int JJTNOTEXISTSFUNC = 91;
+  public int JJTRDFLITERAL = 92;
+  public int JJTTRUE = 93;
+  public int JJTFALSE = 94;
+  public int JJTSTRING = 95;
+  public int JJTQNAME = 96;
+  public int JJTBLANKNODE = 97;
 
 
   public String[] jjtNodeName = {
@@ -155,6 +160,11 @@ public interface SyntaxTreeBuilderTreeConstants
     "Avg",
     "Sample",
     "GroupConcat",
+    "Rand",
+    "Abs",
+    "Ceil",
+    "Floor",
+    "Round",
     "Substr",
     "StrLen",
     "UpperCase",
@@ -194,4 +204,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "BlankNode",
   };
 }
-/* JavaCC - OriginalChecksum=d517fca241e4f2ac3539e9ee06dec129 (do not edit this line) */
+/* JavaCC - OriginalChecksum=18a0857eee1d7d54c6efea170d146480 (do not edit this line) */
