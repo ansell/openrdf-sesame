@@ -43,22 +43,17 @@ public class Tz implements Function {
 			URI datatype = literal.getDatatype();
 
 			if (datatype != null && XMLDatatypeUtil.isCalendarDatatype(datatype)) {
-				try {
-					String lexValue = literal.getLabel();
+				String lexValue = literal.getLabel();
 
-					Pattern pattern = Pattern.compile("Z|[+-]\\d\\d:\\d\\d");
-					Matcher m = pattern.matcher(lexValue);
+				Pattern pattern = Pattern.compile("Z|[+-]\\d\\d:\\d\\d");
+				Matcher m = pattern.matcher(lexValue);
 
-					String timeZone = "";
-					if (m.find()) {
-						timeZone = m.group();
-					}
-
-					return valueFactory.createLiteral(timeZone);
+				String timeZone = "";
+				if (m.find()) {
+					timeZone = m.group();
 				}
-				catch (IllegalArgumentException e) {
-					throw new ValueExprEvaluationException("illegal calendar value: " + argValue);
-				}
+
+				return valueFactory.createLiteral(timeZone);
 			}
 			else {
 				throw new ValueExprEvaluationException("unexpected input value for function: " + argValue);
