@@ -6,9 +6,10 @@
 package org.openrdf.query.algebra.evaluation.function.numeric;
 
 
-import java.math.BigDecimal;
-
-import junit.framework.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -20,17 +21,15 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
-
 /**
- *
  * @author jeen
  */
 public class RandTest {
 
 	private Rand rand;
-	
+
 	private ValueFactory f = new ValueFactoryImpl();
-	
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -54,18 +53,18 @@ public class RandTest {
 	public void testEvaluate() {
 		try {
 			Literal random = rand.evaluate(f);
-			
-			Assert.assertNotNull(random);
-			Assert.assertEquals(XMLSchema.DOUBLE, random.getDatatype());
-			
+
+			assertNotNull(random);
+			assertEquals(XMLSchema.DOUBLE, random.getDatatype());
+
 			double randomValue = random.doubleValue();
-			
-			Assert.assertTrue(randomValue >= 0.0d);
-			Assert.assertTrue(randomValue < 1.0d);
+
+			assertTrue(randomValue >= 0.0d);
+			assertTrue(randomValue < 1.0d);
 		}
 		catch (ValueExprEvaluationException e) {
 			e.printStackTrace();
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 	}
 

@@ -100,6 +100,7 @@ import org.openrdf.query.parser.sparql.ast.ASTConstruct;
 import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
 import org.openrdf.query.parser.sparql.ast.ASTCount;
 import org.openrdf.query.parser.sparql.ast.ASTDatatype;
+import org.openrdf.query.parser.sparql.ast.ASTDay;
 import org.openrdf.query.parser.sparql.ast.ASTDescribe;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
 import org.openrdf.query.parser.sparql.ast.ASTEncodeForURI;
@@ -113,6 +114,7 @@ import org.openrdf.query.parser.sparql.ast.ASTGroupClause;
 import org.openrdf.query.parser.sparql.ast.ASTGroupConcat;
 import org.openrdf.query.parser.sparql.ast.ASTGroupCondition;
 import org.openrdf.query.parser.sparql.ast.ASTHavingClause;
+import org.openrdf.query.parser.sparql.ast.ASTHours;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
 import org.openrdf.query.parser.sparql.ast.ASTIf;
@@ -129,9 +131,12 @@ import org.openrdf.query.parser.sparql.ast.ASTMath;
 import org.openrdf.query.parser.sparql.ast.ASTMax;
 import org.openrdf.query.parser.sparql.ast.ASTMin;
 import org.openrdf.query.parser.sparql.ast.ASTMinusGraphPattern;
+import org.openrdf.query.parser.sparql.ast.ASTMinutes;
+import org.openrdf.query.parser.sparql.ast.ASTMonth;
 import org.openrdf.query.parser.sparql.ast.ASTNot;
 import org.openrdf.query.parser.sparql.ast.ASTNotExistsFunc;
 import org.openrdf.query.parser.sparql.ast.ASTNotIn;
+import org.openrdf.query.parser.sparql.ast.ASTNow;
 import org.openrdf.query.parser.sparql.ast.ASTNumericLiteral;
 import org.openrdf.query.parser.sparql.ast.ASTObjectList;
 import org.openrdf.query.parser.sparql.ast.ASTOffset;
@@ -154,6 +159,7 @@ import org.openrdf.query.parser.sparql.ast.ASTRand;
 import org.openrdf.query.parser.sparql.ast.ASTRegexExpression;
 import org.openrdf.query.parser.sparql.ast.ASTRound;
 import org.openrdf.query.parser.sparql.ast.ASTSameTerm;
+import org.openrdf.query.parser.sparql.ast.ASTSeconds;
 import org.openrdf.query.parser.sparql.ast.ASTSelect;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
 import org.openrdf.query.parser.sparql.ast.ASTStr;
@@ -165,10 +171,13 @@ import org.openrdf.query.parser.sparql.ast.ASTStrStarts;
 import org.openrdf.query.parser.sparql.ast.ASTString;
 import org.openrdf.query.parser.sparql.ast.ASTSubstr;
 import org.openrdf.query.parser.sparql.ast.ASTSum;
+import org.openrdf.query.parser.sparql.ast.ASTTimezone;
 import org.openrdf.query.parser.sparql.ast.ASTTrue;
+import org.openrdf.query.parser.sparql.ast.ASTTz;
 import org.openrdf.query.parser.sparql.ast.ASTUnionGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTUpperCase;
 import org.openrdf.query.parser.sparql.ast.ASTVar;
+import org.openrdf.query.parser.sparql.ast.ASTYear;
 import org.openrdf.query.parser.sparql.ast.Node;
 import org.openrdf.query.parser.sparql.ast.SimpleNode;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
@@ -233,11 +242,12 @@ class TupleExprBuilder extends ASTVisitorBase {
 		FunctionCall functionCall = new FunctionCall(uri);
 
 		int noOfArguments = node.jjtGetNumChildren();
-		
+
 		if (noOfArguments > maxArgs || noOfArguments < minArgs) {
-			throw new VisitorException("unexpected number of arguments (" + noOfArguments + ") for function " + uri);
+			throw new VisitorException("unexpected number of arguments (" + noOfArguments + ") for function "
+					+ uri);
 		}
-		
+
 		for (int i = 0; i < noOfArguments; i++) {
 			Node argNode = node.jjtGetChild(i);
 			functionCall.addArg((ValueExpr)argNode.jjtAccept(this, null));
@@ -1589,7 +1599,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		return createFunctionCall(FN.NUMERIC_ROUND.toString(), node, 1, 1);
 	}
-	
+
 	@Override
 	public FunctionCall visit(ASTRand node, Object data)
 		throws VisitorException
@@ -1694,6 +1704,69 @@ class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		return createFunctionCall("STRLANG", node, 2, 2);
+	}
+
+	@Override
+	public FunctionCall visit(ASTNow node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("NOW", node, 0, 0);
+	}
+
+	@Override
+	public FunctionCall visit(ASTYear node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.YEAR_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTMonth node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.MONTH_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTDay node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.DAY_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTHours node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.HOURS_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTMinutes node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.MINUTES_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTSeconds node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.SECONDS_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTTimezone node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.TIMEZONE_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTTz node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("TZ", node, 1, 1);
 	}
 
 	@Override

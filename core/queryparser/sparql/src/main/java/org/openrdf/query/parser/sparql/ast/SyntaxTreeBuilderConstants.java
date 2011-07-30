@@ -217,91 +217,109 @@ public interface SyntaxTreeBuilderConstants {
   /** RegularExpression Id. */
   int ROUND = 103;
   /** RegularExpression Id. */
-  int Q_IRI_REF = 104;
+  int NOW = 104;
   /** RegularExpression Id. */
-  int PNAME_NS = 105;
+  int YEAR = 105;
   /** RegularExpression Id. */
-  int PNAME_LN = 106;
+  int MONTH = 106;
   /** RegularExpression Id. */
-  int BLANK_NODE_LABEL = 107;
+  int DAY = 107;
   /** RegularExpression Id. */
-  int VAR1 = 108;
+  int HOURS = 108;
   /** RegularExpression Id. */
-  int VAR2 = 109;
+  int MINUTES = 109;
   /** RegularExpression Id. */
-  int LANGTAG = 110;
+  int SECONDS = 110;
   /** RegularExpression Id. */
-  int INTEGER = 111;
+  int TIMEZONE = 111;
   /** RegularExpression Id. */
-  int INTEGER_POSITIVE = 112;
+  int TZ = 112;
   /** RegularExpression Id. */
-  int INTEGER_NEGATIVE = 113;
+  int Q_IRI_REF = 113;
   /** RegularExpression Id. */
-  int DECIMAL = 114;
+  int PNAME_NS = 114;
   /** RegularExpression Id. */
-  int DECIMAL1 = 115;
+  int PNAME_LN = 115;
   /** RegularExpression Id. */
-  int DECIMAL2 = 116;
+  int BLANK_NODE_LABEL = 116;
   /** RegularExpression Id. */
-  int DECIMAL_POSITIVE = 117;
+  int VAR1 = 117;
   /** RegularExpression Id. */
-  int DECIMAL_NEGATIVE = 118;
+  int VAR2 = 118;
   /** RegularExpression Id. */
-  int DOUBLE = 119;
+  int LANGTAG = 119;
   /** RegularExpression Id. */
-  int DOUBLE1 = 120;
+  int INTEGER = 120;
   /** RegularExpression Id. */
-  int DOUBLE2 = 121;
+  int INTEGER_POSITIVE = 121;
   /** RegularExpression Id. */
-  int DOUBLE3 = 122;
+  int INTEGER_NEGATIVE = 122;
   /** RegularExpression Id. */
-  int EXPONENT = 123;
+  int DECIMAL = 123;
   /** RegularExpression Id. */
-  int DOUBLE_POSITIVE = 124;
+  int DECIMAL1 = 124;
   /** RegularExpression Id. */
-  int DOUBLE_NEGATIVE = 125;
+  int DECIMAL2 = 125;
   /** RegularExpression Id. */
-  int STRING_LITERAL1 = 126;
+  int DECIMAL_POSITIVE = 126;
   /** RegularExpression Id. */
-  int STRING_LITERAL2 = 127;
+  int DECIMAL_NEGATIVE = 127;
   /** RegularExpression Id. */
-  int STRING_LITERAL_LONG1 = 128;
+  int DOUBLE = 128;
   /** RegularExpression Id. */
-  int STRING_LITERAL_LONG2 = 129;
+  int DOUBLE1 = 129;
   /** RegularExpression Id. */
-  int SAFE_CHAR1 = 130;
+  int DOUBLE2 = 130;
   /** RegularExpression Id. */
-  int SAFE_CHAR2 = 131;
+  int DOUBLE3 = 131;
   /** RegularExpression Id. */
-  int SAFE_CHAR_LONG1 = 132;
+  int EXPONENT = 132;
   /** RegularExpression Id. */
-  int SAFE_CHAR_LONG2 = 133;
+  int DOUBLE_POSITIVE = 133;
   /** RegularExpression Id. */
-  int ECHAR = 134;
+  int DOUBLE_NEGATIVE = 134;
   /** RegularExpression Id. */
-  int HEX = 135;
+  int STRING_LITERAL1 = 135;
   /** RegularExpression Id. */
-  int ALPHA = 136;
+  int STRING_LITERAL2 = 136;
   /** RegularExpression Id. */
-  int NUM = 137;
+  int STRING_LITERAL_LONG1 = 137;
   /** RegularExpression Id. */
-  int PN_CHARS_BASE = 138;
+  int STRING_LITERAL_LONG2 = 138;
   /** RegularExpression Id. */
-  int PN_CHARS_U = 139;
+  int SAFE_CHAR1 = 139;
   /** RegularExpression Id. */
-  int PN_START_CHAR = 140;
+  int SAFE_CHAR2 = 140;
   /** RegularExpression Id. */
-  int VAR_CHAR = 141;
+  int SAFE_CHAR_LONG1 = 141;
   /** RegularExpression Id. */
-  int PN_END_CHAR = 142;
+  int SAFE_CHAR_LONG2 = 142;
   /** RegularExpression Id. */
-  int PN_CHAR = 143;
+  int ECHAR = 143;
   /** RegularExpression Id. */
-  int PN_PREFIX = 144;
+  int HEX = 144;
   /** RegularExpression Id. */
-  int PN_LOCAL = 145;
+  int ALPHA = 145;
   /** RegularExpression Id. */
-  int VARNAME = 146;
+  int NUM = 146;
+  /** RegularExpression Id. */
+  int PN_CHARS_BASE = 147;
+  /** RegularExpression Id. */
+  int PN_CHARS_U = 148;
+  /** RegularExpression Id. */
+  int PN_START_CHAR = 149;
+  /** RegularExpression Id. */
+  int VAR_CHAR = 150;
+  /** RegularExpression Id. */
+  int PN_END_CHAR = 151;
+  /** RegularExpression Id. */
+  int PN_CHAR = 152;
+  /** RegularExpression Id. */
+  int PN_PREFIX = 153;
+  /** RegularExpression Id. */
+  int PN_LOCAL = 154;
+  /** RegularExpression Id. */
+  int VARNAME = 155;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -412,6 +430,15 @@ public interface SyntaxTreeBuilderConstants {
     "\"ceil\"",
     "\"floor\"",
     "\"round\"",
+    "\"now\"",
+    "\"year\"",
+    "\"month\"",
+    "\"day\"",
+    "\"hours\"",
+    "\"minutes\"",
+    "\"seconds\"",
+    "\"timezone\"",
+    "\"tz\"",
     "<Q_IRI_REF>",
     "<PNAME_NS>",
     "<PNAME_LN>",

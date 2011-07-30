@@ -192,6 +192,15 @@ TOKEN [IGNORE_CASE] :
 |	<CEIL: "ceil">
 |	<FLOOR: "floor">
 |	<ROUND: "round">
+|	<NOW: "now">
+|	<YEAR: "year">
+|	<MONTH: "month">
+|	<DAY: "day">
+|	<HOURS: "hours">
+|	<MINUTES: "minutes">
+|	<SECONDS: "seconds">
+|	<TIMEZONE: "timezone">
+|	<TZ: "tz">
 }
 
 TOKEN:
@@ -944,7 +953,7 @@ void BuiltInCall() #void :
 |	StringFunction()
 |	NumericFunction()
 |	RDFTermFunction()
-//|	DateTimeFunction()
+|	DateTimeFunction()
 //|	HashFunction()
 }
 
@@ -989,7 +998,6 @@ void RDFTermFunction() #void :
 |	StrLang()
 }
 
-/*
 void DateTimeFunction() #void :
 {}
 {
@@ -1004,6 +1012,7 @@ void DateTimeFunction() #void :
 |	Tz()
 }
 
+/*
 void HashFunction() #void :
 {}
 {
@@ -1016,6 +1025,59 @@ void HashFunction() #void :
 }
 */
 
+void Now() :
+{}
+{
+    <NOW> <NIL>
+}
+
+void Year() :
+{}
+{
+    <YEAR> <LPAREN> Expression() <RPAREN>
+}
+
+void Month() :
+{}
+{
+    <MONTH> <LPAREN> Expression() <RPAREN>
+}
+
+void Day() :
+{}
+{
+    <DAY> <LPAREN> Expression() <RPAREN>
+}
+
+void Hours() :
+{}
+{
+    <HOURS> <LPAREN> Expression() <RPAREN>
+}
+
+void Minutes() :
+{}
+{
+    <MINUTES> <LPAREN> Expression() <RPAREN>
+}
+
+void Seconds() :
+{}
+{
+    <SECONDS> <LPAREN> Expression() <RPAREN>
+}
+
+void Timezone() :
+{}
+{
+    <TIMEZONE> <LPAREN> Expression() <RPAREN>
+}
+
+void Tz() :
+{}
+{
+    <TZ> <LPAREN> Expression() <RPAREN>
+}
 
 void Rand() :
 {}

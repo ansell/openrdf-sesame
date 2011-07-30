@@ -3,13 +3,12 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.function.numeric;
-
+package org.openrdf.query.algebra.evaluation.function.datetime;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-
-import java.math.BigDecimal;
 
 import org.junit.After;
 import org.junit.Before;
@@ -21,16 +20,15 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
-
 /**
- *
  * @author jeen
  */
-public class RoundTest {
+public class TzTest {
 
-	private Round round;
+	private Tz tz;
+
 	private ValueFactory f = new ValueFactoryImpl();
-	
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -38,7 +36,7 @@ public class RoundTest {
 	public void setUp()
 		throws Exception
 	{
-		round = new Round();
+		tz = new Tz();
 	}
 
 	/**
@@ -51,14 +49,16 @@ public class RoundTest {
 	}
 
 	@Test
-	public void testEvaluateDouble() {
+	public void testEvaluate1() {
 		try {
-			double dVal = 1.6;
-			Literal rounded = round.evaluate(f, f.createLiteral(dVal));
-			
-			double roundValue = rounded.doubleValue();
-			
-			assertEquals((double)2.0, roundValue, 0.001d);
+
+			Literal result = tz.evaluate(f, f.createLiteral("2011-01-10T14:45:13.815-05:00", XMLSchema.DATETIME));
+
+			assertNotNull(result);
+			assertNull(result.getDatatype());
+
+			assertEquals("-05:00", result.getLabel());
+
 		}
 		catch (ValueExprEvaluationException e) {
 			e.printStackTrace();
@@ -66,16 +66,17 @@ public class RoundTest {
 		}
 	}
 	
-
 	@Test
-	public void testEvaluateInt() {
+	public void testEvaluate2() {
 		try {
-			int iVal = 1;
-			Literal rounded = round.evaluate(f, f.createLiteral(iVal));
-			
-			int roundValue = rounded.intValue();
-			
-			assertEquals(iVal, roundValue);
+
+			Literal result = tz.evaluate(f, f.createLiteral("2011-01-10T14:45:13.815Z", XMLSchema.DATETIME));
+
+			assertNotNull(result);
+			assertNull(result.getDatatype());
+
+			assertEquals("Z", result.getLabel());
+
 		}
 		catch (ValueExprEvaluationException e) {
 			e.printStackTrace();
@@ -83,18 +84,18 @@ public class RoundTest {
 		}
 	}
 	
-
+	
 	@Test
-	public void testEvaluateBigDecimal() {
+	public void testEvaluate3() {
 		try {
-			BigDecimal bd = new BigDecimal(1234567.567);
-			
-			Literal rounded = round.evaluate(f, f.createLiteral(bd.toPlainString(), XMLSchema.DECIMAL));
-			
-			BigDecimal roundValue = rounded.decimalValue();
-			
-			// TODO not 100% sure the scaling/precision is correct.
-			assertEquals(new BigDecimal(1234568.0).setScale(1), roundValue);
+
+			Literal result = tz.evaluate(f, f.createLiteral("2011-01-10T14:45:13.815", XMLSchema.DATETIME));
+
+			assertNotNull(result);
+			assertNull(result.getDatatype());
+
+			assertEquals("", result.getLabel());
+
 		}
 		catch (ValueExprEvaluationException e) {
 			e.printStackTrace();
