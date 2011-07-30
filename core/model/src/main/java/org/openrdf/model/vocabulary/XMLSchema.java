@@ -31,6 +31,9 @@ public class XMLSchema {
 	/** <tt>http://www.w3.org/2001/XMLSchema#dateTime</tt> */
 	public final static URI DATETIME;
 
+	/** <tt>http://www.w3.org/2001/XMLSchema#dayTimeDuration</tt> */
+	public static final URI DAYTIMEDURATION;
+	
 	/** <tt>http://www.w3.org/2001/XMLSchema#time</tt> */
 	public final static URI TIME;
 
@@ -168,6 +171,8 @@ public class XMLSchema {
 
 		DATETIME = factory.createURI(XMLSchema.NAMESPACE, "dateTime");
 
+		DAYTIMEDURATION = factory.createURI(NAMESPACE, "dayTimeDuration");
+		
 		TIME = factory.createURI(XMLSchema.NAMESPACE, "time");
 
 		DATE = factory.createURI(XMLSchema.NAMESPACE, "date");
