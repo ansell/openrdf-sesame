@@ -98,6 +98,7 @@ import org.openrdf.query.parser.sparql.ast.ASTConcat;
 import org.openrdf.query.parser.sparql.ast.ASTConstraint;
 import org.openrdf.query.parser.sparql.ast.ASTConstruct;
 import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
+import org.openrdf.query.parser.sparql.ast.ASTContains;
 import org.openrdf.query.parser.sparql.ast.ASTCount;
 import org.openrdf.query.parser.sparql.ast.ASTDatatype;
 import org.openrdf.query.parser.sparql.ast.ASTDay;
@@ -1593,6 +1594,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public FunctionCall visit(ASTContains node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.CONTAINS.toString(), node, 1, 1);
+	}
+	
+	@Override
 	public FunctionCall visit(ASTFloor node, Object data)
 		throws VisitorException
 	{
@@ -1809,7 +1817,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		return createFunctionCall("SHA384", node, 1, 1);
 	}
-	
+
 	@Override
 	public FunctionCall visit(ASTSHA512 node, Object data)
 		throws VisitorException
