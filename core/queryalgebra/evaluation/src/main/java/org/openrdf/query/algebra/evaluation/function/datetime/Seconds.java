@@ -29,7 +29,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 public class Seconds implements Function {
 
 	public String getURI() {
-		return FN.MINUTES_FROM_DATETIME.toString();
+		return FN.SECONDS_FROM_DATETIME.toString();
 	}
 
 	public Literal evaluate(ValueFactory valueFactory, Value... args)

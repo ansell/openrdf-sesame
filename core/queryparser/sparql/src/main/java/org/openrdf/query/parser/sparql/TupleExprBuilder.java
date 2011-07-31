@@ -127,6 +127,7 @@ import org.openrdf.query.parser.sparql.ast.ASTLang;
 import org.openrdf.query.parser.sparql.ast.ASTLangMatches;
 import org.openrdf.query.parser.sparql.ast.ASTLimit;
 import org.openrdf.query.parser.sparql.ast.ASTLowerCase;
+import org.openrdf.query.parser.sparql.ast.ASTMD5;
 import org.openrdf.query.parser.sparql.ast.ASTMath;
 import org.openrdf.query.parser.sparql.ast.ASTMax;
 import org.openrdf.query.parser.sparql.ast.ASTMin;
@@ -158,6 +159,11 @@ import org.openrdf.query.parser.sparql.ast.ASTRDFLiteral;
 import org.openrdf.query.parser.sparql.ast.ASTRand;
 import org.openrdf.query.parser.sparql.ast.ASTRegexExpression;
 import org.openrdf.query.parser.sparql.ast.ASTRound;
+import org.openrdf.query.parser.sparql.ast.ASTSHA1;
+import org.openrdf.query.parser.sparql.ast.ASTSHA224;
+import org.openrdf.query.parser.sparql.ast.ASTSHA256;
+import org.openrdf.query.parser.sparql.ast.ASTSHA384;
+import org.openrdf.query.parser.sparql.ast.ASTSHA512;
 import org.openrdf.query.parser.sparql.ast.ASTSameTerm;
 import org.openrdf.query.parser.sparql.ast.ASTSeconds;
 import org.openrdf.query.parser.sparql.ast.ASTSelect;
@@ -1767,6 +1773,48 @@ class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		return createFunctionCall("TZ", node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTMD5 node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("MD5", node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTSHA1 node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("SHA1", node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTSHA224 node, Object data)
+		throws VisitorException
+	{
+		throw new VisitorException("hash function SHA-224 is currently not supported");
+	}
+
+	@Override
+	public FunctionCall visit(ASTSHA256 node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("SHA256", node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTSHA384 node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("SHA384", node, 1, 1);
+	}
+	
+	@Override
+	public FunctionCall visit(ASTSHA512 node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("SHA512", node, 1, 1);
 	}
 
 	@Override

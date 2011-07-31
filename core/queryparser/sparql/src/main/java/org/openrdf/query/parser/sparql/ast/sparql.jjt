@@ -201,6 +201,12 @@ TOKEN [IGNORE_CASE] :
 |	<SECONDS: "seconds">
 |	<TIMEZONE: "timezone">
 |	<TZ: "tz">
+|	<MD5: "md5">
+|	<SHA1: "sha1">
+|	<SHA224: "sha224">
+|	<SHA256: "sha256">
+|	<SHA384: "sha384">
+|	<SHA512: "sha512">
 }
 
 TOKEN:
@@ -954,7 +960,7 @@ void BuiltInCall() #void :
 |	NumericFunction()
 |	RDFTermFunction()
 |	DateTimeFunction()
-//|	HashFunction()
+|	HashFunction()
 }
 
 void StringFunction() #void :
@@ -1012,7 +1018,6 @@ void DateTimeFunction() #void :
 |	Tz()
 }
 
-/*
 void HashFunction() #void :
 {}
 {
@@ -1023,7 +1028,43 @@ void HashFunction() #void :
 |	SHA384()
 |	SHA512()
 }
-*/
+
+
+void MD5() :
+{}
+{
+    <MD5> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA1() :
+{}
+{
+    <SHA1> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA224() :
+{}
+{
+    <SHA224> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA256() :
+{}
+{
+    <SHA256> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA384() :
+{}
+{
+    <SHA384> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA512() :
+{}
+{
+    <SHA512> <LPAREN> Expression() <RPAREN>
+}
 
 void Now() :
 {}

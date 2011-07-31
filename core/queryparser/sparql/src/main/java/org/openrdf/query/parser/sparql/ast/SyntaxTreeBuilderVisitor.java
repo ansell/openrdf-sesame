@@ -59,6 +59,12 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTAvg node, Object data) throws VisitorException;
   public Object visit(ASTSample node, Object data) throws VisitorException;
   public Object visit(ASTGroupConcat node, Object data) throws VisitorException;
+  public Object visit(ASTMD5 node, Object data) throws VisitorException;
+  public Object visit(ASTSHA1 node, Object data) throws VisitorException;
+  public Object visit(ASTSHA224 node, Object data) throws VisitorException;
+  public Object visit(ASTSHA256 node, Object data) throws VisitorException;
+  public Object visit(ASTSHA384 node, Object data) throws VisitorException;
+  public Object visit(ASTSHA512 node, Object data) throws VisitorException;
   public Object visit(ASTNow node, Object data) throws VisitorException;
   public Object visit(ASTYear node, Object data) throws VisitorException;
   public Object visit(ASTMonth node, Object data) throws VisitorException;
@@ -111,4 +117,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTQName node, Object data) throws VisitorException;
   public Object visit(ASTBlankNode node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=825379fc776ac178a95b515c86182490 (do not edit this line) */
+/* JavaCC - OriginalChecksum=b28e6edf394fdcb0cee1b3940b574979 (do not edit this line) */

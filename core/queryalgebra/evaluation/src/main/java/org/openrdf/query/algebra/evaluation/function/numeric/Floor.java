@@ -48,7 +48,7 @@ public class Floor implements Function {
 					return literal;
 				}
 				else if (XMLDatatypeUtil.isDecimalDatatype(datatype)) {
-					BigDecimal floor = literal.decimalValue().setScale(0, RoundingMode.FLOOR).setScale(1);
+					BigDecimal floor = literal.decimalValue().setScale(0, RoundingMode.FLOOR);
 					return valueFactory.createLiteral(floor.toPlainString(), datatype);
 				}
 				else if (XMLDatatypeUtil.isFloatingPointDatatype(datatype)) {

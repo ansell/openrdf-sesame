@@ -56,7 +56,7 @@ public class Ceil implements Function {
 					return literal;
 				}
 				else if (XMLDatatypeUtil.isDecimalDatatype(datatype)) {
-					BigDecimal ceilingValue = literal.decimalValue().setScale(0, RoundingMode.CEILING).setScale(1);
+					BigDecimal ceilingValue = literal.decimalValue().setScale(0, RoundingMode.CEILING);
 					return valueFactory.createLiteral(ceilingValue.toPlainString(), datatype);
 				}
 				else if (XMLDatatypeUtil.isFloatingPointDatatype(datatype)) {

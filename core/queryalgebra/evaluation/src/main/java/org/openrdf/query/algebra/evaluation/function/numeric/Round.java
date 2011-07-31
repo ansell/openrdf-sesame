@@ -49,7 +49,7 @@ public class Round implements Function {
 					return literal;
 				}
 				else if (XMLDatatypeUtil.isDecimalDatatype(datatype)) {
-					BigDecimal rounded = literal.decimalValue().setScale(0, RoundingMode.HALF_UP).setScale(1);
+					BigDecimal rounded = literal.decimalValue().setScale(0, RoundingMode.HALF_UP);
 					return valueFactory.createLiteral(rounded.toPlainString(), datatype);
 				}
 				else if (XMLDatatypeUtil.isFloatingPointDatatype(datatype)) {
