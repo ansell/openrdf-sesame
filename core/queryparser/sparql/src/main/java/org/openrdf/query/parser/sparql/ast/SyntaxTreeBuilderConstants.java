@@ -235,91 +235,103 @@ public interface SyntaxTreeBuilderConstants {
   /** RegularExpression Id. */
   int TZ = 112;
   /** RegularExpression Id. */
-  int Q_IRI_REF = 113;
+  int MD5 = 113;
   /** RegularExpression Id. */
-  int PNAME_NS = 114;
+  int SHA1 = 114;
   /** RegularExpression Id. */
-  int PNAME_LN = 115;
+  int SHA224 = 115;
   /** RegularExpression Id. */
-  int BLANK_NODE_LABEL = 116;
+  int SHA256 = 116;
   /** RegularExpression Id. */
-  int VAR1 = 117;
+  int SHA384 = 117;
   /** RegularExpression Id. */
-  int VAR2 = 118;
+  int SHA512 = 118;
   /** RegularExpression Id. */
-  int LANGTAG = 119;
+  int Q_IRI_REF = 119;
   /** RegularExpression Id. */
-  int INTEGER = 120;
+  int PNAME_NS = 120;
   /** RegularExpression Id. */
-  int INTEGER_POSITIVE = 121;
+  int PNAME_LN = 121;
   /** RegularExpression Id. */
-  int INTEGER_NEGATIVE = 122;
+  int BLANK_NODE_LABEL = 122;
   /** RegularExpression Id. */
-  int DECIMAL = 123;
+  int VAR1 = 123;
   /** RegularExpression Id. */
-  int DECIMAL1 = 124;
+  int VAR2 = 124;
   /** RegularExpression Id. */
-  int DECIMAL2 = 125;
+  int LANGTAG = 125;
   /** RegularExpression Id. */
-  int DECIMAL_POSITIVE = 126;
+  int INTEGER = 126;
   /** RegularExpression Id. */
-  int DECIMAL_NEGATIVE = 127;
+  int INTEGER_POSITIVE = 127;
   /** RegularExpression Id. */
-  int DOUBLE = 128;
+  int INTEGER_NEGATIVE = 128;
   /** RegularExpression Id. */
-  int DOUBLE1 = 129;
+  int DECIMAL = 129;
   /** RegularExpression Id. */
-  int DOUBLE2 = 130;
+  int DECIMAL1 = 130;
   /** RegularExpression Id. */
-  int DOUBLE3 = 131;
+  int DECIMAL2 = 131;
   /** RegularExpression Id. */
-  int EXPONENT = 132;
+  int DECIMAL_POSITIVE = 132;
   /** RegularExpression Id. */
-  int DOUBLE_POSITIVE = 133;
+  int DECIMAL_NEGATIVE = 133;
   /** RegularExpression Id. */
-  int DOUBLE_NEGATIVE = 134;
+  int DOUBLE = 134;
   /** RegularExpression Id. */
-  int STRING_LITERAL1 = 135;
+  int DOUBLE1 = 135;
   /** RegularExpression Id. */
-  int STRING_LITERAL2 = 136;
+  int DOUBLE2 = 136;
   /** RegularExpression Id. */
-  int STRING_LITERAL_LONG1 = 137;
+  int DOUBLE3 = 137;
   /** RegularExpression Id. */
-  int STRING_LITERAL_LONG2 = 138;
+  int EXPONENT = 138;
   /** RegularExpression Id. */
-  int SAFE_CHAR1 = 139;
+  int DOUBLE_POSITIVE = 139;
   /** RegularExpression Id. */
-  int SAFE_CHAR2 = 140;
+  int DOUBLE_NEGATIVE = 140;
   /** RegularExpression Id. */
-  int SAFE_CHAR_LONG1 = 141;
+  int STRING_LITERAL1 = 141;
   /** RegularExpression Id. */
-  int SAFE_CHAR_LONG2 = 142;
+  int STRING_LITERAL2 = 142;
   /** RegularExpression Id. */
-  int ECHAR = 143;
+  int STRING_LITERAL_LONG1 = 143;
   /** RegularExpression Id. */
-  int HEX = 144;
+  int STRING_LITERAL_LONG2 = 144;
   /** RegularExpression Id. */
-  int ALPHA = 145;
+  int SAFE_CHAR1 = 145;
   /** RegularExpression Id. */
-  int NUM = 146;
+  int SAFE_CHAR2 = 146;
   /** RegularExpression Id. */
-  int PN_CHARS_BASE = 147;
+  int SAFE_CHAR_LONG1 = 147;
   /** RegularExpression Id. */
-  int PN_CHARS_U = 148;
+  int SAFE_CHAR_LONG2 = 148;
   /** RegularExpression Id. */
-  int PN_START_CHAR = 149;
+  int ECHAR = 149;
   /** RegularExpression Id. */
-  int VAR_CHAR = 150;
+  int HEX = 150;
   /** RegularExpression Id. */
-  int PN_END_CHAR = 151;
+  int ALPHA = 151;
   /** RegularExpression Id. */
-  int PN_CHAR = 152;
+  int NUM = 152;
   /** RegularExpression Id. */
-  int PN_PREFIX = 153;
+  int PN_CHARS_BASE = 153;
   /** RegularExpression Id. */
-  int PN_LOCAL = 154;
+  int PN_CHARS_U = 154;
   /** RegularExpression Id. */
-  int VARNAME = 155;
+  int PN_START_CHAR = 155;
+  /** RegularExpression Id. */
+  int VAR_CHAR = 156;
+  /** RegularExpression Id. */
+  int PN_END_CHAR = 157;
+  /** RegularExpression Id. */
+  int PN_CHAR = 158;
+  /** RegularExpression Id. */
+  int PN_PREFIX = 159;
+  /** RegularExpression Id. */
+  int PN_LOCAL = 160;
+  /** RegularExpression Id. */
+  int VARNAME = 161;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -439,6 +451,12 @@ public interface SyntaxTreeBuilderConstants {
     "\"seconds\"",
     "\"timezone\"",
     "\"tz\"",
+    "\"md5\"",
+    "\"sha1\"",
+    "\"sha224\"",
+    "\"sha256\"",
+    "\"sha384\"",
+    "\"sha512\"",
     "<Q_IRI_REF>",
     "<PNAME_NS>",
     "<PNAME_LN>",

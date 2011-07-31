@@ -55,6 +55,7 @@ import org.openrdf.query.parser.sparql.ast.ASTLang;
 import org.openrdf.query.parser.sparql.ast.ASTLangMatches;
 import org.openrdf.query.parser.sparql.ast.ASTLimit;
 import org.openrdf.query.parser.sparql.ast.ASTLowerCase;
+import org.openrdf.query.parser.sparql.ast.ASTMD5;
 import org.openrdf.query.parser.sparql.ast.ASTMath;
 import org.openrdf.query.parser.sparql.ast.ASTMax;
 import org.openrdf.query.parser.sparql.ast.ASTMin;
@@ -87,6 +88,11 @@ import org.openrdf.query.parser.sparql.ast.ASTRDFLiteral;
 import org.openrdf.query.parser.sparql.ast.ASTRand;
 import org.openrdf.query.parser.sparql.ast.ASTRegexExpression;
 import org.openrdf.query.parser.sparql.ast.ASTRound;
+import org.openrdf.query.parser.sparql.ast.ASTSHA1;
+import org.openrdf.query.parser.sparql.ast.ASTSHA224;
+import org.openrdf.query.parser.sparql.ast.ASTSHA256;
+import org.openrdf.query.parser.sparql.ast.ASTSHA384;
+import org.openrdf.query.parser.sparql.ast.ASTSHA512;
 import org.openrdf.query.parser.sparql.ast.ASTSameTerm;
 import org.openrdf.query.parser.sparql.ast.ASTSample;
 import org.openrdf.query.parser.sparql.ast.ASTSeconds;
@@ -195,6 +201,42 @@ abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	}
 
 	public Object visit(ASTAvg node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTMD5 node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTSHA1 node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTSHA224 node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTSHA256 node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTSHA384 node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTSHA512 node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);

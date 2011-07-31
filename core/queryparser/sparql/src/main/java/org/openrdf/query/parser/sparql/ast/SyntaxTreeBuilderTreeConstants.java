@@ -59,57 +59,63 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTAVG = 53;
   public int JJTSAMPLE = 54;
   public int JJTGROUPCONCAT = 55;
-  public int JJTNOW = 56;
-  public int JJTYEAR = 57;
-  public int JJTMONTH = 58;
-  public int JJTDAY = 59;
-  public int JJTHOURS = 60;
-  public int JJTMINUTES = 61;
-  public int JJTSECONDS = 62;
-  public int JJTTIMEZONE = 63;
-  public int JJTTZ = 64;
-  public int JJTRAND = 65;
-  public int JJTABS = 66;
-  public int JJTCEIL = 67;
-  public int JJTFLOOR = 68;
-  public int JJTROUND = 69;
-  public int JJTSUBSTR = 70;
-  public int JJTSTRLEN = 71;
-  public int JJTUPPERCASE = 72;
-  public int JJTLOWERCASE = 73;
-  public int JJTSTRSTARTS = 74;
-  public int JJTSTRENDS = 75;
-  public int JJTCONCAT = 76;
-  public int JJTCONTAINS = 77;
-  public int JJTENCODEFORURI = 78;
-  public int JJTIF = 79;
-  public int JJTIN = 80;
-  public int JJTNOTIN = 81;
-  public int JJTCOALESCE = 82;
-  public int JJTSTR = 83;
-  public int JJTLANG = 84;
-  public int JJTLANGMATCHES = 85;
-  public int JJTDATATYPE = 86;
-  public int JJTBOUND = 87;
-  public int JJTSAMETERM = 88;
-  public int JJTISIRI = 89;
-  public int JJTISBLANK = 90;
-  public int JJTISLITERAL = 91;
-  public int JJTISNUMERIC = 92;
-  public int JJTBNODEFUNC = 93;
-  public int JJTIRIFUNC = 94;
-  public int JJTSTRDT = 95;
-  public int JJTSTRLANG = 96;
-  public int JJTBIND = 97;
-  public int JJTREGEXEXPRESSION = 98;
-  public int JJTEXISTSFUNC = 99;
-  public int JJTNOTEXISTSFUNC = 100;
-  public int JJTRDFLITERAL = 101;
-  public int JJTTRUE = 102;
-  public int JJTFALSE = 103;
-  public int JJTSTRING = 104;
-  public int JJTQNAME = 105;
-  public int JJTBLANKNODE = 106;
+  public int JJTMD5 = 56;
+  public int JJTSHA1 = 57;
+  public int JJTSHA224 = 58;
+  public int JJTSHA256 = 59;
+  public int JJTSHA384 = 60;
+  public int JJTSHA512 = 61;
+  public int JJTNOW = 62;
+  public int JJTYEAR = 63;
+  public int JJTMONTH = 64;
+  public int JJTDAY = 65;
+  public int JJTHOURS = 66;
+  public int JJTMINUTES = 67;
+  public int JJTSECONDS = 68;
+  public int JJTTIMEZONE = 69;
+  public int JJTTZ = 70;
+  public int JJTRAND = 71;
+  public int JJTABS = 72;
+  public int JJTCEIL = 73;
+  public int JJTFLOOR = 74;
+  public int JJTROUND = 75;
+  public int JJTSUBSTR = 76;
+  public int JJTSTRLEN = 77;
+  public int JJTUPPERCASE = 78;
+  public int JJTLOWERCASE = 79;
+  public int JJTSTRSTARTS = 80;
+  public int JJTSTRENDS = 81;
+  public int JJTCONCAT = 82;
+  public int JJTCONTAINS = 83;
+  public int JJTENCODEFORURI = 84;
+  public int JJTIF = 85;
+  public int JJTIN = 86;
+  public int JJTNOTIN = 87;
+  public int JJTCOALESCE = 88;
+  public int JJTSTR = 89;
+  public int JJTLANG = 90;
+  public int JJTLANGMATCHES = 91;
+  public int JJTDATATYPE = 92;
+  public int JJTBOUND = 93;
+  public int JJTSAMETERM = 94;
+  public int JJTISIRI = 95;
+  public int JJTISBLANK = 96;
+  public int JJTISLITERAL = 97;
+  public int JJTISNUMERIC = 98;
+  public int JJTBNODEFUNC = 99;
+  public int JJTIRIFUNC = 100;
+  public int JJTSTRDT = 101;
+  public int JJTSTRLANG = 102;
+  public int JJTBIND = 103;
+  public int JJTREGEXEXPRESSION = 104;
+  public int JJTEXISTSFUNC = 105;
+  public int JJTNOTEXISTSFUNC = 106;
+  public int JJTRDFLITERAL = 107;
+  public int JJTTRUE = 108;
+  public int JJTFALSE = 109;
+  public int JJTSTRING = 110;
+  public int JJTQNAME = 111;
+  public int JJTBLANKNODE = 112;
 
 
   public String[] jjtNodeName = {
@@ -169,6 +175,12 @@ public interface SyntaxTreeBuilderTreeConstants
     "Avg",
     "Sample",
     "GroupConcat",
+    "MD5",
+    "SHA1",
+    "SHA224",
+    "SHA256",
+    "SHA384",
+    "SHA512",
     "Now",
     "Year",
     "Month",
@@ -222,4 +234,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "BlankNode",
   };
 }
-/* JavaCC - OriginalChecksum=8c07420117f33ff50d15d643361c0eeb (do not edit this line) */
+/* JavaCC - OriginalChecksum=3ae13f19a1bab06e7308c025fb353d02 (do not edit this line) */
