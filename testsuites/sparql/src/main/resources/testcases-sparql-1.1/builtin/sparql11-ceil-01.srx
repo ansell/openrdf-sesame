@@ -13,7 +13,7 @@
         <literal datatype="http://www.w3.org/2001/XMLSchema#decimal">42.2</literal>
       </binding>
       <binding name="ceil">
-	    <literal datatype="http://www.w3.org/2001/XMLSchema#decimal">43.0</literal>
+	    <literal datatype="http://www.w3.org/2001/XMLSchema#decimal">43</literal>
       </binding>
     </result>
   </results>
