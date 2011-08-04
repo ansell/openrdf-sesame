@@ -178,15 +178,15 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		testCon.add(bob, name, nameBob);
 
-		assertTrue("Repository should contain newly added statement", testCon.hasStatement(bob, name, nameBob,
-				false));
+		assertTrue("Repository should contain newly added statement",
+				testCon.hasStatement(bob, name, nameBob, false));
 
 		Statement statement = vf.createStatement(alice, name, nameAlice);
 		testCon.add(statement);
 
 		assertTrue("Repository should contain newly added statement", testCon.hasStatement(statement, false));
-		assertTrue("Repository should contain newly added statement", testCon.hasStatement(alice, name,
-				nameAlice, false));
+		assertTrue("Repository should contain newly added statement",
+				testCon.hasStatement(alice, name, nameAlice, false));
 
 		Repository tempRep = new SailRepository(new MemoryStore());
 		tempRep.initialize();
@@ -194,8 +194,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		con.add(testCon.getStatements(null, null, null, false));
 
-		assertTrue("Temp Repository should contain newly added statement", con.hasStatement(bob, name, nameBob,
-				false));
+		assertTrue("Temp Repository should contain newly added statement",
+				con.hasStatement(bob, name, nameBob, false));
 		con.close();
 		tempRep.shutDown();
 	}
@@ -226,10 +226,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		defaultGraph.close();
 
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
-				nameBob, false));
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
-				nameAlice, false));
+		assertTrue("Repository should contain newly added statements",
+				testCon.hasStatement(null, publisher, nameBob, false));
+		assertTrue("Repository should contain newly added statements",
+				testCon.hasStatement(null, publisher, nameAlice, false));
 
 		// add file graph1.ttl to context1
 		InputStream graph1Stream = RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX
@@ -251,15 +251,15 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertTrue("alice should be known in the store", testCon.hasStatement(null, name, nameAlice, false));
 
-		assertFalse("alice should not be known in context1", testCon.hasStatement(null, name, nameAlice, false,
-				context1));
-		assertTrue("alice should be known in context2", testCon.hasStatement(null, name, nameAlice, false,
-				context2));
+		assertFalse("alice should not be known in context1",
+				testCon.hasStatement(null, name, nameAlice, false, context1));
+		assertTrue("alice should be known in context2",
+				testCon.hasStatement(null, name, nameAlice, false, context2));
 
 		assertTrue("bob should be known in the store", testCon.hasStatement(null, name, nameBob, false));
 
-		assertFalse("bob should not be known in context2", testCon.hasStatement(null, name, nameBob, false,
-				context2));
+		assertFalse("bob should not be known in context2",
+				testCon.hasStatement(null, name, nameBob, false, context2));
 		assertTrue("bib should be known in context1",
 				testCon.hasStatement(null, name, nameBob, false, context1));
 
@@ -276,10 +276,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		defaultGraph.close();
 
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
-				nameBob, false));
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
-				nameAlice, false));
+		assertTrue("Repository should contain newly added statements",
+				testCon.hasStatement(null, publisher, nameBob, false));
+		assertTrue("Repository should contain newly added statements",
+				testCon.hasStatement(null, publisher, nameAlice, false));
 
 		// add file graph1.ttl to context1
 		InputStream graph1 = RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX + "graph1.ttl");
@@ -297,15 +297,15 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertTrue("alice should be known in the store", testCon.hasStatement(null, name, nameAlice, false));
 
-		assertFalse("alice should not be known in context1", testCon.hasStatement(null, name, nameAlice, false,
-				context1));
-		assertTrue("alice should be known in context2", testCon.hasStatement(null, name, nameAlice, false,
-				context2));
+		assertFalse("alice should not be known in context1",
+				testCon.hasStatement(null, name, nameAlice, false, context1));
+		assertTrue("alice should be known in context2",
+				testCon.hasStatement(null, name, nameAlice, false, context2));
 
 		assertTrue("bob should be known in the store", testCon.hasStatement(null, name, nameBob, false));
 
-		assertFalse("bob should not be known in context2", testCon.hasStatement(null, name, nameBob, false,
-				context2));
+		assertFalse("bob should not be known in context2",
+				testCon.hasStatement(null, name, nameBob, false, context2));
 		assertTrue("bib should be known in context1",
 				testCon.hasStatement(null, name, nameBob, false, context1));
 
@@ -324,10 +324,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			defaultGraph.close();
 		}
 
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
-				nameBob, false));
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
-				nameAlice, false));
+		assertTrue("Repository should contain newly added statements",
+				testCon.hasStatement(null, publisher, nameBob, false));
+		assertTrue("Repository should contain newly added statements",
+				testCon.hasStatement(null, publisher, nameAlice, false));
 
 	}
 
@@ -338,10 +338,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		testCon.add(in, "", RDFFormat.TURTLE);
 
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
-				nameBob, false));
-		assertTrue("Repository should contain newly added statements", testCon.hasStatement(null, publisher,
-				nameAlice, false));
+		assertTrue("Repository should contain newly added statements",
+				testCon.hasStatement(null, publisher, nameBob, false));
+		assertTrue("Repository should contain newly added statements",
+				testCon.hasStatement(null, publisher, nameAlice, false));
 
 		assertTrue("alice should be known in the store", testCon.hasStatement(null, name, nameAlice, false));
 
@@ -354,13 +354,13 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.setAutoCommit(false);
 		testCon.add(alice, name, nameAlice);
 
-		assertTrue("Uncommitted update should be visible to own connection", testCon.hasStatement(alice, name,
-				nameAlice, false));
+		assertTrue("Uncommitted update should be visible to own connection",
+				testCon.hasStatement(alice, name, nameAlice, false));
 
 		testCon.commit();
 
-		assertTrue("Repository should contain statement after commit", testCon.hasStatement(alice, name,
-				nameAlice, false));
+		assertTrue("Repository should contain statement after commit",
+				testCon.hasStatement(alice, name, nameAlice, false));
 
 		testCon.setAutoCommit(true);
 	}
@@ -371,13 +371,13 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.setAutoCommit(false);
 		testCon.add(alice, name, nameAlice);
 
-		assertTrue("Uncommitted updates should be visible to own connection", testCon.hasStatement(alice, name,
-				nameAlice, false));
+		assertTrue("Uncommitted updates should be visible to own connection",
+				testCon.hasStatement(alice, name, nameAlice, false));
 
 		testCon.rollback();
 
-		assertFalse("Repository should not contain statement after rollback", testCon.hasStatement(alice, name,
-				nameAlice, false));
+		assertFalse("Repository should not contain statement after rollback",
+				testCon.hasStatement(alice, name, nameAlice, false));
 
 		testCon.setAutoCommit(true);
 	}
@@ -419,6 +419,81 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 		finally {
 			result.close();
+		}
+	}
+
+	public void testPrepareSeRQLQuery()
+		throws Exception
+	{
+
+		StringBuilder queryBuilder = new StringBuilder();
+		queryBuilder.append(" SELECT person");
+		queryBuilder.append(" FROM {person} foaf:name {").append(Александър.getLabel()).append("}");
+		queryBuilder.append(" USING NAMESPACE foaf = <" + FOAF_NS + ">");
+
+		try {
+			TupleQuery query = (TupleQuery)testCon.prepareQuery(QueryLanguage.SERQL, queryBuilder.toString());
+		}
+		catch (UnsupportedOperationException e) {
+			fail("unsupported operation: " + e.getMessage());
+		}
+		catch (ClassCastException e) {
+			fail("unexpected query object type: " + e.getMessage());
+		}
+		
+		queryBuilder = new StringBuilder();
+		queryBuilder.append(" (SELECT person");
+		queryBuilder.append(" FROM {person} foaf:name {").append(Александър.getLabel()).append("}");
+		queryBuilder.append(") UNION ");
+		queryBuilder.append("(SELECT x FROM {x} p {y} )"); 
+		queryBuilder.append(" USING NAMESPACE foaf = <" + FOAF_NS + ">");
+
+		try {
+			TupleQuery query = (TupleQuery)testCon.prepareQuery(QueryLanguage.SERQL, queryBuilder.toString());
+		}
+		catch (UnsupportedOperationException e) {
+			fail("unsupported operation: " + e.getMessage());
+		}
+		catch (ClassCastException e) {
+			fail("unexpected query object type: " + e.getMessage());
+		}
+	}
+
+	public void testPrepareSPARQLQuery()
+		throws Exception
+	{
+
+		StringBuilder queryBuilder = new StringBuilder();
+		queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + ">");
+		queryBuilder.append(" SELECT ?person");
+		queryBuilder.append(" WHERE { ?person foaf:name ?y . }");
+
+		try {
+			TupleQuery query = (TupleQuery)testCon.prepareQuery(QueryLanguage.SPARQL, queryBuilder.toString());
+		}
+		catch (UnsupportedOperationException e) {
+			fail("unsupported operation: " + e.getMessage());
+		}
+		catch (ClassCastException e) {
+			fail("unexpected query object type: " + e.getMessage());
+		}
+		
+		queryBuilder = new StringBuilder();
+		queryBuilder.append(" BASE <http://base.uri>");
+		queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + ">");
+		queryBuilder.append(" PREFIX ex: <http://example.org/>");
+		queryBuilder.append(" PREFIX : <http://example.org/foo#>");
+		queryBuilder.append(" SELECT ?person");
+		queryBuilder.append(" WHERE { ?person foaf:name ?y . }");
+
+		try {
+			TupleQuery query = (TupleQuery)testCon.prepareQuery(QueryLanguage.SPARQL, queryBuilder.toString());
+		}
+		catch (UnsupportedOperationException e) {
+			fail("unsupported operation: " + e.getMessage());
+		}
+		catch (ClassCastException e) {
+			fail("unexpected query object type: " + e.getMessage());
 		}
 	}
 
@@ -799,11 +874,11 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertTrue("Repository should contain statement", testCon.hasStatement(bob, name, nameBob, false));
 
-		assertTrue("Repository should contain statement in context1", testCon.hasStatement(bob, name, nameBob,
-				false, context1));
+		assertTrue("Repository should contain statement in context1",
+				testCon.hasStatement(bob, name, nameBob, false, context1));
 
-		assertFalse("Repository should not contain statement in context2", testCon.hasStatement(bob, name,
-				nameBob, false, context2));
+		assertFalse("Repository should not contain statement in context2",
+				testCon.hasStatement(bob, name, nameBob, false, context2));
 
 		// Check handling of getStatements without context IDs
 		RepositoryResult<Statement> result = testCon.getStatements(bob, name, null, false);
@@ -1083,12 +1158,12 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			assertTrue("namespace for prefix 'rdfs' should exist", map.containsKey("rdfs"));
 			assertTrue("namespace for prefix 'rdf' should exist", map.containsKey("rdf"));
 
-			assertTrue("namespace name for 'example' not well-defined", map.get("example").equals(
-					"http://example.org/"));
-			assertTrue("namespace name for 'rdfs' not well-defined", map.get("rdfs").equals(
-					"http://www.w3.org/2000/01/rdf-schema#"));
-			assertTrue("namespace name for 'rdf' not well-defined", map.get("rdf").equals(
-					"http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
+			assertTrue("namespace name for 'example' not well-defined",
+					map.get("example").equals("http://example.org/"));
+			assertTrue("namespace name for 'rdfs' not well-defined",
+					map.get("rdfs").equals("http://www.w3.org/2000/01/rdf-schema#"));
+			assertTrue("namespace name for 'rdf' not well-defined",
+					map.get("rdf").equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
 		}
 		finally {
 			nsIter.close();
@@ -1542,8 +1617,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 			// Expected
 			long duration = System.currentTimeMillis() - startTime;
 
-			assertTrue("Query not interrupted quickly enough, should have been ~2s, but was " + (duration / 1000)
-					+ "s", duration < 5000);
+			assertTrue("Query not interrupted quickly enough, should have been ~2s, but was "
+					+ (duration / 1000) + "s", duration < 5000);
 		}
 	}
 

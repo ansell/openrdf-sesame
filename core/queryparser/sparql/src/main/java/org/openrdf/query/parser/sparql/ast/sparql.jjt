@@ -178,6 +178,35 @@ TOKEN [IGNORE_CASE] :
 |	<TRUE: "true">
 |	<FALSE: "false">
 |	<BIND: "bind">
+|	<STRLEN: "strlen">
+|	<SUBSTR: "substr">
+|	<STR_STARTS: "strStarts">
+|	<STR_ENDS: "strEnds">
+|	<UCASE: "ucase">
+|	<LCASE: "lcase">
+|	<CONCAT: "concat">
+|	<CONTAINS: "contains">
+|	<ENCODE_FOR_URI: "encode_for_URI">
+|	<RAND: "rand">
+|	<ABS: "abs">
+|	<CEIL: "ceil">
+|	<FLOOR: "floor">
+|	<ROUND: "round">
+|	<NOW: "now">
+|	<YEAR: "year">
+|	<MONTH: "month">
+|	<DAY: "day">
+|	<HOURS: "hours">
+|	<MINUTES: "minutes">
+|	<SECONDS: "seconds">
+|	<TIMEZONE: "timezone">
+|	<TZ: "tz">
+|	<MD5: "md5">
+|	<SHA1: "sha1">
+|	<SHA224: "sha224">
+|	<SHA256: "sha256">
+|	<SHA384: "sha384">
+|	<SHA512: "sha512">
 }
 
 TOKEN [IGNORE_CASE] :	// SPARQL 1.1 Update-specific tokens
@@ -950,25 +979,258 @@ void BrackettedExpression() #void :
 void BuiltInCall() #void :
 {}
 {
-	Str()
-|	Lang()
-|	LangMatches()
-|	Datatype()
-|	Bound()
+	Bound()
 |	SameTerm()
-|	IsIRI()
-|	IsBlank()
-|	IsLiteral()
-|	IsNumeric()
-|	BNodeFunc()
-|	StrDt()
-|	StrLang()
-|	IRIFunc()
-|	RegexExpression()
 |	ExistsFunc()
 |	NotExistsFunc()
 |	Coalesce()
 |	If()
+|	StringFunction()
+|	NumericFunction()
+|	RDFTermFunction()
+|	DateTimeFunction()
+|	HashFunction()
+}
+
+void StringFunction() #void :
+{}
+{
+	Substr()
+|	StrLen()
+|	UpperCase()
+|	LowerCase()
+|	StrStarts()
+|	StrEnds()
+|	Concat()
+|	Contains()
+|	EncodeForURI()
+|	LangMatches()
+|	RegexExpression()
+}
+void NumericFunction() #void :
+{}
+{
+	Rand()
+|	Abs()
+|	Ceil()
+|	Floor()
+|	Round()
+}
+
+void RDFTermFunction() #void :
+{}
+{
+	IsIRI()
+|	IsBlank()
+|	IsLiteral()
+|	IsNumeric()
+|	BNodeFunc()
+|	IRIFunc()
+|	Lang()
+|	Datatype()
+|	Str()
+|	StrDt()
+|	StrLang()
+}
+
+void DateTimeFunction() #void :
+{}
+{
+	Now()
+|	Year()
+|	Month()
+|	Day()
+|	Hours()
+|	Minutes()
+|	Seconds()
+|	Timezone()
+|	Tz()
+}
+
+void HashFunction() #void :
+{}
+{
+	MD5()
+|	SHA1()
+|	SHA224()
+|	SHA256()
+|	SHA384()
+|	SHA512()
+}
+
+
+void MD5() :
+{}
+{
+    <MD5> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA1() :
+{}
+{
+    <SHA1> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA224() :
+{}
+{
+    <SHA224> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA256() :
+{}
+{
+    <SHA256> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA384() :
+{}
+{
+    <SHA384> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA512() :
+{}
+{
+    <SHA512> <LPAREN> Expression() <RPAREN>
+}
+
+void Now() :
+{}
+{
+    <NOW> <NIL>
+}
+
+void Year() :
+{}
+{
+    <YEAR> <LPAREN> Expression() <RPAREN>
+}
+
+void Month() :
+{}
+{
+    <MONTH> <LPAREN> Expression() <RPAREN>
+}
+
+void Day() :
+{}
+{
+    <DAY> <LPAREN> Expression() <RPAREN>
+}
+
+void Hours() :
+{}
+{
+    <HOURS> <LPAREN> Expression() <RPAREN>
+}
+
+void Minutes() :
+{}
+{
+    <MINUTES> <LPAREN> Expression() <RPAREN>
+}
+
+void Seconds() :
+{}
+{
+    <SECONDS> <LPAREN> Expression() <RPAREN>
+}
+
+void Timezone() :
+{}
+{
+    <TIMEZONE> <LPAREN> Expression() <RPAREN>
+}
+
+void Tz() :
+{}
+{
+    <TZ> <LPAREN> Expression() <RPAREN>
+}
+
+void Rand() :
+{}
+{
+    <RAND> <NIL>
+}
+
+void Abs() :
+{}
+{
+    <ABS> <LPAREN> Expression() <RPAREN>
+}
+
+void Ceil() :
+{}
+{
+    <CEIL> <LPAREN> Expression() <RPAREN>
+}
+
+void Floor() :
+{}
+{
+    <FLOOR> <LPAREN> Expression() <RPAREN>
+}
+
+void Round() :
+{}
+{
+    <ROUND> <LPAREN> Expression() <RPAREN>
+}
+
+void Substr() :
+{}
+{
+    <SUBSTR> <LPAREN> Expression() <COMMA> Expression() [ <COMMA> Expression() ] <RPAREN>
+}
+
+void StrLen() :
+{}
+{
+    <STRLEN> <LPAREN> Expression() <RPAREN>
+}
+
+void UpperCase() :
+{}
+{
+    <UCASE> <LPAREN> Expression() <RPAREN>
+}
+
+void LowerCase() :
+{}
+{
+    <LCASE> <LPAREN> Expression() <RPAREN>
+}
+
+void StrStarts() :
+{}
+{
+    <STR_STARTS> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void StrEnds() :
+{}
+{
+    <STR_ENDS> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void Concat() :
+{}
+{
+    <CONCAT> ArgList()
+}
+
+void Contains() :
+{}
+{
+    <CONTAINS> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void EncodeForURI() :
+{}
+{
+    <ENCODE_FOR_URI> <LPAREN> Expression() <RPAREN>
 }
 
 void If() :

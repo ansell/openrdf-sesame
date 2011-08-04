@@ -18,6 +18,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;
+import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
@@ -71,8 +72,6 @@ import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
-import org.openrdf.query.algebra.StrDt;
-import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
@@ -82,6 +81,7 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
+import org.openrdf.query.parser.sparql.ast.ASTAbs;
 import org.openrdf.query.parser.sparql.ast.ASTAnd;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTAvg;
@@ -90,18 +90,24 @@ import org.openrdf.query.parser.sparql.ast.ASTBind;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNodePropertyList;
 import org.openrdf.query.parser.sparql.ast.ASTBound;
+import org.openrdf.query.parser.sparql.ast.ASTCeil;
 import org.openrdf.query.parser.sparql.ast.ASTCoalesce;
 import org.openrdf.query.parser.sparql.ast.ASTCollection;
 import org.openrdf.query.parser.sparql.ast.ASTCompare;
+import org.openrdf.query.parser.sparql.ast.ASTConcat;
 import org.openrdf.query.parser.sparql.ast.ASTConstraint;
 import org.openrdf.query.parser.sparql.ast.ASTConstruct;
 import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
+import org.openrdf.query.parser.sparql.ast.ASTContains;
 import org.openrdf.query.parser.sparql.ast.ASTCount;
 import org.openrdf.query.parser.sparql.ast.ASTDatatype;
+import org.openrdf.query.parser.sparql.ast.ASTDay;
 import org.openrdf.query.parser.sparql.ast.ASTDescribe;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
+import org.openrdf.query.parser.sparql.ast.ASTEncodeForURI;
 import org.openrdf.query.parser.sparql.ast.ASTExistsFunc;
 import org.openrdf.query.parser.sparql.ast.ASTFalse;
+import org.openrdf.query.parser.sparql.ast.ASTFloor;
 import org.openrdf.query.parser.sparql.ast.ASTFunctionCall;
 import org.openrdf.query.parser.sparql.ast.ASTGraphGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTGraphPatternGroup;
@@ -109,6 +115,7 @@ import org.openrdf.query.parser.sparql.ast.ASTGroupClause;
 import org.openrdf.query.parser.sparql.ast.ASTGroupConcat;
 import org.openrdf.query.parser.sparql.ast.ASTGroupCondition;
 import org.openrdf.query.parser.sparql.ast.ASTHavingClause;
+import org.openrdf.query.parser.sparql.ast.ASTHours;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
 import org.openrdf.query.parser.sparql.ast.ASTIf;
@@ -120,13 +127,18 @@ import org.openrdf.query.parser.sparql.ast.ASTIsNumeric;
 import org.openrdf.query.parser.sparql.ast.ASTLang;
 import org.openrdf.query.parser.sparql.ast.ASTLangMatches;
 import org.openrdf.query.parser.sparql.ast.ASTLimit;
+import org.openrdf.query.parser.sparql.ast.ASTLowerCase;
+import org.openrdf.query.parser.sparql.ast.ASTMD5;
 import org.openrdf.query.parser.sparql.ast.ASTMath;
 import org.openrdf.query.parser.sparql.ast.ASTMax;
 import org.openrdf.query.parser.sparql.ast.ASTMin;
 import org.openrdf.query.parser.sparql.ast.ASTMinusGraphPattern;
+import org.openrdf.query.parser.sparql.ast.ASTMinutes;
+import org.openrdf.query.parser.sparql.ast.ASTMonth;
 import org.openrdf.query.parser.sparql.ast.ASTNot;
 import org.openrdf.query.parser.sparql.ast.ASTNotExistsFunc;
 import org.openrdf.query.parser.sparql.ast.ASTNotIn;
+import org.openrdf.query.parser.sparql.ast.ASTNow;
 import org.openrdf.query.parser.sparql.ast.ASTNumericLiteral;
 import org.openrdf.query.parser.sparql.ast.ASTObjectList;
 import org.openrdf.query.parser.sparql.ast.ASTOffset;
@@ -145,19 +157,36 @@ import org.openrdf.query.parser.sparql.ast.ASTPropertyListPath;
 import org.openrdf.query.parser.sparql.ast.ASTQName;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTRDFLiteral;
+import org.openrdf.query.parser.sparql.ast.ASTRand;
 import org.openrdf.query.parser.sparql.ast.ASTRegexExpression;
+import org.openrdf.query.parser.sparql.ast.ASTRound;
+import org.openrdf.query.parser.sparql.ast.ASTSHA1;
+import org.openrdf.query.parser.sparql.ast.ASTSHA224;
+import org.openrdf.query.parser.sparql.ast.ASTSHA256;
+import org.openrdf.query.parser.sparql.ast.ASTSHA384;
+import org.openrdf.query.parser.sparql.ast.ASTSHA512;
 import org.openrdf.query.parser.sparql.ast.ASTSameTerm;
+import org.openrdf.query.parser.sparql.ast.ASTSeconds;
 import org.openrdf.query.parser.sparql.ast.ASTSelect;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
 import org.openrdf.query.parser.sparql.ast.ASTStr;
 import org.openrdf.query.parser.sparql.ast.ASTStrDt;
+import org.openrdf.query.parser.sparql.ast.ASTStrEnds;
 import org.openrdf.query.parser.sparql.ast.ASTStrLang;
+import org.openrdf.query.parser.sparql.ast.ASTStrLen;
+import org.openrdf.query.parser.sparql.ast.ASTStrStarts;
 import org.openrdf.query.parser.sparql.ast.ASTString;
+import org.openrdf.query.parser.sparql.ast.ASTSubstr;
 import org.openrdf.query.parser.sparql.ast.ASTSum;
+import org.openrdf.query.parser.sparql.ast.ASTTimezone;
 import org.openrdf.query.parser.sparql.ast.ASTTrue;
+import org.openrdf.query.parser.sparql.ast.ASTTz;
 import org.openrdf.query.parser.sparql.ast.ASTUnionGraphPattern;
+import org.openrdf.query.parser.sparql.ast.ASTUpperCase;
 import org.openrdf.query.parser.sparql.ast.ASTVar;
+import org.openrdf.query.parser.sparql.ast.ASTYear;
 import org.openrdf.query.parser.sparql.ast.Node;
+import org.openrdf.query.parser.sparql.ast.SimpleNode;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 /**
@@ -212,6 +241,26 @@ class TupleExprBuilder extends ASTVisitorBase {
 		Var var = new Var(varName);
 		var.setAnonymous(true);
 		return var;
+	}
+
+	private FunctionCall createFunctionCall(String uri, SimpleNode node, int minArgs, int maxArgs)
+		throws VisitorException
+	{
+		FunctionCall functionCall = new FunctionCall(uri);
+
+		int noOfArguments = node.jjtGetNumChildren();
+
+		if (noOfArguments > maxArgs || noOfArguments < minArgs) {
+			throw new VisitorException("unexpected number of arguments (" + noOfArguments + ") for function "
+					+ uri);
+		}
+
+		for (int i = 0; i < noOfArguments; i++) {
+			Node argNode = node.jjtGetChild(i);
+			functionCall.addArg((ValueExpr)argNode.jjtAccept(this, null));
+		}
+
+		return functionCall;
 	}
 
 	@Override
@@ -346,24 +395,44 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 				projElemList.addElement(new ProjectionElem(alias));
 
-				if (valueExpr instanceof AggregateOperator) {
-					// Apply implicit grouping if necessary
-					GroupFinder groupFinder = new GroupFinder();
-					result.visit(groupFinder);
-					Group group = groupFinder.getGroup();
+				AggregateCollector collector = new AggregateCollector();
+				valueExpr.visit(collector);
 
-					boolean existingGroup = true;
-					if (group == null) {
-						group = new Group(result);
-						existingGroup = false;
-					}
+				if (collector.getOperators().size() > 0) {
+					for (AggregateOperator operator : collector.getOperators()) {
+						// Apply implicit grouping if necessary
+						GroupFinder groupFinder = new GroupFinder();
+						result.visit(groupFinder);
+						Group group = groupFinder.getGroup();
 
-					group.addGroupElement(new GroupElem(alias, (AggregateOperator)valueExpr));
+						boolean existingGroup = true;
+						if (group == null) {
+							group = new Group(result);
+							existingGroup = false;
+						}
 
-					extension.setArg(group);
+						if (operator.equals(valueExpr)) {
+							group.addGroupElement(new GroupElem(alias, operator));
+							extension.setArg(group);
+						}
+						else {
 
-					if (!existingGroup) {
-						result = group;
+							ValueExpr expr = (ValueExpr)operator.getParentNode();
+
+							Extension anonymousExtension = new Extension();
+							Var anonVar = createConstVar(null);
+							expr.replaceChildNode(operator, anonVar);
+							anonymousExtension.addElement(new ExtensionElem(operator, anonVar.getName()));
+
+							anonymousExtension.setArg(result);
+							result = anonymousExtension;
+							group.addGroupElement(new GroupElem(anonVar.getName(), operator));
+
+						}
+
+						if (!existingGroup) {
+							result = group;
+						}
 					}
 				}
 				extension.addElement(new ExtensionElem(valueExpr, alias));
@@ -398,11 +467,12 @@ class TupleExprBuilder extends ASTVisitorBase {
 
 		private Group group;
 
-		@Override 
+		@Override
 		public void meet(Projection projection) {
-			// stop tree traversal on finding a projection: we do not wish to find the group in a sub-select.
+			// stop tree traversal on finding a projection: we do not wish to find
+			// the group in a sub-select.
 		}
-		
+
 		@Override
 		public void meet(Group group) {
 			this.group = group;
@@ -1499,6 +1569,62 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public FunctionCall visit(ASTSubstr node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.SUBSTRING.toString(), node, 2, 3);
+	}
+
+	@Override
+	public FunctionCall visit(ASTConcat node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.CONCAT.toString(), node, 1, Integer.MAX_VALUE);
+	}
+
+	@Override
+	public FunctionCall visit(ASTAbs node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.NUMERIC_ABS.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTCeil node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.NUMERIC_CEIL.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTContains node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.CONTAINS.toString(), node, 1, 1);
+	}
+	
+	@Override
+	public FunctionCall visit(ASTFloor node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.NUMERIC_FLOOR.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTRound node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.NUMERIC_ROUND.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTRand node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("RAND", node, 0, 0);
+	}
+
+	@Override
 	public SameTerm visit(ASTSameTerm node, Object data)
 		throws VisitorException
 	{
@@ -1534,6 +1660,13 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public FunctionCall visit(ASTEncodeForURI node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.ENCODE_FOR_URI.toString(), node, 1, 1);
+	}
+
+	@Override
 	public Object visit(ASTStr node, Object data)
 		throws VisitorException
 	{
@@ -1542,23 +1675,157 @@ class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public StrDt visit(ASTStrDt node, Object data)
+	public FunctionCall visit(ASTStrDt node, Object data)
 		throws VisitorException
 	{
-		// TODO stricter checking on argument value types?
-		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		ValueExpr datatypeExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
-		return new StrDt(literalExpr, datatypeExpr);
+		return createFunctionCall("STRDT", node, 2, 2);
 	}
 
 	@Override
-	public StrLang visit(ASTStrLang node, Object data)
+	public FunctionCall visit(ASTStrStarts node, Object data)
 		throws VisitorException
 	{
-		// TODO stricter checking on argument value types?
-		ValueExpr literalExpr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		ValueExpr langTagExpr = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
-		return new StrLang(literalExpr, langTagExpr);
+		return createFunctionCall(FN.STARTS_WITH.toString(), node, 2, 2);
+	}
+
+	@Override
+	public FunctionCall visit(ASTStrEnds node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.ENDS_WITH.toString(), node, 2, 2);
+	}
+
+	@Override
+	public FunctionCall visit(ASTStrLen node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.STRING_LENGTH.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTUpperCase node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.UPPER_CASE.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTLowerCase node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.LOWER_CASE.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTStrLang node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("STRLANG", node, 2, 2);
+	}
+
+	@Override
+	public FunctionCall visit(ASTNow node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("NOW", node, 0, 0);
+	}
+
+	@Override
+	public FunctionCall visit(ASTYear node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.YEAR_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTMonth node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.MONTH_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTDay node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.DAY_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTHours node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.HOURS_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTMinutes node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.MINUTES_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTSeconds node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.SECONDS_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTTimezone node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.TIMEZONE_FROM_DATETIME.toString(), node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTTz node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("TZ", node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTMD5 node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("MD5", node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTSHA1 node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("SHA1", node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTSHA224 node, Object data)
+		throws VisitorException
+	{
+		throw new VisitorException("hash function SHA-224 is currently not supported");
+	}
+
+	@Override
+	public FunctionCall visit(ASTSHA256 node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("SHA256", node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTSHA384 node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("SHA384", node, 1, 1);
+	}
+
+	@Override
+	public FunctionCall visit(ASTSHA512 node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("SHA512", node, 1, 1);
 	}
 
 	@Override

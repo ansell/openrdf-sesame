@@ -67,6 +67,12 @@ public class RDFFormat extends FileFormat {
 	 */
 	public static final RDFFormat TRIG = new RDFFormat("TriG", "application/x-trig", Charset.forName("UTF-8"),
 			"trig", true, true);
+	
+	/**
+	 * A binary RDF format.
+	 */
+	public static final RDFFormat BINARY = new RDFFormat("BinaryRDF", "application/x-binary-rdf", null,
+			"brf", true, true);
 
 	/*------------------*
 	 * Static variables *
@@ -90,6 +96,7 @@ public class RDFFormat extends FileFormat {
 		register(N3);
 		register(TRIX);
 		register(TRIG);
+		register(BINARY);
 	}
 
 	/*----------------*

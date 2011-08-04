@@ -7,6 +7,7 @@ package org.openrdf.query.algebra.evaluation.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.math.RoundingMode;
 
 import org.openrdf.model.Literal;
@@ -135,7 +136,7 @@ public class MathUtil {
 						BigDecimal result = null;
 						try {
 							// try to return the exact quotient if possible.
-							result = left.divide(right);
+							result = left.divide(right, MathContext.UNLIMITED);
 						}
 						catch (ArithmeticException e) {
 							// non-terminating decimal expansion in quotient, using rounding.

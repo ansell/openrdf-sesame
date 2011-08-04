@@ -59,6 +59,35 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTAvg node, Object data) throws VisitorException;
   public Object visit(ASTSample node, Object data) throws VisitorException;
   public Object visit(ASTGroupConcat node, Object data) throws VisitorException;
+  public Object visit(ASTMD5 node, Object data) throws VisitorException;
+  public Object visit(ASTSHA1 node, Object data) throws VisitorException;
+  public Object visit(ASTSHA224 node, Object data) throws VisitorException;
+  public Object visit(ASTSHA256 node, Object data) throws VisitorException;
+  public Object visit(ASTSHA384 node, Object data) throws VisitorException;
+  public Object visit(ASTSHA512 node, Object data) throws VisitorException;
+  public Object visit(ASTNow node, Object data) throws VisitorException;
+  public Object visit(ASTYear node, Object data) throws VisitorException;
+  public Object visit(ASTMonth node, Object data) throws VisitorException;
+  public Object visit(ASTDay node, Object data) throws VisitorException;
+  public Object visit(ASTHours node, Object data) throws VisitorException;
+  public Object visit(ASTMinutes node, Object data) throws VisitorException;
+  public Object visit(ASTSeconds node, Object data) throws VisitorException;
+  public Object visit(ASTTimezone node, Object data) throws VisitorException;
+  public Object visit(ASTTz node, Object data) throws VisitorException;
+  public Object visit(ASTRand node, Object data) throws VisitorException;
+  public Object visit(ASTAbs node, Object data) throws VisitorException;
+  public Object visit(ASTCeil node, Object data) throws VisitorException;
+  public Object visit(ASTFloor node, Object data) throws VisitorException;
+  public Object visit(ASTRound node, Object data) throws VisitorException;
+  public Object visit(ASTSubstr node, Object data) throws VisitorException;
+  public Object visit(ASTStrLen node, Object data) throws VisitorException;
+  public Object visit(ASTUpperCase node, Object data) throws VisitorException;
+  public Object visit(ASTLowerCase node, Object data) throws VisitorException;
+  public Object visit(ASTStrStarts node, Object data) throws VisitorException;
+  public Object visit(ASTStrEnds node, Object data) throws VisitorException;
+  public Object visit(ASTConcat node, Object data) throws VisitorException;
+  public Object visit(ASTContains node, Object data) throws VisitorException;
+  public Object visit(ASTEncodeForURI node, Object data) throws VisitorException;
   public Object visit(ASTIf node, Object data) throws VisitorException;
   public Object visit(ASTIn node, Object data) throws VisitorException;
   public Object visit(ASTNotIn node, Object data) throws VisitorException;
@@ -103,4 +132,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTInsertClause node, Object data) throws VisitorException;
   public Object visit(ASTModify node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=4b9d839e889a5fa09d2e688b153dba5d (do not edit this line) */
+/* JavaCC - OriginalChecksum=1d477b3074af5cf64fed9d23b7bb8a4a (do not edit this line) */

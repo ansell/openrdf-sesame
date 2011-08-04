@@ -5,14 +5,15 @@
  */
 package org.openrdf.rio;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Collection;
 
 import junit.framework.TestCase;
 
+import org.openrdf.model.BNode;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
@@ -37,6 +38,47 @@ public abstract class RDFWriterTest extends TestCase {
 		rdfParserFactory = parserF;
 	}
 
+	public void testRoundTrip()
+		throws RDFHandlerException, IOException, RDFParseException
+	{
+		String ex = "http://example.org/";
+
+		ValueFactory vf = new ValueFactoryImpl();
+		BNode bnode = vf.createBNode("anon");
+		URI uri1 = vf.createURI(ex, "uri1");
+		URI uri2 = vf.createURI(ex, "uri2");
+		Literal plainLit = vf.createLiteral("plain");
+		Literal dtLit = vf.createLiteral(1);
+		Literal langLit = vf.createLiteral("test", "en");
+
+		Statement st1 = vf.createStatement(bnode, uri1, plainLit);
+		Statement st2 = vf.createStatement(uri1, uri2, langLit, uri2);
+		Statement st3 = vf.createStatement(uri1, uri2, dtLit);
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
+		rdfWriter.handleNamespace("ex", ex);
+		rdfWriter.startRDF();
+		rdfWriter.handleStatement(st1);
+		rdfWriter.handleStatement(st2);
+		rdfWriter.handleStatement(st3);
+		rdfWriter.endRDF();
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		RDFParser rdfParser = rdfParserFactory.getParser();
+		rdfParser.setValueFactory(vf);
+		StatementCollector stCollector = new StatementCollector();
+		rdfParser.setRDFHandler(stCollector);
+
+		rdfParser.parse(in, "foo:bar");
+
+		Collection<Statement> statements = stCollector.getStatements();
+		assertEquals("Unexpected number of statements", 3, statements.size());
+//		assertTrue(statements.contains(st1));
+		assertTrue(statements.contains(st2));
+		assertTrue(statements.contains(st3));
+	}
+
 	public void testPrefixRedefinition()
 		throws RDFHandlerException, RDFParseException, IOException
 	{
@@ -50,8 +92,8 @@ public abstract class RDFWriterTest extends TestCase {
 		URI uri3 = vf.createURI(ns3, "r3");
 		Statement st = vf.createStatement(uri1, uri2, uri3);
 
-		StringWriter writer = new StringWriter();
-		RDFWriter rdfWriter = rdfWriterFactory.getWriter(writer);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
 		rdfWriter.handleNamespace("", ns1);
 		rdfWriter.handleNamespace("", ns2);
 		rdfWriter.handleNamespace("", ns3);
@@ -59,20 +101,13 @@ public abstract class RDFWriterTest extends TestCase {
 		rdfWriter.handleStatement(st);
 		rdfWriter.endRDF();
 
-		StringReader reader = new StringReader(writer.toString());
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		RDFParser rdfParser = rdfParserFactory.getParser();
 		rdfParser.setValueFactory(vf);
 		StatementCollector stCollector = new StatementCollector();
 		rdfParser.setRDFHandler(stCollector);
 
-		try {
-			rdfParser.parse(reader, "foo:bar");
-		}
-		catch (RDFParseException e) {
-			System.err.println("Failed to parse generated RDF document:");
-			System.err.println(writer.toString());
-			throw e;
-		}
+		rdfParser.parse(in, "foo:bar");
 
 		Collection<Statement> statements = stCollector.getStatements();
 		assertEquals("Unexpected number of statements", 1, statements.size());
@@ -94,8 +129,8 @@ public abstract class RDFWriterTest extends TestCase {
 		URI uri3 = vf.createURI(ns3, "r3");
 		Statement st = vf.createStatement(uri1, uri2, uri3);
 
-		StringWriter writer = new StringWriter();
-		RDFWriter rdfWriter = rdfWriterFactory.getWriter(writer);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
 		rdfWriter.handleNamespace("1", ns1);
 		rdfWriter.handleNamespace("_", ns2);
 		rdfWriter.handleNamespace("a%", ns3);
@@ -103,20 +138,13 @@ public abstract class RDFWriterTest extends TestCase {
 		rdfWriter.handleStatement(st);
 		rdfWriter.endRDF();
 
-		StringReader reader = new StringReader(writer.toString());
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		RDFParser rdfParser = rdfParserFactory.getParser();
 		rdfParser.setValueFactory(vf);
 		StatementCollector stCollector = new StatementCollector();
 		rdfParser.setRDFHandler(stCollector);
 
-		try {
-			rdfParser.parse(reader, "foo:bar");
-		}
-		catch (RDFParseException e) {
-			System.err.println("Failed to parse generated RDF document:");
-			System.err.println(writer.toString());
-			throw e;
-		}
+		rdfParser.parse(in, "foo:bar");
 
 		Collection<Statement> statements = stCollector.getStatements();
 		assertEquals("Unexpected number of statements", 1, statements.size());
@@ -124,8 +152,10 @@ public abstract class RDFWriterTest extends TestCase {
 		Statement parsedSt = statements.iterator().next();
 		assertEquals("Written and parsed statements are not equal", st, parsedSt);
 	}
-	
-   public void testDefaultNamespace() throws Exception {
+
+	public void testDefaultNamespace()
+		throws Exception
+	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
 		rdfWriter.handleNamespace("", RDF.NAMESPACE);
@@ -133,5 +163,5 @@ public abstract class RDFWriterTest extends TestCase {
 		rdfWriter.startRDF();
 		rdfWriter.handleStatement(new StatementImpl(new URIImpl(RDF.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY));
 		rdfWriter.endRDF();
-  } 
+	}
 }

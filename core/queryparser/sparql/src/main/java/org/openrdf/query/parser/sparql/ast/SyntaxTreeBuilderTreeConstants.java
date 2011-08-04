@@ -59,49 +59,78 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTAVG = 53;
   public int JJTSAMPLE = 54;
   public int JJTGROUPCONCAT = 55;
-  public int JJTIF = 56;
-  public int JJTIN = 57;
-  public int JJTNOTIN = 58;
-  public int JJTCOALESCE = 59;
-  public int JJTSTR = 60;
-  public int JJTLANG = 61;
-  public int JJTLANGMATCHES = 62;
-  public int JJTDATATYPE = 63;
-  public int JJTBOUND = 64;
-  public int JJTSAMETERM = 65;
-  public int JJTISIRI = 66;
-  public int JJTISBLANK = 67;
-  public int JJTISLITERAL = 68;
-  public int JJTISNUMERIC = 69;
-  public int JJTBNODEFUNC = 70;
-  public int JJTIRIFUNC = 71;
-  public int JJTSTRDT = 72;
-  public int JJTSTRLANG = 73;
-  public int JJTBIND = 74;
-  public int JJTREGEXEXPRESSION = 75;
-  public int JJTEXISTSFUNC = 76;
-  public int JJTNOTEXISTSFUNC = 77;
-  public int JJTRDFLITERAL = 78;
-  public int JJTTRUE = 79;
-  public int JJTFALSE = 80;
-  public int JJTSTRING = 81;
-  public int JJTQNAME = 82;
-  public int JJTBLANKNODE = 83;
-  public int JJTGRAPHREFALL = 84;
-  public int JJTGRAPHORDEFAULT = 85;
-  public int JJTLOAD = 86;
-  public int JJTCLEAR = 87;
-  public int JJTDROP = 88;
-  public int JJTADD = 89;
-  public int JJTMOVE = 90;
-  public int JJTCOPY = 91;
-  public int JJTCREATE = 92;
-  public int JJTINSERTDATA = 93;
-  public int JJTDELETEDATA = 94;
-  public int JJTDELETEWHERE = 95;
-  public int JJTDELETECLAUSE = 96;
-  public int JJTINSERTCLAUSE = 97;
-  public int JJTMODIFY = 98;
+  public int JJTMD5 = 56;
+  public int JJTSHA1 = 57;
+  public int JJTSHA224 = 58;
+  public int JJTSHA256 = 59;
+  public int JJTSHA384 = 60;
+  public int JJTSHA512 = 61;
+  public int JJTNOW = 62;
+  public int JJTYEAR = 63;
+  public int JJTMONTH = 64;
+  public int JJTDAY = 65;
+  public int JJTHOURS = 66;
+  public int JJTMINUTES = 67;
+  public int JJTSECONDS = 68;
+  public int JJTTIMEZONE = 69;
+  public int JJTTZ = 70;
+  public int JJTRAND = 71;
+  public int JJTABS = 72;
+  public int JJTCEIL = 73;
+  public int JJTFLOOR = 74;
+  public int JJTROUND = 75;
+  public int JJTSUBSTR = 76;
+  public int JJTSTRLEN = 77;
+  public int JJTUPPERCASE = 78;
+  public int JJTLOWERCASE = 79;
+  public int JJTSTRSTARTS = 80;
+  public int JJTSTRENDS = 81;
+  public int JJTCONCAT = 82;
+  public int JJTCONTAINS = 83;
+  public int JJTENCODEFORURI = 84;
+  public int JJTIF = 85;
+  public int JJTIN = 86;
+  public int JJTNOTIN = 87;
+  public int JJTCOALESCE = 88;
+  public int JJTSTR = 89;
+  public int JJTLANG = 90;
+  public int JJTLANGMATCHES = 91;
+  public int JJTDATATYPE = 92;
+  public int JJTBOUND = 93;
+  public int JJTSAMETERM = 94;
+  public int JJTISIRI = 95;
+  public int JJTISBLANK = 96;
+  public int JJTISLITERAL = 97;
+  public int JJTISNUMERIC = 98;
+  public int JJTBNODEFUNC = 99;
+  public int JJTIRIFUNC = 100;
+  public int JJTSTRDT = 101;
+  public int JJTSTRLANG = 102;
+  public int JJTBIND = 103;
+  public int JJTREGEXEXPRESSION = 104;
+  public int JJTEXISTSFUNC = 105;
+  public int JJTNOTEXISTSFUNC = 106;
+  public int JJTRDFLITERAL = 107;
+  public int JJTTRUE = 108;
+  public int JJTFALSE = 109;
+  public int JJTSTRING = 110;
+  public int JJTQNAME = 111;
+  public int JJTBLANKNODE = 112;
+  public int JJTGRAPHREFALL = 113;
+  public int JJTGRAPHORDEFAULT = 114;
+  public int JJTLOAD = 115;
+  public int JJTCLEAR = 116;
+  public int JJTDROP = 117;
+  public int JJTADD = 118;
+  public int JJTMOVE = 119;
+  public int JJTCOPY = 120;
+  public int JJTCREATE = 121;
+  public int JJTINSERTDATA = 122;
+  public int JJTDELETEDATA = 123;
+  public int JJTDELETEWHERE = 124;
+  public int JJTDELETECLAUSE = 125;
+  public int JJTINSERTCLAUSE = 126;
+  public int JJTMODIFY = 127;
 
 
   public String[] jjtNodeName = {
@@ -161,6 +190,35 @@ public interface SyntaxTreeBuilderTreeConstants
     "Avg",
     "Sample",
     "GroupConcat",
+    "MD5",
+    "SHA1",
+    "SHA224",
+    "SHA256",
+    "SHA384",
+    "SHA512",
+    "Now",
+    "Year",
+    "Month",
+    "Day",
+    "Hours",
+    "Minutes",
+    "Seconds",
+    "Timezone",
+    "Tz",
+    "Rand",
+    "Abs",
+    "Ceil",
+    "Floor",
+    "Round",
+    "Substr",
+    "StrLen",
+    "UpperCase",
+    "LowerCase",
+    "StrStarts",
+    "StrEnds",
+    "Concat",
+    "Contains",
+    "EncodeForURI",
     "If",
     "In",
     "NotIn",
@@ -206,4 +264,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "Modify",
   };
 }
-/* JavaCC - OriginalChecksum=2e99d50a9ba22e37e9d5d6fc2491704a (do not edit this line) */
+/* JavaCC - OriginalChecksum=5ae63fd5e494d60cfbaa06c1a13fb270 (do not edit this line) */
