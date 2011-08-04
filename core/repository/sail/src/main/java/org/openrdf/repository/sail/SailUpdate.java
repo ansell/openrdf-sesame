@@ -104,7 +104,6 @@ public class SailUpdate extends AbstractOperation implements Update {
 
 			try {
 				conn.executeUpdate(updateExpr, getActiveDataset(), getBindings(), true);
-				conn.commit();
 			}
 			catch (SailException e) {
 				throw new UpdateExecutionException(e);
