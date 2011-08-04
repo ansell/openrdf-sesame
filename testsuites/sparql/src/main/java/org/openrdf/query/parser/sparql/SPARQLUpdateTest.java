@@ -30,7 +30,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 
 /**
- * Unit tests for SPARQL 1.1 Update functionality.
+ * Tests for SPARQL 1.1 Update functionality.
  * 
  * @author Jeen Broekstra
  */
@@ -302,6 +302,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(msg, con.hasStatement(graph2, f.createURI(EX_NS, "containsPerson"), alice, true));
 		
 	}
+	
 	@Test
 	public void testInsertData()
 		throws Exception
@@ -324,6 +325,33 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		String msg = "two new statements about ex:book1 should have been inserted";
 		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true));
 		assertTrue(msg, con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true));
+	}
+
+	@Test
+	public void testInsertDataMultiplePatterns()
+		throws Exception
+	{
+		logger.debug("executing testInsertData");
+
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT DATA { ex:book1 dc:title \"book 1\". ex:book1 dc:creator \"Ringo\" . ex:book2 dc:creator \"George\". } ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		URI book1 = f.createURI(EX_NS, "book1");
+		URI book2 = f.createURI(EX_NS, "book2");
+
+		assertFalse(con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true));
+		assertFalse(con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true));
+		assertFalse(con.hasStatement(book2, DC.CREATOR, f.createLiteral("George"), true));
+
+		operation.execute();
+
+		String msg = "newly inserted statement missing";
+		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true));
+		assertTrue(msg, con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true));
+		assertTrue(msg, con.hasStatement(book2, DC.CREATOR, f.createLiteral("George"), true));
 	}
 
 	@Test
@@ -366,6 +394,26 @@ public abstract class SPARQLUpdateTest extends TestCase {
 
 		String msg = "statement should have been deleted.";
 		assertFalse(msg, con.hasStatement(alice, FOAF.KNOWS, bob, true));
+	}
+	
+	@Test
+	public void testDeleteDataMultiplePatterns()
+		throws Exception
+	{
+		logger.debug("executing testDeleteData");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("DELETE DATA { ex:alice foaf:knows ex:bob. ex:alice foaf:mbox \"alice@example.org\" .} ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(alice, FOAF.KNOWS, bob, true));
+		assertTrue(con.hasStatement(alice, FOAF.MBOX, f.createLiteral("alice@example.org"), true));
+		operation.execute();
+
+		String msg = "statement should have been deleted.";
+		assertFalse(msg, con.hasStatement(alice, FOAF.KNOWS, bob, true));
+		assertFalse(msg, con.hasStatement(alice, FOAF.MBOX, f.createLiteral("alice@example.org"), true));
 	}
 
 	@Test

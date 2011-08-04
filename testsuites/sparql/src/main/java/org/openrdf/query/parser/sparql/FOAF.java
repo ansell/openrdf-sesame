@@ -22,13 +22,17 @@ public class FOAF {
 	
 	public final static URI KNOWS;
 	
+	public static final URI MBOX;
+	
 	
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		PERSON = factory.createURI(FOAF.NAMESPACE, "Person");
 		
 		NAME = factory.createURI(FOAF.NAMESPACE, "name");
-		
+	
 		KNOWS = factory.createURI(FOAF.NAMESPACE, "knows");
+		
+		MBOX = factory.createURI(FOAF.NAMESPACE, "mbox");
 	}
 }
