@@ -104,17 +104,16 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
 		graphPattern.setContextVar(parentGP.getContextVar());
 
-		if (node.jjtGetNumChildren() > 1) {
-			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+		Object algebraExpr = node.jjtGetChild(0).jjtAccept(this, data);
 
-			Var contextVar = valueExpr2Var(contextNode);
+		if (algebraExpr instanceof ValueExpr) { // named graph identifier
+			Var contextVar = valueExpr2Var((ValueExpr)algebraExpr);
 			graphPattern.setContextVar(contextVar);
 			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
-
-			node.jjtGetChild(1).jjtAccept(this, data);
 		}
-		else {
-			node.jjtGetChild(0).jjtAccept(this, data);
+
+		for (int i = 1; i < node.jjtGetNumChildren(); i++) {
+			node.jjtGetChild(i).jjtAccept(this, data);
 		}
 
 		TupleExpr insertExpr = graphPattern.buildTupleExpr();
@@ -196,25 +195,24 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
 		graphPattern.setContextVar(parentGP.getContextVar());
 
-		if (node.jjtGetNumChildren() > 1) {
-			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+		Object algebraExpr = node.jjtGetChild(0).jjtAccept(this, data);
 
-			Var contextVar = valueExpr2Var(contextNode);
+		if (algebraExpr instanceof ValueExpr) { // named graph identifier
+			Var contextVar = valueExpr2Var((ValueExpr)algebraExpr);
 			graphPattern.setContextVar(contextVar);
 			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
-
-			node.jjtGetChild(1).jjtAccept(this, data);
-		}
-		else {
-			node.jjtGetChild(0).jjtAccept(this, data);
 		}
 
-		TupleExpr insertExpr = graphPattern.buildTupleExpr();
+		for (int i = 1; i < node.jjtGetNumChildren(); i++) {
+			node.jjtGetChild(i).jjtAccept(this, data);
+		}
+
+		TupleExpr deleteExpr = graphPattern.buildTupleExpr();
 
 		graphPattern = parentGP;
 
 		// Retrieve all StatementPatterns from the insert expression
-		List<StatementPattern> statementPatterns = StatementPatternCollector.process(insertExpr);
+		List<StatementPattern> statementPatterns = StatementPatternCollector.process(deleteExpr);
 
 		Set<Var> projectionVars = getProjectionVars(statementPatterns);
 
@@ -300,10 +298,10 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		TupleExpr whereExpr = graphPattern.buildTupleExpr();
 		graphPattern = parentGP;
-		
+
 		TupleExpr deleteExpr = whereExpr.clone();
 		Modify modify = new Modify(deleteExpr, null, whereExpr);
-		
+
 		return modify;
 	}
 
