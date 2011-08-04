@@ -3,6 +3,10 @@
 
 :item1 :uriAsLiteral "http://example.org/" ;
        :plainLiteral "plain text" ;
+       :plainLiteralUpperCase "UPPERCASE TEXT" ;
        :languageLiteral "english text"@en ;
        :stringTypedLiteral "typed text"^^xsd:string ;
-       :numericLiteral 42 .
+       :numericLiteral 42 ;
+       :negativeLiteral "-42"^^xsd:integer ;
+       :decimalLitRoundsUp 42.6 ;
+       :decimalLitRoundsDown 42.2 .

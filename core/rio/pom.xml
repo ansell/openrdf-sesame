@@ -16,6 +16,7 @@
 
 	<modules>
 		<module>api</module>
+		<module>binary</module>
 		<module>n3</module>
 		<module>ntriples</module>
 		<module>rdfxml</module>

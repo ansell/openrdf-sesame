@@ -34,8 +34,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -92,8 +90,6 @@ import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
-import org.openrdf.query.algebra.StrDt;
-import org.openrdf.query.algebra.StrLang;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
@@ -123,7 +119,6 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
-import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -303,11 +298,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			variables.add(beginVar);
 			variables.add(endVar);
-			
+
 			int numberOfVars = variables.size();
-			
+
 			// all intermediate vars should be pairwise distinct,
-			// begin and end var should be pairwise distinct from all intermediates, but not each other.
+			// begin and end var should be pairwise distinct from all
+			// intermediates, but not each other.
 			for (int i = 0; i < numberOfVars; i++) {
 				Var var1 = variables.get(i);
 				for (int j = i + 1; j < numberOfVars; j++) {
@@ -318,7 +314,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 							continue;
 						}
 					}
-					
+
 					Compare compare = new Compare(var1, var2, CompareOp.NE);
 					if (pairwiseDistinct == null) {
 						pairwiseDistinct = compare;
@@ -331,8 +327,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					}
 				}
 			}
-			
-			
+
 			return pairwiseDistinct;
 		}
 
@@ -459,8 +454,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	private class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
 		private QueryBindingSet result;
-
-		private CloseableIteration<BindingSet, QueryEvaluationException> iter;
 
 		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj, BindingSet bindings) {
 			result = new QueryBindingSet(bindings);
@@ -996,12 +989,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof IRIFunction) {
 			return evaluate((IRIFunction)expr, bindings);
 		}
-		else if (expr instanceof StrDt) {
-			return evaluate((StrDt)expr, bindings);
-		}
-		else if (expr instanceof StrLang) {
-			return evaluate((StrLang)expr, bindings);
-		}
 		else if (expr instanceof Regex) {
 			return evaluate((Regex)expr, bindings);
 		}
@@ -1312,75 +1299,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (argValue instanceof Literal) {
 			Literal lit = (Literal)argValue;
-
-			return new URIImpl(lit.getLabel());
+			return tripleSource.getValueFactory().createURI(lit.getLabel());
 		}
 		else if (argValue instanceof URI) {
 			return ((URI)argValue);
 		}
 
 		throw new ValueExprEvaluationException();
-	}
-
-	/**
-	 * Creates a datatyped literal from the operand values.
-	 * 
-	 * @param node
-	 * @param bindings
-	 * @return
-	 * @throws ValueExprEvaluationException
-	 * @throws QueryEvaluationException
-	 */
-	public Literal evaluate(StrDt node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
-	{
-		Value lexicalValue = evaluate(node.getLeftArg(), bindings);
-		Value datatypeValue = evaluate(node.getRightArg(), bindings);
-
-		if (QueryEvaluationUtil.isSimpleLiteral(lexicalValue)) {
-			Literal lit = (Literal)lexicalValue;
-			if (datatypeValue instanceof URI) {
-				return new LiteralImpl(lit.getLabel(), (URI)datatypeValue);
-			}
-			else {
-				throw new ValueExprEvaluationException("illegal value for operand: " + datatypeValue);
-			}
-		}
-		else {
-			throw new ValueExprEvaluationException("illegal value for operand: " + lexicalValue);
-		}
-
-	}
-
-	/**
-	 * Creates a language literal from the operand values.
-	 * 
-	 * @param node
-	 * @param bindings
-	 * @return
-	 * @throws ValueExprEvaluationException
-	 * @throws QueryEvaluationException
-	 */
-	public Literal evaluate(StrLang node, BindingSet bindings)
-		throws ValueExprEvaluationException, QueryEvaluationException
-	{
-		Value lexicalValue = evaluate(node.getLeftArg(), bindings);
-		Value languageValue = evaluate(node.getRightArg(), bindings);
-
-		if (QueryEvaluationUtil.isSimpleLiteral(lexicalValue)) {
-			Literal lit = (Literal)lexicalValue;
-
-			if (languageValue instanceof Literal) {
-				return new LiteralImpl(lit.getLabel(), ((Literal)languageValue).getLabel());
-			}
-			else {
-				throw new ValueExprEvaluationException("illegal value for operand: " + languageValue);
-			}
-		}
-		else {
-			throw new ValueExprEvaluationException("illegal value for operand: " + lexicalValue);
-		}
-
 	}
 
 	/**
