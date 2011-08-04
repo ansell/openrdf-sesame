@@ -531,7 +531,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			throws QueryEvaluationException
 		{
 			Value v = evaluate(s);
-			if (v != null) {
+			if (v != null && distinct(v)) {
 				concatenated.append(v.stringValue());
 				concatenated.append(separator);
 			}
