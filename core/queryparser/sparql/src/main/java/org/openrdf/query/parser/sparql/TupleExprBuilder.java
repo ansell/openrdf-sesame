@@ -2179,8 +2179,8 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
-		GroupConcat gc = new GroupConcat(ve);
-
+		GroupConcat gc = new GroupConcat(ve, node.isDistinct());
+		
 		if (node.jjtGetNumChildren() > 1) {
 			ValueExpr separator = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, data);
 			gc.setSeparator(separator);
@@ -2195,7 +2195,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
-		return new Max(ve);
+		return new Max(ve, node.isDistinct());
 	}
 
 	@Override
@@ -2204,7 +2204,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
-		return new Min(ve);
+		return new Min(ve, node.isDistinct());
 	}
 
 	@Override
@@ -2213,7 +2213,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
-		return new Sum(ve);
+		return new Sum(ve, node.isDistinct());
 	}
 
 	@Override
@@ -2222,7 +2222,7 @@ class TupleExprBuilder extends ASTVisitorBase {
 	{
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
-		return new Avg(ve);
+		return new Avg(ve, node.isDistinct());
 	}
 
 	static class AggregateCollector extends QueryModelVisitorBase<VisitorException> {
