@@ -16,6 +16,7 @@ import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.impl.AbstractOperation;
 import org.openrdf.query.parser.ParsedUpdate;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
@@ -99,13 +100,18 @@ public class SailUpdate extends AbstractOperation implements Update {
 		}
 		else {
 			// pass update operation to the SAIL.
-
 			SailConnection conn = getConnection().getSailConnection();
 
 			try {
 				conn.executeUpdate(updateExpr, getActiveDataset(), getBindings(), true);
+				if (getConnection().isAutoCommit()) {
+					conn.commit();
+				}
 			}
 			catch (SailException e) {
+				throw new UpdateExecutionException(e);
+			}
+			catch (RepositoryException e) {
 				throw new UpdateExecutionException(e);
 			}
 		}
