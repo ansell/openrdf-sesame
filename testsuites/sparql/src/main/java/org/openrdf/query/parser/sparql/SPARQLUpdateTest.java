@@ -108,9 +108,6 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
 
-		RepositoryConnection con2 = rep.getConnection();
-		
-		con.setAutoCommit(false);
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
@@ -120,16 +117,6 @@ public abstract class SPARQLUpdateTest extends TestCase {
 
 		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-		
-		assertFalse(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
-		assertFalse(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-
-		con.commit();
-		
-		assertTrue(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
-		assertTrue(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-
-		con2.close();
 	}
 
 	@Test
