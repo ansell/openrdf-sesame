@@ -235,10 +235,18 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			throws QueryEvaluationException
 		{
 			for (String name : aggregates.keySet()) {
-				Value value = aggregates.get(name).getValue();
-				if (value != null) {
-					// Potentially overwrites bindings from super
-					sol.setBinding(name, value);
+				try {
+					Value value = aggregates.get(name).getValue();
+					if (value != null) {
+						// Potentially overwrites bindings from super
+						sol.setBinding(name, value);
+					}
+				}
+				catch (ValueExprEvaluationException ex) {
+					// There was a type error when calculating the value of the
+					// aggregate.
+					// We silently ignore the error, resulting in no result value
+					// being bound.
 				}
 			}
 		}
@@ -408,6 +416,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 		private Literal sum = vf.createLiteral("0", XMLSchema.INTEGER);
 
+		private ValueExprEvaluationException typeError = null;
+
 		public SumAggregate(Sum operator) {
 			super(operator);
 		}
@@ -416,6 +426,11 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		public void processAggregate(BindingSet s)
 			throws QueryEvaluationException
 		{
+			if (typeError != null) {
+				// halt further processing if a type error has been raised
+				return;
+			}
+
 			Value v = evaluate(s);
 			if (distinct(v)) {
 				if (v instanceof Literal) {
@@ -430,13 +445,19 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 					}
 				}
 				else if (v != null) {
-					throw new ValueExprEvaluationException("not a number: " + v);
+					typeError = new ValueExprEvaluationException("not a number: " + v);
 				}
 			}
 		}
 
 		@Override
-		public Value getValue() {
+		public Value getValue()
+			throws ValueExprEvaluationException
+		{
+			if (typeError != null) {
+				throw typeError;
+			}
+			
 			return sum;
 		}
 	}
@@ -447,6 +468,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 		private Literal sum = vf.createLiteral("0", XMLSchema.INTEGER);
 
+		private ValueExprEvaluationException typeError = null;
+
 		public AvgAggregate(Avg operator) {
 			super(operator);
 		}
@@ -455,6 +478,12 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		public void processAggregate(BindingSet s)
 			throws QueryEvaluationException
 		{
+			if (typeError != null) {
+				// Prevent calculating the aggregate further if a type error has
+				// occured.
+				return;
+			}
+
 			Value v = evaluate(s);
 			if (distinct(v)) {
 				if (v instanceof Literal) {
@@ -470,7 +499,10 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 					count++;
 				}
 				else if (v != null) {
-					throw new ValueExprEvaluationException("not a number: " + v);
+					// we do not actually throw the exception yet, but record it and
+					// stop further processing. The exception will be thrown when
+					// getValue() is invoked.
+					typeError = new ValueExprEvaluationException("not a number: " + v);
 				}
 			}
 		}
@@ -479,8 +511,16 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		public Value getValue()
 			throws ValueExprEvaluationException
 		{
-			if (count == 0)
+			if (typeError != null) {
+				// a type error occurred while processing the aggregate, throw it
+				// now.
+				throw typeError;
+			}
+
+			if (count == 0) {
 				return vf.createLiteral(0.0d);
+			}
+
 			Literal sizeLit = vf.createLiteral(count);
 			return MathUtil.compute(sum, sizeLit, MathOp.DIVIDE);
 		}
@@ -539,8 +579,10 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 		@Override
 		public Value getValue() {
-			if (concatenated.length() == 0)
+			if (concatenated.length() == 0) {
 				return vf.createLiteral("");
+			}
+
 			// remove separator at the end.
 			int len = concatenated.length() - separator.length();
 			return vf.createLiteral(concatenated.substring(0, len));
