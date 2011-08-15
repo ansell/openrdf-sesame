@@ -6368,42 +6368,66 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   }
 
   final public void QuadsNotTriples() throws ParseException {
-    jj_consume_token(GRAPH);
-    VarOrIRIref();
-    jj_consume_token(LBRACE);
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case LPAREN:
-    case LBRACK:
-    case NIL:
-    case ANON:
-    case TRUE:
-    case FALSE:
-    case Q_IRI_REF:
-    case PNAME_NS:
-    case PNAME_LN:
-    case BLANK_NODE_LABEL:
-    case VAR1:
-    case VAR2:
-    case INTEGER:
-    case INTEGER_POSITIVE:
-    case INTEGER_NEGATIVE:
-    case DECIMAL:
-    case DECIMAL_POSITIVE:
-    case DECIMAL_NEGATIVE:
-    case DOUBLE:
-    case DOUBLE_POSITIVE:
-    case DOUBLE_NEGATIVE:
-    case STRING_LITERAL1:
-    case STRING_LITERAL2:
-    case STRING_LITERAL_LONG1:
-    case STRING_LITERAL_LONG2:
-      TriplesTemplate();
-      break;
-    default:
-      jj_la1[136] = jj_gen;
-      ;
+ /*@bgen(jjtree) QuadsNotTriples */
+  ASTQuadsNotTriples jjtn000 = new ASTQuadsNotTriples(JJTQUADSNOTTRIPLES);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+    try {
+      jj_consume_token(GRAPH);
+      VarOrIRIref();
+      jj_consume_token(LBRACE);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case LPAREN:
+      case LBRACK:
+      case NIL:
+      case ANON:
+      case TRUE:
+      case FALSE:
+      case Q_IRI_REF:
+      case PNAME_NS:
+      case PNAME_LN:
+      case BLANK_NODE_LABEL:
+      case VAR1:
+      case VAR2:
+      case INTEGER:
+      case INTEGER_POSITIVE:
+      case INTEGER_NEGATIVE:
+      case DECIMAL:
+      case DECIMAL_POSITIVE:
+      case DECIMAL_NEGATIVE:
+      case DOUBLE:
+      case DOUBLE_POSITIVE:
+      case DOUBLE_NEGATIVE:
+      case STRING_LITERAL1:
+      case STRING_LITERAL2:
+      case STRING_LITERAL_LONG1:
+      case STRING_LITERAL_LONG2:
+        TriplesTemplate();
+        break;
+      default:
+        jj_la1[136] = jj_gen;
+        ;
+      }
+      jj_consume_token(RBRACE);
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        {if (true) throw (RuntimeException)jjte000;}
+      }
+      if (jjte000 instanceof ParseException) {
+        {if (true) throw (ParseException)jjte000;}
+      }
+      {if (true) throw (Error)jjte000;}
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+      }
     }
-    jj_consume_token(RBRACE);
   }
 
   final public void Update() throws ParseException {

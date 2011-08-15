@@ -58,6 +58,7 @@ import org.openrdf.query.parser.sparql.ast.ASTInsertData;
 import org.openrdf.query.parser.sparql.ast.ASTLoad;
 import org.openrdf.query.parser.sparql.ast.ASTModify;
 import org.openrdf.query.parser.sparql.ast.ASTMove;
+import org.openrdf.query.parser.sparql.ast.ASTQuadsNotTriples;
 import org.openrdf.query.parser.sparql.ast.ASTUpdate;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
 
@@ -272,6 +273,29 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 	}
 
 	@Override
+	public TupleExpr visit(ASTQuadsNotTriples node, Object data)
+		throws VisitorException
+	{
+		GraphPattern parentGP = graphPattern;
+		graphPattern = new GraphPattern();
+
+		ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+
+		Var contextVar = valueExpr2Var(contextNode);
+		graphPattern.setContextVar(contextVar);
+		graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
+
+		node.jjtGetChild(1).jjtAccept(this, data);
+
+		TupleExpr result = graphPattern.buildTupleExpr();
+		parentGP.addRequiredTE(result);
+
+		graphPattern = parentGP;
+
+		return result;
+	}
+
+	@Override
 	public Modify visit(ASTDeleteWhere node, Object data)
 		throws VisitorException
 	{
@@ -283,17 +307,8 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
 		graphPattern.setContextVar(parentGP.getContextVar());
 
-		if (node.jjtGetNumChildren() > 1) {
-			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
-
-			Var contextVar = valueExpr2Var(contextNode);
-			graphPattern.setContextVar(contextVar);
-			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
-
-			node.jjtGetChild(1).jjtAccept(this, data);
-		}
-		else {
-			node.jjtGetChild(0).jjtAccept(this, data);
+		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+			node.jjtGetChild(i).jjtAccept(this, data);
 		}
 
 		TupleExpr whereExpr = graphPattern.buildTupleExpr();
@@ -503,17 +518,8 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
 		graphPattern.setContextVar(parentGP.getContextVar());
 
-		if (node.jjtGetNumChildren() > 1) {
-			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
-
-			Var contextVar = valueExpr2Var(contextNode);
-			graphPattern.setContextVar(contextVar);
-			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
-
-			node.jjtGetChild(1).jjtAccept(this, data);
-		}
-		else {
-			node.jjtGetChild(0).jjtAccept(this, data);
+		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+			node.jjtGetChild(i).jjtAccept(this, data);
 		}
 		TupleExpr deleteExpr = graphPattern.buildTupleExpr();
 
@@ -521,61 +527,6 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		return deleteExpr;
 
-		/*
-
-		// Retrieve all StatementPatterns from the delete expression
-		List<StatementPattern> statementPatterns = StatementPatternCollector.process(deleteExpr);
-
-		Set<Var> projectionVars = getProjectionVars(statementPatterns);
-
-		// Create extensions with valueconstants for all anonymous vars with
-		// values.
-		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
-
-		for (Var var : projectionVars) {
-			if (var.isAnonymous() && !extElemMap.containsKey(var)) {
-				ValueExpr valueExpr;
-
-				if (var.hasValue()) {
-					valueExpr = new ValueConstant(var.getValue());
-					extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
-				}
-			}
-		}
-
-		if (!extElemMap.isEmpty()) {
-			result = new Extension(result, extElemMap.values());
-		}
-
-		// Create a Projection for each StatementPattern in the clause
-		List<ProjectionElemList> projList = new ArrayList<ProjectionElemList>();
-
-		for (StatementPattern sp : statementPatterns) {
-			ProjectionElemList projElemList = new ProjectionElemList();
-
-			projElemList.addElement(new ProjectionElem(sp.getSubjectVar().getName(), "subject"));
-			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
-			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
-			if (sp.getContextVar() != null) {
-				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));
-			}
-
-			projList.add(projElemList);
-		}
-
-		if (projList.size() == 1) {
-			result = new Projection(result, projList.get(0));
-		}
-		else if (projList.size() > 1) {
-			result = new MultiProjection(result, projList);
-		}
-		else {
-			// Empty constructor
-			result = new EmptySet();
-		}
-
-		return new Reduced(result);
-		*/
 	}
 
 	@Override
@@ -592,17 +543,8 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
 		graphPattern.setContextVar(parentGP.getContextVar());
 
-		if (node.jjtGetNumChildren() > 1) {
-			ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
-
-			Var contextVar = valueExpr2Var(contextNode);
-			graphPattern.setContextVar(contextVar);
-			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
-
-			node.jjtGetChild(1).jjtAccept(this, data);
-		}
-		else {
-			node.jjtGetChild(0).jjtAccept(this, data);
+		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+			node.jjtGetChild(i).jjtAccept(this, data);
 		}
 
 		TupleExpr insertExpr = graphPattern.buildTupleExpr();

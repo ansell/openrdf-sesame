@@ -1514,7 +1514,7 @@ void Quads() #void :
     [TriplesTemplate()] ( QuadsNotTriples() [<DOT>] [TriplesTemplate()] )*
 }
 
-void QuadsNotTriples() #void :
+void QuadsNotTriples() :
 {}
 {
     <GRAPH> VarOrIRIref() <LBRACE> [TriplesTemplate()] <RBRACE>
