@@ -28,6 +28,7 @@ import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.algebra.Add;
 import org.openrdf.query.algebra.Clear;
 import org.openrdf.query.algebra.Copy;
@@ -599,7 +600,7 @@ public abstract class SailConnectionBase implements SailConnection {
 			executeClear((Clear)updateExpr, dataset, bindings, includeInferred);
 		}
 		else if (updateExpr instanceof Create) {
-			// do nothing
+			executeCreate((Create)updateExpr, dataset, bindings, includeInferred);
 		}
 		else if (updateExpr instanceof Copy) {
 			executeCopy((Copy)updateExpr, dataset, bindings, includeInferred);
@@ -612,6 +613,32 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 		else if (updateExpr instanceof Load) {
 			throw new SailException("load operations can not be handled directly by the SAIL");
+		}
+	}
+
+	protected void executeCreate(Create create, Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
+	{
+		// check if named graph exists, if so, we have to return an error.
+		// Otherwise, we simply do nothing.
+		Value graphValue = create.getGraph().getValue();
+
+		if (graphValue instanceof Resource) {
+			Resource namedGraph = (Resource)graphValue;
+
+			CloseableIteration<? extends Resource, SailException> contextIDs = getContextIDsInternal();
+			try {
+				while (contextIDs.hasNext()) {
+					Resource contextID = contextIDs.next();
+
+					if (namedGraph.equals(contextID)) {
+						throw new SailException("Named graph " + namedGraph + " already exists. ");
+					}
+				}
+			}
+			finally {
+				contextIDs.close();
+			}
 		}
 	}
 
@@ -853,7 +880,7 @@ public abstract class SailConnectionBase implements SailConnection {
 						Resource subject = (Resource)getValueForVar(deletePattern.getSubjectVar(), sourceBinding);
 						URI predicate = (URI)getValueForVar(deletePattern.getPredicateVar(), sourceBinding);
 						Value object = getValueForVar(deletePattern.getObjectVar(), sourceBinding);
-						
+
 						Resource context = null;
 						if (deletePattern.getContextVar() != null) {
 							context = (Resource)getValueForVar(deletePattern.getContextVar(), sourceBinding);
@@ -898,7 +925,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		if (var.hasValue()) {
 			value = var.getValue();
 		}
-		else  {
+		else {
 			value = bindings.getValue(var.getName());
 		}
 		return value;
@@ -926,7 +953,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 		else {
 			subject = (Resource)sourceBinding.getValue(pattern.getSubjectVar().getName());
-			
+
 			if (subject == null) {
 				subject = f.createBNode();
 			}
@@ -947,7 +974,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 		else {
 			object = sourceBinding.getValue(pattern.getObjectVar().getName());
-			
+
 			if (object == null) {
 				object = f.createBNode();
 			}

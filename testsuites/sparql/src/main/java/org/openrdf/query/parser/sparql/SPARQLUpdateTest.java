@@ -7,6 +7,8 @@ package org.openrdf.query.parser.sparql;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -23,9 +25,11 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 
@@ -97,7 +101,6 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	}
 
 	/* test methods */
-
 
 	@Test
 	public void testInsertWhere()
@@ -281,7 +284,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		throws Exception
 	{
 		logger.debug("executing testDeleteTransformedWhere");
-		
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y }");
@@ -300,9 +303,9 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		msg = "ex:containsPerson properties should not have been deleted";
 		assertTrue(msg, con.hasStatement(graph1, f.createURI(EX_NS, "containsPerson"), bob, true));
 		assertTrue(msg, con.hasStatement(graph2, f.createURI(EX_NS, "containsPerson"), alice, true));
-		
+
 	}
-	
+
 	@Test
 	public void testInsertData()
 		throws Exception
@@ -395,7 +398,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		String msg = "statement should have been deleted.";
 		assertFalse(msg, con.hasStatement(alice, FOAF.KNOWS, bob, true));
 	}
-	
+
 	@Test
 	public void testDeleteDataMultiplePatterns()
 		throws Exception
@@ -457,24 +460,48 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(msg, con.hasStatement(alice, FOAF.KNOWS, bob, true, graph1));
 	}
 
-
-
 	@Test
-	public void testCreateGraph()
+	public void testCreateNewGraph()
 		throws Exception
 	{
-		logger.debug("executing testCreateGraph");
+		logger.debug("executing testCreateNewGraph");
 
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
-		update.append("CREATE GRAPH <" + graph1.stringValue() + "> ");
+
+		URI newGraph = f.createURI(EX_NS, "new-graph");
+
+		update.append("CREATE GRAPH <" + newGraph + "> ");
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		operation.execute();
 		assertTrue(con.hasStatement(null, null, null, false, graph1));
 		assertTrue(con.hasStatement(null, null, null, false, graph2));
+		assertFalse(con.hasStatement(null, null, null, false, newGraph));
 		assertTrue(con.hasStatement(null, null, null, false));
+	}
+
+	@Test
+	public void testCreateExistingGraph()
+		throws Exception
+	{
+		logger.debug("executing testCreateExistingGraph");
+
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("CREATE GRAPH <" + graph1 + "> ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		try {
+			operation.execute();
+
+			fail("creation of existing graph should have resulted in error.");
+		}
+		catch (UpdateExecutionException e) {
+			// do nothing, expected.
+		}
 	}
 
 	@Test
@@ -839,13 +866,13 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertFalse(con.hasStatement(null, null, null, false, graph2));
 		assertTrue(con.hasStatement(null, null, null, false));
 	}
-	
+
 	@Test
 	public void testUpdateSequence()
 		throws Exception
 	{
 		logger.debug("executing testUpdateSequence");
-		
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y }; INSERT {?x foaf:name \"foo\" } WHERE {?y ex:containsPerson ?x} ");
@@ -865,7 +892,6 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("foo"), true));
 		assertTrue(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("foo"), true));
 	}
-	
 
 	/*
 	@Test
