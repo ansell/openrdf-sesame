@@ -297,7 +297,7 @@ TOKEN:
 ASTQueryContainer QueryContainer():
 {}
 {
-	Prolog() (Query() | Update()) <EOF>
+	Prolog() (Query() | Update() ( <SEMICOLON> Update())* ) <EOF>
 	{ return jjtThis; }
 }
 

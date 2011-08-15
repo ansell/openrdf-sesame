@@ -7,6 +7,8 @@ package org.openrdf.query.parser.sparql;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -43,6 +45,9 @@ public class SPARQLParser implements QueryParser {
 		throws MalformedQueryException
 	{
 		try {
+
+			ParsedUpdate update = new ParsedUpdate();
+
 			ASTQueryContainer qc = SyntaxTreeBuilder.parseQuery(updateStr);
 			StringEscapesProcessor.process(qc);
 			BaseDeclProcessor.process(qc, baseURI);
@@ -52,24 +57,26 @@ public class SPARQLParser implements QueryParser {
 
 			if (!qc.containsQuery()) { // handle update operation
 
-				ParsedUpdate update = new ParsedUpdate();
-
-				ASTUpdate updateNode = qc.getUpdate();
-
 				UpdateExprBuilder updateExprBuilder = new UpdateExprBuilder(new ValueFactoryImpl());
-				
-				update.setUpdateExpr((UpdateExpr)updateNode.jjtAccept(updateExprBuilder, null));
-				
+
 				// Handle dataset declaration
 				Dataset dataset = DatasetDeclProcessor.process(qc);
 				if (dataset != null) {
 					update.setDataset(dataset);
 				}
+				
+				// handle update sequence
+				List<ASTUpdate> updateNodes = qc.getUpdates();
+				for (ASTUpdate updateNode : updateNodes) {
+
+					update.addUpdateExpr((UpdateExpr)updateNode.jjtAccept(updateExprBuilder, null));
+
+				}
 
 				return update;
 			}
 			else {
-				throw new IncompatibleOperationException("supplied string is not an update operation");
+				throw new IncompatibleOperationException("supplied string is not an update operation sequence");
 			}
 		}
 		catch (ParseException e) {
