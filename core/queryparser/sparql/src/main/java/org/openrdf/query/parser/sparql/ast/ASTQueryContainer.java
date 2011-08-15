@@ -41,6 +41,10 @@ public class ASTQueryContainer extends SimpleNode {
 		return super.jjtGetChild(ASTUpdate.class);
 	}
 	
+	public List<ASTUpdate> getUpdates() {
+		return super.jjtGetChildren(ASTUpdate.class);
+	}
+	
 	public ASTOperation getOperation() {
 		return super.jjtGetChild(ASTOperation.class);
 	}

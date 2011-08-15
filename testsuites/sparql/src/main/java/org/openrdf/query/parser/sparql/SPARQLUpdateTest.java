@@ -839,6 +839,33 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertFalse(con.hasStatement(null, null, null, false, graph2));
 		assertTrue(con.hasStatement(null, null, null, false));
 	}
+	
+	@Test
+	public void testUpdateSequence()
+		throws Exception
+	{
+		logger.debug("executing testUpdateSequence");
+		
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y }; INSERT {?x foaf:name \"foo\" } WHERE {?y ex:containsPerson ?x} ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+		operation.execute();
+
+		String msg = "foaf:name properties should have been deleted";
+		assertFalse(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertFalse(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+		msg = "foaf:name properties with value 'foo' should have been added";
+		assertTrue(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("foo"), true));
+		assertTrue(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("foo"), true));
+	}
+	
 
 	/*
 	@Test

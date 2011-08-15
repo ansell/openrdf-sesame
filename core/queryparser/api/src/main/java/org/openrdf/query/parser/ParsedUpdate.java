@@ -5,7 +5,9 @@
  */
 package org.openrdf.query.parser;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.openrdf.query.algebra.UpdateExpr;
@@ -23,23 +25,23 @@ public class ParsedUpdate extends ParsedOperation {
 
 	private Map<String, String> namespaces;
 
-	private UpdateExpr updateExpr;
+	private List<UpdateExpr> updateExprs = new ArrayList<UpdateExpr>();
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	/**
-	 * Creates a new update. To complete this update, an update expression needs
-	 * to be supplied to it using {@link #setUpdateExpr(UpdateExpr)}.
+	 * Creates a new update. To complete this update, one or more update expressions need
+	 * to be supplied to it using {@link #addUpdateExpr(UpdateExpr)}.
 	 */
 	public ParsedUpdate() {
 		super();
 	}
 
 	/**
-	 * Creates a new update. To complete this update, an update expression needs
-	 * to be supplied to it using {@link #setUpdateExpr(UpdateExpr)}.
+	 * Creates a new update. To complete this update, one or update expressions need
+	 * to be supplied to it using {@link #addUpdateExpr(UpdateExpr)}.
 	 * 
 	 * @param namespaces
 	 *        A mapping of namespace prefixes to namespace names representing the
@@ -65,21 +67,26 @@ public class ParsedUpdate extends ParsedOperation {
 
 	/**
 	 * @param updateExpr
-	 *        The updateExpr to set.
+	 *        The updateExpr to add.
 	 */
-	public void setUpdateExpr(UpdateExpr updateExpr) {
-		this.updateExpr = updateExpr;
+	public void addUpdateExpr(UpdateExpr updateExpr) {
+		updateExprs.add(updateExpr);
 	}
 
 	/**
-	 * @return Returns the updateExpr.
+	 * @return Returns the list of update expressions.
 	 */
-	public UpdateExpr getUpdateExpr() {
-		return updateExpr;
+	public List<UpdateExpr> getUpdateExprs() {
+		return updateExprs;
 	}
 	
 	@Override
 	public String toString() {
-		return updateExpr.toString();
+		StringBuilder stringBuilder = new StringBuilder();
+		for (UpdateExpr updateExpr: updateExprs) {
+			stringBuilder.append(updateExpr.toString());
+			stringBuilder.append("; ");
+		}
+		return stringBuilder.toString();
 	}
 }

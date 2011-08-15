@@ -5,6 +5,8 @@
  */
 package org.openrdf.query.parser;
 
+import java.util.List;
+
 import org.openrdf.query.MalformedQueryException;
 
 /**
