@@ -869,10 +869,10 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	}
 
 	@Test
-	public void testUpdateSequence()
+	public void testUpdateSequenceDeleteInsert()
 		throws Exception
 	{
-		logger.debug("executing testUpdateSequence");
+		logger.debug("executing testUpdateSequenceDeleteInsert");
 
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
@@ -896,6 +896,59 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("foo"), true));
 	}
 
+	@Test
+	public void testUpdateSequenceInsertDelete() throws Exception
+	{
+		logger.debug("executing testUpdateSequenceInsertDelete");
+
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT {?x foaf:name \"foo\" } WHERE {?y ex:containsPerson ?x}; ");
+		update.append(getNamespaceDeclarations());
+		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y } ");
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+		operation.execute();
+
+		String msg = "foaf:name properties should have been deleted";
+		assertFalse(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertFalse(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+		msg = "foaf:name properties with value 'foo' should not have been added";
+		assertFalse(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("foo"), true));
+		assertFalse(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("foo"), true));
+	}
+	
+	@Test
+	public void testUpdateSequenceInsertDelete2() throws Exception
+	{
+		logger.debug("executing testUpdateSequenceInsertDelete2");
+
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT { GRAPH ex:graph2 { ?s ?p ?o } } WHERE { GRAPH ex:graph1 { ?s ?p ?o . FILTER (?s = ex:bob) } }; ");
+		update.append(getNamespaceDeclarations());
+		update.append("WITH ex:graph1 DELETE { ?s ?p ?o } WHERE {?s ?p ?o . FILTER (?s = ex:bob) } ");
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true, graph1));
+		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true, graph2));
+
+		operation.execute();
+
+		String msg = "statements about bob should have been removed from graph1";
+		assertFalse(msg, con.hasStatement(bob, null, null, true, graph1));
+
+		msg = "statements about bob should have been added to graph2";
+		assertTrue(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true, graph2));
+		assertTrue(msg, con.hasStatement(bob, FOAF.MBOX, null, true, graph2));
+		assertTrue(msg, con.hasStatement(bob, FOAF.KNOWS, alice, true, graph2));
+	}
 	/*
 	@Test
 	public void testLoad()
