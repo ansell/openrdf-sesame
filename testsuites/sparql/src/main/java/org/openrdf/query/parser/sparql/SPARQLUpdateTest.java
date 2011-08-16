@@ -500,7 +500,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 			fail("creation of existing graph should have resulted in error.");
 		}
 		catch (UpdateExecutionException e) {
-			// do nothing, expected.
+			// expected behavior
+			con.rollback();
 		}
 	}
 
@@ -875,7 +876,9 @@ public abstract class SPARQLUpdateTest extends TestCase {
 
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
-		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y }; INSERT {?x foaf:name \"foo\" } WHERE {?y ex:containsPerson ?x} ");
+		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y }; ");
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT {?x foaf:name \"foo\" } WHERE {?y ex:containsPerson ?x} ");
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 

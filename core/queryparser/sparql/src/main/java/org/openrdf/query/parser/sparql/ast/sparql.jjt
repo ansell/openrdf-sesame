@@ -48,6 +48,21 @@ public class SyntaxTreeBuilder {
 		SyntaxTreeBuilder stb = new SyntaxTreeBuilder( new StringReader(query) );
 		return stb.QueryContainer();
 	}
+
+	/**
+	 * Parses the supplied SPARQL update sequence and builds a syntax tree from it.
+	 *
+	 * @param sequence A SPARQL update sequence string.
+	 * @return The root of the syntax tree.
+	 * @throws TokenMgrError If the update sequence was syntactically incorrect.
+	 * @throws ParseException If the update sequence was syntactically incorrect.
+	 */
+	public static ASTUpdateSequence parseUpdateSequence(String sequence)
+		throws TokenMgrError, ParseException
+	{
+		SyntaxTreeBuilder stb = new SyntaxTreeBuilder( new StringReader(sequence) );
+		return stb.UpdateSequence();
+	}
 	
 	/**
 	 * Trims <tt>n</tt> character from the start and end of the supplied string.
@@ -294,10 +309,24 @@ TOKEN:
 // grammar
 //
 
+ASTUpdateSequence UpdateSequence():
+{}
+{
+    UpdateContainer() ( <SEMICOLON> UpdateContainer() )* <EOF>
+    { return jjtThis; }
+}
+
+ASTUpdateContainer UpdateContainer():
+{}
+{
+    Prolog() Update()
+    { return jjtThis; }
+}
+
 ASTQueryContainer QueryContainer():
 {}
 {
-	Prolog() (Query() | Update() ( <SEMICOLON> Update())* ) <EOF>
+	Prolog() Query() <EOF>
 	{ return jjtThis; }
 }
 

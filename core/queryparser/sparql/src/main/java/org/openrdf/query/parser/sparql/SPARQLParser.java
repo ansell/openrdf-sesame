@@ -7,7 +7,6 @@ package org.openrdf.query.parser.sparql;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +32,8 @@ import org.openrdf.query.parser.sparql.ast.ASTQuery;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
 import org.openrdf.query.parser.sparql.ast.ASTUpdate;
+import org.openrdf.query.parser.sparql.ast.ASTUpdateContainer;
+import org.openrdf.query.parser.sparql.ast.ASTUpdateSequence;
 import org.openrdf.query.parser.sparql.ast.Node;
 import org.openrdf.query.parser.sparql.ast.ParseException;
 import org.openrdf.query.parser.sparql.ast.SyntaxTreeBuilder;
@@ -48,36 +49,30 @@ public class SPARQLParser implements QueryParser {
 
 			ParsedUpdate update = new ParsedUpdate();
 
-			ASTQueryContainer qc = SyntaxTreeBuilder.parseQuery(updateStr);
-			StringEscapesProcessor.process(qc);
-			BaseDeclProcessor.process(qc, baseURI);
-			Map<String, String> prefixes = PrefixDeclProcessor.process(qc);
-			WildcardProjectionProcessor.process(qc);
-			BlankNodeVarProcessor.process(qc);
+			ASTUpdateSequence updateSequence = SyntaxTreeBuilder.parseUpdateSequence(updateStr);
 
-			if (!qc.containsQuery()) { // handle update operation
+			List<ASTUpdateContainer> updateOperations = updateSequence.getUpdateContainers();
+
+			for (ASTUpdateContainer uc : updateOperations) {
+
+				StringEscapesProcessor.process(uc);
+				BaseDeclProcessor.process(uc, baseURI);
+				PrefixDeclProcessor.process(uc);
+				BlankNodeVarProcessor.process(uc);
 
 				UpdateExprBuilder updateExprBuilder = new UpdateExprBuilder(new ValueFactoryImpl());
 
 				// Handle dataset declaration
-				Dataset dataset = DatasetDeclProcessor.process(qc);
+				Dataset dataset = DatasetDeclProcessor.process(uc);
 				if (dataset != null) {
 					update.setDataset(dataset);
 				}
-				
-				// handle update sequence
-				List<ASTUpdate> updateNodes = qc.getUpdates();
-				for (ASTUpdate updateNode : updateNodes) {
 
-					update.addUpdateExpr((UpdateExpr)updateNode.jjtAccept(updateExprBuilder, null));
-
-				}
-
-				return update;
+				ASTUpdate updateNode = uc.getUpdate();
+				update.addUpdateExpr((UpdateExpr)updateNode.jjtAccept(updateExprBuilder, null));
 			}
-			else {
-				throw new IncompatibleOperationException("supplied string is not an update operation sequence");
-			}
+			
+			return update;
 		}
 		catch (ParseException e) {
 			throw new MalformedQueryException(e.getMessage(), e);
