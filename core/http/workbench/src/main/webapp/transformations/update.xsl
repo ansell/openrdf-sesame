@@ -30,12 +30,12 @@
 				var text = element.innerText || element.textContent;
 				return text.replace(/^\s*/, "").replace(/\s*$/, "");
 			}
-			var currentqueryLn;
+			var currentqueryLn = 'SPARQL';
 			function loadNamespaces() {
 				var update = document.getElementById('update');
-				var queryLn = document.getElementById('queryLn').value;
+				var queryLn = 'SPARQL';
 				var namespaces = document.getElementById(queryLn + '-namespaces');
-				var last = document.getElementById(currentQueryLn + '-namespaces');
+				var last = document.getElementById(currentqueryLn + '-namespaces');
 				if (namespaces) {
 					if (!update.value) {
 						update.value = namespaces.innerText || namespaces.textContent;

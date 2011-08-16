@@ -65,7 +65,7 @@
 	<variable name="add.label">Add</variable>
 	<variable name="remove.label">Remove</variable>
 	<variable name="delete.label">Delete</variable>
-	<variable name="update.label">Update</variable>
+	<variable name="update.label">SPARQL Update</variable>
 	<variable name="create.label">Create</variable>
 	<variable name="next.label">Next</variable>
 	<variable name="cancel.label">Cancel</variable>
@@ -115,7 +115,7 @@
 	<variable name="predicate.label">Predicate</variable>
 	<variable name="query-language.label">Query Language</variable>
 	<variable name="query-string.label">Query</variable>
-	<variable name="update-string.label">SPARQL Update</variable>
+	<variable name="update-string.label">Update</variable>
 	<variable name="subject.label">Subject</variable>
 	<variable name="upload-file.desc">
 		Select the file containing the RDF data you wish to upload
