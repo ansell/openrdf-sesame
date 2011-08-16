@@ -931,7 +931,6 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT { GRAPH ex:graph2 { ?s ?p ?o } } WHERE { GRAPH ex:graph1 { ?s ?p ?o . FILTER (?s = ex:bob) } }; ");
-		update.append(getNamespaceDeclarations());
 		update.append("WITH ex:graph1 DELETE { ?s ?p ?o } WHERE {?s ?p ?o . FILTER (?s = ex:bob) } ");
 		
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
