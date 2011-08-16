@@ -230,6 +230,11 @@
 		<xsl:variable name="disabled"
 			select="$info//sparql:binding[@name='writeable']/sparql:literal/text() = 'false'" />
 		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$update.label" />
+			<xsl:with-param name="href" select="'update'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+		<xsl:call-template name="navigation-entry">
 			<xsl:with-param name="label" select="$add.label" />
 			<xsl:with-param name="href" select="'add'" />
 			<xsl:with-param name="disabled" select="$disabled" />

@@ -21,6 +21,7 @@
 	<variable name="query.title">Query Repository</variable>
 	<variable name="query-result.title">Query Result</variable>
 	<variable name="export.title">Export Repository</variable>
+	<variable name="update.title">Execute SPARQL Update on Repository</variable>
 	<variable name="add.title">Add RDF</variable>
 	<variable name="remove.title">Remove Statements</variable>
 	<variable name="clear.title">Clear Repository</variable>
@@ -60,6 +61,7 @@
 	<variable name="query.label">Query</variable>
 	<variable name="export.label">Export</variable>
 	<variable name="modify.label">Modify</variable>
+	<variable name="update.label">SPARQL Update</variable>
 	<variable name="add.label">Add</variable>
 	<variable name="remove.label">Remove</variable>
 	<variable name="delete.label">Delete</variable>
@@ -113,6 +115,7 @@
 	<variable name="predicate.label">Predicate</variable>
 	<variable name="query-language.label">Query Language</variable>
 	<variable name="query-string.label">Query</variable>
+	<variable name="update-string.label">SPARQL Update</variable>
 	<variable name="subject.label">Subject</variable>
 	<variable name="upload-file.desc">
 		Select the file containing the RDF data you wish to upload
