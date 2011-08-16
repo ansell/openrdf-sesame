@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlSchema;
+
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -23,6 +25,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
@@ -71,7 +74,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		con = rep.getConnection();
 		f = rep.getValueFactory();
 
-		loadDataset();
+		loadDataset("/testdata-update/dataset-update.trig");
 
 		bob = f.createURI(EX_NS, "bob");
 		alice = f.createURI(EX_NS, "alice");
@@ -897,7 +900,8 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	}
 
 	@Test
-	public void testUpdateSequenceInsertDelete() throws Exception
+	public void testUpdateSequenceInsertDelete()
+		throws Exception
 	{
 		logger.debug("executing testUpdateSequenceInsertDelete");
 
@@ -906,7 +910,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		update.append("INSERT {?x foaf:name \"foo\" } WHERE {?y ex:containsPerson ?x}; ");
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y } ");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
@@ -922,9 +926,10 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertFalse(msg, con.hasStatement(bob, FOAF.NAME, f.createLiteral("foo"), true));
 		assertFalse(msg, con.hasStatement(alice, FOAF.NAME, f.createLiteral("foo"), true));
 	}
-	
+
 	@Test
-	public void testUpdateSequenceInsertDelete2() throws Exception
+	public void testUpdateSequenceInsertDelete2()
+		throws Exception
 	{
 		logger.debug("executing testUpdateSequenceInsertDelete2");
 
@@ -932,7 +937,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT { GRAPH ex:graph2 { ?s ?p ?o } } WHERE { GRAPH ex:graph1 { ?s ?p ?o . FILTER (?s = ex:bob) } }; ");
 		update.append("WITH ex:graph1 DELETE { ?s ?p ?o } WHERE {?s ?p ?o . FILTER (?s = ex:bob) } ");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true, graph1));
@@ -948,6 +953,59 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		assertTrue(msg, con.hasStatement(bob, FOAF.MBOX, null, true, graph2));
 		assertTrue(msg, con.hasStatement(bob, FOAF.KNOWS, alice, true, graph2));
 	}
+
+	@Test
+	public void testUpdateSequenceInsertDeleteExample9()
+		throws Exception
+	{
+		logger.debug("executing testUpdateSequenceInsertDeleteExample9");
+
+		// replace the standard dataset with one specific to this case.
+		con.clear();
+		con.commit();
+		loadDataset("/testdata-update/dataset-update-example9.trig");
+
+		URI book1 = f.createURI("http://example/book1");
+		URI book3 = f.createURI("http://example/book3");
+		URI bookStore = f.createURI("http://example/bookStore");
+		URI bookStore2 = f.createURI("http://example/bookStore2");
+		
+		StringBuilder update = new StringBuilder();
+		update.append("prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ");
+		update.append("prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>  ");
+		update.append("prefix xsd: <http://www.w3.org/2001/XMLSchema#>  ");
+		update.append("prefix dc: <http://purl.org/dc/elements/1.1/>  ");
+		update.append("prefix dcmitype: <http://purl.org/dc/dcmitype/>  ");
+		update.append("INSERT  { GRAPH <http://example/bookStore2> { ?book ?p ?v } } ");
+		update.append(" WHERE ");
+		update.append(" { GRAPH  <http://example/bookStore> ");
+		update.append("   { ?book dc:date ?date . ");
+		update.append("       FILTER ( ?date < \"2000-01-01T00:00:00-02:00\"^^xsd:dateTime ) ");
+		update.append("       ?book ?p ?v ");
+		update.append("      } ");
+		update.append(" } ;");
+		update.append("WITH <http://example/bookStore> ");
+		update.append(" DELETE { ?book ?p ?v } ");
+		update.append(" WHERE ");
+		update.append(" { ?book dc:date ?date ; ");
+		update.append("         a dcmitype:PhysicalObject .");
+		update.append("    FILTER ( ?date < \"2000-01-01T00:00:00-02:00\"^^xsd:dateTime ) ");
+		update.append("   ?book ?p ?v");
+		update.append(" } ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.execute();
+
+		String msg = "statements about book1 should have been removed from bookStore";
+		assertFalse(msg, con.hasStatement(book1, null, null, true, bookStore));
+
+		msg = "statements about book1 should have been added to bookStore2";
+		assertTrue(msg, con.hasStatement(book1, RDF.TYPE, null, true, bookStore2));
+		assertTrue(msg, con.hasStatement(book1, DC.DATE, null, true, bookStore2));
+		assertTrue(msg, con.hasStatement(book1, DC.TITLE, null, true, bookStore2));
+	}
+
 	/*
 	@Test
 	public void testLoad()
@@ -981,11 +1039,11 @@ public abstract class SPARQLUpdateTest extends TestCase {
 
 	/* protected methods */
 
-	protected void loadDataset()
+	protected void loadDataset(String datasetFile)
 		throws RDFParseException, RepositoryException, IOException
 	{
 		logger.debug("loading dataset...");
-		InputStream dataset = SPARQLUpdateTest.class.getResourceAsStream("/testdata-update/dataset-update.trig");
+		InputStream dataset = SPARQLUpdateTest.class.getResourceAsStream(datasetFile);
 		try {
 			con.add(dataset, "", RDFFormat.TRIG);
 		}
@@ -1007,6 +1065,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		declarations.append("PREFIX dc: <" + DC.NAMESPACE + "> \n");
 		declarations.append("PREFIX foaf: <" + FOAF.NAMESPACE + "> \n");
 		declarations.append("PREFIX ex: <" + EX_NS + "> \n");
+		declarations.append("PREFIX xsd: <" +  XMLSchema.NAMESPACE + "> \n");
 		declarations.append("\n");
 
 		return declarations.toString();
