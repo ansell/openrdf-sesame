@@ -4,6 +4,8 @@ package org.openrdf.query.parser.sparql.ast;
 public interface SyntaxTreeBuilderVisitor
 {
   public Object visit(SimpleNode node, Object data) throws VisitorException;
+  public Object visit(ASTUpdateSequence node, Object data) throws VisitorException;
+  public Object visit(ASTUpdateContainer node, Object data) throws VisitorException;
   public Object visit(ASTQueryContainer node, Object data) throws VisitorException;
   public Object visit(ASTBaseDecl node, Object data) throws VisitorException;
   public Object visit(ASTPrefixDecl node, Object data) throws VisitorException;
@@ -133,4 +135,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTInsertClause node, Object data) throws VisitorException;
   public Object visit(ASTModify node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=18e03d94aab93e0156bd359f779dad7a (do not edit this line) */
+/* JavaCC - OriginalChecksum=5ff9c1affabb7a887a28ebe55ab39c3a (do not edit this line) */
