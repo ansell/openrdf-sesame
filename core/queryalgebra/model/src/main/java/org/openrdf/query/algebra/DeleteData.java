@@ -63,5 +63,10 @@ public class DeleteData extends QueryModelNodeBase implements UpdateExpr {
 	public TupleExpr getDeleteExpr() {
 		return deleteExpr;
 	}
+
+	public boolean isSilent() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 }

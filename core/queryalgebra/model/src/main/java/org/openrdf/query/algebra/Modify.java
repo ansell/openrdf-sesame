@@ -111,4 +111,9 @@ public class Modify extends QueryModelNodeBase implements UpdateExpr {
 		return whereExpr;
 	}
 
+	public boolean isSilent() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

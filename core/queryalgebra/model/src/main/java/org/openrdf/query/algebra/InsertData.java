@@ -15,7 +15,7 @@ public class InsertData extends QueryModelNodeBase implements UpdateExpr {
 	public InsertData(TupleExpr insertExpr) {
 		setInsertExpr(insertExpr);
 	}
-	
+
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -63,5 +63,10 @@ public class InsertData extends QueryModelNodeBase implements UpdateExpr {
 	public TupleExpr getInsertExpr() {
 		return insertExpr;
 	}
-	
+
+	public boolean isSilent() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

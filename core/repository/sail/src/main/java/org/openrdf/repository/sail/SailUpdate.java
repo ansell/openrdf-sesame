@@ -8,6 +8,9 @@ package org.openrdf.repository.sail;
 import java.net.URL;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.query.Dataset;
@@ -25,6 +28,8 @@ import org.openrdf.sail.SailException;
  * @author Jeen Broekstra
  */
 public class SailUpdate extends AbstractOperation implements Update {
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private final ParsedUpdate parsedUpdate;
 
@@ -94,6 +99,7 @@ public class SailUpdate extends AbstractOperation implements Update {
 					}
 				}
 				catch (Exception e) {
+					logger.warn("exception during update execution: ", e);
 					if (!load.isSilent()) {
 						throw new UpdateExecutionException(e);
 					}
@@ -110,13 +116,18 @@ public class SailUpdate extends AbstractOperation implements Update {
 					}
 				}
 				catch (SailException e) {
-					throw new UpdateExecutionException(e);
+					logger.warn("exception during update execution: ", e);
+					if (!updateExpr.isSilent()) {
+						throw new UpdateExecutionException(e);
+					}
 				}
 				catch (RepositoryException e) {
-					throw new UpdateExecutionException(e);
+					logger.warn("exception during update execution: ", e);
+					if (!updateExpr.isSilent()) {
+						throw new UpdateExecutionException(e);
+					}
 				}
 			}
 		}
 	}
-
 }
