@@ -11,4 +11,9 @@ package org.openrdf.query.algebra;
 public interface UpdateExpr extends QueryModelNode {
 
 	public UpdateExpr clone();
+
+	/**
+	 * @return Returns the silent.
+	 */
+	public boolean isSilent();
 }
