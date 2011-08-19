@@ -22,7 +22,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  *
  * @author Arjohn Kampman 
  */
-class PrefixDeclProcessor {
+public class PrefixDeclProcessor {
 
 	/**
 	 * Processes prefix declarations in queries. This method collects all

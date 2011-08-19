@@ -192,7 +192,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
 /**
  * @author Arjohn Kampman
  */
-class TupleExprBuilder extends ASTVisitorBase {
+public class TupleExprBuilder extends ASTVisitorBase {
 
 	/*-----------*
 	 * Variables *

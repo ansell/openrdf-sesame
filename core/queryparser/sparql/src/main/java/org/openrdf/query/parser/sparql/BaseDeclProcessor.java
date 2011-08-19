@@ -20,7 +20,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  * 
  * @author Arjohn Kampman
  */
-class BaseDeclProcessor {
+public class BaseDeclProcessor {
 
 	/**
 	 * Resolves relative URIs in the supplied query model using either the

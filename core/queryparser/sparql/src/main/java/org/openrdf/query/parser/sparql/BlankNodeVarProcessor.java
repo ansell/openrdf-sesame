@@ -26,7 +26,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  * 
  * @author Arjohn Kampman
  */
-class BlankNodeVarProcessor extends ASTVisitorBase {
+public class BlankNodeVarProcessor extends ASTVisitorBase {
 
 	public static void process(ASTQueryContainer qc)
 		throws MalformedQueryException
