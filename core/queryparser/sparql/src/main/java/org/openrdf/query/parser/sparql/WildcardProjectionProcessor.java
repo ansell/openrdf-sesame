@@ -29,7 +29,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  * @author arjohn
  * @author Jeen Broekstra
  */
-class WildcardProjectionProcessor extends ASTVisitorBase {
+public class WildcardProjectionProcessor extends ASTVisitorBase {
 
 	public static void process(ASTQueryContainer qc)
 		throws MalformedQueryException

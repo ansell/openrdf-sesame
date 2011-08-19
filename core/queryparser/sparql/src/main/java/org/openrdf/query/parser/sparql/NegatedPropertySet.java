@@ -20,7 +20,7 @@ import org.openrdf.query.algebra.Var;
  * 
  * @author Jeen
  */
-class NegatedPropertySet {
+public class NegatedPropertySet {
 
 	private Scope scope;
 
