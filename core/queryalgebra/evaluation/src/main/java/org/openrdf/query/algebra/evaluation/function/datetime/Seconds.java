@@ -36,7 +36,7 @@ public class Seconds implements Function {
 		throws ValueExprEvaluationException
 	{
 		if (args.length != 1) {
-			throw new ValueExprEvaluationException("MINUTES requires 1 argument, got " + args.length);
+			throw new ValueExprEvaluationException("SECONDS requires 1 argument, got " + args.length);
 		}
 
 		Value argValue = args[0];
@@ -49,9 +49,9 @@ public class Seconds implements Function {
 				try {
 					XMLGregorianCalendar calValue = literal.calendarValue();
 
-					int minutes = calValue.getMinute();
-					if (DatatypeConstants.FIELD_UNDEFINED != minutes) {
-						return valueFactory.createLiteral(String.valueOf(minutes), XMLSchema.INTEGER);
+					int seconds = calValue.getSecond();
+					if (DatatypeConstants.FIELD_UNDEFINED != seconds) {
+						return valueFactory.createLiteral(String.valueOf(seconds), XMLSchema.INTEGER);
 					}
 					else {
 						throw new ValueExprEvaluationException("can not determine minutes from value: " + argValue);
