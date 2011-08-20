@@ -145,7 +145,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  * 
  * @author arjohn
  */
-abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
+public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 
 	public Object visit(ASTAbs node, Object data)
 		throws VisitorException

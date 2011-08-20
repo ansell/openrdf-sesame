@@ -12,7 +12,7 @@ import org.openrdf.query.algebra.ValueConstant;
  *
  * @author Jeen
  */
-class PropertySetElem {
+public class PropertySetElem {
 
 	private boolean inverse;
 

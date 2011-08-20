@@ -30,7 +30,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 
-class ConstructorBuilder {
+public class ConstructorBuilder {
 
 	public TupleExpr buildConstructor(TupleExpr bodyExpr, TupleExpr constructExpr, boolean distinct,
 			boolean reduced)
