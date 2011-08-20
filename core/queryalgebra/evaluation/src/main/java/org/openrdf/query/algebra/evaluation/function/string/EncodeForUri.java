@@ -39,7 +39,7 @@ public class EncodeForUri implements Function {
 		if (args[0] instanceof Literal) {
 			Literal literal = (Literal)args[0];
 
-			if (QueryEvaluationUtil.isStringLiteral(literal)) {
+			if (QueryEvaluationUtil.isStringLiteral(literal) || literal.getLanguage() != null) {
 				String lexValue = literal.getLabel();
 
 				return valueFactory.createLiteral(UriUtil.encodeUri(lexValue));
