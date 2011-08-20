@@ -27,6 +27,7 @@ org.openrdf.query.algebra.evaluation.function.numeric.Round
 org.openrdf.query.algebra.evaluation.function.rdfterm.StrDt
 org.openrdf.query.algebra.evaluation.function.rdfterm.StrLang
 org.openrdf.query.algebra.evaluation.function.string.Concat
+org.openrdf.query.algebra.evaluation.function.string.Contains
 org.openrdf.query.algebra.evaluation.function.string.EncodeForUri
 org.openrdf.query.algebra.evaluation.function.string.LowerCase
 org.openrdf.query.algebra.evaluation.function.string.StrEnds
