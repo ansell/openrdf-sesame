@@ -1597,7 +1597,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public FunctionCall visit(ASTContains node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall(FN.CONTAINS.toString(), node, 1, 1);
+		return createFunctionCall(FN.CONTAINS.toString(), node, 2, 2);
 	}
 	
 	@Override
