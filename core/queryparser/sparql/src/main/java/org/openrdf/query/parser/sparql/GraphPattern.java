@@ -26,7 +26,7 @@ import org.openrdf.query.algebra.Var;
  * 
  * @author Arjohn Kampman
  */
-class GraphPattern {
+public class GraphPattern {
 
 	/**
 	 * The context of this graph pattern.

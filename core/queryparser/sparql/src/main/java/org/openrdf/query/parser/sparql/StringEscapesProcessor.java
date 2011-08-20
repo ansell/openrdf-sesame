@@ -18,7 +18,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  * 
  * @author Arjohn Kampman
  */
-class StringEscapesProcessor {
+public class StringEscapesProcessor {
 
 	/**
 	 * Processes escape sequences in ASTString objects.
