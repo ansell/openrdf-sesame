@@ -1996,8 +1996,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					currentOr.setRightArg(new Compare(leftArg, arg, CompareOp.EQ));
 				}
 				else {
-					currentOr = new Or();
-					or.setRightArg(currentOr);
+               Or newOr = new Or();
+               currentOr.setRightArg(newOr);
+               currentOr = newOr; 
 				}
 			}
 			result = or;
@@ -2037,8 +2038,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					currentAnd.setRightArg(new Compare(leftArg, arg, CompareOp.NE));
 				}
 				else {
-					currentAnd = new And();
-					and.setRightArg(currentAnd);
+               And newAnd = new And();
+               currentAnd.setRightArg(newAnd);
+               currentAnd = newAnd; 
 				}
 			}
 			result = and;
