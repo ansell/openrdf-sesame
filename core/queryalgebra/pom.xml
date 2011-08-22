@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>2.5.0-SNAPSHOT</version>
+		<version>2.5.0</version>
 	</parent>
 
 	<artifactId>sesame-queryalgebra</artifactId>
@@ -20,9 +20,9 @@
 	</modules>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.5/core/queryalgebra</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.5/core/queryalgebra</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryalgebra?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryalgebra/</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.5.0/core/queryalgebra</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.5.0/core/queryalgebra</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryalgebra?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.5.0/core/queryalgebra?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryalgebra?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryalgebra/</url>
 
 
 
