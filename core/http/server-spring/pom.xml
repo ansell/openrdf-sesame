@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-http</artifactId>
-		<version>2.5.0-SNAPSHOT</version>
+		<version>2.5.0</version>
 	</parent>
 
 	<artifactId>sesame-http-server-spring</artifactId>
@@ -68,9 +68,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.5/core/http/server-spring</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.5/core/http/server-spring</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/http/server-spring?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/http/server-spring/</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.5.0/core/http/server-spring</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.5.0/core/http/server-spring</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/http/server-spring?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.5.0/core/http/server-spring?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/http/server-spring?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/http/server-spring/</url>
 
 
 
