@@ -26,8 +26,6 @@ import org.openrdf.query.parser.serql.ast.SyntaxTreeBuilder;
 import org.openrdf.query.parser.serql.ast.TokenMgrError;
 import org.openrdf.query.parser.serql.ast.VisitorException;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 public class SeRQLParser implements QueryParser {
 
 	public ParsedQuery parseQuery(String queryStr, String baseURI)
@@ -107,7 +105,6 @@ public class SeRQLParser implements QueryParser {
 	public ParsedUpdate parseUpdate(String updateStr, String baseURI)
 		throws MalformedQueryException
 	{
-		// SeRQL does not implement update operations.
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException("SeRQL does not support update operations");
 	}
 }
