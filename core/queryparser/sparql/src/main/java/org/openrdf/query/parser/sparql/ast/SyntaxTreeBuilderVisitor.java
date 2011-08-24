@@ -19,6 +19,7 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTAskQuery node, Object data) throws VisitorException;
   public Object visit(ASTDatasetClause node, Object data) throws VisitorException;
   public Object visit(ASTWhereClause node, Object data) throws VisitorException;
+  public Object visit(ASTBindingsClause node, Object data) throws VisitorException;
   public Object visit(ASTGroupClause node, Object data) throws VisitorException;
   public Object visit(ASTOrderClause node, Object data) throws VisitorException;
   public Object visit(ASTGroupCondition node, Object data) throws VisitorException;
@@ -32,6 +33,7 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTGraphGraphPattern node, Object data) throws VisitorException;
   public Object visit(ASTUnionGraphPattern node, Object data) throws VisitorException;
   public Object visit(ASTMinusGraphPattern node, Object data) throws VisitorException;
+  public Object visit(ASTServiceGraphPattern node, Object data) throws VisitorException;
   public Object visit(ASTConstraint node, Object data) throws VisitorException;
   public Object visit(ASTFunctionCall node, Object data) throws VisitorException;
   public Object visit(ASTTriplesSameSubject node, Object data) throws VisitorException;
@@ -135,4 +137,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTInsertClause node, Object data) throws VisitorException;
   public Object visit(ASTModify node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=5ff9c1affabb7a887a28ebe55ab39c3a (do not edit this line) */
+/* JavaCC - OriginalChecksum=ebed53dcfcfa80f6b6286cf61b7fa4c5 (do not edit this line) */
