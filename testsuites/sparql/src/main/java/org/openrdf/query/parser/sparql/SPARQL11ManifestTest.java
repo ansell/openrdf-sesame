@@ -42,7 +42,11 @@ public class SPARQL11ManifestTest {
 
 	static final Logger logger = LoggerFactory.getLogger(SPARQL11ManifestTest.class);
 
+	/** use DAWG SPARQL 1.1 tests located on www.3.org instead of local resources */
 	private static final boolean REMOTE = false;
+
+	/** use local copy of DAWG SPARQL 1.1 tests instead of own test suite */
+	private static final boolean LOCAL_DAWG_TESTS = false;
 
 	public static TestSuite suite(SPARQLQueryTest.Factory factory)
 		throws Exception
@@ -55,8 +59,13 @@ public class SPARQL11ManifestTest {
 			tmpDir = null;
 		}
 		else {
-
-			URL url = SPARQL11ManifestTest.class.getResource("/testcases-sparql-1.1/manifest-evaluation.ttl");
+			URL url = null;
+			if (LOCAL_DAWG_TESTS) {
+				url = SPARQL11ManifestTest.class.getResource("/testcases-dawg-sparql-1.1/manifest-evaluation.ttl");
+			}
+			else {
+				url = SPARQL11ManifestTest.class.getResource("/testcases-sparql-1.1/manifest-evaluation.ttl");
+			}
 
 			if ("jar".equals(url.getProtocol())) {
 				// Extract manifest files to a temporary directory
