@@ -51,7 +51,7 @@ public class Seconds implements Function {
 
 					int seconds = calValue.getSecond();
 					if (DatatypeConstants.FIELD_UNDEFINED != seconds) {
-						return valueFactory.createLiteral(String.valueOf(seconds), XMLSchema.INTEGER);
+						return valueFactory.createLiteral(String.valueOf(seconds), XMLSchema.DECIMAL);
 					}
 					else {
 						throw new ValueExprEvaluationException("can not determine minutes from value: " + argValue);
