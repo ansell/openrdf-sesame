@@ -585,7 +585,7 @@ void OptionalGraphPattern() :
 {
 	// Note: does not refer GroupGraphPattern() because constraints are not limited
 	// to the optional graph pattern, but can also reference the operator's LHS
-	<OPTIONAL> <LBRACE> GraphPattern() <RBRACE>
+	<OPTIONAL> <LBRACE> (SelectQuery() | GraphPattern()) <RBRACE>
 }
 
 void GraphGraphPattern() :
