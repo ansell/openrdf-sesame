@@ -193,6 +193,9 @@ TOKEN [IGNORE_CASE] :
 |	<TRUE: "true">
 |	<FALSE: "false">
 |	<BIND: "bind">
+|	<SERVICE: "service">
+|	<BINDINGS: "bindings">
+|	<UNDEF: "UNDEF">
 |	<STRLEN: "strlen">
 |	<SUBSTR: "substr">
 |	<STR_STARTS: "strStarts">
@@ -359,10 +362,7 @@ void PrefixDecl() :
 void Query() #void :
 {}
 {
-	SelectQuery()
-|	ConstructQuery()
-|	DescribeQuery()
-|	AskQuery()
+    (SelectQuery() | ConstructQuery() |	DescribeQuery() | AskQuery()) [BindingsClause()]
 }
 
 void SelectQuery() :
@@ -461,6 +461,22 @@ void WhereClause() :
 {}
 {
 	 [<WHERE>] GroupGraphPattern()
+}
+
+void BindingsClause() :
+{}
+{
+    <BINDINGS> ( Var() )* <LBRACE> ( <LPAREN> ( BindingValue() )* <RPAREN> | <NIL> )* <RBRACE> 
+}
+
+void BindingValue() #void :
+{}
+{
+	IRIref()
+|	RDFLiteral()
+|	NumericLiteral()
+|	BooleanLiteral()
+|	<UNDEF>
 }
 
 void SolutionModifier() #void :
@@ -578,6 +594,7 @@ void GraphPatternNotTriples() #void :
 |	GroupOrUnionGraphPattern()
 |	GraphGraphPattern()
 |	MinusGraphPattern()
+|	ServiceGraphPattern()
 }
 
 void OptionalGraphPattern() :
@@ -604,6 +621,12 @@ void MinusGraphPattern() :
 {}
 {
     <MINUS_SETOPER> GroupGraphPattern()
+}
+
+void ServiceGraphPattern() :
+{}
+{
+    <SERVICE> [<SILENT> { jjtThis.setSilent(true); } ] VarOrIRIref() GroupGraphPattern()
 }
 
 void Filter() #void :

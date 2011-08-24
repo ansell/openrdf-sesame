@@ -87,6 +87,7 @@ import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTAvg;
 import org.openrdf.query.parser.sparql.ast.ASTBNodeFunc;
 import org.openrdf.query.parser.sparql.ast.ASTBind;
+import org.openrdf.query.parser.sparql.ast.ASTBindingsClause;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNodePropertyList;
 import org.openrdf.query.parser.sparql.ast.ASTBound;
@@ -1872,6 +1873,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return new LangMatches(leftArg, rightArg);
 	}
 
+	@Override
+	public Object visit(ASTBindingsClause node, Object data)
+		throws VisitorException 
+	{
+		// TODO implement 
+		return data;
+	}
+	
 	@Override
 	public ValueExpr visit(ASTBound node, Object data)
 		throws VisitorException
