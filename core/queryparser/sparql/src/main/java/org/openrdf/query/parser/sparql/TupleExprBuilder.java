@@ -166,6 +166,7 @@ import org.openrdf.query.parser.sparql.ast.ASTSHA256;
 import org.openrdf.query.parser.sparql.ast.ASTSHA384;
 import org.openrdf.query.parser.sparql.ast.ASTSHA512;
 import org.openrdf.query.parser.sparql.ast.ASTSameTerm;
+import org.openrdf.query.parser.sparql.ast.ASTSample;
 import org.openrdf.query.parser.sparql.ast.ASTSeconds;
 import org.openrdf.query.parser.sparql.ast.ASTSelect;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
@@ -1602,7 +1603,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	{
 		return createFunctionCall(FN.CONTAINS.toString(), node, 2, 2);
 	}
-	
+
 	@Override
 	public FunctionCall visit(ASTFloor node, Object data)
 		throws VisitorException
@@ -1631,6 +1632,16 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new SameTerm(leftArg, rightArg);
+	}
+
+	@Override
+	public Sample visit(ASTSample node, Object data)
+		throws VisitorException
+	{
+		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+
+		return new Sample(ve, node.isDistinct());
+
 	}
 
 	@Override
@@ -1996,9 +2007,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					currentOr.setRightArg(new Compare(leftArg, arg, CompareOp.EQ));
 				}
 				else {
-               Or newOr = new Or();
-               currentOr.setRightArg(newOr);
-               currentOr = newOr; 
+					Or newOr = new Or();
+					currentOr.setRightArg(newOr);
+					currentOr = newOr;
 				}
 			}
 			result = or;
@@ -2038,9 +2049,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					currentAnd.setRightArg(new Compare(leftArg, arg, CompareOp.NE));
 				}
 				else {
-               And newAnd = new And();
-               currentAnd.setRightArg(newAnd);
-               currentAnd = newAnd; 
+					And newAnd = new And();
+					currentAnd.setRightArg(newAnd);
+					currentAnd = newAnd;
 				}
 			}
 			result = and;
@@ -2183,7 +2194,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
 		GroupConcat gc = new GroupConcat(ve, node.isDistinct());
-		
+
 		if (node.jjtGetNumChildren() > 1) {
 			ValueExpr separator = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, data);
 			gc.setSeparator(separator);
