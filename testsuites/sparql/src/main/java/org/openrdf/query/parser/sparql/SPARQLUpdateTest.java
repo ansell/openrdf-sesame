@@ -145,6 +145,59 @@ public abstract class SPARQLUpdateTest extends TestCase {
 	}
 
 	@Test
+	public void testAutoCommitHandling()
+		throws Exception
+	{
+		logger.debug("executing test testAutoCommitHandling");
+		
+		
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("DELETE { ?x foaf:name ?y } INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
+
+		boolean autoCommit = con.isAutoCommit();
+		
+		con.setAutoCommit(false);
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+
+		operation.execute();
+
+		// update should be visible to own connection.
+		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+		assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+
+		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+		RepositoryConnection con2 = rep.getConnection();
+		try {
+			// update should not yet be visible to separate connection
+			assertFalse(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+			assertFalse(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+
+			assertTrue(con2.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+			assertTrue(con2.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+			
+			con.commit();
+
+			// after commit, update should be visible to separate connection.
+			assertTrue(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+			assertTrue(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+
+			assertFalse(con2.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+			assertFalse(con2.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+		}
+		finally {
+			con2.close();
+			con.setAutoCommit(autoCommit);
+		}
+	}
+	
+	@Test
 	public void testInsertTransformedWhere()
 		throws Exception
 	{
