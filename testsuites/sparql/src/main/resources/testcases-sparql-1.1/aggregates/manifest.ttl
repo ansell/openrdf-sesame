@@ -15,6 +15,8 @@
     	:sparql11-count-03
     	:sparql11-count-04
     	:sparql11-order-01
+    	:sparql11-order-02
+    	:sparql11-order-03
     	:sparql11-max-01
     	:sparql11-min-01
     	:sparql11-sum-01
@@ -73,7 +75,19 @@
 	 mf:checkOrder "true"^^xsd:boolean ;
          mf:action [ qt:query <sparql11-order-01.rq> ; qt:data <data-03.ttl> ] ;
          mf:result <sparql11-order-01.srx> .
+
+:sparql11-order-02  mf:name  "sparql11-order-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+	 mf:checkOrder "true"^^xsd:boolean ;
+         mf:action [ qt:query <sparql11-order-02.rq> ; qt:data <data-03.ttl> ] ;
+         mf:result <sparql11-order-02.srx> .
          
+:sparql11-order-03  mf:name  "sparql11-order-03" ;
+         rdf:type   mf:QueryEvaluationTest ;
+	 mf:checkOrder "true"^^xsd:boolean ;
+         mf:action [ qt:query <sparql11-order-03.rq> ; qt:data <data-03.ttl> ] ;
+         mf:result <sparql11-order-03.srx> .
+                  
 :sparql11-max-01  mf:name  "sparql11-max-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-max-01.rq> ; qt:data <data-02.ttl> ] ;

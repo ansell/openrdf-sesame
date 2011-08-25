@@ -292,6 +292,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			tupleExpr = (TupleExpr)groupNode.jjtAccept(this, tupleExpr);
 		}
 
+		Group group = null;
+		
 		// Apply HAVING group filter condition
 		ASTHavingClause havingNode = node.getHavingClause();
 		if (havingNode != null) {
@@ -300,6 +302,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			if (!(tupleExpr instanceof Group)) {
 				tupleExpr = new Group(tupleExpr);
 			}
+			group = (Group)tupleExpr;
 
 			// FIXME is the child of a HAVING node always a compare?
 			Compare condition = (Compare)havingNode.jjtGetChild(0).jjtAccept(this, tupleExpr);
@@ -334,18 +337,58 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				// duplicate of an aggregate in the projection. We could perhaps
 				// optimize for that, to avoid
 				// having to evaluate twice.
-				((Group)tupleExpr).addGroupElement(ge);
+				group.addGroupElement(ge);
 			}
 
-			extension.setArg(tupleExpr);
+			extension.setArg(group);
 			tupleExpr = new Filter(extension, condition);
 		}
 
 		// Apply result ordering
 		ASTOrderClause orderNode = node.getOrderClause();
 		if (orderNode != null) {
-			List<OrderElem> orderElemements = (List<OrderElem>)orderNode.jjtAccept(this, null);
-			tupleExpr = new Order(tupleExpr, orderElemements);
+			List<OrderElem> orderElements = (List<OrderElem>)orderNode.jjtAccept(this, null);
+			
+			for (OrderElem orderElem: orderElements) {
+				// retrieve any aggregate operators from the order element.
+				AggregateCollector collector = new AggregateCollector();
+				collector.meet(orderElem);
+				
+				Extension extension = new Extension();
+				
+				for (AggregateOperator operator: collector.getOperators()) {
+					Var var = createAnonVar("-const-" + constantVarID++);
+
+					// replace occurrence of the operator in the order condition
+					// with the variable.
+					AggregateOperatorReplacer replacer = new AggregateOperatorReplacer(operator, var);
+					replacer.meet(orderElem);
+
+					// create an extension linking the operator to the variable
+					// name.
+					String alias = var.getName();
+
+					ExtensionElem pe = new ExtensionElem(operator, alias);
+					extension.addElement(pe);
+
+					// doublecheck that we have a reference to a Group
+					if (group == null) {
+						if (!(tupleExpr instanceof Group)) {
+							tupleExpr = new Group(tupleExpr);
+						}
+						group = (Group)tupleExpr;
+					}
+					
+					// add the aggregate operator to the group.
+					GroupElem ge = new GroupElem(alias, operator);
+					group.addGroupElement(ge);
+					
+					extension.setArg(tupleExpr);
+					tupleExpr = extension;
+				}
+			}
+			
+			tupleExpr = new Order(tupleExpr, orderElements);
 		}
 
 		// Apply projection
