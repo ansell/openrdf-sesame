@@ -30,12 +30,16 @@ ex:graph1 {
        foaf:knows ex:alice .
 
     ex:bob foaf:knows ex:alice .
+    ex:bob foaf:knows ex:william .
+
     ex:alice foaf:knows ex:bob .
 }
 
 ex:graph2 {
     ex:alice foaf:name "Alice" ;
 	foaf:mbox "alice@example.org" .
+
+    ex:alice foaf:knows ex:william .
 }
 
 ex:graph3 {
