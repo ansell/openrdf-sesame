@@ -293,17 +293,52 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		Group group = null;
-		
-		// Apply HAVING group filter condition
-		ASTHavingClause havingNode = node.getHavingClause();
-		if (havingNode != null) {
-
-			// add implicit group if necessary
-			if (!(tupleExpr instanceof Group)) {
-				tupleExpr = new Group(tupleExpr);
-			}
+		if (tupleExpr instanceof Group) {
 			group = (Group)tupleExpr;
+		}
+		else {
+			// create a new implicit group. Note that this group will only actually
+			// be used in the query model if the query has HAVING or ORDER BY clause
+			group = new Group(tupleExpr);
+		}
 
+		// Apply HAVING group filter condition
+		tupleExpr = processHavingClause(node.getHavingClause(), tupleExpr, group);
+		
+		// Apply result ordering
+		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, group);
+
+		// Apply projection
+		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
+
+		// Process limit and offset clauses
+		ASTLimit limitNode = node.getLimit();
+		long limit = -1L;
+		if (limitNode != null) {
+			limit = (Long)limitNode.jjtAccept(this, null);
+		}
+
+		ASTOffset offsetNode = node.getOffset();
+		long offset = -1L;
+		if (offsetNode != null) {
+			offset = (Long)offsetNode.jjtAccept(this, null);
+		}
+
+		if (offset >= 1L || limit >= 0L) {
+			tupleExpr = new Slice(tupleExpr, offset, limit);
+		}
+
+		if (parentGP != null) {
+			parentGP.addRequiredTE(tupleExpr);
+			graphPattern = parentGP;
+		}
+
+		return tupleExpr;
+	}
+
+	private TupleExpr processHavingClause(ASTHavingClause havingNode, TupleExpr tupleExpr, Group group)
+		throws VisitorException {
+		if (havingNode != null) {
 			// FIXME is the child of a HAVING node always a compare?
 			Compare condition = (Compare)havingNode.jjtGetChild(0).jjtAccept(this, tupleExpr);
 
@@ -333,10 +368,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				GroupElem ge = new GroupElem(alias, operator);
 
 				// FIXME quite often the aggregate in the HAVING clause will be
-				// a
-				// duplicate of an aggregate in the projection. We could perhaps
-				// optimize for that, to avoid
-				// having to evaluate twice.
+				// a duplicate of an aggregate in the projection. We could perhaps
+				// optimize for that, to avoid having to evaluate twice.
 				group.addGroupElement(ge);
 			}
 
@@ -344,19 +377,24 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			tupleExpr = new Filter(extension, condition);
 		}
 
-		// Apply result ordering
-		ASTOrderClause orderNode = node.getOrderClause();
+		return tupleExpr;
+	}
+	
+	
+	private TupleExpr processOrderClause(ASTOrderClause orderNode, TupleExpr tupleExpr, Group group)
+		throws VisitorException
+	{
 		if (orderNode != null) {
 			List<OrderElem> orderElements = (List<OrderElem>)orderNode.jjtAccept(this, null);
-			
-			for (OrderElem orderElem: orderElements) {
+
+			for (OrderElem orderElem : orderElements) {
 				// retrieve any aggregate operators from the order element.
 				AggregateCollector collector = new AggregateCollector();
 				collector.meet(orderElem);
-				
+
 				Extension extension = new Extension();
-				
-				for (AggregateOperator operator: collector.getOperators()) {
+
+				for (AggregateOperator operator : collector.getOperators()) {
 					Var var = createAnonVar("-const-" + constantVarID++);
 
 					// replace occurrence of the operator in the order condition
@@ -371,51 +409,18 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					ExtensionElem pe = new ExtensionElem(operator, alias);
 					extension.addElement(pe);
 
-					// doublecheck that we have a reference to a Group
-					if (group == null) {
-						if (!(tupleExpr instanceof Group)) {
-							tupleExpr = new Group(tupleExpr);
-						}
-						group = (Group)tupleExpr;
-					}
-					
 					// add the aggregate operator to the group.
 					GroupElem ge = new GroupElem(alias, operator);
 					group.addGroupElement(ge);
-					
+
 					extension.setArg(tupleExpr);
 					tupleExpr = extension;
 				}
 			}
-			
+
 			tupleExpr = new Order(tupleExpr, orderElements);
+
 		}
-
-		// Apply projection
-		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
-
-		// Process limit and offset clauses
-		ASTLimit limitNode = node.getLimit();
-		long limit = -1L;
-		if (limitNode != null) {
-			limit = (Long)limitNode.jjtAccept(this, null);
-		}
-
-		ASTOffset offsetNode = node.getOffset();
-		long offset = -1L;
-		if (offsetNode != null) {
-			offset = (Long)offsetNode.jjtAccept(this, null);
-		}
-
-		if (offset >= 1L || limit >= 0L) {
-			tupleExpr = new Slice(tupleExpr, offset, limit);
-		}
-
-		if (parentGP != null) {
-			parentGP.addRequiredTE(tupleExpr);
-			graphPattern = parentGP;
-		}
-
 		return tupleExpr;
 	}
 
@@ -537,12 +542,28 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		node.getWhereClause().jjtAccept(this, null);
 		TupleExpr tupleExpr = graphPattern.buildTupleExpr();
 
-		// Apply result ordering
-		ASTOrderClause orderNode = node.getOrderClause();
-		if (orderNode != null) {
-			List<OrderElem> orderElemements = (List<OrderElem>)orderNode.jjtAccept(this, null);
-			tupleExpr = new Order(tupleExpr, orderElemements);
+		// Apply grouping
+		ASTGroupClause groupNode = node.getGroupClause();
+		if (groupNode != null) {
+
+			tupleExpr = (TupleExpr)groupNode.jjtAccept(this, tupleExpr);
 		}
+
+		Group group = null;
+		if (tupleExpr instanceof Group) {
+			group = (Group)tupleExpr;
+		}
+		else {
+			// create a new implicit group. Note that this group will only actually
+			// be used in the query model if the query has HAVING or ORDER BY clause
+			group = new Group(tupleExpr);
+		}
+
+		// Apply HAVING group filter condition
+		tupleExpr = processHavingClause(node.getHavingClause(), tupleExpr, group);
+
+		// Apply result ordering
+		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, null);
 
 		// Process construct clause
 		ASTConstruct constructNode = node.getConstruct();
@@ -676,13 +697,29 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			node.getWhereClause().jjtAccept(this, null);
 			tupleExpr = graphPattern.buildTupleExpr();
 
-			// Apply result ordering
-			ASTOrderClause orderNode = node.getOrderClause();
-			if (orderNode != null) {
-				List<OrderElem> orderElemements = (List<OrderElem>)orderNode.jjtAccept(this, null);
-				tupleExpr = new Order(tupleExpr, orderElemements);
+			// Apply grouping
+			ASTGroupClause groupNode = node.getGroupClause();
+			if (groupNode != null) {
+
+				tupleExpr = (TupleExpr)groupNode.jjtAccept(this, tupleExpr);
 			}
 
+			Group group = null;
+			if (tupleExpr instanceof Group) {
+				group = (Group)tupleExpr;
+			}
+			else {
+				// create a new implicit group. Note that this group will only actually
+				// be used in the query model if the query has HAVING or ORDER BY clause
+				group = new Group(tupleExpr);
+			}
+
+			// Apply HAVING group filter condition
+			tupleExpr = processHavingClause(node.getHavingClause(), tupleExpr, group);
+
+			// Apply result ordering
+			tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, null);
+			
 			// Process limit and offset clauses
 			ASTLimit limitNode = node.getLimit();
 			long limit = -1;
@@ -1918,12 +1955,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 	@Override
 	public Object visit(ASTBindingsClause node, Object data)
-		throws VisitorException 
+		throws VisitorException
 	{
-		// TODO implement 
+		// TODO implement
 		return data;
 	}
-	
+
 	@Override
 	public ValueExpr visit(ASTBound node, Object data)
 		throws VisitorException
