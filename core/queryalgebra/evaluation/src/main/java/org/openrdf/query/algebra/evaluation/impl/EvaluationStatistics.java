@@ -13,8 +13,10 @@ import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.SingletonSet;
+import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
@@ -77,6 +79,12 @@ public class EvaluationStatistics {
 		public void meet(ArbitraryLengthPath node) {
 			// TODO currently giving ridiculously high cardinality to ensure ALPS are evaluated late in the game.
 			cardinality = 100000;
+		}
+		
+		@Override 
+		public void meet(Projection node) {
+			// TODO hard set of cardinality of Projection to 0, to make sure subselects are always evaluated first.
+			cardinality = 0;
 		}
 		
 		@Override

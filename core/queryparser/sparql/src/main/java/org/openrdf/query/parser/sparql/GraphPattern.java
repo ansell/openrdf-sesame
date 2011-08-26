@@ -9,20 +9,25 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.openrdf.query.algebra.Extension;
+import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.SingletonSet;
+import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
 /**
- * A graph pattern consisting of (required and optional) tuple expressions, binding assignments and
- * boolean constraints.
+ * A graph pattern consisting of (required and optional) tuple expressions,
+ * binding assignments and boolean constraints.
  * 
  * @author Arjohn Kampman
  */
@@ -90,7 +95,12 @@ public class GraphPattern {
 	}
 
 	public void addRequiredTE(TupleExpr te) {
-		requiredTEs.add(te);
+		if (te instanceof Slice || te instanceof Projection) {
+			requiredTEs.add(0, te);
+		}
+		else {
+			requiredTEs.add(te);
+		}
 	}
 
 	public void addRequiredSP(Var subjVar, Var predVar, Var objVar) {
@@ -104,7 +114,7 @@ public class GraphPattern {
 	public List<Extension> getBindingAssignments() {
 		return Collections.unmodifiableList(assignments);
 	}
-	
+
 	public void addOptionalTE(TupleExpr te) {
 		optionalTEs.add(te);
 	}
@@ -160,14 +170,15 @@ public class GraphPattern {
 			result = requiredTEs.get(0);
 
 			for (int i = 1; i < requiredTEs.size(); i++) {
-				result = new Join(result, requiredTEs.get(i));
+				TupleExpr te = requiredTEs.get(i);
+				result = new Join(result, te);
 			}
 		}
 
 		for (TupleExpr optTE : optionalTEs) {
 			result = new LeftJoin(result, optTE);
 		}
-		
+
 		for (Extension assignment : assignments) {
 			assignment.setArg(result);
 			result = assignment;
@@ -179,4 +190,5 @@ public class GraphPattern {
 
 		return result;
 	}
+
 }
