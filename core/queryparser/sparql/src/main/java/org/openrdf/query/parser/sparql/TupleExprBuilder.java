@@ -121,6 +121,7 @@ import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
 import org.openrdf.query.parser.sparql.ast.ASTIf;
 import org.openrdf.query.parser.sparql.ast.ASTIn;
+import org.openrdf.query.parser.sparql.ast.ASTInfix;
 import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
 import org.openrdf.query.parser.sparql.ast.ASTIsIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIsLiteral;
@@ -2064,12 +2065,21 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		return result;
 	}
+	
+	public ValueExpr visit(ASTInfix node, Object data)
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, leftArg);
+		
+		return rightArg;
+	}
 
 	public ValueExpr visit(ASTIn node, Object data)
 		throws VisitorException
 	{
 		ValueExpr result = null;
-		ValueExpr leftArg = (ValueExpr)node.jjtGetParent().jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr leftArg = (ValueExpr)data;
 
 		int listItemCount = node.jjtGetNumChildren();
 
@@ -2111,7 +2121,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		ValueExpr result = null;
-		ValueExpr leftArg = (ValueExpr)node.jjtGetParent().jjtGetChild(0).jjtAccept(this, null);
+		ValueExpr leftArg = (ValueExpr)data;
 
 		int listItemCount = node.jjtGetNumChildren();
 
