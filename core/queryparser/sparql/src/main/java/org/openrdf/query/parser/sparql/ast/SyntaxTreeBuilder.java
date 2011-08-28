@@ -3356,10 +3356,56 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         }
         break;
       case IN:
-        In();
+                  ASTInfix jjtn007 = new ASTInfix(JJTINFIX);
+                  boolean jjtc007 = true;
+                  jjtree.openNodeScope(jjtn007);
+        try {
+          In();
+        } catch (Throwable jjte007) {
+                  if (jjtc007) {
+                    jjtree.clearNodeScope(jjtn007);
+                    jjtc007 = false;
+                  } else {
+                    jjtree.popNode();
+                  }
+                  if (jjte007 instanceof RuntimeException) {
+                    {if (true) throw (RuntimeException)jjte007;}
+                  }
+                  if (jjte007 instanceof ParseException) {
+                    {if (true) throw (ParseException)jjte007;}
+                  }
+                  {if (true) throw (Error)jjte007;}
+        } finally {
+                  if (jjtc007) {
+                    jjtree.closeNodeScope(jjtn007,  2);
+                  }
+        }
         break;
       case NOT_IN:
-        NotIn();
+                  ASTInfix jjtn008 = new ASTInfix(JJTINFIX);
+                  boolean jjtc008 = true;
+                  jjtree.openNodeScope(jjtn008);
+        try {
+          NotIn();
+        } catch (Throwable jjte008) {
+                  if (jjtc008) {
+                    jjtree.clearNodeScope(jjtn008);
+                    jjtc008 = false;
+                  } else {
+                    jjtree.popNode();
+                  }
+                  if (jjte008 instanceof RuntimeException) {
+                    {if (true) throw (RuntimeException)jjte008;}
+                  }
+                  if (jjte008 instanceof ParseException) {
+                    {if (true) throw (ParseException)jjte008;}
+                  }
+                  {if (true) throw (Error)jjte008;}
+        } finally {
+                  if (jjtc008) {
+                    jjtree.closeNodeScope(jjtn008,  2);
+                  }
+        }
         break;
       default:
         jj_la1[93] = jj_gen;

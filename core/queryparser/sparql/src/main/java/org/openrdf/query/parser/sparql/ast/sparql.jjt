@@ -899,8 +899,8 @@ void RelationalExpression() #void :
 	|	<LE> NumericExpression() {jjtThis.setOperator(CompareOp.LE);} #Compare(2)
 	|	<GE> NumericExpression() {jjtThis.setOperator(CompareOp.GE);} #Compare(2)
 	|	<GT> NumericExpression() {jjtThis.setOperator(CompareOp.GT);} #Compare(2)
-	|	In()
-	|	NotIn()
+	|	In() #Infix(2)
+	|	NotIn() #Infix(2)
 	]
 }
 

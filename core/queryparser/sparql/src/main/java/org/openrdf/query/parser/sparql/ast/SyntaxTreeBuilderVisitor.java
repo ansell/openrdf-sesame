@@ -53,6 +53,7 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTOr node, Object data) throws VisitorException;
   public Object visit(ASTAnd node, Object data) throws VisitorException;
   public Object visit(ASTCompare node, Object data) throws VisitorException;
+  public Object visit(ASTInfix node, Object data) throws VisitorException;
   public Object visit(ASTMath node, Object data) throws VisitorException;
   public Object visit(ASTNot node, Object data) throws VisitorException;
   public Object visit(ASTNumericLiteral node, Object data) throws VisitorException;
@@ -137,4 +138,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTInsertClause node, Object data) throws VisitorException;
   public Object visit(ASTModify node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=ebed53dcfcfa80f6b6286cf61b7fa4c5 (do not edit this line) */
+/* JavaCC - OriginalChecksum=99e4184308c2f0cb26b0d2fe6af98c21 (do not edit this line) */
