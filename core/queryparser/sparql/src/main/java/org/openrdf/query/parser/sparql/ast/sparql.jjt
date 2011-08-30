@@ -362,8 +362,7 @@ void PrefixDecl() :
 void Query() #void :
 {}
 {
-    (SelectQuery() | ConstructQuery() |	DescribeQuery() | AskQuery()) [BindingsClause()]
-}
+    (SelectQuery() | ConstructQuery() |	DescribeQuery() | AskQuery()) }
 
 void SelectQuery() :
 {}
@@ -372,6 +371,7 @@ void SelectQuery() :
 	( DatasetClause() )*
 	WhereClause()
 	SolutionModifier()
+	[BindingsClause()]
 }
 
 void Select() :
@@ -407,6 +407,7 @@ void ConstructQuery() :
 	( DatasetClause() )*
 	WhereClause()
 	SolutionModifier()
+	[BindingsClause()]
 }
 
 void Construct() :
@@ -430,6 +431,7 @@ void DescribeQuery() :
 	( DatasetClause() )*
 	[ WhereClause() ]
 	SolutionModifier()
+	[BindingsClause()]
 }
 
 void Describe() :
@@ -449,6 +451,7 @@ void AskQuery() :
 	<ASK>
 	( DatasetClause() )*
 	WhereClause()
+	[BindingsClause()]
 }
 
 void DatasetClause() :
@@ -466,17 +469,23 @@ void WhereClause() :
 void BindingsClause() :
 {}
 {
-    <BINDINGS> ( Var() )* <LBRACE> ( <LPAREN> ( BindingValue() )* <RPAREN> | <NIL> )* <RBRACE> 
+    <BINDINGS> ( Var() )* <LBRACE> ( BindingSet())* <RBRACE> 
 }
 
-void BindingValue() #void :
+void BindingSet() :
+{}
+{
+    <LPAREN> ( BindingValue() )* <RPAREN> | <NIL> 
+}
+
+void BindingValue() :
 {}
 {
 	IRIref()
 |	RDFLiteral()
 |	NumericLiteral()
 |	BooleanLiteral()
-|	<UNDEF>
+|	<UNDEF> 
 }
 
 void SolutionModifier() #void :

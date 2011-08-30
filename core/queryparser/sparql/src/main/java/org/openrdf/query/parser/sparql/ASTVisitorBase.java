@@ -14,6 +14,8 @@ import org.openrdf.query.parser.sparql.ast.ASTBNodeFunc;
 import org.openrdf.query.parser.sparql.ast.ASTBaseDecl;
 import org.openrdf.query.parser.sparql.ast.ASTBasicGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTBind;
+import org.openrdf.query.parser.sparql.ast.ASTBindingSet;
+import org.openrdf.query.parser.sparql.ast.ASTBindingValue;
 import org.openrdf.query.parser.sparql.ast.ASTBindingsClause;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNodePropertyList;
@@ -161,6 +163,13 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	{
 		return node.childrenAccept(this, data);
 	}
+	
+
+	public Object visit(ASTBindingValue node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
 
 	public Object visit(ASTUpdateContainer node, Object data)
 		throws VisitorException
@@ -169,6 +178,12 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	}
 
 	public Object visit(ASTAdd node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTBindingSet node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);

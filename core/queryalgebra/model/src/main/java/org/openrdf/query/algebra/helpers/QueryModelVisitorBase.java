@@ -11,6 +11,7 @@ import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.BinaryValueOperator;
+import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
@@ -94,6 +95,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetBinaryValueOperator(node);
+	}
+
+	public void meet(BindingSetAssignment node)
+		throws X
+	{
+		meetNode(node);
 	}
 
 	public void meet(ArbitraryLengthPath node)

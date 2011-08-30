@@ -42,6 +42,7 @@ import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BinaryTupleOperator;
+import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
@@ -81,6 +82,7 @@ import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.QueryModelNode;
+import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
@@ -182,6 +184,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof ArbitraryLengthPath) {
 			return evaluate((ArbitraryLengthPath)expr, bindings);
+		}
+		else if (expr instanceof BindingSetAssignment) {
+			return evaluate((BindingSetAssignment)expr, bindings);
 		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
@@ -672,6 +677,48 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else {
 			throw new QueryEvaluationException("Unknown unary tuple operator type: " + expr.getClass());
 		}
+	}
+
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSetAssignment bsa,
+			BindingSet bindings)
+		throws QueryEvaluationException
+	{
+		CloseableIteration<BindingSet, QueryEvaluationException> result;
+
+		final List<BindingSet> bindingSets = bsa.getBindingSets();
+
+		// TODO handle existing bindings?
+		
+		result = new CloseableIteration<BindingSet, QueryEvaluationException>() {
+
+			private int i = 0;
+
+			public boolean hasNext()
+				throws QueryEvaluationException
+			{
+				return bindingSets.size() > i;
+			}
+
+			public BindingSet next()
+				throws QueryEvaluationException
+			{
+				return bindingSets.get(i++);
+			}
+
+			public void remove()
+				throws QueryEvaluationException
+			{
+				// TODO Auto-generated method stub
+			}
+
+			public void close()
+				throws QueryEvaluationException
+			{
+				// TODO Auto-generated method stub
+			}
+		};
+
+		return result;
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Projection projection,

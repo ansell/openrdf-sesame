@@ -28,9 +28,13 @@ public abstract class ASTQuery extends ASTOperation {
 	public ASTGroupClause getGroupClause() {
 		return jjtGetChild(ASTGroupClause.class);
 	}
-	
+
 	public ASTHavingClause getHavingClause() {
 		return jjtGetChild(ASTHavingClause.class);
+	}
+
+	public ASTBindingsClause getBindingsClause() {
+		return jjtGetChild(ASTBindingsClause.class);
 	}
 
 	public boolean hasLimit() {
