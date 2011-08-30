@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.BinaryTupleOperator;
+import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
@@ -68,6 +69,11 @@ public class EvaluationStatistics {
 		public void meet(SingletonSet node) {
 			cardinality = 1;
 		}
+		
+		@Override
+		public void meet(BindingSetAssignment node) {
+			cardinality = 0;
+		}
 
 		@Override 
 		public void meet(ZeroLengthPath node) {
@@ -83,8 +89,8 @@ public class EvaluationStatistics {
 		
 		@Override 
 		public void meet(Projection node) {
-			// TODO hard set of cardinality of Projection to 0, to make sure subselects are always evaluated first.
-			cardinality = 0;
+			// TODO hard set of cardinality of Projection to 1, to make sure subselects are always evaluated first.
+			cardinality = 1;
 		}
 		
 		@Override

@@ -20,11 +20,13 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BNodeGenerator;
+import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
@@ -44,6 +46,7 @@ import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.IRIFunction;
 import org.openrdf.query.algebra.If;
+import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
 import org.openrdf.query.algebra.IsNumeric;
@@ -81,12 +84,15 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
+import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.parser.sparql.ast.ASTAbs;
 import org.openrdf.query.parser.sparql.ast.ASTAnd;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTAvg;
 import org.openrdf.query.parser.sparql.ast.ASTBNodeFunc;
 import org.openrdf.query.parser.sparql.ast.ASTBind;
+import org.openrdf.query.parser.sparql.ast.ASTBindingSet;
+import org.openrdf.query.parser.sparql.ast.ASTBindingValue;
 import org.openrdf.query.parser.sparql.ast.ASTBindingsClause;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNodePropertyList;
@@ -272,7 +278,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	{
 		// Skip the prolog, any information it contains should already have been
 		// processed
-		return (TupleExpr)node.getQuery().jjtAccept(this, null);
+	return (TupleExpr)node.getQuery().jjtAccept(this, null);
 	}
 
 	@Override
@@ -299,13 +305,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 		else {
 			// create a new implicit group. Note that this group will only actually
-			// be used in the query model if the query has HAVING or ORDER BY clause
+			// be used in the query model if the query has HAVING or ORDER BY
+			// clause
 			group = new Group(tupleExpr);
 		}
 
 		// Apply HAVING group filter condition
 		tupleExpr = processHavingClause(node.getHavingClause(), tupleExpr, group);
-		
+
 		// Apply result ordering
 		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, group);
 
@@ -329,16 +336,24 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			tupleExpr = new Slice(tupleExpr, offset, limit);
 		}
 
+
+		// process bindings clause
+		ASTBindingsClause bindingsClause = node.getBindingsClause();
+		if (bindingsClause != null) {
+			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
+		}
+
+
 		if (parentGP != null) {
 			parentGP.addRequiredTE(tupleExpr);
 			graphPattern = parentGP;
 		}
-
 		return tupleExpr;
 	}
 
 	private TupleExpr processHavingClause(ASTHavingClause havingNode, TupleExpr tupleExpr, Group group)
-		throws VisitorException {
+		throws VisitorException
+	{
 		if (havingNode != null) {
 			// FIXME is the child of a HAVING node always a compare?
 			Compare condition = (Compare)havingNode.jjtGetChild(0).jjtAccept(this, tupleExpr);
@@ -380,8 +395,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		return tupleExpr;
 	}
-	
-	
+
 	private TupleExpr processOrderClause(ASTOrderClause orderNode, TupleExpr tupleExpr, Group group)
 		throws VisitorException
 	{
@@ -556,7 +570,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 		else {
 			// create a new implicit group. Note that this group will only actually
-			// be used in the query model if the query has HAVING or ORDER BY clause
+			// be used in the query model if the query has HAVING or ORDER BY
+			// clause
 			group = new Group(tupleExpr);
 		}
 
@@ -710,8 +725,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				group = (Group)tupleExpr;
 			}
 			else {
-				// create a new implicit group. Note that this group will only actually
-				// be used in the query model if the query has HAVING or ORDER BY clause
+				// create a new implicit group. Note that this group will only
+				// actually
+				// be used in the query model if the query has HAVING or ORDER BY
+				// clause
 				group = new Group(tupleExpr);
 			}
 
@@ -720,7 +737,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 			// Apply result ordering
 			tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, null);
-			
+
 			// Process limit and offset clauses
 			ASTLimit limitNode = node.getLimit();
 			long limit = -1;
@@ -1955,11 +1972,70 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Object visit(ASTBindingsClause node, Object data)
+	public BindingSetAssignment visit(ASTBindingsClause node, Object data)
 		throws VisitorException
 	{
-		// TODO implement
-		return data;
+		BindingSetAssignment bsa = new BindingSetAssignment();
+
+		List<ASTVar> varNodes = node.jjtGetChildren(ASTVar.class);
+		List<Var> vars = new ArrayList<Var>(varNodes.size());
+
+		for (ASTVar varNode : varNodes) {
+			Var var = (Var)varNode.jjtAccept(this, data);
+			vars.add(var);
+		}
+
+		List<ASTBindingSet> bindingNodes = node.jjtGetChildren(ASTBindingSet.class);
+
+		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
+
+		for (ASTBindingSet bindingNode : bindingNodes) {
+			BindingSet bindingSet = (BindingSet)bindingNode.jjtAccept(this, vars);
+			bindingSets.add(bindingSet);
+		}
+
+		bsa.setBindingSets(bindingSets);
+
+		return bsa;
+	}
+
+	@Override
+	public BindingSet visit(ASTBindingSet node, Object data)
+		throws VisitorException
+	{
+		List<Var> vars = (List<Var>)data;
+
+		List<String> names = new ArrayList<String>(vars.size());
+
+		for (Var var : vars) {
+			names.add(var.getName());
+		}
+
+		Value[] values = new Value[node.jjtGetNumChildren()];
+
+		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+			ValueExpr ve = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
+			if (ve != null) {
+				Value v = valueExpr2Var(ve).getValue();
+				values[i] = v;
+			}
+		}
+
+		BindingSet result = new ListBindingSet(names, values);
+
+		return result;
+	}
+
+	@Override
+	public ValueExpr visit(ASTBindingValue node, Object data)
+		throws VisitorException
+	{
+		if (node.jjtGetNumChildren() > 0) {
+			return (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
+		}
+		else {
+			return null;
+		}
 	}
 
 	@Override
@@ -2065,13 +2141,13 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		return result;
 	}
-	
+
 	public ValueExpr visit(ASTInfix node, Object data)
 		throws VisitorException
 	{
 		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, leftArg);
-		
+
 		return rightArg;
 	}
 
