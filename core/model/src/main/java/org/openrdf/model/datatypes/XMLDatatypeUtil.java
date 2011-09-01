@@ -187,7 +187,7 @@ public class XMLDatatypeUtil {
 	/*----------------*
 	 * Value checking *
 	 *----------------*/
-
+	
 	public static boolean isValidValue(String value, URI datatype) {
 		boolean result = true;
 
@@ -245,7 +245,28 @@ public class XMLDatatypeUtil {
 		else if (datatype.equals(XMLSchema.DATETIME)) {
 			result = isValidDateTime(value);
 		}
-
+		else if (datatype.equals(XMLSchema.DATE)) {
+			result = isValidDate(value);
+		}
+		else if (datatype.equals(XMLSchema.TIME)) {
+			result = isValidTime(value);
+		}
+		else if (datatype.equals(XMLSchema.GDAY)) {
+			result = isValidGDay(value);
+		}
+		else if (datatype.equals(XMLSchema.GMONTH)) {
+			result = isValidGMonth(value);
+		}
+		else if (datatype.equals(XMLSchema.GMONTHDAY)) {
+			result = isValidGMonthDay(value);
+		}
+		else if (datatype.equals(XMLSchema.GYEAR)) {
+			result = isValidGYear(value);
+		}
+		else if (datatype.equals(XMLSchema.GYEARMONTH)) {
+			result = isValidGYearMonth(value);
+		}
+		
 		return result;
 	}
 
@@ -429,6 +450,148 @@ public class XMLDatatypeUtil {
 			return false;
 		}
 	}
+	
+	/**
+	 * Determines if the supplied value is a valid xsd:date string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidDate(String value) {
+		
+		String regex = "-?\\d\\d\\d\\d-\\d\\d-\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+
+	/**
+	 * Determines if the supplied value is a valid xsd:time string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidTime(String value) {
+		
+		String regex = "\\d\\d:\\d\\d:\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Determines if the supplied value is a valid xsd:gDay string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidGDay(String value) {
+		
+		String regex = "---\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Determines if the supplied value is a valid xsd:gMonth string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidGMonth(String value) {
+		
+		String regex = "--\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Determines if the supplied value is a valid xsd:gMonthDay string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidGMonthDay(String value) {
+		
+		String regex = "--\\d\\d-\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Determines if the supplied value is a valid xsd:gYear string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidGYear(String value) {
+		
+		String regex = "-?\\d\\d\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Determines if the supplied value is a valid xsd:gYearMonth string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidGYearMonth(String value) {
+		
+		String regex = "-?\\d\\d\\d\\d-\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+
+	/**
+	 * Determines if the supplied string can be parsed to a valid XMLGregorianCalendar value.
+	 * 
+	 * @param value
+	 * @return true if the supplied string is a parsable calendar value, false otherwise.
+	 */
+	private static boolean isValidCalendarValue(String value) {
+		try {
+			XMLDatatypeUtil.parseCalendar(value);
+			return true;
+		}
+		catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
 
 	/*---------------------*
 	 * Value normalization *
@@ -554,13 +717,11 @@ public class XMLDatatypeUtil {
 	public static String normalizeDecimal(String decimal) {
 		decimal = collapseWhiteSpace(decimal);
 
-		String errMsg = "Not a legal decimal: " + decimal;
-
 		int decLength = decimal.length();
 		StringBuilder result = new StringBuilder(decLength + 2);
 
 		if (decLength == 0) {
-			throwIAE(errMsg);
+			throwIAE("Not a legal decimal: " + decimal);
 		}
 
 		boolean isZeroPointZero = true;
@@ -576,7 +737,7 @@ public class XMLDatatypeUtil {
 		}
 
 		if (idx == decLength) {
-			throwIAE(errMsg);
+			throwIAE("Not a legal decimal: " + decimal);
 		}
 
 		// skip any leading zeros
@@ -603,7 +764,7 @@ public class XMLDatatypeUtil {
 					break;
 				}
 				if (!isDigit(c)) {
-					throwIAE(errMsg);
+					throwIAE("Not a legal decimal: " + decimal);
 				}
 				result.append(c);
 				idx++;
@@ -636,7 +797,7 @@ public class XMLDatatypeUtil {
 				while (idx <= lastIdx) {
 					char c = decimal.charAt(idx);
 					if (!isDigit(c)) {
-						throwIAE(errMsg);
+						throwIAE("Not a legal decimal: " + decimal);
 					}
 					result.append(c);
 					idx++;
@@ -759,12 +920,10 @@ public class XMLDatatypeUtil {
 	private static String normalizeIntegerValue(String integer, String minValue, String maxValue) {
 		integer = collapseWhiteSpace(integer);
 
-		String errMsg = "Not a legal integer: " + integer;
-
 		int intLength = integer.length();
 
 		if (intLength == 0) {
-			throwIAE(errMsg);
+			throwIAE("Not a legal integer: " + integer);
 		}
 
 		int idx = 0;
@@ -780,7 +939,7 @@ public class XMLDatatypeUtil {
 		}
 
 		if (idx == intLength) {
-			throwIAE(errMsg);
+			throwIAE("Not a legal integer: " + integer);
 		}
 
 		if (integer.charAt(idx) == '0' && idx < intLength - 1) {
@@ -797,7 +956,7 @@ public class XMLDatatypeUtil {
 		// Check that all characters in 'norm' are digits
 		for (int i = 0; i < norm.length(); i++) {
 			if (!isDigit(norm.charAt(i))) {
-				throwIAE(errMsg);
+				throwIAE("Not a legal integer: " + integer);
 			}
 		}
 
