@@ -40,6 +40,26 @@ public class XMLDatatypeUtilTest {
 			"2001-12-12+16:00",
 			"2003-02-29" // not a leap year
 	};
+	
+	/** valid xsd:time values */
+	private static final String[] VALID_TIMES = {
+		"13:00:00",
+		"09:15:10",
+		"11:11:11Z",
+		"10:00:01+06:00",
+		"10:01:58-06:00"
+	};
+	
+	/** invalid xsd:time values */
+	private static final String[] INVALID_TIMES = {
+		"foo",
+		"21:32",
+		"9:15:16",
+		"2001-10-10:10:10:10",
+		"-10:00:00",
+		"25:25:25"
+	};
+	
 
 	/** valid xsd:gYear values */
 	private static final String[] VALID_GYEAR = { "2001", "2001+02:00", "2001Z", "-2001" };
@@ -59,6 +79,62 @@ public class XMLDatatypeUtilTest {
 			"---1",
 			"---01+16:00",
 			"---32" };
+	
+	/** valid xsd:gMonth values */
+	private static final String[] VALID_GMONTH = {
+		"--05",
+		"--11Z",
+		"--11+02:00",
+		"--11-04:00",
+		"--02"
+	};
+	
+	/** invalid xsd:gMonth values */
+	private static final String[] INVALID_GMONTH = {
+		"foo",
+		"-05-",
+		"--13",
+		"--1",
+		"01",
+		"2001-01"
+	};
+	
+	/** valid xsd:gMonthDay values */
+	private static final String[] VALID_GMONTHDAY = {
+		"--05-01",
+		"--11-01Z",
+		"--11-01+02:00",
+		"--11-13-04:00",
+		"--11-15"
+	};
+	
+	/** invalid xsd:gMonthDay values */
+	private static final String[] INVALID_GMONTHDAY = {
+		"foo",
+		"-01-30-",
+		"--01-35",
+		"--1-5",
+		"01-15",
+		"--13-01"
+	};
+	
+	/** valid xsd:gYearMonth values */
+	private static final String[] VALID_GYEARMONTH = {	
+		"2001-10",
+		"2001-10Z",
+		"2001-10+02:00",
+		"2001-10-04:00",
+	};
+
+	/** invalid xsd:gYearMonth values */
+	private static final String[] INVALID_GYEARMONTH = {	
+		"foo",
+		"2001",
+		"2001-15",
+		"2001-13-26+02:00",
+		"2001-11-11+02:00",
+		"01-10"
+	};
 
 	/**
 	 * Test method for
@@ -70,11 +146,24 @@ public class XMLDatatypeUtilTest {
 		testValidation(VALID_DATES, XMLSchema.DATE, true);
 		testValidation(INVALID_DATES, XMLSchema.DATE, false);
 
-		testValidation(VALID_GYEAR, XMLSchema.GYEAR, true);
-		testValidation(INVALID_GYEAR, XMLSchema.GYEAR, false);
+		testValidation(VALID_TIMES, XMLSchema.TIME, true);
+		testValidation(INVALID_TIMES, XMLSchema.TIME, false);
 
 		testValidation(VALID_GDAY, XMLSchema.GDAY, true);
 		testValidation(INVALID_GDAY, XMLSchema.GDAY, false);
+
+		testValidation(VALID_GMONTH, XMLSchema.GMONTH, true);
+		testValidation(INVALID_GMONTH, XMLSchema.GMONTH, false);
+
+		testValidation(VALID_GMONTHDAY, XMLSchema.GMONTHDAY, true);
+		testValidation(INVALID_GMONTHDAY, XMLSchema.GMONTHDAY, false);
+		
+		testValidation(VALID_GYEAR, XMLSchema.GYEAR, true);
+		testValidation(INVALID_GYEAR, XMLSchema.GYEAR, false);
+
+		testValidation(VALID_GYEARMONTH, XMLSchema.GYEARMONTH, true);
+		testValidation(INVALID_GYEARMONTH, XMLSchema.GYEARMONTH, false);
+
 	}
 
 	private void testValidation(String[] values, URI datatype, boolean validValues) {
