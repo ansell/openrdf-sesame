@@ -230,7 +230,10 @@ public class XMLDatatypeUtil {
 		else if (datatype.equals(XMLSchema.DURATION)) {
 			result = isValidDuration(value);
 		}
-		
+		else if (datatype.equals(XMLSchema.DAYTIMEDURATION)) {
+			result = isValidDayTimeDuration(value);
+		}
+
 		return result;
 	}
 
@@ -405,11 +408,19 @@ public class XMLDatatypeUtil {
 	}
 
 	public static boolean isValidDuration(String value) {
-		
+
 		// voodoo regex for checking valid xsd:duration string. See
 		// http://www.w3.org/TR/xmlschema-2/#duration for details.
 		String regex = "-?P((\\d)+Y)?((\\d)+M)?((\\d)+D)?((T(\\d)+H((\\d)+M)?((\\d)+(\\.(\\d)+)?S)?)|(T(\\d)+M((\\d)+(\\.(\\d)+)?S)?)|(T(\\d)+(\\.(\\d)+)?S))?";
-		return value.matches(regex);
+		return  value.length() > 1 && value.matches(regex);
+	}
+
+	public static boolean isValidDayTimeDuration(String value) {
+
+		// regex for checking valid xsd:dayTimeDuration string. See
+		// http://www.schemacentral.com/sc/xsd/t-xsd_dayTimeDuration.html
+		String regex = "-?P((\\d)+D)?((T(\\d)+H((\\d)+M)?((\\d)+(\\.(\\d)+)?S)?)|(T(\\d)+M((\\d)+(\\.(\\d)+)?S)?)|(T(\\d)+(\\.(\\d)+)?S))?";
+		return value.length() > 1 && value.matches(regex);
 	}
 
 	public static boolean isValidDateTime(String value) {

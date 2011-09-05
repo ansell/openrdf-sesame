@@ -142,8 +142,12 @@ public class XMLDatatypeUtilTest {
 		"PT130S", 
 		"PT2M10S", 
 		"P1DT2S", 
+		"P1M2D",
+		"P2Y2M1D",
 		"-P1Y",
-		"P1Y2M3DT5H20M30.123S"
+		"P60D",
+		"P1Y2M3DT5H20M30.123S",
+		"PT15.5S"
 	};
 
 	/** invalid xsd:duration values */
@@ -152,9 +156,34 @@ public class XMLDatatypeUtilTest {
 		"P1S",
 		"P-1Y",
 		"P1M2Y",
-		"P2YT"
+		"P2YT",
+		"P",
+		""
 	};
 	
+	/** valid xsd:dayTimeDuration values */
+	private static final String[] VALID_DAYTIMEDURATION = {
+		"P1DT2H",
+		"PT20M",
+		"PT120M",
+		"P3DT5H20M30.123S",
+		"-P6D",
+		"PT15.5S"
+	};
+
+	/** invalid xsd:dayTimeDuration values */
+	private static final String[] INVALID_DAYTIMEDURATION = {
+		"P1Y2M3DT5H20M30.123S",
+		"P1Y",
+		"P-20D",
+		"P20DT",
+		"P15.5D",
+		"P1D2H",
+		"P",
+		"",
+		"PT15.S"
+	};
+
 	/**
 	 * Test method for
 	 * {@link org.openrdf.model.datatypes.XMLDatatypeUtil#isValidValue(java.lang.String, org.openrdf.model.URI)}
@@ -185,6 +214,9 @@ public class XMLDatatypeUtilTest {
 
 		testValidation(VALID_DURATION, XMLSchema.DURATION, true);
 		testValidation(INVALID_DURATION, XMLSchema.DURATION, false);
+
+		testValidation(VALID_DAYTIMEDURATION, XMLSchema.DAYTIMEDURATION, true);
+		testValidation(INVALID_DAYTIMEDURATION, XMLSchema.DAYTIMEDURATION, false);
 
 	}
 
