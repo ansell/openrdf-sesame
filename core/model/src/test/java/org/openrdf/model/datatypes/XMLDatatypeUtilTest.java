@@ -136,6 +136,25 @@ public class XMLDatatypeUtilTest {
 		"01-10"
 	};
 
+	/** valid xsd:duration values */
+	private static final String[] VALID_DURATION = {
+		"PT1004199059S", 
+		"PT130S", 
+		"PT2M10S", 
+		"P1DT2S", 
+		"-P1Y",
+		"P1Y2M3DT5H20M30.123S"
+	};
+
+	/** invalid xsd:duration values */
+	private static final String[] INVALID_DURATION = {
+		"1Y",
+		"P1S",
+		"P-1Y",
+		"P1M2Y",
+		"P2YT"
+	};
+	
 	/**
 	 * Test method for
 	 * {@link org.openrdf.model.datatypes.XMLDatatypeUtil#isValidValue(java.lang.String, org.openrdf.model.URI)}
@@ -163,6 +182,9 @@ public class XMLDatatypeUtilTest {
 
 		testValidation(VALID_GYEARMONTH, XMLSchema.GYEARMONTH, true);
 		testValidation(INVALID_GYEARMONTH, XMLSchema.GYEARMONTH, false);
+
+		testValidation(VALID_DURATION, XMLSchema.DURATION, true);
+		testValidation(INVALID_DURATION, XMLSchema.DURATION, false);
 
 	}
 
