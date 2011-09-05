@@ -35,7 +35,10 @@ public class Substring implements Function {
 
 		Value argValue = args[0];
 		Value startIndexValue = args[1];
-		Value lengthValue = args[2];
+		Value lengthValue = null; 
+		if (args.length > 2) {
+			lengthValue = args[2];
+		}
 
 		if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
