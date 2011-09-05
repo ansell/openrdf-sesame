@@ -29,8 +29,8 @@ public class Substring implements Function {
 	public Literal evaluate(ValueFactory valueFactory, Value... args)
 		throws ValueExprEvaluationException
 	{
-		if (args.length != 1) {
-			throw new ValueExprEvaluationException("SUBSTR requires 1 argument, got " + args.length);
+		if (args.length < 2 || args.length > 3) {
+			throw new ValueExprEvaluationException("Incorrect number of arguments for SUBSTR: " + args.length);
 		}
 
 		Value argValue = args[0];
