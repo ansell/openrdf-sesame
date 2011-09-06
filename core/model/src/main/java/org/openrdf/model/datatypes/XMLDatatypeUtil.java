@@ -15,6 +15,8 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
+import info.aduna.text.ASCIIUtil;
+
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.XMLSchema;
 
@@ -233,6 +235,9 @@ public class XMLDatatypeUtil {
 		else if (datatype.equals(XMLSchema.DAYTIMEDURATION)) {
 			result = isValidDayTimeDuration(value);
 		}
+		else if (datatype.equals(XMLSchema.QNAME)) {
+			result = isValidQName(value);
+		}
 
 		return result;
 	}
@@ -412,7 +417,7 @@ public class XMLDatatypeUtil {
 		// voodoo regex for checking valid xsd:duration string. See
 		// http://www.w3.org/TR/xmlschema-2/#duration for details.
 		String regex = "-?P((\\d)+Y)?((\\d)+M)?((\\d)+D)?((T(\\d)+H((\\d)+M)?((\\d)+(\\.(\\d)+)?S)?)|(T(\\d)+M((\\d)+(\\.(\\d)+)?S)?)|(T(\\d)+(\\.(\\d)+)?S))?";
-		return  value.length() > 1 && value.matches(regex);
+		return value.length() > 1 && value.matches(regex);
 	}
 
 	public static boolean isValidDayTimeDuration(String value) {
@@ -558,6 +563,72 @@ public class XMLDatatypeUtil {
 		else {
 			return false;
 		}
+	}
+
+	/**
+	 * Determines if the supplied value is a valid xsd:QName string. Note that
+	 * this method only checks for syntax errors in the supplied string itself.
+	 * It does not validate that the prefix is a declared and in-scope namespace
+	 * prefix.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidQName(String value) {
+
+		String[] split = value.split(":", -2);
+
+		if (split.length != 2) {
+			return false;
+		}
+
+		// check prefix
+		String prefix = split[0];
+		if (!"".equals(prefix)) {
+			if (!isPrefixStartChar(prefix.charAt(0))) {
+				return false;
+			}
+
+			for (int i = 1; i < prefix.length(); i++) {
+				if (!isNameChar(prefix.charAt(i))) {
+					return false;
+				}
+			}
+		}
+
+		String name = split[1];
+
+		if (!"".equals(name)) {
+			// check name
+			if (!isNameStartChar(name.charAt(0))) {
+				return false;
+			}
+
+			for (int i = 1; i < name.length(); i++) {
+				if (!isNameChar(name.charAt(i))) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private static boolean isPrefixStartChar(int c) {
+		return ASCIIUtil.isLetter(c) || c >= 0x00C0 && c <= 0x00D6 || c >= 0x00D8 && c <= 0x00F6 || c >= 0x00F8
+				&& c <= 0x02FF || c >= 0x0370 && c <= 0x037D || c >= 0x037F && c <= 0x1FFF || c >= 0x200C
+				&& c <= 0x200D || c >= 0x2070 && c <= 0x218F || c >= 0x2C00 && c <= 0x2FEF || c >= 0x3001
+				&& c <= 0xD7FF || c >= 0xF900 && c <= 0xFDCF || c >= 0xFDF0 && c <= 0xFFFD || c >= 0x10000
+				&& c <= 0xEFFFF;
+	}
+
+	private static boolean isNameStartChar(int c) {
+		return c == '_' || isPrefixStartChar(c);
+	}
+
+	private static boolean isNameChar(int c) {
+		return isNameStartChar(c) || ASCIIUtil.isNumber(c) || c == '-' || c == 0x00B7 || c >= 0x0300
+				&& c <= 0x036F || c >= 0x203F && c <= 0x2040;
 	}
 
 	/**
