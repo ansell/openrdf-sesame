@@ -184,6 +184,29 @@ public class XMLDatatypeUtilTest {
 		"PT15.S"
 	};
 
+	/** valid xsd:QName values */
+	private static final String[] VALID_QNAMES = {
+		"foo:bar",
+		"foo:_bar",
+		"foo:_123f",
+		":bar",
+		":_1bar",
+		"foo:",
+		"föö:bar",
+		"foo:băr",
+		"жоо:вар", 	// cyrillic chars
+		"⻐:⻘⻨" 		// random chinese chars, if this sequence happens to mean something, this is unintended
+	};
+
+	/** ivalid xsd:QName values */
+	private static final String[] INVALID_QNAMES = {
+		"1:bar",
+		"foo:1bar",
+		"foo:bar:baz",
+		"foo",
+		"_:bar"
+	};
+
 	/**
 	 * Test method for
 	 * {@link org.openrdf.model.datatypes.XMLDatatypeUtil#isValidValue(java.lang.String, org.openrdf.model.URI)}
@@ -217,6 +240,9 @@ public class XMLDatatypeUtilTest {
 
 		testValidation(VALID_DAYTIMEDURATION, XMLSchema.DAYTIMEDURATION, true);
 		testValidation(INVALID_DAYTIMEDURATION, XMLSchema.DAYTIMEDURATION, false);
+
+		testValidation(VALID_QNAMES, XMLSchema.QNAME, true);
+		testValidation(INVALID_QNAMES, XMLSchema.QNAME, false);
 
 	}
 

@@ -26,6 +26,11 @@
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-i18n</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-text</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
