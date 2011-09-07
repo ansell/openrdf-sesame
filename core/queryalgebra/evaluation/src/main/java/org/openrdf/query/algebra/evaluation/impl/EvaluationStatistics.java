@@ -16,6 +16,7 @@ import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.QueryModelNode;
+import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
@@ -91,6 +92,14 @@ public class EvaluationStatistics {
 		public void meet(Projection node) {
 			// TODO hard set of cardinality of Projection to 1, to make sure subselects are always evaluated first.
 			cardinality = 1;
+		}
+		
+		@Override
+		public void meet(Service node) {
+			node.getServiceExpr().visit(this);
+			
+			// add 'remote service' penalty by multiplying with 2.
+			cardinality = 2*cardinality;
 		}
 		
 		@Override

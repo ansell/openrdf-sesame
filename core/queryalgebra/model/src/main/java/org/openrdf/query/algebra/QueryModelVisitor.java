@@ -188,6 +188,9 @@ public interface QueryModelVisitor<X extends Exception> {
 
 	public void meet(StatementPattern node)
 		throws X;
+	
+	public void meet(Service node)
+		throws X;
 
 	public void meet(Str node)
 		throws X;
