@@ -5,6 +5,9 @@
  */
 package org.openrdf.repository.http;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 import org.openrdf.query.parser.sparql.SPARQLUpdateTest;
 import org.openrdf.repository.Repository;
 
@@ -46,4 +49,12 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 		return new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
 	}
 
+	@Ignore
+	@Test
+	@Override
+	public void testAutoCommitHandling() 
+	{
+		// transaction isolation is not supported for HTTP connections. disabling test.
+		System.err.println("temporarily disabled testAutoCommitHandling() for HTTPRepository");
+	}
 }

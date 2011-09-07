@@ -5,10 +5,12 @@
  */
 package org.openrdf.query.parser.sparql;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
-
-import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +38,7 @@ import org.openrdf.rio.RDFParseException;
  * 
  * @author Jeen Broekstra
  */
-public abstract class SPARQLUpdateTest extends TestCase {
+public abstract class SPARQLUpdateTest {
 
 	static final Logger logger = LoggerFactory.getLogger(SPARQLUpdateTest.class);
 
@@ -94,7 +96,6 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		rep.shutDown();
 		rep = null;
 
-		super.tearDown();
 		logger.debug("tearDown complete.");
 	}
 
@@ -149,14 +150,13 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		throws Exception
 	{
 		logger.debug("executing test testAutoCommitHandling");
-		
-		
+
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE { ?x foaf:name ?y } INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
 
 		boolean autoCommit = con.isAutoCommit();
-		
+
 		con.setAutoCommit(false);
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
@@ -180,7 +180,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 
 			assertTrue(con2.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 			assertTrue(con2.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-			
+
 			con.commit();
 
 			// after commit, update should be visible to separate connection.
@@ -196,7 +196,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 			con.setAutoCommit(autoCommit);
 		}
 	}
-	
+
 	@Test
 	public void testInsertTransformedWhere()
 		throws Exception
@@ -1017,7 +1017,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		URI book3 = f.createURI("http://example/book3");
 		URI bookStore = f.createURI("http://example/bookStore");
 		URI bookStore2 = f.createURI("http://example/bookStore2");
-		
+
 		StringBuilder update = new StringBuilder();
 		update.append("prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ");
 		update.append("prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>  ");
@@ -1113,7 +1113,7 @@ public abstract class SPARQLUpdateTest extends TestCase {
 		declarations.append("PREFIX dc: <" + DC.NAMESPACE + "> \n");
 		declarations.append("PREFIX foaf: <" + FOAF.NAMESPACE + "> \n");
 		declarations.append("PREFIX ex: <" + EX_NS + "> \n");
-		declarations.append("PREFIX xsd: <" +  XMLSchema.NAMESPACE + "> \n");
+		declarations.append("PREFIX xsd: <" + XMLSchema.NAMESPACE + "> \n");
 		declarations.append("\n");
 
 		return declarations.toString();
