@@ -49,7 +49,7 @@ public class SubstringTest {
 	public void testEvaluate1() {
 		
 		Literal pattern = f.createLiteral("foobar");
-		Literal startIndex = f.createLiteral(3);
+		Literal startIndex = f.createLiteral(4);
 		
 		try {
 			Literal result = substrFunc.evaluate(f, pattern, startIndex);
@@ -65,7 +65,7 @@ public class SubstringTest {
 	public void testEvaluate2() {
 		
 		Literal pattern = f.createLiteral("foobar");
-		Literal startIndex = f.createLiteral(3);
+		Literal startIndex = f.createLiteral(4);
 		Literal length = f.createLiteral(2);
 		
 		try {
@@ -82,7 +82,7 @@ public class SubstringTest {
 	public void testEvaluate3() {
 		
 		Literal pattern = f.createLiteral("foobar");
-		Literal startIndex = f.createLiteral(3);
+		Literal startIndex = f.createLiteral(4);
 		Literal length = f.createLiteral(5);
 		
 		try {

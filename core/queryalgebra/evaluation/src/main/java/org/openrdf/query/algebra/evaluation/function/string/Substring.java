@@ -35,7 +35,7 @@ public class Substring implements Function {
 
 		Value argValue = args[0];
 		Value startIndexValue = args[1];
-		Value lengthValue = null; 
+		Value lengthValue = null;
 		if (args.length > 2) {
 			lengthValue = args[2];
 		}
@@ -52,11 +52,17 @@ public class Substring implements Function {
 			{
 				String lexicalValue = literal.getLabel();
 
-				// determine start index from optional expression.
+				// determine start index.
 				int startIndex = 0;
 				if (startIndexValue instanceof Literal) {
 					try {
-						startIndex = ((Literal)startIndexValue).intValue();
+						// xpath:substring startIndex is 1-based.
+						startIndex = ((Literal)startIndexValue).intValue() - 1;
+
+						if (startIndex < 0) {
+							throw new ValueExprEvaluationException(
+									"illegal start index value (expected 1 or larger): " + startIndexValue);
+						}
 					}
 					catch (NumberFormatException e) {
 						throw new ValueExprEvaluationException("illegal start index value (expected int value): "
