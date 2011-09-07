@@ -71,6 +71,7 @@ import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.Sample;
+import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
@@ -178,6 +179,7 @@ import org.openrdf.query.parser.sparql.ast.ASTSample;
 import org.openrdf.query.parser.sparql.ast.ASTSeconds;
 import org.openrdf.query.parser.sparql.ast.ASTSelect;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
+import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTStr;
 import org.openrdf.query.parser.sparql.ast.ASTStrDt;
 import org.openrdf.query.parser.sparql.ast.ASTStrEnds;
@@ -940,6 +942,24 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		graphPattern = parentGP;
 
 		return te;
+	}
+	
+	public Object visit(ASTServiceGraphPattern node, Object data)
+		throws VisitorException
+	{
+		GraphPattern parentGP = graphPattern;
+				
+		ValueExpr serviceRef = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
+		
+		graphPattern = new GraphPattern(parentGP);
+		node.jjtGetChild(1).jjtAccept(this, null);
+		TupleExpr serviceExpr = graphPattern.buildTupleExpr();
+
+		parentGP.addRequiredTE(new Service(valueExpr2Var(serviceRef), serviceExpr));
+		
+		graphPattern = parentGP;
+		
+		return null;
 	}
 
 	@Override
@@ -2481,6 +2501,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		private void meetAggregate(AggregateOperator node) {
 			operators.add(node);
 		}
+
 	}
 
 	static class AggregateOperatorReplacer extends QueryModelVisitorBase<VisitorException> {

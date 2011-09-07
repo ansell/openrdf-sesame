@@ -67,6 +67,7 @@ import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.Sample;
+import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
@@ -431,6 +432,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetNode(node);
+	}
+	
+	public void meet(Service node) 
+		throws X
+	{
+		meetNode(node);		
 	}
 
 	public void meet(ZeroLengthPath node)

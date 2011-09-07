@@ -87,6 +87,7 @@ import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
+import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
@@ -483,6 +484,31 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 	}
 
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service, 
+			final BindingSet bindings)
+		throws QueryEvaluationException
+	{
+		Var serviceRef = service.getServiceRef();
+		
+		String serviceUri;
+		if (serviceRef.hasValue())
+			serviceUri = serviceRef.getValue().stringValue();
+		else 
+		{
+			if (bindings.hasBinding(serviceRef.getName())) {
+				serviceUri = bindings.getBinding(serviceRef.getName()).getValue().stringValue();
+			}
+			else {
+				throw new QueryEvaluationException("SERVICE variables must be bound at evaluation time.");
+			}
+		}
+		
+		System.out.println("SERVICE to be evaluated at " + serviceUri);
+		
+		// TODO evaluate at SERVICE only
+		return evaluate(service.getServiceExpr(),bindings);
+	}
+	
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,
 			final BindingSet bindings)
 		throws QueryEvaluationException
@@ -649,6 +675,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof Filter) {
 			return evaluate((Filter)expr, bindings);
+		}
+		else if (expr instanceof Service) {
+			return evaluate((Service)expr, bindings);
 		}
 		else if (expr instanceof Slice) {
 			return evaluate((Slice)expr, bindings);
