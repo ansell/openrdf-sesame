@@ -12,7 +12,7 @@
 	<packaging>pom</packaging>
 
 	<name>OpenRDF Sesame: Repository</name>
-	<description>Repository API and implemenations.</description>
+	<description>Repository API and implementations.</description>
 
 	<modules>
 		<module>api</module>
@@ -22,6 +22,7 @@
 		<module>sail</module>
 		<module>dataset</module>
 		<module>contextaware</module>
+		<module>sparql</module>
 	</modules>
 
 	<scm>
