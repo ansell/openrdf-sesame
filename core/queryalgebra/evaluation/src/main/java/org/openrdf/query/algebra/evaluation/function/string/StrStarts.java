@@ -6,7 +6,6 @@
 package org.openrdf.query.algebra.evaluation.function.string;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;

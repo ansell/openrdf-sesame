@@ -9,11 +9,12 @@ import java.util.Collections;
 import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.QueryModelNodeBase;
 import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.QueryEvaluationException;
 
 /**
  * @author James Leigh
