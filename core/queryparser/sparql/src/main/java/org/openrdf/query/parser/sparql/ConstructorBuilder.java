@@ -13,21 +13,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
+import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 
 public class ConstructorBuilder {
@@ -38,8 +44,72 @@ public class ConstructorBuilder {
 		return buildConstructor(bodyExpr, constructExpr, true, distinct, reduced);
 	}
 
-	public TupleExpr buildConstructor(TupleExpr bodyExpr, boolean distinct, boolean reduced) {
+	public TupleExpr buildConstructor(TupleExpr bodyExpr, boolean distinct, boolean reduced)
+		throws MalformedQueryException
+	{
+		// check that bodyExpr contains _only_ a basic graph pattern.
+		BasicPatternVerifier verifier = new BasicPatternVerifier();
+		bodyExpr.visit(verifier);
+
+		if (!verifier.isBasicPattern()) {
+			throw new MalformedQueryException(
+					"can not use shorthand CONSTRUCT: graph pattern in WHERE clause is not a basic pattern.");
+		}
+
 		return buildConstructor(bodyExpr, bodyExpr, false, distinct, reduced);
+	}
+
+	private class BasicPatternVerifier extends QueryModelVisitorBase<RuntimeException> {
+
+		private boolean basicPattern = true;
+
+		/**
+		 * @param basicPattern
+		 *        The basicPattern to set.
+		 */
+		/**
+		 * @return Returns the basicPattern.
+		 */
+		public boolean isBasicPattern() {
+			return basicPattern;
+		}
+
+		@Override
+		public void meet(LeftJoin node) {
+			basicPattern = false;
+		}
+
+		@Override
+		public void meet(Filter node) {
+			basicPattern = false;
+		}
+
+		@Override
+		public void meet(Extension node) {
+			basicPattern = false;
+		}
+
+		@Override
+		public void meet(Projection node) {
+			basicPattern = false;
+		}
+
+		@Override
+		public void meet(Union node) {
+			basicPattern = false;
+		}
+
+		public void meet(StatementPattern node) {
+			if (!Scope.DEFAULT_CONTEXTS.equals(node.getScope())) {
+				basicPattern = false;
+			}
+			else if (node.getContextVar() != null) {
+				basicPattern = false;
+			}
+			else {
+				super.meet(node);
+			}
+		}
 	}
 
 	private TupleExpr buildConstructor(TupleExpr bodyExpr, TupleExpr constructExpr,
