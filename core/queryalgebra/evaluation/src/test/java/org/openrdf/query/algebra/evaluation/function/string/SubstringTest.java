@@ -5,7 +5,8 @@
  */
 package org.openrdf.query.algebra.evaluation.function.string;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -86,7 +87,7 @@ public class SubstringTest {
 		Literal length = f.createLiteral(5);
 		
 		try {
-			Literal result = substrFunc.evaluate(f, pattern, startIndex, length);
+			substrFunc.evaluate(f, pattern, startIndex, length);
 			fail("illegal length spec should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
@@ -101,7 +102,7 @@ public class SubstringTest {
 		Literal pattern = f.createLiteral("foobar");
 		
 		try {
-			Literal result = substrFunc.evaluate(f, pattern);
+			substrFunc.evaluate(f, pattern);
 			fail("illegal number of args hould have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {

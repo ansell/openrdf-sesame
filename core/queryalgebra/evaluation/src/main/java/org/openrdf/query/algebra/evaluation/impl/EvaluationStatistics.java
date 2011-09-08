@@ -18,7 +18,6 @@ import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
-import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;

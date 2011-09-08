@@ -5,16 +5,11 @@
  */
 package org.openrdf.query.algebra.evaluation.function.hash;
 
-import java.math.BigInteger;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import info.aduna.net.UriUtil;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.FN;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;

@@ -17,7 +17,6 @@ import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
-import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
 /**
  * The SPARQL built-in {@link Function} MONTH, as defined in <a

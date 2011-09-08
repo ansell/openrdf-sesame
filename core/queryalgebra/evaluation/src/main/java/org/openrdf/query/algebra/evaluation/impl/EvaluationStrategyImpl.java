@@ -82,7 +82,6 @@ import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;

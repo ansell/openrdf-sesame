@@ -6,11 +6,7 @@
 package org.openrdf.query.algebra.evaluation.function.numeric;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.Formatter.BigDecimalLayoutForm;
-import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -18,11 +14,8 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.vocabulary.FN;
-import org.openrdf.model.vocabulary.XMLSchema;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
-import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
 /**
  * The SPARQL built-in {@link Function} CEIL, as defined in <a

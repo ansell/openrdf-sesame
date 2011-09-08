@@ -5,12 +5,12 @@
  */
 package org.openrdf.query.algebra.evaluation.util;
 
-import info.aduna.iteration.CloseableIteration;
-
 import java.util.Arrays;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
+
+import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
