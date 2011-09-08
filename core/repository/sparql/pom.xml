@@ -12,7 +12,7 @@
 
 	<artifactId>sesame-repository-sparql</artifactId>
 
-	<name>SPARQL Repository</name>
+	<name>OpenRDF Sesame: SPARQL Repository</name>
 	<description><![CDATA[
 The SPARQL Repository provides a Sesame Repository interface to any SPARQL end-point.
 ]]>
