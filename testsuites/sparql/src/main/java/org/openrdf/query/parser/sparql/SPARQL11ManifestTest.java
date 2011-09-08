@@ -61,7 +61,7 @@ public class SPARQL11ManifestTest {
 		else {
 			URL url = null;
 			if (LOCAL_DAWG_TESTS) {
-				url = SPARQL11ManifestTest.class.getResource("/testcases-dawg-sparql-1.1/manifest-evaluation.ttl");
+				url = SPARQL11ManifestTest.class.getResource("/testcases-dawg-sparql-1.1/manifest-all.ttl");
 			}
 			else {
 				url = SPARQL11ManifestTest.class.getResource("/testcases-sparql-1.1/manifest-evaluation.ttl");

@@ -21,6 +21,7 @@ import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.ArbitraryLengthPath;
@@ -297,7 +298,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		// Apply grouping
 		ASTGroupClause groupNode = node.getGroupClause();
 		if (groupNode != null) {
-
 			tupleExpr = (TupleExpr)groupNode.jjtAccept(this, tupleExpr);
 		}
 
@@ -451,6 +451,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		ProjectionElemList projElemList = new ProjectionElemList();
 
+		GroupFinder groupFinder = new GroupFinder();
+		result.visit(groupFinder);
+		Group group = groupFinder.getGroup();
+		boolean existingGroup = group != null;
+		
+		List<String> aliasesInProjection = new ArrayList<String>();
 		for (ASTProjectionElem projElemNode : node.getProjectionElemList()) {
 
 			Node child = projElemNode.jjtGetChild(0);
@@ -458,8 +464,15 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			String alias = projElemNode.getAlias();
 			if (alias != null) {
 				// aliased projection element
+				
+				if (aliasesInProjection.contains(alias)) {
+					throw new VisitorException("duplicate use of alias '" + alias + "' in projection."); 
+				}
+				aliasesInProjection.add(alias);
+				
 				ValueExpr valueExpr = (ValueExpr)child.jjtAccept(this, null);
 
+				
 				projElemList.addElement(new ProjectionElem(alias));
 
 				AggregateCollector collector = new AggregateCollector();
@@ -468,14 +481,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				if (collector.getOperators().size() > 0) {
 					for (AggregateOperator operator : collector.getOperators()) {
 						// Apply implicit grouping if necessary
-						GroupFinder groupFinder = new GroupFinder();
-						result.visit(groupFinder);
-						Group group = groupFinder.getGroup();
-
-						boolean existingGroup = true;
 						if (group == null) {
 							group = new Group(result);
-							existingGroup = false;
 						}
 
 						if (operator.equals(valueExpr)) {
@@ -483,7 +490,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 							extension.setArg(group);
 						}
 						else {
-
 							ValueExpr expr = (ValueExpr)operator.getParentNode();
 
 							Extension anonymousExtension = new Extension();
@@ -506,6 +512,11 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			}
 			else if (child instanceof ASTVar) {
 				Var projVar = (Var)child.jjtAccept(this, null);
+				if (existingGroup) {
+					if (!group.getBindingNames().contains(projVar.getName())) {
+						throw new VisitorException("variable in projection not present in GROUP BY.");
+					}
+				}
 				projElemList.addElement(new ProjectionElem(projVar.getName()));
 			}
 			else {
@@ -595,7 +606,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			// SPARQL does not allow distinct or reduced right now. Leaving
 			// functionality in construct builder for
 			// possible future use.
-			tupleExpr = cb.buildConstructor(tupleExpr, false, false);
+			try {
+				tupleExpr = cb.buildConstructor(tupleExpr, false, false);
+			}
+			catch (MalformedQueryException e) {
+				throw new VisitorException(e.getMessage());
+			}
 		}
 
 		// process limit and offset clauses
@@ -2023,6 +2039,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public BindingSet visit(ASTBindingSet node, Object data)
 		throws VisitorException
 	{
+		@SuppressWarnings("unchecked")
 		List<Var> vars = (List<Var>)data;
 
 		List<String> names = new ArrayList<String>(vars.size());
@@ -2031,9 +2048,15 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			names.add(var.getName());
 		}
 
-		Value[] values = new Value[node.jjtGetNumChildren()];
+		int numberOfBindingValues = node.jjtGetNumChildren();
+		
+		if (numberOfBindingValues != vars.size()) {
+			throw new VisitorException("number of values in bindingset does not match variables in BINDINGS clause");
+		}
+		
+		Value[] values = new Value[numberOfBindingValues];
 
-		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+		for (int i = 0; i < numberOfBindingValues; i++) {
 			ValueExpr ve = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
 			if (ve != null) {
 				Value v = valueExpr2Var(ve).getValue();

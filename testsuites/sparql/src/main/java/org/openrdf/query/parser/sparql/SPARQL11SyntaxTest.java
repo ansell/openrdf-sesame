@@ -64,11 +64,13 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 		sb.append("SELECT TestURI, Name, Action, Type ");
 		sb.append("FROM {TestURI} rdf:type {Type};");
 		sb.append("               mf:name {Name};");
-		sb.append("               mf:action {Action} ");
+		sb.append("               mf:action {Action};");
+		sb.append("               dawgt:approval {dawgt:Approved} ");
 		sb.append("WHERE Type = mf:PositiveSyntaxTest11 or Type = mf:NegativeSyntaxTest11 ");
 		sb.append("USING NAMESPACE");
 		sb.append("  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>,");
-		sb.append("  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>");
+		sb.append("  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>,");
+		sb.append("  dawgt = <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>");
 		TESTCASE_QUERY = sb.toString();
 	}
 
@@ -181,7 +183,7 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 			}
 		}
 
-		String manifestFile = host + "manifest-syntax.ttl";
+		String manifestFile = host + "manifest-all.ttl";
 
 		TestSuite suite = new TestSuite() {
 
