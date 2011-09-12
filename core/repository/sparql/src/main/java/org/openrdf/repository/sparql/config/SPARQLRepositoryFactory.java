@@ -34,7 +34,6 @@ public class SPARQLRepositoryFactory implements RepositoryFactory {
 		if (config instanceof SPARQLRepositoryConfig) {
 			SPARQLRepositoryConfig httpConfig = (SPARQLRepositoryConfig) config;
 			result = new SPARQLRepository(httpConfig.getURL());
-			result.setSubjectSpaces(httpConfig.getSubjectSpaces());
 		} else {
 			throw new RepositoryConfigException("Invalid configuration class: "
 					+ config.getClass());
