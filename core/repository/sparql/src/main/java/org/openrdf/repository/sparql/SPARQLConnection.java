@@ -13,6 +13,13 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpConnectionManager;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.apache.commons.httpclient.params.HttpMethodParams;
+
 import info.aduna.io.MavenUtil;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
@@ -21,12 +28,6 @@ import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.SingletonIteration;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnectionManager;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -75,15 +76,11 @@ public class SPARQLConnection extends ConnectionBase {
 	private String queryEndpointUrl;
 	private String updateEndpointUrl;
 
-	private PrefixHashSet subjects;
-
 	public SPARQLConnection(SPARQLRepository repository,
-			String queryEndpointUrl, String updateEndpointUrl,
-			PrefixHashSet subjects) {
+			String queryEndpointUrl, String updateEndpointUrl) {
 		super(repository);
 		this.queryEndpointUrl = queryEndpointUrl;
 		this.updateEndpointUrl = updateEndpointUrl;
-		this.subjects = subjects;
 
 		// Use MultiThreadedHttpConnectionManager to allow concurrent access on
 		// HttpClient
@@ -116,14 +113,9 @@ public class SPARQLConnection extends ConnectionBase {
 			boolean includeInferred, RDFHandler handler, Resource... contexts)
 			throws RepositoryException, RDFHandlerException {
 		try {
-			if (noMatch(subj)) {
-				handler.startRDF();
-				handler.endRDF();
-			} else {
-				GraphQuery query = prepareGraphQuery(SPARQL, EVERYTHING, "");
-				setBindings(query, subj, pred, obj, contexts);
-				query.evaluate(handler);
-			}
+			GraphQuery query = prepareGraphQuery(SPARQL, EVERYTHING, "");
+			setBindings(query, subj, pred, obj, contexts);
+			query.evaluate(handler);
 		} catch (MalformedQueryException e) {
 			throw new RepositoryException(e);
 		} catch (QueryEvaluationException e) {
@@ -164,10 +156,6 @@ public class SPARQLConnection extends ConnectionBase {
 			Value obj, boolean includeInferred, Resource... contexts)
 			throws RepositoryException {
 		try {
-			if (noMatch(subj)) {
-				return new RepositoryResult<Statement>(
-						new EmptyIteration<Statement, RepositoryException>());
-			}
 			if (subj != null && pred != null && obj != null) {
 				if (hasStatement(subj, pred, obj, includeInferred, contexts)) {
 					Statement st = new StatementImpl(subj, pred, obj);
@@ -203,8 +191,6 @@ public class SPARQLConnection extends ConnectionBase {
 			boolean includeInferred, Resource... contexts)
 			throws RepositoryException {
 		try {
-			if (noMatch(subj))
-				return false;
 			BooleanQuery query = prepareBooleanQuery(SPARQL, SOMETHING, "");
 			setBindings(query, subj, pred, obj, contexts);
 			return query.evaluate();
@@ -355,11 +341,6 @@ public class SPARQLConnection extends ConnectionBase {
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 			throws RepositoryException, MalformedQueryException {
 		throw new UnsupportedOperationException();
-	}
-
-	private boolean noMatch(Resource subj) {
-		return subjects != null && subj != null
-				&& !subjects.match(subj.stringValue());
 	}
 
 	private void setBindings(Query query, Resource subj, URI pred, Value obj,

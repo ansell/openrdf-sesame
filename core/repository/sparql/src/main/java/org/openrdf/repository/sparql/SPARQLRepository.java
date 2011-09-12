@@ -6,7 +6,6 @@
 package org.openrdf.repository.sparql;
 
 import java.io.File;
-import java.util.Set;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -24,8 +23,6 @@ public class SPARQLRepository implements Repository {
 	
 	private String queryEndpointUrl;
 	private String updateEndpointUrl;
-	
-	private PrefixHashSet subjects;
 
 	public SPARQLRepository(String queryEndpointUrl) {
 		this.queryEndpointUrl = queryEndpointUrl;
@@ -35,13 +32,9 @@ public class SPARQLRepository implements Repository {
 		this.queryEndpointUrl = queryEndpointUrl;
 		this.updateEndpointUrl = updateEndpointUrl;
 	}
-	
-	public void setSubjectSpaces(Set<String> subjects) {
-		this.subjects = new PrefixHashSet(subjects);
-	}
 
 	public RepositoryConnection getConnection() throws RepositoryException {
-		return new SPARQLConnection(this, queryEndpointUrl, updateEndpointUrl, subjects);
+		return new SPARQLConnection(this, queryEndpointUrl, updateEndpointUrl);
 	}
 
 	public File getDataDir() {
