@@ -29,7 +29,7 @@ public class LowerCase implements Function {
 	public Literal evaluate(ValueFactory valueFactory, Value... args)
 		throws ValueExprEvaluationException
 	{
-		if (args.length != 0) {
+		if (args.length != 1) {
 			throw new ValueExprEvaluationException("LCASE requires exactly 1 argument, got " + args.length);
 		}
 
