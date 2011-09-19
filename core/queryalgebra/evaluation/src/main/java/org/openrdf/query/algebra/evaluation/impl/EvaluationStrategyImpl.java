@@ -558,6 +558,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			else if (contextValue != null) {
 				contexts = new Resource[] { (Resource)contextValue };
 			}
+			/* TODO activate this to have an exclusive (rather than inclusive) interpretation of the default graph in SPARQL querying.
+			else if (sp.getScope() == Scope.DEFAULT_CONTEXTS ) {
+				contexts = new Resource[] { (Resource)null };
+			}
+			*/
 			else {
 				contexts = new Resource[0];
 			}
