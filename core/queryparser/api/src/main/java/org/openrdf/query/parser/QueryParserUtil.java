@@ -5,6 +5,9 @@
  */
 package org.openrdf.query.parser;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.openrdf.query.IncompatibleOperationException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
@@ -48,18 +51,29 @@ public class QueryParserUtil {
 	public static ParsedOperation parseOperation(QueryLanguage ql, String operation, String baseURI)
 		throws MalformedQueryException
 	{
-		QueryParser parser = createParser(ql);
 		ParsedOperation parsedOperation = null;
-		try {
+		QueryParser parser = createParser(ql);
+		
+		if (QueryLanguage.SPARQL.equals(ql)) {
+			String strippedOperation = removeSPARQLQueryProlog(operation).toUpperCase();
+
+			if (strippedOperation.startsWith("SELECT") || strippedOperation.startsWith("CONSTRUCT")
+					|| strippedOperation.startsWith("DESCRIBE") || strippedOperation.startsWith("ASK"))
+			{
+				parsedOperation = parser.parseQuery(operation, baseURI);
+			}
+			else {
+				parsedOperation = parser.parseUpdate(operation, baseURI);
+			}
+		}
+		else {
+			// SPARQL is the only QL supported by sesame that has update operations, so we simply redirect to parseQuery
 			parsedOperation = parser.parseQuery(operation, baseURI);
 		}
-		catch (MalformedQueryException e) {
-			parsedOperation = parser.parseUpdate(operation, baseURI);
-		}
+		
 		return parsedOperation;
 	}
 
-	
 	/**
 	 * Parses the supplied update operation into a query model.
 	 * 
@@ -69,8 +83,8 @@ public class QueryParserUtil {
 	 *        The update operation.
 	 * @param baseURI
 	 *        The base URI to resolve any relative URIs that are in the operation
-	 *        against, can be <tt>null</tt> if the update operation does not contain any
-	 *        relative URIs.
+	 *        against, can be <tt>null</tt> if the update operation does not
+	 *        contain any relative URIs.
 	 * @return The model for the parsed update operation.
 	 * @throws MalformedQueryException
 	 *         If the supplied update operation was malformed.
@@ -187,5 +201,38 @@ public class QueryParserUtil {
 		}
 
 		throw new IllegalArgumentException("query is not a boolean query: " + query);
+	}
+
+	/**
+	 * Removes SPARQL prefix and base declarations, if any, from the supplied
+	 * SPARQL query string.
+	 * 
+	 * @param queryString
+	 *        a SPARQL query string
+	 * @return a substring of queryString, with prefix and base declarations
+	 *         removed.
+	 */
+	public static String removeSPARQLQueryProlog(String queryString) {
+		String normalizedQuery = queryString;
+
+		// strip all prefix declarations
+		Pattern pattern = Pattern.compile("prefix[^:]+:\\s*<[^>]*>\\s*", Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(queryString);
+
+		int startIndexCorrection = 0;
+		while (matcher.find()) {
+			normalizedQuery = normalizedQuery.substring(matcher.end() - startIndexCorrection,
+					normalizedQuery.length());
+			startIndexCorrection += (matcher.end() - startIndexCorrection);
+		}
+
+		// strip base declaration (if present)
+		pattern = Pattern.compile("base\\s+<[^>]*>\\s*", Pattern.CASE_INSENSITIVE);
+		matcher = pattern.matcher(normalizedQuery);
+		if (matcher.find()) {
+			normalizedQuery = normalizedQuery.substring(matcher.end(), normalizedQuery.length());
+		}
+
+		return normalizedQuery.trim();
 	}
 }
