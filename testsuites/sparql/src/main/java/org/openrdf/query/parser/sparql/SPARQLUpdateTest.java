@@ -431,6 +431,29 @@ public abstract class SPARQLUpdateTest {
 		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true, graph1));
 		assertTrue(msg, con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true, graph1));
 	}
+	
+	@Test
+	public void testInsertDataInGraph2()
+		throws Exception
+	{
+		logger.debug("executing testInsertDataInGraph2");
+
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT DATA { GRAPH ex:graph1 { ex:Human rdfs:subClassOf ex:Mammal. ex:Mammal rdfs:subClassOf ex:Animal. ex:george a ex:Human. ex:ringo a ex:Human. } } ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		URI human = f.createURI(EX_NS, "Human");
+		URI mammal = f.createURI(EX_NS, "Mammal");
+		URI george = f.createURI(EX_NS, "george");
+
+		operation.execute();
+
+		assertTrue(con.hasStatement(human, RDFS.SUBCLASSOF, mammal, true, graph1));
+		assertTrue(con.hasStatement(mammal, RDFS.SUBCLASSOF, null, true, graph1));
+		assertTrue(con.hasStatement(george, RDF.TYPE, human, true, graph1));
+	}
 
 	@Test
 	public void testDeleteData()

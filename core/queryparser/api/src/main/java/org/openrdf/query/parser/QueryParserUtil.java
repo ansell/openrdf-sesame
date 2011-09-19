@@ -53,7 +53,7 @@ public class QueryParserUtil {
 		try {
 			parsedOperation = parser.parseQuery(operation, baseURI);
 		}
-		catch (IncompatibleOperationException e) {
+		catch (MalformedQueryException e) {
 			parsedOperation = parser.parseUpdate(operation, baseURI);
 		}
 		return parsedOperation;
