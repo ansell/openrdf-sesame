@@ -528,15 +528,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Resource[] contexts;
 
 			if (dataset != null) {
-				Set<URI> graphs = new HashSet<URI>();
-				
-				// any named graphs should always be searched.
-				graphs.addAll(dataset.getNamedGraphs());
+				Set<URI> graphs = null;
 				
 				if (sp.getScope() == Scope.DEFAULT_CONTEXTS) {
-					// statement pattern can appear anywhere in the dataset. That
-					// means in any default graph or any named graph.
-					graphs.addAll(dataset.getDefaultGraphs());
+					graphs = dataset.getDefaultGraphs();
+				}
+				else {
+					graphs = dataset.getNamedGraphs();
 				}
 
 				if (graphs.isEmpty()) {
