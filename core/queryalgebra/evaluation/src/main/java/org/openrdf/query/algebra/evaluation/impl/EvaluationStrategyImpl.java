@@ -7,6 +7,7 @@ package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -483,17 +484,16 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service, 
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service,
 			final BindingSet bindings)
 		throws QueryEvaluationException
 	{
 		Var serviceRef = service.getServiceRef();
-		
+
 		String serviceUri;
 		if (serviceRef.hasValue())
 			serviceUri = serviceRef.getValue().stringValue();
-		else 
-		{
+		else {
 			if (bindings.hasBinding(serviceRef.getName())) {
 				serviceUri = bindings.getBinding(serviceRef.getName()).getValue().stringValue();
 			}
@@ -501,13 +501,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				throw new QueryEvaluationException("SERVICE variables must be bound at evaluation time.");
 			}
 		}
-		
+
 		System.out.println("SERVICE to be evaluated at " + serviceUri);
-		
+
 		// TODO evaluate at SERVICE only
-		return evaluate(service.getServiceExpr(),bindings);
+		return evaluate(service.getServiceExpr(), bindings);
 	}
-	
+
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,
 			final BindingSet bindings)
 		throws QueryEvaluationException
@@ -528,12 +528,15 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Resource[] contexts;
 
 			if (dataset != null) {
-				Set<URI> graphs;
+				Set<URI> graphs = new HashSet<URI>();
+				
+				// any named graphs should always be searched.
+				graphs.addAll(dataset.getNamedGraphs());
+				
 				if (sp.getScope() == Scope.DEFAULT_CONTEXTS) {
-					graphs = dataset.getDefaultGraphs();
-				}
-				else {
-					graphs = dataset.getNamedGraphs();
+					// statement pattern can appear anywhere in the dataset. That
+					// means in any default graph or any named graph.
+					graphs.addAll(dataset.getDefaultGraphs());
 				}
 
 				if (graphs.isEmpty()) {
@@ -716,7 +719,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		final List<BindingSet> bindingSets = bsa.getBindingSets();
 
 		// TODO handle existing bindings?
-		
+
 		result = new CloseableIteration<BindingSet, QueryEvaluationException>() {
 
 			private int i = 0;
