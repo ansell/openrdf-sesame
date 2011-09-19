@@ -1104,20 +1104,31 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 
-		if (pathAltNode.jjtGetNumChildren() > 1) {
-
+		int altCount = pathAltNode.jjtGetNumChildren();
+		
+		if (altCount > 1) {
 			GraphPattern parentGP = graphPattern;
-
-			graphPattern = new GraphPattern(parentGP);
-			pathAltNode.jjtGetChild(0).jjtAccept(this, data);
-			TupleExpr leftArg = graphPattern.buildTupleExpr();
-
-			graphPattern = new GraphPattern(parentGP);
-
-			pathAltNode.jjtGetChild(1).jjtAccept(this, data);
-			TupleExpr rightArg = graphPattern.buildTupleExpr();
-			parentGP.addRequiredTE(new Union(leftArg, rightArg));
-
+			Union union = new Union();
+			Union currentUnion = union;
+			for (int i = 0; i < altCount -1; i++) {
+				graphPattern = new GraphPattern(parentGP);
+				pathAltNode.jjtGetChild(i).jjtAccept(this, data);
+				TupleExpr arg = graphPattern.buildTupleExpr();
+				currentUnion.setLeftArg(arg);
+				if (i == altCount - 2) { // second-to-last item
+					graphPattern = new GraphPattern(parentGP);
+					pathAltNode.jjtGetChild(i + 1).jjtAccept(this, data);
+					arg = graphPattern.buildTupleExpr();
+					currentUnion.setRightArg(arg);
+				}
+				else {
+					Union newUnion = new Union();
+					currentUnion.setRightArg(newUnion);
+					currentUnion = newUnion;
+				}
+			}
+			
+			parentGP.addRequiredTE(union);
 			graphPattern = parentGP;
 		}
 		else {
