@@ -285,7 +285,9 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		graphPattern.setContextVar(contextVar);
 		graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
 
-		node.jjtGetChild(1).jjtAccept(this, data);
+		for (int i = 1; i < node.jjtGetNumChildren(); i++) {
+			node.jjtGetChild(i).jjtAccept(this, data);
+		}
 
 		TupleExpr result = graphPattern.buildTupleExpr();
 		parentGP.addRequiredTE(result);
