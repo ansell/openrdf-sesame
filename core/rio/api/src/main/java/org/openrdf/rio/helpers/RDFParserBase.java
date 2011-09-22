@@ -7,6 +7,7 @@ package org.openrdf.rio.helpers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import info.aduna.net.ParsedURI;
 
@@ -360,6 +361,11 @@ public abstract class RDFParserBase implements RDFParser {
 				return valueFactory.createLiteral(label, datatype);
 			}
 			else if (lang != null) {
+				if (verifyData()) {
+					if (!isValidLanguageTag(lang)) {
+						reportError("'" + lang + "' is not a valid language tag ");
+					}
+				}
 				return valueFactory.createLiteral(label, lang);
 			}
 			else {
@@ -372,6 +378,24 @@ public abstract class RDFParserBase implements RDFParser {
 		}
 	}
 
+	/**
+	 * Checks that the supplied language tag conforms to lexical formatting as specified
+	 * in RFC-3066.
+	 * 
+	 * @see <a href="http://www.ietf.org/rfc/rfc3066.txt">RFC 3066</a>
+	 * 
+	 * @param languageTag
+	 * 
+	 * @return true if the language tag is lexically valid, false otherwise.
+	 */
+	protected boolean isValidLanguageTag(String languageTag) 
+	{
+		// language tag is RFC3066-conformant if it matches this regex: [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})* 
+		boolean result = Pattern.matches("[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*", languageTag);
+		
+		return result;
+	}
+	
 	/**
 	 * Creates a new {@link Statement} object with the supplied components.
 	 */

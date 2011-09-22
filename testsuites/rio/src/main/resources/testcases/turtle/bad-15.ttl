@@ -1,0 +1,3 @@
+# Test literal with invalid language tag
+@prefix :  <http://example.org/ex#> .
+:a :b "foo"@fr_1793 . 
