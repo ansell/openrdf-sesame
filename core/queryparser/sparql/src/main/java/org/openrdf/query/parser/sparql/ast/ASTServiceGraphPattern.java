@@ -2,10 +2,16 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package org.openrdf.query.parser.sparql.ast;
 
+import java.util.Map;
+
 public
 class ASTServiceGraphPattern extends SimpleNode {
   private boolean silent;
-
+  private String patternString;
+  
+  private Map<String, String> prefixDeclarations;
+  private String baseURI;
+  
 public ASTServiceGraphPattern(int id) {
     super(id);
   }
@@ -28,5 +34,48 @@ public ASTServiceGraphPattern(int id) {
 	public boolean isSilent() {
 		return this.silent;
 	}
+
+	/**
+	 * @param patternString The patternString to set.
+	 */
+	public void setPatternString(String patternString) {
+		this.patternString = patternString;
+	}
+
+	/**
+	 * @return Returns the patternString.
+	 */
+	public String getPatternString() {
+		return patternString;
+	}
+
+	/**
+	 * @param prefixDeclarations The prefixDeclarations to set.
+	 */
+	public void setPrefixDeclarations(Map<String, String> prefixDeclarations) {
+		this.prefixDeclarations = prefixDeclarations;
+	}
+
+	/**
+	 * @return Returns the prefixDeclarations.
+	 */
+	public Map<String, String> getPrefixDeclarations() {
+		return prefixDeclarations;
+	}
+
+	/**
+	 * @param baseURI The baseURI to set.
+	 */
+	public void setBaseURI(String baseURI) {
+		this.baseURI = baseURI;
+	}
+
+	/**
+	 * @return Returns the baseURI.
+	 */
+	public String getBaseURI() {
+		return baseURI;
+	}
+
 }
 /* JavaCC - OriginalChecksum=bee99d7e824ef3f88b61fe127af7e775 (do not edit this line) */
