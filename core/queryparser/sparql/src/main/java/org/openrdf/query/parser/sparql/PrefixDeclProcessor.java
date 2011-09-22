@@ -14,6 +14,7 @@ import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTOperationContainer;
 import org.openrdf.query.parser.sparql.ast.ASTPrefixDecl;
 import org.openrdf.query.parser.sparql.ast.ASTQName;
+import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
 import org.openrdf.query.parser.sparql.ast.SyntaxTreeBuilderTreeConstants;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
 
@@ -99,5 +100,15 @@ public class PrefixDeclProcessor {
 
 			return null;
 		}
+		
+		@Override
+		public Object visit(ASTServiceGraphPattern node, Object data)
+			throws VisitorException
+		{
+			node.setPrefixDeclarations(prefixMap);
+			return super.visit(node, data);
+		}
+		
+
 	}
 }
