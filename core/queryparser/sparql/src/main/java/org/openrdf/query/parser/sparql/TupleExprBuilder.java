@@ -965,8 +965,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	{
 		GraphPattern parentGP = graphPattern;
 				
-		System.out.println(node.getPatternString());
-		
 		ValueExpr serviceRef = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		
 		graphPattern = new GraphPattern(parentGP);
