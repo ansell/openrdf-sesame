@@ -2,7 +2,7 @@
 
 package org.openrdf.query.parser.sparql.ast;
 
-public class ASTIRI extends SimpleNode {
+public class ASTIRI extends ASTRDFValue {
 
 	private String value;
 
@@ -30,8 +30,7 @@ public class ASTIRI extends SimpleNode {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return super.toString() + " (" + value + ")";
 	}
 }

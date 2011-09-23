@@ -2,7 +2,7 @@
 
 package org.openrdf.query.parser.sparql.ast;
 
-public class ASTBlankNode extends SimpleNode {
+public class ASTBlankNode extends ASTRDFValue {
 
 	private String id;
 
@@ -30,8 +30,7 @@ public class ASTBlankNode extends SimpleNode {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return super.toString() + " (" + id + ")";
 	}
 }
