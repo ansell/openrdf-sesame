@@ -37,8 +37,13 @@ import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.BNodeGenerator;
@@ -110,18 +115,24 @@ import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterat
 import org.openrdf.query.algebra.evaluation.iterator.ExtensionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.FilterIterator;
 import org.openrdf.query.algebra.evaluation.iterator.GroupIterator;
+import org.openrdf.query.algebra.evaluation.iterator.InsertBindingsIteration;
 import org.openrdf.query.algebra.evaluation.iterator.JoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.LeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.MultiProjectionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.OrderIterator;
 import org.openrdf.query.algebra.evaluation.iterator.ProjectionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.SPARQLMinusIteration;
+import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
 import org.openrdf.query.algebra.evaluation.util.MathUtil;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
+import org.openrdf.query.algebra.evaluation.util.QueryStringUtil;
+import org.openrdf.query.algebra.evaluation.util.SPARQLRepositoryManager;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.sparql.SPARQLRepository;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -130,6 +141,7 @@ import org.openrdf.query.algebra.helpers.VarNameCollector;
  * @author James Leigh
  * @author Arjohn Kampman
  * @author David Huynh
+ * @author Andreas Schwarte
  */
 public class EvaluationStrategyImpl implements EvaluationStrategy {
 
@@ -485,7 +497,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service,
-			final BindingSet bindings)
+			BindingSet bindings)
 		throws QueryEvaluationException
 	{
 		Var serviceRef = service.getServiceRef();
@@ -494,18 +506,68 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (serviceRef.hasValue())
 			serviceUri = serviceRef.getValue().stringValue();
 		else {
-			if (bindings.hasBinding(serviceRef.getName())) {
+			if (bindings!=null && bindings.hasBinding(serviceRef.getName())) {
 				serviceUri = bindings.getBinding(serviceRef.getName()).getValue().stringValue();
 			}
 			else {
 				throw new QueryEvaluationException("SERVICE variables must be bound at evaluation time.");
 			}
 		}
-
-		System.out.println("SERVICE to be evaluated at " + serviceUri);
-
-		// TODO evaluate at SERVICE only
-		return evaluate(service.getServiceExpr(), bindings);
+		
+		try {
+		
+			SPARQLRepository rep = SPARQLRepositoryManager.getRepository(serviceUri);
+			
+			// create a copy of the free variables, and remove those for which
+			// bindings are available (we can set them!)
+			Set<String> freeVars = new HashSet<String>(service.getServiceVars());
+			freeVars.removeAll(bindings.getBindingNames());
+			
+			String baseUri = null;	// TODO handle base uri
+			String queryString;
+			// special case: no free variables => perform ASK query
+			if (freeVars.size()==0) {
+				queryString = QueryStringUtil.askQueryString(service, bindings);
+				BooleanQuery query = rep.getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, queryString, baseUri);
+				
+				boolean exists = query.evaluate();
+				
+				// check if triples are available (with inserted bindings)
+				if (exists)
+					return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
+				else
+					return new EmptyIteration<BindingSet, QueryEvaluationException>();				
+			}
+			
+			// otherwise: perform a SELECT query
+			queryString = QueryStringUtil.selectQueryString(service, freeVars, bindings);
+			TupleQuery query = rep.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString, baseUri);
+			
+			TupleQueryResult res = query.evaluate();
+				
+			// insert original bindings again
+			InsertBindingsIteration result = new InsertBindingsIteration(res, bindings);
+			if (service.isSilent())
+				return new SilentIteration(result);
+			else
+				return result;
+			
+		} catch (RepositoryException e) {
+			throw new QueryEvaluationException("SPARQLRepository for endpoint " + serviceUri + " could not be initialized.", e);
+		} catch (MalformedQueryException e) {
+			throw new QueryEvaluationException(e);
+		} catch (QueryEvaluationException e) {
+			// suppress exceptions if silent
+			if (service.isSilent()) 
+				return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
+			throw e;
+		} catch (RuntimeException e) {
+			// suppress special exceptions (e.g. UndeclaredThrowable with wrapped QueryEval) if silent
+			if (service.isSilent())
+				return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
+			throw e;
+		}
+		
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,

@@ -98,7 +98,10 @@ public class EvaluationStatistics {
 			node.getServiceExpr().visit(this);
 			
 			// add 'remote service' penalty by multiplying with 2.
-			cardinality = 2*cardinality;
+//			cardinality = 2*cardinality;
+
+			// TODO the cardinality is always 0, fix this. for now use high value
+			cardinality = 100000;
 		}
 		
 		@Override
