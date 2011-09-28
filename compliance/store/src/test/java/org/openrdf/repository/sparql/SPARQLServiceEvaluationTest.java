@@ -42,19 +42,32 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
- * @author jeen
+ * Test suite for evaluation of SPARQL queries involving SERVICE clauses. The
+ * test suite starts up an embedded Jetty server running Sesame, which functions
+ * as the SPARQL endpoint to test against.
+ * 
+ * @author Jeen Broekstra
  */
 public class SPARQLServiceEvaluationTest {
 
 	static final Logger logger = LoggerFactory.getLogger(SPARQLServiceEvaluationTest.class);
-	
+
 	private HTTPMemServer server;
 
 	private HTTPRepository remoteRepository;
+
 	private SailRepository localRepository;
 
+	private ValueFactory f;
+
+	private URI bob;
+
+	private URI alice;
+
+	private URI william;
+
 	protected static final String EX_NS = "http://example.org/";
-	
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -74,8 +87,15 @@ public class SPARQLServiceEvaluationTest {
 
 			localRepository = new SailRepository(new MemoryStore());
 			localRepository.initialize();
-			
+
 			loadDataSet(localRepository, "/testdata-query/defaultgraph.ttl");
+			
+			f = localRepository.getValueFactory();
+
+			bob = f.createURI(EX_NS, "bob");
+			alice = f.createURI(EX_NS, "alice");
+			william = f.createURI(EX_NS, "william");
+			
 		}
 		catch (Exception e) {
 			server.stop();
@@ -88,7 +108,7 @@ public class SPARQLServiceEvaluationTest {
 	{
 		logger.debug("loading dataset...");
 		InputStream dataset = SPARQLServiceEvaluationTest.class.getResourceAsStream(datasetFile);
-		
+
 		RepositoryConnection con = rep.getConnection();
 		try {
 			con.add(dataset, "", RDFFormat.forFileName(datasetFile));
@@ -99,7 +119,6 @@ public class SPARQLServiceEvaluationTest {
 		}
 		logger.debug("dataset loaded.");
 	}
-	
 
 	/**
 	 * @throws java.lang.Exception
@@ -120,18 +139,18 @@ public class SPARQLServiceEvaluationTest {
 	public void testSimpleServiceQuery()
 		throws RepositoryException
 	{
-		ValueFactory f = localRepository.getValueFactory();
-		
-		URI bob = f.createURI(EX_NS, "bob");
-		URI alice = f.createURI(EX_NS, "alice");
-		URI william = f.createURI(EX_NS, "william");
-		
-		String simpleQuery = "SELECT * WHERE { SERVICE <" + HTTPMemServer.REPOSITORY_URL
-				+ "> { ?X <" + FOAF.NAME + "> ?Y} ?X a <" + FOAF.PERSON + "> }";
+		StringBuilder qb = new StringBuilder();
+		qb.append(" SELECT * \n"); 
+		qb.append(" WHERE { \n");
+		qb.append("     SERVICE <" + HTTPMemServer.REPOSITORY_URL + "> { \n");
+		qb.append("             ?X <"	+ FOAF.NAME + "> ?Y \n ");
+		qb.append("     } \n ");
+		qb.append("     ?X a <" + FOAF.PERSON + "> . \n");
+		qb.append(" } \n");
 
 		RepositoryConnection conn = localRepository.getConnection();
 		try {
-			TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, simpleQuery);
+			TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, qb.toString());
 
 			TupleQueryResult tqr = tq.evaluate();
 
@@ -142,10 +161,10 @@ public class SPARQLServiceEvaluationTest {
 			while (tqr.hasNext()) {
 				BindingSet bs = tqr.next();
 				count++;
-				
+
 				Value x = bs.getValue("X");
 				Value y = bs.getValue("Y");
-				
+
 				assertFalse(william.equals(x));
 
 				assertTrue(bob.equals(x) || alice.equals(x));
@@ -156,9 +175,9 @@ public class SPARQLServiceEvaluationTest {
 					f.createLiteral("Alice").equals(y);
 				}
 			}
-			
+
 			assertEquals(2, count);
-			
+
 		}
 		catch (MalformedQueryException e) {
 			fail(e.getMessage());
