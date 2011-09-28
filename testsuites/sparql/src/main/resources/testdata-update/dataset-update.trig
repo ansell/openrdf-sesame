@@ -16,6 +16,7 @@
 ex:graph1 {
     ex:bob foaf:name "Bob" ;
        foaf:mbox "bob@example.org" ;
+       ex:age 42 ;
        foaf:knows ex:alice .
 
     ex:alice foaf:knows ex:bob .

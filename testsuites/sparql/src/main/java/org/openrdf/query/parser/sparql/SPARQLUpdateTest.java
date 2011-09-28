@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
@@ -143,6 +144,36 @@ public abstract class SPARQLUpdateTest {
 		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 
+	}
+	
+	@Test
+	public void testDeleteInsertWhereLoopingBehavior()
+		throws Exception
+	{
+		logger.debug("executing test testDeleteInsertWhereLoopingBehavior");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append(" DELETE { ?x ex:age ?y } INSERT {?x ex:age ?z }");
+		update.append(" WHERE { ");
+		update.append("   ?x ex:age ?y .");
+		update.append("   BIND((?y + 1) as ?z) ");
+		update.append("   FILTER( ?y < 46 ) ");
+		update.append(" } ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		URI age = f.createURI(EX_NS, "age");
+		Literal originalAgeValue = f.createLiteral("42", XMLSchema.INTEGER);
+		Literal correctAgeValue = f.createLiteral("43", XMLSchema.INTEGER);
+		Literal inCorrectAgeValue = f.createLiteral("46", XMLSchema.INTEGER);
+
+		assertTrue(con.hasStatement(bob, age, originalAgeValue, true));
+		
+		operation.execute();
+
+		assertFalse(con.hasStatement(bob, age, originalAgeValue, true));
+		assertTrue(con.hasStatement(bob, age, correctAgeValue, true));
+		assertFalse(con.hasStatement(bob, age, inCorrectAgeValue, true));
 	}
 
 	@Test

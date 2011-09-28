@@ -865,10 +865,13 @@ public abstract class SailConnectionBase implements SailConnection {
 		TupleExpr insertClause = modify.getInsertExpr();
 		TupleExpr whereClause = modify.getWhereExpr();
 
-		CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings = evaluateInternal(
-				whereClause, dataset, bindings, includeInferred);
-
+		// We open a separate connection on the sail to evaluate the where-clause. This is necessary to avoid uncommitted
+		// triples from the INSERT to show up in the result.
+		SailConnection readConnection = sailBase.getConnection();
 		try {
+			CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings = readConnection.evaluate(
+					whereClause, dataset, bindings, includeInferred);
+
 			while (sourceBindings.hasNext()) {
 				BindingSet sourceBinding = sourceBindings.next();
 
@@ -915,6 +918,9 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 		catch (QueryEvaluationException e) {
 			throw new SailException(e);
+		}
+		finally {
+			readConnection.close();
 		}
 	}
 
