@@ -15,6 +15,8 @@ import java.util.List;
  */
 public abstract class ASTOperationContainer extends SimpleNode {
 
+	private String source;
+
 	/**
 	 * @param id
 	 */
@@ -44,4 +46,13 @@ public abstract class ASTOperationContainer extends SimpleNode {
 	public List<ASTPrefixDecl> getPrefixDeclList() {
 		return super.jjtGetChildren(ASTPrefixDecl.class);
 	}
+	
+	public void setSourceString(String source) {
+		this.source = source;
+	}
+	
+	public String getSourceString() {
+		return source;
+	}
+
 }

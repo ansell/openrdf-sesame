@@ -23,7 +23,9 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                 throws TokenMgrError, ParseException
         {
                 SyntaxTreeBuilder stb = new SyntaxTreeBuilder( new StringReader(query) );
-                return stb.QueryContainer();
+                ASTQueryContainer container = stb.QueryContainer();
+                container.setSourceString(query);
+                return container;
         }
 
         /**
@@ -49,17 +51,6 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                         s = s.substring(n, s.length() - n);
                 }
                 return s;
-        }
-
-        /**
-	 * Append the image of the  provided token to the supplied StringBuilder.
-	 * @param sb the StringBuilder to append to. May be null.
-	 */
-        private static void appendToken(StringBuilder sb, Token t) {
-            if (sb != null) {
-                sb.append(t.image);
-                sb.append(" ");
-            }
         }
 
 //
@@ -227,7 +218,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     try {
       jj_consume_token(PREFIX);
       prefix = jj_consume_token(PNAME_NS);
-      IRI(null);
+      IRI();
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
                 // Remove trailing colon from prefix
@@ -259,16 +250,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   final public void Query() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case SELECT:
-      SelectQuery(null);
+      SelectQuery();
       break;
     case CONSTRUCT:
-      ConstructQuery(null);
+      ConstructQuery();
       break;
     case DESCRIBE:
-      DescribeQuery(null);
+      DescribeQuery();
       break;
     case ASK:
-      AskQuery(null);
+      AskQuery();
       break;
     default:
       jj_la1[3] = jj_gen;
@@ -277,13 +268,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void SelectQuery(StringBuilder sb) throws ParseException {
+  final public void SelectQuery() throws ParseException {
  /*@bgen(jjtree) SelectQuery */
   ASTSelectQuery jjtn000 = new ASTSelectQuery(JJTSELECTQUERY);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
     try {
-      Select(sb);
+      Select();
       label_3:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -294,13 +285,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[4] = jj_gen;
           break label_3;
         }
-        DatasetClause(sb);
+        DatasetClause();
       }
-      WhereClause(sb);
-      SolutionModifier(sb);
+      WhereClause();
+      SolutionModifier();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case BINDINGS:
-        BindingsClause(sb);
+        BindingsClause();
         break;
       default:
         jj_la1[5] = jj_gen;
@@ -327,25 +318,24 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Select(StringBuilder sb) throws ParseException {
+  final public void Select() throws ParseException {
  /*@bgen(jjtree) Select */
   ASTSelect jjtn000 = new ASTSelect(JJTSELECT);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(SELECT);
-                       appendToken(sb, t);
+      jj_consume_token(SELECT);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DISTINCT:
       case REDUCED:
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case DISTINCT:
           jj_consume_token(DISTINCT);
-                            jjtn000.setDistinct(true); appendToken(sb, t);
+                            jjtn000.setDistinct(true);
           break;
         case REDUCED:
           jj_consume_token(REDUCED);
-                           jjtn000.setReduced(true); appendToken(sb, t);
+                           jjtn000.setReduced(true);
           break;
         default:
           jj_la1[6] = jj_gen;
@@ -362,14 +352,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         jj_consume_token(STAR);
                          jjtree.closeNodeScope(jjtn000, true);
                          jjtc000 = false;
-                         jjtn000.setWildcard(true); appendToken(sb, t);
+                         jjtn000.setWildcard(true);
         break;
       case LPAREN:
       case VAR1:
       case VAR2:
         label_4:
         while (true) {
-          ProjectionElem(sb);
+          ProjectionElem();
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case LPAREN:
           case VAR1:
@@ -408,24 +398,23 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void ProjectionElem(StringBuilder sb) throws ParseException {
+  final public void ProjectionElem() throws ParseException {
  /*@bgen(jjtree) ProjectionElem */
- ASTProjectionElem jjtn000 = new ASTProjectionElem(JJTPROJECTIONELEM);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTProjectionElem jjtn000 = new ASTProjectionElem(JJTPROJECTIONELEM);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case VAR1:
       case VAR2:
-        Var(sb);
+        Var();
         break;
       case LPAREN:
-        LParen(sb);
-        Expression(sb);
-        t = jj_consume_token(AS);
-                   appendToken(sb, t);
-        Var(sb);
-        RParen(sb);
+        jj_consume_token(LPAREN);
+        Expression();
+        jj_consume_token(AS);
+        Var();
+        jj_consume_token(RPAREN);
         break;
       default:
         jj_la1[10] = jj_gen;
@@ -453,13 +442,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void ConstructQuery(StringBuilder sb) throws ParseException {
+  final public void ConstructQuery() throws ParseException {
  /*@bgen(jjtree) ConstructQuery */
   ASTConstructQuery jjtn000 = new ASTConstructQuery(JJTCONSTRUCTQUERY);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
     try {
-      Construct(sb);
+      Construct();
       label_5:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -470,13 +459,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[11] = jj_gen;
           break label_5;
         }
-        DatasetClause(sb);
+        DatasetClause();
       }
-      WhereClause(sb);
-      SolutionModifier(sb);
+      WhereClause();
+      SolutionModifier();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case BINDINGS:
-        BindingsClause(sb);
+        BindingsClause();
         break;
       default:
         jj_la1[12] = jj_gen;
@@ -503,16 +492,15 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Construct(StringBuilder sb) throws ParseException {
+  final public void Construct() throws ParseException {
  /*@bgen(jjtree) Construct */
- ASTConstruct jjtn000 = new ASTConstruct(JJTCONSTRUCT);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTConstruct jjtn000 = new ASTConstruct(JJTCONSTRUCT);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(CONSTRUCT);
-                          appendToken(sb, t);
+      jj_consume_token(CONSTRUCT);
       if (jj_2_1(2)) {
-        ConstructClause(sb);
+        ConstructClause();
       } else {
         ;
       }
@@ -537,11 +525,8 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void ConstructClause(StringBuilder sb) throws ParseException {
- Token t;
-    // Note: replaced ConstructTriples ref with equivalent TriplesBlock ref
-        t = jj_consume_token(LBRACE);
-                   appendToken(sb, t);
+  final public void ConstructClause() throws ParseException {
+    jj_consume_token(LBRACE);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LPAREN:
     case LBRACK:
@@ -568,23 +553,22 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case STRING_LITERAL2:
     case STRING_LITERAL_LONG1:
     case STRING_LITERAL_LONG2:
-      TriplesBlock(sb);
+      TriplesBlock();
       break;
     default:
       jj_la1[13] = jj_gen;
       ;
     }
-    t = jj_consume_token(RBRACE);
-                   appendToken(sb, t);
+    jj_consume_token(RBRACE);
   }
 
-  final public void DescribeQuery(StringBuilder sb) throws ParseException {
+  final public void DescribeQuery() throws ParseException {
  /*@bgen(jjtree) DescribeQuery */
   ASTDescribeQuery jjtn000 = new ASTDescribeQuery(JJTDESCRIBEQUERY);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
     try {
-      Describe(sb);
+      Describe();
       label_6:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -595,21 +579,21 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[14] = jj_gen;
           break label_6;
         }
-        DatasetClause(sb);
+        DatasetClause();
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LBRACE:
       case WHERE:
-        WhereClause(sb);
+        WhereClause();
         break;
       default:
         jj_la1[15] = jj_gen;
         ;
       }
-      SolutionModifier(sb);
+      SolutionModifier();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case BINDINGS:
-        BindingsClause(sb);
+        BindingsClause();
         break;
       default:
         jj_la1[16] = jj_gen;
@@ -636,20 +620,19 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Describe(StringBuilder sb) throws ParseException {
+  final public void Describe() throws ParseException {
  /*@bgen(jjtree) Describe */
- ASTDescribe jjtn000 = new ASTDescribe(JJTDESCRIBE);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTDescribe jjtn000 = new ASTDescribe(JJTDESCRIBE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(DESCRIBE);
-                         appendToken(sb, t);
+      jj_consume_token(DESCRIBE);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case STAR:
-        t = jj_consume_token(STAR);
-                             jjtree.closeNodeScope(jjtn000, true);
-                             jjtc000 = false;
-                             appendToken(sb, t); jjtn000.setWildcard(true);
+        jj_consume_token(STAR);
+                         jjtree.closeNodeScope(jjtn000, true);
+                         jjtc000 = false;
+                         jjtn000.setWildcard(true);
         break;
       case Q_IRI_REF:
       case PNAME_NS:
@@ -658,7 +641,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case VAR2:
         label_7:
         while (true) {
-          VarOrIRIref(sb);
+          VarOrIRIref();
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case Q_IRI_REF:
           case PNAME_NS:
@@ -699,14 +682,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void AskQuery(StringBuilder sb) throws ParseException {
+  final public void AskQuery() throws ParseException {
  /*@bgen(jjtree) AskQuery */
- ASTAskQuery jjtn000 = new ASTAskQuery(JJTASKQUERY);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTAskQuery jjtn000 = new ASTAskQuery(JJTASKQUERY);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(ASK);
-                    appendToken(sb, t);
+      jj_consume_token(ASK);
       label_8:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -717,12 +699,12 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[19] = jj_gen;
           break label_8;
         }
-        DatasetClause(sb);
+        DatasetClause();
       }
-      WhereClause(sb);
+      WhereClause();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case BINDINGS:
-        BindingsClause(sb);
+        BindingsClause();
         break;
       default:
         jj_la1[20] = jj_gen;
@@ -749,24 +731,23 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void DatasetClause(StringBuilder sb) throws ParseException {
+  final public void DatasetClause() throws ParseException {
  /*@bgen(jjtree) DatasetClause */
   ASTDatasetClause jjtn000 = new ASTDatasetClause(JJTDATASETCLAUSE);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(FROM);
-                     appendToken(sb, t);
+      jj_consume_token(FROM);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case NAMED:
-        t = jj_consume_token(NAMED);
-                        appendToken(sb, t); jjtn000.setNamed(true);
+        jj_consume_token(NAMED);
+                         jjtn000.setNamed(true);
         break;
       default:
         jj_la1[21] = jj_gen;
         ;
       }
-      IRIref(sb);
+      IRIref();
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -788,22 +769,21 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void WhereClause(StringBuilder sb) throws ParseException {
+  final public void WhereClause() throws ParseException {
  /*@bgen(jjtree) WhereClause */
   ASTWhereClause jjtn000 = new ASTWhereClause(JJTWHERECLAUSE);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case WHERE:
-        t = jj_consume_token(WHERE);
-                         appendToken(sb, t);
+        jj_consume_token(WHERE);
         break;
       default:
         jj_la1[22] = jj_gen;
         ;
       }
-      GroupGraphPattern(sb);
+      GroupGraphPattern();
     } catch (Throwable jjte000) {
            if (jjtc000) {
              jjtree.clearNodeScope(jjtn000);
@@ -825,14 +805,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void BindingsClause(StringBuilder sb) throws ParseException {
+  final public void BindingsClause() throws ParseException {
  /*@bgen(jjtree) BindingsClause */
   ASTBindingsClause jjtn000 = new ASTBindingsClause(JJTBINDINGSCLAUSE);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(BINDINGS);
-                     appendToken(sb, t);
+      jj_consume_token(BINDINGS);
       label_9:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -844,10 +823,9 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[23] = jj_gen;
           break label_9;
         }
-        Var(sb);
+        Var();
       }
-      t = jj_consume_token(LBRACE);
-                   appendToken(sb, t);
+      jj_consume_token(LBRACE);
       label_10:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -859,12 +837,9 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[24] = jj_gen;
           break label_10;
         }
-        BindingSet(sb);
+        BindingSet();
       }
-      t = jj_consume_token(RBRACE);
-                   jjtree.closeNodeScope(jjtn000, true);
-                   jjtc000 = false;
-                   appendToken(sb, t);
+      jj_consume_token(RBRACE);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -886,15 +861,15 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void BindingSet(StringBuilder sb) throws ParseException {
+  final public void BindingSet() throws ParseException {
  /*@bgen(jjtree) BindingSet */
   ASTBindingSet jjtn000 = new ASTBindingSet(JJTBINDINGSET);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAREN:
-        LParen(sb);
+        jj_consume_token(LPAREN);
         label_11:
         while (true) {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -923,15 +898,12 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
             jj_la1[25] = jj_gen;
             break label_11;
           }
-          BindingValue(sb);
+          BindingValue();
         }
-        RParen(sb);
+        jj_consume_token(RPAREN);
         break;
       case NIL:
-        t = jj_consume_token(NIL);
-                jjtree.closeNodeScope(jjtn000, true);
-                jjtc000 = false;
-                appendToken(sb, t);
+        jj_consume_token(NIL);
         break;
       default:
         jj_la1[26] = jj_gen;
@@ -959,23 +931,23 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void BindingValue(StringBuilder sb) throws ParseException {
+  final public void BindingValue() throws ParseException {
  /*@bgen(jjtree) BindingValue */
   ASTBindingValue jjtn000 = new ASTBindingValue(JJTBINDINGVALUE);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case Q_IRI_REF:
       case PNAME_NS:
       case PNAME_LN:
-        IRIref(sb);
+        IRIref();
         break;
       case STRING_LITERAL1:
       case STRING_LITERAL2:
       case STRING_LITERAL_LONG1:
       case STRING_LITERAL_LONG2:
-        RDFLiteral(sb);
+        RDFLiteral();
         break;
       case INTEGER:
       case INTEGER_POSITIVE:
@@ -986,17 +958,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case DOUBLE:
       case DOUBLE_POSITIVE:
       case DOUBLE_NEGATIVE:
-        NumericLiteral(sb);
+        NumericLiteral();
         break;
       case TRUE:
       case FALSE:
-        BooleanLiteral(sb);
+        BooleanLiteral();
         break;
       case UNDEF:
-        t = jj_consume_token(UNDEF);
-                      jjtree.closeNodeScope(jjtn000, true);
-                      jjtc000 = false;
-                     appendToken(sb, t);
+        jj_consume_token(UNDEF);
         break;
       default:
         jj_la1[27] = jj_gen;
@@ -1024,10 +993,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void SolutionModifier(StringBuilder sb) throws ParseException {
+  final public void SolutionModifier() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case GROUP:
-      GroupClause(sb);
+      GroupClause();
       break;
     default:
       jj_la1[28] = jj_gen;
@@ -1035,7 +1004,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case HAVING:
-      HavingClause(sb);
+      HavingClause();
       break;
     default:
       jj_la1[29] = jj_gen;
@@ -1043,7 +1012,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ORDER:
-      OrderClause(sb);
+      OrderClause();
       break;
     default:
       jj_la1[30] = jj_gen;
@@ -1052,7 +1021,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LIMIT:
     case OFFSET:
-      LimitOffsetClauses(sb);
+      LimitOffsetClauses();
       break;
     default:
       jj_la1[31] = jj_gen;
@@ -1060,19 +1029,17 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void GroupClause(StringBuilder sb) throws ParseException {
+  final public void GroupClause() throws ParseException {
  /*@bgen(jjtree) GroupClause */
   ASTGroupClause jjtn000 = new ASTGroupClause(JJTGROUPCLAUSE);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(GROUP);
-                  appendToken(sb, t);
-      t = jj_consume_token(BY);
-              appendToken(sb, t);
+      jj_consume_token(GROUP);
+      jj_consume_token(BY);
       label_12:
       while (true) {
-        GroupCondition(sb);
+        GroupCondition();
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case LPAREN:
         case EXISTS:
@@ -1156,19 +1123,17 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void OrderClause(StringBuilder sb) throws ParseException {
+  final public void OrderClause() throws ParseException {
  /*@bgen(jjtree) OrderClause */
   ASTOrderClause jjtn000 = new ASTOrderClause(JJTORDERCLAUSE);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(ORDER);
-                      appendToken(sb, t);
-      t = jj_consume_token(BY);
-                   appendToken(sb, t);
+      jj_consume_token(ORDER);
+      jj_consume_token(BY);
       label_13:
       while (true) {
-        OrderCondition(sb);
+        OrderCondition();
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case LPAREN:
         case ASC:
@@ -1254,17 +1219,17 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void GroupCondition(StringBuilder sb) throws ParseException {
+  final public void GroupCondition() throws ParseException {
  /*@bgen(jjtree) GroupCondition */
   ASTGroupCondition jjtn000 = new ASTGroupCondition(JJTGROUPCONDITION);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case Q_IRI_REF:
       case PNAME_NS:
       case PNAME_LN:
-        FunctionCall(sb);
+        FunctionCall();
         break;
       case EXISTS:
       case NOT_EXISTS:
@@ -1314,26 +1279,25 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case SHA256:
       case SHA384:
       case SHA512:
-        BuiltInCall(sb);
+        BuiltInCall();
         break;
       case LPAREN:
-        LParen(sb);
-        Expression(sb);
+        jj_consume_token(LPAREN);
+        Expression();
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case AS:
-          t = jj_consume_token(AS);
-                                        appendToken(sb, t);
-          Var(sb);
+          jj_consume_token(AS);
+          Var();
           break;
         default:
           jj_la1[34] = jj_gen;
           ;
         }
-        RParen(sb);
+        jj_consume_token(RPAREN);
         break;
       case VAR1:
       case VAR2:
-        Var(sb);
+        Var();
         break;
       default:
         jj_la1[35] = jj_gen;
@@ -1361,15 +1325,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void HavingClause(StringBuilder sb) throws ParseException {
+  final public void HavingClause() throws ParseException {
  /*@bgen(jjtree) HavingClause */
- ASTHavingClause jjtn000 = new ASTHavingClause(JJTHAVINGCLAUSE);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTHavingClause jjtn000 = new ASTHavingClause(JJTHAVINGCLAUSE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(HAVING);
-                  appendToken(sb, t);
-      Constraint(sb);
+      jj_consume_token(HAVING);
+      Constraint();
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1391,11 +1354,11 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void OrderCondition(StringBuilder sb) throws ParseException {
+  final public void OrderCondition() throws ParseException {
  /*@bgen(jjtree) OrderCondition */
   ASTOrderCondition jjtn000 = new ASTOrderCondition(JJTORDERCONDITION);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAREN:
@@ -1406,10 +1369,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         case DESC:
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case ASC:
-            t = jj_consume_token(ASC);
+            jj_consume_token(ASC);
             break;
           case DESC:
-            t = jj_consume_token(DESC);
+            jj_consume_token(DESC);
                           jjtn000.setAscending(false);
             break;
           default:
@@ -1417,18 +1380,17 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
             jj_consume_token(-1);
             throw new ParseException();
           }
-             appendToken(sb, t);
           break;
         default:
           jj_la1[37] = jj_gen;
           ;
         }
-        BrackettedExpression(sb);
+        BrackettedExpression();
         break;
       case Q_IRI_REF:
       case PNAME_NS:
       case PNAME_LN:
-        FunctionCall(sb);
+        FunctionCall();
         break;
       case EXISTS:
       case NOT_EXISTS:
@@ -1478,11 +1440,11 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case SHA256:
       case SHA384:
       case SHA512:
-        BuiltInCall(sb);
+        BuiltInCall();
         break;
       case VAR1:
       case VAR2:
-        Var(sb);
+        Var();
         break;
       default:
         jj_la1[38] = jj_gen;
@@ -1510,13 +1472,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void LimitOffsetClauses(StringBuilder sb) throws ParseException {
+  final public void LimitOffsetClauses() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LIMIT:
-      Limit(sb);
+      Limit();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case OFFSET:
-        Offset(sb);
+        Offset();
         break;
       default:
         jj_la1[39] = jj_gen;
@@ -1524,10 +1486,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       }
       break;
     case OFFSET:
-      Offset(sb);
+      Offset();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LIMIT:
-        Limit(sb);
+        Limit();
         break;
       default:
         jj_la1[40] = jj_gen;
@@ -1541,18 +1503,17 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Limit(StringBuilder sb) throws ParseException {
+  final public void Limit() throws ParseException {
  /*@bgen(jjtree) Limit */
   ASTLimit jjtn000 = new ASTLimit(JJTLIMIT);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);Token t;
     try {
-      t = jj_consume_token(LIMIT);
-                      appendToken(sb, t);
+      jj_consume_token(LIMIT);
       t = jj_consume_token(INTEGER);
-                        jjtree.closeNodeScope(jjtn000, true);
-                        jjtc000 = false;
-                        jjtn000.setValue(Long.parseLong(t.image)); appendToken(sb, t);
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+          jjtn000.setValue(Long.parseLong(t.image));
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -1560,18 +1521,17 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Offset(StringBuilder sb) throws ParseException {
+  final public void Offset() throws ParseException {
  /*@bgen(jjtree) Offset */
   ASTOffset jjtn000 = new ASTOffset(JJTOFFSET);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);Token t;
     try {
-      t = jj_consume_token(OFFSET);
-                       appendToken(sb, t);
+      jj_consume_token(OFFSET);
       t = jj_consume_token(INTEGER);
-                        jjtree.closeNodeScope(jjtn000, true);
-                        jjtc000 = false;
-                        jjtn000.setValue(Long.parseLong(t.image)); appendToken(sb, t);
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+          jjtn000.setValue(Long.parseLong(t.image));
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -1579,26 +1539,25 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void GroupGraphPattern(StringBuilder sb) throws ParseException {
+  final public Token GroupGraphPattern() throws ParseException {
  /*@bgen(jjtree) GraphPatternGroup */
-  ASTGraphPatternGroup jjtn000 = new ASTGraphPatternGroup(JJTGRAPHPATTERNGROUP);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+ ASTGraphPatternGroup jjtn000 = new ASTGraphPatternGroup(JJTGRAPHPATTERNGROUP);
+ boolean jjtc000 = true;
+ jjtree.openNodeScope(jjtn000);Token endOfPatternToken;
     try {
-      t = jj_consume_token(LBRACE);
-                       appendToken(sb, t);
+      jj_consume_token(LBRACE);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SELECT:
-        SelectQuery(sb);
+        SelectQuery();
         break;
       default:
         jj_la1[42] = jj_gen;
-        GraphPattern(sb);
+        GraphPattern();
       }
-      t = jj_consume_token(RBRACE);
-                        jjtree.closeNodeScope(jjtn000, true);
-                        jjtc000 = false;
-                       appendToken(sb, t);
+      endOfPatternToken = jj_consume_token(RBRACE);
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+            {if (true) return endOfPatternToken;}
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1618,10 +1577,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
             jjtree.closeNodeScope(jjtn000, true);
           }
     }
+    throw new Error("Missing return statement in function");
   }
 
-  final public void GraphPattern(StringBuilder sb) throws ParseException {
-  Token t;
+  final public void GraphPattern() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LPAREN:
     case LBRACK:
@@ -1650,7 +1609,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case STRING_LITERAL2:
     case STRING_LITERAL_LONG1:
     case STRING_LITERAL_LONG2:
-      BasicGraphPattern(sb);
+      BasicGraphPattern();
       break;
     default:
       jj_la1[43] = jj_gen;
@@ -1662,17 +1621,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case GRAPH:
     case MINUS_SETOPER:
     case SERVICE:
-      GraphPatternNotTriples(sb);
+      GraphPatternNotTriples();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DOT:
-        t = jj_consume_token(DOT);
-                                                                          appendToken(sb, t);
+        jj_consume_token(DOT);
         break;
       default:
         jj_la1[44] = jj_gen;
         ;
       }
-      GraphPattern(sb);
+      GraphPattern();
       break;
     default:
       jj_la1[45] = jj_gen;
@@ -1680,11 +1638,11 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void BasicGraphPattern(StringBuilder sb) throws ParseException {
+  final public void BasicGraphPattern() throws ParseException {
  /*@bgen(jjtree) BasicGraphPattern */
   ASTBasicGraphPattern jjtn000 = new ASTBasicGraphPattern(JJTBASICGRAPHPATTERN);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAREN:
@@ -1712,7 +1670,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case STRING_LITERAL2:
       case STRING_LITERAL_LONG1:
       case STRING_LITERAL_LONG2:
-        TriplesBlock(sb);
+        TriplesBlock();
         label_14:
         while (true) {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1724,11 +1682,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
             jj_la1[46] = jj_gen;
             break label_14;
           }
-          FilterOrBind(sb);
+          FilterOrBind();
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case DOT:
-            t = jj_consume_token(DOT);
-                                                        appendToken(sb, t);
+            jj_consume_token(DOT);
             break;
           default:
             jj_la1[47] = jj_gen;
@@ -1760,7 +1717,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           case STRING_LITERAL2:
           case STRING_LITERAL_LONG1:
           case STRING_LITERAL_LONG2:
-            TriplesBlock(sb);
+            TriplesBlock();
             break;
           default:
             jj_la1[48] = jj_gen;
@@ -1772,11 +1729,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case BIND:
         label_15:
         while (true) {
-          FilterOrBind(sb);
+          FilterOrBind();
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case DOT:
-            t = jj_consume_token(DOT);
-                                       appendToken(sb, t);
+            jj_consume_token(DOT);
             break;
           default:
             jj_la1[49] = jj_gen;
@@ -1808,7 +1764,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           case STRING_LITERAL2:
           case STRING_LITERAL_LONG1:
           case STRING_LITERAL_LONG2:
-            TriplesBlock(sb);
+            TriplesBlock();
             break;
           default:
             jj_la1[50] = jj_gen;
@@ -1851,13 +1807,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void FilterOrBind(StringBuilder sb) throws ParseException {
+  final public void FilterOrBind() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case FILTER:
-      Filter(sb);
+      Filter();
       break;
     case BIND:
-      Bind(sb);
+      Bind();
       break;
     default:
       jj_la1[53] = jj_gen;
@@ -1866,9 +1822,8 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void TriplesBlock(StringBuilder sb) throws ParseException {
- Token t;
-    TriplesSameSubjectPath(sb);
+  final public void TriplesBlock() throws ParseException {
+    TriplesSameSubjectPath();
     label_16:
     while (true) {
       if (jj_2_2(2)) {
@@ -1876,14 +1831,12 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       } else {
         break label_16;
       }
-      t = jj_consume_token(DOT);
-                        appendToken(sb, t);
-      TriplesSameSubjectPath(sb);
+      jj_consume_token(DOT);
+      TriplesSameSubjectPath();
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case DOT:
-      t = jj_consume_token(DOT);
-                     appendToken(sb, t);
+      jj_consume_token(DOT);
       break;
     default:
       jj_la1[54] = jj_gen;
@@ -1891,9 +1844,8 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void TriplesTemplate(StringBuilder sb) throws ParseException {
- Token t;
-    TriplesSameSubject(sb);
+  final public void TriplesTemplate() throws ParseException {
+    TriplesSameSubject();
     label_17:
     while (true) {
       if (jj_2_3(2)) {
@@ -1901,14 +1853,12 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       } else {
         break label_17;
       }
-      t = jj_consume_token(DOT);
-                      appendToken(sb, t);
-      TriplesSameSubject(sb);
+      jj_consume_token(DOT);
+      TriplesSameSubject();
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case DOT:
-      t = jj_consume_token(DOT);
-                     appendToken(sb, t);
+      jj_consume_token(DOT);
       break;
     default:
       jj_la1[55] = jj_gen;
@@ -1916,22 +1866,22 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void GraphPatternNotTriples(StringBuilder sb) throws ParseException {
+  final public void GraphPatternNotTriples() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case OPTIONAL:
-      OptionalGraphPattern(sb);
+      OptionalGraphPattern();
       break;
     case LBRACE:
-      GroupOrUnionGraphPattern(sb);
+      GroupOrUnionGraphPattern();
       break;
     case GRAPH:
-      GraphGraphPattern(sb);
+      GraphGraphPattern();
       break;
     case MINUS_SETOPER:
-      MinusGraphPattern(sb);
+      MinusGraphPattern();
       break;
     case SERVICE:
-      ServiceGraphPattern(sb);
+      ServiceGraphPattern();
       break;
     default:
       jj_la1[56] = jj_gen;
@@ -1940,30 +1890,23 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void OptionalGraphPattern(StringBuilder sb) throws ParseException {
+  final public void OptionalGraphPattern() throws ParseException {
  /*@bgen(jjtree) OptionalGraphPattern */
- ASTOptionalGraphPattern jjtn000 = new ASTOptionalGraphPattern(JJTOPTIONALGRAPHPATTERN);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTOptionalGraphPattern jjtn000 = new ASTOptionalGraphPattern(JJTOPTIONALGRAPHPATTERN);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      // Note: does not refer GroupGraphPattern(null) because constraints are not limited
-              // to the optional graph pattern, but can also reference the operator's LHS
-              t = jj_consume_token(OPTIONAL);
-                         appendToken(sb, t);
-      t = jj_consume_token(LBRACE);
-                       appendToken(sb, t);
+      jj_consume_token(OPTIONAL);
+      jj_consume_token(LBRACE);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SELECT:
-        SelectQuery(sb);
+        SelectQuery();
         break;
       default:
         jj_la1[57] = jj_gen;
-        GraphPattern(sb);
+        GraphPattern();
       }
-      t = jj_consume_token(RBRACE);
-                       jjtree.closeNodeScope(jjtn000, true);
-                       jjtc000 = false;
-                       appendToken(sb, t);
+      jj_consume_token(RBRACE);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1985,16 +1928,15 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void GraphGraphPattern(StringBuilder sb) throws ParseException {
+  final public void GraphGraphPattern() throws ParseException {
  /*@bgen(jjtree) GraphGraphPattern */
- ASTGraphGraphPattern jjtn000 = new ASTGraphGraphPattern(JJTGRAPHGRAPHPATTERN);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTGraphGraphPattern jjtn000 = new ASTGraphGraphPattern(JJTGRAPHGRAPHPATTERN);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(GRAPH);
-                      appendToken(sb, t);
-      VarOrIRIref(sb);
-      GroupGraphPattern(sb);
+      jj_consume_token(GRAPH);
+      VarOrIRIref();
+      GroupGraphPattern();
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -2016,36 +1958,34 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void GroupOrUnionGraphPattern(StringBuilder sb) throws ParseException {
- Token t;
-    GroupGraphPattern(sb);
+  final public void GroupOrUnionGraphPattern() throws ParseException {
+    GroupGraphPattern();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case UNION:
-      t = jj_consume_token(UNION);
-                          appendToken(sb, t);
-              ASTUnionGraphPattern jjtn001 = new ASTUnionGraphPattern(JJTUNIONGRAPHPATTERN);
-              boolean jjtc001 = true;
-              jjtree.openNodeScope(jjtn001);
+      jj_consume_token(UNION);
+                                        ASTUnionGraphPattern jjtn001 = new ASTUnionGraphPattern(JJTUNIONGRAPHPATTERN);
+                                        boolean jjtc001 = true;
+                                        jjtree.openNodeScope(jjtn001);
       try {
-        GroupOrUnionGraphPattern(sb);
+        GroupOrUnionGraphPattern();
       } catch (Throwable jjte001) {
-              if (jjtc001) {
-                jjtree.clearNodeScope(jjtn001);
-                jjtc001 = false;
-              } else {
-                jjtree.popNode();
-              }
-              if (jjte001 instanceof RuntimeException) {
-                {if (true) throw (RuntimeException)jjte001;}
-              }
-              if (jjte001 instanceof ParseException) {
-                {if (true) throw (ParseException)jjte001;}
-              }
-              {if (true) throw (Error)jjte001;}
+                                        if (jjtc001) {
+                                          jjtree.clearNodeScope(jjtn001);
+                                          jjtc001 = false;
+                                        } else {
+                                          jjtree.popNode();
+                                        }
+                                        if (jjte001 instanceof RuntimeException) {
+                                          {if (true) throw (RuntimeException)jjte001;}
+                                        }
+                                        if (jjte001 instanceof ParseException) {
+                                          {if (true) throw (ParseException)jjte001;}
+                                        }
+                                        {if (true) throw (Error)jjte001;}
       } finally {
-              if (jjtc001) {
-                jjtree.closeNodeScope(jjtn001,  2);
-              }
+                                        if (jjtc001) {
+                                          jjtree.closeNodeScope(jjtn001,  2);
+                                        }
       }
       break;
     default:
@@ -2054,15 +1994,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void MinusGraphPattern(StringBuilder sb) throws ParseException {
+  final public void MinusGraphPattern() throws ParseException {
  /*@bgen(jjtree) MinusGraphPattern */
- ASTMinusGraphPattern jjtn000 = new ASTMinusGraphPattern(JJTMINUSGRAPHPATTERN);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTMinusGraphPattern jjtn000 = new ASTMinusGraphPattern(JJTMINUSGRAPHPATTERN);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(MINUS_SETOPER);
-                         appendToken(sb, t);
-      GroupGraphPattern(sb);
+      jj_consume_token(MINUS_SETOPER);
+      GroupGraphPattern();
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -2084,33 +2023,30 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void ServiceGraphPattern(StringBuilder sbParent) throws ParseException {
+  final public void ServiceGraphPattern() throws ParseException {
  /*@bgen(jjtree) ServiceGraphPattern */
-    ASTServiceGraphPattern jjtn000 = new ASTServiceGraphPattern(JJTSERVICEGRAPHPATTERN);
-    boolean jjtc000 = true;
-    jjtree.openNodeScope(jjtn000);StringBuilder sb = new StringBuilder();
-    Token t;
-    String s;
+  ASTServiceGraphPattern jjtn000 = new ASTServiceGraphPattern(JJTSERVICEGRAPHPATTERN);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);Token t;
     try {
       t = jj_consume_token(SERVICE);
-                    appendToken(sb, t);
+        jjtn000.setBeginTokenLinePos(t.beginLine);
+        jjtn000.setBeginTokenColumnPos(t.beginColumn);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SILENT:
-        t = jj_consume_token(SILENT);
-                    jjtn000.setSilent(true); appendToken(sb, t);
+        jj_consume_token(SILENT);
+                jjtn000.setSilent(true);
         break;
       default:
         jj_la1[59] = jj_gen;
         ;
       }
-      VarOrIRIref(sb);
-      GroupGraphPattern(sb);
+      VarOrIRIref();
+      t = GroupGraphPattern();
       jjtree.closeNodeScope(jjtn000, true);
       jjtc000 = false;
-        jjtn000.setPatternString(sb.toString());
-        if (sbParent != null) {
-            sbParent.append(sb);
-        }
+        jjtn000.setEndTokenLinePos(t.beginLine);
+        jjtn000.setEndTokenColumnPos(t.beginColumn);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -2132,14 +2068,12 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Filter(StringBuilder sb) throws ParseException {
- Token t;
-    t = jj_consume_token(FILTER);
-                      appendToken(sb, t);
-    Constraint(sb);
+  final public void Filter() throws ParseException {
+    jj_consume_token(FILTER);
+    Constraint();
   }
 
-  final public void Constraint(StringBuilder sb) throws ParseException {
+  final public void Constraint() throws ParseException {
  /*@bgen(jjtree) Constraint */
   ASTConstraint jjtn000 = new ASTConstraint(JJTCONSTRAINT);
   boolean jjtc000 = true;
@@ -2147,7 +2081,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAREN:
-        BrackettedExpression(sb);
+        BrackettedExpression();
         break;
       case EXISTS:
       case NOT_EXISTS:
@@ -2197,12 +2131,12 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case SHA256:
       case SHA384:
       case SHA512:
-        BuiltInCall(sb);
+        BuiltInCall();
         break;
       case Q_IRI_REF:
       case PNAME_NS:
       case PNAME_LN:
-        FunctionCall(sb);
+        FunctionCall();
         break;
       default:
         jj_la1[60] = jj_gen;
@@ -2230,14 +2164,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void FunctionCall(StringBuilder sb) throws ParseException {
+  final public void FunctionCall() throws ParseException {
  /*@bgen(jjtree) FunctionCall */
   ASTFunctionCall jjtn000 = new ASTFunctionCall(JJTFUNCTIONCALL);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
     try {
-      IRIref(sb);
-      ArgList(sb);
+      IRIref();
+      ArgList();
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -2259,16 +2193,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void ArgList(StringBuilder sb) throws ParseException {
- Token t;
+  final public void ArgList() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NIL:
-      t = jj_consume_token(NIL);
-                    appendToken(sb, t);
+      jj_consume_token(NIL);
       break;
     case LPAREN:
-      LParen(sb);
-      Expression(sb);
+      jj_consume_token(LPAREN);
+      Expression();
       label_18:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2279,11 +2211,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[61] = jj_gen;
           break label_18;
         }
-        t = jj_consume_token(COMMA);
-                          appendToken(sb, t);
-        Expression(sb);
+        jj_consume_token(COMMA);
+        Expression();
       }
-      RParen(sb);
+      jj_consume_token(RPAREN);
       break;
     default:
       jj_la1[62] = jj_gen;
@@ -2292,7 +2223,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void TriplesSameSubject(StringBuilder sb) throws ParseException {
+  final public void TriplesSameSubject() throws ParseException {
  /*@bgen(jjtree) TriplesSameSubject */
   ASTTriplesSameSubject jjtn000 = new ASTTriplesSameSubject(JJTTRIPLESSAMESUBJECT);
   boolean jjtc000 = true;
@@ -2322,12 +2253,12 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case STRING_LITERAL2:
       case STRING_LITERAL_LONG1:
       case STRING_LITERAL_LONG2:
-        VarOrTerm(sb);
-        PropertyList(sb);
+        VarOrTerm();
+        PropertyList();
         break;
       case LPAREN:
       case LBRACK:
-        TriplesNode(sb);
+        TriplesNode();
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case IS_A:
         case Q_IRI_REF:
@@ -2335,7 +2266,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         case PNAME_LN:
         case VAR1:
         case VAR2:
-          PropertyList(sb);
+          PropertyList();
           break;
         default:
           jj_la1[63] = jj_gen;
@@ -2368,18 +2299,17 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void PropertyList(StringBuilder sb) throws ParseException {
+  final public void PropertyList() throws ParseException {
  /*@bgen(jjtree) PropertyList */
- ASTPropertyList jjtn000 = new ASTPropertyList(JJTPROPERTYLIST);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTPropertyList jjtn000 = new ASTPropertyList(JJTPROPERTYLIST);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      Verb(sb);
-      ObjectList(sb);
+      Verb();
+      ObjectList();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SEMICOLON:
-        t = jj_consume_token(SEMICOLON);
-                             appendToken(sb, t);
+        jj_consume_token(SEMICOLON);
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case IS_A:
         case Q_IRI_REF:
@@ -2387,7 +2317,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         case PNAME_LN:
         case VAR1:
         case VAR2:
-          PropertyList(sb);
+          PropertyList();
           break;
         default:
           jj_la1[65] = jj_gen;
@@ -2419,13 +2349,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void ObjectList(StringBuilder sb) throws ParseException {
+  final public void ObjectList() throws ParseException {
  /*@bgen(jjtree) ObjectList */
- ASTObjectList jjtn000 = new ASTObjectList(JJTOBJECTLIST);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTObjectList jjtn000 = new ASTObjectList(JJTOBJECTLIST);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      Object(sb);
+      Object();
       label_19:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2436,9 +2366,8 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[67] = jj_gen;
           break label_19;
         }
-        t = jj_consume_token(COMMA);
-                          appendToken(sb, t);
-        Object(sb);
+        jj_consume_token(COMMA);
+        Object();
       }
     } catch (Throwable jjte000) {
           if (jjtc000) {
@@ -2461,7 +2390,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void TriplesSameSubjectPath(StringBuilder sb) throws ParseException {
+  final public void TriplesSameSubjectPath() throws ParseException {
  /*@bgen(jjtree) TriplesSameSubjectPath */
   ASTTriplesSameSubjectPath jjtn000 = new ASTTriplesSameSubjectPath(JJTTRIPLESSAMESUBJECTPATH);
   boolean jjtc000 = true;
@@ -2491,12 +2420,12 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case STRING_LITERAL2:
       case STRING_LITERAL_LONG1:
       case STRING_LITERAL_LONG2:
-        VarOrTerm(sb);
-        PropertyListPath(sb);
+        VarOrTerm();
+        PropertyListPath();
         break;
       case LPAREN:
       case LBRACK:
-        TriplesNode(sb);
+        TriplesNode();
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case LPAREN:
         case NOT:
@@ -2507,7 +2436,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         case PNAME_LN:
         case VAR1:
         case VAR2:
-          PropertyListPath(sb);
+          PropertyListPath();
           break;
         default:
           jj_la1[68] = jj_gen;
@@ -2540,11 +2469,11 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void PropertyListPath(StringBuilder sb) throws ParseException {
+  final public void PropertyListPath() throws ParseException {
  /*@bgen(jjtree) PropertyListPath */
- ASTPropertyListPath jjtn000 = new ASTPropertyListPath(JJTPROPERTYLISTPATH);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTPropertyListPath jjtn000 = new ASTPropertyListPath(JJTPROPERTYLISTPATH);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAREN:
@@ -2554,18 +2483,18 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case Q_IRI_REF:
       case PNAME_NS:
       case PNAME_LN:
-        VerbPath(sb);
+        VerbPath();
         break;
       case VAR1:
       case VAR2:
-        VerbSimple(sb);
+        VerbSimple();
         break;
       default:
         jj_la1[70] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-      ObjectList(sb);
+      ObjectList();
       label_20:
       while (true) {
         if (jj_2_4(2)) {
@@ -2573,8 +2502,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         } else {
           break label_20;
         }
-        t = jj_consume_token(SEMICOLON);
-                          appendToken(sb, t);
+        jj_consume_token(SEMICOLON);
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case LPAREN:
         case NOT:
@@ -2585,7 +2513,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         case PNAME_LN:
         case VAR1:
         case VAR2:
-          PropertyListPath(sb);
+          PropertyListPath();
           break;
         default:
           jj_la1[71] = jj_gen;
@@ -2613,21 +2541,21 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void VerbPath(StringBuilder sb) throws ParseException {
-    Path(sb);
+  final public void VerbPath() throws ParseException {
+    Path();
   }
 
-  final public void Path(StringBuilder sb) throws ParseException {
-    PathAlternative(sb);
+  final public void Path() throws ParseException {
+    PathAlternative();
   }
 
-  final public void PathAlternative(StringBuilder sb) throws ParseException {
+  final public void PathAlternative() throws ParseException {
  /*@bgen(jjtree) PathAlternative */
   ASTPathAlternative jjtn000 = new ASTPathAlternative(JJTPATHALTERNATIVE);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
-      PathSequence(sb);
+      PathSequence();
       label_21:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2638,9 +2566,8 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[72] = jj_gen;
           break label_21;
         }
-        t = jj_consume_token(PIPE);
-                     appendToken(sb, t);
-        PathSequence(sb);
+        jj_consume_token(PIPE);
+        PathSequence();
       }
     } catch (Throwable jjte000) {
       if (jjtc000) {
@@ -2663,13 +2590,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void PathSequence(StringBuilder sb) throws ParseException {
+  final public void PathSequence() throws ParseException {
  /*@bgen(jjtree) PathSequence */
- ASTPathSequence jjtn000 = new ASTPathSequence(JJTPATHSEQUENCE);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTPathSequence jjtn000 = new ASTPathSequence(JJTPATHSEQUENCE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      PathElt(sb);
+      PathElt();
       label_22:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2680,9 +2607,8 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[73] = jj_gen;
           break label_22;
         }
-        t = jj_consume_token(SLASH);
-                      appendToken(sb, t);
-        PathElt(sb);
+        jj_consume_token(SLASH);
+        PathElt();
       }
     } catch (Throwable jjte000) {
       if (jjtc000) {
@@ -2705,87 +2631,84 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void PathElt(StringBuilder sb) throws ParseException {
+  final public void PathElt() throws ParseException {
  /*@bgen(jjtree) PathElt */
- ASTPathElt jjtn000 = new ASTPathElt(JJTPATHELT);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTPathElt jjtn000 = new ASTPathElt(JJTPATHELT);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case INVERSE:
-        t = jj_consume_token(INVERSE);
-                     jjtn000.setInverse(true); appendToken(sb, t);
+        jj_consume_token(INVERSE);
+               jjtn000.setInverse(true);
         break;
       default:
         jj_la1[74] = jj_gen;
         ;
       }
-      PathPrimary(sb);
+      PathPrimary();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LBRACE:
       case PLUS:
       case STAR:
       case QUESTION:
-        PathMod(sb);
+        PathMod();
         break;
       default:
         jj_la1[75] = jj_gen;
         ;
       }
     } catch (Throwable jjte000) {
-      if (jjtc000) {
-        jjtree.clearNodeScope(jjtn000);
-        jjtc000 = false;
-      } else {
-        jjtree.popNode();
-      }
-      if (jjte000 instanceof RuntimeException) {
-        {if (true) throw (RuntimeException)jjte000;}
-      }
-      if (jjte000 instanceof ParseException) {
-        {if (true) throw (ParseException)jjte000;}
-      }
-      {if (true) throw (Error)jjte000;}
+     if (jjtc000) {
+       jjtree.clearNodeScope(jjtn000);
+       jjtc000 = false;
+     } else {
+       jjtree.popNode();
+     }
+     if (jjte000 instanceof RuntimeException) {
+       {if (true) throw (RuntimeException)jjte000;}
+     }
+     if (jjte000 instanceof ParseException) {
+       {if (true) throw (ParseException)jjte000;}
+     }
+     {if (true) throw (Error)jjte000;}
     } finally {
-      if (jjtc000) {
-        jjtree.closeNodeScope(jjtn000, true);
-      }
+     if (jjtc000) {
+       jjtree.closeNodeScope(jjtn000, true);
+     }
     }
   }
 
-  final public void PathPrimary(StringBuilder sb) throws ParseException {
- Token t;
+  final public void PathPrimary() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case Q_IRI_REF:
     case PNAME_NS:
     case PNAME_LN:
-      IRIref(sb);
+      IRIref();
       break;
     case IS_A:
-      t = jj_consume_token(IS_A);
-                 ASTIRI jjtn001 = new ASTIRI(JJTIRI);
-                 boolean jjtc001 = true;
-                 jjtree.openNodeScope(jjtn001);
+      jj_consume_token(IS_A);
+             ASTIRI jjtn001 = new ASTIRI(JJTIRI);
+             boolean jjtc001 = true;
+             jjtree.openNodeScope(jjtn001);
       try {
-                 jjtree.closeNodeScope(jjtn001, true);
-                 jjtc001 = false;
-                 appendToken(sb, t); jjtn001.setValue(RDF.TYPE.toString());
+             jjtree.closeNodeScope(jjtn001, true);
+             jjtc001 = false;
+             jjtn001.setValue(RDF.TYPE.toString());
       } finally {
-                 if (jjtc001) {
-                   jjtree.closeNodeScope(jjtn001, true);
-                 }
+             if (jjtc001) {
+               jjtree.closeNodeScope(jjtn001, true);
+             }
       }
       break;
     case NOT:
-      t = jj_consume_token(NOT);
-                appendToken(sb, t);
-      PathNegatedPropertySet(sb);
+      jj_consume_token(NOT);
+      PathNegatedPropertySet();
       break;
     case LPAREN:
-      LParen(sb);
-      Path(sb);
-      t = jj_consume_token(RPAREN);
-                 appendToken(sb, t);
+      jj_consume_token(LPAREN);
+      Path();
+      jj_consume_token(RPAREN);
       break;
     default:
       jj_la1[76] = jj_gen;
@@ -2794,25 +2717,24 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void PathNegatedPropertySet(StringBuilder sb) throws ParseException {
- Token t;
+  final public void PathNegatedPropertySet() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case INVERSE:
     case IS_A:
     case Q_IRI_REF:
     case PNAME_NS:
     case PNAME_LN:
-      PathOneInPropertySet(sb);
+      PathOneInPropertySet();
       break;
     case LPAREN:
-      LParen(sb);
+      jj_consume_token(LPAREN);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case INVERSE:
       case IS_A:
       case Q_IRI_REF:
       case PNAME_NS:
       case PNAME_LN:
-        PathOneInPropertySet(sb);
+        PathOneInPropertySet();
         label_23:
         while (true) {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2823,16 +2745,15 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
             jj_la1[77] = jj_gen;
             break label_23;
           }
-          t = jj_consume_token(PIPE);
-                        appendToken(sb, t);
-          PathOneInPropertySet(sb);
+          jj_consume_token(PIPE);
+          PathOneInPropertySet();
         }
         break;
       default:
         jj_la1[78] = jj_gen;
         ;
       }
-      RParen(sb);
+      jj_consume_token(RPAREN);
       break;
     default:
       jj_la1[79] = jj_gen;
@@ -2841,55 +2762,55 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void PathOneInPropertySet(StringBuilder sb) throws ParseException {
+  final public void PathOneInPropertySet() throws ParseException {
  /*@bgen(jjtree) PathOneInPropertySet */
- ASTPathOneInPropertySet jjtn000 = new ASTPathOneInPropertySet(JJTPATHONEINPROPERTYSET);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTPathOneInPropertySet jjtn000 = new ASTPathOneInPropertySet(JJTPATHONEINPROPERTYSET);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case Q_IRI_REF:
       case PNAME_NS:
       case PNAME_LN:
-        IRIref(sb);
+        IRIref();
         break;
       case IS_A:
-        t = jj_consume_token(IS_A);
-                 ASTIRI jjtn001 = new ASTIRI(JJTIRI);
-                 boolean jjtc001 = true;
-                 jjtree.openNodeScope(jjtn001);
+        jj_consume_token(IS_A);
+             ASTIRI jjtn001 = new ASTIRI(JJTIRI);
+             boolean jjtc001 = true;
+             jjtree.openNodeScope(jjtn001);
         try {
-                 jjtree.closeNodeScope(jjtn001, true);
-                 jjtc001 = false;
-                 appendToken(sb, t); jjtn001.setValue(RDF.TYPE.toString());
+             jjtree.closeNodeScope(jjtn001, true);
+             jjtc001 = false;
+             jjtn001.setValue(RDF.TYPE.toString());
         } finally {
-                 if (jjtc001) {
-                   jjtree.closeNodeScope(jjtn001, true);
-                 }
+             if (jjtc001) {
+               jjtree.closeNodeScope(jjtn001, true);
+             }
         }
         break;
       case INVERSE:
-        t = jj_consume_token(INVERSE);
-                    appendToken(sb, t); jjtn000.setInverse(true);
+        jj_consume_token(INVERSE);
+               jjtn000.setInverse(true);
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case Q_IRI_REF:
         case PNAME_NS:
         case PNAME_LN:
-          IRIref(sb);
+          IRIref();
           break;
         case IS_A:
-          t = jj_consume_token(IS_A);
-                     ASTIRI jjtn002 = new ASTIRI(JJTIRI);
-                     boolean jjtc002 = true;
-                     jjtree.openNodeScope(jjtn002);
+          jj_consume_token(IS_A);
+                                                                 ASTIRI jjtn002 = new ASTIRI(JJTIRI);
+                                                                 boolean jjtc002 = true;
+                                                                 jjtree.openNodeScope(jjtn002);
           try {
-                     jjtree.closeNodeScope(jjtn002, true);
-                     jjtc002 = false;
-                     appendToken(sb, t); jjtn002.setValue(RDF.TYPE.toString());
+                                                                 jjtree.closeNodeScope(jjtn002, true);
+                                                                 jjtc002 = false;
+                                                                 jjtn002.setValue(RDF.TYPE.toString());
           } finally {
-                     if (jjtc002) {
-                       jjtree.closeNodeScope(jjtn002, true);
-                     }
+                                                                 if (jjtc002) {
+                                                                   jjtree.closeNodeScope(jjtn002, true);
+                                                                 }
           }
           break;
         default:
@@ -2924,66 +2845,52 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void PathMod(StringBuilder sb) throws ParseException {
+  final public void PathMod() throws ParseException {
  /*@bgen(jjtree) PathMod */
   ASTPathMod jjtn000 = new ASTPathMod(JJTPATHMOD);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);Token min;
   Token max;
-  Token t;
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case STAR:
-        t = jj_consume_token(STAR);
-      jjtree.closeNodeScope(jjtn000, true);
-      jjtc000 = false;
-        jjtn000.setLowerBound(0);
-        jjtn000.setUpperBound(Long.MAX_VALUE);
-        appendToken(sb, t);
+        jj_consume_token(STAR);
+             jjtree.closeNodeScope(jjtn000, true);
+             jjtc000 = false;
+             jjtn000.setLowerBound(0);
+             jjtn000.setUpperBound(Long.MAX_VALUE);
         break;
       case QUESTION:
-        t = jj_consume_token(QUESTION);
-      jjtree.closeNodeScope(jjtn000, true);
-      jjtc000 = false;
-        jjtn000.setLowerBound(0);
-        jjtn000.setUpperBound(1);
-        appendToken(sb, t);
+        jj_consume_token(QUESTION);
+                 jjtree.closeNodeScope(jjtn000, true);
+                 jjtc000 = false;
+                 jjtn000.setLowerBound(0);
+                 jjtn000.setUpperBound(1);
         break;
       case PLUS:
-        t = jj_consume_token(PLUS);
-      jjtree.closeNodeScope(jjtn000, true);
-      jjtc000 = false;
-        jjtn000.setLowerBound(1);
-        jjtn000.setUpperBound(Long.MAX_VALUE);
-        appendToken(sb, t);
+        jj_consume_token(PLUS);
+             jjtree.closeNodeScope(jjtn000, true);
+             jjtc000 = false;
+             jjtn000.setLowerBound(1);
+             jjtn000.setUpperBound(Long.MAX_VALUE);
         break;
       case LBRACE:
-        t = jj_consume_token(LBRACE);
-                  appendToken(sb, t);
+        jj_consume_token(LBRACE);
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case INTEGER:
           min = jj_consume_token(INTEGER);
-            jjtn000.setLowerBound(Long.parseLong(min.image));
-            appendToken(sb, min);
+                                jjtn000.setLowerBound(Long.parseLong(min.image));
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case COMMA:
-            t = jj_consume_token(COMMA);
-                         appendToken(sb, t);
+            jj_consume_token(COMMA);
             switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
             case RBRACE:
-              t = jj_consume_token(RBRACE);
-                               jjtree.closeNodeScope(jjtn000, true);
-                               jjtc000 = false;
-                              appendToken(sb, t);
+              jj_consume_token(RBRACE);
               break;
             case INTEGER:
               max = jj_consume_token(INTEGER);
-                    jjtn000.setUpperBound(Long.parseLong(max.image));
-                    appendToken(sb, max);
-              t = jj_consume_token(RBRACE);
-                               jjtree.closeNodeScope(jjtn000, true);
-                               jjtc000 = false;
-                              appendToken(sb, t);
+                                                        jjtn000.setUpperBound(Long.parseLong(max.image));
+              jj_consume_token(RBRACE);
               break;
             default:
               jj_la1[82] = jj_gen;
@@ -2992,10 +2899,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
             }
             break;
           case RBRACE:
-            t = jj_consume_token(RBRACE);
-                           jjtree.closeNodeScope(jjtn000, true);
-                           jjtc000 = false;
-                          appendToken(sb, t);
+            jj_consume_token(RBRACE);
             break;
           default:
             jj_la1[83] = jj_gen;
@@ -3004,15 +2908,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           }
           break;
         case COMMA:
-          t = jj_consume_token(COMMA);
-                     appendToken(sb, t);
+          jj_consume_token(COMMA);
           max = jj_consume_token(INTEGER);
-            jjtn000.setUpperBound(Long.parseLong(max.image));
-            appendToken(sb, max);
-          t = jj_consume_token(RBRACE);
-                       jjtree.closeNodeScope(jjtn000, true);
-                       jjtc000 = false;
-                      appendToken(sb, t);
+                                                   jjtn000.setUpperBound(Long.parseLong(max.image));
+          jj_consume_token(RBRACE);
           break;
         default:
           jj_la1[84] = jj_gen;
@@ -3032,37 +2931,36 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void VerbSimple(StringBuilder sb) throws ParseException {
-    Var(sb);
+  final public void VerbSimple() throws ParseException {
+    Var();
   }
 
-  final public void Object(StringBuilder sb) throws ParseException {
-    GraphNode(sb);
+  final public void Object() throws ParseException {
+    GraphNode();
   }
 
-  final public void Verb(StringBuilder sb) throws ParseException {
- Token t;
+  final public void Verb() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case Q_IRI_REF:
     case PNAME_NS:
     case PNAME_LN:
     case VAR1:
     case VAR2:
-      VarOrIRIref(sb);
+      VarOrIRIref();
       break;
     case IS_A:
-      t = jj_consume_token(IS_A);
-                     ASTIRI jjtn001 = new ASTIRI(JJTIRI);
-                     boolean jjtc001 = true;
-                     jjtree.openNodeScope(jjtn001);
+      jj_consume_token(IS_A);
+                 ASTIRI jjtn001 = new ASTIRI(JJTIRI);
+                 boolean jjtc001 = true;
+                 jjtree.openNodeScope(jjtn001);
       try {
-                     jjtree.closeNodeScope(jjtn001, true);
-                     jjtc001 = false;
-                     appendToken(sb, t); jjtn001.setValue(RDF.TYPE.toString());
+                 jjtree.closeNodeScope(jjtn001, true);
+                 jjtc001 = false;
+                 jjtn001.setValue(RDF.TYPE.toString());
       } finally {
-                     if (jjtc001) {
-                       jjtree.closeNodeScope(jjtn001, true);
-                     }
+                 if (jjtc001) {
+                   jjtree.closeNodeScope(jjtn001, true);
+                 }
       }
       break;
     default:
@@ -3072,13 +2970,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void TriplesNode(StringBuilder sb) throws ParseException {
+  final public void TriplesNode() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LPAREN:
-      Collection(sb);
+      Collection();
       break;
     case LBRACK:
-      BlankNodePropertyList(sb);
+      BlankNodePropertyList();
       break;
     default:
       jj_la1[87] = jj_gen;
@@ -3087,19 +2985,15 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void BlankNodePropertyList(StringBuilder sb) throws ParseException {
+  final public void BlankNodePropertyList() throws ParseException {
  /*@bgen(jjtree) BlankNodePropertyList */
   ASTBlankNodePropertyList jjtn000 = new ASTBlankNodePropertyList(JJTBLANKNODEPROPERTYLIST);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(LBRACK);
-                      appendToken(sb, t);
-      PropertyList(sb);
-      t = jj_consume_token(RBRACK);
-                       jjtree.closeNodeScope(jjtn000, true);
-                       jjtc000 = false;
-                      appendToken(sb, t);
+      jj_consume_token(LBRACK);
+      PropertyList();
+      jj_consume_token(RBRACK);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -3121,16 +3015,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Collection(StringBuilder sb) throws ParseException {
+  final public void Collection() throws ParseException {
  /*@bgen(jjtree) Collection */
   ASTCollection jjtn000 = new ASTCollection(JJTCOLLECTION);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
-      LParen(sb);
+      jj_consume_token(LPAREN);
       label_24:
       while (true) {
-        GraphNode(sb);
+        GraphNode();
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case LPAREN:
         case LBRACK:
@@ -3164,7 +3058,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           break label_24;
         }
       }
-      RParen(sb);
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -3186,7 +3080,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void GraphNode(StringBuilder sb) throws ParseException {
+  final public void GraphNode() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NIL:
     case ANON:
@@ -3211,11 +3105,11 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case STRING_LITERAL2:
     case STRING_LITERAL_LONG1:
     case STRING_LITERAL_LONG2:
-      VarOrTerm(sb);
+      VarOrTerm();
       break;
     case LPAREN:
     case LBRACK:
-      TriplesNode(sb);
+      TriplesNode();
       break;
     default:
       jj_la1[89] = jj_gen;
@@ -3224,11 +3118,11 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void VarOrTerm(StringBuilder sb) throws ParseException {
+  final public void VarOrTerm() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case VAR1:
     case VAR2:
-      Var(sb);
+      Var();
       break;
     case NIL:
     case ANON:
@@ -3251,7 +3145,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case STRING_LITERAL2:
     case STRING_LITERAL_LONG1:
     case STRING_LITERAL_LONG2:
-      GraphTerm(sb);
+      GraphTerm();
       break;
     default:
       jj_la1[90] = jj_gen;
@@ -3260,16 +3154,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void VarOrIRIref(StringBuilder sb) throws ParseException {
+  final public void VarOrIRIref() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case VAR1:
     case VAR2:
-      Var(sb);
+      Var();
       break;
     case Q_IRI_REF:
     case PNAME_NS:
     case PNAME_LN:
-      IRIref(sb);
+      IRIref();
       break;
     default:
       jj_la1[91] = jj_gen;
@@ -3278,7 +3172,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Var(StringBuilder sb) throws ParseException {
+  final public void Var() throws ParseException {
  /*@bgen(jjtree) Var */
   ASTVar jjtn000 = new ASTVar(JJTVAR);
   boolean jjtc000 = true;
@@ -3299,7 +3193,6 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
           jjtn000.setName(t.image.substring(1));
-          appendToken(sb, t);
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -3307,20 +3200,19 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void GraphTerm(StringBuilder sb) throws ParseException {
-        Token t;
+  final public void GraphTerm() throws ParseException {
         boolean positive = true;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case Q_IRI_REF:
     case PNAME_NS:
     case PNAME_LN:
-      IRIref(sb);
+      IRIref();
       break;
     case STRING_LITERAL1:
     case STRING_LITERAL2:
     case STRING_LITERAL_LONG1:
     case STRING_LITERAL_LONG2:
-      RDFLiteral(sb);
+      RDFLiteral();
       break;
     case INTEGER:
     case INTEGER_POSITIVE:
@@ -3331,30 +3223,29 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case DOUBLE:
     case DOUBLE_POSITIVE:
     case DOUBLE_NEGATIVE:
-      NumericLiteral(sb);
+      NumericLiteral();
       break;
     case TRUE:
     case FALSE:
-      BooleanLiteral(sb);
+      BooleanLiteral();
       break;
     case ANON:
     case BLANK_NODE_LABEL:
-      BlankNode(sb);
+      BlankNode();
       break;
     case NIL:
-      t = jj_consume_token(NIL);
-          ASTIRI jjtn001 = new ASTIRI(JJTIRI);
-          boolean jjtc001 = true;
-          jjtree.openNodeScope(jjtn001);
+      jj_consume_token(NIL);
+                ASTIRI jjtn001 = new ASTIRI(JJTIRI);
+                boolean jjtc001 = true;
+                jjtree.openNodeScope(jjtn001);
       try {
-          jjtree.closeNodeScope(jjtn001, true);
-          jjtc001 = false;
-            appendToken(sb, t);
-            jjtn001.setValue(RDF.NIL.toString());
+                jjtree.closeNodeScope(jjtn001, true);
+                jjtc001 = false;
+               jjtn001.setValue(RDF.NIL.toString());
       } finally {
-          if (jjtc001) {
-            jjtree.closeNodeScope(jjtn001, true);
-          }
+                if (jjtc001) {
+                  jjtree.closeNodeScope(jjtn001, true);
+                }
       }
       break;
     default:
@@ -3364,40 +3255,38 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Expression(StringBuilder sb) throws ParseException {
-    ConditionalOrExpression(sb);
+  final public void Expression() throws ParseException {
+    ConditionalOrExpression();
   }
 
-  final public void ConditionalOrExpression(StringBuilder sb) throws ParseException {
- Token t;
-    ConditionalAndExpression(sb);
+  final public void ConditionalOrExpression() throws ParseException {
+    ConditionalAndExpression();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case OR:
-      t = jj_consume_token(OR);
-                       appendToken(sb, t);
-              ASTOr jjtn001 = new ASTOr(JJTOR);
-              boolean jjtc001 = true;
-              jjtree.openNodeScope(jjtn001);
+      jj_consume_token(OR);
+                                            ASTOr jjtn001 = new ASTOr(JJTOR);
+                                            boolean jjtc001 = true;
+                                            jjtree.openNodeScope(jjtn001);
       try {
-        ConditionalOrExpression(sb);
+        ConditionalOrExpression();
       } catch (Throwable jjte001) {
-              if (jjtc001) {
-                jjtree.clearNodeScope(jjtn001);
-                jjtc001 = false;
-              } else {
-                jjtree.popNode();
-              }
-              if (jjte001 instanceof RuntimeException) {
-                {if (true) throw (RuntimeException)jjte001;}
-              }
-              if (jjte001 instanceof ParseException) {
-                {if (true) throw (ParseException)jjte001;}
-              }
-              {if (true) throw (Error)jjte001;}
+                                            if (jjtc001) {
+                                              jjtree.clearNodeScope(jjtn001);
+                                              jjtc001 = false;
+                                            } else {
+                                              jjtree.popNode();
+                                            }
+                                            if (jjte001 instanceof RuntimeException) {
+                                              {if (true) throw (RuntimeException)jjte001;}
+                                            }
+                                            if (jjte001 instanceof ParseException) {
+                                              {if (true) throw (ParseException)jjte001;}
+                                            }
+                                            {if (true) throw (Error)jjte001;}
       } finally {
-              if (jjtc001) {
-                jjtree.closeNodeScope(jjtn001,  2);
-              }
+                                            if (jjtc001) {
+                                              jjtree.closeNodeScope(jjtn001,  2);
+                                            }
       }
       break;
     default:
@@ -3406,36 +3295,34 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void ConditionalAndExpression(StringBuilder sb) throws ParseException {
- Token t;
-    ValueLogical(sb);
+  final public void ConditionalAndExpression() throws ParseException {
+    ValueLogical();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case AND:
-      t = jj_consume_token(AND);
-                        appendToken(sb, t);
-              ASTAnd jjtn001 = new ASTAnd(JJTAND);
-              boolean jjtc001 = true;
-              jjtree.openNodeScope(jjtn001);
+      jj_consume_token(AND);
+                                 ASTAnd jjtn001 = new ASTAnd(JJTAND);
+                                 boolean jjtc001 = true;
+                                 jjtree.openNodeScope(jjtn001);
       try {
-        ConditionalAndExpression(sb);
+        ConditionalAndExpression();
       } catch (Throwable jjte001) {
-              if (jjtc001) {
-                jjtree.clearNodeScope(jjtn001);
-                jjtc001 = false;
-              } else {
-                jjtree.popNode();
-              }
-              if (jjte001 instanceof RuntimeException) {
-                {if (true) throw (RuntimeException)jjte001;}
-              }
-              if (jjte001 instanceof ParseException) {
-                {if (true) throw (ParseException)jjte001;}
-              }
-              {if (true) throw (Error)jjte001;}
+                                 if (jjtc001) {
+                                   jjtree.clearNodeScope(jjtn001);
+                                   jjtc001 = false;
+                                 } else {
+                                   jjtree.popNode();
+                                 }
+                                 if (jjte001 instanceof RuntimeException) {
+                                   {if (true) throw (RuntimeException)jjte001;}
+                                 }
+                                 if (jjte001 instanceof ParseException) {
+                                   {if (true) throw (ParseException)jjte001;}
+                                 }
+                                 {if (true) throw (Error)jjte001;}
       } finally {
-              if (jjtc001) {
-                jjtree.closeNodeScope(jjtn001,  2);
-              }
+                                 if (jjtc001) {
+                                   jjtree.closeNodeScope(jjtn001,  2);
+                                 }
       }
       break;
     default:
@@ -3444,13 +3331,12 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void ValueLogical(StringBuilder sb) throws ParseException {
-    RelationalExpression(sb);
+  final public void ValueLogical() throws ParseException {
+    RelationalExpression();
   }
 
-  final public void RelationalExpression(StringBuilder sb) throws ParseException {
- Token t;
-    NumericExpression(sb);
+  final public void RelationalExpression() throws ParseException {
+    NumericExpression();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case EQ:
     case NE:
@@ -3462,105 +3348,99 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case NOT_IN:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case EQ:
-        t = jj_consume_token(EQ);
-                          appendToken(sb, t);
-        NumericExpression(sb);
-                                        ASTCompare jjtn001 = new ASTCompare(JJTCOMPARE);
-                                        boolean jjtc001 = true;
-                                        jjtree.openNodeScope(jjtn001);
+        jj_consume_token(EQ);
+        NumericExpression();
+                                           ASTCompare jjtn001 = new ASTCompare(JJTCOMPARE);
+                                           boolean jjtc001 = true;
+                                           jjtree.openNodeScope(jjtn001);
         try {
-                                        jjtree.closeNodeScope(jjtn001,  2);
-                                        jjtc001 = false;
-                                       jjtn001.setOperator(CompareOp.EQ);
+                                           jjtree.closeNodeScope(jjtn001,  2);
+                                           jjtc001 = false;
+                                          jjtn001.setOperator(CompareOp.EQ);
         } finally {
-                                        if (jjtc001) {
-                                          jjtree.closeNodeScope(jjtn001,  2);
-                                        }
+                                           if (jjtc001) {
+                                             jjtree.closeNodeScope(jjtn001,  2);
+                                           }
         }
         break;
       case NE:
-        t = jj_consume_token(NE);
-                          appendToken(sb, t);
-        NumericExpression(sb);
-                                        ASTCompare jjtn002 = new ASTCompare(JJTCOMPARE);
-                                        boolean jjtc002 = true;
-                                        jjtree.openNodeScope(jjtn002);
+        jj_consume_token(NE);
+        NumericExpression();
+                                           ASTCompare jjtn002 = new ASTCompare(JJTCOMPARE);
+                                           boolean jjtc002 = true;
+                                           jjtree.openNodeScope(jjtn002);
         try {
-                                        jjtree.closeNodeScope(jjtn002,  2);
-                                        jjtc002 = false;
-                                       jjtn002.setOperator(CompareOp.NE);
+                                           jjtree.closeNodeScope(jjtn002,  2);
+                                           jjtc002 = false;
+                                          jjtn002.setOperator(CompareOp.NE);
         } finally {
-                                        if (jjtc002) {
-                                          jjtree.closeNodeScope(jjtn002,  2);
-                                        }
+                                           if (jjtc002) {
+                                             jjtree.closeNodeScope(jjtn002,  2);
+                                           }
         }
         break;
       case LT:
-        t = jj_consume_token(LT);
-                          appendToken(sb, t);
-        NumericExpression(sb);
-                                        ASTCompare jjtn003 = new ASTCompare(JJTCOMPARE);
-                                        boolean jjtc003 = true;
-                                        jjtree.openNodeScope(jjtn003);
+        jj_consume_token(LT);
+        NumericExpression();
+                                           ASTCompare jjtn003 = new ASTCompare(JJTCOMPARE);
+                                           boolean jjtc003 = true;
+                                           jjtree.openNodeScope(jjtn003);
         try {
-                                        jjtree.closeNodeScope(jjtn003,  2);
-                                        jjtc003 = false;
-                                       jjtn003.setOperator(CompareOp.LT);
+                                           jjtree.closeNodeScope(jjtn003,  2);
+                                           jjtc003 = false;
+                                          jjtn003.setOperator(CompareOp.LT);
         } finally {
-                                        if (jjtc003) {
-                                          jjtree.closeNodeScope(jjtn003,  2);
-                                        }
+                                           if (jjtc003) {
+                                             jjtree.closeNodeScope(jjtn003,  2);
+                                           }
         }
         break;
       case LE:
-        t = jj_consume_token(LE);
-                          appendToken(sb, t);
-        NumericExpression(sb);
-                                        ASTCompare jjtn004 = new ASTCompare(JJTCOMPARE);
-                                        boolean jjtc004 = true;
-                                        jjtree.openNodeScope(jjtn004);
+        jj_consume_token(LE);
+        NumericExpression();
+                                           ASTCompare jjtn004 = new ASTCompare(JJTCOMPARE);
+                                           boolean jjtc004 = true;
+                                           jjtree.openNodeScope(jjtn004);
         try {
-                                        jjtree.closeNodeScope(jjtn004,  2);
-                                        jjtc004 = false;
-                                       jjtn004.setOperator(CompareOp.LE);
+                                           jjtree.closeNodeScope(jjtn004,  2);
+                                           jjtc004 = false;
+                                          jjtn004.setOperator(CompareOp.LE);
         } finally {
-                                        if (jjtc004) {
-                                          jjtree.closeNodeScope(jjtn004,  2);
-                                        }
+                                           if (jjtc004) {
+                                             jjtree.closeNodeScope(jjtn004,  2);
+                                           }
         }
         break;
       case GE:
-        t = jj_consume_token(GE);
-                          appendToken(sb, t);
-        NumericExpression(sb);
-                                        ASTCompare jjtn005 = new ASTCompare(JJTCOMPARE);
-                                        boolean jjtc005 = true;
-                                        jjtree.openNodeScope(jjtn005);
+        jj_consume_token(GE);
+        NumericExpression();
+                                           ASTCompare jjtn005 = new ASTCompare(JJTCOMPARE);
+                                           boolean jjtc005 = true;
+                                           jjtree.openNodeScope(jjtn005);
         try {
-                                        jjtree.closeNodeScope(jjtn005,  2);
-                                        jjtc005 = false;
-                                       jjtn005.setOperator(CompareOp.GE);
+                                           jjtree.closeNodeScope(jjtn005,  2);
+                                           jjtc005 = false;
+                                          jjtn005.setOperator(CompareOp.GE);
         } finally {
-                                        if (jjtc005) {
-                                          jjtree.closeNodeScope(jjtn005,  2);
-                                        }
+                                           if (jjtc005) {
+                                             jjtree.closeNodeScope(jjtn005,  2);
+                                           }
         }
         break;
       case GT:
-        t = jj_consume_token(GT);
-                          appendToken(sb, t);
-        NumericExpression(sb);
-                                        ASTCompare jjtn006 = new ASTCompare(JJTCOMPARE);
-                                        boolean jjtc006 = true;
-                                        jjtree.openNodeScope(jjtn006);
+        jj_consume_token(GT);
+        NumericExpression();
+                                           ASTCompare jjtn006 = new ASTCompare(JJTCOMPARE);
+                                           boolean jjtc006 = true;
+                                           jjtree.openNodeScope(jjtn006);
         try {
-                                        jjtree.closeNodeScope(jjtn006,  2);
-                                        jjtc006 = false;
-                                       jjtn006.setOperator(CompareOp.GT);
+                                           jjtree.closeNodeScope(jjtn006,  2);
+                                           jjtc006 = false;
+                                          jjtn006.setOperator(CompareOp.GT);
         } finally {
-                                        if (jjtc006) {
-                                          jjtree.closeNodeScope(jjtn006,  2);
-                                        }
+                                           if (jjtc006) {
+                                             jjtree.closeNodeScope(jjtn006,  2);
+                                           }
         }
         break;
       case IN:
@@ -3568,7 +3448,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                   boolean jjtc007 = true;
                   jjtree.openNodeScope(jjtn007);
         try {
-          In(sb);
+          In();
         } catch (Throwable jjte007) {
                   if (jjtc007) {
                     jjtree.clearNodeScope(jjtn007);
@@ -3594,7 +3474,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                   boolean jjtc008 = true;
                   jjtree.openNodeScope(jjtn008);
         try {
-          NotIn(sb);
+          NotIn();
         } catch (Throwable jjte008) {
                   if (jjtc008) {
                     jjtree.clearNodeScope(jjtn008);
@@ -3627,13 +3507,12 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void NumericExpression(StringBuilder sb) throws ParseException {
-    AdditiveExpression(sb);
+  final public void NumericExpression() throws ParseException {
+    AdditiveExpression();
   }
 
-  final public void AdditiveExpression(StringBuilder sb) throws ParseException {
-  Token t;
-    MultiplicativeExpression(sb);
+  final public void AdditiveExpression() throws ParseException {
+    MultiplicativeExpression();
     label_25:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -3653,71 +3532,69 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PLUS:
-        t = jj_consume_token(PLUS);
-                      appendToken(sb, t);
-        MultiplicativeExpression(sb);
-                                         ASTMath jjtn001 = new ASTMath(JJTMATH);
-                                         boolean jjtc001 = true;
-                                         jjtree.openNodeScope(jjtn001);
+        jj_consume_token(PLUS);
+        MultiplicativeExpression();
+                                              ASTMath jjtn001 = new ASTMath(JJTMATH);
+                                              boolean jjtc001 = true;
+                                              jjtree.openNodeScope(jjtn001);
         try {
-                                         jjtree.closeNodeScope(jjtn001,  2);
-                                         jjtc001 = false;
-                                        jjtn001.setOperator(MathOp.PLUS);
+                                              jjtree.closeNodeScope(jjtn001,  2);
+                                              jjtc001 = false;
+                                             jjtn001.setOperator(MathOp.PLUS);
         } finally {
-                                         if (jjtc001) {
-                                           jjtree.closeNodeScope(jjtn001,  2);
-                                         }
+                                              if (jjtc001) {
+                                                jjtree.closeNodeScope(jjtn001,  2);
+                                              }
         }
         break;
       case MINUS:
-        t = jj_consume_token(MINUS);
-                      appendToken(sb, t);
-        MultiplicativeExpression(sb);
-                                         ASTMath jjtn002 = new ASTMath(JJTMATH);
-                                         boolean jjtc002 = true;
-                                         jjtree.openNodeScope(jjtn002);
+        jj_consume_token(MINUS);
+        MultiplicativeExpression();
+                                               ASTMath jjtn002 = new ASTMath(JJTMATH);
+                                               boolean jjtc002 = true;
+                                               jjtree.openNodeScope(jjtn002);
         try {
-                                         jjtree.closeNodeScope(jjtn002,  2);
-                                         jjtc002 = false;
-                                        jjtn002.setOperator(MathOp.MINUS);
+                                               jjtree.closeNodeScope(jjtn002,  2);
+                                               jjtc002 = false;
+                                              jjtn002.setOperator(MathOp.MINUS);
         } finally {
-                                         if (jjtc002) {
-                                           jjtree.closeNodeScope(jjtn002,  2);
-                                         }
+                                               if (jjtc002) {
+                                                 jjtree.closeNodeScope(jjtn002,  2);
+                                               }
         }
         break;
       case INTEGER_POSITIVE:
       case DECIMAL_POSITIVE:
       case DOUBLE_POSITIVE:
-        NumericLiteralPositive(sb);
-                                       ASTMath jjtn003 = new ASTMath(JJTMATH);
-                                       boolean jjtc003 = true;
-                                       jjtree.openNodeScope(jjtn003);
+        NumericLiteralPositive();
+                                     ASTMath jjtn003 = new ASTMath(JJTMATH);
+                                     boolean jjtc003 = true;
+                                     jjtree.openNodeScope(jjtn003);
         try {
-                                       jjtree.closeNodeScope(jjtn003,  2);
-                                       jjtc003 = false;
-                                      jjtn003.setOperator(MathOp.PLUS);
+                                     jjtree.closeNodeScope(jjtn003,  2);
+                                     jjtc003 = false;
+                                    jjtn003.setOperator(MathOp.PLUS);
         } finally {
-                                       if (jjtc003) {
-                                         jjtree.closeNodeScope(jjtn003,  2);
-                                       }
+                                     if (jjtc003) {
+                                       jjtree.closeNodeScope(jjtn003,  2);
+                                     }
         }
         break;
       case INTEGER_NEGATIVE:
       case DECIMAL_NEGATIVE:
       case DOUBLE_NEGATIVE:
-        NumericLiteralNegative(sb);
-                                       ASTMath jjtn004 = new ASTMath(JJTMATH);
-                                       boolean jjtc004 = true;
-                                       jjtree.openNodeScope(jjtn004);
+        NumericLiteralNegative();
+                                     ASTMath jjtn004 = new ASTMath(JJTMATH);
+                                     boolean jjtc004 = true;
+                                     jjtree.openNodeScope(jjtn004);
         try {
-                                       jjtree.closeNodeScope(jjtn004,  2);
-                                       jjtc004 = false;
-                                      jjtn004.setOperator(MathOp.PLUS);
+                                     jjtree.closeNodeScope(jjtn004,  2);
+                                     jjtc004 = false;
+                                    jjtn004.setOperator(MathOp.PLUS);
         } finally {
-                                       if (jjtc004) {
-                                         jjtree.closeNodeScope(jjtn004,  2);
-                                       }
+                                     if (jjtc004) {
+                                       jjtree.closeNodeScope(jjtn004,  2);
+                                     }
         }
         break;
       default:
@@ -3728,9 +3605,8 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void MultiplicativeExpression(StringBuilder sb) throws ParseException {
-  Token t;
-    UnaryExpression(sb);
+  final public void MultiplicativeExpression() throws ParseException {
+    UnaryExpression();
     label_26:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -3744,37 +3620,35 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case STAR:
-        t = jj_consume_token(STAR);
-                      appendToken(sb, t);
-        UnaryExpression(sb);
-                                ASTMath jjtn001 = new ASTMath(JJTMATH);
-                                boolean jjtc001 = true;
-                                jjtree.openNodeScope(jjtn001);
+        jj_consume_token(STAR);
+        UnaryExpression();
+                                     ASTMath jjtn001 = new ASTMath(JJTMATH);
+                                     boolean jjtc001 = true;
+                                     jjtree.openNodeScope(jjtn001);
         try {
-                                jjtree.closeNodeScope(jjtn001,  2);
-                                jjtc001 = false;
-                               jjtn001.setOperator(MathOp.MULTIPLY);
+                                     jjtree.closeNodeScope(jjtn001,  2);
+                                     jjtc001 = false;
+                                    jjtn001.setOperator(MathOp.MULTIPLY);
         } finally {
-                                if (jjtc001) {
-                                  jjtree.closeNodeScope(jjtn001,  2);
-                                }
+                                     if (jjtc001) {
+                                       jjtree.closeNodeScope(jjtn001,  2);
+                                     }
         }
         break;
       case SLASH:
-        t = jj_consume_token(SLASH);
-                       appendToken(sb, t);
-        UnaryExpression(sb);
-                                ASTMath jjtn002 = new ASTMath(JJTMATH);
-                                boolean jjtc002 = true;
-                                jjtree.openNodeScope(jjtn002);
+        jj_consume_token(SLASH);
+        UnaryExpression();
+                                      ASTMath jjtn002 = new ASTMath(JJTMATH);
+                                      boolean jjtc002 = true;
+                                      jjtree.openNodeScope(jjtn002);
         try {
-                                jjtree.closeNodeScope(jjtn002,  2);
-                                jjtc002 = false;
-                               jjtn002.setOperator(MathOp.DIVIDE);
+                                      jjtree.closeNodeScope(jjtn002,  2);
+                                      jjtc002 = false;
+                                     jjtn002.setOperator(MathOp.DIVIDE);
         } finally {
-                                if (jjtc002) {
-                                  jjtree.closeNodeScope(jjtn002,  2);
-                                }
+                                      if (jjtc002) {
+                                        jjtree.closeNodeScope(jjtn002,  2);
+                                      }
         }
         break;
       default:
@@ -3785,35 +3659,33 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void UnaryExpression(StringBuilder sb) throws ParseException {
-  Token t;
+  final public void UnaryExpression() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NOT:
-      t = jj_consume_token(NOT);
-                    appendToken(sb, t);
-          ASTNot jjtn001 = new ASTNot(JJTNOT);
-          boolean jjtc001 = true;
-          jjtree.openNodeScope(jjtn001);
+      jj_consume_token(NOT);
+                ASTNot jjtn001 = new ASTNot(JJTNOT);
+                boolean jjtc001 = true;
+                jjtree.openNodeScope(jjtn001);
       try {
-        PrimaryExpression(sb);
+        PrimaryExpression();
       } catch (Throwable jjte001) {
-          if (jjtc001) {
-            jjtree.clearNodeScope(jjtn001);
-            jjtc001 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte001 instanceof RuntimeException) {
-            {if (true) throw (RuntimeException)jjte001;}
-          }
-          if (jjte001 instanceof ParseException) {
-            {if (true) throw (ParseException)jjte001;}
-          }
-          {if (true) throw (Error)jjte001;}
+                if (jjtc001) {
+                  jjtree.clearNodeScope(jjtn001);
+                  jjtc001 = false;
+                } else {
+                  jjtree.popNode();
+                }
+                if (jjte001 instanceof RuntimeException) {
+                  {if (true) throw (RuntimeException)jjte001;}
+                }
+                if (jjte001 instanceof ParseException) {
+                  {if (true) throw (ParseException)jjte001;}
+                }
+                {if (true) throw (Error)jjte001;}
       } finally {
-          if (jjtc001) {
-            jjtree.closeNodeScope(jjtn001, true);
-          }
+                if (jjtc001) {
+                  jjtree.closeNodeScope(jjtn001, true);
+                }
       }
       break;
     case LPAREN:
@@ -3895,29 +3767,28 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case STRING_LITERAL_LONG2:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PLUS:
-        t = jj_consume_token(PLUS);
-                     appendToken(sb, t);
+        jj_consume_token(PLUS);
         break;
       default:
         jj_la1[102] = jj_gen;
         ;
       }
-      PrimaryExpression(sb);
+      PrimaryExpression();
       break;
     case MINUS:
-      UnaryMinus(sb);
-      PrimaryExpression(sb);
-                                               ASTMath jjtn002 = new ASTMath(JJTMATH);
-                                               boolean jjtc002 = true;
-                                               jjtree.openNodeScope(jjtn002);
+      UnaryMinus();
+      PrimaryExpression();
+                                           ASTMath jjtn002 = new ASTMath(JJTMATH);
+                                           boolean jjtc002 = true;
+                                           jjtree.openNodeScope(jjtn002);
       try {
-                                               jjtree.closeNodeScope(jjtn002,  2);
-                                               jjtc002 = false;
-                                              jjtn002.setOperator(MathOp.MULTIPLY);
+                                           jjtree.closeNodeScope(jjtn002,  2);
+                                           jjtc002 = false;
+                                          jjtn002.setOperator(MathOp.MULTIPLY);
       } finally {
-                                               if (jjtc002) {
-                                                 jjtree.closeNodeScope(jjtn002,  2);
-                                               }
+                                           if (jjtc002) {
+                                             jjtree.closeNodeScope(jjtn002,  2);
+                                           }
       }
       break;
     default:
@@ -3927,16 +3798,15 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void UnaryMinus(StringBuilder sb) throws ParseException {
+  final public void UnaryMinus() throws ParseException {
  /*@bgen(jjtree) NumericLiteral */
   ASTNumericLiteral jjtn000 = new ASTNumericLiteral(JJTNUMERICLITERAL);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(MINUS);
+      jj_consume_token(MINUS);
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
-                appendToken(sb, t);
                 jjtn000.setValue("-1");
                 jjtn000.setDatatype(XMLSchema.INTEGER);
     } finally {
@@ -3946,10 +3816,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void PrimaryExpression(StringBuilder sb) throws ParseException {
+  final public void PrimaryExpression() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LPAREN:
-      BrackettedExpression(sb);
+      BrackettedExpression();
       break;
     case EXISTS:
     case NOT_EXISTS:
@@ -3999,24 +3869,24 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case SHA256:
     case SHA384:
     case SHA512:
-      BuiltInCall(sb);
+      BuiltInCall();
       break;
     default:
       jj_la1[104] = jj_gen;
       if (jj_2_5(2)) {
-        FunctionCall(sb);
+        FunctionCall();
       } else {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case Q_IRI_REF:
         case PNAME_NS:
         case PNAME_LN:
-          IRIref(sb);
+          IRIref();
           break;
         case STRING_LITERAL1:
         case STRING_LITERAL2:
         case STRING_LITERAL_LONG1:
         case STRING_LITERAL_LONG2:
-          RDFLiteral(sb);
+          RDFLiteral();
           break;
         case INTEGER:
         case INTEGER_POSITIVE:
@@ -4027,15 +3897,15 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         case DOUBLE:
         case DOUBLE_POSITIVE:
         case DOUBLE_NEGATIVE:
-          NumericLiteral(sb);
+          NumericLiteral();
           break;
         case TRUE:
         case FALSE:
-          BooleanLiteral(sb);
+          BooleanLiteral();
           break;
         case VAR1:
         case VAR2:
-          Var(sb);
+          Var();
           break;
         case COUNT:
         case SUM:
@@ -4044,7 +3914,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         case AVG:
         case SAMPLE:
         case GROUP_CONCAT:
-          Aggregate(sb);
+          Aggregate();
           break;
         default:
           jj_la1[105] = jj_gen;
@@ -4055,28 +3925,28 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Aggregate(StringBuilder sb) throws ParseException {
+  final public void Aggregate() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case COUNT:
-      Count(sb);
+      Count();
       break;
     case SUM:
-      Sum(sb);
+      Sum();
       break;
     case MIN:
-      Min(sb);
+      Min();
       break;
     case MAX:
-      Max(sb);
+      Max();
       break;
     case AVG:
-      Avg(sb);
+      Avg();
       break;
     case SAMPLE:
-      Sample(sb);
+      Sample();
       break;
     case GROUP_CONCAT:
-      GroupConcat(sb);
+      GroupConcat();
       break;
     default:
       jj_la1[106] = jj_gen;
@@ -4085,19 +3955,18 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Count(StringBuilder sb) throws ParseException {
+  final public void Count() throws ParseException {
  /*@bgen(jjtree) Count */
- ASTCount jjtn000 = new ASTCount(JJTCOUNT);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTCount jjtn000 = new ASTCount(JJTCOUNT);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(COUNT);
-                  appendToken(sb, t);
-      LParen(sb);
+      jj_consume_token(COUNT);
+      jj_consume_token(LPAREN);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DISTINCT:
-        t = jj_consume_token(DISTINCT);
-                           appendToken(sb, t); jjtn000.setDistinct(true);
+        jj_consume_token(DISTINCT);
+                                   jjtn000.setDistinct(true);
         break;
       default:
         jj_la1[107] = jj_gen;
@@ -4105,8 +3974,8 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case STAR:
-        t = jj_consume_token(STAR);
-                         appendToken(sb, t); jjtn000.setWildcard(true);
+        jj_consume_token(STAR);
+                 jjtn000.setWildcard(true);
         break;
       case LPAREN:
       case NOT:
@@ -4187,14 +4056,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case STRING_LITERAL2:
       case STRING_LITERAL_LONG1:
       case STRING_LITERAL_LONG2:
-        Expression(sb);
+        Expression();
         break;
       default:
         jj_la1[108] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-      RParen(sb);
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4216,38 +4085,25 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void LParen(StringBuilder sb) throws ParseException {
-  Token t;
-    t = jj_consume_token(LPAREN);
-                   appendToken(sb, t);
-  }
-
-  final public void RParen(StringBuilder sb) throws ParseException {
-  Token t;
-    t = jj_consume_token(RPAREN);
-                   appendToken(sb, t);
-  }
-
-  final public void Sum(StringBuilder sb) throws ParseException {
+  final public void Sum() throws ParseException {
  /*@bgen(jjtree) Sum */
- ASTSum jjtn000 = new ASTSum(JJTSUM);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTSum jjtn000 = new ASTSum(JJTSUM);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(SUM);
-               appendToken(sb, t);
-      LParen(sb);
+      jj_consume_token(SUM);
+      jj_consume_token(LPAREN);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DISTINCT:
-        t = jj_consume_token(DISTINCT);
-                           appendToken(sb, t); jjtn000.setDistinct(true);
+        jj_consume_token(DISTINCT);
+                                 jjtn000.setDistinct(true);
         break;
       default:
         jj_la1[109] = jj_gen;
         ;
       }
-      Expression(sb);
-      RParen(sb);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4269,26 +4125,25 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Min(StringBuilder sb) throws ParseException {
+  final public void Min() throws ParseException {
  /*@bgen(jjtree) Min */
- ASTMin jjtn000 = new ASTMin(JJTMIN);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTMin jjtn000 = new ASTMin(JJTMIN);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(MIN);
-               appendToken(sb, t);
-      LParen(sb);
+      jj_consume_token(MIN);
+      jj_consume_token(LPAREN);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DISTINCT:
-        t = jj_consume_token(DISTINCT);
-                           appendToken(sb, t); jjtn000.setDistinct(true);
+        jj_consume_token(DISTINCT);
+                                 jjtn000.setDistinct(true);
         break;
       default:
         jj_la1[110] = jj_gen;
         ;
       }
-      Expression(sb);
-      RParen(sb);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4310,26 +4165,25 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Max(StringBuilder sb) throws ParseException {
+  final public void Max() throws ParseException {
  /*@bgen(jjtree) Max */
- ASTMax jjtn000 = new ASTMax(JJTMAX);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTMax jjtn000 = new ASTMax(JJTMAX);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(MAX);
-                appendToken(sb, t);
-      LParen(sb);
+      jj_consume_token(MAX);
+      jj_consume_token(LPAREN);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DISTINCT:
-        t = jj_consume_token(DISTINCT);
-                           appendToken(sb, t); jjtn000.setDistinct(true);
+        jj_consume_token(DISTINCT);
+                                 jjtn000.setDistinct(true);
         break;
       default:
         jj_la1[111] = jj_gen;
         ;
       }
-      Expression(sb);
-      RParen(sb);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4351,26 +4205,25 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Avg(StringBuilder sb) throws ParseException {
+  final public void Avg() throws ParseException {
  /*@bgen(jjtree) Avg */
- ASTAvg jjtn000 = new ASTAvg(JJTAVG);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTAvg jjtn000 = new ASTAvg(JJTAVG);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(AVG);
-               appendToken(sb, t);
-      LParen(sb);
+      jj_consume_token(AVG);
+      jj_consume_token(LPAREN);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DISTINCT:
-        t = jj_consume_token(DISTINCT);
-                           appendToken(sb, t); jjtn000.setDistinct(true);
+        jj_consume_token(DISTINCT);
+                                 jjtn000.setDistinct(true);
         break;
       default:
         jj_la1[112] = jj_gen;
         ;
       }
-      Expression(sb);
-      RParen(sb);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4392,26 +4245,25 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Sample(StringBuilder sb) throws ParseException {
+  final public void Sample() throws ParseException {
  /*@bgen(jjtree) Sample */
- ASTSample jjtn000 = new ASTSample(JJTSAMPLE);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTSample jjtn000 = new ASTSample(JJTSAMPLE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(SAMPLE);
-                  appendToken(sb, t);
-      LParen(sb);
+      jj_consume_token(SAMPLE);
+      jj_consume_token(LPAREN);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DISTINCT:
-        t = jj_consume_token(DISTINCT);
-                           appendToken(sb, t); jjtn000.setDistinct(true);
+        jj_consume_token(DISTINCT);
+                                    jjtn000.setDistinct(true);
         break;
       default:
         jj_la1[113] = jj_gen;
         ;
       }
-      Expression(sb);
-      RParen(sb);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4433,40 +4285,36 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void GroupConcat(StringBuilder sb) throws ParseException {
+  final public void GroupConcat() throws ParseException {
  /*@bgen(jjtree) GroupConcat */
- ASTGroupConcat jjtn000 = new ASTGroupConcat(JJTGROUPCONCAT);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTGroupConcat jjtn000 = new ASTGroupConcat(JJTGROUPCONCAT);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(GROUP_CONCAT);
-                        appendToken(sb, t);
-      LParen(sb);
+      jj_consume_token(GROUP_CONCAT);
+      jj_consume_token(LPAREN);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DISTINCT:
-        t = jj_consume_token(DISTINCT);
-                           appendToken(sb, t); jjtn000.setDistinct(true);
+        jj_consume_token(DISTINCT);
+                                          jjtn000.setDistinct(true);
         break;
       default:
         jj_la1[114] = jj_gen;
         ;
       }
-      Expression(sb);
+      Expression();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SEMICOLON:
-        t = jj_consume_token(SEMICOLON);
-                              appendToken(sb, t);
-        t = jj_consume_token(SEPARATOR);
-                              appendToken(sb, t);
-        t = jj_consume_token(EQ);
-                      appendToken(sb, t);
-        Expression(sb);
+        jj_consume_token(SEMICOLON);
+        jj_consume_token(SEPARATOR);
+        jj_consume_token(EQ);
+        Expression();
         break;
       default:
         jj_la1[115] = jj_gen;
         ;
       }
-      RParen(sb);
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4488,31 +4336,31 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void BrackettedExpression(StringBuilder sb) throws ParseException {
-    LParen(sb);
-    Expression(sb);
-    RParen(sb);
+  final public void BrackettedExpression() throws ParseException {
+    jj_consume_token(LPAREN);
+    Expression();
+    jj_consume_token(RPAREN);
   }
 
-  final public void BuiltInCall(StringBuilder sb) throws ParseException {
+  final public void BuiltInCall() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case BOUND:
-      Bound(sb);
+      Bound();
       break;
     case SAMETERM:
-      SameTerm(sb);
+      SameTerm();
       break;
     case EXISTS:
-      ExistsFunc(sb);
+      ExistsFunc();
       break;
     case NOT_EXISTS:
-      NotExistsFunc(sb);
+      NotExistsFunc();
       break;
     case COALESCE:
-      Coalesce(sb);
+      Coalesce();
       break;
     case IF:
-      If(sb);
+      If();
       break;
     case LANGMATCHES:
     case REGEX:
@@ -4525,14 +4373,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case CONCAT:
     case CONTAINS:
     case ENCODE_FOR_URI:
-      StringFunction(sb);
+      StringFunction();
       break;
     case RAND:
     case ABS:
     case CEIL:
     case FLOOR:
     case ROUND:
-      NumericFunction(sb);
+      NumericFunction();
       break;
     case STR:
     case LANG:
@@ -4545,7 +4393,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case STRDT:
     case STRLANG:
     case IRI:
-      RDFTermFunction(sb);
+      RDFTermFunction();
       break;
     case NOW:
     case YEAR:
@@ -4556,7 +4404,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case SECONDS:
     case TIMEZONE:
     case TZ:
-      DateTimeFunction(sb);
+      DateTimeFunction();
       break;
     case MD5:
     case SHA1:
@@ -4564,7 +4412,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case SHA256:
     case SHA384:
     case SHA512:
-      HashFunction(sb);
+      HashFunction();
       break;
     default:
       jj_la1[116] = jj_gen;
@@ -4573,40 +4421,40 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void StringFunction(StringBuilder sb) throws ParseException {
+  final public void StringFunction() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case SUBSTR:
-      Substr(sb);
+      Substr();
       break;
     case STRLEN:
-      StrLen(sb);
+      StrLen();
       break;
     case UCASE:
-      UpperCase(sb);
+      UpperCase();
       break;
     case LCASE:
-      LowerCase(sb);
+      LowerCase();
       break;
     case STR_STARTS:
-      StrStarts(sb);
+      StrStarts();
       break;
     case STR_ENDS:
-      StrEnds(sb);
+      StrEnds();
       break;
     case CONCAT:
-      Concat(sb);
+      Concat();
       break;
     case CONTAINS:
-      Contains(sb);
+      Contains();
       break;
     case ENCODE_FOR_URI:
-      EncodeForURI(sb);
+      EncodeForURI();
       break;
     case LANGMATCHES:
-      LangMatches(sb);
+      LangMatches();
       break;
     case REGEX:
-      RegexExpression(sb);
+      RegexExpression();
       break;
     default:
       jj_la1[117] = jj_gen;
@@ -4615,22 +4463,22 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void NumericFunction(StringBuilder sb) throws ParseException {
+  final public void NumericFunction() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case RAND:
-      Rand(sb);
+      Rand();
       break;
     case ABS:
-      Abs(sb);
+      Abs();
       break;
     case CEIL:
-      Ceil(sb);
+      Ceil();
       break;
     case FLOOR:
-      Floor(sb);
+      Floor();
       break;
     case ROUND:
-      Round(sb);
+      Round();
       break;
     default:
       jj_la1[118] = jj_gen;
@@ -4639,40 +4487,40 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void RDFTermFunction(StringBuilder sb) throws ParseException {
+  final public void RDFTermFunction() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IS_IRI:
-      IsIRI(sb);
+      IsIRI();
       break;
     case IS_BLANK:
-      IsBlank(sb);
+      IsBlank();
       break;
     case IS_LITERAL:
-      IsLiteral(sb);
+      IsLiteral();
       break;
     case IS_NUMERIC:
-      IsNumeric(sb);
+      IsNumeric();
       break;
     case BNODE:
-      BNodeFunc(sb);
+      BNodeFunc();
       break;
     case IRI:
-      IRIFunc(sb);
+      IRIFunc();
       break;
     case LANG:
-      Lang(sb);
+      Lang();
       break;
     case DATATYPE:
-      Datatype(sb);
+      Datatype();
       break;
     case STR:
-      Str(sb);
+      Str();
       break;
     case STRDT:
-      StrDt(sb);
+      StrDt();
       break;
     case STRLANG:
-      StrLang(sb);
+      StrLang();
       break;
     default:
       jj_la1[119] = jj_gen;
@@ -4681,34 +4529,34 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void DateTimeFunction(StringBuilder sb) throws ParseException {
+  final public void DateTimeFunction() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NOW:
-      Now(sb);
+      Now();
       break;
     case YEAR:
-      Year(sb);
+      Year();
       break;
     case MONTH:
-      Month(sb);
+      Month();
       break;
     case DAY:
-      Day(sb);
+      Day();
       break;
     case HOURS:
-      Hours(sb);
+      Hours();
       break;
     case MINUTES:
-      Minutes(sb);
+      Minutes();
       break;
     case SECONDS:
-      Seconds(sb);
+      Seconds();
       break;
     case TIMEZONE:
-      Timezone(sb);
+      Timezone();
       break;
     case TZ:
-      Tz(sb);
+      Tz();
       break;
     default:
       jj_la1[120] = jj_gen;
@@ -4717,25 +4565,25 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void HashFunction(StringBuilder sb) throws ParseException {
+  final public void HashFunction() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case MD5:
-      MD5(sb);
+      MD5();
       break;
     case SHA1:
-      SHA1(sb);
+      SHA1();
       break;
     case SHA224:
-      SHA224(sb);
+      SHA224();
       break;
     case SHA256:
-      SHA256(sb);
+      SHA256();
       break;
     case SHA384:
-      SHA384(sb);
+      SHA384();
       break;
     case SHA512:
-      SHA512(sb);
+      SHA512();
       break;
     default:
       jj_la1[121] = jj_gen;
@@ -4744,15 +4592,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void MD5(StringBuilder sb) throws ParseException {
+  final public void MD5() throws ParseException {
  /*@bgen(jjtree) MD5 */
- ASTMD5 jjtn000 = new ASTMD5(JJTMD5);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTMD5 jjtn000 = new ASTMD5(JJTMD5);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(MD5);
-                appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(MD5);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4774,15 +4623,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void SHA1(StringBuilder sb) throws ParseException {
+  final public void SHA1() throws ParseException {
  /*@bgen(jjtree) SHA1 */
- ASTSHA1 jjtn000 = new ASTSHA1(JJTSHA1);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTSHA1 jjtn000 = new ASTSHA1(JJTSHA1);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(SHA1);
-                 appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(SHA1);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4804,15 +4654,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void SHA224(StringBuilder sb) throws ParseException {
+  final public void SHA224() throws ParseException {
  /*@bgen(jjtree) SHA224 */
- ASTSHA224 jjtn000 = new ASTSHA224(JJTSHA224);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTSHA224 jjtn000 = new ASTSHA224(JJTSHA224);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(SHA224);
-                   appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(SHA224);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4834,15 +4685,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void SHA256(StringBuilder sb) throws ParseException {
+  final public void SHA256() throws ParseException {
  /*@bgen(jjtree) SHA256 */
- ASTSHA256 jjtn000 = new ASTSHA256(JJTSHA256);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTSHA256 jjtn000 = new ASTSHA256(JJTSHA256);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(SHA256);
-                   appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(SHA256);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4864,15 +4716,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void SHA384(StringBuilder sb) throws ParseException {
+  final public void SHA384() throws ParseException {
  /*@bgen(jjtree) SHA384 */
- ASTSHA384 jjtn000 = new ASTSHA384(JJTSHA384);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTSHA384 jjtn000 = new ASTSHA384(JJTSHA384);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(SHA384);
-                   appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(SHA384);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4894,15 +4747,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void SHA512(StringBuilder sb) throws ParseException {
+  final public void SHA512() throws ParseException {
  /*@bgen(jjtree) SHA512 */
- ASTSHA512 jjtn000 = new ASTSHA512(JJTSHA512);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTSHA512 jjtn000 = new ASTSHA512(JJTSHA512);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(SHA512);
-                   appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(SHA512);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4924,18 +4778,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Now(StringBuilder sb) throws ParseException {
+  final public void Now() throws ParseException {
  /*@bgen(jjtree) Now */
- ASTNow jjtn000 = new ASTNow(JJTNOW);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTNow jjtn000 = new ASTNow(JJTNOW);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(NOW);
-                appendToken(sb, t);
-      t = jj_consume_token(NIL);
-                jjtree.closeNodeScope(jjtn000, true);
-                jjtc000 = false;
-                appendToken(sb, t);
+      jj_consume_token(NOW);
+      jj_consume_token(NIL);
     } finally {
       if (jjtc000) {
         jjtree.closeNodeScope(jjtn000, true);
@@ -4943,15 +4793,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Year(StringBuilder sb) throws ParseException {
+  final public void Year() throws ParseException {
  /*@bgen(jjtree) Year */
- ASTYear jjtn000 = new ASTYear(JJTYEAR);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTYear jjtn000 = new ASTYear(JJTYEAR);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(YEAR);
-                 appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(YEAR);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -4973,15 +4824,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Month(StringBuilder sb) throws ParseException {
+  final public void Month() throws ParseException {
  /*@bgen(jjtree) Month */
- ASTMonth jjtn000 = new ASTMonth(JJTMONTH);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTMonth jjtn000 = new ASTMonth(JJTMONTH);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(MONTH);
-                  appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(MONTH);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5003,15 +4855,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Day(StringBuilder sb) throws ParseException {
+  final public void Day() throws ParseException {
  /*@bgen(jjtree) Day */
- ASTDay jjtn000 = new ASTDay(JJTDAY);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTDay jjtn000 = new ASTDay(JJTDAY);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(DAY);
-                appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(DAY);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5033,15 +4886,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Hours(StringBuilder sb) throws ParseException {
+  final public void Hours() throws ParseException {
  /*@bgen(jjtree) Hours */
- ASTHours jjtn000 = new ASTHours(JJTHOURS);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTHours jjtn000 = new ASTHours(JJTHOURS);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(HOURS);
-                  appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(HOURS);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5063,15 +4917,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Minutes(StringBuilder sb) throws ParseException {
+  final public void Minutes() throws ParseException {
  /*@bgen(jjtree) Minutes */
- ASTMinutes jjtn000 = new ASTMinutes(JJTMINUTES);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTMinutes jjtn000 = new ASTMinutes(JJTMINUTES);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(MINUTES);
-                    appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(MINUTES);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5093,15 +4948,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Seconds(StringBuilder sb) throws ParseException {
+  final public void Seconds() throws ParseException {
  /*@bgen(jjtree) Seconds */
- ASTSeconds jjtn000 = new ASTSeconds(JJTSECONDS);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTSeconds jjtn000 = new ASTSeconds(JJTSECONDS);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(SECONDS);
-                    appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(SECONDS);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5123,15 +4979,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Timezone(StringBuilder sb) throws ParseException {
+  final public void Timezone() throws ParseException {
  /*@bgen(jjtree) Timezone */
- ASTTimezone jjtn000 = new ASTTimezone(JJTTIMEZONE);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTTimezone jjtn000 = new ASTTimezone(JJTTIMEZONE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(TIMEZONE);
-                     appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(TIMEZONE);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5153,15 +5010,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Tz(StringBuilder sb) throws ParseException {
+  final public void Tz() throws ParseException {
  /*@bgen(jjtree) Tz */
- ASTTz jjtn000 = new ASTTz(JJTTZ);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTTz jjtn000 = new ASTTz(JJTTZ);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(TZ);
-               appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(TZ);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5183,18 +5041,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Rand(StringBuilder sb) throws ParseException {
+  final public void Rand() throws ParseException {
  /*@bgen(jjtree) Rand */
- ASTRand jjtn000 = new ASTRand(JJTRAND);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTRand jjtn000 = new ASTRand(JJTRAND);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(RAND);
-                appendToken(sb, t);
-      t = jj_consume_token(NIL);
-                jjtree.closeNodeScope(jjtn000, true);
-                jjtc000 = false;
-                appendToken(sb, t);
+      jj_consume_token(RAND);
+      jj_consume_token(NIL);
     } finally {
       if (jjtc000) {
         jjtree.closeNodeScope(jjtn000, true);
@@ -5202,15 +5056,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Abs(StringBuilder sb) throws ParseException {
+  final public void Abs() throws ParseException {
  /*@bgen(jjtree) Abs */
- ASTAbs jjtn000 = new ASTAbs(JJTABS);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTAbs jjtn000 = new ASTAbs(JJTABS);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(ABS);
-                appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(ABS);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5232,15 +5087,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Ceil(StringBuilder sb) throws ParseException {
+  final public void Ceil() throws ParseException {
  /*@bgen(jjtree) Ceil */
- ASTCeil jjtn000 = new ASTCeil(JJTCEIL);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTCeil jjtn000 = new ASTCeil(JJTCEIL);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(CEIL);
-                 appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(CEIL);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5262,15 +5118,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Floor(StringBuilder sb) throws ParseException {
+  final public void Floor() throws ParseException {
  /*@bgen(jjtree) Floor */
- ASTFloor jjtn000 = new ASTFloor(JJTFLOOR);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTFloor jjtn000 = new ASTFloor(JJTFLOOR);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(FLOOR);
-                  appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(FLOOR);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5292,15 +5149,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Round(StringBuilder sb) throws ParseException {
+  final public void Round() throws ParseException {
  /*@bgen(jjtree) Round */
- ASTRound jjtn000 = new ASTRound(JJTROUND);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTRound jjtn000 = new ASTRound(JJTROUND);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(ROUND);
-                  appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(ROUND);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5322,30 +5180,27 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Substr(StringBuilder sb) throws ParseException {
+  final public void Substr() throws ParseException {
  /*@bgen(jjtree) Substr */
- ASTSubstr jjtn000 = new ASTSubstr(JJTSUBSTR);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTSubstr jjtn000 = new ASTSubstr(JJTSUBSTR);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(SUBSTR);
-                   appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
-      t = jj_consume_token(COMMA);
-                      appendToken(sb, t);
-      Expression(sb);
+      jj_consume_token(SUBSTR);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(COMMA);
+      Expression();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case COMMA:
-        t = jj_consume_token(COMMA);
-                          appendToken(sb, t);
-        Expression(sb);
+        jj_consume_token(COMMA);
+        Expression();
         break;
       default:
         jj_la1[122] = jj_gen;
         ;
       }
-      RParen(sb);
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5367,15 +5222,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void StrLen(StringBuilder sb) throws ParseException {
+  final public void StrLen() throws ParseException {
  /*@bgen(jjtree) StrLen */
- ASTStrLen jjtn000 = new ASTStrLen(JJTSTRLEN);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTStrLen jjtn000 = new ASTStrLen(JJTSTRLEN);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(STRLEN);
-                  appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(STRLEN);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5397,15 +5253,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void UpperCase(StringBuilder sb) throws ParseException {
+  final public void UpperCase() throws ParseException {
  /*@bgen(jjtree) UpperCase */
- ASTUpperCase jjtn000 = new ASTUpperCase(JJTUPPERCASE);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTUpperCase jjtn000 = new ASTUpperCase(JJTUPPERCASE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(UCASE);
-                  appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(UCASE);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5427,15 +5284,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void LowerCase(StringBuilder sb) throws ParseException {
+  final public void LowerCase() throws ParseException {
  /*@bgen(jjtree) LowerCase */
- ASTLowerCase jjtn000 = new ASTLowerCase(JJTLOWERCASE);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTLowerCase jjtn000 = new ASTLowerCase(JJTLOWERCASE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(LCASE);
-                  appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(LCASE);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5457,20 +5315,18 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void StrStarts(StringBuilder sb) throws ParseException {
+  final public void StrStarts() throws ParseException {
  /*@bgen(jjtree) StrStarts */
- ASTStrStarts jjtn000 = new ASTStrStarts(JJTSTRSTARTS);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTStrStarts jjtn000 = new ASTStrStarts(JJTSTRSTARTS);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(STR_STARTS);
-                       appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
-      t = jj_consume_token(COMMA);
-                      appendToken(sb, t);
-      Expression(sb);
-      RParen(sb);
+      jj_consume_token(STR_STARTS);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(COMMA);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5492,20 +5348,18 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void StrEnds(StringBuilder sb) throws ParseException {
+  final public void StrEnds() throws ParseException {
  /*@bgen(jjtree) StrEnds */
- ASTStrEnds jjtn000 = new ASTStrEnds(JJTSTRENDS);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTStrEnds jjtn000 = new ASTStrEnds(JJTSTRENDS);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(STR_ENDS);
-                     appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
-      t = jj_consume_token(COMMA);
-                      appendToken(sb, t);
-      Expression(sb);
-      RParen(sb);
+      jj_consume_token(STR_ENDS);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(COMMA);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5527,15 +5381,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Concat(StringBuilder sb) throws ParseException {
+  final public void Concat() throws ParseException {
  /*@bgen(jjtree) Concat */
- ASTConcat jjtn000 = new ASTConcat(JJTCONCAT);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTConcat jjtn000 = new ASTConcat(JJTCONCAT);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(CONCAT);
-                   appendToken(sb, t);
-      ArgList(sb);
+      jj_consume_token(CONCAT);
+      ArgList();
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5557,20 +5410,18 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Contains(StringBuilder sb) throws ParseException {
+  final public void Contains() throws ParseException {
  /*@bgen(jjtree) Contains */
- ASTContains jjtn000 = new ASTContains(JJTCONTAINS);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTContains jjtn000 = new ASTContains(JJTCONTAINS);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(CONTAINS);
-                     appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
-      t = jj_consume_token(COMMA);
-                      appendToken(sb, t);
-      Expression(sb);
-      RParen(sb);
+      jj_consume_token(CONTAINS);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(COMMA);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5592,15 +5443,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void EncodeForURI(StringBuilder sb) throws ParseException {
+  final public void EncodeForURI() throws ParseException {
  /*@bgen(jjtree) EncodeForURI */
- ASTEncodeForURI jjtn000 = new ASTEncodeForURI(JJTENCODEFORURI);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTEncodeForURI jjtn000 = new ASTEncodeForURI(JJTENCODEFORURI);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(ENCODE_FOR_URI);
-                           appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(ENCODE_FOR_URI);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5622,27 +5474,20 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Comma(StringBuilder sb) throws ParseException {
- Token t;
-    t = jj_consume_token(COMMA);
-                  appendToken(sb, t);
-  }
-
-  final public void If(StringBuilder sb) throws ParseException {
+  final public void If() throws ParseException {
  /*@bgen(jjtree) If */
- ASTIf jjtn000 = new ASTIf(JJTIF);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTIf jjtn000 = new ASTIf(JJTIF);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(IF);
-               appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
-      Comma(sb);
-      Expression(sb);
-      Comma(sb);
-      Expression(sb);
-      RParen(sb);
+      jj_consume_token(IF);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(COMMA);
+      Expression();
+      jj_consume_token(COMMA);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5664,15 +5509,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void In(StringBuilder sb) throws ParseException {
+  final public void In() throws ParseException {
  /*@bgen(jjtree) In */
- ASTIn jjtn000 = new ASTIn(JJTIN);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTIn jjtn000 = new ASTIn(JJTIN);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(IN);
-               appendToken(sb, t);
-      ArgList(sb);
+      jj_consume_token(IN);
+      ArgList();
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5694,15 +5538,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void NotIn(StringBuilder sb) throws ParseException {
+  final public void NotIn() throws ParseException {
  /*@bgen(jjtree) NotIn */
- ASTNotIn jjtn000 = new ASTNotIn(JJTNOTIN);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTNotIn jjtn000 = new ASTNotIn(JJTNOTIN);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(NOT_IN);
-                   appendToken(sb, t);
-      ArgList(sb);
+      jj_consume_token(NOT_IN);
+      ArgList();
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5724,16 +5567,15 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Coalesce(StringBuilder sb) throws ParseException {
+  final public void Coalesce() throws ParseException {
  /*@bgen(jjtree) Coalesce */
- ASTCoalesce jjtn000 = new ASTCoalesce(JJTCOALESCE);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTCoalesce jjtn000 = new ASTCoalesce(JJTCOALESCE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(COALESCE);
-                     appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
+      jj_consume_token(COALESCE);
+      jj_consume_token(LPAREN);
+      Expression();
       label_27:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -5744,10 +5586,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[123] = jj_gen;
           break label_27;
         }
-        Comma(sb);
-        Expression(sb);
+        jj_consume_token(COMMA);
+        Expression();
       }
-      RParen(sb);
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -5769,15 +5611,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Str(StringBuilder sb) throws ParseException {
+  final public void Str() throws ParseException {
  /*@bgen(jjtree) Str */
- ASTStr jjtn000 = new ASTStr(JJTSTR);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTStr jjtn000 = new ASTStr(JJTSTR);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(STR);
-                    appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(STR);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -5799,15 +5642,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Lang(StringBuilder sb) throws ParseException {
+  final public void Lang() throws ParseException {
  /*@bgen(jjtree) Lang */
- ASTLang jjtn000 = new ASTLang(JJTLANG);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTLang jjtn000 = new ASTLang(JJTLANG);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(LANG);
-                     appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(LANG);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -5829,19 +5673,18 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void LangMatches(StringBuilder sb) throws ParseException {
+  final public void LangMatches() throws ParseException {
  /*@bgen(jjtree) LangMatches */
- ASTLangMatches jjtn000 = new ASTLangMatches(JJTLANGMATCHES);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTLangMatches jjtn000 = new ASTLangMatches(JJTLANGMATCHES);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(LANGMATCHES);
-                            appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
-      Comma(sb);
-      Expression(sb);
-      RParen(sb);
+      jj_consume_token(LANGMATCHES);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(COMMA);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -5863,15 +5706,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Datatype(StringBuilder sb) throws ParseException {
+  final public void Datatype() throws ParseException {
  /*@bgen(jjtree) Datatype */
- ASTDatatype jjtn000 = new ASTDatatype(JJTDATATYPE);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTDatatype jjtn000 = new ASTDatatype(JJTDATATYPE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(DATATYPE);
-                         appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(DATATYPE);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -5893,17 +5737,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Bound(StringBuilder sb) throws ParseException {
+  final public void Bound() throws ParseException {
  /*@bgen(jjtree) Bound */
- ASTBound jjtn000 = new ASTBound(JJTBOUND);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTBound jjtn000 = new ASTBound(JJTBOUND);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(BOUND);
-                      appendToken(sb, t);
-      LParen(sb);
-      Var(sb);
-      RParen(sb);
+      jj_consume_token(BOUND);
+      jj_consume_token(LPAREN);
+      Var();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -5925,19 +5768,18 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void SameTerm(StringBuilder sb) throws ParseException {
+  final public void SameTerm() throws ParseException {
  /*@bgen(jjtree) SameTerm */
- ASTSameTerm jjtn000 = new ASTSameTerm(JJTSAMETERM);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTSameTerm jjtn000 = new ASTSameTerm(JJTSAMETERM);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(SAMETERM);
-                         appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
-      Comma(sb);
-      Expression(sb);
-      RParen(sb);
+      jj_consume_token(SAMETERM);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(COMMA);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -5959,15 +5801,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void IsIRI(StringBuilder sb) throws ParseException {
+  final public void IsIRI() throws ParseException {
  /*@bgen(jjtree) IsIRI */
- ASTIsIRI jjtn000 = new ASTIsIRI(JJTISIRI);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTIsIRI jjtn000 = new ASTIsIRI(JJTISIRI);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(IS_IRI);
-                       appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(IS_IRI);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -5989,15 +5832,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void IsBlank(StringBuilder sb) throws ParseException {
+  final public void IsBlank() throws ParseException {
  /*@bgen(jjtree) IsBlank */
- ASTIsBlank jjtn000 = new ASTIsBlank(JJTISBLANK);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTIsBlank jjtn000 = new ASTIsBlank(JJTISBLANK);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(IS_BLANK);
-                         appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(IS_BLANK);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -6019,15 +5863,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void IsLiteral(StringBuilder sb) throws ParseException {
+  final public void IsLiteral() throws ParseException {
  /*@bgen(jjtree) IsLiteral */
- ASTIsLiteral jjtn000 = new ASTIsLiteral(JJTISLITERAL);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTIsLiteral jjtn000 = new ASTIsLiteral(JJTISLITERAL);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(IS_LITERAL);
-                           appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(IS_LITERAL);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -6049,15 +5894,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void IsNumeric(StringBuilder sb) throws ParseException {
+  final public void IsNumeric() throws ParseException {
  /*@bgen(jjtree) IsNumeric */
- ASTIsNumeric jjtn000 = new ASTIsNumeric(JJTISNUMERIC);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTIsNumeric jjtn000 = new ASTIsNumeric(JJTISNUMERIC);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(IS_NUMERIC);
-                           appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(IS_NUMERIC);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -6079,25 +5925,21 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void BNodeFunc(StringBuilder sb) throws ParseException {
+  final public void BNodeFunc() throws ParseException {
  /*@bgen(jjtree) BNodeFunc */
- ASTBNodeFunc jjtn000 = new ASTBNodeFunc(JJTBNODEFUNC);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTBNodeFunc jjtn000 = new ASTBNodeFunc(JJTBNODEFUNC);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(BNODE);
-                      appendToken(sb, t);
+      jj_consume_token(BNODE);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case NIL:
-        t = jj_consume_token(NIL);
-                         jjtree.closeNodeScope(jjtn000, true);
-                         jjtc000 = false;
-                         appendToken(sb, t);
+        jj_consume_token(NIL);
         break;
       case LPAREN:
-        LParen(sb);
-        Expression(sb);
-        RParen(sb);
+        jj_consume_token(LPAREN);
+        Expression();
+        jj_consume_token(RPAREN);
         break;
       default:
         jj_la1[124] = jj_gen;
@@ -6125,15 +5967,16 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void IRIFunc(StringBuilder sb) throws ParseException {
+  final public void IRIFunc() throws ParseException {
  /*@bgen(jjtree) IRIFunc */
- ASTIRIFunc jjtn000 = new ASTIRIFunc(JJTIRIFUNC);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTIRIFunc jjtn000 = new ASTIRIFunc(JJTIRIFUNC);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(IRI);
-                    appendToken(sb, t);
-      BrackettedExpression(sb);
+      jj_consume_token(IRI);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -6155,19 +5998,18 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void StrDt(StringBuilder sb) throws ParseException {
+  final public void StrDt() throws ParseException {
  /*@bgen(jjtree) StrDt */
- ASTStrDt jjtn000 = new ASTStrDt(JJTSTRDT);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTStrDt jjtn000 = new ASTStrDt(JJTSTRDT);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(STRDT);
-                      appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
-      Comma(sb);
-      Expression(sb);
-      RParen(sb);
+      jj_consume_token(STRDT);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(COMMA);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -6189,19 +6031,18 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void StrLang(StringBuilder sb) throws ParseException {
+  final public void StrLang() throws ParseException {
  /*@bgen(jjtree) StrLang */
- ASTStrLang jjtn000 = new ASTStrLang(JJTSTRLANG);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTStrLang jjtn000 = new ASTStrLang(JJTSTRLANG);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(STRLANG);
-                        appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
-      Comma(sb);
-      Expression(sb);
-      RParen(sb);
+      jj_consume_token(STRLANG);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(COMMA);
+      Expression();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -6223,20 +6064,18 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void Bind(StringBuilder sb) throws ParseException {
+  final public void Bind() throws ParseException {
  /*@bgen(jjtree) Bind */
- ASTBind jjtn000 = new ASTBind(JJTBIND);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTBind jjtn000 = new ASTBind(JJTBIND);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(BIND);
-                     appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
-      t = jj_consume_token(AS);
-                       appendToken(sb, t);
-      Var(sb);
-      RParen(sb);
+      jj_consume_token(BIND);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(AS);
+      Var();
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -6258,28 +6097,27 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void RegexExpression(StringBuilder sb) throws ParseException {
+  final public void RegexExpression() throws ParseException {
  /*@bgen(jjtree) RegexExpression */
- ASTRegexExpression jjtn000 = new ASTRegexExpression(JJTREGEXEXPRESSION);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTRegexExpression jjtn000 = new ASTRegexExpression(JJTREGEXEXPRESSION);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(REGEX);
-                      appendToken(sb, t);
-      LParen(sb);
-      Expression(sb);
-      Comma(sb);
-      Expression(sb);
+      jj_consume_token(REGEX);
+      jj_consume_token(LPAREN);
+      Expression();
+      jj_consume_token(COMMA);
+      Expression();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case COMMA:
-        Comma(sb);
-        Expression(sb);
+        jj_consume_token(COMMA);
+        Expression();
         break;
       default:
         jj_la1[125] = jj_gen;
         ;
       }
-      RParen(sb);
+      jj_consume_token(RPAREN);
     } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -6301,15 +6139,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void ExistsFunc(StringBuilder sb) throws ParseException {
+  final public void ExistsFunc() throws ParseException {
  /*@bgen(jjtree) ExistsFunc */
- ASTExistsFunc jjtn000 = new ASTExistsFunc(JJTEXISTSFUNC);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTExistsFunc jjtn000 = new ASTExistsFunc(JJTEXISTSFUNC);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(EXISTS);
-                   appendToken(sb, t);
-      GroupGraphPattern(sb);
+      jj_consume_token(EXISTS);
+      GroupGraphPattern();
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -6331,15 +6168,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void NotExistsFunc(StringBuilder sb) throws ParseException {
+  final public void NotExistsFunc() throws ParseException {
  /*@bgen(jjtree) NotExistsFunc */
- ASTNotExistsFunc jjtn000 = new ASTNotExistsFunc(JJTNOTEXISTSFUNC);
- boolean jjtc000 = true;
- jjtree.openNodeScope(jjtn000);Token t;
+  ASTNotExistsFunc jjtn000 = new ASTNotExistsFunc(JJTNOTEXISTSFUNC);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      t = jj_consume_token(NOT_EXISTS);
-                       appendToken(sb, t);
-      GroupGraphPattern(sb);
+      jj_consume_token(NOT_EXISTS);
+      GroupGraphPattern();
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -6361,25 +6197,24 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void RDFLiteral(StringBuilder sb) throws ParseException {
+  final public void RDFLiteral() throws ParseException {
  /*@bgen(jjtree) RDFLiteral */
   ASTRDFLiteral jjtn000 = new ASTRDFLiteral(JJTRDFLITERAL);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);Token t;
     try {
-      String(sb);
+      String();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DT_PREFIX:
       case LANGTAG:
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case LANGTAG:
           t = jj_consume_token(LANGTAG);
-                               appendToken(sb, t); jjtn000.setLang(t.image.substring(1));
+                               jjtn000.setLang(t.image.substring(1));
           break;
         case DT_PREFIX:
-          t = jj_consume_token(DT_PREFIX);
-                                 appendToken(sb, t);
-          IRIref(sb);
+          jj_consume_token(DT_PREFIX);
+          IRIref();
           break;
         default:
           jj_la1[126] = jj_gen;
@@ -6412,22 +6247,22 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void NumericLiteral(StringBuilder sb) throws ParseException {
+  final public void NumericLiteral() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case INTEGER:
     case DECIMAL:
     case DOUBLE:
-      NumericLiteralUnsigned(sb);
+      NumericLiteralUnsigned();
       break;
     case INTEGER_POSITIVE:
     case DECIMAL_POSITIVE:
     case DOUBLE_POSITIVE:
-      NumericLiteralPositive(sb);
+      NumericLiteralPositive();
       break;
     case INTEGER_NEGATIVE:
     case DECIMAL_NEGATIVE:
     case DOUBLE_NEGATIVE:
-      NumericLiteralNegative(sb);
+      NumericLiteralNegative();
       break;
     default:
       jj_la1[128] = jj_gen;
@@ -6436,7 +6271,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void NumericLiteralUnsigned(StringBuilder sb) throws ParseException {
+  final public void NumericLiteralUnsigned() throws ParseException {
  /*@bgen(jjtree) NumericLiteral */
   ASTNumericLiteral jjtn000 = new ASTNumericLiteral(JJTNUMERICLITERAL);
   boolean jjtc000 = true;
@@ -6464,7 +6299,6 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jjtc000 = false;
                 jjtn000.setValue(t.image);
                 jjtn000.setDatatype(datatype);
-                appendToken(sb, t);
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -6472,7 +6306,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void NumericLiteralPositive(StringBuilder sb) throws ParseException {
+  final public void NumericLiteralPositive() throws ParseException {
  /*@bgen(jjtree) NumericLiteral */
   ASTNumericLiteral jjtn000 = new ASTNumericLiteral(JJTNUMERICLITERAL);
   boolean jjtc000 = true;
@@ -6500,7 +6334,6 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jjtc000 = false;
                 jjtn000.setValue(t.image);
                 jjtn000.setDatatype(datatype);
-                appendToken(sb, t);
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -6508,7 +6341,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void NumericLiteralNegative(StringBuilder sb) throws ParseException {
+  final public void NumericLiteralNegative() throws ParseException {
  /*@bgen(jjtree) NumericLiteral */
   ASTNumericLiteral jjtn000 = new ASTNumericLiteral(JJTNUMERICLITERAL);
   boolean jjtc000 = true;
@@ -6536,7 +6369,6 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jjtc000 = false;
                 jjtn000.setValue(t.image);
                 jjtn000.setDatatype(datatype);
-                appendToken(sb, t);
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -6544,15 +6376,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void BooleanLiteral(StringBuilder sb) throws ParseException {
- Token t;
+  final public void BooleanLiteral() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case TRUE:
           ASTTrue jjtn001 = new ASTTrue(JJTTRUE);
           boolean jjtc001 = true;
           jjtree.openNodeScope(jjtn001);
       try {
-        t = jj_consume_token(TRUE);
+        jj_consume_token(TRUE);
       } finally {
           if (jjtc001) {
             jjtree.closeNodeScope(jjtn001, true);
@@ -6564,7 +6395,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           boolean jjtc002 = true;
           jjtree.openNodeScope(jjtn002);
       try {
-        t = jj_consume_token(FALSE);
+        jj_consume_token(FALSE);
       } finally {
           if (jjtc002) {
             jjtree.closeNodeScope(jjtn002, true);
@@ -6576,10 +6407,9 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       jj_consume_token(-1);
       throw new ParseException();
     }
-      appendToken(sb, t);
   }
 
-  final public void String(StringBuilder sb) throws ParseException {
+  final public void String() throws ParseException {
  /*@bgen(jjtree) String */
   ASTString jjtn000 = new ASTString(JJTSTRING);
   boolean jjtc000 = true;
@@ -6602,7 +6432,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         }
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
-         jjtn000.setValue(_trimString(t.image, 1)); appendToken(sb, t);
+         jjtn000.setValue(_trimString(t.image, 1));
         break;
       case STRING_LITERAL_LONG1:
       case STRING_LITERAL_LONG2:
@@ -6620,7 +6450,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         }
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
-         jjtn000.setValue(_trimString(t.image, 3)); appendToken(sb, t);
+         jjtn000.setValue(_trimString(t.image, 3));
         break;
       default:
         jj_la1[135] = jj_gen;
@@ -6634,14 +6464,14 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void IRIref(StringBuilder sb) throws ParseException {
+  final public void IRIref() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case Q_IRI_REF:
-      IRI(sb);
+      IRI();
       break;
     case PNAME_NS:
     case PNAME_LN:
-      PrefixedName(sb);
+      PrefixedName();
       break;
     default:
       jj_la1[136] = jj_gen;
@@ -6650,7 +6480,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void PrefixedName(StringBuilder sb) throws ParseException {
+  final public void PrefixedName() throws ParseException {
  /*@bgen(jjtree) QName */
   ASTQName jjtn000 = new ASTQName(JJTQNAME);
   boolean jjtc000 = true;
@@ -6670,8 +6500,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       }
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
-            jjtn000.setValue(t.image);
-            appendToken(sb, t);
+         jjtn000.setValue(t.image);
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -6679,7 +6508,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
-  final public void BlankNode(StringBuilder sb) throws ParseException {
+  final public void BlankNode() throws ParseException {
  /*@bgen(jjtree) BlankNode */
   ASTBlankNode jjtn000 = new ASTBlankNode(JJTBLANKNODE);
   boolean jjtc000 = true;
@@ -6688,27 +6517,26 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case BLANK_NODE_LABEL:
         t = jj_consume_token(BLANK_NODE_LABEL);
+                                 jjtree.closeNodeScope(jjtn000, true);
+                                 jjtc000 = false;
                                 jjtn000.setID(t.image.substring(2));
         break;
       case ANON:
-        t = jj_consume_token(ANON);
+        jj_consume_token(ANON);
         break;
       default:
         jj_la1[138] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-      jjtree.closeNodeScope(jjtn000, true);
-      jjtc000 = false;
-      appendToken(sb, t);
     } finally {
-  if (jjtc000) {
-    jjtree.closeNodeScope(jjtn000, true);
-  }
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
     }
   }
 
-  final public void IRI(StringBuilder sb) throws ParseException {
+  final public void IRI() throws ParseException {
  /*@bgen(jjtree) IRI */
   ASTIRI jjtn000 = new ASTIRI(JJTIRI);
   boolean jjtc000 = true;
@@ -6717,7 +6545,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       t = jj_consume_token(Q_IRI_REF);
                           jjtree.closeNodeScope(jjtn000, true);
                           jjtc000 = false;
-                         jjtn000.setValue(_trimString(t.image, 1)); appendToken(sb, t);
+                         jjtn000.setValue(_trimString(t.image, 1));
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -6799,7 +6627,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_la1[140] = jj_gen;
           ;
         }
-        IRIref(null);
+        IRIref();
         break;
       default:
         jj_la1[141] = jj_gen;
@@ -6829,7 +6657,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
 
   final public void GraphRef() throws ParseException {
     jj_consume_token(GRAPH);
-    IRIref(null);
+    IRIref();
   }
 
   final public void QuadData() throws ParseException {
@@ -6865,7 +6693,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     case STRING_LITERAL2:
     case STRING_LITERAL_LONG1:
     case STRING_LITERAL_LONG2:
-      TriplesTemplate(null);
+      TriplesTemplate();
       break;
     default:
       jj_la1[142] = jj_gen;
@@ -6916,7 +6744,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case STRING_LITERAL2:
       case STRING_LITERAL_LONG1:
       case STRING_LITERAL_LONG2:
-        TriplesTemplate(null);
+        TriplesTemplate();
         break;
       default:
         jj_la1[145] = jj_gen;
@@ -6932,7 +6760,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   jjtree.openNodeScope(jjtn000);
     try {
       jj_consume_token(GRAPH);
-      VarOrIRIref(null);
+      VarOrIRIref();
       jj_consume_token(LBRACE);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAREN:
@@ -6960,7 +6788,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case STRING_LITERAL2:
       case STRING_LITERAL_LONG1:
       case STRING_LITERAL_LONG2:
-        TriplesTemplate(null);
+        TriplesTemplate();
         break;
       default:
         jj_la1[146] = jj_gen;
@@ -7051,7 +6879,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         jj_la1[149] = jj_gen;
         ;
       }
-      IRIref(null);
+      IRIref();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case INTO:
         jj_consume_token(INTO);
@@ -7480,7 +7308,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         jj_la1[157] = jj_gen;
         ;
       }
-      IRIref(null);
+      IRIref();
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -7511,7 +7339,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case WITH:
         jj_consume_token(WITH);
-        IRIref(null);
+        IRIref();
         break;
       default:
         jj_la1[158] = jj_gen;
@@ -7550,7 +7378,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         UsingClause();
       }
       jj_consume_token(WHERE);
-      GroupGraphPattern(null);
+      GroupGraphPattern();
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -7628,122 +7456,133 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     finally { jj_save(7, xla); }
   }
 
-  private boolean jj_3R_90() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(163)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(164)) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_54() {
-    if (jj_3R_63()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_81() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_89()) {
-    jj_scanpos = xsp;
-    if (jj_3R_90()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_89() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(161)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(162)) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_53() {
-    if (jj_scan_token(NIL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_45() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_53()) {
-    jj_scanpos = xsp;
-    if (jj_3R_54()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_34() {
-    if (jj_3R_44()) return true;
-    if (jj_3R_45()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_86() {
-    if (jj_scan_token(FALSE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_85() {
-    if (jj_scan_token(TRUE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_78() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_85()) {
-    jj_scanpos = xsp;
-    if (jj_3R_86()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_104() {
-    if (jj_scan_token(DOUBLE_NEGATIVE)) return true;
-    return false;
-  }
-
   private boolean jj_3R_103() {
-    if (jj_scan_token(DECIMAL_NEGATIVE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_102() {
-    if (jj_scan_token(INTEGER_NEGATIVE)) return true;
+    if (jj_3R_44()) return true;
     return false;
   }
 
   private boolean jj_3R_93() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_102()) {
-    jj_scanpos = xsp;
     if (jj_3R_103()) {
     jj_scanpos = xsp;
-    if (jj_3R_104()) return true;
+    if (jj_3R_104()) {
+    jj_scanpos = xsp;
+    if (jj_3R_105()) {
+    jj_scanpos = xsp;
+    if (jj_3R_106()) return true;
     }
     }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_102() {
+    if (jj_scan_token(DOUBLE_NEGATIVE)) return true;
     return false;
   }
 
   private boolean jj_3R_101() {
-    if (jj_scan_token(DOUBLE_POSITIVE)) return true;
+    if (jj_scan_token(DECIMAL_NEGATIVE)) return true;
     return false;
   }
 
   private boolean jj_3R_100() {
-    if (jj_scan_token(DECIMAL_POSITIVE)) return true;
+    if (jj_scan_token(INTEGER_NEGATIVE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_92() {
+    if (jj_scan_token(INVERSE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_86() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_92()) jj_scanpos = xsp;
+    if (jj_3R_93()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_78() {
+    if (jj_3R_86()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_91() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_100()) {
+    jj_scanpos = xsp;
+    if (jj_3R_101()) {
+    jj_scanpos = xsp;
+    if (jj_3R_102()) return true;
+    }
+    }
     return false;
   }
 
   private boolean jj_3R_99() {
+    if (jj_scan_token(DOUBLE_POSITIVE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_98() {
+    if (jj_scan_token(DECIMAL_POSITIVE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_97() {
     if (jj_scan_token(INTEGER_POSITIVE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_73() {
+    if (jj_3R_78()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_50() {
+    if (jj_3R_59()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_66() {
+    if (jj_3R_73()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_90() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_97()) {
+    jj_scanpos = xsp;
+    if (jj_3R_98()) {
+    jj_scanpos = xsp;
+    if (jj_3R_99()) return true;
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_58() {
+    if (jj_3R_66()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_96() {
+    if (jj_scan_token(DOUBLE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_95() {
+    if (jj_scan_token(DECIMAL)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_94() {
+    if (jj_scan_token(INTEGER)) return true;
     return false;
   }
 
@@ -7753,329 +7592,8 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3R_36() {
-    if (jj_scan_token(DELETE)) return true;
-    if (jj_scan_token(DATA)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_92() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_99()) {
-    jj_scanpos = xsp;
-    if (jj_3R_100()) {
-    jj_scanpos = xsp;
-    if (jj_3R_101()) return true;
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_35() {
-    if (jj_scan_token(INSERT)) return true;
-    if (jj_scan_token(DATA)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_98() {
-    if (jj_scan_token(DOUBLE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_97() {
-    if (jj_scan_token(DECIMAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_96() {
-    if (jj_scan_token(INTEGER)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_84() {
-    if (jj_3R_93()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_83() {
-    if (jj_3R_92()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_91() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_96()) {
-    jj_scanpos = xsp;
-    if (jj_3R_97()) {
-    jj_scanpos = xsp;
-    if (jj_3R_98()) return true;
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_82() {
-    if (jj_3R_91()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_77() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_82()) {
-    jj_scanpos = xsp;
-    if (jj_3R_83()) {
-    jj_scanpos = xsp;
-    if (jj_3R_84()) return true;
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_74() {
-    if (jj_scan_token(NIL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_73() {
-    if (jj_3R_79()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_76() {
-    if (jj_3R_81()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_108() {
-    if (jj_3R_63()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_72() {
-    if (jj_3R_78()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_71() {
-    if (jj_3R_77()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_107() {
-    if (jj_scan_token(NOT)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_70() {
-    if (jj_3R_76()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_106() {
-    if (jj_scan_token(IS_A)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_65() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_69()) {
-    jj_scanpos = xsp;
-    if (jj_3R_70()) {
-    jj_scanpos = xsp;
-    if (jj_3R_71()) {
-    jj_scanpos = xsp;
-    if (jj_3R_72()) {
-    jj_scanpos = xsp;
-    if (jj_3R_73()) {
-    jj_scanpos = xsp;
-    if (jj_3R_74()) return true;
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_69() {
-    if (jj_3R_44()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_105() {
-    if (jj_3R_44()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_95() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_105()) {
-    jj_scanpos = xsp;
-    if (jj_3R_106()) {
-    jj_scanpos = xsp;
-    if (jj_3R_107()) {
-    jj_scanpos = xsp;
-    if (jj_3R_108()) return true;
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3_8() {
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  private boolean jj_3_7() {
-    if (jj_3R_36()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_94() {
-    if (jj_scan_token(INVERSE)) return true;
-    return false;
-  }
-
-  private boolean jj_3_6() {
-    if (jj_3R_35()) return true;
-    return false;
-  }
-
-  private boolean jj_3_3() {
-    if (jj_scan_token(DOT)) return true;
-    if (jj_3R_32()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_88() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_94()) jj_scanpos = xsp;
-    if (jj_3R_95()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_64() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(143)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(144)) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_80() {
-    if (jj_3R_88()) return true;
-    return false;
-  }
-
-  private boolean jj_3_2() {
-    if (jj_scan_token(DOT)) return true;
-    if (jj_3R_31()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_63() {
-    if (jj_scan_token(LPAREN)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_38() {
-    if (jj_3R_46()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_46() {
-    if (jj_3R_31()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_56() {
-    if (jj_3R_65()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_75() {
-    if (jj_3R_80()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_55() {
-    if (jj_3R_64()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_47() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_55()) {
-    jj_scanpos = xsp;
-    if (jj_3R_56()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_30() {
-    if (jj_scan_token(LBRACE)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_38()) jj_scanpos = xsp;
-    if (jj_scan_token(RBRACE)) return true;
-    return false;
-  }
-
-  private boolean jj_3_1() {
-    if (jj_3R_30()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_68() {
-    if (jj_3R_75()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_59() {
-    if (jj_3R_68()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_33() {
-    if (jj_3R_43()) return true;
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    if (jj_scan_token(SEMICOLON)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_33()) jj_scanpos = xsp;
-    return false;
-  }
-
-  private boolean jj_3R_66() {
-    if (jj_3R_63()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_50() {
-    if (jj_3R_60()) return true;
-    return false;
-  }
-
   private boolean jj_3R_49() {
-    if (jj_3R_59()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_67() {
-    if (jj_scan_token(LBRACK)) return true;
+    if (jj_3R_58()) return true;
     return false;
   }
 
@@ -8089,38 +7607,42 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3_5() {
-    if (jj_3R_34()) return true;
+  private boolean jj_3R_36() {
+    if (jj_scan_token(DELETE)) return true;
+    if (jj_scan_token(DATA)) return true;
     return false;
   }
 
-  private boolean jj_3R_58() {
-    if (jj_3R_67()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_48() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_57()) {
-    jj_scanpos = xsp;
-    if (jj_3R_58()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_57() {
-    if (jj_3R_66()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_61() {
-    if (jj_scan_token(Q_IRI_REF)) return true;
+  private boolean jj_3R_82() {
+    if (jj_3R_91()) return true;
     return false;
   }
 
   private boolean jj_3R_40() {
     if (jj_3R_48()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_81() {
+    if (jj_3R_90()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_89() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_94()) {
+    jj_scanpos = xsp;
+    if (jj_3R_95()) {
+    jj_scanpos = xsp;
+    if (jj_3R_96()) return true;
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_80() {
+    if (jj_3R_89()) return true;
     return false;
   }
 
@@ -8139,38 +7661,52 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3R_87() {
-    if (jj_scan_token(BLANK_NODE_LABEL)) return true;
+  private boolean jj_3R_35() {
+    if (jj_scan_token(INSERT)) return true;
+    if (jj_scan_token(DATA)) return true;
     return false;
   }
 
-  private boolean jj_3R_79() {
+  private boolean jj_3R_72() {
+    if (jj_scan_token(NIL)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_71() {
+    if (jj_3R_77()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_75() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_87()) {
+    if (jj_3R_80()) {
     jj_scanpos = xsp;
-    if (jj_scan_token(31)) return true;
+    if (jj_3R_81()) {
+    jj_scanpos = xsp;
+    if (jj_3R_82()) return true;
+    }
     }
     return false;
   }
 
-  private boolean jj_3R_62() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(141)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(140)) return true;
-    }
+  private boolean jj_3R_70() {
+    if (jj_3R_76()) return true;
     return false;
   }
 
-  private boolean jj_3R_60() {
-    if (jj_3R_64()) return true;
+  private boolean jj_3R_69() {
+    if (jj_3R_75()) return true;
     return false;
   }
 
   private boolean jj_3R_42() {
     if (jj_3R_48()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_68() {
+    if (jj_3R_74()) return true;
     return false;
   }
 
@@ -8189,13 +7725,222 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3R_52() {
+  private boolean jj_3R_63() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_67()) {
+    jj_scanpos = xsp;
+    if (jj_3R_68()) {
+    jj_scanpos = xsp;
+    if (jj_3R_69()) {
+    jj_scanpos = xsp;
+    if (jj_3R_70()) {
+    jj_scanpos = xsp;
+    if (jj_3R_71()) {
+    jj_scanpos = xsp;
+    if (jj_3R_72()) return true;
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_67() {
+    if (jj_3R_44()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_74() {
+    if (jj_3R_79()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_53() {
+    if (jj_scan_token(LPAREN)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_45() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(30)) {
+    jj_scanpos = xsp;
+    if (jj_3R_53()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_62() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(143)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(144)) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_34() {
+    if (jj_3R_44()) return true;
+    if (jj_3R_45()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_55() {
+    if (jj_3R_63()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_54() {
     if (jj_3R_62()) return true;
     return false;
   }
 
-  private boolean jj_3R_51() {
+  private boolean jj_3R_47() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_54()) {
+    jj_scanpos = xsp;
+    if (jj_3R_55()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_8() {
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  private boolean jj_3_7() {
+    if (jj_3R_36()) return true;
+    return false;
+  }
+
+  private boolean jj_3_6() {
+    if (jj_3R_35()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_64() {
+    if (jj_scan_token(LPAREN)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_65() {
+    if (jj_scan_token(LBRACK)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_57() {
+    if (jj_3R_65()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_56() {
+    if (jj_3R_64()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_48() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_56()) {
+    jj_scanpos = xsp;
+    if (jj_3R_57()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_3() {
+    if (jj_scan_token(DOT)) return true;
+    if (jj_3R_32()) return true;
+    return false;
+  }
+
+  private boolean jj_3_2() {
+    if (jj_scan_token(DOT)) return true;
+    if (jj_3R_31()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_38() {
+    if (jj_3R_46()) return true;
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_3R_30()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_59() {
+    if (jj_3R_62()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_30() {
+    if (jj_scan_token(LBRACE)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_38()) jj_scanpos = xsp;
+    if (jj_scan_token(RBRACE)) return true;
+    return false;
+  }
+
+  private boolean jj_3_5() {
+    if (jj_3R_34()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_60() {
+    if (jj_scan_token(Q_IRI_REF)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_46() {
+    if (jj_3R_31()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_77() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_85()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(31)) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_85() {
+    if (jj_scan_token(BLANK_NODE_LABEL)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_33() {
+    if (jj_3R_43()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_61() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(141)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(140)) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_52() {
     if (jj_3R_61()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_51() {
+    if (jj_3R_60()) return true;
     return false;
   }
 
@@ -8206,6 +7951,79 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     jj_scanpos = xsp;
     if (jj_3R_52()) return true;
     }
+    return false;
+  }
+
+  private boolean jj_3R_88() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(163)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(164)) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_79() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_87()) {
+    jj_scanpos = xsp;
+    if (jj_3R_88()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_87() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(161)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(162)) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_106() {
+    if (jj_scan_token(LPAREN)) return true;
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_scan_token(SEMICOLON)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_33()) jj_scanpos = xsp;
+    return false;
+  }
+
+  private boolean jj_3R_84() {
+    if (jj_scan_token(FALSE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_105() {
+    if (jj_scan_token(NOT)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_76() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_83()) {
+    jj_scanpos = xsp;
+    if (jj_3R_84()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_83() {
+    if (jj_scan_token(TRUE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_104() {
+    if (jj_scan_token(IS_A)) return true;
     return false;
   }
 

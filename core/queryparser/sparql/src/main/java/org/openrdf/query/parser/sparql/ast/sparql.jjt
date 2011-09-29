@@ -46,7 +46,9 @@ public class SyntaxTreeBuilder {
 		throws TokenMgrError, ParseException
 	{
 		SyntaxTreeBuilder stb = new SyntaxTreeBuilder( new StringReader(query) );
-		return stb.QueryContainer();
+		ASTQueryContainer container = stb.QueryContainer();
+		container.setSourceString(query);
+		return container;
 	}
 
 	/**
@@ -72,17 +74,6 @@ public class SyntaxTreeBuilder {
 			s = s.substring(n, s.length() - n);
 		}
 		return s;
-	}
-
-	/**
-	 * Append the image of the  provided token to the supplied StringBuilder.
-	 * @param sb the StringBuilder to append to. May be null.
-	 */
-	private static void appendToken(StringBuilder sb, Token t) {
-	    if (sb != null) {
-		sb.append(t.image);
-		sb.append(" ");
-	    }
 	}
 }
 PARSER_END(SyntaxTreeBuilder)
@@ -359,7 +350,7 @@ void BaseDecl() :
 void PrefixDecl() :
 { Token prefix; }
 {
-	<PREFIX> prefix = <PNAME_NS> IRI(null)
+	<PREFIX> prefix = <PNAME_NS> IRI()
 	{
 		// Remove trailing colon from prefix
 		String prefixStr = prefix.image;
@@ -373,1462 +364,1113 @@ void PrefixDecl() :
 void Query() #void :
 {}
 {
-    (SelectQuery(null) | ConstructQuery(null) |	DescribeQuery(null) | AskQuery(null)) }
+    (SelectQuery() | ConstructQuery() |	DescribeQuery() | AskQuery()) }
 
-void SelectQuery(StringBuilder sb) :
+void SelectQuery() :
 {}
 {
-	Select(sb)
-	( DatasetClause(sb) )*
-	WhereClause(sb)
-	SolutionModifier(sb)
-	[BindingsClause(sb)]
+	Select()
+	( DatasetClause() )*
+	WhereClause()
+	SolutionModifier()
+	[BindingsClause()]
 }
 
-void Select(StringBuilder sb) :
-{ Token t; }
+void Select() :
+{}
 {
-	t = <SELECT> { appendToken(sb, t); }
+	<SELECT>
+	
 	[
-		<DISTINCT> {jjtThis.setDistinct(true); appendToken(sb, t); }
+		<DISTINCT> {jjtThis.setDistinct(true);}
 	|
-		<REDUCED> {jjtThis.setReduced(true); appendToken(sb, t); }
+		<REDUCED> {jjtThis.setReduced(true);}
 	]
 
 	(
-		<STAR> { jjtThis.setWildcard(true); appendToken(sb, t); }
+		<STAR> { jjtThis.setWildcard(true); }
 	|
-		( ProjectionElem(sb) )+ 
+		( ProjectionElem() )+ 
 	)
 }
 
-void ProjectionElem(StringBuilder sb) :
-{Token t; }
-{
-    Var(sb)
-    |
-    LParen(sb)
-	Expression(sb) 
-	t = <AS> { appendToken(sb, t); }
-	Var(sb)
-    RParen(sb)
-}
-
-void ConstructQuery(StringBuilder sb) :
+void ProjectionElem() :
 {}
 {
-	Construct(sb)
-	( DatasetClause(sb) )*
-	WhereClause(sb)
-	SolutionModifier(sb)
-	[BindingsClause(sb)]
+    Var() 
+    |
+    <LPAREN> Expression() <AS> Var() <RPAREN>
 }
 
-void Construct(StringBuilder sb) :
-{Token t;}
+void ConstructQuery() :
+{}
+{
+	Construct()
+	( DatasetClause() )*
+	WhereClause()
+	SolutionModifier()
+	[BindingsClause()]
+}
+
+void Construct() :
+{}
 {	
-	t = <CONSTRUCT> { appendToken(sb, t); }
-	[ LOOKAHEAD(2) ConstructClause(sb) ]
+	<CONSTRUCT> [ LOOKAHEAD(2) ConstructClause() ]
 	
 }
 
-void ConstructClause(StringBuilder sb) #void :
-{Token t;}
-{
-    // Note: replaced ConstructTriples ref with equivalent TriplesBlock ref
-    t = <LBRACE> { appendToken(sb, t); }
-	[ TriplesBlock(sb) ] 
-    t = <RBRACE> { appendToken(sb, t); }
-}
-
-void DescribeQuery(StringBuilder sb) :
+void ConstructClause() #void :
 {}
 {
-	Describe(sb)
-	( DatasetClause(sb) )*
-	[ WhereClause(sb) ]
-	SolutionModifier(sb)
-	[BindingsClause(sb)]
+    // Note: replaced ConstructTriples ref with equivalent TriplesBlock ref
+    <LBRACE> [ TriplesBlock() ] <RBRACE>
 }
 
-void Describe(StringBuilder sb) :
-{Token t;}
+void DescribeQuery() :
+{}
 {
-	t = <DESCRIBE> { appendToken(sb, t); }
+	Describe()
+	( DatasetClause() )*
+	[ WhereClause() ]
+	SolutionModifier()
+	[BindingsClause()]
+}
+
+void Describe() :
+{}
+{
+	<DESCRIBE>
 	(
-		t = <STAR> { appendToken(sb, t); jjtThis.setWildcard(true); }
+		<STAR> { jjtThis.setWildcard(true); }
 	|
-		( VarOrIRIref(sb) )+
+		( VarOrIRIref() )+
 	)
 }
 
-void AskQuery(StringBuilder sb) :
-{Token t;}
-{
-	t = <ASK> { appendToken(sb, t); }
-	( DatasetClause(sb) )*
-	WhereClause(sb)
-	[BindingsClause(sb)]
-}
-
-void DatasetClause(StringBuilder sb) :
-{ Token t; }
-{
-	t = <FROM> { appendToken(sb, t); }
-	[ t = <NAMED> { appendToken(sb, t); jjtThis.setNamed(true);}] 
-	IRIref(sb)
-}
-
-void WhereClause(StringBuilder sb) :
-{ Token t; }
-{
-	 [ t = <WHERE> { appendToken(sb, t); } ] GroupGraphPattern(sb)
-}
-
-void BindingsClause(StringBuilder sb) :
-{ Token t; }
-{
-    t = <BINDINGS> { appendToken(sb, t); }
-    ( Var(sb) )* 
-    t = <LBRACE> { appendToken(sb, t); }
-	( BindingSet(sb))* 
-    t = <RBRACE> { appendToken(sb, t); }
-}
-
-void BindingSet(StringBuilder sb) :
-{ Token t; }
-{
-    LParen(sb)
-	( BindingValue(sb) )* 
-    RParen(sb)
-    | 
-    t = <NIL> { appendToken(sb, t); }
-}
-
-void BindingValue(StringBuilder sb) :
-{ Token t; }
-{
-	IRIref(sb)
-|	RDFLiteral(sb)
-|	NumericLiteral(sb)
-|	BooleanLiteral(sb)
-|	t = <UNDEF> {appendToken(sb, t); }
-}
-
-void SolutionModifier(StringBuilder sb) #void :
+void AskQuery() :
 {}
 {
-    [GroupClause(sb)] [HavingClause(sb)] [OrderClause(sb)] [LimitOffsetClauses(sb)]
+	<ASK>
+	( DatasetClause() )*
+	WhereClause()
+	[BindingsClause()]
 }
 
-void GroupClause(StringBuilder sb) :
-{ Token t; }
-{
-    t = <GROUP> { appendToken(sb, t); } 
-    t = <BY> {appendToken(sb, t); }
-    ( GroupCondition(sb) )+
-}
-
-void OrderClause(StringBuilder sb) :
-{ Token t; }
-{
-	t = <ORDER> { appendToken(sb, t); }
-	t = <BY> { appendToken(sb, t); } 
-	( OrderCondition(sb) )+
-}
-
-void GroupCondition(StringBuilder sb) :
-{ Token t; }
-{
-	FunctionCall(sb)
-|	BuiltInCall(sb)
-|	LParen(sb)
-	    Expression(sb) [ t = <AS> { appendToken(sb, t); } Var(sb) ] 
-	RParen(sb)
-|	Var(sb)
-}
-
-void HavingClause(StringBuilder sb) :
-{Token t;}
-{
-    t = <HAVING> {appendToken(sb, t); }
-    Constraint(sb)
-}
-
-void OrderCondition(StringBuilder sb) :
-{ Token t; }
-{
-	[ 
-	    ( t = <ASC> 
-	    | t = <DESC> {jjtThis.setAscending(false);}
-	    )
-	    {appendToken(sb, t); }
-	]  BrackettedExpression(sb)
-|	FunctionCall(sb)
-|	BuiltInCall(sb)
-|	Var(sb)
-}
-
-void LimitOffsetClauses(StringBuilder sb) #void :
+void DatasetClause() :
 {}
 {
-	Limit(sb) [ Offset(sb) ]
+	<FROM> [<NAMED> {jjtThis.setNamed(true);}] IRIref()
+}
+
+void WhereClause() :
+{}
+{
+	 [<WHERE>] GroupGraphPattern()
+}
+
+void BindingsClause() :
+{}
+{
+    <BINDINGS> ( Var() )* <LBRACE> ( BindingSet())* <RBRACE> 
+}
+
+void BindingSet() :
+{}
+{
+    <LPAREN> ( BindingValue() )* <RPAREN> | <NIL> 
+}
+
+void BindingValue() :
+{}
+{
+	IRIref()
+|	RDFLiteral()
+|	NumericLiteral()
+|	BooleanLiteral()
+|	<UNDEF> 
+}
+
+void SolutionModifier() #void :
+{}
+{
+    [GroupClause()] [HavingClause()] [OrderClause()] [LimitOffsetClauses()]
+}
+
+void GroupClause() :
+{}
+{
+    <GROUP> <BY> ( GroupCondition() )+
+}
+
+void OrderClause() :
+{}
+{
+	<ORDER> <BY> ( OrderCondition() )+
+}
+
+void GroupCondition() :
+{}
+{
+	FunctionCall()
+|	BuiltInCall()
+|	<LPAREN> Expression() [ <AS> Var() ] <RPAREN> 
+|	Var()
+}
+
+void HavingClause() :
+{}
+{
+    <HAVING> Constraint()
+}
+
+void OrderCondition() :
+{}
+{
+	[ <ASC> | <DESC> {jjtThis.setAscending(false);}] BrackettedExpression()
+|	FunctionCall()
+|	BuiltInCall()
+|	Var()
+}
+
+void LimitOffsetClauses() #void :
+{}
+{
+	Limit() [ Offset() ]
 |
-	Offset(sb) [ Limit(sb) ]
+	Offset() [ Limit() ]
 }
 
-void Limit(StringBuilder sb) :
+void Limit() :
 { Token t; }
 {
-	t = <LIMIT> { appendToken(sb, t); }
-	t = <INTEGER> { jjtThis.setValue(Long.parseLong(t.image)); appendToken(sb, t); }
+	<LIMIT> t = <INTEGER>
+	{ jjtThis.setValue(Long.parseLong(t.image)); }
 }
 
-void Offset(StringBuilder sb) :
+void Offset() :
 { Token t; }
 {
-	t = <OFFSET> { appendToken(sb, t); }
-	t = <INTEGER> { jjtThis.setValue(Long.parseLong(t.image)); appendToken(sb, t); }
+	<OFFSET> t = <INTEGER>
+	{ jjtThis.setValue(Long.parseLong(t.image)); }
 }
 
-void GroupGraphPattern(StringBuilder sb) #GraphPatternGroup :
-{ Token t; }
+Token GroupGraphPattern() #GraphPatternGroup :
+{Token endOfPatternToken; }
 {
-	t = <LBRACE>  {appendToken(sb, t); }
+	<LBRACE> 
 	(
-	    SelectQuery(sb) 
+	    SelectQuery() 
 	    | 
-	    GraphPattern(sb)
+	    GraphPattern()
 	) 
-	t = <RBRACE>  {appendToken(sb, t); }
-}
-
-void GraphPattern(StringBuilder sb) #void :
-{ Token t; }
-{
-	[BasicGraphPattern(sb)] [ GraphPatternNotTriples(sb) [ t = <DOT> {appendToken(sb, t);} ] GraphPattern(sb) ]
-}
-
-void BasicGraphPattern(StringBuilder sb) :
-{ Token t; }
-{
-	TriplesBlock(sb) ( FilterOrBind(sb) [t = <DOT> {appendToken(sb, t);}] [TriplesBlock(sb)] )*
-|
-	( FilterOrBind(sb) [t = <DOT> {appendToken(sb, t);} ] [TriplesBlock(sb)] )+
-}
-
-void FilterOrBind(StringBuilder sb) #void :
-{}
-{
-    Filter(sb)
-    |
-    Bind(sb)
-}
-
-
-void TriplesBlock(StringBuilder sb) #void :
-{Token t;}
-{
-	// Note: recursive rule rewriten to non-recursive rule, requires lookahead
-	TriplesSameSubjectPath(sb) 
-	( 
-	    LOOKAHEAD(2) 
-	    t = <DOT> { appendToken(sb, t); } 
-	    TriplesSameSubjectPath(sb) 
-	)* 
-	[ t= <DOT> { appendToken(sb, t); } ]
-}
-
-void TriplesTemplate(StringBuilder sb) #void :
-{Token t;}
-{
-	// Note: recursive rule rewriten to non-recursive rule, requires lookahead
-	TriplesSameSubject(sb) 
-	( 
-	    LOOKAHEAD(2) 
-	    t= <DOT> {appendToken(sb, t); }
-	    TriplesSameSubject(sb) 
-	)* 
-	[ t = <DOT> {appendToken(sb, t); }]
-}
-
-void GraphPatternNotTriples(StringBuilder sb) #void :
-{}
-{
-	OptionalGraphPattern(sb)
-|	GroupOrUnionGraphPattern(sb)
-|	GraphGraphPattern(sb)
-|	MinusGraphPattern(sb)
-|	ServiceGraphPattern(sb)
-}
-
-void OptionalGraphPattern(StringBuilder sb) :
-{Token t;}
-{
-	// Note: does not refer GroupGraphPattern(null) because constraints are not limited
-	// to the optional graph pattern, but can also reference the operator's LHS
-	t = <OPTIONAL> { appendToken(sb, t); }
-	t = <LBRACE> { appendToken(sb, t); } 
-	(
-	    SelectQuery(sb) 
-	    | GraphPattern(sb)
-	) 
-	t = <RBRACE> { appendToken(sb, t); }
-}
-
-void GraphGraphPattern(StringBuilder sb) :
-{Token t;}
-{
-	t = <GRAPH> { appendToken(sb, t); }
-	VarOrIRIref(sb) 
-	GroupGraphPattern(sb)
-}
-
-void GroupOrUnionGraphPattern(StringBuilder sb) #void :
-{Token t;}
-{
-	GroupGraphPattern(sb) 
-	[
-	    t = <UNION> { appendToken(sb, t); }
-	    GroupOrUnionGraphPattern(sb) #UnionGraphPattern(2) 
-	]
-}
-
-void MinusGraphPattern(StringBuilder sb) :
-{Token t;}
-{
-    t = <MINUS_SETOPER> {appendToken(sb, t);}
-    GroupGraphPattern(sb)
-}
-
-void ServiceGraphPattern(StringBuilder sbParent) :
-{ 
-    StringBuilder sb = new StringBuilder();
-    Token t; 
-    String s;
-}
-{
-    t = <SERVICE> { appendToken(sb, t); }
-    [t = <SILENT> { jjtThis.setSilent(true); appendToken(sb, t); } ] 
-    VarOrIRIref(sb) GroupGraphPattern(sb)
-
-    { 
-	jjtThis.setPatternString(sb.toString()); 
-	if (sbParent != null) {
-	    sbParent.append(sb);
+	endOfPatternToken = <RBRACE>
+	{
+	    return endOfPatternToken;
 	}
+}
+
+void GraphPattern() #void :
+{}
+{
+	[BasicGraphPattern()] [ GraphPatternNotTriples() [<DOT>] GraphPattern() ]
+}
+
+void BasicGraphPattern() :
+{}
+{
+	TriplesBlock() ( FilterOrBind() [<DOT>] [TriplesBlock()] )*
+|
+	( FilterOrBind() [<DOT>] [TriplesBlock()] )+
+}
+
+
+void FilterOrBind() #void :
+{}
+{
+    Filter()
+    |
+    Bind()
+}
+
+
+void TriplesBlock() #void :
+{}
+{
+	// Note: recursive rule rewriten to non-recursive rule, requires lookahead
+	TriplesSameSubjectPath() ( LOOKAHEAD(2) <DOT> TriplesSameSubjectPath() )* [<DOT>]
+}
+
+void TriplesTemplate() #void :
+{}
+{
+	// Note: recursive rule rewriten to non-recursive rule, requires lookahead
+	TriplesSameSubject() ( LOOKAHEAD(2) <DOT> TriplesSameSubject() )* [<DOT>]
+}
+
+void GraphPatternNotTriples() #void :
+{}
+{
+	OptionalGraphPattern()
+|	GroupOrUnionGraphPattern()
+|	GraphGraphPattern()
+|	MinusGraphPattern()
+|	ServiceGraphPattern()
+}
+
+void OptionalGraphPattern() :
+{}
+{
+	// Note: does not refer GroupGraphPattern() because constraints are not limited
+	// to the optional graph pattern, but can also reference the operator's LHS
+	<OPTIONAL> <LBRACE> (SelectQuery() | GraphPattern()) <RBRACE>
+}
+
+void GraphGraphPattern() :
+{}
+{
+	<GRAPH> VarOrIRIref() GroupGraphPattern()
+}
+
+void GroupOrUnionGraphPattern() #void :
+{}
+{
+	GroupGraphPattern() [ <UNION> GroupOrUnionGraphPattern() #UnionGraphPattern(2) ]
+}
+
+void MinusGraphPattern() :
+{}
+{
+    <MINUS_SETOPER> GroupGraphPattern()
+}
+
+void ServiceGraphPattern() :
+{ Token t; }
+{
+    t =  <SERVICE> 
+    {
+	jjtThis.setBeginTokenLinePos(t.beginLine);
+	jjtThis.setBeginTokenColumnPos(t.beginColumn);
+    }
+    [<SILENT> { jjtThis.setSilent(true); } ] 
+    VarOrIRIref() 
+    t = GroupGraphPattern()
+    {
+	jjtThis.setEndTokenLinePos(t.beginLine);
+	jjtThis.setEndTokenColumnPos(t.beginColumn);
     }
 }
 
-void Filter(StringBuilder sb) #void :
-{Token t;}
-{
-	t = <FILTER> {appendToken(sb, t); }
-	Constraint(sb)
-}
-
-void Constraint(StringBuilder sb) :
+void Filter() #void :
 {}
 {
-	BrackettedExpression(sb)
-|	BuiltInCall(sb)
-|	FunctionCall(sb)
+	<FILTER> Constraint()
 }
 
-void FunctionCall(StringBuilder sb) :
+void Constraint() :
 {}
 {
-	IRIref(sb) ArgList(sb)
+	BrackettedExpression()
+|	BuiltInCall()
+|	FunctionCall()
 }
 
-void ArgList(StringBuilder sb) #void :
-{Token t;}
+void FunctionCall() :
+{}
 {
-	t = <NIL> { appendToken(sb, t); }
+	IRIref() ArgList()
+}
+
+void ArgList() #void :
+{}
+{
+	<NIL>
 |
-	LParen(sb)
-	Expression(sb) 
-	( 
-	    t = <COMMA> { appendToken(sb, t); }
-	    Expression(sb) 
-	)* 
-	RParen(sb)
+	<LPAREN> Expression() ( <COMMA> Expression() )* <RPAREN>
 }
 
-void TriplesSameSubject(StringBuilder sb) :
+void TriplesSameSubject() :
 {}
 {
-	VarOrTerm(sb) PropertyList(sb)
+	VarOrTerm() PropertyList()
 |
-	TriplesNode(sb) [PropertyList(sb)]
+	TriplesNode() [PropertyList()]
 }
 
-void PropertyList(StringBuilder sb) :
-{Token t;}
-{
-	Verb(sb) ObjectList(sb) 
-	[ 
-	    t = <SEMICOLON> {appendToken(sb, t); } 
-	    [PropertyList(sb)] 
-	]
-}
-
-void ObjectList(StringBuilder sb):
-{Token t;}
-{
-	Object(sb) 
-	( 
-	    t = <COMMA> { appendToken(sb, t); }
-	    Object(sb) 
-	)*
-}
-
-void TriplesSameSubjectPath(StringBuilder sb) :
+void PropertyList() :
 {}
 {
-    VarOrTerm(sb) PropertyListPath(sb)
-    |
-    TriplesNode(sb) [PropertyListPath(sb)]
+	Verb() ObjectList() [ <SEMICOLON> [PropertyList()] ]
 }
 
-void PropertyListPath(StringBuilder sb) :
-{Token t;}
-{
-    (
-	VerbPath(sb) 
-	| 
-	VerbSimple(sb)
-    ) 
-    ObjectList(sb) 
-    (
-	LOOKAHEAD(2) 
-	t = <SEMICOLON> { appendToken(sb, t); }
-	[PropertyListPath(sb)] 
-    )*
-}
-
-void VerbPath(StringBuilder sb) #void :
+void ObjectList():
 {}
 {
-    Path(sb)
+	Object() ( <COMMA> Object() )*
 }
 
-void Path(StringBuilder sb) #void :
+void TriplesSameSubjectPath() :
 {}
 {
-    PathAlternative(sb)
-}
-
-void PathAlternative(StringBuilder sb) :
-{ Token t; }
-{
-    PathSequence(sb) 
-    ( 
-	t = <PIPE> { appendToken(sb, t); }
-	PathSequence(sb) 
-    )*
-}
-
-void PathSequence(StringBuilder sb) :
-{Token t; }
-{
-    PathElt(sb) 
-    ( 
-	t = <SLASH> { appendToken(sb, t); }
-	PathElt(sb) 
-    )*
-}
-
-void PathElt(StringBuilder sb) :
-{Token t;}
-{
-    [ t = <INVERSE> {jjtThis.setInverse(true); appendToken(sb, t); } ] 
-    PathPrimary(sb) 
-    [ PathMod(sb) ]
-}
-
-void PathPrimary(StringBuilder sb) #void :
-{Token t;}
-{
-    IRIref(sb) 
+    VarOrTerm() PropertyListPath()
     |
-    t = <IS_A> { appendToken(sb, t); jjtThis.setValue(RDF.TYPE.toString()); } #IRI
-    |
-    t = <NOT> { appendToken(sb, t); }
-    PathNegatedPropertySet(sb) 
-    |
-    LParen(sb)
-	Path(sb) 
-    t= <RPAREN> {appendToken(sb, t); }
+    TriplesNode() [PropertyListPath()]
 }
 
-void PathNegatedPropertySet(StringBuilder sb) #void :
-{Token t;}
+void PropertyListPath() :
+{}
 {
-    PathOneInPropertySet(sb) 
-    |
-    LParen(sb)
-    [ 
-	PathOneInPropertySet(sb) 
-	( 
-	    t = <PIPE> {appendToken(sb, t); }
-	    PathOneInPropertySet(sb) 
-	)* 
-    ]
-    RParen(sb)
+    (VerbPath() | VerbSimple()) ObjectList() (LOOKAHEAD(2) <SEMICOLON> [PropertyListPath()] )*
 }
 
-void PathOneInPropertySet(StringBuilder sb) :
-{Token t;}
+void VerbPath() #void :
+{}
 {
-    IRIref(sb) 
-    |
-    t = <IS_A> { appendToken(sb, t); jjtThis.setValue(RDF.TYPE.toString()); } #IRI
-    |
-    t = <INVERSE> { appendToken(sb, t); jjtThis.setInverse(true); } 
-    ( 
-	IRIref(sb) 
-	| 
-	t = <IS_A> { appendToken(sb, t); jjtThis.setValue(RDF.TYPE.toString()); } #IRI 
-    )
+    Path()
 }
 
-void PathMod(StringBuilder sb) :
+void Path() #void :
+{}
+{
+    PathAlternative()
+}
+
+void PathAlternative() :
+{}
+{
+    PathSequence() ( <PIPE> PathSequence() )*
+}
+
+void PathSequence() :
+{}
+{
+    PathElt() ( <SLASH> PathElt() )*
+}
+
+void PathElt() :
+{}
+{
+   [<INVERSE> {jjtThis.setInverse(true); }] PathPrimary() [ PathMod() ]
+}
+
+void PathPrimary() #void :
+{}
+{
+    IRIref() 
+    |
+    <IS_A> { jjtThis.setValue(RDF.TYPE.toString()); } #IRI
+    |
+    <NOT> PathNegatedPropertySet() 
+    |
+    <LPAREN> Path() <RPAREN>
+}
+
+void PathNegatedPropertySet() #void :
+{}
+{
+    PathOneInPropertySet() 
+    |
+    <LPAREN>
+	[ PathOneInPropertySet() ( <PIPE> PathOneInPropertySet() )* ]
+    <RPAREN>
+}
+
+void PathOneInPropertySet() :
+{}
+{
+    IRIref() 
+    |
+    <IS_A> { jjtThis.setValue(RDF.TYPE.toString()); } #IRI
+    |
+    <INVERSE> {jjtThis.setInverse(true); } ( IRIref() | <IS_A> { jjtThis.setValue(RDF.TYPE.toString()); } #IRI )
+}
+
+void PathMod() :
 { Token min;
   Token max; 
-  Token t;
 }
 {
-    t = <STAR> 
-    { 
-	jjtThis.setLowerBound(0);
-	jjtThis.setUpperBound(Long.MAX_VALUE);
-	appendToken(sb, t);
+    <STAR> { jjtThis.setLowerBound(0);
+	     jjtThis.setUpperBound(Long.MAX_VALUE);
     }
     |
-    t = <QUESTION> 
-    { 
-	jjtThis.setLowerBound(0);
-	jjtThis.setUpperBound(1); 
-	appendToken(sb, t);
+    <QUESTION> { jjtThis.setLowerBound(0);
+		 jjtThis.setUpperBound(1); 
     }
     |
-    t = <PLUS> 
-    { 
-	jjtThis.setLowerBound(1);
-	jjtThis.setUpperBound(Long.MAX_VALUE);
-	appendToken(sb, t);
+    <PLUS> { jjtThis.setLowerBound(1);
+	     jjtThis.setUpperBound(Long.MAX_VALUE);
     }
     |
-    t = <LBRACE> {appendToken(sb, t);}
-    ( 
-	min = <INTEGER> 
-	{
-	    jjtThis.setLowerBound(Long.parseLong(min.image)); 
-	    appendToken(sb, min);
-	} 
-	( 
-	    t = <COMMA> {appendToken(sb, t);}
-	    ( 
-		t = <RBRACE> {appendToken(sb, t); }
-		| 
-		max = <INTEGER> 
-		{
-		    jjtThis.setUpperBound(Long.parseLong(max.image)); 
-		    appendToken(sb, max);
-		} 
-		t = <RBRACE> {appendToken(sb, t); }
-	    ) 
-	    | 
-	    t = <RBRACE> {appendToken(sb, t);} 
-	) 
-	| 
-	t = <COMMA> {appendToken(sb, t); }
-	max = <INTEGER> 
-	{
-	    jjtThis.setUpperBound(Long.parseLong(max.image)); 
-	    appendToken(sb, max);
-	} 
-	t = <RBRACE> {appendToken(sb, t); }
-    )
+    <LBRACE> ( min = <INTEGER> {jjtThis.setLowerBound(Long.parseLong(min.image)); } 
+		( <COMMA> ( <RBRACE> | max = <INTEGER> {jjtThis.setUpperBound(Long.parseLong(max.image)); } <RBRACE> ) | <RBRACE> ) 
+			| <COMMA> max = <INTEGER> {jjtThis.setUpperBound(Long.parseLong(max.image)); } <RBRACE> )
 }
 
-void VerbSimple(StringBuilder sb) #void :
+void VerbSimple() #void :
 {}
 {
-    Var(sb)
+    Var()
 }
 
-void Object(StringBuilder sb) #void :
+void Object() #void :
 {}
 {
-	GraphNode(sb)
+	GraphNode()
 }
 
-void Verb(StringBuilder sb) #void :
-{Token t;}
-{
-	VarOrIRIref(sb)
-|
-	t = <IS_A> { appendToken(sb, t); jjtThis.setValue(RDF.TYPE.toString()); } #IRI
-}
-
-void TriplesNode(StringBuilder sb) #void :
+void Verb() #void :
 {}
 {
-	Collection(sb)
+	VarOrIRIref()
 |
-	BlankNodePropertyList(sb)
+	<IS_A> { jjtThis.setValue(RDF.TYPE.toString()); } #IRI
 }
 
-void BlankNodePropertyList(StringBuilder sb) :
-{ Token t; }
-{
-	t = <LBRACK> {appendToken(sb, t); }
-	    PropertyList(sb) 
-	t = <RBRACK> {appendToken(sb, t); }
-}
-
-void Collection(StringBuilder sb) :
-{ Token t; }
-{
-	LParen(sb)
-	( GraphNode(sb) )+ 
-	RParen(sb)
-}
-
-void GraphNode(StringBuilder sb) #void :
+void TriplesNode() #void :
 {}
 {
-	VarOrTerm(sb)
+	Collection()
 |
-	TriplesNode(sb)
+	BlankNodePropertyList()
 }
 
-void VarOrTerm(StringBuilder sb) #void :
+void BlankNodePropertyList() :
 {}
 {
-	Var(sb)
-|
-	GraphTerm(sb)
+	<LBRACK> PropertyList() <RBRACK>
 }
 
-void VarOrIRIref(StringBuilder sb) #void :
-{ 
-}
+void Collection() :
+{}
 {
-	Var(sb)
-|
- 	IRIref(sb)
+	<LPAREN> ( GraphNode() )+ <RPAREN>
 }
 
-void Var(StringBuilder sb) :
+void GraphNode() #void :
+{}
+{
+	VarOrTerm()
+|
+	TriplesNode()
+}
+
+void VarOrTerm() #void :
+{}
+{
+	Var()
+|
+	GraphTerm()
+}
+
+void VarOrIRIref() #void :
+{}
+{
+	Var()
+|
+	IRIref()
+}
+
+void Var() :
 { Token t; }
 {
 	( t = <VAR1> | t = <VAR2> )
-	{ 
-	  jjtThis.setName(t.image.substring(1)); 
-	  appendToken(sb, t);
-	}
+	{ jjtThis.setName(t.image.substring(1)); }
 }
 
-void GraphTerm(StringBuilder sb) #void :
+void GraphTerm() #void :
 {
-	Token t;
 	boolean positive = true;
 }
 {
-	IRIref(sb)
+	IRIref()
 |
-	RDFLiteral(sb)
+	RDFLiteral()
 |
-	NumericLiteral(sb)
+	NumericLiteral()
 |
-	BooleanLiteral(sb)
+	BooleanLiteral()
 |
-	BlankNode(sb)
+	BlankNode()
 |
-	t = <NIL> 
-	{ 
-	    appendToken(sb, t);
-	    jjtThis.setValue(RDF.NIL.toString());
-	} #IRI
+	<NIL> {jjtThis.setValue(RDF.NIL.toString());} #IRI
 }
 
-void Expression(StringBuilder sb) #void :
+void Expression() #void :
 {}
 {
-	ConditionalOrExpression(sb)
+	ConditionalOrExpression()
 }
 
-void ConditionalOrExpression(StringBuilder sb) #void :
-{Token t; }
-{
-	ConditionalAndExpression(sb) 
-	[ 
-	    t = <OR> { appendToken(sb, t); }
-	    ConditionalOrExpression(sb) #Or(2) 
-	]
-}
-
-void ConditionalAndExpression(StringBuilder sb) #void :
-{Token t; }
-{
-	ValueLogical(sb) 
-	[ 
-	    t = <AND> { appendToken(sb, t); }
-	    ConditionalAndExpression(sb) #And(2) 
-	]
-}
-
-void ValueLogical(StringBuilder sb) #void :
+void ConditionalOrExpression() #void :
 {}
 {
-	RelationalExpression(sb)
+	ConditionalAndExpression() [ <OR> ConditionalOrExpression() #Or(2) ]
 }
 
-void RelationalExpression(StringBuilder sb) #void :
-{Token t; }
+void ConditionalAndExpression() #void :
+{}
 {
-	NumericExpression(sb)
+	ValueLogical() [ <AND> ConditionalAndExpression() #And(2) ]
+}
+
+void ValueLogical() #void :
+{}
+{
+	RelationalExpression()
+}
+
+void RelationalExpression() #void :
+{}
+{
+	NumericExpression()
 	[
-		t = <EQ> {appendToken(sb, t);}
-		NumericExpression(sb) {jjtThis.setOperator(CompareOp.EQ);} #Compare(2)
-	|	t = <NE> {appendToken(sb, t);}
-		NumericExpression(sb) {jjtThis.setOperator(CompareOp.NE);} #Compare(2)
-	|	t = <LT> {appendToken(sb, t);}
-		NumericExpression(sb) {jjtThis.setOperator(CompareOp.LT);} #Compare(2)
-	|	t = <LE> {appendToken(sb, t);}
-		NumericExpression(sb) {jjtThis.setOperator(CompareOp.LE);} #Compare(2)
-	|	t = <GE> {appendToken(sb, t);}
-		NumericExpression(sb) {jjtThis.setOperator(CompareOp.GE);} #Compare(2)
-	|	t = <GT> {appendToken(sb, t);}
-		NumericExpression(sb) {jjtThis.setOperator(CompareOp.GT);} #Compare(2)
-	|	In(sb) #Infix(2)
-	|	NotIn(sb) #Infix(2)
+		<EQ> NumericExpression() {jjtThis.setOperator(CompareOp.EQ);} #Compare(2)
+	|	<NE> NumericExpression() {jjtThis.setOperator(CompareOp.NE);} #Compare(2)
+	|	<LT> NumericExpression() {jjtThis.setOperator(CompareOp.LT);} #Compare(2)
+	|	<LE> NumericExpression() {jjtThis.setOperator(CompareOp.LE);} #Compare(2)
+	|	<GE> NumericExpression() {jjtThis.setOperator(CompareOp.GE);} #Compare(2)
+	|	<GT> NumericExpression() {jjtThis.setOperator(CompareOp.GT);} #Compare(2)
+	|	In() #Infix(2)
+	|	NotIn() #Infix(2)
 	]
 }
 
-void NumericExpression (StringBuilder sb) #void :
+void NumericExpression () #void :
 {}
 {
-	AdditiveExpression(sb)
+	AdditiveExpression()
 }
 
-void AdditiveExpression(StringBuilder sb) #void :
-{ Token t; }
+void AdditiveExpression() #void :
+{}
 {
-	MultiplicativeExpression(sb)
+	MultiplicativeExpression()
 	(
-	  t = <PLUS> {appendToken(sb, t); }
-	  MultiplicativeExpression(sb) {jjtThis.setOperator(MathOp.PLUS);} #Math(2)
-	| 
-	  t= <MINUS> {appendToken(sb, t); }
-	  MultiplicativeExpression(sb) {jjtThis.setOperator(MathOp.MINUS);} #Math(2)
-	| NumericLiteralPositive(sb) {jjtThis.setOperator(MathOp.PLUS);} #Math(2)
-	| NumericLiteralNegative(sb) {jjtThis.setOperator(MathOp.PLUS);} #Math(2)
+	  <PLUS> MultiplicativeExpression() {jjtThis.setOperator(MathOp.PLUS);} #Math(2)
+	| <MINUS> MultiplicativeExpression() {jjtThis.setOperator(MathOp.MINUS);} #Math(2)
+	| NumericLiteralPositive() {jjtThis.setOperator(MathOp.PLUS);} #Math(2)
+	| NumericLiteralNegative() {jjtThis.setOperator(MathOp.PLUS);} #Math(2)
 	)*
 }
 
-void MultiplicativeExpression(StringBuilder sb) #void :
-{ Token t; }
+void MultiplicativeExpression() #void :
+{}
 {
-	UnaryExpression(sb)
+	UnaryExpression()
 	(
-	  t = <STAR> {appendToken(sb, t); }
-	  UnaryExpression(sb) {jjtThis.setOperator(MathOp.MULTIPLY);} #Math(2)
-	| 
-	  t = <SLASH> {appendToken(sb, t); }
-	  UnaryExpression(sb) {jjtThis.setOperator(MathOp.DIVIDE);} #Math(2)
+	  <STAR> UnaryExpression() {jjtThis.setOperator(MathOp.MULTIPLY);} #Math(2)
+	| <SLASH> UnaryExpression() {jjtThis.setOperator(MathOp.DIVIDE);} #Math(2)
 	)*
 }
 
-void UnaryExpression(StringBuilder sb) #void :
-{ Token t; }
+void UnaryExpression() #void :
+{}
 {
-	t = <NOT> { appendToken(sb, t); } 
-	PrimaryExpression(sb) #Not
+	<NOT> PrimaryExpression() #Not
 |
-	[ t= <PLUS> {appendToken(sb, t);} ] 
-	PrimaryExpression(sb)
+	[<PLUS>] PrimaryExpression()
 |
-	UnaryMinus(sb) PrimaryExpression(sb) {jjtThis.setOperator(MathOp.MULTIPLY);} #Math(2)
+	UnaryMinus() PrimaryExpression() {jjtThis.setOperator(MathOp.MULTIPLY);} #Math(2)
 }
 
-void UnaryMinus(StringBuilder sb) #NumericLiteral :
-{ Token t; }
+void UnaryMinus() #NumericLiteral :
+{}
 {
-	t = <MINUS> 
-	{	
-		appendToken(sb, t); 
+	<MINUS>
+	{
 		jjtThis.setValue("-1");
 		jjtThis.setDatatype(XMLSchema.INTEGER);
 	}
 }
 
-void PrimaryExpression(StringBuilder sb) #void :
+void PrimaryExpression() #void :
 {}
 {
-	BrackettedExpression(sb)
-|	BuiltInCall(sb)
-|	LOOKAHEAD(2) FunctionCall(sb)
-|	IRIref(sb)
-|	RDFLiteral(sb)
-|	NumericLiteral(sb)
-|	BooleanLiteral(sb)
-|	Var(sb)
-| 	Aggregate(sb)
+	BrackettedExpression()
+|	BuiltInCall()
+|	LOOKAHEAD(2) FunctionCall()
+|	IRIref()
+|	RDFLiteral()
+|	NumericLiteral()
+|	BooleanLiteral()
+|	Var()
+| 	Aggregate()
 }
 
-void Aggregate(StringBuilder sb) #void :
+void Aggregate() #void :
 {}
 {
-    Count(sb) 
-|   Sum(sb)
-|   Min(sb)
-|   Max(sb)
-|   Avg(sb)
-|   Sample(sb)
-|   GroupConcat(sb)
+    Count() 
+|   Sum()
+|   Min()
+|   Max()
+|   Avg()
+|   Sample()
+|   GroupConcat()
 }
 
-void Count(StringBuilder sb) :
-{Token t;}
+void Count() :
+{}
 {
-    t = <COUNT> { appendToken(sb, t); }
-    LParen(sb)
-	[ t = <DISTINCT> { appendToken(sb, t); jjtThis.setDistinct(true); } ]
-	( 
-	    t = <STAR> { appendToken(sb, t); jjtThis.setWildcard(true); } 
-	    | 
-	    Expression(sb)
-	) 
-    RParen(sb)
+    <COUNT> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ]
+       ( <STAR> {jjtThis.setWildcard(true); } | Expression() ) <RPAREN>
 }
 
-void LParen(StringBuilder sb) #void : 
+void Sum() :
+{}
+{
+    <SUM> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+}
+
+void Min() :
+{}
+{
+    <MIN> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+}
+
+void Max() :
+{}
+{
+    <MAX> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+}
+
+void Avg() :
+{}
+{
+    <AVG> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+}
+
+void Sample() :
+{}
+{
+    <SAMPLE> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ] Expression() <RPAREN>
+}
+
+void GroupConcat() :
+{}
+{
+    <GROUP_CONCAT> <LPAREN> [ <DISTINCT> {jjtThis.setDistinct(true);} ]
+    Expression() [ <SEMICOLON> <SEPARATOR> <EQ> Expression() ] <RPAREN>
+}
+
+void BrackettedExpression() #void :
+{}
+{
+	<LPAREN> Expression() <RPAREN>
+}
+
+void BuiltInCall() #void :
+{}
+{
+	Bound()
+|	SameTerm()
+|	ExistsFunc()
+|	NotExistsFunc()
+|	Coalesce()
+|	If()
+|	StringFunction()
+|	NumericFunction()
+|	RDFTermFunction()
+|	DateTimeFunction()
+|	HashFunction()
+}
+
+void StringFunction() #void :
+{}
+{
+	Substr()
+|	StrLen()
+|	UpperCase()
+|	LowerCase()
+|	StrStarts()
+|	StrEnds()
+|	Concat()
+|	Contains()
+|	EncodeForURI()
+|	LangMatches()
+|	RegexExpression()
+}
+void NumericFunction() #void :
+{}
+{
+	Rand()
+|	Abs()
+|	Ceil()
+|	Floor()
+|	Round()
+}
+
+void RDFTermFunction() #void :
+{}
+{
+	IsIRI()
+|	IsBlank()
+|	IsLiteral()
+|	IsNumeric()
+|	BNodeFunc()
+|	IRIFunc()
+|	Lang()
+|	Datatype()
+|	Str()
+|	StrDt()
+|	StrLang()
+}
+
+void DateTimeFunction() #void :
+{}
+{
+	Now()
+|	Year()
+|	Month()
+|	Day()
+|	Hours()
+|	Minutes()
+|	Seconds()
+|	Timezone()
+|	Tz()
+}
+
+void HashFunction() #void :
+{}
+{
+	MD5()
+|	SHA1()
+|	SHA224()
+|	SHA256()
+|	SHA384()
+|	SHA512()
+}
+
+
+void MD5() :
+{}
+{
+    <MD5> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA1() :
+{}
+{
+    <SHA1> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA224() :
+{}
+{
+    <SHA224> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA256() :
+{}
+{
+    <SHA256> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA384() :
+{}
+{
+    <SHA384> <LPAREN> Expression() <RPAREN>
+}
+
+void SHA512() :
+{}
+{
+    <SHA512> <LPAREN> Expression() <RPAREN>
+}
+
+void Now() :
+{}
+{
+    <NOW> <NIL>
+}
+
+void Year() :
+{}
+{
+    <YEAR> <LPAREN> Expression() <RPAREN>
+}
+
+void Month() :
+{}
+{
+    <MONTH> <LPAREN> Expression() <RPAREN>
+}
+
+void Day() :
+{}
+{
+    <DAY> <LPAREN> Expression() <RPAREN>
+}
+
+void Hours() :
+{}
+{
+    <HOURS> <LPAREN> Expression() <RPAREN>
+}
+
+void Minutes() :
+{}
+{
+    <MINUTES> <LPAREN> Expression() <RPAREN>
+}
+
+void Seconds() :
+{}
+{
+    <SECONDS> <LPAREN> Expression() <RPAREN>
+}
+
+void Timezone() :
+{}
+{
+    <TIMEZONE> <LPAREN> Expression() <RPAREN>
+}
+
+void Tz() :
+{}
+{
+    <TZ> <LPAREN> Expression() <RPAREN>
+}
+
+void Rand() :
+{}
+{
+    <RAND> <NIL>
+}
+
+void Abs() :
+{}
+{
+    <ABS> <LPAREN> Expression() <RPAREN>
+}
+
+void Ceil() :
+{}
+{
+    <CEIL> <LPAREN> Expression() <RPAREN>
+}
+
+void Floor() :
+{}
+{
+    <FLOOR> <LPAREN> Expression() <RPAREN>
+}
+
+void Round() :
+{}
+{
+    <ROUND> <LPAREN> Expression() <RPAREN>
+}
+
+void Substr() :
+{}
+{
+    <SUBSTR> <LPAREN> Expression() <COMMA> Expression() [ <COMMA> Expression() ] <RPAREN>
+}
+
+void StrLen() :
+{}
+{
+    <STRLEN> <LPAREN> Expression() <RPAREN>
+}
+
+void UpperCase() :
+{}
+{
+    <UCASE> <LPAREN> Expression() <RPAREN>
+}
+
+void LowerCase() :
+{}
+{
+    <LCASE> <LPAREN> Expression() <RPAREN>
+}
+
+void StrStarts() :
+{}
+{
+    <STR_STARTS> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void StrEnds() :
+{}
+{
+    <STR_ENDS> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void Concat() :
+{}
+{
+    <CONCAT> ArgList()
+}
+
+void Contains() :
+{}
+{
+    <CONTAINS> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void EncodeForURI() :
+{}
+{
+    <ENCODE_FOR_URI> <LPAREN> Expression() <RPAREN>
+}
+
+void If() :
+{}
+{
+    <IF> <LPAREN> Expression() <COMMA> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void In() :
+{}
+{
+    <IN> ArgList()
+}
+
+void NotIn() :
+{}
+{
+    <NOT_IN> ArgList()
+}
+
+void Coalesce() : 
+{}
+{
+    <COALESCE> <LPAREN> Expression() (<COMMA> Expression())* <RPAREN>
+}
+
+void Str() :
+{}
+{
+	<STR> <LPAREN> Expression() <RPAREN>
+}
+
+void Lang() :
+{}
+{
+	<LANG> <LPAREN> Expression() <RPAREN>
+}
+
+void LangMatches() :
+{}
+{
+	<LANGMATCHES> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void Datatype() :
+{}
+{
+	<DATATYPE> <LPAREN> Expression() <RPAREN>
+}
+
+void Bound() :
+{}
+{
+	<BOUND> <LPAREN> Var() <RPAREN>
+}
+
+void SameTerm() :
+{}
+{
+	<SAMETERM> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void IsIRI() :
+{}
+{
+	<IS_IRI> <LPAREN> Expression() <RPAREN>
+}
+
+void IsBlank() :
+{}
+{
+	<IS_BLANK> <LPAREN> Expression() <RPAREN>
+}
+
+void IsLiteral() :
+{}
+{
+	<IS_LITERAL> <LPAREN> Expression() <RPAREN>
+}
+
+void IsNumeric() :
+{}
+{
+	<IS_NUMERIC> <LPAREN> Expression() <RPAREN>
+}
+
+void BNodeFunc() :
+{}
+{
+	<BNODE> ( <NIL> | <LPAREN> Expression() <RPAREN> ) 
+}
+
+void IRIFunc() :
+{}
+{
+	<IRI> <LPAREN> Expression() <RPAREN>
+}
+
+void StrDt() :
+{}
+{
+	<STRDT> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void StrLang() :
+{}
+{
+	<STRLANG> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void Bind() :
+{}
+{
+	<BIND> <LPAREN> Expression() <AS> Var() <RPAREN>
+}
+
+void RegexExpression() :
+{}
+{
+	<REGEX> <LPAREN> Expression() <COMMA> Expression() [ <COMMA> Expression() ] <RPAREN>
+}
+
+void ExistsFunc() :
+{}
+{
+    <EXISTS> GroupGraphPattern()
+}
+
+void NotExistsFunc() :
+{}
+{
+    <NOT_EXISTS> GroupGraphPattern()
+}
+
+
+void RDFLiteral() :
 { Token t; }
 {
-    t = <LPAREN> { appendToken(sb, t); }
-}
-
-void RParen(StringBuilder sb) #void : 
-{ Token t; }
-{
-    t = <RPAREN> { appendToken(sb, t); }
-}
-
-
-void Sum(StringBuilder sb) :
-{Token t;}
-{
-    t = <SUM> {appendToken(sb, t);}
-    LParen(sb)
-	[ t = <DISTINCT> { appendToken(sb, t); jjtThis.setDistinct(true); } ] 
-	Expression(sb) 
-    RParen(sb)
-}
-
-void Min(StringBuilder sb) :
-{Token t;}
-{
-    t = <MIN> {appendToken(sb, t); }
-    LParen(sb) 
-	[ t = <DISTINCT> { appendToken(sb, t); jjtThis.setDistinct(true); } ] 
-	Expression(sb) 
-    RParen(sb)
-}
-
-void Max(StringBuilder sb) :
-{Token t;}
-{
-    t = <MAX> { appendToken(sb, t); }
-    LParen(sb)
-	[ t = <DISTINCT> { appendToken(sb, t); jjtThis.setDistinct(true); } ] 
-	Expression(sb) 
-    RParen(sb)
-}
-
-void Avg(StringBuilder sb) :
-{Token t;}
-{
-    t = <AVG> {appendToken(sb, t); }
-    LParen(sb) 
-	[ t = <DISTINCT> { appendToken(sb, t); jjtThis.setDistinct(true); } ] 
-	Expression(sb) 
-    RParen(sb)
-}
-
-void Sample(StringBuilder sb) :
-{Token t;}
-{
-    t = <SAMPLE> {appendToken(sb, t); }
-    LParen(sb)
-	[ t = <DISTINCT> { appendToken(sb, t); jjtThis.setDistinct(true); } ] Expression(sb) 
-    RParen(sb)
-}
-
-void GroupConcat(StringBuilder sb) :
-{Token t;}
-{
-    t = <GROUP_CONCAT> {appendToken(sb, t); }
-    LParen(sb)
-	[ t = <DISTINCT> { appendToken(sb, t); jjtThis.setDistinct(true); } ] Expression(sb) 
-	[ 
-	    t = <SEMICOLON> { appendToken(sb, t); }
-	    t = <SEPARATOR> { appendToken(sb, t); }
-	    t = <EQ> {appendToken(sb, t); }
-	    Expression(sb) 
-	]
-    RParen(sb)
-}
-
-void BrackettedExpression(StringBuilder sb) #void :
-{}
-{
-	LParen(sb)
-	    Expression(sb) 
-	RParen(sb)
-}
-
-void BuiltInCall(StringBuilder sb) #void :
-{}
-{
-	Bound(sb)
-|	SameTerm(sb)
-|	ExistsFunc(sb)
-|	NotExistsFunc(sb)
-|	Coalesce(sb)
-|	If(sb)
-|	StringFunction(sb)
-|	NumericFunction(sb)
-|	RDFTermFunction(sb)
-|	DateTimeFunction(sb)
-|	HashFunction(sb)
-}
-
-void StringFunction(StringBuilder sb) #void :
-{}
-{
-	Substr(sb)
-|	StrLen(sb)
-|	UpperCase(sb)
-|	LowerCase(sb)
-|	StrStarts(sb)
-|	StrEnds(sb)
-|	Concat(sb)
-|	Contains(sb)
-|	EncodeForURI(sb)
-|	LangMatches(sb)
-|	RegexExpression(sb)
-}
-void NumericFunction(StringBuilder sb) #void :
-{}
-{
-	Rand(sb)
-|	Abs(sb)
-|	Ceil(sb)
-|	Floor(sb)
-|	Round(sb)
-}
-
-void RDFTermFunction(StringBuilder sb) #void :
-{}
-{
-	IsIRI(sb)
-|	IsBlank(sb)
-|	IsLiteral(sb)
-|	IsNumeric(sb)
-|	BNodeFunc(sb)
-|	IRIFunc(sb)
-|	Lang(sb)
-|	Datatype(sb)
-|	Str(sb)
-|	StrDt(sb)
-|	StrLang(sb)
-}
-
-void DateTimeFunction(StringBuilder sb) #void :
-{}
-{
-	Now(sb)
-|	Year(sb)
-|	Month(sb)
-|	Day(sb)
-|	Hours(sb)
-|	Minutes(sb)
-|	Seconds(sb)
-|	Timezone(sb)
-|	Tz(sb)
-}
-
-void HashFunction(StringBuilder sb) #void :
-{}
-{
-	MD5(sb)
-|	SHA1(sb)
-|	SHA224(sb)
-|	SHA256(sb)
-|	SHA384(sb)
-|	SHA512(sb)
-}
-
-
-void MD5(StringBuilder sb) :
-{Token t;}
-{
-    t = <MD5> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void SHA1(StringBuilder sb) :
-{Token t;}
-{
-    t = <SHA1> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void SHA224(StringBuilder sb) :
-{Token t; }
-{
-    t = <SHA224> { appendToken(sb, t); } 
-    BrackettedExpression(sb)
-}
-
-void SHA256(StringBuilder sb) :
-{Token t;}
-{
-    t = <SHA256> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void SHA384(StringBuilder sb) :
-{Token t;}
-{
-    t = <SHA384> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void SHA512(StringBuilder sb) :
-{Token t;}
-{
-    t = <SHA512> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Now(StringBuilder sb) :
-{Token t;}
-{
-    t = <NOW> { appendToken(sb, t); }
-    t = <NIL> { appendToken(sb, t); }
-}
-
-void Year(StringBuilder sb) :
-{Token t;}
-{
-    t = <YEAR> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Month(StringBuilder sb) :
-{Token t;}
-{
-    t = <MONTH> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Day(StringBuilder sb) :
-{Token t;}
-{
-    t = <DAY> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Hours(StringBuilder sb) :
-{Token t;}
-{
-    t = <HOURS> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Minutes(StringBuilder sb) :
-{Token t;}
-{
-    t = <MINUTES> { appendToken(sb, t); } 
-    BrackettedExpression(sb)
-}
-
-void Seconds(StringBuilder sb) :
-{Token t;}
-{
-    t = <SECONDS> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Timezone(StringBuilder sb) :
-{Token t;}
-{
-    t = <TIMEZONE> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Tz(StringBuilder sb) :
-{Token t;}
-{
-    t = <TZ> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Rand(StringBuilder sb) :
-{Token t;}
-{
-    t= <RAND> { appendToken(sb, t); }
-    t = <NIL> { appendToken(sb, t); }
-}
-
-void Abs(StringBuilder sb) :
-{Token t;}
-{
-    t = <ABS> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Ceil(StringBuilder sb) :
-{Token t;}
-{
-    t = <CEIL> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Floor(StringBuilder sb) :
-{Token t;}
-{
-    t = <FLOOR> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Round(StringBuilder sb) :
-{Token t;}
-{
-    t = <ROUND> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Substr(StringBuilder sb) :
-{Token t;}
-{
-    t = <SUBSTR> { appendToken(sb, t); }
-    LParen(sb)
-	Expression(sb) 
-	t = <COMMA> { appendToken(sb, t); }
-	Expression(sb) 
-	[ 
-	    t = <COMMA> { appendToken(sb, t); } 
-	    Expression(sb) 
-	]
-    RParen(sb)
-}
-
-void StrLen(StringBuilder sb) :
-{Token t;}
-{
-    t= <STRLEN> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void UpperCase(StringBuilder sb) :
-{Token t;}
-{
-    t = <UCASE> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void LowerCase(StringBuilder sb) :
-{Token t;}
-{
-    t = <LCASE> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void StrStarts(StringBuilder sb) :
-{Token t;}
-{
-    t = <STR_STARTS> { appendToken(sb, t); }
-    LParen(sb) 
-	Expression(sb) 
-	t = <COMMA> { appendToken(sb, t); }
-	Expression(sb) 
-    RParen(sb)
-}
-
-void StrEnds(StringBuilder sb) :
-{Token t;}
-{
-    t = <STR_ENDS> { appendToken(sb, t); } 
-    LParen(sb)
-	Expression(sb) 
-	t = <COMMA> { appendToken(sb, t); }
-	Expression(sb) 
-    RParen(sb)
-}
-
-void Concat(StringBuilder sb) :
-{Token t;}
-{
-    t = <CONCAT> { appendToken(sb, t); }
-    ArgList(sb)
-}
-
-void Contains(StringBuilder sb) :
-{Token t;}
-{
-    t = <CONTAINS> { appendToken(sb, t); }
-    LParen(sb)
-	Expression(sb) 
-	t = <COMMA> { appendToken(sb, t); } 
-	Expression(sb) 
-    RParen(sb)
-}
-
-void EncodeForURI(StringBuilder sb) :
-{Token t;}
-{
-    t = <ENCODE_FOR_URI> { appendToken(sb, t); }
-    BrackettedExpression(sb)
-}
-
-void Comma(StringBuilder sb) #void :
-{Token t;}
-{
-    t = <COMMA> { appendToken(sb, t); }
-}
-
-void If(StringBuilder sb) :
-{Token t;}
-{
-    t = <IF> { appendToken(sb, t); }
-    LParen(sb)
-	Expression(sb) 
-	Comma(sb)
-	Expression(sb) 
-	Comma(sb) 
-	Expression(sb)
-    RParen(sb)
-}
-
-void In(StringBuilder sb) :
-{Token t;}
-{
-    t = <IN> { appendToken(sb, t); }
-    ArgList(sb)
-}
-
-void NotIn(StringBuilder sb) :
-{Token t;}
-{
-    t = <NOT_IN> { appendToken(sb, t); }
-    ArgList(sb)
-}
-
-void Coalesce(StringBuilder sb) : 
-{Token t;}
-{
-    t = <COALESCE> { appendToken(sb, t); }
-    LParen(sb)
-	Expression(sb) 
-	(
-	    Comma(sb) 
-	    Expression(sb)
-	)* 
-    RParen(sb)
-}
-
-void Str(StringBuilder sb) :
-{Token t;}
-{
-	t = <STR> { appendToken(sb, t); }
-	BrackettedExpression(sb)
-}
-
-void Lang(StringBuilder sb) :
-{Token t;}
-{
-	t = <LANG> { appendToken(sb, t); }
-	BrackettedExpression(sb)
-}
-
-void LangMatches(StringBuilder sb) :
-{Token t;}
-{
-	t = <LANGMATCHES> { appendToken(sb, t); }
-	LParen(sb)
-	    Expression(sb) 
-	    Comma(sb)
-	    Expression(sb) 
-	RParen(sb)
-}
-
-void Datatype(StringBuilder sb) :
-{Token t;}
-{
-	t = <DATATYPE> { appendToken(sb, t); }
-	BrackettedExpression(sb)
-}
-
-void Bound(StringBuilder sb) :
-{Token t;}
-{
-	t = <BOUND> { appendToken(sb, t); }
-	LParen(sb) 
-	    Var(sb) 
-	RParen(sb)
-}
-
-void SameTerm(StringBuilder sb) :
-{Token t;}
-{
-	t = <SAMETERM> { appendToken(sb, t); }
-	LParen(sb)
-	    Expression(sb) 
-	    Comma(sb)
-	    Expression(sb) 
-	RParen(sb)
-}
-
-void IsIRI(StringBuilder sb) :
-{Token t;}
-{
-	t = <IS_IRI> { appendToken(sb, t); }
-	BrackettedExpression(sb)
-}
-
-void IsBlank(StringBuilder sb) :
-{Token t;}
-{
-	t = <IS_BLANK> { appendToken(sb, t); }
-	BrackettedExpression(sb)
-}
-
-void IsLiteral(StringBuilder sb) :
-{Token t;}
-{
-	t = <IS_LITERAL> { appendToken(sb, t); }
-	BrackettedExpression(sb)
-}
-
-void IsNumeric(StringBuilder sb) :
-{Token t;}
-{
-	t = <IS_NUMERIC> { appendToken(sb, t); }
-	BrackettedExpression(sb)
-}
-
-void BNodeFunc(StringBuilder sb) :
-{Token t;}
-{
-	t = <BNODE> { appendToken(sb, t); }
-	( 
-	    t  = <NIL> { appendToken(sb, t); }
-	    | 
-	    LParen(sb) 
-		Expression(sb) 
-	    RParen(sb) 
-	) 
-}
-
-void IRIFunc(StringBuilder sb) :
-{Token t;}
-{
-	t = <IRI> { appendToken(sb, t); }
-	BrackettedExpression(sb)
-}
-
-void StrDt(StringBuilder sb) :
-{Token t;}
-{
-	t = <STRDT> { appendToken(sb, t); }
-	LParen(sb)
-	    Expression(sb) 
-	    Comma(sb) 
-	    Expression(sb)
-	RParen(sb)
-}
-
-void StrLang(StringBuilder sb) :
-{Token t;}
-{
-	t = <STRLANG> { appendToken(sb, t); }
-	LParen(sb)
-	    Expression(sb) 
-	    Comma(sb)
-	    Expression(sb)
-	RParen(sb)
-}
-
-void Bind(StringBuilder sb) :
-{Token t;}
-{
-	t = <BIND> { appendToken(sb, t); }
-	LParen(sb)
-	    Expression(sb) 
-	    t = <AS> { appendToken(sb, t); } 
-	    Var(sb) 
-	RParen(sb)
-}
-
-void RegexExpression(StringBuilder sb) :
-{Token t;}
-{
-	t = <REGEX> { appendToken(sb, t); }
-	LParen(sb)
-	    Expression(sb) 
-	    Comma(sb)
-	    Expression(sb) 
-	    [ 
-		Comma(sb)
-		Expression(sb) 
-	    ]
-	RParen(sb)
-}
-
-void ExistsFunc(StringBuilder sb) :
-{Token t;}
-{
-    t = <EXISTS> { appendToken(sb, t); } 
-    GroupGraphPattern(sb)
-}
-
-void NotExistsFunc(StringBuilder sb) :
-{Token t;}
-{
-    t = <NOT_EXISTS> { appendToken(sb, t); }
-    GroupGraphPattern(sb)
-}
-
-
-void RDFLiteral(StringBuilder sb) :
-{ Token t; }
-{
-	String(sb)
+	String()
 	[
-		t = <LANGTAG> {appendToken(sb, t); jjtThis.setLang(t.image.substring(1));}
+		t = <LANGTAG> {jjtThis.setLang(t.image.substring(1));}
 	|
-		t = <DT_PREFIX> {appendToken(sb, t);}
-		IRIref(sb)
+		<DT_PREFIX> IRIref()
 	]
 }
 
-void NumericLiteral(StringBuilder sb) #void :
+void NumericLiteral() #void :
 {}
 {
 	(
-		NumericLiteralUnsigned(sb)
-	|	NumericLiteralPositive(sb)
-	|	NumericLiteralNegative(sb)
+		NumericLiteralUnsigned()
+	|	NumericLiteralPositive()
+	|	NumericLiteralNegative()
 	)
 }
 
-void NumericLiteralUnsigned(StringBuilder sb) #NumericLiteral :
+void NumericLiteralUnsigned() #NumericLiteral :
 { Token t; URI datatype; }
 {
 	(
@@ -1840,11 +1482,10 @@ void NumericLiteralUnsigned(StringBuilder sb) #NumericLiteral :
 	{
 		jjtThis.setValue(t.image);
 		jjtThis.setDatatype(datatype);
-		appendToken(sb, t); 
 	}
 }
 
-void NumericLiteralPositive(StringBuilder sb) #NumericLiteral :
+void NumericLiteralPositive() #NumericLiteral :
 { Token t; URI datatype; }
 {
 	(
@@ -1856,11 +1497,10 @@ void NumericLiteralPositive(StringBuilder sb) #NumericLiteral :
 	{
 		jjtThis.setValue(t.image);
 		jjtThis.setDatatype(datatype);
-		appendToken(sb, t);
 	}
 }
 
-void NumericLiteralNegative(StringBuilder sb) #NumericLiteral :
+void NumericLiteralNegative() #NumericLiteral :
 { Token t; URI datatype; }
 {
 	(
@@ -1872,66 +1512,53 @@ void NumericLiteralNegative(StringBuilder sb) #NumericLiteral :
 	{
 		jjtThis.setValue(t.image);
 		jjtThis.setDatatype(datatype);
-		appendToken(sb, t);
 	}
 }
 
-void BooleanLiteral(StringBuilder sb) #void :
-{Token t;}
+void BooleanLiteral() #void :
+{}
 {
-    (
-	t = <TRUE> #True
-	|
-	t = <FALSE> #False
-    )
-    { appendToken(sb, t); }
+	<TRUE> #True
+|	<FALSE> #False
 }
 
-void String(StringBuilder sb) :
+void String() :
 { Token t; }
 {
 	( t = <STRING_LITERAL1> | t= <STRING_LITERAL2> )
-	{jjtThis.setValue(_trimString(t.image, 1)); appendToken(sb, t); }
+	{jjtThis.setValue(_trimString(t.image, 1));}
 |
 	( t = <STRING_LITERAL_LONG1> | t = <STRING_LITERAL_LONG2>)
-	{jjtThis.setValue(_trimString(t.image, 3)); appendToken(sb, t); }
+	{jjtThis.setValue(_trimString(t.image, 3));}
 }
 
-void IRIref(StringBuilder sb) #void :
-{ }
+void IRIref() #void :
+{}
 {
-
-	IRI(sb)
+	IRI()
 |
-	PrefixedName(sb)
+	PrefixedName()
 }
 
-void PrefixedName(StringBuilder sb) #QName :
+void PrefixedName() #QName :
 { Token t; }
 {
 	(t = <PNAME_LN> | t = <PNAME_NS>)
-	{
-	    jjtThis.setValue(t.image);
-	    appendToken(sb, t);
-	}
+	{jjtThis.setValue(t.image);}
 }
 
-
-void BlankNode(StringBuilder sb) :
+void BlankNode() :
 { Token t; }
 {
-(
-	t = <BLANK_NODE_LABEL> {jjtThis.setID(t.image.substring(2)); }
+	t = <BLANK_NODE_LABEL> {jjtThis.setID(t.image.substring(2));}
 |
-	t= <ANON> 
-)
-    { appendToken(sb, t); }
+	<ANON>
 }
 
-void IRI(StringBuilder sb) :
+void IRI() :
 { Token t; }
 {
-	t = <Q_IRI_REF> {jjtThis.setValue(_trimString(t.image, 1)); appendToken(sb, t); }
+	t = <Q_IRI_REF> {jjtThis.setValue(_trimString(t.image, 1));}
 }
 
 /// SPARQL 1.1 Update productions
@@ -1949,13 +1576,13 @@ void GraphOrDefault() :
 {}
 {
 	<DEFAULT_GRAPH>
-|	[<GRAPH>] IRIref(null)
+|	[<GRAPH>] IRIref()
 }
 
 void GraphRef() #void :
 {}
 { 
-	<GRAPH> IRIref(null) 
+	<GRAPH> IRIref() 
 }
 
 void QuadData() #void :
@@ -1967,13 +1594,13 @@ void QuadData() #void :
 void Quads() #void :
 {}
 {
-    [TriplesTemplate(null)] ( QuadsNotTriples() [<DOT>] [TriplesTemplate(null)] )*
+    [TriplesTemplate()] ( QuadsNotTriples() [<DOT>] [TriplesTemplate()] )*
 }
 
 void QuadsNotTriples() :
 {}
 {
-    <GRAPH> VarOrIRIref(null) <LBRACE> [TriplesTemplate(null)] <RBRACE>
+    <GRAPH> VarOrIRIref() <LBRACE> [TriplesTemplate()] <RBRACE>
 }
 
 void Update() #void :
@@ -1995,7 +1622,7 @@ void Update() #void :
 void Load() :
 {}
 {
-    <LOAD> [<SILENT> {jjtThis.setSilent(true);} ] IRIref(null) [<INTO> GraphRef() ]
+    <LOAD> [<SILENT> {jjtThis.setSilent(true);} ] IRIref() [<INTO> GraphRef() ]
 }
 
 
@@ -2068,13 +1695,13 @@ void InsertClause() :
 void UsingClause() #DatasetClause :
 {}
 {
-    <USING> [<NAMED> {jjtThis.setNamed(true);}] IRIref(null)
+    <USING> [<NAMED> {jjtThis.setNamed(true);}] IRIref()
 }
 
 void Modify() :
 {}
 {
-    [<WITH> IRIref(null)] 
+    [<WITH> IRIref()] 
     ( DeleteClause() [InsertClause()] | InsertClause() ) (UsingClause())* 
-    <WHERE> GroupGraphPattern(null)
+    <WHERE> GroupGraphPattern()
 }
