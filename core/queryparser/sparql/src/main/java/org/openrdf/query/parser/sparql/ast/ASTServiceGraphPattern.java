@@ -4,29 +4,39 @@ package org.openrdf.query.parser.sparql.ast;
 
 import java.util.Map;
 
-public
-class ASTServiceGraphPattern extends SimpleNode {
-  private boolean silent;
-  private String patternString;
-  
-  private Map<String, String> prefixDeclarations;
-  private String baseURI;
-  
-public ASTServiceGraphPattern(int id) {
-    super(id);
-  }
+public class ASTServiceGraphPattern extends SimpleNode {
 
-  public ASTServiceGraphPattern(SyntaxTreeBuilder p, int id) {
-    super(p, id);
-  }
+	private boolean silent;
 
+	private String patternString;
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SyntaxTreeBuilderVisitor visitor, Object data) throws VisitorException {
-    return visitor.visit(this, data);
-  }
-  
-  
+	private Map<String, String> prefixDeclarations;
+
+	private String baseURI;
+
+	private int beginTokenLinePos;
+
+	private int beginTokenColumnPos;
+
+	private int endTokenLinePos;
+
+	private int endTokenColumnPos;
+
+	public ASTServiceGraphPattern(int id) {
+		super(id);
+	}
+
+	public ASTServiceGraphPattern(SyntaxTreeBuilder p, int id) {
+		super(p, id);
+	}
+
+	/** Accept the visitor. **/
+	public Object jjtAccept(SyntaxTreeBuilderVisitor visitor, Object data)
+		throws VisitorException
+	{
+		return visitor.visit(this, data);
+	}
+
 	public void setSilent(boolean silent) {
 		this.silent = silent;
 	}
@@ -36,21 +46,49 @@ public ASTServiceGraphPattern(int id) {
 	}
 
 	/**
-	 * @param patternString The patternString to set.
-	 */
-	public void setPatternString(String patternString) {
-		this.patternString = patternString;
-	}
-
-	/**
 	 * @return Returns the patternString.
 	 */
 	public String getPatternString() {
+
+		if (patternString == null) {
+			ASTOperationContainer parentContainer = (ASTOperationContainer)getParentContainer(this);
+
+			String sourceString = parentContainer.getSourceString();
+
+			// snip away line until begin token line position
+			String substring = sourceString;
+			for (int i = 1; i < getBeginTokenLinePos(); i++) {
+				substring = substring.substring(substring.indexOf("\n") + 1);
+			}
+			
+			// snip away until begin token column pos
+			substring = substring.substring(getBeginTokenColumnPos() - 1);
+
+			// determine part of the query behind the service pattern closing bracket.
+			String toTrimSuffix = sourceString;
+			for (int i = 1; i < getEndTokenLinePos(); i++) {
+				toTrimSuffix = toTrimSuffix.substring(toTrimSuffix.indexOf("\n") + 1);
+			}
+			toTrimSuffix = toTrimSuffix.substring(getEndTokenColumnPos() - 1);
+
+			// trim off the end
+			patternString = substring.substring(0, substring.indexOf(toTrimSuffix) + 1);
+		}
+
 		return patternString;
 	}
 
+	private Node getParentContainer(Node node) {
+		if (node instanceof ASTOperationContainer || node == null) {
+			return node;
+		}
+
+		return getParentContainer(node.jjtGetParent());
+	}
+
 	/**
-	 * @param prefixDeclarations The prefixDeclarations to set.
+	 * @param prefixDeclarations
+	 *        The prefixDeclarations to set.
 	 */
 	public void setPrefixDeclarations(Map<String, String> prefixDeclarations) {
 		this.prefixDeclarations = prefixDeclarations;
@@ -64,7 +102,8 @@ public ASTServiceGraphPattern(int id) {
 	}
 
 	/**
-	 * @param baseURI The baseURI to set.
+	 * @param baseURI
+	 *        The baseURI to set.
 	 */
 	public void setBaseURI(String baseURI) {
 		this.baseURI = baseURI;
@@ -75,6 +114,66 @@ public ASTServiceGraphPattern(int id) {
 	 */
 	public String getBaseURI() {
 		return baseURI;
+	}
+
+	/**
+	 * @param endTokenColumnPos
+	 *        The endTokenColumnPos to set.
+	 */
+	public void setEndTokenColumnPos(int endTokenColumnPos) {
+		this.endTokenColumnPos = endTokenColumnPos;
+	}
+
+	/**
+	 * @return Returns the endTokenColumnPos.
+	 */
+	public int getEndTokenColumnPos() {
+		return endTokenColumnPos;
+	}
+
+	/**
+	 * @param endTokenLinePos
+	 *        The endTokenLinePos to set.
+	 */
+	public void setEndTokenLinePos(int endTokenLinePos) {
+		this.endTokenLinePos = endTokenLinePos;
+	}
+
+	/**
+	 * @return Returns the endTokenLinePos.
+	 */
+	public int getEndTokenLinePos() {
+		return endTokenLinePos;
+	}
+
+	/**
+	 * @param beginTokenColumnPos
+	 *        The beginTokenColumnPos to set.
+	 */
+	public void setBeginTokenColumnPos(int beginTokenColumnPos) {
+		this.beginTokenColumnPos = beginTokenColumnPos;
+	}
+
+	/**
+	 * @return Returns the beginTokenColumnPos.
+	 */
+	public int getBeginTokenColumnPos() {
+		return beginTokenColumnPos;
+	}
+
+	/**
+	 * @param beginTokenLinePos
+	 *        The beginTokenLinePos to set.
+	 */
+	public void setBeginTokenLinePos(int beginTokenLinePos) {
+		this.beginTokenLinePos = beginTokenLinePos;
+	}
+
+	/**
+	 * @return Returns the beginTokenLinePos.
+	 */
+	public int getBeginTokenLinePos() {
+		return beginTokenLinePos;
 	}
 
 }
