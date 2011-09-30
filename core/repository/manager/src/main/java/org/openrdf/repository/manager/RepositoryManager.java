@@ -272,7 +272,7 @@ public abstract class RepositoryManager {
 	}
 
 	/**
-	 * Returns all inititalized repositories. This method returns fast as no lazy
+	 * Returns all initialized repositories. This method returns fast as no lazy
 	 * creation of repositories takes place.
 	 * 
 	 * @return a collection containing the IDs of all initialized repositories.
@@ -285,7 +285,7 @@ public abstract class RepositoryManager {
 	}
 
 	/**
-	 * Returns all inititalized repositories. This method returns fast as no lazy
+	 * Returns all initialized repositories. This method returns fast as no lazy
 	 * creation of repositories takes place.
 	 * 
 	 * @return a set containing the initialized repositories.
