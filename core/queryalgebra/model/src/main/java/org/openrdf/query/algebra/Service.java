@@ -229,9 +229,10 @@ public class Service extends UnaryTupleOperator {
 	 */
 	private String parseServiceExpression(String serviceExpression) {
 		
-		if (serviceExpression.toLowerCase().startsWith("service")) {
+		// TODO fixme (currently the string does not start with service for two SERVICE or nested)
+		if (true || serviceExpression.toLowerCase().startsWith("service")) {
 			return serviceExpression.substring(serviceExpression.indexOf("{")+1, serviceExpression.length()-2);
-		}
+		} 
 		return serviceExpression;
 	}
 }
