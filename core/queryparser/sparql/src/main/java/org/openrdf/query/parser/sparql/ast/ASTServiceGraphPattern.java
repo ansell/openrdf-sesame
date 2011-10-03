@@ -72,7 +72,7 @@ public class ASTServiceGraphPattern extends SimpleNode {
 			toTrimSuffix = toTrimSuffix.substring(getEndTokenColumnPos() - 1);
 
 			// trim off the end
-			patternString = substring.substring(0, substring.indexOf(toTrimSuffix) + 1);
+			patternString = substring.substring(0, substring.lastIndexOf(toTrimSuffix) + 1);
 		}
 
 		return patternString;

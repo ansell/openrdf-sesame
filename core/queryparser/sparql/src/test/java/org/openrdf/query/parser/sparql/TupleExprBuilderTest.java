@@ -9,6 +9,9 @@ package org.openrdf.query.parser.sparql;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,8 +73,8 @@ public class TupleExprBuilderTest {
 		ServiceNodeFinder f = new ServiceNodeFinder();
 		f.visit(qc, null);
 		
-		assertTrue(f.graphPattern != null);
-		assertEquals(servicePattern, f.graphPattern);
+		assertTrue(f.getGraphPatterns().size() == 1);
+		assertTrue(servicePattern.equals(f.getGraphPatterns().get(0)));
 	}
 	
 	@Test
@@ -95,18 +98,72 @@ public class TupleExprBuilderTest {
 		ServiceNodeFinder f = new ServiceNodeFinder();
 		f.visit(qc, null);
 		
-		assertTrue(f.graphPattern != null);
-		assertTrue(servicePattern.equals(f.graphPattern));
+		assertTrue(f.getGraphPatterns().size() == 1);
+		assertTrue(servicePattern.equals(f.getGraphPatterns().get(0)));
 	}
 	
+	@Test
+	public void testServiceGraphPatternStringDetection3() throws TokenMgrError, ParseException, VisitorException {
+
+		String servicePattern1 = "SERVICE <foo:bar> \n { ?x <foo:baz> ?y. }";
+		String servicePattern2 = "SERVICE <foo:bar2> \n { ?x <foo:baz> ?y. }";
+		
+		StringBuilder qb = new StringBuilder();
+		qb.append("SELECT * \n");
+		qb.append("WHERE { \n");
+		qb.append(servicePattern1);
+		qb.append(" OPTIONAL { \n");
+		qb.append(servicePattern2);
+		qb.append("    } \n");
+		qb.append(" } ");
+	
+		ASTQueryContainer qc = SyntaxTreeBuilder.parseQuery(qb.toString());
+		
+		ServiceNodeFinder f = new ServiceNodeFinder();
+		f.visit(qc, null);
+		
+		assertTrue(f.getGraphPatterns().size() == 2);
+		assertTrue(servicePattern1.equals(f.getGraphPatterns().get(0)));
+		assertTrue(servicePattern2.equals(f.getGraphPatterns().get(1)));
+	}
+	
+	
+	@Test
+	public void testServiceGraphPatternStringDetection4() throws TokenMgrError, ParseException, VisitorException {
+
+		String servicePattern1 = "SERVICE <http://localhost:18080/openrdf/repositories/endpoint1> {  ?s ?p ?o1 . " +
+		"OPTIONAL {	SERVICE SILENT <http://invalid.endpoint.org/sparql> { ?s ?p2 ?o2 } } }";
+		
+		String servicePattern2 = "SERVICE SILENT <http://invalid.endpoint.org/sparql> { ?s ?p2 ?o2 }";
+		
+		StringBuilder qb = new StringBuilder();
+		qb.append("SELECT * \n");
+		qb.append("WHERE { \n");
+		qb.append(servicePattern1);
+		qb.append(" } ");
+	
+		ASTQueryContainer qc = SyntaxTreeBuilder.parseQuery(qb.toString());
+		
+		ServiceNodeFinder f = new ServiceNodeFinder();
+		f.visit(qc, null);
+		
+		assertTrue(f.getGraphPatterns().size() == 2);
+		assertTrue(servicePattern1.equals(f.getGraphPatterns().get(0)));
+		assertTrue(servicePattern2.equals(f.getGraphPatterns().get(1)));
+	}
+
 	private class ServiceNodeFinder extends ASTVisitorBase {
 		
-		public String graphPattern;
+		private List<String> graphPatterns = new ArrayList<String>();
 		
 		@Override
 		public Object visit(ASTServiceGraphPattern node, Object data) throws VisitorException {
-			graphPattern = node.getPatternString();
+			graphPatterns.add(node.getPatternString());
 			return super.visit(node, data);
+		}
+		
+		public List<String> getGraphPatterns() {
+			return graphPatterns;
 		}
 	}
 }

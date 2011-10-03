@@ -46,6 +46,11 @@ public class SyntaxTreeBuilder {
 		throws TokenMgrError, ParseException
 	{
 		SyntaxTreeBuilder stb = new SyntaxTreeBuilder( new StringReader(query) );
+
+		// Set size of tab to 1 to force tokenmanager to report correct column
+		// index for substring splitting of service graph pattern.
+		stb.jj_input_stream.setTabSize(1);
+
 		ASTQueryContainer container = stb.QueryContainer();
 		container.setSourceString(query);
 		return container;
