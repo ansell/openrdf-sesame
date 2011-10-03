@@ -23,6 +23,11 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                 throws TokenMgrError, ParseException
         {
                 SyntaxTreeBuilder stb = new SyntaxTreeBuilder( new StringReader(query) );
+
+                // Set size of tab to 1 to force tokenmanager to report correct column
+                // index for substring splitting of service graph pattern.
+                stb.jj_input_stream.setTabSize(1);
+
                 ASTQueryContainer container = stb.QueryContainer();
                 container.setSourceString(query);
                 return container;
@@ -40,6 +45,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                 throws TokenMgrError, ParseException
         {
                 SyntaxTreeBuilder stb = new SyntaxTreeBuilder( new StringReader(sequence) );
+                
+                // Set tab size to 1 to have consistent column count behaviour for query and update.
+                stb.jj_input_stream.setTabSize(1);
+                
                 return stb.UpdateSequence();
         }
 
@@ -7456,42 +7465,6 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     finally { jj_save(7, xla); }
   }
 
-  private boolean jj_3R_103() {
-    if (jj_3R_44()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_93() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_103()) {
-    jj_scanpos = xsp;
-    if (jj_3R_104()) {
-    jj_scanpos = xsp;
-    if (jj_3R_105()) {
-    jj_scanpos = xsp;
-    if (jj_3R_106()) return true;
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_102() {
-    if (jj_scan_token(DOUBLE_NEGATIVE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_101() {
-    if (jj_scan_token(DECIMAL_NEGATIVE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_100() {
-    if (jj_scan_token(INTEGER_NEGATIVE)) return true;
-    return false;
-  }
-
   private boolean jj_3R_92() {
     if (jj_scan_token(INVERSE)) return true;
     return false;
@@ -7505,11 +7478,6 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3R_78() {
-    if (jj_3R_86()) return true;
-    return false;
-  }
-
   private boolean jj_3R_91() {
     Token xsp;
     xsp = jj_scanpos;
@@ -7520,6 +7488,11 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     if (jj_3R_102()) return true;
     }
     }
+    return false;
+  }
+
+  private boolean jj_3R_78() {
+    if (jj_3R_86()) return true;
     return false;
   }
 
@@ -8024,6 +7997,42 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
 
   private boolean jj_3R_104() {
     if (jj_scan_token(IS_A)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_103() {
+    if (jj_3R_44()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_93() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_103()) {
+    jj_scanpos = xsp;
+    if (jj_3R_104()) {
+    jj_scanpos = xsp;
+    if (jj_3R_105()) {
+    jj_scanpos = xsp;
+    if (jj_3R_106()) return true;
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_102() {
+    if (jj_scan_token(DOUBLE_NEGATIVE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_101() {
+    if (jj_scan_token(DECIMAL_NEGATIVE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_100() {
+    if (jj_scan_token(INTEGER_NEGATIVE)) return true;
     return false;
   }
 
