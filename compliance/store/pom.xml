@@ -43,9 +43,6 @@
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-repository-sparql</artifactId>
-			<!-- FIXME not sure why I need to provide a version here,
-			     but not for any of the other dependencies -->
-			<version>2.5.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
