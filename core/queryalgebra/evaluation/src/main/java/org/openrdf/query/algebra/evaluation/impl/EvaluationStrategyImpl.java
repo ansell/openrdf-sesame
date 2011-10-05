@@ -8,6 +8,7 @@ package org.openrdf.query.algebra.evaluation.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -36,6 +37,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Dataset;
@@ -126,7 +128,6 @@ import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
 import org.openrdf.query.algebra.evaluation.util.MathUtil;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
-import org.openrdf.query.algebra.evaluation.util.QueryStringUtil;
 import org.openrdf.query.algebra.evaluation.util.SPARQLRepositoryManager;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
@@ -524,10 +525,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			freeVars.removeAll(bindings.getBindingNames());
 			
 			String baseUri = null;	// TODO handle base uri
-			String queryString;
+			
+			// depending on freeVars.size: either SELECT or ASK query
+			String queryString = service.getQueryString(freeVars);
+			
 			// special case: no free variables => perform ASK query
 			if (freeVars.size()==0) {
-				queryString = QueryStringUtil.askQueryString(service, bindings);
 				BooleanQuery query = rep.getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, queryString, baseUri);
 				
 				boolean exists = query.evaluate();
@@ -540,8 +543,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 			
 			// otherwise: perform a SELECT query
-			queryString = QueryStringUtil.selectQueryString(service, freeVars, bindings);
 			TupleQuery query = rep.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString, baseUri);
+			Iterator<Binding> bIter = bindings.iterator();
+			while (bIter.hasNext()) {
+				Binding b = bIter.next();
+				if (service.getServiceVars().contains(b.getName()))
+					query.setBinding(b.getName(), b.getValue());
+			}
+				
 			
 			TupleQueryResult res = query.evaluate();
 				
