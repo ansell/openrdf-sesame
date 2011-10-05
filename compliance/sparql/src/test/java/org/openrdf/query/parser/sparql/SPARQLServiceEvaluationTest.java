@@ -381,7 +381,19 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 			execute("/testcases-service/service07.rq", "/testcases-service/service07.srx", false);			
 			
 		} catch (Exception e1) {
-			e1.printStackTrace();
+			fail(e1.getMessage());
+		}		
+	}
+	
+	@Test
+	public void test8() {
+		/* test where the SERVICE expression is to be evaluated as ASK request */
+		try {
+			// clears the repository and adds new data + execute
+			prepareTest("/testcases-service/data08.ttl", Arrays.asList("/testcases-service/data08endpoint.ttl"));
+			execute("/testcases-service/service08.rq", "/testcases-service/service08.srx", false);			
+			
+		} catch (Exception e1) {
 			fail(e1.getMessage());
 		}		
 	}
