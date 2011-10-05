@@ -88,6 +88,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.rio.helpers.ParseErrorLogger;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -1155,6 +1156,8 @@ public class HTTPClient {
 				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
 				RDFParser parser = Rio.createParser(format, getValueFactory());
 				parser.setPreserveBNodeIDs(true);
+				parser.setStopAtFirstError(false);
+				parser.setParseErrorListener(new ParseErrorLogger());
 				parser.setRDFHandler(handler);
 				parser.parse(method.getResponseBodyAsStream(), method.getURI().getURI());
 			}

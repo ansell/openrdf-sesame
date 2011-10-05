@@ -56,6 +56,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.rio.helpers.ParseErrorLogger;
 
 /**
  * Abstract class implementing most 'convenience' methods in the
@@ -381,8 +382,9 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		RDFParser rdfParser = Rio.createParser(dataFormat, getRepository().getValueFactory());
 
 		rdfParser.setVerifyData(true);
-		rdfParser.setStopAtFirstError(true);
-		rdfParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+		rdfParser.setStopAtFirstError(false);
+		rdfParser.setParseErrorListener(new ParseErrorLogger());
+		rdfParser.setDatatypeHandling(RDFParser.DatatypeHandling.VERIFY);
 
 		RDFInserter rdfInserter = new RDFInserter(this);
 		rdfInserter.enforceContext(contexts);
