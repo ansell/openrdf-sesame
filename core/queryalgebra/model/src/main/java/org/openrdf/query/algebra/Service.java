@@ -37,8 +37,12 @@ public class Service extends UnaryTupleOperator {
 	/* the prefix declarations, potentially null */
 	private Map<String, String> prefixDeclarations;
 	
-	/* the computed prefix string or empty string. needs to be computed only once*/
-	private String computedPrefixString;
+	
+	/* prepared queries, including prefix. Contains %PROJECTION_VARS% to be replaced
+	 * at evaluation time. see 
+	 */
+	private String preparedSelectQueryString;
+	private String preparedAskQueryString;
 	
 	private boolean silent;
 	
@@ -54,7 +58,7 @@ public class Service extends UnaryTupleOperator {
 		setExpressionString(serviceExpressionString);
 		this.serviceVars = computeServiceVars(serviceExpr);
 		this.prefixDeclarations = prefixDeclarations;
-		this.computedPrefixString = computePrefixString(prefixDeclarations);
+		initPreparedQueryString();
 		this.silent = silent;
 	}
 		
@@ -82,15 +86,6 @@ public class Service extends UnaryTupleOperator {
 		return silent;
 	}
 
-	/**
-	 * A computed prefix string from available prefix declarations.
-	 * 
-	 * @return Returns the computedPrefixString.
-	 */
-	public String getComputedPrefixString() {
-		return computedPrefixString;
-	}
-	
 	/**
 	 * @return Returns the prefixDeclarations.
 	 */
@@ -123,6 +118,32 @@ public class Service extends UnaryTupleOperator {
 	 */
 	public String getServiceExpressionString() {
 		return serviceExpressionString;
+	}
+	
+	
+	/**
+	 * Returns the query string using the provided projection vars. 
+	 * 
+	 * Two cases are considered:
+	 * 
+	 * a) projectionVars available => SELECT query
+	 *  
+	 * The variables are inserted into the preparedSelectQueryString in the SELECT clause.
+	 * 
+	 * b) projectionVars empty => ASK query
+	 * 
+	 * return preparedAskQueryString
+	 * 
+	 * @param projectionVars
+	 * @return
+	 */
+	public String getQueryString(Set<String> projectionVars) {
+		if (projectionVars.size()==0)
+			return preparedAskQueryString;
+		StringBuilder sb = new StringBuilder();
+		for (String var : projectionVars)
+			sb.append(" ?").append(var);
+		return preparedSelectQueryString.replace("%PROJECTION_VARS%", sb.toString());
 	}
 
 	/**
@@ -199,6 +220,26 @@ public class Service extends UnaryTupleOperator {
 		return res;
 	}
 	
+	private void initPreparedQueryString() {
+		
+		String prefixString = computePrefixString(prefixDeclarations);
+		
+		// build the raw SELECT query string
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefixString);
+		sb.append("SELECT %PROJECTION_VARS% WHERE { ");
+		sb.append(serviceExpressionString);
+		sb.append(" }");
+		preparedSelectQueryString = sb.toString();
+		
+		// build the raw ASK query string
+		sb = new StringBuilder();
+		sb.append(prefixString);
+		sb.append("ASK {");
+		sb.append(serviceExpressionString);
+		sb.append(" }");
+		preparedAskQueryString = sb.toString();
+	}
 	
 	/**
 	 * Compute the prefix string only once to avoid computation overhead 
@@ -229,8 +270,7 @@ public class Service extends UnaryTupleOperator {
 	 */
 	private String parseServiceExpression(String serviceExpression) {
 		
-		// TODO fixme (currently the string does not start with service for two SERVICE or nested)
-		if (true || serviceExpression.toLowerCase().startsWith("service")) {
+		if (serviceExpression.toLowerCase().startsWith("service")) {
 			return serviceExpression.substring(serviceExpression.indexOf("{")+1, serviceExpression.length()-2);
 		} 
 		return serviceExpression;
