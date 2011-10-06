@@ -25,11 +25,11 @@ public class ParserConfig {
 
 	/**
 	 * Creates a ParserConfig object with default configuration: verifyData is
-	 * <tt>true</tt>, stopAtFirstError is <tt>true</tt>, preserveBNodeIDS is
+	 * <tt>true</tt>, stopAtFirstError is <tt>false</tt>, preserveBNodeIDS is
 	 * <tt>false</tt>, and dataTypeHandling is set to VERIFY.
 	 */
 	public ParserConfig() {
-		this(true, true, false, DatatypeHandling.VERIFY);
+		this(true, false, false, DatatypeHandling.VERIFY);
 	}
 
 	/**
