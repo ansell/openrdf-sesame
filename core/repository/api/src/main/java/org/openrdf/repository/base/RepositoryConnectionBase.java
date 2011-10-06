@@ -48,6 +48,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.util.RDFInserter;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -77,6 +78,8 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	private final Repository repository;
 
+	private volatile ParserConfig parserConfig = new ParserConfig();
+	
 	private volatile boolean isOpen;
 
 	private volatile boolean autoCommit;
@@ -87,6 +90,13 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		this.autoCommit = true;
 	}
 
+	public void setParserConfig(ParserConfig parserConfig) {
+		this.parserConfig = parserConfig;
+	}
+	
+	public ParserConfig getParserConfig() {
+		return parserConfig;
+	}
 	public Repository getRepository() {
 		return repository;
 	}
@@ -380,11 +390,8 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		RDFParser rdfParser = Rio.createParser(dataFormat, getRepository().getValueFactory());
-
-		rdfParser.setVerifyData(true);
-		rdfParser.setStopAtFirstError(false);
+		rdfParser.setParserConfig(getParserConfig());
 		rdfParser.setParseErrorListener(new ParseErrorLogger());
-		rdfParser.setDatatypeHandling(RDFParser.DatatypeHandling.VERIFY);
 
 		RDFInserter rdfInserter = new RDFInserter(this);
 		rdfInserter.enforceContext(contexts);

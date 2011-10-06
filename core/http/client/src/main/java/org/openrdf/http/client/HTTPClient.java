@@ -80,6 +80,7 @@ import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.query.resultio.TupleQueryResultParserRegistry;
 import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -122,6 +123,8 @@ public class HTTPClient {
 
 	private AuthScope authScope;
 
+	private ParserConfig parserConfig = new ParserConfig();
+	
 	private TupleQueryResultFormat preferredTQRFormat = TupleQueryResultFormat.BINARY;
 
 	private BooleanQueryResultFormat preferredBQRFormat = BooleanQueryResultFormat.TEXT;
@@ -1155,8 +1158,7 @@ public class HTTPClient {
 			try {
 				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
 				RDFParser parser = Rio.createParser(format, getValueFactory());
-				parser.setPreserveBNodeIDs(true);
-				parser.setStopAtFirstError(false);
+				parser.setParserConfig(getParserConfig());
 				parser.setParseErrorListener(new ParseErrorLogger());
 				parser.setRDFHandler(handler);
 				parser.parse(method.getResponseBodyAsStream(), method.getURI().getURI());
@@ -1322,5 +1324,19 @@ public class HTTPClient {
 		else {
 			method.releaseConnection();
 		}
+	}
+
+	/**
+	 * @param parserConfig The parserConfig to set.
+	 */
+	public void setParserConfig(ParserConfig parserConfig) {
+		this.parserConfig = parserConfig;
+	}
+
+	/**
+	 * @return Returns the parserConfig.
+	 */
+	public ParserConfig getParserConfig() {
+		return parserConfig;
 	}
 }
