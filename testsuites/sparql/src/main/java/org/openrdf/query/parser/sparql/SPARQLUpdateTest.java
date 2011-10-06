@@ -121,6 +121,27 @@ public abstract class SPARQLUpdateTest {
 		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 	}
+	
+	@Test
+	public void testInsertWhereWithBinding()
+		throws Exception
+	{
+		logger.debug("executing test InsertWhere");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+		operation.setBinding("x", bob);
+		
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+
+		operation.execute();
+
+		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+	}
 
 	@Test
 	public void testDeleteInsertWhere()
@@ -145,7 +166,7 @@ public abstract class SPARQLUpdateTest {
 		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 
 	}
-	
+
 	@Test
 	public void testDeleteInsertWhereLoopingBehavior()
 		throws Exception
@@ -168,7 +189,7 @@ public abstract class SPARQLUpdateTest {
 		Literal inCorrectAgeValue = f.createLiteral("46", XMLSchema.INTEGER);
 
 		assertTrue(con.hasStatement(bob, age, originalAgeValue, true));
-		
+
 		operation.execute();
 
 		assertFalse(con.hasStatement(bob, age, originalAgeValue, true));
@@ -462,7 +483,7 @@ public abstract class SPARQLUpdateTest {
 		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true, graph1));
 		assertTrue(msg, con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true, graph1));
 	}
-	
+
 	@Test
 	public void testInsertDataInGraph2()
 		throws Exception
