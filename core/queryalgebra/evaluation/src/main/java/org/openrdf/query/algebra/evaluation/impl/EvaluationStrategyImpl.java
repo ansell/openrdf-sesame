@@ -110,7 +110,6 @@ import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterat
 import org.openrdf.query.algebra.evaluation.iterator.ExtensionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.FilterIterator;
 import org.openrdf.query.algebra.evaluation.iterator.GroupIterator;
-import org.openrdf.query.algebra.evaluation.iterator.InsertBindingsIteration;
 import org.openrdf.query.algebra.evaluation.iterator.JoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.LeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.MultiProjectionIterator;
@@ -127,6 +126,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
+import org.openrdf.repository.sparql.query.InsertBindingSetCursor;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -531,7 +531,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			CloseableIteration<BindingSet, QueryEvaluationException> res = fs.evaluate(queryString, bindings, baseUri, QueryType.SELECT, service);
 			
 			// insert original bindings again
-			InsertBindingsIteration result = new InsertBindingsIteration(res, bindings);
+			InsertBindingSetCursor result = new InsertBindingSetCursor(res, bindings);
+
 			if (service.isSilent())
 				return new SilentIteration(result);
 			else
