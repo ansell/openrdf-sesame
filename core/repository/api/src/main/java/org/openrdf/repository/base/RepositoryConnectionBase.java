@@ -57,6 +57,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.helpers.ParseErrorLogger;
 
 /**
@@ -78,7 +79,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	private final Repository repository;
 
-	private volatile ParserConfig parserConfig = new ParserConfig();
+	private volatile ParserConfig parserConfig = new ParserConfig(true, false, false, DatatypeHandling.VERIFY);
 	
 	private volatile boolean isOpen;
 
