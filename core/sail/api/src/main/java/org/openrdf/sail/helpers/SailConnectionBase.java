@@ -38,6 +38,7 @@ import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.Move;
+import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
@@ -45,6 +46,7 @@ import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
+import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
@@ -875,6 +877,11 @@ public abstract class SailConnectionBase implements SailConnection {
 			while (sourceBindings.hasNext()) {
 				BindingSet sourceBinding = sourceBindings.next();
 
+				if (whereClause instanceof SingletonSet && sourceBinding instanceof EmptyBindingSet && bindings != null) {
+					// in the case of an empty WHERE clause, we use the supplied bindings to produce triples to DELETE/INSERT
+					sourceBinding = bindings;
+				}
+				
 				if (deleteClause != null) {
 					List<StatementPattern> deletePatterns = StatementPatternCollector.process(deleteClause);
 
