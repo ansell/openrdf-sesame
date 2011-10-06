@@ -23,6 +23,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
@@ -112,7 +113,7 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	/**
-	 * Creates a new TurtleParser that will use the supplied ValueFactory to
+	 * Creates a new RDFParserBase that will use the supplied ValueFactory to
 	 * create RDF model objects.
 	 * 
 	 * @param valueFactory
@@ -123,10 +124,7 @@ public abstract class RDFParserBase implements RDFParser {
 		namespaceTable = new HashMap<String, String>(16);
 
 		setValueFactory(valueFactory);
-		setVerifyData(true);
-		setPreserveBNodeIDs(false);
-		setStopAtFirstError(true);
-		setDatatypeHandling(DatatypeHandling.VERIFY);
+		setParserConfig(new ParserConfig());
 	}
 
 	/*---------*
@@ -161,6 +159,17 @@ public abstract class RDFParserBase implements RDFParser {
 		return locationListener;
 	}
 
+	public void setParserConfig(ParserConfig config) {
+		setVerifyData(config.verifyData());
+		setStopAtFirstError(config.stopAtFirstError());
+		setDatatypeHandling(config.datatypeHandling());
+		setPreserveBNodeIDs(config.isPreserveBNodeIDs());
+	}
+	
+	public ParserConfig getParserConfig() {
+		return new ParserConfig(verifyData(), stopAtFirstError(), preserveBNodeIDs(), datatypeHandling());
+	}
+	
 	public void setVerifyData(boolean verifyData) {
 		this.verifyData = verifyData;
 	}

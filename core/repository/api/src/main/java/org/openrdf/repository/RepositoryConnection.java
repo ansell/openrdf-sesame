@@ -23,12 +23,12 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Operation;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.Update;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -91,6 +91,23 @@ public interface RepositoryConnection {
 	 * Returns the Repository object to which this connection belongs.
 	 */
 	public Repository getRepository();
+
+	/**
+	 * Set the parser configuration this connection should use for
+	 * RDFParser-based operations.
+	 * 
+	 * @param config
+	 *        a Rio RDF Parser configuration.
+	 */
+	public void setParserConfig(ParserConfig config);
+
+	/**
+	 * Returns the parser configuration this connection uses for Rio-based
+	 * operations.
+	 * 
+	 * @return a Rio RDF parser configuration.
+	 */
+	public ParserConfig getParserConfig();
 
 	/**
 	 * Gets a ValueFactory for this RepositoryConnection.

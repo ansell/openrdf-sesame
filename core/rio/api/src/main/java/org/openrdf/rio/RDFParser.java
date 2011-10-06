@@ -75,6 +75,22 @@ public interface RDFParser {
 	public void setParseLocationListener(ParseLocationListener ll);
 
 	/**
+	 * Sets all supplied parser configuration options.
+	 * 
+	 * @param config
+	 *        a parser configuration object.
+	 */
+	public void setParserConfig(ParserConfig config);
+
+	/**
+	 * Retrieves the current parser configuration as a single object.
+	 * 
+	 * @return a parser configuration object representing the current
+	 *         configuration of the parser.
+	 */
+	public ParserConfig getParserConfig();
+
+	/**
 	 * Sets whether the parser should verify the data it parses (default value is
 	 * <tt>true</tt>).
 	 */
@@ -94,13 +110,13 @@ public interface RDFParser {
 
 	/**
 	 * Sets the datatype handling mode. There are three modes for handling
-	 * datatyped literals: <em>ignore</em>, <em>verify</em>and
-	 * <em>normalize</em>. If set to <em>ignore</em>, no special action
-	 * will be taken to handle datatyped literals. If set to <em>verify</em>,
-	 * any literals with known (XML Schema built-in) datatypes are checked to see
-	 * if their values are valid. If set to <em>normalize</em>, the literal
-	 * values are not only checked, but also normalized to their canonical
-	 * representation. The default value is <em>verify</em>.
+	 * datatyped literals: <em>ignore</em>, <em>verify</em>and <em>normalize</em>
+	 * . If set to <em>ignore</em>, no special action will be taken to handle
+	 * datatyped literals. If set to <em>verify</em>, any literals with known
+	 * (XML Schema built-in) datatypes are checked to see if their values are
+	 * valid. If set to <em>normalize</em>, the literal values are not only
+	 * checked, but also normalized to their canonical representation. The
+	 * default value is <em>verify</em>.
 	 * 
 	 * @param datatypeHandling
 	 *        A datatype handling option.

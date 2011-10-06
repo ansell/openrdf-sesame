@@ -46,10 +46,12 @@ import org.openrdf.query.Update;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -100,6 +102,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public HTTPRepositoryConnection(HTTPRepository repository) {
 		super(repository);
 
+		setParserConfig(new ParserConfig(true, true, true, DatatypeHandling.IGNORE));
+		
 		if (debugEnabled()) {
 			creatorTrace = new Throwable();
 		}
@@ -109,6 +113,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Methods *
 	 *---------*/
 
+	@Override 
+	public void setParserConfig(ParserConfig parserConfig) {
+		super.setParserConfig(parserConfig);
+		getRepository().getHTTPClient().setParserConfig(parserConfig);
+	}
+	
 	@Override
 	public HTTPRepository getRepository() {
 		return (HTTPRepository)super.getRepository();
