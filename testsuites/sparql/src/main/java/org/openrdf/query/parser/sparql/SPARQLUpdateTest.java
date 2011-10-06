@@ -121,19 +121,19 @@ public abstract class SPARQLUpdateTest {
 		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 	}
-	
+
 	@Test
 	public void testInsertWhereWithBinding()
 		throws Exception
 	{
-		logger.debug("executing test InsertWhere");
+		logger.debug("executing test testInsertWhereWithBinding");
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 		operation.setBinding("x", bob);
-		
+
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 
@@ -142,6 +142,83 @@ public abstract class SPARQLUpdateTest {
 		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 	}
+
+	@Test
+	public void testInsertEmptyWhere()
+		throws Exception
+	{
+		logger.debug("executing test testInsertEmptyWhere");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT { <" + bob + "> rdfs:label \"Bob\" . } WHERE { }");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+
+		operation.execute();
+
+		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+	}
+
+	@Test
+	public void testInsertEmptyWhereWithBinding()
+		throws Exception
+	{
+		logger.debug("executing test testInsertEmptyWhereWithBinding");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT {?x rdfs:label ?y . } WHERE { }");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+		operation.setBinding("x", bob);
+		operation.setBinding("y", f.createLiteral("Bob"));
+
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+
+		operation.execute();
+
+		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+	}
+
+	@Test
+	public void testInsertNonMatchingWhere()
+		throws Exception
+	{
+		logger.debug("executing test testInsertNonMatchingWhere");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT { ?x rdfs:label ?y . } WHERE { ?x rdfs:comment ?y }");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, null, true));
+
+		operation.execute();
+		
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, null, true));
+	}
+	
+	@Test
+	public void testInsertNonMatchingWhereWithBindings()
+		throws Exception
+	{
+		logger.debug("executing test testInsertNonMatchingWhereWithBindings");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT { ?x rdfs:label ?y . } WHERE { ?x rdfs:comment ?y }");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+		operation.setBinding("x", bob);
+		operation.setBinding("y", f.createLiteral("Bob"));
+
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, null, true));
+
+		operation.execute();
+		
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, null, true));
+	}
+	
 
 	@Test
 	public void testDeleteInsertWhere()
