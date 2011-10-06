@@ -32,6 +32,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -110,6 +111,39 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	{
 		return true;
 	}
+
+	@Override
+	public void setParserConfig(ParserConfig parserConfig) {
+		try {
+			if (isDelegatingAdd()) {
+				getDelegate().setParserConfig(parserConfig);
+			}
+			else {
+				super.setParserConfig(parserConfig);
+			}
+		}
+		catch (RepositoryException e) {
+			logger.error("Error while trying to configure parser", e);
+		}
+
+	}
+	
+	@Override
+	public ParserConfig getParserConfig() {
+		try {
+			if (isDelegatingAdd()) {
+				return getDelegate().getParserConfig();
+			}
+			else {
+				return super.getParserConfig();
+			}
+		}
+		catch (RepositoryException e) {
+			logger.error("Error while trying to retrieve parser config", e);
+		}
+		return null;
+	}
+
 
 	@Override
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
