@@ -8,6 +8,7 @@ package org.openrdf.http.server.repository.statements;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE;
 import static org.openrdf.http.protocol.Protocol.BASEURI_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.BINDING_PREFIX;
 import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
@@ -16,6 +17,7 @@ import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -139,9 +141,27 @@ public class StatementsController extends AbstractController {
 
 		String sparqlUpdateString = request.getParameterValues(Protocol.UPDATE_PARAM_NAME)[0];
 
+
+
 		try {
 			
 			Update update = repositoryCon.prepareUpdate(QueryLanguage.SPARQL, sparqlUpdateString);
+			
+			// determine if any variable bindings have been set on this update.
+			@SuppressWarnings("unchecked")
+			Enumeration<String> parameterNames = request.getParameterNames();
+
+			while (parameterNames.hasMoreElements()) {
+				String parameterName = parameterNames.nextElement();
+
+				if (parameterName.startsWith(BINDING_PREFIX) && parameterName.length() > BINDING_PREFIX.length())
+				{
+					String bindingName = parameterName.substring(BINDING_PREFIX.length());
+					Value bindingValue = ProtocolUtil.parseValueParam(request, parameterName,
+							repository.getValueFactory());
+					update.setBinding(bindingName, bindingValue);
+				}
+			}
 			
 			update.execute();
 			
