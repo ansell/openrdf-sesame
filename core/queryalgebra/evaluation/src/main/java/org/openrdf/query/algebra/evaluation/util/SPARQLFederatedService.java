@@ -20,6 +20,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.Service;
+import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sparql.SPARQLRepository;
 
@@ -33,7 +34,7 @@ public class SPARQLFederatedService implements FederatedService {
 
 	
 	protected final SPARQLRepository rep;
-		
+	protected RepositoryConnection conn = null;	
 	
 	/**
 	 * 
@@ -59,11 +60,14 @@ public class SPARQLFederatedService implements FederatedService {
 			QueryType type, Service service) throws QueryEvaluationException {
 
 		try {
-			
+			// use a cache connection if possible 
+			// (TODO add mechanism to unset/close connection)
+			if (conn==null)
+				conn = rep.getConnection();
 			
 			if (type==QueryType.SELECT) {
 				
-				TupleQuery query = rep.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryString, baseUri);
+				TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryString, baseUri);
 				
 				Iterator<Binding> bIter = bindings.iterator();
 				while (bIter.hasNext()) {
@@ -77,7 +81,7 @@ public class SPARQLFederatedService implements FederatedService {
 				return res;
 				
 			} else if (type==QueryType.ASK) {
-				BooleanQuery query = rep.getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, sparqlQueryString, baseUri);
+				BooleanQuery query = conn.prepareBooleanQuery(QueryLanguage.SPARQL, sparqlQueryString, baseUri);
 				
 				Iterator<Binding> bIter = bindings.iterator();
 				while (bIter.hasNext()) {
