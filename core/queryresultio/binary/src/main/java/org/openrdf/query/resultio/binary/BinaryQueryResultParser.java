@@ -7,6 +7,7 @@ package org.openrdf.query.resultio.binary;
 
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.BNODE_RECORD_MARKER;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.DATATYPE_LITERAL_RECORD_MARKER;
+import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.EMPTY_ROW_RECORD_MARKER;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.ERROR_RECORD_MARKER;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.FORMAT_VERSION;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.LANG_LITERAL_RECORD_MARKER;
@@ -43,6 +44,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
@@ -114,7 +116,7 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 
 		// Check format version (parser is backward-compatible with version 1 and version 2)
 		formatVersion = this.in.readInt();
-		if (formatVersion != FORMAT_VERSION && formatVersion != 1 && formatVersion != 2) {
+		if (formatVersion > FORMAT_VERSION && formatVersion < 1) {
 			throw new QueryResultParseException("Incompatible format version: " + formatVersion);
 		}
 		
@@ -149,6 +151,9 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 			}
 			else if (recordTypeMarker == NAMESPACE_RECORD_MARKER) {
 				processNamespace();
+			}
+			else if (recordTypeMarker == EMPTY_ROW_RECORD_MARKER) {
+				handler.handleSolution(EmptyBindingSet.getInstance());
 			}
 			else {
 				Value value = null;

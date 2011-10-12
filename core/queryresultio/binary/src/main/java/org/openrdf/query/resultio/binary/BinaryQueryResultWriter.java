@@ -7,6 +7,7 @@ package org.openrdf.query.resultio.binary;
 
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.BNODE_RECORD_MARKER;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.DATATYPE_LITERAL_RECORD_MARKER;
+import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.EMPTY_ROW_RECORD_MARKER;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.ERROR_RECORD_MARKER;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.FORMAT_VERSION;
 import static org.openrdf.query.resultio.binary.BinaryQueryResultConstants.LANG_LITERAL_RECORD_MARKER;
@@ -102,7 +103,7 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 			out.writeInt(FORMAT_VERSION);
 
 			out.writeInt(this.bindingNames.size());
-			
+
 			for (String bindingName : this.bindingNames) {
 				writeString(bindingName);
 			}
@@ -132,30 +133,35 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		throws TupleQueryResultHandlerException
 	{
 		try {
-			for (String bindingName : bindingNames) {
-				Value value = bindingSet.getValue(bindingName);
-
-				if (value == null) {
-					writeNull();
-				}
-				else if (value.equals(previousBindings.getValue(bindingName))) {
-					writeRepeat();
-				}
-				else if (value instanceof URI) {
-					writeQName((URI)value);
-				}
-				else if (value instanceof BNode) {
-					writeBNode((BNode)value);
-				}
-				else if (value instanceof Literal) {
-					writeLiteral((Literal)value);
-				}
-				else {
-					throw new TupleQueryResultHandlerException("Unknown Value object type: " + value.getClass());
-				}
+			if (bindingSet.size() == 0) {
+				writeEmptyRow();
 			}
+			else {
+				for (String bindingName : bindingNames) {
+					Value value = bindingSet.getValue(bindingName);
 
-			previousBindings = bindingSet;
+					if (value == null) {
+						writeNull();
+					}
+					else if (value.equals(previousBindings.getValue(bindingName))) {
+						writeRepeat();
+					}
+					else if (value instanceof URI) {
+						writeQName((URI)value);
+					}
+					else if (value instanceof BNode) {
+						writeBNode((BNode)value);
+					}
+					else if (value instanceof Literal) {
+						writeLiteral((Literal)value);
+					}
+					else {
+						throw new TupleQueryResultHandlerException("Unknown Value object type: " + value.getClass());
+					}
+				}
+
+				previousBindings = bindingSet;
+			}
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -172,6 +178,12 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		throws IOException
 	{
 		out.writeByte(REPEAT_RECORD_MARKER);
+	}
+
+	private void writeEmptyRow()
+		throws IOException
+	{
+		out.writeByte(EMPTY_ROW_RECORD_MARKER);
 	}
 
 	private void writeQName(URI uri)
