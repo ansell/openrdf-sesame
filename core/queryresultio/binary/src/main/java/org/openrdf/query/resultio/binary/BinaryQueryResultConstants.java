@@ -72,6 +72,8 @@ import java.io.DataOutput;
  * This indicates a datatyped literal. The record type marker is followed by an
  * UTF-8 encoded string for the literal's label. Following this label is either
  * a QNAME or URI record for the literal's datatype.
+ * <li><tt>EMPTY_ROW</tt> (byte value: 9):<br>
+ * This indicates a row with zero values.
  * <li><tt>ERROR</tt> (byte value: 126):<br>
  * This record indicates a error. The type of error is indicates by the byte
  * directly following the record type marker: <tt>1</tt> for a malformed query
@@ -95,7 +97,7 @@ public interface BinaryQueryResultConstants {
 	/**
 	 * The version number of the current format.
 	 */
-	public static final int FORMAT_VERSION = 3;
+	public static final int FORMAT_VERSION = 4;
 
 	/* RECORD TYPES */
 	public static final int NULL_RECORD_MARKER = 0;
@@ -115,6 +117,8 @@ public interface BinaryQueryResultConstants {
 	public static final int LANG_LITERAL_RECORD_MARKER = 7;
 
 	public static final int DATATYPE_LITERAL_RECORD_MARKER = 8;
+	
+	public static final int EMPTY_ROW_RECORD_MARKER = 9;
 
 	public static final int ERROR_RECORD_MARKER = 126;
 
