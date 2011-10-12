@@ -61,7 +61,8 @@
 	<variable name="query.label">Query</variable>
 	<variable name="export.label">Export</variable>
 	<variable name="modify.label">Modify</variable>
-	<variable name="update.label">SPARQL Update</variable>
+	<variable name="update.label">Update</variable>
+	<variable name="sparqlupdate.label">SPARQL Update</variable>
 	<variable name="add.label">Add</variable>
 	<variable name="remove.label">Remove</variable>
 	<variable name="delete.label">Delete</variable>
