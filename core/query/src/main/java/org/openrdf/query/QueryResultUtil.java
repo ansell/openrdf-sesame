@@ -206,6 +206,11 @@ public class QueryResultUtil {
 	}
 
 	private static boolean bindingSetsMatch(BindingSet bs1, BindingSet bs2, Map<BNode, BNode> bNodeMapping) {
+		
+		if (bs1.size() != bs2.size()) {
+			return false;
+		}
+		
 		for (Binding binding1 : bs1) {
 			Value value1 = binding1.getValue();
 			Value value2 = bs2.getValue(binding1.getName());
