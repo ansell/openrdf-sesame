@@ -6,6 +6,7 @@
 package org.openrdf.repository.sparql;
 
 import java.io.File;
+import java.util.Map;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -23,6 +24,7 @@ public class SPARQLRepository implements Repository {
 	
 	private String queryEndpointUrl;
 	private String updateEndpointUrl;
+	private Map<String,String> additionalHttpHeaders;
 
 	public SPARQLRepository(String queryEndpointUrl) {
 		this.queryEndpointUrl = queryEndpointUrl;
@@ -66,4 +68,17 @@ public class SPARQLRepository implements Repository {
 		return queryEndpointUrl;
 	}
 
+	/**
+	 * @return Returns the additionalHttpHeaders.
+	 */
+	public Map<String, String> getAdditionalHttpHeaders() {
+		return additionalHttpHeaders;
+	}
+	
+	/**
+	 * @param additionalHttpHeaders The additionalHttpHeaders to set as key value pairs.
+	 */
+	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
+		this.additionalHttpHeaders = additionalHttpHeaders;
+	}
 }

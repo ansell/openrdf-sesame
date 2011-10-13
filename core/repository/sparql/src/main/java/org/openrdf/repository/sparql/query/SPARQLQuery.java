@@ -10,6 +10,8 @@ import info.aduna.net.ParsedURI;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -28,6 +30,7 @@ import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.impl.MapBindingSet;
+import org.openrdf.repository.sparql.SPARQLConnection;
 
 /**
  * Provides an execution thread for background result parsing and inlines
@@ -115,6 +118,11 @@ public abstract class SPARQLQuery implements Query {
 			}
 		}
 		post.addRequestHeader("Accept", getAccept());
+		Map<String, String> additionalHeaders = (Map<String, String>)client.getParams().getParameter(SPARQLConnection.ADDITIONAL_HEADER_NAME);
+		if (additionalHeaders!=null) {
+			for (Entry<String, String> additionalHeader : additionalHeaders.entrySet())
+				post.addRequestHeader(additionalHeader.getKey(), additionalHeader.getValue());
+		}
 		boolean completed = false;
 		try {
 			if (client.executeMethod(post) >= 400) {

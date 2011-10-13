@@ -77,6 +77,11 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame",
 			"sesame-repository-sparql", "devel");
 
+	/**
+	 * The key under which the (optional) HTTP header are stored in the HttpClientParams
+	 */
+	public static String ADDITIONAL_HEADER_NAME = "additionalHTTPHeaders";
+	
 	private HttpClient client;
 
 	private String queryEndpointUrl;
@@ -101,6 +106,9 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		HttpClientParams clientParams = new HttpClientParams();
 		clientParams.setParameter(HttpMethodParams.USER_AGENT,
 				APP_NAME + "/" + VERSION + " " + clientParams.getParameter(HttpMethodParams.USER_AGENT));
+		// set additional HTTP headers, if desired by the user
+		if (repository.getAdditionalHttpHeaders()!=null)
+			clientParams.setParameter(ADDITIONAL_HEADER_NAME, repository.getAdditionalHttpHeaders());
 		client = new HttpClient(clientParams, manager);
 	}
 
