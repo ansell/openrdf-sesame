@@ -281,7 +281,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	{
 		// Skip the prolog, any information it contains should already have been
 		// processed
-	return (TupleExpr)node.getQuery().jjtAccept(this, null);
+		return (TupleExpr)node.getQuery().jjtAccept(this, null);
 	}
 
 	@Override
@@ -338,13 +338,11 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			tupleExpr = new Slice(tupleExpr, offset, limit);
 		}
 
-
 		// process bindings clause
 		ASTBindingsClause bindingsClause = node.getBindingsClause();
 		if (bindingsClause != null) {
 			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
 		}
-
 
 		if (parentGP != null) {
 			parentGP.addRequiredTE(tupleExpr);
@@ -455,7 +453,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		result.visit(groupFinder);
 		Group group = groupFinder.getGroup();
 		boolean existingGroup = group != null;
-		
+
 		List<String> aliasesInProjection = new ArrayList<String>();
 		for (ASTProjectionElem projElemNode : node.getProjectionElemList()) {
 
@@ -464,15 +462,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			String alias = projElemNode.getAlias();
 			if (alias != null) {
 				// aliased projection element
-				
+
 				if (aliasesInProjection.contains(alias)) {
-					throw new VisitorException("duplicate use of alias '" + alias + "' in projection."); 
+					throw new VisitorException("duplicate use of alias '" + alias + "' in projection.");
 				}
 				aliasesInProjection.add(alias);
-				
+
 				ValueExpr valueExpr = (ValueExpr)child.jjtAccept(this, null);
 
-				
 				projElemList.addElement(new ProjectionElem(alias));
 
 				AggregateCollector collector = new AggregateCollector();
@@ -959,25 +956,24 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		return te;
 	}
-	
+
 	public Object visit(ASTServiceGraphPattern node, Object data)
 		throws VisitorException
 	{
 		GraphPattern parentGP = graphPattern;
-				
+
 		ValueExpr serviceRef = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		
+
 		graphPattern = new GraphPattern(parentGP);
 		node.jjtGetChild(1).jjtAccept(this, null);
 		TupleExpr serviceExpr = graphPattern.buildTupleExpr();
 		String serviceExpressionString = node.getPatternString();
 
-		parentGP.addRequiredTE(new Service(valueExpr2Var(serviceRef),
-				serviceExpr, serviceExpressionString, node
-						.getPrefixDeclarations(), node.isSilent()));
+		parentGP.addRequiredTE(new Service(valueExpr2Var(serviceRef), serviceExpr, serviceExpressionString,
+				node.getPrefixDeclarations(), node.getBaseURI(), node.isSilent()));
 
 		graphPattern = parentGP;
-		
+
 		return null;
 	}
 
@@ -1108,12 +1104,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	{
 
 		int altCount = pathAltNode.jjtGetNumChildren();
-		
+
 		if (altCount > 1) {
 			GraphPattern parentGP = graphPattern;
 			Union union = new Union();
 			Union currentUnion = union;
-			for (int i = 0; i < altCount -1; i++) {
+			for (int i = 0; i < altCount - 1; i++) {
 				graphPattern = new GraphPattern(parentGP);
 				pathAltNode.jjtGetChild(i).jjtAccept(this, data);
 				TupleExpr arg = graphPattern.buildTupleExpr();
@@ -1130,7 +1126,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					currentUnion = newUnion;
 				}
 			}
-			
+
 			parentGP.addRequiredTE(union);
 			graphPattern = parentGP;
 		}
@@ -2063,11 +2059,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		int numberOfBindingValues = node.jjtGetNumChildren();
-		
+
 		if (numberOfBindingValues != vars.size()) {
-			throw new VisitorException("number of values in bindingset does not match variables in BINDINGS clause");
+			throw new VisitorException(
+					"number of values in bindingset does not match variables in BINDINGS clause");
 		}
-		
+
 		Value[] values = new Value[numberOfBindingValues];
 
 		for (int i = 0; i < numberOfBindingValues; i++) {
