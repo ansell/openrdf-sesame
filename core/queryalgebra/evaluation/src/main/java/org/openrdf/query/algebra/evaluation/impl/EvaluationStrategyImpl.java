@@ -517,7 +517,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Set<String> freeVars = new HashSet<String>(service.getServiceVars());
 			freeVars.removeAll(bindings.getBindingNames());
 			
-			String baseUri = null;	// TODO handle base uri
+			String baseUri = service.getBaseURI();
 			
 			// depending on freeVars.size: either SELECT or ASK query
 			String queryString = service.getQueryString(freeVars);
