@@ -219,6 +219,30 @@ public abstract class SPARQLUpdateTest {
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, null, true));
 	}
 	
+	@Test
+	public void testInsertWhereWithBindings()
+		throws Exception
+	{
+		logger.debug("executing test testInsertWhereWithBindings");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT { ?x rdfs:comment ?z . } WHERE { ?x foaf:name ?y }");
+
+		Literal comment = f.createLiteral("Bob has a comment");
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+		operation.setBinding("x", bob);
+		operation.setBinding("z", comment);
+
+		assertFalse(con.hasStatement(null, RDFS.COMMENT, comment, true));
+
+		operation.execute();
+		
+		assertTrue(con.hasStatement(bob, RDFS.COMMENT, comment, true));
+		assertFalse(con.hasStatement(alice, RDFS.COMMENT, comment, true));
+
+	}
+	
 
 	@Test
 	public void testDeleteInsertWhere()
