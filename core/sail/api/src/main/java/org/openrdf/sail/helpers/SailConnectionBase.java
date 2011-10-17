@@ -6,8 +6,10 @@
 package org.openrdf.sail.helpers;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -47,6 +49,8 @@ import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.query.impl.EmptyBindingSet;
+import org.openrdf.query.impl.ListBindingSet;
+import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
@@ -867,7 +871,8 @@ public abstract class SailConnectionBase implements SailConnection {
 		TupleExpr insertClause = modify.getInsertExpr();
 		TupleExpr whereClause = modify.getWhereExpr();
 
-		// We open a separate connection on the sail to evaluate the where-clause. This is necessary to avoid uncommitted
+		// We open a separate connection on the sail to evaluate the where-clause.
+		// This is necessary to avoid uncommitted
 		// triples from the INSERT to show up in the result.
 		SailConnection readConnection = sailBase.getConnection();
 		try {
@@ -877,11 +882,30 @@ public abstract class SailConnectionBase implements SailConnection {
 			while (sourceBindings.hasNext()) {
 				BindingSet sourceBinding = sourceBindings.next();
 
-				if (whereClause instanceof SingletonSet && sourceBinding instanceof EmptyBindingSet && bindings != null) {
-					// in the case of an empty WHERE clause, we use the supplied bindings to produce triples to DELETE/INSERT
+				if (whereClause instanceof SingletonSet && sourceBinding instanceof EmptyBindingSet
+						&& bindings != null)
+				{
+					// in the case of an empty WHERE clause, we use the supplied
+					// bindings to produce triples to DELETE/INSERT
 					sourceBinding = bindings;
 				}
-				
+				else {
+					// check if any supplied bindings do not occur in the bindingset
+					// produced by the WHERE clause. If so, merge.
+					Set<String> uniqueBindings = new HashSet<String>(bindings.getBindingNames());
+					uniqueBindings.removeAll(sourceBinding.getBindingNames());
+					if (uniqueBindings.size() > 0) {
+						MapBindingSet mergedSet = new MapBindingSet();
+						for (String bindingName : sourceBinding.getBindingNames()) {
+							mergedSet.addBinding(sourceBinding.getBinding(bindingName));
+						}
+						for (String bindingName : uniqueBindings) {
+							mergedSet.addBinding(bindings.getBinding(bindingName));
+						}
+						sourceBinding = mergedSet;
+					}
+				}
+
 				if (deleteClause != null) {
 					List<StatementPattern> deletePatterns = StatementPatternCollector.process(deleteClause);
 
