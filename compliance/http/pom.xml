@@ -153,9 +153,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.5/http/server</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.5/http/server</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/http/server?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/compliance/http/server/</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/http/server</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/http/server</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/http/server?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/http/server?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/http/server?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/compliance/http/server/</url>
 
 
 

@@ -62,9 +62,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.5/compliance/model</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.5/compliance/model</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/compliance/model?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/compliance/model/</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/compliance/model</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/compliance/model</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/compliance/model?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/compliance/model?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/compliance/model?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/compliance/model/</url>
 
 
 
