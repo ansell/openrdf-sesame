@@ -23,9 +23,9 @@
 	</modules>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/queryresultio</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/queryresultio</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryresultio?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/core/queryresultio?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryresultio?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryresultio/</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.5/core/queryresultio</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.5/core/queryresultio</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryresultio?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryresultio/</url>
 
 
 
