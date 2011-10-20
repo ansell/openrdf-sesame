@@ -500,36 +500,37 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (serviceRef.hasValue())
 			serviceUri = serviceRef.getValue().stringValue();
 		else {
-			if (bindings!=null && bindings.hasBinding(serviceRef.getName())) {
+			if (bindings != null && bindings.hasBinding(serviceRef.getName())) {
 				serviceUri = bindings.getBinding(serviceRef.getName()).getValue().stringValue();
 			}
 			else {
 				throw new QueryEvaluationException("SERVICE variables must be bound at evaluation time.");
 			}
 		}
-		
+
 		try {
 
 			FederatedService fs = FederatedServiceManager.getService(serviceUri);
-			
+
 			// create a copy of the free variables, and remove those for which
 			// bindings are available (we can set them as constraints!)
 			Set<String> freeVars = new HashSet<String>(service.getServiceVars());
 			freeVars.removeAll(bindings.getBindingNames());
-			
+
 			String baseUri = service.getBaseURI();
-			
+
 			// depending on freeVars.size: either SELECT or ASK query
 			String queryString = service.getQueryString(freeVars);
-			
+
 			// special case: no free variables => perform ASK query
-			if (freeVars.size()==0) {
+			if (freeVars.size() == 0) {
 				return fs.evaluate(queryString, bindings, baseUri, QueryType.ASK, service);
 			}
-			
+
 			// otherwise: perform a SELECT query
-			CloseableIteration<BindingSet, QueryEvaluationException> res = fs.evaluate(queryString, bindings, baseUri, QueryType.SELECT, service);
-			
+			CloseableIteration<BindingSet, QueryEvaluationException> res = fs.evaluate(queryString, bindings,
+					baseUri, QueryType.SELECT, service);
+
 			// insert original bindings again
 			InsertBindingSetCursor result = new InsertBindingSetCursor(res, bindings);
 
@@ -537,19 +538,22 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				return new SilentIteration(result);
 			else
 				return result;
-			
-		} catch (QueryEvaluationException e) {
+
+		}
+		catch (QueryEvaluationException e) {
 			// suppress exceptions if silent
-			if (service.isSilent()) 
-				return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
-			throw e;
-		} catch (RuntimeException e) {
-			// suppress special exceptions (e.g. UndeclaredThrowable with wrapped QueryEval) if silent
 			if (service.isSilent())
 				return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
 			throw e;
 		}
-		
+		catch (RuntimeException e) {
+			// suppress special exceptions (e.g. UndeclaredThrowable with wrapped
+			// QueryEval) if silent
+			if (service.isSilent())
+				return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
+			throw e;
+		}
+
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,
@@ -573,7 +577,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			if (dataset != null) {
 				Set<URI> graphs = null;
-				
+
 				if (sp.getScope() == Scope.DEFAULT_CONTEXTS) {
 					graphs = dataset.getDefaultGraphs();
 				}
@@ -1424,7 +1428,22 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (argValue instanceof Literal) {
 			Literal lit = (Literal)argValue;
-			return tripleSource.getValueFactory().createURI(lit.getLabel());
+			
+			String baseURI = node.getBaseURI();
+			
+			URI result = null;
+			try {
+				result = tripleSource.getValueFactory().createURI(lit.getLabel());
+			}
+			catch (IllegalArgumentException e) {
+				try {
+					result = tripleSource.getValueFactory().createURI(baseURI, lit.getLabel());
+				}
+				catch (IllegalArgumentException e1) {
+					throw new ValueExprEvaluationException(e1.getMessage());
+				}
+			}
+			return result;
 		}
 		else if (argValue instanceof URI) {
 			return ((URI)argValue);
@@ -1777,7 +1796,19 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws QueryEvaluationException
 	{
 		Value result = null;
-		if (isTrue(node.getCondition(), bindings)) {
+
+		boolean conditionIsTrue;
+		
+		try {
+			Value value = evaluate(node.getCondition(), bindings);
+			conditionIsTrue = QueryEvaluationUtil.getEffectiveBooleanValue(value);
+		}
+		catch (ValueExprEvaluationException e) {
+			// in case of type error, if-construction should result in empty binding.
+			return null;
+		}
+
+		if (conditionIsTrue) {
 			result = evaluate(node.getResult(), bindings);
 		}
 		else {

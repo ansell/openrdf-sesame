@@ -14,6 +14,8 @@ package org.openrdf.query.algebra;
  */
 public class IRIFunction extends UnaryValueOperator {
 
+	private String baseURI;
+	
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -48,5 +50,19 @@ public class IRIFunction extends UnaryValueOperator {
 	@Override
 	public IRIFunction clone() {
 		return (IRIFunction)super.clone();
+	}
+
+	/**
+	 * @param baseURI The baseURI to set.
+	 */
+	public void setBaseURI(String baseURI) {
+		this.baseURI = baseURI;
+	}
+
+	/**
+	 * @return Returns the baseURI.
+	 */
+	public String getBaseURI() {
+		return baseURI;
 	}
 }
