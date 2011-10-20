@@ -250,46 +250,43 @@ public class QueryResultUtil {
 					URI dt1 = leftLit.getDatatype();
 					URI dt2 = rightLit.getDatatype();
 
-					if (dt1 != null && dt2 != null) {
-						if (!dt1.equals(dt2)) {
-							return false;
+					if (dt1 != null && dt2 != null && dt1.equals(dt2)
+							&& XMLDatatypeUtil.isValidValue(leftLit.getLabel(), dt1)
+							&& XMLDatatypeUtil.isValidValue(rightLit.getLabel(), dt2))
+					{
+						Integer compareResult = null;
+						if (dt1.equals(XMLSchema.DOUBLE)) {
+							compareResult = Double.compare(leftLit.doubleValue(), rightLit.doubleValue());
 						}
-						else {
-							Integer compareResult = null;
-							if (dt1.equals(XMLSchema.DOUBLE)) {
-								compareResult = Double.compare(leftLit.doubleValue(), rightLit.doubleValue());
-							}
-							else if (dt1.equals(XMLSchema.FLOAT)) {
-								compareResult = Float.compare(leftLit.floatValue(), rightLit.floatValue());
-							}
-							else if (dt1.equals(XMLSchema.DECIMAL)) {
-								compareResult = leftLit.decimalValue().compareTo(rightLit.decimalValue());
-							}
-							else if (XMLDatatypeUtil.isIntegerDatatype(dt1)) {
-								compareResult = leftLit.integerValue().compareTo(rightLit.integerValue());
-							}
-							else if (dt1.equals(XMLSchema.BOOLEAN)) {
-								Boolean leftBool = Boolean.valueOf(leftLit.booleanValue());
-								Boolean rightBool = Boolean.valueOf(rightLit.booleanValue());
-								compareResult = leftBool.compareTo(rightBool);
-							}
-							else if (XMLDatatypeUtil.isCalendarDatatype(dt1)) {
-								XMLGregorianCalendar left = leftLit.calendarValue();
-								XMLGregorianCalendar right = rightLit.calendarValue();
+						else if (dt1.equals(XMLSchema.FLOAT)) {
+							compareResult = Float.compare(leftLit.floatValue(), rightLit.floatValue());
+						}
+						else if (dt1.equals(XMLSchema.DECIMAL)) {
+							compareResult = leftLit.decimalValue().compareTo(rightLit.decimalValue());
+						}
+						else if (XMLDatatypeUtil.isIntegerDatatype(dt1)) {
+							compareResult = leftLit.integerValue().compareTo(rightLit.integerValue());
+						}
+						else if (dt1.equals(XMLSchema.BOOLEAN)) {
+							Boolean leftBool = Boolean.valueOf(leftLit.booleanValue());
+							Boolean rightBool = Boolean.valueOf(rightLit.booleanValue());
+							compareResult = leftBool.compareTo(rightBool);
+						}
+						else if (XMLDatatypeUtil.isCalendarDatatype(dt1)) {
+							XMLGregorianCalendar left = leftLit.calendarValue();
+							XMLGregorianCalendar right = rightLit.calendarValue();
 
-								compareResult = left.compare(right);
-							}
+							compareResult = left.compare(right);
+						}
 
-							if (compareResult != null) {
-								if (compareResult.intValue() != 0) {
-									return false;
-								}
-							}
-							else if (!value1.equals(value2)) {
+						if (compareResult != null) {
+							if (compareResult.intValue() != 0) {
 								return false;
 							}
 						}
-
+						else if (!value1.equals(value2)) {
+							return false;
+						}
 					}
 					else if (!value1.equals(value2)) {
 						return false;
