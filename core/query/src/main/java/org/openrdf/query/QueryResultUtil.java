@@ -12,12 +12,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 
@@ -206,11 +212,11 @@ public class QueryResultUtil {
 	}
 
 	private static boolean bindingSetsMatch(BindingSet bs1, BindingSet bs2, Map<BNode, BNode> bNodeMapping) {
-		
+
 		if (bs1.size() != bs2.size()) {
 			return false;
 		}
-		
+
 		for (Binding binding1 : bs1) {
 			Value value1 = binding1.getValue();
 			Value value2 = bs2.getValue(binding1.getName());
@@ -236,7 +242,60 @@ public class QueryResultUtil {
 			}
 			else {
 				// values are not (both) bNodes
-				if (!value1.equals(value2)) {
+				if (value1 instanceof Literal && value2 instanceof Literal) {
+					// do literal value-based comparison for supported datatypes
+					Literal leftLit = (Literal)value1;
+					Literal rightLit = (Literal)value2;
+
+					URI dt1 = leftLit.getDatatype();
+					URI dt2 = rightLit.getDatatype();
+
+					if (dt1 != null && dt2 != null) {
+						if (!dt1.equals(dt2)) {
+							return false;
+						}
+						else {
+							Integer compareResult = null;
+							if (dt1.equals(XMLSchema.DOUBLE)) {
+								compareResult = Double.compare(leftLit.doubleValue(), rightLit.doubleValue());
+							}
+							else if (dt1.equals(XMLSchema.FLOAT)) {
+								compareResult = Float.compare(leftLit.floatValue(), rightLit.floatValue());
+							}
+							else if (dt1.equals(XMLSchema.DECIMAL)) {
+								compareResult = leftLit.decimalValue().compareTo(rightLit.decimalValue());
+							}
+							else if (XMLDatatypeUtil.isIntegerDatatype(dt1)) {
+								compareResult = leftLit.integerValue().compareTo(rightLit.integerValue());
+							}
+							else if (dt1.equals(XMLSchema.BOOLEAN)) {
+								Boolean leftBool = Boolean.valueOf(leftLit.booleanValue());
+								Boolean rightBool = Boolean.valueOf(rightLit.booleanValue());
+								compareResult = leftBool.compareTo(rightBool);
+							}
+							else if (XMLDatatypeUtil.isCalendarDatatype(dt1)) {
+								XMLGregorianCalendar left = leftLit.calendarValue();
+								XMLGregorianCalendar right = rightLit.calendarValue();
+
+								compareResult = left.compare(right);
+							}
+
+							if (compareResult != null) {
+								if (compareResult.intValue() != 0) {
+									return false;
+								}
+							}
+							else if (!value1.equals(value2)) {
+								return false;
+							}
+						}
+
+					}
+					else if (!value1.equals(value2)) {
+						return false;
+					}
+				}
+				else if (!value1.equals(value2)) {
 					return false;
 				}
 			}
