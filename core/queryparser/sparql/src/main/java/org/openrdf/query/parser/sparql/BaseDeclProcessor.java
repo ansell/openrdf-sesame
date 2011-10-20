@@ -10,6 +10,7 @@ import info.aduna.net.ParsedURI;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.sparql.ast.ASTBaseDecl;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
+import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
 import org.openrdf.query.parser.sparql.ast.ASTOperationContainer;
 import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
@@ -92,6 +93,14 @@ public class BaseDeclProcessor {
 			ParsedURI resolvedURI = parsedBaseURI.resolve(node.getValue());
 			node.setValue(resolvedURI.toString());
 
+			return super.visit(node, data);
+		}
+
+		@Override
+		public Object visit(ASTIRIFunc node, Object data)
+			throws VisitorException
+		{
+			node.setBaseURI(parsedBaseURI.toString());
 			return super.visit(node, data);
 		}
 

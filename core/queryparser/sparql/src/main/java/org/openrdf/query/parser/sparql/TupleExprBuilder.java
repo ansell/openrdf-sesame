@@ -1989,7 +1989,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		ValueExpr expr = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-		return new IRIFunction(expr);
+		IRIFunction fn = new IRIFunction(expr);
+		fn.setBaseURI(node.getBaseURI());
+		return fn;
 	}
 
 	@Override
