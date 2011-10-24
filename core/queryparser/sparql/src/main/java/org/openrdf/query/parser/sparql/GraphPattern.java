@@ -161,6 +161,19 @@ public class GraphPattern {
 	 * @return A tuple expression for this graph pattern.
 	 */
 	public TupleExpr buildTupleExpr() {
+		return buildTupleExpr(true);
+	}
+
+	/**
+	 * Builds a combined tuple expression from the tuple expressions and
+	 * constraints in this graph pattern.
+	 * 
+	 * @param includeAssignments
+	 *        flag indicating if bind assignments should be included in the
+	 *        resulting TupleExpr.
+	 * @return A tuple expression for this graph pattern.
+	 */
+	public TupleExpr buildTupleExpr(boolean includeAssignments) {
 		TupleExpr result;
 
 		if (requiredTEs.isEmpty()) {
@@ -179,9 +192,11 @@ public class GraphPattern {
 			result = new LeftJoin(result, optTE);
 		}
 
-		for (Extension assignment : assignments) {
-			assignment.setArg(result);
-			result = assignment;
+		if (includeAssignments) {
+			for (Extension assignment : assignments) {
+				assignment.setArg(result);
+				result = assignment;
+			}
 		}
 
 		for (ValueExpr constraint : constraints) {

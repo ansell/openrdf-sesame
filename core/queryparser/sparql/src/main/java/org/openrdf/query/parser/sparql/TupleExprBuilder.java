@@ -989,7 +989,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		// Optional constraints also apply to left hand side of operator
 		List<ValueExpr> constraints = graphPattern.removeAllConstraints();
 
-		TupleExpr leftArg = parentGP.buildTupleExpr();
+		// do not include bind assignment in the leftarg to avoid infinite loop:
+		// bind assignments will be added later.
+		TupleExpr leftArg = parentGP.buildTupleExpr(false);
+
 		TupleExpr rightArg = graphPattern.buildTupleExpr();
 
 		LeftJoin leftJoin;
