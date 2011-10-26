@@ -40,24 +40,27 @@ public class WildcardProjectionProcessor extends ASTVisitorBase {
 		if (queryNode != null) {
 			ASTWhereClause queryBody = queryNode.getWhereClause();
 
-			SelectClauseCollector collector = new SelectClauseCollector();
-			try {
-				queryBody.jjtAccept(collector, null);
+			// DESCRIBE queries can be without a query body sometimes
+			if (queryBody != null) {
+				SelectClauseCollector collector = new SelectClauseCollector();
+				try {
+					queryBody.jjtAccept(collector, null);
 
-				Set<ASTSelect> selectClauses = collector.getSelectClauses();
+					Set<ASTSelect> selectClauses = collector.getSelectClauses();
 
-				for (ASTSelect selectClause : selectClauses) {
-					if (selectClause.isWildcard()) {
-						ASTSelectQuery q = (ASTSelectQuery)selectClause.jjtGetParent();
+					for (ASTSelect selectClause : selectClauses) {
+						if (selectClause.isWildcard()) {
+							ASTSelectQuery q = (ASTSelectQuery)selectClause.jjtGetParent();
 
-						addQueryVars(q.getWhereClause(), selectClause);
-						selectClause.setWildcard(false);
+							addQueryVars(q.getWhereClause(), selectClause);
+							selectClause.setWildcard(false);
+						}
 					}
-				}
 
-			}
-			catch (VisitorException e) {
-				throw new MalformedQueryException(e);
+				}
+				catch (VisitorException e) {
+					throw new MalformedQueryException(e);
+				}
 			}
 		}
 
@@ -129,15 +132,17 @@ public class WildcardProjectionProcessor extends ASTVisitorBase {
 		public Object visit(ASTSelectQuery node, Object data)
 			throws VisitorException
 		{
-			// stop visitor from processing body of sub-select, only add variables from the projection
+			// stop visitor from processing body of sub-select, only add variables
+			// from the projection
 			return visit(node.getSelect(), data);
 		}
-		
+
 		@Override
 		public Object visit(ASTProjectionElem node, Object data)
 			throws VisitorException
 		{
-			// only include the actual alias from a projection element in a subselect, not any variables used as 
+			// only include the actual alias from a projection element in a
+			// subselect, not any variables used as
 			// input to a function
 			String alias = node.getAlias();
 			if (alias != null) {
