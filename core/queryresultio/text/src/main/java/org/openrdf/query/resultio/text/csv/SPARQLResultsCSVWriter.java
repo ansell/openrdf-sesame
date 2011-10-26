@@ -22,7 +22,6 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
-import org.openrdf.query.resultio.text.SPARQLResultsUtil;
 
 /**
  * TupleQueryResultWriter for the SPARQL CSV (Comma-Separated Values) format.
