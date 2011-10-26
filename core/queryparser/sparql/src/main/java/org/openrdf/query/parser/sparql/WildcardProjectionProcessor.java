@@ -36,11 +36,13 @@ public class WildcardProjectionProcessor extends ASTVisitorBase {
 	{
 		ASTQuery queryNode = qc.getQuery();
 
-		// scan for (possibly nested) select clauses
+		// scan for nested SELECT clauses in the query
 		if (queryNode != null) {
+			ASTWhereClause queryBody = queryNode.getWhereClause();
+
 			SelectClauseCollector collector = new SelectClauseCollector();
 			try {
-				queryNode.jjtAccept(collector, null);
+				queryBody.jjtAccept(collector, null);
 
 				Set<ASTSelect> selectClauses = collector.getSelectClauses();
 
@@ -59,8 +61,18 @@ public class WildcardProjectionProcessor extends ASTVisitorBase {
 			}
 		}
 
-		// check for possible wildcard in DESCRIBE query
-		if (queryNode instanceof ASTDescribeQuery) {
+		if (queryNode instanceof ASTSelectQuery) {
+			// check for wildcard in upper SELECT query
+
+			ASTSelectQuery selectQuery = (ASTSelectQuery)queryNode;
+			ASTSelect selectClause = selectQuery.getSelect();
+			if (selectClause.isWildcard()) {
+				addQueryVars(selectQuery.getWhereClause(), selectClause);
+				selectClause.setWildcard(false);
+			}
+		}
+		else if (queryNode instanceof ASTDescribeQuery) {
+			// check for possible wildcard in DESCRIBE query
 			ASTDescribeQuery describeQuery = (ASTDescribeQuery)queryNode;
 			ASTDescribe describeClause = describeQuery.getDescribe();
 
@@ -111,6 +123,30 @@ public class WildcardProjectionProcessor extends ASTVisitorBase {
 
 		public Set<String> getVariableNames() {
 			return variableNames;
+		}
+
+		@Override
+		public Object visit(ASTSelectQuery node, Object data)
+			throws VisitorException
+		{
+			// stop visitor from processing body of sub-select, only add variables from the projection
+			return visit(node.getSelect(), data);
+		}
+		
+		@Override
+		public Object visit(ASTProjectionElem node, Object data)
+			throws VisitorException
+		{
+			// only include the actual alias from a projection element in a subselect, not any variables used as 
+			// input to a function
+			String alias = node.getAlias();
+			if (alias != null) {
+				variableNames.add(alias);
+				return null;
+			}
+			else {
+				return super.visit(node, data);
+			}
 		}
 
 		@Override
