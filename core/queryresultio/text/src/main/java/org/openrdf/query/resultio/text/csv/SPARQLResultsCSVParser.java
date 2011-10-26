@@ -55,7 +55,7 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase {
 				for (String valueString : nextLine) {
 					Value v = null;
 					if (valueString.startsWith("_:")) {
-						v = valueFactory.createBNode(valueString);
+						v = valueFactory.createBNode(valueString.substring(2));
 					}
 					else if (valueString.startsWith("\"")) {
 						v = parseLiteral(valueString);
