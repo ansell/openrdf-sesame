@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.resultio;
+package org.openrdf.query.resultio.text;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -12,6 +12,10 @@ import java.io.IOException;
 import junit.framework.TestCase;
 
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.resultio.BooleanQueryResultFormat;
+import org.openrdf.query.resultio.QueryResultIO;
+import org.openrdf.query.resultio.QueryResultParseException;
+import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 
 public class BooleanQueryResultSerializationTest extends TestCase {
 
