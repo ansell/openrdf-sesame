@@ -435,13 +435,13 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			if (distinct(v)) {
 				if (v instanceof Literal) {
 					Literal nextLiteral = (Literal)v;
-					// check if the literal is numeric, if not, skip it. This is
-					// strictly speaking not spec-compliant, but a whole lot more
-					// useful.
 					if (nextLiteral.getDatatype() != null
 							&& XMLDatatypeUtil.isNumericDatatype(nextLiteral.getDatatype()))
 					{
 						sum = MathUtil.compute(sum, nextLiteral, MathOp.PLUS);
+					}
+					else {
+						typeError = new ValueExprEvaluationException("not a number: " + v);
 					}
 				}
 				else if (v != null) {
@@ -457,7 +457,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			if (typeError != null) {
 				throw typeError;
 			}
-			
+
 			return sum;
 		}
 	}
@@ -488,13 +488,14 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			if (distinct(v)) {
 				if (v instanceof Literal) {
 					Literal nextLiteral = (Literal)v;
-					// check if the literal is numeric, if not, skip it. This is
-					// strictly speaking not spec-compliant, but a whole lot more
-					// useful.
+					// check if the literal is numeric.
 					if (nextLiteral.getDatatype() != null
 							&& XMLDatatypeUtil.isNumericDatatype(nextLiteral.getDatatype()))
 					{
 						sum = MathUtil.compute(sum, nextLiteral, MathOp.PLUS);
+					}
+					else {
+						typeError = new ValueExprEvaluationException("not a number: " + v);
 					}
 					count++;
 				}
