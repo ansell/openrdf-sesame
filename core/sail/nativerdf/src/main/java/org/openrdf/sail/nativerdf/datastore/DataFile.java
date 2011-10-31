@@ -64,31 +64,37 @@ public class DataFile {
 		this.nioFile = new NioFile(file);
 		this.forceSync = forceSync;
 
-		// Open a read/write channel to the file
+		try {
+			// Open a read/write channel to the file
 
-		if (nioFile.size() == 0) {
-			// Empty file, write header
-			nioFile.writeBytes(MAGIC_NUMBER, 0);
-			nioFile.writeByte(FILE_FORMAT_VERSION, MAGIC_NUMBER.length);
+			if (nioFile.size() == 0) {
+				// Empty file, write header
+				nioFile.writeBytes(MAGIC_NUMBER, 0);
+				nioFile.writeByte(FILE_FORMAT_VERSION, MAGIC_NUMBER.length);
 
-			sync();
+				sync();
+			}
+			else if (nioFile.size() < HEADER_LENGTH) {
+				throw new IOException("File too small to be a compatible data file");
+			}
+			else {
+				// Verify file header
+				if (!Arrays.equals(MAGIC_NUMBER, nioFile.readBytes(0, MAGIC_NUMBER.length))) {
+					throw new IOException("File doesn't contain compatible data records");
+				}
+
+				byte version = nioFile.readByte(MAGIC_NUMBER.length);
+				if (version > FILE_FORMAT_VERSION) {
+					throw new IOException("Unable to read data file; it uses a newer file format");
+				}
+				else if (version != FILE_FORMAT_VERSION) {
+					throw new IOException("Unable to read data file; invalid file format version: " + version);
+				}
+			}
 		}
-		else if (nioFile.size() < HEADER_LENGTH) {
-			throw new IOException("File too small to be a compatible data file");
-		}
-		else {
-			// Verify file header
-			if (!Arrays.equals(MAGIC_NUMBER, nioFile.readBytes(0, MAGIC_NUMBER.length))) {
-				throw new IOException("File doesn't contain compatible data records");
-			}
-
-			byte version = nioFile.readByte(MAGIC_NUMBER.length);
-			if (version > FILE_FORMAT_VERSION) {
-				throw new IOException("Unable to read data file; it uses a newer file format");
-			}
-			else if (version != FILE_FORMAT_VERSION) {
-				throw new IOException("Unable to read data file; invalid file format version: " + version);
-			}
+		catch (IOException e) {
+			this.nioFile.close();
+			throw e;
 		}
 	}
 
