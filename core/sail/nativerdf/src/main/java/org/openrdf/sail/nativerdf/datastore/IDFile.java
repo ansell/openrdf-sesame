@@ -70,32 +70,37 @@ public class IDFile {
 		this.nioFile = new NioFile(file);
 		this.forceSync = forceSync;
 
-		if (nioFile.size() == 0L) {
-			// Empty file, write header
-			nioFile.writeBytes(MAGIC_NUMBER, 0);
-			nioFile.writeByte(FILE_FORMAT_VERSION, 3);
-			nioFile.writeBytes(new byte[] { 0, 0, 0, 0 }, 4);
+		try {
+			if (nioFile.size() == 0L) {
+				// Empty file, write header
+				nioFile.writeBytes(MAGIC_NUMBER, 0);
+				nioFile.writeByte(FILE_FORMAT_VERSION, 3);
+				nioFile.writeBytes(new byte[] { 0, 0, 0, 0 }, 4);
 
-			sync();
-		}
-		else if (nioFile.size() < HEADER_LENGTH) {
-			throw new IOException("File too small to be a compatible ID file");
-		}
-		else {
-			// Verify file header
-			if (!Arrays.equals(MAGIC_NUMBER, nioFile.readBytes(0, MAGIC_NUMBER.length))) {
-				throw new IOException("File doesn't contain compatible ID records");
+				sync();
 			}
+			else if (nioFile.size() < HEADER_LENGTH) {
+				throw new IOException("File too small to be a compatible ID file");
+			}
+			else {
+				// Verify file header
+				if (!Arrays.equals(MAGIC_NUMBER, nioFile.readBytes(0, MAGIC_NUMBER.length))) {
+					throw new IOException("File doesn't contain compatible ID records");
+				}
 
-			byte version = nioFile.readByte(MAGIC_NUMBER.length);
-			if (version > FILE_FORMAT_VERSION) {
-				throw new IOException("Unable to read ID file; it uses a newer file format");
-			}
-			else if (version != FILE_FORMAT_VERSION) {
-				throw new IOException("Unable to read ID file; invalid file format version: " + version);
+				byte version = nioFile.readByte(MAGIC_NUMBER.length);
+				if (version > FILE_FORMAT_VERSION) {
+					throw new IOException("Unable to read ID file; it uses a newer file format");
+				}
+				else if (version != FILE_FORMAT_VERSION) {
+					throw new IOException("Unable to read ID file; invalid file format version: " + version);
+				}
 			}
 		}
-
+		catch (IOException e) {
+			this.nioFile.close();
+			throw e;
+		}
 	}
 
 	/*---------*

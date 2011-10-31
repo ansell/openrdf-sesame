@@ -98,48 +98,54 @@ public class HashFile {
 		this.nioFile = new NioFile(file);
 		this.forceSync = forceSync;
 
-		if (nioFile.size() == 0L) {
-			// Empty file, insert bucket count, bucket size
-			// and item count at the start of the file
-			bucketCount = INIT_BUCKET_COUNT;
-			bucketSize = INIT_BUCKET_SIZE;
-			itemCount = 0;
-			recordSize = ITEM_SIZE * bucketSize + 4;
+		try {
+			if (nioFile.size() == 0L) {
+				// Empty file, insert bucket count, bucket size
+				// and item count at the start of the file
+				bucketCount = INIT_BUCKET_COUNT;
+				bucketSize = INIT_BUCKET_SIZE;
+				itemCount = 0;
+				recordSize = ITEM_SIZE * bucketSize + 4;
 
-			// Initialize the file by writing <_bucketCount> empty buckets
-			writeEmptyBuckets(HEADER_LENGTH, bucketCount);
+				// Initialize the file by writing <_bucketCount> empty buckets
+				writeEmptyBuckets(HEADER_LENGTH, bucketCount);
 
-			sync();
+				sync();
+			}
+			else {
+				// Read bucket count, bucket size and item count from the file
+				ByteBuffer buf = ByteBuffer.allocate((int)HEADER_LENGTH);
+				nioFile.read(buf, 0L);
+				buf.rewind();
+
+				if (buf.remaining() < HEADER_LENGTH) {
+					throw new IOException("File too short to be a compatible hash file");
+				}
+
+				byte[] magicNumber = new byte[MAGIC_NUMBER.length];
+				buf.get(magicNumber);
+				byte version = buf.get();
+				bucketCount = buf.getInt();
+				bucketSize = buf.getInt();
+				itemCount = buf.getInt();
+
+				if (!Arrays.equals(MAGIC_NUMBER, magicNumber)) {
+					throw new IOException("File doesn't contain compatible hash file data");
+				}
+
+				if (version > FILE_FORMAT_VERSION) {
+					throw new IOException("Unable to read hash file; it uses a newer file format");
+				}
+				else if (version != FILE_FORMAT_VERSION) {
+					throw new IOException("Unable to read hash file; invalid file format version: " + version);
+				}
+
+				recordSize = ITEM_SIZE * bucketSize + 4;
+			}
 		}
-		else {
-			// Read bucket count, bucket size and item count from the file
-			ByteBuffer buf = ByteBuffer.allocate((int)HEADER_LENGTH);
-			nioFile.read(buf, 0L);
-			buf.rewind();
-
-			if (buf.remaining() < HEADER_LENGTH) {
-				throw new IOException("File too short to be a compatible hash file");
-			}
-
-			byte[] magicNumber = new byte[MAGIC_NUMBER.length];
-			buf.get(magicNumber);
-			byte version = buf.get();
-			bucketCount = buf.getInt();
-			bucketSize = buf.getInt();
-			itemCount = buf.getInt();
-
-			if (!Arrays.equals(MAGIC_NUMBER, magicNumber)) {
-				throw new IOException("File doesn't contain compatible hash file data");
-			}
-
-			if (version > FILE_FORMAT_VERSION) {
-				throw new IOException("Unable to read hash file; it uses a newer file format");
-			}
-			else if (version != FILE_FORMAT_VERSION) {
-				throw new IOException("Unable to read hash file; invalid file format version: " + version);
-			}
-
-			recordSize = ITEM_SIZE * bucketSize + 4;
+		catch (IOException e) {
+			this.nioFile.close();
+			throw e;
 		}
 	}
 
@@ -374,10 +380,6 @@ public class HashFile {
 	private void increaseHashTable()
 		throws IOException
 	{
-		// System.out.println("Increasing hash table to " + (2*_bucketCount) + "
-		// buckets...");
-		// long startTime = System.currentTimeMillis();
-
 		long oldTableSize = HEADER_LENGTH + (long)bucketCount * recordSize;
 		long newTableSize = HEADER_LENGTH + (long)bucketCount * recordSize * 2;
 		long oldFileSize = nioFile.size(); // includes overflow buckets
@@ -402,14 +404,14 @@ public class HashFile {
 		ByteBuffer bucket = ByteBuffer.allocate(recordSize);
 		ByteBuffer newBucket = ByteBuffer.allocate(recordSize);
 
-		// Rehash items in non-overflow buckets, half of these will move to a new
-		// location, but none of them will trigger the creation of new overflow
+		// Rehash items in non-overflow buckets, half of these will move to a
+		// new location, but none of them will trigger the creation of new overflow
 		// buckets. Any (now deprecated) references to overflow buckets are
 		// removed too.
 
 		// All items that are moved to a new location end up in one and the same
-		// new and empty bucket. All items are divided between the old and the new
-		// bucket and the changes to the buckets are written to disk only once.
+		// new and empty bucket. All items are divided between the old and the
+		// new bucket and the changes to the buckets are written to disk only once.
 		for (long bucketOffset = HEADER_LENGTH; bucketOffset < oldTableSize; bucketOffset += recordSize) {
 			nioFile.read(bucket, bucketOffset);
 
@@ -440,8 +442,8 @@ public class HashFile {
 			}
 
 			if (bucketChanged) {
-				// Some of the items were moved to the new bucket, write it to the
-				// file
+				// Some of the items were moved to the new bucket, write it to
+				// the file
 				newBucket.flip();
 				nioFile.write(newBucket, newBucketOffset);
 				newBucket.clear();
@@ -454,8 +456,8 @@ public class HashFile {
 			}
 
 			if (bucketChanged) {
-				// Some of the items were moved to the new bucket or the overflow
-				// ID has been reset; write the bucket back to the file
+				// Some of the items were moved to the new bucket or the
+				// overflow ID has been reset; write the bucket back to the file
 				bucket.rewind();
 				nioFile.write(bucket, bucketOffset);
 			}
@@ -489,10 +491,6 @@ public class HashFile {
 		// Discard the temp file
 		tmpRaf.close();
 		tmpFile.delete();
-
-		// long endTime = System.currentTimeMillis();
-		// System.out.println("Hash table rehashed in " + (endTime-startTime) + "
-		// ms");
 	}
 
 	/*------------------------*
@@ -551,7 +549,8 @@ public class HashFile {
 					}
 				}
 
-				// No matching hash code in current bucket, check overflow bucket
+				// No matching hash code in current bucket, check overflow
+				// bucket
 				int overflowID = bucketBuffer.getInt(ITEM_SIZE * bucketSize);
 				if (overflowID == 0) {
 					// No overflow bucket, end the search
