@@ -46,7 +46,7 @@ public class ValueComparator implements Comparator<Value> {
 		boolean b1 = o1 instanceof BNode;
 		boolean b2 = o2 instanceof BNode;
 		if (b1 && b2) {
-			return 0;
+			return compareBNodes((BNode)o1, (BNode)o2);
 		}
 		if (b1) {
 			return -1;
@@ -70,6 +70,10 @@ public class ValueComparator implements Comparator<Value> {
 
 		// 4. RDF literals
 		return compareLiterals((Literal)o1, (Literal)o2);
+	}
+
+	private int compareBNodes(BNode leftBNode, BNode rightBNode) {
+		return leftBNode.getID().compareTo(rightBNode.getID());
 	}
 
 	private int compareURIs(URI leftURI, URI rightURI) {
