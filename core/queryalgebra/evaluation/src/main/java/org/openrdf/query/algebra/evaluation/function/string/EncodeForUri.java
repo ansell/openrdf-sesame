@@ -5,8 +5,6 @@
  */
 package org.openrdf.query.algebra.evaluation.function.string;
 
-import info.aduna.net.UriUtil;
-
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -21,6 +19,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
  * for RDF</a>
  * 
  * @author Jeen Broekstra
+ * @author Arjohn Kampman
  */
 public class EncodeForUri implements Function {
 
@@ -42,7 +41,7 @@ public class EncodeForUri implements Function {
 			if (QueryEvaluationUtil.isStringLiteral(literal) || literal.getLanguage() != null) {
 				String lexValue = literal.getLabel();
 
-				return valueFactory.createLiteral(UriUtil.encodeUri(lexValue));
+				return valueFactory.createLiteral(encodeUri(lexValue));
 			}
 			else {
 				throw new ValueExprEvaluationException("Invalid argument for ENCODE_FOR_URI: " + literal);
@@ -53,4 +52,35 @@ public class EncodeForUri implements Function {
 		}
 	}
 
+	private String encodeUri(String uri) {
+		StringBuilder buf = new StringBuilder(uri.length() * 2);
+
+		int uriLen = uri.length();
+		for (int i = 0; i < uriLen; i++) {
+			char c = uri.charAt(i);
+
+			if (isUnreserved(c)) {
+				buf.append(c);
+			}
+			else {
+				// Escape character
+				buf.append('%');
+				String hexVal = Integer.toHexString((int)c);
+
+				// Ensure use of two characters
+				if (hexVal.length() == 1) {
+					buf.append('0');
+				}
+
+				buf.append(hexVal);
+			}
+		}
+
+		return buf.toString();
+	}
+
+	private final boolean isUnreserved(char c) {
+		return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '-' || c == '.'
+				|| c == '_' || c == '~';
+	}
 }
