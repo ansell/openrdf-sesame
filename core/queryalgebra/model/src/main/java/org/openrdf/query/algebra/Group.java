@@ -12,7 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import info.aduna.collections.iterators.Iterators;
+import org.openrdf.util.iterators.Iterators;
 
 /**
  * A tuple operator that groups tuples that have a specific set of equivalent

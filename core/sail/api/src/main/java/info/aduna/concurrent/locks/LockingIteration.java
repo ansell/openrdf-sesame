@@ -4,11 +4,12 @@
  * Licensed under the Aduna BSD-style license.
  */
 
-package info.aduna.iteration;
+package info.aduna.concurrent.locks;
 
 import java.util.NoSuchElementException;
 
-import info.aduna.concurrent.locks.Lock;
+import info.aduna.iteration.Iteration;
+import info.aduna.iteration.IterationWrapper;
 
 /**
  * An Iteration that holds on to a lock until the Iteration is closed. Upon

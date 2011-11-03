@@ -5,7 +5,7 @@
  */
 package org.openrdf.repository.sparql.query;
 
-import info.aduna.collections.iterators.ConvertingIterator;
+import org.openrdf.util.iterators.ConvertingIterator;
 
 import java.util.Collection;
 import java.util.HashMap;

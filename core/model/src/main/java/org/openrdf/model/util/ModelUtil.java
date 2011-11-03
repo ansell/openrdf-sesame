@@ -12,13 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import info.aduna.collections.iterators.Iterators;
-
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.util.iterators.Iterators;
 
 /**
  * @author Arjohn Kampman

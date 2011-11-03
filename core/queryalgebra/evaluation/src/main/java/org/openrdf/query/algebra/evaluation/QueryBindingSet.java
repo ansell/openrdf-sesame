@@ -11,13 +11,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import info.aduna.collections.iterators.ConvertingIterator;
-
 import org.openrdf.model.Value;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.impl.BindingImpl;
 import org.openrdf.query.impl.MapBindingSet;
+import org.openrdf.util.iterators.ConvertingIterator;
 
 /**
  * An implementation of the {@link BindingSet} interface that is used to evalate
