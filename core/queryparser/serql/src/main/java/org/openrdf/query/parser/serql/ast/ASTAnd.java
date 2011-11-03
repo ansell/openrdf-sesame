@@ -7,9 +7,6 @@ package org.openrdf.query.parser.serql.ast;
 
 import java.util.List;
 
-import info.aduna.collections.CastingList;
-
-
 public class ASTAnd extends ASTBooleanExpr {
 
 	public ASTAnd(int id) {

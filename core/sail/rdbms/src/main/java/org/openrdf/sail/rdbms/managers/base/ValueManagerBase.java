@@ -8,11 +8,10 @@ package org.openrdf.sail.rdbms.managers.base;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import info.aduna.collections.LRUMap;
-
 import org.openrdf.sail.rdbms.managers.HashManager;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.schema.IdSequence;
+import org.openrdf.sail.rdbms.util.LRUMap;
 
 public abstract class ValueManagerBase<V extends RdbmsValue> extends ManagerBase {
 
