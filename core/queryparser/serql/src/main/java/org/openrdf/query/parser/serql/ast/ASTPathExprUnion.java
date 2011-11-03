@@ -7,8 +7,6 @@ package org.openrdf.query.parser.serql.ast;
 
 import java.util.List;
 
-import info.aduna.collections.CastingList;
-
 public class ASTPathExprUnion extends ASTPathExpr {
 
 	public ASTPathExprUnion(int id) {

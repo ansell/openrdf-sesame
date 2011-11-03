@@ -7,8 +7,6 @@ package org.openrdf.query.parser.serql.ast;
 
 import java.util.List;
 
-import info.aduna.collections.CastingList;
-
 public class ASTArgList extends SimpleNode {
 
 	public ASTArgList(int id) {
