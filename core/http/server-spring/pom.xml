@@ -18,7 +18,11 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-runtime</artifactId>
 		</dependency>
-
+ 
+		<dependency>
+			<groupId>info.aduna.appbase</groupId>
+			<artifactId>aduna-appbase-core</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>info.aduna.appbase</groupId>
 			<artifactId>aduna-appbase-webapp-base-core</artifactId>
