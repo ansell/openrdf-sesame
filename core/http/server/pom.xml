@@ -24,29 +24,32 @@
 			<groupId>info.aduna.appbase</groupId>
 			<artifactId>aduna-appbase-core</artifactId>
 		</dependency>
+
 		<dependency>
-			<groupId>info.aduna.appbase</groupId>
-			<artifactId>aduna-appbase-webapp-system</artifactId>
+			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-webapp-war</artifactId>
 			<type>war</type>
 		</dependency>
+		<dependency>
+			<groupId>org.tuckey</groupId>
+			<artifactId>urlrewritefilter</artifactId>
+		</dependency>
+
 
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<scope>runtime</scope>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
 			<scope>runtime</scope>
-			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-xml</artifactId>
-			<scope>test</scope>
 		</dependency>
 
 		<dependency>
