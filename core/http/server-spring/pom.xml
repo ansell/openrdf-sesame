@@ -23,10 +23,6 @@
 			<groupId>info.aduna.appbase</groupId>
 			<artifactId>aduna-appbase-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>info.aduna.appbase</groupId>
-			<artifactId>aduna-appbase-webapp-base-core</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
@@ -42,12 +38,28 @@
 		</dependency>
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
+			<artifactId>aduna-commons-xml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-webapp-core</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet.jsp</groupId>
+			<artifactId>jsp-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>taglibs</groupId>
+			<artifactId>standard</artifactId>
 		</dependency>
 
 		<dependency>
@@ -68,6 +80,11 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
 		</dependency>
 	</dependencies>
 
