@@ -30,7 +30,6 @@ public class AllTests {
 		suite.addTestSuite(IntersectionIterationTest.class);
 		suite.addTestSuite(DistinctIntersectionIterationTest.class);
 		suite.addTestSuite(IteratorIterationTest.class);
-		suite.addTestSuite(LockingIterationTest.class);
 		suite.addTestSuite(LookAheadIterationTest.class);
 		suite.addTestSuite(MinusIterationTest.class);
 		suite.addTestSuite(DistinctMinusIterationTest.class);

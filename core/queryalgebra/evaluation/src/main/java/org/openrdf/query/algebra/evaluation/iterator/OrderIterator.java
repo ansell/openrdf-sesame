@@ -6,13 +6,13 @@
 package org.openrdf.query.algebra.evaluation.iterator;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.TreeMap;
 
-import info.aduna.collections.iterators.EmptyIterator;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.DelayedIteration;
 import info.aduna.iteration.Iteration;
@@ -125,7 +125,7 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 		return new LookAheadIteration<BindingSet, QueryEvaluationException>() {
 
 			// Initialize with empty iteration so that var is never null
-			private volatile Iterator<BindingSet> iterator = new EmptyIterator<BindingSet>();
+			private volatile Iterator<BindingSet> iterator = Collections.<BindingSet>emptyList().iterator();
 
 			protected BindingSet getNextElement() {
 				while (!iterator.hasNext() && values.hasNext()) {

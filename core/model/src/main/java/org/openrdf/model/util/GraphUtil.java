@@ -9,9 +9,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import info.aduna.collections.iterators.ConvertingIterator;
-import info.aduna.collections.iterators.Iterators;
-
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
@@ -19,6 +16,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.util.iterators.ConvertingIterator;
+import org.openrdf.util.iterators.Iterators;
 
 /**
  * Utility methods for working with {@link Graph} objects.

@@ -18,16 +18,16 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-runtime</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-util</artifactId>
+		</dependency>
  
 		<dependency>
 			<groupId>info.aduna.appbase</groupId>
 			<artifactId>aduna-appbase-core</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-collections</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-io</artifactId>

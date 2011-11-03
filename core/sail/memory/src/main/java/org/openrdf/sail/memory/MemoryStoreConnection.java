@@ -12,9 +12,9 @@ import java.util.Collections;
 import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
+import info.aduna.concurrent.locks.LockingIteration;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
-import info.aduna.iteration.LockingIteration;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;

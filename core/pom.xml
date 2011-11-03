@@ -24,6 +24,7 @@
 		<module>runtime</module>
 		<module>runtime-osgi</module>
 		<module>sail</module>
+		<module>util</module>
 	</modules>
 
 	<name>OpenRDF Sesame Core</name>

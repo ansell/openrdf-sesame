@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import info.aduna.collections.iterators.FilterIterator;
+import org.openrdf.util.iterators.FilterIterator;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Graph;
