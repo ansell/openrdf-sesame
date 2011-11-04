@@ -93,7 +93,7 @@ public class ProtocolTest extends TestCase {
 	{
 		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
 		String encContext = Protocol.encodeValue(new URIImpl("urn:x-local:graph1"));
-		location += Protocol.CONTEXT_PARAM_NAME + "=" + encContext;
+		location += "?" + Protocol.CONTEXT_PARAM_NAME + "=" + encContext;
 		putFile(location, "/testcases/named-graph-1.ttl");
 	}
 
@@ -106,7 +106,7 @@ public class ProtocolTest extends TestCase {
 	{
 		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
 		String encContext = Protocol.encodeValue(new URIImpl("urn:x-local:graph1"));
-		location += Protocol.CONTEXT_PARAM_NAME + "=" + encContext;
+		location += "?" + Protocol.CONTEXT_PARAM_NAME + "=" + encContext;
 		delete(location);
 	}
 
