@@ -285,11 +285,6 @@
 				<artifactId>aduna-commons-i18n</artifactId>
 				<version>1.4.0</version>
 			</dependency>
-			<dependency>
-				<groupId>info.aduna.commons</groupId>
-				<artifactId>aduna-commons-net-http-server-embedded</artifactId>
-				<version>2.5.0</version>
-			</dependency>
 
 			<!-- Apache Commons -->
 			<dependency>

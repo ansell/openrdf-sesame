@@ -27,7 +27,6 @@ import info.aduna.io.GZipUtil;
 import info.aduna.io.ZipUtil;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
-import info.aduna.net.http.RequestHeaders;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
@@ -38,7 +37,6 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Operation;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -244,14 +242,14 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		// Set appropriate Accept headers
 		if (dataFormat != null) {
 			for (String mimeType : dataFormat.getMIMETypes()) {
-				con.addRequestProperty(RequestHeaders.ACCEPT, mimeType);
+				con.addRequestProperty("Accept", mimeType);
 			}
 		}
 		else {
 			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
 			List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, true, null);
 			for (String acceptParam : acceptParams) {
-				con.addRequestProperty(RequestHeaders.ACCEPT, acceptParam);
+				con.addRequestProperty("Accept", acceptParam);
 			}
 		}
 

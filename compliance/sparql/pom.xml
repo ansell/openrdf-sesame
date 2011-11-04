@@ -143,8 +143,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-net-http-server-embedded</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-http-compliance</artifactId>
 		</dependency>
 
 		<dependency>
