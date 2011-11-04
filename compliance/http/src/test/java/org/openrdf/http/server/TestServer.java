@@ -7,8 +7,6 @@ package org.openrdf.http.server;
 
 import java.io.File;
 
-import info.aduna.net.http.server.embedded.EmbeddedServer;
-
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;

@@ -43,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.io.IOUtil;
-import info.aduna.net.http.HttpClientUtil;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.http.protocol.Protocol;
@@ -459,7 +458,7 @@ public class HTTPClient {
 			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				throw new UnauthorizedException();
 			}
-			else if (!HttpClientUtil.is2xx(httpCode)) {
+			else if (!is2xx(httpCode)) {
 				ErrorInfo errInfo = ErrorInfo.parse(method.getResponseBodyAsString());
 
 				if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
@@ -722,7 +721,7 @@ public class HTTPClient {
 			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				throw new UnauthorizedException();
 			}
-			else if (!HttpClientUtil.is2xx(httpCode)) {
+			else if (!is2xx(httpCode)) {
 				ErrorInfo errInfo = getErrorInfo(method);
 				throw new RepositoryException("Transaction failed: " + errInfo + " (" + httpCode + ")");
 			}
@@ -818,7 +817,7 @@ public class HTTPClient {
 			else if (httpCode == HttpURLConnection.HTTP_UNSUPPORTED_TYPE) {
 				throw new UnsupportedRDFormatException(method.getResponseBodyAsString());
 			}
-			else if (!HttpClientUtil.is2xx(httpCode)) {
+			else if (!is2xx(httpCode)) {
 				ErrorInfo errInfo = ErrorInfo.parse(method.getResponseBodyAsString());
 
 				if (errInfo.getErrorType() == ErrorType.MALFORMED_DATA) {
@@ -960,7 +959,7 @@ public class HTTPClient {
 			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				throw new UnauthorizedException();
 			}
-			else if (!HttpClientUtil.is2xx(httpCode)) {
+			else if (!is2xx(httpCode)) {
 				ErrorInfo errInfo = getErrorInfo(method);
 				throw new RepositoryException("Failed to set namespace: " + errInfo + " (" + httpCode + ")");
 			}
@@ -984,7 +983,7 @@ public class HTTPClient {
 			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				throw new UnauthorizedException();
 			}
-			else if (!HttpClientUtil.is2xx(httpCode)) {
+			else if (!is2xx(httpCode)) {
 				ErrorInfo errInfo = getErrorInfo(method);
 				throw new RepositoryException("Failed to remove namespace: " + errInfo + " (" + httpCode + ")");
 			}
@@ -1008,7 +1007,7 @@ public class HTTPClient {
 			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				throw new UnauthorizedException();
 			}
-			else if (!HttpClientUtil.is2xx(httpCode)) {
+			else if (!is2xx(httpCode)) {
 				ErrorInfo errInfo = getErrorInfo(method);
 				throw new RepositoryException("Failed to clear namespaces: " + errInfo + " (" + httpCode + ")");
 			}
@@ -1263,6 +1262,16 @@ public class HTTPClient {
 	/*-------------------------*
 	 * General utility methods *
 	 *-------------------------*/
+
+	/**
+	 * Checks whether the specified status code is in the 2xx-range, indicating a
+	 * successfull request.
+	 * 
+	 * @return <tt>true</tt> if the status code is in the 2xx range.
+	 */
+	private boolean is2xx(int statusCode) {
+		return statusCode >= 200 && statusCode < 300;
+	}
 
 	/**
 	 * Gets the MIME type specified in the response headers of the supplied

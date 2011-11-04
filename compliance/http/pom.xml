@@ -92,13 +92,21 @@
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-net-http-server-embedded</artifactId>
+			<groupId>info.aduna.appbase</groupId>
+			<artifactId>aduna-appbase-logging-file</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna.appbase</groupId>
-			<artifactId>aduna-appbase-logging-file</artifactId>
+			<groupId>org.mortbay.jetty</groupId>
+			<artifactId>jetty</artifactId>
+			<version>6.1.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mortbay.jetty</groupId>
+			<artifactId>jsp-2.1</artifactId>
+			<version>6.1.9</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
