@@ -43,6 +43,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+		<slf4j.version>1.6.1</slf4j.version>
+		<logback.version>0.9.28</logback.version>
 		<aduna.appbase.version>3.11.0</aduna.appbase.version>
 		<spring.version>2.5.6</spring.version>
 	</properties>
@@ -234,6 +236,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-config</artifactId>
+				<version>2.6.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-util</artifactId>
 				<version>2.6.1-SNAPSHOT</version>
 			</dependency>
@@ -269,17 +276,28 @@
 				<scope>runtime</scope>
 			</dependency>
 
-			<!-- Aduna Appbase -->
+			<!-- Aduna Commons -->
 			<dependency>
-				<groupId>info.aduna.appbase</groupId>
-				<artifactId>aduna-appbase</artifactId>
-				<version>${aduna.appbase.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
+				<groupId>info.aduna.commons</groupId>
+				<artifactId>aduna-commons-io</artifactId>
+				<version>2.10.0</version>
+			</dependency>
+			<dependency>
+				<groupId>info.aduna.commons</groupId>
+				<artifactId>aduna-commons-lang</artifactId>
+				<version>2.9.0</version>
+			</dependency>
+			<dependency>
+				<groupId>info.aduna.commons</groupId>
+				<artifactId>aduna-commons-platform-info</artifactId>
+				<version>2.9.0</version>
+			</dependency>
+			<dependency>
+				<groupId>info.aduna.commons</groupId>
+				<artifactId>aduna-commons-text</artifactId>
+				<version>2.7.0</version>
 			</dependency>
 
-			<!-- Aduna Commons -->
-			<!-- Note: other Aduna Commons dependencies are imported from appbase -->
 			<dependency>
 				<groupId>info.aduna.commons</groupId>
 				<artifactId>aduna-commons-i18n</artifactId>
@@ -331,11 +349,80 @@
 				<scope>runtime</scope>
 			</dependency>
 
+			<!-- Java Enterprise Edition -->
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>servlet-api</artifactId>
+				<version>2.4</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>javax.servlet.jsp</groupId>
+				<artifactId>jsp-api</artifactId>
+				<version>2.0</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>jstl</artifactId>
+				<version>1.1.2</version>
+			</dependency>
+			<dependency>
+				<groupId>taglibs</groupId>
+				<artifactId>standard</artifactId>
+				<version>1.1.2</version>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>javax.activation</groupId>
+				<artifactId>activation</artifactId>
+				<version>1.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.tuckey</groupId>
+				<artifactId>urlrewritefilter</artifactId>
+				<version>3.0.4</version>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.servlet</groupId>
+						<artifactId>servlet-api</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>ant</groupId>
+						<artifactId>ant</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>log4j</groupId>
+						<artifactId>log4j</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>junit</groupId>
+						<artifactId>junit</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
 			<!-- Spring framework -->
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-aop</artifactId>
 				<version>${spring.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-webmvc</artifactId>
+				<version>2.5.6</version>
 				<exclusions>
 					<exclusion>
 						<groupId>commons-logging</groupId>
@@ -375,6 +462,40 @@
 				<groupId>cglib</groupId>
 				<artifactId>cglib</artifactId>
 				<version>2.2</version>
+			</dependency>
+
+			<!-- Logging: SLF4J and logback -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-jdk14</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>jcl-over-slf4j</artifactId>
+				<version>${slf4j.version}</version>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>log4j-over-slf4j</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-core</artifactId>
+				<version>${logback.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback.version}</version>
 			</dependency>
 			
 			<!-- Testing: JUnit -->

@@ -92,8 +92,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna.appbase</groupId>
-			<artifactId>aduna-appbase-logging-file</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-config</artifactId>
 		</dependency>
 
 		<dependency>
