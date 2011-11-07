@@ -200,6 +200,16 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		tempRep.shutDown();
 	}
 
+	public void testAddLiteralWithNewline()
+		throws Exception
+	{
+		Literal test = vf.createLiteral("this is a test\n");
+		testCon.add(bob, RDFS.LABEL, test);
+
+		assertTrue("Repository should contain newly added statement",
+				testCon.hasStatement(bob, RDFS.LABEL, test, false));
+	}
+
 	public void testTransactionIsolation()
 		throws Exception
 	{
@@ -440,12 +450,12 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		catch (ClassCastException e) {
 			fail("unexpected query object type: " + e.getMessage());
 		}
-		
+
 		queryBuilder = new StringBuilder();
 		queryBuilder.append(" (SELECT person");
 		queryBuilder.append(" FROM {person} foaf:name {").append(Александър.getLabel()).append("}");
 		queryBuilder.append(") UNION ");
-		queryBuilder.append("(SELECT x FROM {x} p {y} )"); 
+		queryBuilder.append("(SELECT x FROM {x} p {y} )");
 		queryBuilder.append(" USING NAMESPACE foaf = <" + FOAF_NS + ">");
 
 		try {
@@ -477,7 +487,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		catch (ClassCastException e) {
 			fail("unexpected query object type: " + e.getMessage());
 		}
-		
+
 		queryBuilder = new StringBuilder();
 		queryBuilder.append(" BASE <http://base.uri>");
 		queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + ">");
