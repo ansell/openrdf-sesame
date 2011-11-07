@@ -22,11 +22,11 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-rio-api</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-net</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-util</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-xml</artifactId>
