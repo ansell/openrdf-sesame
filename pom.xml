@@ -275,13 +275,6 @@
 				<scope>runtime</scope>
 			</dependency>
 
-			<!-- Aduna Commons -->
-			<dependency>
-				<groupId>info.aduna.commons</groupId>
-				<artifactId>aduna-commons-i18n</artifactId>
-				<version>1.4.0</version>
-			</dependency>
-
 			<!-- Apache Commons -->
 			<dependency>
 				<groupId>commons-cli</groupId>
