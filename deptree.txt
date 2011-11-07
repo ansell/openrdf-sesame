@@ -1,0 +1,1780 @@
+[INFO] Scanning for projects...
+[INFO] Reactor build order: 
+[INFO]   OpenRDF Sesame
+[INFO]   OpenRDF Sesame Core
+[INFO]   OpenRDF Sesame: util
+[INFO]   OpenRDF Sesame: Model
+[INFO]   OpenRDF Sesame: Rio
+[INFO]   OpenRDF Sesame: Rio - API
+[INFO]   OpenRDF Sesame: Query
+[INFO]   OpenRDF Sesame: Query algebra
+[INFO]   OpenRDF Sesame: Query algebra - model
+[INFO]   OpenRDF Sesame: Query parser
+[INFO]   OpenRDF Sesame: Query parser - API
+[INFO]   OpenRDF Sesame: Query parser - SeRQL
+[INFO]   OpenRDF Sesame: Query parser - SPARQL
+[INFO]   OpenRDF Sesame: Query result IO
+[INFO]   OpenRDF Sesame: Query result IO - API
+[INFO]   OpenRDF Sesame: Query result IO - binary
+[INFO]   OpenRDF Sesame: Query result IO - SPARQL/JSON
+[INFO]   OpenRDF Sesame: Query result IO - SPARQL/XML
+[INFO]   OpenRDF Sesame: Query result IO - plain text booleans
+[INFO]   OpenRDF Sesame: Repository
+[INFO]   OpenRDF Sesame: Repository - API
+[INFO]   OpenRDF Sesame: Repository - event (wrapper)
+[INFO]   OpenRDF Sesame: Sail
+[INFO]   OpenRDF Sesame: Sail API
+[INFO]   OpenRDF Sesame: SailRepository
+[INFO]   OpenRDF Sesame: Inferencer Sails
+[INFO]   OpenRDF Sesame: Rio - N-Triples
+[INFO]   OpenRDF Sesame: HTTP
+[INFO]   OpenRDF Sesame: HTTP protocol
+[INFO]   OpenRDF Sesame: HTTP client
+[INFO]   OpenRDF Sesame: SPARQL Repository
+[INFO]   OpenRDF Sesame: Query algebra - evaluation
+[INFO]   OpenRDF Sesame: MemoryStore
+[INFO]   OpenRDF Sesame: HTTPRepository
+[INFO]   OpenRDF Sesame: Repository manager
+[INFO]   OpenRDF Sesame: DatasetRepository (wrapper)
+[INFO]   OpenRDF Sesame: Repository - context aware (wrapper)
+[INFO]   OpenRDF Sesame: Rio - Binary
+[INFO]   OpenRDF Sesame: Rio - Turtle
+[INFO]   OpenRDF Sesame: Rio - N3 (writer-only)
+[INFO]   OpenRDF Sesame: Rio - RDF/XML
+[INFO]   OpenRDF Sesame: Rio - TriX
+[INFO]   OpenRDF Sesame: Rio - TriG
+[INFO]   OpenRDF Sesame: NativeStore
+[INFO]   OpenRDF Sesame: RDBMS Sail
+[INFO]   OpenRDF Sesame: Runtime
+[INFO]   OpenRDF Sesame: Console
+[INFO]   OpenRDF Sesame: HTTP server - core
+[INFO]   OpenRDF Sesame: HTTP server
+[INFO]   OpenRDF Sesame: HTTP workbench
+[INFO]   OpenRDF Sesame: Runtime - OSGi
+[INFO]   OpenRDF Sesame test suites
+[INFO]   OpenRDF Rio compliance test suite
+[INFO]   OpenRDF SeRQL test suite
+[INFO]   OpenRDF SPARQL compliance test suite
+[INFO]   OpenRDF SAIL and Repository API compliance test suite
+[INFO]   OpenRDF Sesame compliance tests
+[INFO]   OpenRDF Model compliance test
+[INFO]   OpenRDF Rio compliance tests
+[INFO]   OpenRDF HTTP server compliance tests
+[INFO]   OpenRDF SAIL and Repository compliance test
+[INFO]   OpenRDF SeRQL query parser compliance tests
+[INFO]   OpenRDF SPARQL query parser compliance tests
+[INFO] Searching repository for plugin with prefix: 'dependency'.
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame:pom:2.6.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame Core
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-core:pom:2.6.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: util
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT
+[INFO] +- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] \- junit:junit:jar:4.7:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Model
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] \- junit:junit:jar:4.7:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Rio
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-rio:pom:2.6.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Rio - API
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] \- junit:junit:jar:4.7:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query algebra
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryalgebra:pom:2.6.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query algebra - model
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO]    \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query parser
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryparser:pom:2.6.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query parser - API
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO]    \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query parser - SeRQL
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query parser - SPARQL
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] \- junit:junit:jar:4.7:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query result IO
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryresultio:pom:2.6.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query result IO - API
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO]    \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query result IO - binary
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- junit:junit:jar:4.7:test
+[INFO] \- ch.qos.logback:logback-classic:jar:0.9.28:test
+[INFO]    \- ch.qos.logback:logback-core:jar:0.9.28:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query result IO - SPARQL/JSON
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] \- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query result IO - SPARQL/XML
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- junit:junit:jar:4.7:test
+[INFO] \- ch.qos.logback:logback-classic:jar:0.9.28:test
+[INFO]    \- ch.qos.logback:logback-core:jar:0.9.28:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query result IO - plain text booleans
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- net.sf.opencsv:opencsv:jar:2.0:compile
+[INFO] +- junit:junit:jar:4.7:test
+[INFO] \- ch.qos.logback:logback-classic:jar:0.9.28:test
+[INFO]    \- ch.qos.logback:logback-core:jar:0.9.28:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Repository
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-repository:pom:2.6.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Repository - API
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Repository - event (wrapper)
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] \- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO]    +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO]    \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Sail
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-sail:pom:2.6.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Sail API
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: SailRepository
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] \- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO]    \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Inferencer Sails
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Rio - N-Triples
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] \- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO]    \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: HTTP
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-http:pom:2.6.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: HTTP protocol
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] \- junit:junit:jar:4.7:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: HTTP client
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] +- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: SPARQL Repository
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Query algebra - evaluation
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  |  \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- ch.qos.logback:logback-classic:jar:0.9.28:test
+[INFO] |  \- ch.qos.logback:logback-core:jar:0.9.28:test
+[INFO] \- junit:junit:jar:4.7:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: MemoryStore
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     +- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     |  +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |     |  \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |     \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] \- junit:junit:jar:4.7:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: HTTPRepository
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Repository manager
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |        \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: DatasetRepository (wrapper)
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] \- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO]    \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Repository - context aware (wrapper)
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- junit:junit:jar:4.7:test
+[INFO] \- ch.qos.logback:logback-classic:jar:0.9.28:test
+[INFO]    \- ch.qos.logback:logback-core:jar:0.9.28:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Rio - Binary
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] \- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO]    \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Rio - Turtle
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] \- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Rio - N3 (writer-only)
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] \- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Rio - RDF/XML
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO]    \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Rio - TriX
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO]    \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Rio - TriG
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:compile
+[INFO] \- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO]    \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: NativeStore
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     +- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     |  +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |     |  \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |     \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- ch.qos.logback:logback-classic:jar:0.9.28:test
+[INFO] |  \- ch.qos.logback:logback-core:jar:0.9.28:test
+[INFO] \- junit:junit:jar:4.7:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: RDBMS Sail
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  |  |  \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  |  \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- commons-dbcp:commons-dbcp:jar:1.3:compile
+[INFO] |  \- commons-pool:commons-pool:jar:1.5.4:compile
+[INFO] +- junit:junit:jar:4.7:test
+[INFO] +- postgresql:postgresql:jar:9.0-801.jdbc3:provided
+[INFO] \- mysql:mysql-connector-java:jar:5.1.15:provided
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Runtime
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:runtime (scope not updated to compile)
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:runtime (scope not updated to compile)
+[INFO] +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:runtime (scope not updated to compile)
+[INFO] +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:runtime (scope not updated to compile)
+[INFO] |  +- commons-httpclient:commons-httpclient:jar:3.1:runtime
+[INFO] |  \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:runtime (scope not updated to compile)
+[INFO] +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:runtime (scope not updated to compile)
+[INFO] +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:runtime (scope not updated to compile)
+[INFO] |  \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |     \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO] |     \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO] \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Console
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-console:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |     \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |        \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO] |  |     \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- info.aduna.appbase:aduna-appbase-core:jar:3.11.0:compile
+[INFO] |  +- info.aduna.appbase:aduna-appbase-logging-api:jar:3.11.0:compile
+[INFO] |  +- info.aduna.appbase:aduna-appbase-logging-file:jar:3.11.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-platform-info:jar:2.9.0:compile
+[INFO] |  +- ch.qos.logback:logback-core:jar:0.9.28:compile
+[INFO] |  \- ch.qos.logback:logback-classic:jar:0.9.28:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- commons-cli:commons-cli:jar:1.2:compile
+[INFO] \- org.slf4j:jcl-over-slf4j:jar:1.6.1:runtime
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: HTTP server - core
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-http-server-spring:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |     \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |        \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  \- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |     \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO] |        \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- info.aduna.appbase:aduna-appbase-core:jar:3.11.0:compile
+[INFO] |  +- info.aduna.appbase:aduna-appbase-logging-api:jar:3.11.0:compile
+[INFO] |  +- info.aduna.appbase:aduna-appbase-logging-file:jar:3.11.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-platform-info:jar:2.9.0:compile
+[INFO] |  +- ch.qos.logback:logback-core:jar:0.9.28:compile
+[INFO] |  \- ch.qos.logback:logback-classic:jar:0.9.28:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- javax.servlet:servlet-api:jar:2.4:provided
+[INFO] +- javax.servlet.jsp:jsp-api:jar:2.0:provided
+[INFO] +- javax.servlet:jstl:jar:1.1.2:compile
+[INFO] +- taglibs:standard:jar:1.1.2:runtime
+[INFO] +- org.springframework:spring-aop:jar:2.5.6:runtime
+[INFO] +- org.springframework:spring-webmvc:jar:2.5.6:compile
+[INFO] |  +- org.springframework:spring-beans:jar:2.5.6:compile
+[INFO] |  +- org.springframework:spring-context:jar:2.5.6:compile
+[INFO] |  |  \- aopalliance:aopalliance:jar:1.0:compile
+[INFO] |  +- org.springframework:spring-context-support:jar:2.5.6:compile
+[INFO] |  +- org.springframework:spring-core:jar:2.5.6:compile
+[INFO] |  \- org.springframework:spring-web:jar:2.5.6:compile
+[INFO] +- cglib:cglib:jar:2.2:compile
+[INFO] |  \- asm:asm:jar:3.1:compile
+[INFO] +- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] \- junit:junit:jar:4.7:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: HTTP server
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-http-server:war:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-http-server-spring:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  |  \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  |     \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  |        \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  |  |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |     \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO] |  |        \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  +- javax.servlet:jstl:jar:1.1.2:compile
+[INFO] |  +- taglibs:standard:jar:1.1.2:runtime
+[INFO] |  +- org.springframework:spring-aop:jar:2.5.6:runtime
+[INFO] |  +- org.springframework:spring-webmvc:jar:2.5.6:compile
+[INFO] |  |  +- org.springframework:spring-beans:jar:2.5.6:compile
+[INFO] |  |  +- org.springframework:spring-context:jar:2.5.6:compile
+[INFO] |  |  |  \- aopalliance:aopalliance:jar:1.0:compile
+[INFO] |  |  +- org.springframework:spring-context-support:jar:2.5.6:compile
+[INFO] |  |  +- org.springframework:spring-core:jar:2.5.6:compile
+[INFO] |  |  \- org.springframework:spring-web:jar:2.5.6:compile
+[INFO] |  +- cglib:cglib:jar:2.2:compile
+[INFO] |  |  \- asm:asm:jar:3.1:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:test (scope not updated to compile)
+[INFO] +- info.aduna.appbase:aduna-appbase-core:jar:3.11.0:compile
+[INFO] |  +- info.aduna.appbase:aduna-appbase-logging-api:jar:3.11.0:compile
+[INFO] |  +- info.aduna.appbase:aduna-appbase-logging-file:jar:3.11.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-platform-info:jar:2.9.0:compile
+[INFO] |  \- ch.qos.logback:logback-core:jar:0.9.28:compile
+[INFO] +- org.tuckey:urlrewritefilter:jar:3.0.4:compile
+[INFO] +- ch.qos.logback:logback-classic:jar:0.9.28:runtime (scope not updated to compile)
+[INFO] +- org.slf4j:jcl-over-slf4j:jar:1.6.1:runtime
+[INFO] \- junit:junit:jar:4.7:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: HTTP workbench
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-http-workbench:war:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |        \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |           \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  \- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |     \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO] |        \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO] +- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-console:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.appbase:aduna-appbase-core:jar:3.11.0:compile
+[INFO] |  |  +- info.aduna.appbase:aduna-appbase-logging-api:jar:3.11.0:compile
+[INFO] |  |  +- info.aduna.appbase:aduna-appbase-logging-file:jar:3.11.0:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-platform-info:jar:2.9.0:compile
+[INFO] |  \- commons-cli:commons-cli:jar:1.2:compile
+[INFO] +- javax.servlet:servlet-api:jar:2.4:provided
+[INFO] +- commons-fileupload:commons-fileupload:jar:1.2.1:compile
+[INFO] +- commons-io:commons-io:jar:1.3.2:compile
+[INFO] +- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.slf4j:slf4j-jdk14:jar:1.6.1:runtime
+[INFO] +- org.slf4j:jcl-over-slf4j:jar:1.6.1:runtime
+[INFO] \- junit:junit:jar:4.7:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame: Runtime - OSGi
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-runtime-osgi:bundle:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  +- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] \- org.openrdf.sesame:sesame-http-server-spring:jar:2.6.1-SNAPSHOT:compile
+[INFO]    +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  |  +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  |  +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  |  |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  |  |  \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  |  |     \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  |  |        \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  |  \- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO]    |  +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |  \- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO]    |     \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO]    |        \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO]    +- info.aduna.appbase:aduna-appbase-core:jar:3.11.0:compile
+[INFO]    |  +- info.aduna.appbase:aduna-appbase-logging-api:jar:3.11.0:compile
+[INFO]    |  +- info.aduna.appbase:aduna-appbase-logging-file:jar:3.11.0:compile
+[INFO]    |  +- info.aduna.commons:aduna-commons-platform-info:jar:2.9.0:compile
+[INFO]    |  +- ch.qos.logback:logback-core:jar:0.9.28:compile
+[INFO]    |  \- ch.qos.logback:logback-classic:jar:0.9.28:compile
+[INFO]    +- javax.servlet:jstl:jar:1.1.2:compile
+[INFO]    +- taglibs:standard:jar:1.1.2:runtime
+[INFO]    +- org.springframework:spring-aop:jar:2.5.6:runtime
+[INFO]    +- org.springframework:spring-webmvc:jar:2.5.6:compile
+[INFO]    |  +- org.springframework:spring-beans:jar:2.5.6:compile
+[INFO]    |  +- org.springframework:spring-context:jar:2.5.6:compile
+[INFO]    |  |  \- aopalliance:aopalliance:jar:1.0:compile
+[INFO]    |  +- org.springframework:spring-context-support:jar:2.5.6:compile
+[INFO]    |  +- org.springframework:spring-core:jar:2.5.6:compile
+[INFO]    |  \- org.springframework:spring-web:jar:2.5.6:compile
+[INFO]    \- cglib:cglib:jar:2.2:compile
+[INFO]       \- asm:asm:jar:3.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame test suites
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-testsuites:pom:2.6.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Rio compliance test suite
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-rio-testsuite:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO] |  |     \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- xml-security:xmlsec:jar:1.3.0:compile
+[INFO] +- xalan:xalan:jar:2.6.0:compile
+[INFO] |  \- xml-apis:xml-apis:jar:1.0.b2:compile
+[INFO] \- junit:junit:jar:4.7:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF SeRQL test suite
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-serql-testsuite:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO] |  |     \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] \- junit:junit:jar:4.7:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF SPARQL compliance test suite
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-sparql-testsuite:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:runtime (scope not updated to compile)
+[INFO] +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |        \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |           +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |           |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |           +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |           \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] \- junit:junit:jar:4.7:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF SAIL and Repository API compliance test suite
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-store-testsuite:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO] |  |     \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] \- junit:junit:jar:4.7:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Sesame compliance tests
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-compliance:pom:2.6.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Model compliance test
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-model-compliance:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |  \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |     \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  |        \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO] |  |     \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- ch.qos.logback:logback-classic:jar:0.9.28:runtime
+[INFO] |  \- ch.qos.logback:logback-core:jar:0.9.28:runtime
+[INFO] \- junit:junit:jar:4.7:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF Rio compliance tests
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-rio-compliance:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO] |  |     \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-testsuite:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- xml-security:xmlsec:jar:1.3.0:compile
+[INFO] +- xalan:xalan:jar:2.6.0:compile
+[INFO] |  \- xml-apis:xml-apis:jar:1.0.b2:compile
+[INFO] +- junit:junit:jar:4.7:test
+[INFO] +- ch.qos.logback:logback-classic:jar:0.9.28:test
+[INFO] |  \- ch.qos.logback:logback-core:jar:0.9.28:test
+[INFO] \- org.slf4j:jcl-over-slf4j:jar:1.6.1:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF HTTP server compliance tests
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-http-compliance:war:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:runtime (scope not updated to compile)
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- junit:junit:jar:4.7:compile
+[INFO] +- org.openrdf.sesame:sesame-http-server:war:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     |  \- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |     \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |        \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- info.aduna.appbase:aduna-appbase-logging-file:jar:3.11.0:compile
+[INFO] |  +- info.aduna.appbase:aduna-appbase-logging-api:jar:3.11.0:compile
+[INFO] |  \- ch.qos.logback:logback-core:jar:0.9.28:compile
+[INFO] +- org.mortbay.jetty:jetty:jar:6.1.9:compile
+[INFO] |  +- org.mortbay.jetty:jetty-util:jar:6.1.9:compile
+[INFO] |  \- org.mortbay.jetty:servlet-api-2.5:jar:6.1.9:compile
+[INFO] +- org.mortbay.jetty:jsp-2.1:jar:6.1.9:runtime
+[INFO] |  +- org.eclipse.jdt:core:jar:3.1.1:runtime
+[INFO] |  +- org.mortbay.jetty:jsp-api-2.1:jar:6.1.9:runtime
+[INFO] |  \- ant:ant:jar:1.6.5:runtime
+[INFO] +- ch.qos.logback:logback-classic:jar:0.9.28:test (scope not updated to compile)
+[INFO] +- org.slf4j:jcl-over-slf4j:jar:1.6.1:test
+[INFO] \- org.slf4j:log4j-over-slf4j:jar:1.6.1:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF SAIL and Repository compliance test
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-store-compliance:war:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-store-testsuite:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  \- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- org.openrdf.sesame:sesame-serql-testsuite:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sparql-testsuite:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- commons-dbcp:commons-dbcp:jar:1.3:compile
+[INFO] |     \- commons-pool:commons-pool:jar:1.5.4:compile
+[INFO] +- org.openrdf.sesame:sesame-http-server:war:2.6.1-SNAPSHOT:runtime
+[INFO] +- junit:junit:jar:4.7:compile
+[INFO] +- ch.qos.logback:logback-classic:jar:0.9.28:test
+[INFO] |  \- ch.qos.logback:logback-core:jar:0.9.28:test
+[INFO] +- postgresql:postgresql:jar:9.0-801.jdbc3:compile
+[INFO] +- mysql:mysql-connector-java:jar:5.1.15:compile
+[INFO] +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.mortbay.jetty:jetty:jar:6.1.9:compile
+[INFO] |  +- org.mortbay.jetty:jetty-util:jar:6.1.9:compile
+[INFO] |  \- org.mortbay.jetty:servlet-api-2.5:jar:6.1.9:compile
+[INFO] +- org.mortbay.jetty:jsp-2.1:jar:6.1.9:runtime
+[INFO] |  +- org.eclipse.jdt:core:jar:3.1.1:runtime
+[INFO] |  +- org.mortbay.jetty:jsp-api-2.1:jar:6.1.9:runtime
+[INFO] |  \- ant:ant:jar:1.6.5:runtime
+[INFO] +- org.slf4j:jcl-over-slf4j:jar:1.6.1:test
+[INFO] \- org.slf4j:log4j-over-slf4j:jar:1.6.1:test
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF SeRQL query parser compliance tests
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-serql-compliance:jar:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-runtime:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] |  +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-sparqljson:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-queryresultio-text:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- net.sf.opencsv:opencsv:jar:2.0:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |  |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-repository-contextaware:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-rio-binary:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-n3:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trix:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-nativerdf:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  +- org.openrdf.sesame:sesame-sail-rdbms:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  |  \- commons-dbcp:commons-dbcp:jar:1.3:runtime
+[INFO] |  |     \- commons-pool:commons-pool:jar:1.5.4:runtime
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- org.openrdf.sesame:sesame-serql-testsuite:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |     \- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- ch.qos.logback:logback-classic:jar:0.9.28:test
+[INFO] |  \- ch.qos.logback:logback-core:jar:0.9.28:test
+[INFO] \- junit:junit:jar:4.7:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OpenRDF SPARQL query parser compliance tests
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] org.openrdf.sesame:sesame-sparql-compliance:war:2.6.1-SNAPSHOT
+[INFO] +- org.openrdf.sesame:sesame-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- info.aduna.commons:aduna-commons-i18n:jar:1.4.0:compile
+[INFO] +- org.openrdf.sesame:sesame-sparql-testsuite:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-trig:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-rio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-rio-turtle:jar:2.6.1-SNAPSHOT:runtime (scope not updated to compile)
+[INFO] +- org.openrdf.sesame:sesame-rio-rdfxml:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-query:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryresultio-sparqlxml:jar:2.6.1-SNAPSHOT:runtime (scope not updated to compile)
+[INFO] +- org.openrdf.sesame:sesame-queryparser-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-queryalgebra-model:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-queryparser-sparql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-repository-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-dataset:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-sail:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-sail-api:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-http-server:war:2.6.1-SNAPSHOT:runtime
+[INFO] +- org.openrdf.sesame:sesame-sail-memory:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-sail-inferencer:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  |  \- org.openrdf.sesame:sesame-queryparser-serql:jar:2.6.1-SNAPSHOT:runtime
+[INFO] |  \- org.openrdf.sesame:sesame-queryalgebra-evaluation:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     \- org.openrdf.sesame:sesame-repository-sparql:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-util:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- info.aduna.commons:aduna-commons-lang:jar:2.9.0:compile
+[INFO] +- info.aduna.commons:aduna-commons-io:jar:2.10.0:compile
+[INFO] +- org.slf4j:slf4j-api:jar:1.6.1:compile
+[INFO] +- ch.qos.logback:logback-classic:jar:0.9.28:test
+[INFO] |  \- ch.qos.logback:logback-core:jar:0.9.28:test
+[INFO] +- junit:junit:jar:4.7:compile
+[INFO] +- org.openrdf.sesame:sesame-http-protocol:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-rio-ntriples:jar:2.6.1-SNAPSHOT:compile
+[INFO] +- org.openrdf.sesame:sesame-repository-manager:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-event:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  +- org.openrdf.sesame:sesame-repository-http:jar:2.6.1-SNAPSHOT:compile
+[INFO] |  \- org.openrdf.sesame:sesame-http-client:jar:2.6.1-SNAPSHOT:compile
+[INFO] |     +- commons-httpclient:commons-httpclient:jar:3.1:compile
+[INFO] |     \- commons-codec:commons-codec:jar:1.4:runtime
+[INFO] +- org.mortbay.jetty:jetty:jar:6.1.9:compile
+[INFO] |  +- org.mortbay.jetty:jetty-util:jar:6.1.9:compile
+[INFO] |  \- org.mortbay.jetty:servlet-api-2.5:jar:6.1.9:compile
+[INFO] +- org.mortbay.jetty:jsp-2.1:jar:6.1.9:runtime
+[INFO] |  +- org.eclipse.jdt:core:jar:3.1.1:runtime
+[INFO] |  +- org.mortbay.jetty:jsp-api-2.1:jar:6.1.9:runtime
+[INFO] |  \- ant:ant:jar:1.6.5:runtime
+[INFO] +- org.slf4j:jcl-over-slf4j:jar:1.6.1:test
+[INFO] \- org.slf4j:log4j-over-slf4j:jar:1.6.1:test
+[INFO] 
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] ------------------------------------------------------------------------
+[INFO] OpenRDF Sesame ........................................ SUCCESS [2.218s]
+[INFO] OpenRDF Sesame Core ................................... SUCCESS [0.000s]
+[INFO] OpenRDF Sesame: util .................................. SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Model ................................. SUCCESS [0.031s]
+[INFO] OpenRDF Sesame: Rio ................................... SUCCESS [0.000s]
+[INFO] OpenRDF Sesame: Rio - API ............................. SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Query ................................. SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Query algebra ......................... SUCCESS [0.000s]
+[INFO] OpenRDF Sesame: Query algebra - model ................. SUCCESS [0.015s]
+[INFO] OpenRDF Sesame: Query parser .......................... SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Query parser - API .................... SUCCESS [0.015s]
+[INFO] OpenRDF Sesame: Query parser - SeRQL .................. SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Query parser - SPARQL ................. SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Query result IO ....................... SUCCESS [0.015s]
+[INFO] OpenRDF Sesame: Query result IO - API ................. SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Query result IO - binary .............. SUCCESS [0.031s]
+[INFO] OpenRDF Sesame: Query result IO - SPARQL/JSON ......... SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Query result IO - SPARQL/XML .......... SUCCESS [0.015s]
+[INFO] OpenRDF Sesame: Query result IO - plain text booleans . SUCCESS [0.032s]
+[INFO] OpenRDF Sesame: Repository ............................ SUCCESS [0.000s]
+[INFO] OpenRDF Sesame: Repository - API ...................... SUCCESS [0.015s]
+[INFO] OpenRDF Sesame: Repository - event (wrapper) .......... SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Sail .................................. SUCCESS [0.000s]
+[INFO] OpenRDF Sesame: Sail API .............................. SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: SailRepository ........................ SUCCESS [0.031s]
+[INFO] OpenRDF Sesame: Inferencer Sails ...................... SUCCESS [0.031s]
+[INFO] OpenRDF Sesame: Rio - N-Triples ....................... SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: HTTP .................................. SUCCESS [0.000s]
+[INFO] OpenRDF Sesame: HTTP protocol ......................... SUCCESS [0.015s]
+[INFO] OpenRDF Sesame: HTTP client ........................... SUCCESS [0.047s]
+[INFO] OpenRDF Sesame: SPARQL Repository ..................... SUCCESS [0.031s]
+[INFO] OpenRDF Sesame: Query algebra - evaluation ............ SUCCESS [0.032s]
+[INFO] OpenRDF Sesame: MemoryStore ........................... SUCCESS [0.047s]
+[INFO] OpenRDF Sesame: HTTPRepository ........................ SUCCESS [0.031s]
+[INFO] OpenRDF Sesame: Repository manager .................... SUCCESS [0.078s]
+[INFO] OpenRDF Sesame: DatasetRepository (wrapper) ........... SUCCESS [0.031s]
+[INFO] OpenRDF Sesame: Repository - context aware (wrapper) .. SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Rio - Binary .......................... SUCCESS [0.015s]
+[INFO] OpenRDF Sesame: Rio - Turtle .......................... SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Rio - N3 (writer-only) ................ SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: Rio - RDF/XML ......................... SUCCESS [0.000s]
+[INFO] OpenRDF Sesame: Rio - TriX ............................ SUCCESS [0.015s]
+[INFO] OpenRDF Sesame: Rio - TriG ............................ SUCCESS [0.016s]
+[INFO] OpenRDF Sesame: NativeStore ........................... SUCCESS [0.047s]
+[INFO] OpenRDF Sesame: RDBMS Sail ............................ SUCCESS [0.078s]
+[INFO] OpenRDF Sesame: Runtime ............................... SUCCESS [0.156s]
+[INFO] OpenRDF Sesame: Console ............................... SUCCESS [0.188s]
+[INFO] OpenRDF Sesame: HTTP server - core .................... SUCCESS [0.359s]
+[INFO] OpenRDF Sesame: HTTP server ........................... SUCCESS [0.219s]
+[INFO] OpenRDF Sesame: HTTP workbench ........................ SUCCESS [0.187s]
+[INFO] OpenRDF Sesame: Runtime - OSGi ........................ SUCCESS [0.203s]
+[INFO] OpenRDF Sesame test suites ............................ SUCCESS [0.016s]
+[INFO] OpenRDF Rio compliance test suite ..................... SUCCESS [0.156s]
+[INFO] OpenRDF SeRQL test suite .............................. SUCCESS [0.141s]
+[INFO] OpenRDF SPARQL compliance test suite .................. SUCCESS [0.078s]
+[INFO] OpenRDF SAIL and Repository API compliance test suite . SUCCESS [0.141s]
+[INFO] OpenRDF Sesame compliance tests ....................... SUCCESS [0.000s]
+[INFO] OpenRDF Model compliance test ......................... SUCCESS [0.156s]
+[INFO] OpenRDF Rio compliance tests .......................... SUCCESS [0.172s]
+[INFO] OpenRDF HTTP server compliance tests .................. SUCCESS [0.125s]
+[INFO] OpenRDF SAIL and Repository compliance test ........... SUCCESS [0.219s]
+[INFO] OpenRDF SeRQL query parser compliance tests ........... SUCCESS [0.187s]
+[INFO] OpenRDF SPARQL query parser compliance tests .......... SUCCESS [0.141s]
+[INFO] ------------------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESSFUL
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 10 seconds
+[INFO] Finished at: Mon Nov 07 15:55:53 CET 2011
+[INFO] Final Memory: 28M/69M
+[INFO] ------------------------------------------------------------------------
