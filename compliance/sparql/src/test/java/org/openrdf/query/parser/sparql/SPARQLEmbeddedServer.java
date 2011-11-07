@@ -8,8 +8,12 @@ package org.openrdf.query.parser.sparql;
 import java.io.File;
 import java.util.List;
 
+import org.mortbay.jetty.Connector;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.nio.BlockingChannelConnector;
+import org.mortbay.jetty.webapp.WebAppContext;
+
 import org.openrdf.http.protocol.Protocol;
-import org.openrdf.http.server.EmbeddedServer;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -21,30 +25,44 @@ import org.openrdf.repository.manager.SystemRepository;
 import org.openrdf.repository.sail.config.SailRepositoryConfig;
 import org.openrdf.sail.memory.config.MemoryStoreConfig;
 
-
 /**
  * An embedded http server for SPARQL query testing. Initializes a memory store
  * repository for each specified reposiotoryId.
  * 
  * @author Andreas Schwarte
  */
-public class SPARQLEmbeddedServer extends EmbeddedServer {
+public class SPARQLEmbeddedServer {
 
-	protected static final String OPENRDF_CONTEXT = "/openrdf";
-	protected static final String OPENRDF_SERVER_WAR = "./target/openrdf-sesame";
-		
-	protected final List<String> repositoryIds;
-	
-	
+	private static final String HOST = "localhost";
+
+	private static final int PORT = 18080;
+
+	private static final String OPENRDF_CONTEXT = "/openrdf";
+
+	private final List<String> repositoryIds;
+
+	private final Server jetty;
+
 	/**
 	 * @param repositoryIds
 	 */
 	public SPARQLEmbeddedServer(List<String> repositoryIds) {
-		// warPath configured in pom.xml maven-war-plugin configuration
-		super(DEFAULT_HOST, DEFAULT_PORT, OPENRDF_CONTEXT, OPENRDF_SERVER_WAR);
 		this.repositoryIds = repositoryIds;
+		System.clearProperty("DEBUG");
+
+		jetty = new Server();
+
+		Connector conn = new BlockingChannelConnector();
+		conn.setHost(HOST);
+		conn.setPort(PORT);
+		jetty.addConnector(conn);
+
+		WebAppContext webapp = new WebAppContext();
+		webapp.setContextPath(OPENRDF_CONTEXT);
+		// warPath configured in pom.xml maven-war-plugin configuration
+		webapp.setWar("./target/openrdf-sesame");
+		jetty.addHandler(webapp);
 	}
-	
 
 	/**
 	 * @return the url to the repository with given id
@@ -52,16 +70,14 @@ public class SPARQLEmbeddedServer extends EmbeddedServer {
 	public String getRepositoryUrl(String repoId) {
 		return Protocol.getRepositoryLocation(getServerUrl(), repoId);
 	}
-		
+
 	/**
 	 * @return the server url
 	 */
 	public String getServerUrl() {
-		return "http://" + DEFAULT_HOST + ":" + DEFAULT_PORT + OPENRDF_CONTEXT;
+		return "http://" + HOST + ":" + PORT + OPENRDF_CONTEXT;
 	}
-	
-	
-	@Override
+
 	public void start()
 		throws Exception
 	{
@@ -69,13 +85,11 @@ public class SPARQLEmbeddedServer extends EmbeddedServer {
 		dataDir.mkdirs();
 		System.setProperty("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
 
-		super.start();
+		jetty.start();
 
 		createTestRepositories();
 	}
-	
 
-	@Override
 	public void stop()
 		throws Exception
 	{
@@ -89,12 +103,10 @@ public class SPARQLEmbeddedServer extends EmbeddedServer {
 			con.close();
 		}
 
-		super.stop();
+		jetty.stop();
+		System.clearProperty("org.mortbay.log.class");
 	}
 
-	/**
-	 * @throws RepositoryException
-	 */
 	private void createTestRepositories()
 		throws RepositoryException, RepositoryConfigException
 	{
@@ -106,7 +118,7 @@ public class SPARQLEmbeddedServer extends EmbeddedServer {
 			MemoryStoreConfig memStoreConfig = new MemoryStoreConfig();
 			SailRepositoryConfig sailRepConfig = new SailRepositoryConfig(memStoreConfig);
 			RepositoryConfig repConfig = new RepositoryConfig(repId, sailRepConfig);
-	
+
 			RepositoryConfigUtil.updateRepositoryConfigs(systemRep, repConfig);
 		}
 
