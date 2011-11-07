@@ -396,6 +396,19 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 		} catch (Exception e1) {
 			fail(e1.getMessage());
 		}		
+	}	
+	
+	@Test
+	public void test9() {
+		/* test where the service endpoint is bound at runtime through BIND */
+		try {
+			// clears the repository and adds new data + execute
+			prepareTest(null, Arrays.asList("/testcases-service/data09endpoint.ttl"));
+			execute("/testcases-service/service09.rq", "/testcases-service/service09.srx", false);			
+			
+		} catch (Exception e1) {
+			fail(e1.getMessage());
+		}		
 	}
 	
 	
