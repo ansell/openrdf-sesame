@@ -26,11 +26,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-webapp-war</artifactId>
-			<type>war</type>
-		</dependency>
-		<dependency>
 			<groupId>org.tuckey</groupId>
 			<artifactId>urlrewritefilter</artifactId>
 		</dependency>
