@@ -19,11 +19,6 @@
 			<artifactId>sesame-util</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-i18n</artifactId>
-		</dependency>
-		
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
