@@ -19,10 +19,6 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-util</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-platform-info</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
