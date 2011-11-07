@@ -45,7 +45,6 @@
 
 		<slf4j.version>1.6.1</slf4j.version>
 		<logback.version>0.9.28</logback.version>
-		<aduna.appbase.version>3.11.0</aduna.appbase.version>
 		<spring.version>2.5.6</spring.version>
 	</properties>
 
@@ -401,7 +400,7 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-webmvc</artifactId>
-				<version>2.5.6</version>
+				<version>${spring.version}</version>
 				<exclusions>
 					<exclusion>
 						<groupId>commons-logging</groupId>
@@ -637,7 +636,7 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/</url>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6</url>
 	</scm>
 
 	<repositories>
