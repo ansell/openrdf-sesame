@@ -44,11 +44,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-io</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
 		</dependency>
