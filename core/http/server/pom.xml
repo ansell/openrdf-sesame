@@ -19,6 +19,11 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-http-server-spring</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-util</artifactId>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>info.aduna.appbase</groupId>
@@ -40,11 +45,6 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
 			<scope>runtime</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-xml</artifactId>
 		</dependency>
 
 		<dependency>

@@ -101,6 +101,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-util</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-lang</artifactId>
 		</dependency>
@@ -108,11 +113,6 @@
 		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-io</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-text</artifactId>
 		</dependency>
 
 		<dependency>

@@ -32,10 +32,6 @@
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-io</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-xml</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
