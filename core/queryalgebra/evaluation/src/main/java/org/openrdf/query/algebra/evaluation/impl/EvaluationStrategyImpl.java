@@ -6,7 +6,6 @@
 package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,7 +46,6 @@ import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
-import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
 import org.openrdf.query.algebra.Datatype;
@@ -257,26 +255,49 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		protected BindingSet getNextElement()
 			throws QueryEvaluationException
 		{
-			if (currentIter.hasNext()) {
-				currentIterNotEmpty = true;
-				return currentIter.next();
-			}
-			else {
+			if (!currentIter.hasNext()) {
 				if (currentIterNotEmpty || currentLength == 0L) {
 					currentLength++;
 					createIteration();
 					currentIterNotEmpty = false;
+				}
+			}
 
-					if (currentIter.hasNext()) {
-						currentIterNotEmpty = true;
-						return currentIter.next();
-					}
+			while (currentIter.hasNext()) {
+				BindingSet nextElement = currentIter.next();
+				if (!isCyclicPath(nextElement)) {
+					currentIterNotEmpty = true;
+					return nextElement;
 				}
 			}
 
 			return null;
 		}
 
+		private boolean isCyclicPath(BindingSet bindingSet) {
+			boolean cycleDetected = false;
+			List<Value> visited = new ArrayList<Value>();
+			
+			visited.add(bindingSet.getValue(subjVar.getName()));
+			visited.add(bindingSet.getValue(endVar.getName()));
+			
+			for (String name: bindingSet.getBindingNames()) {
+				if (name.startsWith("path-join-")) { // only check for intermediate join nodes
+					Value v = bindingSet.getValue(name);
+					if (visited.contains(v)) {
+						cycleDetected = true;
+						break;
+					}
+					else {
+						visited.add(v);
+					}
+				}
+			}
+			
+			return cycleDetected;
+			
+		}
+		
 		private void createIteration()
 			throws QueryEvaluationException
 		{
@@ -292,19 +313,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				// cycle-detection.
 				long numberOfJoins = currentLength - 1;
 
-				List<Var> vars = new ArrayList<Var>((int)numberOfJoins);
+				Join join = createMultiJoin(scope, subjVar, pathExpression, endVar, contextVar, numberOfJoins);
 
-				Join join = createMultiJoin(scope, subjVar, pathExpression, endVar, contextVar, numberOfJoins,
-						vars);
-
-				ValueExpr loopCheck = createPairwiseDistinctExpr(subjVar, endVar, vars);
-
-				Filter filter = new Filter(join, loopCheck);
-
-				currentIter = evaluate(filter, bindings);
+				currentIter = evaluate(join, bindings);
 			}
 		}
 
+		/*
 		private ValueExpr createPairwiseDistinctExpr(Var beginVar, Var endVar, List<Var> variables) {
 			ValueExpr pairwiseDistinct = null;
 
@@ -342,12 +357,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			return pairwiseDistinct;
 		}
+		*/
 
 		private Join createMultiJoin(Scope scope, Var subjVar, TupleExpr pathExpression, Var endVar,
-				Var contextVar, long numberOfJoins, Collection<Var> intermediateVars)
+				Var contextVar, long numberOfJoins)
 			throws QueryEvaluationException
 		{
-
 			Join join = new Join();
 			Join currentJoin = join;
 
@@ -359,7 +374,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			for (long i = 0L; i < numberOfJoins; i++) {
 				Var joinVar = createAnonVar("path-join-" + numberOfJoins + "-" + i);
-				intermediateVars.add(joinVar);
 
 				TupleExpr clone = pathExpression.clone();
 				VarReplacer replacer = new VarReplacer(endVar, joinVar, i, replaceAnonVars);
@@ -1428,9 +1442,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (argValue instanceof Literal) {
 			Literal lit = (Literal)argValue;
-			
+
 			String baseURI = node.getBaseURI();
-			
+
 			URI result = null;
 			try {
 				result = tripleSource.getValueFactory().createURI(lit.getLabel());
@@ -1798,13 +1812,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value result = null;
 
 		boolean conditionIsTrue;
-		
+
 		try {
 			Value value = evaluate(node.getCondition(), bindings);
 			conditionIsTrue = QueryEvaluationUtil.getEffectiveBooleanValue(value);
 		}
 		catch (ValueExprEvaluationException e) {
-			// in case of type error, if-construction should result in empty binding.
+			// in case of type error, if-construction should result in empty
+			// binding.
 			return null;
 		}
 
