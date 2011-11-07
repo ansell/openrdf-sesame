@@ -22,10 +22,9 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-queryalgebra-model</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-lang</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-util</artifactId>
 		</dependency>
 	</dependencies>
 
