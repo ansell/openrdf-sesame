@@ -50,10 +50,12 @@ public abstract class RDFWriterTest extends TestCase {
 		Literal plainLit = vf.createLiteral("plain");
 		Literal dtLit = vf.createLiteral(1);
 		Literal langLit = vf.createLiteral("test", "en");
+		Literal litWithNewline = vf.createLiteral("literal with newline\n");
 
 		Statement st1 = vf.createStatement(bnode, uri1, plainLit);
 		Statement st2 = vf.createStatement(uri1, uri2, langLit, uri2);
 		Statement st3 = vf.createStatement(uri1, uri2, dtLit);
+		Statement st4 = vf.createStatement(uri1, uri2, litWithNewline);
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
@@ -62,6 +64,7 @@ public abstract class RDFWriterTest extends TestCase {
 		rdfWriter.handleStatement(st1);
 		rdfWriter.handleStatement(st2);
 		rdfWriter.handleStatement(st3);
+		rdfWriter.handleStatement(st4);
 		rdfWriter.endRDF();
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -73,10 +76,11 @@ public abstract class RDFWriterTest extends TestCase {
 		rdfParser.parse(in, "foo:bar");
 
 		Collection<Statement> statements = stCollector.getStatements();
-		assertEquals("Unexpected number of statements", 3, statements.size());
+		assertEquals("Unexpected number of statements", 4, statements.size());
 //		assertTrue(statements.contains(st1));
 		assertTrue(statements.contains(st2));
 		assertTrue(statements.contains(st3));
+		assertTrue("missing statement with literal ending on newline", statements.contains(st4));
 	}
 
 	public void testPrefixRedefinition()
