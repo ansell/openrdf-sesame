@@ -310,7 +310,7 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 			fail(e1.getMessage());
 		}		
 	}
-	
+
 	@Test
 	public void test2() {		
 		try {
@@ -411,6 +411,18 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 		}		
 	}
 	
+	@Test
+	public void test10() {
+		/* test how we deal with blank node */
+		try {
+			// clears the repository and adds new data + execute
+			prepareTest("/testcases-service/data10.ttl", Arrays.asList("/testcases-service/data10endpoint.ttl"));
+			execute("/testcases-service/service10.rq", "/testcases-service/service10.srx", false);			
+			
+		} catch (Exception e1) {
+			fail(e1.getMessage());
+		}		
+	}
 	
 	/**
 	 * Execute a testcase, both queryFile and expectedResultFile must be files 

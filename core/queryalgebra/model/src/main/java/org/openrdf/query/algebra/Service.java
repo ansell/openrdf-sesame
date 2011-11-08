@@ -204,7 +204,8 @@ public class Service extends UnaryTupleOperator {
 			public void meet(Var node)
 				throws RuntimeException
 			{
-				if (!node.hasValue())
+				// take only real vars, i.e. ignore blank nodes
+				if (!node.hasValue() && !node.isAnonymous())
 					res.add(node.getName());
 			}
 			// TODO maybe stop tree traversal in nested SERVICE?

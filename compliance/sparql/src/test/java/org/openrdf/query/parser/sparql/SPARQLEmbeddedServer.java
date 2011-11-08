@@ -101,6 +101,7 @@ public class SPARQLEmbeddedServer {
 		}
 		finally {
 			con.close();
+			systemRepo.shutDown();
 		}
 
 		jetty.stop();
@@ -116,6 +117,7 @@ public class SPARQLEmbeddedServer {
 		// create a memory store for each provided repository id
 		for (String repId : repositoryIds) {
 			MemoryStoreConfig memStoreConfig = new MemoryStoreConfig();
+			memStoreConfig.setPersist(false);
 			SailRepositoryConfig sailRepConfig = new SailRepositoryConfig(memStoreConfig);
 			RepositoryConfig repConfig = new RepositoryConfig(repId, sailRepConfig);
 
