@@ -6,8 +6,12 @@
 package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -215,6 +219,81 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return new PathIteration(scope, subjectVar, pathExpression, objVar, contextVar, minLength, bindings);
 	}
 
+	private class ValuePair {
+
+		private final Value startValue;
+
+		private final Value endValue;
+
+		public ValuePair(Value startValue, Value endValue) {
+			this.startValue = startValue;
+			this.endValue = endValue;
+		}
+
+		/**
+		 * @return Returns the startValue.
+		 */
+		public Value getStartValue() {
+			return startValue;
+		}
+
+		/**
+		 * @return Returns the endValue.
+		 */
+		public Value getEndValue() {
+			return endValue;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getOuterType().hashCode();
+			result = prime * result + ((endValue == null) ? 0 : endValue.hashCode());
+			result = prime * result + ((startValue == null) ? 0 : startValue.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (!(obj instanceof ValuePair)) {
+				return false;
+			}
+			ValuePair other = (ValuePair)obj;
+			if (!getOuterType().equals(other.getOuterType())) {
+				return false;
+			}
+			if (endValue == null) {
+				if (other.endValue != null) {
+					return false;
+				}
+			}
+			else if (!endValue.equals(other.endValue)) {
+				return false;
+			}
+			if (startValue == null) {
+				if (other.startValue != null) {
+					return false;
+				}
+			}
+			else if (!startValue.equals(other.startValue)) {
+				return false;
+			}
+			return true;
+		}
+
+		private EvaluationStrategyImpl getOuterType() {
+			return EvaluationStrategyImpl.this;
+		}
+
+	}
+
 	private class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
 		private long currentLength;
@@ -223,26 +302,40 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		private BindingSet bindings;
 
-		private boolean currentIterNotEmpty;
-
 		private Scope scope;
 
-		private Var subjVar;
-
-		private TupleExpr pathExpression;
+		private Var startVar;
 
 		private Var endVar;
 
+		private final boolean startVarFixed;
+
+		private final boolean endVarFixed;
+
+		private Queue<ValuePair> valueQueue = new LinkedList<ValuePair>();
+
+		private List<ValuePair> reportedValues = new ArrayList<ValuePair>();
+
+		private TupleExpr pathExpression;
+
 		private Var contextVar;
 
-		public PathIteration(Scope scope, Var subjVar, TupleExpr pathExpression, Var endVar, Var contextVar,
+		private ValuePair currentVp;
+
+		private static final String JOINVAR_PREFIX = "intermediate-join-";
+
+		public PathIteration(Scope scope, Var startVar, TupleExpr pathExpression, Var endVar, Var contextVar,
 				long minLength, BindingSet bindings)
 			throws QueryEvaluationException
 		{
 			this.scope = scope;
-			this.subjVar = subjVar;
-			this.pathExpression = pathExpression;
+			this.startVar = startVar;
 			this.endVar = endVar;
+
+			this.startVarFixed = startVar.hasValue() || bindings.hasBinding(startVar.getName());
+			this.endVarFixed = endVar.hasValue() || bindings.hasBinding(endVar.getName());
+
+			this.pathExpression = pathExpression;
 			this.contextVar = contextVar;
 
 			this.currentLength = minLength;
@@ -255,18 +348,37 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		protected BindingSet getNextElement()
 			throws QueryEvaluationException
 		{
-			if (!currentIter.hasNext()) {
-				if (currentIterNotEmpty || currentLength == 0L) {
-					currentLength++;
-					createIteration();
-					currentIterNotEmpty = false;
+			while (!currentIter.hasNext()) {
+				createIteration();
+				// stop condition: if the iter is an EmptyIteration
+				if (currentIter instanceof EmptyIteration<?, ?>) {
+					break;
 				}
 			}
 
 			while (currentIter.hasNext()) {
 				BindingSet nextElement = currentIter.next();
+
+				if (!startVarFixed && !endVarFixed && currentVp != null) {
+					Value startValue = currentVp.getStartValue();
+
+					if (startValue != null) {
+						nextElement = new QueryBindingSet(nextElement);
+						((QueryBindingSet)nextElement).addBinding(startVar.getName(), startValue);
+					}
+				}
+
 				if (!isCyclicPath(nextElement)) {
-					currentIterNotEmpty = true;
+
+					Value v1 = getVarValue(startVar, startVarFixed, nextElement);
+					Value v2 = getVarValue(endVar, endVarFixed, nextElement);
+
+					ValuePair vp = new ValuePair(v1, v2);
+					reportedValues.add(vp);
+					if (!v1.equals(v2)) {
+						valueQueue.add(vp);
+					}
+
 					return nextElement;
 				}
 			}
@@ -274,48 +386,76 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			return null;
 		}
 
-		private boolean isCyclicPath(BindingSet bindingSet) {
-			boolean cycleDetected = false;
-			List<Value> visited = new ArrayList<Value>();
-			
-			visited.add(bindingSet.getValue(subjVar.getName()));
-			visited.add(bindingSet.getValue(endVar.getName()));
-			
-			for (String name: bindingSet.getBindingNames()) {
-				if (name.startsWith("path-join-")) { // only check for intermediate join nodes
-					Value v = bindingSet.getValue(name);
-					if (visited.contains(v)) {
-						cycleDetected = true;
-						break;
-					}
-					else {
-						visited.add(v);
-					}
+		private Value getVarValue(Var var, boolean fixedValue, BindingSet bindingSet) {
+			Value v;
+			if (fixedValue) {
+				v = var.getValue();
+				if (v == null) {
+					v = this.bindings.getValue(var.getName());
 				}
 			}
-			
-			return cycleDetected;
-			
+			else {
+				v = bindingSet.getValue(var.getName());
+			}
+
+			return v;
 		}
-		
+
+		private boolean isCyclicPath(BindingSet bindingSet) {
+			if (currentLength <= 2) {
+				return false;
+			}
+
+			Value v1 = getVarValue(startVar, startVarFixed, bindingSet);
+			Value v2 = getVarValue(endVar, endVarFixed, bindingSet);
+
+			return reportedValues.contains(new ValuePair(v1, v2));
+
+		}
+
 		private void createIteration()
 			throws QueryEvaluationException
 		{
+
 			if (currentLength == 0L) {
-				ZeroLengthPath zlp = new ZeroLengthPath(scope, subjVar, endVar, contextVar);
+				ZeroLengthPath zlp = new ZeroLengthPath(scope, startVar, endVar, contextVar);
 				currentIter = evaluate(zlp, bindings);
+				currentLength++;
 			}
 			else if (currentLength == 1) {
 				currentIter = evaluate(pathExpression, bindings);
+				currentLength++;
 			}
 			else {
-				// length greater than zero, create join with filter for
-				// cycle-detection.
-				long numberOfJoins = currentLength - 1;
+				currentLength++;
+				currentVp = valueQueue.poll();
 
-				Join join = createMultiJoin(scope, subjVar, pathExpression, endVar, contextVar, numberOfJoins);
+				if (currentVp != null) {
 
-				currentIter = evaluate(join, bindings);
+					TupleExpr pathExprClone = pathExpression.clone();
+
+					Var toBeReplaced;
+					Value v;
+					if (!endVarFixed) {
+						toBeReplaced = startVar;
+						v = currentVp.getEndValue();
+					}
+					else {
+						toBeReplaced = endVar;
+						v = currentVp.getStartValue();
+					}
+
+					Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength);
+					replacement.setValue(v);
+
+					VarReplacer replacer = new VarReplacer(toBeReplaced, replacement, 0, false);
+					pathExprClone.visit(replacer);
+
+					currentIter = evaluate(pathExprClone, bindings);
+				}
+				else {
+					currentIter = new EmptyIteration<BindingSet, QueryEvaluationException>();
+				}
 			}
 		}
 
@@ -359,6 +499,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		*/
 
+		/*
 		private Join createMultiJoin(Scope scope, Var subjVar, TupleExpr pathExpression, Var endVar,
 				Var contextVar, long numberOfJoins)
 			throws QueryEvaluationException
@@ -402,6 +543,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			return join;
 		}
+		*/
 	}
 
 	private class VarReplacer extends QueryModelVisitorBase<QueryEvaluationException> {
