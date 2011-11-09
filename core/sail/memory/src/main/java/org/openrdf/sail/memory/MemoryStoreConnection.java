@@ -113,6 +113,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 
 		Lock stLock = store.getStatementsReadLock();
+		boolean releaseLock = true;
 
 		try {
 			int snapshot = store.getCurrentSnapshot();
@@ -142,15 +143,17 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			CloseableIteration<BindingSet, QueryEvaluationException> iter;
 			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
-			return new LockingIteration<BindingSet, QueryEvaluationException>(stLock, iter);
+			iter = new LockingIteration<BindingSet, QueryEvaluationException>(stLock, iter);
+			releaseLock = false;
+			return iter;
 		}
 		catch (QueryEvaluationException e) {
-			stLock.release();
 			throw new SailException(e);
 		}
-		catch (RuntimeException e) {
-			stLock.release();
-			throw e;
+		finally {
+			if (releaseLock) {
+				stLock.release();
+			}
 		}
 	}
 
@@ -230,6 +233,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		Lock stLock = store.getStatementsReadLock();
+		boolean releaseLock = true;
 
 		try {
 			int snapshot = store.getCurrentSnapshot();
@@ -240,12 +244,17 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 				readMode = ReadMode.TRANSACTION;
 			}
 
-			return new LockingIteration<MemStatement, SailException>(stLock, store.createStatementIterator(
-					SailException.class, subj, pred, obj, !includeInferred, snapshot, readMode, contexts));
+			CloseableIteration<MemStatement, SailException> iter;
+			iter = store.createStatementIterator(SailException.class, subj, pred, obj, !includeInferred,
+					snapshot, readMode, contexts);
+			iter = new LockingIteration<MemStatement, SailException>(stLock, iter);
+			releaseLock = false;
+			return iter;
 		}
-		catch (RuntimeException e) {
-			stLock.release();
-			throw e;
+		finally {
+			if (releaseLock) {
+				stLock.release();
+			}
 		}
 	}
 
@@ -323,6 +332,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 
 		txnStLock = store.getStatementsReadLock();
+		boolean releaseLocks = true;
 
 		try {
 			// Prevent concurrent transactions by acquiring an exclusive txn lock
@@ -330,23 +340,18 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			try {
 				store.startTransaction();
+				releaseLocks = false;
 			}
-			catch (SailException e) {
-				txnLock.release();
-				throw e;
-			}
-			catch (RuntimeException e) {
-				txnLock.release();
-				throw e;
+			finally {
+				if (releaseLocks) {
+					txnLock.release();
+				}
 			}
 		}
-		catch (SailException e) {
-			txnStLock.release();
-			throw e;
-		}
-		catch (RuntimeException e) {
-			txnStLock.release();
-			throw e;
+		finally {
+			if (releaseLocks) {
+				txnStLock.release();
+			}
 		}
 	}
 

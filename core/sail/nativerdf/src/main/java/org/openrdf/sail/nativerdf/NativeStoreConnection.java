@@ -280,17 +280,19 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		txnLock = nativeStore.getTransactionLock();
+		boolean relaseLock = true;
 
 		try {
 			nativeStore.getTripleStore().startTransaction();
+			relaseLock = false;
 		}
 		catch (IOException e) {
-			txnLock.release();
 			throw new SailException(e);
 		}
-		catch (RuntimeException e) {
-			txnLock.release();
-			throw e;
+		finally {
+			if (relaseLock) {
+				txnLock.release();
+			}
 		}
 	}
 
