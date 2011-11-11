@@ -31,6 +31,8 @@ public class TransactionReader {
 		throws SAXException, IOException
 	{
 		SimpleSAXParser saxParser = new SimpleSAXParser();
+		saxParser.setPreserveWhitespace(true);
+		
 		TransactionSAXParser handler = new TransactionSAXParser();
 		saxParser.setListener(handler);
 		saxParser.parse(in);
