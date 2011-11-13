@@ -368,18 +368,38 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					}
 				}
 
-				if (!isCyclicPath(nextElement)) {
+				Value v1, v2;
 
-					Value v1 = getVarValue(startVar, startVarFixed, nextElement);
-					Value v2 = getVarValue(endVar, endVarFixed, nextElement);
+				if (startVarFixed && endVarFixed && currentLength > 2) {
+					v1 = getVarValue(startVar, startVarFixed, nextElement);
+					v2 = nextElement.getValue("END_" + JOINVAR_PREFIX + currentLength);
+				}
+				else {
+					v1 = getVarValue(startVar, startVarFixed, nextElement);
+					v2 = getVarValue(endVar, endVarFixed, nextElement);
+				}
+
+				if (!isCyclicPath(v1, v2)) {
 
 					ValuePair vp = new ValuePair(v1, v2);
-					reportedValues.add(vp);
-					if (!v1.equals(v2)) {
-						valueQueue.add(vp);
+					if (startVarFixed && endVarFixed) {
+						Value endValue = getVarValue(endVar, endVarFixed, nextElement);
+						if (endValue.equals(v2)) {
+							reportedValues.add(vp);
+							if (!v1.equals(v2)) {
+								valueQueue.add(vp);
+							}
+							return nextElement;
+						}
 					}
+					else {
+						reportedValues.add(vp);
+						if (!v1.equals(v2)) {
+							valueQueue.add(vp);
+						}
 
-					return nextElement;
+						return nextElement;
+					}
 				}
 			}
 
@@ -401,13 +421,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			return v;
 		}
 
-		private boolean isCyclicPath(BindingSet bindingSet) {
+		private boolean isCyclicPath(Value v1, Value v2) {
 			if (currentLength <= 2) {
 				return false;
 			}
-
-			Value v1 = getVarValue(startVar, startVarFixed, bindingSet);
-			Value v2 = getVarValue(endVar, endVarFixed, bindingSet);
 
 			return reportedValues.contains(new ValuePair(v1, v2));
 
@@ -423,39 +440,68 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				currentLength++;
 			}
 			else if (currentLength == 1) {
-				currentIter = evaluate(pathExpression, bindings);
+				TupleExpr pathExprClone = pathExpression.clone();
+
+				if (startVarFixed && endVarFixed) {
+					Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength);
+
+					VarReplacer replacer = new VarReplacer(endVar, replacement, 0, false);
+					pathExprClone.visit(replacer);
+				}
+				currentIter = evaluate(pathExprClone, bindings);
 				currentLength++;
 			}
 			else {
-				currentLength++;
+
 				currentVp = valueQueue.poll();
 
 				if (currentVp != null) {
 
 					TupleExpr pathExprClone = pathExpression.clone();
 
-					Var toBeReplaced;
-					Value v;
-					if (!endVarFixed) {
-						toBeReplaced = startVar;
-						v = currentVp.getEndValue();
+					if (startVarFixed && endVarFixed) {
+
+						Var startReplacement = createAnonVar(JOINVAR_PREFIX + currentLength);
+						Var endReplacement = createAnonVar("END_" + JOINVAR_PREFIX + currentLength);
+
+						Value v = currentVp.getEndValue();
+						startReplacement.setValue(v);
+
+						VarReplacer replacer = new VarReplacer(startVar, startReplacement, 0, false);
+						pathExprClone.visit(replacer);
+
+						replacer = new VarReplacer(endVar, endReplacement, 0, false);
+						pathExprClone.visit(replacer);
+
 					}
+
 					else {
-						toBeReplaced = endVar;
-						v = currentVp.getStartValue();
+
+						Var toBeReplaced;
+						Value v;
+						if (!endVarFixed) {
+							toBeReplaced = startVar;
+							v = currentVp.getEndValue();
+						}
+						else {
+							toBeReplaced = endVar;
+							v = currentVp.getStartValue();
+						}
+
+						Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength);
+						replacement.setValue(v);
+
+						VarReplacer replacer = new VarReplacer(toBeReplaced, replacement, 0, false);
+						pathExprClone.visit(replacer);
 					}
-
-					Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength);
-					replacement.setValue(v);
-
-					VarReplacer replacer = new VarReplacer(toBeReplaced, replacement, 0, false);
-					pathExprClone.visit(replacer);
 
 					currentIter = evaluate(pathExprClone, bindings);
 				}
 				else {
 					currentIter = new EmptyIteration<BindingSet, QueryEvaluationException>();
 				}
+				currentLength++;
+
 			}
 		}
 
