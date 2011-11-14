@@ -935,13 +935,15 @@ public abstract class SailConnectionBase implements SailConnection {
 					for (StatementPattern insertPattern : insertPatterns) {
 						Statement toBeInserted = createStatementFromPattern(insertPattern, sourceBinding);
 
-						if (toBeInserted.getContext() == null) {
-							addStatementInternal(toBeInserted.getSubject(), toBeInserted.getPredicate(),
-									toBeInserted.getObject());
-						}
-						else {
-							addStatementInternal(toBeInserted.getSubject(), toBeInserted.getPredicate(),
-									toBeInserted.getObject(), toBeInserted.getContext());
+						if (toBeInserted != null) {
+							if (toBeInserted.getContext() == null) {
+								addStatementInternal(toBeInserted.getSubject(), toBeInserted.getPredicate(),
+										toBeInserted.getObject());
+							}
+							else {
+								addStatementInternal(toBeInserted.getSubject(), toBeInserted.getPredicate(),
+										toBeInserted.getObject(), toBeInserted.getContext());
+							}
 						}
 					}
 				}
@@ -991,7 +993,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		else {
 			subject = (Resource)sourceBinding.getValue(pattern.getSubjectVar().getName());
 
-			if (subject == null) {
+			if (subject == null && pattern.getSubjectVar().isAnonymous()) {
 				subject = f.createBNode();
 			}
 		}
@@ -1001,9 +1003,10 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 		else {
 			predicate = (URI)sourceBinding.getValue(pattern.getPredicateVar().getName());
-			if (predicate == null) {
-				throw new SailException("could not instiantiate StatementPattern predicate.");
-			}
+			// if (predicate == null) {
+			// throw new
+			// SailException("could not instiantiate StatementPattern predicate.");
+			// }
 		}
 
 		if (pattern.getObjectVar().hasValue()) {
@@ -1012,7 +1015,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		else {
 			object = sourceBinding.getValue(pattern.getObjectVar().getName());
 
-			if (object == null) {
+			if (object == null && pattern.getObjectVar().isAnonymous()) {
 				object = f.createBNode();
 			}
 		}
@@ -1027,11 +1030,13 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 
 		Statement st = null;
-		if (context != null) {
-			st = f.createStatement(subject, predicate, object, context);
-		}
-		else {
-			st = f.createStatement(subject, predicate, object);
+		if (subject != null && predicate != null && object != null) {
+			if (context != null) {
+				st = f.createStatement(subject, predicate, object, context);
+			}
+			else {
+				st = f.createStatement(subject, predicate, object);
+			}
 		}
 		return st;
 	}

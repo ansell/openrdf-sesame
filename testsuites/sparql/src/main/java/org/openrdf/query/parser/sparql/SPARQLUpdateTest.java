@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
@@ -31,6 +32,7 @@ import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 
@@ -195,10 +197,10 @@ public abstract class SPARQLUpdateTest {
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, null, true));
 
 		operation.execute();
-		
+
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, null, true));
 	}
-	
+
 	@Test
 	public void testInsertNonMatchingWhereWithBindings()
 		throws Exception
@@ -215,10 +217,10 @@ public abstract class SPARQLUpdateTest {
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, null, true));
 
 		operation.execute();
-		
+
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, null, true));
 	}
-	
+
 	@Test
 	public void testInsertWhereWithBindings()
 		throws Exception
@@ -229,7 +231,7 @@ public abstract class SPARQLUpdateTest {
 		update.append("INSERT { ?x rdfs:comment ?z . } WHERE { ?x foaf:name ?y }");
 
 		Literal comment = f.createLiteral("Bob has a comment");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 		operation.setBinding("x", bob);
 		operation.setBinding("z", comment);
@@ -237,12 +239,50 @@ public abstract class SPARQLUpdateTest {
 		assertFalse(con.hasStatement(null, RDFS.COMMENT, comment, true));
 
 		operation.execute();
-		
+
 		assertTrue(con.hasStatement(bob, RDFS.COMMENT, comment, true));
 		assertFalse(con.hasStatement(alice, RDFS.COMMENT, comment, true));
 
 	}
-	
+
+	@Test
+	public void testInsertWhereWithOptional()
+		throws Exception
+	{
+		logger.debug("executing testInsertWhereWithOptional");
+
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append(" INSERT { ?s ex:age ?incAge } ");
+		// update.append(" DELETE { ?s ex:age ?age } ");
+		update.append(" WHERE { ?s foaf:name ?name . ");
+		update.append(" OPTIONAL {?s ex:age ?age . BIND ((?age + 1) as ?incAge)  } ");
+		update.append(" } ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		URI age = f.createURI(EX_NS, "age");
+
+		assertFalse(con.hasStatement(alice, age, null, true));
+		assertTrue(con.hasStatement(bob, age, null, true));
+
+		operation.execute();
+
+		RepositoryResult<Statement> result = con.getStatements(bob, age, null, true);
+
+		while (result.hasNext()) {
+			System.out.println(result.next().toString());
+		}
+
+		assertTrue(con.hasStatement(bob, age, f.createLiteral("43", XMLSchema.INTEGER), true));
+
+		result = con.getStatements(alice, age, null, true);
+
+		while (result.hasNext()) {
+			System.out.println(result.next());
+		}
+		assertFalse(con.hasStatement(alice, age, null, true));
+	}
 
 	@Test
 	public void testDeleteInsertWhere()
