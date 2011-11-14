@@ -6,11 +6,9 @@
 package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -669,8 +667,29 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		private QueryBindingSet result;
 
+		private Var subjectVar;
+
+		private Var objVar;
+
+		private Value subj;
+
+		private Value obj;
+
+		private BindingSet bindings;
+
+		private CloseableIteration<BindingSet, QueryEvaluationException> subjectIter;
+
+		private CloseableIteration<BindingSet, QueryEvaluationException> objectIter;
+
+		private List<Value> reportedValues = new ArrayList<Value>();
+
 		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj, BindingSet bindings) {
 			result = new QueryBindingSet(bindings);
+			this.subjectVar = subjectVar;
+			this.objVar = objVar;
+			this.subj = subj;
+			this.obj = obj;
+			this.bindings = bindings;
 
 			if (subj != null && obj == null) {
 				result.addBinding(objVar.getName(), subj);
@@ -679,15 +698,79 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			if (obj != null && subj == null) {
 				result.addBinding(subjectVar.getName(), obj);
 			}
+
 		}
 
 		@Override
 		protected BindingSet getNextElement()
 			throws QueryEvaluationException
 		{
-			BindingSet next = result;
-			result = null;
-			return next;
+			if (subj == null && obj == null) {
+				if (this.subjectIter == null) {
+					subjectIter = createSubjectIteration();
+				}
+
+				while (subjectIter.hasNext()) {
+					QueryBindingSet next = new QueryBindingSet(subjectIter.next());
+
+					Value v = next.getValue(subjectVar.getName());
+
+					if (!reportedValues.contains(v)) {
+						next.addBinding(objVar.getName(), v);
+						reportedValues.add(v);
+						return next;
+					}
+				}
+
+				if (this.objectIter == null) {
+					objectIter = createObjectIteration();
+				}
+				while (objectIter.hasNext()) {
+					QueryBindingSet next = new QueryBindingSet(objectIter.next());
+
+					Value v = next.getValue(objVar.getName());
+
+					if (v instanceof Resource) {
+						if (!reportedValues.contains(v)) {
+							next.addBinding(subjectVar.getName(), v);
+							reportedValues.add(v);
+							return next;
+						}
+					}
+				}
+			}
+			else {
+				QueryBindingSet next = result;
+				result = null;
+				return next;
+			}
+			return null;
+		}
+
+		private CloseableIteration<BindingSet, QueryEvaluationException> createSubjectIteration()
+			throws QueryEvaluationException
+		{
+			Var predicate = createAnonVar("zero-length-internal-pred");
+			Var endVar = createAnonVar("zero-length-internal-end");
+
+			StatementPattern subjects = new StatementPattern(subjectVar, predicate, endVar);
+
+			CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(subjects, bindings);
+
+			return iter;
+		}
+
+		private CloseableIteration<BindingSet, QueryEvaluationException> createObjectIteration()
+			throws QueryEvaluationException
+		{
+			Var startVar = createAnonVar("zero-length-internal-start");
+			Var predicate = createAnonVar("zero-length-internal-pred");
+
+			StatementPattern subjects = new StatementPattern(startVar, predicate, objVar);
+
+			CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(subjects, bindings);
+
+			return iter;
 		}
 
 	}
