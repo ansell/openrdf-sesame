@@ -400,7 +400,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					}
 				}
 			}
-
+			
+			// if we're done, throw away the cached list of values to avoid hogging resources
+			reportedValues = null;
+			valueQueue = null;
 			return null;
 		}
 
@@ -744,6 +747,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				result = null;
 				return next;
 			}
+			
+			// if we're done, throw away the cached list of values to avoid hogging resources
+			reportedValues = null;
 			return null;
 		}
 
