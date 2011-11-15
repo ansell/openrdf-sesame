@@ -2330,16 +2330,24 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public Object visit(ASTBind node, Object data)
 		throws VisitorException
 	{
+		// bind expression 
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
+		// name to bind the expression outcome to
 		Node aliasNode = node.jjtGetChild(1);
 		String alias = ((ASTVar)aliasNode).getName();
 
+		TupleExpr arg = graphPattern.buildTupleExpr();
+		
 		Extension extension = new Extension();
 		extension.addElement(new ExtensionElem(ve, alias));
+		extension.setArg(arg);
+		
+		GraphPattern replacementGP = new GraphPattern(graphPattern);
+		replacementGP.addRequiredTE(extension);
 
-		graphPattern.addBindingAssignment(extension);
-
+		graphPattern = replacementGP;
+		
 		return extension;
 	}
 
