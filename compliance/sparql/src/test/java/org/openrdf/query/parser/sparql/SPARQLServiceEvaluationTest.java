@@ -44,6 +44,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceManager;
 import org.openrdf.query.dawg.DAWGTestResultSetUtil;
 import org.openrdf.query.impl.MutableTupleQueryResult;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
@@ -100,6 +101,8 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 	public void setUp()
 		throws Exception
 	{
+		FederatedServiceManager.getInstance().unregisterAll();
+		
 		// set up the server: the maximal number of endpoints must be known
 		List<String> repositoryIds = new ArrayList<String>(MAX_ENDPOINTS);
 		for (int i=1; i<=MAX_ENDPOINTS; i++)
@@ -300,128 +303,84 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 
 	
 	@Test
-	public void test1() {		
-		try {
-			// clears the repository and adds new data + execute
-			prepareTest("/testcases-service/data01.ttl", Arrays.asList("/testcases-service/data01endpoint.ttl"));
-			execute("/testcases-service/service01.rq", "/testcases-service/service01.srx", false);			
-			
-		} catch (Exception e1) {
-			fail(e1.getMessage());
-		}		
+	public void test1() throws Exception{
+		prepareTest("/testcases-service/data01.ttl", Arrays.asList("/testcases-service/data01endpoint.ttl"));
+		execute("/testcases-service/service01.rq", "/testcases-service/service01.srx", false);			
 	}
 
 	@Test
-	public void test2() {		
-		try {
-			// clears the repository and adds new data + execute
-			prepareTest(null, Arrays.asList("/testcases-service/data02endpoint1.ttl", "/testcases-service/data02endpoint2.ttl"));
-			execute("/testcases-service/service02.rq", "/testcases-service/service02.srx", false);			
-			
-		} catch (Exception e1) {
-			e1.printStackTrace();
-			fail(e1.getMessage());
-		}		
+	public void test2() throws Exception {		
+		prepareTest(null, Arrays.asList("/testcases-service/data02endpoint1.ttl", "/testcases-service/data02endpoint2.ttl"));
+		execute("/testcases-service/service02.rq", "/testcases-service/service02.srx", false);			
 	}
 	
 	
 	@Test
-	public void test3() {		
-		try {
-			// clears the repository and adds new data + execute
-			prepareTest(null, Arrays.asList("/testcases-service/data03endpoint1.ttl", "/testcases-service/data03endpoint2.ttl"));
-			execute("/testcases-service/service03.rq", "/testcases-service/service03.srx", false);			
-			
-		} catch (Exception e1) {
-			fail(e1.getMessage());
-		}		
+	public void test3() throws Exception {		
+		prepareTest(null, Arrays.asList("/testcases-service/data03endpoint1.ttl", "/testcases-service/data03endpoint2.ttl"));
+		execute("/testcases-service/service03.rq", "/testcases-service/service03.srx", false);	
 	}
 	
 	@Test
-	public void test4() {		
-		try {
-			// clears the repository and adds new data + execute
-			prepareTest("/testcases-service/data04.ttl", Arrays.asList("/testcases-service/data04endpoint.ttl"));
-			execute("/testcases-service/service04.rq", "/testcases-service/service04.srx", false);			
-			
-		} catch (Exception e1) {
-			fail(e1.getMessage());
-		}		
+	public void test4() throws Exception {		
+		prepareTest("/testcases-service/data04.ttl", Arrays.asList("/testcases-service/data04endpoint.ttl"));
+		execute("/testcases-service/service04.rq", "/testcases-service/service04.srx", false);			
 	}
 	
 	@Test
-	public void test5() {		
-		try {
-			// clears the repository and adds new data + execute
-			prepareTest("/testcases-service/data05.ttl", Arrays.asList("/testcases-service/data05endpoint1.ttl", "/testcases-service/data05endpoint2.ttl"));
-			execute("/testcases-service/service05.rq", "/testcases-service/service05.srx", false);			
-			
-		} catch (Exception e1) {
-			fail(e1.getMessage());
-		}		
+	public void test5() throws Exception {		
+		prepareTest("/testcases-service/data05.ttl", Arrays.asList("/testcases-service/data05endpoint1.ttl", "/testcases-service/data05endpoint2.ttl"));
+		execute("/testcases-service/service05.rq", "/testcases-service/service05.srx", false);			
 	}
 	
 	@Test
-	public void test6() {		
-		try {
-			// clears the repository and adds new data + execute
-			prepareTest(null, Arrays.asList("/testcases-service/data06endpoint1.ttl"));
-			execute("/testcases-service/service06.rq", "/testcases-service/service06.srx", false);			
-			
-		} catch (Exception e1) {
-			fail(e1.getMessage());
-		}		
+	public void test6() throws Exception {		
+		prepareTest(null, Arrays.asList("/testcases-service/data06endpoint1.ttl"));
+		execute("/testcases-service/service06.rq", "/testcases-service/service06.srx", false);			
 	}
 	
 	@Test
-	public void test7() {		
-		try {
-			// clears the repository and adds new data + execute
-			prepareTest("/testcases-service/data07.ttl", Collections.<String>emptyList());
-			execute("/testcases-service/service07.rq", "/testcases-service/service07.srx", false);			
-			
-		} catch (Exception e1) {
-			fail(e1.getMessage());
-		}		
+	public void test7() throws Exception {		
+		// clears the repository and adds new data + execute
+		prepareTest("/testcases-service/data07.ttl", Collections.<String>emptyList());
+		execute("/testcases-service/service07.rq", "/testcases-service/service07.srx", false);			
 	}
 	
 	@Test
-	public void test8() {
+	public void test8() throws Exception {
 		/* test where the SERVICE expression is to be evaluated as ASK request */
-		try {
-			// clears the repository and adds new data + execute
-			prepareTest("/testcases-service/data08.ttl", Arrays.asList("/testcases-service/data08endpoint.ttl"));
-			execute("/testcases-service/service08.rq", "/testcases-service/service08.srx", false);			
-			
-		} catch (Exception e1) {
-			fail(e1.getMessage());
-		}		
+		prepareTest("/testcases-service/data08.ttl", Arrays.asList("/testcases-service/data08endpoint.ttl"));
+		execute("/testcases-service/service08.rq", "/testcases-service/service08.srx", false);			
 	}	
 	
 	@Test
-	public void test9() {
+	public void test9() throws Exception {
 		/* test where the service endpoint is bound at runtime through BIND */
-		try {
-			// clears the repository and adds new data + execute
-			prepareTest(null, Arrays.asList("/testcases-service/data09endpoint.ttl"));
-			execute("/testcases-service/service09.rq", "/testcases-service/service09.srx", false);			
-			
-		} catch (Exception e1) {
-			fail(e1.getMessage());
-		}		
+		prepareTest(null, Arrays.asList("/testcases-service/data09endpoint.ttl"));
+		execute("/testcases-service/service09.rq", "/testcases-service/service09.srx", false);			
 	}
 	
 	@Test
-	public void test10() {
+	public void test10() throws Exception {
 		/* test how we deal with blank node */
-		try {
-			// clears the repository and adds new data + execute
-			prepareTest("/testcases-service/data10.ttl", Arrays.asList("/testcases-service/data10endpoint.ttl"));
-			execute("/testcases-service/service10.rq", "/testcases-service/service10.srx", false);			
-			
-		} catch (Exception e1) {
-			fail(e1.getMessage());
-		}		
+		prepareTest("/testcases-service/data10.ttl", Arrays.asList("/testcases-service/data10endpoint.ttl"));
+		execute("/testcases-service/service10.rq", "/testcases-service/service10.srx", false);			
+	}
+	
+	@Test
+	public void test11() throws Exception {
+		/* test how we deal with blank node */
+		// clears the repository and adds new data + execute
+		prepareTest("/testcases-service/data10.ttl", Arrays.asList("/testcases-service/data10endpoint.ttl"));
+		execute("/testcases-service/service10.rq", "/testcases-service/service10.srx", false);		
+	}
+	
+	@Test
+	public void test12() throws Exception {
+		/* test vectored join with more intermediate results */
+		// clears the repository and adds new data + execute
+		prepareTest("/testcases-service/data11.ttl", Arrays.asList("/testcases-service/data11endpoint.ttl"));
+		execute("/testcases-service/service11.rq", "/testcases-service/service11.srx", false);		
 	}
 	
 	/**

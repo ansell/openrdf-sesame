@@ -104,6 +104,10 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.query.algebra.evaluation.federation.FederatedService;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceManager;
+import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
+import org.openrdf.query.algebra.evaluation.federation.FederatedService.QueryType;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
@@ -117,16 +121,12 @@ import org.openrdf.query.algebra.evaluation.iterator.OrderIterator;
 import org.openrdf.query.algebra.evaluation.iterator.ProjectionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.SPARQLMinusIteration;
 import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
-import org.openrdf.query.algebra.evaluation.util.FederatedService;
-import org.openrdf.query.algebra.evaluation.util.FederatedService.QueryType;
-import org.openrdf.query.algebra.evaluation.util.FederatedServiceManager;
 import org.openrdf.query.algebra.evaluation.util.MathUtil;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
-import org.openrdf.repository.sparql.query.InsertBindingSetCursor;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -801,7 +801,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		try {
 
-			FederatedService fs = FederatedServiceManager.getService(serviceUri);
+			FederatedService fs = FederatedServiceManager.getInstance().getService(serviceUri);
 
 			// create a copy of the free variables, and remove those for which
 			// bindings are available (we can set them as constraints!)
@@ -819,11 +819,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 
 			// otherwise: perform a SELECT query
-			CloseableIteration<BindingSet, QueryEvaluationException> res = fs.evaluate(queryString, bindings,
+			CloseableIteration<BindingSet, QueryEvaluationException> result = fs.evaluate(queryString, bindings,
 					baseUri, QueryType.SELECT, service);
-
-			// insert original bindings again
-			InsertBindingSetCursor result = new InsertBindingSetCursor(res, bindings);
 
 			if (service.isSilent())
 				return new SilentIteration(result);
@@ -1218,6 +1215,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Join join, BindingSet bindings)
 		throws QueryEvaluationException
 	{
+		// efficient computation of a SERVICE join using vectored evaluation
+		// TODO maybe we can create a ServiceJoin node already in the parser?
+		if (join.getRightArg() instanceof Service) {
+			CloseableIteration<BindingSet, QueryEvaluationException> leftIter = evaluate(join.getLeftArg(), bindings);
+			return new ServiceJoinIterator(leftIter, (Service)join.getRightArg(), bindings, this);
+		}
 		return new JoinIterator(this, join, bindings);
 	}
 
