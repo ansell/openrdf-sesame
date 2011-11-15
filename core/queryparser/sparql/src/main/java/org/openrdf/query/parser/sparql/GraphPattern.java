@@ -59,11 +59,6 @@ public class GraphPattern {
 	private List<ValueExpr> constraints = new ArrayList<ValueExpr>();
 
 	/**
-	 * The binding assignments in this graph pattern.
-	 */
-	private List<Extension> assignments = new ArrayList<Extension>();
-
-	/**
 	 * Creates a new graph pattern.
 	 */
 	public GraphPattern() {
@@ -111,10 +106,6 @@ public class GraphPattern {
 		return Collections.unmodifiableList(requiredTEs);
 	}
 
-	public List<Extension> getBindingAssignments() {
-		return Collections.unmodifiableList(assignments);
-	}
-
 	public void addOptionalTE(TupleExpr te) {
 		optionalTEs.add(te);
 	}
@@ -125,10 +116,6 @@ public class GraphPattern {
 
 	public void addConstraint(ValueExpr constraint) {
 		constraints.add(constraint);
-	}
-
-	public void addBindingAssignment(Extension bindingAssignment) {
-		assignments.add(bindingAssignment);
 	}
 
 	public void addConstraints(Collection<ValueExpr> constraints) {
@@ -161,19 +148,6 @@ public class GraphPattern {
 	 * @return A tuple expression for this graph pattern.
 	 */
 	public TupleExpr buildTupleExpr() {
-		return buildTupleExpr(true);
-	}
-
-	/**
-	 * Builds a combined tuple expression from the tuple expressions and
-	 * constraints in this graph pattern.
-	 * 
-	 * @param includeAssignments
-	 *        flag indicating if bind assignments should be included in the
-	 *        resulting TupleExpr.
-	 * @return A tuple expression for this graph pattern.
-	 */
-	public TupleExpr buildTupleExpr(boolean includeAssignments) {
 		TupleExpr result;
 
 		if (requiredTEs.isEmpty()) {
@@ -190,13 +164,6 @@ public class GraphPattern {
 
 		for (TupleExpr optTE : optionalTEs) {
 			result = new LeftJoin(result, optTE);
-		}
-
-		if (includeAssignments) {
-			for (Extension assignment : assignments) {
-				assignment.setArg(result);
-				result = assignment;
-			}
 		}
 
 		for (ValueExpr constraint : constraints) {
