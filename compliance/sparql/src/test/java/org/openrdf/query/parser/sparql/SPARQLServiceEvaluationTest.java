@@ -369,19 +369,25 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 	
 	@Test
 	public void test11() throws Exception {
-		/* test how we deal with blank node */
-		// clears the repository and adds new data + execute
-		prepareTest("/testcases-service/data10.ttl", Arrays.asList("/testcases-service/data10endpoint.ttl"));
-		execute("/testcases-service/service10.rq", "/testcases-service/service10.srx", false);		
-	}
-	
-	@Test
-	public void test12() throws Exception {
 		/* test vectored join with more intermediate results */
 		// clears the repository and adds new data + execute
 		prepareTest("/testcases-service/data11.ttl", Arrays.asList("/testcases-service/data11endpoint.ttl"));
 		execute("/testcases-service/service11.rq", "/testcases-service/service11.srx", false);		
 	}
+	
+	/**
+	 * This is a manual test to see the Fallback in action. Query asks
+	 * DBpedia, which does not support BINDINGS
+	 * 
+	 * @throws Exception
+	 */
+	public void test12() throws Exception {
+		/* test vectored join with more intermediate results */
+		// clears the repository and adds new data + execute
+		prepareTest("/testcases-service/data12.ttl", Collections.<String>emptyList());
+		execute("/testcases-service/service12.rq", "/testcases-service/service12.srx", false);		
+	}
+	
 	
 	/**
 	 * Execute a testcase, both queryFile and expectedResultFile must be files 
