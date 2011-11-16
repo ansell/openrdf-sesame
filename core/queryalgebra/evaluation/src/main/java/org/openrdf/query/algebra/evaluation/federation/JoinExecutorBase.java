@@ -89,13 +89,11 @@ public abstract class JoinExecutorBase<T> extends LookAheadIteration<T, QueryEva
 		/* optimization: avoid adding empty results */
 		if (res instanceof EmptyIteration<?,?>)
 			return;
-		
-		synchronized (this) {
-			try {
-				rightQueue.put(res);
-			} catch (InterruptedException e) {
-				throw new RuntimeException("Error adding element to right queue", e);
-			}
+
+		try {
+			rightQueue.put(res);
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Error adding element to right queue", e);
 		}
 	}
 		
@@ -105,9 +103,7 @@ public abstract class JoinExecutorBase<T> extends LookAheadIteration<T, QueryEva
 	
 
 	public void toss(Exception e) {
-		synchronized (this) {
-			rightQueue.toss(e);
-		}
+		rightQueue.toss(e);
 	}
 	
 	
@@ -146,7 +142,8 @@ public abstract class JoinExecutorBase<T> extends LookAheadIteration<T, QueryEva
 			rightIter = null;
 		}
 
-		leftIter.close();
+		if (leftIter!=null)
+			leftIter.close();
 	}
 	
 	/**
@@ -155,9 +152,7 @@ public abstract class JoinExecutorBase<T> extends LookAheadIteration<T, QueryEva
 	 * @return
 	 */
 	public boolean isFinished() {
-		synchronized (this) {
-			return finished;
-		}
+		return finished;
 	}
 	
 

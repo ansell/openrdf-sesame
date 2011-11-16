@@ -173,7 +173,18 @@ public class SPARQLFederatedService implements FederatedService {
 			queryString = queryString + buildBindingsClause(allBindings, service.getServiceVars());
 
 			TupleQuery query = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString, baseUri);
-			TupleQueryResult res = query.evaluate();
+			TupleQueryResult res;
+			try {
+				res = query.evaluate();
+			} catch (QueryEvaluationException q) {
+				
+				// use fallback: endpoint might not support BINDINGS clause
+				String preparedQuery = service.getQueryString(projectionVars);
+				CloseableIteration<BindingSet, QueryEvaluationException> result = 
+						new ServiceFallbackIteration(service, preparedQuery, allBindings, this);
+				result = service.isSilent() ? new SilentIteration(result) : result;
+				return result;
+			}
 			
 			CloseableIteration<BindingSet, QueryEvaluationException> result =
 					new ServiceJoinConversionIteration(res, allBindings);
