@@ -95,13 +95,24 @@ public class EvaluationStatistics {
 		
 		@Override
 		public void meet(Service node) {
-			node.getServiceExpr().visit(this);
-			
-			// add 'remote service' penalty by multiplying with 2.
-//			cardinality = 2*cardinality;
-
-			// TODO the cardinality is always 0, fix this. for now use high value
-			cardinality = 100000;
+			if (!node.getServiceRef().hasValue()) {
+				// the URI is not available, may be computed in the course of the query
+				// => use high cost to order the SERVICE node late in the query plan
+				cardinality = 100000;
+			} else {
+				ServiceNodeAnalyzer serviceAnalyzer = new ServiceNodeAnalyzer();
+				node.visitChildren(serviceAnalyzer);
+				int count = serviceAnalyzer.getStatementCount();
+				
+				// more than one free variable in a single triple pattern
+				if (count==1 && node.getServiceVars().size()>1) {
+					cardinality = 100;	// TODO (should be higher than other simple stmts)
+				} else {
+					// only very selective statements should be better than this
+					// => evaluate service expressions first
+					cardinality = 1 + (node.getServiceVars().size() * 0.1);	
+				}
+			}
 		}
 		
 		@Override
@@ -174,4 +185,20 @@ public class EvaluationStatistics {
 			cardinality = node.cardinality();
 		}
 	}
+	
+	
+	// count the number of triple patterns
+	private static class ServiceNodeAnalyzer extends QueryModelVisitorBase<RuntimeException> {
+		
+		private int count=0;
+		
+		public int getStatementCount() {
+			return count;
+		}
+		
+		@Override
+		public void meet(StatementPattern node) throws RuntimeException {
+			count++;
+		}					
+	};
 }
