@@ -5,10 +5,16 @@
  */
 package org.openrdf.rio;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
+
+import org.junit.Ignore;
+import org.junit.Test;
 
 import junit.framework.TestCase;
 
@@ -27,7 +33,7 @@ import org.openrdf.rio.helpers.StatementCollector;
 /**
  * @author Arjohn Kampman
  */
-public abstract class RDFWriterTest extends TestCase {
+public abstract class RDFWriterTest {
 
 	protected RDFWriterFactory rdfWriterFactory;
 
@@ -38,6 +44,7 @@ public abstract class RDFWriterTest extends TestCase {
 		rdfParserFactory = parserF;
 	}
 
+	@Test
 	public void testRoundTrip()
 		throws RDFHandlerException, IOException, RDFParseException
 	{
@@ -83,6 +90,7 @@ public abstract class RDFWriterTest extends TestCase {
 		assertTrue("missing statement with literal ending on newline", statements.contains(st4));
 	}
 
+	@Test
 	public void testPrefixRedefinition()
 		throws RDFHandlerException, RDFParseException, IOException
 	{
@@ -120,6 +128,7 @@ public abstract class RDFWriterTest extends TestCase {
 		assertEquals("Written and parsed statements are not equal", st, parsedSt);
 	}
 
+	@Test
 	public void testIllegalPrefix()
 		throws RDFHandlerException, RDFParseException, IOException
 	{
@@ -157,6 +166,7 @@ public abstract class RDFWriterTest extends TestCase {
 		assertEquals("Written and parsed statements are not equal", st, parsedSt);
 	}
 
+	@Test
 	public void testDefaultNamespace()
 		throws Exception
 	{
