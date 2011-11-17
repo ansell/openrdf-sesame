@@ -75,6 +75,9 @@ public class FN {
 	/** fn:substring */
 	public static final URI SUBSTRING;
 	
+	/** fn:substring-before */
+	public static final URI SUBSTRING_BEFORE;
+	
 	/** fn:timezone-from-dateTime */
 	public static final URI TIMEZONE_FROM_DATETIME;
 	
@@ -122,6 +125,8 @@ public class FN {
 		STRING_LENGTH = f.createURI(NAMESPACE, "string-length");
 		
 		SUBSTRING = f.createURI(NAMESPACE, "substring");
+		
+		SUBSTRING_BEFORE = f.createURI(NAMESPACE, "substring-before");
 		
 		TIMEZONE_FROM_DATETIME = f.createURI(NAMESPACE, "timezone-from-dateTime");
 		
