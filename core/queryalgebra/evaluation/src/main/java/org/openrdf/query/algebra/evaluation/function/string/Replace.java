@@ -12,6 +12,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.FN;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
@@ -45,67 +46,72 @@ public class Replace implements Function {
 				flags = (Literal)args[3];
 			}
 
-			if (QueryEvaluationUtil.isStringLiteral(arg) && QueryEvaluationUtil.isSimpleLiteral(pattern)
-					&& QueryEvaluationUtil.isSimpleLiteral(replacement))
-			{
-				String flagString = null;
-				if (flags != null) {
-					if (!QueryEvaluationUtil.isSimpleLiteral(flags)) {
-						throw new ValueExprEvaluationException("incompatible operands for REPLACE");
+			if (arg.getDatatype() != null && !XMLSchema.STRING.equals(arg.getDatatype())) {
+				throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + arg);
+			}
+
+			if (pattern.getDatatype() != null || pattern.getLanguage() != null) {
+				throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + pattern);
+			}
+
+			if (replacement.getDatatype() != null || replacement.getLanguage() != null) {
+				throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + replacement);
+			}
+
+			String flagString = null;
+			if (flags != null) {
+				if (flags.getDatatype() != null || flags.getLanguage() != null) {
+					throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + flags);
+				}
+				flagString = flags.getLabel();
+			}
+
+			String argString = arg.getLabel();
+			String patternString = pattern.getLabel();
+			String replacementString = replacement.getLabel();
+
+			int f = 0;
+			if (flagString != null) {
+				for (char c : flagString.toCharArray()) {
+					switch (c) {
+						case 's':
+							f |= Pattern.DOTALL;
+							break;
+						case 'm':
+							f |= Pattern.MULTILINE;
+							break;
+						case 'i':
+							f |= Pattern.CASE_INSENSITIVE;
+							break;
+						case 'x':
+							f |= Pattern.COMMENTS;
+							break;
+						case 'd':
+							f |= Pattern.UNIX_LINES;
+							break;
+						case 'u':
+							f |= Pattern.UNICODE_CASE;
+							break;
+						default:
+							throw new ValueExprEvaluationException(flagString);
 					}
-					flagString = flags.getLabel();
-				}
-
-				String argString = arg.getLabel();
-				String patternString = pattern.getLabel();
-				String replacementString = replacement.getLabel();
-
-				int f = 0;
-				if (flagString != null) {
-					for (char c : flagString.toCharArray()) {
-						switch (c) {
-							case 's':
-								f |= Pattern.DOTALL;
-								break;
-							case 'm':
-								f |= Pattern.MULTILINE;
-								break;
-							case 'i':
-								f |= Pattern.CASE_INSENSITIVE;
-								break;
-							case 'x':
-								f |= Pattern.COMMENTS;
-								break;
-							case 'd':
-								f |= Pattern.UNIX_LINES;
-								break;
-							case 'u':
-								f |= Pattern.UNICODE_CASE;
-								break;
-							default:
-								throw new ValueExprEvaluationException(flagString);
-						}
-					}
-				}
-
-				Pattern p = Pattern.compile(patternString, f);
-				String result = p.matcher(argString).replaceAll(replacementString);
-
-				String lang = arg.getLanguage();
-				URI dt = arg.getDatatype();
-
-				if (lang != null) {
-					return valueFactory.createLiteral(result, lang);
-				}
-				else if (dt != null) {
-					return valueFactory.createLiteral(result, dt);
-				}
-				else {
-					return valueFactory.createLiteral(result);
 				}
 			}
+
+			Pattern p = Pattern.compile(patternString, f);
+			String result = p.matcher(argString).replaceAll(replacementString);
+
+			String lang = arg.getLanguage();
+			URI dt = arg.getDatatype();
+
+			if (lang != null) {
+				return valueFactory.createLiteral(result, lang);
+			}
+			else if (dt != null) {
+				return valueFactory.createLiteral(result, dt);
+			}
 			else {
-				throw new ValueExprEvaluationException("incompatible operands for REPLACE");
+				return valueFactory.createLiteral(result);
 			}
 		}
 		catch (ClassCastException e) {
