@@ -5,6 +5,7 @@
  */
 package org.openrdf.query.resultio.text.tsv;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import au.com.bytecode.opencsv.CSVReader;
+import info.aduna.text.StringUtil;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -41,18 +42,23 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase {
 	public void parse(InputStream in)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
 	{
-		CSVReader reader = new CSVReader(new InputStreamReader(in, Charset.forName("UTF-8")), '\t');
-		String[] nextLine;
-		while ((nextLine = reader.readNext()) != null) {
+		InputStreamReader r = new InputStreamReader(in, Charset.forName("UTF-8"));
+		
+		BufferedReader reader = new BufferedReader(r);
+		
+		String nextLine;
+		while ((nextLine = reader.readLine()) != null) {
 			if (bindingNames == null) {
 				// header is mandatory in SPARQL TSV
-				bindingNames = Arrays.asList(nextLine);
+				String[] names = nextLine.split("\t", -1);
+				bindingNames = Arrays.asList(names);
 				handler.startQueryResult(bindingNames);
 			}
 			else {
 				// process solution
+				String[] lineTokens = nextLine.split("\t", -1);
 				List<Value> values = new ArrayList<Value>();
-				for (String valueString : nextLine) {
+				for (String valueString : lineTokens) {
 					Value v = null;
 					if (valueString.startsWith("_:")) {
 						v = valueFactory.createBNode(valueString.substring(2));
@@ -103,7 +109,7 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase {
 
 				// Get label
 				String label = literal.substring(1, endLabelIdx);
-				// label = unescapeString(label);
+				label = unescapeString(label);
 
 				if (startLangIdx != -1) {
 					// Get language
@@ -134,5 +140,10 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase {
 	private int findEndOfLabel(String literal) {
 		// we just look for the last occurrence of a double quote
 		return literal.lastIndexOf("\"");
+	}
+	
+	private String unescapeString(String s) {
+		s = StringUtil.gsub("\\", "", s);
+		return s;
 	}
 }

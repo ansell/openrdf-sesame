@@ -150,6 +150,7 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		}
 
 		writer.write(encodeString(label));
+		
 		if (quoted) {
 			writer.write("\"");
 		}
