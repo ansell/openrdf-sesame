@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.resultio.text.csv;
+package org.openrdf.query.resultio.text;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,16 +29,13 @@ import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 
-public class TupleQueryResultSerializationTest extends TestCase {
+public abstract class TupleQueryResultSerializationTest extends TestCase {
 
-	public void testSPARQLResultFormat()
+	public abstract void testSPARQLResultFormat()
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
-		UnsupportedQueryResultFormatException, QueryEvaluationException
-	{
-		testQueryResultFormat(TupleQueryResultFormat.CSV);
-	}
+		UnsupportedQueryResultFormatException, QueryEvaluationException;
 
-	private void testQueryResultFormat(TupleQueryResultFormat format)
+	protected void testQueryResultFormat(TupleQueryResultFormat format)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
 		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{

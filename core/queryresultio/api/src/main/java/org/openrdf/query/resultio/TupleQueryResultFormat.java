@@ -56,8 +56,8 @@ public class TupleQueryResultFormat extends FileFormat {
 	/**
 	 * SPARQL Query Result TSV Format.
 	 */
-//	public static final TupleQueryResultFormat TSV =  new TupleQueryResultFormat("SPARQL/TSV",
-//			"text/tab-separated-values", Charset.forName("UTF-8"), "tsv");
+	public static final TupleQueryResultFormat TSV =  new TupleQueryResultFormat("SPARQL/TSV",
+			"text/tab-separated-values", Charset.forName("UTF-8"), "tsv");
 
 	
 	/*------------------*
@@ -78,7 +78,7 @@ public class TupleQueryResultFormat extends FileFormat {
 		register(BINARY);
 		register(JSON);
 		register(CSV);
-//		register(TSV);
+		register(TSV);
 	}
 
 	/*----------------*
