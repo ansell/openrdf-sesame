@@ -35,10 +35,7 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/rio/trig</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/rio/trig</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/rio/trig?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/core/rio/trig?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/rio/trig?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/rio/trig/</url>
-
-
-
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/core/rio/trig</url>
 	</scm>
 
 </project>

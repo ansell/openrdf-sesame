@@ -23,10 +23,7 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/queryparser</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/queryparser</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryparser?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/core/queryparser?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryparser?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/core/queryparser/</url>
-
-
-
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/core/queryparser</url>
 	</scm>
 
 </project>
