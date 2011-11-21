@@ -118,10 +118,7 @@
 	<scm>
 		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/testsuites/sparql</connection>
 		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/testsuites/sparql</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/testsuites/sparql?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/testsuites/sparql?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/testsuites/sparql?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.5/testsuites/sparql/</url>
-
-
-
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/testsuites/sparql</url>
 	</scm>
 
 </project>
