@@ -30,6 +30,9 @@ org.openrdf.query.algebra.evaluation.function.string.Concat
 org.openrdf.query.algebra.evaluation.function.string.Contains
 org.openrdf.query.algebra.evaluation.function.string.EncodeForUri
 org.openrdf.query.algebra.evaluation.function.string.LowerCase
+org.openrdf.query.algebra.evaluation.function.string.Replace
+org.openrdf.query.algebra.evaluation.function.string.StrAfter
+org.openrdf.query.algebra.evaluation.function.string.StrBefore
 org.openrdf.query.algebra.evaluation.function.string.StrEnds
 org.openrdf.query.algebra.evaluation.function.string.StrLen
 org.openrdf.query.algebra.evaluation.function.string.StrStarts

@@ -148,4 +148,21 @@ public class ReplaceTest {
 			fail(e.getMessage());
 		}
 	}
+	
+	@Test
+	public void testEvaluate7() {
+
+		Literal arg = f.createLiteral("日本語", "ja");
+		Literal pattern = f.createLiteral("[^a-zA-Z0-9]");
+		Literal replacement = f.createLiteral("-");
+
+		try {
+			Literal result = replaceFunc.evaluate(f, arg, pattern, replacement);
+			assertEquals("---", result.getLabel());
+			assertEquals("ja", result.getLanguage());
+		}
+		catch (ValueExprEvaluationException e) {
+			fail(e.getMessage());
+		}
+	}
 }
