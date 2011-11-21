@@ -63,6 +63,9 @@ public class FN {
 	/** fn:numeric-round */
 	public static final URI NUMERIC_ROUND;
 	
+	/** fn:replace */
+	public static final URI REPLACE;
+	
 	/** fn:seconds-from-dateTime */
 	public static final URI SECONDS_FROM_DATETIME;
 	
@@ -77,6 +80,9 @@ public class FN {
 	
 	/** fn:substring-before */
 	public static final URI SUBSTRING_BEFORE;
+	
+	/** fn:substring-after */
+	public static final URI SUBSTRING_AFTER;
 	
 	/** fn:timezone-from-dateTime */
 	public static final URI TIMEZONE_FROM_DATETIME;
@@ -118,6 +124,8 @@ public class FN {
 		
 		NUMERIC_ROUND = f.createURI(NAMESPACE, "numeric-round");
 		
+		REPLACE = f.createURI(NAMESPACE, "replace");
+		
 		SECONDS_FROM_DATETIME = f.createURI(NAMESPACE, "seconds-from-dateTime");
 		
 		STARTS_WITH = f.createURI(NAMESPACE, "starts-with");
@@ -127,6 +135,8 @@ public class FN {
 		SUBSTRING = f.createURI(NAMESPACE, "substring");
 		
 		SUBSTRING_BEFORE = f.createURI(NAMESPACE, "substring-before");
+		
+		SUBSTRING_AFTER = f.createURI(NAMESPACE, "substring-after");
 		
 		TIMEZONE_FROM_DATETIME = f.createURI(NAMESPACE, "timezone-from-dateTime");
 		

@@ -107,6 +107,7 @@ import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTRDFLiteral;
 import org.openrdf.query.parser.sparql.ast.ASTRand;
 import org.openrdf.query.parser.sparql.ast.ASTRegexExpression;
+import org.openrdf.query.parser.sparql.ast.ASTReplace;
 import org.openrdf.query.parser.sparql.ast.ASTRound;
 import org.openrdf.query.parser.sparql.ast.ASTSHA1;
 import org.openrdf.query.parser.sparql.ast.ASTSHA224;
@@ -120,6 +121,8 @@ import org.openrdf.query.parser.sparql.ast.ASTSelect;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
 import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTStr;
+import org.openrdf.query.parser.sparql.ast.ASTStrAfter;
+import org.openrdf.query.parser.sparql.ast.ASTStrBefore;
 import org.openrdf.query.parser.sparql.ast.ASTStrDt;
 import org.openrdf.query.parser.sparql.ast.ASTStrEnds;
 import org.openrdf.query.parser.sparql.ast.ASTStrLang;
@@ -163,7 +166,6 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	{
 		return node.childrenAccept(this, data);
 	}
-	
 
 	public Object visit(ASTBindingValue node, Object data)
 		throws VisitorException
@@ -825,6 +827,12 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 		return node.childrenAccept(this, data);
 	}
 
+	public Object visit(ASTReplace node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
 	public Object visit(ASTRound node, Object data)
 		throws VisitorException
 	{
@@ -862,6 +870,18 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	}
 
 	public Object visit(ASTStr node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTStrAfter node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTStrBefore node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);

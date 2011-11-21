@@ -207,6 +207,9 @@ TOKEN [IGNORE_CASE] :
 |	<SUBSTR: "substr">
 |	<STR_STARTS: "strStarts">
 |	<STR_ENDS: "strEnds">
+|	<STR_BEFORE: "strBefore">
+|	<STR_AFTER: "strAfter">
+|	<REPLACE: "replace">
 |	<UCASE: "ucase">
 |	<LCASE: "lcase">
 |	<CONCAT: "concat">
@@ -1089,6 +1092,9 @@ void StringFunction() #void :
 |	LowerCase()
 |	StrStarts()
 |	StrEnds()
+|	StrBefore()
+|	StrAfter()
+|	Replace()
 |	Concat()
 |	Contains()
 |	EncodeForURI()
@@ -1301,6 +1307,24 @@ void StrEnds() :
 {}
 {
     <STR_ENDS> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void StrBefore() :
+{}
+{
+    <STR_BEFORE> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void StrAfter() :
+{}
+{
+    <STR_AFTER> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void Replace() :
+{}
+{
+    <REPLACE> <LPAREN> Expression() <COMMA> Expression() <COMMA> Expression() [ <COMMA> Expression() ] <RPAREN>
 }
 
 void Concat() :

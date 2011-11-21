@@ -92,6 +92,9 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTLowerCase node, Object data) throws VisitorException;
   public Object visit(ASTStrStarts node, Object data) throws VisitorException;
   public Object visit(ASTStrEnds node, Object data) throws VisitorException;
+  public Object visit(ASTStrBefore node, Object data) throws VisitorException;
+  public Object visit(ASTStrAfter node, Object data) throws VisitorException;
+  public Object visit(ASTReplace node, Object data) throws VisitorException;
   public Object visit(ASTConcat node, Object data) throws VisitorException;
   public Object visit(ASTContains node, Object data) throws VisitorException;
   public Object visit(ASTEncodeForURI node, Object data) throws VisitorException;
@@ -140,4 +143,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTInsertClause node, Object data) throws VisitorException;
   public Object visit(ASTModify node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=e8e122d14fdb47be4e38771b380b8599 (do not edit this line) */
+/* JavaCC - OriginalChecksum=dd084d98514ac3df70dabfbd088d00af (do not edit this line) */
