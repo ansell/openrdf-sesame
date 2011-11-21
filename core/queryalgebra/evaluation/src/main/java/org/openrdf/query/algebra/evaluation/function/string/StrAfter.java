@@ -15,23 +15,23 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 
 /**
- * The SPARQL built-in {@link Function} STRBEFORE, as defined in <a
+ * The SPARQL built-in {@link Function} STRAFTER, as defined in <a
  * href="http://www.w3.org/TR/sparql11-query/#func-substr">SPARQL Query Language
  * for RDF</a>.
  * 
  * @author Jeen Broekstra
  */
-public class StrBefore implements Function {
+public class StrAfter implements Function {
 
 	public String getURI() {
-		return FN.SUBSTRING_BEFORE.toString();
+		return FN.SUBSTRING_AFTER.toString();
 	}
 
 	public Literal evaluate(ValueFactory valueFactory, Value... args)
 		throws ValueExprEvaluationException
 	{
 		if (args.length != 2) {
-			throw new ValueExprEvaluationException("Incorrect number of arguments for STRBEFORE: " + args.length);
+			throw new ValueExprEvaluationException("Incorrect number of arguments for STRAFTER: " + args.length);
 		}
 
 		Value leftArg = args[0];
@@ -47,7 +47,7 @@ public class StrBefore implements Function {
 			URI leftDt = leftLit.getDatatype();
 			URI rightDt = rightLit.getDatatype();
 			
-			// STRBEFORE function accepts only plain literals (optionally
+			// STRAFTER function accepts only plain literals (optionally
 			// language-tagged) or string-typed literals.
 			if ((leftLanguage != null
 					|| (leftDt == null || XMLSchema.STRING.equals(leftDt)))
@@ -59,27 +59,28 @@ public class StrBefore implements Function {
 				
 				int index = lexicalValue.indexOf(substring);
 
-				String substringBefore = "";
+				String substringAfter = "";
 				if (index > -1) {
-					substringBefore = lexicalValue.substring(0, index);
+					index += substring.length() - 1;
+					substringAfter = lexicalValue.substring(index + 1, lexicalValue.length());
 				}
 				
 				if (leftLanguage != null) {
-					return valueFactory.createLiteral(substringBefore, leftLanguage);
+					return valueFactory.createLiteral(substringAfter, leftLanguage);
 				}
 				else if (leftDt != null) {
-					return valueFactory.createLiteral(substringBefore, leftDt);
+					return valueFactory.createLiteral(substringAfter, leftDt);
 				}
 				else {
-					return valueFactory.createLiteral(substringBefore);
+					return valueFactory.createLiteral(substringAfter);
 				}
 			}
 			else {
-				throw new ValueExprEvaluationException("incompatible operands for STRBEFORE: " + leftArg + ", " + rightArg);
+				throw new ValueExprEvaluationException("incompatible operands for STRAFTER: " + leftArg + ", " + rightArg);
 			}
 		}
 		else {
-			throw new ValueExprEvaluationException("incompatible operands for STRBEFORE: " + leftArg + ", " + rightArg);
+			throw new ValueExprEvaluationException("incompatible operands for STRAFTER: " + leftArg + ", " + rightArg);
 		}
 	}
 }

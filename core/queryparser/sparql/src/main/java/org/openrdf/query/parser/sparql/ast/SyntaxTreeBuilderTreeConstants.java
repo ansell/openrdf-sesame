@@ -92,53 +92,56 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTLOWERCASE = 86;
   public int JJTSTRSTARTS = 87;
   public int JJTSTRENDS = 88;
-  public int JJTCONCAT = 89;
-  public int JJTCONTAINS = 90;
-  public int JJTENCODEFORURI = 91;
-  public int JJTIF = 92;
-  public int JJTIN = 93;
-  public int JJTNOTIN = 94;
-  public int JJTCOALESCE = 95;
-  public int JJTSTR = 96;
-  public int JJTLANG = 97;
-  public int JJTLANGMATCHES = 98;
-  public int JJTDATATYPE = 99;
-  public int JJTBOUND = 100;
-  public int JJTSAMETERM = 101;
-  public int JJTISIRI = 102;
-  public int JJTISBLANK = 103;
-  public int JJTISLITERAL = 104;
-  public int JJTISNUMERIC = 105;
-  public int JJTBNODEFUNC = 106;
-  public int JJTIRIFUNC = 107;
-  public int JJTSTRDT = 108;
-  public int JJTSTRLANG = 109;
-  public int JJTBIND = 110;
-  public int JJTREGEXEXPRESSION = 111;
-  public int JJTEXISTSFUNC = 112;
-  public int JJTNOTEXISTSFUNC = 113;
-  public int JJTRDFLITERAL = 114;
-  public int JJTTRUE = 115;
-  public int JJTFALSE = 116;
-  public int JJTSTRING = 117;
-  public int JJTQNAME = 118;
-  public int JJTBLANKNODE = 119;
-  public int JJTGRAPHREFALL = 120;
-  public int JJTGRAPHORDEFAULT = 121;
-  public int JJTQUADSNOTTRIPLES = 122;
-  public int JJTLOAD = 123;
-  public int JJTCLEAR = 124;
-  public int JJTDROP = 125;
-  public int JJTADD = 126;
-  public int JJTMOVE = 127;
-  public int JJTCOPY = 128;
-  public int JJTCREATE = 129;
-  public int JJTINSERTDATA = 130;
-  public int JJTDELETEDATA = 131;
-  public int JJTDELETEWHERE = 132;
-  public int JJTDELETECLAUSE = 133;
-  public int JJTINSERTCLAUSE = 134;
-  public int JJTMODIFY = 135;
+  public int JJTSTRBEFORE = 89;
+  public int JJTSTRAFTER = 90;
+  public int JJTREPLACE = 91;
+  public int JJTCONCAT = 92;
+  public int JJTCONTAINS = 93;
+  public int JJTENCODEFORURI = 94;
+  public int JJTIF = 95;
+  public int JJTIN = 96;
+  public int JJTNOTIN = 97;
+  public int JJTCOALESCE = 98;
+  public int JJTSTR = 99;
+  public int JJTLANG = 100;
+  public int JJTLANGMATCHES = 101;
+  public int JJTDATATYPE = 102;
+  public int JJTBOUND = 103;
+  public int JJTSAMETERM = 104;
+  public int JJTISIRI = 105;
+  public int JJTISBLANK = 106;
+  public int JJTISLITERAL = 107;
+  public int JJTISNUMERIC = 108;
+  public int JJTBNODEFUNC = 109;
+  public int JJTIRIFUNC = 110;
+  public int JJTSTRDT = 111;
+  public int JJTSTRLANG = 112;
+  public int JJTBIND = 113;
+  public int JJTREGEXEXPRESSION = 114;
+  public int JJTEXISTSFUNC = 115;
+  public int JJTNOTEXISTSFUNC = 116;
+  public int JJTRDFLITERAL = 117;
+  public int JJTTRUE = 118;
+  public int JJTFALSE = 119;
+  public int JJTSTRING = 120;
+  public int JJTQNAME = 121;
+  public int JJTBLANKNODE = 122;
+  public int JJTGRAPHREFALL = 123;
+  public int JJTGRAPHORDEFAULT = 124;
+  public int JJTQUADSNOTTRIPLES = 125;
+  public int JJTLOAD = 126;
+  public int JJTCLEAR = 127;
+  public int JJTDROP = 128;
+  public int JJTADD = 129;
+  public int JJTMOVE = 130;
+  public int JJTCOPY = 131;
+  public int JJTCREATE = 132;
+  public int JJTINSERTDATA = 133;
+  public int JJTDELETEDATA = 134;
+  public int JJTDELETEWHERE = 135;
+  public int JJTDELETECLAUSE = 136;
+  public int JJTINSERTCLAUSE = 137;
+  public int JJTMODIFY = 138;
 
 
   public String[] jjtNodeName = {
@@ -231,6 +234,9 @@ public interface SyntaxTreeBuilderTreeConstants
     "LowerCase",
     "StrStarts",
     "StrEnds",
+    "StrBefore",
+    "StrAfter",
+    "Replace",
     "Concat",
     "Contains",
     "EncodeForURI",
@@ -280,4 +286,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "Modify",
   };
 }
-/* JavaCC - OriginalChecksum=ecff457fd2980769b7b0cd552af4f4d7 (do not edit this line) */
+/* JavaCC - OriginalChecksum=f371c859a44454dbffc479e0661c1a44 (do not edit this line) */

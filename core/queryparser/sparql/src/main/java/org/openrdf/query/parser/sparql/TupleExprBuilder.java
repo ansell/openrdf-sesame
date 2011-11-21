@@ -47,7 +47,6 @@ import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.IRIFunction;
 import org.openrdf.query.algebra.If;
-import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
 import org.openrdf.query.algebra.IsNumeric;
@@ -169,6 +168,7 @@ import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTRDFLiteral;
 import org.openrdf.query.parser.sparql.ast.ASTRand;
 import org.openrdf.query.parser.sparql.ast.ASTRegexExpression;
+import org.openrdf.query.parser.sparql.ast.ASTReplace;
 import org.openrdf.query.parser.sparql.ast.ASTRound;
 import org.openrdf.query.parser.sparql.ast.ASTSHA1;
 import org.openrdf.query.parser.sparql.ast.ASTSHA224;
@@ -182,6 +182,8 @@ import org.openrdf.query.parser.sparql.ast.ASTSelect;
 import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
 import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTStr;
+import org.openrdf.query.parser.sparql.ast.ASTStrAfter;
+import org.openrdf.query.parser.sparql.ast.ASTStrBefore;
 import org.openrdf.query.parser.sparql.ast.ASTStrDt;
 import org.openrdf.query.parser.sparql.ast.ASTStrEnds;
 import org.openrdf.query.parser.sparql.ast.ASTStrLang;
@@ -400,6 +402,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		if (orderNode != null) {
+			@SuppressWarnings("unchecked")
 			List<OrderElem> orderElements = (List<OrderElem>)orderNode.jjtAccept(this, null);
 
 			for (OrderElem orderElem : orderElements) {
@@ -1860,6 +1863,20 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public FunctionCall visit(ASTStrAfter node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.SUBSTRING_AFTER.toString(), node, 2, 2);
+	}
+
+	@Override
+	public FunctionCall visit(ASTStrBefore node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.SUBSTRING_BEFORE.toString(), node, 2, 2);
+	}
+
+	@Override
 	public FunctionCall visit(ASTUpperCase node, Object data)
 		throws VisitorException
 	{
@@ -2163,6 +2180,13 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public FunctionCall visit(ASTReplace node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall(FN.REPLACE.toString(), node, 3, 4);
+	}
+
+	@Override
 	public Exists visit(ASTExistsFunc node, Object data)
 		throws VisitorException
 	{
@@ -2328,7 +2352,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public Object visit(ASTBind node, Object data)
 		throws VisitorException
 	{
-		// bind expression 
+		// bind expression
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
 		// name to bind the expression outcome to
@@ -2336,16 +2360,16 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		String alias = ((ASTVar)aliasNode).getName();
 
 		TupleExpr arg = graphPattern.buildTupleExpr();
-		
+
 		Extension extension = new Extension();
 		extension.addElement(new ExtensionElem(ve, alias));
 		extension.setArg(arg);
-		
+
 		GraphPattern replacementGP = new GraphPattern(graphPattern);
 		replacementGP.addRequiredTE(extension);
 
 		graphPattern = replacementGP;
-		
+
 		return extension;
 	}
 

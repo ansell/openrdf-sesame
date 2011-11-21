@@ -23,9 +23,9 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 /**
  * @author jeen
  */
-public class StrBeforeTest {
+public class StrAfterTest {
 
-	private StrBefore strBeforeFunc;
+	private StrAfter strAfterFunc;
 
 	private ValueFactory f = new ValueFactoryImpl();
 
@@ -37,7 +37,7 @@ public class StrBeforeTest {
 	public void setUp()
 		throws Exception
 	{
-		strBeforeFunc = new StrBefore();
+		strAfterFunc = new StrAfter();
 	}
 
 	/**
@@ -56,9 +56,9 @@ public class StrBeforeTest {
 		Literal rightArg = f.createLiteral("ba");
 		
 		try {
-			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
-			assertEquals("foo", result.getLabel());
+			assertEquals("r", result.getLabel());
 		}
 		catch (ValueExprEvaluationException e) {
 			fail(e.getMessage());
@@ -72,7 +72,7 @@ public class StrBeforeTest {
 		Literal rightArg = f.createLiteral("xyz");
 		
 		try {
-			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
 			assertEquals("", result.getLabel());
 		}
@@ -88,9 +88,9 @@ public class StrBeforeTest {
 		Literal rightArg = f.createLiteral("b");
 		
 		try {
-			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
-			assertEquals("foo", result.getLabel());
+			assertEquals("ar", result.getLabel());
 			assertEquals("en", result.getLanguage());
 			assertEquals(null, result.getDatatype());
 		}
@@ -106,9 +106,9 @@ public class StrBeforeTest {
 		Literal rightArg = f.createLiteral("b");
 		
 		try {
-			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
-			assertEquals("foo", result.getLabel());
+			assertEquals("ar", result.getLabel());
 			assertEquals(XMLSchema.STRING, result.getDatatype());
 
 		}
@@ -124,9 +124,9 @@ public class StrBeforeTest {
 		Literal rightArg = f.createLiteral("b", XMLSchema.STRING);
 		
 		try {
-			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
-			assertEquals("foo", result.getLabel());
+			assertEquals("ar", result.getLabel());
 			assertEquals(null, result.getDatatype());
 
 		}
@@ -143,7 +143,7 @@ public class StrBeforeTest {
 		Literal rightArg = f.createLiteral("b", XMLSchema.DATE);
 		
 		try {
-			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
 			fail("operand with incompatible datatype, should have resulted in error");
 		}
@@ -159,7 +159,7 @@ public class StrBeforeTest {
 		Literal rightArg = f.createLiteral("b");
 		
 		try {
-			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
 			fail("operand with incompatible datatype, should have resulted in error");
 		}
@@ -176,7 +176,7 @@ public class StrBeforeTest {
 		Literal rightArg = f.createLiteral("b");
 		
 		try {
-			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
 			fail("operand of incompatible type, should have resulted in error");
 		}
@@ -191,7 +191,7 @@ public class StrBeforeTest {
 		Literal rightArg = f.createLiteral("b", "nl");
 		
 		try {
-			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
 			fail("operands with incompatible language tags, should have resulted in error");
 		}
@@ -207,7 +207,7 @@ public class StrBeforeTest {
 		Literal rightArg = f.createLiteral("b", "nl");
 		
 		try {
-			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
 			fail("operands with incompatible language tags, should have resulted in error");
 
@@ -223,9 +223,9 @@ public class StrBeforeTest {
 		Literal rightArg = f.createLiteral("b", XMLSchema.STRING);
 		
 		try {
-			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
-			assertEquals("foo", result.getLabel());
+			assertEquals("ar", result.getLabel());
 			assertEquals(null, result.getDatatype());
 			assertEquals("en", result.getLanguage());
 
