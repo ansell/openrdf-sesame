@@ -140,6 +140,47 @@ public abstract class ComplexSPARQLQueryTest {
 		}
 
 	}
+	
+	@Test 
+	public void testPropertyPathInTree() {
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append(" SELECT ?node ?name ");
+		query.append(" FROM ex:tree-graph ");
+		query.append(" WHERE { ?node ex:hasParent+ ex:b . ?node ex:name ?name . }");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			while (result.hasNext()) {
+				BindingSet bs = result.next();
+				assertNotNull(bs);
+				
+				System.out.println(bs);
+				
+			}
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+				
+	}
 
 	@Test
 	public void testGroupConcatNonDistinct() {

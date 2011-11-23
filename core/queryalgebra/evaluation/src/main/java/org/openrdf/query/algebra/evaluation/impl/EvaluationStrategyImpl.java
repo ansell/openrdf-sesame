@@ -370,7 +370,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 				if (startVarFixed && endVarFixed && currentLength > 2) {
 					v1 = getVarValue(startVar, startVarFixed, nextElement);
-					v2 = nextElement.getValue("END_" + JOINVAR_PREFIX + currentLength);
+					v2 = nextElement.getValue("END_" + JOINVAR_PREFIX);
+				}
+				else if (startVarFixed && endVarFixed && currentLength == 2) {
+					v1 = getVarValue(startVar, startVarFixed, nextElement);
+					v2 = nextElement.getValue(JOINVAR_PREFIX + (currentLength - 1));
 				}
 				else {
 					v1 = getVarValue(startVar, startVarFixed, nextElement);
@@ -388,6 +392,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 								valueQueue.add(vp);
 							}
 							return nextElement;
+						}
+						else {
+							if (!v1.equals(v2)) {
+								valueQueue.add(vp);
+							}
+							return getNextElement();
 						}
 					}
 					else {
@@ -463,7 +473,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					if (startVarFixed && endVarFixed) {
 
 						Var startReplacement = createAnonVar(JOINVAR_PREFIX + currentLength);
-						Var endReplacement = createAnonVar("END_" + JOINVAR_PREFIX + currentLength);
+						Var endReplacement = createAnonVar("END_" + JOINVAR_PREFIX);
 
 						Value v = currentVp.getEndValue();
 						startReplacement.setValue(v);
