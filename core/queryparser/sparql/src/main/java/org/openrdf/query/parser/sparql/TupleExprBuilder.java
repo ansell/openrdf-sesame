@@ -525,8 +525,19 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		if (!extension.getElements().isEmpty()) {
-			extension.setArg(result);
-			result = extension;
+			if (result instanceof Order) {
+				// Extensions produced by SELECT expressions should be nested inside the ORDER BY clause, to make sure
+				// sorting can work on the newly introduced variable. See SES-892.
+				Order o = (Order)result;
+				TupleExpr arg = o.getArg();
+				extension.setArg(arg);
+				o.setArg(extension);
+				result = o;
+			}
+			else {
+				extension.setArg(result);
+				result = extension;
+			}
 		}
 
 		result = new Projection(result, projElemList);
