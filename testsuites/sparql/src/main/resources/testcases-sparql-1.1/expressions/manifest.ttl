@@ -12,6 +12,7 @@
     	:sparql11-alias-01
     	:sparql11-alias-02
     	:sparql11-numeric-01
+    	:sparql11-expression-ordered-01
     ).
 
 :sparql11-alias-01  mf:name  "sparql11-alias-01" ;
@@ -29,4 +30,10 @@
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-numeric-01.rq> ; qt:data <data-02.ttl> ] ;
          mf:result <sparql11-numeric-01.srx> .
+         
+:sparql11-expression-ordered-01  mf:name  "sparql11-expression-ordered-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-expression-ordered-01.rq> ; qt:data <data-02.ttl> ] ;
+         mf:checkOrder "true" ;
+         mf:result <sparql11-expression-ordered-01.srx> .
 	 
