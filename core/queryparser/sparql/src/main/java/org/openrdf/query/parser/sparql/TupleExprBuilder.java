@@ -1252,8 +1252,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			else if (pathElement.isNestedPath()) {
 				GraphPattern parentGP = graphPattern;
 
-				graphPattern = new GraphPattern();
+				graphPattern = new GraphPattern(parentGP);
 
+				
 				if (i == pathLength - 1) {
 					// last element in the path
 					pathElement.jjtGetChild(0).jjtAccept(this, data);
