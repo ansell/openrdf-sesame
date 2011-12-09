@@ -272,6 +272,13 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
+	protected void autoCommit()
+		throws RepositoryException
+	{
+		super.autoCommit();
+	}
+
+	@Override
 	public void clear(Resource... contexts)
 		throws RepositoryException
 	{
