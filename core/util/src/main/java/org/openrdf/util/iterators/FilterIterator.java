@@ -54,11 +54,8 @@ public abstract class FilterIterator<E> implements Iterator<E> {
 		}
 	}
 
-	/**
-	 * Throws an {@link UnsupportedOperationException}.
-	 */
 	public void remove() {
-		throw new UnsupportedOperationException();
+		filteredIter.remove();
 	}
 
 	/**
