@@ -5,6 +5,7 @@
  */
 package org.openrdf.query.algebra.helpers;
 
+import org.openrdf.query.algebra.Add;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.Avg;
@@ -13,13 +14,17 @@ import org.openrdf.query.algebra.BinaryTupleOperator;
 import org.openrdf.query.algebra.BinaryValueOperator;
 import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Bound;
+import org.openrdf.query.algebra.Clear;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
 import org.openrdf.query.algebra.CompareSubQueryValueOperator;
+import org.openrdf.query.algebra.Copy;
 import org.openrdf.query.algebra.Count;
+import org.openrdf.query.algebra.Create;
 import org.openrdf.query.algebra.Datatype;
+import org.openrdf.query.algebra.DeleteData;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
@@ -34,6 +39,7 @@ import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.IRIFunction;
 import org.openrdf.query.algebra.If;
 import org.openrdf.query.algebra.In;
+import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
@@ -46,10 +52,13 @@ import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Like;
+import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
+import org.openrdf.query.algebra.Modify;
+import org.openrdf.query.algebra.Move;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.NAryValueOperator;
 import org.openrdf.query.algebra.Namespace;
@@ -92,16 +101,16 @@ import org.openrdf.query.algebra.ZeroLengthPath;
  */
 public abstract class QueryModelVisitorBase<X extends Exception> implements QueryModelVisitor<X> {
 
+	public void meet(Add node)
+		throws X
+	{
+		meetUpdateExpr(node);
+	}
+
 	public void meet(And node)
 		throws X
 	{
 		meetBinaryValueOperator(node);
-	}
-
-	public void meet(BindingSetAssignment node)
-		throws X
-	{
-		meetNode(node);
 	}
 
 	public void meet(ArbitraryLengthPath node)
@@ -116,6 +125,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetUnaryValueOperator(node);
 	}
 
+	public void meet(BindingSetAssignment node)
+		throws X
+	{
+		meetNode(node);
+	}
+
 	public void meet(BNodeGenerator node)
 		throws X
 	{
@@ -126,6 +141,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetNode(node);
+	}
+
+	public void meet(Clear node)
+		throws X
+	{
+		meetUpdateExpr(node);
 	}
 
 	public void meet(Coalesce node)
@@ -152,16 +173,34 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetCompareSubQueryValueOperator(node);
 	}
 
+	public void meet(Copy node)
+		throws X
+	{
+		meetUpdateExpr(node);
+	}
+
 	public void meet(Count node)
 		throws X
 	{
 		meetUnaryValueOperator(node);
 	}
 
+	public void meet(Create node)
+		throws X
+	{
+		meetUpdateExpr(node);
+	}
+
 	public void meet(Datatype node)
 		throws X
 	{
 		meetUnaryValueOperator(node);
+	}
+
+	public void meet(DeleteData node)
+		throws X
+	{
+		meetUpdateExpr(node);
 	}
 
 	public void meet(Difference node)
@@ -242,10 +281,22 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetCompareSubQueryValueOperator(node);
 	}
 
+	public void meet(InsertData node)
+		throws X
+	{
+		meetUpdateExpr(node);
+	}
+
 	public void meet(Intersection node)
 		throws X
 	{
 		meetBinaryTupleOperator(node);
+	}
+
+	public void meet(IRIFunction node)
+		throws X
+	{
+		meetUnaryValueOperator(node);
 	}
 
 	public void meet(IsBNode node)
@@ -308,13 +359,19 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetBinaryTupleOperator(node);
 	}
 
-	public void meet(LocalName node)
+	public void meet(Like node)
 		throws X
 	{
 		meetUnaryValueOperator(node);
 	}
 
-	public void meet(Like node)
+	public void meet(Load node)
+		throws X
+	{
+		meetUpdateExpr(node);
+	}
+
+	public void meet(LocalName node)
 		throws X
 	{
 		meetUnaryValueOperator(node);
@@ -336,6 +393,18 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetUnaryValueOperator(node);
+	}
+
+	public void meet(Modify node)
+		throws X
+	{
+		meetUpdateExpr(node);
+	}
+
+	public void meet(Move node)
+		throws X
+	{
+		meetUpdateExpr(node);
 	}
 
 	public void meet(MultiProjection node)
@@ -410,16 +479,22 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetBinaryValueOperator(node);
 	}
 
-	public void meet(Slice node)
-		throws X
-	{
-		meetUnaryTupleOperator(node);
-	}
-
 	public void meet(SameTerm node)
 		throws X
 	{
 		meetBinaryValueOperator(node);
+	}
+
+	public void meet(Sample node)
+		throws X
+	{
+		meetUnaryValueOperator(node);
+	}
+
+	public void meet(Service node) 
+		throws X
+	{
+		meetNode(node);		
 	}
 
 	public void meet(SingletonSet node)
@@ -428,19 +503,13 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetNode(node);
 	}
 
-	public void meet(StatementPattern node)
+	public void meet(Slice node)
 		throws X
 	{
-		meetNode(node);
-	}
-	
-	public void meet(Service node) 
-		throws X
-	{
-		meetNode(node);		
+		meetUnaryTupleOperator(node);
 	}
 
-	public void meet(ZeroLengthPath node)
+	public void meet(StatementPattern node)
 		throws X
 	{
 		meetNode(node);
@@ -452,28 +521,10 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetUnaryValueOperator(node);
 	}
 
-	public void meet(Sample node)
-		throws X
-	{
-		meetUnaryValueOperator(node);
-	}
-
 	public void meet(Sum node)
 		throws X
 	{
 		meetUnaryValueOperator(node);
-	}
-
-	public void meet(IRIFunction node)
-		throws X
-	{
-		meetUnaryValueOperator(node);
-	}
-
-	public void meet(UpdateExpr node)
-		throws X
-	{
-		meetNode(node);
 	}
 
 	public void meet(Union node)
@@ -489,6 +540,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	}
 
 	public void meet(Var node)
+		throws X
+	{
+		meetNode(node);
+	}
+
+	public void meet(ZeroLengthPath node)
 		throws X
 	{
 		meetNode(node);
@@ -515,23 +572,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		else if (node instanceof BinaryValueOperator) {
 			meetBinaryValueOperator((BinaryValueOperator)node);
 		}
+		else if (node instanceof UpdateExpr) {
+			meetUpdateExpr((UpdateExpr)node);
+		}
 		else {
 			meetNode(node);
 		}
-	}
-
-	/**
-	 * Method called by all <tt>meet</tt> methods with a
-	 * {@link UnaryTupleOperator} node as argument. Forwards the call to
-	 * {@link #meetNode} by default.
-	 * 
-	 * @param node
-	 *        The node that is being visited.
-	 */
-	protected void meetUnaryTupleOperator(UnaryTupleOperator node)
-		throws X
-	{
-		meetNode(node);
 	}
 
 	/**
@@ -550,48 +596,6 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 
 	/**
 	 * Method called by all <tt>meet</tt> methods with a
-	 * {@link CompareSubQueryValueOperator} node as argument. Forwards the call
-	 * to {@link #meetSubQueryValueOperator} by default.
-	 * 
-	 * @param node
-	 *        The node that is being visited.
-	 */
-	protected void meetCompareSubQueryValueOperator(CompareSubQueryValueOperator node)
-		throws X
-	{
-		meetSubQueryValueOperator(node);
-	}
-
-	/**
-	 * Method called by all <tt>meet</tt> methods with a
-	 * {@link SubQueryValueOperator} node as argument. Forwards the call to
-	 * {@link #meetNode} by default.
-	 * 
-	 * @param node
-	 *        The node that is being visited.
-	 */
-	protected void meetSubQueryValueOperator(SubQueryValueOperator node)
-		throws X
-	{
-		meetNode(node);
-	}
-
-	/**
-	 * Method called by all <tt>meet</tt> methods with a
-	 * {@link UnaryValueOperator} node as argument. Forwards the call to
-	 * {@link #meetNode} by default.
-	 * 
-	 * @param node
-	 *        The node that is being visited.
-	 */
-	protected void meetUnaryValueOperator(UnaryValueOperator node)
-		throws X
-	{
-		meetNode(node);
-	}
-
-	/**
-	 * Method called by all <tt>meet</tt> methods with a
 	 * {@link BinaryValueOperator} node as argument. Forwards the call to
 	 * {@link #meetNode} by default.
 	 * 
@@ -602,6 +606,20 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetNode(node);
+	}
+
+	/**
+	 * Method called by all <tt>meet</tt> methods with a
+	 * {@link CompareSubQueryValueOperator} node as argument. Forwards the call
+	 * to {@link #meetSubQueryValueOperator} by default.
+	 * 
+	 * @param node
+	 *        The node that is being visited.
+	 */
+	protected void meetCompareSubQueryValueOperator(CompareSubQueryValueOperator node)
+		throws X
+	{
+		meetSubQueryValueOperator(node);
 	}
 
 	/**
@@ -631,5 +649,61 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		node.visitChildren(this);
+	}
+
+	/**
+	 * Method called by all <tt>meet</tt> methods with a
+	 * {@link SubQueryValueOperator} node as argument. Forwards the call to
+	 * {@link #meetNode} by default.
+	 * 
+	 * @param node
+	 *        The node that is being visited.
+	 */
+	protected void meetSubQueryValueOperator(SubQueryValueOperator node)
+		throws X
+	{
+		meetNode(node);
+	}
+
+	/**
+	 * Method called by all <tt>meet</tt> methods with a
+	 * {@link UnaryTupleOperator} node as argument. Forwards the call to
+	 * {@link #meetNode} by default.
+	 * 
+	 * @param node
+	 *        The node that is being visited.
+	 */
+	protected void meetUnaryTupleOperator(UnaryTupleOperator node)
+		throws X
+	{
+		meetNode(node);
+	}
+
+	/**
+	 * Method called by all <tt>meet</tt> methods with a
+	 * {@link UnaryValueOperator} node as argument. Forwards the call to
+	 * {@link #meetNode} by default.
+	 * 
+	 * @param node
+	 *        The node that is being visited.
+	 */
+	protected void meetUnaryValueOperator(UnaryValueOperator node)
+		throws X
+	{
+		meetNode(node);
+	}
+
+	/**
+	 * Method called by all <tt>meet</tt> methods with a
+	 * {@link UpdateExpr} node as argument. Forwards the call to
+	 * {@link #meetNode} by default.
+	 * 
+	 * @param node
+	 *        The node that is being visited.
+	 */
+	protected void meetUpdateExpr(UpdateExpr node)
+		throws X
+	{
+		meetNode(node);
 	}
 }
