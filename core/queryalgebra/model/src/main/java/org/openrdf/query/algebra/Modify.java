@@ -42,6 +42,9 @@ public class Modify extends QueryModelNodeBase implements UpdateExpr {
 		if (insertExpr != null) {
 			insertExpr.visit(visitor);
 		}
+		if (whereExpr != null) {
+			whereExpr.visit(visitor);
+		}
 		super.visitChildren(visitor);
 	}
 
