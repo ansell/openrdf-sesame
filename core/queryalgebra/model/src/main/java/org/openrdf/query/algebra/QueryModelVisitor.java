@@ -18,11 +18,9 @@ public interface QueryModelVisitor<X extends Exception> {
 		throws X;
 
 
-	public void meet(BindingSetAssignment node)
-		throws X;
+	public void meet(Add add)
+			throws X;
 
-	public void meet(ZeroLengthPath node)
-		throws X;
 
 	public void meet(And node)
 		throws X;
@@ -33,11 +31,17 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Avg node)
 		throws X;
 
+	public void meet(BindingSetAssignment node)
+		throws X;
+
 	public void meet(BNodeGenerator node)
 		throws X;
 
 	public void meet(Bound node)
 		throws X;
+
+	public void meet(Clear clear)
+			throws X;
 
 	public void meet(Coalesce node)
 		throws X;
@@ -51,11 +55,20 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(CompareAny node)
 		throws X;
 
+	public void meet(Copy copy)
+			throws X;
+
 	public void meet(Count node)
 		throws X;
 
+	public void meet(Create create)
+			throws X;
+
 	public void meet(Datatype node)
 		throws X;
+
+	public void meet(DeleteData deleteData)
+			throws X;
 
 	public void meet(Difference node)
 		throws X;
@@ -73,6 +86,9 @@ public interface QueryModelVisitor<X extends Exception> {
 		throws X;
 
 	public void meet(ExtensionElem node)
+		throws X;
+
+	public void meet(Filter node)
 		throws X;
 
 	public void meet(FunctionCall node)
@@ -93,7 +109,13 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(In node)
 		throws X;
 
+	public void meet(InsertData insertData)
+			throws X;
+
 	public void meet(Intersection node)
+		throws X;
+
+	public void meet(IRIFunction node)
 		throws X;
 
 	public void meet(IsBNode node)
@@ -123,8 +145,14 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(LangMatches node)
 		throws X;
 
+	public void meet(LeftJoin node)
+		throws X;
+
 	public void meet(Like node)
 		throws X;
+
+	public void meet(Load load)
+			throws X;
 
 	public void meet(LocalName node)
 		throws X;
@@ -138,6 +166,12 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Min node)
 		throws X;
 
+	public void meet(Modify modify)
+			throws X;
+
+	public void meet(Move move)
+			throws X;
+
 	public void meet(MultiProjection node)
 		throws X;
 
@@ -145,9 +179,6 @@ public interface QueryModelVisitor<X extends Exception> {
 		throws X;
 
 	public void meet(Not node)
-		throws X;
-
-	public void meet(LeftJoin node)
 		throws X;
 
 	public void meet(Or node)
@@ -161,11 +192,11 @@ public interface QueryModelVisitor<X extends Exception> {
 
 	public void meet(Projection node)
 		throws X;
-
-	public void meet(ProjectionElemList node)
+	
+	public void meet(ProjectionElem node)
 		throws X;
 
-	public void meet(ProjectionElem node)
+	public void meet(ProjectionElemList node)
 		throws X;
 
 	public void meet(Reduced node)
@@ -174,28 +205,25 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Regex node)
 		throws X;
 
-	public void meet(Slice node)
-		throws X;
-
 	public void meet(SameTerm node)
 		throws X;
 
-	public void meet(Filter node)
+	public void meet(Sample node)
+		throws X;
+
+	public void meet(Service node)
 		throws X;
 
 	public void meet(SingletonSet node)
 		throws X;
 
-	public void meet(StatementPattern node)
+	public void meet(Slice node)
 		throws X;
-	
-	public void meet(Service node)
+
+	public void meet(StatementPattern node)
 		throws X;
 
 	public void meet(Str node)
-		throws X;
-
-	public void meet(Sample node)
 		throws X;
 
 	public void meet(Sum node)
@@ -204,16 +232,13 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Union node)
 		throws X;
 
-	public void meet(UpdateExpr node)
-		throws X;
-
-	public void meet(IRIFunction node)
-		throws X;
-
 	public void meet(ValueConstant node)
 		throws X;
 
 	public void meet(Var node)
+		throws X;
+
+	public void meet(ZeroLengthPath node)
 		throws X;
 
 	public void meetOther(QueryModelNode node)
