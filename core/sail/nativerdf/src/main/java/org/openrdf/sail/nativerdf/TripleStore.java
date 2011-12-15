@@ -394,6 +394,7 @@ class TripleStore {
 					while ((value = sourceIter.next()) != null) {
 						addedBTree.insert(value);
 					}
+					addedBTree.sync();
 				}
 				finally {
 					sourceIter.close();
