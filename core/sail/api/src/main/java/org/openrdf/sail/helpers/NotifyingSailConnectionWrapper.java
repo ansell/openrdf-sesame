@@ -33,7 +33,7 @@ public class NotifyingSailConnectionWrapper extends SailConnectionWrapper implem
 	 *---------*/
 
 	@Override
-	protected NotifyingSailConnection getWrappedConnection() {
+	public NotifyingSailConnection getWrappedConnection() {
 		return (NotifyingSailConnection)super.getWrappedConnection();
 	}
 

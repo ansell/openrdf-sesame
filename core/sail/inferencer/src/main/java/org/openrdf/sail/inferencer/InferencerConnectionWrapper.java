@@ -50,7 +50,7 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * @return The connection that was supplied to the constructor of this class.
 	 */
 	@Override
-	protected InferencerConnection getWrappedConnection() {
+	public InferencerConnection getWrappedConnection() {
 		return (InferencerConnection)super.getWrappedConnection();
 	}
 
