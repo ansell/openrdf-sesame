@@ -388,6 +388,12 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 		execute("/testcases-service/service12.rq", "/testcases-service/service12.srx", false);		
 	}
 	
+	public void test13() throws Exception {
+		/* test for bug SES-899: cross product is required */
+		prepareTest(null, Arrays.asList("/testcases-service/data13.ttl"));
+		execute("/testcases-service/service13.rq", "/testcases-service/service13.srx", false);				
+	}
+	
 	
 	/**
 	 * Execute a testcase, both queryFile and expectedResultFile must be files 

@@ -52,7 +52,12 @@ public class ServiceJoinConversionIteration extends
 			}
 			res.addBinding(b.getName(), b.getValue());
 		}
-
+		
+		// should never occur: in such case we would have to create the cross product (which
+		// is dealt with in another place)
+		if (bIndex == -1)
+			throw new RuntimeException("Invalid join. Please report this to the developers.");
+		
 		res.addAll(bindings.get(bIndex));
 		return res;
 	}
