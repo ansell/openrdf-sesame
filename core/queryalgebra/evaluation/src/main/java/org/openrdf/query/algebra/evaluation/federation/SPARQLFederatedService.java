@@ -169,8 +169,12 @@ public class SPARQLFederatedService implements FederatedService {
 			
 			String queryString = service.getQueryString(projectionVars);			
 			
-			// append the BINDINGS clause to the query
-			queryString = queryString + buildBindingsClause(allBindings, service.getServiceVars());
+			List<String> relevantBindingNames = getRelevantBindingNames(allBindings, service.getServiceVars());
+			
+			if (relevantBindingNames.size()!=0) {
+				// append the BINDINGS clause to the query
+				queryString += buildBindingsClause(allBindings, relevantBindingNames);
+			}
 
 			TupleQuery query = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString, baseUri);
 			TupleQueryResult res;
@@ -186,8 +190,13 @@ public class SPARQLFederatedService implements FederatedService {
 				return result;
 			}
 			
-			CloseableIteration<BindingSet, QueryEvaluationException> result =
-					new ServiceJoinConversionIteration(res, allBindings);
+			CloseableIteration<BindingSet, QueryEvaluationException> result;
+			
+			if (relevantBindingNames.size()==0)
+				result = new ServiceCrossProductIteration(res, allBindings);	// cross product
+			else
+				result = new ServiceJoinConversionIteration(res, allBindings);	// common join
+			
 			result = service.isSilent() ? new SilentIteration(result) : result;
 			return result;
 			
@@ -235,10 +244,21 @@ public class SPARQLFederatedService implements FederatedService {
 		return conn;
 	}
 	
-	protected String buildBindingsClause(List<BindingSet> bindings, Set<String> serviceVars) 
-				throws QueryEvaluationException {
+	/**
+	 * Compute the relevant binding names using the variables occuring in the service 
+	 * expression and the input bindings. The idea is find all variables which need
+	 * to be projected in the subquery, i.e. those that will not be bound by 
+	 * an input binding.<p>
+	 * 
+	 * If the resulting list is empty, the cross product needs to be formed.
+	 * 
+	 * @param bindings
+	 * @param serviceVars
+	 * @return
+	 * 			the list of relevant bindings (if empty: the cross product needs to be formed)
+	 */
+	private List<String> getRelevantBindingNames(List<BindingSet> bindings, Set<String> serviceVars) {
 		
-	
 		// get the bindings variables
 		// TODO CHECK: does the first bindingset give all relevant names
 		
@@ -247,12 +267,23 @@ public class SPARQLFederatedService implements FederatedService {
 			if (serviceVars.contains(bName))
 				relevantBindingNames.add(bName);
 		}
-
-		if (relevantBindingNames.size()==0) {
-			// TODO think about what to do in this case
-			return "";
-		}
-
+		
+		return relevantBindingNames;
+	}
+	
+	/**
+	 * Computes the BINDINGS clause for the set of relevant input bindings. The BINDINGS
+	 * clause is attached to a subquery for block-nested-loop evaluation. Implementation
+	 * note: we use a special binding to mark the rowIndex of the input binding.
+	 * 
+	 * @param bindings
+	 * @param relevantBindingNames
+	 * @return
+	 * @throws QueryEvaluationException
+	 */
+	private String buildBindingsClause(List<BindingSet> bindings, List<String> relevantBindingNames) 
+				throws QueryEvaluationException {
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append(" BINDINGS ?__rowIdx");	// __rowIdx: see comment in evaluate()
 		
