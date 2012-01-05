@@ -72,6 +72,7 @@ import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Service;
+import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
@@ -981,6 +982,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		graphPattern = new GraphPattern(parentGP);
 		node.jjtGetChild(1).jjtAccept(this, null);
 		TupleExpr serviceExpr = graphPattern.buildTupleExpr();
+		
+		if (serviceExpr instanceof SingletonSet)
+			return null;	// do not add an empty service block
+		
 		String serviceExpressionString = node.getPatternString();
 
 		parentGP.addRequiredTE(new Service(valueExpr2Var(serviceRef), serviceExpr, serviceExpressionString,

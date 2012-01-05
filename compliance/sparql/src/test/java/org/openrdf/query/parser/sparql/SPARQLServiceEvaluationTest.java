@@ -394,6 +394,11 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 		execute("/testcases-service/service13.rq", "/testcases-service/service13.srx", false);				
 	}
 	
+	public void testEmptyServiceBlock() throws Exception {
+		/* test for bug SES-900: nullpointer for empty service block */
+		prepareTest(null, Arrays.asList("/testcases-service/data13.ttl"));
+		execute("/testcases-service/service14.rq", "/testcases-service/service14.srx", false);	
+	}
 	
 	/**
 	 * Execute a testcase, both queryFile and expectedResultFile must be files 
