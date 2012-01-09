@@ -9,21 +9,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
-import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.Filter;
-import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Projection;
+import org.openrdf.query.algebra.SPARQLIntersection;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
 /**
  * A graph pattern consisting of (required and optional) tuple expressions,
@@ -90,12 +87,7 @@ public class GraphPattern {
 	}
 
 	public void addRequiredTE(TupleExpr te) {
-		if (te instanceof Slice || te instanceof Projection) {
-			requiredTEs.add(0, te);
-		}
-		else {
-			requiredTEs.add(te);
-		}
+		requiredTEs.add(te);
 	}
 
 	public void addRequiredSP(Var subjVar, Var predVar, Var objVar) {
@@ -158,7 +150,14 @@ public class GraphPattern {
 
 			for (int i = 1; i < requiredTEs.size(); i++) {
 				TupleExpr te = requiredTEs.get(i);
-				result = new Join(result, te);
+				if ((te instanceof Slice || te instanceof Projection)
+						|| (result instanceof Slice || result instanceof Projection || result instanceof SPARQLIntersection))
+				{
+					result = new SPARQLIntersection(result, te);
+				}
+				else {
+					result = new Join(result, te);
+				}
 			}
 		}
 
