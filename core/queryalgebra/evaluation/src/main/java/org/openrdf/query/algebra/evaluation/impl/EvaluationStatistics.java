@@ -87,12 +87,6 @@ public class EvaluationStatistics {
 			cardinality = 100000;
 		}
 		
-		@Override 
-		public void meet(Projection node) {
-			// TODO hard set of cardinality of Projection to 1, to make sure subselects are always evaluated first.
-			cardinality = 1;
-		}
-		
 		@Override
 		public void meet(Service node) {
 			if (!node.getServiceRef().hasValue()) {
