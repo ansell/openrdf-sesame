@@ -325,14 +325,14 @@ TOKEN:
 ASTUpdateSequence UpdateSequence():
 {}
 {
-    UpdateContainer() ( <SEMICOLON> UpdateContainer() )* <EOF>
+    UpdateContainer() ( <SEMICOLON> [ UpdateContainer() ] )* <EOF>
     { return jjtThis; }
 }
 
 ASTUpdateContainer UpdateContainer():
 {}
 {
-    Prolog() Update()
+    Prolog() Update() 
     { return jjtThis; }
 }
 
