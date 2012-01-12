@@ -359,12 +359,11 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		if (havingNode != null) {
-			// FIXME is the child of a HAVING node always a compare?
-			Compare condition = (Compare)havingNode.jjtGetChild(0).jjtAccept(this, tupleExpr);
+			ValueExpr expr = (ValueExpr)havingNode.jjtGetChild(0).jjtAccept(this, tupleExpr);
 
-			// retrieve any aggregate operators from the condition.
+			// retrieve any aggregate operators from the expression.
 			AggregateCollector collector = new AggregateCollector();
-			collector.meet(condition);
+			collector.meetOther(expr);
 
 			// replace operator occurrences with an anonymous var, and alias it
 			// to the group
@@ -372,10 +371,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			for (AggregateOperator operator : collector.getOperators()) {
 				Var var = createAnonVar("-const-" + constantVarID++);
 
-				// replace occurrence of the operator in the filter condition
+				// replace occurrence of the operator in the filter expression
 				// with the variable.
 				AggregateOperatorReplacer replacer = new AggregateOperatorReplacer(operator, var);
-				replacer.meet(condition);
+				replacer.meetOther(expr);
 
 				String alias = var.getName();
 
@@ -394,7 +393,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			}
 
 			extension.setArg(group);
-			tupleExpr = new Filter(extension, condition);
+			tupleExpr = new Filter(extension, expr);
 		}
 
 		return tupleExpr;
