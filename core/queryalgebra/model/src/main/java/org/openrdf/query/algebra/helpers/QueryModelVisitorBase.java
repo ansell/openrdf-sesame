@@ -74,6 +74,7 @@ import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
+import org.openrdf.query.algebra.SPARQLIntersection;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Service;
@@ -491,10 +492,10 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		meetUnaryValueOperator(node);
 	}
 
-	public void meet(Service node) 
+	public void meet(Service node)
 		throws X
 	{
-		meetNode(node);		
+		meetNode(node);
 	}
 
 	public void meet(SingletonSet node)
@@ -507,6 +508,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetUnaryTupleOperator(node);
+	}
+
+	public void meet(SPARQLIntersection node)
+		throws X
+	{
+		meetBinaryTupleOperator(node);
 	}
 
 	public void meet(StatementPattern node)
@@ -694,9 +701,8 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	}
 
 	/**
-	 * Method called by all <tt>meet</tt> methods with a
-	 * {@link UpdateExpr} node as argument. Forwards the call to
-	 * {@link #meetNode} by default.
+	 * Method called by all <tt>meet</tt> methods with a {@link UpdateExpr} node
+	 * as argument. Forwards the call to {@link #meetNode} by default.
 	 * 
 	 * @param node
 	 *        The node that is being visited.
