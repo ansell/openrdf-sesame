@@ -63,6 +63,8 @@ public class HttpServerUtil {
 		}
 
 		String result = null;
+		HeaderElement matchingAcceptType = null;
+
 		double highestQuality = 0.0;
 
 		while (mimeTypes.hasNext()) {
@@ -86,7 +88,17 @@ public class HttpServerUtil {
 
 				if (quality > highestQuality) {
 					result = mimeType;
+					matchingAcceptType = acceptType;
 					highestQuality = quality;
+				}
+				else if (quality == highestQuality) {
+					// found a match with equal quality preference. check if the
+					// accept type is more specific
+					// than the previous match.
+					if (isMoreSpecificType(acceptType, matchingAcceptType)) {
+						result = mimeType;
+						matchingAcceptType = acceptType;
+					}
 				}
 			}
 		}
@@ -94,6 +106,53 @@ public class HttpServerUtil {
 		return result;
 	}
 
+	/**
+	 * Checks if the first supplied MIME type is more specific than the second supplied 
+	 * MIME type.
+	 * 
+	 * @param leftMimeTypeElem
+	 * @param rightMimeTypeElem
+	 * @return true iff leftMimeTypeElem is a more specific MIME type spec than
+	 *         rightMimeTypeElem, false otherwise.
+	 */
+	private static boolean isMoreSpecificType(HeaderElement leftMimeTypeElem, HeaderElement rightMimeTypeElem) {
+		
+		String[] leftMimeType = splitMIMEType(leftMimeTypeElem.getValue());
+		String[] rightMimeType = splitMIMEType(rightMimeTypeElem.getValue());
+
+		if (rightMimeType != null) {
+			if (rightMimeType[1].equals("*")) {
+				if (!leftMimeType[1].equals("*")) {
+					return true;
+				}
+			}
+			if (rightMimeType[0].equals("*")) {
+				if (!leftMimeType[0].equals("*")) {
+					return true;
+				}
+			}
+			
+			return false;
+ 		}
+		else {
+			return true;
+		}
+	}
+		
+
+	private static String[] splitMIMEType(String mimeTypeString) {
+		int slashIdx = mimeTypeString.indexOf('/');
+		if (slashIdx > 0) {
+			String type = mimeTypeString.substring(0, slashIdx);
+			String subType = mimeTypeString.substring(slashIdx + 1);
+			return new String[] { type, subType };
+		}
+		else {
+			// invalid mime type
+			return null;
+		}
+	}
+	
 	/**
 	 * Gets the elements of the request header with the specified name.
 	 * 
