@@ -321,6 +321,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		// Apply result ordering
 		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, group);
 
+		// process bindings clause
+		ASTBindingsClause bindingsClause = node.getBindingsClause();
+		if (bindingsClause != null) {
+			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
+		}
+
 		// Apply projection
 		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
 
@@ -341,12 +347,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			tupleExpr = new Slice(tupleExpr, offset, limit);
 		}
 
-		// process bindings clause
-		ASTBindingsClause bindingsClause = node.getBindingsClause();
-		if (bindingsClause != null) {
-			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
-		}
-
+	
 		if (parentGP != null) {
 			parentGP.addRequiredTE(tupleExpr);
 			graphPattern = parentGP;
