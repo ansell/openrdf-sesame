@@ -15,6 +15,7 @@ import java.lang.management.ManagementFactory;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.security.AccessControlException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -208,14 +209,21 @@ public class DirectoryLockManager implements LockManager {
 
 			private boolean active = true;
 
-			private Thread hook = new Thread(new Runnable() {
-
-				public void run() {
-					delete();
-				}
-			});
+			private Thread hook;
 			{
-				Runtime.getRuntime().addShutdownHook(hook);
+				try {
+					Thread hook = new Thread(new Runnable() {
+
+						public void run() {
+							delete();
+						}
+					});
+					Runtime.getRuntime().addShutdownHook(hook);
+					this.hook = hook;
+				}
+				catch (AccessControlException e) {
+					// okay, just remember to close it yourself
+				}
 			}
 
 			public boolean isActive() {
@@ -225,10 +233,15 @@ public class DirectoryLockManager implements LockManager {
 			public void release() {
 				active = false;
 				try {
-					Runtime.getRuntime().removeShutdownHook(hook);
+					if (hook != null) {
+						Runtime.getRuntime().removeShutdownHook(hook);
+					}
 				}
 				catch (IllegalStateException e) {
 					// already shutting down
+				}
+				catch (AccessControlException e) {
+					logger.warn(e.toString(), e);
 				}
 				delete();
 			}
