@@ -99,10 +99,7 @@ public class SPARQLIntersectionOptimizer implements QueryOptimizer {
 			int maxSize = 0;
 			for (int i = 0; i < intersectionArgs.size(); i++) {
 				TupleExpr firstArg = intersectionArgs.get(i);
-				for (int j = 0; j < intersectionArgs.size(); j++) {
-					if (i == j) {
-						continue;
-					}
+				for (int j = i + 1; j < intersectionArgs.size(); j++) {
 					TupleExpr secondArg = intersectionArgs.get(j);
 
 					Set<String> names = firstArg.getBindingNames();
