@@ -77,6 +77,23 @@ public class ProtocolUtil {
 					+ paramValue);
 		}
 	}
+	
+	public static URI parseGraphParam(HttpServletRequest request, ValueFactory vf)
+			throws ClientHTTPException
+		{
+			String paramValue = request.getParameter(Protocol.GRAPH_PARAM_NAME);
+			if (paramValue == null) {
+				return null;
+			}
+			
+			try {
+				return Protocol.decodeURI("<" + paramValue + ">", vf);
+			}
+			catch (IllegalArgumentException e) {
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid value for parameter '" + Protocol.GRAPH_PARAM_NAME + "': "
+						+ paramValue);
+			}
+		}
 
 	public static Resource[] parseContextParam(HttpServletRequest request, String paramName, ValueFactory vf)
 		throws ClientHTTPException

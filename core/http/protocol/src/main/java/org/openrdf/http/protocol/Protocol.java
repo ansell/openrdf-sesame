@@ -50,6 +50,11 @@ public abstract class Protocol {
 	public static final String NULL_PARAM_VALUE = "null";
 
 	/**
+	 * Parameter name for the graph parameter.
+	 */
+	public static final String GRAPH_PARAM_NAME = "graph";
+
+	/**
 	 * Parameter name for the update parameter.
 	 */
 	public static final String UPDATE_PARAM_NAME = "update";
