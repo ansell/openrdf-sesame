@@ -84,6 +84,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<prop key="/repositories/*/namespaces">openrdfRepositoryNamespacesController</prop>
 				<prop key="/repositories/*/contexts">openrdfRepositoryContextsController</prop>
 				<prop key="/repositories/*/statements">openrdfRepositoryStatementsController</prop>
+				<prop key="/repositories/*/rdf-graphs">openrdfRepositoryContextsController</prop>
+				<prop key="/repositories/*/rdf-graphs/*">openrdfRepositoryGraphController</prop>
 				<prop key="/repositories/*/size">openrdfRepositorySizeController</prop>
 				<prop key="/repositories/*">openrdfRepositoryController</prop>
 			</props>
@@ -127,4 +129,5 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="openrdfRepositoryNamespaceController" class="org.openrdf.http.server.repository.namespaces.NamespaceController" />
 	<bean id="openrdfRepositorySizeController" class="org.openrdf.http.server.repository.size.SizeController" />
 	<bean id="openrdfRepositoryStatementsController" class="org.openrdf.http.server.repository.statements.StatementsController" />
+	<bean id="openrdfRepositoryGraphController" class="org.openrdf.http.server.repository.graph.GraphController" />
 </beans>
