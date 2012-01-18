@@ -74,24 +74,27 @@ public class GraphController extends AbstractController {
 		if (METHOD_GET.equals(reqMethod)) {
 			logger.info("GET graph");
 			result = getExportStatementsResult(repository, repositoryCon, request, response);
+			logger.info("GET graph request finished.");
 		}
 		else if (METHOD_POST.equals(reqMethod)) {
 			logger.info("POST data to graph");
 			result = getAddDataResult(repository, repositoryCon, request, response, false);
+			logger.info("POST data request finished.");
 		}
 		else if ("PUT".equals(reqMethod)) {
 			logger.info("PUT data in graph");
 			result = getAddDataResult(repository, repositoryCon, request, response, true);
+			logger.info("PUT data request finished.");
 		}
 		else if ("DELETE".equals(reqMethod)) {
 			logger.info("DELETE data from graph");
 			result = getDeleteDataResult(repository, repositoryCon, request, response);
+			logger.info("DELETE data request finished.");
 		}
 		else {
 			throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method not allowed: "
 					+ reqMethod);
 		}
-
 		return result;
 	}
 
