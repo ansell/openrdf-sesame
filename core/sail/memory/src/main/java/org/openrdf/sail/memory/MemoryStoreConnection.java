@@ -141,7 +141,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			new FilterOptimizer().optimize(tupleExpr, dataset, bindings);
 			new OrderLimitOptimizer().optimize(tupleExpr, dataset, bindings);
 
-			logger.info("Optimized query model:\n{}", tupleExpr);
+			logger.trace("Optimized query model:\n{}", tupleExpr);
 
 			CloseableIteration<BindingSet, QueryEvaluationException> iter;
 			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
