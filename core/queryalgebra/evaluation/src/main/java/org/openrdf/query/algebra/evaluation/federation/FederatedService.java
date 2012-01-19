@@ -67,6 +67,8 @@ public interface FederatedService {
 	 * 
 	 * <b>Contracts:</b> 
 	 * <ul>
+	 *  <li>All final results need to be added to the {@link ResultConsumer} via its
+	 *      addResult() method</li>
 	 * 	<li>The original bindings need to be inserted into the result, e.g.
 	 *		 via {@link InsertBindingSetCursor}.</li>
 	 *  <li>SILENT service must be dealt with in the method</li>
@@ -78,6 +80,10 @@ public interface FederatedService {
 	 * 				the reference to the service node, contains information to construct the query
 	 * @param bindings
 	 * 				the bindings serving as additional constraints (for vectored evaluation)
+	 * @param baseUri
+	 * 				the baseUri
+	 * @param consumer
+	 * 				the consuming iteration to which the result must be handed over 
 	 * 
 	 * @return
 	 * 			the result of evaluating the query using bindings as constraints, the original 
@@ -85,10 +91,10 @@ public interface FederatedService {
 	 * 
 	 * @throws QueryEvaluationException
 	 */
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
+	public void evaluate(
 			Service service,
 			CloseableIteration<BindingSet, QueryEvaluationException> bindings,
-			String baseUri) throws QueryEvaluationException;
+			String baseUri, ResultConsumer<BindingSet> consumer) throws QueryEvaluationException;
 	
 	/**
 	 * Method to perform any initializations, invoked after construction.

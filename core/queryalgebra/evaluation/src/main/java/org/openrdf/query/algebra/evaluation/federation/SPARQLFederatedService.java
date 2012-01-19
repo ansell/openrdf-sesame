@@ -112,12 +112,37 @@ public class SPARQLFederatedService implements FederatedService {
 			throw new QueryEvaluationException(e);
 		} catch (RepositoryException e) {
 			throw new QueryEvaluationException("SPARQLRepository for endpoint " + rep.toString() + " could not be initialized.", e);
-		}
-		
-		
-		
-	}
+		}		
+	}	
 
+	public void evaluate(
+			Service service,
+			CloseableIteration<BindingSet, QueryEvaluationException> bindings,
+			String baseUri, ResultConsumer<BindingSet> consumer) throws QueryEvaluationException {
+		
+		// the number of bindings sent in a single subquery. 
+		// if blockSize is set to 0, the entire input stream is used as block input
+		// the block size effectively determines the number of remote requests
+		int blockSize=15;	// TODO configurable block size
+		
+		if (blockSize>0) {
+			while (bindings.hasNext()) {
+				
+				ArrayList<BindingSet> blockBindings = new ArrayList<BindingSet>(blockSize);
+				for (int i=0; i<blockSize; i++) {
+					if (!bindings.hasNext())
+						break;
+					blockBindings.add(bindings.next());
+				}
+				CloseableIteration<BindingSet, QueryEvaluationException> materializedIter = 
+							new CollectionIteration<BindingSet, QueryEvaluationException>(blockBindings);
+				consumer.addResult(evaluateInternal(service, materializedIter, service.getBaseURI()));	
+			}
+		} else {
+			// if blocksize is 0 (i.e. disabled) the entire iteration is used as block
+			consumer.addResult(evaluateInternal(service, bindings, service.getBaseURI()));	
+		}
+	}
 
 	/**
 	 * Evaluate the SPARQL query that can be constructed from the SERVICE node
@@ -129,10 +154,12 @@ public class SPARQLFederatedService implements FederatedService {
 	 * 
 	 * This method deals with SILENT SERVICEs.
 	 */
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
+	protected CloseableIteration<BindingSet, QueryEvaluationException> evaluateInternal(
 			Service service,
 			CloseableIteration<BindingSet, QueryEvaluationException> bindings, String baseUri)
 			throws QueryEvaluationException {
+		
+		
 		
 		// materialize all bindings (to allow for fallback in case of errors)
 		// note that this may be blocking depending on the underlying iterator

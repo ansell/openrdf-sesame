@@ -5,8 +5,6 @@
  */
 package org.openrdf.query.algebra.evaluation.federation;
 
-import java.util.ArrayList;
-
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.query.BindingSet;
@@ -14,7 +12,6 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
-import org.openrdf.query.algebra.evaluation.iterator.CollectionIteration;
 
 /**
  * Iterator for efficient SERVICE evaluation (vectored).
@@ -66,30 +63,12 @@ public class ServiceJoinIterator extends JoinExecutorBase<BindingSet> {
 		
 		// use vectored evaluation
 		FederatedService fs = FederatedServiceManager.getInstance().getService(serviceUri);
-		
-		// the number of bindings sent in a single subquery. 
-		// if blockSize is set to 0, the entire input stream is used as block input
-		// the block size effectively determines the number of remote requests
-		int blockSize=15;	// TODO configurable block size
-		
-		if (blockSize>0) {
-			while (leftIter.hasNext()) {
-				
-				ArrayList<BindingSet> blockBindings = new ArrayList<BindingSet>(blockSize);
-				for (int i=0; i<blockSize; i++) {
-					if (!leftIter.hasNext())
-						break;
-					blockBindings.add(leftIter.next());
-				}
-				CloseableIteration<BindingSet, QueryEvaluationException> materializedIter = 
-							new CollectionIteration<BindingSet, QueryEvaluationException>(blockBindings);
-				addResult(fs.evaluate(service, materializedIter, service.getBaseURI()));	
-			}
-		} else {
-			// if blocksize is 0 (i.e. disabled) the entire iteration is used as block
-			addResult(fs.evaluate(service, leftIter, service.getBaseURI()));	
-		}
-		
+		fs.evaluate(service, leftIter, service.getBaseURI(), new ResultConsumer<BindingSet>() {
 			
+			public void addResult(
+					CloseableIteration<BindingSet, QueryEvaluationException> res) {
+				ServiceJoinIterator.this.addResult(res);				
+			}
+		});
 	}
 }
