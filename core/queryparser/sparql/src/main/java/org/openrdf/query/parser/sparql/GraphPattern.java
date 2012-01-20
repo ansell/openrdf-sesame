@@ -150,7 +150,9 @@ public class GraphPattern {
 
 			for (int i = 1; i < requiredTEs.size(); i++) {
 				TupleExpr te = requiredTEs.get(i);
-				if ((te instanceof Slice || te instanceof Projection) || result instanceof SPARQLIntersection) {
+				if ((te instanceof Slice || result instanceof Slice)
+						|| (te instanceof Projection && (result instanceof SPARQLIntersection || result instanceof Projection)))
+				{
 					result = new SPARQLIntersection(result, te);
 				}
 				else {
@@ -169,5 +171,4 @@ public class GraphPattern {
 
 		return result;
 	}
-
 }
