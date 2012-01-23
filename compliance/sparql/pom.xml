@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-compliance</artifactId>
-		<version>2.6.3</version>
+		<version>2.6.4-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-sparql-compliance</artifactId>
@@ -192,9 +192,9 @@
 	</build>
 	
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.6.3/compliance/sparql</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.6.3/compliance/sparql</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.6.3/compliance/sparql?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/compliance/sparql</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/compliance/sparql</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/compliance/sparql</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/compliance/sparql</url>
 	</scm>
 
 </project>
