@@ -346,7 +346,7 @@ ASTQueryContainer QueryContainer():
 void Prolog() #void :
 {}
 {
-	[ BaseDecl() ] ( PrefixDecl() )*
+	( PrefixDecl() | BaseDecl() )*
 }
 
 void BaseDecl() :
