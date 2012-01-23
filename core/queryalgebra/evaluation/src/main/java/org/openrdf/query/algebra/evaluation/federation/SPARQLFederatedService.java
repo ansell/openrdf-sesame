@@ -30,6 +30,7 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.evaluation.iterator.CollectionIteration;
 import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
+import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sparql.SPARQLRepository;
@@ -43,6 +44,48 @@ import org.openrdf.repository.sparql.query.InsertBindingSetCursor;
  */
 public class SPARQLFederatedService implements FederatedService {
 
+	/**
+	 * A convenience iteration for SERVICE expression which evaluates 
+	 * intermediate results in batches and manages all results. Uses
+	 * {@link JoinExecutorBase} facilities to guarantee correct access
+	 * to the final results
+	 * 
+	 * @author as
+	 */
+	private class BatchingServiceIteration extends JoinExecutorBase<BindingSet> {
+
+		private final int blockSize;
+		private final Service service;
+		
+		/**
+		 * @param inputBindings
+		 * @throws QueryEvaluationException
+		 */
+		public BatchingServiceIteration(
+				CloseableIteration<BindingSet, QueryEvaluationException> inputBindings, int blockSize, Service service)
+				throws QueryEvaluationException {
+			super(inputBindings, null, EmptyBindingSet.getInstance());
+			this.blockSize = blockSize;
+			this.service = service;
+			run();
+		}
+
+		@Override
+		protected void handleBindings() throws Exception {	
+			while (!closed && leftIter.hasNext()) {
+								
+				ArrayList<BindingSet> blockBindings = new ArrayList<BindingSet>(blockSize);
+				for (int i=0; i<blockSize; i++) {
+					if (!leftIter.hasNext())
+						break;
+					blockBindings.add(leftIter.next());
+				}
+				CloseableIteration<BindingSet, QueryEvaluationException> materializedIter = 
+							new CollectionIteration<BindingSet, QueryEvaluationException>(blockBindings);
+				addResult(evaluateInternal(service, materializedIter, service.getBaseURI()));	
+			}
+		}		
+	}
 	
 	protected final SPARQLRepository rep;
 	protected RepositoryConnection conn = null;	
@@ -115,10 +158,10 @@ public class SPARQLFederatedService implements FederatedService {
 		}		
 	}	
 
-	public void evaluate(
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
 			Service service,
 			CloseableIteration<BindingSet, QueryEvaluationException> bindings,
-			String baseUri, ResultConsumer<BindingSet> consumer) throws QueryEvaluationException {
+			String baseUri) throws QueryEvaluationException {
 		
 		// the number of bindings sent in a single subquery. 
 		// if blockSize is set to 0, the entire input stream is used as block input
@@ -126,21 +169,10 @@ public class SPARQLFederatedService implements FederatedService {
 		int blockSize=15;	// TODO configurable block size
 		
 		if (blockSize>0) {
-			while (bindings.hasNext()) {
-				
-				ArrayList<BindingSet> blockBindings = new ArrayList<BindingSet>(blockSize);
-				for (int i=0; i<blockSize; i++) {
-					if (!bindings.hasNext())
-						break;
-					blockBindings.add(bindings.next());
-				}
-				CloseableIteration<BindingSet, QueryEvaluationException> materializedIter = 
-							new CollectionIteration<BindingSet, QueryEvaluationException>(blockBindings);
-				consumer.addResult(evaluateInternal(service, materializedIter, service.getBaseURI()));	
-			}
+			return new BatchingServiceIteration(bindings, blockSize, service);
 		} else {
 			// if blocksize is 0 (i.e. disabled) the entire iteration is used as block
-			consumer.addResult(evaluateInternal(service, bindings, service.getBaseURI()));	
+			return evaluateInternal(service, bindings, service.getBaseURI());	
 		}
 	}
 

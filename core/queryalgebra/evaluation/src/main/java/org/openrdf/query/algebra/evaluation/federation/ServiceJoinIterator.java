@@ -63,12 +63,6 @@ public class ServiceJoinIterator extends JoinExecutorBase<BindingSet> {
 		
 		// use vectored evaluation
 		FederatedService fs = FederatedServiceManager.getInstance().getService(serviceUri);
-		fs.evaluate(service, leftIter, service.getBaseURI(), new ResultConsumer<BindingSet>() {
-			
-			public void addResult(
-					CloseableIteration<BindingSet, QueryEvaluationException> res) {
-				ServiceJoinIterator.this.addResult(res);				
-			}
-		});
+		addResult(fs.evaluate(service, leftIter, service.getBaseURI()));
 	}
 }
