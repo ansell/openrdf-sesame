@@ -256,7 +256,8 @@ public class Service extends UnaryTupleOperator {
 
 	/**
 	 * Parses a service expression to just have the inner expresion, e.g. from
-	 * something like "SERVICE <url> { ... }" becomes " ... "
+	 * something like "SERVICE <url> { ... }" becomes " ... ", also applies
+	 * trim() to remove leading/tailing space
 	 * 
 	 * @param serviceExpression
 	 * @return
@@ -265,7 +266,7 @@ public class Service extends UnaryTupleOperator {
 
 		if (serviceExpression.toLowerCase().startsWith("service")) {
 			return serviceExpression.substring(serviceExpression.indexOf("{") + 1,
-					serviceExpression.length() - 2);
+					serviceExpression.lastIndexOf("}")).trim();
 		}
 		return serviceExpression;
 	}
