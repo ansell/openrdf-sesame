@@ -17,8 +17,10 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.rio.RDFFormat;
 import org.openrdf.workbench.RepositoryServlet;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 
@@ -44,6 +46,10 @@ public abstract class BaseRepositoryServlet extends BaseServlet implements Repos
 		} else {
 			this.repository = repository;
 			this.vf = repository.getValueFactory();
+			
+			if (this.repository instanceof HTTPRepository) {
+				((HTTPRepository)this.repository).setPreferredRDFFormat(RDFFormat.BINARY);
+			}
 		}
 	}
 
@@ -52,7 +58,7 @@ public abstract class BaseRepositoryServlet extends BaseServlet implements Repos
 		super.init(config);
 		if (repository == null) {
 			if (config.getInitParameter(REPOSITORY_PARAM) != null)
-				repository = (Repository) lookup(config, REPOSITORY_PARAM);
+				setRepository((Repository) lookup(config, REPOSITORY_PARAM));
 		}
 		if (manager == null) {
 			if (config.getInitParameter(MANAGER_PARAM) == null)
