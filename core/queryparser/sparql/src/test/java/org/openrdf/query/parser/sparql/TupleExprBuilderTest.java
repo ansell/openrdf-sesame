@@ -6,20 +6,19 @@
 package org.openrdf.query.parser.sparql;
 
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.algebra.Service;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ParseException;
@@ -151,6 +150,21 @@ public class TupleExprBuilderTest {
 		assertTrue(servicePattern1.equals(f.getGraphPatterns().get(0)));
 		assertTrue(servicePattern2.equals(f.getGraphPatterns().get(1)));
 	}
+	
+	@Test
+	public void testServiceGraphPatternChopping() throws Exception {
+
+		// just for construction
+		Service service = new Service(null, new SingletonSet(), "", null, null, false);
+		
+		service.setExpressionString("SERVICE <a> { ?s ?p ?o }");
+		Assert.assertEquals("?s ?p ?o", service.getServiceExpressionString());
+		
+		service.setExpressionString("SERVICE <a> {?s ?p ?o}");
+		Assert.assertEquals("?s ?p ?o", service.getServiceExpressionString());
+		
+	}
+	
 
 	private class ServiceNodeFinder extends ASTVisitorBase {
 		
