@@ -65,8 +65,6 @@ public class BinaryRDFParser extends RDFParserBase {
 			throw new IllegalArgumentException("Input stream must not be null");
 		}
 
-		rdfHandler.startRDF();
-
 		this.in = new DataInputStream(in);
 
 		// Check magic number
