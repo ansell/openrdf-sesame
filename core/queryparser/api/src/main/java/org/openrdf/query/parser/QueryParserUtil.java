@@ -227,7 +227,7 @@ public class QueryParserUtil {
 		}
 
 		// strip base declaration (if present)
-		pattern = Pattern.compile("base\\s+<[^>]*>\\s*", Pattern.CASE_INSENSITIVE);
+		pattern = Pattern.compile("^base\\s+<[^>]*>\\s*", Pattern.CASE_INSENSITIVE);
 		matcher = pattern.matcher(normalizedQuery);
 		if (matcher.find()) {
 			normalizedQuery = normalizedQuery.substring(matcher.end(), normalizedQuery.length());
