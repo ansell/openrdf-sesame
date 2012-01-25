@@ -22,7 +22,7 @@
 
 	<fileSets>
 		<fileSet>
-			<directory>/</directory>
+			<directory>.</directory>
 			<outputDirectory/>
 			<includes>
 				<include>*.txt</include>
