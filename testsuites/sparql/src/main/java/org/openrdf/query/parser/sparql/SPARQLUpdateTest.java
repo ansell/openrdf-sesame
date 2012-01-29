@@ -26,7 +26,9 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.Repository;
@@ -282,6 +284,57 @@ public abstract class SPARQLUpdateTest {
 			System.out.println(result.next());
 		}
 		assertFalse(con.hasStatement(alice, age, null, true));
+	}
+
+	@Test
+	public void testInsertWhereWithBlankNode()
+		throws Exception
+	{
+		logger.debug("executing testInsertWhereWithBlankNode");
+
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append(" INSERT { ?s ex:complexAge [ rdf:value ?age; rdfs:label \"old\" ] . } ");
+		update.append(" WHERE { ?s ex:age ?age . ");
+		update.append(" } ");
+		
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		URI age = f.createURI(EX_NS, "age");
+		URI complexAge = f.createURI(EX_NS, "complexAge");
+
+		assertTrue(con.hasStatement(bob, age, null, true));
+
+		operation.execute();
+
+		RepositoryResult<Statement> sts = con.getStatements(bob, complexAge, null, true);
+		
+		assertTrue(sts.hasNext());
+		
+		while (sts.hasNext()) {
+			logger.debug("statement: " + sts.next().toString());
+		}
+		
+		sts = con.getStatements(null, RDF.VALUE, null, true);
+
+		assertTrue(sts.hasNext());
+		
+		while (sts.hasNext()) {
+			logger.debug("statement: " + sts.next().toString());
+		}
+
+		
+		String query = getNamespaceDeclarations() + " SELECT ?bn ?age ?l WHERE { ex:bob ex:complexAge ?bn. ?bn rdf:value ?age. ?bn rdfs:label ?l .} ";
+		
+		TupleQueryResult result = con.prepareTupleQuery(QueryLanguage.SPARQL, query).evaluate();
+		
+		assertTrue(result.hasNext());
+		
+		BindingSet bs = result.next();
+		
+		logger.debug(bs.toString());
+		assertFalse(result.hasNext());
+			
 	}
 
 	@Test
