@@ -5,6 +5,7 @@
  */
 package org.openrdf.query.parser.sparql;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -22,6 +23,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -297,7 +299,7 @@ public abstract class SPARQLUpdateTest {
 		update.append(" INSERT { ?s ex:complexAge [ rdf:value ?age; rdfs:label \"old\" ] . } ");
 		update.append(" WHERE { ?s ex:age ?age . ");
 		update.append(" } ");
-		
+
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		URI age = f.createURI(EX_NS, "age");
@@ -308,33 +310,34 @@ public abstract class SPARQLUpdateTest {
 		operation.execute();
 
 		RepositoryResult<Statement> sts = con.getStatements(bob, complexAge, null, true);
-		
+
 		assertTrue(sts.hasNext());
-		
-		while (sts.hasNext()) {
-			logger.debug("statement: " + sts.next().toString());
-		}
-		
+
+		Value v1 = sts.next().getObject();
+
+		sts.close();
+
 		sts = con.getStatements(null, RDF.VALUE, null, true);
 
 		assertTrue(sts.hasNext());
-		
-		while (sts.hasNext()) {
-			logger.debug("statement: " + sts.next().toString());
-		}
 
-		
-		String query = getNamespaceDeclarations() + " SELECT ?bn ?age ?l WHERE { ex:bob ex:complexAge ?bn. ?bn rdf:value ?age. ?bn rdfs:label ?l .} ";
-		
+		Value v2 = sts.next().getSubject();
+
+		assertEquals(v1, v2);
+
+		sts.close();
+
+		String query = getNamespaceDeclarations()
+				+ " SELECT ?bn ?age ?l WHERE { ex:bob ex:complexAge ?bn. ?bn rdf:value ?age. ?bn rdfs:label ?l .} ";
+
 		TupleQueryResult result = con.prepareTupleQuery(QueryLanguage.SPARQL, query).evaluate();
-		
+
 		assertTrue(result.hasNext());
-		
+
 		BindingSet bs = result.next();
-		
-		logger.debug(bs.toString());
+
 		assertFalse(result.hasNext());
-			
+
 	}
 
 	@Test

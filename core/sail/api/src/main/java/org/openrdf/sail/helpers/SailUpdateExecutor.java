@@ -19,6 +19,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -417,8 +418,10 @@ public class SailUpdateExecutor {
 				if (insertClause != null) {
 					List<StatementPattern> insertPatterns = StatementPatternCollector.process(insertClause);
 
+					// bnodes in the insert pattern are locally scoped for each individual source binding.
+					MapBindingSet bnodeMapping = new MapBindingSet();
 					for (StatementPattern insertPattern : insertPatterns) {
-						Statement toBeInserted = createStatementFromPattern(insertPattern, sourceBinding);
+						Statement toBeInserted = createStatementFromPattern(insertPattern, sourceBinding, bnodeMapping);
 
 						if (toBeInserted != null) {
 							if (toBeInserted.getContext() == null) {
@@ -448,7 +451,7 @@ public class SailUpdateExecutor {
 	 * @return
 	 * @throws SailException
 	 */
-	private Statement createStatementFromPattern(StatementPattern pattern, BindingSet sourceBinding)
+	private Statement createStatementFromPattern(StatementPattern pattern, BindingSet sourceBinding, MapBindingSet bnodeMapping)
 		throws SailException
 	{
 
@@ -464,7 +467,15 @@ public class SailUpdateExecutor {
 			subject = (Resource)sourceBinding.getValue(pattern.getSubjectVar().getName());
 
 			if (subject == null && pattern.getSubjectVar().isAnonymous()) {
-				subject = vf.createBNode();
+				Binding mappedSubject = bnodeMapping.getBinding(pattern.getSubjectVar().getName());
+				
+				if (mappedSubject != null) {
+					subject = (Resource)mappedSubject.getValue();
+				}
+				else {
+					subject = vf.createBNode();
+					bnodeMapping.addBinding(pattern.getSubjectVar().getName(), subject);
+				}
 			}
 		}
 
@@ -473,10 +484,6 @@ public class SailUpdateExecutor {
 		}
 		else {
 			predicate = (URI)sourceBinding.getValue(pattern.getPredicateVar().getName());
-			// if (predicate == null) {
-			// throw new
-			// SailException("could not instiantiate StatementPattern predicate.");
-			// }
 		}
 
 		if (pattern.getObjectVar().hasValue()) {
@@ -486,7 +493,15 @@ public class SailUpdateExecutor {
 			object = sourceBinding.getValue(pattern.getObjectVar().getName());
 
 			if (object == null && pattern.getObjectVar().isAnonymous()) {
-				object = vf.createBNode();
+				Binding mappedObject = bnodeMapping.getBinding(pattern.getObjectVar().getName());
+				
+				if (mappedObject != null) {
+					object = (Resource)mappedObject.getValue();
+				}
+				else {
+					object = vf.createBNode();
+					bnodeMapping.addBinding(pattern.getObjectVar().getName(), object);
+				}
 			}
 		}
 
