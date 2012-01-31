@@ -154,7 +154,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 */
 	public Query prepareQuery(QueryLanguage ql, String queryString, String baseURI) {
 		if (QueryLanguage.SPARQL.equals(ql)) {
-			String strippedQuery = QueryParserUtil.removeSPARQLQueryProlog(queryString);
+			String strippedQuery = QueryParserUtil.removeSPARQLQueryProlog(queryString).toUpperCase();
 			if (strippedQuery.startsWith("SELECT")) {
 				return prepareTupleQuery(ql, queryString, baseURI);
 			}
