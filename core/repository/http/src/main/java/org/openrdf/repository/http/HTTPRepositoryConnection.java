@@ -35,7 +35,6 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Operation;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
@@ -43,6 +42,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.Update;
+import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
@@ -103,7 +103,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		super(repository);
 
 		setParserConfig(new ParserConfig(true, true, true, DatatypeHandling.IGNORE));
-		
+
 		if (debugEnabled()) {
 			creatorTrace = new Throwable();
 		}
@@ -113,12 +113,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Methods *
 	 *---------*/
 
-	@Override 
+	@Override
 	public void setParserConfig(ParserConfig parserConfig) {
 		super.setParserConfig(parserConfig);
 		getRepository().getHTTPClient().setParserConfig(parserConfig);
 	}
-	
+
 	@Override
 	public HTTPRepository getRepository() {
 		return (HTTPRepository)super.getRepository();
@@ -154,7 +154,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 */
 	public Query prepareQuery(QueryLanguage ql, String queryString, String baseURI) {
 		if (QueryLanguage.SPARQL.equals(ql)) {
-			String strippedQuery = stripSparqlQueryString(queryString).toUpperCase();
+			String strippedQuery = QueryParserUtil.removeSPARQLQueryProlog(queryString);
 			if (strippedQuery.startsWith("SELECT")) {
 				return prepareTupleQuery(ql, queryString, baseURI);
 			}
@@ -182,39 +182,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		else {
 			throw new UnsupportedOperationException("Operation not supported for query language " + ql);
 		}
-	}
-
-	/**
-	 * Removes SPARQL prefix and base declarations, if any, from the supplied
-	 * SPARQL query string.
-	 * 
-	 * @param queryString
-	 *        a SPARQL query string
-	 * @return a substring of queryString, with prefix and base declarations
-	 *         removed.
-	 */
-	private String stripSparqlQueryString(String queryString) {
-		String normalizedQuery = queryString;
-
-		// strip all prefix declarations
-		Pattern pattern = Pattern.compile("prefix[^:]+:\\s*<[^>]*>\\s*", Pattern.CASE_INSENSITIVE);
-		Matcher matcher = pattern.matcher(queryString);
-
-		int startIndexCorrection = 0;
-		while (matcher.find()) {
-			normalizedQuery = normalizedQuery.substring(matcher.end() - startIndexCorrection,
-					normalizedQuery.length());
-			startIndexCorrection += (matcher.end() - startIndexCorrection);
-		}
-
-		// strip base declaration (if present)
-		pattern = Pattern.compile("base\\s+<[^>]*>\\s*", Pattern.CASE_INSENSITIVE);
-		matcher = pattern.matcher(normalizedQuery);
-		if (matcher.find()) {
-			normalizedQuery = normalizedQuery.substring(matcher.end(), normalizedQuery.length());
-		}
-
-		return normalizedQuery.trim();
 	}
 
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String queryString, String baseURI) {
