@@ -37,4 +37,15 @@ public class ParsedTupleQuery extends ParsedQuery {
 	public ParsedTupleQuery(TupleExpr tupleExpr) {
 		super(tupleExpr);
 	}
+	
+	/**
+	 * Creates a new tuple query for the supplied tuple expression.
+	 * 
+	 * @param tupleExpr
+	 *        A tuple expression representing the query, formulated in OpenRDF
+	 *        Query Algebra objects.
+	 */
+	public ParsedTupleQuery(String sourceString, TupleExpr tupleExpr) {
+		super(sourceString, tupleExpr);
+	}
 }

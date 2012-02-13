@@ -59,6 +59,18 @@ public class ParsedGraphQuery extends ParsedQuery {
 	public ParsedGraphQuery(TupleExpr tupleExpr) {
 		super(tupleExpr);
 	}
+	
+
+	/**
+	 * Creates a new graph query for the supplied tuple expression.
+	 * 
+	 * @param tupleExpr
+	 *        A tuple expression representing the query, formulated in Sail Query
+	 *        Model objects.
+	 */
+	public ParsedGraphQuery(String sourceString, TupleExpr tupleExpr) {
+		super(sourceString, tupleExpr);
+	}
 
 	/**
 	 * Creates a new graph query.
@@ -72,6 +84,21 @@ public class ParsedGraphQuery extends ParsedQuery {
 	 */
 	public ParsedGraphQuery(TupleExpr tupleExpr, Map<String, String> namespaces) {
 		this(tupleExpr);
+		queryNamespaces = namespaces;
+	}
+	
+	/**
+	 * Creates a new graph query.
+	 * 
+	 * @param tupleExpr
+	 *        A tuple expression representing the query, formulated in Sail Query
+	 *        Model objects.
+	 * @param namespaces
+	 *        A mapping of namespace prefixes to namespace names representing the
+	 *        namespaces that are used in the query.
+	 */
+	public ParsedGraphQuery(String sourceString, TupleExpr tupleExpr, Map<String, String> namespaces) {
+		this(sourceString, tupleExpr);
 		queryNamespaces = namespaces;
 	}
 
