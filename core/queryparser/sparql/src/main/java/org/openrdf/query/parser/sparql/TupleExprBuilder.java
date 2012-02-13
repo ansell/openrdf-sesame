@@ -282,6 +282,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public TupleExpr visit(ASTQueryContainer node, Object data)
 		throws VisitorException
 	{
+		
 		// Skip the prolog, any information it contains should already have been
 		// processed
 		return (TupleExpr)node.getQuery().jjtAccept(this, null);

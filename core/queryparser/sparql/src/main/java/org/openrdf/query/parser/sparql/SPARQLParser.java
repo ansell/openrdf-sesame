@@ -127,16 +127,16 @@ public class SPARQLParser implements QueryParser {
 
 				ASTQuery queryNode = qc.getQuery();
 				if (queryNode instanceof ASTSelectQuery) {
-					query = new ParsedTupleQuery(tupleExpr);
+					query = new ParsedTupleQuery(queryStr, tupleExpr);
 				}
 				else if (queryNode instanceof ASTConstructQuery) {
-					query = new ParsedGraphQuery(tupleExpr, prefixes);
+					query = new ParsedGraphQuery(queryStr, tupleExpr, prefixes);
 				}
 				else if (queryNode instanceof ASTAskQuery) {
-					query = new ParsedBooleanQuery(tupleExpr);
+					query = new ParsedBooleanQuery(queryStr, tupleExpr);
 				}
 				else if (queryNode instanceof ASTDescribeQuery) {
-					query = new ParsedGraphQuery(tupleExpr, prefixes);
+					query = new ParsedGraphQuery(queryStr, tupleExpr, prefixes);
 				}
 				else {
 					throw new RuntimeException("Unexpected query type: " + queryNode.getClass());
