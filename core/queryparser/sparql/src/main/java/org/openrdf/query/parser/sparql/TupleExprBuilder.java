@@ -2377,18 +2377,33 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		Node aliasNode = node.jjtGetChild(1);
 		String alias = ((ASTVar)aliasNode).getName();
 
-		TupleExpr arg = graphPattern.buildTupleExpr();
 
 		Extension extension = new Extension();
 		extension.addElement(new ExtensionElem(ve, alias));
-		extension.setArg(arg);
+		
+		TupleExpr result = null;
+		TupleExpr arg = graphPattern.buildTupleExpr();
+		if (arg instanceof Filter) {
+			result = arg;
+			// we need to push down the extension so that filters can operate on the BIND expression.
+			while (((Filter)arg).getArg() instanceof Filter) {
+				arg = ((Filter)arg).getArg();
+			}
+			
+			extension.setArg(((Filter)arg).getArg());
+			((Filter)arg).setArg(extension);
+		}
+		else {
+			extension.setArg(arg);
+			result = extension;
+		}
 
 		GraphPattern replacementGP = new GraphPattern(graphPattern);
-		replacementGP.addRequiredTE(extension);
+		replacementGP.addRequiredTE(result);
 
 		graphPattern = replacementGP;
 
-		return extension;
+		return result;
 	}
 
 	@Override
