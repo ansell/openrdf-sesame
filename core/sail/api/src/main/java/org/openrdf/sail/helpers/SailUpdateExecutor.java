@@ -5,6 +5,8 @@
  */
 package org.openrdf.sail.helpers;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,18 +36,17 @@ import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.Move;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.algebra.ValueConstant;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
-
 
 /**
  * Implementation of
@@ -58,9 +59,13 @@ import org.openrdf.sail.SailException;
  * @author james
  */
 public class SailUpdateExecutor {
+
 	private final Logger logger = LoggerFactory.getLogger(SailUpdateExecutor.class);
+
 	private final Sail sail;
+
 	private final SailConnection con;
+
 	private final ValueFactory vf;
 
 	/**
@@ -159,8 +164,8 @@ public class SailUpdateExecutor {
 		con.clear((Resource)destination);
 
 		// get all statements from source and add them to destination
-		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null,
-				null, includeInferred, (Resource)source);
+		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null, null,
+				includeInferred, (Resource)source);
 		while (statements.hasNext()) {
 			Statement st = statements.next();
 			con.addStatement(st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
@@ -190,8 +195,8 @@ public class SailUpdateExecutor {
 		}
 
 		// get all statements from source and add them to destination
-		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null,
-				null, includeInferred, (Resource)source);
+		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null, null,
+				includeInferred, (Resource)source);
 		while (statements.hasNext()) {
 			Statement st = statements.next();
 			con.addStatement(st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
@@ -224,8 +229,8 @@ public class SailUpdateExecutor {
 		con.clear((Resource)destination);
 
 		// remove all statements from source and add them to destination
-		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null,
-				null, includeInferred, (Resource)source);
+		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null, null,
+				includeInferred, (Resource)source);
 		while (statements.hasNext()) {
 			Statement st = statements.next();
 			con.addStatement(st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
@@ -357,14 +362,17 @@ public class SailUpdateExecutor {
 		TupleExpr insertClause = modify.getInsertExpr();
 		TupleExpr whereClause = modify.getWhereExpr();
 
-		// We open a separate connection on the sail to evaluate the where-clause.
-		// This is necessary to avoid uncommitted
-		// triples from the INSERT to show up in the result.
-		SailConnection readConnection = sail.getConnection();
 		try {
-			CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings = readConnection.evaluate(
+			CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings = con.evaluate(
 					whereClause, dataset, bindings, includeInferred);
 
+			// We fully materialize the result of evaluation of the WHERE-clause.
+			// This is necessary to avoid having triples
+			// produced or removed by the current INSERT/DELETE clause
+			// contaminating the result, while at the same time guaranteeing that
+			// results produced by previous updates in the same transaction _are_
+			// taken into account (see SES-930)
+			Collection<BindingSet> cachedSourceBindings = new ArrayList<BindingSet>();
 			while (sourceBindings.hasNext()) {
 				BindingSet sourceBinding = sourceBindings.next();
 
@@ -391,7 +399,10 @@ public class SailUpdateExecutor {
 						sourceBinding = mergedSet;
 					}
 				}
+				cachedSourceBindings.add(sourceBinding);
+			}
 
+			for (BindingSet sourceBinding : cachedSourceBindings) {
 				if (deleteClause != null) {
 					List<StatementPattern> deletePatterns = StatementPatternCollector.process(deleteClause);
 
@@ -418,10 +429,12 @@ public class SailUpdateExecutor {
 				if (insertClause != null) {
 					List<StatementPattern> insertPatterns = StatementPatternCollector.process(insertClause);
 
-					// bnodes in the insert pattern are locally scoped for each individual source binding.
+					// bnodes in the insert pattern are locally scoped for each
+					// individual source binding.
 					MapBindingSet bnodeMapping = new MapBindingSet();
 					for (StatementPattern insertPattern : insertPatterns) {
-						Statement toBeInserted = createStatementFromPattern(insertPattern, sourceBinding, bnodeMapping);
+						Statement toBeInserted = createStatementFromPattern(insertPattern, sourceBinding,
+								bnodeMapping);
 
 						if (toBeInserted != null) {
 							if (toBeInserted.getContext() == null) {
@@ -440,9 +453,6 @@ public class SailUpdateExecutor {
 		catch (QueryEvaluationException e) {
 			throw new SailException(e);
 		}
-		finally {
-			readConnection.close();
-		}
 	}
 
 	/**
@@ -451,7 +461,8 @@ public class SailUpdateExecutor {
 	 * @return
 	 * @throws SailException
 	 */
-	private Statement createStatementFromPattern(StatementPattern pattern, BindingSet sourceBinding, MapBindingSet bnodeMapping)
+	private Statement createStatementFromPattern(StatementPattern pattern, BindingSet sourceBinding,
+			MapBindingSet bnodeMapping)
 		throws SailException
 	{
 
@@ -468,7 +479,7 @@ public class SailUpdateExecutor {
 
 			if (subject == null && pattern.getSubjectVar().isAnonymous()) {
 				Binding mappedSubject = bnodeMapping.getBinding(pattern.getSubjectVar().getName());
-				
+
 				if (mappedSubject != null) {
 					subject = (Resource)mappedSubject.getValue();
 				}
@@ -494,7 +505,7 @@ public class SailUpdateExecutor {
 
 			if (object == null && pattern.getObjectVar().isAnonymous()) {
 				Binding mappedObject = bnodeMapping.getBinding(pattern.getObjectVar().getName());
-				
+
 				if (mappedObject != null) {
 					object = (Resource)mappedObject.getValue();
 				}

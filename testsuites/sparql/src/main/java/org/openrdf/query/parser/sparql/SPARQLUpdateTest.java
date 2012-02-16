@@ -447,6 +447,47 @@ public abstract class SPARQLUpdateTest {
 	}
 
 	@Test
+	public void testConsecutiveUpdatesInSameTransaction()
+		throws Exception
+	{
+		// this tests if consecutive updates in the same transaction behave correctly. See issue SES-930
+		logger.debug("executing test testConsecutiveUpdatesInSameTransaction");
+
+		StringBuilder update1 = new StringBuilder();
+		update1.append(getNamespaceDeclarations());
+		update1.append("DELETE { ?x foaf:name ?y } WHERE {?x foaf:name ?y }");
+
+		boolean autoCommit = con.isAutoCommit();
+
+		con.setAutoCommit(false);
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update1.toString());
+
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+
+		operation.execute();
+
+		// update should be visible to own connection.
+		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+		StringBuilder update2 = new StringBuilder();
+		update2.append(getNamespaceDeclarations());
+		update2.append("INSERT { ?x rdfs:label ?y } WHERE {?x foaf:name ?y }");
+
+		operation = con.prepareUpdate(QueryLanguage.SPARQL, update2.toString());
+		
+		operation.execute();
+
+		// update should not have resulted in any inserts: where clause is empty.
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+		
+		con.setAutoCommit(autoCommit);
+
+	}
+
+	@Test
 	public void testInsertTransformedWhere()
 		throws Exception
 	{
