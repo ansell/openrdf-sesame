@@ -21,6 +21,6 @@ public class SPARQLCSVSerializationTest extends TupleQueryResultSerializationTes
 		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		// TODO disabled for now since CSV format is lossy and therefore does not provide round-trip
-		 testQueryResultFormat(TupleQueryResultFormat.CSV);
+//		 testQueryResultFormat(TupleQueryResultFormat.CSV);
 	}
 }
