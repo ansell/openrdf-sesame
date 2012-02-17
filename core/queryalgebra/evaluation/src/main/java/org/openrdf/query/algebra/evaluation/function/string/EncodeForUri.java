@@ -5,6 +5,9 @@
  */
 package org.openrdf.query.algebra.evaluation.function.string;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -53,6 +56,7 @@ public class EncodeForUri implements Function {
 	}
 
 	private String encodeUri(String uri) {
+				
 		StringBuilder buf = new StringBuilder(uri.length() * 2);
 
 		int uriLen = uri.length();
@@ -63,16 +67,31 @@ public class EncodeForUri implements Function {
 				buf.append(c);
 			}
 			else {
-				// Escape character
-				buf.append('%');
-				String hexVal = Integer.toHexString((int)c);
+				// use UTF-8 hex encoding for character.
+				try {
+					byte[] utf8 = Character.toString(c).getBytes("UTF-8");
+					
+					for (byte b: utf8) {
+						// Escape character
+						buf.append('%');
+						
+						char cb = (char)(b & 0xFF);
+						
+						String hexVal = Integer.toHexString(cb).toUpperCase();
 
-				// Ensure use of two characters
-				if (hexVal.length() == 1) {
-					buf.append('0');
+						// Ensure use of two characters
+						if (hexVal.length() == 1) {
+							buf.append('0');
+						}
+
+						buf.append(hexVal);
+					}
+						
 				}
-
-				buf.append(hexVal);
+				catch (UnsupportedEncodingException e) {
+					// UTF-8 is always supported
+					throw new RuntimeException(e);
+				}
 			}
 		}
 
