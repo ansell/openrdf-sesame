@@ -13,11 +13,15 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import javax.xml.crypto.dsig.XMLSignContext;
+
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
@@ -145,16 +149,29 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 
 		boolean quoted = false;
 
-		if (datatype != null || language != null || label.contains("\"") || label.contains(",")
-				|| label.contains("\r") || label.contains("\n"))
+		if (datatype != null
+				&& (XMLDatatypeUtil.isIntegerDatatype(datatype) || XMLDatatypeUtil.isDecimalDatatype(datatype) || XMLSchema.DOUBLE.equals(datatype)))
 		{
+			try {
+				String normalized = XMLDatatypeUtil.normalize(label, datatype);
+				writer.write(normalized);
+				return; // done
+			}
+			catch (IllegalArgumentException e) {
+				// not a valid numeric datatyped literal. ignore error and write as
+				// (optionally quoted) string instead.
+			}
+		}
+
+		if (label.contains(",") || label.contains("\r") || label.contains("\n") || label.contains("\"")) {
 			quoted = true;
 
-			// escape quotes inside the string 
+			// escape quotes inside the string
 			label = label.replaceAll("\"", "\"\"");
 
-			// add quotes around the string (escaped with a second quote for the CSV parser)
-			label = "\"\"" + label + "\"\"";
+			// add quotes around the string (escaped with a second quote for the
+			// CSV parser)
+//			label = "\"\"" + label + "\"\"";
 		}
 
 		if (quoted) {
@@ -163,17 +180,6 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 		}
 
 		writer.write(label);
-
-		if (datatype != null) {
-			// Append the literal's datatype
-			writer.write("^^");
-			writeURI(datatype);
-		}
-		else if (language != null) {
-			// Append the literal's language
-			writer.write("@");
-			writer.write(language);
-		}
 
 		if (quoted) {
 			// write closing quote for entire value

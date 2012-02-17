@@ -19,6 +19,8 @@ import info.aduna.text.StringUtil;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.ListBindingSet;
@@ -43,15 +45,19 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase {
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
 	{
 		InputStreamReader r = new InputStreamReader(in, Charset.forName("UTF-8"));
-		
+
 		BufferedReader reader = new BufferedReader(r);
-		
+
 		String nextLine;
 		while ((nextLine = reader.readLine()) != null) {
 			if (bindingNames == null) {
 				// header is mandatory in SPARQL TSV
 				String[] names = nextLine.split("\t", -1);
-				bindingNames = Arrays.asList(names);
+				bindingNames = new ArrayList<String>(names.length);
+				for (String name: names) {
+					// strip the '?' prefix
+					bindingNames.add(name.substring(1));
+				}
 				handler.startQueryResult(bindingNames);
 			}
 			else {
@@ -63,14 +69,45 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase {
 					if (valueString.startsWith("_:")) {
 						v = valueFactory.createBNode(valueString.substring(2));
 					}
+					else if (valueString.startsWith("<")) {
+						try {
+							v = valueFactory.createURI(valueString.substring(1, valueString.length() - 1));
+						}
+						catch (IllegalArgumentException e) {
+							v = valueFactory.createLiteral(valueString);
+						}
+					}
 					else if (valueString.startsWith("\"")) {
 						v = parseLiteral(valueString);
 					}
 					else if (!"".equals(valueString)) {
-						try {
-							v = valueFactory.createURI(valueString);
+						if (valueString.matches("^[\\+\\-]?[\\d\\.].*")) {
+
+							URI datatype = null;
+
+							if (XMLDatatypeUtil.isValidInteger(valueString)) {
+								if (XMLDatatypeUtil.isValidNegativeInteger(valueString)) {
+									datatype = XMLSchema.NEGATIVE_INTEGER;
+								}
+								else {
+									datatype = XMLSchema.INTEGER;
+								}
+							}
+							else if (XMLDatatypeUtil.isValidDecimal(valueString)) {
+								datatype = XMLSchema.DECIMAL;
+							}
+							else if (XMLDatatypeUtil.isValidDouble(valueString)) {
+								datatype = XMLSchema.DOUBLE;
+							}
+
+							if (datatype != null) {
+								v = valueFactory.createLiteral(valueString, datatype);
+							}
+							else {
+								v = valueFactory.createLiteral(valueString);
+							}
 						}
-						catch (IllegalArgumentException e) {
+						else {
 							v = valueFactory.createLiteral(valueString);
 						}
 					}
@@ -119,7 +156,7 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase {
 				else if (startDtIdx != -1) {
 					// Get datatype
 					String datatype = literal.substring(startDtIdx + 2);
-					// datatype = datatype.substring(1, datatype.length() - 1);
+					datatype = datatype.substring(1, datatype.length() - 1);
 					URI dtURI = valueFactory.createURI(datatype);
 					return valueFactory.createLiteral(label, dtURI);
 				}
@@ -141,7 +178,7 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase {
 		// we just look for the last occurrence of a double quote
 		return literal.lastIndexOf("\"");
 	}
-	
+
 	private String unescapeString(String s) {
 		s = StringUtil.gsub("\\", "", s);
 		return s;
