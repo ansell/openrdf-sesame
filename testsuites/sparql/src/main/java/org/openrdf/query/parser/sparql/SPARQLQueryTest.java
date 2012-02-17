@@ -589,11 +589,19 @@ public abstract class SPARQLQueryTest extends TestCase {
 		query.append("                             mf:result {resultFile}; ");
 		query.append("                             [ mf:checkOrder {ordered} ]; ");
 		query.append("                             mf:action {action} qt:query {queryFile}; ");
-		query.append("                                               [qt:data {defaultGraph}] ");
+		query.append("                                               [qt:data {defaultGraph}]; ");
+		query.append("                                               [sd:entailmentRegime {Regime} ]");
+		
+		// skip tests involving CSV result files, these are not query tests
+		query.append(" WHERE NOT resultFile LIKE \"*.csv\" ");
+		// skip tests involving entailment regimes 
+		query.append("       AND NOT BOUND(Regime) ");
 		query.append(" USING NAMESPACE ");
 		query.append("  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, ");
 		query.append("  dawgt = <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>, ");
-		query.append("  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>");
+		query.append("  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>, ");
+		query.append("  sd = <http://www.w3.org/ns/sparql-service-description#>, ");
+		query.append("  ent = <http://www.w3.org/ns/entailment/> ");
 		TupleQuery testCaseQuery = con.prepareTupleQuery(QueryLanguage.SERQL, query.toString());
 
 		query.setLength(0);
