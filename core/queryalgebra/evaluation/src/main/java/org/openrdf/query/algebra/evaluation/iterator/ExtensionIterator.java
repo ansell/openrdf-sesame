@@ -44,7 +44,10 @@ public class ExtensionIterator extends ConvertingIteration<BindingSet, BindingSe
 			ValueExpr expr = extElem.getExpr();
 			if (!(expr instanceof AggregateOperator)) {
 				try {
-					Value targetValue = strategy.evaluate(extElem.getExpr(), sourceBindings);
+					// we evaluate each extension element over the targetbindings, so that bindings from
+					// a previous extension element in this same extension can be used by other extension elements. 
+					// e.g. if a projection contains (?a + ?b as ?c) (?c * 2 as ?d)
+					Value targetValue = strategy.evaluate(extElem.getExpr(), targetBindings);
 
 					if (targetValue != null) {
 						// Potentially overwrites bindings from super
