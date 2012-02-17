@@ -1517,7 +1517,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Value nodeId = evaluate(nodeIdExpr, bindings);
 
 			if (nodeId instanceof Literal) {
-				return tripleSource.getValueFactory().createBNode(((Literal)nodeId).getLabel());
+				String nodeLabel = ((Literal)nodeId).getLabel() + (bindings.toString().hashCode());
+				return tripleSource.getValueFactory().createBNode(nodeLabel);
 			}
 			else {
 				throw new ValueExprEvaluationException("BNODE function argument must be a literal");
