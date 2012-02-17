@@ -22,6 +22,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.query.resultio.QueryResultIO;
@@ -49,7 +50,13 @@ public abstract class TupleQueryResultSerializationTest extends TestCase {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
+		//		while (output.hasNext()) { 
+//			BindingSet bs = output.next();
+//			System.out.println(bs);
+//		}
+		
 		assertTrue(QueryResultUtil.equals(expected, output));
+		
 	}
 
 	private TupleQueryResult createQueryResult() {

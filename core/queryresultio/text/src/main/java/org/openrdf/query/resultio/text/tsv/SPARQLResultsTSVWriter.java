@@ -52,6 +52,7 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 
 		try {
 			for (int i = 0; i < bindingNames.size(); i++) {
+				writer.write("?"); // mandatory prefix in TSV
 				writer.write(bindingNames.get(i));
 				if (i < bindingNames.size() - 1) {
 					writer.write("\t");
@@ -128,7 +129,7 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		throws IOException
 	{
 		String uriString = uri.toString();
-		writer.write(uriString);
+		writer.write("<" + uriString + ">");
 	}
 
 	protected void writeBNode(BNode bNode)
