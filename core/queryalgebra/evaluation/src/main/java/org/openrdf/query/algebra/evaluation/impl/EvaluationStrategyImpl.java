@@ -748,12 +748,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 					Value v = next.getValue(objVar.getName());
 
-					if (v instanceof Resource) {
-						if (!reportedValues.contains(v)) {
-							next.addBinding(subjectVar.getName(), v);
-							reportedValues.add(v);
-							return next;
-						}
+					if (!reportedValues.contains(v)) {
+						next.addBinding(subjectVar.getName(), v);
+						reportedValues.add(v);
+						return next;
 					}
 				}
 			}
@@ -1303,7 +1301,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (intersection instanceof SPARQLIntersection) {
 			return evaluate((SPARQLIntersection)intersection, bindings);
 		}
-		
+
 		Iteration<BindingSet, QueryEvaluationException> leftArg, rightArg;
 
 		leftArg = new DelayedIteration<BindingSet, QueryEvaluationException>() {
