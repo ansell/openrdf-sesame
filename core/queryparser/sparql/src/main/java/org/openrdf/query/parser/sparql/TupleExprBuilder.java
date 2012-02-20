@@ -295,7 +295,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		GraphPattern parentGP = graphPattern;
 
 		// Start with building the graph pattern
-		graphPattern = new GraphPattern();
+		graphPattern = new GraphPattern(parentGP);
 		node.getWhereClause().jjtAccept(this, null);
 		TupleExpr tupleExpr = graphPattern.buildTupleExpr();
 
