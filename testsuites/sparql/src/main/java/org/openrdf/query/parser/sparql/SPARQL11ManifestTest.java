@@ -46,7 +46,7 @@ public class SPARQL11ManifestTest {
 	private static final boolean REMOTE = false;
 
 	/** use local copy of DAWG SPARQL 1.1 tests instead of own test suite */
-	private static final boolean LOCAL_DAWG_TESTS = false;
+	private static final boolean LOCAL_DAWG_TESTS = true;
 
 	public static TestSuite suite(SPARQLQueryTest.Factory factory)
 		throws Exception
