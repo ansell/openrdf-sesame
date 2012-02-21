@@ -131,6 +131,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
+import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -608,6 +609,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		*/
 	}
 
+	
 	private class VarReplacer extends QueryModelVisitorBase<QueryEvaluationException> {
 
 		private Var toBeReplaced;
@@ -1110,7 +1112,24 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws QueryEvaluationException
 	{
 		CloseableIteration<BindingSet, QueryEvaluationException> result;
-		result = this.evaluate(projection.getArg(), bindings);
+
+		BindingSet subSelectBindings;
+		if (bindings instanceof EmptyBindingSet) {
+			subSelectBindings = bindings;
+		}
+		else {
+			// we need to remove any of the parent bindings that are not
+			// bindingnames in the projection,
+			// as bindings for these variables are out-of-scope for the sub-select
+			subSelectBindings = new QueryBindingSet();
+			for (String bindingName : bindings.getBindingNames()) {
+				if (projection.getBindingNames().contains(bindingName)) {
+					((QueryBindingSet)subSelectBindings).addBinding(bindings.getBinding(bindingName));
+				}
+			}
+		}
+
+		result = this.evaluate(projection.getArg(), subSelectBindings);
 		result = new ProjectionIterator(projection, result, bindings);
 		return result;
 	}

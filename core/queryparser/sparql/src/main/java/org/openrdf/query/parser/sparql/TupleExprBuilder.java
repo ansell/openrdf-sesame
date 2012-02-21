@@ -8,10 +8,12 @@ package org.openrdf.query.parser.sparql;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -79,6 +81,7 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
@@ -282,7 +285,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public TupleExpr visit(ASTQueryContainer node, Object data)
 		throws VisitorException
 	{
-		
+
 		// Skip the prolog, any information it contains should already have been
 		// processed
 		return (TupleExpr)node.getQuery().jjtAccept(this, null);
@@ -331,6 +334,31 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		// Apply projection
 		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
 
+		if (node.isSubSelect()) {
+			// we're processing a sub-select. To avoid variable scoping problems,
+			// alpha-convert all non-projected variables in the sub-select.
+
+			UnaryTupleOperator projection = (UnaryTupleOperator)tupleExpr;
+			while (!(projection instanceof Projection)) {
+				projection = (UnaryTupleOperator)projection.getArg();
+			}
+
+			VarCollector collector = new VarCollector();
+			projection.getArg().visit(collector);
+
+			Set<String> projectionNames = projection.getBindingNames();
+
+			for (Var var : collector.getCollectedVars()) {
+				if (!var.hasValue() && !var.isAnonymous()) {
+					if (!projectionNames.contains(var.getName())) {
+						SubSelectAlphaConvertor replacer = new SubSelectAlphaConvertor((Projection)projection, var,
+								createAnonVar(var.getName() + "-" + UUID.randomUUID().toString()));
+						projection.getArg().visit(replacer);
+					}
+				}
+			}
+		}
+
 		// Process limit and offset clauses
 		ASTLimit limitNode = node.getLimit();
 		long limit = -1L;
@@ -348,8 +376,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			tupleExpr = new Slice(tupleExpr, offset, limit);
 		}
 
-	
 		if (parentGP != null) {
+
 			parentGP.addRequiredTE(tupleExpr);
 			graphPattern = parentGP;
 		}
@@ -528,7 +556,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		if (!extension.getElements().isEmpty()) {
 			if (result instanceof Order) {
-				// Extensions produced by SELECT expressions should be nested inside the ORDER BY clause, to make sure
+				// Extensions produced by SELECT expressions should be nested inside
+				// the ORDER BY clause, to make sure
 				// sorting can work on the newly introduced variable. See SES-892.
 				Order o = (Order)result;
 				TupleExpr arg = o.getArg();
@@ -543,6 +572,13 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		result = new Projection(result, projElemList);
+
+		if (node.isSubSelect()) {
+			// set context var at the level of the projection. This allows us
+			// to distinguish named graphs selected in the
+			// outer query from named graphs selected as part of the sub-select.
+			((Projection)result).setProjectionContext(graphPattern.getContextVar());
+		}
 
 		if (node.isDistinct()) {
 			result = new Distinct(result);
@@ -983,10 +1019,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		graphPattern = new GraphPattern(parentGP);
 		node.jjtGetChild(1).jjtAccept(this, null);
 		TupleExpr serviceExpr = graphPattern.buildTupleExpr();
-		
+
 		if (serviceExpr instanceof SingletonSet)
-			return null;	// do not add an empty service block
-		
+			return null; // do not add an empty service block
+
 		String serviceExpressionString = node.getPatternString();
 
 		parentGP.addRequiredTE(new Service(valueExpr2Var(serviceRef), serviceExpr, serviceExpressionString,
@@ -1260,7 +1296,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 				graphPattern = new GraphPattern(parentGP);
 
-				
 				if (i == pathLength - 1) {
 					// last element in the path
 					pathElement.jjtGetChild(0).jjtAccept(this, data);
@@ -1566,6 +1601,24 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 	}
 
+	private class VarCollector extends QueryModelVisitorBase<VisitorException> {
+
+		private final Set<Var> collectedVars = new HashSet<Var>();
+
+		@Override
+		public void meet(Var var) {
+			collectedVars.add(var);
+		}
+
+		/**
+		 * @return Returns the collectedVars.
+		 */
+		public Set<Var> getCollectedVars() {
+			return collectedVars;
+		}
+
+	}
+
 	private class VarReplacer extends QueryModelVisitorBase<VisitorException> {
 
 		private Var toBeReplaced;
@@ -1581,6 +1634,87 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		public void meet(Var var) {
 			if (toBeReplaced.equals(var)) {
 				QueryModelNode parent = var.getParentNode();
+				parent.replaceChildNode(var, replacement);
+				replacement.setParentNode(parent);
+			}
+		}
+	}
+
+	private class SubSelectAlphaConvertor extends QueryModelVisitorBase<VisitorException> {
+
+		private Var toBeReplaced;
+
+		private Var replacement;
+
+		private Projection projection;
+
+		public SubSelectAlphaConvertor(Projection projection, Var toBeReplaced, Var replacement) {
+			this.projection = projection;
+			this.toBeReplaced = toBeReplaced;
+			this.replacement = replacement;
+		}
+		
+		public void meet(Projection projection) throws VisitorException {
+			if (projection.getBindingNames().contains(toBeReplaced.getName())) {
+				super.meet(projection);
+			}
+		}
+		
+		public void meet(ProjectionElem elem) throws VisitorException {
+			if (elem.getSourceName().equals(toBeReplaced.getName())) {
+				elem.setSourceName(replacement.getName());
+				elem.setTargetName(replacement.getName());
+			}
+			super.meet(elem);
+		}
+
+		public void meet(ExtensionElem elem) throws VisitorException {
+			if (elem.getName().equals(toBeReplaced.getName())) {
+				elem.setName(replacement.getName());
+			}
+			super.meet(elem);
+		}
+		
+		@Override
+		public void meet(Group group)
+			throws VisitorException
+		{
+			super.meet(group);
+
+			String name = toBeReplaced.getName();
+
+			Set<String> groupBindings = group.getGroupBindingNames();
+			Set<String> newGroupBindings = new HashSet<String>(groupBindings);
+
+			if (groupBindings.contains(name)) {
+				newGroupBindings.remove(name);
+				newGroupBindings.add(replacement.getName());
+
+				group.setGroupBindingNames(newGroupBindings);
+			}
+		}
+
+		@Override
+		public void meet(StatementPattern sp)
+			throws VisitorException
+		{
+			if (toBeReplaced.equals(sp.getContextVar())) {
+				if (projection.getProjectionContext() != null
+						&& projection.getProjectionContext().equals(sp.getContextVar()))
+				{
+					Var newSpContextVar = createAnonVar(sp.getContextVar().getName()
+							+ UUID.randomUUID().toString());
+					sp.setContextVar(newSpContextVar);
+				}
+			}
+			super.meet(sp);
+		}
+
+		@Override
+		public void meet(Var var) {
+			if (toBeReplaced.equals(var)) {
+				QueryModelNode parent = var.getParentNode();
+				
 				parent.replaceChildNode(var, replacement);
 				replacement.setParentNode(parent);
 			}
@@ -1610,7 +1744,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		else {
 			// path is a single IRI or a more complex path. handled by the
 			// visitor.
-
 		}
 
 		ASTPropertyListPath nextPropList = propListNode.getNextPropertyList();
@@ -2377,19 +2510,19 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		Node aliasNode = node.jjtGetChild(1);
 		String alias = ((ASTVar)aliasNode).getName();
 
-
 		Extension extension = new Extension();
 		extension.addElement(new ExtensionElem(ve, alias));
-		
+
 		TupleExpr result = null;
 		TupleExpr arg = graphPattern.buildTupleExpr();
 		if (arg instanceof Filter) {
 			result = arg;
-			// we need to push down the extension so that filters can operate on the BIND expression.
+			// we need to push down the extension so that filters can operate on
+			// the BIND expression.
 			while (((Filter)arg).getArg() instanceof Filter) {
 				arg = ((Filter)arg).getArg();
 			}
-			
+
 			extension.setArg(((Filter)arg).getArg());
 			((Filter)arg).setArg(extension);
 		}

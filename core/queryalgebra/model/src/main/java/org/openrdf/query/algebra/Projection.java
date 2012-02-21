@@ -19,6 +19,8 @@ public class Projection extends UnaryTupleOperator {
 
 	private ProjectionElemList projElemList = new ProjectionElemList();
 
+	private Var projectionContext = null;
+	
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -104,4 +106,19 @@ public class Projection extends UnaryTupleOperator {
 		clone.setProjectionElemList(getProjectionElemList().clone());
 		return clone;
 	}
+
+	/**
+	 * @return Returns the projectionContext.
+	 */
+	public Var getProjectionContext() {
+		return projectionContext;
+	}
+
+	/**
+	 * @param projectionContext The projectionContext to set.
+	 */
+	public void setProjectionContext(Var projectionContext) {
+		this.projectionContext = projectionContext;
+	}
+
 }

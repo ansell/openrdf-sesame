@@ -22,4 +22,8 @@ public class ASTSelectQuery extends ASTQuery {
 	public ASTSelect getSelect() {
 		return jjtGetChild(ASTSelect.class);
 	}
+	
+	public boolean isSubSelect() {
+		return ! (parent instanceof ASTQueryContainer);
+	}
 }

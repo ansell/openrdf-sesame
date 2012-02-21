@@ -47,6 +47,10 @@ public class ASTSelect extends SimpleNode {
 		return wildcard;
 	}
 
+	public boolean isSubSelect() {
+		return ((ASTSelectQuery)parent).isSubSelect();
+	}
+	
 	public void setWildcard(boolean wildcard) {
 		this.wildcard = wildcard;
 	}
