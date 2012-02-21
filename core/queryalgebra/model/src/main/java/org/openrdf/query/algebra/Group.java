@@ -129,6 +129,7 @@ public class Group extends UnaryTupleOperator {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
+
 		if (replaceNodeInList(groupElements, current, replacement)) {
 			return;
 		}
@@ -162,5 +163,24 @@ public class Group extends UnaryTupleOperator {
 		}
 
 		return clone;
+	}
+	
+	@Override
+	public String getSignature() {
+		StringBuilder b = new StringBuilder();
+		b.append(this.getClass().getSimpleName());
+		b.append(" (");
+		
+		Set<String> bindingNames = getGroupBindingNames();
+		int count = 0;
+		for (String name: bindingNames) {
+			b.append(name);
+			count++;
+			if (count < bindingNames.size()) {
+				b.append(", ");
+			}
+		}
+		b.append(")");
+		return b.toString();
 	}
 }
