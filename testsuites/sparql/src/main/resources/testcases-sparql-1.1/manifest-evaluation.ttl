@@ -13,6 +13,5 @@
     	<negation/manifest.ttl>
     	<subquery/manifest.ttl>
     	<aggregates/manifest.ttl>
-    	<bsbm/manifest.ttl>
    ).
 
