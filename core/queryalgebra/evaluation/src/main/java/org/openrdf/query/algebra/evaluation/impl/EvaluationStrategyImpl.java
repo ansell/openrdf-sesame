@@ -414,6 +414,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 						return nextElement;
 					}
 				}
+				else {
+					return getNextElement();
+				}
 			}
 
 			// if we're done, throw away the cached list of values to avoid hogging
