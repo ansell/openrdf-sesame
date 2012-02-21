@@ -62,6 +62,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.rio.trig.TriGWriter;
 import org.openrdf.sail.memory.MemoryStore;
 
 public abstract class SPARQLQueryTest extends TestCase {
@@ -182,6 +183,9 @@ public abstract class SPARQLQueryTest extends TestCase {
 				query.setDataset(dataset);
 			}
 
+			String name = this.getName();
+			
+		
 			if (query instanceof TupleQuery) {
 				TupleQueryResult queryResult = ((TupleQuery)query).evaluate();
 
@@ -588,14 +592,19 @@ public abstract class SPARQLQueryTest extends TestCase {
 		query.append("                             mf:name {testName}; ");
 		query.append("                             mf:result {resultFile}; ");
 		query.append("                             [ mf:checkOrder {ordered} ]; ");
+		query.append("                             [ mf:requires {Requirement} ];");
 		query.append("                             mf:action {action} qt:query {queryFile}; ");
 		query.append("                                               [qt:data {defaultGraph}]; ");
 		query.append("                                               [sd:entailmentRegime {Regime} ]");
 		
 		// skip tests involving CSV result files, these are not query tests
 		query.append(" WHERE NOT resultFile LIKE \"*.csv\" ");
+		// skip tests involving JSON, sesame currently does not have a SPARQL/JSON parser.
+		query.append(" AND NOT resultFile LIKE \"*.srj\" ");
 		// skip tests involving entailment regimes 
-		query.append("       AND NOT BOUND(Regime) ");
+		query.append(" AND NOT BOUND(Regime) ");
+		// skip test involving basic federation, these are tested separately.
+		query.append(" AND (NOT BOUND(Requirement) OR (Requirement != mf:BasicFederation)) ");
 		query.append(" USING NAMESPACE ");
 		query.append("  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, ");
 		query.append("  dawgt = <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>, ");
@@ -648,6 +657,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 				while (namedGraphs.hasNext()) {
 					BindingSet graphBindings = namedGraphs.next();
 					URI namedGraphURI = (URI)graphBindings.getValue("graph");
+					logger.debug(" adding named graph : {}", namedGraphURI);
 					dataset.addNamedGraph(namedGraphURI);
 				}
 			}

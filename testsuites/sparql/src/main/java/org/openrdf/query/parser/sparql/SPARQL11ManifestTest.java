@@ -46,7 +46,14 @@ public class SPARQL11ManifestTest {
 	private static final boolean REMOTE = false;
 
 	/** use local copy of DAWG SPARQL 1.1 tests instead of own test suite */
-	private static final boolean LOCAL_DAWG_TESTS = true;
+	private static final boolean LOCAL_DAWG_TESTS = false;
+
+	/** use only a subset of all available tests, where the subset is defined by an
+	 *  array of subdirectory names.
+	 */
+	private static final boolean USE_SUBSET = false;
+
+	private static final String[] subDirs = { "subquery" };
 
 	public static TestSuite suite(SPARQLQueryTest.Factory factory)
 		throws Exception
@@ -126,7 +133,10 @@ public class SPARQL11ManifestTest {
 		while (manifestResults.hasNext()) {
 			BindingSet bindingSet = manifestResults.next();
 			String subManifestFile = bindingSet.getValue("manifestFile").toString();
-			suite.addTest(SPARQLQueryTest.suite(subManifestFile, factory, false));
+
+			if (includeSubManifest(subManifestFile)) {
+				suite.addTest(SPARQLQueryTest.suite(subManifestFile, factory, false));
+			}
 		}
 
 		manifestResults.close();
@@ -135,6 +145,24 @@ public class SPARQL11ManifestTest {
 
 		logger.info("Created aggregated test suite with " + suite.countTestCases() + " test cases.");
 		return suite;
+	}
+
+	private static boolean includeSubManifest(String subManifestFile) {
+		boolean result = true;
+
+		if (USE_SUBSET && subDirs != null && subDirs.length > 0) {
+			result = false;
+			for (String subdir : subDirs) {
+				int index = subManifestFile.lastIndexOf("/");
+				String path = subManifestFile.substring(0, index);
+				String sd = path.substring(path.lastIndexOf("/") + 1);
+				if (sd.equals(subdir)) {
+					result = true;
+					break;
+				}
+			}
+		}
+		return result;
 	}
 
 	static void addTurtle(RepositoryConnection con, URL url, String baseURI, Resource... contexts)
