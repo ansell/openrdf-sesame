@@ -6,7 +6,6 @@
 package org.openrdf.query.algebra.evaluation.function.string;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
@@ -41,7 +40,7 @@ public class EncodeForUri implements Function {
 		if (args[0] instanceof Literal) {
 			Literal literal = (Literal)args[0];
 
-			if (QueryEvaluationUtil.isStringLiteral(literal) || literal.getLanguage() != null) {
+			if (QueryEvaluationUtil.isStringLiteral(literal)) {
 				String lexValue = literal.getLabel();
 
 				return valueFactory.createLiteral(encodeUri(lexValue));

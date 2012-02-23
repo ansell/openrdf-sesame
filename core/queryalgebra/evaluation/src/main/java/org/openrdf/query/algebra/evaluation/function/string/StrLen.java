@@ -40,7 +40,7 @@ public class StrLen implements Function {
 
 			// strlen function accepts only plain literals (optionally
 			// language-tagged) or string-typed literals.
-			if (literal.getLanguage() != null || QueryEvaluationUtil.isStringLiteral(literal)) {
+			if (QueryEvaluationUtil.isStringLiteral(literal)) {
 
 				// TODO we jump through some hoops here to get an xsd:integer
 				// literal. Shouldn't createLiteral(int) return an xsd:integer

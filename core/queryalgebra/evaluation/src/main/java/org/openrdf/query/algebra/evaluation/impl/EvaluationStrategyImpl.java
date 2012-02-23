@@ -1570,7 +1570,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
 
-			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal) && literal.getDatatype() == null) {
 				return literal;
 			}
 			else {
@@ -1591,7 +1591,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
 
-			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal) && literal.getDatatype() == null) {
 				return literal;
 			}
 			else {
@@ -1806,7 +1806,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			farg = evaluate(flagsArg, bindings);
 		}
 
-		if (QueryEvaluationUtil.isSimpleLiteral(arg) && QueryEvaluationUtil.isSimpleLiteral(parg)
+		if (QueryEvaluationUtil.isStringLiteral(arg) && QueryEvaluationUtil.isSimpleLiteral(parg)
 				&& (farg == null || QueryEvaluationUtil.isSimpleLiteral(farg)))
 		{
 			String text = ((Literal)arg).getLabel();

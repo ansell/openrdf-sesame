@@ -37,7 +37,7 @@ public class SHA512 extends HashFunction {
 		if (args[0] instanceof Literal) {
 			Literal literal = (Literal)args[0];
 
-			if (QueryEvaluationUtil.isStringLiteral(literal)) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
 				String lexValue = literal.getLabel();
 
 				try {
