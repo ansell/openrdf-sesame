@@ -13,8 +13,6 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import javax.xml.crypto.dsig.XMLSignContext;
-
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
