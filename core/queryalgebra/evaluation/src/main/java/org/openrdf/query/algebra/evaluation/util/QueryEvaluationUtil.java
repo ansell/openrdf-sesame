@@ -141,7 +141,7 @@ public class QueryEvaluationUtil {
 
 		Integer compareResult = null;
 
-		if (QueryEvaluationUtil.isStringLiteral(leftLit) && QueryEvaluationUtil.isStringLiteral(rightLit)) {
+		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
 			compareResult = leftLit.getLabel().compareTo(rightLit.getLabel());
 		}
 		else if (leftDatatype != null && rightDatatype != null) {
@@ -291,9 +291,9 @@ public class QueryEvaluationUtil {
 	}
 
 	/**
-	 * Checks whether the supplied value is a "simple literal" as defined in the
-	 * SPARQL spec. A "simple literal" is a literal without a language tag or a
-	 * datatype.
+	 * Checks whether the supplied value is a "simple literal". A
+	 * "simple literal" is a literal with no language tag nor datatype, or a
+	 * literal with datatype xsd:string.
 	 */
 	public static boolean isSimpleLiteral(Value v) {
 		if (v instanceof Literal) {
@@ -304,28 +304,35 @@ public class QueryEvaluationUtil {
 	}
 
 	/**
-	 * Checks whether the supplied literal is a "simple literal" as defined in
-	 * the SPARQL spec. A "simple literal" is a literal without a language tag or
-	 * a datatype.
+	 * Checks whether the supplied literal is a "simple literal". A
+	 * "simple literal" is a literal with no language tag nor datatype, or a
+	 * literal with datatype xsd:string.
 	 */
 	public static boolean isSimpleLiteral(Literal l) {
-		return l.getLanguage() == null && l.getDatatype() == null;
+		return l.getLanguage() == null && isStringLiteral(l);
 	}
 
 	/**
 	 * Checks whether the supplied literal is a "string literal". A "string
-	 * literal" is either a {@link #isSimpleLiteral(Literal) simple literal} or a
-	 * literal with datatype {@link XMLSchema#STRING xsd:string}.
+	 * literal" is either a simple literal, a plain literal with language tag, or
+	 * a literal with datatype xsd:string.
+	 */
+	public static boolean isStringLiteral(Value v) {
+		if (v instanceof Literal) {
+			return isStringLiteral((Literal)v);
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether the supplied literal is a "string literal". A "string
+	 * literal" is either a simple literal, a plain literal with language tag, or
+	 * a literal with datatype xsd:string.
 	 */
 	public static boolean isStringLiteral(Literal l) {
 		URI datatype = l.getDatatype();
-
-		if (datatype == null) {
-			return l.getLanguage() == null;
-		}
-		else {
-			return datatype.equals(XMLSchema.STRING);
-		}
+		return datatype == null || datatype.equals(XMLSchema.STRING);
 	}
 
 	private static boolean isSupportedDatatype(URI datatype) {

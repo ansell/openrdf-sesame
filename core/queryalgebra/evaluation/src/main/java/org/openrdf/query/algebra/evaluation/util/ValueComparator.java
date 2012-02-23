@@ -85,7 +85,7 @@ public class ValueComparator implements Comparator<Value> {
 		// than an RDF literal with type xsd:string of the same lexical
 		// form."
 
-		if (!QueryEvaluationUtil.isStringLiteral(leftLit) || !QueryEvaluationUtil.isStringLiteral(rightLit)) {
+		if (!QueryEvaluationUtil.isSimpleLiteral(leftLit) || !QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
 			try {
 				boolean isSmaller = QueryEvaluationUtil.compareLiterals(leftLit, rightLit, CompareOp.LT);
 

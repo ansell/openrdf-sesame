@@ -39,7 +39,7 @@ public class IntegerCast implements Function {
 			Literal literal = (Literal)args[0];
 			URI datatype = literal.getDatatype();
 
-			if (QueryEvaluationUtil.isStringLiteral(literal)) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
 				String integerValue = XMLDatatypeUtil.collapseWhiteSpace(literal.getLabel());
 				if (XMLDatatypeUtil.isValidInteger(integerValue)) {
 					return valueFactory.createLiteral(integerValue, XMLSchema.INTEGER);

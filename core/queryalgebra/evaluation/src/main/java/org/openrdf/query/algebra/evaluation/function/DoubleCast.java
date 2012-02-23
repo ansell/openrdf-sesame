@@ -37,7 +37,7 @@ public class DoubleCast implements Function {
 			Literal literal = (Literal)args[0];
 			URI datatype = literal.getDatatype();
 
-			if (QueryEvaluationUtil.isStringLiteral(literal)) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
 				String doubleValue = XMLDatatypeUtil.collapseWhiteSpace(literal.getLabel());
 				if (XMLDatatypeUtil.isValidDouble(doubleValue)) {
 					return valueFactory.createLiteral(doubleValue, XMLSchema.DOUBLE);

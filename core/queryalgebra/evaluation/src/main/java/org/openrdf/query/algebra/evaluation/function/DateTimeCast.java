@@ -38,7 +38,7 @@ public class DateTimeCast implements Function {
 			Literal literal = (Literal)args[0];
 			URI datatype = literal.getDatatype();
 
-			if (QueryEvaluationUtil.isStringLiteral(literal)) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
 				String dateTimeValue = XMLDatatypeUtil.collapseWhiteSpace(literal.getLabel());
 				if (XMLDatatypeUtil.isValidDateTime(dateTimeValue)) {
 					return valueFactory.createLiteral(dateTimeValue, XMLSchema.DATETIME);

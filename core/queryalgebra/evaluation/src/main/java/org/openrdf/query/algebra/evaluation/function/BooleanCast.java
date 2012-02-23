@@ -40,7 +40,7 @@ public class BooleanCast implements Function {
 			Literal literal = (Literal)args[0];
 			URI datatype = literal.getDatatype();
 
-			if (QueryEvaluationUtil.isStringLiteral(literal)) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
 				String booleanValue = XMLDatatypeUtil.collapseWhiteSpace(literal.getLabel());
 				if (XMLDatatypeUtil.isValidBoolean(booleanValue)) {
 					return valueFactory.createLiteral(booleanValue, XMLSchema.BOOLEAN);
