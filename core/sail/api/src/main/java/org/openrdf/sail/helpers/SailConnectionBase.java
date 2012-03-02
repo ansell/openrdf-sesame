@@ -22,6 +22,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -567,7 +568,8 @@ public abstract class SailConnectionBase implements SailConnection {
 		 * purposes with third-party SAIL implementations we provide a default implementation for 
 		 * now.
 		 */
-		SailUpdateExecutor executor = new SailUpdateExecutor(sailBase, this);
+		ValueFactory vf = sailBase.getValueFactory();
+		SailUpdateExecutor executor = new SailUpdateExecutor(this, vf, false);
 		executor.executeUpdate(updateExpr, dataset, bindings, includeInferred);
 	}
 
