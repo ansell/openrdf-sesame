@@ -486,7 +486,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		result.visit(groupFinder);
 		Group group = groupFinder.getGroup();
 		boolean existingGroup = group != null;
-
+		
 		List<String> aliasesInProjection = new ArrayList<String>();
 		for (ASTProjectionElem projElemNode : node.getProjectionElemList()) {
 
@@ -542,11 +542,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			}
 			else if (child instanceof ASTVar) {
 				Var projVar = (Var)child.jjtAccept(this, null);
-				if (existingGroup) {
-					if (!group.getBindingNames().contains(projVar.getName())) {
-						throw new VisitorException("variable in projection not present in GROUP BY.");
-					}
-				}
 				projElemList.addElement(new ProjectionElem(projVar.getName()));
 			}
 			else {
@@ -573,6 +568,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		result = new Projection(result, projElemList);
 
+		if (group != null) {
+			for (ProjectionElem elem: projElemList.getElements()) {
+				if (! group.getBindingNames().contains(elem.getTargetName())) {
+					throw new VisitorException("variable '" + elem.getTargetName() + "' in projection not present in GROUP BY.");
+				}
+			}
+		}
+		
 		if (node.isSubSelect()) {
 			// set context var at the level of the projection. This allows us
 			// to distinguish named graphs selected in the
@@ -931,8 +934,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				name = v.getName();
 			}
 			else {
-				// create an alias on the spot
-				name = createConstVar(null).getName();
+				throw new VisitorException("alias expected in group condition");
 			}
 
 			ExtensionElem elem = new ExtensionElem(ve, name);

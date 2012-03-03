@@ -65,7 +65,7 @@ public class EarlReport {
 		con.add(projectNode, DOAP.NAME, vf.createLiteral("OpenRDF Sesame"));
 		con.add(projectNode, DOAP.RELEASE, releaseNode);
 		con.add(releaseNode, RDF.TYPE, DOAP.VERSION);
-		con.add(releaseNode, DOAP.NAME, vf.createLiteral("Sesame 2.0-SNAPSHOT"));
+		con.add(releaseNode, DOAP.NAME, vf.createLiteral("Sesame 2.6.4-SNAPSHOT"));
 		SimpleDateFormat xsdDataFormat = new SimpleDateFormat("yyyy-MM-dd");
 		String currentDate = xsdDataFormat.format(new Date());
 		con.add(releaseNode, DOAP.CREATED, vf.createLiteral(currentDate, XMLSchema.DATE));
@@ -78,8 +78,8 @@ public class EarlReport {
 		EarlTestListener listener = new EarlTestListener();
 		testResult.addListener(listener);
 
-		MemorySPARQLQueryTest.suite().run(testResult);
-		SPARQLSyntaxTest.suite().run(testResult);
+		MemorySPARQL11QueryTest.suite().run(testResult);
+		SPARQL11SyntaxTest.suite().run(testResult);
 
 		con.setAutoCommit(true);
 
