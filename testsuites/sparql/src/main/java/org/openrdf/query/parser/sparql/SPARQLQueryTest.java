@@ -673,6 +673,17 @@ public abstract class SPARQLQueryTest extends TestCase {
 				laxCardinalityResult.close();
 			}
 
+			// if this is enabled, Sesame passes all tests, showing that the only difference is the semantics of arbitrary-length
+			// paths
+			/*
+			if (!laxCardinality) {
+				// property-path tests always with lax cardinality because Sesame filters out duplicates by design
+				if (testURI.stringValue().contains("property-path")) {
+					laxCardinality = true;
+				}
+			}
+			*/
+
 			// check if we should test for query result ordering
 			boolean checkOrder = false;
 			if (ordered != null) {
