@@ -54,8 +54,8 @@ public class StrStarts implements Function {
 					throw new ValueExprEvaluationException("incompatible operands for STRSTARTS function");
 				}
 			}
-			else if (QueryEvaluationUtil.isSimpleLiteral(leftLit)) {
-				if (QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
+			else if (QueryEvaluationUtil.isStringLiteral(leftLit)) {
+				if (QueryEvaluationUtil.isStringLiteral(rightLit)) {
 					String leftLexVal = leftLit.getLabel();
 					String rightLexVal = rightLit.getLabel();
 

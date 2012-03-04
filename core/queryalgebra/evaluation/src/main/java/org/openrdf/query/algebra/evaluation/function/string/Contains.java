@@ -52,8 +52,8 @@ public class Contains implements Function {
 					throw new ValueExprEvaluationException("incompatible operands for CONTAINS function");
 				}
 			}
-			else if (QueryEvaluationUtil.isSimpleLiteral(leftLit)) {
-				if (QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
+			else if (QueryEvaluationUtil.isStringLiteral(leftLit)) {
+				if (QueryEvaluationUtil.isStringLiteral(rightLit)) {
 					String leftLexVal = leftLit.getLabel();
 					String rightLexVal = rightLit.getLabel();
 

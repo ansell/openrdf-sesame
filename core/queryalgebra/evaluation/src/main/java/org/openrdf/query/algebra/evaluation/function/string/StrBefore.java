@@ -13,6 +13,7 @@ import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
 /**
  * The SPARQL built-in {@link Function} STRBEFORE, as defined in <a
@@ -41,19 +42,13 @@ public class StrBefore implements Function {
 			Literal leftLit = (Literal)leftArg;
 			Literal rightLit = (Literal)rightArg;
 
-			String leftLanguage = leftLit.getLanguage();
-			String rightLanguage = rightLit.getLanguage();
 			
-			URI leftDt = leftLit.getDatatype();
-			URI rightDt = rightLit.getDatatype();
-			
-			// STRBEFORE function accepts only plain literals (optionally
-			// language-tagged) or string-typed literals.
-			if ((leftLanguage != null
-					|| (leftDt == null || XMLSchema.STRING.equals(leftDt)))
-					&& (rightLanguage == null || rightLanguage.equals(leftLanguage))
-					&& (rightDt == null || XMLSchema.STRING.equals(rightDt)))
+			// STRBEFORE function accepts only string literals 
+			if (QueryEvaluationUtil.isStringLiteral(leftLit) && QueryEvaluationUtil.isStringLiteral(rightLit))
 			{
+				String leftLanguage = leftLit.getLanguage();
+				URI leftDt = leftLit.getDatatype();
+
 				String lexicalValue = leftLit.getLabel();
 				String substring = rightLit.getLabel();
 				

@@ -13,6 +13,7 @@ import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
 /**
  * The SPARQL built-in {@link Function} STRAFTER, as defined in <a
@@ -40,23 +41,16 @@ public class StrAfter implements Function {
 		if (leftArg instanceof Literal && rightArg instanceof Literal) {
 			Literal leftLit = (Literal)leftArg;
 			Literal rightLit = (Literal)rightArg;
-
-			String leftLanguage = leftLit.getLanguage();
-			String rightLanguage = rightLit.getLanguage();
 			
-			URI leftDt = leftLit.getDatatype();
-			URI rightDt = rightLit.getDatatype();
-			
-			// STRAFTER function accepts only plain literals (optionally
-			// language-tagged) or string-typed literals.
-			if ((leftLanguage != null
-					|| (leftDt == null || XMLSchema.STRING.equals(leftDt)))
-					&& (rightLanguage == null || rightLanguage.equals(leftLanguage))
-					&& (rightDt == null || XMLSchema.STRING.equals(rightDt)))
+			// STRAFTER function accepts only string literals.
+			if (QueryEvaluationUtil.isStringLiteral(leftLit) && QueryEvaluationUtil.isStringLiteral(rightLit))
 			{
 				String lexicalValue = leftLit.getLabel();
 				String substring = rightLit.getLabel();
-				
+
+				String leftLanguage = leftLit.getLanguage();
+				URI leftDt = leftLit.getDatatype();
+
 				int index = lexicalValue.indexOf(substring);
 
 				String substringAfter = "";

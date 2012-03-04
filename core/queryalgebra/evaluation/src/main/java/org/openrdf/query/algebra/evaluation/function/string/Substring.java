@@ -12,6 +12,7 @@ import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
 /**
  * The SPARQL built-in {@link Function} SUBSTR, as defined in <a
@@ -43,12 +44,8 @@ public class Substring implements Function {
 		if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
 
-			String language = literal.getLanguage();
-
-			// substr function accepts only plain literals (optionally
-			// language-tagged) or string-typed literals.
-			if (language != null
-					|| (literal.getDatatype() == null || XMLSchema.STRING.equals(literal.getDatatype())))
+			// substr function accepts string literals only.
+			if (QueryEvaluationUtil.isStringLiteral(literal))
 			{
 				String lexicalValue = literal.getLabel();
 
@@ -93,6 +90,7 @@ public class Substring implements Function {
 				}
 
 				try {
+					String language = literal.getLanguage();
 					lexicalValue = lexicalValue.substring(startIndex, endIndex);
 
 					if (language != null) {
