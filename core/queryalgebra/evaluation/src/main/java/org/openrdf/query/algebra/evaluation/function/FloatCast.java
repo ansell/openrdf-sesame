@@ -37,7 +37,7 @@ public class FloatCast implements Function {
 			Literal literal = (Literal)args[0];
 			URI datatype = literal.getDatatype();
 
-			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
+			if (QueryEvaluationUtil.isStringLiteral(literal)) {
 				String floatValue = XMLDatatypeUtil.collapseWhiteSpace(literal.getLabel());
 				if (XMLDatatypeUtil.isValidFloat(floatValue)) {
 					return valueFactory.createLiteral(floatValue, XMLSchema.FLOAT);
