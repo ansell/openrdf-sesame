@@ -46,21 +46,21 @@ public class Replace implements Function {
 				flags = (Literal)args[3];
 			}
 
-			if (arg.getDatatype() != null && !XMLSchema.STRING.equals(arg.getDatatype())) {
+			if (! QueryEvaluationUtil.isStringLiteral(arg)) {
 				throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + arg);
 			}
 
-			if (pattern.getDatatype() != null || pattern.getLanguage() != null) {
+			if (! QueryEvaluationUtil.isSimpleLiteral(pattern)) {
 				throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + pattern);
 			}
 
-			if (replacement.getDatatype() != null || replacement.getLanguage() != null) {
+			if (! QueryEvaluationUtil.isSimpleLiteral(replacement)) {
 				throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + replacement);
 			}
 
 			String flagString = null;
 			if (flags != null) {
-				if (flags.getDatatype() != null || flags.getLanguage() != null) {
+				if (!QueryEvaluationUtil.isSimpleLiteral(flags)) {
 					throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + flags);
 				}
 				flagString = flags.getLabel();

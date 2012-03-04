@@ -12,6 +12,7 @@ import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
 /**
  * The SPARQL built-in {@link Function} UCASE, as defined in <a
@@ -36,14 +37,11 @@ public class UpperCase implements Function {
 		if (args[0] instanceof Literal) {
 			Literal literal = (Literal)args[0];
 
-			String language = literal.getLanguage();
-
-			// UpperCase function accepts only plain literals (optionally
-			// language-tagged) or string-typed literals.
-			if (language != null
-					|| (literal.getDatatype() == null || XMLSchema.STRING.equals(literal.getDatatype())))
+			// UpperCase function accepts only string literal
+			if (QueryEvaluationUtil.isStringLiteral(literal))
 			{
 				String lexicalValue = literal.getLabel().toUpperCase();
+				String language = literal.getLanguage();
 
 				if (language != null) {
 					return valueFactory.createLiteral(lexicalValue, language);

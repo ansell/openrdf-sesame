@@ -38,8 +38,7 @@ public class StrLen implements Function {
 		if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
 
-			// strlen function accepts only plain literals (optionally
-			// language-tagged) or string-typed literals.
+			// strlen function accepts only string literals 
 			if (QueryEvaluationUtil.isStringLiteral(literal)) {
 
 				// TODO we jump through some hoops here to get an xsd:integer
