@@ -486,7 +486,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		result.visit(groupFinder);
 		Group group = groupFinder.getGroup();
 		boolean existingGroup = group != null;
-		
+
 		List<String> aliasesInProjection = new ArrayList<String>();
 		for (ASTProjectionElem projElemNode : node.getProjectionElemList()) {
 
@@ -503,12 +503,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 				ValueExpr valueExpr = (ValueExpr)child.jjtAccept(this, null);
 
-				projElemList.addElement(new ProjectionElem(alias));
+				ProjectionElem elem = new ProjectionElem(alias);
+				projElemList.addElement(elem);
 
 				AggregateCollector collector = new AggregateCollector();
 				valueExpr.visit(collector);
 
 				if (collector.getOperators().size() > 0) {
+					elem.setAggregateOperatorInExpression(true);
 					for (AggregateOperator operator : collector.getOperators()) {
 						// Apply implicit grouping if necessary
 						if (group == null) {
@@ -569,13 +571,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		result = new Projection(result, projElemList);
 
 		if (group != null) {
-			for (ProjectionElem elem: projElemList.getElements()) {
-				if (! group.getBindingNames().contains(elem.getTargetName())) {
-					throw new VisitorException("variable '" + elem.getTargetName() + "' in projection not present in GROUP BY.");
+			for (ProjectionElem elem : projElemList.getElements()) {
+				if (!elem.hasAggregateOperatorInExpression() && !group.getBindingNames().contains(elem.getTargetName())) {
+					throw new VisitorException("variable '" + elem.getTargetName()
+							+ "' in projection not present in GROUP BY.");
 				}
 			}
 		}
-		
+
 		if (node.isSubSelect()) {
 			// set context var at the level of the projection. This allows us
 			// to distinguish named graphs selected in the
@@ -1655,14 +1658,18 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			this.toBeReplaced = toBeReplaced;
 			this.replacement = replacement;
 		}
-		
-		public void meet(Projection projection) throws VisitorException {
+
+		public void meet(Projection projection)
+			throws VisitorException
+		{
 			if (projection.getBindingNames().contains(toBeReplaced.getName())) {
 				super.meet(projection);
 			}
 		}
-		
-		public void meet(ProjectionElem elem) throws VisitorException {
+
+		public void meet(ProjectionElem elem)
+			throws VisitorException
+		{
 			if (elem.getSourceName().equals(toBeReplaced.getName())) {
 				elem.setSourceName(replacement.getName());
 				elem.setTargetName(replacement.getName());
@@ -1670,13 +1677,15 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			super.meet(elem);
 		}
 
-		public void meet(ExtensionElem elem) throws VisitorException {
+		public void meet(ExtensionElem elem)
+			throws VisitorException
+		{
 			if (elem.getName().equals(toBeReplaced.getName())) {
 				elem.setName(replacement.getName());
 			}
 			super.meet(elem);
 		}
-		
+
 		@Override
 		public void meet(Group group)
 			throws VisitorException
@@ -1716,7 +1725,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		public void meet(Var var) {
 			if (toBeReplaced.equals(var)) {
 				QueryModelNode parent = var.getParentNode();
-				
+
 				parent.replaceChildNode(var, replacement);
 				replacement.setParentNode(parent);
 			}
