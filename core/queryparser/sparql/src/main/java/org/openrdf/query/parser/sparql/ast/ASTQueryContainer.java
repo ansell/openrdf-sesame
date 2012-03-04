@@ -12,6 +12,13 @@ public class ASTQueryContainer extends ASTOperationContainer {
 		super(p, id);
 	}
 
+	@Override
+	public Object jjtAccept(SyntaxTreeBuilderVisitor visitor, Object data)
+		throws VisitorException
+	{
+		return visitor.visit(this, data);
+	}
+	
 	public boolean containsQuery() {
 		return (getQuery() != null);
 	}

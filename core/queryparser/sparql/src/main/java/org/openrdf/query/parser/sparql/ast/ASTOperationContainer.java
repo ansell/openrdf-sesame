@@ -28,13 +28,6 @@ public abstract class ASTOperationContainer extends SimpleNode {
 		super(p, id);
 	}
 
-	@Override
-	public Object jjtAccept(SyntaxTreeBuilderVisitor visitor, Object data)
-		throws VisitorException
-	{
-		return visitor.visit(this, data);
-	}
-
 	public ASTBaseDecl getBaseDecl() {
 		return super.jjtGetChild(ASTBaseDecl.class);
 	}
