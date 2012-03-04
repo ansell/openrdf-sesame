@@ -292,8 +292,9 @@ public class QueryEvaluationUtil {
 
 	/**
 	 * Checks whether the supplied value is a "simple literal". A
-	 * "simple literal" is a literal with no language tag nor datatype, or a
-	 * literal with datatype xsd:string.
+	 * "simple literal" is a literal with no language tag nor datatype.
+	 * 
+	 * @see http://www.w3.org/TR/sparql11-query/#simple_literal 
 	 */
 	public static boolean isSimpleLiteral(Value v) {
 		if (v instanceof Literal) {
@@ -305,17 +306,20 @@ public class QueryEvaluationUtil {
 
 	/**
 	 * Checks whether the supplied literal is a "simple literal". A
-	 * "simple literal" is a literal with no language tag nor datatype, or a
-	 * literal with datatype xsd:string.
+	 * "simple literal" is a literal with no language tag nor datatype.
+	 * 
+	 * @see http://www.w3.org/TR/sparql11-query/#simple_literal 
 	 */
 	public static boolean isSimpleLiteral(Literal l) {
-		return l.getLanguage() == null && isStringLiteral(l);
+		return l.getLanguage() == null && l.getDatatype() == null;
 	}
 
 	/**
 	 * Checks whether the supplied literal is a "string literal". A "string
 	 * literal" is either a simple literal, a plain literal with language tag, or
 	 * a literal with datatype xsd:string.
+	 * 
+	 * @see http://www.w3.org/TR/sparql11-query/#func-string
 	 */
 	public static boolean isStringLiteral(Value v) {
 		if (v instanceof Literal) {
@@ -329,6 +333,8 @@ public class QueryEvaluationUtil {
 	 * Checks whether the supplied literal is a "string literal". A "string
 	 * literal" is either a simple literal, a plain literal with language tag, or
 	 * a literal with datatype xsd:string.
+	 * 
+	 * @see http://www.w3.org/TR/sparql11-query/#func-string
 	 */
 	public static boolean isStringLiteral(Literal l) {
 		URI datatype = l.getDatatype();
