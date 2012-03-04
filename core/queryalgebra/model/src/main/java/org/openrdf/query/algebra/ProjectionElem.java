@@ -15,6 +15,8 @@ public class ProjectionElem extends QueryModelNodeBase {
 
 	private String targetName;
 
+	private boolean aggregateOperatorInExpression;
+	
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -93,5 +95,19 @@ public class ProjectionElem extends QueryModelNodeBase {
 	@Override
 	public ProjectionElem clone() {
 		return (ProjectionElem)super.clone();
+	}
+
+	/**
+	 * @return Returns the aggregateOperatorInExpression.
+	 */
+	public boolean hasAggregateOperatorInExpression() {
+		return aggregateOperatorInExpression;
+	}
+
+	/**
+	 * @param aggregateOperatorInExpression The aggregateOperatorInExpression to set.
+	 */
+	public void setAggregateOperatorInExpression(boolean aggregateOperatorInExpression) {
+		this.aggregateOperatorInExpression = aggregateOperatorInExpression;
 	}
 }
