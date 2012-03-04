@@ -45,6 +45,8 @@ import org.openrdf.rio.helpers.RDFParserBase;
  * the line. The Turtle grammar doesn't allow comments to be used inside triple
  * constructs that extend over multiple lines, but the author's own parser
  * deviates from this too.</li>
+ * <li>The localname part of a prefixed named is allowed to start with a number
+ * (cf. <a href="http://www.w3.org/TR/turtle/">the W3C Turtle Working Draft</a>).</li>
  * </ul>
  * 
  * @author Arjohn Kampman
