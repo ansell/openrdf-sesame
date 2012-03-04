@@ -2326,7 +2326,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			arg2 = ((UnaryTupleOperator)arg2).getArg();
 		}
 		Set<String> commonVars = arg1.getBindingNames();
-		commonVars.retainAll(arg2.getBindingNames());
+		commonVars.retainAll(arg2.getAssuredBindingNames());
 		return intersect(evaluate(intersection.getLeftArg(), bindings),
 				evaluate(intersection.getRightArg(), bindings), commonVars);
 	}
