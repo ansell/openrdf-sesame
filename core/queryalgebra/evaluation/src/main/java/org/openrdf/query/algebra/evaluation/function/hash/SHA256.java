@@ -10,6 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
@@ -37,7 +38,7 @@ public class SHA256 extends HashFunction {
 		if (args[0] instanceof Literal) {
 			Literal literal = (Literal)args[0];
 
-			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal) || XMLSchema.STRING.equals(literal.getDatatype())) {
 				String lexValue = literal.getLabel();
 
 				try {

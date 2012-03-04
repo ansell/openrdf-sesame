@@ -192,11 +192,13 @@ public class StrAfterTest {
 		
 		try {
 			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
+
+			assertEquals("ar", result.getLabel());
+			assertEquals(null, result.getDatatype());
 			
-			fail("operands with incompatible language tags, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			// do nothing, expected.
+			fail(e.getMessage());
 		}
 	}
 	
@@ -209,11 +211,13 @@ public class StrAfterTest {
 		try {
 			Literal result = strAfterFunc.evaluate(f, leftArg, rightArg);
 			
-			fail("operands with incompatible language tags, should have resulted in error");
+			assertEquals("ar", result.getLabel());
+			assertEquals(null, result.getDatatype());
+
 
 		}
 		catch (ValueExprEvaluationException e) {
-			// do nothing, expected 
+			fail(e.getMessage());
 		}
 	}
 	
