@@ -46,6 +46,12 @@ public abstract class HTTPQuery extends AbstractQuery {
 	}
 
 	@Override
+	public void setMaxQueryTime(int maxQueryTime) {
+		super.setMaxQueryTime(maxQueryTime);
+		this.httpCon.getRepository().getHTTPClient().setConnectionTimeout(1000L * this.maxQueryTime);
+	}
+	
+	@Override
 	public String toString()
 	{
 		return queryString;
