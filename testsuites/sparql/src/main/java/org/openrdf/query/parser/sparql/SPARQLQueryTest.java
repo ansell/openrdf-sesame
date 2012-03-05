@@ -29,7 +29,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
@@ -59,10 +58,9 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.Rio;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
+import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
-import org.openrdf.rio.trig.TriGWriter;
 import org.openrdf.sail.memory.MemoryStore;
 
 public abstract class SPARQLQueryTest extends TestCase {
@@ -84,13 +82,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected final boolean laxCardinality;
 
 	protected final boolean checkOrder;
-	
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
 	protected Repository dataRep;
-
 
 	/*--------------*
 	 * Constructors *
@@ -101,7 +98,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	{
 		this(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, false);
 	}
-	
+
 	public SPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
 			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
 	{
@@ -184,13 +181,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 			}
 
 			String name = this.getName();
-			
-		
+
 			if (query instanceof TupleQuery) {
 				TupleQueryResult queryResult = ((TupleQuery)query).evaluate();
 
 				TupleQueryResult expectedResult = readExpectedTupleQueryResult();
-				
+
 				compareTupleQueryResults(queryResult, expectedResult);
 
 				// Graph queryGraph = RepositoryUtil.asGraph(queryResult);
@@ -233,7 +229,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 		else {
 			resultsEqual = QueryResultUtil.equals(queryResultTable, expectedResultTable);
-			
+
 			if (checkOrder) {
 				// also check the order in which solutions occur.
 				queryResultTable.beforeFirst();
@@ -242,8 +238,8 @@ public abstract class SPARQLQueryTest extends TestCase {
 				while (queryResultTable.hasNext()) {
 					BindingSet bs = queryResultTable.next();
 					BindingSet expectedBs = expectedResultTable.next();
-					
-					if (! bs.equals(expectedBs)) {
+
+					if (!bs.equals(expectedBs)) {
 						resultsEqual = false;
 						break;
 					}
@@ -273,7 +269,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			 */
 
 			List<BindingSet> queryBindings = Iterations.asList(queryResultTable);
-			
+
 			List<BindingSet> expectedBindings = Iterations.asList(expectedResultTable);
 
 			List<BindingSet> missingBindings = new ArrayList<BindingSet>(expectedBindings);
@@ -311,18 +307,18 @@ public abstract class SPARQLQueryTest extends TestCase {
 				StringUtil.appendN('=', getName().length(), message);
 				message.append("========================\n");
 			}
-			
+
 			if (checkOrder && missingBindings.isEmpty() && unexpectedBindings.isEmpty()) {
 				message.append("Results are not in expected order.\n");
 				message.append(" =======================\n");
 				message.append("query result: \n");
-				for (BindingSet bs: queryBindings) {
+				for (BindingSet bs : queryBindings) {
 					message.append(bs);
 					message.append("\n");
 				}
 				message.append(" =======================\n");
 				message.append("expected result: \n");
-				for (BindingSet bs: expectedBindings) {
+				for (BindingSet bs : expectedBindings) {
 					message.append(bs);
 					message.append("\n");
 				}
@@ -554,7 +550,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 		SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 				String resultFileURL, Dataset dataSet, boolean laxCardinality);
-		
+
 		SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 				String resultFileURL, Dataset dataSet, boolean laxCardinality, boolean checkOrder);
 	}
@@ -596,12 +592,13 @@ public abstract class SPARQLQueryTest extends TestCase {
 		query.append("                             mf:action {action} qt:query {queryFile}; ");
 		query.append("                                               [qt:data {defaultGraph}]; ");
 		query.append("                                               [sd:entailmentRegime {Regime} ]");
-		
+
 		// skip tests involving CSV result files, these are not query tests
 		query.append(" WHERE NOT resultFile LIKE \"*.csv\" ");
-		// skip tests involving JSON, sesame currently does not have a SPARQL/JSON parser.
+		// skip tests involving JSON, sesame currently does not have a SPARQL/JSON
+		// parser.
 		query.append(" AND NOT resultFile LIKE \"*.srj\" ");
-		// skip tests involving entailment regimes 
+		// skip tests involving entailment regimes
 		query.append(" AND NOT BOUND(Regime) ");
 		// skip test involving basic federation, these are tested separately.
 		query.append(" AND (NOT BOUND(Requirement) OR (Requirement != mf:BasicFederation)) ");
@@ -673,7 +670,8 @@ public abstract class SPARQLQueryTest extends TestCase {
 				laxCardinalityResult.close();
 			}
 
-			// if this is enabled, Sesame passes all tests, showing that the only difference is the semantics of arbitrary-length
+			// if this is enabled, Sesame passes all tests, showing that the only
+			// difference is the semantics of arbitrary-length
 			// paths
 			/*
 			if (!laxCardinality) {
@@ -689,8 +687,8 @@ public abstract class SPARQLQueryTest extends TestCase {
 			if (ordered != null) {
 				checkOrder = Boolean.parseBoolean(ordered.stringValue());
 			}
-			
- 			SPARQLQueryTest test = factory.createSPARQLQueryTest(testURI.toString(), testName, queryFile,
+
+			SPARQLQueryTest test = factory.createSPARQLQueryTest(testURI.toString(), testName, queryFile,
 					resultFile, dataset, laxCardinality, checkOrder);
 			if (test != null) {
 				suite.addTest(test);
