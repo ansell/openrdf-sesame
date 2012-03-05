@@ -38,6 +38,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
@@ -1634,10 +1635,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				// literal with datatype
 				return literal.getDatatype();
 			}
-			else if (literal.getLanguage() == null) {
+			else if (literal.getLanguage() != null) {
+				return RDF.LANGSTRING;
+			}
+			else {
 				// simple literal
 				return XMLSchema.STRING;
 			}
+			
 		}
 
 		throw new ValueExprEvaluationException();

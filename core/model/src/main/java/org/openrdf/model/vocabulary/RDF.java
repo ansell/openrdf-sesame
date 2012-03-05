@@ -66,6 +66,8 @@ public class RDF {
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#nil */
 	public final static URI NIL;
 	
+	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#langString */
+	public static final URI LANGSTRING;
 	
 	static{
 		ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -85,5 +87,6 @@ public class RDF {
 		FIRST = factory.createURI(RDF.NAMESPACE, "first");
 		REST = factory.createURI(RDF.NAMESPACE, "rest");
 		NIL = factory.createURI(RDF.NAMESPACE, "nil");
+		LANGSTRING = factory.createURI(RDF.NAMESPACE, "langString");
 	}
 }
