@@ -45,6 +45,9 @@ public abstract class SPARQLQuery implements Query {
 	private String url;
 	private String query;
 	private Dataset dataset = new DatasetImpl();
+	
+	private int maxQueryTime = 0;
+	
 	private MapBindingSet bindings = new MapBindingSet();
 
 	public SPARQLQuery(HttpClient client, String url, String base, String query) {
@@ -71,7 +74,7 @@ public abstract class SPARQLQuery implements Query {
 	}
 
 	public int getMaxQueryTime() {
-		return 0;
+		return maxQueryTime; 
 	}
 
 	public void removeBinding(String name) {
@@ -98,7 +101,8 @@ public abstract class SPARQLQuery implements Query {
 	}
 
 	public void setMaxQueryTime(int maxQueryTime) {
-		throw new UnsupportedOperationException();
+		this.maxQueryTime = maxQueryTime;
+		this.client.getParams().setConnectionManagerTimeout(1000L * maxQueryTime);
 	}
 
 	public String getUrl() {
