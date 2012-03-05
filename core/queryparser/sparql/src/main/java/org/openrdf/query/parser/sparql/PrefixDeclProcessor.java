@@ -8,6 +8,8 @@ package org.openrdf.query.parser.sparql;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
@@ -20,8 +22,8 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 /**
  * Processes the prefix declarations in a SPARQL query model.
- *
- * @author Arjohn Kampman 
+ * 
+ * @author Arjohn Kampman
  */
 public class PrefixDeclProcessor {
 
@@ -93,6 +95,8 @@ public class PrefixDeclProcessor {
 				throw new VisitorException("QName '" + qname + "' uses an undefined prefix");
 			}
 
+			localName = processEscapesAndHex(localName);
+
 			// Replace the qname node with a new IRI node in the parent node
 			ASTIRI iriNode = new ASTIRI(SyntaxTreeBuilderTreeConstants.JJTIRI);
 			iriNode.setValue(namespace + localName);
@@ -100,7 +104,43 @@ public class PrefixDeclProcessor {
 
 			return null;
 		}
-		
+
+		private String processEscapesAndHex(String localName) {
+			
+			// first process hex-encoded chars.
+			StringBuffer unencoded = new StringBuffer();
+			Pattern hexPattern = Pattern.compile("([^\\\\]|^)(%[A-F\\d][A-F\\d])", Pattern.CASE_INSENSITIVE);
+			Matcher m = hexPattern.matcher(localName);
+			boolean result = m.find();
+			while (result) {
+				// we match the previous char because we need to be sure we are not processing an escaped % char rather than
+				// an actual hex encoding, for example: 'foo\%bar'.
+				String previousChar = m.group(1);
+				String encoded = m.group(2);
+
+				int codePoint = Integer.parseInt(encoded.substring(1), 16);
+				String decoded = String.valueOf( Character.toChars(codePoint));
+				
+				m.appendReplacement(unencoded, previousChar + decoded);
+				result = m.find();
+			}
+			m.appendTail(unencoded);
+
+			// then process escaped special chars.
+			StringBuffer unescaped = new StringBuffer();
+			Pattern escapedCharPattern = Pattern.compile("\\\\[_~\\.\\-!\\$\\&\\'\\(\\)\\*\\+\\,\\;\\=\\:\\/\\?#\\@\\%]");
+			m = escapedCharPattern.matcher(unencoded.toString());
+			result = m.find();
+			while (result) {
+				String escaped = m.group();
+				m.appendReplacement(unescaped, escaped.substring(1));
+				result = m.find();
+			}
+			m.appendTail(unescaped);
+			
+			return unescaped.toString();
+		}
+
 		@Override
 		public Object visit(ASTServiceGraphPattern node, Object data)
 			throws VisitorException
@@ -108,7 +148,6 @@ public class PrefixDeclProcessor {
 			node.setPrefixDeclarations(prefixMap);
 			return super.visit(node, data);
 		}
-		
 
 	}
 }
