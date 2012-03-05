@@ -123,7 +123,7 @@ public class HTTPClient {
 	private AuthScope authScope;
 
 	private ParserConfig parserConfig = new ParserConfig();
-	
+
 	private TupleQueryResultFormat preferredTQRFormat = TupleQueryResultFormat.BINARY;
 
 	private BooleanQueryResultFormat preferredBQRFormat = BooleanQueryResultFormat.TEXT;
@@ -1336,7 +1336,8 @@ public class HTTPClient {
 	}
 
 	/**
-	 * @param parserConfig The parserConfig to set.
+	 * @param parserConfig
+	 *        The parserConfig to set.
 	 */
 	public void setParserConfig(ParserConfig parserConfig) {
 		this.parserConfig = parserConfig;
@@ -1347,5 +1348,22 @@ public class HTTPClient {
 	 */
 	public ParserConfig getParserConfig() {
 		return parserConfig;
+	}
+
+	/**
+	 * Gets the http connection read timeout in milliseconds.
+	 */
+	public long getConnectionTimeout() {
+		return this.httpClient.getParams().getConnectionManagerTimeout();
+	}
+
+	/**
+	 * Sets the http connection read timeout.
+	 * 
+	 * @param timeout
+	 *        timeout in milliseconds. Zero sets to infinity.
+	 */
+	public void setConnectionTimeout(long timeout) {
+		this.httpClient.getParams().setConnectionManagerTimeout(timeout);
 	}
 }
