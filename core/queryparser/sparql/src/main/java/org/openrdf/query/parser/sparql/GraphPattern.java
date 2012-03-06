@@ -21,6 +21,7 @@ import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
 /**
  * A graph pattern consisting of (required and optional) tuple expressions,
@@ -150,8 +151,7 @@ public class GraphPattern {
 
 			for (int i = 1; i < requiredTEs.size(); i++) {
 				TupleExpr te = requiredTEs.get(i);
-				if ((te instanceof Slice || result instanceof Slice)
-						|| (te instanceof Projection && (result instanceof SPARQLIntersection || result instanceof Projection)))
+				if (containsProjection(te))
 				{
 					result = new SPARQLIntersection(result, te);
 				}
@@ -170,5 +170,26 @@ public class GraphPattern {
 		}
 
 		return result;
+	}
+	
+	private boolean containsProjection(TupleExpr t) {
+		@SuppressWarnings("serial")
+		class VisitException extends Exception {}
+		final boolean[] result = new boolean[1];
+		try {
+			t.visit(new QueryModelVisitorBase<VisitException>() {
+				
+				@Override
+				public void meet(Projection node) throws VisitException {
+					result[0] = true;
+					throw new VisitException();
+				}
+				
+			});
+		} catch (VisitException ex) {
+			// Do nothing. We have thrown this exception on the first successful
+			// meeting of Projection.
+		}
+		return result[0];
 	}
 }
