@@ -2361,15 +2361,23 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			iter = iter2;
 		}
 
-		final HashMap<BindingSet, List<BindingSet>> map = new HashMap<BindingSet, List<BindingSet>>();
+		final HashMap<Binding, Set<BindingSet>> map = new HashMap<Binding, Set<BindingSet>>();
 		Iterator<BindingSet> listIter = list1.iterator();
 		while (listIter.hasNext()) {
 			BindingSet b = listIter.next();
 			BindingSet key = calcKey(b, commonVars);
-			List<BindingSet> list = map.get(key);
-			if (list == null)
-				map.put(key, list = new ArrayList<BindingSet>());
-			list.add(b);
+			for (Binding b1 : key) {
+				Set<BindingSet> set = map.get(b1);
+				if (set == null)
+					map.put(b1, set = new HashSet<BindingSet>());
+				set.add(b);
+			}
+			if (key.size() == 0) {
+				Set<BindingSet> set = map.get(null);
+				if (set == null)
+					map.put(null, set = new HashSet<BindingSet>());
+				set.add(b);
+			}
 		}
 		final Iterator<BindingSet> longListIter = list2.iterator();
 		final CloseableIteration<BindingSet, QueryEvaluationException> longIter = new CloseableIteration<BindingSet, QueryEvaluationException>()
@@ -2423,42 +2431,63 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Iterator<BindingSet> newMergeIter()
 				throws QueryEvaluationException
 			{
+				outer:
 				while (longIter.hasNext()) {
 					final BindingSet current = longIter.next();
 					BindingSet key = calcKey(current, commonVars);
-					List<BindingSet> list = map.get(key);
-					if (list != null) {
-						final Iterator<BindingSet> listIter = list.iterator();
-						return new Iterator<BindingSet>() {
-
-							boolean initialized;
-
-							BindingSet res;
-
-							public boolean hasNext() {
-								if (!initialized) {
-									next();
-									initialized = true;
-								}
-								return res != null;
+					Set<BindingSet> set = new HashSet<BindingSet>();
+					boolean firstIteration = true;
+					for (Binding b : key) {
+						Set<BindingSet> s = map.get(b);
+						if (s == null) {
+							continue outer;
+						}
+						if (firstIteration) {
+							set.addAll(s);
+							firstIteration = false;
+						} else {
+							set.retainAll(s);
+							if (set.size() == 0) {
+								continue outer;
 							}
-
-							public BindingSet next() {
-								BindingSet ret = res;
-								res = null;
-								if (listIter.hasNext()) {
-									QueryBindingSet q = new QueryBindingSet();
-									q.addAll(current);
-									q.addAll(listIter.next());
-									res = q;
-								}
-								return ret;
-							}
-
-							public void remove() {
-							}
-						};
+						}						
 					}
+					if (key.size() == 0) {
+						set = map.get(null);
+						if (set == null) {
+							set = new HashSet<BindingSet>();
+						}
+					}
+					final Iterator<BindingSet> setIter = set.iterator();
+					return new Iterator<BindingSet>() {
+
+						boolean initialized;
+
+						BindingSet res;
+
+						public boolean hasNext() {
+							if (!initialized) {
+								next();
+								initialized = true;
+							}
+							return res != null;
+						}
+
+						public BindingSet next() {
+							BindingSet ret = res;
+							res = null;
+							if (setIter.hasNext()) {
+								QueryBindingSet q = new QueryBindingSet();
+								q.addAll(current);
+								q.addAll(setIter.next());
+								res = q;
+							}
+							return ret;
+						}
+
+						public void remove() {
+						}
+					};
 				}
 				return null;
 			}
@@ -2494,13 +2523,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		};
 	}
-
+	
 	private BindingSet calcKey(BindingSet bindings, Set<String> commonVars) {
 		QueryBindingSet q = new QueryBindingSet();
 		for (String varName : commonVars) {
 			Binding b = bindings.getBinding(varName);
-			assert b != null : "Common variable value is null";
-			q.addBinding(b);
+			if (b != null) {
+				q.addBinding(b);
+			}
 		}
 		return q;
 	}

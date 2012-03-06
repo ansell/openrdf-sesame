@@ -13,6 +13,7 @@
     	:sparql11-subquery-02
     	:sparql11-subquery-03
     	:sparql11-subquery-04
+    	:sparql11-subquery-05
     	:sparql11-count-subquery-01
     ).
 
@@ -36,6 +37,11 @@
          mf:action [ qt:query <sparql11-subquery-04.rq> ; qt:data <data-03.ttl> ] ;
          mf:result <sparql11-subquery-04.srx> .
          
+:sparql11-subquery-05  mf:name  "sparql11-subquery-05" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-subquery-05.rq> ; qt:data <data-04.ttl> ] ;
+         mf:result <sparql11-subquery-05.srx> .
+                  
 :sparql11-count-subquery-01  mf:name  "sparql11-count-subquery-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-count-subquery-01.rq> ; qt:data <data-02.ttl> ] ;
