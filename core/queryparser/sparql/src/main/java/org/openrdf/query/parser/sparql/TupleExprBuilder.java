@@ -572,7 +572,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		if (group != null) {
 			for (ProjectionElem elem : projElemList.getElements()) {
-				if (!elem.hasAggregateOperatorInExpression() && !group.getBindingNames().contains(elem.getTargetName())) {
+				if (!elem.hasAggregateOperatorInExpression()
+						&& !group.getBindingNames().contains(elem.getTargetName()))
+				{
 					throw new VisitorException("variable '" + elem.getTargetName()
 							+ "' in projection not present in GROUP BY.");
 				}
@@ -654,7 +656,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		if (bindingsClause != null) {
 			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
 		}
-		
+
 		// Process construct clause
 		ASTConstruct constructNode = node.getConstruct();
 		if (!constructNode.isWildcard()) {
@@ -675,7 +677,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			}
 		}
 
-		
 		// process limit and offset clauses
 		ASTLimit limitNode = node.getLimit();
 		long limit = -1L;
@@ -901,7 +902,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		if (bindingsClause != null) {
 			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
 		}
-		
+
 		return tupleExpr;
 	}
 
@@ -1237,12 +1238,30 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 	}
 
+	private boolean checkInverse(Node node) {
+		if (node instanceof ASTPathElt) {
+			return ((ASTPathElt)node).isInverse();
+		}
+		else {
+			Node parent = node.jjtGetParent();
+			if (parent != null) {
+				return checkInverse(parent);
+			}
+			else {
+				return false;
+			}
+		}
+	}
+
 	@Override
 	public Object visit(ASTPathSequence pathSeqNode, Object data)
 		throws VisitorException
 	{
 		ValueExpr subject = (ValueExpr)data;
 		Var subjVar = valueExpr2Var(subject);
+
+		// check if we should invert subject and object.
+		boolean invertSequence = checkInverse(pathSeqNode);
 
 		@SuppressWarnings("unchecked")
 		List<ValueExpr> objectList = (List<ValueExpr>)getObjectList(pathSeqNode).jjtAccept(this, null);
@@ -1256,6 +1275,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		Scope scope = pathSequencePattern.getStatementPatternScope();
 		Var contextVar = pathSequencePattern.getContextVar();
 
+		Var startVar = subjVar;
+		
 		for (int i = 0; i < pathLength; i++) {
 			ASTPathElt pathElement = pathElements.get(i);
 
@@ -1284,7 +1305,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 				NegatedPropertySet nps = new NegatedPropertySet();
 				nps.setScope(scope);
-				nps.setSubjectVar(subjVar);
+				nps.setSubjectVar(startVar);
 				nps.setContextVar(contextVar);
 
 				for (Node child : pathElement.jjtGetChildren()) {
@@ -1296,13 +1317,13 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				}
 				else {
 					// not last element in path.
-					Var nextVar = createAnonVar(subjVar.getName() + "-property-set-" + i);
+					Var nextVar = createAnonVar(startVar.getName() + "-property-set-" + i);
 
 					List<ValueExpr> nextVarList = new ArrayList<ValueExpr>();
 					nextVarList.add(nextVar);
 					nps.setObjectList(nextVarList);
 
-					subjVar = nextVar;
+					startVar = nextVar;
 				}
 
 				// convert the NegatedPropertySet to a proper TupleExpr
@@ -1322,7 +1343,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 					for (ValueExpr object : objectList) {
 						Var objVar = valueExpr2Var(object);
-						te = handlePathModifiers(scope, subjVar, te, objVar, contextVar, lowerBound, upperBound);
+						te = handlePathModifiers(scope, startVar, te, objVar, contextVar, lowerBound, upperBound);
 						pathSequencePattern.addRequiredTE(te);
 					}
 				}
@@ -1338,10 +1359,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					// replace all object list occurrences with the intermediate var.
 
 					te = replaceVarOccurrence(te, objectList, nextVar);
-					te = handlePathModifiers(scope, subjVar, te, nextVar, contextVar, lowerBound, upperBound);
+					te = handlePathModifiers(scope, startVar, te, nextVar, contextVar, lowerBound, upperBound);
 					pathSequencePattern.addRequiredTE(te);
 
-					subjVar = nextVar;
+					startVar = nextVar;
 				}
 
 				graphPattern = parentGP;
@@ -1352,46 +1373,70 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				Var predVar = valueExpr2Var(pred);
 
 				TupleExpr te;
+
+
 				if (i == pathLength - 1) {
 					// last element in the path, connect to list of defined objects
 					for (ValueExpr object : objectList) {
 						Var objVar = valueExpr2Var(object);
+						Var endVar = objVar;
 
+						if (invertSequence) { 
+							endVar = subjVar;
+						}
+						
 						if (pathElement.isInverse()) {
-							te = new StatementPattern(scope, objVar, predVar, subjVar, contextVar);
-							te = handlePathModifiers(scope, objVar, te, subjVar, contextVar, lowerBound, upperBound);
-
-							pathSequencePattern.addRequiredTE(te);
+							te = new StatementPattern(scope, endVar, predVar, startVar, contextVar);
+							te = handlePathModifiers(scope, endVar, te, startVar, contextVar, lowerBound, upperBound);
 						}
 						else {
-							te = new StatementPattern(scope, subjVar, predVar, objVar, contextVar);
-							te = handlePathModifiers(scope, subjVar, te, objVar, contextVar, lowerBound, upperBound);
-
-							pathSequencePattern.addRequiredTE(te);
+							te = new StatementPattern(scope, startVar, predVar, endVar, contextVar);
+							te = handlePathModifiers(scope, startVar, te, endVar, contextVar, lowerBound, upperBound);
+							
 						}
+
+
+						pathSequencePattern.addRequiredTE(te);
 					}
 				}
 				else {
 					// not the last element in the path, introduce an anonymous var
 					// to connect.
 					Var nextVar = createAnonVar(predVar.getName() + "-" + i);
-					if (pathElement.isInverse()) {
 
-						te = new StatementPattern(scope, nextVar, predVar, subjVar, contextVar);
+					if (invertSequence && startVar.equals(subjVar)) { // first element in inverted sequence
+						for (ValueExpr object : objectList) {
+							Var objVar = valueExpr2Var(object);
+							startVar = objVar;
 
-						te = handlePathModifiers(scope, nextVar, te, subjVar, contextVar, lowerBound, upperBound);
+							if (pathElement.isInverse()) {
+								Var temp = startVar;
+								startVar = nextVar;
+								nextVar = temp;
+							}
 
-						pathSequencePattern.addRequiredTE(te);
+							te = new StatementPattern(scope, startVar, predVar, nextVar, contextVar);
+							te = handlePathModifiers(scope, startVar, te, nextVar, contextVar, lowerBound,
+									upperBound);
+
+							pathSequencePattern.addRequiredTE(te);
+						}
 					}
 					else {
-						te = new StatementPattern(scope, subjVar, predVar, nextVar, contextVar);
-						te = handlePathModifiers(scope, subjVar, te, nextVar, contextVar, lowerBound, upperBound);
+
+						if (pathElement.isInverse()) {
+							startVar = nextVar;
+							nextVar = subjVar;
+						}
+						
+						te = new StatementPattern(scope, startVar, predVar, nextVar, contextVar);
+						te = handlePathModifiers(scope, startVar, te, nextVar, contextVar, lowerBound, upperBound);
 
 						pathSequencePattern.addRequiredTE(te);
 					}
 
 					// set the subject for the next element in the path.
-					subjVar = nextVar;
+					startVar = (pathElement.isInverse() ? startVar : nextVar);
 				}
 			}
 		}
