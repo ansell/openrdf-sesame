@@ -58,6 +58,7 @@ public abstract class NAryValueOperator extends QueryModelNodeBase implements Va
 			args = new ArrayList<ValueExpr>();
 		}
 		args.add(arg);
+		arg.setParentNode(this);
 	}
 	
 	@Override
