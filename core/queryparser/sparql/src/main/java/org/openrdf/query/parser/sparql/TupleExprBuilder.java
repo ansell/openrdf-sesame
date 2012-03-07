@@ -649,6 +649,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		// Apply result ordering
 		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, null);
 
+		// process bindings clause
+		ASTBindingsClause bindingsClause = node.getBindingsClause();
+		if (bindingsClause != null) {
+			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
+		}
+		
 		// Process construct clause
 		ASTConstruct constructNode = node.getConstruct();
 		if (!constructNode.isWildcard()) {
@@ -669,6 +675,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			}
 		}
 
+		
 		// process limit and offset clauses
 		ASTLimit limitNode = node.getLimit();
 		long limit = -1L;
@@ -889,6 +896,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		TupleExpr tupleExpr = graphPattern.buildTupleExpr();
 		tupleExpr = new Slice(tupleExpr, 0, 1);
 
+		// process bindings clause
+		ASTBindingsClause bindingsClause = node.getBindingsClause();
+		if (bindingsClause != null) {
+			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
+		}
+		
 		return tupleExpr;
 	}
 
