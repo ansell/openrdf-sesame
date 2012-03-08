@@ -1117,23 +1117,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		CloseableIteration<BindingSet, QueryEvaluationException> result;
 
-		BindingSet subSelectBindings;
-		if (bindings instanceof EmptyBindingSet) {
-			subSelectBindings = bindings;
-		}
-		else {
-			// we need to remove any of the parent bindings that are not
-			// bindingnames in the projection,
-			// as bindings for these variables are out-of-scope for the sub-select
-			subSelectBindings = new QueryBindingSet();
-			for (String bindingName : bindings.getBindingNames()) {
-				if (projection.getBindingNames().contains(bindingName)) {
-					((QueryBindingSet)subSelectBindings).addBinding(bindings.getBinding(bindingName));
-				}
-			}
-		}
-
-		result = this.evaluate(projection.getArg(), subSelectBindings);
+		result = this.evaluate(projection.getArg(), bindings);
 		result = new ProjectionIterator(projection, result, bindings);
 		return result;
 	}
