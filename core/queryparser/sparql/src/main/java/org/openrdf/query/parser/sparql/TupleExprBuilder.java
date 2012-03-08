@@ -951,7 +951,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				name = v.getName();
 			}
 			else {
-				throw new VisitorException("alias expected in group condition");
+				// TODO actually add the new variable to the query?
+				Var v = createAnonVar(node.getName() + "_anon");
+				name = v.getName();
 			}
 
 			ExtensionElem elem = new ExtensionElem(ve, name);
