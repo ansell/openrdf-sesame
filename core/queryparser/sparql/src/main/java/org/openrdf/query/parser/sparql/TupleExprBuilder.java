@@ -951,8 +951,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				name = v.getName();
 			}
 			else {
-				// TODO actually add the new variable to the query?
-				Var v = createAnonVar(node.getName() + "_anon");
+				Var v = createAnonVar("_anon_" + node.getName());
 				name = v.getName();
 			}
 
