@@ -15,6 +15,7 @@ import org.openrdf.repository.dataset.DatasetRepository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.rdbms.mysql.MySqlStore;
 
+/* SES-923 test suite disabled temporarily.
 public class MySqlSPARQL11QueryTest extends SPARQLQueryTest {
 
 	public static Test suite()
@@ -56,3 +57,4 @@ public class MySqlSPARQL11QueryTest extends SPARQLQueryTest {
 		return new DatasetRepository(new SailRepository(sail));
 	}
 }
+*/

@@ -16,6 +16,8 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.sail.rdbms.postgresql.PgSqlStore;
 
+/* SES-923 test suite disabled temporarily.
+
 public class PgSqlSPARQL11QueryTest extends SPARQLQueryTest {
 
 	public static Test suite()
@@ -57,3 +59,4 @@ public class PgSqlSPARQL11QueryTest extends SPARQLQueryTest {
 		return new DatasetRepository(new SailRepository(sail));
 	}
 }
+*/
