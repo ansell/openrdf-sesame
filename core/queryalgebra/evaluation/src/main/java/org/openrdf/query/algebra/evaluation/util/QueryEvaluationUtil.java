@@ -139,9 +139,20 @@ public class QueryEvaluationUtil {
 		URI leftDatatype = leftLit.getDatatype();
 		URI rightDatatype = rightLit.getDatatype();
 
+		// for purposes of query evaluation in SPARQL, simple literals and string-typed literals with the same
+		// lexical value are considered equal.
+		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && XMLSchema.STRING.equals(rightDatatype)) {
+			leftDatatype = XMLSchema.STRING;
+		}
+		else if (QueryEvaluationUtil.isSimpleLiteral(rightLit) && XMLSchema.STRING.equals(leftDatatype)) {
+			rightDatatype = XMLSchema.STRING;
+		}
+		
 		Integer compareResult = null;
 
-		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
+		if (QueryEvaluationUtil.isSimpleLiteral(leftLit)
+				&& QueryEvaluationUtil.isSimpleLiteral(rightLit))
+		{
 			compareResult = leftLit.getLabel().compareTo(rightLit.getLabel());
 		}
 		else if (leftDatatype != null && rightDatatype != null) {
@@ -253,13 +264,15 @@ public class QueryEvaluationUtil {
 				if (leftDatatype != null && rightDatatype != null && isSupportedDatatype(leftDatatype)
 						&& isSupportedDatatype(rightDatatype))
 				{
-					// left and right arguments have incompatible but supported datatypes
-					
-					// we need to check that the lexical-to-value mapping for both datatypes succeeds
+					// left and right arguments have incompatible but supported
+					// datatypes
+
+					// we need to check that the lexical-to-value mapping for both
+					// datatypes succeeds
 					if (!XMLDatatypeUtil.isValidValue(leftLit.getLabel(), leftDatatype)) {
 						throw new ValueExprEvaluationException("not a valid datatype value: " + leftLit);
 					}
-					
+
 					if (!XMLDatatypeUtil.isValidValue(rightLit.getLabel(), rightDatatype)) {
 						throw new ValueExprEvaluationException("not a valid datatype value: " + rightLit);
 					}
@@ -294,7 +307,7 @@ public class QueryEvaluationUtil {
 	 * Checks whether the supplied value is a "simple literal". A
 	 * "simple literal" is a literal with no language tag nor datatype.
 	 * 
-	 * @see http://www.w3.org/TR/sparql11-query/#simple_literal 
+	 * @see http://www.w3.org/TR/sparql11-query/#simple_literal
 	 */
 	public static boolean isSimpleLiteral(Value v) {
 		if (v instanceof Literal) {
@@ -308,7 +321,7 @@ public class QueryEvaluationUtil {
 	 * Checks whether the supplied literal is a "simple literal". A
 	 * "simple literal" is a literal with no language tag nor datatype.
 	 * 
-	 * @see http://www.w3.org/TR/sparql11-query/#simple_literal 
+	 * @see http://www.w3.org/TR/sparql11-query/#simple_literal
 	 */
 	public static boolean isSimpleLiteral(Literal l) {
 		return l.getLanguage() == null && l.getDatatype() == null;
