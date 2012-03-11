@@ -352,79 +352,81 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		protected BindingSet getNextElement()
 			throws QueryEvaluationException
 		{
-			while (!currentIter.hasNext()) {
-				createIteration();
-				// stop condition: if the iter is an EmptyIteration
-				if (currentIter instanceof EmptyIteration<?, ?>) {
-					break;
-				}
-			}
-
-			while (currentIter.hasNext()) {
-				BindingSet nextElement = currentIter.next();
-
-				if (!startVarFixed && !endVarFixed && currentVp != null) {
-					Value startValue = currentVp.getStartValue();
-
-					if (startValue != null) {
-						nextElement = new QueryBindingSet(nextElement);
-						((QueryBindingSet)nextElement).addBinding(startVar.getName(), startValue);
+			again: while (true) {
+				while (!currentIter.hasNext()) {
+					createIteration();
+					// stop condition: if the iter is an EmptyIteration
+					if (currentIter instanceof EmptyIteration<?, ?>) {
+						break;
 					}
 				}
 
-				Value v1, v2;
+				while (currentIter.hasNext()) {
+					BindingSet nextElement = currentIter.next();
 
-				if (startVarFixed && endVarFixed && currentLength > 2) {
-					v1 = getVarValue(startVar, startVarFixed, nextElement);
-					v2 = nextElement.getValue("END_" + JOINVAR_PREFIX);
-				}
-				else if (startVarFixed && endVarFixed && currentLength == 2) {
-					v1 = getVarValue(startVar, startVarFixed, nextElement);
-					v2 = nextElement.getValue(JOINVAR_PREFIX + (currentLength - 1));
-				}
-				else {
-					v1 = getVarValue(startVar, startVarFixed, nextElement);
-					v2 = getVarValue(endVar, endVarFixed, nextElement);
-				}
+					if (!startVarFixed && !endVarFixed && currentVp != null) {
+						Value startValue = currentVp.getStartValue();
 
-				if (!isCyclicPath(v1, v2)) {
+						if (startValue != null) {
+							nextElement = new QueryBindingSet(nextElement);
+							((QueryBindingSet)nextElement).addBinding(startVar.getName(), startValue);
+						}
+					}
 
-					ValuePair vp = new ValuePair(v1, v2);
-					if (startVarFixed && endVarFixed) {
-						Value endValue = getVarValue(endVar, endVarFixed, nextElement);
-						if (endValue.equals(v2)) {
+					Value v1, v2;
+
+					if (startVarFixed && endVarFixed && currentLength > 2) {
+						v1 = getVarValue(startVar, startVarFixed, nextElement);
+						v2 = nextElement.getValue("END_" + JOINVAR_PREFIX);
+					}
+					else if (startVarFixed && endVarFixed && currentLength == 2) {
+						v1 = getVarValue(startVar, startVarFixed, nextElement);
+						v2 = nextElement.getValue(JOINVAR_PREFIX + (currentLength - 1));
+					}
+					else {
+						v1 = getVarValue(startVar, startVarFixed, nextElement);
+						v2 = getVarValue(endVar, endVarFixed, nextElement);
+					}
+
+					if (!isCyclicPath(v1, v2)) {
+
+						ValuePair vp = new ValuePair(v1, v2);
+						if (startVarFixed && endVarFixed) {
+							Value endValue = getVarValue(endVar, endVarFixed, nextElement);
+							if (endValue.equals(v2)) {
+								reportedValues.add(vp);
+								if (!v1.equals(v2)) {
+									valueQueue.add(vp);
+								}
+								return nextElement;
+							}
+							else {
+								if (!v1.equals(v2)) {
+									valueQueue.add(vp);
+								}
+								continue again;
+							}
+						}
+						else {
 							reportedValues.add(vp);
 							if (!v1.equals(v2)) {
 								valueQueue.add(vp);
 							}
+
 							return nextElement;
-						}
-						else {
-							if (!v1.equals(v2)) {
-								valueQueue.add(vp);
-							}
-							return getNextElement();
 						}
 					}
 					else {
-						reportedValues.add(vp);
-						if (!v1.equals(v2)) {
-							valueQueue.add(vp);
-						}
-
-						return nextElement;
+						continue again;
 					}
 				}
-				else {
-					return getNextElement();
-				}
-			}
 
-			// if we're done, throw away the cached list of values to avoid hogging
-			// resources
-			reportedValues = null;
-			valueQueue = null;
-			return null;
+				// if we're done, throw away the cached list of values to avoid
+				// hogging resources
+				reportedValues = null;
+				valueQueue = null;
+				return null;
+			}
 		}
 
 		private Value getVarValue(Var var, boolean fixedValue, BindingSet bindingSet) {
@@ -613,7 +615,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		*/
 	}
 
-	
 	private class VarReplacer extends QueryModelVisitorBase<QueryEvaluationException> {
 
 		private Var toBeReplaced;
@@ -1626,7 +1627,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				// simple literal
 				return XMLSchema.STRING;
 			}
-			
+
 		}
 
 		throw new ValueExprEvaluationException();
@@ -2415,8 +2416,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Iterator<BindingSet> newMergeIter()
 				throws QueryEvaluationException
 			{
-				outer:
-				while (longIter.hasNext()) {
+				outer: while (longIter.hasNext()) {
 					final BindingSet current = longIter.next();
 					BindingSet key = calcKey(current, commonVars);
 					Set<BindingSet> set = new HashSet<BindingSet>();
@@ -2429,12 +2429,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 						if (firstIteration) {
 							set.addAll(s);
 							firstIteration = false;
-						} else {
+						}
+						else {
 							set.retainAll(s);
 							if (set.size() == 0) {
 								continue outer;
 							}
-						}						
+						}
 					}
 					if (key.size() == 0) {
 						set = map.get(null);
@@ -2507,7 +2508,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		};
 	}
-	
+
 	private BindingSet calcKey(BindingSet bindings, Set<String> commonVars) {
 		QueryBindingSet q = new QueryBindingSet();
 		for (String varName : commonVars) {
