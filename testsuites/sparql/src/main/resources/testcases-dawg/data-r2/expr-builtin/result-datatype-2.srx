@@ -19,6 +19,11 @@
     </result>
     <result>
       <binding name="x">
+        <uri>http://example/x3</uri>
+      </binding>
+    </result>
+    <result>
+      <binding name="x">
         <uri>http://example/x4</uri>
       </binding>
     </result>
