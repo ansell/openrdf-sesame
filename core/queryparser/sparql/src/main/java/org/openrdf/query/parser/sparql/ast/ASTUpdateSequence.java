@@ -6,6 +6,8 @@ import java.util.List;
 
 public class ASTUpdateSequence extends SimpleNode {
 
+	private String source;
+
 	public ASTUpdateSequence(int id) {
 		super(id);
 	}
@@ -21,6 +23,14 @@ public class ASTUpdateSequence extends SimpleNode {
 		return visitor.visit(this, data);
 	}
 
+	public void setSourceString(String source) {
+		this.source = source;
+	}
+	
+	public String getSourceString() {
+		return source;
+	}
+	
 	public List<ASTUpdateContainer> getUpdateContainers() {
 		return super.jjtGetChildren(ASTUpdateContainer.class);
 	}

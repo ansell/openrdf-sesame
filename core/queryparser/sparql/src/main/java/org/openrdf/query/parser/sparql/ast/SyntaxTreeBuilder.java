@@ -45,7 +45,9 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                 throws TokenMgrError, ParseException
         {
                 SyntaxTreeBuilder stb = new SyntaxTreeBuilder( new StringReader(sequence) );
-                return stb.UpdateSequence();
+                ASTUpdateSequence seq = stb.UpdateSequence();
+                seq.setSourceString(sequence);
+                return seq;
         }
 
         /**
@@ -7629,27 +7631,6 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     finally { jj_save(7, xla); }
   }
 
-  private boolean jj_3R_95() {
-    if (jj_scan_token(DECIMAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_94() {
-    if (jj_scan_token(INTEGER)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_78() {
-    if (jj_3R_86()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_37() {
-    if (jj_scan_token(DELETE)) return true;
-    if (jj_scan_token(WHERE)) return true;
-    return false;
-  }
-
   private boolean jj_3R_36() {
     if (jj_scan_token(DELETE)) return true;
     if (jj_scan_token(DATA)) return true;
@@ -8197,6 +8178,27 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
 
   private boolean jj_3R_96() {
     if (jj_scan_token(DOUBLE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_95() {
+    if (jj_scan_token(DECIMAL)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_94() {
+    if (jj_scan_token(INTEGER)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_78() {
+    if (jj_3R_86()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_37() {
+    if (jj_scan_token(DELETE)) return true;
+    if (jj_scan_token(WHERE)) return true;
     return false;
   }
 

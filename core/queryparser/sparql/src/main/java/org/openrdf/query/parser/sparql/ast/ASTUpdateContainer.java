@@ -2,6 +2,8 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package org.openrdf.query.parser.sparql.ast;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 public class ASTUpdateContainer extends ASTOperationContainer {
 
 	public ASTUpdateContainer(int id) {
@@ -25,6 +27,16 @@ public class ASTUpdateContainer extends ASTOperationContainer {
 
 	public ASTBaseDecl getBaseDecl() {
 		return super.jjtGetChild(ASTBaseDecl.class);
+	}
+
+	@Override
+	public void setSourceString(String source) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public String getSourceString() {
+		return ((ASTUpdateSequence)this.jjtGetParent()).getSourceString();
 	}
 }
 /* JavaCC - OriginalChecksum=fc3044232a8f28a530abb0172b429242 (do not edit this line) */
