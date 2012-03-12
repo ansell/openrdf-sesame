@@ -15,6 +15,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.Lang;
@@ -66,6 +67,7 @@ public class URIExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperat
 	{
 		SqlCase sqlCase = new SqlCase();
 		sqlCase.when(isNotNull(type(node.getArg())), type(node.getArg()));
+		sqlCase.when(isNotNull(lang(node.getArg())), str(RDF.LANGSTRING.stringValue()));
 		sqlCase.when(and(isNull(lang(node.getArg())), isNotNull(label(node.getArg()))),
 				str(XMLSchema.STRING.stringValue()));
 		result = sqlCase;
