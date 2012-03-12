@@ -68,7 +68,9 @@ public class SyntaxTreeBuilder {
 		throws TokenMgrError, ParseException
 	{
 		SyntaxTreeBuilder stb = new SyntaxTreeBuilder( new StringReader(sequence) );
-		return stb.UpdateSequence();
+		ASTUpdateSequence seq = stb.UpdateSequence();
+		seq.setSourceString(sequence);
+		return seq;
 	}
 	
 	/**

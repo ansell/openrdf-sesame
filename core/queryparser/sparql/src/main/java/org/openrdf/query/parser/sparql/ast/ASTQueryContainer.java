@@ -4,6 +4,8 @@ package org.openrdf.query.parser.sparql.ast;
 
 public class ASTQueryContainer extends ASTOperationContainer {
 
+	private String sourceString;
+	
 	public ASTQueryContainer(int id) {
 		super(id);
 	}
@@ -25,6 +27,17 @@ public class ASTQueryContainer extends ASTOperationContainer {
 
 	public ASTQuery getQuery() {
 		return super.jjtGetChild(ASTQuery.class);
+	}
+
+	@Override
+	public void setSourceString(String source) {
+		sourceString = source;
+		
+	}
+
+	@Override
+	public String getSourceString() {
+		return sourceString;
 	}
 
 }
