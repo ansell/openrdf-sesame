@@ -84,8 +84,7 @@ public class ValueComparator implements Comparator<Value> {
 		// Additional constraint for ORDER BY: "A plain literal is lower
 		// than an RDF literal with type xsd:string of the same lexical
 		// form."
-
-		if (!QueryEvaluationUtil.isSimpleLiteral(leftLit) || !QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
+		if (!(QueryEvaluationUtil.isPlainLiteral(leftLit) || QueryEvaluationUtil.isPlainLiteral(rightLit))) {
 			try {
 				boolean isSmaller = QueryEvaluationUtil.compareLiterals(leftLit, rightLit, CompareOp.LT);
 
