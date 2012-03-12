@@ -139,44 +139,45 @@ public class QueryEvaluationUtil {
 		URI leftDatatype = leftLit.getDatatype();
 		URI rightDatatype = rightLit.getDatatype();
 
-		// for purposes of query evaluation in SPARQL, simple literals and string-typed literals with the same
+		// for purposes of query evaluation in SPARQL, simple literals and
+		// string-typed literals with the same
 		// lexical value are considered equal.
+		URI commonDatatype = null;
 		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && XMLSchema.STRING.equals(rightDatatype)) {
-			leftDatatype = XMLSchema.STRING;
+			commonDatatype = XMLSchema.STRING;
 		}
 		else if (QueryEvaluationUtil.isSimpleLiteral(rightLit) && XMLSchema.STRING.equals(leftDatatype)) {
-			rightDatatype = XMLSchema.STRING;
+			commonDatatype = XMLSchema.STRING;
 		}
-		
+
 		Integer compareResult = null;
 
-		if (QueryEvaluationUtil.isSimpleLiteral(leftLit)
-				&& QueryEvaluationUtil.isSimpleLiteral(rightLit))
-		{
+		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
 			compareResult = leftLit.getLabel().compareTo(rightLit.getLabel());
 		}
-		else if (leftDatatype != null && rightDatatype != null) {
-			URI commonDatatype = null;
-
-			if (leftDatatype.equals(rightDatatype)) {
-				commonDatatype = leftDatatype;
-			}
-			else if (XMLDatatypeUtil.isNumericDatatype(leftDatatype)
-					&& XMLDatatypeUtil.isNumericDatatype(rightDatatype))
-			{
-				// left and right arguments have different datatypes, try to find a
-				// more general, shared datatype
-				if (leftDatatype.equals(XMLSchema.DOUBLE) || rightDatatype.equals(XMLSchema.DOUBLE)) {
-					commonDatatype = XMLSchema.DOUBLE;
+		else if ((leftDatatype != null && rightDatatype != null) || commonDatatype != null) {
+			if (commonDatatype == null) {
+				if (leftDatatype.equals(rightDatatype)) {
+					commonDatatype = leftDatatype;
 				}
-				else if (leftDatatype.equals(XMLSchema.FLOAT) || rightDatatype.equals(XMLSchema.FLOAT)) {
-					commonDatatype = XMLSchema.FLOAT;
-				}
-				else if (leftDatatype.equals(XMLSchema.DECIMAL) || rightDatatype.equals(XMLSchema.DECIMAL)) {
-					commonDatatype = XMLSchema.DECIMAL;
-				}
-				else {
-					commonDatatype = XMLSchema.INTEGER;
+				else if (XMLDatatypeUtil.isNumericDatatype(leftDatatype)
+						&& XMLDatatypeUtil.isNumericDatatype(rightDatatype))
+				{
+					// left and right arguments have different datatypes, try to find
+					// a
+					// more general, shared datatype
+					if (leftDatatype.equals(XMLSchema.DOUBLE) || rightDatatype.equals(XMLSchema.DOUBLE)) {
+						commonDatatype = XMLSchema.DOUBLE;
+					}
+					else if (leftDatatype.equals(XMLSchema.FLOAT) || rightDatatype.equals(XMLSchema.FLOAT)) {
+						commonDatatype = XMLSchema.FLOAT;
+					}
+					else if (leftDatatype.equals(XMLSchema.DECIMAL) || rightDatatype.equals(XMLSchema.DECIMAL)) {
+						commonDatatype = XMLSchema.DECIMAL;
+					}
+					else {
+						commonDatatype = XMLSchema.INTEGER;
+					}
 				}
 			}
 
@@ -301,6 +302,20 @@ public class QueryEvaluationUtil {
 					throw new IllegalArgumentException("Unknown operator: " + operator);
 			}
 		}
+	}
+
+	/**
+	 * Checks whether the supplied value is a "plain literal". A "plain literal"
+	 * is a literal with no datatype and optionally a language tag.
+	 * 
+	 * @see http://www.w3.org/TR/REC-rdf-concepts/#dfn-plain-literal
+	 */
+	public static boolean isPlainLiteral(Value v) {
+		if (v instanceof Literal) {
+			Literal l = (Literal)v;
+			return (l.getDatatype() == null);
+		}
+		return false;
 	}
 
 	/**
