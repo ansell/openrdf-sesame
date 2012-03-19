@@ -952,7 +952,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			name = v.getName();
 		}
 		else {
-			if (!(ve instanceof Var)) {
+			if (ve instanceof Var) {
+				name = ((Var)ve).getName();
+			}
+			else {
 				aliased = true;
 				Var v = createAnonVar("_anon_" + node.getName());
 				name = v.getName();
