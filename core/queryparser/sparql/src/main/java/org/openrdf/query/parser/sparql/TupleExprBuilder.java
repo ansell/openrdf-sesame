@@ -944,19 +944,22 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		String name = null;
 		ValueExpr ve = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
-		if (ve instanceof Var) {
-			name = ((Var)ve).getName();
+
+		boolean aliased = false;
+		if (node.jjtGetNumChildren() > 1) {
+			aliased = true;
+			Var v = (Var)node.jjtGetChild(1).jjtAccept(this, data);
+			name = v.getName();
 		}
 		else {
-			if (node.jjtGetNumChildren() > 1) {
-				Var v = (Var)node.jjtGetChild(1).jjtAccept(this, data);
-				name = v.getName();
-			}
-			else {
+			if (!(ve instanceof Var)) {
+				aliased = true;
 				Var v = createAnonVar("_anon_" + node.getName());
 				name = v.getName();
 			}
+		}
 
+		if (aliased) {
 			ExtensionElem elem = new ExtensionElem(ve, name);
 			extension.addElement(elem);
 		}
@@ -1279,7 +1282,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		Var contextVar = pathSequencePattern.getContextVar();
 
 		Var startVar = subjVar;
-		
+
 		for (int i = 0; i < pathLength; i++) {
 			ASTPathElt pathElement = pathElements.get(i);
 
@@ -1377,17 +1380,16 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 				TupleExpr te;
 
-
 				if (i == pathLength - 1) {
 					// last element in the path, connect to list of defined objects
 					for (ValueExpr object : objectList) {
 						Var objVar = valueExpr2Var(object);
 						Var endVar = objVar;
 
-						if (invertSequence) { 
+						if (invertSequence) {
 							endVar = subjVar;
 						}
-						
+
 						if (pathElement.isInverse()) {
 							te = new StatementPattern(scope, endVar, predVar, startVar, contextVar);
 							te = handlePathModifiers(scope, endVar, te, startVar, contextVar, lowerBound, upperBound);
@@ -1395,9 +1397,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						else {
 							te = new StatementPattern(scope, startVar, predVar, endVar, contextVar);
 							te = handlePathModifiers(scope, startVar, te, endVar, contextVar, lowerBound, upperBound);
-							
-						}
 
+						}
 
 						pathSequencePattern.addRequiredTE(te);
 					}
@@ -1407,7 +1408,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					// to connect.
 					Var nextVar = createAnonVar(predVar.getName() + "-" + i);
 
-					if (invertSequence && startVar.equals(subjVar)) { // first element in inverted sequence
+					if (invertSequence && startVar.equals(subjVar)) { // first
+																						// element in
+																						// inverted
+																						// sequence
 						for (ValueExpr object : objectList) {
 							Var objVar = valueExpr2Var(object);
 							startVar = objVar;
@@ -1431,7 +1435,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 							startVar = nextVar;
 							nextVar = subjVar;
 						}
-						
+
 						te = new StatementPattern(scope, startVar, predVar, nextVar, contextVar);
 						te = handlePathModifiers(scope, startVar, te, nextVar, contextVar, lowerBound, upperBound);
 
