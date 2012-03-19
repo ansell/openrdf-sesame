@@ -334,6 +334,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		// Apply projection
 		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
 
+		/*
 		if (node.isSubSelect()) {
 			// we're processing a sub-select. To avoid variable scoping problems,
 			// alpha-convert all non-projected variables in the sub-select.
@@ -358,6 +359,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				}
 			}
 		}
+		*/
 
 		// Process limit and offset clauses
 		ASTLimit limitNode = node.getLimit();
