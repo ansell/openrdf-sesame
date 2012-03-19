@@ -450,7 +450,8 @@ public abstract class SPARQLUpdateTest {
 	public void testConsecutiveUpdatesInSameTransaction()
 		throws Exception
 	{
-		// this tests if consecutive updates in the same transaction behave correctly. See issue SES-930
+		// this tests if consecutive updates in the same transaction behave
+		// correctly. See issue SES-930
 		logger.debug("executing test testConsecutiveUpdatesInSameTransaction");
 
 		StringBuilder update1 = new StringBuilder();
@@ -476,13 +477,13 @@ public abstract class SPARQLUpdateTest {
 		update2.append("INSERT { ?x rdfs:label ?y } WHERE {?x foaf:name ?y }");
 
 		operation = con.prepareUpdate(QueryLanguage.SPARQL, update2.toString());
-		
+
 		operation.execute();
 
 		// update should not have resulted in any inserts: where clause is empty.
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-		
+
 		con.setAutoCommit(autoCommit);
 
 	}
@@ -1179,6 +1180,29 @@ public abstract class SPARQLUpdateTest {
 	}
 
 	@Test
+	public void testClearDefault()
+		throws Exception
+	{
+		logger.debug("executing testClearDefault");
+
+		String update = "CLEAR DEFAULT";
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
+
+		// Verify statements exist in the named graphs.
+		assertTrue(con.hasStatement(null, null, null, false, graph1));
+		assertTrue(con.hasStatement(null, null, null, false, graph2));
+		// Verify statements exist in the default graph.
+		assertTrue(con.hasStatement(null, null, null, false, new Resource[] { null }));
+
+		operation.execute();
+		assertTrue(con.hasStatement(null, null, null, false, graph1));
+		assertTrue(con.hasStatement(null, null, null, false, graph2));
+		// Verify that no statements remain in the 'default' graph.
+		assertFalse(con.hasStatement(null, null, null, false, new Resource[] { null }));
+	}
+
+	@Test
 	public void testClearGraph()
 		throws Exception
 	{
@@ -1222,6 +1246,30 @@ public abstract class SPARQLUpdateTest {
 
 		operation.execute();
 		assertFalse(con.hasStatement(null, null, null, false));
+
+	}
+
+	@Test
+	public void testDropDefault()
+		throws Exception
+	{
+		logger.debug("executing testDropDefault");
+
+		String update = "DROP DEFAULT";
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update);
+
+		// Verify statements exist in the named graphs.
+		assertTrue(con.hasStatement(null, null, null, false, graph1));
+		assertTrue(con.hasStatement(null, null, null, false, graph2));
+		// Verify statements exist in the default graph.
+		assertTrue(con.hasStatement(null, null, null, false, new Resource[] { null }));
+
+		operation.execute();
+		assertTrue(con.hasStatement(null, null, null, false, graph1));
+		assertTrue(con.hasStatement(null, null, null, false, graph2));
+		// Verify that no statements remain in the 'default' graph.
+		assertFalse(con.hasStatement(null, null, null, false, new Resource[] { null }));
 
 	}
 
