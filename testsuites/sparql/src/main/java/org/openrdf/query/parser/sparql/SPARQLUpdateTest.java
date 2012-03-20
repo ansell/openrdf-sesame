@@ -148,6 +148,29 @@ public abstract class SPARQLUpdateTest {
 		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 	}
+	
+
+	@Test
+	public void testInsertWhereWithBindings2()
+		throws Exception
+	{
+		logger.debug("executing test testInsertWhereWithBindings2");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT {?x rdfs:label ?z . } WHERE {?x foaf:name ?y }");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+		operation.setBinding("z", f.createLiteral("Bobbie"));
+		operation.setBinding("x", bob);
+
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bobbie"), true));
+		assertFalse(con.hasStatement(alice, RDFS.LABEL, null, true));
+
+		operation.execute();
+
+		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bobbie"), true));
+		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+	}
 
 	@Test
 	public void testInsertEmptyWhere()
@@ -387,8 +410,33 @@ public abstract class SPARQLUpdateTest {
 
 		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-
 	}
+	
+	@Test
+	public void testDeleteInsertWhereWithBindings2()
+		throws Exception
+	{
+		logger.debug("executing test testDeleteInsertWhereWithBindings2");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("DELETE { ?x foaf:name ?y } INSERT {?x rdfs:label ?z . } WHERE {?x foaf:name ?y }");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.setBinding("z", f.createLiteral("person"));
+		
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+
+		operation.execute();
+
+		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("person"), true));
+		assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("person"), true));
+
+		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+	}
+	
 	@Test
 	public void testDeleteInsertWhereLoopingBehavior()
 		throws Exception
