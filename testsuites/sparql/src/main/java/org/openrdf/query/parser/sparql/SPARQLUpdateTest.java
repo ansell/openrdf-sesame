@@ -365,6 +365,31 @@ public abstract class SPARQLUpdateTest {
 	}
 
 	@Test
+	public void testDeleteInsertWhereWithBindings()
+		throws Exception
+	{
+		logger.debug("executing test testDeleteInsertWhereWithBindings");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("DELETE { ?x foaf:name ?y } INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		operation.setBinding("x", bob);
+		
+		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+
+		operation.execute();
+
+		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+
+		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+	}
+	@Test
 	public void testDeleteInsertWhereLoopingBehavior()
 		throws Exception
 	{
