@@ -56,6 +56,7 @@ public class ContextAwareFactory implements RepositoryFactory {
 			repo.setIncludeInferred(config.isIncludeInferred());
 			repo.setMaxQueryTime(config.getMaxQueryTime());
 			repo.setQueryLanguage(config.getQueryLanguage());
+			repo.setBaseURI(config.getBaseURI());
 			repo.setReadContexts(config.getReadContexts());
 			repo.setAddContexts(config.getAddContexts());
 			repo.setRemoveContexts(config.getRemoveContexts());
