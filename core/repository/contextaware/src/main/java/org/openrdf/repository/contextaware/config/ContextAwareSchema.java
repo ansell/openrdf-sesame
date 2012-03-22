@@ -35,14 +35,8 @@ public class ContextAwareSchema {
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#readContext</tt> */
 	public final static URI READ_CONTEXT;
 
-	/** <tt>http://www.openrdf.org/config/repository/contextaware#addContext</tt> */
-	public final static URI ADD_CONTEXT;
-
-	/** <tt>http://www.openrdf.org/config/repository/contextaware#removeContext</tt> */
-	public final static URI REMOVE_CONTEXT;
-
-	/** <tt>http://www.openrdf.org/config/repository/contextaware#archiveContext</tt> */
-	public final static URI ARCHIVE_CONTEXT;
+	/** <tt>http://www.openrdf.org/config/repository/contextaware#updateContext</tt> */
+	public final static URI UPDATE_CONTEXT;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -50,9 +44,7 @@ public class ContextAwareSchema {
 		QUERY_LANGUAGE = factory.createURI(NAMESPACE, "ql");
 		BASE_URI = factory.createURI(NAMESPACE, "base");
 		READ_CONTEXT = factory.createURI(NAMESPACE, "readContext");
-		ADD_CONTEXT = factory.createURI(NAMESPACE, "addContext");
-		REMOVE_CONTEXT = factory.createURI(NAMESPACE, "removeContext");
-		ARCHIVE_CONTEXT = factory.createURI(NAMESPACE, "archiveContext");
+		UPDATE_CONTEXT = factory.createURI(NAMESPACE, "updateContext");
 		MAX_QUERY_TIME = factory.createURI(NAMESPACE, "maxQueryTime");
 	}
 }

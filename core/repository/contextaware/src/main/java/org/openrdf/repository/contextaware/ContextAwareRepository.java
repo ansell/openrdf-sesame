@@ -30,11 +30,7 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	private URI[] readContexts = ALL_CONTEXTS;
 
-	private URI[] addContexts = ALL_CONTEXTS;
-
-	private URI[] removeContexts = ALL_CONTEXTS;
-
-	private URI[] archiveContexts = ALL_CONTEXTS;
+	private URI updateContext = null;
 
 	public ContextAwareRepository() {
 		super();
@@ -53,17 +49,10 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @see ContextAwareConnection#getAddContexts()
+	 * @see ContextAwareConnection#getUpdateContext()
 	 */
-	public URI[] getAddContexts() {
-		return addContexts;
-	}
-
-	/**
-	 * @see ContextAwareConnection#getArchiveContexts()
-	 */
-	public URI[] getArchiveContexts() {
-		return archiveContexts;
+	public URI getUpdateContext() {
+		return updateContext;
 	}
 
 	/**
@@ -89,13 +78,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @see ContextAwareConnection#getRemoveContexts()
-	 */
-	public URI[] getRemoveContexts() {
-		return removeContexts;
-	}
-
-	/**
 	 * @see ContextAwareConnection#isIncludeInferred()
 	 */
 	public boolean isIncludeInferred() {
@@ -103,17 +85,10 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @see ContextAwareConnection#setAddContexts(URI[])
+	 * @see ContextAwareConnection#setUpdateContext(URI)
 	 */
-	public void setAddContexts(URI... addContexts) {
-		this.addContexts = addContexts;
-	}
-
-	/**
-	 * @see ContextAwareConnection#setArchiveContexts(URI[])
-	 */
-	public void setArchiveContexts(URI... archiveContexts) {
-		this.archiveContexts = archiveContexts;
+	public void setUpdateContext(URI updateContext) {
+		this.updateContext = updateContext;
 	}
 
 	/**
@@ -145,13 +120,6 @@ public class ContextAwareRepository extends RepositoryWrapper {
 		this.readContexts = readContexts;
 	}
 
-	/**
-	 * @see ContextAwareConnection#setRemoveContexts(URI[])
-	 */
-	public void setRemoveContexts(URI... removeContexts) {
-		this.removeContexts = removeContexts;
-	}
-
 	@Override
 	public ContextAwareConnection getConnection()
 		throws RepositoryException
@@ -162,9 +130,7 @@ public class ContextAwareRepository extends RepositoryWrapper {
 		con.setQueryLanguage(getQueryLanguage());
 		con.setBaseURI(getBaseURI());
 		con.setReadContexts(getReadContexts());
-		con.setAddContexts(getAddContexts());
-		con.setRemoveContexts(getRemoveContexts());
-		con.setArchiveContexts(getArchiveContexts());
+		con.setUpdateContext(getUpdateContext());
 		return con;
 	}
 
