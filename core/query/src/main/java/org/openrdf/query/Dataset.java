@@ -38,7 +38,7 @@ public interface Dataset {
 
 	/**
 	 * Gets the default update graph URI of this dataset. An null value indicates
-	 * the null context should be used if not otherwise specified in the
+	 * the default graph of the store should be used if nothing specified in the
 	 * operation.
 	 */
 	public URI getDefaultUpdateGraph();
