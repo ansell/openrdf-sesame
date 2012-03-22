@@ -7,6 +7,7 @@ package org.openrdf.repository.contextaware.config;
 
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ADD_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ARCHIVE_CONTEXT;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.BASE_URI;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.INCLUDE_INFERRED;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.MAX_QUERY_TIME;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.QUERY_LANGUAGE;
@@ -40,6 +41,8 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	private int maxQueryTime = 0;
 
 	private QueryLanguage queryLanguage = QueryLanguage.SPARQL;
+
+	private String baseURI;
 
 	private URI[] readContexts = ALL_CONTEXTS;
 
@@ -80,6 +83,13 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	 */
 	public QueryLanguage getQueryLanguage() {
 		return queryLanguage;
+	}
+
+	/**
+	 * @return Returns the default baseURI.
+	 */
+	public String getBaseURI() {
+		return baseURI;
 	}
 
 	/**
@@ -132,6 +142,13 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	}
 
 	/**
+	 * @param baseURI The default baseURI to set.
+	 */
+	public void setBaseURI(String baseURI) {
+		this.baseURI = baseURI;
+	}
+
+	/**
 	 * @see ContextAwareConnection#setReadContexts(URI[])
 	 */
 	public void setReadContexts(URI... readContexts) {
@@ -160,6 +177,9 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 		}
 		if (queryLanguage != null) {
 			graph.add(repImplNode, QUERY_LANGUAGE, vf.createLiteral(queryLanguage.getName()));
+		}
+		if (baseURI != null) {
+			graph.add(repImplNode, BASE_URI, vf.createURI(baseURI));
 		}
 		for (URI uri : readContexts) {
 			graph.add(repImplNode, READ_CONTEXT, uri);
@@ -195,6 +215,10 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 			lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, QUERY_LANGUAGE);
 			if (lit != null) {
 				setQueryLanguage(QueryLanguage.valueOf(lit.getLabel()));
+			}
+			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, BASE_URI);
+			if (uri != null) {
+				setBaseURI(uri.stringValue());
 			}
 
 			Set<Value> objects = GraphUtil.getObjects(graph, implNode, READ_CONTEXT);

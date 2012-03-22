@@ -29,6 +29,9 @@ public class ContextAwareSchema {
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#queryLanguage</tt> */
 	public final static URI QUERY_LANGUAGE;
 
+	/** <tt>http://www.openrdf.org/config/repository/contextaware#base</tt> */
+	public final static URI BASE_URI;
+
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#readContext</tt> */
 	public final static URI READ_CONTEXT;
 
@@ -45,6 +48,7 @@ public class ContextAwareSchema {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		INCLUDE_INFERRED = factory.createURI(NAMESPACE, "includeInferred");
 		QUERY_LANGUAGE = factory.createURI(NAMESPACE, "ql");
+		BASE_URI = factory.createURI(NAMESPACE, "base");
 		READ_CONTEXT = factory.createURI(NAMESPACE, "readContext");
 		ADD_CONTEXT = factory.createURI(NAMESPACE, "addContext");
 		REMOVE_CONTEXT = factory.createURI(NAMESPACE, "removeContext");

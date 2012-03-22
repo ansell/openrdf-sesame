@@ -26,6 +26,8 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	private QueryLanguage ql = QueryLanguage.SPARQL;
 
+	private String baseURI;
+
 	private URI[] readContexts = ALL_CONTEXTS;
 
 	private URI[] addContexts = ALL_CONTEXTS;
@@ -69,6 +71,14 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	 */
 	public QueryLanguage getQueryLanguage() {
 		return ql;
+	}
+
+	
+	/**
+	 * @return Returns the default baseURI.
+	 */
+	public String getBaseURI() {
+		return baseURI;
 	}
 
 	/**
@@ -120,6 +130,14 @@ public class ContextAwareRepository extends RepositoryWrapper {
 		this.ql = ql;
 	}
 
+	
+	/**
+	 * @param baseURI The default baseURI to set.
+	 */
+	public void setBaseURI(String baseURI) {
+		this.baseURI = baseURI;
+	}
+
 	/**
 	 * @see ContextAwareConnection#setReadContexts(URI[])
 	 */
@@ -142,6 +160,7 @@ public class ContextAwareRepository extends RepositoryWrapper {
 		con.setIncludeInferred(isIncludeInferred());
 		con.setMaxQueryTime(getMaxQueryTime());
 		con.setQueryLanguage(getQueryLanguage());
+		con.setBaseURI(getBaseURI());
 		con.setReadContexts(getReadContexts());
 		con.setAddContexts(getAddContexts());
 		con.setRemoveContexts(getRemoveContexts());
