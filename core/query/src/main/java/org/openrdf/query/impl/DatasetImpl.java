@@ -21,6 +21,8 @@ public class DatasetImpl implements Dataset {
 
 	protected Set<URI> namedGraphs = new LinkedHashSet<URI>();
 
+	protected URI defaultUpdateGraph;
+
 	public DatasetImpl() {
 	}
 
@@ -67,6 +69,22 @@ public class DatasetImpl implements Dataset {
 	 */
 	public boolean removeNamedGraph(URI graphURI) {
 		return namedGraphs.remove(graphURI);
+	}
+
+	
+	/**
+	 * @return Returns the default update graph.
+	 */
+	public URI getDefaultUpdateGraph() {
+		return defaultUpdateGraph;
+	}
+
+	
+	/**
+	 * @param defaultUpdateGraph The default update graph to used.
+	 */
+	public void setDefaultUpdateGraph(URI defaultUpdateGraph) {
+		this.defaultUpdateGraph = defaultUpdateGraph;
 	}
 
 	/**
