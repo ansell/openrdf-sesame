@@ -10,15 +10,17 @@ import java.util.Set;
 import org.openrdf.model.URI;
 
 /**
- * Represents a dataset against which queries can be evaluated. A dataset
- * consists of a default graph, which is the <a
+ * Represents a dataset against which operations can be evaluated. A dataset
+ * consists of a default graph for read and using operations, which is the <a
  * href="http://www.w3.org/TR/rdf-mt/#defmerge">RDF merge</a> of one or more
- * graphs, and a set of named graphs. See <a
+ * graphs, a set of named graphs, and a single update graph for INSERT and
+ * DELETE. See <a
  * href="http://www.w3.org/TR/rdf-sparql-query/#rdfDataset">SPARQL Query
  * Language for RDF</a> for more info.
  * 
  * @author Simon Schenk
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public interface Dataset {
 
@@ -33,4 +35,11 @@ public interface Dataset {
 	 * there are no named graphs in this dataset.
 	 */
 	public Set<URI> getNamedGraphs();
+
+	/**
+	 * Gets the default update graph URI of this dataset. An null value indicates
+	 * the null context should be used if not otherwise specified in the
+	 * operation.
+	 */
+	public URI getDefaultUpdateGraph();
 }
