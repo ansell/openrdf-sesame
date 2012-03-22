@@ -5,14 +5,12 @@
  */
 package org.openrdf.repository.contextaware.config;
 
-import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ADD_CONTEXT;
-import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ARCHIVE_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.BASE_URI;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.INCLUDE_INFERRED;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.MAX_QUERY_TIME;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.QUERY_LANGUAGE;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.READ_CONTEXT;
-import static org.openrdf.repository.contextaware.config.ContextAwareSchema.REMOVE_CONTEXT;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.UPDATE_CONTEXT;
 
 import java.util.Set;
 
@@ -46,11 +44,7 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 
 	private URI[] readContexts = ALL_CONTEXTS;
 
-	private URI[] addContexts = ALL_CONTEXTS;
-
-	private URI[] removeContexts = ALL_CONTEXTS;
-
-	private URI[] archiveContexts = ALL_CONTEXTS;
+	private URI updateContext = null;
 
 	public ContextAwareConfig() {
 		super(ContextAwareFactory.REPOSITORY_TYPE);
@@ -65,17 +59,10 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	}
 
 	/**
-	 * @see ContextAwareConnection#getAddContexts()
+	 * @see ContextAwareConnection#getUpdateContexts()
 	 */
-	public URI[] getAddContexts() {
-		return addContexts;
-	}
-
-	/**
-	 * @see ContextAwareConnection#getArchiveContexts()
-	 */
-	public URI[] getArchiveContexts() {
-		return archiveContexts;
+	public URI getUpdateContext() {
+		return updateContext;
 	}
 
 	/**
@@ -100,13 +87,6 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	}
 
 	/**
-	 * @see ContextAwareConnection#getRemoveContexts()
-	 */
-	public URI[] getRemoveContexts() {
-		return removeContexts;
-	}
-
-	/**
 	 * @see ContextAwareConnection#isIncludeInferred()
 	 */
 	public boolean isIncludeInferred() {
@@ -114,17 +94,10 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	}
 
 	/**
-	 * @see ContextAwareConnection#setAddContexts(URI[])
+	 * @see ContextAwareConnection#setUpdateContext(URI)
 	 */
-	public void setAddContexts(URI... addContexts) {
-		this.addContexts = addContexts;
-	}
-
-	/**
-	 * @see ContextAwareConnection#setArchiveContexts(URI[])
-	 */
-	public void setArchiveContexts(URI... archiveContexts) {
-		this.archiveContexts = archiveContexts;
+	public void setUpdateContext(URI updateContext) {
+		this.updateContext = updateContext;
 	}
 
 	/**
@@ -155,13 +128,6 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 		this.readContexts = readContexts;
 	}
 
-	/**
-	 * @see ContextAwareConnection#setRemoveContexts(URI[])
-	 */
-	public void setRemoveContexts(URI... removeContexts) {
-		this.removeContexts = removeContexts;
-	}
-
 	@Override
 	public Resource export(Graph graph) {
 		Resource repImplNode = super.export(graph);
@@ -184,14 +150,8 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 		for (URI uri : readContexts) {
 			graph.add(repImplNode, READ_CONTEXT, uri);
 		}
-		for (URI resource : addContexts) {
-			graph.add(repImplNode, ADD_CONTEXT, resource);
-		}
-		for (URI resource : removeContexts) {
-			graph.add(repImplNode, REMOVE_CONTEXT, resource);
-		}
-		for (URI resource : archiveContexts) {
-			graph.add(repImplNode, ARCHIVE_CONTEXT, resource);
+		if (updateContext != null) {
+			graph.add(repImplNode, UPDATE_CONTEXT, updateContext);
 		}
 
 		return repImplNode;
@@ -224,14 +184,10 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 			Set<Value> objects = GraphUtil.getObjects(graph, implNode, READ_CONTEXT);
 			setReadContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = GraphUtil.getObjects(graph, implNode, ADD_CONTEXT);
-			setAddContexts(objects.toArray(new URI[objects.size()]));
-
-			objects = GraphUtil.getObjects(graph, implNode, REMOVE_CONTEXT);
-			setRemoveContexts(objects.toArray(new URI[objects.size()]));
-
-			objects = GraphUtil.getObjects(graph, implNode, ARCHIVE_CONTEXT);
-			setArchiveContexts(objects.toArray(new URI[objects.size()]));
+			uri = GraphUtil.getOptionalObjectURI(graph, implNode, BASE_URI);
+			if (uri != null) {
+				setUpdateContext(uri);
+			}
 		}
 		catch (GraphUtilException e) {
 			throw new RepositoryConfigException(e);
