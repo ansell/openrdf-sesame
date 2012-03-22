@@ -332,6 +332,7 @@ public class SailUpdateExecutor {
 
 		try {
 			try {
+				URI with = dataset.getDefaultUpdateGraph();
 				while (toBeInserted.hasNext()) {
 					BindingSet bs = toBeInserted.next();
 	
@@ -340,8 +341,11 @@ public class SailUpdateExecutor {
 					Value object = bs.getValue("object");
 					Resource context = (Resource)bs.getValue("context");
 	
-					if (context == null) {
+					if (context == null && with == null) {
 						con.addStatement(subject, predicate, object);
+					}
+					else if (context == null) {
+						con.addStatement(subject, predicate, object, with);
 					}
 					else {
 						con.addStatement(subject, predicate, object, context);
@@ -375,6 +379,7 @@ public class SailUpdateExecutor {
 
 		try {
 			try {
+				URI with = dataset.getDefaultUpdateGraph();
 				while (toBeDeleted.hasNext()) {
 					BindingSet bs = toBeDeleted.next();
 	
@@ -383,8 +388,11 @@ public class SailUpdateExecutor {
 					Value object = bs.getValue("object");
 					Resource context = (Resource)bs.getValue("context");
 	
-					if (context == null) {
+					if (context == null && with == null) {
 						con.removeStatements(subject, predicate, object);
+					}
+					else if (context == null) {
+						con.removeStatements(subject, predicate, object, with);
 					}
 					else {
 						con.removeStatements(subject, predicate, object, context);
@@ -408,12 +416,13 @@ public class SailUpdateExecutor {
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings;
 			sourceBindings = evaluateWhereClause(whereClause, dataset, bindings, includeInferred);
 			try {
+				URI with = dataset.getDefaultUpdateGraph();
 				if (readSnapshot) {
 					while (sourceBindings.hasNext()) {
 						BindingSet sourceBinding = sourceBindings.next();
-						deleteBoundTriples(sourceBinding, modify.getDeleteExpr());
+						deleteBoundTriples(sourceBinding, modify.getDeleteExpr(), with);
 
-						insertBoundTriples(sourceBinding, modify.getInsertExpr());
+						insertBoundTriples(sourceBinding, modify.getInsertExpr(), with);
 					}
 				}
 				else {
@@ -429,9 +438,9 @@ public class SailUpdateExecutor {
 					}
 
 					for (BindingSet sourceBinding : cachedSourceBindings) {
-						deleteBoundTriples(sourceBinding, modify.getDeleteExpr());
+						deleteBoundTriples(sourceBinding, modify.getDeleteExpr(), with);
 
-						insertBoundTriples(sourceBinding, modify.getInsertExpr());
+						insertBoundTriples(sourceBinding, modify.getInsertExpr(), with);
 					}
 				}
 			}
@@ -498,7 +507,7 @@ public class SailUpdateExecutor {
 	 * @param deleteClause
 	 * @throws SailException
 	 */
-	private void deleteBoundTriples(BindingSet whereBinding, TupleExpr deleteClause)
+	private void deleteBoundTriples(BindingSet whereBinding, TupleExpr deleteClause, URI with)
 		throws SailException
 	{
 		if (deleteClause != null) {
@@ -515,8 +524,11 @@ public class SailUpdateExecutor {
 					context = (Resource)getValueForVar(deletePattern.getContextVar(), whereBinding);
 				}
 
-				if (context == null) {
+				if (context == null && with == null) {
 					con.removeStatements(subject, predicate, object);
+				}
+				else if (context == null) {
+					con.removeStatements(subject, predicate, object, with);
 				}
 				else {
 					con.removeStatements(subject, predicate, object, context);
@@ -530,7 +542,7 @@ public class SailUpdateExecutor {
 	 * @param insertClause
 	 * @throws SailException
 	 */
-	private void insertBoundTriples(BindingSet whereBinding, TupleExpr insertClause)
+	private void insertBoundTriples(BindingSet whereBinding, TupleExpr insertClause, URI with)
 		throws SailException
 	{
 		if (insertClause != null) {
@@ -544,9 +556,13 @@ public class SailUpdateExecutor {
 						bnodeMapping);
 
 				if (toBeInserted != null) {
-					if (toBeInserted.getContext() == null) {
+					if (with == null && toBeInserted.getContext() == null) {
 						con.addStatement(toBeInserted.getSubject(), toBeInserted.getPredicate(),
 								toBeInserted.getObject());
+					}
+					else if (toBeInserted.getContext() == null) {
+						con.addStatement(toBeInserted.getSubject(), toBeInserted.getPredicate(),
+								toBeInserted.getObject(), with);
 					}
 					else {
 						con.addStatement(toBeInserted.getSubject(), toBeInserted.getPredicate(),
