@@ -37,9 +37,16 @@ public interface Dataset {
 	public Set<URI> getNamedGraphs();
 
 	/**
-	 * Gets the default update graph URI of this dataset. An null value indicates
-	 * the default graph of the store should be used if nothing specified in the
-	 * operation.
+	 * Gets the default insert graph URI of this dataset. An null value indicates
+	 * that triples should be inserted into the null context, if not otherwise
+	 * indicated.
 	 */
-	public URI getDefaultUpdateGraph();
+	public URI getDefaultInsertGraph();
+
+	/**
+	 * Gets the default remove graph URIs of this dataset. An empty set indicates
+	 * that triples should be removed from all contexts, if not otherwise
+	 * indicated.
+	 */
+	public Set<URI> getDefaultRemoveGraphs();
 }

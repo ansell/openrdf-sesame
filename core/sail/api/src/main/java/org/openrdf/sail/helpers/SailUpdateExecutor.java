@@ -332,7 +332,7 @@ public class SailUpdateExecutor {
 
 		try {
 			try {
-				URI with = dataset.getDefaultUpdateGraph();
+				URI insert = dataset.getDefaultInsertGraph();
 				while (toBeInserted.hasNext()) {
 					BindingSet bs = toBeInserted.next();
 	
@@ -341,11 +341,11 @@ public class SailUpdateExecutor {
 					Value object = bs.getValue("object");
 					Resource context = (Resource)bs.getValue("context");
 	
-					if (context == null && with == null) {
+					if (context == null && insert == null) {
 						con.addStatement(subject, predicate, object);
 					}
 					else if (context == null) {
-						con.addStatement(subject, predicate, object, with);
+						con.addStatement(subject, predicate, object, insert);
 					}
 					else {
 						con.addStatement(subject, predicate, object, context);
@@ -379,7 +379,7 @@ public class SailUpdateExecutor {
 
 		try {
 			try {
-				URI with = dataset.getDefaultUpdateGraph();
+				URI[] remove = toArray(dataset.getDefaultRemoveGraphs());
 				while (toBeDeleted.hasNext()) {
 					BindingSet bs = toBeDeleted.next();
 	
@@ -388,11 +388,8 @@ public class SailUpdateExecutor {
 					Value object = bs.getValue("object");
 					Resource context = (Resource)bs.getValue("context");
 	
-					if (context == null && with == null) {
-						con.removeStatements(subject, predicate, object);
-					}
-					else if (context == null) {
-						con.removeStatements(subject, predicate, object, with);
+					if (context == null) {
+						con.removeStatements(subject, predicate, object, remove);
 					}
 					else {
 						con.removeStatements(subject, predicate, object, context);
@@ -416,13 +413,14 @@ public class SailUpdateExecutor {
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings;
 			sourceBindings = evaluateWhereClause(whereClause, dataset, bindings, includeInferred);
 			try {
-				URI with = dataset.getDefaultUpdateGraph();
+				URI insert = dataset.getDefaultInsertGraph();
+				URI[] remove = toArray(dataset.getDefaultRemoveGraphs());
 				if (readSnapshot) {
 					while (sourceBindings.hasNext()) {
 						BindingSet sourceBinding = sourceBindings.next();
-						deleteBoundTriples(sourceBinding, modify.getDeleteExpr(), with);
+						deleteBoundTriples(sourceBinding, modify.getDeleteExpr(), remove);
 
-						insertBoundTriples(sourceBinding, modify.getInsertExpr(), with);
+						insertBoundTriples(sourceBinding, modify.getInsertExpr(), insert);
 					}
 				}
 				else {
@@ -438,9 +436,9 @@ public class SailUpdateExecutor {
 					}
 
 					for (BindingSet sourceBinding : cachedSourceBindings) {
-						deleteBoundTriples(sourceBinding, modify.getDeleteExpr(), with);
+						deleteBoundTriples(sourceBinding, modify.getDeleteExpr(), remove);
 
-						insertBoundTriples(sourceBinding, modify.getInsertExpr(), with);
+						insertBoundTriples(sourceBinding, modify.getInsertExpr(), insert);
 					}
 				}
 			}
@@ -451,6 +449,12 @@ public class SailUpdateExecutor {
 		catch (QueryEvaluationException e) {
 			throw new SailException(e);
 		}
+	}
+
+	private URI[] toArray(Set<URI> set) {
+		if (set == null)
+			return new URI[0];
+		return set.toArray(new URI[set.size()]);
 	}
 
 	/**
@@ -507,7 +511,7 @@ public class SailUpdateExecutor {
 	 * @param deleteClause
 	 * @throws SailException
 	 */
-	private void deleteBoundTriples(BindingSet whereBinding, TupleExpr deleteClause, URI with)
+	private void deleteBoundTriples(BindingSet whereBinding, TupleExpr deleteClause, URI... remove)
 		throws SailException
 	{
 		if (deleteClause != null) {
@@ -524,11 +528,8 @@ public class SailUpdateExecutor {
 					context = (Resource)getValueForVar(deletePattern.getContextVar(), whereBinding);
 				}
 
-				if (context == null && with == null) {
-					con.removeStatements(subject, predicate, object);
-				}
-				else if (context == null) {
-					con.removeStatements(subject, predicate, object, with);
+				if (context == null) {
+					con.removeStatements(subject, predicate, object, remove);
 				}
 				else {
 					con.removeStatements(subject, predicate, object, context);
