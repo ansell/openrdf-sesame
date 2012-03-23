@@ -38,6 +38,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -50,11 +51,15 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.Update;
 import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.repository.contextaware.ContextAwareConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -1629,6 +1634,122 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 			assertTrue("Query not interrupted quickly enough, should have been ~2s, but was "
 					+ (duration / 1000) + "s", duration < 5000);
+		}
+	}
+
+	public void testQueryDefaultGraph()
+		throws Exception
+	{
+		URI graph = vf.createURI("urn:test:default");
+		testCon.add(vf.createURI("urn:test:s1"), vf.createURI("urn:test:p1"), vf.createURI("urn:test:o1"));
+		assertEquals(0, size(graph));
+		testCon.add(vf.createURI("urn:test:s2"), vf.createURI("urn:test:p2"), vf.createURI("urn:test:o2"), graph);
+		assertEquals(1, size(graph));
+	}
+
+	public void testQueryBaseURI()
+		throws Exception
+	{
+		testCon.add(vf.createURI("urn:test:s1"), vf.createURI("urn:test:p1"), vf.createURI("urn:test:o1"));
+		TupleQueryResult rs = testCon.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT * { <> ?p ?o }", "urn:test:s1").evaluate();
+		try {
+			assertTrue(rs.hasNext());
+		}finally {
+			 rs.close();
+		}
+	}
+
+	public void testUpdateBaseURI()
+		throws Exception
+	{
+		testCon.prepareUpdate(QueryLanguage.SPARQL, "INSERT DATA { <> a <> }", "urn:test:s1").execute();
+		assertEquals(1, testCon.size());
+	}
+
+	public void testDeleteDefaultGraph()
+		throws Exception
+	{
+		URI g1 = vf.createURI("urn:test:g1");
+		URI g2 = vf.createURI("urn:test:g2");
+		testCon.add(vf.createURI("urn:test:s1"), vf.createURI("urn:test:p1"), vf.createURI("urn:test:o1"), g1);
+		testCon.add(vf.createURI("urn:test:s2"), vf.createURI("urn:test:p2"), vf.createURI("urn:test:o2"), g2);
+		Update up = testCon.prepareUpdate(QueryLanguage.SPARQL, "DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }");
+		DatasetImpl ds = new DatasetImpl();
+		ds.addDefaultGraph(g1);
+		up.setDataset(ds);
+		up.execute();
+		assertEquals(0, size(g1));
+		assertEquals(1, size(g2));
+	}
+
+	public void testDefaultContext()
+		throws Exception
+	{
+		ContextAwareConnection con = new ContextAwareConnection(testCon);
+		URI defaultGraph = vf.createURI("urn:test:default");
+		con.setReadContexts(defaultGraph);
+		con.setInsertContext(defaultGraph);
+		con.setRemoveContexts(defaultGraph);
+		con.add(vf.createURI("urn:test:s1"), vf.createURI("urn:test:p1"), vf.createURI("urn:test:o1"));
+		con.prepareUpdate("INSERT DATA { <urn:test:s2> <urn:test:p2> \"l2\" }").execute();
+		assertEquals(2, con.getStatements(null, null, null).asList().size());
+		assertEquals(2, con.getStatements(null, null, null, defaultGraph).asList().size());
+		assertEquals(2, size(defaultGraph));
+		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"), (Resource)null);
+		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"), vf.createURI("urn:test:other"));
+		assertEquals(2, con.getStatements(null, null, null).asList().size());
+		assertEquals(4, testCon.getStatements(null, null, null, true).asList().size());
+		assertEquals(2, size(defaultGraph));
+		assertEquals(1, size(vf.createURI("urn:test:other")));
+		con.prepareUpdate("DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }").execute();
+		assertEquals(0, con.getStatements(null, null, null).asList().size());
+		assertEquals(2, testCon.getStatements(null, null, null, true).asList().size());
+		assertEquals(0, size(defaultGraph));
+		assertEquals(1, size(vf.createURI("urn:test:other")));
+	}
+
+	public void testDefaultInsertContext()
+		throws Exception
+	{
+		ContextAwareConnection con = new ContextAwareConnection(testCon);
+		URI defaultGraph = vf.createURI("urn:test:default");
+		con.setInsertContext(defaultGraph);
+		con.add(vf.createURI("urn:test:s1"), vf.createURI("urn:test:p1"), vf.createURI("urn:test:o1"));
+		con.prepareUpdate("INSERT DATA { <urn:test:s2> <urn:test:p2> \"l2\" }").execute();
+		assertEquals(2, con.getStatements(null, null, null).asList().size());
+		assertEquals(2, con.getStatements(null, null, null, defaultGraph).asList().size());
+		assertEquals(2, size(defaultGraph));
+		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"), (Resource)null);
+		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"), vf.createURI("urn:test:other"));
+		assertEquals(4, con.getStatements(null, null, null).asList().size());
+		assertEquals(2, con.getStatements(null, null, null, defaultGraph).asList().size());
+		assertEquals(4, testCon.getStatements(null, null, null, true).asList().size());
+		assertEquals(2, size(defaultGraph));
+		assertEquals(1, size(vf.createURI("urn:test:other")));
+		con.prepareUpdate("DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }").execute();
+		assertEquals(0, con.getStatements(null, null, null).asList().size());
+		assertEquals(0, testCon.getStatements(null, null, null, true).asList().size());
+		assertEquals(0, size(defaultGraph));
+		assertEquals(0, size(vf.createURI("urn:test:other")));
+	}
+
+	private int size(URI defaultGraph)
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException
+	{
+		TupleQuery qry = testCon.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT * { ?s ?p ?o }");
+		DatasetImpl dataset = new DatasetImpl();
+		dataset.addDefaultGraph(defaultGraph);
+		qry.setDataset(dataset);
+		TupleQueryResult result = qry.evaluate();
+		try {
+			int count = 0;
+			while(result.hasNext()) {
+				result.next();
+				count++;
+			}
+			return count;
+		} finally {
+			result.close();
 		}
 	}
 
