@@ -110,9 +110,9 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.federation.FederatedService;
+import org.openrdf.query.algebra.evaluation.federation.FederatedService.QueryType;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceManager;
 import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
-import org.openrdf.query.algebra.evaluation.federation.FederatedService.QueryType;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
@@ -132,7 +132,6 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
-import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -884,44 +883,50 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		try {
 			Resource[] contexts;
 
-			if (dataset != null) {
-				Set<URI> graphs = null;
+			Set<URI> graphs = null;
+			boolean emptyGraph = false;
 
+			if (dataset != null) {
 				if (sp.getScope() == Scope.DEFAULT_CONTEXTS) {
 					graphs = dataset.getDefaultGraphs();
+					emptyGraph = graphs.isEmpty() && !dataset.getNamedGraphs().isEmpty();
 				}
 				else {
 					graphs = dataset.getNamedGraphs();
+					emptyGraph = graphs.isEmpty() && !dataset.getDefaultGraphs().isEmpty();
 				}
+			}
 
-				if (graphs.isEmpty()) {
-					// Search zero contexts
-					return new EmptyIteration<BindingSet, QueryEvaluationException>();
+			if (emptyGraph) {
+				// Search zero contexts
+				return new EmptyIteration<BindingSet, QueryEvaluationException>();
+			}
+			else if (graphs == null || graphs.isEmpty()) {
+				// store default behaivour
+				if (contextValue != null) {
+					contexts = new Resource[] { (Resource)contextValue };
 				}
-				else if (contextValue != null) {
-					if (graphs.contains(contextValue)) {
-						contexts = new Resource[] { (Resource)contextValue };
-					}
-					else {
-						// Statement pattern specifies a context that is not part of
-						// the dataset
-						return new EmptyIteration<BindingSet, QueryEvaluationException>();
-					}
+				/* TODO activate this to have an exclusive (rather than inclusive) interpretation of the default graph in SPARQL querying.
+				else if (sp.getScope() == Scope.DEFAULT_CONTEXTS ) {
+					contexts = new Resource[] { (Resource)null };
 				}
+				*/
 				else {
-					contexts = graphs.toArray(new Resource[graphs.size()]);
+					contexts = new Resource[0];
 				}
 			}
 			else if (contextValue != null) {
-				contexts = new Resource[] { (Resource)contextValue };
+				if (graphs.contains(contextValue)) {
+					contexts = new Resource[] { (Resource)contextValue };
+				}
+				else {
+					// Statement pattern specifies a context that is not part of
+					// the dataset
+					return new EmptyIteration<BindingSet, QueryEvaluationException>();
+				}
 			}
-			/* TODO activate this to have an exclusive (rather than inclusive) interpretation of the default graph in SPARQL querying.
-			else if (sp.getScope() == Scope.DEFAULT_CONTEXTS ) {
-				contexts = new Resource[] { (Resource)null };
-			}
-			*/
 			else {
-				contexts = new Resource[0];
+				contexts = graphs.toArray(new Resource[graphs.size()]);
 			}
 
 			stIter = tripleSource.getStatements((Resource)subjValue, (URI)predValue, objValue, contexts);

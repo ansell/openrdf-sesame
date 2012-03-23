@@ -74,6 +74,10 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		this(repository, repository.getConnection());
 	}
 
+	public ContextAwareConnection(RepositoryConnection connection) {
+		super(connection.getRepository(), connection);
+	}
+
 	public ContextAwareConnection(Repository repository, RepositoryConnection connection) {
 		super(repository, connection);
 	}
@@ -848,7 +852,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	private <O extends Operation> O initOperation(O op) {
-		if (readContexts.length > 0) {
+		if (readContexts.length > 0 || removeContexts.length > 0 || insertContext != null) {
 			DatasetImpl ds = new DatasetImpl();
 			for (URI graph : readContexts) {
 				ds.addDefaultGraph(graph);
