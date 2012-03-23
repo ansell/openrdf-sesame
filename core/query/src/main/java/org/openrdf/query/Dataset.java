@@ -25,28 +25,33 @@ import org.openrdf.model.URI;
 public interface Dataset {
 
 	/**
-	 * Gets the default graph URIs of this dataset. An empty set indicates that
-	 * the default graph is an empty graph.
+	 * Gets the default remove graph URIs of this dataset. An empty set indicates
+	 * the the store's default behaviour should be used, if not otherwise
+	 * indicated in the operation.
 	 */
-	public Set<URI> getDefaultGraphs();
-
-	/**
-	 * Gets the named graph URIs of this dataset. An empty set indicates that
-	 * there are no named graphs in this dataset.
-	 */
-	public Set<URI> getNamedGraphs();
+	public Set<URI> getDefaultRemoveGraphs();
 
 	/**
 	 * Gets the default insert graph URI of this dataset. An null value indicates
-	 * that triples should be inserted into the null context, if not otherwise
-	 * indicated.
+	 * that the store's default behaviour should be used, if not otherwise
+	 * indicated in the operation.
 	 */
 	public URI getDefaultInsertGraph();
 
 	/**
-	 * Gets the default remove graph URIs of this dataset. An empty set indicates
-	 * that triples should be removed from all contexts, if not otherwise
-	 * indicated.
+	 * Gets the default graph URIs of this dataset. An empty default graph set
+	 * and a non-empty named graph set indicates that the default graph is an
+	 * empty graph. However, if both the default graph set and the named graph
+	 * set are empty, that indicates that the store's default behaviour should be
+	 * used.
 	 */
-	public Set<URI> getDefaultRemoveGraphs();
+	public Set<URI> getDefaultGraphs();
+
+	/**
+	 * Gets the named graph URIs of this dataset. An empty named graph set and a
+	 * non-empty default graph set indicates that there are no named graphs.
+	 * However, if both the default graph set and the named graph set are empty,
+	 * that indicates that the store's default behaviour should be used.
+	 */
+	public Set<URI> getNamedGraphs();
 }

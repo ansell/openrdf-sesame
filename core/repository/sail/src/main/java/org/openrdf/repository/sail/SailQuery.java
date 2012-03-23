@@ -14,6 +14,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.impl.AbstractQuery;
+import org.openrdf.query.impl.FallbackDataset;
 import org.openrdf.query.parser.ParsedQuery;
 
 /**
@@ -58,7 +59,7 @@ public abstract class SailQuery extends AbstractQuery {
 	 */
 	public Dataset getActiveDataset() {
 		if (dataset != null) {
-			return dataset;
+			return FallbackDataset.fallback(dataset, parsedQuery.getDataset());
 		}
 
 		// No external dataset specified, use query's own dataset (if any)

@@ -321,18 +321,18 @@ public class SailUpdateExecutor {
 	 * @param includeInferred
 	 * @throws SailException
 	 */
-	protected void executeInsertData(InsertData insertDataExpr, Dataset dataset, BindingSet bindings,
+	protected void executeInsertData(InsertData insertDataExpr, Dataset ds, BindingSet bindings,
 			boolean includeInferred)
 		throws SailException
 	{
 		TupleExpr insertExpr = insertDataExpr.getInsertExpr();
 
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeInserted = con.evaluate(
-				insertExpr, dataset, bindings, includeInferred);
+				insertExpr, ds, bindings, includeInferred);
 
 		try {
 			try {
-				URI insert = dataset.getDefaultInsertGraph();
+				URI insert = ds == null ? null : ds.getDefaultInsertGraph();
 				while (toBeInserted.hasNext()) {
 					BindingSet bs = toBeInserted.next();
 	
@@ -379,7 +379,7 @@ public class SailUpdateExecutor {
 
 		try {
 			try {
-				URI[] remove = toArray(dataset.getDefaultRemoveGraphs());
+				URI[] remove = getDefaultRemoveGraphs(dataset);
 				while (toBeDeleted.hasNext()) {
 					BindingSet bs = toBeDeleted.next();
 	
@@ -388,11 +388,11 @@ public class SailUpdateExecutor {
 					Value object = bs.getValue("object");
 					Resource context = (Resource)bs.getValue("context");
 	
-					if (context == null) {
-						con.removeStatements(subject, predicate, object, remove);
-					}
-					else {
+					if (context != null) {
 						con.removeStatements(subject, predicate, object, context);
+					}
+					else if (remove != null) {
+						con.removeStatements(subject, predicate, object, remove);
 					}
 				}
 			}
@@ -405,16 +405,16 @@ public class SailUpdateExecutor {
 		}
 	}
 
-	protected void executeModify(Modify modify, Dataset dataset, BindingSet bindings, boolean includeInferred)
+	protected void executeModify(Modify modify, Dataset ds, BindingSet bindings, boolean includeInferred)
 		throws SailException
 	{
 		try {
 			TupleExpr whereClause = modify.getWhereExpr();
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings;
-			sourceBindings = evaluateWhereClause(whereClause, dataset, bindings, includeInferred);
+			sourceBindings = evaluateWhereClause(whereClause, ds, bindings, includeInferred);
 			try {
-				URI insert = dataset.getDefaultInsertGraph();
-				URI[] remove = toArray(dataset.getDefaultRemoveGraphs());
+				URI insert = ds == null ? null : ds.getDefaultInsertGraph();
+				URI[] remove = getDefaultRemoveGraphs(ds);
 				if (readSnapshot) {
 					while (sourceBindings.hasNext()) {
 						BindingSet sourceBinding = sourceBindings.next();
@@ -451,8 +451,11 @@ public class SailUpdateExecutor {
 		}
 	}
 
-	private URI[] toArray(Set<URI> set) {
-		if (set == null)
+	private URI[] getDefaultRemoveGraphs(Dataset dataset) {
+		if (dataset == null)
+			return new URI[0];
+		Set<URI> set = dataset.getDefaultRemoveGraphs();
+		if (set == null || set.isEmpty())
 			return new URI[0];
 		return set.toArray(new URI[set.size()]);
 	}
@@ -528,11 +531,11 @@ public class SailUpdateExecutor {
 					context = (Resource)getValueForVar(deletePattern.getContextVar(), whereBinding);
 				}
 
-				if (context == null) {
-					con.removeStatements(subject, predicate, object, remove);
-				}
-				else {
+				if (context != null) {
 					con.removeStatements(subject, predicate, object, context);
+				}
+				else if (remove != null) {
+					con.removeStatements(subject, predicate, object, remove);
 				}
 			}
 		}

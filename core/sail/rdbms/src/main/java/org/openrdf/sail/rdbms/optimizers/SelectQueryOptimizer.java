@@ -41,11 +41,11 @@ import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.algebra.BNodeColumn;
@@ -465,12 +465,12 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 	}
 
 	private Resource[] getContexts(StatementPattern sp, Value ctxValue) {
-		if (dataset == null) {
+		Set<URI> graphs = getGraphs(sp);
+		if (graphs == null) {
 			if (ctxValue != null)
 				return new Resource[] { (Resource)ctxValue };
 			return new Resource[0];
 		}
-		Set<URI> graphs = getGraphs(sp);
 		if (graphs.isEmpty())
 			return null; // Search zero contexts
 		if (ctxValue == null)
@@ -483,6 +483,10 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 	}
 
 	private Set<URI> getGraphs(StatementPattern sp) {
+		if (dataset == null)
+			return null;
+		if (dataset.getDefaultGraphs().isEmpty() && dataset.getNamedGraphs().isEmpty())
+			return null;
 		if (sp.getScope() == Scope.DEFAULT_CONTEXTS)
 			return dataset.getDefaultGraphs();
 		return dataset.getNamedGraphs();

@@ -19,6 +19,7 @@ import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.impl.AbstractOperation;
+import org.openrdf.query.impl.FallbackDataset;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.sail.SailConnection;
@@ -58,7 +59,7 @@ public class SailUpdate extends AbstractOperation implements Update {
 	 */
 	public Dataset getActiveDataset() {
 		if (dataset != null) {
-			return dataset;
+			return FallbackDataset.fallback(dataset, parsedUpdate.getDataset());
 		}
 
 		// No external dataset specified, use update operation's own dataset (if

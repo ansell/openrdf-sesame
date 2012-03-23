@@ -28,6 +28,42 @@ public class DatasetImpl implements Dataset {
 	public DatasetImpl() {
 	}
 
+	public Set<URI> getDefaultRemoveGraphs() {
+		return Collections.unmodifiableSet(defaultRemoveGraphs);
+	}
+
+	/**
+	 * Adds a graph URI to the set of default remove graph URIs.
+	 */
+	public void addDefaultRemoveGraph(URI graphURI) {
+		defaultRemoveGraphs.add(graphURI);
+	}
+
+	/**
+	 * Removes a graph URI from the set of default remove graph URIs.
+	 * 
+	 * @return <tt>true</tt> if the URI was removed from the set, <tt>false</tt>
+	 *         if the set did not contain the URI.
+	 */
+	public boolean removeDefaultRemoveGraph(URI graphURI) {
+		return defaultRemoveGraphs.remove(graphURI);
+	}
+
+	/**
+	 * @return Returns the default insert graph.
+	 */
+	public URI getDefaultInsertGraph() {
+		return defaultInsertGraph;
+	}
+
+	/**
+	 * @param defaultUpdateGraph
+	 *        The default insert graph to used.
+	 */
+	public void setDefaultInsertGraph(URI defaultInsertGraph) {
+		this.defaultInsertGraph = defaultInsertGraph;
+	}
+
 	public Set<URI> getDefaultGraphs() {
 		return Collections.unmodifiableSet(defaultGraphs);
 	}
@@ -42,8 +78,8 @@ public class DatasetImpl implements Dataset {
 	/**
 	 * Removes a graph URI from the set of default graph URIs.
 	 * 
-	 * @return <tt>true</tt> if the URI was removed from the set,
-	 *         <tt>false</tt> if the set did not contain the URI.
+	 * @return <tt>true</tt> if the URI was removed from the set, <tt>false</tt>
+	 *         if the set did not contain the URI.
 	 */
 	public boolean removeDefaultGraph(URI graphURI) {
 		return defaultGraphs.remove(graphURI);
@@ -66,69 +102,38 @@ public class DatasetImpl implements Dataset {
 	/**
 	 * Removes a graph URI from the set of named graph URIs.
 	 * 
-	 * @return <tt>true</tt> if the URI was removed from the set,
-	 *         <tt>false</tt> if the set did not contain the URI.
+	 * @return <tt>true</tt> if the URI was removed from the set, <tt>false</tt>
+	 *         if the set did not contain the URI.
 	 */
 	public boolean removeNamedGraph(URI graphURI) {
 		return namedGraphs.remove(graphURI);
-	}
-
-	
-	/**
-	 * @return Returns the default insert graph.
-	 */
-	public URI getDefaultInsertGraph() {
-		return defaultInsertGraph;
-	}
-
-	
-	/**
-	 * @param defaultUpdateGraph The default insert graph to used.
-	 */
-	public void setDefaultInsertGraph(URI defaultInsertGraph) {
-		this.defaultInsertGraph = defaultInsertGraph;
-	}
-
-	public Set<URI> getDefaultRemoveGraphs() {
-		return Collections.unmodifiableSet(defaultRemoveGraphs);
-	}
-
-	/**
-	 * Adds a graph URI to the set of default remove graph URIs.
-	 */
-	public void addDefaultRemoveGraph(URI graphURI) {
-		defaultRemoveGraphs.add(graphURI);
-	}
-
-	/**
-	 * Removes a graph URI from the set of default remove graph URIs.
-	 * 
-	 * @return <tt>true</tt> if the URI was removed from the set,
-	 *         <tt>false</tt> if the set did not contain the URI.
-	 */
-	public boolean removeDefaultRemoveGraph(URI graphURI) {
-		return defaultRemoveGraphs.remove(graphURI);
 	}
 
 	/**
 	 * Removes all graph URIs (both default and named) from this dataset.
 	 */
 	public void clear() {
+		defaultRemoveGraphs.clear();
+		defaultInsertGraph = null;
 		defaultGraphs.clear();
 		namedGraphs.clear();
 	}
 
 	@Override
 	public String toString() {
-		if (defaultGraphs.isEmpty() && namedGraphs.isEmpty())
-			return "## empty dataset ##";
 		StringBuilder sb = new StringBuilder();
-		for (URI uri : defaultGraphs) {
-			sb.append("FROM ");
+		for (URI uri : getDefaultRemoveGraphs()) {
+			sb.append("DELETE FROM ");
 			appendURI(sb, uri);
 		}
-		for (URI uri : namedGraphs) {
-			sb.append("FROM NAMED ");
+		sb.append("INSERT INTO ");
+		appendURI(sb, getDefaultInsertGraph());
+		for (URI uri : getDefaultGraphs()) {
+			sb.append("USING ");
+			appendURI(sb, uri);
+		}
+		for (URI uri : getNamedGraphs()) {
+			sb.append("USING NAMED ");
 			appendURI(sb, uri);
 		}
 		return sb.toString();
@@ -139,7 +144,8 @@ public class DatasetImpl implements Dataset {
 		if (str.length() > 50) {
 			sb.append("<").append(str, 0, 19).append("..");
 			sb.append(str, str.length() - 29, str.length()).append(">\n");
-		} else {
+		}
+		else {
 			sb.append("<").append(uri).append(">\n");
 		}
 	}
