@@ -10,9 +10,14 @@ import static javax.servlet.http.HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE;
 import static org.openrdf.http.protocol.Protocol.BASEURI_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.BINDING_PREFIX;
 import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.DEFAULT_GRAPH_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.INSERT_GRAPH_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.NAMED_GRAPH_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.QUERY_LANGUAGE_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.REMOVE_GRAPH_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
 
 import java.io.IOException;
@@ -52,6 +57,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
+import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -141,11 +147,93 @@ public class StatementsController extends AbstractController {
 
 		String sparqlUpdateString = request.getParameterValues(Protocol.UPDATE_PARAM_NAME)[0];
 
+		// default query language is SPARQL
+		QueryLanguage queryLn = QueryLanguage.SPARQL;
 
+		String queryLnStr = request.getParameter(QUERY_LANGUAGE_PARAM_NAME);
+		logger.debug("query language param = {}", queryLnStr);
+
+		if (queryLnStr != null) {
+			queryLn = QueryLanguage.valueOf(queryLnStr);
+
+			if (queryLn == null) {
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Unknown query language: " + queryLnStr);
+			}
+		}
+
+		String baseURI = request.getParameter(Protocol.BASEURI_PARAM_NAME);
+
+		// determine if inferred triples should be included in query evaluation
+		boolean includeInferred = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
+
+		// build a dataset, if specified
+		String[] defaultRemoveGraphURIs = request.getParameterValues(REMOVE_GRAPH_PARAM_NAME);
+		String[] defaultInsertGraphURIs = request.getParameterValues(INSERT_GRAPH_PARAM_NAME);
+		String[] defaultGraphURIs = request.getParameterValues(DEFAULT_GRAPH_PARAM_NAME);
+		String[] namedGraphURIs = request.getParameterValues(NAMED_GRAPH_PARAM_NAME);
+
+		DatasetImpl dataset = new DatasetImpl();
+
+		if (defaultRemoveGraphURIs != null) {
+			for (String graphURI : defaultRemoveGraphURIs) {
+				try {
+					URI uri = repository.getValueFactory().createURI(graphURI);
+					dataset.addDefaultRemoveGraph(uri);
+				}
+				catch (IllegalArgumentException e) {
+					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default remove graph: "
+							+ graphURI);
+				}
+			}
+		}
+
+		if (defaultInsertGraphURIs != null && defaultInsertGraphURIs.length > 0) {
+			String graphURI = defaultInsertGraphURIs[0];
+			try {
+				URI uri = repository.getValueFactory().createURI(graphURI);
+				dataset.setDefaultInsertGraph(uri);
+			}
+			catch (IllegalArgumentException e) {
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default insert graph: "
+						+ graphURI);
+			}
+		}
+
+		if (defaultGraphURIs != null) {
+			for (String defaultGraphURI : defaultGraphURIs) {
+				try {
+					URI uri = repository.getValueFactory().createURI(defaultGraphURI);
+					dataset.addDefaultGraph(uri);
+				}
+				catch (IllegalArgumentException e) {
+					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default graph: "
+							+ defaultGraphURI);
+				}
+			}
+		}
+
+		if (namedGraphURIs != null) {
+			for (String namedGraphURI : namedGraphURIs) {
+				try {
+					URI uri = repository.getValueFactory().createURI(namedGraphURI);
+					dataset.addNamedGraph(uri);
+				}
+				catch (IllegalArgumentException e) {
+					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for named graph: "
+							+ namedGraphURI);
+				}
+			}
+		}
 
 		try {
 			
-			Update update = repositoryCon.prepareUpdate(QueryLanguage.SPARQL, sparqlUpdateString);
+			Update update = repositoryCon.prepareUpdate(queryLn, sparqlUpdateString, baseURI);
+
+			update.setIncludeInferred(includeInferred);
+
+			if (dataset != null) {
+				update.setDataset(dataset);
+			}
 			
 			// determine if any variable bindings have been set on this update.
 			@SuppressWarnings("unchecked")

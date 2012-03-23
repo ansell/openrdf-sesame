@@ -77,6 +77,16 @@ public abstract class Protocol {
 	public static final String TIMEOUT_PARAM_NAME = "timeout";
 
 	/**
+	 * Parameter name for the default remove graph URI parameter.
+	 */
+	public static final String REMOVE_GRAPH_PARAM_NAME = "remove-graph-uri";
+
+	/**
+	 * Parameter name for the default insert graph URI parameter.
+	 */
+	public static final String INSERT_GRAPH_PARAM_NAME = "insert-graph-uri";
+
+	/**
 	 * Parameter name for the default graph URI parameter.
 	 */
 	public static final String DEFAULT_GRAPH_PARAM_NAME = "default-graph-uri";

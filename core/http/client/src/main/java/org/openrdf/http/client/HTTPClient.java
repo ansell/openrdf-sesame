@@ -624,6 +624,12 @@ public class HTTPClient {
 				Boolean.toString(includeInferred)));
 
 		if (dataset != null) {
+			for (URI graphURI : dataset.getDefaultRemoveGraphs()) {
+				queryParams.add(new NameValuePair(Protocol.REMOVE_GRAPH_PARAM_NAME, graphURI.toString()));
+			}
+			if (dataset.getDefaultInsertGraph() != null) {
+				queryParams.add(new NameValuePair(Protocol.INSERT_GRAPH_PARAM_NAME, dataset.getDefaultInsertGraph().toString()));
+			}
 			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
 				queryParams.add(new NameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME, defaultGraphURI.toString()));
 			}
