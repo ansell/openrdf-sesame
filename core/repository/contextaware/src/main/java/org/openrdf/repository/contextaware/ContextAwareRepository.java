@@ -30,7 +30,13 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	private URI[] readContexts = ALL_CONTEXTS;
 
-	private URI updateContext = null;
+	private URI[] addContexts = ALL_CONTEXTS;
+
+	private URI[] removeContexts = ALL_CONTEXTS;
+
+	private URI[] archiveContexts = ALL_CONTEXTS;
+
+	private URI insertContext = null;
 
 	public ContextAwareRepository() {
 		super();
@@ -49,10 +55,26 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @see ContextAwareConnection#getUpdateContext()
+	 * @see ContextAwareConnection#getAddContexts()
 	 */
-	public URI getUpdateContext() {
-		return updateContext;
+	@Deprecated
+	public URI[] getAddContexts() {
+		return addContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#getArchiveContexts()
+	 */
+	@Deprecated
+	public URI[] getArchiveContexts() {
+		return archiveContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#getInsertContext()
+	 */
+	public URI getInsertContext() {
+		return insertContext;
 	}
 
 	/**
@@ -78,6 +100,13 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
+	 * @see ContextAwareConnection#getRemoveContexts()
+	 */
+	public URI[] getRemoveContexts() {
+		return removeContexts;
+	}
+
+	/**
 	 * @see ContextAwareConnection#isIncludeInferred()
 	 */
 	public boolean isIncludeInferred() {
@@ -85,10 +114,26 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @see ContextAwareConnection#setUpdateContext(URI)
+	 * @see ContextAwareConnection#setAddContexts(URI[])
 	 */
-	public void setUpdateContext(URI updateContext) {
-		this.updateContext = updateContext;
+	@Deprecated
+	public void setAddContexts(URI... addContexts) {
+		this.addContexts = addContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#setArchiveContexts(URI[])
+	 */
+	@Deprecated
+	public void setArchiveContexts(URI... archiveContexts) {
+		this.archiveContexts = archiveContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#setInsertContext(URI)
+	 */
+	public void setInsertContext(URI insertContext) {
+		this.insertContext = insertContext;
 	}
 
 	/**
@@ -120,6 +165,13 @@ public class ContextAwareRepository extends RepositoryWrapper {
 		this.readContexts = readContexts;
 	}
 
+	/**
+	 * @see ContextAwareConnection#setRemoveContexts(URI[])
+	 */
+	public void setRemoveContexts(URI... removeContexts) {
+		this.removeContexts = removeContexts;
+	}
+
 	@Override
 	public ContextAwareConnection getConnection()
 		throws RepositoryException
@@ -130,7 +182,10 @@ public class ContextAwareRepository extends RepositoryWrapper {
 		con.setQueryLanguage(getQueryLanguage());
 		con.setBaseURI(getBaseURI());
 		con.setReadContexts(getReadContexts());
-		con.setUpdateContext(getUpdateContext());
+		con.setAddContexts(getAddContexts());
+		con.setRemoveContexts(getRemoveContexts());
+		con.setArchiveContexts(getArchiveContexts());
+		con.setInsertContext(getInsertContext());
 		return con;
 	}
 

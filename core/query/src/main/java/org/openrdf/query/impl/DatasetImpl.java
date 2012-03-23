@@ -21,7 +21,9 @@ public class DatasetImpl implements Dataset {
 
 	protected Set<URI> namedGraphs = new LinkedHashSet<URI>();
 
-	protected URI defaultUpdateGraph;
+	protected URI defaultInsertGraph;
+
+	protected Set<URI> defaultRemoveGraphs = new LinkedHashSet<URI>();
 
 	public DatasetImpl() {
 	}
@@ -73,18 +75,39 @@ public class DatasetImpl implements Dataset {
 
 	
 	/**
-	 * @return Returns the default update graph.
+	 * @return Returns the default insert graph.
 	 */
-	public URI getDefaultUpdateGraph() {
-		return defaultUpdateGraph;
+	public URI getDefaultInsertGraph() {
+		return defaultInsertGraph;
 	}
 
 	
 	/**
-	 * @param defaultUpdateGraph The default update graph to used.
+	 * @param defaultUpdateGraph The default insert graph to used.
 	 */
-	public void setDefaultUpdateGraph(URI defaultUpdateGraph) {
-		this.defaultUpdateGraph = defaultUpdateGraph;
+	public void setDefaultInsertGraph(URI defaultInsertGraph) {
+		this.defaultInsertGraph = defaultInsertGraph;
+	}
+
+	public Set<URI> getDefaultRemoveGraphs() {
+		return Collections.unmodifiableSet(defaultRemoveGraphs);
+	}
+
+	/**
+	 * Adds a graph URI to the set of default remove graph URIs.
+	 */
+	public void addDefaultRemoveGraph(URI graphURI) {
+		defaultRemoveGraphs.add(graphURI);
+	}
+
+	/**
+	 * Removes a graph URI from the set of default remove graph URIs.
+	 * 
+	 * @return <tt>true</tt> if the URI was removed from the set,
+	 *         <tt>false</tt> if the set did not contain the URI.
+	 */
+	public boolean removeDefaultRemoveGraph(URI graphURI) {
+		return defaultRemoveGraphs.remove(graphURI);
 	}
 
 	/**

@@ -5,13 +5,13 @@
  */
 package org.openrdf.repository.base;
 
-import info.aduna.iteration.Iteration;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
+
+import info.aduna.iteration.Iteration;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -21,7 +21,6 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Operation;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -31,7 +30,6 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
-import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;

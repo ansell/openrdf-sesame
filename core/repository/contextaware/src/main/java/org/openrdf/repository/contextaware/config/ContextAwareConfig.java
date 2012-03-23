@@ -5,12 +5,15 @@
  */
 package org.openrdf.repository.contextaware.config;
 
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ADD_CONTEXT;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ARCHIVE_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.BASE_URI;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.INCLUDE_INFERRED;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.INSERT_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.MAX_QUERY_TIME;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.QUERY_LANGUAGE;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.READ_CONTEXT;
-import static org.openrdf.repository.contextaware.config.ContextAwareSchema.UPDATE_CONTEXT;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.REMOVE_CONTEXT;
 
 import java.util.Set;
 
@@ -44,7 +47,13 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 
 	private URI[] readContexts = ALL_CONTEXTS;
 
-	private URI updateContext = null;
+	private URI[] addContexts = ALL_CONTEXTS;
+
+	private URI[] removeContexts = ALL_CONTEXTS;
+
+	private URI[] archiveContexts = ALL_CONTEXTS;
+
+	private URI insertContext = null;
 
 	public ContextAwareConfig() {
 		super(ContextAwareFactory.REPOSITORY_TYPE);
@@ -59,10 +68,26 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	}
 
 	/**
-	 * @see ContextAwareConnection#getUpdateContexts()
+	 * @see ContextAwareConnection#getAddContexts()
 	 */
-	public URI getUpdateContext() {
-		return updateContext;
+	@Deprecated
+	public URI[] getAddContexts() {
+		return addContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#getArchiveContexts()
+	 */
+	@Deprecated
+	public URI[] getArchiveContexts() {
+		return archiveContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#getInsertContext()
+	 */
+	public URI getInsertContext() {
+		return insertContext;
 	}
 
 	/**
@@ -87,6 +112,13 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	}
 
 	/**
+	 * @see ContextAwareConnection#getRemoveContexts()
+	 */
+	public URI[] getRemoveContexts() {
+		return removeContexts;
+	}
+
+	/**
 	 * @see ContextAwareConnection#isIncludeInferred()
 	 */
 	public boolean isIncludeInferred() {
@@ -94,10 +126,26 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	}
 
 	/**
-	 * @see ContextAwareConnection#setUpdateContext(URI)
+	 * @see ContextAwareConnection#setAddContexts(URI[])
 	 */
-	public void setUpdateContext(URI updateContext) {
-		this.updateContext = updateContext;
+	@Deprecated
+	public void setAddContexts(URI... addContexts) {
+		this.addContexts = addContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#setArchiveContexts(URI[])
+	 */
+	@Deprecated
+	public void setArchiveContexts(URI... archiveContexts) {
+		this.archiveContexts = archiveContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#setInsertContext(URI)
+	 */
+	public void setInsertContext(URI insertContext) {
+		this.insertContext = insertContext;
 	}
 
 	/**
@@ -128,6 +176,13 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 		this.readContexts = readContexts;
 	}
 
+	/**
+	 * @see ContextAwareConnection#setRemoveContexts(URI[])
+	 */
+	public void setRemoveContexts(URI... removeContexts) {
+		this.removeContexts = removeContexts;
+	}
+
 	@Override
 	public Resource export(Graph graph) {
 		Resource repImplNode = super.export(graph);
@@ -150,8 +205,17 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 		for (URI uri : readContexts) {
 			graph.add(repImplNode, READ_CONTEXT, uri);
 		}
-		if (updateContext != null) {
-			graph.add(repImplNode, UPDATE_CONTEXT, updateContext);
+		for (URI resource : addContexts) {
+			graph.add(repImplNode, ADD_CONTEXT, resource);
+		}
+		for (URI resource : removeContexts) {
+			graph.add(repImplNode, REMOVE_CONTEXT, resource);
+		}
+		for (URI resource : archiveContexts) {
+			graph.add(repImplNode, ARCHIVE_CONTEXT, resource);
+		}
+		if (insertContext != null) {
+			graph.add(repImplNode, INSERT_CONTEXT, insertContext);
 		}
 
 		return repImplNode;
@@ -184,9 +248,18 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 			Set<Value> objects = GraphUtil.getObjects(graph, implNode, READ_CONTEXT);
 			setReadContexts(objects.toArray(new URI[objects.size()]));
 
-			uri = GraphUtil.getOptionalObjectURI(graph, implNode, BASE_URI);
+			objects = GraphUtil.getObjects(graph, implNode, ADD_CONTEXT);
+			setAddContexts(objects.toArray(new URI[objects.size()]));
+
+			objects = GraphUtil.getObjects(graph, implNode, REMOVE_CONTEXT);
+			setRemoveContexts(objects.toArray(new URI[objects.size()]));
+
+			objects = GraphUtil.getObjects(graph, implNode, ARCHIVE_CONTEXT);
+			setArchiveContexts(objects.toArray(new URI[objects.size()]));
+
+			uri = GraphUtil.getOptionalObjectURI(graph, implNode, INSERT_CONTEXT);
 			if (uri != null) {
-				setUpdateContext(uri);
+				setInsertContext(uri);
 			}
 		}
 		catch (GraphUtilException e) {

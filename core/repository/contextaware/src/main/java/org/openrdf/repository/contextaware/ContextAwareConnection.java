@@ -35,6 +35,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
+import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -59,7 +60,13 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 	private URI[] readContexts = ALL_CONTEXTS;
 
-	private URI updateContext = null;
+	private URI[] addContexts = ALL_CONTEXTS;
+
+	private URI[] removeContexts = ALL_CONTEXTS;
+
+	private URI[] archiveContexts = ALL_CONTEXTS;
+
+	private URI insertContext = null;
 
 	public ContextAwareConnection(Repository repository)
 		throws RepositoryException
@@ -69,6 +76,11 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 	public ContextAwareConnection(Repository repository, RepositoryConnection connection) {
 		super(repository, connection);
+	}
+
+	@Override
+	protected boolean isDelegatingRemove() {
+		return archiveContexts.length == 0 && removeContexts.length < 2;
 	}
 
 	/**
@@ -138,34 +150,97 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	/**
-	 * The default contexts to add/remove the statements to/from. For INSERT/add
-	 * operations Each statement is added to any context specified in the
-	 * statement, or if the statement contains no context, it is added with the
-	 * context specified here. For DELETE/remove operations Each statement is
-	 * removed from the context specified in the statement, or if the statement
-	 * contains no context, it is removed from the context specified here.
+	 * The contexts to add the statements to. Note that this parameter is a
+	 * vararg and as such is optional. If no contexts are specified, each
+	 * statement is added to any context specified in the statement, or if the
+	 * statement contains no context, it is added without a context. If one or
+	 * more contexts are specified each statement is added to these contexts,
+	 * ignoring any context information in the statement itself.
 	 */
-	public URI getUpdateContext() {
-		return updateContext;
+	public URI[] getAddContexts() {
+		return addContexts;
 	}
 
 	/**
-	 * The default contexts to add/remove the statements to/from. For INSERT/add
+	 * The contexts to add the statements to. Note that this parameter is a
+	 * vararg and as such is optional. If no contexts are specified, each
+	 * statement is added to any context specified in the statement, or if the
+	 * statement contains no context, it is added without a context. If one or
+	 * more contexts are specified each statement is added to these contexts,
+	 * ignoring any context information in the statement itself.
+	 */
+	@Deprecated
+	public void setAddContexts(URI... addContexts) {
+		this.addContexts = addContexts;
+		if (addContexts == null || addContexts.length < 0) {
+			this.insertContext = null;
+		} else if (addContexts.length == 1) {
+			this.insertContext = addContexts[0];
+		}
+	}
+
+	/**
+	 * The context(s) to remove the data from. Note that this parameter is a
+	 * vararg and as such is optional. If no contexts are supplied the method
+	 * operates on the contexts associated with the statement itself, and if no
+	 * context is associated with the statement, on the entire repository.
+	 */
+	public URI[] getRemoveContexts() {
+		return removeContexts;
+	}
+
+	/**
+	 * The context(s) to remove the data from. Note that this parameter is a
+	 * vararg and as such is optional. If no contexts are supplied the method
+	 * operates on the contexts associated with the statement itself, and if no
+	 * context is associated with the statement, on the entire repository.
+	 */
+	public void setRemoveContexts(URI... removeContexts) {
+		this.removeContexts = removeContexts;
+	}
+
+	/**
+	 * Before Statements are removed, they are first copied to these contexts.
+	 */
+	@Deprecated
+	public URI[] getArchiveContexts() {
+		return archiveContexts;
+	}
+
+	/**
+	 * Before Statements are removed, they are first copied to these contexts.
+	 */
+	@Deprecated
+	public void setArchiveContexts(URI... archiveContexts) {
+		this.archiveContexts = archiveContexts;
+	}
+
+	/**
+	 * The default context to add the statements to. For INSERT/add
 	 * operations Each statement is added to any context specified in the
 	 * statement, or if the statement contains no context, it is added with the
-	 * context specified here. For DELETE/remove operations Each statement is
-	 * removed from the context specified in the statement, or if the statement
-	 * contains no context, it is removed from the context specified here.
+	 * context specified here.
 	 */
-	public void setUpdateContext(URI updateContext) {
-		this.updateContext = updateContext;
+	public URI getInsertContext() {
+		return insertContext;
+	}
+
+	/**
+	 * The default context to add the statements to. For INSERT/add
+	 * operations Each statement is added to any context specified in the
+	 * statement, or if the statement contains no context, it is added with the
+	 * context specified here.
+	 */
+	public void setInsertContext(URI insertContext) {
+		this.insertContext = insertContext;
+		this.addContexts = new URI[]{insertContext};
 	}
 
 	public void add(File file, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
 		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
-			super.add(file, baseURI, dataFormat, updateContext);
+			super.add(file, baseURI, dataFormat, addContexts);
 		}
 		else {
 			super.add(file, baseURI, dataFormat, contexts);
@@ -180,7 +255,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			baseURI = this.baseURI;
 		}
 		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
-			super.add(file, baseURI, dataFormat, updateContext);
+			super.add(file, baseURI, dataFormat, addContexts);
 		}
 		else {
 			super.add(file, baseURI, dataFormat, contexts);
@@ -191,7 +266,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws IOException, RDFParseException, RepositoryException
 	{
 		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
-			super.add(in, baseURI, dataFormat, updateContext);
+			super.add(in, baseURI, dataFormat, addContexts);
 		}
 		else {
 			super.add(in, baseURI, dataFormat, contexts);
@@ -206,7 +281,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			baseURI = this.baseURI;
 		}
 		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
-			super.add(in, baseURI, dataFormat, updateContext);
+			super.add(in, baseURI, dataFormat, addContexts);
 		}
 		else {
 			super.add(in, baseURI, dataFormat, contexts);
@@ -236,7 +311,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 				protected Statement convert(Statement st) {
 					if (st.getContext() == null)
 						return new ContextStatementImpl(st.getSubject(), st.getPredicate(), st.getObject(),
-								updateContext);
+								insertContext);
 					return st;
 				}
 			});
@@ -250,7 +325,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws IOException, RDFParseException, RepositoryException
 	{
 		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
-			super.add(reader, baseURI, dataFormat, updateContext);
+			super.add(reader, baseURI, dataFormat, addContexts);
 		}
 		else {
 			super.add(reader, baseURI, dataFormat, contexts);
@@ -265,7 +340,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			baseURI = this.baseURI;
 		}
 		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
-			super.add(reader, baseURI, dataFormat, updateContext);
+			super.add(reader, baseURI, dataFormat, addContexts);
 		}
 		else {
 			super.add(reader, baseURI, dataFormat, contexts);
@@ -277,7 +352,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws RepositoryException
 	{
 		if (contexts != null && contexts.length == 0) {
-			super.add(subject, predicate, object, updateContext);
+			super.add(subject, predicate, object, addContexts);
 		}
 		else {
 			super.add(subject, predicate, object, contexts);
@@ -289,7 +364,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws RepositoryException
 	{
 		if (contexts != null && contexts.length == 0 && st.getContext() == null) {
-			super.add(st, updateContext);
+			super.add(st, addContexts);
 		}
 		else {
 			super.add(st, contexts);
@@ -300,7 +375,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws IOException, RDFParseException, RepositoryException
 	{
 		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
-			super.add(url, baseURI, dataFormat, updateContext);
+			super.add(url, baseURI, dataFormat, addContexts);
 		}
 		else {
 			super.add(url, baseURI, dataFormat, contexts);
@@ -315,7 +390,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			baseURI = this.baseURI;
 		}
 		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
-			super.add(url, baseURI, dataFormat, updateContext);
+			super.add(url, baseURI, dataFormat, addContexts);
 		}
 		else {
 			super.add(url, baseURI, dataFormat, contexts);
@@ -327,7 +402,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws RepositoryException
 	{
 		if (contexts != null && contexts.length == 0) {
-			super.clear(updateContext);
+			super.clear(removeContexts);
 		}
 		else {
 			super.clear(contexts);
@@ -662,13 +737,13 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			Resource... contexts)
 		throws RepositoryException, E
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (contexts != null && contexts.length == 0 && removeContexts.length == 1) {
 			super.remove(new ConvertingIteration<Statement, Statement, E>(statementIter) {
 
 				protected Statement convert(Statement st) {
 					if (st.getContext() == null)
 						return new ContextStatementImpl(st.getSubject(), st.getPredicate(), st.getObject(),
-								updateContext);
+								removeContexts[0]);
 					return st;
 				}
 			});
@@ -698,7 +773,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws RepositoryException
 	{
 		if (contexts != null && contexts.length == 0) {
-			super.remove(subject, predicate, object, updateContext);
+			super.remove(subject, predicate, object, removeContexts);
 		}
 		else {
 			super.remove(subject, predicate, object, contexts);
@@ -721,7 +796,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws RepositoryException
 	{
 		if (contexts != null && contexts.length == 0 && st.getContext() == null) {
-			super.remove(st, updateContext);
+			super.remove(st, removeContexts);
 		}
 		else {
 			super.remove(st, contexts);
@@ -748,13 +823,40 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		}
 	}
 
+	@Override
+	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
+	{
+		if (archiveContexts.length > 0) {
+			RDFHandler handler = new RDFInserter(getDelegate());
+			try {
+				getDelegate().exportStatements(subject, predicate, object, true, handler, archiveContexts);
+			}
+			catch (RDFHandlerException e) {
+				if (e.getCause() instanceof RepositoryException) {
+					throw (RepositoryException)e.getCause();
+				}
+				throw new AssertionError(e);
+			}
+		}
+		if (contexts != null && contexts.length == 0) {
+			getDelegate().remove(subject, predicate, object, removeContexts);
+		}
+		else {
+			getDelegate().remove(subject, predicate, object, contexts);
+		}
+	}
+
 	private <O extends Operation> O initOperation(O op) {
 		if (readContexts.length > 0) {
 			DatasetImpl ds = new DatasetImpl();
 			for (URI graph : readContexts) {
 				ds.addDefaultGraph(graph);
 			}
-			ds.setDefaultUpdateGraph(updateContext);
+			for (URI graph : removeContexts) {
+				ds.addDefaultRemoveGraph(graph);
+			}
+			ds.setDefaultInsertGraph(insertContext);
 			op.setDataset(ds);
 		}
 
