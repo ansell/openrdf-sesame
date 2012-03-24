@@ -177,7 +177,7 @@ public class StatementsController extends AbstractController {
 		if (defaultRemoveGraphURIs != null) {
 			for (String graphURI : defaultRemoveGraphURIs) {
 				try {
-					URI uri = repository.getValueFactory().createURI(graphURI);
+					URI uri = createURIOrNull(repository, graphURI);
 					dataset.addDefaultRemoveGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
@@ -190,7 +190,7 @@ public class StatementsController extends AbstractController {
 		if (defaultInsertGraphURIs != null && defaultInsertGraphURIs.length > 0) {
 			String graphURI = defaultInsertGraphURIs[0];
 			try {
-				URI uri = repository.getValueFactory().createURI(graphURI);
+				URI uri = createURIOrNull(repository, graphURI);
 				dataset.setDefaultInsertGraph(uri);
 			}
 			catch (IllegalArgumentException e) {
@@ -202,7 +202,7 @@ public class StatementsController extends AbstractController {
 		if (defaultGraphURIs != null) {
 			for (String defaultGraphURI : defaultGraphURIs) {
 				try {
-					URI uri = repository.getValueFactory().createURI(defaultGraphURI);
+					URI uri = createURIOrNull(repository, defaultGraphURI);
 					dataset.addDefaultGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
@@ -215,7 +215,7 @@ public class StatementsController extends AbstractController {
 		if (namedGraphURIs != null) {
 			for (String namedGraphURI : namedGraphURIs) {
 				try {
-					URI uri = repository.getValueFactory().createURI(namedGraphURI);
+					URI uri = createURIOrNull(repository, namedGraphURI);
 					dataset.addNamedGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
@@ -265,6 +265,17 @@ public class StatementsController extends AbstractController {
 			ErrorInfo errInfo = new ErrorInfo(ErrorType.MALFORMED_QUERY, e.getMessage());
 			throw new ClientHTTPException(SC_BAD_REQUEST, errInfo.toString());
 		}
+	}
+
+	/**
+	 * @param repository
+	 * @param graphURI
+	 * @return
+	 */
+	private URI createURIOrNull(Repository repository, String graphURI) {
+		if ("null".equals(graphURI))
+			return null;
+		return repository.getValueFactory().createURI(graphURI);
 	}
 
 	/**

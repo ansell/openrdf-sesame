@@ -14,16 +14,17 @@ import org.openrdf.query.Dataset;
 
 /**
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public class DatasetImpl implements Dataset {
 
-	protected Set<URI> defaultGraphs = new LinkedHashSet<URI>();
+	private Set<URI> defaultRemoveGraphs = new LinkedHashSet<URI>();
 
-	protected Set<URI> namedGraphs = new LinkedHashSet<URI>();
+	private URI defaultInsertGraph;
 
-	protected URI defaultInsertGraph;
+	private Set<URI> defaultGraphs = new LinkedHashSet<URI>();
 
-	protected Set<URI> defaultRemoveGraphs = new LinkedHashSet<URI>();
+	private Set<URI> namedGraphs = new LinkedHashSet<URI>();
 
 	public DatasetImpl() {
 	}
@@ -135,6 +136,9 @@ public class DatasetImpl implements Dataset {
 		for (URI uri : getNamedGraphs()) {
 			sb.append("USING NAMED ");
 			appendURI(sb, uri);
+		}
+		if (getDefaultGraphs().isEmpty() && getNamedGraphs().isEmpty()) {
+			sb.append("## empty dataset ##");
 		}
 		return sb.toString();
 	}

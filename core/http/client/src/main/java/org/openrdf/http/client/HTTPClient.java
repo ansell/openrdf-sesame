@@ -594,10 +594,10 @@ public class HTTPClient {
 
 		if (dataset != null) {
 			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME, defaultGraphURI.toString()));
+				queryParams.add(new NameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME, String.valueOf(defaultGraphURI)));
 			}
 			for (URI namedGraphURI : dataset.getNamedGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, namedGraphURI.toString()));
+				queryParams.add(new NameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, String.valueOf(namedGraphURI)));
 			}
 		}
 
@@ -625,16 +625,16 @@ public class HTTPClient {
 
 		if (dataset != null) {
 			for (URI graphURI : dataset.getDefaultRemoveGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.REMOVE_GRAPH_PARAM_NAME, graphURI.toString()));
+				queryParams.add(new NameValuePair(Protocol.REMOVE_GRAPH_PARAM_NAME, String.valueOf(graphURI)));
 			}
 			if (dataset.getDefaultInsertGraph() != null) {
-				queryParams.add(new NameValuePair(Protocol.INSERT_GRAPH_PARAM_NAME, dataset.getDefaultInsertGraph().toString()));
+				queryParams.add(new NameValuePair(Protocol.INSERT_GRAPH_PARAM_NAME, String.valueOf(dataset.getDefaultInsertGraph())));
 			}
 			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME, defaultGraphURI.toString()));
+				queryParams.add(new NameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME, String.valueOf(defaultGraphURI)));
 			}
 			for (URI namedGraphURI : dataset.getNamedGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, namedGraphURI.toString()));
+				queryParams.add(new NameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, String.valueOf(namedGraphURI)));
 			}
 		}
 

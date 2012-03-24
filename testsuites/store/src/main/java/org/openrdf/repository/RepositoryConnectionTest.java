@@ -1733,6 +1733,32 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals(0, size(vf.createURI("urn:test:other")));
 	}
 
+	public void testExclusiveNullContext()
+		throws Exception
+	{
+		ContextAwareConnection con = new ContextAwareConnection(testCon);
+		URI defaultGraph = null; // null context
+		con.setReadContexts(defaultGraph);
+		con.setInsertContext(defaultGraph);
+		con.setRemoveContexts(defaultGraph);
+		con.add(vf.createURI("urn:test:s1"), vf.createURI("urn:test:p1"), vf.createURI("urn:test:o1"));
+		con.prepareUpdate("INSERT DATA { <urn:test:s2> <urn:test:p2> \"l2\" }").execute();
+		assertEquals(2, con.getStatements(null, null, null).asList().size());
+		assertEquals(2, con.getStatements(null, null, null, defaultGraph).asList().size());
+		assertEquals(2, size(defaultGraph));
+		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"), (Resource)null);
+		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"), vf.createURI("urn:test:other"));
+		assertEquals(3, con.getStatements(null, null, null).asList().size());
+		assertEquals(4, testCon.getStatements(null, null, null, true).asList().size());
+		assertEquals(3, size(defaultGraph));
+		assertEquals(1, size(vf.createURI("urn:test:other")));
+		con.prepareUpdate("DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }").execute();
+		assertEquals(0, con.getStatements(null, null, null).asList().size());
+		assertEquals(1, testCon.getStatements(null, null, null, true).asList().size());
+		assertEquals(0, size(defaultGraph));
+		assertEquals(1, size(vf.createURI("urn:test:other")));
+	}
+
 	private int size(URI defaultGraph)
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
