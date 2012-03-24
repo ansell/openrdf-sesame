@@ -115,10 +115,10 @@ public abstract class SPARQLQuery implements Query {
 		post.addParameter("query", getQueryString());
 		if (dataset != null) {
 			for (URI graph : dataset.getDefaultGraphs()) {
-				post.addParameter("default-graph-uri", graph.stringValue());
+				post.addParameter("default-graph-uri", String.valueOf(graph));
 			}
 			for (URI graph : dataset.getNamedGraphs()) {
-				post.addParameter("named-graph-uri", graph.stringValue());
+				post.addParameter("named-graph-uri", String.valueOf(graph));
 			}
 		}
 		post.addRequestHeader("Accept", getAccept());
