@@ -1630,7 +1630,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 				for (long i = 0L; i < length; i++) {
 					if (i < length - 1) {
-						nextVar = createAnonVar(predVar.getValue() + "-path-" + length + "-" + i);
+						nextVar = createAnonVar(predVar.getName() + "-path-" + length + "-" + i);
 					}
 					else {
 						nextVar = endVar;
