@@ -87,6 +87,16 @@ public abstract class Protocol {
 	public static final String INSERT_GRAPH_PARAM_NAME = "insert-graph-uri";
 
 	/**
+	 * Parameter name for the default graph URI parameter for update.
+	 */
+	public static final String USING_GRAPH_PARAM_NAME = "using-graph-uri";
+
+	/**
+	 * Parameter name for the named graph URI parameter for update.
+	 */
+	public static final String USING_NAMED_GRAPH_PARAM_NAME = "using-named-graph-uri";
+
+	/**
 	 * Parameter name for the default graph URI parameter.
 	 */
 	public static final String DEFAULT_GRAPH_PARAM_NAME = "default-graph-uri";

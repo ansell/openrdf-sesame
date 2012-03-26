@@ -10,15 +10,15 @@ import static javax.servlet.http.HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE;
 import static org.openrdf.http.protocol.Protocol.BASEURI_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.BINDING_PREFIX;
 import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.DEFAULT_GRAPH_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.INSERT_GRAPH_PARAM_NAME;
-import static org.openrdf.http.protocol.Protocol.NAMED_GRAPH_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.QUERY_LANGUAGE_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.REMOVE_GRAPH_PARAM_NAME;
 import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.USING_GRAPH_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.USING_NAMED_GRAPH_PARAM_NAME;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -169,8 +169,8 @@ public class StatementsController extends AbstractController {
 		// build a dataset, if specified
 		String[] defaultRemoveGraphURIs = request.getParameterValues(REMOVE_GRAPH_PARAM_NAME);
 		String[] defaultInsertGraphURIs = request.getParameterValues(INSERT_GRAPH_PARAM_NAME);
-		String[] defaultGraphURIs = request.getParameterValues(DEFAULT_GRAPH_PARAM_NAME);
-		String[] namedGraphURIs = request.getParameterValues(NAMED_GRAPH_PARAM_NAME);
+		String[] defaultGraphURIs = request.getParameterValues(USING_GRAPH_PARAM_NAME);
+		String[] namedGraphURIs = request.getParameterValues(USING_NAMED_GRAPH_PARAM_NAME);
 
 		DatasetImpl dataset = new DatasetImpl();
 

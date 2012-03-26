@@ -1676,6 +1676,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		Update up = testCon.prepareUpdate(QueryLanguage.SPARQL, "DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }");
 		DatasetImpl ds = new DatasetImpl();
 		ds.addDefaultGraph(g1);
+		ds.addDefaultRemoveGraph(g1);
 		up.setDataset(ds);
 		up.execute();
 		assertEquals(0, size(g1));
