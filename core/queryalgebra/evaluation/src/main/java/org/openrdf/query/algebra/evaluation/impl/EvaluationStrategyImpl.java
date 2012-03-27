@@ -90,7 +90,7 @@ import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
-import org.openrdf.query.algebra.SPARQLIntersection;
+import org.openrdf.query.algebra.BottomUpJoin;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
@@ -116,6 +116,7 @@ import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
+import org.openrdf.query.algebra.evaluation.iterator.BottomUpJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.ExtensionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.FilterIterator;
 import org.openrdf.query.algebra.evaluation.iterator.GroupIterator;
@@ -1219,6 +1220,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (expr instanceof Join) {
 			return evaluate((Join)expr, bindings);
 		}
+		else if (expr instanceof BottomUpJoin) {
+			return evaluate((BottomUpJoin)expr, bindings);
+		}
 		else if (expr instanceof LeftJoin) {
 			return evaluate((LeftJoin)expr, bindings);
 		}
@@ -1311,10 +1315,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			final BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		if (intersection instanceof SPARQLIntersection) {
-			return evaluate((SPARQLIntersection)intersection, bindings);
-		}
-
 		Iteration<BindingSet, QueryEvaluationException> leftArg, rightArg;
 
 		leftArg = new DelayedIteration<BindingSet, QueryEvaluationException>() {
@@ -2308,220 +2308,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return Long.MAX_VALUE;
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(SPARQLIntersection intersection,
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BottomUpJoin bottomUpJoin,
 			BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		TupleExpr arg1 = intersection.getLeftArg();
-		while (arg1 instanceof UnaryTupleOperator && !(arg1 instanceof Projection)) {
-			arg1 = ((UnaryTupleOperator)arg1).getArg();
-		}
-		TupleExpr arg2 = intersection.getRightArg();
-		while (arg2 instanceof UnaryTupleOperator && !(arg2 instanceof Projection)) {
-			arg2 = ((UnaryTupleOperator)arg2).getArg();
-		}
-		Set<String> commonVars = arg1.getBindingNames();
-		commonVars.retainAll(arg2.getAssuredBindingNames());
-		return intersect(evaluate(intersection.getLeftArg(), bindings),
-				evaluate(intersection.getRightArg(), bindings), commonVars);
+		return new BottomUpJoinIterator(this, bottomUpJoin, bindings);
 	}
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> intersect(
-			CloseableIteration<BindingSet, QueryEvaluationException> iter1,
-			CloseableIteration<BindingSet, QueryEvaluationException> iter2, final Set<String> commonVars)
-		throws QueryEvaluationException
-	{
-
-		ArrayList<BindingSet> list1 = new ArrayList<BindingSet>();
-		ArrayList<BindingSet> list2 = new ArrayList<BindingSet>();
-		while (iter1.hasNext() && iter2.hasNext()) {
-			BindingSet b = iter1.next();
-			list1.add(b);
-			b = iter2.next();
-			list2.add(b);
-		}
-		final CloseableIteration<BindingSet, QueryEvaluationException> iter;
-		if (iter1.hasNext()) {
-			iter = iter1;
-			ArrayList<BindingSet> swap = list1;
-			list1 = list2;
-			list2 = swap;
-		}
-		else {
-			iter = iter2;
-		}
-
-		final HashMap<Binding, Set<BindingSet>> map = new HashMap<Binding, Set<BindingSet>>();
-		Iterator<BindingSet> listIter = list1.iterator();
-		while (listIter.hasNext()) {
-			BindingSet b = listIter.next();
-			BindingSet key = calcKey(b, commonVars);
-			for (Binding b1 : key) {
-				Set<BindingSet> set = map.get(b1);
-				if (set == null)
-					map.put(b1, set = new HashSet<BindingSet>());
-				set.add(b);
-			}
-			if (key.size() == 0) {
-				Set<BindingSet> set = map.get(null);
-				if (set == null)
-					map.put(null, set = new HashSet<BindingSet>());
-				set.add(b);
-			}
-		}
-		final Iterator<BindingSet> longListIter = list2.iterator();
-		final CloseableIteration<BindingSet, QueryEvaluationException> longIter = new CloseableIteration<BindingSet, QueryEvaluationException>()
-		{
-
-			boolean initialized;
-
-			BindingSet res;
-
-			public boolean hasNext()
-				throws QueryEvaluationException
-			{
-				if (!initialized) {
-					next();
-					initialized = true;
-				}
-				return res != null;
-			}
-
-			public BindingSet next()
-				throws QueryEvaluationException
-			{
-				BindingSet ret = res;
-				res = null;
-				if (longListIter.hasNext()) {
-					res = longListIter.next();
-				}
-				else if (iter.hasNext()) {
-					res = iter.next();
-				}
-				return ret;
-			}
-
-			public void remove() {
-			}
-
-			public void close()
-				throws QueryEvaluationException
-			{
-			}
-		};
-
-		return new CloseableIteration<BindingSet, QueryEvaluationException>() {
-
-			boolean initialized;
-
-			BindingSet res;
-
-			Iterator<BindingSet> mergeIter = newMergeIter();
-
-			Iterator<BindingSet> newMergeIter()
-				throws QueryEvaluationException
-			{
-				outer: while (longIter.hasNext()) {
-					final BindingSet current = longIter.next();
-					BindingSet key = calcKey(current, commonVars);
-					Set<BindingSet> set = new HashSet<BindingSet>();
-					boolean firstIteration = true;
-					for (Binding b : key) {
-						Set<BindingSet> s = map.get(b);
-						if (s == null) {
-							continue outer;
-						}
-						if (firstIteration) {
-							set.addAll(s);
-							firstIteration = false;
-						}
-						else {
-							set.retainAll(s);
-							if (set.size() == 0) {
-								continue outer;
-							}
-						}
-					}
-					if (key.size() == 0) {
-						set = map.get(null);
-						if (set == null) {
-							set = new HashSet<BindingSet>();
-						}
-					}
-					final Iterator<BindingSet> setIter = set.iterator();
-					return new Iterator<BindingSet>() {
-
-						boolean initialized;
-
-						BindingSet res;
-
-						public boolean hasNext() {
-							if (!initialized) {
-								next();
-								initialized = true;
-							}
-							return res != null;
-						}
-
-						public BindingSet next() {
-							BindingSet ret = res;
-							res = null;
-							if (setIter.hasNext()) {
-								QueryBindingSet q = new QueryBindingSet();
-								q.addAll(current);
-								q.addAll(setIter.next());
-								res = q;
-							}
-							return ret;
-						}
-
-						public void remove() {
-						}
-					};
-				}
-				return null;
-			}
-
-			public boolean hasNext()
-				throws QueryEvaluationException
-			{
-				if (!initialized) {
-					next();
-					initialized = true;
-				}
-				return res != null;
-			}
-
-			public BindingSet next()
-				throws QueryEvaluationException
-			{
-				BindingSet ret = res;
-				if (mergeIter != null && !mergeIter.hasNext()) {
-					mergeIter = newMergeIter();
-				}
-				res = mergeIter != null && mergeIter.hasNext() ? mergeIter.next() : null;
-				return ret;
-			}
-
-			public void remove() {
-			}
-
-			public void close()
-				throws QueryEvaluationException
-			{
-			}
-
-		};
-	}
-
-	private BindingSet calcKey(BindingSet bindings, Set<String> commonVars) {
-		QueryBindingSet q = new QueryBindingSet();
-		for (String varName : commonVars) {
-			Binding b = bindings.getBinding(varName);
-			if (b != null) {
-				q.addBinding(b);
-			}
-		}
-		return q;
-	}
+	
 }

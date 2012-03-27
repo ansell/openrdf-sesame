@@ -53,7 +53,7 @@ public class SPARQL11ManifestTest {
 	 */
 	private static final boolean USE_SUBSET = false;
 
-	private static final String[] subDirs = { "property-path" };
+	private static final String[] subDirs = { "subquery" };
 
 	public static TestSuite suite(SPARQLQueryTest.Factory factory)
 		throws Exception

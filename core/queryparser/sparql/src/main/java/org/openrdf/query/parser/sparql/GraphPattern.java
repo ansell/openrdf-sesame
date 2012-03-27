@@ -14,7 +14,7 @@ import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Projection;
-import org.openrdf.query.algebra.SPARQLIntersection;
+import org.openrdf.query.algebra.BottomUpJoin;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
@@ -151,9 +151,9 @@ public class GraphPattern {
 
 			for (int i = 1; i < requiredTEs.size(); i++) {
 				TupleExpr te = requiredTEs.get(i);
-				if (containsProjection(te))
+				if (containsProjection(te) || containsProjection(result))
 				{
-					result = new SPARQLIntersection(result, te);
+					result = new BottomUpJoin(result, te);
 				}
 				else {
 					result = new Join(result, te);
@@ -185,6 +185,12 @@ public class GraphPattern {
 					throw new VisitException();
 				}
 				
+				@Override
+				public void meet(BottomUpJoin node) throws VisitException {
+					// projections already inside a SPARQLIntersection need not be taken into account
+					result[0] = false;
+					throw new VisitException();
+				}
 			});
 		} catch (VisitException ex) {
 			// Do nothing. We have thrown this exception on the first successful
