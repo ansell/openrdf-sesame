@@ -29,10 +29,5 @@
 				<literal>a0+p1</literal>
 			</binding>
 		</result>
-		<result>
-			<binding name="s">
-				<uri>http://example.org/a0</uri>
-			</binding>
-		</result>
 	</results>
 </sparql>
