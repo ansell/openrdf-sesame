@@ -131,4 +131,25 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		assertTrue(testCon.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
 		assertTrue(testCon2.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
 	}
+
+	@Override
+	public void testDefaultContext()
+		throws Exception
+	{
+		// ignore
+	}
+
+	@Override
+	public void testDefaultInsertContext()
+		throws Exception
+	{
+		// ignore
+	}
+
+	@Override
+	public void testExclusiveNullContext()
+		throws Exception
+	{
+		// ignore
+	}
 }
