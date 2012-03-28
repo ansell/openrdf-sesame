@@ -373,11 +373,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 					if (startVarFixed && endVarFixed && currentLength > 2) {
 						v1 = getVarValue(startVar, startVarFixed, nextElement);
-						v2 = nextElement.getValue("END_" + JOINVAR_PREFIX);
+						v2 = nextElement.getValue("END_" + JOINVAR_PREFIX + "-" + pathExpression.hashCode());
 					}
 					else if (startVarFixed && endVarFixed && currentLength == 2) {
 						v1 = getVarValue(startVar, startVarFixed, nextElement);
-						v2 = nextElement.getValue(JOINVAR_PREFIX + (currentLength - 1));
+						v2 = nextElement.getValue(JOINVAR_PREFIX + (currentLength - 1) + "-" + pathExpression.hashCode());
 					}
 					else {
 						v1 = getVarValue(startVar, startVarFixed, nextElement);
@@ -462,7 +462,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				TupleExpr pathExprClone = pathExpression.clone();
 
 				if (startVarFixed && endVarFixed) {
-					Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength);
+					Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-" + pathExpression.hashCode());
 
 					VarReplacer replacer = new VarReplacer(endVar, replacement, 0, false);
 					pathExprClone.visit(replacer);
@@ -480,8 +480,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 					if (startVarFixed && endVarFixed) {
 
-						Var startReplacement = createAnonVar(JOINVAR_PREFIX + currentLength);
-						Var endReplacement = createAnonVar("END_" + JOINVAR_PREFIX);
+						Var startReplacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-" + pathExpression.hashCode());
+						Var endReplacement = createAnonVar("END_" + JOINVAR_PREFIX + "-" + pathExpression.hashCode());
 
 						Value v = currentVp.getEndValue();
 						startReplacement.setValue(v);
@@ -507,7 +507,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 							v = currentVp.getStartValue();
 						}
 
-						Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength);
+						Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-" + pathExpression.hashCode());
 						replacement.setValue(v);
 
 						VarReplacer replacer = new VarReplacer(toBeReplaced, replacement, 0, false);
