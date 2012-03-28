@@ -19,6 +19,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.BottomUpJoin;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
  * Join Iterator that executes a basic bottom-up hash-join algorithm. To be used
@@ -41,13 +42,13 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 
 	private CloseableIteration<BindingSet, QueryEvaluationException> restIter;
 
-	private HashMap<BindingSet, ArrayList<BindingSet>> hashMap;
+	private HashMap<BindingSet, ArrayList<BindingSet>> hashTable;
 
 	private Set<String> joinAttributes;
 
-	private BindingSet currentElem;
+	private BindingSet currentScanElem;
 
-	private ArrayList<BindingSet> hashmapElems;
+	private ArrayList<BindingSet> hashTableValues;
 
 	/*--------------*
 	 * Constructors *
@@ -62,7 +63,7 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 		joinAttributes = join.getLeftArg().getBindingNames();
 		joinAttributes.retainAll(join.getRightArg().getBindingNames());
 
-		hashMap = new HashMap<BindingSet, ArrayList<BindingSet>>();
+		hashTable = new HashMap<BindingSet, ArrayList<BindingSet>>();
 
 		List<BindingSet> leftArgResults = new ArrayList<BindingSet>();
 		List<BindingSet> rightArgResults = new ArrayList<BindingSet>();
@@ -92,14 +93,14 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 			BindingSet hashKey = calcKey(b, joinAttributes);
 
 			ArrayList<BindingSet> hashValue = null;
-			if (hashMap.containsKey(hashKey)) {
-				hashValue = hashMap.get(hashKey);
+			if (hashTable.containsKey(hashKey)) {
+				hashValue = hashTable.get(hashKey);
 			}
 			else {
 				hashValue = new ArrayList<BindingSet>();
 			}
 			hashValue.add(b);
-			hashMap.put(hashKey, hashValue);
+			hashTable.put(hashKey, hashValue);
 		}
 
 	}
@@ -112,13 +113,13 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 	protected BindingSet getNextElement()
 		throws QueryEvaluationException
 	{
-		while (currentElem == null) {
+		while (currentScanElem == null) {
 			if (scanList.size() > 0) {
-				currentElem = scanList.remove(0);
+				currentScanElem = scanList.remove(0);
 			}
 			else {
 				if (restIter.hasNext()) {
-					currentElem = restIter.next();
+					currentScanElem = restIter.next();
 				}
 				else {
 					// no more elements available
@@ -126,32 +127,41 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 				}
 			}
 
-			BindingSet key = calcKey(currentElem, joinAttributes);
-			
-			if (hashMap.containsKey(key)) {
-				hashmapElems = new ArrayList<BindingSet>(hashMap.get(key));
+			if (currentScanElem instanceof EmptyBindingSet) {
+				// the empty bindingset should be merged with all bindingset in the hash table
+				hashTableValues = new ArrayList<BindingSet>();
+				for (BindingSet key : hashTable.keySet()) {
+					hashTableValues.addAll(hashTable.get(key));
+				}
 			}
-			else{
-				currentElem = null;
-				hashmapElems = null;
+			else {
+				BindingSet key = calcKey(currentScanElem, joinAttributes);
+
+				if (hashTable.containsKey(key)) {
+					hashTableValues = new ArrayList<BindingSet>(hashTable.get(key));
+				}
+				else {
+					currentScanElem = null;
+					hashTableValues = null;
+				}
 			}
 		}
 
-		BindingSet nextElem = hashmapElems.remove(0);
+		BindingSet nextHashTableValue = hashTableValues.remove(0);
 
-		QueryBindingSet result = new QueryBindingSet(currentElem);
+		QueryBindingSet result = new QueryBindingSet(currentScanElem);
 
-		for (String name : nextElem.getBindingNames()) {
-			Binding b = nextElem.getBinding(name);
+		for (String name : nextHashTableValue.getBindingNames()) {
+			Binding b = nextHashTableValue.getBinding(name);
 			if (!result.hasBinding(name)) {
 				result.addBinding(b);
 			}
 		}
 
-		if (hashmapElems.size() == 0) {
+		if (hashTableValues.size() == 0) {
 			// we've exhausted the current scanlist entry
-			currentElem = null;
-			hashmapElems = null;
+			currentScanElem = null;
+			hashTableValues = null;
 		}
 
 		return result;
@@ -162,9 +172,13 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 		throws QueryEvaluationException
 	{
 		super.handleClose();
-
+		
 		leftIter.close();
 		rightIter.close();
+		
+		hashTable = null;
+		hashTableValues = null;
+		scanList = null;
 	}
 
 	private BindingSet calcKey(BindingSet bindings, Set<String> commonVars) {
