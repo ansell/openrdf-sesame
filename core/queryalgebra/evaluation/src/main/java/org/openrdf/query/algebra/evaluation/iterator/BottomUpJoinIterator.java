@@ -16,7 +16,7 @@ import info.aduna.iteration.LookAheadIteration;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.BottomUpJoin;
+import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.impl.EmptyBindingSet;
@@ -54,7 +54,7 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 	 * Constructors *
 	 *--------------*/
 
-	public BottomUpJoinIterator(EvaluationStrategy strategy, BottomUpJoin join, BindingSet bindings)
+	public BottomUpJoinIterator(EvaluationStrategy strategy, Join join, BindingSet bindings)
 		throws QueryEvaluationException
 	{
 		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
