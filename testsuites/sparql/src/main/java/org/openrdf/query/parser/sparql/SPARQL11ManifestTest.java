@@ -48,12 +48,13 @@ public class SPARQL11ManifestTest {
 	/** use local copy of DAWG SPARQL 1.1 tests instead of own test suite */
 	private static final boolean LOCAL_DAWG_TESTS = false;
 
-	/** use only a subset of all available tests, where the subset is defined by an
-	 *  array of subdirectory names.
+	/**
+	 * use only a subset of all available tests, where the subset is defined by
+	 * an array of subdirectory names.
 	 */
-	private static final boolean USE_SUBSET = false;
+	private static final boolean USE_SUBSET = true;
 
-	private static final String[] subDirs = { "subquery" };
+	private static final String[] subDirs = { "bsbm" };
 
 	public static TestSuite suite(SPARQLQueryTest.Factory factory)
 		throws Exception

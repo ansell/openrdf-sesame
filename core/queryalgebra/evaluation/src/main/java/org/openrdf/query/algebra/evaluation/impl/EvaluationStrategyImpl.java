@@ -6,9 +6,7 @@
 package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -40,7 +38,6 @@ import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
-import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -90,7 +87,6 @@ import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
-import org.openrdf.query.algebra.BottomUpJoin;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
@@ -1220,9 +1216,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (expr instanceof Join) {
 			return evaluate((Join)expr, bindings);
 		}
-		else if (expr instanceof BottomUpJoin) {
-			return evaluate((BottomUpJoin)expr, bindings);
-		}
 		else if (expr instanceof LeftJoin) {
 			return evaluate((LeftJoin)expr, bindings);
 		}
@@ -1253,7 +1246,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					bindings);
 			return new ServiceJoinIterator(leftIter, (Service)join.getRightArg(), bindings, this);
 		}
-		return new JoinIterator(this, join, bindings);
+		
+		if (join.hasSubSelect()) {
+			return new BottomUpJoinIterator(this, join, bindings);
+		}
+		else {
+			return new JoinIterator(this, join, bindings);
+		}
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(LeftJoin leftJoin,
@@ -2308,12 +2307,4 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return Long.MAX_VALUE;
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BottomUpJoin bottomUpJoin,
-			BindingSet bindings)
-		throws QueryEvaluationException
-	{
-		return new BottomUpJoinIterator(this, bottomUpJoin, bindings);
-	}
-
-	
 }

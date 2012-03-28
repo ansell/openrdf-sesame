@@ -14,9 +14,7 @@ import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Projection;
-import org.openrdf.query.algebra.BottomUpJoin;
 import org.openrdf.query.algebra.SingletonSet;
-import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
@@ -151,13 +149,13 @@ public class GraphPattern {
 
 			for (int i = 1; i < requiredTEs.size(); i++) {
 				TupleExpr te = requiredTEs.get(i);
-				if (containsProjection(te) || containsProjection(result))
-				{
-					result = new BottomUpJoin(result, te);
-				}
-				else {
+//				if (containsProjection(te) || containsProjection(result))
+//				{
+//					result = new BottomUpJoin(result, te);
+//				}
+//				else {
 					result = new Join(result, te);
-				}
+//				}
 			}
 		}
 
@@ -172,30 +170,4 @@ public class GraphPattern {
 		return result;
 	}
 	
-	private boolean containsProjection(TupleExpr t) {
-		@SuppressWarnings("serial")
-		class VisitException extends Exception {}
-		final boolean[] result = new boolean[1];
-		try {
-			t.visit(new QueryModelVisitorBase<VisitException>() {
-				
-				@Override
-				public void meet(Projection node) throws VisitException {
-					result[0] = true;
-					throw new VisitException();
-				}
-				
-				@Override
-				public void meet(BottomUpJoin node) throws VisitException {
-					// projections already inside a SPARQLIntersection need not be taken into account
-					result[0] = false;
-					throw new VisitException();
-				}
-			});
-		} catch (VisitException ex) {
-			// Do nothing. We have thrown this exception on the first successful
-			// meeting of Projection.
-		}
-		return result[0];
-	}
 }

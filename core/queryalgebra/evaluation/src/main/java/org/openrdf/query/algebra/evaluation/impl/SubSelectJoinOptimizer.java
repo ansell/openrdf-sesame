@@ -14,34 +14,37 @@ import java.util.Set;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.algebra.Intersection;
-import org.openrdf.query.algebra.BottomUpJoin;
+import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
 /**
- * A query optimizer that reorders BottomUpJoins.
+ * A query optimizer that reorders Joins involving subselects.
  * 
  * @author Jeen Broekstra
  * @author Ruslan Velkov
  */
-public class BottomUpJoinOptimizer implements QueryOptimizer {
+public class SubSelectJoinOptimizer implements QueryOptimizer {
 
 	/**
-	 * Applies generally applicable optimizations: BottomUpJoins are sorted
+	 * Applies generally applicable optimizations: Joins involving subselects are sorted
 	 * according to the number of overlapping binding variables.
 	 * 
 	 * @param tupleExpr
 	 */
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new BottomUpJoinVisitor());
+		tupleExpr.visit(new JoinVisitor());
 	}
 
-	protected class BottomUpJoinVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected class JoinVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
-		public void meet(BottomUpJoin node) {
+		public void meet(Join node) {
+			
+			if (!node.hasSubSelect()) {
+				return;
+			}
 
 			// recursively get all join arguments.
 			List<TupleExpr> joinArgs = getJoinArgs(node, new ArrayList<TupleExpr>());
@@ -50,10 +53,10 @@ public class BottomUpJoinOptimizer implements QueryOptimizer {
 			List<TupleExpr> orderedJoinArgs = reorderJoinArgs(joinArgs);
 
 			// build the reordered join hierarchy
-			TupleExpr replacement = new BottomUpJoin(orderedJoinArgs.get(0), orderedJoinArgs.get(1));
+			TupleExpr replacement = new Join(orderedJoinArgs.get(0), orderedJoinArgs.get(1));
 
 			for (int i = 2; i < orderedJoinArgs.size(); i++) {
-				replacement = new BottomUpJoin(replacement, orderedJoinArgs.get(i));
+				replacement = new Join(replacement, orderedJoinArgs.get(i));
 			}
 
 			// replace the original node with the reordered tree
@@ -61,10 +64,10 @@ public class BottomUpJoinOptimizer implements QueryOptimizer {
 		}
 
 		protected <L extends List<TupleExpr>> L getJoinArgs(TupleExpr tupleExpr, L joinArgs) {
-			if (tupleExpr instanceof BottomUpJoin) {
-				BottomUpJoin sparqlIntersection = (BottomUpJoin)tupleExpr;
-				getJoinArgs(sparqlIntersection.getLeftArg(), joinArgs);
-				getJoinArgs(sparqlIntersection.getRightArg(), joinArgs);
+			if (tupleExpr instanceof Join) {
+				Join join = (Join)tupleExpr;
+				getJoinArgs(join.getLeftArg(), joinArgs);
+				getJoinArgs(join.getRightArg(), joinArgs);
 			}
 			else {
 				joinArgs.add(tupleExpr);
