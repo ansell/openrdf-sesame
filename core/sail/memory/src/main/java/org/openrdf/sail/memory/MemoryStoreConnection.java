@@ -41,7 +41,7 @@ import org.openrdf.query.algebra.evaluation.impl.IterativeEvaluationOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.OrderLimitOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryModelNormalizer;
-import org.openrdf.query.algebra.evaluation.impl.BottomUpJoinOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.SubSelectJoinOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailException;
@@ -135,7 +135,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			new DisjunctiveConstraintOptimizer().optimize(tupleExpr, dataset, bindings);
 			new SameTermFilterOptimizer().optimize(tupleExpr, dataset, bindings);
 			new QueryModelNormalizer().optimize(tupleExpr, dataset, bindings);
-			new BottomUpJoinOptimizer().optimize(tupleExpr, dataset, bindings);
+			new SubSelectJoinOptimizer().optimize(tupleExpr, dataset, bindings);
 			new QueryJoinOptimizer(new MemEvaluationStatistics()).optimize(tupleExpr, dataset, bindings);
 			new IterativeEvaluationOptimizer().optimize(tupleExpr, dataset, bindings);
 			new FilterOptimizer().optimize(tupleExpr, dataset, bindings);

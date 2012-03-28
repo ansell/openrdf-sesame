@@ -74,7 +74,6 @@ import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
-import org.openrdf.query.algebra.BottomUpJoin;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Service;
@@ -508,12 +507,6 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetUnaryTupleOperator(node);
-	}
-
-	public void meet(BottomUpJoin node)
-		throws X
-	{
-		meetBinaryTupleOperator(node);
 	}
 
 	public void meet(StatementPattern node)
