@@ -63,46 +63,7 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 		joinAttributes = join.getLeftArg().getBindingNames();
 		joinAttributes.retainAll(join.getRightArg().getBindingNames());
 
-		hashTable = new HashMap<BindingSet, ArrayList<BindingSet>>();
-
-		List<BindingSet> leftArgResults = new ArrayList<BindingSet>();
-		List<BindingSet> rightArgResults = new ArrayList<BindingSet>();
-
-		while (leftIter.hasNext() && rightIter.hasNext()) {
-			BindingSet b = leftIter.next();
-			leftArgResults.add(b);
-			b = rightIter.next();
-			rightArgResults.add(b);
-		}
-
-		List<BindingSet> smallestResult = null;
-
-		if (leftIter.hasNext()) { // leftArg is the greater relation
-			smallestResult = rightArgResults;
-			scanList = leftArgResults;
-			restIter = leftIter;
-		}
-		else { // rightArg is the greater relation (or they are equal)
-			smallestResult = leftArgResults;
-			scanList = rightArgResults;
-			restIter = rightIter;
-		}
-
-		// create the hash table for our join
-		for (BindingSet b : smallestResult) {
-			BindingSet hashKey = calcKey(b, joinAttributes);
-
-			ArrayList<BindingSet> hashValue = null;
-			if (hashTable.containsKey(hashKey)) {
-				hashValue = hashTable.get(hashKey);
-			}
-			else {
-				hashValue = new ArrayList<BindingSet>();
-			}
-			hashValue.add(b);
-			hashTable.put(hashKey, hashValue);
-		}
-
+		hashTable = null;
 	}
 
 	/*---------*
@@ -113,6 +74,10 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 	protected BindingSet getNextElement()
 		throws QueryEvaluationException
 	{
+		if (hashTable == null) {
+			setupHashTable();
+		}
+		
 		while (currentScanElem == null) {
 			if (scanList.size() > 0) {
 				currentScanElem = scanList.remove(0);
@@ -190,5 +155,50 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 			}
 		}
 		return q;
+	}
+	
+	private void setupHashTable() throws QueryEvaluationException {
+		
+		hashTable = new HashMap<BindingSet, ArrayList<BindingSet>>();
+
+		List<BindingSet> leftArgResults = new ArrayList<BindingSet>();
+		List<BindingSet> rightArgResults = new ArrayList<BindingSet>();
+
+		while (leftIter.hasNext() && rightIter.hasNext()) {
+			BindingSet b = leftIter.next();
+			leftArgResults.add(b);
+			b = rightIter.next();
+			rightArgResults.add(b);
+		}
+
+		List<BindingSet> smallestResult = null;
+
+		if (leftIter.hasNext()) { // leftArg is the greater relation
+			smallestResult = rightArgResults;
+			scanList = leftArgResults;
+			restIter = leftIter;
+		}
+		else { // rightArg is the greater relation (or they are equal)
+			smallestResult = leftArgResults;
+			scanList = rightArgResults;
+			restIter = rightIter;
+		}
+
+		// create the hash table for our join
+		for (BindingSet b : smallestResult) {
+			BindingSet hashKey = calcKey(b, joinAttributes);
+
+			ArrayList<BindingSet> hashValue = null;
+			if (hashTable.containsKey(hashKey)) {
+				hashValue = hashTable.get(hashKey);
+			}
+			else {
+				hashValue = new ArrayList<BindingSet>();
+			}
+			hashValue.add(b);
+			hashTable.put(hashKey, hashValue);
+		}
+
+
 	}
 }
