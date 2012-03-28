@@ -37,9 +37,6 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(BNodeGenerator node)
 		throws X;
 	
-	public void meet(BottomUpJoin node)
-			throws X;
-
 	public void meet(Bound node)
 		throws X;
 
