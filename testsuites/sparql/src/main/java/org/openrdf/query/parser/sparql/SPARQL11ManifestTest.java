@@ -52,7 +52,7 @@ public class SPARQL11ManifestTest {
 	 * use only a subset of all available tests, where the subset is defined by
 	 * an array of subdirectory names.
 	 */
-	private static final boolean USE_SUBSET = true;
+	private static final boolean USE_SUBSET = false;
 
 	private static final String[] subDirs = { "bsbm" };
 
