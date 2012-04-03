@@ -26,8 +26,10 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HeaderElement;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.ProxyHost;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.DeleteMethod;
@@ -146,7 +148,10 @@ public class HTTPClient {
 		params.setDefaultMaxConnectionsPerHost(20);
 		manager.setParams(params);
 
+		
 		httpClient = new HttpClient(manager);
+
+		configureProxySettings(httpClient);
 	}
 
 	/*-----------------*
@@ -1371,5 +1376,28 @@ public class HTTPClient {
 	 */
 	public void setConnectionTimeout(long timeout) {
 		this.httpClient.getParams().setConnectionManagerTimeout(timeout);
+	}
+	
+	private static void configureProxySettings(HttpClient httpClient) {
+		String proxyHostName = System.getenv("http.proxyHost");
+		if (proxyHostName != null) {
+			int proxyPort = 80; // default
+			try {
+				proxyPort = Integer.parseInt(System.getenv("http.proxyPort"));
+			}
+			catch (NumberFormatException e) {
+				// do nothing, revert to default
+			}
+			ProxyHost proxyHost = new ProxyHost(proxyHostName, proxyPort);
+			httpClient.getHostConfiguration().setProxyHost(proxyHost);
+			
+			String proxyUser = System.getenv("http.proxyUser");
+			if (proxyUser != null) {
+				String proxyPassword = System.getenv("http.proxyPassword");
+				httpClient.getState().setProxyCredentials( new AuthScope(proxyHost.getHostName(), proxyHost.getPort()), 
+						new UsernamePasswordCredentials(proxyUser, proxyPassword));
+
+			}
+		}
 	}
 }
