@@ -1380,7 +1380,7 @@ public class HTTPClient {
 	
 	private static void configureProxySettings(HttpClient httpClient) {
 		String proxyHostName = System.getenv("http.proxyHost");
-		if (proxyHostName != null) {
+		if (proxyHostName != null && proxyHostName.length() > 0) {
 			int proxyPort = 80; // default
 			try {
 				proxyPort = Integer.parseInt(System.getenv("http.proxyPort"));
