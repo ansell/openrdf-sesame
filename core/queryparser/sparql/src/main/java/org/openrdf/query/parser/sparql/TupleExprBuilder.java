@@ -505,7 +505,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 				ValueExpr valueExpr = (ValueExpr)child.jjtAccept(this, null);
 
-				ProjectionElem elem = new ProjectionElem(alias);
+				String targetName = alias;
+				String sourceName = alias;
+				if (child instanceof ASTVar) {
+					sourceName = ((ASTVar)child).getName();
+				}
+				ProjectionElem elem = new ProjectionElem(sourceName, targetName);
 				projElemList.addElement(elem);
 
 				AggregateCollector collector = new AggregateCollector();
@@ -575,7 +580,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		if (group != null) {
 			for (ProjectionElem elem : projElemList.getElements()) {
 				if (!elem.hasAggregateOperatorInExpression()
-						&& !group.getBindingNames().contains(elem.getTargetName()))
+						&& !(group.getBindingNames().contains(elem.getTargetName()) 
+								|| group.getBindingNames().contains(elem.getSourceName())))
 				{
 					throw new VisitorException("variable '" + elem.getTargetName()
 							+ "' in projection not present in GROUP BY.");
