@@ -1396,7 +1396,7 @@ public class HTTPClient {
 				String proxyPassword = System.getenv("http.proxyPassword");
 				httpClient.getState().setProxyCredentials( new AuthScope(proxyHost.getHostName(), proxyHost.getPort()), 
 						new UsernamePasswordCredentials(proxyUser, proxyPassword));
-
+				httpClient.getParams().setAuthenticationPreemptive(true);
 			}
 		}
 	}
