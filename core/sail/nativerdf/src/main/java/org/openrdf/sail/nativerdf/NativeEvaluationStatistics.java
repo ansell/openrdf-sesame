@@ -40,13 +40,26 @@ class NativeEvaluationStatistics extends EvaluationStatistics {
 
 		@Override
 		protected double getCardinality(StatementPattern sp) {
-			Resource subj = (Resource)getConstantValue(sp.getSubjectVar());
-			URI pred = (URI)getConstantValue(sp.getPredicateVar());
-			Value obj = getConstantValue(sp.getObjectVar());
-			Resource context = (Resource)getConstantValue(sp.getContextVar());
-
 			try {
-				return nativeStore.cardinality(subj, pred, obj, context);
+				Value subj = getConstantValue(sp.getSubjectVar());
+				if (!(subj instanceof Resource)) {
+					// can happen when a previous optimizer has inlined a comparison operator. 
+					// this can cause, for example, the subject variable to be equated to a literal value. 
+					// See SES-970 
+					subj = null;
+				}
+				Value pred = getConstantValue(sp.getPredicateVar());
+				if (!(pred instanceof URI)) {
+					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 
+					pred = null;
+				}
+				Value obj = getConstantValue(sp.getObjectVar());
+				Value context = getConstantValue(sp.getContextVar());
+				if (!(context instanceof Resource)) {
+					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 
+					context = null;
+				}
+				return nativeStore.cardinality((Resource)subj, (URI)pred, obj, (Resource)context);
 			}
 			catch (IOException e) {
 				log.error(
