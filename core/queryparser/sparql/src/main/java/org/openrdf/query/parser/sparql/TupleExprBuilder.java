@@ -334,33 +334,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		// Apply projection
 		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
 
-		/*
-		if (node.isSubSelect()) {
-			// we're processing a sub-select. To avoid variable scoping problems,
-			// alpha-convert all non-projected variables in the sub-select.
-
-			UnaryTupleOperator projection = (UnaryTupleOperator)tupleExpr;
-			while (!(projection instanceof Projection)) {
-				projection = (UnaryTupleOperator)projection.getArg();
-			}
-
-			VarCollector collector = new VarCollector();
-			projection.getArg().visit(collector);
-
-			Set<String> projectionNames = projection.getBindingNames();
-
-			for (Var var : collector.getCollectedVars()) {
-				if (!var.hasValue() && !var.isAnonymous()) {
-					if (!projectionNames.contains(var.getName())) {
-						SubSelectAlphaConvertor replacer = new SubSelectAlphaConvertor((Projection)projection, var,
-								createAnonVar(var.getName() + "-" + UUID.randomUUID().toString()));
-						projection.getArg().visit(replacer);
-					}
-				}
-			}
-		}
-		*/
-
 		// Process limit and offset clauses
 		ASTLimit limitNode = node.getLimit();
 		long limit = -1L;
@@ -547,7 +520,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						}
 					}
 				}
-				extension.addElement(new ExtensionElem(valueExpr, alias));
+
+				// add extension element reference to the projection element and to
+				// the extension
+				ExtensionElem extElem = new ExtensionElem(valueExpr, alias);
+				extension.addElement(extElem);
+				elem.setSourceExpression(extElem);
 			}
 			else if (child instanceof ASTVar) {
 				Var projVar = (Var)child.jjtAccept(this, null);
@@ -579,12 +557,36 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		if (group != null) {
 			for (ProjectionElem elem : projElemList.getElements()) {
-				if (!elem.hasAggregateOperatorInExpression()
-						&& !(group.getBindingNames().contains(elem.getTargetName()) 
-								|| group.getBindingNames().contains(elem.getSourceName())))
-				{
-					throw new VisitorException("variable '" + elem.getTargetName()
-							+ "' in projection not present in GROUP BY.");
+				if (!elem.hasAggregateOperatorInExpression()) {
+					Set<String> groupNames = group.getBindingNames();
+
+					ExtensionElem extElem = elem.getSourceExpression();
+					if (extElem != null) {
+						ValueExpr expr = extElem.getExpr();
+
+						VarCollector collector = new VarCollector();
+						expr.visit(collector);
+
+						for (Var var : collector.getCollectedVars()) {
+							if (!groupNames.contains(var.getName())) {
+								throw new VisitorException("variable '" + var.getName()
+										+ "' in projection not present in GROUP BY.");
+
+							}
+						}
+					}
+					else {
+						if (!groupNames.contains(elem.getTargetName())) 
+						{
+							throw new VisitorException("variable '" + elem.getTargetName()
+									+ "' in projection not present in GROUP BY.");
+						}
+						else if (!groupNames.contains(elem.getSourceName())) {
+							throw new VisitorException("variable '" + elem.getSourceName()
+									+ "' in projection not present in GROUP BY.");
+							
+						}
+					}
 				}
 			}
 		}

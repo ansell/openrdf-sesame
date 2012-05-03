@@ -17,6 +17,8 @@ public class ProjectionElem extends QueryModelNodeBase {
 
 	private boolean aggregateOperatorInExpression;
 	
+	private ExtensionElem sourceExpression;
+	
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -110,4 +112,20 @@ public class ProjectionElem extends QueryModelNodeBase {
 	public void setAggregateOperatorInExpression(boolean aggregateOperatorInExpression) {
 		this.aggregateOperatorInExpression = aggregateOperatorInExpression;
 	}
+
+	/**
+	 * @return Returns the sourceExpression.
+	 */
+	public ExtensionElem getSourceExpression() {
+		return sourceExpression;
+	}
+
+	/**
+	 * @param sourceExpression The sourceExpression to set.
+	 */
+	public void setSourceExpression(ExtensionElem sourceExpression) {
+		this.sourceExpression = sourceExpression;
+	}
+	
+	
 }
