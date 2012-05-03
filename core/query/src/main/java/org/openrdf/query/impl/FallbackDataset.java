@@ -30,7 +30,7 @@ public class FallbackDataset implements Dataset {
 
 	private FallbackDataset(Dataset primary, Dataset secondary) {
 		assert primary != null;
-		assert fallback != null;
+		assert secondary != null;
 		this.primary = primary;
 		this.fallback = secondary;
 	}
