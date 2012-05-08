@@ -707,7 +707,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		if (baseURI == null) {
 			baseURI = this.baseURI;
 		}
-		return super.prepareUpdate(ql, update, baseURI);
+		return initOperation(super.prepareUpdate(ql, update, baseURI));
 	}
 
 	@Override
