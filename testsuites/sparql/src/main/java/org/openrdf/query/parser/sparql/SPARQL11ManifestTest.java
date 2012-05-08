@@ -46,7 +46,7 @@ public class SPARQL11ManifestTest {
 	private static final boolean REMOTE = false;
 
 	/** use local copy of DAWG SPARQL 1.1 tests instead of own test suite */
-	private static final boolean LOCAL_DAWG_TESTS = false;
+	private static final boolean LOCAL_DAWG_TESTS = true;
 
 	/**
 	 * use only a subset of all available tests, where the subset is defined by
@@ -56,48 +56,14 @@ public class SPARQL11ManifestTest {
 
 	private static final String[] subDirs = { "bsbm" };
 
+	private static File tmpDir;
+
 	public static TestSuite suite(SPARQLQueryTest.Factory factory)
 		throws Exception
 	{
 
-		final String manifestFile;
-		final File tmpDir;
-		if (REMOTE) {
-			manifestFile = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/manifest-all.ttl";
-			tmpDir = null;
-		}
-		else {
-			URL url = null;
-			if (LOCAL_DAWG_TESTS) {
-				url = SPARQL11ManifestTest.class.getResource("/testcases-dawg-sparql-1.1/manifest-all.ttl");
-			}
-			else {
-				url = SPARQL11ManifestTest.class.getResource("/testcases-sparql-1.1/manifest-evaluation.ttl");
-			}
-
-			if ("jar".equals(url.getProtocol())) {
-				// Extract manifest files to a temporary directory
-				try {
-					tmpDir = FileUtil.createTempDir("sparql-1.1-evaluation");
-
-					JarURLConnection con = (JarURLConnection)url.openConnection();
-					JarFile jar = con.getJarFile();
-
-					ZipUtil.extract(jar, tmpDir);
-
-					File localFile = new File(tmpDir, con.getEntryName());
-					manifestFile = localFile.toURI().toURL().toString();
-				}
-				catch (IOException e) {
-					throw new AssertionError(e);
-				}
-			}
-			else {
-				manifestFile = url.toString();
-				tmpDir = null;
-			}
-		}
-
+		final String manifestFile = getManifestFile();
+		
 		TestSuite suite = new TestSuite(factory.getClass().getName()) {
 
 			@Override
@@ -148,6 +114,100 @@ public class SPARQL11ManifestTest {
 		return suite;
 	}
 
+
+	public static TestSuite suite(SPARQLUpdateConformanceTest.Factory factory)
+		throws Exception
+	{
+		final String manifestFile = getManifestFile();
+
+		TestSuite suite = new TestSuite(factory.getClass().getName()) {
+
+			@Override
+			public void run(TestResult result) {
+				try {
+					super.run(result);
+				}
+				finally {
+					if (tmpDir != null) {
+						try {
+							FileUtil.deleteDir(tmpDir);
+						}
+						catch (IOException e) {
+							System.err.println("Unable to clean up temporary directory '" + tmpDir + "': "
+									+ e.getMessage());
+						}
+					}
+				}
+			}
+		};
+
+		Repository manifestRep = new SailRepository(new MemoryStore());
+		manifestRep.initialize();
+		RepositoryConnection con = manifestRep.getConnection();
+
+		addTurtle(con, new URL(manifestFile), manifestFile);
+
+		String query = "SELECT DISTINCT manifestFile FROM {x} rdf:first {manifestFile} "
+				+ "USING NAMESPACE mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
+				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
+
+		TupleQueryResult manifestResults = con.prepareTupleQuery(QueryLanguage.SERQL, query, manifestFile).evaluate();
+
+		while (manifestResults.hasNext()) {
+			BindingSet bindingSet = manifestResults.next();
+			String subManifestFile = bindingSet.getValue("manifestFile").toString();
+
+			if (includeSubManifest(subManifestFile)) {
+				suite.addTest(SPARQLUpdateConformanceTest.suite(subManifestFile, factory, true));
+			}
+		}
+
+		manifestResults.close();
+		con.close();
+		manifestRep.shutDown();
+
+		logger.info("Created aggregated test suite with " + suite.countTestCases() + " test cases.");
+		return suite;
+	}
+
+	private static String getManifestFile() {
+      String manifestFile = null;
+		if (REMOTE) {
+			manifestFile = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/manifest-all.ttl";
+		}
+		else {
+			URL url = null;
+			if (LOCAL_DAWG_TESTS) {
+				url = SPARQL11ManifestTest.class.getResource("/testcases-dawg-sparql-1.1/manifest-all.ttl");
+			}
+			else {
+				url = SPARQL11ManifestTest.class.getResource("/testcases-sparql-1.1/manifest-evaluation.ttl");
+			}
+
+			if ("jar".equals(url.getProtocol())) {
+				// Extract manifest files to a temporary directory
+				try {
+					tmpDir = FileUtil.createTempDir("sparql-1.1-evaluation");
+
+					JarURLConnection con = (JarURLConnection)url.openConnection();
+					JarFile jar = con.getJarFile();
+
+					ZipUtil.extract(jar, tmpDir);
+
+					File localFile = new File(tmpDir, con.getEntryName());
+					manifestFile = localFile.toURI().toURL().toString();
+				}
+				catch (IOException e) {
+					throw new AssertionError(e);
+				}
+			}
+			else {
+				manifestFile = url.toString();
+			}
+		}
+		return manifestFile;
+	}
+	
 	private static boolean includeSubManifest(String subManifestFile) {
 		boolean result = true;
 
