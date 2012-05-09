@@ -316,6 +316,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		private List<ValuePair> reportedValues = new ArrayList<ValuePair>();
 
+		private List<ValuePair> unreportedValues = new ArrayList<ValuePair>();
+		
 		private TupleExpr pathExpression;
 
 		private Var contextVar;
@@ -373,11 +375,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 					if (startVarFixed && endVarFixed && currentLength > 2) {
 						v1 = getVarValue(startVar, startVarFixed, nextElement);
-						v2 = nextElement.getValue("END_" + JOINVAR_PREFIX + "-" + pathExpression.hashCode());
+						v2 = nextElement.getValue("END_" + JOINVAR_PREFIX + pathExpression.hashCode());
 					}
 					else if (startVarFixed && endVarFixed && currentLength == 2) {
 						v1 = getVarValue(startVar, startVarFixed, nextElement);
-						v2 = nextElement.getValue(JOINVAR_PREFIX + (currentLength - 1) + "-" + pathExpression.hashCode());
+						v2 = nextElement.getValue(JOINVAR_PREFIX + (currentLength - 1) + "-"
+								+ pathExpression.hashCode());
 					}
 					else {
 						v1 = getVarValue(startVar, startVarFixed, nextElement);
@@ -397,8 +400,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 								return nextElement;
 							}
 							else {
-								if (!v1.equals(v2)) {
-									valueQueue.add(vp);
+								if (!unreportedValues.contains(vp)) {
+									unreportedValues.add(vp);
+									if (!v1.equals(v2)) {
+										valueQueue.add(vp);
+									}
 								}
 								continue again;
 							}
@@ -417,9 +423,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					}
 				}
 
-				// if we're done, throw away the cached list of values to avoid
+				// if we're done, throw away the cached lists of values to avoid
 				// hogging resources
 				reportedValues = null;
+				unreportedValues = null;
 				valueQueue = null;
 				return null;
 			}
@@ -462,7 +469,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				TupleExpr pathExprClone = pathExpression.clone();
 
 				if (startVarFixed && endVarFixed) {
-					Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-" + pathExpression.hashCode());
+					Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-"
+							+ pathExpression.hashCode());
 
 					VarReplacer replacer = new VarReplacer(endVar, replacement, 0, false);
 					pathExprClone.visit(replacer);
@@ -480,8 +488,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 					if (startVarFixed && endVarFixed) {
 
-						Var startReplacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-" + pathExpression.hashCode());
-						Var endReplacement = createAnonVar("END_" + JOINVAR_PREFIX + "-" + pathExpression.hashCode());
+						Var startReplacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-"
+								+ pathExpression.hashCode());
+						Var endReplacement = createAnonVar("END_" + JOINVAR_PREFIX + pathExpression.hashCode());
+						startReplacement.setAnonymous(false);
+						endReplacement.setAnonymous(false);
 
 						Value v = currentVp.getEndValue();
 						startReplacement.setValue(v);
@@ -491,11 +502,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 						replacer = new VarReplacer(endVar, endReplacement, 0, false);
 						pathExprClone.visit(replacer);
-
 					}
-
 					else {
-
 						Var toBeReplaced;
 						Value v;
 						if (!endVarFixed) {
@@ -507,7 +515,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 							v = currentVp.getStartValue();
 						}
 
-						Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-" + pathExpression.hashCode());
+						Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-"
+								+ pathExpression.hashCode());
 						replacement.setValue(v);
 
 						VarReplacer replacer = new VarReplacer(toBeReplaced, replacement, 0, false);
@@ -1246,7 +1255,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					bindings);
 			return new ServiceJoinIterator(leftIter, (Service)join.getRightArg(), bindings, this);
 		}
-		
+
 		if (join.hasSubSelect()) {
 			return new BottomUpJoinIterator(this, join, bindings);
 		}
