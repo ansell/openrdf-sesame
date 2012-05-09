@@ -6,6 +6,7 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.query.algebra.ArbitraryLengthPath;
@@ -69,46 +70,62 @@ public class EvaluationStatistics {
 		public void meet(SingletonSet node) {
 			cardinality = 1;
 		}
-		
+
 		@Override
 		public void meet(BindingSetAssignment node) {
 			cardinality = 0;
 		}
 
-		@Override 
+		@Override
 		public void meet(ZeroLengthPath node) {
-			// TODO currently giving ridiculously high cardinality to ensure ZLPs are evaluated late in the game.
+			// TODO currently giving ridiculously high cardinality to ensure ZLPs
+			// are evaluated late in the game.
 			cardinality = 100000;
 		}
-		
-		@Override 
+
+		@Override
 		public void meet(ArbitraryLengthPath node) {
-			// TODO currently giving ridiculously high cardinality to ensure ALPS are evaluated late in the game.
-			cardinality = 100000;
+
+			List<Var> vars = new ArrayList<Var>();
+			vars.add(node.getSubjectVar());
+			vars.add(node.getObjectVar());
+
+			int constantVarCount = countConstantVars(vars);
+			double unboundVarFactor = (double)(node.getBindingNames().size() - constantVarCount)
+					/ node.getBindingNames().size();
+			
+			cardinality = Math.pow(1000.0, unboundVarFactor);
 		}
-		
+
 		@Override
 		public void meet(Service node) {
 			if (!node.getServiceRef().hasValue()) {
-				// the URI is not available, may be computed in the course of the query
+				// the URI is not available, may be computed in the course of the
+				// query
 				// => use high cost to order the SERVICE node late in the query plan
 				cardinality = 100000;
-			} else {
+			}
+			else {
 				ServiceNodeAnalyzer serviceAnalyzer = new ServiceNodeAnalyzer();
 				node.visitChildren(serviceAnalyzer);
 				int count = serviceAnalyzer.getStatementCount();
-				
+
 				// more than one free variable in a single triple pattern
-				if (count==1 && node.getServiceVars().size()>1) {
-					cardinality = 100 + node.getServiceVars().size();	// TODO (should be higher than other simple stmts)
-				} else {
+				if (count == 1 && node.getServiceVars().size() > 1) {
+					cardinality = 100 + node.getServiceVars().size(); // TODO (should
+																						// be higher
+																						// than other
+																						// simple
+																						// stmts)
+				}
+				else {
 					// only very selective statements should be better than this
 					// => evaluate service expressions first
-					cardinality = 1 + (node.getServiceVars().size() * 0.1);	
+					cardinality = 1 + (node.getServiceVars().size() * 0.1);
 				}
 			}
 		}
-		
+
 		@Override
 		public void meet(StatementPattern sp) {
 			cardinality = getCardinality(sp);
@@ -179,20 +196,21 @@ public class EvaluationStatistics {
 			cardinality = node.cardinality();
 		}
 	}
-	
-	
+
 	// count the number of triple patterns
 	private static class ServiceNodeAnalyzer extends QueryModelVisitorBase<RuntimeException> {
-		
-		private int count=0;
-		
+
+		private int count = 0;
+
 		public int getStatementCount() {
 			return count;
 		}
-		
+
 		@Override
-		public void meet(StatementPattern node) throws RuntimeException {
+		public void meet(StatementPattern node)
+			throws RuntimeException
+		{
 			count++;
-		}					
+		}
 	};
 }
