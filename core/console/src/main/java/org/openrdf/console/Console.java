@@ -1273,6 +1273,9 @@ public class Console {
 			RepositoryConnection con = repository.getConnection();
 			try {
 				con.clear(contexts);
+				if (contexts.length == 0) {
+					con.clearNamespaces();
+				}
 			}
 			finally {
 				con.close();
