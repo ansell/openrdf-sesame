@@ -46,7 +46,7 @@ public class SPARQL11ManifestTest {
 	private static final boolean REMOTE = false;
 
 	/** use local copy of DAWG SPARQL 1.1 tests instead of own test suite */
-	private static final boolean LOCAL_DAWG_TESTS = true;
+	private static final boolean LOCAL_DAWG_TESTS = false;
 
 	/**
 	 * use only a subset of all available tests, where the subset is defined by
