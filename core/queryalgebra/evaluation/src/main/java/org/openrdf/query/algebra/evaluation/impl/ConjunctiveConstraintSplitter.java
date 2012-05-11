@@ -13,10 +13,12 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.VarNameCollector;
 
 /**
  * Splits conjunctive constraints into seperate constraints.
@@ -56,6 +58,32 @@ public class ConjunctiveConstraintSplitter implements QueryOptimizer {
 			filter.setArg(filterArg);
 		}
 
+		@Override
+		public void meet(LeftJoin node) {
+			super.meet(node);
+
+			if (node.getCondition() != null) {
+				List<ValueExpr> conjunctiveConstraints = new ArrayList<ValueExpr>(16);
+				getConjunctiveConstraints(node.getCondition(), conjunctiveConstraints);
+	
+				TupleExpr arg = node.getRightArg();
+				ValueExpr condition = null;
+	
+				for (ValueExpr constraint : conjunctiveConstraints) {
+					if (isWithinBindingScope(constraint, arg)) {
+						arg = new Filter(arg, constraint);
+					} else if (condition == null) {
+						condition = constraint;
+					} else {
+						condition = new And(condition, constraint);
+					}
+				}
+	
+				node.setCondition(condition);
+				node.setRightArg(arg);
+			}
+		}
+
 		protected void getConjunctiveConstraints(ValueExpr valueExpr, List<ValueExpr> conjunctiveConstraints) {
 			if (valueExpr instanceof And) {
 				And and = (And)valueExpr;
@@ -65,6 +93,10 @@ public class ConjunctiveConstraintSplitter implements QueryOptimizer {
 			else {
 				conjunctiveConstraints.add(valueExpr);
 			}
+		}
+
+		private boolean isWithinBindingScope(ValueExpr condition, TupleExpr node) {
+			return node.getBindingNames().containsAll(VarNameCollector.process(condition));
 		}
 	}
 }
