@@ -6,13 +6,10 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.util.Set;
-
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Filter;
-import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.TupleExpr;
@@ -20,7 +17,6 @@ import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
-import org.openrdf.query.algebra.helpers.VarNameCollector;
 
 /**
  * A query optimizer that optimize disjunctive constraints on tuple expressions.
@@ -64,42 +60,6 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 			else {
 				super.meet(filter);
 			}
-		}
-
-		@Override
-		public void meet(LeftJoin leftJoin) {
-			ValueExpr condition = leftJoin.getCondition();
-			if (condition instanceof Or && containsSameTerm(condition)
-					&& isWithinBindingScope(condition, leftJoin.getRightArg().getBindingNames()))
-			{
-				Or orNode = (Or)condition;
-				TupleExpr filterArg = leftJoin.getRightArg();
-
-				ValueExpr leftConstraint = orNode.getLeftArg();
-				ValueExpr rightConstraint = orNode.getRightArg();
-
-				// remove filter
-				leftJoin.setCondition(null);
-
-				// Push UNION down below other filters to avoid cloning them
-				TupleExpr node = findNotFilter(filterArg);
-
-				Filter leftFilter = new Filter(node.clone(), leftConstraint);
-				Filter rightFilter = new Filter(node.clone(), rightConstraint);
-				Union union = new Union(leftFilter, rightFilter);
-				node.replaceWith(union);
-
-				leftJoin.getParentNode().visit(this);
-			}
-			else {
-				super.meet(leftJoin);
-			}
-		}
-
-		private boolean isWithinBindingScope(ValueExpr condition, Set<String> scope) {
-			VarNameCollector variables = new VarNameCollector();
-			condition.visit(variables);
-			return scope.containsAll(variables.getVarNames());
 		}
 
 		private TupleExpr findNotFilter(TupleExpr node) {

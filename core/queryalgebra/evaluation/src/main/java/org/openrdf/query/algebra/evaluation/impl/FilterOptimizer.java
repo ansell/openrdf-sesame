@@ -10,15 +10,20 @@ import java.util.Set;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.Difference;
+import org.openrdf.query.algebra.Distinct;
+import org.openrdf.query.algebra.EmptySet;
+import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.Filter;
-import org.openrdf.query.algebra.Group;
+import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.QueryRoot;
+import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
-import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
@@ -50,11 +55,7 @@ public class FilterOptimizer implements QueryOptimizer {
 		@Override
 		public void meet(Filter filter) {
 			super.meet(filter);
-			filter.getArg().visit(getFilterRelocator(filter));
-		}
-
-		protected FilterRelocator getFilterRelocator(Filter filter) {
-			return new FilterRelocator(filter);
+			FilterRelocator.relocate(filter);
 		}
 	}
 
@@ -64,7 +65,11 @@ public class FilterOptimizer implements QueryOptimizer {
 
 	protected static class FilterRelocator extends QueryModelVisitorBase<RuntimeException> {
 
-		protected Filter filter;
+		public static void relocate(Filter filter) {
+			filter.visit(new FilterRelocator(filter));
+		}
+
+		protected final Filter filter;
 
 		protected final Set<String> filterVars;
 
@@ -75,7 +80,9 @@ public class FilterOptimizer implements QueryOptimizer {
 
 		@Override
 		protected void meetNode(QueryModelNode node) {
-			// By default, do not visit child nodes
+			// By default, do not traverse
+			assert node instanceof TupleExpr;
+			relocate(filter, (TupleExpr) node);
 		}
 
 		@Override
@@ -105,19 +112,56 @@ public class FilterOptimizer implements QueryOptimizer {
 
 		@Override
 		public void meet(Union union) {
-			// apply the filter to both arguments
-			union.getLeftArg().visit(this);
+			Filter clone = new Filter();
+			clone.setCondition(filter.getCondition().clone());
 
-			ValueExpr conditionClone = filter.getCondition().clone();
-			filter = new Filter();
-			filter.setCondition(conditionClone);
+			relocate(filter, union.getLeftArg());
+			relocate(clone, union.getRightArg());
 
-			union.getRightArg().visit(this);
+			FilterRelocator.relocate(filter);
+			FilterRelocator.relocate(clone);
 		}
 
 		@Override
-		public void meet(StatementPattern sp) {
-			relocate(filter, sp);
+		public void meet(Difference node) {
+			Filter clone = new Filter();
+			clone.setCondition(filter.getCondition().clone());
+		
+			relocate(filter, node.getLeftArg());
+			relocate(clone, node.getRightArg());
+		
+			FilterRelocator.relocate(filter);
+			FilterRelocator.relocate(clone);
+		}
+
+		@Override
+		public void meet(Intersection node) {
+			Filter clone = new Filter();
+			clone.setCondition(filter.getCondition().clone());
+		
+			relocate(filter, node.getLeftArg());
+			relocate(clone, node.getRightArg());
+		
+			FilterRelocator.relocate(filter);
+			FilterRelocator.relocate(clone);
+		}
+
+		@Override
+		public void meet(Extension node) {
+			if (node.getArg().getBindingNames().containsAll(filterVars)) {
+				node.getArg().visit(this);
+			}
+			else {
+				relocate(filter, node);
+			}
+		}
+
+		@Override
+		public void meet(EmptySet node) {
+			if (filter.getParentNode() != null) {
+				// Remove filter from its original location
+				filter.replaceWith(filter.getArg());
+			}
 		}
 
 		@Override
@@ -127,9 +171,23 @@ public class FilterOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(Group group) {
-			// Prefer evaluation of filters before grouping
-			group.getArg().visit(this);
+		public void meet(Distinct node) {
+			node.getArg().visit(this);
+		}
+
+		@Override
+		public void meet(Order node) {
+			node.getArg().visit(this);
+		}
+
+		@Override
+		public void meet(QueryRoot node) {
+			node.getArg().visit(this);
+		}
+
+		@Override
+		public void meet(Reduced node) {
+			node.getArg().visit(this);
 		}
 
 		protected void relocate(Filter filter, TupleExpr newFilterArg) {
