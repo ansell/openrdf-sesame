@@ -210,11 +210,61 @@ public abstract class RepositoryManager {
 	 *         inconsistent configuration data in the system repository. For
 	 *         example, this happens when there are multiple existing
 	 *         configurations with the concerning ID.
+	 * @deprecated use {@link removeRepository(String repositoryID)} instead.
 	 */
+	@Deprecated
 	public boolean removeRepositoryConfig(String repositoryID)
 		throws RepositoryException, RepositoryConfigException
 	{
 		logger.debug("Removing repository configuration for {}.", repositoryID);
+		boolean isRemoved = false;
+
+		synchronized (initializedRepositories) {
+			isRemoved = RepositoryConfigUtil.removeRepositoryConfigs(getSystemRepository(), repositoryID);
+
+			if (isRemoved) {
+				logger.debug("Shutdown repository {} after removal of configuration.", repositoryID);
+				Repository repository = initializedRepositories.remove(repositoryID);
+
+				if (repository != null) {
+					repository.shutDown();
+				}
+
+				try {
+					cleanUpRepository(repositoryID);
+				}
+				catch (IOException e) {
+					throw new RepositoryException("Unable to clean up resources for removed repository "
+							+ repositoryID, e);
+				}
+			}
+		}
+
+		return isRemoved;
+	}
+
+	/**
+	 * Removes the specified repository by deleting its configuration from the
+	 * manager's system repository if such a configuration is present, and
+	 * removing any persistent data associated with the repository. Returns
+	 * <tt>true</tt> if the system repository actually contained the specified
+	 * repository configuration. <strong>NB this operation can not be
+	 * undone!</strong>
+	 * 
+	 * @param repositoryID
+	 *        The ID of the repository that needs to be removed.
+	 * @throws RepositoryException
+	 *         If the manager failed to update its system repository.
+	 * @throws RepositoryConfigException
+	 *         If the manager doesn't know how to remove a repository due to
+	 *         inconsistent configuration data in the system repository. For
+	 *         example, this happens when there are multiple existing
+	 *         configurations with the concerning ID.
+	 */
+	public boolean removeRepository(String repositoryID)
+		throws RepositoryException, RepositoryConfigException
+	{
+		logger.debug("Removing repository {}.", repositoryID);
 		boolean isRemoved = false;
 
 		synchronized (initializedRepositories) {

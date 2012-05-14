@@ -46,7 +46,8 @@ public class ServerHTTPException extends HTTPException {
 	}
 
 	/**
-	 * Creates a {@link ServerHTTPException} with the specified status code.
+	 * Creates a {@link ServerHTTPException} with the specified status code. The
+	 * supplied status code must be in the 5xx range.
 	 * 
 	 * @throws IllegalArgumentException
 	 *         If <tt>statusCode</tt> is not in the 5xx range.
@@ -56,7 +57,8 @@ public class ServerHTTPException extends HTTPException {
 	}
 
 	/**
-	 * Creates a {@link ServerHTTPException} with the specified status code.
+	 * Creates a {@link ServerHTTPException} with the specified status code. The
+	 * supplied status code must be in the 5xx range.
 	 * 
 	 * @throws IllegalArgumentException
 	 *         If <tt>statusCode</tt> is not in the 5xx range.
@@ -66,7 +68,8 @@ public class ServerHTTPException extends HTTPException {
 	}
 
 	/**
-	 * Creates a {@link ServerHTTPException} with the specified status code.
+	 * Creates a {@link ServerHTTPException} with the specified status code. The
+	 * supplied status code must be in the 5xx range.
 	 * 
 	 * @throws IllegalArgumentException
 	 *         If <tt>statusCode</tt> is not in the 5xx range.
@@ -76,7 +79,8 @@ public class ServerHTTPException extends HTTPException {
 	}
 
 	/**
-	 * Creates a {@link ServerHTTPException} with the specified status code.
+	 * Creates a {@link ServerHTTPException} with the specified status code. The
+	 * supplied status code must be in the 5xx range.
 	 * 
 	 * @throws IllegalArgumentException
 	 *         If <tt>statusCode</tt> is not in the 5xx range.

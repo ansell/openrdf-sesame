@@ -51,6 +51,10 @@ public class DeleteServlet extends TransformationServlet {
 	}
 
 	private void dropRepository(String id) throws Exception {
+		
+		manager.removeRepository(id);
+		
+		/*
 		Repository systemRepo = manager.getSystemRepository();
 		RepositoryConnection con = systemRepo.getConnection();
 		try {
@@ -60,6 +64,7 @@ public class DeleteServlet extends TransformationServlet {
 		} finally {
 			con.close();
 		}
+		*/
 	}
 
 	private Resource findContext(String id, RepositoryConnection con)
