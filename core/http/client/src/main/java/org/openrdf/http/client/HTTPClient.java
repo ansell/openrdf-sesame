@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HeaderElement;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -1073,6 +1074,31 @@ public class HTTPClient {
 		}
 	}
 
+	public void deleteRepository(String repositoryID) throws HttpException, IOException, RepositoryException {
+		
+		HttpMethod method = new DeleteMethod(Protocol.getRepositoryLocation(serverURL, repositoryID));
+		setDoAuthentication(method);
+
+		try {
+			int httpCode = httpClient.executeMethod(method);
+
+			if (httpCode == HttpURLConnection.HTTP_NO_CONTENT) {
+				return;
+			}
+			else if (httpCode == HttpURLConnection.HTTP_FORBIDDEN) {
+				ErrorInfo errInfo = getErrorInfo(method);
+				throw new UnauthorizedException(errInfo.getErrorMessage());
+			}
+			else {
+				ErrorInfo errInfo = getErrorInfo(method);
+				throw new RepositoryException("Failed to delete repository: " + errInfo + " (" + httpCode + ")");
+			}
+		}
+		finally {
+			releaseConnection(method);
+		}
+	}
+	
 	/*------------------*
 	 * Response parsing *
 	 *------------------*/

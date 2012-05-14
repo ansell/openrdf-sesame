@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.httpclient.HttpException;
+
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.URI;
@@ -96,6 +98,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
 	/**
 	 * Set the username and password for authenication with the remote server.
 	 * 
@@ -248,9 +251,43 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
+	public boolean removeRepository(String repositoryID)
+		throws RepositoryException, RepositoryConfigException
+	{
+
+		boolean existingRepo = RepositoryConfigUtil.hasRepositoryConfig(getSystemRepository(), repositoryID);
+
+		if (existingRepo) {
+			HTTPClient httpClient = new HTTPClient();
+
+			try {
+				httpClient.setServerURL(serverURL);
+				httpClient.setUsernameAndPassword(username, password);
+
+				try {
+					httpClient.deleteRepository(repositoryID);
+				}
+				catch (HttpException e) {
+					logger.warn("error while deleting remote repository", e);
+					throw new RepositoryConfigException(e);
+				}
+				catch (IOException e) {
+					logger.warn("error while deleting remote repository", e);
+					throw new RepositoryConfigException(e);
+				}
+			}
+			finally {
+				httpClient.shutDown();
+			}
+		}
+
+		return existingRepo;
+	}
+
+	@Override
 	protected void cleanUpRepository(String repositoryID)
 		throws IOException
+
 	{
-		// do nothing
 	}
 }
