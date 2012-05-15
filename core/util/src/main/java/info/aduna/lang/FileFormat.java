@@ -178,6 +178,8 @@ public class FileFormat {
 	 *         FileFormat's MIME types.
 	 */
 	public boolean hasMIMEType(String mimeType) {
+		if (mimeType == null)
+			return false;
 		String type = mimeType;
 		if (mimeType.indexOf(';') > 0) {
 			type = mimeType.substring(0, mimeType.indexOf(';'));
