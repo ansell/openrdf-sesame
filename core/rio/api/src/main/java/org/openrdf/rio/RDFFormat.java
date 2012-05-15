@@ -62,17 +62,24 @@ public class RDFFormat extends FileFormat {
 			Arrays.asList("xml", "trix"), false, true);
 
 	/**
-	 * The <a href="http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/">TriG</a>
-	 * file format.
+	 * The <a
+	 * href="http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/">TriG</a> file
+	 * format.
 	 */
 	public static final RDFFormat TRIG = new RDFFormat("TriG", "application/x-trig", Charset.forName("UTF-8"),
 			"trig", true, true);
-	
+
 	/**
 	 * A binary RDF format.
 	 */
-	public static final RDFFormat BINARY = new RDFFormat("BinaryRDF", "application/x-binary-rdf", null,
-			"brf", true, true);
+	public static final RDFFormat BINARY = new RDFFormat("BinaryRDF", "application/x-binary-rdf", null, "brf",
+			true, true);
+
+	/**
+	 * The <a href="http://sw.deri.org/2008/07/n-quads/">NQuads</a> file format.
+	 */
+	public static final RDFFormat NQUADS = new RDFFormat("NQuads", "text/x-nquads",
+			Charset.forName("US-ASCII"), "nq", false, true);
 
 	/*------------------*
 	 * Static variables *
@@ -97,6 +104,7 @@ public class RDFFormat extends FileFormat {
 		register(TRIX);
 		register(TRIG);
 		register(BINARY);
+		register(NQUADS);
 	}
 
 	/*----------------*
@@ -323,9 +331,9 @@ public class RDFFormat extends FileFormat {
 	 *        The name of the RDF file format, e.g. "RDF/XML".
 	 * @param mimeTypes
 	 *        The MIME types of the RDF file format, e.g.
-	 *        <tt>application/rdf+xml</tt> for the RDF/XML file format. The
-	 *        first item in the list is interpreted as the default MIME type for
-	 *        the format.
+	 *        <tt>application/rdf+xml</tt> for the RDF/XML file format. The first
+	 *        item in the list is interpreted as the default MIME type for the
+	 *        format.
 	 * @param charset
 	 *        The default character encoding of the RDF file format. Specify
 	 *        <tt>null</tt> if not applicable.
