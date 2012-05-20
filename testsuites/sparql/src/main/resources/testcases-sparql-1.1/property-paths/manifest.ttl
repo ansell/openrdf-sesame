@@ -9,6 +9,8 @@
     rdfs:comment "SPARQL 1.1: property paths (by Jeen Broekstra)" ;
     mf:entries
     (
+    	:sparql11-collection-01
+    	:sparql11-collection-02
     	:sparql11-wildcard-reflexive-01
     	:sparql11-alternative-01
     	:sparql11-alternative-02
@@ -44,6 +46,17 @@
     	:sparql11-nested-06
     ).
     
+:sparql11-collection-01  mf:name  "sparql11-collection-01" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-collection-01.rq> ; qt:data <data-10.ttl> ] ;
+         mf:result <sparql11-collection-01.srx> .
+         
+             
+:sparql11-collection-02  mf:name  "sparql11-collection-02" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-collection-01.rq> ; qt:data <data-11.ttl> ] ;
+         mf:result <sparql11-collection-02.srx> .
+         
 :sparql11-wildcard-reflexive-01  mf:name  "sparql11-wildcard-reflexive-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-wildcard-reflexive-01.rq> ; qt:data <data-09.ttl> ] ;
