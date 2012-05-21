@@ -2930,10 +2930,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
             switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
             case RBRACE:
               jj_consume_token(RBRACE);
+                                       jjtree.closeNodeScope(jjtn000, true);
+                                       jjtc000 = false;
+                                      jjtn000.setUpperBound(Long.MAX_VALUE);
               break;
             case INTEGER:
               max = jj_consume_token(INTEGER);
-                                                        jjtn000.setUpperBound(Long.parseLong(max.image));
+                                                                                                  jjtn000.setUpperBound(Long.parseLong(max.image));
               jj_consume_token(RBRACE);
               break;
             default:
@@ -2954,7 +2957,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         case COMMA:
           jj_consume_token(COMMA);
           max = jj_consume_token(INTEGER);
-                                                   jjtn000.setUpperBound(Long.parseLong(max.image));
+                                                   jjtn000.setUpperBound(Long.parseLong(max.image)); jjtn000.setLowerBound(0);
           jj_consume_token(RBRACE);
           break;
         default:
