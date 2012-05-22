@@ -35,18 +35,17 @@ public class If extends QueryModelNodeBase implements ValueExpr {
 	public If(ValueExpr condition) {
 		setCondition(condition);
 	}
-	
+
 	public If(ValueExpr condition, ValueExpr result) {
 		setCondition(condition);
 		setResult(result);
 	}
-	
+
 	public If(ValueExpr condition, ValueExpr result, ValueExpr alternative) {
 		setCondition(condition);
 		setResult(result);
 		setAlternative(alternative);
 	}
-
 
 	/*---------*
 	 * Methods *
@@ -85,6 +84,12 @@ public class If extends QueryModelNodeBase implements ValueExpr {
 		throws X
 	{
 		condition.visit(visitor);
+		if (result != null) {
+			result.visit(visitor);
+		}
+		if (alternative != null) {
+			alternative.visit(visitor);
+		}
 	}
 
 	@Override
@@ -101,22 +106,50 @@ public class If extends QueryModelNodeBase implements ValueExpr {
 	public boolean equals(Object other) {
 		if (other instanceof If) {
 			If o = (If)other;
-			return (condition.equals(o.getCondition()) && result.equals(o.getResult()) && alternative.equals(o.getAlternative()));
+
+			boolean equal = condition.equals(o.getCondition());
+			if (!equal) {
+				return equal;
+			}
+
+			equal = (result == null) ? o.getResult() == null : result.equals(o.getResult());
+			if (!equal) {
+				return equal;
+			}
+
+			equal = (alternative == null) ? o.getAlternative() == null : alternative.equals(o.getAlternative());
+
+			return equal;
 		}
 		return false;
 	}
 
 	@Override
 	public int hashCode() {
-		return condition.hashCode() ^ result.hashCode() ^ "If".hashCode();
+		int hashCode = condition.hashCode();
+
+		if (result != null) {
+			hashCode = hashCode ^ result.hashCode();
+		}
+		if (alternative != null) {
+			hashCode = hashCode ^ alternative.hashCode();
+		}
+
+		hashCode = hashCode ^ "If".hashCode();
+
+		return hashCode;
 	}
 
 	@Override
 	public If clone() {
 		If clone = (If)super.clone();
-		clone.setCondition(getCondition().clone());
-		clone.setResult(getResult().clone());
-		clone.setAlternative(getAlternative().clone());
+		clone.setCondition(condition.clone());
+		if (result != null) {
+			clone.setResult(result.clone());
+		}
+		if (alternative != null) {
+			clone.setAlternative(alternative.clone());
+		}
 		return clone;
 	}
 
