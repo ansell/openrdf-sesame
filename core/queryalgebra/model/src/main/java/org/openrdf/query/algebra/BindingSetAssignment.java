@@ -6,7 +6,6 @@
 package org.openrdf.query.algebra;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.openrdf.query.BindingSet;
@@ -15,7 +14,7 @@ import org.openrdf.query.BindingSet;
  */
 public class BindingSetAssignment extends QueryModelNodeBase implements TupleExpr {
 
-	private List<BindingSet> bindingSets;
+	private Iterable<BindingSet> bindingSets;
 	
 	public Set<String> getBindingNames() {
 		return getAssuredBindingNames();
@@ -55,14 +54,14 @@ public class BindingSetAssignment extends QueryModelNodeBase implements TupleExp
 	/**
 	 * @param bindingSets The bindingSets to set.
 	 */
-	public void setBindingSets(List<BindingSet> bindingSets) {
+	public void setBindingSets(Iterable<BindingSet> bindingSets) {
 		this.bindingSets = bindingSets;
 	}
 
 	/**
 	 * @return Returns the bindingSets.
 	 */
-	public List<BindingSet> getBindingSets() {
+	public Iterable<BindingSet> getBindingSets() {
 		return bindingSets;
 	}
 
