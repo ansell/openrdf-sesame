@@ -529,7 +529,17 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			}
 			else if (child instanceof ASTVar) {
 				Var projVar = (Var)child.jjtAccept(this, null);
-				projElemList.addElement(new ProjectionElem(projVar.getName()));
+				ProjectionElem elem = new ProjectionElem(projVar.getName());
+				projElemList.addElement(elem);
+				
+				VarCollector whereClauseVarCollector = new VarCollector();
+				result.visit(whereClauseVarCollector);
+
+				if (!whereClauseVarCollector.collectedVars.contains(projVar)) {
+					ExtensionElem extElem = new ExtensionElem(projVar, projVar.getName());
+					extension.addElement(extElem);
+					elem.setSourceExpression(extElem);
+				}
 			}
 			else {
 				throw new IllegalStateException("required alias for non-Var projection elements not found");
@@ -576,15 +586,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						}
 					}
 					else {
-						if (!groupNames.contains(elem.getTargetName())) 
-						{
+						if (!groupNames.contains(elem.getTargetName())) {
 							throw new VisitorException("variable '" + elem.getTargetName()
 									+ "' in projection not present in GROUP BY.");
 						}
 						else if (!groupNames.contains(elem.getSourceName())) {
 							throw new VisitorException("variable '" + elem.getSourceName()
 									+ "' in projection not present in GROUP BY.");
-							
+
 						}
 					}
 				}
@@ -723,6 +732,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		Set<Var> constructVars = getConstructVars(statementPatterns);
 
+		VarCollector whereClauseVarCollector = new VarCollector();
+		result.visit(whereClauseVarCollector);
+
 		// Create BNodeGenerator's for all anonymous variables
 		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
 
@@ -738,6 +750,15 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				}
 
 				extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
+			}
+			else if (!whereClauseVarCollector.collectedVars.contains(var)) {
+				// non-anon var in construct clause not present in where clause
+				if (!extElemMap.containsKey(var)) {
+					// assign non-anonymous vars not present in where clause as
+					// extension elements. This is necessary to make external binding
+					// assingnment possible (see SES-996)
+					extElemMap.put(var, new ExtensionElem(var, var.getName()));
+				}
 			}
 		}
 
