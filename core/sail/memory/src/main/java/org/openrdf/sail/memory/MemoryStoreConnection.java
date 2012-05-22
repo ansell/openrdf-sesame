@@ -637,18 +637,33 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			@Override
 			public double getCardinality(StatementPattern sp) {
-				Resource subj = (Resource)getConstantValue(sp.getSubjectVar());
-				URI pred = (URI)getConstantValue(sp.getPredicateVar());
+				
+				Value subj = getConstantValue(sp.getSubjectVar());
+				if (!(subj instanceof Resource)) {
+					// can happen when a previous optimizer has inlined a comparison operator. 
+					// this can cause, for example, the subject variable to be equated to a literal value. 
+					// See SES-970 / SES-998
+					subj = null;
+				}
+				Value pred = getConstantValue(sp.getPredicateVar());
+				if (!(pred instanceof URI)) {
+					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 / SES-998
+					pred = null;
+				}
 				Value obj = getConstantValue(sp.getObjectVar());
-				Resource context = (Resource)getConstantValue(sp.getContextVar());
+				Value context = getConstantValue(sp.getContextVar());
+				if (!(context instanceof Resource)) {
+					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 / SES-998
+					context = null;
+				}
 
 				MemValueFactory valueFactory = store.getValueFactory();
 
 				// Perform look-ups for value-equivalents of the specified values
-				MemResource memSubj = valueFactory.getMemResource(subj);
-				MemURI memPred = valueFactory.getMemURI(pred);
+				MemResource memSubj = valueFactory.getMemResource((Resource)subj);
+				MemURI memPred = valueFactory.getMemURI((URI)pred);
 				MemValue memObj = valueFactory.getMemValue(obj);
-				MemResource memContext = valueFactory.getMemResource(context);
+				MemResource memContext = valueFactory.getMemResource((Resource)context);
 
 				if (subj != null && memSubj == null || pred != null && memPred == null || obj != null
 						&& memObj == null || context != null && memContext == null)
