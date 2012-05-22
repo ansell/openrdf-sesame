@@ -5,6 +5,7 @@
  */
 package org.openrdf.query.algebra;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -21,8 +22,13 @@ public class BindingSetAssignment extends QueryModelNodeBase implements TupleExp
 	}
 
 	public Set<String> getAssuredBindingNames() {
-		// TODO implement more robustly.
-		return bindingSets.get(0).getBindingNames();
+		Set<String> result = new HashSet<String>();
+		if (bindingSets != null) {
+			for (BindingSet set: bindingSets) {
+				result.addAll(set.getBindingNames());
+			}
+		}
+		return result;
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
