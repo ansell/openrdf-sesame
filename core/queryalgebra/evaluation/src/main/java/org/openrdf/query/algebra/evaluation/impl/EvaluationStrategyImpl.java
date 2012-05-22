@@ -7,6 +7,7 @@ package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -1087,24 +1088,22 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		CloseableIteration<BindingSet, QueryEvaluationException> result;
 
-		final List<BindingSet> bindingSets = bsa.getBindingSets();
+		final Iterator<BindingSet> iter = bsa.getBindingSets().iterator();
 
 		// TODO handle existing bindings?
 
 		result = new CloseableIteration<BindingSet, QueryEvaluationException>() {
 
-			private int i = 0;
-
 			public boolean hasNext()
 				throws QueryEvaluationException
 			{
-				return bindingSets.size() > i;
+				return iter.hasNext();
 			}
 
 			public BindingSet next()
 				throws QueryEvaluationException
 			{
-				return bindingSets.get(i++);
+				return iter.next();
 			}
 
 			public void remove()
